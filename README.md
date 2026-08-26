@@ -110,13 +110,23 @@ This makes a workspace commit a reproducible snapshot of the complete platform.
 
 ## Working with a service
 
-Enter a service normally:
+Each service in this workspace is a Git submodule.
+
+A submodule is normally checked out at the exact commit recorded by the workspace. This means that after cloning the workspace or running `git submodule update`, a service can be in a **detached HEAD** state.
+
+Before making changes inside a service, switch to the branch you intend to work on.
+
+For example:
 
 ```bash
 cd moda-interact-messaging
+
+git status
+git switch main
+git pull --ff-only origin main
 ```
 
-Make and push changes in that repository:
+Then make, commit, and push the service changes normally:
 
 ```bash
 git add .
@@ -124,26 +134,41 @@ git commit -m "describe the change"
 git push
 ```
 
-Then return to the workspace root:
+Return to the workspace root:
 
 ```bash
 cd ..
 git status
 ```
 
-The workspace will show the service as having a new submodule commit, for example:
+The workspace will now show that the submodule points at a newer commit, for example:
 
 ```text
 modified: moda-interact-messaging (new commits)
 ```
 
-Record the updated service version in the workspace:
+Record that new service commit in the workspace:
 
 ```bash
 git add moda-interact-messaging
 git commit -m "update messaging service"
 git push
 ```
+
+This two-level commit process is intentional:
+
+```text
+service repository
+    |
+    +--> commit and push the code change
+             |
+             v
+workspace repository
+    |
+    +--> commit the new submodule pointer
+```
+
+The service repository owns the code change. The workspace repository records which version of that service belongs to the current platform snapshot.
 
 ## Updating submodules
 
@@ -160,6 +185,53 @@ git submodule update --remote --recursive
 ```
 
 Review changes before committing updated submodule pointers to the workspace.
+
+
+## Detached HEAD and submodules
+
+Seeing `HEAD detached at <commit>` inside a service is normal after a recursive clone or `git submodule update`.
+
+The workspace records a commit SHA for each service, not a branch. Git therefore checks out that exact commit.
+
+Before starting new work in a service, use:
+
+```bash
+git switch main
+git pull --ff-only origin main
+```
+
+If you accidentally make commits while detached, do **not** discard them. Recover them with the reflog:
+
+```bash
+git reflog --oneline
+```
+
+Then either cherry-pick the detached commit onto `main`:
+
+```bash
+git switch main
+git cherry-pick <detached-commit-sha>
+git push
+```
+
+or preserve a longer detached series on a temporary branch first:
+
+```bash
+git switch -c recover-work <latest-detached-commit-sha>
+git switch main
+git merge recover-work
+git push
+```
+
+After pushing the recovered service commit, return to the workspace root and update the submodule pointer:
+
+```bash
+cd ..
+git add <service-directory>
+git commit -m "update <service-name>"
+git push
+```
+
 
 ## Checking submodule status
 
@@ -186,12 +258,43 @@ When making a database change, keep dependent service pointers aligned intention
 A typical database change flow is:
 
 ```text
-1. Change and commit moda-interact-database
-2. Update the database submodule in affected services
-3. Test and commit each affected service
-4. Update the corresponding service pointers in this workspace
-5. Commit the workspace snapshot
+1. Change, test, commit, and push moda-interact-database
+2. Update the nested database submodule in every affected service
+3. Test, commit, and push each affected service
+4. Return to the workspace root
+5. Update the top-level service and database submodule pointers
+6. Commit and push the workspace snapshot
 ```
+
+For example, after pushing a new database commit:
+
+```bash
+# Update the database checkout used by moda-interact
+cd moda-interact/database
+git fetch origin
+git switch main
+git pull --ff-only origin main
+
+cd ..
+git add database
+git commit -m "update shared database schema"
+git push
+```
+
+Repeat that for each service that consumes the new schema.
+
+Then, from the workspace root, record the compatible platform versions:
+
+```bash
+git add   moda-interact-database   moda-interact   moda-interact-background   moda-interact-messaging
+
+git commit -m "update platform database dependencies"
+git push
+```
+
+Only include services that actually changed.
+
+The top-level `moda-interact-database/` checkout and nested `database/` submodules are independent Git checkouts. Keep their commit pointers aligned intentionally when they are meant to consume the same schema version.
 
 ## VS Code
 
