@@ -29,20 +29,22 @@ The `--recursive` flag is important because some Moda Interact services also inc
 
 ## Workspace structure
 
+The workspace root contains the Git metadata, the included workspace file, and the submodule directories for each service. After a normal recursive clone or `git submodule update --init --recursive`, each service directory is populated with its own repository checkout.
+
 ```text
 moda-interact-workspace/
 ├── .codex/
 │   └── agents/
+├── .gitignore
+├── .gitmodules
+├── README.md
 ├── moda-interact/
-│   └── database/
 ├── moda-interact-background/
-│   └── database/
 ├── moda-interact-database/
 ├── moda-interact-messaging/
 ├── moda-interact-site/
 ├── moda-interact.code-workspace
-├── keep-render-awake.sh
-└── start-docker-ui.sh
+└── .git/
 ```
 
 ## Projects
