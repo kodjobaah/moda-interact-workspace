@@ -325,6 +325,28 @@ moda_architect
 
 The repository agents focus on their own service boundaries, while `moda_architect` handles cross-repository design and coordination.
 
+Agent responsibilities:
+
+- **`moda_architect`**: Coordinates cross-repository design, ownership decisions,
+      integration contracts, migration planning and deployment sequencing.
+- **`moda_app`**: Owns the Shopify application, authentication, merchant UI,
+      Shopify webhooks, onboarding, billing, subscriptions and shop services.
+- **`moda_background`**: Owns BullMQ workers, checkout recovery, order
+      processing, commerce-agent orchestration, Shopify tools, entitlements,
+      retries and usage recording.
+- **`moda_database`**: Owns the Prisma schema, PostgreSQL migrations,
+      relationships, constraints, indexes, seed data and ERD generation.
+- **`moda_messaging`**: Owns Meta/WhatsApp webhook verification, signature
+      validation, event normalisation, Redis/BullMQ publishing and fast webhook
+      acknowledgement.
+- **`moda_site`**: Owns the public website, responsive UI, SEO, product
+      positioning, documentation links and marketing-facing content.
+
+Use a specialist agent for changes contained within one repository. Use
+`moda_architect` when a change affects shared database models, queue payloads,
+webhook contracts, billing and entitlement behavior, environment variables or
+deployment order.
+
 ## Useful commands
 
 ```bash
