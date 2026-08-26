@@ -1,0 +1,15 @@
+[submodule "moda-interact"]
+	path = moda-interact
+	url = https://github.com/kodjobaah/moda-interact.git
+[submodule "moda-interact-background"]
+	path = moda-interact-background
+	url = https://github.com/kodjobaah/moda-interact-background.git
+[submodule "moda-interact-database"]
+	path = moda-interact-database
+	url = https://github.com/kodjobaah/moda-interact-database.git
+[submodule "moda-interact-messaging"]
+	path = moda-interact-messaging
+	url = https://github.com/kodjobaah/moda-interact-messaging.git
+[submodule "moda-interact-site"]
+	path = moda-interact-site
+	url = https://github.com/kodjobaah/moda-interact-site.git
