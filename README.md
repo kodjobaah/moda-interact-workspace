@@ -184,20 +184,21 @@ workspace repository
 
 The service repository owns the code change. The workspace repository records which version of that service belongs to the current platform snapshot.
 
-## Claude agents
+## Codex and Claude agents
 
-Workspace-level agents were originally authored for Codex under `.codex/agents/`
-and have since been migrated to Claude. The live agent definitions now live
-under:
+Workspace-level agents are authored for both Codex and Claude. The same agent
+definitions are maintained in parallel under two locations:
 
 ```text
-.claude/agents/
+.codex/agents/<name>.toml
+.claude/agents/<name>.agent.md
 ```
 
-Each agent is a `<name>.agent.md` file (Markdown with frontmatter, wrapping the
-same underlying configuration previously stored as `.codex/agents/<name>.toml`).
-The `.codex/agents/` definitions are kept only as the historical source and are
-no longer the active copy.
+Each `.agent.md` file wraps the same underlying configuration as its `.toml`
+counterpart (Markdown with frontmatter around the TOML body). Both locations
+are actively used — which one applies depends on which tool (Codex or Claude)
+is handling a given task — so changes to an agent's instructions should be
+applied to both files to keep them in sync.
 
 The intended model is:
 

@@ -1,3 +1,10 @@
+---
+name: "moda_app"
+description: "Auto-migrated custom configuration for moda_app"
+---
+
+# System Configuration Raw Data
+```toml
 name = "moda_app"
 description = "Owner of the moda-interact Shopify application. Use for Shopify auth, React Router, merchant UI, Shopify webhooks, onboarding, billing and shop-level application services."
 
@@ -78,3 +85,4 @@ When changing code:
 If the task changes contracts used by another Moda repository, stop and flag it as
 a cross-repository concern for moda_architect.
 """
+```
