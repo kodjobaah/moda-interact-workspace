@@ -44,6 +44,7 @@ moda-interact-workspace/
 ├── moda-interact-admin/
 ├── moda-interact-messaging/
 ├── moda-interact-site/
+├── moda-interact-shared/
 ├── moda-interact.code-workspace
 └── .git/
 ```
@@ -58,6 +59,7 @@ moda-interact-workspace/
 | `moda-interact-admin` | Next.js platform administration console for cross-merchant usage and operational visibility |
 | [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | WhatsApp/Meta webhook ingress and queue publishing |
 | [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public Moda Interact website and product-facing content |
+| [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared) | Shared TypeScript package (`@kodjobaah/moda-interact-shared`) for code common to multiple services |
 
 ## High-level architecture
 
@@ -209,6 +211,7 @@ moda_architect
 ├── moda_background
 ├── moda_database
 ├── moda_messaging
+├── moda_shared
 └── moda_site
 ```
 
@@ -231,6 +234,8 @@ Agent responsibilities:
 - **`moda_messaging`**: Owns Meta/WhatsApp webhook verification, signature
       validation, event normalisation, Redis/BullMQ publishing and fast webhook
       acknowledgement.
+- **`moda_shared`**: Owns the `@kodjobaah/moda-interact-shared` package —
+      code intended to be reused across multiple Moda Interact services.
 - **`moda_site`**: Owns the public website, responsive UI, SEO, product
       positioning, documentation links and marketing-facing content.
 
