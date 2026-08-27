@@ -41,6 +41,7 @@ moda-interact-workspace/
 ├── moda-interact/
 ├── moda-interact-background/
 ├── moda-interact-database/
+├── moda-interact-admin/
 ├── moda-interact-messaging/
 ├── moda-interact-site/
 ├── moda-interact.code-workspace
@@ -54,6 +55,7 @@ moda-interact-workspace/
 | [`moda-interact`](https://github.com/kodjobaah/moda-interact) | Shopify app, merchant UI, Shopify webhooks, onboarding, billing and subscription flows |
 | [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background) | BullMQ workers, checkout recovery workflows, commerce agent, Shopify tools, entitlements and usage |
 | [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database) | Shared Prisma schema, PostgreSQL migrations, seed data and ERD |
+| `moda-interact-admin` | Next.js platform administration console for cross-merchant usage and operational visibility |
 | [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | WhatsApp/Meta webhook ingress and queue publishing |
 | [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public Moda Interact website and product-facing content |
 
@@ -182,6 +184,7 @@ The intended model is:
 
 ```text
 moda_architect
+├── moda_admin
 ├── moda_app
 ├── moda_background
 ├── moda_database
@@ -195,6 +198,9 @@ Agent responsibilities:
 
 - **`moda_architect`**: Coordinates cross-repository design, ownership decisions,
       integration contracts, migration planning and deployment sequencing.
+- **`moda_admin`**: Owns the Next.js platform administration console, internal
+      authentication, cross-merchant usage views, operational visibility and
+      admin workflows.
 - **`moda_app`**: Owns the Shopify application, authentication, merchant UI,
       Shopify webhooks, onboarding, billing, subscriptions and shop services.
 - **`moda_background`**: Owns BullMQ workers, checkout recovery, order
