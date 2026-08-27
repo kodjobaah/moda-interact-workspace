@@ -44,6 +44,7 @@ moda-interact-workspace/
 ├── moda-interact-admin/
 ├── moda-interact-messaging/
 ├── moda-interact-site/
+├── shopify-webhook-downloader/
 ├── moda-interact.code-workspace
 └── .git/
 ```
@@ -58,6 +59,7 @@ moda-interact-workspace/
 | `moda-interact-admin` | Next.js platform administration console for cross-merchant usage and operational visibility |
 | [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | WhatsApp/Meta webhook ingress and queue publishing |
 | [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public Moda Interact website and product-facing content |
+| [`shopify-webhook-downloader`](https://github.com/kodjobaah/shopify-webhook-downloader) | Developer tooling that scrapes reference Shopify webhook sample payloads |
 
 ## High-level architecture
 
@@ -201,7 +203,8 @@ moda_architect
 ├── moda_background
 ├── moda_database
 ├── moda_messaging
-└── moda_site
+├── moda_site
+└── moda_webhook_payloads
 ```
 
 The repository agents focus on their own service boundaries, while `moda_architect` handles cross-repository design and coordination.
@@ -225,6 +228,8 @@ Agent responsibilities:
       acknowledgement.
 - **`moda_site`**: Owns the public website, responsive UI, SEO, product
       positioning, documentation links and marketing-facing content.
+- **`moda_webhook_payloads`**: Owns the Shopify webhook payload scraper and
+      keeps the reference sample payload fixtures up to date.
 
 Use a specialist agent for changes contained within one repository. Use
 `moda_architect` when a change affects shared database models, queue payloads,
