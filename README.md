@@ -93,6 +93,18 @@ moda-interact-site
 
 `moda-interact-database` is the authoritative owner of the shared Prisma schema and migration history.
 
+## Architecture documentation
+
+The central architecture documentation is maintained in [`docs/`](docs/).
+
+- [Architecture overview](docs/architecture/overview.md)
+- [Service boundaries](docs/architecture/services.md)
+- [Architecture decisions](docs/decisions/)
+
+The workspace README explains how to work with the repositories and submodules;
+the architecture documentation explains how the platform behaves and where each
+responsibility belongs.
+
 ## Why this workspace exists
 
 Each service remains an independent Git repository with its own commit history and deployment lifecycle.
