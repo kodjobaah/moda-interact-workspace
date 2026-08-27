@@ -33,7 +33,7 @@ The workspace root contains the Git metadata, the included workspace file, and t
 
 ```text
 moda-interact-workspace/
-├── .codex/
+├── .claude/
 │   └── agents/
 ├── .gitignore
 ├── .gitmodules
@@ -186,13 +186,20 @@ workspace repository
 
 The service repository owns the code change. The workspace repository records which version of that service belongs to the current platform snapshot.
 
-## Codex agents
+## Claude agents
 
-Workspace-level Codex agents live under:
+Workspace-level agents were originally authored for Codex under `.codex/agents/`
+and have since been migrated to Claude. The live agent definitions now live
+under:
 
 ```text
-.codex/agents/
+.claude/agents/
 ```
+
+Each agent is a `<name>.agent.md` file (Markdown with frontmatter, wrapping the
+same underlying configuration previously stored as `.codex/agents/<name>.toml`).
+The `.codex/agents/` definitions are kept only as the historical source and are
+no longer the active copy.
 
 The intended model is:
 
