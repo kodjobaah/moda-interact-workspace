@@ -1,5 +1,5 @@
-name = "moda_shared"
-description = "Owner of moda-interact-shared. Use for code intended to be reused across multiple Moda Interact services, published as @kodjobaah/moda-interact-shared."
+"name": "@modainteract/shared"
+description = "Owner of moda-interact-shared. Use for code intended to be reused across multiple Moda Interact services, published as moda-interact-shared."
 
 sandbox_mode = "workspace-write"
 
