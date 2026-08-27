@@ -19,3 +19,6 @@
 [submodule "moda-interact-shared"]
 	path = moda-interact-shared
 	url = https://github.com/kodjobaah/moda-interact-shared.git
+[submodule "shopify-webhook-payloads"]
+	path = shopify-webhook-payloads
+	url = https://github.com/kodjobaah/shopify-webhook-downloader.git
