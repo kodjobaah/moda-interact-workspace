@@ -1,4 +1,6 @@
 .DS_Store
 *.log
 .env
+node_modules/
+copilot-worktrees/
 env
