@@ -234,7 +234,7 @@ Agent responsibilities:
 - **`moda_messaging`**: Owns Meta/WhatsApp webhook verification, signature
       validation, event normalisation, Redis/BullMQ publishing and fast webhook
       acknowledgement.
-- **`moda_shared`**: Owns the `@kodjobaah/moda-interact-shared` package —
+- **`moda_shared`**: Owns the `@modainteract/moda-interact-shared` package —
       code intended to be reused across multiple Moda Interact services.
 - **`moda_site`**: Owns the public website, responsive UI, SEO, product
       positioning, documentation links and marketing-facing content.
