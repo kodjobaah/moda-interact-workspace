@@ -11,7 +11,6 @@ stay within the owning service unless a shared contract must change.
 | `moda-interact-database` | Prisma schema, PostgreSQL migrations, constraints, indexes, seed data and ERD | Application routes and business workflows |
 | `moda-interact-messaging` | Meta/WhatsApp webhook verification, event normalisation and queue publishing | AI generation, recovery workflows and Shopify product logic |
 | `moda-interact-site` | Public marketing website, product content and public legal pages | Authenticated application behavior and platform workflows |
-| `shopify-webhook-downloader` | Developer tooling that scrapes and refreshes sample Shopify webhook payloads used as reference fixtures | Runtime webhook handling, any production application logic |
 
 ## Ownership rules
 

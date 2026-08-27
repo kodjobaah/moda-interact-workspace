@@ -16,6 +16,3 @@
 [submodule "moda-interact-admin"]
 	path = moda-interact-admin
 	url = https://github.com/kodjobaah/moda-interact-admin.git
-[submodule "shopify-webhook-downloader"]
-	path = shopify-webhook-downloader
-	url = https://github.com/kodjobaah/shopify-webhook-downloader.git
