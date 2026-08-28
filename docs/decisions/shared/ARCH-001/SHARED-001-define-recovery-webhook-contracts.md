@@ -6,11 +6,11 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-status: ready
+status: review
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-08-28T17:02:29Z
+attempt: 1
 depends_on: []
 enables: ["ARCH-001-SHOPIFY-001", "ARCH-001-BACKGROUND-001"]
 created: 2026-08-28
@@ -95,17 +95,17 @@ The shared package must provide a deterministic pending-recovery candidate ident
 
 ## Work Items
 
-- [ ] Add v2 schema-version constant(s) without redefining v1 semantics.
-- [ ] Add strict `checkout.created` schema and TypeScript type.
-- [ ] Add strict `checkout.updated` schema and TypeScript type.
-- [ ] Add strict v2 `order.completed` schema including `cartToken`.
-- [ ] Add/update discriminated-union parser(s) and type guards.
-- [ ] Add `checkout-updated` cross-service job contract.
-- [ ] Add deterministic pending-candidate job ID helper.
-- [ ] Add/update correlation/ordering helper(s).
-- [ ] Export all new contracts from `@modainteract/moda-interact-shared/shopify`.
-- [ ] Add contract tests covering valid and rejected payloads.
-- [ ] Confirm v1 contracts remain importable/parseable for transition.
+- [x] Add v2 schema-version constant(s) without redefining v1 semantics.
+- [x] Add strict `checkout.created` schema and TypeScript type.
+- [x] Add strict `checkout.updated` schema and TypeScript type.
+- [x] Add strict v2 `order.completed` schema including `cartToken`.
+- [x] Add/update discriminated-union parser(s) and type guards.
+- [x] Add `checkout-updated` cross-service job contract.
+- [x] Add deterministic pending-candidate job ID helper.
+- [x] Add/update correlation/ordering helper(s).
+- [x] Export all new contracts from `@modainteract/moda-interact-shared/shopify`.
+- [x] Add contract tests covering valid and rejected payloads.
+- [x] Confirm v1 contracts remain importable/parseable for transition.
 
 ## Interfaces / Contracts
 
@@ -140,19 +140,19 @@ None
 
 ## Acceptance Criteria
 
-- [ ] v2 checkout-create payload contains no customer, line-item, total or address fields.
-- [ ] v2 checkout-update payload contains only the recovery correlation data required by ARCH-001.
-- [ ] v2 order payload includes both `checkoutToken` and `cartToken` as nullable correlation identifiers.
-- [ ] Producer and consumer can import the same runtime schemas/types from the shared package.
-- [ ] Candidate identity is deterministic for the same `shopId + checkoutToken`.
-- [ ] v1 contract semantics are not silently changed.
-- [ ] Shared contract tests pass.
+- [x] v2 checkout-create payload contains no customer, line-item, total or address fields.
+- [x] v2 checkout-update payload contains only the recovery correlation data required by ARCH-001.
+- [x] v2 order payload includes both `checkoutToken` and `cartToken` as nullable correlation identifiers.
+- [x] Producer and consumer can import the same runtime schemas/types from the shared package.
+- [x] Candidate identity is deterministic for the same `shopId + checkoutToken`.
+- [x] v1 contract semantics are not silently changed.
+- [x] Shared contract tests pass.
 
 ## Validation
 
-- [ ] `npm test`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
+- [x] `npm test`
+- [x] `npm run typecheck`
+- [x] `npm run build`
 
 ## Implementation Notes
 
@@ -166,35 +166,59 @@ Do not add repository-local implementation behaviour to the shared package.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-shared/src/shopify/constants.ts`
+- `moda-interact-shared/src/shopify/queue-contracts.ts`
+- `moda-interact-shared/src/shopify/node.ts`
+- `moda-interact-shared/src/shopify/node.test.ts`
+- `moda-interact-shared/src/shopify/index.ts`
+- `moda-interact-shared/src/shopify/v1/checkout-observed.schema.ts`
+- `moda-interact-shared/src/shopify/v1/order-completed.schema.ts`
+- `moda-interact-shared/src/shopify/v1/commerce-event.schema.ts`
+- `moda-interact-shared/src/shopify/v1/commerce-event.test.ts`
+- `moda-interact-shared/src/shopify/v2/checkout-created.schema.ts`
+- `moda-interact-shared/src/shopify/v2/checkout-updated.schema.ts`
+- `moda-interact-shared/src/shopify/v2/order-completed.schema.ts`
+- `moda-interact-shared/src/shopify/v2/recovery-event.schema.ts`
+- `moda-interact-shared/src/shopify/v2/recovery-event.test.ts`
+- `docs/decisions/shared/ARCH-001/SHARED-001-define-recovery-webhook-contracts.md`
 
 ### Work Completed
 
-None
+- Added explicit v2 schema version constant and v2 event type constants while preserving v1 constants and semantics.
+- Added strict recovery-focused v2 payload schemas for `checkout.created`, `checkout.updated`, and `order.completed`.
+- Added v2 discriminated-union event schema, runtime parser/safe parser, and event type guards.
+- Added `checkout-updated` queue/job contract under shared queue constants.
+- Added deterministic pending-recovery candidate identifier helper in Node-only exports.
+- Added v2 ordering/correlation helpers with checkout-token preference for order correlation.
+- Exported all new v2 contracts and helpers from `@modainteract/moda-interact-shared/shopify`.
+- Added tests for valid/rejected v2 payloads and explicit v1 parser compatibility.
+- Reorganized contract sources into explicit `v1/` and `v2/` folders while preserving the package export surface.
 
 ### Validation Results
 
-None
+- `npm test` (pass): 7 tests passed.
+- `npm run typecheck` (pass).
+- `npm run build` (pass).
 
 ### Deviations
 
-None
+- None.
 
 ### Assumptions
 
-None
+- `checkout-updated` uses the existing `checkout-events` queue with a distinct job name for cross-service routing.
 
 ### Unresolved Issues
 
-None
+- None.
 
 ### Architectural Concerns
 
-None
+- None.
 
 ## Architect Review
 
