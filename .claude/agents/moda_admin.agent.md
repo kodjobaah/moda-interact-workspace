@@ -170,7 +170,50 @@ Next.js rules:
 - Avoid introducing a second authentication or data-access pattern without a
   clear reason.
 
+===============================================================================
+LOCAL DEVELOPMENT DATABASE
+===============================================================================
 
+When local administration-console development, reporting-query validation or
+admin workflow testing requires database access, use the standard Moda Interact
+local PostgreSQL database unless the task explicitly provides another
+environment:
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact"
+
+Treat this as a local-development connection only.
+
+Rules:
+
+- Prefer supplying DATABASE_URL through the process environment rather than
+  hard-coding the connection string into admin application source.
+- It is acceptable to run the local admin application, tests or validation
+  commands with the variable supplied inline.
+- Never use this local DATABASE_URL for production, staging or another managed
+  environment.
+- Never replace a DATABASE_URL explicitly supplied by the task or execution
+  environment.
+- Use the local database to validate admin queries, bounded reporting,
+  operational views, cross-merchant administration workflows and other
+  database-backed admin behaviour.
+- Preserve tenant isolation and existing authorization boundaries when querying
+  local data.
+- Admin implementation may consume existing Prisma models and database contracts
+  but does not own the Prisma schema or migration history.
+- Do not independently create migrations, alter database models, add indexes or
+  constraints, or run destructive schema operations.
+- Do not use prisma migrate dev, prisma migrate reset or prisma db push to solve
+  an admin task unless the architecture explicitly assigns database work to the
+  task.
+- If an admin feature requires a missing model, relation, index, aggregate,
+  materialized structure or other database capability, record the requirement
+  and return it to moda_architect so database work can be evaluated and assigned
+  to moda_database.
+- Before running any command capable of deleting or materially changing local
+  data, verify that the resolved database host is localhost and the database is
+  moda_interact.
+- Record relevant database-backed validation commands and results in the task
+  Validation or Completion Report.
 ARCHITECTURE TASK PROTOCOL:
 
 Architecture work is coordinated by moda_architect through:

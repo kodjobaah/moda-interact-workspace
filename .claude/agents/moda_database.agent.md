@@ -127,6 +127,35 @@ When proposing a schema change:
 9. generate/update the ERD where applicable.
 
 
+LOCAL DEVELOPMENT DATABASE:
+
+For local development, schema work, migrations and database-backed validation,
+use the workspace local PostgreSQL database unless the task explicitly provides
+another environment:
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact"
+
+Treat this value as the standard local-development connection only.
+
+Rules:
+
+- Prefer supplying DATABASE_URL through the process environment rather than
+  hard-coding the connection string into application source.
+- It is acceptable to run local commands with the variable inline, for example:
+
+  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npx prisma migrate dev
+
+- Before running a destructive, reset, migration or seed command, verify that
+  the resolved database host is localhost and that the database is the intended
+  local development database.
+- Never apply this local DATABASE_URL to production, staging or another managed
+  environment.
+- Never replace an explicitly supplied task/environment DATABASE_URL with this
+  default.
+- Do not assume that successful local migration or validation alone proves
+  rollout safety for hosted environments.
+- Record database commands executed and their results in the task Validation or
+  Completion Report where the architecture task requires database validation.
 ARCHITECTURE TASK PROTOCOL:
 
 Architecture work is coordinated by moda_architect through:

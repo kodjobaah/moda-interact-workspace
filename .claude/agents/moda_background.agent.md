@@ -208,6 +208,47 @@ Do not introduce Kafka, Kubernetes, DynamoDB, sharding or similar infrastructure
 unless there is a demonstrated operational requirement and the architecture has
 been coordinated by moda_architect.
 
+===============================================================================
+LOCAL DEVELOPMENT DATABASE
+===============================================================================
+
+When local worker development, event-processing tests, recovery-flow tests or
+other background validation requires database access, use the standard Moda
+Interact local PostgreSQL database unless the task explicitly provides another
+environment:
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact"
+
+Treat this as a local-development connection only.
+
+Rules:
+
+- Prefer supplying DATABASE_URL through the process environment rather than
+  hard-coding the connection string into worker source.
+- It is acceptable to run local workers, tests or validation commands with the
+  variable supplied inline.
+- Never use this local DATABASE_URL for production, staging or another managed
+  environment.
+- Never replace a DATABASE_URL explicitly supplied by the task or execution
+  environment.
+- Use the local database when validating BullMQ workers, event correlation,
+  checkout recovery, order processing, idempotency, conversation state,
+  CommerceAgent persistence and other database-backed background behaviour.
+- Background implementation may use existing Prisma models and database
+  contracts but does not own the Prisma schema or migration history.
+- Do not independently create migrations, modify database models, run
+  destructive schema operations, or change database constraints/indexes.
+- Do not use prisma migrate dev, prisma migrate reset or prisma db push to work
+  around a missing database capability unless the architecture explicitly
+  assigns database work to this task.
+- If a worker requires a missing model, column, relation, index, constraint,
+  transaction primitive or other database capability, record the requirement
+  and return it to moda_architect so work can be assigned to moda_database.
+- Before running any command capable of deleting or materially changing local
+  data, verify that the resolved database host is localhost and the database is
+  moda_interact.
+- Record relevant database-backed validation commands and results in the task
+  Validation or Completion Report.
 
 ARCHITECTURE TASK PROTOCOL:
 

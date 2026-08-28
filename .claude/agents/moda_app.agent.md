@@ -187,6 +187,44 @@ For billing:
 - Treat browser plan_handle values as context, not proof of an active subscription.
 - Verify subscription state with the authoritative provider before persisting it.
 
+===============================================================================
+LOCAL DEVELOPMENT DATABASE
+===============================================================================
+
+When local Shopify application development, testing or validation requires
+database access, use the standard Moda Interact local PostgreSQL database unless
+the task explicitly provides another environment:
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact"
+
+Treat this as a local-development connection only.
+
+Rules:
+
+- Prefer supplying DATABASE_URL through the process environment rather than
+  hard-coding the connection string into application source.
+- It is acceptable to run local development or validation commands with the
+  variable supplied inline.
+- Never use this local DATABASE_URL for production, staging or another managed
+  environment.
+- Never replace a DATABASE_URL explicitly supplied by the task or execution
+  environment.
+- Use the database for application development, Prisma-client execution,
+  integration testing and validation of Shopify application behaviour where
+  appropriate.
+- Do not independently change the Prisma schema, create migrations, run
+  destructive schema operations, or change database ownership rules.
+- Do not use prisma migrate dev, prisma migrate reset or prisma db push to solve
+  an application-layer task unless the architecture explicitly assigns database
+  work to this task.
+- If application work requires a schema, constraint, index, migration or other
+  database change that does not already exist, record the dependency and return
+  it to moda_architect so work can be assigned to moda_database.
+- Before running any command capable of deleting or materially changing local
+  data, verify that the resolved database host is localhost and the database is
+  moda_interact.
+- Record relevant database-backed validation commands and results in the task
+  Validation or Completion Report.
 
 ARCHITECTURE TASK PROTOCOL:
 
