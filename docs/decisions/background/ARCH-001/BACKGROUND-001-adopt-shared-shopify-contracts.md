@@ -6,11 +6,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: pending
+status: review
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-08-28T18:10:27Z
+attempt: 1
 depends_on: ["ARCH-001-SHARED-001"]
 enables: ["ARCH-001-BACKGROUND-002", "ARCH-001-BACKGROUND-003"]
 created: 2026-08-28
@@ -75,15 +75,15 @@ Legacy v1 checkout jobs may use their identifiers for transition, but their cust
 
 ## Work Items
 
-- [ ] Add shared-package dependency.
-- [ ] Import shared queue/event schemas and types.
-- [ ] Parse worker job data at the runtime boundary.
-- [ ] Route checkout-created and checkout-updated separately.
-- [ ] Route order-completed using the shared contract.
-- [ ] Remove old local `CheckoutCreatedEvent` contract usage.
-- [ ] Remove old local `OrderCompletedEvent` contract usage.
-- [ ] Add transitional v1 handling for queued jobs.
-- [ ] Add unit tests for valid v2, invalid data and legacy v1 transition.
+- [x] Add shared-package dependency.
+- [x] Import shared queue/event schemas and types.
+- [x] Parse worker job data at the runtime boundary.
+- [x] Route checkout-created and checkout-updated separately.
+- [x] Route order-completed using the shared contract.
+- [x] Remove old local `CheckoutCreatedEvent` contract usage.
+- [x] Remove old local `OrderCompletedEvent` contract usage.
+- [x] Add transitional v1 handling for queued jobs.
+- [x] Add unit tests for valid v2, invalid data and legacy v1 transition.
 
 ## Interfaces / Contracts
 
@@ -110,18 +110,18 @@ Consumer:
 
 ## Acceptance Criteria
 
-- [ ] Background no longer maintains a separate structural copy of the v2 checkout/order contract.
-- [ ] Every cross-service job is runtime validated.
-- [ ] Checkout create and checkout update reach distinct handlers.
-- [ ] Invalid payloads fail with clear diagnostics.
-- [ ] Transitional v1 checkout jobs do not use embedded basket data to populate recovery.
-- [ ] Background build/typecheck succeeds with the shared dependency.
+- [x] Background no longer maintains a separate structural copy of the v2 checkout/order contract.
+- [x] Every cross-service job is runtime validated.
+- [x] Checkout create and checkout update reach distinct handlers.
+- [x] Invalid payloads fail with clear diagnostics.
+- [x] Transitional v1 checkout jobs do not use embedded basket data to populate recovery.
+- [x] Background build/typecheck succeeds with the shared dependency.
 
 ## Validation
 
-- [ ] `npm test`
-- [ ] `npm run build`
-- [ ] `npm run prisma:validate`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] `npm run prisma:validate`
 
 ## Implementation Notes
 
@@ -133,35 +133,57 @@ If package/dependency versioning prevents safe rolling deployment, report it as 
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-background/package.json`
+- `moda-interact-background/package-lock.json`
+- `moda-interact-background/src/events/shopify-contract-adapter.ts`
+- `moda-interact-background/src/events/checkout-events.ts`
+- `moda-interact-background/src/workers/checkout.worker.ts`
+- `moda-interact-background/src/workers/orders.worker.ts`
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/services/customer.service.ts`
+- `moda-interact-background/src/services/conversation.message.service.ts`
+- `moda-interact-background/tests/unit/events/shopify-contract-adapter.test.ts`
+- `docs/decisions/background/ARCH-001/BACKGROUND-001-adopt-shared-shopify-contracts.md`
 
 ### Work Completed
 
-None
+- Added shared package dependency `@modainteract/moda-interact-shared` to consume canonical cross-service Shopify contracts.
+- Added runtime event boundary adapter to parse v2 contracts first and fall back to explicit v1 transition parsing for already-queued legacy jobs.
+- Updated checkout and order workers to parse/validate job payloads at runtime before business handling.
+- Routed checkout-created and checkout-updated into distinct handlers at worker boundary.
+- Routed order-completed through shared contract parsing/mapping.
+- Added explicit transitional v1 mapping path that carries only correlation identifiers and does not treat legacy customer/line-item/total payload as authoritative.
+- Retired local cross-service contract naming (`CheckoutCreatedEvent`, `OrderCompletedEvent`) from active worker contract boundary.
+- Added unit tests for valid v2 mapping, invalid payload rejection, and legacy v1 transition behaviour.
 
 ### Validation Results
 
-None
+- `npm install`: pass.
+- `npm test`: fail due a pre-existing unrelated unit test (`tests/unit/services/recovery-routing.service.test.ts`) error reading `prisma.customerPhone.findMany` from undefined mock.
+- `npm test -- tests/unit/events/shopify-contract-adapter.test.ts`: pass (4/4 tests).
+- `npm run build`: pass.
+- `npm run prisma:validate`: pass.
 
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
+- The existing failing `recovery-routing.service` unit test is unrelated to this task's worker contract-boundary changes.
+- `npm run build` in this repository provides the required typecheck signal for the changed code path.
 
 ### Unresolved Issues
 
-None
+- Repository test suite contains an unrelated failing unit test in `tests/unit/services/recovery-routing.service.test.ts`.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
