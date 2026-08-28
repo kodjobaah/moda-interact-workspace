@@ -4,6 +4,16 @@ This repository is the top-level workspace for the **Moda Interact** platform.
 
 It ties together the independently versioned Moda Interact services using Git submodules, so the workspace records which exact commit of each service belongs to a given platform version.
 
+## Coding agent workflow
+
+Moda Interact uses a structured multi-agent engineering workflow with explicit
+repository ownership, architecture tasks, dependency tracking, task claiming,
+shared contracts and architect review.
+
+See:
+
+[Moda Interact Coding Agent Workflow](docs/coding-agent-workflow.md)
+
 ## Clone the complete workspace
 
 Because this repository contains Git submodules, clone it recursively:

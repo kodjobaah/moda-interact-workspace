@@ -1,0 +1,906 @@
+# Moda Interact Coding Agent Workflow
+
+## Overview
+
+Moda Interact uses coding agents as part of a structured engineering workflow rather than as standalone coding assistants.
+
+The core idea is simple:
+
+> **Conversation is temporary execution context. The repository is durable engineering state.**
+
+Instead of relying on a long-running chat to remember architecture, ownership, dependencies and implementation status, those concerns are recorded in version-controlled files that any compatible coding agent can read.
+
+This makes the workflow portable across execution environments such as Codex, Claude, Continue and other capable coding agents.
+
+---
+
+## Why this workflow exists
+
+A typical coding-agent workflow looks like this:
+
+```text
+Developer
+    |
+    v
+"Implement feature X"
+    |
+    v
+Coding agent
+    |
+    v
+Explore repository
+    |
+    v
+Edit files
+    |
+    v
+Developer reviews diff
+```
+
+That works well for many local tasks, but becomes less reliable when a system spans:
+
+- multiple repositories;
+- shared database models;
+- queue/event contracts;
+- asynchronous workers;
+- webhook producers and consumers;
+- deployment sequencing;
+- idempotency requirements;
+- tenant isolation;
+- shared runtime schemas;
+- multiple AI execution environments.
+
+Moda Interact therefore adds a coordination layer above the individual coding agent.
+
+---
+
+# Agent organisation
+
+The platform uses logical engineering roles:
+
+```text
+moda_architect
+├── moda_admin
+├── moda_app
+├── moda_background
+├── moda_database
+├── moda_messaging
+├── moda_shared
+└── moda_site
+```
+
+Each logical agent has a bounded responsibility.
+
+| Agent | Primary responsibility |
+| --- | --- |
+| `moda_architect` | Cross-repository architecture, decomposition, dependencies, sequencing, review and integration |
+| `moda_app` | Shopify app, merchant UI, Shopify ingress, onboarding, billing and subscriptions |
+| `moda_background` | BullMQ workers, event processing, recovery workflows, CommerceAgent and retryable background work |
+| `moda_database` | Prisma schema, PostgreSQL migrations, constraints, indexes and durable integrity |
+| `moda_messaging` | Meta/WhatsApp webhook ingress, validation, normalisation and queue publication |
+| `moda_shared` | Canonical cross-service runtime contracts and shared primitives |
+| `moda_admin` | Platform administration, reporting and operational visibility |
+| `moda_site` | Public website, product content and SEO |
+
+Repository ownership is explicit.
+
+For example:
+
+```text
+moda_app
+    -> moda-interact/
+
+moda_background
+    -> moda-interact-background/
+
+moda_database
+    -> moda-interact-database/
+
+moda_shared
+    -> moda-interact-shared/
+```
+
+This reduces the chance that an implementation agent silently expands a task into unrelated repositories.
+
+---
+
+# Architect and repository-agent separation
+
+The architect coordinates work rather than implementing substantial repository-specific changes when an owner agent exists.
+
+The normal flow is:
+
+```text
+User
+  |
+  v
+moda_architect
+  |
+  | inspect current code
+  | define architecture
+  v
+Architecture document
+  |
+  | decompose into bounded tasks
+  v
+Repository task files
+  |
+  v
+Specialist repository agents
+  |
+  | implement + validate
+  v
+status: review
+  |
+  v
+moda_architect
+  |
+  | inspect actual implementation
+  v
+status: complete
+```
+
+The implementation agent does **not** decide that its own architectural task is complete.
+
+Only `moda_architect` can transition:
+
+```text
+review -> complete
+```
+
+This creates a separation similar to implementation and review in a human engineering team.
+
+---
+
+# Architecture initiatives
+
+Cross-repository work is organised into architecture initiatives.
+
+Examples:
+
+```text
+ARCH-001
+ARCH-002
+ARCH-003
+```
+
+An architecture ID identifies an initiative, not an individual implementation task.
+
+An architecture document may look like:
+
+```text
+docs/architecture/ARCH-001-shopify-webhook-reliability.md
+```
+
+The document describes the complete design:
+
+- problem being solved;
+- affected repositories;
+- workload assumptions;
+- data flow;
+- contracts;
+- transaction boundaries;
+- deployment order;
+- scalability considerations;
+- security constraints;
+- migration requirements.
+
+---
+
+# Architecture task decomposition
+
+The architect decomposes an architecture into domain-owned tasks.
+
+Example:
+
+```text
+ARCH-001
+├── ARCH-001-SHARED-001
+├── ARCH-001-DATABASE-001
+├── ARCH-001-SHOPIFY-001
+└── ARCH-001-BACKGROUND-001
+```
+
+The task files live under the owning decision domain:
+
+```text
+docs/decisions/
+├── shared/
+│   └── ARCH-001/
+│       └── SHARED-001-define-recovery-webhook-contracts.md
+├── database/
+│   └── ARCH-001/
+├── shopify/
+│   └── ARCH-001/
+└── background/
+    └── ARCH-001/
+```
+
+A task contains both human-readable implementation instructions and machine-readable execution metadata.
+
+Example:
+
+```yaml
+---
+id: ARCH-001-BACKGROUND-001
+architecture_id: ARCH-001
+title: Consume versioned Shopify event
+domain: background
+repository: moda-interact-background
+assigned_agent: moda_background
+coordinator: moda_architect
+status: ready
+priority: 20
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+  - ARCH-001-SHARED-001
+enables: []
+created: 2026-08-28
+updated: 2026-08-28
+---
+```
+
+This means an agent can discover:
+
+- what it owns;
+- whether the task is executable;
+- which dependencies must already be complete;
+- whether another runtime has claimed it;
+- what work it enables after completion.
+
+---
+
+# Task lifecycle
+
+Tasks use a controlled status model:
+
+```text
+pending
+ready
+in_progress
+review
+complete
+blocked
+superseded
+```
+
+The intended lifecycle is:
+
+```text
+pending
+   |
+   v
+ready
+   |
+   | repository agent claims task
+   v
+in_progress
+   |
+   | implementation + validation
+   v
+review
+   |
+   | architect accepts
+   v
+complete
+```
+
+A repository agent may also return:
+
+```text
+in_progress -> blocked
+```
+
+when the implementation reveals a missing dependency, architectural conflict or unsafe assumption.
+
+---
+
+# Task claiming
+
+Task discovery is not a claim.
+
+Immediately before implementation, the agent re-reads the task and verifies:
+
+```text
+status: ready
+assigned_agent: <correct agent>
+all depends_on tasks: complete
+```
+
+The task is then claimed using execution metadata:
+
+```yaml
+status: in_progress
+executor: codex
+claimed_at: 2026-08-28T15:30:00+01:00
+attempt: 1
+```
+
+or:
+
+```yaml
+executor: claude
+```
+
+The agent must not overwrite another executor's active claim.
+
+This allows multiple coding environments to work against the same durable task state without silently duplicating work.
+
+---
+
+# Standard repository-agent kickoff
+
+A standard template is used to start an architecture task:
+
+```text
+docs/agent-task-execution-template.md
+```
+
+The template is populated with:
+
+```text
+<AGENT>
+<ARCH_ID>
+<TASK_ID>
+<TASK_FILE>
+```
+
+Example:
+
+```text
+<AGENT>     = moda_shared
+<ARCH_ID>   = ARCH-001
+<TASK_ID>   = ARCH-001-SHARED-001
+<TASK_FILE> = docs/decisions/shared/ARCH-001/SHARED-001-define-recovery-webhook-contracts.md
+```
+
+The template then requires the repository agent to:
+
+```text
+read agent definition
+        |
+        v
+read architecture
+        |
+        v
+read task
+        |
+        v
+read dependencies/contracts
+        |
+        v
+verify task is ready
+        |
+        v
+claim task
+        |
+        v
+implement bounded scope
+        |
+        v
+run validation
+        |
+        v
+complete task report
+        |
+        v
+status: review
+        |
+        v
+return to moda_architect
+```
+
+The task file remains authoritative.
+
+The kickoff prompt is only an execution wrapper.
+
+---
+
+# Codex, Claude and other runtimes
+
+The logical engineering role is deliberately independent of the AI vendor.
+
+For example:
+
+```text
+Codex -----\
+            \
+             -> moda_background
+            /
+Claude ----/
+```
+
+The logical role is:
+
+```text
+moda_background
+```
+
+not:
+
+```text
+claude_background
+codex_background
+```
+
+Agent definitions are stored in runtime-specific formats:
+
+```text
+.codex/agents/<name>.toml
+.claude/agents/<name>.agent.md
+```
+
+The definitions are intended to remain semantically equivalent.
+
+The Codex definitions can be used as the authored source and synchronised into Claude definitions:
+
+```bash
+python3 sync_agents.py
+```
+
+This means the engineering organisation can survive a change of AI model or provider.
+
+---
+
+# Canonical shared contracts
+
+Cross-service runtime contracts are centrally owned by:
+
+```text
+moda-interact-shared/
+```
+
+and consumed through:
+
+```text
+@kodjobaah/moda-interact-shared
+```
+
+This package is not merely a miscellaneous utility library.
+
+It is the canonical home for cross-service runtime boundaries such as:
+
+- queue payload types;
+- event schemas;
+- runtime validators;
+- schema-version constants;
+- shared enums;
+- deterministic event/job identifiers;
+- correlation and ordering identifiers.
+
+Instead of this:
+
+```text
+Producer
+  -> local CheckoutEvent definition
+
+Consumer
+  -> another local CheckoutEvent definition
+```
+
+the intended model is:
+
+```text
+                 moda_shared
+                     |
+          canonical CheckoutEvent
+                     |
+             +-------+-------+
+             |               |
+             v               v
+         producer         consumer
+```
+
+If a required cross-service contract does not exist, a repository agent should not invent a competing local version.
+
+The missing contract is returned to `moda_architect`, which can create or sequence a `moda_shared` task.
+
+---
+
+# Dependency-driven contract rollout
+
+Shared-contract tasks can explicitly gate producers and consumers.
+
+Example:
+
+```text
+ARCH-001-SHARED-001
+Define canonical contract
+        |
+        +--------------------------+
+        |                          |
+        v                          v
+ARCH-001-SHOPIFY-001      ARCH-001-BACKGROUND-001
+producer imports it       consumer imports it
+```
+
+This makes deployment and compatibility requirements visible before implementation begins.
+
+---
+
+# Durable project state
+
+One of the main principles of the workflow is:
+
+```text
+Conversation = temporary execution context
+
+Repository/docs = durable engineering state
+```
+
+A fresh agent should be able to reconstruct:
+
+```text
+Who am I?
+What repository do I own?
+What task am I executing?
+Why does it exist?
+What does it depend on?
+What contracts apply?
+What may I change?
+How must I validate it?
+Who accepts completion?
+```
+
+without relying on hidden chat history.
+
+This is particularly important when tasks may be executed by different models at different times.
+
+---
+
+# Benefits of the approach
+
+## 1. Reduced agent drift
+
+A repository agent receives explicit ownership and bounded task scope.
+
+It is less likely to "helpfully" refactor unrelated code or redesign another repository.
+
+---
+
+## 2. Cross-repository changes become explicit
+
+A change that affects:
+
+```text
+shared contract
+    +
+database
+    +
+producer
+    +
+consumer
+```
+
+becomes a visible dependency graph instead of an implicit sequence inside one AI conversation.
+
+---
+
+## 3. Better review boundaries
+
+Implementation and acceptance are separated.
+
+```text
+repository agent
+      |
+      v
+status: review
+      |
+      v
+moda_architect
+      |
+      v
+status: complete
+```
+
+This reduces the risk of the implementation agent deciding that its own assumptions are correct.
+
+---
+
+## 4. AI-provider independence
+
+The workflow is organised around logical engineering roles rather than vendor-specific agents.
+
+A task can move between compatible execution environments without changing its architectural ownership.
+
+---
+
+## 5. Better recovery from interrupted work
+
+Because execution state is stored in the task file, a new agent can determine whether work is:
+
+```text
+ready
+in_progress
+blocked
+review
+complete
+```
+
+without needing the previous conversation.
+
+---
+
+## 6. Explicit dependency management
+
+Tasks cannot safely become executable until their dependencies are complete.
+
+This is useful for:
+
+- schema before application code;
+- shared contract before producer/consumer;
+- migration before dependent deployment;
+- infrastructure before runtime integration.
+
+---
+
+## 7. Central contract ownership
+
+Producer and consumer services are less likely to drift into structurally similar but semantically incompatible event definitions.
+
+---
+
+## 8. Easier multi-agent collaboration
+
+Agents can work independently when their tasks do not conflict.
+
+The architecture/task graph provides a common coordination mechanism.
+
+---
+
+## 9. Better auditability
+
+Architecture decisions, dependencies, implementation reports and review status are stored in version control.
+
+This makes it possible to understand not just **what changed**, but also:
+
+- why it changed;
+- which architecture required it;
+- which agent implemented it;
+- what validation was performed;
+- what assumptions or concerns remained.
+
+---
+
+## 10. More meaningful agent evaluation
+
+Models can be compared using the same bounded task specification.
+
+Instead of asking only:
+
+> Did the model generate valid TypeScript?
+
+the workflow can evaluate:
+
+```text
+Did it read the correct architecture?
+Did it respect dependencies?
+Did it claim the task correctly?
+Did it stay inside its repository?
+Did it reuse shared contracts?
+Did it run the required validation?
+Did it report unresolved concerns?
+Did it return the task for review?
+```
+
+This is a more realistic test of coding-agent reliability.
+
+---
+
+# How this compares with typical coding-agent usage
+
+A useful maturity spectrum is:
+
+| Level | Typical usage |
+| --- | --- |
+| 1 | AI autocomplete |
+| 2 | Chat about code |
+| 3 | Agent given a feature or issue |
+| 4 | Repo-aware agent with rules/instructions |
+| 5 | Durable tasks, dependencies and review |
+| 6 | Multi-agent engineering workflow with specialist ownership and coordination |
+
+Many developer workflows currently sit around levels 2-4.
+
+Moda Interact is intentionally moving toward levels 5-6.
+
+| Typical agent workflow | Moda Interact workflow |
+| --- | --- |
+| Prompt is the main instruction | Task file is authoritative |
+| Agent explores freely | Repository ownership is explicit |
+| Developer coordinates manually | Architect coordinates |
+| State lives mainly in chat | State lives in version-controlled files |
+| Dependencies are implicit | Dependencies are machine-readable |
+| Agent may edit multiple domains | Changes are bounded by logical ownership |
+| Agent declares work finished | Architect accepts completion |
+| Interfaces may be recreated locally | Shared contracts have canonical ownership |
+| Workflow often depends on one AI vendor | Logical agents are runtime-independent |
+
+---
+
+# When to use the full architecture workflow
+
+The architecture workflow is intended for changes that affect system boundaries or require coordination.
+
+Examples:
+
+- new cross-service event contract;
+- database model or migration;
+- producer/consumer protocol change;
+- queue semantics;
+- idempotency or ordering;
+- tenant isolation;
+- deployment sequencing;
+- billing/entitlement behaviour;
+- high-volume processing architecture.
+
+For a small local change, the full process may be unnecessary.
+
+Example:
+
+```text
+LOCAL / LOW-RISK CHANGE
+
+repository agent
+      |
+      v
+implement directly
+```
+
+versus:
+
+```text
+ARCHITECTURAL / CROSS-BOUNDARY CHANGE
+
+moda_architect
+      |
+      v
+architecture
+      |
+      v
+task graph
+      |
+      v
+repository agents
+      |
+      v
+architect review
+```
+
+The goal is governance where it adds value, not bureaucracy for every edit.
+
+---
+
+# Trade-offs
+
+The approach introduces additional structure.
+
+Potential costs include:
+
+- more documentation;
+- task-file maintenance;
+- coordination overhead for small changes;
+- need to keep agent definitions synchronised;
+- need to maintain task and architecture indexes;
+- risk of rules becoming stale if not automated.
+
+The workflow therefore works best when architecture tasks are reserved for changes whose complexity justifies the coordination.
+
+---
+
+# Current maturity assessment
+
+The workflow is currently strong in design but still has room for more automation.
+
+Approximate assessment:
+
+| Area | Assessment |
+| --- | ---: |
+| Logical agent separation | 9.5 / 10 |
+| Repository ownership | 9 / 10 |
+| Architecture/task decomposition | 9 / 10 |
+| Durable coordination state | 9.5 / 10 |
+| Shared contract governance | 9 / 10 |
+| Review/acceptance model | 9 / 10 |
+| AI-provider independence | 9 / 10 |
+| Workflow automation | 6.5 / 10 |
+| Overhead control | 7.5 / 10 |
+
+Overall:
+
+```text
+~8.5 / 10
+```
+
+The main opportunity is not adding more rules.
+
+It is automating the rules that already exist.
+
+---
+
+# Next step: automate workflow validation
+
+The architecture could be strengthened with a workspace validation command such as:
+
+```bash
+python3 scripts/validate_architecture.py
+```
+
+or:
+
+```bash
+npm run architecture:validate
+```
+
+It could automatically verify:
+
+```text
+task IDs are valid
+dependencies exist
+ready tasks have complete dependencies
+assigned_agent matches repository/domain
+only one active executor has claimed a task
+architecture references are valid
+Codex and Claude definitions are synchronised
+shared-contract tasks exist where required
+task indexes are consistent
+```
+
+Example output:
+
+```text
+✓ ARCH-001-SHARED-001 valid
+✓ dependency graph valid
+✓ repository ownership valid
+✓ no duplicate active claims
+✓ agent definitions synchronized
+✓ architecture task graph valid
+```
+
+At that point, governance moves from "instructions the agent should remember" to "constraints the workspace can enforce".
+
+---
+
+# Desired end state
+
+The long-term goal is that a completely fresh coding agent can be given only:
+
+```text
+ARCH_ID
+TASK_ID
+TASK_FILE
+```
+
+and independently determine:
+
+```text
+who it is
+what it owns
+what it must read
+what it depends on
+what it may change
+how it must validate the change
+how it reports completion
+and who must approve it
+```
+
+If that works consistently across different coding models and execution environments, then the workflow has moved beyond ordinary AI-assisted coding into a durable multi-agent engineering system.
+
+---
+
+## Related workspace documentation
+
+The workflow is implemented through:
+
+```text
+.codex/agents/
+.claude/agents/
+docs/architecture/
+docs/decisions/
+docs/contracts/
+docs/agent-task-execution-template.md
+```
+
+See the workspace README for repository layout, submodule management and local development guidance.
