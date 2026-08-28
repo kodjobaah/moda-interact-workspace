@@ -761,7 +761,7 @@ The workspace coordinates the platform but does not replace the independent owne
 - Long-running, retryable and state-correlating workflows belong in `moda-interact-background`.
 - Shared data models and migrations belong in `moda-interact-database`.
 - Messaging provider ingress belongs in `moda-interact-messaging`.
-- Canonical cross-service runtime contracts belong in `moda-interact-shared` and should be consumed through `@kodjobaah/moda-interact-shared`.
+- Canonical cross-service runtime contracts belong in `moda-interact-shared` and should be consumed through `@modainteract/moda-interact-shared`.
 - Platform administration and cross-merchant operational views belong in `moda-interact-admin`.
 - Public product and marketing content belongs in `moda-interact-site`.
 - Cross-repository architecture, sequencing and implementation review belong to `moda_architect`.

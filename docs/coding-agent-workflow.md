@@ -455,7 +455,7 @@ moda-interact-shared/
 and consumed through:
 
 ```text
-@kodjobaah/moda-interact-shared
+@modainteract/moda-interact-shared
 ```
 
 This package is not merely a miscellaneous utility library.
