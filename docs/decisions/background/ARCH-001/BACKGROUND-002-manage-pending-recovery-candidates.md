@@ -6,11 +6,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: pending
+status: review
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-08-28T18:20:54Z
+attempt: 1
 depends_on: ["ARCH-001-BACKGROUND-001"]
 enables: ["ARCH-001-BACKGROUND-004"]
 created: 2026-08-28
@@ -81,15 +81,15 @@ Any secondary cart-token correlation must use an indexed Redis key/structure wit
 
 ## Work Items
 
-- [ ] Add internal recovery-candidate queue/producer.
-- [ ] Load recovery delay from `ShopSettings`.
-- [ ] Build minimal candidate data.
-- [ ] Schedule one delayed candidate per checkout.
-- [ ] Handle duplicate checkout-create idempotently.
-- [ ] Add checkout-token lookup.
-- [ ] Add cart-token alias/index if used for order fallback.
-- [ ] Clean up aliases on cancellation/completion/maturation.
-- [ ] Add unit tests for delay, duplicate and cleanup behaviour.
+- [x] Add internal recovery-candidate queue/producer.
+- [x] Load recovery delay from `ShopSettings`.
+- [x] Build minimal candidate data.
+- [x] Schedule one delayed candidate per checkout.
+- [x] Handle duplicate checkout-create idempotently.
+- [x] Add checkout-token lookup.
+- [x] Add cart-token alias/index if used for order fallback.
+- [x] Clean up aliases on cancellation/completion/maturation.
+- [x] Add unit tests for delay, duplicate and cleanup behaviour.
 
 ## Interfaces / Contracts
 
@@ -115,19 +115,19 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Exactly one pending candidate exists for the same shop/checkout.
-- [ ] Candidate data contains no basket/customer state.
-- [ ] Recovery delay comes from current shop settings.
-- [ ] Candidate lookup by checkout token is O(1).
-- [ ] Cart-token fallback, if implemented, is O(1) and does not scan queue jobs.
-- [ ] Transient aliases do not outlive the candidate indefinitely.
-- [ ] No PostgreSQL `CheckoutRecovery` is created by checkout-create handling itself.
+- [x] Exactly one pending candidate exists for the same shop/checkout.
+- [x] Candidate data contains no basket/customer state.
+- [x] Recovery delay comes from current shop settings.
+- [x] Candidate lookup by checkout token is O(1).
+- [x] Cart-token fallback, if implemented, is O(1) and does not scan queue jobs.
+- [x] Transient aliases do not outlive the candidate indefinitely.
+- [x] No PostgreSQL `CheckoutRecovery` is created by checkout-create handling itself.
 
 ## Validation
 
-- [ ] `npm test`
-- [ ] `npm run build`
-- [ ] `npm run prisma:validate`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] `npm run prisma:validate`
 
 ## Implementation Notes
 
@@ -141,35 +141,53 @@ If robust cart-token correlation requires a design materially different from the
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-background/src/domain/pending-recovery-candidate.ts`
+- `moda-interact-background/src/services/pending-recovery-candidate.service.ts`
+- `moda-interact-background/src/workers/pending-recovery-candidate.worker.ts`
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/index.ts`
+- `moda-interact-background/tests/unit/services/pending-recovery-candidate.service.test.ts`
+- `docs/decisions/background/ARCH-001/BACKGROUND-002-manage-pending-recovery-candidates.md`
 
 ### Work Completed
 
-None
+- Added repository-local delayed pending-candidate queue and job constants for `pending-recovery-candidates` / `evaluate-pending-recovery`.
+- Implemented candidate scheduling service that:
+  - loads `ShopSettings.recoveryDelayMinutes` from PostgreSQL using shop domain;
+  - builds minimal candidate payload (`shopId`, `checkoutToken`, `cartToken`, `abandonedCheckoutUrl`, `checkoutCreatedAt`);
+  - schedules exactly one deterministic delayed job per `shopId + checkoutToken` and refreshes existing delayed jobs idempotently.
+- Added O(1) Redis index keys for checkout-token and cart-token lookup.
+- Added index cleanup on candidate maturation and checkout-token cancellation, with bounded TTL as fallback protection.
+- Wired checkout-created contract handling to schedule pending candidates without creating `CheckoutRecovery`.
+- Added dedicated pending-candidate worker to process matured jobs and clean transient aliases.
+- Added unit tests covering delay loading, duplicate idempotency/refresh, O(1) lookups, and cleanup behavior.
 
 ### Validation Results
 
-None
+- `npm test`: fail due pre-existing unrelated unit test failure in `tests/unit/services/recovery-routing.service.test.ts` (`prisma.customerPhone.findMany` undefined in test mock path).
+- `npm test -- tests/unit/services/pending-recovery-candidate.service.test.ts`: pass (5/5).
+- `npm run build`: pass.
+- `npm run prisma:validate`: pass.
 
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
+- The existing `recovery-routing.service` unit test failure is unrelated to pending-candidate lifecycle implementation.
 
 ### Unresolved Issues
 
-None
+- Repository-wide `npm test` remains red due to a pre-existing failure in `tests/unit/services/recovery-routing.service.test.ts`.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
