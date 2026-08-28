@@ -6,11 +6,11 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: pending
+status: review
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-08-28T17:42:16Z
+attempt: 1
 depends_on: ["ARCH-001-SHARED-001"]
 enables: ["ARCH-001-SHOPIFY-002"]
 created: 2026-08-28
@@ -83,16 +83,16 @@ Invalid required identifiers must follow the existing rejected-payload behaviour
 
 ## Work Items
 
-- [ ] Import the shared v2 contract.
-- [ ] Split checkout-create and checkout-update topic plans.
-- [ ] Replace the current large checkout normalizer with recovery-focused normalizers.
-- [ ] Preserve `abandoned_checkout_url` on checkout creation.
-- [ ] Preserve `cart_token` on order creation.
-- [ ] Update event-envelope typing/parsing.
-- [ ] Update ordering/correlation key construction.
-- [ ] Remove unused normalization helpers for customer/line-item/price data from this ingress path.
-- [ ] Update normalization tests.
-- [ ] Update ingress-service tests.
+- [x] Import the shared v2 contract.
+- [x] Split checkout-create and checkout-update topic plans.
+- [x] Replace the current large checkout normalizer with recovery-focused normalizers.
+- [x] Preserve `abandoned_checkout_url` on checkout creation.
+- [x] Preserve `cart_token` on order creation.
+- [x] Update event-envelope typing/parsing.
+- [x] Update ordering/correlation key construction.
+- [x] Remove unused normalization helpers for customer/line-item/price data from this ingress path.
+- [x] Update normalization tests.
+- [x] Update ingress-service tests.
 
 ## Interfaces / Contracts
 
@@ -120,19 +120,19 @@ Produces:
 
 ## Acceptance Criteria
 
-- [ ] `checkouts/create` and `checkouts/update` produce distinct shared event types.
-- [ ] Checkout-create event contains no customer, line-item, total or address payload.
-- [ ] Checkout-update event contains no basket snapshot.
-- [ ] Order event contains `cartToken` when supplied by Shopify.
-- [ ] Webhook HMAC/authentication flow is unchanged.
-- [ ] Unsupported/cart-topic behaviour is unchanged by this task.
-- [ ] Unit tests prove the new normalized shapes.
+- [x] `checkouts/create` and `checkouts/update` produce distinct shared event types.
+- [x] Checkout-create event contains no customer, line-item, total or address payload.
+- [x] Checkout-update event contains no basket snapshot.
+- [x] Order event contains `cartToken` when supplied by Shopify.
+- [x] Webhook HMAC/authentication flow is unchanged.
+- [x] Unsupported/cart-topic behaviour is unchanged by this task.
+- [x] Unit tests prove the new normalized shapes.
 
 ## Validation
 
-- [ ] `npm test -- --run`
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
+- [x] `npm test -- --run`
+- [x] `npm run typecheck`
+- [x] `npm run lint`
 
 ## Implementation Notes
 
@@ -144,35 +144,53 @@ Do not change Shopify subscriptions for checkout deletion or cart topics in this
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact/app/services/webhooks/checkout-normalization.ts`
+- `moda-interact/app/services/webhooks/order-normalization.ts`
+- `moda-interact/app/services/webhooks/shopify-webhook-ingress.service.ts`
+- `moda-interact/app/services/webhooks/shopify-webhook-queue.server.ts`
+- `moda-interact/tests/unit/webhooks/shopify-normalization.test.js`
+- `moda-interact/tests/unit/webhooks/shopify-webhook-ingress.service.test.js`
+- `moda-interact/tests/unit/webhooks/shopify-webhook-queue.server.test.js`
+- `docs/decisions/shopify/ARCH-001/SHOPIFY-001-produce-recovery-focused-events.md`
 
 ### Work Completed
 
-None
+- Replaced legacy checkout-observed normalization with v2 recovery-focused normalizers:
+	- checkout create now emits only `checkoutToken`, `cartToken`, `abandonedCheckoutUrl`, and `checkoutCreatedAt`.
+	- checkout update now emits only `checkoutToken`.
+- Updated order normalization to v2 shape with `orderId`, `checkoutToken`, `cartToken`, and `completedAt`.
+- Updated ingress topic classification so `checkouts/create` and `checkouts/update` map to distinct event types and publication paths.
+- Updated envelope construction to v2 schema and parsing via shared v2 runtime parser.
+- Updated ordering key construction to shared v2 helpers for checkout and order correlation.
+- Added distinct checkout-updated publication path and job contract usage in queue publisher.
+- Removed pre-recovery customer/line-item/total transport from this ingress path.
+- Updated normalization, ingress, and queue tests to validate new minimal v2 payloads and topic classification.
 
 ### Validation Results
 
-None
+- `npm test -- --run`: pass (5 files, 24 tests).
+- `npm run typecheck`: fail with pre-existing repository errors unrelated to this task (example: `app/db.server.js` cannot find `process`, plus additional existing errors across billing/routes).
+- `npm run lint`: fail with pre-existing repository lint issues unrelated to this task (example: missing `prop-types` in onboarding component, existing `process` and unused-import issues in billing/routes).
 
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
+- Existing repository-level typecheck/lint failures are pre-existing and out of scope for this task.
 
 ### Unresolved Issues
 
-None
+- Repository-level `npm run typecheck` and `npm run lint` are currently red due to pre-existing issues outside webhook-ingress scope.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
