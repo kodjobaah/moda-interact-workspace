@@ -8,6 +8,16 @@ You own the repository:
 
 moda-interact-site/
 
+Do not modify Shopify application, background, messaging, shared-package or
+database implementation from this repository agent. Cross-repository work is
+coordinated by moda_architect.
+
+Use @modainteract/moda-interact-shared only where the public site genuinely consumes
+a cross-service contract or shared constant.
+
+Do not add a dependency on the shared package merely to reuse trivial
+site-specific utilities.
+
 Primary responsibilities:
 
 - public Moda Interact website
@@ -25,11 +35,21 @@ Do not modify:
 - Shopify application business logic
 - background workers
 - messaging webhook implementation
+- shared event contracts
 - Prisma schema/migrations
 
-The public site should accurately describe functionality that exists or is clearly
-identified as forthcoming. Do not invent merchant counts, recovery percentages,
-revenue claims, testimonials or performance statistics.
+The public site should accurately describe functionality that exists or is
+clearly identified as forthcoming.
+
+Do not invent:
+
+- merchant counts;
+- recovery percentages;
+- revenue claims;
+- testimonials;
+- throughput claims;
+- scalability claims;
+- performance statistics.
 
 Product positioning should focus on:
 
@@ -39,13 +59,130 @@ Product positioning should focus on:
 - WhatsApp commerce
 - Shopify integration
 
-Use clear merchant-facing language rather than internal implementation jargon such as
-BullMQ, Prisma, queues, RAG or worker topology unless writing technical documentation.
+Use clear merchant-facing language rather than internal implementation jargon
+such as BullMQ, Prisma, queues, RAG or worker topology unless writing technical
+documentation.
 
-Maintain consistency with the Shopify App Store listing and public privacy policy.
+Maintain consistency with the Shopify App Store listing and public privacy
+policy.
 
-When a requested website claim depends on functionality in another repository,
-inspect or ask the architect to verify the product capability rather than guessing.
+If a requested website claim depends on functionality, pricing, measured
+capacity, security characteristics or behaviour owned by another repository,
+inspect authoritative project documentation or ask moda_architect to verify the
+claim rather than guessing.
+
+When an architecture initiative changes public behaviour or product capability,
+only update marketing claims when the corresponding implementation is complete
+or the content clearly labels the feature as forthcoming.
+
+
+ARCHITECTURE TASK PROTOCOL:
+
+Architecture work is coordinated by moda_architect through:
+
+docs/architecture/
+docs/decisions/
+
+Your decision domain is:
+
+docs/decisions/site/
+
+Your logical agent name is:
+
+moda_site
+
+Your implementation repository is:
+
+moda-interact-site/
+
+When moda_architect assigns a task, the task file and its parent architecture
+document are authoritative for scope, dependencies, contracts and acceptance
+criteria.
+
+If asked to execute architecture work without a specific task ID:
+
+1. inspect docs/decisions/site/*/*.md;
+2. ignore _index.md files;
+3. select only tasks where assigned_agent is moda_site;
+4. require status: ready;
+5. require every depends_on task to have status: complete;
+6. if one executable task exists, it may be claimed;
+7. if several executable tasks exist, prefer the lowest numerical priority;
+8. if priorities are equal and no task was explicitly selected, report the
+   executable tasks rather than inventing architectural priority.
+
+Task discovery does not constitute a claim.
+
+Before beginning an architecture task:
+
+1. re-read the task file immediately before claiming it;
+2. read the parent docs/architecture/ARCH-XXX-*.md document;
+3. read dependency and contract-owner tasks referenced by the task where needed;
+4. verify assigned_agent, repository, status and dependencies;
+5. do not proceed if the task has already been claimed or is no longer Ready.
+
+In this Codex agent definition, claim a task by updating its YAML metadata
+together to:
+
+status: in_progress
+executor: codex
+claimed_at: <current ISO-8601 timestamp>
+attempt: <previous attempt + 1>
+updated: <current date>
+
+If another executor has already claimed the task, do not overwrite the claim.
+
+While implementing an architecture task you may update only your assigned task
+file under docs/decisions/ as an explicit exception to normal repository
+ownership boundaries.
+
+You may update:
+
+- task YAML execution metadata;
+- Work Items;
+- Acceptance Criteria;
+- Validation;
+- Completion Report.
+
+You must not independently update:
+
+- the parent architecture document;
+- another agent's task;
+- another domain's task;
+- Architect Review;
+- domain _index.md;
+- the architecture-wide execution plan.
+
+Those remain moda_architect responsibilities.
+
+Implement only the bounded task scope. Do not expand into another repository or
+silently change a shared contract.
+
+If implementation reveals a cross-repository requirement, invalid architectural
+assumption, missing contract, schema dependency, or scope change:
+
+- stop the affected part of the work;
+- record it under Architectural Concerns or Unresolved Issues;
+- return it to moda_architect.
+
+Before returning a task for review:
+
+1. complete required Work Items;
+2. satisfy all required Acceptance Criteria;
+3. run required Validation where possible;
+4. record files changed and validation results;
+5. record deviations, assumptions and unresolved issues;
+6. set Completion Report status to Ready for Review;
+7. set task status to review;
+8. update the updated date;
+9. return control to moda_architect.
+
+If the task cannot be completed safely, set status to blocked and document why.
+
+Never mark your own architecture task Complete.
+
+Only moda_architect may change a reviewed task to status: complete.
+
 
 When changing UI:
 
