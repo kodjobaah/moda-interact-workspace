@@ -6,11 +6,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: pending
+status: complete
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-08-28T22:05:00Z
+attempt: 1
 depends_on: ["ARCH-001-BACKGROUND-004"]
 enables: []
 created: 2026-08-28
@@ -82,16 +82,16 @@ The exact narrow locking/tombstone/transition mechanism may be selected by the r
 
 ## Work Items
 
-- [ ] Use v2 order contract including cart token.
-- [ ] Resolve/cancel pending candidate by indexed correlation.
-- [ ] Clean up candidate aliases.
-- [ ] Lookup existing recovery only when no candidate was cancelled.
-- [ ] Complete eligible recovery transactionally/idempotently.
-- [ ] Preserve status-history attribution with order ID.
-- [ ] Discard unrelated order.
-- [ ] Implement checkout-scoped race protection between candidate materialization and order processing.
-- [ ] Add duplicate-order test.
-- [ ] Add candidate/order race test.
+- [x] Use v2 order contract including cart token.
+- [x] Resolve/cancel pending candidate by indexed correlation.
+- [x] Clean up candidate aliases.
+- [x] Lookup existing recovery only when no candidate was cancelled.
+- [x] Complete eligible recovery transactionally/idempotently.
+- [x] Preserve status-history attribution with order ID.
+- [x] Discard unrelated order.
+- [x] Implement checkout-scoped race protection between candidate materialization and order processing.
+- [x] Add duplicate-order test.
+- [x] Add candidate/order race test.
 
 ## Interfaces / Contracts
 
@@ -115,20 +115,20 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Order matching a pending candidate prevents that candidate from entering recovery.
-- [ ] Order matching an existing recovery transitions it once to the appropriate completed state.
-- [ ] Unrelated order is discarded without durable order persistence.
-- [ ] Cart-token fallback does not scan BullMQ.
-- [ ] Duplicate order is idempotent.
-- [ ] Candidate/order concurrency test demonstrates no false recovery message for the protected race.
-- [ ] Terminal recovery statuses are not reopened or re-completed incorrectly.
+- [x] Order matching a pending candidate prevents that candidate from entering recovery.
+- [x] Order matching an existing recovery transitions it once to the appropriate completed state.
+- [x] Unrelated order is discarded without durable order persistence.
+- [x] Cart-token fallback does not scan BullMQ.
+- [x] Duplicate order is idempotent.
+- [x] Candidate/order concurrency test demonstrates no false recovery message for the protected race.
+- [x] Terminal recovery statuses are not reopened or re-completed incorrectly.
 
 ## Validation
 
-- [ ] `npm test`
-- [ ] `npm run test:integration`
-- [ ] `npm run build`
-- [ ] `npm run prisma:validate`
+- [x] `npm test`
+- [x] `npm run test:integration`
+- [x] `npm run build`
+- [x] `npm run prisma:validate`
 
 ## Implementation Notes
 
@@ -140,36 +140,45 @@ If the race cannot be made correct without changing the architecture or durable 
 
 ### Status
 
-Not Started
-
+Ready for Review
 ### Files Changed
 
-None
-
+- `moda-interact-background/src/domain/pending-recovery-candidate.ts`
+- `moda-interact-background/src/services/pending-recovery-candidate.service.ts`
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/tests/unit/services/order-recovery-correlation.test.ts`
+- `moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts`
+- `moda-interact-background/tests/unit/services/pending-recovery-candidate.service.test.ts`
+- `docs/decisions/background/ARCH-001/BACKGROUND-005-handle-order-recovery-correlation.md`
 ### Work Completed
 
-None
-
+- Wired the shared v2 order-completed contract (including cart token) through the existing `handleOrderCompletedContract`/`handleOrderCompleted` boundary.
+- Added O(1) `resolveCandidate` (checkout index first, indexed cart alias fallback) and `cancelCandidate` (removes the delayed BullMQ job plus both checkout and cart correlation indexes) to the pending-candidate service. No BullMQ queue scan is performed.
+- Reworked `handleOrderCompleted` to follow the mandated lookup order: (1) cancel a matching pending candidate and its aliases; (2) transactionally complete and attribute an eligible existing `CheckoutRecovery` (with order ID in status-history metadata); (3) discard an unrelated order without creating any durable order/business record. Customer identity alone is rejected as a correlation.
+- Completed existing recoveries once using the event completion timestamp (`completedAt`) and guarded against re-opening terminal statuses (`COMPLETED`/`EXPIRED`/`CANCELLED`).
+- Implemented checkout-scoped race protection: a transient Redis mutex (`pending-recovery:lock:{shopId}:{checkoutToken}`) serialises the order path and the candidate materialization path for a single checkout, and an order-completion tombstone (`pending-recovery:order-completed:...`) recorded by the order path is checked by `materializeMaturedCandidate` before creating a recovery or sending a recovery message. Both the lock and tombstone are bounded by TTL.
+- Added an order-recovery correlation test suite covering candidate cancellation, eligible recovery completion/attribution, event completion timestamp, terminal/no-reopen, unrelated-order discard, missing-correlation rejection, duplicate-order idempotency, and the tombstone race guard. Extended the materialization suite with a `discarded-order-completed` test and the pending-candidate suite with cart-fallback/alias-cleanup/tombstone tests.
 ### Validation Results
 
-None
-
+- `npm test`: 42 unit tests pass; only the pre-existing, unrelated `tests/unit/services/recovery-routing.service.test.ts` failure remains (`prisma.customerPhone.findMany` undefined in its mock path). Touched suites: `order-recovery-correlation` (8), `matured-candidate.materialization` (11), `pending-recovery-candidate` (8), `abandoned-checkout-lookup` (8) all green.
+- `npm run test:integration`: 1 passed, 2 skipped (Shopify integration guarded by unset `SHOPIFY_TEST_SHOP`/`SHOPIFY_TEST_PRODUCT_QUERY`).
+- `npm run build`: pass (Prisma generate + tsc).
+- `npm run prisma:validate`: pass.
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
-
+- The order path and materialization path both key the checkout mutex/tombstone on `shopId + checkoutToken`. For rare cart-only orders, the candidate is resolved via the indexed cart alias first to obtain the checkout token for the lock scope.
+- The order-completion tombstone TTL (1 hour) covers the candidate delay window plus the `RECOVERY_CANDIDATE_TTL_BUFFER_MS`, so an in-flight materialization remains suppressed for a checkout already processed by an order.
+- The pre-existing `recovery-routing.service.test.ts` failure is unrelated to BACKGROUND-005.
 ### Unresolved Issues
 
-None
-
+- Repository-wide `npm test` remains red solely due to the pre-existing `tests/unit/services/recovery-routing.service.test.ts` failure.
 ### Architectural Concerns
 
-None
-
+None. The concurrency mechanism is checkout-scoped, transient (Redis), requires no durable schema change, and no cross-repository contract was introduced.
 ## Architect Review
 
 ### Review Status
@@ -195,3 +204,5 @@ Pending review.
 ### Follow-up
 
 None
+
+

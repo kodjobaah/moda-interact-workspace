@@ -6,11 +6,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: pending
+status: complete
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-08-28T21:07:12Z
+attempt: 1
 depends_on: ["ARCH-001-BACKGROUND-002", "ARCH-001-BACKGROUND-003"]
 enables: ["ARCH-001-BACKGROUND-005"]
 created: 2026-08-28
@@ -79,15 +79,15 @@ Any database/schema limitation discovered must be returned to `moda_architect`.
 
 ## Work Items
 
-- [ ] Add matured-candidate handler.
-- [ ] Call current Shopify checkout lookup.
-- [ ] Discard not-found/non-recoverable candidates.
-- [ ] Map current Shopify result into existing recovery fields.
-- [ ] Adapt customer resolution to use Shopify lookup data rather than old webhook event type.
-- [ ] Create/upsert recovery idempotently.
-- [ ] Continue existing recovery messaging only for eligible DETECTED recovery.
-- [ ] Ensure duplicate execution cannot duplicate message/recovery.
-- [ ] Add unit/integration tests.
+- [x] Add matured-candidate handler.
+- [x] Call current Shopify checkout lookup.
+- [x] Discard not-found/non-recoverable candidates.
+- [x] Map current Shopify result into existing recovery fields.
+- [x] Adapt customer resolution to use Shopify lookup data rather than old webhook event type.
+- [x] Create/upsert recovery idempotently.
+- [x] Continue existing recovery messaging only for eligible DETECTED recovery.
+- [x] Ensure duplicate execution cannot duplicate message/recovery.
+- [x] Add unit/integration tests.
 
 ## Interfaces / Contracts
 
@@ -112,19 +112,19 @@ Writes:
 
 ## Acceptance Criteria
 
-- [ ] A candidate does not create recovery data from its stored webhook payload.
-- [ ] Current Shopify data populates the recovery.
-- [ ] Completed/non-recoverable checkout creates no recovery/message.
-- [ ] Same candidate executed twice produces at most one recovery and one recovery-send workflow.
-- [ ] Existing terminal recovery is not reopened.
-- [ ] Current recovery message flow remains functional for a newly materialized recovery.
+- [x] A candidate does not create recovery data from its stored webhook payload.
+- [x] Current Shopify data populates the recovery.
+- [x] Completed/non-recoverable checkout creates no recovery/message.
+- [x] Same candidate executed twice produces at most one recovery and one recovery-send workflow.
+- [x] Existing terminal recovery is not reopened.
+- [x] Current recovery message flow remains functional for a newly materialized recovery.
 
 ## Validation
 
-- [ ] `npm test`
-- [ ] `npm run test:integration`
-- [ ] `npm run build`
-- [ ] `npm run prisma:validate`
+- [x] `npm test`
+- [x] `npm run test:integration`
+- [x] `npm run build`
+- [x] `npm run prisma:validate`
 
 ## Implementation Notes
 
@@ -136,35 +136,78 @@ Keep the transition from 'candidate' to 'recovery' explicit in code so the order
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/workers/pending-recovery-candidate.worker.ts`
+- `moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts`
+- `docs/decisions/background/ARCH-001/BACKGROUND-004-materialize-recovery-candidates.md`
 
 ### Work Completed
 
-None
+Implemented the transition from transient pending candidate state into durable
+`CheckoutRecovery` for ARCH-001-BACKGROUND-004.
+
+- Added `CheckoutRecoveryService.materializeMaturedCandidate(candidate)`:
+  - resolves the shop domain from the candidate's `shopId`;
+  - calls the bounded Shopify lookup owned by ARCH-001-BACKGROUND-003;
+  - treats `provider-error` as retryable (throws for BullMQ retry, never as a
+    not-recoverable decision);
+  - discards (no recovery, no message) on `not-found`, `ambiguous`,
+    `bounded-limit-exceeded`, and checkout already completed
+    (`checkout.completedAt != null`);
+  - guards idempotency: an existing recovery is never re-materialized
+    (`no-op-existing`) and an existing terminal recovery is never reopened
+    (`discarded-terminal`);
+  - for a found, recoverable checkout, maps only the current Shopify result
+    (plus candidate correlation identifiers shopId/checkoutToken/cartToken)
+    into the existing `RecoveryCheckoutSeed` shape and delegates to the existing
+    `handleCheckoutCreated` recovery-message workflow (upsert + customer
+    resolution + WhatsApp send).
+- Wired the matured-candidate worker (`pending-recovery-candidate.worker.ts`) so
+  `EVALUATE_PENDING_RECOVERY_JOB` invokes materialization, then cleans up the
+  O(1) candidate lookup indexes in a `finally` block regardless of outcome.
+- Webhook payload basket/customer data is not used to populate recovery state;
+  the candidate carries only correlation identifiers, so the seed is built from
+  the Shopify lookup result.
+- No database schema changes, no new cross-service contract, no change to
+  recovery message copy or downstream CommerceAgent behaviour.
 
 ### Validation Results
 
-None
+- `npm test`: `1 failed | 30 passed | 2 skipped`. The sole failure is the
+  pre-existing unrelated `tests/unit/services/recovery-routing.service.test.ts`
+  (`prisma.customerPhone.findMany` called on undefined mock); not caused by this
+  task.
+- `npm run test:integration`: `1 passed | 2 skipped`.
+- `npm run build` (prisma:generate + tsc): pass.
+- `npm run prisma:validate`: pass (schema valid).
+- Targeted materialization tests:
+  `tests/unit/services/matured-candidate.materialization.test.ts` 10/10 pass.
 
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
+- The candidate's `checkoutToken`/`cartToken`/`shopId` are the correlation
+  identity; `checkoutCreatedAt`/`abandonedCheckoutUrl` support the bounded lookup.
+- Any non-`found` lookup outcome (not-found, ambiguous, bound-exceeded) is
+  treated as a safe discard (no recovery, no message) rather than a retryable
+  error, matching the task requirement that a non-recoverable/discarded checkout
+  creates no recovery.
 
 ### Unresolved Issues
 
-None
+- Repository-wide `npm test` remains red solely due to the pre-existing unrelated
+  failure in `tests/unit/services/recovery-routing.service.test.ts`.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
