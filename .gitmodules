@@ -22,3 +22,6 @@
 [submodule "shopify-webhook-payloads"]
 	path = shopify-webhook-payloads
 	url = https://github.com/kodjobaah/shopify-webhook-downloader.git
+[submodule "moda-interact-system-test"]
+	path = moda-interact-system-test
+	url = https://github.com/kodjobaah/moda-interact-system-test.git
