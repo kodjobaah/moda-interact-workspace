@@ -25,3 +25,6 @@
 [submodule "moda-interact-system-test"]
 	path = moda-interact-system-test
 	url = https://github.com/kodjobaah/moda-interact-system-test.git
+[submodule "moda-interact-gateway"]
+	path = moda-interact-gateway
+	url = https://github.com/kodjobaah/moda-interact-gateway.git
