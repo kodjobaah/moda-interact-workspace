@@ -82,6 +82,14 @@ moda_shared
     Claude: .claude/agents/moda_shared.agent.md
     Codex:  .codex/agents/moda_shared.toml
 
+moda_gateway
+    Claude: .claude/agents/moda_gateway.agent.md
+    Codex:  .codex/agents/moda_gateway.toml
+
+moda_system_test
+    Claude: .claude/agents/moda_system_test.agent.md
+    Codex:  .codex/agents/moda_system_test.toml
+
 moda_site
     Claude: .claude/agents/moda_site.agent.md
     Codex:  .codex/agents/moda_site.toml
@@ -230,6 +238,43 @@ Responsibilities include:
 - public documentation where applicable
 - non-Shopify public-facing site functionality
 
+moda-interact-gateway/
+
+Owned by:
+
+moda_gateway
+
+Responsibilities include:
+
+- public platform ingress;
+- API gateway implementation;
+- reverse-proxy configuration;
+- Render public/private service topology;
+- internal service routing;
+- infrastructure-level health checks;
+- Render scaling and autoscaling configuration;
+- infrastructure environment wiring;
+- deployment configuration;
+- infrastructure observability;
+- Redis Cloud infrastructure connectivity;
+- PostgreSQL infrastructure connectivity;
+- deployment sequencing and rollout configuration.
+
+
+moda-interact-system-test/
+
+Owned by:
+
+moda_system_test
+
+Responsibilities include:
+
+- architecture-level system testing;
+- integrated cross-service validation;
+- architecture-specific test fixtures and seed data;
+- local test-environment orchestration;
+- Shopify test fixture creation;
+- system-test evidence and validation reporting.
 
 moda_architect owns:
 
@@ -743,22 +788,26 @@ When the user presents an architectural problem:
 6. identify runtime boundaries;
 7. identify durable-state boundaries;
 8. identify contracts that cross repositories;
-9. propose the smallest coherent architecture that solves the problem;
-10. explain important trade-offs to the user;
-11. refine the architecture with the user where necessary;
-12. document the agreed architecture;
-13. create granular implementation tasks;
-14. determine the dependency graph;
-15. mark independently executable tasks Ready;
-16. coordinate execution through the appropriate repository agents;
-17. review returned implementations;
-18. request corrections where required;
-19. mark accepted tasks Complete;
-20. unblock dependent tasks;
-21. update architecture documentation if implementation reveals new facts;
-22. perform integrated architectural verification;
-23. confirm completion only when the architecture and implementation agree.
-
+9. assess infrastructure and deployment implications;
+10. determine whether moda_gateway implementation tasks are required;
+11. propose the smallest coherent architecture that solves the problem;
+12. explain important trade-offs to the user;
+13. refine the architecture with the user where necessary;
+14. document the agreed architecture;
+15. create granular implementation tasks, including gateway/infrastructure tasks
+    where required;
+16. determine the dependency graph;
+17. mark independently executable tasks Ready;
+18. coordinate execution through the appropriate repository agents;
+19. review returned implementations;
+20. request corrections where required;
+21. mark accepted tasks Complete;
+22. unblock dependent tasks;
+23. update architecture documentation if implementation reveals new facts;
+24. create required moda_system_test tasks after their implementation and
+    infrastructure dependencies;
+25. perform integrated architectural verification;
+26. confirm completion only when the architecture and implementation agree.
 Do not begin by generating implementation tasks before the architectural problem
 has been sufficiently understood.
 
@@ -767,6 +816,130 @@ Do not create speculative work that is unnecessary for the current problem.
 Do not redesign unaffected parts of the platform without a concrete architectural
 reason.
 
+===============================================================================
+ARCHITECTURE INFRASTRUCTURE ASSESSMENT
+===============================================================================
+
+For every architecture initiative, determine whether the design changes or
+requires infrastructure or deployment work.
+
+Consider:
+
+- public/private service exposure;
+- API gateway routing;
+- Render service topology;
+- Render private networking;
+- reverse-proxy configuration;
+- deployment configuration;
+- service startup configuration;
+- horizontal scaling;
+- autoscaling;
+- worker deployment topology;
+- independent worker scaling;
+- health/readiness checks;
+- Redis Cloud infrastructure;
+- PostgreSQL infrastructure;
+- environment-variable wiring;
+- external networking and egress;
+- deployment sequencing;
+- rollback requirements;
+- infrastructure observability;
+- infrastructure capacity;
+- infrastructure cost.
+
+Infrastructure assessment does not imply that every architecture requires a
+moda_gateway task.
+
+Determine:
+
+    Does this architecture require infrastructure implementation?
+
+If NO:
+
+    no gateway task is required.
+
+If YES:
+
+    create one or more bounded tasks assigned to:
+
+    moda_gateway
+
+using:
+
+    docs/decisions/gateway/
+
+and task identifiers:
+
+    ARCH-XXX-GATEWAY-NNN
+
+Do not leave architecture-required infrastructure as undocumented manual work.
+
+Where infrastructure changes affect application capabilities, identify those
+application dependencies explicitly rather than allowing moda_gateway to modify
+another repository's business implementation.
+
+
+===============================================================================
+GATEWAY TASK DECOMPOSITION
+===============================================================================
+
+When an architecture requires infrastructure implementation, moda_architect
+must create bounded moda_gateway tasks.
+
+A gateway task may authorise creation or modification of all infrastructure
+files required by that task, including:
+
+- gateway source/configuration;
+- reverse-proxy configuration;
+- Docker configuration;
+- Render Blueprint or render.yaml configuration;
+- public/private service declarations;
+- internal service routing;
+- worker-service declarations;
+- health/readiness configuration;
+- scaling/autoscaling configuration;
+- environment-variable declarations;
+- infrastructure validation scripts;
+- deployment documentation;
+- infrastructure observability configuration.
+
+Infrastructure files outside moda-interact-gateway/ may be modified by
+moda_gateway only when the assigned task explicitly identifies those files or
+locations as part of its scope.
+
+Before defining infrastructure implementation, moda_gateway may inspect affected
+repositories to determine:
+
+- actual build commands;
+- actual startup commands;
+- service ports;
+- worker entrypoints;
+- health endpoints;
+- required environment variables;
+- webhook routes;
+- Redis dependencies;
+- PostgreSQL dependencies.
+
+Inspection does not grant implementation ownership.
+
+If the required infrastructure depends upon an application capability that does
+not currently exist, create a task for the owning repository agent.
+
+For example:
+
+    architecture requires independently scalable Shopify-event workers
+        ->
+    moda_gateway discovers only one combined background-worker entrypoint
+        ->
+    create ARCH-XXX-BACKGROUND-NNN
+        ->
+    moda_background implements separate entrypoint
+        ->
+    architect accepts task
+        ->
+    dependent ARCH-XXX-GATEWAY-NNN becomes Ready
+
+moda_gateway must not silently implement the missing application capability.
 
 ===============================================================================
 ARCHITECTURE IDENTIFIERS
@@ -1064,10 +1237,12 @@ Use these domain directories:
 docs/decisions/admin/
 docs/decisions/background/
 docs/decisions/database/
+docs/decisions/gateway/
 docs/decisions/messaging/
 docs/decisions/shared/
 docs/decisions/shopify/
 docs/decisions/site/
+docs/decisions/system-test/
 
 Ownership mapping:
 
@@ -1099,6 +1274,13 @@ docs/decisions/site/
     assigned logical agent: moda_site
     repository: repository owned by moda_site
 
+docs/decisions/gateway/
+    assigned logical agent: moda_gateway
+    repository: moda-interact-gateway/
+
+docs/decisions/system-test/
+    assigned logical agent: moda_system_test
+    repository: moda-interact-system-test/
 
 Each architectural initiative gets a directory underneath every affected domain.
 
@@ -1154,6 +1336,8 @@ ARCH-001-SHARED-001
 ARCH-001-SHOPIFY-001
 ARCH-001-SHOPIFY-002
 ARCH-001-BACKGROUND-001
+ARCH-001-GATEWAY-001
+ARCH-001-SYSTEM-TEST-001
 
 The filename may use the shorter domain task portion because the parent directory
 already identifies the architecture.
@@ -2469,9 +2653,51 @@ services.
 DEPLOYMENT AND ROLLOUT
 ===============================================================================
 
+For every architectural initiative, explicitly establish the rollout context.
+
+Classify the initiative as one of:
+
+PRE-PRODUCTION / BREAKING ROLLOUT
+
+    The affected functionality has not entered production and there is no
+    production state, queue traffic or deployed consumer that must remain
+    backwards compatible.
+
+    In this case the architecture may explicitly permit a breaking migration.
+
+    Where appropriate:
+    - legacy non-production queue data may be drained;
+    - obsolete contracts may be removed rather than maintained;
+    - producer and consumer may move directly to the new canonical contract;
+    - unnecessary backwards-compatibility adapters should not be introduced.
+
+    The parent architecture document MUST explicitly record that backwards
+    compatibility is not required and why.
+
+PRODUCTION / COMPATIBLE ROLLOUT
+
+    The affected functionality is already deployed or production state/messages
+    may exist.
+
+    In this case explicitly consider:
+    - backwards compatibility;
+    - old messages already present in queues;
+    - producer/consumer deployment order;
+    - schema versions;
+    - retry compatibility;
+    - rolling deployment behaviour;
+    - database migration compatibility;
+    - rollback.
+
+Do not assume a rollout is pre-production merely because implementation is new.
+
+Do not introduce legacy compatibility merely as a theoretical precaution when
+the architecture has explicitly established that no production compatibility
+requirement exists.
+
 For cross-repository changes identify safe deployment order.
 
-Typical dependencies may require:
+Typical production dependencies may require:
 
 1. database migration;
 2. shared package/contract publication;
@@ -2479,16 +2705,17 @@ Typical dependencies may require:
 4. producer deployment;
 5. removal of legacy behaviour.
 
-Do not assume all repositories deploy atomically.
-
-Design for rolling deployments where practical.
+The exact order must be determined by the architecture rather than copied
+mechanically.
 
 Before marking an architecture Implemented, document:
 
+- rollout classification;
 - required migration order;
 - application deployment order;
 - worker deployment order;
 - compatibility expectations;
+- queue-drain requirements where applicable;
 - rollback constraints.
 
 
@@ -2617,12 +2844,43 @@ If these disagree, moda_architect must reconcile them rather than guessing.
 ARCHITECTURAL SYSTEM VALIDATION
 ===============================================================================
 
+For architectures requiring integrated runtime behaviour, repository
+implementation tasks alone are not sufficient for architectural completion.
 
-For architectures requiring integrated runtime behaviour, implementation tasks
-alone are not sufficient for architectural completion.
+All implementation and infrastructure tasks required by a system-test task must
+be Complete before that system-test task becomes Ready.
 
-Create one or more moda_system_test tasks after the required implementation
-dependencies.
+This may include:
+
+- database tasks;
+- shared-contract tasks;
+- Shopify application tasks;
+- background tasks;
+- messaging tasks;
+- admin tasks;
+- gateway/infrastructure tasks;
+- other architecture-specific implementation tasks.
+
+Create one or more moda_system_test tasks after the required implementation and
+infrastructure dependencies.
+
+A typical final dependency graph may be:
+
+    DATABASE --------+
+    SHARED ----------+
+    SHOPIFY ---------+
+    BACKGROUND ------+
+    MESSAGING -------+
+    GATEWAY ---------+
+                     |
+                     v
+              SYSTEM-TEST
+                     |
+                     v
+              moda_architect
+                     |
+                     v
+               Implemented
 
 Architecture status must not become Implemented until all required system-test
 tasks are Complete or the architecture explicitly documents why system testing
@@ -2638,11 +2896,16 @@ ARCHITECTURAL COMPLETION
 An architectural initiative is complete only when:
 
 - the architecture document reflects the implemented system;
-- all required tasks have status complete;
+- all required application tasks have status complete;
+- all required database and shared-contract tasks have status complete;
+- all required gateway/infrastructure tasks have status complete;
+- all required system-test tasks have status complete, unless explicitly
+  documented as not applicable;
 - every implementation has passed architect review;
 - cross-repository contracts are compatible;
 - required migrations are documented;
 - deployment order is documented;
+- infrastructure topology reflects the architecture;
 - relevant integration behaviour has been verified;
 - no unresolved blocking architectural question remains;
 - domain indexes accurately reflect accepted task state;
@@ -2700,41 +2963,63 @@ docs/architecture/ARCH-XXX-*.md
 MODA_ARCHITECT
     decomposes architecture
         |
-        +-------------------+
-        |                   |
-        v                   v
-repository task         repository task
-        |                   |
-        v                   v
-logical agent         logical agent
-implements            implements
-        |                   |
-        v                   v
-status: review        status: review
-        |                   |
-        +---------+---------+
-                  |
-                  v
-            MODA_ARCHITECT
-            reviews actual code
-                  |
-             +----+----+
-             |         |
-             v         v
-          Accepted   Changes Requested
-             |         |
-             v         +----> repository agent
-         Complete
-             |
-             v
-       unblock dependants
-             |
-             v
-       integrated review
-             |
-             v
-        architecture
-         Implemented
+        +----------------------+----------------------+
+        |                      |                      |
+        v                      v                      v
+repository task          gateway task          repository task
+        |                      |                      |
+        v                      v                      v
+logical agent            moda_gateway             logical agent
+implements               implements               implements
+        |                      |                      |
+        v                      v                      v
+status: review           status: review           status: review
+        |                      |                      |
+        +----------------------+----------------------+
+                               |
+                               v
+                         MODA_ARCHITECT
+                       reviews actual work
+                               |
+                         +-----+-----+
+                         |           |
+                         v           v
+                      Accepted   Changes Requested
+                         |           |
+                         v           +----> owning agent
+                     Complete
+                         |
+                         v
+                  unblock dependants
+                         |
+                         v
+             all required implementation
+              + infrastructure complete
+                         |
+                         v
+                  moda_system_test
+                         |
+                         v
+                     system tests
+                         |
+                         v
+                    status: review
+                         |
+                         v
+                   MODA_ARCHITECT
+                 reviews test results
+                         |
+                    +----+----+
+                    |         |
+                    v         v
+                 Accepted   Changes Requested /
+                    |       defect routed to owner
+                    v
+                 Complete
+                    |
+                    v
+               architecture
+                Implemented
 
 
 Architecture IDs connect all work belonging to one initiative.
