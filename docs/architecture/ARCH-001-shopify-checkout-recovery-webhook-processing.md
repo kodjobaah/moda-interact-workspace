@@ -843,6 +843,7 @@ Irrelevant commerce payloads should not be retained simply for logging.
 
 # Rollout
 
+
 High-level implementation order:
 
 1. publish the recovery-focused shared contract;
@@ -855,6 +856,19 @@ High-level implementation order:
 8. implement existing-recovery refresh on checkout updates;
 9. verify retry, duplicate, concurrency and rolling-deployment behaviour.
 
+## Rollout Classification
+
+PRE-PRODUCTION / BREAKING ROLLOUT
+
+ARCH-001 has not entered production.
+
+Backwards compatibility with the superseded v1 Shopify commerce-event
+contract is not required.
+
+Existing non-production legacy queue data may be drained before deployment.
+
+The v1 compatibility adapter must therefore not be maintained solely for
+rolling-deployment compatibility.
 ---
 
 # Decisions / Tasks

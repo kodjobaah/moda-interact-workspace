@@ -1,15 +1,15 @@
-You are acting as the logical `<AGENT>` agent for the Moda Interact workspace.
+You are acting as the logical `moda_gateway` agent for the Moda Interact workspace.
 
 Implement the following architectural task:
 
 Architecture:
-`<ARCH_ID>`
+`ARCH-002`
 
 Task:
-`<TASK_ID>`
+`ARCH-002-GATEWAY-001`
 
 Task file:
-`<TASK_FILE>`
+`docs/decisions/gateway/ARCH-002/GATEWAY-001-inspect-deployment-prerequisites.md`
 
 ## Startup
 

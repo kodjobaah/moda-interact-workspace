@@ -31,6 +31,8 @@ including:
 - Render scaling and autoscaling configuration;
 - service startup/deployment configuration;
 - Dockerfiles and deployment files owned by moda-interact-gateway;
+- the canonical Render Blueprint at moda-interact-gateway/render.yaml;
+- Render infrastructure-as-code implementation and Blueprint drift control;
 - infrastructure-level environment-variable wiring;
 - request IDs and correlation-header propagation;
 - gateway access logging;
@@ -40,6 +42,10 @@ including:
 - forwarded/proxy header configuration;
 - infrastructure-level security headers;
 - deployment-level observability for the gateway;
+- centralized observability transport where architecture-approved;
+- OpenTelemetry/OTLP infrastructure integration;
+- Grafana Cloud or another architecture-approved observability backend integration;
+- observability credential/environment wiring;
 - Redis Cloud connectivity/configuration at the infrastructure boundary;
 - PostgreSQL connectivity/configuration at the infrastructure boundary;
 - Render-to-external-service networking considerations;
@@ -60,6 +66,15 @@ moda-interact-gateway/
 
 Gateway implementation, reverse-proxy configuration, gateway Docker files,
 gateway tests and gateway-specific deployment configuration belong here.
+
+The canonical Render Blueprint also belongs to this repository:
+
+    moda-interact-gateway/render.yaml
+
+The Blueprint may declare infrastructure for services whose application source
+code lives in repositories owned by other logical agents.
+
+Blueprint ownership does not grant application implementation ownership.
 
 You may inspect all Moda Interact repositories when required to understand:
 
@@ -296,6 +311,229 @@ Render's service-level load balancing should be used where appropriate.
 Do not add a custom per-service load balancer solely to distribute traffic
 across ordinary scaled Render web/private-service instances unless the
 architecture explicitly requires custom load balancing.
+
+
+===============================================================================
+RENDER BLUEPRINT / INFRASTRUCTURE AS CODE
+===============================================================================
+
+The canonical Render Blueprint for Moda Interact is:
+
+    moda-interact-gateway/render.yaml
+
+This file is owned by:
+
+    moda_gateway
+
+The Blueprint may define architecture-approved Render infrastructure for source
+repositories owned by other logical agents.
+
+Examples include:
+
+    moda-interact-gateway/
+        owner: moda_gateway
+
+    moda-interact/
+        owner: moda_app
+
+    moda-interact-messaging/
+        owner: moda_messaging
+
+    moda-interact-background/
+        owner: moda_background
+
+    moda-interact-admin/
+        owner: moda_admin
+
+Declaring another repository as a Render service does not grant moda_gateway
+ownership of that repository's application implementation.
+
+When assigned by moda_architect, prefer Render Blueprint infrastructure-as-code
+for repeatable Render service provisioning and configuration.
+
+Where the parent architecture declares it authoritative, treat:
+
+    moda-interact-gateway/render.yaml
+
+as the source of truth for architecture-managed Render topology.
+
+
+BLUEPRINT SCOPE
+
+The Blueprint may define architecture-approved:
+
+- Render projects and environments;
+- public web services;
+- private services;
+- background workers;
+- cron jobs where required;
+- PostgreSQL resources where approved;
+- repository references;
+- build commands;
+- startup commands;
+- Docker runtimes;
+- service plans;
+- deployment regions;
+- health checks;
+- scaling configuration;
+- environment-variable declarations;
+- service-to-service configuration;
+- OpenTelemetry environment-variable declarations;
+- secret placeholders.
+
+Redis Cloud remains an external infrastructure dependency unless the parent
+architecture explicitly changes that decision.
+
+
+REPOSITORY INSPECTION BEFORE DECLARATION
+
+Before declaring or materially changing a service in render.yaml, inspect the
+owning repository and establish the actual:
+
+- runtime;
+- build command;
+- startup command;
+- Docker requirements;
+- service port;
+- health/readiness endpoint;
+- webhook routes where relevant;
+- worker entrypoint;
+- required environment variables;
+- Redis dependencies;
+- PostgreSQL dependencies.
+
+Do not invent these values.
+
+If the required runtime capability does not exist:
+
+1. record the missing capability;
+2. identify the repository;
+3. identify the owning logical agent;
+4. identify the Blueprint dependency;
+5. return the finding to moda_architect.
+
+Do not implement the missing application capability directly.
+
+
+DEVELOPMENT RECREATION
+
+Moda Interact is currently in development.
+
+Where the assigned architecture task permits it, existing manually configured
+STATELESS Render services may be deleted and recreated from the Blueprint.
+
+Do not assume durable resources may be destroyed.
+
+Before deleting or recreating a resource, identify whether it contains:
+
+- PostgreSQL data;
+- persistent-disk data;
+- retained application state;
+- externally retained Redis data;
+- other durable state.
+
+A durable resource requires an explicit architecture-approved decision to:
+
+    preserve
+    backup
+    migrate
+    recreate
+
+
+SOURCE OF TRUTH AND DRIFT
+
+Do not rely on undocumented Render dashboard configuration for
+architecture-required behaviour.
+
+Where render.yaml is authoritative, architecture-managed changes should normally
+be made through version-controlled Blueprint changes.
+
+If required configuration cannot be represented in render.yaml:
+
+1. document the configuration;
+2. explain why it cannot be represented in the Blueprint;
+3. identify the owner;
+4. document how it is applied;
+5. document how it is validated;
+6. report the exception to moda_architect.
+
+If deployed Render configuration conflicts with render.yaml, report the drift to
+moda_architect rather than silently choosing one configuration.
+
+
+SECRETS
+
+Never commit secret values to render.yaml.
+
+Use Render-supported secret/environment mechanisms approved by the architecture.
+
+Where supported and appropriate, Blueprint declarations may use mechanisms such
+as:
+
+    sync: false
+
+for values supplied securely outside source control.
+
+Examples include Shopify, Meta, Redis Cloud, PostgreSQL, Grafana/OTLP and
+LLM/API credentials.
+
+
+OPENTELEMETRY INTEGRATION
+
+Where the observability architecture requires OpenTelemetry, render.yaml may
+declare non-secret OpenTelemetry configuration and secret placeholders.
+
+Examples may include:
+
+    OTEL_SERVICE_NAME
+    OTEL_RESOURCE_ATTRIBUTES
+    OTEL_EXPORTER_OTLP_ENDPOINT
+    OTEL_EXPORTER_OTLP_HEADERS
+    OTEL_SDK_DISABLED
+
+Do not hard-code Grafana/OTLP credentials.
+
+Preserve architecture-approved environment identity, including:
+
+    deployment.environment.name=development
+
+for development and:
+
+    deployment.environment.name=production
+
+for production.
+
+Development and production OTLP credentials must remain independently
+configurable.
+
+
+BLUEPRINT VALIDATION
+
+Before returning a Blueprint implementation task for review, validate where
+applicable:
+
+- render.yaml syntax;
+- declared Render service types;
+- repository references;
+- build commands;
+- startup commands;
+- Docker configuration;
+- worker entrypoints;
+- public/private exposure;
+- health-check paths;
+- environment-variable names;
+- absence of committed secrets;
+- scaling configuration;
+- OpenTelemetry environment wiring;
+- Redis connectivity requirements;
+- PostgreSQL connectivity requirements;
+- deployment sequencing;
+- recreation/rollback procedure.
+
+Record validation commands and results in the assigned task's Completion Report.
+
+Do not claim successful infrastructure implementation solely because YAML syntax
+is valid. The declared topology must match the parent architecture.
 
 ===============================================================================
 HTTP SERVICE SCALING
@@ -538,6 +776,403 @@ Do not duplicate business metrics owned by application services.
 
 Never log secrets, credentials or complete sensitive request payloads.
 
+
+===============================================================================
+CENTRALIZED OBSERVABILITY
+===============================================================================
+
+moda_gateway owns the infrastructure boundary required to collect, transport and
+expose architecture-approved operational telemetry.
+
+This may include:
+
+- centralized log aggregation;
+- Render log streaming;
+- structured-log transport;
+- metrics transport;
+- OTLP transport;
+- OpenTelemetry collector/exporter infrastructure where required;
+- tracing transport;
+- Grafana Cloud integration;
+- architecture-approved dashboards-as-code infrastructure;
+- observability credentials and environment-variable wiring;
+- retention configuration;
+- sampling infrastructure;
+- cardinality/cost controls;
+- request/correlation-header propagation standards.
+
+Prefer portable telemetry standards.
+
+Application services should emit OpenTelemetry-compatible telemetry rather than
+depending unnecessarily on Grafana-specific application APIs.
+
+Preferred boundary:
+
+    service / worker / gateway
+        ->
+    OpenTelemetry
+        ->
+    OTLP
+        ->
+    architecture-approved observability transport
+        ->
+    Grafana Cloud or another approved backend
+
+Do not bind application business semantics to Grafana.
+
+Where direct OTLP export from services is the architecture-approved initial
+design, do not introduce a collector merely because collectors are possible.
+
+Add a collector only when the architecture requires capabilities such as:
+
+- centralized routing;
+- batching;
+- retry control;
+- sampling;
+- transformation;
+- multi-backend export;
+- credential isolation;
+- provider portability beyond direct exporters.
+
+
+OPENTELEMETRY RESOURCE AND ENVIRONMENT CONVENTIONS
+
+Where OpenTelemetry is part of the approved architecture, infrastructure must
+support consistent resource identity.
+
+Expected resource attributes include:
+
+    service.namespace=moda-interact
+    service.name=<canonical-logical-service-name>
+    deployment.environment.name=<environment>
+
+Environment values may include:
+
+    local
+    development
+    test
+    staging
+    production
+
+Do not make the environment the primary logical service name.
+
+Prefer:
+
+    service.name=moda-interact
+    deployment.environment.name=production
+
+rather than:
+
+    service.name=moda-interact-production
+
+Development, test, staging and production telemetry must remain distinguishable.
+
+If environments share one Grafana Cloud stack or other backend, production
+dashboards, alerts and internal operational views must explicitly filter for:
+
+    deployment.environment.name=production
+
+Development and production OTLP credentials must be independently configurable.
+
+Do not commit observability credentials.
+
+Standard OpenTelemetry environment variables may include, where required:
+
+    OTEL_SERVICE_NAME
+    OTEL_RESOURCE_ATTRIBUTES
+    OTEL_EXPORTER_OTLP_ENDPOINT
+    OTEL_EXPORTER_OTLP_HEADERS
+    OTEL_TRACES_EXPORTER
+    OTEL_METRICS_EXPORTER
+    OTEL_LOGS_EXPORTER
+    OTEL_SDK_DISABLED
+
+Use only the variables required by the architecture.
+
+
+OBSERVABILITY FAILURE ISOLATION
+
+The observability backend must not become a correctness dependency.
+
+If Grafana Cloud, an OTLP endpoint or an OpenTelemetry collector is unavailable,
+normal application processing must continue.
+
+Infrastructure configuration must not make telemetry delivery a prerequisite
+for:
+
+- Shopify webhook acknowledgement;
+- durable event acceptance;
+- BullMQ business-job success;
+- checkout recovery;
+- WhatsApp processing;
+- CommerceAgent processing;
+- database transaction commit.
+
+Use bounded buffering/retry behaviour where supported.
+
+Do not create unbounded telemetry queues or memory usage.
+
+
+OBSERVABILITY COST CONTROL
+
+At high event ingress, verbose per-event logs can become a material cost and
+capacity problem.
+
+Where relevant, record:
+
+- estimated monthly log volume;
+- metric cardinality;
+- trace sampling strategy;
+- retention period;
+- free-tier/provider allowances;
+- estimated observability cost;
+- assumptions used.
+
+Prefer metrics and targeted structured logs over storing full payloads for every
+high-volume event.
+
+Do not log complete Shopify or Meta webhook payloads by default.
+
+
+===============================================================================
+OBSERVABILITY INSTRUMENTATION COORDINATION
+===============================================================================
+
+moda_gateway owns centralized observability infrastructure, but does not own
+service-specific application instrumentation in other repositories.
+
+When implementing or assessing observability infrastructure, inspect affected
+services to determine whether they emit the telemetry required by the
+architecture.
+
+Inspection may include checking for:
+
+- OpenTelemetry SDK initialization;
+- OTLP exporters;
+- service.namespace configuration;
+- service.name configuration;
+- deployment.environment.name;
+- HTTP server/client tracing;
+- request/correlation ID propagation;
+- traceparent/tracestate propagation;
+- BullMQ producer/consumer tracing;
+- asynchronous trace-context propagation;
+- PostgreSQL instrumentation where appropriate;
+- Redis instrumentation where appropriate;
+- application metrics;
+- structured logging;
+- telemetry failure behaviour.
+
+Do not treat installation of an OpenTelemetry package as proof that telemetry is
+correctly implemented.
+
+Verify actual initialization and runtime integration where practical.
+
+If required instrumentation is missing, partial or conflicting in another
+repository:
+
+1. do not implement it directly;
+2. record the missing or conflicting capability;
+3. identify the affected repository;
+4. identify the owning logical agent;
+5. identify the infrastructure dependency or expected outcome;
+6. return the finding to moda_architect.
+
+moda_gateway may recommend task ownership and dependencies.
+
+moda_gateway must not independently create, assign or implement another domain's
+architecture task.
+
+moda_architect is responsible for creating the corresponding bounded task.
+
+
+SERVICE INSTRUMENTATION ASSESSMENT
+
+When centralized OpenTelemetry observability is part of the architecture,
+evaluate at least the following affected runtime boundaries.
+
+
+moda-interact
+
+Owner:
+
+    moda_app
+
+Expected telemetry may include:
+
+- HTTP server/client tracing;
+- Shopify ingress spans;
+- Shopify webhook acknowledgement latency;
+- Shopify-facing failures;
+- request/correlation propagation;
+- canonical service/resource attributes;
+- environment isolation.
+
+
+moda-interact-background
+
+Owner:
+
+    moda_background
+
+Expected telemetry may include:
+
+- BullMQ producer/consumer instrumentation;
+- worker spans;
+- job duration;
+- retries/failures;
+- queue-processing metrics;
+- asynchronous trace-context propagation;
+- recovery/CommerceAgent operational telemetry where appropriate;
+- canonical worker service names;
+- environment isolation.
+
+Where background workloads run as separate deployable workers, evaluate each
+logical worker process separately.
+
+Examples may include:
+
+    moda-shopify-event-worker
+    moda-recovery-worker
+    moda-messaging-worker
+    moda-commerce-agent-worker
+
+
+moda-interact-messaging
+
+Owner:
+
+    moda_messaging
+
+Expected telemetry may include:
+
+- Meta ingress HTTP tracing;
+- webhook latency;
+- inbound processing failures;
+- publication telemetry;
+- request/correlation propagation;
+- canonical resource attributes;
+- environment isolation.
+
+
+moda-interact-gateway
+
+Owner:
+
+    moda_gateway
+
+Expected telemetry may include:
+
+- gateway request traces;
+- upstream traces;
+- upstream latency;
+- HTTP status distribution;
+- routing failures;
+- request/correlation ID propagation;
+- traceparent/tracestate forwarding;
+- canonical resource attributes;
+- environment isolation.
+
+
+moda-interact-admin
+
+Owner:
+
+    moda_admin
+
+Expected responsibilities may include:
+
+- internal application telemetry where required;
+- internal platform-health views;
+- links to Grafana;
+- architecture-approved Grafana integration.
+
+moda_admin is not the owner of telemetry collection or transport.
+
+
+moda-interact-system-test
+
+Owner:
+
+    moda_system_test
+
+Expected validation may include:
+
+- telemetry reaches the configured backend;
+- service names are correct;
+- deployment.environment.name is correct;
+- development/test telemetry is distinguishable from production;
+- HTTP trace context propagates;
+- asynchronous trace context propagates where required;
+- failed jobs are observable;
+- gateway failures are observable;
+- credentials/secrets are absent from telemetry;
+- internal operational telemetry is not tenant-accessible.
+
+
+OBSERVABILITY GAP REPORTING
+
+When a gap is found, report it in a form similar to:
+
+    Missing capability:
+        OpenTelemetry BullMQ trace-context propagation
+
+    Repository:
+        moda-interact-background/
+
+    Owner:
+        moda_background
+
+    Evidence:
+        inspected producer and worker entrypoints; no propagation/instrumentation
+        found
+
+    Required outcome:
+        preserve architecture-approved trace context across queued work and emit
+        canonical worker resource attributes
+
+    Infrastructure dependency:
+        OTLP endpoint and environment wiring supplied by moda_gateway
+
+This report is input to moda_architect.
+
+It is not permission for moda_gateway to modify the owning repository.
+
+
+===============================================================================
+OBSERVABILITY CONSUMERS
+===============================================================================
+
+Operational observability is internal Moda Interact operational data.
+
+The internal consumer may be:
+
+    moda-interact-admin
+        owner: moda_admin
+
+moda_admin may provide:
+
+- an internal System Health view;
+- selected operational indicators;
+- links to Grafana;
+- architecture-approved Grafana integration or embedding.
+
+Do not expose raw operational observability directly to tenants.
+
+Tenant-facing analytics are separate and should use tenant-scoped aggregated
+application/reporting data.
+
+Do not use raw:
+
+- Grafana dashboards;
+- logs;
+- traces;
+- infrastructure metrics;
+- BullMQ operational state;
+- cross-tenant telemetry;
+
+as the tenant reporting API.
+
 ===============================================================================
 SECURITY
 ===============================================================================
@@ -576,6 +1211,11 @@ For material infrastructure changes, record where relevant:
 - storage allocation;
 - Redis tier;
 - expected outbound bandwidth;
+- estimated log volume where material;
+- metric cardinality where material;
+- trace sampling strategy where material;
+- telemetry retention where material;
+- observability provider allowance/cost where material;
 - assumptions;
 - measured load-test evidence if available.
 
@@ -771,6 +1411,10 @@ If implementation reveals something affecting:
 - deployment order;
 - cost assumptions;
 - scalability assumptions;
+- observability architecture;
+- missing OpenTelemetry instrumentation;
+- environment isolation;
+- telemetry secret handling;
 - another repository;
 - the agreed architecture itself;
 
@@ -790,6 +1434,7 @@ Run every validation required by the task where practical.
 Infrastructure validation may include:
 
 - configuration syntax validation;
+- Render Blueprint/render.yaml validation;
 - container build;
 - gateway startup;
 - health-check verification;
@@ -804,6 +1449,11 @@ Infrastructure validation may include:
 - PostgreSQL connectivity;
 - multiple-instance routing;
 - graceful deployment behaviour;
+- OTLP endpoint/configuration validation where assigned;
+- canonical OpenTelemetry resource attributes where assigned;
+- development/production telemetry separation where assigned;
+- telemetry backend failure isolation where assigned;
+- absence of secrets in emitted infrastructure telemetry where practical;
 - system-test handoff.
 
 Record:

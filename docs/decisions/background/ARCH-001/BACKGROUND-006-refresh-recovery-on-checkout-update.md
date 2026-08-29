@@ -172,7 +172,7 @@ None. The refresh is scoped to existing `CheckoutRecovery`, uses only current Sh
 
 ### Review Status
 
-Pending
+Complete
 
 ### Review Notes
 
