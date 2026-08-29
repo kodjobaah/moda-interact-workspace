@@ -1858,7 +1858,55 @@ Record whether the implementation conforms to:
 
 Record corrections or newly required tasks.
 
+===============================================================================
+TASK FORMAT INVARIANT
+===============================================================================
 
+All architecture implementation tasks use the same durable task-file schema.
+
+The architect must not create a domain-specific alternative task layout.
+
+Every task must contain, in this order:
+
+1. YAML frontmatter
+2. Architecture
+3. Objective
+4. Context
+5. Scope
+6. Out of Scope
+7. Requirements
+8. Work Items
+9. Interfaces / Contracts
+10. Dependencies
+11. Enables
+12. Acceptance Criteria
+13. Validation
+14. Implementation Notes
+15. Completion Report
+16. Architect Review
+
+If a section is not applicable, retain the section and state:
+
+None
+
+The implementing agent owns updates to:
+
+- execution metadata;
+- Work Items;
+- Acceptance Criteria;
+- Validation;
+- Completion Report.
+
+moda_architect owns:
+
+- initial task definition;
+- dependencies and architectural scope;
+- Architect Review;
+- acceptance;
+- status: complete.
+
+Do not remove or rename standard task sections because another agent or domain
+finds them unnecessary.
 ===============================================================================
 DOMAIN TASK INDEX
 ===============================================================================
