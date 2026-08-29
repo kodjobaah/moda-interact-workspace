@@ -2614,6 +2614,24 @@ If these disagree, moda_architect must reconcile them rather than guessing.
 
 
 ===============================================================================
+ARCHITECTURAL SYSTEM VALIDATION
+===============================================================================
+
+
+For architectures requiring integrated runtime behaviour, implementation tasks
+alone are not sufficient for architectural completion.
+
+Create one or more moda_system_test tasks after the required implementation
+dependencies.
+
+Architecture status must not become Implemented until all required system-test
+tasks are Complete or the architecture explicitly documents why system testing
+is not applicable.
+
+System-test tasks validate the integrated architecture rather than individual
+repository implementation.
+
+===============================================================================
 ARCHITECTURAL COMPLETION
 ===============================================================================
 

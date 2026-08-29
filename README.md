@@ -63,6 +63,7 @@ moda-interact-workspace/
 ├── moda-interact-messaging/
 ├── moda-interact-site/
 ├── moda-interact-shared/
+├── moda-interact-system-test/
 ├── moda-interact.code-workspace
 └── .git/
 ```
@@ -73,11 +74,12 @@ moda-interact-workspace/
 | --- | --- |
 | [`moda-interact`](https://github.com/kodjobaah/moda-interact) | Shopify app, merchant UI, Shopify webhooks, onboarding, billing and subscription flows |
 | [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background) | BullMQ workers, checkout recovery workflows, commerce agent, Shopify tools, entitlements and usage |
-| [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database) | Shared Prisma schema, PostgreSQL migrations, seed data and ERD |
+| [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database) | Shared Prisma schema, PostgreSQL migrations, canonical/reference seed data and ERD |
 | `moda-interact-admin` | Next.js platform administration console for cross-merchant usage and operational visibility |
 | [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | WhatsApp/Meta webhook ingress and queue publishing |
 | [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public Moda Interact website and product-facing content |
-| [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared) | Canonical shared TypeScript package (`@kodjobaah/moda-interact-shared`) for cross-service runtime contracts, validation schemas, event versions, deterministic identifiers and genuinely reusable code |
+| [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared) | Canonical shared TypeScript package (`@modainteract/moda-interact-shared`) for cross-service runtime contracts, validation schemas, event versions, deterministic identifiers and genuinely reusable code |
+| `moda-interact-system-test` | Architecture-level system tests, architecture-specific test fixtures/seed data, local test-environment orchestration and integrated architecture validation |
 
 ## High-level architecture
 
@@ -150,7 +152,8 @@ docs/decisions/
 ├── messaging/
 ├── shared/
 ├── shopify/
-└── site/
+├── site/
+└── system-test/
 ```
 
 Each affected domain receives an `ARCH-XXX` directory containing its bounded tasks. For example:
@@ -165,10 +168,14 @@ docs/decisions/
 │   └── ARCH-001/
 │       ├── _index.md
 │       └── SHOPIFY-001-persist-webhook.md
-└── background/
+├── background/
+│   └── ARCH-001/
+│       ├── _index.md
+│       └── BACKGROUND-001-consume-shopify-event.md
+└── system-test/
     └── ARCH-001/
         ├── _index.md
-        └── BACKGROUND-001-consume-shopify-event.md
+        └── SYSTEM-TEST-001-validate-recovery-webhook-flow.md
 ```
 
 The fully qualified task IDs are:
@@ -177,6 +184,7 @@ The fully qualified task IDs are:
 ARCH-001-SHARED-001
 ARCH-001-SHOPIFY-001
 ARCH-001-BACKGROUND-001
+ARCH-001-SYSTEM-TEST-001
 ```
 
 The architecture document answers: **What are we building and how does the complete system fit together?**
@@ -201,7 +209,8 @@ moda-interact-workspace
 ├── moda-interact-background @ <commit>
 ├── moda-interact-database   @ <commit>
 ├── moda-interact-messaging  @ <commit>
-└── moda-interact-site       @ <commit>
+├── moda-interact-site       @ <commit>
+└── moda-interact-system-test @ <commit>
 ```
 
 This makes a workspace commit a reproducible snapshot of the complete platform.
@@ -282,7 +291,8 @@ moda_architect
 ├── moda_database
 ├── moda_messaging
 ├── moda_shared
-└── moda_site
+├── moda_site
+└── moda_system_test
 ```
 
 Codex definitions live under `.codex/agents/<name>.toml`. Claude definitions live under `.claude/agents/<name>.agent.md`. The two files represent the same logical role and should express the same repository ownership, architectural responsibilities and task protocol even though runtime-specific configuration may differ.
@@ -317,10 +327,11 @@ Do not manually allow the Claude and Codex definitions for one logical agent to 
 - **`moda_admin`**: Owns the Next.js platform administration console, internal authentication, cross-merchant usage views, operational visibility and admin workflows.
 - **`moda_app`**: Owns the Shopify application, authentication, merchant UI, Shopify webhook ingress, onboarding, billing, subscriptions and shop services.
 - **`moda_background`**: Owns BullMQ workers, high-volume Shopify event inspection/filtering, checkout recovery, order processing, commerce-agent orchestration, Shopify tools, retries, entitlements and usage recording.
-- **`moda_database`**: Owns the Prisma schema, PostgreSQL migrations, relationships, constraints, indexes, seed data, durable integrity and ERD generation.
+- **`moda_database`**: Owns the Prisma schema, PostgreSQL migrations, relationships, constraints, indexes, canonical/reference seed data, durable integrity and ERD generation.
 - **`moda_messaging`**: Owns Meta/WhatsApp webhook verification, signature validation, event normalisation, messaging ingress, queue publication and fast webhook acknowledgement.
-- **`moda_shared`**: Owns the canonical `@kodjobaah/moda-interact-shared` package for cross-service runtime contracts, validation schemas, event versions, deterministic identifiers, shared enums and genuinely reusable primitives.
+- **`moda_shared`**: Owns the canonical `@modainteract/moda-interact-shared` package for cross-service runtime contracts, validation schemas, event versions, deterministic identifiers, shared enums and genuinely reusable primitives.
 - **`moda_site`**: Owns the public website, responsive UI, SEO, product positioning, documentation links and marketing-facing content.
+- **`moda_system_test`**: Owns `moda-interact-system-test/`, architecture-level system tests, architecture-specific test fixtures/seed data, local test-environment orchestration and integrated validation after implementation tasks are complete.
 
 Use a specialist agent for work contained within one repository. Use `moda_architect` when work changes repository boundaries, shared database models, cross-service contracts, queue payloads, webhook contracts, billing or entitlement semantics, migration order or deployment sequencing.
 
@@ -339,9 +350,9 @@ docs/architecture/ARCH-XXX-*.md
   | decompose architecture
   v
 docs/decisions/<domain>/ARCH-XXX/<TASK>.md
-  | task becomes ready when dependencies are complete
+  | implementation tasks become ready when dependencies are complete
   v
-repository agent
+repository agents
   | claim + implement + validate
   v
 status: review
@@ -351,14 +362,84 @@ moda_architect
   |
   +--> Changes Requested --> same repository agent/task
   |
-  +--> Accepted --> status: complete --> unblock dependants
+  +--> Accepted --> implementation task status: complete
                                       |
                                       v
-                             integrated review
+                     required implementation tasks complete
                                       |
                                       v
-                          architecture: implemented
+                    ARCH-XXX-SYSTEM-TEST-NNN becomes ready
+                                      |
+                                      v
+                           moda_system_test
+                         /        |         \
+                        v         v          v
+                 start local   prepare    run integrated
+                 environment   fixtures   system scenarios
+                                      |
+                                      v
+                             status: review
+                                      |
+                                      v
+                               moda_architect
+                                      |
+                          +-----------+-----------+
+                          |                       |
+                          v                       v
+                 Changes Requested        system-test complete
+                                                  |
+                                                  v
+                                      architecture: implemented
 ```
+
+### Architecture-level system validation
+
+For architectures that require integrated runtime validation, implementation tasks alone are not sufficient for architectural completion.
+
+`moda_system_test` owns:
+
+```text
+moda-interact-system-test/
+```
+
+and receives tasks under:
+
+```text
+docs/decisions/system-test/ARCH-XXX/
+```
+
+with IDs such as:
+
+```text
+ARCH-001-SYSTEM-TEST-001
+```
+
+A system-test task normally depends on all implementation tasks required for the scenario it validates.
+
+Its responsibilities include:
+
+- creating architecture-specific system-test fixtures and seed data;
+- starting the local PostgreSQL Docker environment required by the test;
+- assuming Redis is already running, while verifying that it is reachable;
+- starting the Shopify development environment and other required Moda Interact services using their existing development commands;
+- using the Shopify API to find or create required test customers, reusing existing deterministic fixtures where possible;
+- executing cross-service/end-to-end scenarios;
+- recording test evidence and failures;
+- returning implementation defects to `moda_architect` rather than modifying the owning service repository.
+
+The seed-data ownership boundary is:
+
+```text
+moda_database
+    -> canonical/permanent application or reference seed data
+
+moda_system_test
+    -> architecture-specific system-test fixtures and seed data
+```
+
+`moda_system_test` may **run and inspect** other repositories to prepare and execute the system, but it does not gain implementation ownership of them.
+
+For architectures where integrated system validation is required, `moda_architect` should not mark the architecture `implemented` until the required system-test tasks are `complete`.
 
 ### Starting a repository agent
 
@@ -538,7 +619,7 @@ Each task contains checkable Work Items, Acceptance Criteria and Validation, plu
 
 ### Shared contract workflow
 
-Cross-service runtime contracts have one canonical owner: `moda-interact-shared/`, published as `@kodjobaah/moda-interact-shared`.
+Cross-service runtime contracts have one canonical owner: `moda-interact-shared/`, published as `@modainteract/moda-interact-shared`.
 
 Before a producer or consumer defines a queue payload, runtime event schema, schema-version constant, shared enum, deterministic event/job ID helper or other cross-service primitive, it must first check the shared package. If the canonical definition exists, use it instead of creating a local copy.
 
@@ -764,6 +845,7 @@ The workspace coordinates the platform but does not replace the independent owne
 - Canonical cross-service runtime contracts belong in `moda-interact-shared` and should be consumed through `@modainteract/moda-interact-shared`.
 - Platform administration and cross-merchant operational views belong in `moda-interact-admin`.
 - Public product and marketing content belongs in `moda-interact-site`.
-- Cross-repository architecture, sequencing and implementation review belong to `moda_architect`.
+- Architecture-specific system tests, test fixtures and local system-test orchestration belong in `moda-interact-system-test`.
+- Cross-repository architecture, sequencing, implementation review and final architecture acceptance belong to `moda_architect`.
 
 The workspace records how those independently deployed parts fit together and provides the durable architecture/task state used by Codex and Claude agents.

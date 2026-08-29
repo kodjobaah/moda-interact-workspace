@@ -4,5 +4,27 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3"
-  }
+  },
+  "name": "moda-interact-workspace",
+  "version": "1.0.0",
+  "description": "This repository is the top-level workspace for the **Moda Interact** platform.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kodjobaah/moda-interact-workspace.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kodjobaah/moda-interact-workspace/issues"
+  },
+  "homepage": "https://github.com/kodjobaah/moda-interact-workspace#readme"
 }

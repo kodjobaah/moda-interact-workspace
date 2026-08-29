@@ -48,7 +48,8 @@ That works well for many local tasks, but becomes less reliable when a system sp
 - idempotency requirements;
 - tenant isolation;
 - shared runtime schemas;
-- multiple AI execution environments.
+- multiple AI execution environments;
+- integrated architecture/system validation.
 
 Moda Interact therefore adds a coordination layer above the individual coding agent.
 
@@ -66,7 +67,8 @@ moda_architect
 ├── moda_database
 ├── moda_messaging
 ├── moda_shared
-└── moda_site
+├── moda_site
+└── moda_system_test
 ```
 
 Each logical agent has a bounded responsibility.
@@ -76,11 +78,12 @@ Each logical agent has a bounded responsibility.
 | `moda_architect` | Cross-repository architecture, decomposition, dependencies, sequencing, review and integration |
 | `moda_app` | Shopify app, merchant UI, Shopify ingress, onboarding, billing and subscriptions |
 | `moda_background` | BullMQ workers, event processing, recovery workflows, CommerceAgent and retryable background work |
-| `moda_database` | Prisma schema, PostgreSQL migrations, constraints, indexes and durable integrity |
+| `moda_database` | Prisma schema, PostgreSQL migrations, constraints, indexes, canonical/reference seed data and durable integrity |
 | `moda_messaging` | Meta/WhatsApp webhook ingress, validation, normalisation and queue publication |
 | `moda_shared` | Canonical cross-service runtime contracts and shared primitives |
 | `moda_admin` | Platform administration, reporting and operational visibility |
 | `moda_site` | Public website, product content and SEO |
+| `moda_system_test` | Architecture-level system tests, architecture-specific test fixtures/seed data, environment orchestration and integrated validation |
 
 Repository ownership is explicit.
 
@@ -98,6 +101,9 @@ moda_database
 
 moda_shared
     -> moda-interact-shared/
+
+moda_system_test
+    -> moda-interact-system-test/
 ```
 
 This reduces the chance that an implementation agent silently expands a task into unrelated repositories.
@@ -123,7 +129,7 @@ Architecture document
   |
   | decompose into bounded tasks
   v
-Repository task files
+Repository implementation tasks
   |
   v
 Specialist repository agents
@@ -137,10 +143,31 @@ moda_architect
   |
   | inspect actual implementation
   v
-status: complete
+implementation task: complete
+  |
+  | once all dependencies required for integrated validation are complete
+  v
+moda_system_test
+  |
+  | prepare environment + fixtures
+  | run architecture-level system scenarios
+  v
+status: review
+  |
+  v
+moda_architect
+  |
+  | inspect system-test evidence
+  v
+system-test task: complete
+  |
+  v
+architecture: implemented
 ```
 
 The implementation agent does **not** decide that its own architectural task is complete.
+
+Likewise, `moda_system_test` does not decide that its own system-test task is complete.
 
 Only `moda_architect` can transition:
 
@@ -148,7 +175,201 @@ Only `moda_architect` can transition:
 review -> complete
 ```
 
-This creates a separation similar to implementation and review in a human engineering team.
+For architectures that require integrated runtime validation, repository implementation tasks being complete does **not** by itself make the architecture implemented. The required system-test task or tasks must also be reviewed and completed.
+
+This creates a separation similar to implementation, independent system validation and review in a human engineering team.
+
+---
+
+# Architecture-level system validation
+
+`moda_system_test` provides a distinct validation phase after the required architectural implementation has been completed.
+
+It owns:
+
+```text
+moda-interact-system-test/
+```
+
+and its architecture decision domain is:
+
+```text
+docs/decisions/system-test/
+```
+
+System-test task IDs use:
+
+```text
+ARCH-XXX-SYSTEM-TEST-NNN
+```
+
+For example:
+
+```text
+ARCH-001-SYSTEM-TEST-001
+```
+
+## Purpose
+
+Repository agents validate their bounded implementation.
+
+For example:
+
+```text
+moda_app
+    -> validates Shopify-app implementation
+
+moda_background
+    -> validates worker/background implementation
+
+moda_database
+    -> validates schema/migrations
+
+moda_shared
+    -> validates shared contracts
+```
+
+`moda_system_test` validates that the required parts work together as the architecture describes:
+
+```text
+repository-level validation
+          |
+          v
+implementation tasks complete
+          |
+          v
+moda_system_test
+          |
+          v
+integrated architecture behaviour
+```
+
+It should test externally observable architecture behaviour rather than duplicate every unit test owned by repository agents.
+
+## Environment orchestration
+
+For a system-test task, `moda_system_test` is responsible for preparing the local environment required by the parent architecture.
+
+This can include:
+
+- starting the PostgreSQL Docker container used for local testing;
+- using the standard local Moda Interact PostgreSQL database defined by the workspace;
+- assuming Redis is already running, but verifying connectivity before dependent tests begin;
+- starting Shopify development through the existing commands in `moda-interact/`;
+- starting background, messaging or other Moda Interact services when the scenario requires them;
+- collecting relevant service logs and evidence.
+
+The system-test agent may execute commands in other repositories for startup and observation.
+
+That operational access does **not** transfer implementation ownership.
+
+If startup or execution exposes a defect in another repository, `moda_system_test` records the failure and returns it to `moda_architect`.
+
+It must not silently modify the owning repository to make the system test pass.
+
+## Architecture-specific test fixtures and seed data
+
+`moda_system_test` owns the data required specifically to execute architecture-level system scenarios.
+
+Examples include:
+
+- architecture-specific local database records;
+- deterministic test customers;
+- checkout/recovery scenarios;
+- conversation/message fixtures;
+- task-specific identifiers;
+- other test state required by the architecture.
+
+The ownership boundary is:
+
+```text
+moda_database
+    -> canonical/permanent application or reference seed data
+
+moda_system_test
+    -> architecture-specific system-test fixtures and seed data
+```
+
+This avoids turning system-test setup into ownership of permanent application data.
+
+System-test fixtures should be deterministic, repeatable and idempotent where practical.
+
+## Shopify-side test data
+
+When a system scenario requires a Shopify customer, `moda_system_test` uses the Shopify API to find or create the required test customer.
+
+The fixture flow should be:
+
+```text
+determine stable test identifier
+          |
+          v
+search Shopify for existing test customer
+          |
+     +----+----+
+     |         |
+   found     missing
+     |         |
+     v         v
+   reuse     create
+     |         |
+     +----+----+
+          |
+          v
+continue system scenario
+```
+
+The agent should reuse existing deterministic fixtures where possible rather than create uncontrolled duplicates.
+
+Shopify credentials and access tokens must come from the configured development environment and must not be hard-coded into the system-test repository.
+
+The agent must not delete or mutate unrelated merchant data.
+
+## Failure ownership
+
+When a system test fails, the system-test task should record:
+
+- scenario;
+- expected behaviour;
+- actual behaviour;
+- test command;
+- relevant logs;
+- database state where useful;
+- queue state where useful;
+- Shopify state where useful;
+- likely failing service/repository where it can be identified.
+
+The failure is then returned to `moda_architect`.
+
+The architect decides which repository agent owns the follow-up implementation work.
+
+## Architecture completion gate
+
+For architectures that require integrated system validation:
+
+```text
+implementation tasks complete
+          |
+          v
+system-test task ready
+          |
+          v
+moda_system_test executes scenarios
+          |
+          v
+status: review
+          |
+          v
+moda_architect reviews evidence
+          |
+          v
+system-test task complete
+          |
+          v
+architecture implemented
+```
+
+If integrated system testing is not applicable to a particular architecture, that should be explicit in the architecture document rather than assumed.
 
 ---
 
@@ -198,7 +419,8 @@ ARCH-001
 ├── ARCH-001-SHARED-001
 ├── ARCH-001-DATABASE-001
 ├── ARCH-001-SHOPIFY-001
-└── ARCH-001-BACKGROUND-001
+├── ARCH-001-BACKGROUND-001
+└── ARCH-001-SYSTEM-TEST-001
 ```
 
 The task files live under the owning decision domain:
@@ -212,8 +434,11 @@ docs/decisions/
 │   └── ARCH-001/
 ├── shopify/
 │   └── ARCH-001/
-└── background/
+├── background/
+│   └── ARCH-001/
+└── system-test/
     └── ARCH-001/
+        └── SYSTEM-TEST-001-validate-recovery-webhook-flow.md
 ```
 
 A task contains both human-readable implementation instructions and machine-readable execution metadata.
@@ -249,6 +474,35 @@ This means an agent can discover:
 - which dependencies must already be complete;
 - whether another runtime has claimed it;
 - what work it enables after completion.
+
+A system-test task normally depends on the implementation required for its scenario. For example:
+
+```yaml
+---
+id: ARCH-001-SYSTEM-TEST-001
+architecture_id: ARCH-001
+title: Validate recovery webhook flow
+domain: system-test
+repository: moda-interact-system-test
+assigned_agent: moda_system_test
+coordinator: moda_architect
+status: pending
+priority: 90
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+  - ARCH-001-SHARED-001
+  - ARCH-001-DATABASE-001
+  - ARCH-001-SHOPIFY-001
+  - ARCH-001-BACKGROUND-001
+enables: []
+created: 2026-08-29
+updated: 2026-08-29
+---
+```
+
+The task becomes `ready` only when the dependencies required for integrated validation are `complete`.
 
 ---
 
@@ -664,7 +918,30 @@ This makes it possible to understand not just **what changed**, but also:
 
 ---
 
-## 10. More meaningful agent evaluation
+## 10. Integrated architecture verification
+
+Repository-level tests can pass while the complete architecture still fails because of configuration, sequencing, contract, queue, database or environment interactions.
+
+The dedicated system-test phase adds an explicit integrated check:
+
+```text
+repository tests pass
+        |
+        v
+moda_system_test
+        |
+        v
+cross-service scenario passes
+        |
+        v
+architecture accepted
+```
+
+This provides evidence that the architecture works as a system, not just as a set of individually valid repository changes.
+
+---
+
+## 11. More meaningful agent evaluation
 
 Models can be compared using the same bounded task specification.
 
@@ -715,6 +992,7 @@ Moda Interact is intentionally moving toward levels 5-6.
 | Dependencies are implicit | Dependencies are machine-readable |
 | Agent may edit multiple domains | Changes are bounded by logical ownership |
 | Agent declares work finished | Architect accepts completion |
+| Integrated testing is often ad hoc/manual | Dedicated `moda_system_test` phase validates integrated architecture behaviour |
 | Interfaces may be recreated locally | Shared contracts have canonical ownership |
 | Workflow often depends on one AI vendor | Logical agents are runtime-independent |
 
@@ -766,7 +1044,13 @@ task graph
 repository agents
       |
       v
-architect review
+architect review of implementation
+      |
+      v
+moda_system_test
+      |
+      v
+architect final acceptance
 ```
 
 The goal is governance where it adds value, not bureaucracy for every edit.
@@ -804,6 +1088,7 @@ Approximate assessment:
 | Durable coordination state | 9.5 / 10 |
 | Shared contract governance | 9 / 10 |
 | Review/acceptance model | 9 / 10 |
+| Architecture-level system validation design | 9 / 10 |
 | AI-provider independence | 9 / 10 |
 | Workflow automation | 6.5 / 10 |
 | Overhead control | 7.5 / 10 |
@@ -845,6 +1130,8 @@ only one active executor has claimed a task
 architecture references are valid
 Codex and Claude definitions are synchronised
 shared-contract tasks exist where required
+required system-test tasks exist for architectures that require integrated validation
+system-test dependencies point to valid implementation tasks
 task indexes are consistent
 ```
 
@@ -882,6 +1169,7 @@ what it must read
 what it depends on
 what it may change
 how it must validate the change
+whether integrated system validation is required
 how it reports completion
 and who must approve it
 ```
@@ -899,8 +1187,10 @@ The workflow is implemented through:
 .claude/agents/
 docs/architecture/
 docs/decisions/
+docs/decisions/system-test/
 docs/contracts/
 docs/agent-task-execution-template.md
+moda-interact-system-test/
 ```
 
 See the workspace README for repository layout, submodule management and local development guidance.
