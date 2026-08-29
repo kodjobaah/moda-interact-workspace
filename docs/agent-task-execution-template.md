@@ -1,4 +1,4 @@
-You are acting as the logical `moda_gateway` agent for the Moda Interact workspace.
+You are acting as the logical `moda_app` agent for the Moda Interact workspace.
 
 Implement the following architectural task:
 
@@ -6,10 +6,10 @@ Architecture:
 `ARCH-002`
 
 Task:
-`ARCH-002-GATEWAY-001`
+`ARCH-002-SHOPIFY-001`
 
 Task file:
-`docs/decisions/gateway/ARCH-002/GATEWAY-001-inspect-deployment-prerequisites.md`
+`SHOPIFY-001-add-health-readiness.md`
 
 ## Startup
 
