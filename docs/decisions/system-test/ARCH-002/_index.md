@@ -2,7 +2,7 @@
 
 ## Initiative
 
-Render Production Gateway & Infrastructure
+Render Test & Production Gateway & Infrastructure
 
 ## Owner
 
@@ -15,14 +15,29 @@ repository: moda-interact-system-test
 
 ## Task
 
-- `ARCH-002-SYSTEM-TEST-001` — Validate integrated production topology
+| Task | Description | Status | Dependencies |
+|------|-------------|--------|--------------|
+| SYSTEM-TEST-001 | Validate integrated test and production-ready topology | Pending | GATEWAY-004 |
 
 ## Unblocking rule
 
-This task must remain blocked until:
+`SYSTEM-TEST-001` remains Pending until `ARCH-002-GATEWAY-004` is
+architect-accepted Complete.
 
-- all required gateway tasks are Complete and architect-reviewed;
-- all prerequisite implementation tasks discovered by `GATEWAY-001` are Complete and architect-reviewed;
-- the infrastructure topology is ready to exercise as an integrated system.
+GATEWAY-004 is the final infrastructure validation gate and is expected to be
+Complete only after the required application, build, observability and topology
+prerequisites have been accepted.
 
-`moda_system_test` may run and observe the platform but must not modify another agent's implementation simply to make a failing test pass.
+System validation runs functional/integration scenarios primarily against the
+isolated **test** environment.
+
+The cheap test environment is not evidence that production sustains the
+approximately 22,000-Shopify-webhooks-per-minute capacity target.
+
+Measured production-sized capacity evidence is required before ARCH-002 may make
+that production-capacity claim.
+
+`moda_system_test` may run/observe the platform but must not modify another
+agent's implementation merely to make a failing scenario pass.
+
+The individual task file is authoritative for task state.

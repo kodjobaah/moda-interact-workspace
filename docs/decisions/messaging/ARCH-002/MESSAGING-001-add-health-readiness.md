@@ -11,14 +11,14 @@ priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: 
+depends_on:
   - ARCH-002-GATEWAY-001
 enables: []
 created: 2026-08-29
 updated: 2026-08-29
 ---
 
-# Add messaging service health and readiness
+# Add Messaging Service Health and Readiness
 
 ## Architecture
 
@@ -36,43 +36,97 @@ Coordinator:
 
 ## Objective
 
-Provide liveness and Redis-aware readiness endpoints for the Meta/WhatsApp ingress service.
+Provide deterministic liveness and Redis-aware readiness endpoints for the
+Meta/WhatsApp ingress service in test and production.
 
 ## Context
 
-Accepted discovery found no health/readiness route in `moda-interact-messaging`, which depends on Redis to publish inbound work.
+Accepted discovery found no health/readiness route in
+`moda-interact-messaging`.
+
+The service requires Redis/BullMQ publication for accepted inbound work.
+
+GATEWAY-003 needs concrete health paths rather than inferred routes.
 
 ## Scope
 
-- add cheap liveness;
-- add readiness for Redis dependency;
-- add tests and document semantics.
+Implement:
+
+```text
+GET /health
+GET /ready
+```
+
+`/health` is process liveness.
+
+`/ready` reflects Redis availability required for normal ingress acceptance.
+
+Add tests and document response/status semantics.
 
 ## Out of Scope
 
 - Meta webhook processing changes;
 - gateway routing;
-- Render Blueprint;
-- background worker changes.
+- Render Blueprint configuration;
+- background worker changes;
+- Meta/provider health calls;
+- returning secret dependency information.
 
 ## Requirements
 
-Liveness must remain cheap.
+`GET /health`:
 
-Readiness must fail predictably when Redis is unavailable.
+- remains cheap;
+- performs no Redis or Meta/provider calls;
+- succeeds when the process/runtime is healthy;
+- returns no secret/tenant data.
 
-No secret/token values may be exposed.
+`GET /ready`:
+
+- performs a bounded, non-mutating Redis readiness check;
+- succeeds when required Redis/BullMQ infrastructure is ready;
+- fails predictably when Redis is unavailable;
+- performs no Meta/provider calls;
+- returns no credential/connection-string details.
+
+The same paths/semantics apply to test and production.
+
+GATEWAY-003 decides infrastructure health-check wiring. This task does not
+expose an otherwise private implementation service directly to the public
+internet.
 
 ## Work Items
 
-- [ ] implement liveness;
-- [ ] implement Redis-aware readiness;
-- [ ] add tests;
-- [ ] document endpoints.
+- [ ] implement `GET /health`;
+- [ ] implement `GET /ready`;
+- [ ] add bounded Redis readiness;
+- [ ] add success/failure tests;
+- [ ] verify liveness performs no dependency/provider work;
+- [ ] add sensitive-response validation;
+- [ ] document endpoints and status semantics.
 
 ## Interfaces / Contracts
 
-Produces HTTP health/readiness routes consumed by GATEWAY-003.
+Produces:
+
+```text
+GET /health
+GET /ready
+```
+
+consumed by:
+
+```text
+ARCH-002-GATEWAY-003
+ARCH-002-GATEWAY-004
+ARCH-002-SYSTEM-TEST-001
+```
+
+Recommended Render deployment-health target:
+
+```text
+/ready
+```
 
 ## Dependencies
 
@@ -84,20 +138,25 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] liveness succeeds for a healthy process;
-- [ ] readiness reflects Redis availability;
+- [ ] `GET /health` succeeds for a healthy process without external calls;
+- [ ] `GET /ready` reflects Redis availability;
+- [ ] readiness checks are bounded/non-mutating;
 - [ ] no sensitive values are returned;
-- [ ] Meta webhook behaviour is unchanged.
+- [ ] Meta webhook behaviour is unchanged;
+- [ ] test and production share the same health/readiness contract.
 
 ## Validation
 
 - [ ] tests;
 - [ ] typecheck;
-- [ ] production build.
+- [ ] production build;
+- [ ] Redis success/failure tests;
+- [ ] liveness no-dependency-call test;
+- [ ] sensitive-output review.
 
 ## Implementation Notes
 
-Do not perform Meta provider calls in health checks.
+Do not perform Meta/provider calls in health checks.
 
 ## Completion Report
 

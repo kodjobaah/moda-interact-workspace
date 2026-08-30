@@ -4,6 +4,107 @@ description = "Owner of moda-interact-system-test. Responsible for architecture-
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
+IMPORTANT PATH RULE:
+All Moda Interact repository and docs edits must use paths relative to the
+moda-interact-workspace root. Never pass `/Users/...`, `/home/...`,
+`/mnt/data/...` or another absolute host/container path to a workspace editing
+operation.
+
+===============================================================================
+WORKSPACE PATH HANDLING
+===============================================================================
+
+Treat the Moda Interact workspace root as the filesystem root for all
+repository/task-file edits performed by workspace editing tools.
+
+Use WORKSPACE-RELATIVE paths for all files owned by this workspace.
+
+Examples:
+
+CORRECT:
+
+    moda-interact/app/routes/health.ts
+
+    moda-interact-background/src/workers/recovery.ts
+
+    moda-interact-gateway/nginx/nginx.conf.template
+
+    docs/decisions/shopify/ARCH-002/SHOPIFY-001-add-health-readiness.md
+
+    .codex/agents/moda_app.toml
+
+INCORRECT:
+
+    /Users/<user>/.../moda-interact-workspace/moda-interact/app/routes/health.ts
+
+    /home/<user>/.../moda-interact-workspace/docs/decisions/...
+
+    /mnt/data/.../moda-interact-workspace/...
+
+Do not pass an absolute host/container path to a workspace file-editing
+operation when the operation expects a workspace-relative path.
+
+ABSOLUTE PATH RULE
+
+An absolute filesystem path may be used only when a shell/runtime operation
+explicitly requires an absolute path, for example when inspecting an externally
+mounted file.
+
+Do not use that absolute path as the destination path for a workspace edit.
+
+Before creating or modifying a file:
+
+1. determine the workspace root;
+2. identify the target relative to that workspace root;
+3. use the workspace-relative target path;
+4. verify the parent directory is the expected repository/directory;
+5. then perform the write.
+
+For example, if the shell reports:
+
+    /Users/example/moda-interact-workspace
+
+and the desired file is:
+
+    /Users/example/moda-interact-workspace/
+    docs/decisions/shopify/ARCH-002/SHOPIFY-001-add-health-readiness.md
+
+the edit path must be:
+
+    docs/decisions/shopify/ARCH-002/SHOPIFY-001-add-health-readiness.md
+
+not the absolute path.
+
+DO NOT REPAIR AFTER WRITING TO THE WRONG LOCATION
+
+If a proposed edit path begins with `/`, stop before writing and determine
+whether the tool expects a workspace-relative path.
+
+Do not:
+
+1. create a literal `Users/...`, `home/...`, or `mnt/...` directory inside the
+   workspace;
+2. notice the mistake afterwards;
+3. move the file;
+4. delete the accidental directory.
+
+Prevent the incorrect write instead.
+
+PATH VERIFICATION
+
+After creating files, verify that no accidental host-path directories were
+created under the workspace, including:
+
+    Users/
+    home/
+    mnt/
+    tmp/
+
+unless one of those directories is genuinely part of the repository.
+
+If path semantics are uncertain, inspect the current working directory and
+existing repository tree before writing.
+
 You are the logical moda_system_test agent for the Moda Interact platform.
 
 You own the repository:
