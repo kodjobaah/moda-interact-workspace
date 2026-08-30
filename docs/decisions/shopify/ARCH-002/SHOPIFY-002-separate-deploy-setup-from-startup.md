@@ -6,7 +6,7 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: review
+status: complete
 priority: 20
 executor: codex
 claimed_at: 2026-08-30T08:25:04Z
@@ -341,81 +341,74 @@ None. The runtime command contract now matches the accepted ARCH-002 sequence
 
 ### Review Status
 
-Changes Requested
+Accepted
+
+### Review Date
+
+2026-08-30
 
 ### Review Notes
 
-The implementation was reviewed from the returned source archive rather than
-from the Completion Report alone.
+The architect reviewed the returned implementation source and the corrected
+validation evidence.
 
-The deployment-command separation is structurally correct:
+`ARCH-002-SHOPIFY-002` is accepted.
 
-- `package.json` exposes distinct `build`, `migrate`, `seed` and `start`
-  commands;
-- `start` launches only `react-router-serve ./build/server/index.js`;
-- migration is independently callable through `npm run migrate`;
-- seed is independently callable through `npm run seed`;
-- the Docker `CMD` invokes only `npm run start`;
-- no lifecycle command hard-codes a test or production database URL;
-- the deterministic startup-contract test checks the intended command
-  boundaries;
-- repository search found no remaining runtime/documentation references to the
-  removed `docker-start` or `setup` scripts outside the contract test itself.
-
-The task cannot yet be architect-accepted because the submitted validation
-evidence contradicts a checked Acceptance Criterion.
-
-The task marks:
+The application now exposes the required deployment lifecycle as four distinct
+commands:
 
 ```text
-existing application starts successfully
+build
+migrate
+seed
+start
 ```
 
-as satisfied, but the Completion Report records that the live `npm run start`
-smoke test crashed during SSR module load with:
+The implementation conforms to the architecture:
 
-```text
-TypeError: z.url is not a function
-```
+- `start` launches only
+  `react-router-serve ./build/server/index.js`;
+- normal replica startup does not execute migration;
+- normal replica startup does not execute seed;
+- `migrate` is independently callable through `npm run migrate`;
+- `seed` is independently callable through `npm run seed`;
+- Docker `CMD` invokes only `npm run start`;
+- no lifecycle command hard-codes a database URL or environment;
+- the same command contract can therefore be wired by test and production
+  infrastructure;
+- the README documents build, migration, seed and start as distinct phases.
 
-That failed smoke test is not evidence that startup succeeds.
+The architect-review correction was also verified in the returned source:
 
-The returned source has subsequently changed relative to that recorded
-diagnosis: `moda-interact/package.json` now directly declares
-`zod: ^4.0.0`, and the returned lockfile resolves the application root Zod to
-4.5.4. The Completion Report therefore also contains stale statements saying
-that the root still resolves to Zod 3.23.8 and that the dependency tree is
-unchanged.
+- `moda-interact` now declares a direct runtime `zod: ^4.0.0`;
+- the lockfile resolves application-root Zod to 4.5.4;
+- the ERD generator's Zod 3.23.8 remains isolated beneath that development
+  tool;
+- the prior `z.url is not a function` startup failure is therefore no longer
+  represented by the current dependency state.
 
-This is a narrow validation/documentation correction. Do not redesign the
-lifecycle commands.
+The corrected Completion Report records a clean `npm ci`, successful
+production build, 66 passing tests, successful web-runtime startup and a
+`GET /health` response of HTTP 200. It also records that process inspection and
+startup logs contained no migration or seed invocation.
 
-### Required Correction
+### Typecheck Baseline
 
-Using the current returned source state:
+Repository-wide `npm run typecheck` still exits non-zero with the same 48
+pre-existing errors previously identified during ARCH-002-SHOPIFY-001.
 
-1. bootstrap the workspace environment and run the quick workspace doctor;
-2. perform a clean/reproducible application install suitable for the current
-   development validation;
-3. run `npm run build`;
-4. run `npm run start` against that freshly built artifact;
-5. probe `GET /health` and record successful startup/response evidence;
-6. confirm the started web process does not invoke migration or seed;
-7. rerun `tests/unit/deploy/startup-contract.test.ts` and the relevant/full
-   test suite required by the task;
-8. update the Completion Report so its Zod/runtime description matches the
-   actual current package manifest and lockfile;
-9. only keep the `existing application starts successfully` Acceptance
-   Criterion checked if the rerun actually succeeds.
+Those errors are outside the files changed by this task. The task reports zero
+type errors in its changed implementation/test files.
 
-If the current application still fails to start, record the current failure
-accurately and return the task for architectural review rather than marking the
-criterion satisfied.
+This existing repository debt is retained as baseline technical debt and does
+not block acceptance of SHOPIFY-002. Acceptance must not be interpreted as
+claiming that the whole `moda-interact` repository currently has a clean
+typecheck.
 
-Do not create a separate correction task. Continue with
-`ARCH-002-SHOPIFY-002`.
+A future task that changes the affected legacy files must not use this note to
+ignore new type errors introduced by that task.
 
-### Reviewed Files
+### Reviewed Implementation
 
 - `moda-interact/package.json`
 - `moda-interact/package-lock.json`
@@ -423,45 +416,49 @@ Do not create a separate correction task. Continue with
 - `moda-interact/tests/unit/deploy/startup-contract.test.ts`
 - `moda-interact/README.md`
 - `docs/decisions/shopify/ARCH-002/SHOPIFY-002-separate-deploy-setup-from-startup.md`
-- `docs/decisions/shopify/ARCH-002/_index.md`
 
-### Validation Reviewed
+### Architect Verification
 
-Architect inspection confirmed:
+Source inspection confirmed:
 
 ```text
 package scripts:
-  build    present
-  migrate  present
-  seed     present
-  start    present
-  setup    absent
+  build        present
+  migrate      present
+  seed         present
+  start        present
+  setup        absent
   docker-start absent
+
+start:
+  react-router-serve ./build/server/index.js
 
 Docker CMD:
   npm run start
 
-current package manifest:
-  direct runtime zod = ^4.0.0
+direct application Zod:
+  ^4.0.0
 
-current lockfile:
-  root node_modules/zod = 4.5.4
+lockfile application-root Zod:
+  4.5.4
+
+ERD-generator nested Zod:
+  3.23.8
 ```
 
-The prior live-start validation in the Completion Report failed and must be
-rerun against this current dependency state before acceptance.
+The deterministic startup-contract test verifies that migration/seed cannot be
+reintroduced into the normal start command without failing the task-owned test.
 
 ### Architecture Conformance
 
-Command design: Conforms.
-
-Validation evidence: Incomplete/inconsistent with the checked Acceptance
-Criteria.
+Conforms.
 
 ### Follow-up
 
-Return the same task to `moda_app` with `status: in_progress`.
+`ARCH-002-SHOPIFY-002` is complete.
 
-After the corrected validation and Completion Report are returned with
-`status: review`, `moda_architect` should review the actual source and evidence
-again.
+Infrastructure task `ARCH-002-GATEWAY-003` may consume this command contract
+once its remaining dependencies are complete.
+
+The existing repository-wide typecheck debt remains documented baseline debt;
+it is not a SHOPIFY-002 correction item.

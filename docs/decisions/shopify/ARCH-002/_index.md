@@ -15,7 +15,7 @@ Coordinator:
 | Task | Description | Status | Dependencies |
 |------|-------------|--------|--------------|
 | SHOPIFY-001 | Add Shopify service health and readiness | Complete | GATEWAY-001 |
-| SHOPIFY-002 | Separate database setup from replica startup | Ready | GATEWAY-001 |
+| SHOPIFY-002 | Separate database setup from replica startup | Complete | GATEWAY-001 |
 | SHOPIFY-003 | Add OpenTelemetry to Shopify ingress | Ready | GATEWAY-001 |
 | SHOPIFY-004 | Use published shared package in Shopify application | Ready | GATEWAY-001 |
 
