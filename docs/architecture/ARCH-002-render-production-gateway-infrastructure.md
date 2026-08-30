@@ -762,3 +762,28 @@ Reformatted the original ARCH-002 gateway bundle to the current
   SYSTEM-TEST-001 as Pending on GATEWAY-004;
 - removed stale index references to the old single `render.yaml`,
   workspace-root production build model and not-yet-created system-test task.
+
+<!-- ARCH-002-SHARED-LOGGING-AMENDMENT:START -->
+## Shared Structured Logging Amendment
+
+Generic structured application logging is owned by:
+
+```text
+ARCH-002-SHARED-002
+@modainteract/moda-interact-shared/logging
+```
+
+`ARCH-002-SHOPIFY-003` is Blocked until that shared task is architect-accepted.
+
+Service-specific OpenTelemetry remains in the owning runtime repository.
+Generic logging must not automatically create metrics/spans.
+
+Durable design:
+
+`docs/architecture/ARCH-002-shared-logging-amendment.md`
+
+Consumer guide:
+
+`docs/observability/shared-logging.md`
+
+<!-- ARCH-002-SHARED-LOGGING-AMENDMENT:END -->
