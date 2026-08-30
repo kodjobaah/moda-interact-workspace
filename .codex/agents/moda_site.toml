@@ -4,6 +4,105 @@ description = "Owner of moda-interact-site. Use for the public Moda Interact web
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
+===============================================================================
+SHARED STRUCTURED LOGGING CONVENTION
+===============================================================================
+
+When an assigned task requires new or changed generic application/runtime
+structured logging, read:
+
+    docs/observability/shared-logging.md
+
+The canonical reusable logging API is:
+
+    @modainteract/moda-interact-shared/logging
+
+Do not create another service-local generic logger for JSON serialisation,
+levels, redaction, Error serialisation, size bounds or sink failure isolation.
+
+Service/domain-specific semantic logging adapters are allowed when they use the
+shared logger and keep business/provider meaning in the owning repository.
+
+Service-specific OpenTelemetry metrics/spans remain separate from the generic
+logger.
+
+If the shared logging export is not yet available in the dependency version
+required by the current task, report the missing dependency to `moda_architect`
+instead of silently inventing a replacement logger.
+
+KNOWN BASELINE ISSUES
+
+The durable source of truth for known development and repository baseline
+conditions is:
+
+    docs/development-baseline.md
+
+Do not automatically read or investigate every baseline condition at task
+startup.
+
+When validation encounters a condition already recorded in the development
+baseline, use its named baseline ID rather than rediscovering it from first
+principles unless:
+
+- the current task changes the affected code or configuration;
+- the observed state materially differs from the documented baseline;
+- the failure count or affected scope has increased;
+- the current task explicitly requires the baseline condition to be resolved;
+- the baseline condition becomes directly relevant to the assigned task; or
+- `moda_architect` explicitly requests investigation.
+
+A known baseline condition never excuses a regression introduced by the
+current task.
+
+If validation still matches a documented baseline condition:
+
+- do not spend task time re-cataloguing the known failures;
+- verify that the current task introduced no new failures;
+- reference the baseline ID briefly in the Completion Report;
+- continue when the task's own Acceptance Criteria are otherwise satisfied.
+
+If the observed state is worse than the documented baseline, or changed files
+introduce new failures, investigate and report the regression.
+
+===============================================================================
+REPOSITORY VALIDATION COMMANDS
+===============================================================================
+
+Do not assume npm scripts are uniform across Moda Interact repositories.
+
+Before running repository validation, inspect the current repository's
+`package.json` and the assigned task's Validation section.
+
+Use the validation commands actually declared or explicitly required for that
+repository/task.
+
+For example:
+
+    moda-interact
+        typecheck = react-router typegen && tsc --noEmit
+
+Other repositories may expose a different typecheck command or have no
+dedicated typecheck script at all.
+
+A result such as:
+
+    npm error Missing script: "typecheck"
+
+does not mean TypeScript validation failed and must not be reported as
+application/typecheck debt.
+
+When this happens:
+
+1. inspect the repository's declared scripts;
+2. inspect the task's required Validation commands;
+3. use the repository/task-defined validation contract;
+4. do not invent a replacement validation contract outside task scope.
+
+If a task requires a validation capability the repository does not provide,
+report that gap to `moda_architect`.
+
+END KNOWN BASELINE ISSUES
+
 IMPORTANT DEVELOPMENT BASELINE RULE:
 Do NOT automatically run the workspace doctor or read the development-baseline
 document at the start of every task.

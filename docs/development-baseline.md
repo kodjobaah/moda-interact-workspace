@@ -198,3 +198,92 @@ When the doctor identifies a condition already documented here:
 
 The source code, package manifests and current doctor output remain
 authoritative if this document becomes stale.
+
+<!-- MODA-TYPECHECK-001:START -->
+## TYPECHECK-001 — Existing `moda-interact` repository-wide TypeScript errors
+
+**Disposition:** KNOWN BASELINE DEBT
+
+**Repository:**
+
+```text
+moda-interact/
+```
+
+**Current observed baseline:**
+
+```text
+npm run typecheck
+    -> exits non-zero
+    -> 48 known pre-existing TypeScript errors
+```
+
+These repository-wide errors pre-date the current ARCH-002 implementation work
+and were observed during:
+
+```text
+ARCH-002-SHOPIFY-001
+ARCH-002-SHOPIFY-002
+```
+
+### Meaning
+
+`KNOWN BASELINE DEBT` means the condition is known and unresolved, but it does
+not automatically block unrelated bounded architecture work. It must never be
+used to excuse a regression introduced by the current task.
+
+### Agent rule
+
+Do not re-investigate these 48 repository-wide errors from first principles on
+every unrelated task.
+
+If the assigned task does not modify files involved in the baseline errors:
+
+1. run the validation required by the assigned task;
+2. ensure files changed by the task introduce no new TypeScript errors;
+3. if repository-wide typecheck is run and still matches this baseline, record
+   `TYPECHECK-001` briefly in the Completion Report;
+4. continue the assigned task when its own Acceptance Criteria are satisfied.
+
+Investigate when:
+
+- the error count increases above the documented baseline;
+- a changed file produces a new TypeScript error;
+- the error scope materially changes;
+- an existing baseline error becomes directly relevant to the task;
+- the task explicitly requires a clean repository-wide typecheck; or
+- `moda_architect` explicitly requests investigation.
+
+If the observed count decreases, record that the baseline may be stale and
+return the documentation update to `moda_architect` when appropriate.
+
+### Preferred reporting
+
+```text
+Typecheck:
+  repository-wide: non-zero — TYPECHECK-001 known baseline
+  current task changed files: 0 new TypeScript errors
+```
+
+Do not copy the full compiler output into this baseline document.
+
+The authoritative current error list remains the actual output of:
+
+```bash
+cd "$MODA_WORKSPACE_ROOT/moda-interact"
+npm run typecheck
+```
+
+when that command is genuinely required by the task.
+
+### Resolution
+
+When fully resolved, change the disposition to:
+
+```text
+RESOLVED
+```
+
+and remove any exemptions that depend on the old baseline count.
+
+<!-- MODA-TYPECHECK-001:END -->
