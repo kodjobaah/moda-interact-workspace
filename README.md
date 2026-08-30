@@ -14,6 +14,76 @@ See:
 
 [Moda Interact Coding Agent Workflow](docs/coding-agent-workflow.md)
 
+<!-- MODA-DEVELOPMENT-BASELINE:START -->
+## Development environment baseline
+
+Coding-agent shells may be non-interactive and may not inherit the developer's
+NVM environment. The workspace also contains shared runtime dependencies whose
+resolution must remain consistent across services.
+
+IntelliJ is opened at the `moda-interact-workspace` project root. Agent task
+startup therefore begins by bootstrapping from that root:
+
+```bash
+source scripts/bootstrap-node.sh
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+```
+
+`bootstrap-node.sh` resolves and exports:
+
+```text
+MODA_WORKSPACE_ROOT
+```
+
+That variable is the stable workspace path for the rest of the task. If the
+agent later changes into a service repository, it must continue to use:
+
+```bash
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+```
+
+rather than looking for a repository-local `scripts/workspace-doctor.sh`.
+
+`.nvmrc` is the single source of truth for the workspace development Node
+version. Agent definitions and bootstrap scripts do not embed a concrete Node
+version.
+
+The workspace doctor classifies known environment/dependency conditions so
+agents do not repeatedly investigate the same baseline:
+
+```text
+EXPECTED
+FIX
+WARN
+PRODUCTION GATE
+```
+
+For deployment work:
+
+```bash
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --production
+```
+
+For deeper dependency diagnostics:
+
+```bash
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --full
+```
+
+The baseline documentation is always:
+
+```text
+$MODA_WORKSPACE_ROOT/docs/development-baseline.md
+```
+
+See:
+
+- [`docs/development-baseline.md`](docs/development-baseline.md)
+- [`scripts/bootstrap-node.sh`](scripts/bootstrap-node.sh)
+- [`scripts/workspace-doctor.sh`](scripts/workspace-doctor.sh)
+
+<!-- MODA-DEVELOPMENT-BASELINE:END -->
+
 ## Clone the complete workspace
 
 Because this repository contains Git submodules, clone it recursively:

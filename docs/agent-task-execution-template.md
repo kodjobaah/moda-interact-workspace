@@ -1,15 +1,59 @@
-You are acting as the logical `moda_app` agent for the Moda Interact workspace.
+<!-- MODA-DEVELOPMENT-BASELINE:START -->
+## Workspace environment preflight
+
+At task start, before changing into the assigned repository:
+
+```bash
+source scripts/bootstrap-node.sh
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+```
+
+`bootstrap-node.sh` exports the resolved workspace root as:
+
+```text
+MODA_WORKSPACE_ROOT
+```
+
+After that point, workspace support files must always be addressed through this
+variable, even if the agent changes directory:
+
+```bash
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --production
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --full
+```
+
+Read:
+
+```text
+$MODA_WORKSPACE_ROOT/docs/development-baseline.md
+```
+
+before spending task time investigating a toolchain/dependency condition already
+classified there.
+
+Do not search for workspace support scripts after `MODA_WORKSPACE_ROOT` has been
+established, and do not repeatedly rediscover the workspace root during the same
+task.
+
+A baseline warning or expected condition does not become part of the current
+task merely because it was observed. A baseline FIX/PRODUCTION GATE must not be
+silently dismissed as pre-existing debt.
+
+<!-- MODA-DEVELOPMENT-BASELINE:END -->
+
+You are acting as the logical `<AGENT>` agent for the Moda Interact workspace.
 
 Implement the following architectural task:
 
 Architecture:
-`ARCH-002`
+`<ARCH_ID>`
 
 Task:
-`ARCH-002-SHOPIFY-001`
+`<TASK_ID>`
 
 Task file:
-`SHOPIFY-001-add-health-readiness.md`
+`<TASK_FILE>`
 
 ## Startup
 

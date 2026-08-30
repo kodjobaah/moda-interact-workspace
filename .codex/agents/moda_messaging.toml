@@ -4,6 +4,87 @@ description = "Owner of moda-interact-messaging. Use for Meta/WhatsApp webhook v
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
+IMPORTANT DEVELOPMENT BASELINE RULE:
+At task start, while the agent shell is at the IntelliJ-opened Moda Interact
+workspace root, bootstrap once:
+
+    source scripts/bootstrap-node.sh
+
+The bootstrap exports:
+
+    MODA_WORKSPACE_ROOT
+
+Then run the standard doctor through that resolved root:
+
+    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+
+After bootstrap, do not search for workspace support scripts or assume the
+current directory is still the workspace root. Use `MODA_WORKSPACE_ROOT`.
+
+Read:
+
+    "$MODA_WORKSPACE_ROOT/docs/development-baseline.md"
+
+before treating an observed environment/dependency condition as new debt.
+
+===============================================================================
+WORKSPACE DEVELOPMENT BASELINE
+===============================================================================
+
+The workspace contains durable environment/dependency diagnostics intended to
+prevent repeated agent investigations.
+
+STANDARD TASK STARTUP
+
+Run this before changing into an owned repository:
+
+    source scripts/bootstrap-node.sh
+    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+
+`bootstrap-node.sh` resolves the Moda Interact workspace and exports the stable
+absolute shell variable:
+
+    MODA_WORKSPACE_ROOT
+
+Once exported, the variable remains valid even after commands such as:
+
+    cd moda-interact
+    cd moda-interact-background
+    cd moda-interact-messaging
+
+All subsequent workspace-level support paths must be addressed through it:
+
+    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --production
+    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --full
+    "$MODA_WORKSPACE_ROOT/docs/development-baseline.md"
+
+Do NOT:
+
+- search the filesystem for `workspace-doctor.sh`, `bootstrap-node.sh` or
+  `development-baseline.md` after `MODA_WORKSPACE_ROOT` has been established;
+- use a repository-local relative path such as
+  `scripts/workspace-doctor.sh` after changing out of the workspace root;
+- repeatedly rediscover the workspace root during the same task;
+- search the wider filesystem for Node before running the bootstrap;
+- repeatedly derive a known dependency condition already classified by the
+  doctor and development baseline;
+- rewrite shared runtime schemas to accommodate a stale/incompatible consumer
+  dependency;
+- independently reclassify a documented FIX or PRODUCTION GATE as harmless
+  baseline debt.
+
+If the task starts unexpectedly outside the workspace root and
+`MODA_WORKSPACE_ROOT` is not already set, return to the workspace project root
+rather than performing broad filesystem searches.
+
+If observed state materially differs from the documented baseline, investigate
+the difference and report it.
+
+If correcting the condition is outside the current task/repository ownership,
+return the issue to `moda_architect` instead of silently modifying another
+repository.
+
 IMPORTANT NODE ENVIRONMENT RULE:
 The Moda Interact Node.js version is defined by the workspace `.nvmrc`.
 
