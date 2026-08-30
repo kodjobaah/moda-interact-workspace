@@ -430,7 +430,7 @@ moda-interact-shared/
 
 and are consumed through the published package:
 
-@kodjobaah/moda-interact-shared
+@modainteract/moda-interact-shared
 
 Before defining a new:
 
@@ -443,7 +443,7 @@ Before defining a new:
 - correlation/ordering identifier;
 - other type or utility used across repository boundaries;
 
-first inspect @kodjobaah/moda-interact-shared to determine whether an
+first inspect @modainteract/moda-interact-shared to determine whether an
 authoritative implementation already exists.
 
 If it exists, USE the shared implementation rather than defining a local copy.

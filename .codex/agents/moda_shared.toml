@@ -1,5 +1,5 @@
 name = "moda_shared"
-description = "Owner of moda-interact-shared, published as @kodjobaah/moda-interact-shared. Use for cross-service types, runtime validation schemas, event contracts, deterministic identifiers and other code genuinely shared across Moda Interact services."
+description = "Owner of moda-interact-shared, published as @modainteract/moda-interact-shared. Use for cross-service types, runtime validation schemas, event contracts, deterministic identifiers and other code genuinely shared across Moda Interact services."
 
 sandbox_mode = "workspace-write"
 

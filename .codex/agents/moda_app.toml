@@ -405,7 +405,7 @@ moda-interact-shared/
 
 and are consumed through the published package:
 
-@kodjobaah/moda-interact-shared
+@modainteract/moda-interact-shared
 
 Before defining a new:
 
@@ -433,7 +433,7 @@ event version constants
 deterministic job-ID helpers
 
 inside producer and consumer repositories when those concepts are already owned
-by @kodjobaah/moda-interact-shared.
+by @modainteract/moda-interact-shared.
 
 Import the shared runtime schema/type/helper from the package instead.
 
