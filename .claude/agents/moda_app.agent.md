@@ -3,6 +3,50 @@ name: "moda_app"
 description: "Owner of the moda-interact Shopify application. Use for Shopify auth, React Router, merchant UI, Shopify webhooks, onboarding, billing and shop-level application services."
 ---
 
+IMPORTANT NODE ENVIRONMENT RULE:
+The Moda Interact Node.js version is defined by the workspace `.nvmrc`.
+
+Before reporting that `node`, `npm`, `npx`, `corepack` or `shopify` is
+unavailable, bootstrap the workspace environment with:
+
+    source scripts/bootstrap-node.sh
+
+Do not search for or reinstall Node merely because it is initially absent from
+PATH. Do not embed a concrete Node version in this agent definition.
+
+===============================================================================
+NODE / NVM TOOLCHAIN BOOTSTRAP
+===============================================================================
+
+Coding-agent shells may be non-interactive and may not load NVM automatically.
+
+An initial `command -v node` failure does NOT mean Node.js is unavailable.
+
+Before any Node/npm/npx/corepack/Shopify CLI command, bootstrap the workspace
+Node environment:
+
+    source scripts/bootstrap-node.sh
+
+The bootstrap reads the required version from:
+
+    .nvmrc
+
+The agent definition must remain version-independent. `.nvmrc` is the single
+workspace source of truth for the selected Node development version.
+
+Do NOT:
+
+- search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesystem for Node
+  before running the workspace bootstrap;
+- install or replace Node merely because it is initially missing from PATH;
+- report Node/npm/npx/corepack/shopify as unavailable before attempting the
+  bootstrap;
+- use filesystem globs such as `/usr/local/bin/node*` for Node discovery;
+- repeatedly rediscover the Node installation during the same task.
+
+If the bootstrap reports that the `.nvmrc` version is not installed, report
+that precise condition. Do not silently select a different Node version.
+
 IMPORTANT PATH RULE:
 All Moda Interact repository and docs edits must use paths relative to the
 moda-interact-workspace root. Never pass `/Users/...`, `/home/...`,

@@ -37,6 +37,99 @@ git submodule update --init --recursive
 
 The `--recursive` flag is important because some Moda Interact services also include `moda-interact-database` as a nested submodule.
 
+## Node.js development toolchain
+
+Moda Interact uses NVM for the workspace development Node.js toolchain.
+
+The workspace root [`/.nvmrc`](.nvmrc) is the **single source of truth for the Node.js version selected for local development and coding-agent shells**. Scripts and agent definitions must not duplicate a concrete Node version.
+
+After entering the workspace, bootstrap the Node environment with:
+
+```bash
+source scripts/bootstrap-node.sh
+```
+
+The bootstrap script:
+
+```text
+find workspace root
+        |
+        v
+read .nvmrc
+        |
+        v
+load $HOME/.nvm/nvm.sh when available
+        |
+        v
+nvm use <workspace version>
+        |
+        +----> if NVM shell integration is unavailable,
+        |      use the matching installed NVM version directly
+        v
+verify node + npm
+```
+
+This is necessary because coding-agent shells may be non-interactive and therefore may not load the user's normal NVM shell initialisation. An initial `node: command not found` does **not** mean Node.js is absent from the machine.
+
+Agents must bootstrap the workspace environment before searching for Node, installing another Node version, or reporting `node`, `npm`, `npx`, `corepack` or `shopify` as unavailable.
+
+### Installing the selected Node version
+
+If the version in `.nvmrc` is not yet installed:
+
+```bash
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+nvm install
+nvm use
+```
+
+Then verify:
+
+```bash
+node --version
+npm --version
+```
+
+### Changing Node versions later
+
+Do **not** edit every agent definition when upgrading Node.
+
+Change the version once in:
+
+```text
+.nvmrc
+```
+
+then install/select it:
+
+```bash
+nvm install
+nvm use
+```
+
+and validate the affected services.
+
+Where a service declares a `package.json` `engines.node` range, keep that compatibility declaration aligned with the workspace version. The responsibilities are intentionally different:
+
+```text
+.nvmrc
+    -> selects the Node version used by developers and coding-agent shells
+
+package.json engines.node
+    -> declares versions the individual package/service supports
+
+deployment configuration
+    -> selects/validates the Node runtime used by the deployed service
+```
+
+Changing `.nvmrc` does not by itself prove that every service supports the new Node version. A platform Node upgrade should therefore run each affected service's tests, typecheck/build and deployment validation before the new version is treated as supported.
+
+Detailed policy and upgrade guidance:
+
+[Node.js toolchain and agent-shell bootstrap](docs/node-toolchain.md)
+
 ## Workspace structure
 
 The workspace root contains the Git metadata, the included workspace file, and the submodule directories for each service. After a normal recursive clone or `git submodule update --init --recursive`, each service directory is populated with its own repository checkout.
@@ -51,9 +144,14 @@ moda-interact-workspace/
 │   ├── agent-task-execution-template.md
 │   ├── architecture/
 │   ├── contracts/
-│   └── decisions/
+│   ├── decisions/
+│   └── node-toolchain.md
+├── scripts/
+│   ├── bootstrap-node.sh
+│   └── apply-node-agent-policy.py
 ├── .gitignore
 ├── .gitmodules
+├── .nvmrc
 ├── README.md
 ├── sync_agents.py
 ├── moda-interact/
@@ -320,6 +418,47 @@ python3 sync_agents.py
 ```
 
 Do not manually allow the Claude and Codex definitions for one logical agent to develop different ownership or architecture rules.
+
+### Agent Node.js environment
+
+Codex and Claude executions may run in non-interactive shells that do not inherit the developer's interactive NVM setup.
+
+Agent definitions therefore refer to the stable bootstrap command:
+
+```bash
+source scripts/bootstrap-node.sh
+```
+
+They do **not** embed a concrete Node version. The selected version remains in `.nvmrc`.
+
+The canonical Node-environment rule should be maintained in the Codex TOML definitions and propagated to Claude with:
+
+```bash
+python3 scripts/apply-node-agent-policy.py
+python3 sync_agents.py
+```
+
+`apply-node-agent-policy.py` is idempotent: it adds the bootstrap policy only when it is absent and does not replace the rest of an agent's instructions.
+
+The agent environment contract is:
+
+```text
+agent needs Node/npm/npx/corepack/Shopify CLI
+        |
+        v
+source scripts/bootstrap-node.sh
+        |
+        v
+workspace .nvmrc determines version
+        |
+        v
+toolchain verified
+        |
+        v
+run repository command
+```
+
+Agents must not search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesystem merely because Node is initially absent from `PATH`. They must attempt the workspace bootstrap first.
 
 ### Agent responsibilities
 
@@ -826,6 +965,12 @@ git submodule status --recursive
 
 # Open the VS Code workspace
 code moda-interact.code-workspace
+
+# Bootstrap the workspace Node/NVM environment
+source scripts/bootstrap-node.sh
+
+# Apply the version-independent Node bootstrap rule to Codex agents
+python3 scripts/apply-node-agent-policy.py
 
 # Regenerate Claude agent definitions from canonical Codex TOML files
 python3 sync_agents.py
