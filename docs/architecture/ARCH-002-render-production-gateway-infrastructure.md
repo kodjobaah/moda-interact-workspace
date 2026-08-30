@@ -1,13 +1,13 @@
 ---
 id: ARCH-002
-title: Render production gateway and infrastructure
+title: Render test and production gateway and infrastructure
 status: in_progress
 coordinator: moda_architect
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-30
 ---
 
-# ARCH-002: Render Production Gateway and Infrastructure
+# ARCH-002: Render Test and Production Gateway and Infrastructure
 
 ## Status
 
@@ -30,20 +30,29 @@ configuration.
 
 ## Goals
 
-- establish the production public ingress boundary;
+- establish the public ingress boundary used by deployed test and production
+  environments;
 - minimise direct public exposure of application services;
 - route public HTTP traffic through a thin infrastructure gateway;
 - preserve Shopify and Meta webhook verification in the owning services;
-- define Render service topology from actual repository capabilities;
-- define Redis Cloud and PostgreSQL infrastructure wiring;
+- define two canonical Render Blueprints from actual repository capabilities;
+- preserve the same logical service boundaries across test and production;
+- use the cheapest practical test topology without weakening production
+  architecture boundaries merely to obtain Free compute;
+- define Redis Cloud and PostgreSQL infrastructure wiring with environment
+  isolation;
 - preserve independent application/background scaling boundaries;
 - document deployment, health, rollback, scaling and cost assumptions;
+- preserve a production ingress capacity target of approximately 22,000 Shopify
+  webhook requests per minute;
+- treat production machine sizing and instance counts as assumed/estimated until
+  load testing provides measured evidence;
 - validate infrastructure before integrated system testing.
 
 Planning workload:
 
 ```text
-Shopify inbound events ≈ 20,000/minute ≈ 333/second
+Shopify inbound events ≈ 22,000/minute ≈ 367/second
 ```
 
 This is raw ingress capacity, not recovery, WhatsApp, CommerceAgent or LLM
@@ -68,44 +77,206 @@ The target production gateway/private-service topology has not yet entered
 production. Compatibility with a previous production gateway topology is not
 required.
 
-Development/staging infrastructure may be replaced as necessary after required
-configuration and system validation.
+ARCH-002 uses two deployed Render environments:
+
+```text
+test
+production
+```
+
+The intended rollout order is:
+
+```text
+implementation prerequisites
+    ->
+test Blueprint deployment
+    ->
+integration/system validation
+    ->
+load/capacity validation
+    ->
+production sizing review
+    ->
+production Blueprint deployment
+```
+
+Existing development/test stateless infrastructure may be replaced where the
+assigned task permits it.
+
+Durable state must not be destroyed merely because the architecture is
+pre-production.
 
 The exact deployment order must be established from actual service
 prerequisites rather than copied from an example.
 
+### Canonical Render Blueprints
+
+The canonical ARCH-002 Render Blueprint files are:
+
+```text
+moda-interact-gateway/render.test.yaml
+moda-interact-gateway/render.production.yaml
+```
+
+Together they are the version-controlled source of truth for the
+architecture-managed Render topology.
+
+The two Blueprints must manage distinct Render resources.
+
+They model the same logical platform boundaries at different cost/capacity
+levels.
+
+### Test environment
+
+The test environment exists for integration, deployment and system-test
+validation.
+
+It should:
+
+- use the cheapest practical Render compute;
+- use Free compute where Render supports the required service type;
+- use the smallest practical paid compute where Free is unavailable;
+- normally begin with one instance per service unless an accepted prerequisite
+  requires otherwise;
+- preserve private-service and background-worker boundaries;
+- not make an internal/private service public merely to qualify for a Free plan;
+- use test-only PostgreSQL/state;
+- use test-only Redis/state;
+- use test Shopify configuration/credentials;
+- use test Meta/WhatsApp configuration/credentials;
+- use test OpenTelemetry/OTLP configuration/credentials;
+- contain no production data or production secret values;
+- use `deployment.environment.name=test`.
+
+### Production environment
+
+The production environment uses production-isolated infrastructure and
+credentials.
+
+It should:
+
+- preserve the approved public/private service boundary;
+- use independently scalable HTTP services and worker pools;
+- use production PostgreSQL/state;
+- use production Redis/state;
+- use production Shopify configuration/credentials;
+- use production Meta/WhatsApp configuration/credentials;
+- use production OpenTelemetry/OTLP configuration/credentials;
+- use `deployment.environment.name=production`;
+- preserve the capacity target of approximately 22,000 Shopify webhook requests
+  per minute.
+
+Initial production compute plans, minimum/maximum instance counts and autoscaling
+settings are planning hypotheses.
+
+They must be labelled **ASSUMED** or **ESTIMATED** until load testing
+demonstrates measured capacity.
+
+No unmeasured hardware configuration may be described as proven to support the
+22,000/minute target.
+
+### Environment identity and isolation
+
+Environment-specific Render resource names may use suffixes where useful, for
+example:
+
+```text
+moda-interact-gateway-test
+moda-interact-gateway-production
+```
+
+OpenTelemetry logical service identity remains environment-independent:
+
+```text
+service.namespace=moda-interact
+service.name=<canonical-logical-service>
+deployment.environment.name=test|production
+```
+
+Do not encode the environment into `service.name`.
+
+Test and production must not share credentials or durable state merely for
+convenience.
+
 ## Current Architecture
 
-Accepted discovery establishes:
+Accepted GATEWAY-001 discovery established the original deployment facts:
 
 - the workspace superproject uses Git submodules for application/shared
   repositories;
-- `moda-interact` and `moda-interact-background` consume
+- `moda-interact` and `moda-interact-background` originally consumed
   `@modainteract/moda-interact-shared` through a sibling `file:` dependency;
-- clean service-local Docker builds cannot currently resolve that sibling package;
-- `moda-interact` and `moda-interact-messaging` have no health/readiness endpoint;
-- `moda-interact-admin` has no health/readiness endpoint;
-- `moda-interact-background` has liveness but not dependency readiness;
-- all background worker classes currently start from one process and cannot be
-  independently deployed/scaled;
-- `moda-interact` currently runs Prisma migration and seed work on every replica
+- clean service-local Docker builds could not resolve that sibling package;
+- `moda-interact` and `moda-interact-messaging` had no health/readiness endpoint;
+- `moda-interact-admin` had no health/readiness endpoint;
+- `moda-interact-background` had liveness but not dependency readiness;
+- all background worker classes originally started from one process and could
+  not be independently deployed/scaled;
+- `moda-interact` originally ran Prisma migration and seed work on every replica
   startup;
-- no OpenTelemetry implementation was found in the inspected deployable units;
-- the gateway implementation itself remains downstream work.
+- no OpenTelemetry implementation was found in the inspected deployable units.
+
+Subsequent ARCH-002 decisions/tasks may supersede an original discovery
+constraint. The discovery report remains evidence of what was inspected at that
+time; it is not authority to reintroduce a superseded design.
+
+`ARCH-002-GATEWAY-002` has since implemented the thin public gateway and is
+architect-accepted Complete.
+
+The remaining deployment topology is downstream work.
 
 ### Shared package build decision
 
-ARCH-002 selects **workspace-superproject build context** rather than introducing
-a registry publication requirement.
+ARCH-002 now selects the **published npm package boundary** for production
+dependency resolution.
 
-Render supports repository-root Docker build context for monorepo services and
-automatically clones Git submodules from a repository's root `.gitmodules`.
+The canonical cross-service package is:
 
-The target therefore keeps `moda-interact-shared` as a sibling build input and
-updates infrastructure Docker/build configuration so app/background production
-builds can consume the canonical shared package from the workspace checkout.
+```text
+@modainteract/moda-interact-shared
+```
 
-This decision is implemented by `ARCH-002-GATEWAY-005`.
+The production dependency direction is:
+
+```text
+moda-interact-shared
+    ->
+versioned public npm artifact
+    ->
+moda-interact / moda-interact-background
+```
+
+Application repositories own their dependency declarations.
+
+The bounded consumer tasks are:
+
+```text
+ARCH-002-SHOPIFY-004
+ARCH-002-BACKGROUND-004
+```
+
+Those tasks replace the production `file:../moda-interact-shared` dependency
+with an architect-approved exact npm package version and update their lockfiles.
+
+`ARCH-002-GATEWAY-005` then validates that both consumers:
+
+- resolve the package from npm;
+- use compatible accepted package artifacts;
+- perform clean service-local installs/builds;
+- do not require a sibling `moda-interact-shared` checkout solely for production
+  dependency resolution.
+
+There is no speculative `ARCH-002-SHARED-001` dependency in this architecture.
+
+If a consumer proves that the currently published npm artifact cannot satisfy
+the required accepted exports/contracts, the owning task must return Blocked
+with evidence. `moda_architect` may then create a bounded `moda_shared` task.
+
+Do not silently fall back to workspace-root production build context or a
+`file:` dependency.
+
+Local development may continue to use workspace-oriented workflows where useful,
+provided the committed production dependency/build model remains npm-based.
 
 ### Application startup decision
 
@@ -146,7 +317,10 @@ a new queue boundary before capacity evidence requires it.
 
 ## Proposed Architecture
 
-Target direction, subject to GATEWAY-001 validation:
+The same logical topology is deployed in both test and production.
+
+The environments differ in compute/capacity, credentials, state and public
+addresses — not in the fundamental service boundaries:
 
 ```text
                          INTERNET
@@ -213,7 +387,7 @@ Owns:
 
 - gateway/reverse-proxy implementation;
 - infrastructure Docker configuration;
-- Render Blueprint/topology;
+- canonical Render Blueprints/topology (`render.test.yaml` and `render.production.yaml`);
 - private-service routing;
 - infrastructure health configuration;
 - infrastructure environment wiring;
@@ -291,15 +465,61 @@ Relevant scaling boundaries must be treated independently:
 - public gateway instances;
 - Shopify application instances;
 - messaging ingress instances;
-- background worker instances;
+- admin instances where applicable;
+- `moda-shopify-event-worker` instances;
+- `moda-recovery-worker` instances;
+- `moda-messaging-worker` instances;
 - Redis Cloud capacity;
 - PostgreSQL capacity.
 
-Worker capacity should consider queue depth, queue lag, oldest-job age,
-processing throughput, retry rate, worker concurrency and downstream provider
-limits.
+Background worker work distribution remains:
 
-Planning values are ASSUMED until measured.
+```text
+Redis Cloud / BullMQ
+    ->
+moda-shopify-event-worker
+moda-recovery-worker
+moda-messaging-worker
+```
+
+BullMQ/Redis distributes jobs across existing worker processes.
+
+Render/infrastructure controls how many worker processes/instances exist.
+
+Because Render background workers do not receive inbound network traffic,
+ARCH-002 does not require an HTTP readiness endpoint for worker services.
+BACKGROUND-002 instead provides bounded dependency preflight before queue
+consumption plus a deterministic non-network readiness/diagnostic command for
+infrastructure/system validation.
+
+Worker capacity should consider:
+
+- queue depth;
+- queue lag;
+- oldest-job age;
+- processing throughput;
+- retry rate;
+- worker concurrency;
+- Redis operations per job;
+- downstream provider limits.
+
+CPU/memory alone must not be treated as proof that a worker queue is keeping up.
+
+Test should begin with the cheapest practical capacity while preserving the
+architecture.
+
+Production must preserve the raw Shopify ingress target:
+
+```text
+≈ 22,000 webhook requests/minute
+≈ 367 requests/second
+```
+
+Production instance plans/counts are **ASSUMED/ESTIMATED** until measured load
+testing validates them.
+
+The architecture may later add queue-aware autoscaling only through a separate
+approved task if measurements justify it.
 
 ## Security
 
@@ -311,7 +531,11 @@ Planning values are ASSUMED until measured.
 - use Render/provider secret mechanisms;
 - use TLS where required;
 - preserve tenant/authentication boundaries;
-- do not log credentials or tokens.
+- do not log credentials or tokens;
+- isolate test and production credentials;
+- isolate test and production Redis/PostgreSQL state;
+- do not place production data in the test environment;
+- do not weaken service exposure merely to reduce test-environment cost.
 
 ## Observability
 
@@ -323,7 +547,33 @@ Infrastructure documentation/configuration should cover:
 - upstream failures;
 - worker health where applicable;
 - queue capacity signals;
-- deployment failures.
+- deployment failures;
+- OpenTelemetry/OTLP infrastructure wiring;
+- test/production telemetry isolation.
+
+Canonical resource identity includes:
+
+```text
+service.namespace=moda-interact
+service.name=<canonical-logical-service>
+deployment.environment.name=<environment>
+```
+
+For deployed ARCH-002 environments:
+
+```text
+deployment.environment.name=test
+deployment.environment.name=production
+```
+
+Test and production OTLP credentials must be independently configurable.
+
+If one observability backend is shared, production dashboards/alerts must filter
+explicitly for the production deployment environment.
+
+Observability must not become a correctness dependency for webhook
+acknowledgement, BullMQ processing, recovery, WhatsApp/CommerceAgent processing
+or database commits.
 
 ## Infrastructure Assessment
 
@@ -343,11 +593,11 @@ as owner-specific tasks by `moda_architect`.
 | Task | Owner | Status | Depends On |
 |------|-------|--------|------------|
 | ARCH-002-GATEWAY-001 | moda_gateway | Complete | - |
-| ARCH-002-GATEWAY-002 | moda_gateway | Ready | ARCH-002-GATEWAY-001 |
-| ARCH-002-GATEWAY-005 | moda_gateway | Ready | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-001 | moda_app | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-GATEWAY-002 | moda_gateway | Complete | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-001 | moda_app | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-SHOPIFY-002 | moda_app | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-SHOPIFY-003 | moda_app | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-004 | moda_app | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-MESSAGING-001 | moda_messaging | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-MESSAGING-002 | moda_messaging | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-ADMIN-001 | moda_admin | Ready | ARCH-002-GATEWAY-001 |
@@ -355,38 +605,63 @@ as owner-specific tasks by `moda_architect`.
 | ARCH-002-BACKGROUND-001 | moda_background | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-BACKGROUND-002 | moda_background | Pending | ARCH-002-BACKGROUND-001 |
 | ARCH-002-BACKGROUND-003 | moda_background | Pending | ARCH-002-BACKGROUND-001 |
+| ARCH-002-BACKGROUND-004 | moda_background | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-GATEWAY-005 | moda_gateway | Pending | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004 |
 | ARCH-002-GATEWAY-006 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-003, ARCH-002-MESSAGING-002, ARCH-002-ADMIN-002, ARCH-002-BACKGROUND-003 |
 | ARCH-002-GATEWAY-003 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
 | ARCH-002-GATEWAY-004 | moda_gateway | Pending | ARCH-002-GATEWAY-003 |
+| ARCH-002-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-002-GATEWAY-004 |
 
-After GATEWAY-001 review, `moda_architect` must:
+`ARCH-002-GATEWAY-003` remains Pending.
 
-1. create any concrete prerequisite tasks for owning agents;
-2. add their fully-qualified IDs to downstream `depends_on`;
-3. refine the architecture from inspected facts;
-4. agree the implementation topology with the user;
-5. only then mark appropriate downstream tasks Ready.
+Before it becomes Ready:
 
-A system-test task is intentionally **not created yet**.
+1. every declared prerequisite must be Complete;
+2. GATEWAY-005 must prove service-local npm-based app/background builds;
+3. GATEWAY-006 must establish the accepted OTLP/environment wiring model;
+4. application health/startup/worker prerequisites must be accepted;
+5. the two canonical Blueprint files defined by this architecture must remain the
+   task target.
 
-Once all required implementation, infrastructure and observability tasks are
-Complete, `moda_architect` creates `ARCH-002-SYSTEM-TEST-001` for
-`moda_system_test`.
+`ARCH-002-SYSTEM-TEST-001` already exists as the integrated validation task.
+
+Its durable dependency is `ARCH-002-GATEWAY-004`, the final infrastructure
+validation gate. GATEWAY-004 is expected to become Complete only after
+GATEWAY-003 and all transitive application/build/observability prerequisites are
+architect-accepted.
+
+SYSTEM-TEST-001 performs full functional validation in the isolated test
+environment, validates production configuration/isolation, and requires measured
+capacity evidence before ARCH-002 claims the approximately 22,000-webhooks/minute
+production target.
+
+The cheap test environment is not production-capacity evidence.
+
+The architecture must not mark system testing Ready merely because the gateway
+itself is deployable.
 
 ## Open Questions
 
-To be resolved by GATEWAY-001 and architect review:
+Remaining implementation/measurement questions include:
 
-- actual Render repository/build-context model;
-- actual build/start commands;
-- current health/readiness capabilities;
-- current worker entrypoints;
-- which worker classes require independent services;
-- actual shared-package distribution/build strategy;
-- exact private-service route contract;
-- actual baseline Render plans and scaling limits;
-- PostgreSQL production infrastructure choice;
-- Redis Cloud region/TLS/connection assumptions.
+- exact test-environment Render plans after the gateway agent validates the
+  service types supported by the current Render Blueprint model;
+- actual production HTTP instance plans/minimums/maximums;
+- measured gateway/application capacity at the 22,000-webhooks/minute target;
+- measured worker throughput and queue-lag behaviour;
+- whether queue-aware autoscaling is justified after measurement;
+- PostgreSQL production infrastructure sizing/choice;
+- Redis Cloud production tier/region/TLS/connection capacity;
+- final production admin route/base-path or host-routing contract;
+- final production public-route hardening for the development catch-all gateway
+  route.
+
+The following are no longer open architecture questions:
+
+- shared-package production distribution: published npm artifact;
+- canonical Blueprint model: separate test and production files;
+- initial worker deployment units: Shopify event, recovery, messaging;
+- replica startup: seed excluded from normal application startup.
 
 ## Relationship to ARCH-001
 
@@ -428,3 +703,62 @@ Reformatted the original ARCH-002 gateway bundle to the current
 - kept GATEWAY-002 independently executable;
 - kept GATEWAY-003 pending on concrete deployability/observability prerequisites;
 - retained `moda-interact-gateway/render.yaml` as the canonical Render Blueprint.
+
+### 2026-08-29 — GATEWAY-002 accepted and deployment model refined
+
+- accepted `ARCH-002-GATEWAY-002` as Complete after gateway security correction
+  and validation;
+- superseded the earlier workspace-superproject production build-context
+  decision with the published npm package boundary for
+  `@modainteract/moda-interact-shared`;
+- introduced `ARCH-002-SHOPIFY-004` and `ARCH-002-BACKGROUND-004` as the
+  consumer-owned npm dependency tasks;
+- removed the speculative `ARCH-002-SHARED-001` dependency from GATEWAY-005;
+- defined two canonical Render Blueprint files:
+  `moda-interact-gateway/render.test.yaml` and
+  `moda-interact-gateway/render.production.yaml`;
+- required test and production to use isolated state/secrets;
+- defined test as the cheapest practical topology that preserves production
+  service boundaries;
+- raised the production raw Shopify ingress capacity target to approximately
+  22,000 webhooks/minute (~367/second);
+- required unmeasured production hardware/instance sizing to remain
+  ASSUMED/ESTIMATED until load testing validates capacity;
+- preserved the three independent background worker deployment units;
+- recorded that `ARCH-002-SYSTEM-TEST-001` exists and remains Pending until its
+  implementation/infrastructure/observability prerequisites are Complete.
+
+### 2026-08-29 — application/runtime prerequisite tasks refined
+
+- defined deterministic `/health` and `/ready` contracts for Shopify and
+  messaging private HTTP services;
+- clarified that Render background workers do not receive inbound traffic and
+  therefore use bounded dependency preflight plus a non-network readiness
+  command rather than an HTTP readiness contract;
+- required graceful shutdown and strict worker-entrypoint isolation for the
+  three independently scalable background worker services;
+- made Shopify, messaging and worker OpenTelemetry tasks explicitly preserve
+  stable service names across isolated test and production environments;
+- added bounded telemetry/cardinality and secret-handling requirements;
+- rewrote `ARCH-002-SYSTEM-TEST-001` into the current coordination format;
+- made the test environment the primary functional integration environment;
+- separated cheap test-environment correctness from production capacity
+  validation;
+- required measured evidence before claiming approximately 22,000 Shopify
+  webhooks/minute production capacity.
+
+### 2026-08-29 — remaining ARCH-002 tasks and indexes reconciled
+
+- defined deterministic `/health` and `/ready` contracts for the internal admin
+  service without conflating those operational routes with the unresolved
+  production admin base-path/host-routing decision;
+- made admin OpenTelemetry explicitly test/production-aware and strengthened
+  cross-tenant/database telemetry data-safety requirements;
+- retained SHOPIFY-004 and BACKGROUND-004 as the consumer-owned exact npm package
+  migration tasks and required current-artifact compatibility validation;
+- reconciled Shopify, messaging, background, admin, gateway and system-test
+  ARCH-002 indexes with the current dependency graph;
+- recorded GATEWAY-002 as Complete, GATEWAY-005/GATEWAY-003 as Pending, and
+  SYSTEM-TEST-001 as Pending on GATEWAY-004;
+- removed stale index references to the old single `render.yaml`,
+  workspace-root production build model and not-yet-created system-test task.
