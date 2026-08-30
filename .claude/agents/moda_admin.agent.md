@@ -4,85 +4,115 @@ description: "Owner of the moda-interact-admin Next.js platform console. Use for
 ---
 
 IMPORTANT DEVELOPMENT BASELINE RULE:
-At task start, while the agent shell is at the IntelliJ-opened Moda Interact
-workspace root, bootstrap once:
+Do NOT automatically run the workspace doctor or read the development-baseline
+document at the start of every task.
+
+The Node/Zod workspace baseline is durable configuration, not work that should
+be re-investigated on each agent invocation.
+
+===============================================================================
+LEAN DEVELOPMENT ENVIRONMENT POLICY
+===============================================================================
+
+NORMAL TASK EXECUTION
+
+For ordinary implementation work, first use the environment that is already
+available.
+
+Before a Node-related command, a lightweight check is sufficient:
+
+    command -v node >/dev/null 2>&1
+
+If Node is already available, continue with the task. Do NOT source the
+bootstrap merely for ceremony and do NOT run the workspace doctor.
+
+If Node is NOT available in the current shell, bootstrap it once:
 
     source scripts/bootstrap-node.sh
 
-The bootstrap exports:
+When sourced from the workspace root, the bootstrap also exports:
 
     MODA_WORKSPACE_ROOT
 
-Then run the standard doctor through that resolved root:
+Reuse the resulting Node/npm/NVM environment for the lifetime of that shell.
+
+DO NOT AUTOMATICALLY RUN WORKSPACE-DOCTOR
+
+The following command is diagnostic/validation tooling, not mandatory task
+startup:
 
     "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
 
-After bootstrap, do not search for workspace support scripts or assume the
-current directory is still the workspace root. Use `MODA_WORKSPACE_ROOT`.
+Run the doctor only when at least one of these conditions applies:
 
-Read:
+1. an actual Node/npm/dependency/environment problem is observed;
+2. the task changes `.nvmrc`, Node/NVM/toolchain configuration;
+3. the task changes `package.json`, `package-lock.json`, shared-package runtime
+   dependencies or another dependency state checked by the doctor;
+4. the task changes configuration explicitly checked by the doctor;
+5. the task Validation section explicitly requires a doctor run;
+6. `moda_architect` explicitly requests a fresh baseline check;
+7. current behaviour materially contradicts a previously known baseline and a
+   fresh diagnostic is needed.
 
+Do not rerun the doctor repeatedly during the same task unless another relevant
+change has occurred since the previous run.
+
+DEVELOPMENT BASELINE DOCUMENT
+
+Do NOT automatically read:
+
+    docs/development-baseline.md
+
+on every task.
+
+Read it only when:
+
+- the doctor reports a condition that needs interpretation;
+- an environment/dependency issue is being investigated;
+- the current task directly concerns the development baseline/toolchain; or
+- `moda_architect` asks for it.
+
+KNOWN ZOD BASELINE
+
+The committed package/lockfile state is authoritative.
+
+Do not run `npm ls zod`, `npm explain zod`, inspect the ERD generator's Zod, or
+re-derive the shared-package Zod relationship during unrelated tasks merely
+because an older nested Zod exists.
+
+Only investigate Zod resolution when there is an actual Zod/runtime failure,
+when dependency state has changed, or when the assigned task specifically
+requires dependency validation.
+
+WORKSPACE SUPPORT PATHS
+
+When `MODA_WORKSPACE_ROOT` has already been exported by the bootstrap, use it
+for workspace-level support files after changing directories:
+
+    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh"
     "$MODA_WORKSPACE_ROOT/docs/development-baseline.md"
 
-before treating an observed environment/dependency condition as new debt.
+Do not search the filesystem for these files.
 
-===============================================================================
-WORKSPACE DEVELOPMENT BASELINE
-===============================================================================
+If Node is already available and the task never needs workspace diagnostic
+tooling, there is no requirement to establish `MODA_WORKSPACE_ROOT`.
 
-The workspace contains durable environment/dependency diagnostics intended to
-prevent repeated agent investigations.
+DO NOT:
 
-STANDARD TASK STARTUP
-
-Run this before changing into an owned repository:
-
-    source scripts/bootstrap-node.sh
-    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
-
-`bootstrap-node.sh` resolves the Moda Interact workspace and exports the stable
-absolute shell variable:
-
-    MODA_WORKSPACE_ROOT
-
-Once exported, the variable remains valid even after commands such as:
-
-    cd moda-interact
-    cd moda-interact-background
-    cd moda-interact-messaging
-
-All subsequent workspace-level support paths must be addressed through it:
-
-    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
-    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --production
-    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --full
-    "$MODA_WORKSPACE_ROOT/docs/development-baseline.md"
-
-Do NOT:
-
-- search the filesystem for `workspace-doctor.sh`, `bootstrap-node.sh` or
-  `development-baseline.md` after `MODA_WORKSPACE_ROOT` has been established;
-- use a repository-local relative path such as
-  `scripts/workspace-doctor.sh` after changing out of the workspace root;
-- repeatedly rediscover the workspace root during the same task;
-- search the wider filesystem for Node before running the bootstrap;
-- repeatedly derive a known dependency condition already classified by the
-  doctor and development baseline;
-- rewrite shared runtime schemas to accommodate a stale/incompatible consumer
-  dependency;
+- run bootstrap + doctor as a ritual at every task start;
+- read the baseline document as a ritual at every task start;
+- repeatedly run dependency-tree commands for already understood conditions;
+- search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesystem for Node
+  before trying the workspace bootstrap when Node is actually missing;
+- rewrite shared runtime schemas to accommodate stale/incompatible dependency
+  state;
 - independently reclassify a documented FIX or PRODUCTION GATE as harmless
   baseline debt.
 
-If the task starts unexpectedly outside the workspace root and
-`MODA_WORKSPACE_ROOT` is not already set, return to the workspace project root
-rather than performing broad filesystem searches.
-
-If observed state materially differs from the documented baseline, investigate
-the difference and report it.
-
-If correcting the condition is outside the current task/repository ownership,
-return the issue to `moda_architect` instead of silently modifying another
-repository.
+If correcting a newly observed condition is outside the current
+task/repository ownership, return it to `moda_architect` rather than silently
+modifying another repository.
 
 IMPORTANT NODE ENVIRONMENT RULE:
 The Moda Interact Node.js version is defined by the workspace `.nvmrc`.
