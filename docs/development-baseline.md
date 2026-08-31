@@ -21,20 +21,32 @@ PRODUCTION GATE
     acceptable for local development but forbidden for production validation
 ```
 
-Before investigating a Node/toolchain/dependency-resolution failure, run:
+For ordinary tasks, do **not** run the workspace doctor or read this baseline
+as a startup ritual. Use the current environment first.
+
+When a Node-related command is needed, check whether Node is already available:
 
 ```bash
-source scripts/bootstrap-node.sh
-"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+command -v node >/dev/null 2>&1
 ```
 
-For production/deployment work:
+If Node is missing, recover the workspace Node environment only through:
+
+```bash
+source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+```
+
+Run the doctor only when an actual environment/dependency issue is being
+investigated, relevant toolchain/dependency state changed, task validation
+requires it, or `moda_architect` requests it.
+
+For production/deployment diagnostics when relevant:
 
 ```bash
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --production
 ```
 
-For deeper Zod tree output:
+For deliberate deep dependency/Zod diagnostics when relevant:
 
 ```bash
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --full
@@ -45,23 +57,34 @@ For deeper Zod tree output:
 
 **Disposition:** EXPECTED
 
-IntelliJ is opened using the `moda-interact-workspace` root. At task startup,
-before changing directories, agents run:
+Agent tasks are expected to start from the `moda-interact-workspace` root.
+Before changing directories, verify that root without invoking Node or running
+diagnostics:
 
 ```bash
-source scripts/bootstrap-node.sh
-"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+test -f .nvmrc && test -d .codex/agents
+export MODA_WORKSPACE_ROOT="$PWD"
 ```
 
-The bootstrap resolves the workspace once and exports:
+`MODA_WORKSPACE_ROOT` is the stable shell anchor for the lifetime of the task.
+Establishing it does not require a Node bootstrap or doctor run.
 
-```text
-MODA_WORKSPACE_ROOT
+Use workspace-relative paths for ordinary repository navigation from the root:
+
+```bash
+cd moda-interact
+cd moda-interact-shared
 ```
 
-This variable is the stable path anchor for the lifetime of the task shell.
+Do not reconstruct a developer-specific absolute path such as
+`/Users/.../moda-interact-workspace/...` for normal navigation. Return to the
+verified workspace root with:
 
-After changing into a service repository, use:
+```bash
+cd "$MODA_WORKSPACE_ROOT"
+```
+
+When diagnostic tooling is actually needed after changing directories, use:
 
 ```bash
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
@@ -75,12 +98,11 @@ and refer to the baseline as:
 $MODA_WORKSPACE_ROOT/docs/development-baseline.md
 ```
 
-Agents must not search for those files or repeatedly rediscover the workspace
-root after the variable has been established.
+Agents must not search for those support files or repeatedly rediscover the
+workspace root during the same task.
 
-If an agent task unexpectedly starts outside the workspace root and the variable
-is not already defined, the correct response is to return to the IntelliJ-opened
-workspace project root rather than perform broad filesystem searches.
+If an agent task unexpectedly starts outside the workspace root, report that
+condition rather than performing broad filesystem searches.
 
 <!-- MODA-WORKSPACE-ROOT-CONTRACT:END -->
 
@@ -94,15 +116,29 @@ An initial `node not found` / `npm not found` does not establish that Node is no
 installed. The workspace `.nvmrc` is the only selected development Node version
 source of truth.
 
-Agents must run:
+For an ordinary task, first use the current shell:
 
 ```bash
-source scripts/bootstrap-node.sh
+command -v node >/dev/null 2>&1
 ```
 
-before searching for Node, installing Node, or reporting the toolchain missing.
+If Node is available, continue without bootstrapping. If Node is missing, recover
+it once through the workspace-owned bootstrap:
 
-Do not hardcode a Node version into agent definitions.
+```bash
+source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+```
+
+Node environment recovery is owned exclusively by that bootstrap. Agents must
+not manually add `$HOME/.nvm/versions/node/.../bin` to `PATH`, call `nvm use` as
+a substitute, infer/hardcode the `.nvmrc` version, search the filesystem for a
+Node binary, or silently install/select another Node version.
+
+If the bootstrap reports that the `.nvmrc` version is not installed, report that
+precise condition.
+
+Do not hardcode a Node version into agent definitions or active toolchain
+documentation.
 
 ## DEP-ZOD-001 — Shared runtime schemas use the shared package's Zod contract
 

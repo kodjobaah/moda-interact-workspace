@@ -4,50 +4,91 @@
 
 Moda Interact needs one predictable Node.js development toolchain across a
 multi-repository workspace while avoiding a concrete Node version being copied
-into agent definitions, helper scripts and documentation.
+into agent definitions, helper commands and active documentation.
 
-The design deliberately separates **version selection** from **environment
-bootstrap**.
+The design deliberately separates **version selection**, **workspace path
+anchoring**, and **environment recovery**.
 
 ## Source of truth
 
-The workspace root `.nvmrc` selects the Node.js version used by developers and
-coding-agent shells.
+The workspace root `.nvmrc` is the single source of truth for the Node.js
+version selected for developer and coding-agent work.
 
-Example:
+The selected value may change over time. Agent definitions and bootstrap
+instructions must remain version-independent.
 
-```text
-24.19.0
-```
+## Workspace root contract
 
-The value may change over time. No bootstrap script or agent definition should
-need modification solely because the selected Node version changes.
-
-## Bootstrap contract
-
-Every fresh shell that needs Node-related tooling should run:
+Agent tasks are expected to start from the `moda-interact-workspace` root.
+Before changing directories, verify and anchor that root without invoking Node:
 
 ```bash
-source scripts/bootstrap-node.sh
+test -f .nvmrc && test -d .codex/agents
+export MODA_WORKSPACE_ROOT="$PWD"
 ```
 
-The script discovers the Moda Interact workspace root by walking upward until it
-finds both `.nvmrc` and `.codex/agents/`. This means it can be sourced from the
-workspace root or from inside a service submodule.
+If this check fails, stop and report the unexpected working directory. Do not
+search the filesystem for the project and do not reconstruct a user-specific
+absolute workspace path.
 
-It then:
+Use workspace-relative repository navigation from the root:
 
-1. reads the workspace `.nvmrc`;
-2. loads `$HOME/.nvm/nvm.sh` if NVM is not already active;
-3. asks NVM to select the `.nvmrc` version;
-4. falls back to the matching already-installed NVM directory only when NVM
-   shell integration cannot be loaded and `.nvmrc` contains an exact version;
-5. verifies `node` and `npm`;
-6. reports the resolved tool paths and versions.
+```bash
+cd moda-interact
+cd moda-interact-shared
+```
 
-The bootstrap does **not** install Node automatically. Missing runtime
-installation is a distinct condition that should be fixed deliberately with
-`nvm install`.
+Return to the verified root with:
+
+```bash
+cd "$MODA_WORKSPACE_ROOT"
+```
+
+## Lean bootstrap contract
+
+Do not bootstrap Node merely because a task has started.
+
+Before the first Node-related command in a shell, check the environment already
+provided:
+
+```bash
+command -v node >/dev/null 2>&1
+```
+
+If Node is available, continue directly.
+
+If Node is missing, recover the workspace toolchain once through:
+
+```bash
+source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+```
+
+The bootstrap reads the workspace `.nvmrc`, loads NVM where needed, selects the
+configured version, verifies the toolchain and exports/refreshes the workspace
+root anchor as supported by the script.
+
+The bootstrap does **not** install Node automatically. If the selected `.nvmrc`
+version is not installed, that is a distinct condition that should be reported
+and fixed deliberately.
+
+## Node recovery ownership
+
+`scripts/bootstrap-node.sh` exclusively owns Node/NVM recovery for coding-agent
+shells.
+
+An agent must not manually:
+
+- export `$HOME/.nvm/versions/node/.../bin` or another inferred Node directory
+  into `PATH`;
+- call `nvm use` as a substitute for the workspace bootstrap;
+- infer, copy or hardcode the `.nvmrc` version into a command;
+- search `/usr/local/bin`, `/opt/homebrew/bin`, `$HOME/.nvm` or the wider
+  filesystem for Node;
+- install, replace or silently select a different Node version because Node is
+  initially absent from `PATH`.
+
+If bootstrap fails, report the bootstrap failure rather than creating an
+alternative environment setup.
 
 ## Why agents need this
 
@@ -55,38 +96,46 @@ Codex and Claude may execute shell commands in non-interactive sessions. Those
 sessions do not necessarily run `.zshrc`, `.bashrc`, or the developer's normal
 NVM initialisation.
 
-Therefore:
+Therefore `node not found` before bootstrap means only that Node is not currently
+on that shell's `PATH`; it does not establish that Node is not installed.
 
-```text
-node not found
+## Workspace doctor is on demand
+
+The workspace doctor is diagnostic/validation tooling, not mandatory startup.
+Do not run it merely because a task begins.
+
+Use it when an actual environment/dependency issue is observed, relevant
+Node/dependency/configuration state changes, the task Validation section requires
+it, or `moda_architect` explicitly requests it:
+
+```bash
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --production
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --full
 ```
 
-before bootstrap means only:
-
-```text
-Node is not currently on this shell's PATH
-```
-
-It does not establish that Node is not installed.
-
-Agents must run the workspace bootstrap before searching the filesystem,
-installing Node or declaring the toolchain unavailable.
+Likewise, `docs/development-baseline.md` is read when environment/dependency
+investigation makes it relevant, not as a ritual on every task.
 
 ## Agent definitions
 
-Codex TOMLs are canonical. Their Node rule is intentionally version-independent:
+Codex TOMLs are canonical. Their Node rule is intentionally version-independent
+and implements the lean sequence:
 
 ```text
-source scripts/bootstrap-node.sh
+need Node-related tooling
+        |
+        v
+command -v node
+        |
+   +----+----+
+   |         |
+found      missing
+   |         |
+continue   source workspace bootstrap
 ```
 
-Install/update the rule with:
-
-```bash
-python3 scripts/apply-node-agent-policy.py
-```
-
-Then regenerate Claude definitions:
+After changing canonical Codex definitions, regenerate Claude definitions with:
 
 ```bash
 python3 sync_agents.py
@@ -108,11 +157,12 @@ They should be compatible, but they should not be conflated.
 
 ## Node upgrade procedure
 
-When moving to a new Node version:
+When deliberately moving to a new Node version:
 
 1. change `.nvmrc`;
-2. run `nvm install` and `nvm use`;
-3. source `scripts/bootstrap-node.sh`;
+2. install/select that version in the developer environment as part of the
+   deliberate toolchain change;
+3. validate through `scripts/bootstrap-node.sh`;
 4. inspect affected `package.json` `engines.node` constraints;
 5. run tests/typecheck/build for every affected service;
 6. validate Docker/Render runtime compatibility;
@@ -128,5 +178,5 @@ version.
 
 If a future service genuinely requires an independent Node major version, treat
 that as a deliberate toolchain architecture change rather than adding a hidden
-exception to an agent. At that point the bootstrap can be extended to support
-service-local version selection while retaining the workspace default.
+exception to an agent. At that point the bootstrap can be extended while
+retaining the workspace default.
