@@ -6,16 +6,17 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: pending
+status: complete
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-08-31 16:55:46+00:00
+attempt: 1
 depends_on:
-  - ARCH-002-BACKGROUND-001
-enables: []
+- ARCH-002-BACKGROUND-001
+enables:
+- ARCH-002-BACKGROUND-005
 created: 2026-08-29
-updated: 2026-08-29
+updated: '2026-08-31'
 ---
 
 # Add Worker Dependency Readiness
@@ -118,16 +119,16 @@ required dependency is unavailable.
 
 ## Work Items
 
-- [ ] inspect each of the three worker entrypoints and record its required
+- [x] inspect each of the three worker entrypoints and record its required
       dependencies;
-- [ ] implement reusable bounded Redis/PostgreSQL probes;
-- [ ] perform worker-specific dependency preflight before consumption;
-- [ ] add a non-network readiness/preflight command;
-- [ ] add Redis failure tests;
-- [ ] add PostgreSQL failure tests where applicable;
-- [ ] verify an unready worker does not begin normal queue consumption;
-- [ ] verify failure output contains no secrets;
-- [ ] document operational semantics for test/production deployment.
+- [x] implement reusable bounded Redis/PostgreSQL probes;
+- [x] perform worker-specific dependency preflight before consumption;
+- [x] add a non-network readiness/preflight command;
+- [x] add Redis failure tests;
+- [x] add PostgreSQL failure tests where applicable;
+- [x] verify an unready worker does not begin normal queue consumption;
+- [x] verify failure output contains no secrets;
+- [x] document operational semantics for test/production deployment.
 
 ## Interfaces / Contracts
 
@@ -167,26 +168,26 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] required Redis unavailability prevents normal consumption and is reflected
+- [x] required Redis unavailability prevents normal consumption and is reflected
       predictably;
-- [ ] required PostgreSQL unavailability prevents normal consumption where
+- [x] required PostgreSQL unavailability prevents normal consumption where
       applicable;
-- [ ] each worker probes only dependencies it actually requires;
-- [ ] readiness/preflight checks are bounded and non-mutating;
-- [ ] a deterministic non-network readiness command exists and is documented;
-- [ ] worker background-service deployment does not require inbound HTTP;
-- [ ] no secrets are exposed;
-- [ ] test and production use the same readiness semantics.
+- [x] each worker probes only dependencies it actually requires;
+- [x] readiness/preflight checks are bounded and non-mutating;
+- [x] a deterministic non-network readiness command exists and is documented;
+- [x] worker background-service deployment does not require inbound HTTP;
+- [x] no secrets are exposed;
+- [x] test and production use the same readiness semantics.
 
 ## Validation
 
-- [ ] tests;
-- [ ] typecheck;
-- [ ] production build;
-- [ ] worker-specific dependency matrix review;
-- [ ] readiness/preflight command verification;
-- [ ] prove failed preflight does not start normal consumers;
-- [ ] sensitive-output review.
+- [x] tests;
+- [x] typecheck;
+- [x] production build;
+- [x] worker-specific dependency matrix review;
+- [x] readiness/preflight command verification;
+- [x] prove failed preflight does not start normal consumers;
+- [x] sensitive-output review.
 
 ## Implementation Notes
 
@@ -201,19 +202,57 @@ it as the worker readiness contract.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `moda-interact-background/package.json`
+- `moda-interact-background/README.md`
+- `moda-interact-background/src/entrypoints/messaging.ts`
+- `moda-interact-background/src/entrypoints/recovery.ts`
+- `moda-interact-background/src/entrypoints/shopify-event.ts`
+- `moda-interact-background/src/readiness.ts`
+- `moda-interact-background/src/runtime/readiness.ts`
+- `moda-interact-background/tests/unit/runtime/entrypoint-isolation.test.ts`
+- `moda-interact-background/tests/unit/runtime/readiness.test.ts`
+- `docs/decisions/background/ARCH-002/BACKGROUND-002-add-worker-readiness.md`
 
 ### Work Completed
 
-None.
+- Recorded an explicit dependency matrix: all three current worker units require
+  Redis/BullMQ and PostgreSQL through their actual worker/service graphs.
+- Added reusable five-second Redis `PING` and PostgreSQL `SELECT 1` probes using
+  transient clients and environment-provided configuration.
+- Gated production worker dynamic imports behind readiness, so failed preflight
+  cannot construct a BullMQ consumer.
+- Added deterministic non-network readiness commands for each logical worker;
+  these run the same probes as startup without importing worker modules.
+- Sanitized readiness failures to logical service/dependency names and contained
+  raw Redis error events.
+- Documented command, dependency, timeout, exit-code and deployment semantics.
 
 ### Validation Results
 
-Not run.
+- `npm test -- --run tests/unit/runtime/readiness.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/runtime/worker-process.test.ts`:
+  passed, 3 files and 14 tests.
+- `npm test`: 12 files passed, 1 file failed, 1 skipped; 65 tests passed, 1
+  failed, 2 skipped. The sole failure is the existing
+  `recovery-routing.service.test.ts` Prisma mock omitting
+  `customerPhone.findMany`; no readiness or lifecycle test failed.
+- `./node_modules/.bin/tsc --noEmit`: passed.
+- `npm run build`: passed, including Prisma Client generation and production
+  TypeScript compilation.
+- All three compiled readiness commands exited `1` with sanitized
+  `redis unavailable` output when Redis configuration was absent; an injected
+  database credential marker was not emitted.
+- All three compiled production start commands exited `1` on the same failed
+  preflight without emitting any consumer `started` log or credential marker.
+- `node dist/readiness.js invalid-worker` exited `2` with deterministic usage.
+- Source review found no readiness HTTP listener, provider call, static worker
+  import or connection-string logging. VS Code diagnostics were clean.
+- A live Redis/PostgreSQL command-level probe was not run because Docker was not
+  available in the validation shell. Concrete configuration failures and
+  injected Redis/PostgreSQL success/failure behavior are covered by unit tests.
 
 ### Deviations
 
@@ -221,38 +260,98 @@ None.
 
 ### Assumptions
 
-None.
+- `PING` and `SELECT 1` are the canonical non-mutating availability checks for
+  the repository's Redis and PostgreSQL clients.
+- The current checkout, order, pending-recovery and WhatsApp processing graphs
+  all require PostgreSQL; therefore each of the three deployment units probes
+  both dependencies.
 
 ### Unresolved Issues
 
-None recorded yet.
+- The existing `recovery-routing.service.test.ts` mock lacks
+  `prisma.customerPhone.findMany`, leaving the unrelated full suite one test
+  short of green.
 
 ### Architectural Concerns
 
-None recorded yet.
+None. No HTTP worker endpoint, provider probe, queue contract, business retry or
+consumer boundary was introduced or changed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Accepted by `moda_architect` on 2026-08-31.
+
+The implementation satisfies the worker dependency-readiness boundary:
+
+- all three production worker entrypoints execute readiness before dynamically
+  importing their BullMQ Worker modules;
+- the current dependency matrix is explicit and limited to Redis and PostgreSQL
+  for each of the three accepted production worker units;
+- Redis readiness uses bounded `PING` and PostgreSQL readiness uses bounded
+  `SELECT 1`, both through environment-provided configuration;
+- failed readiness prevents normal consumer construction and returns a
+  predictable non-zero process outcome;
+- readiness failures expose only logical service/dependency names rather than
+  raw connection strings or underlying credential-bearing errors;
+- deterministic readiness commands exist for all three logical worker services
+  and execute the same dependency probes without starting normal consumers;
+- invalid logical service names produce a deterministic usage/error outcome;
+- no inbound HTTP readiness endpoint, external provider probe, queue semantic
+  change, retry change or observability-runtime implementation was introduced.
 
 ### Reviewed Files
 
-Pending.
+Reviewed:
+
+- `src/runtime/readiness.ts`;
+- `src/readiness.ts`;
+- all three production worker entrypoints;
+- package scripts;
+- readiness and entrypoint-isolation tests;
+- README operational documentation;
+- Completion Report.
 
 ### Validation Reviewed
 
-Pending.
+Accepted evidence:
+
+- focused readiness/lifecycle suite: 14 tests passed;
+- TypeScript typecheck passed;
+- production build passed;
+- all three compiled readiness commands fail deterministically and sanitise
+  output when dependency configuration is absent;
+- all three production start commands fail readiness before consumers start;
+- invalid worker name exits with deterministic usage status;
+- sensitive-output/static-import/HTTP-listener review passed.
+
+The full repository suite still contains the same unrelated
+`recovery-routing.service.test.ts` Prisma mock failure already observed during
+BACKGROUND-001 (`customerPhone.findMany` missing). No readiness/lifecycle test
+failed, and task-specific validation, typecheck and build are green.
+
+A live Docker-backed Redis/PostgreSQL probe was unavailable in the execution
+environment. The implementation's concrete success/failure paths are covered by
+focused tests, and this limitation does not block acceptance.
 
 ### Architecture Conformance
 
-Pending.
+Conforms.
+
+The task adds dependency readiness only. It does not introduce BACKGROUND-005
+shared observability runtime work or change worker/business processing
+semantics.
 
 ### Follow-up
 
-Pending.
+`ARCH-002-BACKGROUND-002` is Complete.
+
+`ARCH-002-BACKGROUND-004` remains Ready and independent.
+
+`ARCH-002-BACKGROUND-005` remains Pending until BACKGROUND-004 is also
+architect-reviewed Complete. Once that occurs, BACKGROUND-005 may become Ready.

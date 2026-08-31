@@ -6,20 +6,61 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: pending
+status: superseded
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-002-BACKGROUND-001
-enables:
-  - ARCH-002-GATEWAY-006
+- ARCH-002-BACKGROUND-001
+- ARCH-002-SHARED-010
+enables: []
 created: 2026-08-29
-updated: 2026-08-29
+updated: '2026-08-31'
 ---
-
 # Add OpenTelemetry to Background Workers
+
+## Superseded — Granular Replacement (2026-08-31)
+
+This task must not be executed.
+
+`ARCH-002-BACKGROUND-001` has now established the actual production topology.
+The broad observability scope is replaced by independently reviewable
+capabilities:
+
+- `ARCH-002-BACKGROUND-005` — adopt the shared observability runtime in the
+  three production worker processes;
+- `ARCH-002-BACKGROUND-006` — wire shared BullMQ telemetry on background
+  Worker/Queue boundaries;
+- `ARCH-002-BACKGROUND-007` — add bounded worker operational metrics;
+- `ARCH-002-BACKGROUND-008` — integrate GenAI active spans in the messaging
+  CommerceAgent path;
+- `ARCH-002-BACKGROUND-009` — integrate bounded GenAI operational metrics.
+
+Historical content below remains architecture evidence only and does not define
+executable scope.
+
+## Granularity Gate — Do Not Hand Off Yet (2026-08-31)
+
+This broad task remains `pending` behind `ARCH-002-BACKGROUND-001`.
+
+When BACKGROUND-001 is architect-accepted Complete, do **not** automatically mark
+this task Ready. Return it to `moda_architect` so the observability work can be
+decomposed against the actual worker entrypoints and commands established by
+BACKGROUND-001.
+
+The decomposition must separate independently reviewable worker/runtime,
+BullMQ, and CommerceAgent/GenAI integration capabilities rather than asking one
+agent to implement the whole background observability surface in one pass.
+
+## Current Architect Instruction — Shared Runtime
+
+This task's executable architecture is the shared-runtime amendment in this
+file plus `docs/observability/shared-observability-runtime.md`. Any earlier
+service-local NodeSDK/provider/exporter/bootstrap instructions or completion
+notes are historical implementation evidence and are superseded where they
+conflict with the shared-runtime amendment. Service/domain semantic telemetry
+remains owned by this repository.
 
 ## Architecture
 
@@ -261,3 +302,54 @@ Pending.
 ### Follow-up
 
 Pending.
+
+## Architect Amendment — Shared Observability Runtime (2026-08-31)
+
+**This amendment supersedes any conflicting service-local NodeSDK/provider/
+exporter/bootstrap instructions earlier in this task.** Background still owns
+worker/recovery/messaging/CommerceAgent semantic telemetry; generic runtime
+plumbing is shared.
+
+Do not resume implementation until:
+
+```text
+BACKGROUND-001 is Complete (actual worker entrypoints known)
+ARCH-002-SHARED-010 is architect-accepted Complete
+```
+
+Then:
+
+1. consume the exact published shared version from SHARED-010;
+2. read `docs/observability/shared-observability-runtime.md`;
+3. create one small preload/profile per actual production worker process:
+
+```text
+moda-shopify-event-worker
+moda-recovery-worker
+moda-messaging-worker
+```
+
+4. prefix each **real command produced by BACKGROUND-001** with its matching
+   preload; do not invent a new worker entrypoint in this task;
+5. final generic instrumentation is:
+
+```text
+BullMQ producer/consumer=true
+Prisma=true where used
+HTTP/fetch/Undici=true where external calls occur
+```
+
+6. construct BullMQ telemetry only through
+   `@modainteract/moda-interact-shared/observability/bullmq` and pass it through
+   Queue/Worker `telemetry` options;
+7. use `.../observability/genai` for messaging/CommerceAgent agent/tool/turn
+   helpers;
+8. one inbound WhatsApp turn is one trace; never one trace for a whole customer
+   conversation;
+9. service-owned metrics must use bounded dimensions; arbitrary tool/agent/job/
+   conversation/customer identifiers are prohibited metric attributes;
+10. remove obsolete local provider/exporter/bootstrap logic only after parity is
+    proven.
+
+Reference code:
+`docs/decisions/shared/ARCH-002/reference-observability/services/moda-interact-background/`.
