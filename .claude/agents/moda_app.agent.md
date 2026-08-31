@@ -29,6 +29,37 @@ If the shared logging export is not yet available in the dependency version
 required by the current task, report the missing dependency to `moda_architect`
 instead of silently inventing a replacement logger.
 
+===============================================================================
+SHARED OBSERVABILITY RUNTIME CONVENTION
+===============================================================================
+
+When an assigned task requires Node OpenTelemetry runtime/bootstrap,
+instrumentation plumbing, BullMQ telemetry, Prisma instrumentation or generic
+GenAI observation helpers, read:
+
+    docs/observability/shared-observability-runtime.md
+
+After the architecture-approved shared observability release is available, the
+canonical reusable runtime surfaces are:
+
+    @modainteract/moda-interact-shared/observability/node
+    @modainteract/moda-interact-shared/observability/bullmq
+    @modainteract/moda-interact-shared/observability/genai
+
+Do not create a competing service-local NodeSDK, tracer/meter provider, OTLP
+trace/metric exporter, sampler/bootstrap policy, generic Prisma instrumentation
+or BullMQOtel helper when the shared package supplies that capability.
+
+The service still owns WHAT its telemetry means: service profile, business
+semantic spans/metrics, bounded domain attributes and repository integration.
+Those semantics must use the global providers installed by the shared runtime
+rather than registering another provider/exporter stack.
+
+The process preload must run before framework/worker modules that require
+instrumentation. If a required generic capability is missing from the exact
+shared dependency version, report the gap to `moda_architect`; do not silently
+invent a replacement runtime.
+
 KNOWN BASELINE ISSUES
 
 The durable source of truth for known development and repository baseline
@@ -113,27 +144,87 @@ be re-investigated on each agent invocation.
 LEAN DEVELOPMENT ENVIRONMENT POLICY
 ===============================================================================
 
+WORKSPACE ROOT ANCHOR
+
+Agent tasks are expected to start from the `moda-interact-workspace` root.
+Before changing directories, verify that assumption without invoking Node or
+running diagnostic tooling:
+
+    test -f .nvmrc && test -d .codex/agents
+
+If that check fails, stop and report that the task shell is not at the expected
+workspace root. Do not search the filesystem for the project and do not
+reconstruct the developer's absolute workspace path.
+
+Once the root is verified, establish the stable shell anchor:
+
+    export MODA_WORKSPACE_ROOT="$PWD"
+
+This is a path anchor only. Establishing it does NOT require a Node bootstrap or
+workspace-doctor run.
+
 NORMAL TASK EXECUTION
 
 For ordinary implementation work, first use the environment that is already
 available.
 
-Before a Node-related command, a lightweight check is sufficient:
+Before the first Node-related command in the current shell, a lightweight check
+is sufficient:
 
     command -v node >/dev/null 2>&1
 
 If Node is already available, continue with the task. Do NOT source the
 bootstrap merely for ceremony and do NOT run the workspace doctor.
 
-If Node is NOT available in the current shell, bootstrap it once:
+If Node is NOT available in the current shell, bootstrap it once through the
+workspace-owned recovery path:
 
-    source scripts/bootstrap-node.sh
+    source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
 
-When sourced from the workspace root, the bootstrap also exports:
+The bootstrap reads the selected development version from the workspace
+`.nvmrc`. Reuse the resulting Node/npm/NVM environment for the lifetime of that
+shell.
 
-    MODA_WORKSPACE_ROOT
+NODE ENVIRONMENT RECOVERY OWNERSHIP
 
-Reuse the resulting Node/npm/NVM environment for the lifetime of that shell.
+Node environment recovery is owned exclusively by:
+
+    scripts/bootstrap-node.sh
+
+If `command -v node` fails, the agent MUST use the workspace bootstrap. The
+agent must NOT create an alternative Node setup.
+
+Never manually:
+
+- export `$HOME/.nvm/versions/node/.../bin` or another inferred Node directory
+  into `PATH`;
+- call `nvm use` directly as a substitute for the workspace bootstrap;
+- infer, copy or hardcode the `.nvmrc` version into a shell command;
+- search `/usr/local/bin`, `/opt/homebrew/bin`, `$HOME/.nvm` or the wider
+  filesystem for a Node binary;
+- install, replace or silently select a different Node version because Node is
+  initially absent from `PATH`.
+
+If the bootstrap reports that the `.nvmrc` version is not installed, report
+that precise condition. Do not silently select a different version.
+
+WORKSPACE NAVIGATION
+
+Use workspace-relative repository paths for ordinary navigation from the
+workspace root, for example:
+
+    cd moda-interact
+    cd moda-interact-shared
+
+Do not reconstruct or use a developer-specific absolute path such as
+`/Users/.../moda-interact-workspace/...` for ordinary repository navigation.
+When returning to the verified workspace root after changing directories, use:
+
+    cd "$MODA_WORKSPACE_ROOT"
+
+All workspace file-edit destinations must still use workspace-relative paths;
+`MODA_WORKSPACE_ROOT` is for shell navigation and support-file invocation, not
+for bypassing the workspace-relative edit-path policy.
 
 DO NOT AUTOMATICALLY RUN WORKSPACE-DOCTOR
 
@@ -186,24 +277,23 @@ requires dependency validation.
 
 WORKSPACE SUPPORT PATHS
 
-When `MODA_WORKSPACE_ROOT` has already been exported by the bootstrap, use it
-for workspace-level support files after changing directories:
+Use the task-shell anchor for workspace-level support files after changing
+directories:
 
     "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh"
     "$MODA_WORKSPACE_ROOT/docs/development-baseline.md"
 
-Do not search the filesystem for these files.
-
-If Node is already available and the task never needs workspace diagnostic
-tooling, there is no requirement to establish `MODA_WORKSPACE_ROOT`.
+Do not search the filesystem for these files and do not repeatedly rediscover
+the workspace root during the same task.
 
 DO NOT:
 
 - run bootstrap + doctor as a ritual at every task start;
 - read the baseline document as a ritual at every task start;
+- manually repair Node/NVM `PATH` state instead of using the workspace bootstrap;
+- hardcode the workspace Node version in agent commands or definitions;
+- reconstruct the developer's absolute workspace path for normal navigation;
 - repeatedly run dependency-tree commands for already understood conditions;
-- search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesystem for Node
-  before trying the workspace bootstrap when Node is actually missing;
 - rewrite shared runtime schemas to accommodate stale/incompatible dependency
   state;
 - independently reclassify a documented FIX or PRODUCTION GATE as harmless
@@ -212,50 +302,6 @@ DO NOT:
 If correcting a newly observed condition is outside the current
 task/repository ownership, return it to `moda_architect` rather than silently
 modifying another repository.
-
-IMPORTANT NODE ENVIRONMENT RULE:
-The Moda Interact Node.js version is defined by the workspace `.nvmrc`.
-
-Before reporting that `node`, `npm`, `npx`, `corepack` or `shopify` is
-unavailable, bootstrap the workspace environment with:
-
-    source scripts/bootstrap-node.sh
-
-Do not search for or reinstall Node merely because it is initially absent from
-PATH. Do not embed a concrete Node version in this agent definition.
-
-===============================================================================
-NODE / NVM TOOLCHAIN BOOTSTRAP
-===============================================================================
-
-Coding-agent shells may be non-interactive and may not load NVM automatically.
-
-An initial `command -v node` failure does NOT mean Node.js is unavailable.
-
-Before any Node/npm/npx/corepack/Shopify CLI command, bootstrap the workspace
-Node environment:
-
-    source scripts/bootstrap-node.sh
-
-The bootstrap reads the required version from:
-
-    .nvmrc
-
-The agent definition must remain version-independent. `.nvmrc` is the single
-workspace source of truth for the selected Node development version.
-
-Do NOT:
-
-- search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesystem for Node
-  before running the workspace bootstrap;
-- install or replace Node merely because it is initially missing from PATH;
-- report Node/npm/npx/corepack/shopify as unavailable before attempting the
-  bootstrap;
-- use filesystem globs such as `/usr/local/bin/node*` for Node discovery;
-- repeatedly rediscover the Node installation during the same task.
-
-If the bootstrap reports that the `.nvmrc` version is not installed, report
-that precise condition. Do not silently select a different Node version.
 
 IMPORTANT PATH RULE:
 All Moda Interact repository and docs edits must use paths relative to the

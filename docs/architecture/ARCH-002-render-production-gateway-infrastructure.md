@@ -4,7 +4,7 @@ title: Render test and production gateway and infrastructure
 status: in_progress
 coordinator: moda_architect
 created: 2026-08-29
-updated: 2026-08-30
+updated: 2026-08-31
 ---
 
 # ARCH-002: Render Test and Production Gateway and Infrastructure
@@ -337,20 +337,26 @@ addresses — not in the fundamental service boundaries:
             v               v               v
       moda-interact   moda-messaging   moda-admin
       private HTTP     private HTTP     private HTTP
-            |               |
-            +-------+-------+
-                    |
-                 Redis Cloud
-                    |
-         BullMQ worker services
-          +---------+---------+
-          |         |         |
-   Shopify-event  Recovery  Messaging/
-      worker      worker   CommerceAgent
-          \         |         /
+            |               |               |
+            +-------+-------+               |
+                    |                       |
+                 Redis Cloud                |
+                    |                       |
+         BullMQ worker services             |
+          +---------+---------+             |
+          |         |         |             |
+          v         v         v             |
+   Shopify-event  Recovery  Messaging/      |
+      worker      worker   CommerceAgent     |
+          |         |         |             |
+          +---------+---------+-------------+
                     |
                 PostgreSQL
 ```
+
+Background workers are private Render Background Worker deployments. They are
+not HTTP upstreams and are not routed through the gateway. Redis/BullMQ
+coordinates work distribution to the three independently scalable worker pools.
 
 Only topology supported by actual application capabilities may be implemented.
 
@@ -379,6 +385,35 @@ Meta
 The gateway must preserve headers and request-body behaviour required by
 downstream signature verification.
 
+### Admin control plane
+
+Production browser contract:
+
+```text
+Administrator
+    -> admin.modainteract.com
+    -> Render public ingress
+    -> moda-interact-gateway
+    -> moda-interact-admin private service
+    -> platform-admin authentication / authorisation
+```
+
+The Admin application remains rooted at `/`. ARCH-002 selects host-based routing
+instead of introducing a Next.js `/admin` base path.
+
+The production Admin hostname is:
+
+```text
+admin.modainteract.com
+```
+
+The test Admin hostname is deployment-configured and must remain isolated from
+production.
+
+The Admin service itself remains private on Render. Gateway routing is not an
+authentication mechanism; `moda-interact-admin` must independently enforce the
+platform-admin boundary.
+
 ## Repository Responsibilities
 
 ### moda_gateway
@@ -405,6 +440,14 @@ Must not silently implement missing business/application capabilities.
 Own application capabilities required by infrastructure, including health
 endpoints, worker entrypoints and application startup behaviour where those
 capabilities do not already exist.
+
+### moda_admin
+
+Owns the platform-admin application security boundary and internal operational
+presentation. The Admin service remains a private Render HTTP service.
+
+`moda_admin` does not own public host routing, Render topology or observability
+transport infrastructure.
 
 ### moda_system_test
 
@@ -535,7 +578,16 @@ approved task if measurements justify it.
 - isolate test and production credentials;
 - isolate test and production Redis/PostgreSQL state;
 - do not place production data in the test environment;
-- do not weaken service exposure merely to reduce test-environment cost.
+- do not weaken service exposure merely to reduce test-environment cost;
+- keep `moda-interact-admin` private on Render and expose browser traffic only
+  through the gateway host-routing contract;
+- require application-level platform-admin authentication and server-side
+  authorisation for privileged Admin functionality;
+- do not treat gateway routing/private networking as a substitute for Admin
+  authorisation;
+- do not make Grafana operational dashboards anonymous/public merely to enable
+  iframe embedding;
+- keep Admin and Grafana credentials/session material out of logs/telemetry.
 
 ## Observability
 
@@ -571,6 +623,13 @@ Test and production OTLP credentials must be independently configurable.
 If one observability backend is shared, production dashboards/alerts must filter
 explicitly for the production deployment environment.
 
+The Admin `/observability` page is the internal operational presentation
+boundary. The intended live Grafana presentation may use an iframe only when the
+selected Grafana capability supports private authenticated embedding. Anonymous
+or publicly shared dashboard access is not architecture-conformant. If secure
+embedding is unavailable, the implementation task must return Blocked to
+`moda_architect` rather than weakening dashboard access.
+
 Observability must not become a correctness dependency for webhook
 acknowledgement, BullMQ processing, recovery, WhatsApp/CommerceAgent processing
 or database commits.
@@ -595,22 +654,37 @@ as owner-specific tasks by `moda_architect`.
 | ARCH-002-GATEWAY-001 | moda_gateway | Complete | - |
 | ARCH-002-GATEWAY-002 | moda_gateway | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-SHOPIFY-001 | moda_app | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-002 | moda_app | Ready | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-003 | moda_app | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-002 | moda_app | Complete | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-003 | moda_app | Superseded | SHOPIFY-006/007 |
 | ARCH-002-SHOPIFY-004 | moda_app | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-006 | moda_app | Ready | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-SHOPIFY-007 | moda_app | Pending | ARCH-002-SHOPIFY-006 |
 | ARCH-002-MESSAGING-001 | moda_messaging | Ready | ARCH-002-GATEWAY-001 |
-| ARCH-002-MESSAGING-002 | moda_messaging | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-MESSAGING-002 | moda_messaging | Superseded | MESSAGING-003/004/005 |
+| ARCH-002-MESSAGING-003 | moda_messaging | Ready | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-MESSAGING-004 | moda_messaging | Pending | ARCH-002-MESSAGING-003 |
+| ARCH-002-MESSAGING-005 | moda_messaging | Pending | ARCH-002-MESSAGING-003 |
 | ARCH-002-ADMIN-001 | moda_admin | Ready | ARCH-002-GATEWAY-001 |
-| ARCH-002-ADMIN-002 | moda_admin | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-ADMIN-002 | moda_admin | Superseded | ADMIN-009/010 |
+| ARCH-002-DATABASE-001 | moda_database | Ready | - |
+| ARCH-002-ADMIN-003 | moda_admin | Pending | ARCH-002-DATABASE-001 |
+| ARCH-002-ADMIN-005 | moda_admin | Pending | ARCH-002-ADMIN-003 |
+| ARCH-002-ADMIN-006 | moda_admin | Pending | ARCH-002-ADMIN-003 |
+| ARCH-002-ADMIN-007 | moda_admin | Pending | ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-SHARED-005 |
+| ARCH-002-ADMIN-008 | moda_admin | Pending | ARCH-002-ADMIN-003, ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-ADMIN-007 |
+| ARCH-002-ADMIN-004 | moda_admin | Pending | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006 |
+| ARCH-002-ADMIN-009 | moda_admin | Ready | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-ADMIN-010 | moda_admin | Pending | ARCH-002-ADMIN-009 |
 | ARCH-002-BACKGROUND-001 | moda_background | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-BACKGROUND-002 | moda_background | Pending | ARCH-002-BACKGROUND-001 |
 | ARCH-002-BACKGROUND-003 | moda_background | Pending | ARCH-002-BACKGROUND-001 |
 | ARCH-002-BACKGROUND-004 | moda_background | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-GATEWAY-005 | moda_gateway | Pending | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004 |
-| ARCH-002-GATEWAY-006 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-003, ARCH-002-MESSAGING-002, ARCH-002-ADMIN-002, ARCH-002-BACKGROUND-003 |
-| ARCH-002-GATEWAY-003 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
+| ARCH-002-GATEWAY-006 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-007, ARCH-002-MESSAGING-004, ARCH-002-MESSAGING-005, ARCH-002-ADMIN-010, ARCH-002-BACKGROUND-003 |
+| ARCH-002-GATEWAY-007 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008 |
+| ARCH-002-GATEWAY-003 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
 | ARCH-002-GATEWAY-004 | moda_gateway | Pending | ARCH-002-GATEWAY-003 |
-| ARCH-002-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-002-GATEWAY-004 |
+| ARCH-002-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-002-GATEWAY-004, ARCH-002-ADMIN-004 |
 
 `ARCH-002-GATEWAY-003` remains Pending.
 
@@ -620,13 +694,16 @@ Before it becomes Ready:
 2. GATEWAY-005 must prove service-local npm-based app/background builds;
 3. GATEWAY-006 must establish the accepted OTLP/environment wiring model;
 4. application health/startup/worker prerequisites must be accepted;
-5. the two canonical Blueprint files defined by this architecture must remain the
+5. the final platform-admin security gate (`ADMIN-008`) must be accepted;
+6. host-based Admin gateway routing (`GATEWAY-007`) must be accepted;
+7. the two canonical Blueprint files defined by this architecture must remain the
    task target.
 
 `ARCH-002-SYSTEM-TEST-001` already exists as the integrated validation task.
 
-Its durable dependency is `ARCH-002-GATEWAY-004`, the final infrastructure
-validation gate. GATEWAY-004 is expected to become Complete only after
+Its durable dependencies are `ARCH-002-GATEWAY-004`, the final infrastructure
+validation gate, and `ARCH-002-ADMIN-004`, the secure internal Grafana
+presentation task. GATEWAY-004 is expected to become Complete only after
 GATEWAY-003 and all transitive application/build/observability prerequisites are
 architect-accepted.
 
@@ -652,7 +729,6 @@ Remaining implementation/measurement questions include:
 - whether queue-aware autoscaling is justified after measurement;
 - PostgreSQL production infrastructure sizing/choice;
 - Redis Cloud production tier/region/TLS/connection capacity;
-- final production admin route/base-path or host-routing contract;
 - final production public-route hardening for the development catch-all gateway
   route.
 
@@ -661,7 +737,9 @@ The following are no longer open architecture questions:
 - shared-package production distribution: published npm artifact;
 - canonical Blueprint model: separate test and production files;
 - initial worker deployment units: Shopify event, recovery, messaging;
-- replica startup: seed excluded from normal application startup.
+- replica startup: seed excluded from normal application startup;
+- production Admin route model: `admin.modainteract.com` host routing through the
+  gateway to the private Admin service; no Next.js `/admin` base path.
 
 ## Relationship to ARCH-001
 
@@ -763,6 +841,27 @@ Reformatted the original ARCH-002 gateway bundle to the current
 - removed stale index references to the old single `render.yaml`,
   workspace-root production build model and not-yet-created system-test task.
 
+
+### 2026-08-31 — Admin Render/control-plane routing and Grafana presentation
+
+- confirmed `moda-interact-admin` remains a private Render HTTP service rather
+  than a separate Vercel/public application deployment;
+- resolved the production Admin browser contract as
+  `admin.modainteract.com -> moda-interact-gateway -> private moda-interact-admin`;
+- selected host-based routing and explicitly rejected requiring a Next.js
+  `/admin` base path;
+- added `ARCH-002-ADMIN-003` for platform-admin authentication/authorisation;
+- added `ARCH-002-GATEWAY-007` as a bounded follow-up to replace the provisional
+  GATEWAY-002 `/admin/*` mapping without reopening the accepted task;
+- added `ARCH-002-ADMIN-004` for secure live Grafana presentation after Admin
+  security and observability transport are available;
+- prohibited anonymous/public Grafana sharing merely to support iframe
+  embedding;
+- updated GATEWAY-003/GATEWAY-004 and SYSTEM-TEST-001 dependencies/assertions;
+- clarified in the primary topology diagram that the three BullMQ worker pools
+  are private background worker deployments behind Redis rather than HTTP
+  gateway upstreams.
+
 <!-- ARCH-002-SHARED-LOGGING-AMENDMENT:START -->
 ## Shared Structured Logging Amendment
 
@@ -787,3 +886,33 @@ Consumer guide:
 `docs/observability/shared-logging.md`
 
 <!-- ARCH-002-SHARED-LOGGING-AMENDMENT:END -->
+
+
+### 2026-08-31 — Admin security decomposition
+
+See `docs/architecture/ARCH-002-admin-security-amendment.md`. The former broad ADMIN-003 security task is decomposed into DATABASE-001 and ADMIN-003/005/006/007/008. Development auth bypass is allowed only for the development deployment environment and never in a production Node process.
+
+## Shared observability runtime amendment
+
+See `docs/architecture/ARCH-002-shared-observability-runtime-amendment.md` and
+the durable consumer contract at
+`docs/observability/shared-observability-runtime.md`.
+
+
+### 2026-08-31 — Shared observability release `0.4.0` and granular consumer rollout
+
+`ARCH-002-SHARED-010` is architect-accepted Complete. The exact consumer release
+is `@modainteract/moda-interact-shared@0.4.0`.
+
+The former broad SHOPIFY-003, MESSAGING-002 and ADMIN-002 observability tasks are
+Superseded by granular consumer tasks:
+
+- SHOPIFY-006 -> SHOPIFY-007
+- MESSAGING-003 -> MESSAGING-004 and MESSAGING-005
+- ADMIN-009 -> ADMIN-010
+
+BACKGROUND-003 remains Pending behind BACKGROUND-001 and must be decomposed
+against the actual worker entrypoints before it becomes executable.
+
+GATEWAY-006 and SYSTEM-TEST-002 depend on the final granular consumer gates
+rather than the superseded broad tasks.

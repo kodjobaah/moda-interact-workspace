@@ -1,0 +1,57 @@
+{
+  "name": "@modainteract/moda-interact-shared",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./shopify": {
+      "types": "./dist/shopify/index.d.ts",
+      "import": "./dist/shopify/index.js"
+    },
+    "./shopify/node": {
+      "types": "./dist/shopify/node.d.ts",
+      "import": "./dist/shopify/node.js"
+    },
+    "./logging": {
+      "types": "./dist/logging/index.d.ts",
+      "import": "./dist/logging/index.js"
+    },
+    "./logging/node": {
+      "types": "./dist/logging/node.d.ts",
+      "import": "./dist/logging/node.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api-logs": "0.221.0",
+    "@opentelemetry/exporter-logs-otlp-http": "0.221.0",
+    "@opentelemetry/resources": "^2.10.0",
+    "@opentelemetry/sdk-logs": "0.221.0",
+    "winston": "3.19.0",
+    "winston-loki": "6.1.7",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.23.12",
+    "typescript": "^5.0.0"
+  }
+}

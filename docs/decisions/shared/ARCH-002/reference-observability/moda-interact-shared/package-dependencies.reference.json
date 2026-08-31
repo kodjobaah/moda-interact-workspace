@@ -1,0 +1,17 @@
+{
+  "shared_007_dependencies_to_add": {
+    "@opentelemetry/context-async-hooks": "^2.10.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "0.221.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.221.0",
+    "@opentelemetry/instrumentation-http": "0.221.0",
+    "@opentelemetry/instrumentation-undici": "0.31.0",
+    "@opentelemetry/sdk-metrics": "^2.10.0",
+    "@opentelemetry/sdk-node": "0.221.0",
+    "@opentelemetry/sdk-trace-base": "^2.10.0"
+  },
+  "shared_008_dependencies_to_add": {
+    "@prisma/instrumentation": "^6.19.3",
+    "bullmq-otel": "2.0.1"
+  },
+  "note": "SHARED-007 must not add Prisma/BullMQ runtime implementation. Verify Prisma/BullMQ compatibility against committed workspace versions during SHARED-008 and before SHARED-010 publication; do not independently bump consumer ORM/queue majors."
+}

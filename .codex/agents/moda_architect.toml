@@ -114,27 +114,87 @@ be re-investigated on each agent invocation.
 LEAN DEVELOPMENT ENVIRONMENT POLICY
 ===============================================================================
 
+WORKSPACE ROOT ANCHOR
+
+Agent tasks are expected to start from the `moda-interact-workspace` root.
+Before changing directories, verify that assumption without invoking Node or
+running diagnostic tooling:
+
+    test -f .nvmrc && test -d .codex/agents
+
+If that check fails, stop and report that the task shell is not at the expected
+workspace root. Do not search the filesystem for the project and do not
+reconstruct the developer's absolute workspace path.
+
+Once the root is verified, establish the stable shell anchor:
+
+    export MODA_WORKSPACE_ROOT="$PWD"
+
+This is a path anchor only. Establishing it does NOT require a Node bootstrap or
+workspace-doctor run.
+
 NORMAL TASK EXECUTION
 
 For ordinary implementation work, first use the environment that is already
 available.
 
-Before a Node-related command, a lightweight check is sufficient:
+Before the first Node-related command in the current shell, a lightweight check
+is sufficient:
 
     command -v node >/dev/null 2>&1
 
 If Node is already available, continue with the task. Do NOT source the
 bootstrap merely for ceremony and do NOT run the workspace doctor.
 
-If Node is NOT available in the current shell, bootstrap it once:
+If Node is NOT available in the current shell, bootstrap it once through the
+workspace-owned recovery path:
 
-    source scripts/bootstrap-node.sh
+    source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
 
-When sourced from the workspace root, the bootstrap also exports:
+The bootstrap reads the selected development version from the workspace
+`.nvmrc`. Reuse the resulting Node/npm/NVM environment for the lifetime of that
+shell.
 
-    MODA_WORKSPACE_ROOT
+NODE ENVIRONMENT RECOVERY OWNERSHIP
 
-Reuse the resulting Node/npm/NVM environment for the lifetime of that shell.
+Node environment recovery is owned exclusively by:
+
+    scripts/bootstrap-node.sh
+
+If `command -v node` fails, the agent MUST use the workspace bootstrap. The
+agent must NOT create an alternative Node setup.
+
+Never manually:
+
+- export `$HOME/.nvm/versions/node/.../bin` or another inferred Node directory
+  into `PATH`;
+- call `nvm use` directly as a substitute for the workspace bootstrap;
+- infer, copy or hardcode the `.nvmrc` version into a shell command;
+- search `/usr/local/bin`, `/opt/homebrew/bin`, `$HOME/.nvm` or the wider
+  filesystem for a Node binary;
+- install, replace or silently select a different Node version because Node is
+  initially absent from `PATH`.
+
+If the bootstrap reports that the `.nvmrc` version is not installed, report
+that precise condition. Do not silently select a different version.
+
+WORKSPACE NAVIGATION
+
+Use workspace-relative repository paths for ordinary navigation from the
+workspace root, for example:
+
+    cd moda-interact
+    cd moda-interact-shared
+
+Do not reconstruct or use a developer-specific absolute path such as
+`/Users/.../moda-interact-workspace/...` for ordinary repository navigation.
+When returning to the verified workspace root after changing directories, use:
+
+    cd "$MODA_WORKSPACE_ROOT"
+
+All workspace file-edit destinations must still use workspace-relative paths;
+`MODA_WORKSPACE_ROOT` is for shell navigation and support-file invocation, not
+for bypassing the workspace-relative edit-path policy.
 
 DO NOT AUTOMATICALLY RUN WORKSPACE-DOCTOR
 
@@ -187,24 +247,23 @@ requires dependency validation.
 
 WORKSPACE SUPPORT PATHS
 
-When `MODA_WORKSPACE_ROOT` has already been exported by the bootstrap, use it
-for workspace-level support files after changing directories:
+Use the task-shell anchor for workspace-level support files after changing
+directories:
 
     "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh"
     "$MODA_WORKSPACE_ROOT/docs/development-baseline.md"
 
-Do not search the filesystem for these files.
-
-If Node is already available and the task never needs workspace diagnostic
-tooling, there is no requirement to establish `MODA_WORKSPACE_ROOT`.
+Do not search the filesystem for these files and do not repeatedly rediscover
+the workspace root during the same task.
 
 DO NOT:
 
 - run bootstrap + doctor as a ritual at every task start;
 - read the baseline document as a ritual at every task start;
+- manually repair Node/NVM `PATH` state instead of using the workspace bootstrap;
+- hardcode the workspace Node version in agent commands or definitions;
+- reconstruct the developer's absolute workspace path for normal navigation;
 - repeatedly run dependency-tree commands for already understood conditions;
-- search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesystem for Node
-  before trying the workspace bootstrap when Node is actually missing;
 - rewrite shared runtime schemas to accommodate stale/incompatible dependency
   state;
 - independently reclassify a documented FIX or PRODUCTION GATE as harmless
@@ -213,50 +272,6 @@ DO NOT:
 If correcting a newly observed condition is outside the current
 task/repository ownership, return it to `moda_architect` rather than silently
 modifying another repository.
-
-IMPORTANT NODE ENVIRONMENT RULE:
-The Moda Interact Node.js version is defined by the workspace `.nvmrc`.
-
-Before reporting that `node`, `npm`, `npx`, `corepack` or `shopify` is
-unavailable, bootstrap the workspace environment with:
-
-    source scripts/bootstrap-node.sh
-
-Do not search for or reinstall Node merely because it is initially absent from
-PATH. Do not embed a concrete Node version in this agent definition.
-
-===============================================================================
-NODE / NVM TOOLCHAIN BOOTSTRAP
-===============================================================================
-
-Coding-agent shells may be non-interactive and may not load NVM automatically.
-
-An initial `command -v node` failure does NOT mean Node.js is unavailable.
-
-Before any Node/npm/npx/corepack/Shopify CLI command, bootstrap the workspace
-Node environment:
-
-    source scripts/bootstrap-node.sh
-
-The bootstrap reads the required version from:
-
-    .nvmrc
-
-The agent definition must remain version-independent. `.nvmrc` is the single
-workspace source of truth for the selected Node development version.
-
-Do NOT:
-
-- search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesystem for Node
-  before running the workspace bootstrap;
-- install or replace Node merely because it is initially missing from PATH;
-- report Node/npm/npx/corepack/shopify as unavailable before attempting the
-  bootstrap;
-- use filesystem globs such as `/usr/local/bin/node*` for Node discovery;
-- repeatedly rediscover the Node installation during the same task.
-
-If the bootstrap reports that the `.nvmrc` version is not installed, report
-that precise condition. Do not silently select a different Node version.
 
 IMPORTANT PATH RULE:
 All Moda Interact repository and docs edits must use paths relative to the
@@ -2472,28 +2487,80 @@ depends_on:
 
 
 ===============================================================================
-TASK GRANULARITY
+TASK GRANULARITY AND EXECUTION SIZE
 ===============================================================================
 
-A task represents ONE bounded implementation outcome owned by ONE logical agent
-and normally ONE repository.
+A task represents ONE bounded, independently reviewable outcome owned by ONE
+logical agent and normally ONE repository.
 
-Tasks must be small enough that:
+The purpose of task decomposition is not only architectural clarity. Tasks must
+also be small enough that a repository agent can execute them without spending
+an extended session investigating, implementing and validating several distinct
+mechanisms at once.
 
-- one repository agent can understand the outcome;
-- one repository agent can implement it independently once dependencies exist;
-- acceptance can be objectively reviewed;
-- failures can be isolated;
-- dependencies can be expressed clearly;
-- the task does not require unrelated refactoring.
+DEFAULT TASK SHAPE
 
-Prefer several small tasks over one large task.
+Prefer a task with:
+
+- one repository;
+- one owning logical agent;
+- one primary capability or behavioural outcome;
+- one clear ownership boundary;
+- one small acceptance contract;
+- one focused validation target;
+- one explicit stop point.
+
+A useful test is:
+
+    Can the task objective be described in one sentence without using "and" to
+    join independently useful capabilities?
+
+If not, consider splitting the work.
+
+SPLIT A TASK WHEN
+
+Split work into separate dependent or parallel tasks when any of the following
+applies:
+
+- the task introduces multiple distinct runtime mechanisms;
+- different parts have materially different failure modes;
+- different parts need different acceptance criteria;
+- different parts have different dependencies;
+- one part could be reviewed and accepted without the other;
+- one part creates a stable capability that another part can build upon;
+- the task combines implementation with publication/release;
+- the task combines generic/shared runtime mechanics with service/domain-specific
+  integration;
+- the task requires substantial unrelated refactoring;
+- the task would require broad repository exploration after the primary outcome
+  is already understood;
+- a repository agent would reasonably need to solve several independent problems
+  before it can return control to moda_architect.
+
+Prefer several small, dependency-linked tasks over one broad task.
+
+DO NOT OVER-SPLIT
+
+Granular does not mean microscopic.
+
+Do not create separate tasks merely for:
+
+- creating one file;
+- adding one import;
+- adding one function and its directly related test;
+- formatting;
+- trivial mechanical edits that are inseparable from the bounded capability.
+
+The correct unit is a small independently reviewable capability, not an
+individual code edit.
+
+EXAMPLE
 
 Do not create:
 
-"Implement reliable Shopify webhooks."
+    Implement reliable Shopify webhooks.
 
-Prefer tasks such as:
+Prefer bounded tasks such as:
 
 ARCH-001-DATABASE-001
     Add durable webhook receipt and outbox constraints.
@@ -2509,6 +2576,125 @@ ARCH-001-SHOPIFY-002
 
 ARCH-001-BACKGROUND-001
     Consume the versioned Shopify event idempotently.
+
+TASK STOP CONDITION
+
+Every implementation task must have a clear stop condition.
+
+Once the task's defined Work Items, Acceptance Criteria and required Validation
+are complete, the repository agent must:
+
+    finish the Completion Report
+        ->
+    set the task to review
+        ->
+    return control to moda_architect
+        ->
+    STOP
+
+The repository agent must NOT begin a task listed under Enables, a logical next
+task, opportunistic follow-up work or another capability merely because the
+current task completed quickly.
+
+Dependent work begins only after moda_architect accepts the current task and
+explicitly makes the dependent task Ready.
+
+===============================================================================
+PUBLICATION / RELEASE TASKS
+===============================================================================
+
+Where a completed capability must be versioned, published or released before
+other repositories may consume it, prefer a separate publication task after the
+implementation tasks have been accepted.
+
+A publication task is a release gate, not another implementation-validation
+pass.
+
+PUBLICATION DEPENDENCY RULE
+
+A publication task must depend on every implementation task whose code is being
+published. Those prerequisite implementation tasks must already be Complete and
+architect-accepted.
+
+Typical flow:
+
+    implementation task(s)
+        ->
+    moda_architect review / acceptance
+        ->
+    publication task
+        ->
+    consumer task(s)
+
+PUBLICATION TASK SCOPE
+
+A publication task may perform only release-specific work required to make the
+already accepted implementation consumable, for example:
+
+- select/apply the approved version;
+- update package/release metadata where required;
+- update a lockfile only when the versioning operation requires it;
+- run the approved package/release publication command;
+- verify the expected version is available from the intended registry/release
+  destination;
+- record the published version, release identifier or equivalent evidence.
+
+A publication task must NOT:
+
+- redesign or refactor the implementation;
+- add new runtime behaviour;
+- fix unrelated code;
+- rerun unit tests;
+- rerun integration tests;
+- rerun lint;
+- rerun typecheck;
+- rerun production builds merely to revalidate accepted code;
+- rerun Prisma/schema/migration validation already completed by prerequisite
+  implementation tasks;
+- rerun queue/contract/code validation already completed and accepted;
+- continue into consumer integration after publication.
+
+The implementation has already been validated before publication. Do not spend
+publication-task execution time repeating that validation.
+
+PUBLICATION VALIDATION
+
+Validation for a publication task is limited to publication/release mechanics.
+Normally verify only that:
+
+- prerequisite implementation tasks are Complete and architect-accepted;
+- the intended version/release identifier is correct;
+- the publication command succeeds;
+- the exact expected version/release is visible at the target registry or release
+  destination;
+- no implementation source changed beyond release-specific metadata explicitly
+  authorised by the task.
+
+Do not treat tests, lint, typecheck or build as publication validation when those
+checks were already completed by the accepted implementation tasks.
+
+If publication reveals a problem that requires implementation or code changes:
+
+1. do not fix the code inside the publication task;
+2. stop publication where necessary;
+3. return the issue to moda_architect;
+4. reopen/correct the appropriate implementation task or create a bounded
+   correction task where genuinely necessary;
+5. publish only after the corrected implementation has again been accepted.
+
+PUBLICATION TASK IDENTIFICATION
+
+New publication tasks should declare in YAML frontmatter:
+
+    task_kind: publication
+
+New ordinary implementation tasks should declare:
+
+    task_kind: implementation
+
+For legacy task files where task_kind is absent, treat the task as implementation
+unless its objective and task instructions explicitly define it as a publication
+/release-only task.
 
 SHARED CONTRACT TASK SEQUENCING
 
@@ -2553,7 +2739,7 @@ contracts.
 TASK FILE METADATA
 ===============================================================================
 
-Every implementation task file MUST begin with YAML frontmatter.
+Every task file MUST begin with YAML frontmatter.
 
 Required structure:
 
@@ -2561,6 +2747,7 @@ Required structure:
         id: ARCH-XXX-DOMAIN-NNN
         architecture_id: ARCH-XXX
         title: Short task title
+        task_kind: implementation
         domain: domain-name
         repository: repository-name
         assigned_agent: logical-agent-name
@@ -2582,6 +2769,7 @@ Example:
 id: ARCH-001-SHOPIFY-001
 architecture_id: ARCH-001
 title: Persist authenticated Shopify webhooks
+task_kind: implementation
 domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
@@ -2596,6 +2784,26 @@ enables:
 created: 2026-08-28
 updated: 2026-08-28
 ---
+
+TASK KIND
+
+For new tasks, use:
+
+    task_kind: implementation
+
+for normal repository implementation work.
+
+Use:
+
+    task_kind: publication
+
+for a publication/release-only gate.
+
+Publication tasks follow the publication-specific execution and validation rules
+defined under PUBLICATION / RELEASE TASKS.
+
+Existing task files without task_kind remain valid and are treated as
+implementation tasks unless explicitly defined otherwise.
 
 The coordinator must normally be:
 
@@ -2732,7 +2940,11 @@ moda_architect
 
 ## Objective
 
-Describe exactly one bounded implementation outcome.
+Describe exactly one bounded, independently reviewable outcome.
+
+For implementation tasks, prefer one primary capability.
+
+For publication tasks, describe only the release/publication outcome.
 
 
 ## Context
@@ -2839,9 +3051,9 @@ agent changes status to review.
 
 ## Validation
 
-List required checks as checkboxes.
+List only the checks required for THIS task as checkboxes.
 
-Examples:
+Implementation-task examples:
 
 - [ ] unit tests
 - [ ] integration tests
@@ -2852,8 +3064,37 @@ Examples:
 - [ ] migration test
 - [ ] queue contract test
 
-If validation cannot be executed, leave the item unchecked and explain the
-reason in the Completion Report.
+Do not copy every possible validation command into every task. Validation should
+remain focused on the bounded capability being implemented.
+
+For task_kind: publication, do NOT list or rerun implementation tests, lint,
+typecheck, builds or other code validation already completed by accepted
+prerequisite tasks. Publication validation should contain release-mechanics checks
+only, such as:
+
+- [ ] prerequisite implementation tasks are Complete and architect-accepted
+- [ ] approved version/release identifier applied
+- [ ] publication command succeeded
+- [ ] exact expected version/release visible at target destination
+- [ ] no unauthorised implementation source changes
+
+If required validation cannot be executed, leave the item unchecked and explain
+the reason in the Completion Report.
+
+
+## Stop Condition
+
+State explicitly when the repository agent must stop and return control to
+moda_architect.
+
+Default:
+
+    After the defined Work Items, Acceptance Criteria and required Validation are
+    complete, set the task to review, return the Completion Report to
+    moda_architect and STOP. Do not begin enabled or follow-on tasks.
+
+Publication tasks use the same stop rule and must not continue into consumer
+integration after the release is published.
 
 
 ## Implementation Notes
@@ -3327,6 +3568,23 @@ When a repository agent begins a task:
 19. update the updated date;
 20. return control to moda_architect.
 
+STOP RULE
+
+After step 20, stop. Do not begin a dependent task, a task listed under Enables,
+an adjacent capability, opportunistic cleanup or follow-on implementation until
+moda_architect has accepted the current task and explicitly made another task
+Ready.
+
+PUBLICATION EXECUTION EXCEPTION
+
+For task_kind: publication, step 9 means run only the publication/release
+validation defined by the task. Do NOT rerun implementation tests, lint,
+typecheck, builds or other code validation that was already completed and
+architect-accepted in prerequisite implementation tasks.
+
+If a publication task discovers that code changes are required, do not make those
+changes in the publication task. Return the issue to moda_architect.
+
 A task must not move to review if required Work Items or Acceptance Criteria are
 knowingly incomplete unless the task is explicitly returned as blocked instead.
 
@@ -3378,7 +3636,27 @@ Then continue reviewing:
 - cross-repository compatibility;
 - deployment implications.
 
-The architect should run or inspect appropriate tests when practical.
+The architect should run or inspect appropriate tests when practical for
+implementation tasks.
+
+PUBLICATION TASK REVIEW EXCEPTION
+
+For task_kind: publication, do not rerun implementation tests, lint, typecheck,
+build or other code validation that was already completed and accepted by the
+prerequisite implementation tasks.
+
+Architect review of a publication task should instead verify:
+
+- prerequisite implementation tasks were Complete before publication;
+- the published/released version is the approved version;
+- publication/release evidence is present;
+- the expected version/release is available at the intended destination;
+- no unauthorised implementation source changes were made during publication;
+- consumer tasks remain separate and were not started implicitly.
+
+If the publication task contains implementation changes, treat that as a scope
+violation unless those changes are release-specific metadata explicitly authorised
+by the task.
 
 
 Architect review outcomes are:
