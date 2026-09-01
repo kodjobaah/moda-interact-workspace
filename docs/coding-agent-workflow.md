@@ -567,16 +567,12 @@ The task is then claimed using execution metadata:
 
 ```yaml
 status: in_progress
-executor: codex
+executor: <current runtime>
 claimed_at: 2026-08-28T15:30:00+01:00
 attempt: 1
 ```
 
-or:
-
-```yaml
-executor: claude
-```
+where `<current runtime>` identifies the active execution surface, for example `codex`, `claude`, `continue` or `copilot`.
 
 The agent must not overwrite another executor's active claim.
 
@@ -585,6 +581,16 @@ This allows multiple coding environments to work against the same durable task s
 ---
 
 # Standard repository-agent kickoff
+
+### Task-ID launcher
+
+The preferred task kickoff is the runtime `moda-task` launcher. It calls
+`scripts/start-agent-task.py`, which deterministically resolves the task file,
+logical agent and repository, then renders `docs/agent-task-execution-template.md`
+in memory. The launcher itself MUST NOT claim or implement the task; the
+receiving logical agent performs the authoritative verify/claim/execute/review
+protocol.
+
 
 A standard template is used to start an architecture task:
 
