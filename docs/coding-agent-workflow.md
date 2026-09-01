@@ -1503,20 +1503,44 @@ constraints the workspace can enforce
 
 # Desired end state
 
-The long-term goal is that a completely fresh coding agent or developer needs to
-provide only:
+The first major part of the desired state has now been **implemented**.
+
+A developer no longer needs to manually provide the architecture ID, logical
+agent, repository or task-file path. The normal entry point is the fully
+qualified task ID through the `moda-task` launcher.
+
+For example:
 
 ```text
-TASK_ID
+Claude:    /moda-task ARCH-002-SHOPIFY-001
+
+Continue:  /moda-task ARCH-002-SHOPIFY-001
+
+Codex:     $moda-task ARCH-002-SHOPIFY-001
+           where the current Codex surface exposes project skill invocation
+
+Copilot:   Use /moda-task for ARCH-002-SHOPIFY-001
+```
+
+Conceptually, the developer provides only:
+
+```text
+moda-task <TASK_ID>
 ```
 
 For example:
 
 ```text
-ARCH-002-SHOPIFY-001
+moda-task ARCH-002-SHOPIFY-001
 ```
 
-Deterministic tooling should then resolve:
+The launcher delegates deterministic resolution to:
+
+```text
+scripts/start-agent-task.py
+```
+
+which already resolves:
 
 ```text
 TASK_ID
@@ -1525,13 +1549,13 @@ TASK_ID
 architecture
   |
   v
+decision domain
+  |
+  v
 task file
   |
   v
-domain
-  |
-  v
-logical agent
+logical Moda agent
   |
   v
 repository
@@ -1540,34 +1564,134 @@ repository
 canonical execution template
 ```
 
-The resolved logical agent should then be able to determine:
+This means the following part of the target workflow is already achieved:
 
 ```text
-who it is
-what it owns
-what it must read
-what it depends on
-what contracts apply
-what it may change
-how it must validate the change
-whether integrated system validation is required
-how it reports completion
-and who must approve it
+developer supplies TASK_ID
+        |
+        v
+deterministic task resolution
+        |
+        v
+correct logical agent + repository + execution context
 ```
 
-The desired separation is:
+The model does not need to infer those relationships from repository structure
+or conversation history.
+
+## Remaining desired state
+
+The remaining goal is to extend the same deterministic approach beyond task
+startup and into the rest of the execution lifecycle.
+
+Today, after resolution, the logical repository agent still performs several
+workflow operations itself:
 
 ```text
-judgement / architecture / implementation reasoning
+verify task state
+        |
+        v
+verify dependencies
+        |
+        v
+claim task
+        |
+        v
+implement + validate
+        |
+        v
+complete Completion Report
+        |
+        v
+submit task for review
+```
+
+Implementation and engineering judgement should remain model-owned where they
+require reasoning.
+
+The mechanical parts should progressively become workspace-enforced operations.
+
+For example:
+
+```text
+moda-task <TASK_ID>
+        |
+        v
+deterministic resolution                    ✅ implemented
+        |
+        v
+deterministic dependency/state validation   ⏳ remaining automation
+        |
+        v
+deterministic task claim                     ⏳ remaining automation
+        |
+        v
+agent implementation + engineering judgement
+        |
+        v
+deterministic review-submission validation   ⏳ remaining automation
+        |
+        v
+moda_architect review
+        |
+        v
+deterministic architecture validation        ⏳ remaining automation
+```
+
+Possible future workspace commands could therefore include:
+
+```bash
+python3 scripts/claim-agent-task.py ARCH-002-SHOPIFY-001 --executor codex
+```
+
+and:
+
+```bash
+python3 scripts/submit-agent-task.py ARCH-002-SHOPIFY-001
+```
+
+alongside broader validation such as:
+
+```bash
+python3 scripts/validate_architecture.py
+```
+
+These tools could enforce mechanical rules such as:
+
+- the task exists;
+- the task is `ready`;
+- `assigned_agent` matches the resolved logical owner;
+- all required dependencies are `complete`;
+- no other executor already owns an active claim;
+- claim metadata is valid;
+- Work Items, Acceptance Criteria and Validation are complete before review;
+- the Completion Report is present before transition to `review`;
+- architecture/task indexes and dependency references remain consistent.
+
+The desired separation is therefore:
+
+```text
+routing / ownership lookup / task resolution
+        -> deterministic tooling              ✅ implemented
+
+dependency checks / claiming / state transitions /
+submission validation / architecture validation
+        -> deterministic tooling              ⏳ progressively automated
+
+architecture / implementation / trade-offs /
+failure diagnosis / review judgement
         -> model
-
-routing / ownership lookup / metadata validation / synchronization
-        -> deterministic tooling
 ```
 
-If that works consistently across different coding models and execution
-environments, then the workflow has moved beyond ordinary AI-assisted coding
-into a durable multi-agent engineering system.
+The end state is not that software replaces the coding agent.
+
+It is that the coding agent spends its context and reasoning on work that
+actually requires engineering judgement, while the workspace itself enforces
+facts and workflow mechanics that can be determined exactly.
+
+If this can be maintained consistently across Codex, Claude, Continue and
+Copilot, then Moda Interact has a durable multi-agent engineering workflow whose
+coordination model is independent of any one AI runtime.
 
 ---
 
