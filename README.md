@@ -699,18 +699,28 @@ Codex definitions live under `.codex/agents/<name>.toml`. Claude definitions liv
 
 ### Canonical agent definitions and sync
 
-The Codex TOML files are the canonical authored definitions. Claude agent files are generated from them with:
-
-```bash
-python3 sync_agents.py
-```
-
-Run the command from the workspace root, where both `.codex/` and `.claude/` are present. The sync process copies the logical agent name, description and developer instructions into Claude agent Markdown while leaving Codex-only execution settings such as `sandbox_mode` out of the Claude definition.
-
-After changing a Codex agent definition:
+The Codex TOML files are the **canonical authored definitions** for logical Moda
+agents:
 
 ```text
-.codex/agents/moda_background.toml
+.codex/agents/<name>.toml
+```
+
+Claude agent definitions are generated from those canonical files:
+
+```text
+.claude/agents/<name>.agent.md
+```
+
+Do not maintain the same logical-agent behaviour independently in both
+locations. When repository ownership, architecture rules, task protocol or
+repository-specific instructions change, edit the Codex TOML and regenerate the
+Claude definition.
+
+The normal workflow is:
+
+```text
+edit .codex/agents/moda_background.toml
         |
         v
 python3 sync_agents.py
@@ -719,7 +729,173 @@ python3 sync_agents.py
 .claude/agents/moda_background.agent.md
 ```
 
-Do not manually allow the Claude and Codex definitions for one logical agent to develop different ownership or architecture rules.
+Run the sync command from the workspace root:
+
+```bash
+python3 sync_agents.py
+```
+
+The sync script reads each canonical Codex TOML and generates the corresponding
+Claude Markdown definition from:
+
+```text
+name
+description
+developer_instructions
+```
+
+Codex-only execution configuration outside `developer_instructions`, such as
+model or sandbox/runtime settings, is not copied into Claude.
+
+Generated Claude files should be treated as generated artifacts and should not
+be edited directly.
+
+#### Runtime-neutral developer instructions
+
+Although the canonical source lives under `.codex/agents/`,
+`developer_instructions` describes the **logical Moda agent**, not Codex itself.
+
+Behavioural rules inside `developer_instructions` must therefore remain
+execution-runtime neutral.
+
+Prefer:
+
+```text
+When claiming a task, set `executor` to the identifier for the current
+execution runtime.
+```
+
+Do not hard-code:
+
+```text
+executor: codex
+```
+
+and do not write runtime-specific behavioural instructions such as:
+
+```text
+In this Codex agent definition...
+Codex must...
+Codex should...
+```
+
+unless Codex is only being referenced as one supported runtime or as a
+configuration/file location.
+
+The same logical agent can therefore record the execution runtime that actually
+performed the task:
+
+```text
+Codex     -> executor: codex
+Claude    -> executor: claude
+Continue  -> executor: continue
+Copilot   -> executor: copilot
+```
+
+`sync_agents.py` validates this rule and fails rather than silently copying
+Codex-specific behaviour into generated Claude definitions.
+
+#### Check synchronization without changing files
+
+To verify that every generated Claude definition matches its canonical Codex
+source without rewriting anything, run:
+
+```bash
+python3 sync_agents.py --check
+```
+
+The command exits successfully only when the generated definitions are current.
+
+A missing or stale Claude definition causes a non-zero exit status, making this
+suitable for CI or pre-commit verification:
+
+```text
+.codex/agents/*.toml
+        |
+        v
+python3 sync_agents.py --check
+        |
+        +--> synchronized -> exit 0
+        |
+        +--> missing/stale -> exit non-zero
+```
+
+#### Sync a single logical agent
+
+During focused work, regenerate one agent with:
+
+```bash
+python3 sync_agents.py --agent moda_background
+```
+
+The option can be supplied more than once:
+
+```bash
+python3 sync_agents.py \
+  --agent moda_app \
+  --agent moda_background
+```
+
+A full sync should normally be run before committing a change that affects
+multiple agent definitions.
+
+#### Remove obsolete generated Claude agents
+
+If a canonical Codex agent has deliberately been removed, obsolete generated
+Claude definitions can be removed with:
+
+```bash
+python3 sync_agents.py --prune
+```
+
+Only files identified by the sync script as generated Claude definitions are
+eligible for pruning.
+
+`--prune` cannot be combined with `--agent`.
+
+#### Recommended agent-definition workflow
+
+For a normal agent change:
+
+```text
+1. Edit .codex/agents/<agent>.toml
+2. Keep developer_instructions runtime-neutral
+3. Run python3 sync_agents.py --agent <agent>
+4. Review the generated .claude/agents/<agent>.agent.md
+5. Run python3 sync_agents.py --check
+6. Commit the Codex source and generated Claude file together
+```
+
+For a shared policy change affecting several agents:
+
+```text
+1. Update the canonical Codex TOML definitions
+2. Run python3 sync_agents.py
+3. Run python3 sync_agents.py --check
+4. Review the generated Claude changes
+5. Commit both representations together
+```
+
+The intended ownership model is:
+
+```text
+.codex/agents/*.toml
+        |
+        | canonical logical-agent definitions
+        v
+   sync_agents.py
+        |
+        v
+.claude/agents/*.agent.md
+        |
+        | generated runtime representation
+        v
+     Claude Code
+```
+
+The Codex and generated Claude files represent the same logical Moda roles.
+Repository ownership, architecture responsibilities, governance rules and task
+protocol must not diverge between them.
 
 ### Agent Node.js environment
 
@@ -1343,8 +1519,17 @@ source scripts/bootstrap-node.sh
 # Apply the version-independent Node bootstrap rule to Codex agents
 python3 scripts/apply-node-agent-policy.py
 
-# Regenerate Claude agent definitions from canonical Codex TOML files
+# Regenerate all Claude agent definitions from canonical Codex TOML files
 python3 sync_agents.py
+
+# Verify Claude definitions are synchronized without rewriting files
+python3 sync_agents.py --check
+
+# Regenerate one logical agent
+python3 sync_agents.py --agent moda_background
+
+# Remove obsolete generated Claude agents
+python3 sync_agents.py --prune
 
 # View the standard repository-agent kickoff template
 cat docs/agent-task-execution-template.md
