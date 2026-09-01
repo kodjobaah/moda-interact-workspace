@@ -952,6 +952,56 @@ Agents must not search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesy
 
 Use a specialist agent for work contained within one repository. Use `moda_architect` when work changes repository boundaries, shared database models, cross-service contracts, queue payloads, webhook contracts, billing or entitlement semantics, migration order or deployment sequencing.
 
+## Agent startup context and token efficiency
+
+Moda Interact deliberately separates architectural judgement from deterministic
+workflow so coding agents spend as much of their context as possible on the
+actual implementation task.
+
+A typical repository-agent invocation currently loads roughly:
+
+```text
+logical agent definition
+        +
+task execution protocol
+        +
+assigned task
+        +
+parent architecture context
+        +
+relevant dependency/contract context
+```
+
+In practice, this is approximately **9,000–10,000 tokens of startup context for
+a typical implementation task** before substantial code inspection and
+implementation begins.
+
+The goal is not to remove governance rules simply to reduce token usage.
+Repository ownership, architectural invariants, task lifecycle rules, security
+constraints, review gates and failure-handling rules remain explicit.
+
+Token efficiency is instead improved by:
+
+- keeping logical-agent definitions focused on durable ownership and engineering
+  rules;
+- keeping the task execution lifecycle in one canonical execution template;
+- avoiding duplicated rules across Claude and Codex definitions;
+- generating Claude definitions from canonical Codex definitions;
+- resolving task IDs, repositories and logical agents deterministically in
+  `scripts/start-agent-task.py`;
+- reading dependency metadata before loading full dependency task bodies;
+- loading detailed technical reference material only when it is relevant to the
+  current task.
+
+The longer-term principle is:
+
+> **Use model context for judgement and engineering decisions; use deterministic
+> tooling for routing, validation and workflow mechanics.**
+
+As more mechanical task operations are moved into scripts and architecture
+context becomes more targeted, startup context can be reduced further without
+weakening the engineering governance model.
+
 ## Architecture execution workflow
 
 Cross-repository architectural work follows a durable filesystem-based workflow. Agents must not rely on hidden Claude/Codex conversation state to coordinate implementation.
