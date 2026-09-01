@@ -7,371 +7,102 @@ description: "Owner of moda-interact-site. Use for the public Moda Interact webs
 SHARED STRUCTURED LOGGING CONVENTION
 ===============================================================================
 
-When an assigned task requires new or changed generic application/runtime
-structured logging, read:
-
-    docs/observability/shared-logging.md
+When a task requires new or changed generic application/runtime structured
+logging, read `docs/observability/shared-logging.md`.
 
 The canonical reusable logging API is:
 
     @modainteract/moda-interact-shared/logging
 
-Do not create another service-local generic logger for JSON serialisation,
-levels, redaction, Error serialisation, size bounds or sink failure isolation.
-
-Service/domain-specific semantic logging adapters are allowed when they use the
-shared logger and keep business/provider meaning in the owning repository.
-
-Service-specific OpenTelemetry metrics/spans remain separate from the generic
-logger.
-
-If the shared logging export is not yet available in the dependency version
-required by the current task, report the missing dependency to `moda_architect`
-instead of silently inventing a replacement logger.
-
-KNOWN BASELINE ISSUES
-
-The durable source of truth for known development and repository baseline
-conditions is:
-
-    docs/development-baseline.md
-
-Do not automatically read or investigate every baseline condition at task
-startup.
-
-When validation encounters a condition already recorded in the development
-baseline, use its named baseline ID rather than rediscovering it from first
-principles unless:
-
-- the current task changes the affected code or configuration;
-- the observed state materially differs from the documented baseline;
-- the failure count or affected scope has increased;
-- the current task explicitly requires the baseline condition to be resolved;
-- the baseline condition becomes directly relevant to the assigned task; or
-- `moda_architect` explicitly requests investigation.
-
-A known baseline condition never excuses a regression introduced by the
-current task.
-
-If validation still matches a documented baseline condition:
-
-- do not spend task time re-cataloguing the known failures;
-- verify that the current task introduced no new failures;
-- reference the baseline ID briefly in the Completion Report;
-- continue when the task's own Acceptance Criteria are otherwise satisfied.
-
-If the observed state is worse than the documented baseline, or changed files
-introduce new failures, investigate and report the regression.
+MUST NOT create a competing service-local generic logger for JSON
+serialisation, levels, redaction, Error serialisation, size bounds or sink
+failure isolation. Domain-specific semantic logging adapters are allowed when
+they use the shared logger and keep business/provider semantics in the owning
+repository. OpenTelemetry metrics/spans remain separate from generic logging.
+If the required shared logging export is unavailable in the dependency version
+used by the task, report the dependency gap to `moda_architect`; do not invent a
+replacement.
 
 ===============================================================================
-REPOSITORY VALIDATION COMMANDS
+KNOWN DEVELOPMENT BASELINE AND VALIDATION
 ===============================================================================
 
-Do not assume npm scripts are uniform across Moda Interact repositories.
+`docs/development-baseline.md` is the durable source for known development and
+repository baseline conditions. Do NOT read or reinvestigate it automatically
+at task startup.
 
-Before running repository validation, inspect the current repository's
-`package.json` and the assigned task's Validation section.
+When validation encounters a documented baseline condition, use its baseline ID
+rather than rediscovering it unless the current task changes the affected code
+or configuration, the observed state differs or is worse, the task requires the
+condition to be resolved, the condition becomes directly relevant, or
+`moda_architect` requests investigation.
 
-Use the validation commands actually declared or explicitly required for that
-repository/task.
+A known baseline condition never excuses a regression introduced by the current
+task. If observed behaviour still matches the documented baseline, verify the
+task introduced no new failures, reference the baseline ID briefly in the
+Completion Report, and continue when the task Acceptance Criteria are otherwise
+satisfied. If the state is worse or changed files introduce failures,
+investigate and report the regression.
 
-For example:
-
-    moda-interact
-        typecheck = react-router typegen && tsc --noEmit
-
-Other repositories may expose a different typecheck command or have no
-dedicated typecheck script at all.
-
-A result such as:
-
-    npm error Missing script: "typecheck"
-
-does not mean TypeScript validation failed and must not be reported as
-application/typecheck debt.
-
-When this happens:
-
-1. inspect the repository's declared scripts;
-2. inspect the task's required Validation commands;
-3. use the repository/task-defined validation contract;
-4. do not invent a replacement validation contract outside task scope.
-
-If a task requires a validation capability the repository does not provide,
-report that gap to `moda_architect`.
-
-END KNOWN BASELINE ISSUES
-
-IMPORTANT DEVELOPMENT BASELINE RULE:
-Do NOT automatically run the workspace doctor or read the development-baseline
-document at the start of every task.
-
-The Node/Zod workspace baseline is durable configuration, not work that should
-be re-investigated on each agent invocation.
+Do NOT assume npm scripts are uniform across repositories. Before repository
+validation, inspect the repository `package.json` and the task Validation
+section, then run the commands actually declared/required. A missing script is
+not proof that the underlying validation failed. Do not invent a replacement
+validation contract outside task scope. If the task requires a validation
+capability the repository does not provide, report that gap to `moda_architect`.
 
 ===============================================================================
-LEAN DEVELOPMENT ENVIRONMENT POLICY
+LEAN DEVELOPMENT ENVIRONMENT AND WORKSPACE PATH POLICY
 ===============================================================================
 
-WORKSPACE ROOT ANCHOR
-
-Agent tasks are expected to start from the `moda-interact-workspace` root.
-Before changing directories, verify that assumption without invoking Node or
-running diagnostic tooling:
-
-    test -f .nvmrc && test -d .codex/agents
-
-If that check fails, stop and report that the task shell is not at the expected
-workspace root. Do not search the filesystem for the project and do not
-reconstruct the developer's absolute workspace path.
-
-Once the root is verified, establish the stable shell anchor:
-
-    export MODA_WORKSPACE_ROOT="$PWD"
-
-This is a path anchor only. Establishing it does NOT require a Node bootstrap or
-workspace-doctor run.
-
-NORMAL TASK EXECUTION
-
-For ordinary implementation work, first use the environment that is already
-available.
-
-Before the first Node-related command in the current shell, a lightweight check
-is sufficient:
-
-    command -v node >/dev/null 2>&1
-
-If Node is already available, continue with the task. Do NOT source the
-bootstrap merely for ceremony and do NOT run the workspace doctor.
-
-If Node is NOT available in the current shell, bootstrap it once through the
-workspace-owned recovery path:
-
-    source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
-
-The bootstrap reads the selected development version from the workspace
-`.nvmrc`. Reuse the resulting Node/npm/NVM environment for the lifetime of that
-shell.
-
-NODE ENVIRONMENT RECOVERY OWNERSHIP
-
-Node environment recovery is owned exclusively by:
-
-    scripts/bootstrap-node.sh
-
-If `command -v node` fails, the agent MUST use the workspace bootstrap. The
-agent must NOT create an alternative Node setup.
-
-Never manually:
-
-- export `$HOME/.nvm/versions/node/.../bin` or another inferred Node directory
-  into `PATH`;
-- call `nvm use` directly as a substitute for the workspace bootstrap;
-- infer, copy or hardcode the `.nvmrc` version into a shell command;
-- search `/usr/local/bin`, `/opt/homebrew/bin`, `$HOME/.nvm` or the wider
-  filesystem for a Node binary;
-- install, replace or silently select a different Node version because Node is
-  initially absent from `PATH`.
-
-If the bootstrap reports that the `.nvmrc` version is not installed, report
-that precise condition. Do not silently select a different version.
-
-WORKSPACE NAVIGATION
-
-Use workspace-relative repository paths for ordinary navigation from the
-workspace root, for example:
-
-    cd moda-interact
-    cd moda-interact-shared
-
-Do not reconstruct or use a developer-specific absolute path such as
-`/Users/.../moda-interact-workspace/...` for ordinary repository navigation.
-When returning to the verified workspace root after changing directories, use:
-
-    cd "$MODA_WORKSPACE_ROOT"
-
-All workspace file-edit destinations must still use workspace-relative paths;
-`MODA_WORKSPACE_ROOT` is for shell navigation and support-file invocation, not
-for bypassing the workspace-relative edit-path policy.
-
-DO NOT AUTOMATICALLY RUN WORKSPACE-DOCTOR
-
-The following command is diagnostic/validation tooling, not mandatory task
-startup:
-
-    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
-
-Run the doctor only when at least one of these conditions applies:
-
-1. an actual Node/npm/dependency/environment problem is observed;
-2. the task changes `.nvmrc`, Node/NVM/toolchain configuration;
-3. the task changes `package.json`, `package-lock.json`, shared-package runtime
-   dependencies or another dependency state checked by the doctor;
-4. the task changes configuration explicitly checked by the doctor;
-5. the task Validation section explicitly requires a doctor run;
-6. `moda_architect` explicitly requests a fresh baseline check;
-7. current behaviour materially contradicts a previously known baseline and a
-   fresh diagnostic is needed.
-
-Do not rerun the doctor repeatedly during the same task unless another relevant
-change has occurred since the previous run.
-
-DEVELOPMENT BASELINE DOCUMENT
-
-Do NOT automatically read:
-
-    docs/development-baseline.md
-
-on every task.
-
-Read it only when:
-
-- the doctor reports a condition that needs interpretation;
-- an environment/dependency issue is being investigated;
-- the current task directly concerns the development baseline/toolchain; or
-- `moda_architect` asks for it.
-
-KNOWN ZOD BASELINE
-
-The committed package/lockfile state is authoritative.
-
-Do not run `npm ls zod`, `npm explain zod`, inspect the ERD generator's Zod, or
-re-derive the shared-package Zod relationship during unrelated tasks merely
-because an older nested Zod exists.
-
-Only investigate Zod resolution when there is an actual Zod/runtime failure,
-when dependency state has changed, or when the assigned task specifically
-requires dependency validation.
-
-WORKSPACE SUPPORT PATHS
-
-Use the task-shell anchor for workspace-level support files after changing
-directories:
-
-    "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh"
-    "$MODA_WORKSPACE_ROOT/docs/development-baseline.md"
-
-Do not search the filesystem for these files and do not repeatedly rediscover
-the workspace root during the same task.
-
-DO NOT:
-
-- run bootstrap + doctor as a ritual at every task start;
-- read the baseline document as a ritual at every task start;
-- manually repair Node/NVM `PATH` state instead of using the workspace bootstrap;
-- hardcode the workspace Node version in agent commands or definitions;
-- reconstruct the developer's absolute workspace path for normal navigation;
-- repeatedly run dependency-tree commands for already understood conditions;
-- rewrite shared runtime schemas to accommodate stale/incompatible dependency
-  state;
-- independently reclassify a documented FIX or PRODUCTION GATE as harmless
-  baseline debt.
-
-If correcting a newly observed condition is outside the current
-task/repository ownership, return it to `moda_architect` rather than silently
-modifying another repository.
-
-IMPORTANT PATH RULE:
-All Moda Interact repository and docs edits must use paths relative to the
-moda-interact-workspace root. Never pass `/Users/...`, `/home/...`,
-`/mnt/data/...` or another absolute host/container path to a workspace editing
-operation.
-
-===============================================================================
-WORKSPACE PATH HANDLING
-===============================================================================
-
-Treat the Moda Interact workspace root as the filesystem root for all
-repository/task-file edits performed by workspace editing tools.
-
-Use WORKSPACE-RELATIVE paths for all files owned by this workspace.
-
-Examples:
-
-CORRECT:
-
-    moda-interact/app/routes/health.ts
-
-    moda-interact-background/src/workers/recovery.ts
-
-    moda-interact-gateway/nginx/nginx.conf.template
-
-    docs/decisions/shopify/ARCH-002/SHOPIFY-001-add-health-readiness.md
-
-    .codex/agents/moda_app.toml
-
-INCORRECT:
-
-    /Users/<user>/.../moda-interact-workspace/moda-interact/app/routes/health.ts
-
-    /home/<user>/.../moda-interact-workspace/docs/decisions/...
-
-    /mnt/data/.../moda-interact-workspace/...
-
-Do not pass an absolute host/container path to a workspace file-editing
-operation when the operation expects a workspace-relative path.
-
-ABSOLUTE PATH RULE
-
-An absolute filesystem path may be used only when a shell/runtime operation
-explicitly requires an absolute path, for example when inspecting an externally
-mounted file.
-
-Do not use that absolute path as the destination path for a workspace edit.
-
-Before creating or modifying a file:
-
-1. determine the workspace root;
-2. identify the target relative to that workspace root;
-3. use the workspace-relative target path;
-4. verify the parent directory is the expected repository/directory;
-5. then perform the write.
-
-For example, if the shell reports:
-
-    /Users/example/moda-interact-workspace
-
-and the desired file is:
-
-    /Users/example/moda-interact-workspace/
-    docs/decisions/shopify/ARCH-002/SHOPIFY-001-add-health-readiness.md
-
-the edit path must be:
-
-    docs/decisions/shopify/ARCH-002/SHOPIFY-001-add-health-readiness.md
-
-not the absolute path.
-
-DO NOT REPAIR AFTER WRITING TO THE WRONG LOCATION
-
-If a proposed edit path begins with `/`, stop before writing and determine
-whether the tool expects a workspace-relative path.
-
-Do not:
-
-1. create a literal `Users/...`, `home/...`, or `mnt/...` directory inside the
-   workspace;
-2. notice the mistake afterwards;
-3. move the file;
-4. delete the accidental directory.
-
-Prevent the incorrect write instead.
-
-PATH VERIFICATION
-
-After creating files, verify that no accidental host-path directories were
-created under the workspace, including:
-
-    Users/
-    home/
-    mnt/
-    tmp/
-
-unless one of those directories is genuinely part of the repository.
-
-If path semantics are uncertain, inspect the current working directory and
-existing repository tree before writing.
+Establish one `MODA_WORKSPACE_ROOT` for the task. If it is not already provided,
+walk upward only through the current directory's parent chain until a directory
+contains `.nvmrc`, `.codex/agents`, `.claude/agents`, and
+`docs/agent-task-execution-template.md`. Do NOT search the wider filesystem,
+reconstruct a developer-specific absolute path, or assume a username/home
+location. If no valid root exists in the parent chain, stop and report it.
+
+Use the environment already available. Before the first Node-related command:
+
+    command -v node >/dev/null 2>&1 || \
+      source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+
+Node environment recovery is owned exclusively by `scripts/bootstrap-node.sh`.
+MUST NOT manually add inferred NVM/Node directories to `PATH`, use `nvm use` as
+a substitute for the bootstrap, hardcode the `.nvmrc` version, search the
+filesystem for Node, or silently install/select another Node version. If the
+bootstrap reports that the workspace version is unavailable, report that exact
+condition.
+
+The workspace doctor is diagnostic/validation tooling, not a startup ritual.
+Run it only for an actual environment/dependency problem; a relevant
+Node/toolchain/dependency/configuration change; an explicit task Validation
+requirement; an explicit architect request; or behaviour that materially
+contradicts the known baseline. Do not rerun it without a relevant intervening
+change.
+
+Do not re-derive known Zod dependency state during unrelated tasks. Investigate
+Zod resolution only for an actual Zod/runtime failure, changed dependency state,
+or an explicit task requirement.
+
+All edits to workspace-owned files MUST use paths relative to
+`moda-interact-workspace`. Use `MODA_WORKSPACE_ROOT` for shell navigation and
+workspace support-file invocation, not as a way to bypass relative edit paths.
+Never pass `/Users/...`, `/home/...`, `/mnt/data/...` or another host/container
+absolute path to a workspace editing operation. Absolute paths are allowed only
+for shell/runtime operations that genuinely require them, such as reading an
+external mounted file; they MUST NOT be workspace edit destinations.
+
+Before writing, verify the intended repository/directory and relative target. If
+a proposed workspace edit path begins with `/`, stop before writing and resolve
+the correct workspace-relative path. Prevent accidental `Users/`, `home/`,
+`mnt/`, or similar host-path directory creation rather than creating and moving
+it afterwards. If path semantics are uncertain, inspect the working directory
+and repository tree before writing.
+
+If correcting an environment, baseline, dependency or path condition would
+require work outside the current task/repository ownership, return it to
+`moda_architect` rather than silently modifying another repository.
 
 You own the repository:
 
@@ -490,11 +221,11 @@ Before beginning an architecture task:
 4. verify assigned_agent, repository, status and dependencies;
 5. do not proceed if the task has already been claimed or is no longer Ready.
 
-In this Codex agent definition, claim a task by updating its YAML metadata
+Claim a task using the current execution runtime identifier by updating its YAML metadata
 together to:
 
 status: in_progress
-executor: codex
+executor: <current runtime>
 claimed_at: <current ISO-8601 timestamp>
 attempt: <previous attempt + 1>
 updated: <current date>

@@ -1,31 +1,30 @@
 ---
-name: agent
+name: moda-task
 description: Launch a Moda Interact architecture task by task ID.
-disable-model-invocation: true
 ---
 
-You are a task launcher only.
+You are a task launcher only. Do not claim, implement or modify task state in
+this launcher context.
 
-Do not implement the architecture task yourself.
-Do not claim the task.
-Do not modify task state.
+Extract exactly one Moda Interact task ID from the invocation, e.g.
+`ARCH-002-SHOPIFY-001`.
 
-The requested task ID is supplied as:
-
-$ARGUMENTS
-
-Extract exactly one Moda Interact architecture task ID.
-
-Establish the Moda Interact workspace root by walking upward from the current
-working directory until a directory contains all of:
-
-- `.nvmrc`
-- `.claude/agents`
-- `docs/agent-task-execution-template.md`
-
-Do not search outside the current directory's parent chain.
+Establish the workspace root by walking upward only through the current parent
+chain until `.nvmrc`, `.codex/agents` and
+`docs/agent-task-execution-template.md` are present. Do not search the wider
+filesystem.
 
 Run:
 
 ```bash
-python3 "$ROOT/scripts/start-agent-task.py" "$ARGUMENTS" --json
+python3 "$ROOT/scripts/start-agent-task.py" "$TASK_ID" --json
+```
+
+Read the returned JSON. `agent` identifies the configured logical Codex agent;
+`prompt` is the complete rendered execution instruction.
+
+Use the current Codex runtime's named custom-agent delegation mechanism to
+invoke `agent` and pass `prompt` unchanged. Do not summarize or weaken it. If
+this Codex surface cannot select the configured logical agent by name, stop and
+report that named-agent delegation is unavailable; do not silently substitute a
+generic worker with a different model/execution profile.
