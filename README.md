@@ -14,6 +14,221 @@ See:
 
 [Moda Interact Coding Agent Workflow](docs/coding-agent-workflow.md)
 
+### Using the agent workflow from VS Code
+
+The durable architecture/task workflow is independent of the chat or coding
+runtime used to execute it. A developer can open the workspace once in VS Code
+and use the same task IDs and logical Moda agents through three supported entry
+points:
+
+| Entry point | Project integration | Typical task launch |
+| --- | --- | --- |
+| **Continue Chat** | `.continue/prompts/moda-task.md`, registered in the developer's Continue `config.yaml` | `/moda-task ARCH-002-SHOPIFY-001` |
+| **GitHub Copilot Chat / Agent Mode** | shared project skill at `.claude/skills/moda-task/SKILL.md` | ask Copilot to use `/moda-task` for the task ID |
+| **Claude Code or Codex** | Claude skill at `.claude/skills/moda-task/SKILL.md`; Codex skill at `.codex/skills/moda-task/SKILL.md` | Claude: `/moda-task <TASK_ID>`; Codex: `$moda-task <TASK_ID>` when the current Codex surface exposes skill invocation |
+
+All three entry points use the same deterministic resolver:
+
+```text
+scripts/start-agent-task.py
+```
+
+The resolver does not implement the task. It:
+
+```text
+TASK_ID
+  |
+  v
+parse architecture + domain + task number
+  |
+  v
+resolve docs/decisions/<domain>/<ARCH-ID>/<DOMAIN-NNN>-*.md
+  |
+  v
+verify task metadata
+  |
+  v
+resolve logical agent + repository
+  |
+  v
+render docs/agent-task-execution-template.md in memory
+  |
+  v
+return routing metadata + complete execution prompt
+```
+
+For example:
+
+```text
+ARCH-002-SHOPIFY-001
+        |
+        +--> architecture: ARCH-002
+        +--> domain: shopify
+        +--> logical agent: moda_app
+        +--> repository: moda-interact
+        +--> task file:
+             docs/decisions/shopify/ARCH-002/SHOPIFY-001-*.md
+```
+
+The launcher is deliberately small. Task claiming, dependency verification,
+implementation, validation, Completion Report updates and transition to
+`status: review` remain the responsibility of the resolved repository agent.
+
+#### Workspace-location independence
+
+Open VS Code at the top-level Moda Interact workspace:
+
+```bash
+code moda-interact.code-workspace
+```
+
+During execution an agent may change into any service repository or a deeper
+subdirectory. A later task launch must not depend on where the previous agent
+left the shell.
+
+`scripts/start-agent-task.py` derives the workspace root from the location of
+the script itself, so once the resolver is invoked it does not rely on the
+terminal's current working directory. Runtime launcher skills/prompts should
+locate the workspace root, expose it as `MODA_WORKSPACE_ROOT` for the launcher
+command, and then call:
+
+```bash
+python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "<TASK_ID>" --json
+```
+
+#### Continue setup
+
+Continue uses a project prompt rather than a persistent rule so the task
+launcher instructions are loaded only when the launcher is invoked.
+
+The project prompt is stored at:
+
+```text
+.continue/prompts/moda-task.md
+```
+
+Each developer registers that prompt in the Continue configuration stored at:
+
+```text
+~/.continue/config.yaml
+```
+
+For example:
+
+```yaml
+prompts:
+  - uses: file:///absolute/path/to/moda-interact-workspace/.continue/prompts/moda-task.md
+```
+
+The prompt must contain:
+
+```yaml
+---
+name: moda-task
+description: Launch a Moda Interact architecture task by task ID.
+invokable: true
+---
+```
+
+After Continue reloads the configuration, the launcher is invoked with:
+
+```text
+/moda-task ARCH-002-SHOPIFY-001
+```
+
+Continue may execute the resolved logical role in the current agent context
+rather than spawning the same kind of named subagent available in another
+runtime. The durable task file, agent definition and execution template remain
+the authoritative workflow regardless of runtime.
+
+#### Copilot setup
+
+GitHub Copilot Agent Mode supports project Agent Skills and recognises
+`.claude/skills/` as one of its project skill locations. Moda Interact therefore
+shares the Claude project skill with Copilot:
+
+```text
+.claude/skills/moda-task/SKILL.md
+```
+
+This avoids maintaining a second equivalent Copilot copy under
+`.github/skills/`.
+
+In Copilot Chat / Agent Mode, explicitly ask Copilot to use the `moda-task`
+skill with the architecture task ID, for example:
+
+```text
+Use /moda-task for ARCH-002-SHOPIFY-001
+```
+
+The skill resolves the task through `scripts/start-agent-task.py` and then
+executes/delegates according to the returned logical agent and rendered prompt.
+
+Copilot does not treat `.claude/agents/` as native Copilot custom-agent
+definitions. Unless separate Copilot custom agents are configured, Copilot
+executes the rendered task in its current Agent Mode context while following
+the resolved logical Moda agent's repository ownership and task protocol.
+
+#### Claude Code setup
+
+Claude project agent definitions remain under:
+
+```text
+.claude/agents/
+```
+
+and the reusable task launcher lives at:
+
+```text
+.claude/skills/moda-task/SKILL.md
+```
+
+Launch a task with:
+
+```text
+/moda-task ARCH-002-SHOPIFY-001
+```
+
+The skill is an invocation adapter only. It must not claim or implement the task
+itself.
+
+#### Codex setup
+
+Codex logical agent definitions remain under:
+
+```text
+.codex/agents/
+```
+
+and the Moda task launcher is stored at:
+
+```text
+.codex/skills/moda-task/SKILL.md
+```
+
+Where the current Codex surface exposes project skill invocation, launch with:
+
+```text
+$moda-task ARCH-002-SHOPIFY-001
+```
+
+The Codex launcher must preserve named logical-agent routing. If the current
+runtime cannot select the requested configured logical agent, it should report
+that limitation rather than silently substituting a generic worker with a
+different model or execution profile.
+
+#### Manual resolver test
+
+The launcher can always be tested directly from the workspace root:
+
+```bash
+python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
+```
+
+The JSON result includes the resolved task, architecture, domain, logical agent,
+repository, task file, current task status and rendered execution prompt.
+
+
 <!-- MODA-DEVELOPMENT-BASELINE:START -->
 ## Development environment baseline
 
@@ -21,8 +236,9 @@ Coding-agent shells may be non-interactive and may not inherit the developer's
 NVM environment. The workspace also contains shared runtime dependencies whose
 resolution must remain consistent across services.
 
-IntelliJ is opened at the `moda-interact-workspace` project root. Agent task
-startup therefore begins by bootstrapping from that root:
+The development IDE should be opened at the `moda-interact-workspace` project
+root. In VS Code, open the included `moda-interact.code-workspace`. Agent task
+startup therefore begins by bootstrapping from the workspace root:
 
 ```bash
 source scripts/bootstrap-node.sh
@@ -207,9 +423,18 @@ The workspace root contains the Git metadata, the included workspace file, and t
 ```text
 moda-interact-workspace/
 ├── .codex/
-│   └── agents/
+│   ├── agents/
+│   └── skills/
+│       └── moda-task/
+│           └── SKILL.md
 ├── .claude/
-│   └── agents/
+│   ├── agents/
+│   └── skills/
+│       └── moda-task/
+│           └── SKILL.md
+├── .continue/
+│   └── prompts/
+│       └── moda-task.md
 ├── docs/
 │   ├── agent-task-execution-template.md
 │   ├── architecture/
@@ -218,7 +443,8 @@ moda-interact-workspace/
 │   └── node-toolchain.md
 ├── scripts/
 │   ├── bootstrap-node.sh
-│   └── apply-node-agent-policy.py
+│   ├── apply-node-agent-policy.py
+│   └── start-agent-task.py
 ├── .gitignore
 ├── .gitmodules
 ├── .nvmrc
@@ -445,9 +671,15 @@ workspace repository
 
 The service repository owns the code change. The workspace repository records which version of that service belongs to the current platform snapshot.
 
-## Codex and Claude agents
+## Coding-agent runtimes and logical Moda agents
 
-Workspace-level agents exist as logical Moda agent roles and can be executed through either Codex or Claude.
+Workspace-level agents exist as logical Moda agent roles. The same durable role
+and architecture-task model can be reached from Claude Code, Codex, GitHub
+Copilot Chat / Agent Mode and Continue Chat.
+
+Claude and Codex have runtime-specific logical-agent definitions. Copilot and
+Continue act as additional VS Code entry points into the same task workflow;
+they do not create a competing task model or source of truth.
 
 The logical roles are:
 
@@ -651,6 +883,53 @@ moda_system_test
 For architectures where integrated system validation is required, `moda_architect` should not mark the architecture `implemented` until the required system-test tasks are `complete`.
 
 ### Starting a repository agent
+
+#### Preferred: launch by task ID
+
+For normal architecture-task execution, do not manually copy and edit the
+kickoff template. Use the runtime launcher with the fully qualified task ID:
+
+```text
+Continue: /moda-task ARCH-001-BACKGROUND-001
+
+Claude:   /moda-task ARCH-001-BACKGROUND-001
+
+Codex:    $moda-task ARCH-001-BACKGROUND-001
+          (where project skill invocation is exposed)
+
+Copilot:  Use /moda-task for ARCH-001-BACKGROUND-001
+```
+
+All launchers route through:
+
+```text
+scripts/start-agent-task.py
+```
+
+The resolver maps the task ID to the correct domain, task file, logical agent
+and repository, validates the task metadata, and renders the canonical kickoff
+template in memory.
+
+For example:
+
+```text
+ARCH-001-BACKGROUND-001
+        |
+        v
+moda_background
+        |
+        v
+moda-interact-background
+        |
+        v
+docs/decisions/background/ARCH-001/BACKGROUND-001-*.md
+```
+
+The resolver is routing-only. The receiving repository agent still owns the
+authoritative pre-claim checks, task claim, implementation, validation,
+Completion Report and transition to `status: review`.
+
+#### Manual fallback
 
 The standard kickoff template for architecture tasks is:
 
@@ -1014,11 +1293,33 @@ The top-level `moda-interact-database/` checkout and nested `database/` submodul
 
 ## VS Code
 
-Open the included workspace with:
+Open the included workspace at the top-level project root with:
 
 ```bash
 code moda-interact.code-workspace
 ```
+
+From that workspace, developers have three supported ways to enter the same
+architecture-task workflow:
+
+1. **Continue Chat** — use the registered `/moda-task <TASK_ID>` prompt.
+2. **GitHub Copilot Chat / Agent Mode** — use the shared
+   `.claude/skills/moda-task/SKILL.md` project skill.
+3. **Claude Code or Codex** — use their runtime-specific agent definitions and
+   `moda-task` skill from VS Code/its integrated terminal.
+
+Whichever entry point is used, durable engineering state remains in the
+workspace files:
+
+```text
+docs/architecture/
+docs/decisions/
+docs/agent-task-execution-template.md
+.codex/agents/
+.claude/agents/
+```
+
+The chat session is an execution surface, not the source of truth.
 
 ## Useful commands
 
@@ -1047,6 +1348,18 @@ python3 sync_agents.py
 
 # View the standard repository-agent kickoff template
 cat docs/agent-task-execution-template.md
+
+# Resolve and render an architecture task without launching it
+python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
+
+# Inspect the Claude/Copilot task launcher
+cat .claude/skills/moda-task/SKILL.md
+
+# Inspect the Codex task launcher
+cat .codex/skills/moda-task/SKILL.md
+
+# Inspect the Continue task launcher prompt
+cat .continue/prompts/moda-task.md
 ```
 
 ## Development principle
@@ -1063,4 +1376,4 @@ The workspace coordinates the platform but does not replace the independent owne
 - Architecture-specific system tests, test fixtures and local system-test orchestration belong in `moda-interact-system-test`.
 - Cross-repository architecture, sequencing, implementation review and final architecture acceptance belong to `moda_architect`.
 
-The workspace records how those independently deployed parts fit together and provides the durable architecture/task state used by Codex and Claude agents.
+The workspace records how those independently deployed parts fit together and provides the durable architecture/task state used across Claude Code, Codex, GitHub Copilot and Continue execution environments.
