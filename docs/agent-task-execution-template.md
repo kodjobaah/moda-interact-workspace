@@ -1,21 +1,91 @@
 <!-- MODA-DEVELOPMENT-BASELINE:START -->
 ## Workspace environment preflight
 
-At task start, before changing into the assigned repository:
+Agent execution may begin either:
+
+- at the `moda-interact-workspace` root; or
+- directly inside one of the repositories contained by the workspace.
+
+Before reading, claiming, validating, or modifying any task, establish the
+workspace root.
+
+First check the current directory and, if necessary, its immediate parent:
 
 ```bash
-source scripts/bootstrap-node.sh
-"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
+if test -f .nvmrc && test -d .codex/agents; then
+  export MODA_WORKSPACE_ROOT="$PWD"
+elif test -f ../.nvmrc && test -d ../.codex/agents; then
+  cd ..
+  export MODA_WORKSPACE_ROOT="$PWD"
+else
+  echo "Unable to establish the moda-interact-workspace root."
+  echo "Current directory: $PWD"
+  exit 1
+fi
 ```
 
-`bootstrap-node.sh` exports the resolved workspace root as:
+After normalisation, verify the expected workspace anchors:
 
-```text
-MODA_WORKSPACE_ROOT
+```bash
+test -f "$MODA_WORKSPACE_ROOT/.nvmrc"
+test -d "$MODA_WORKSPACE_ROOT/.codex/agents"
+test -d "$MODA_WORKSPACE_ROOT/.claude/agents"
 ```
 
-After that point, workspace support files must always be addressed through this
-variable, even if the agent changes directory:
+Changing from a direct child repository to its parent workspace root is normal
+task setup. It is not an implementation change and must not cause the task to
+be reported as blocked.
+
+Do not:
+
+- search the wider filesystem for the workspace;
+- reconstruct a user-specific absolute path;
+- assume a particular username or home directory;
+- use `/Users/...`, `/home/...`, or `/mnt/data/...` as the workspace root;
+- claim or modify the task until the workspace root has been established.
+
+If neither the current directory nor its immediate parent is the workspace
+root, stop and report the unexpected working directory.
+
+Once established, always return to the workspace root with:
+
+```bash
+cd "$MODA_WORKSPACE_ROOT"
+```
+
+and navigate to repositories using workspace-relative paths.
+
+Do **not** automatically bootstrap Node, run the workspace doctor, or read the
+development baseline merely because a task has started.
+
+Before the first Node-related command in the current shell:
+
+```bash
+if ! command -v node >/dev/null 2>&1; then
+  source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+fi
+```
+
+Node recovery is owned exclusively by `scripts/bootstrap-node.sh`. Do not
+manually export an NVM Node directory into `PATH`, call `nvm use` as a
+substitute, hardcode the `.nvmrc` version, search for a Node binary, or silently
+select/install another Node version.
+
+Use workspace-relative paths for normal repository navigation, for example:
+
+```bash
+cd moda-interact-shared
+```
+
+Return to the verified root with:
+
+```bash
+cd "$MODA_WORKSPACE_ROOT"
+```
+
+The workspace doctor is diagnostic/validation tooling. Run it only for an
+observed environment/dependency problem, a relevant toolchain/dependency change,
+a task Validation requirement, or an explicit `moda_app` request:
 
 ```bash
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
@@ -23,18 +93,8 @@ variable, even if the agent changes directory:
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --full
 ```
 
-Read:
-
-```text
-$MODA_WORKSPACE_ROOT/docs/development-baseline.md
-```
-
-before spending task time investigating a toolchain/dependency condition already
-classified there.
-
-Do not search for workspace support scripts after `MODA_WORKSPACE_ROOT` has been
-established, and do not repeatedly rediscover the workspace root during the same
-task.
+Read `$MODA_WORKSPACE_ROOT/docs/development-baseline.md` only when the current
+task or an observed diagnostic condition makes that baseline relevant.
 
 A baseline warning or expected condition does not become part of the current
 task merely because it was observed. A baseline FIX/PRODUCTION GATE must not be
