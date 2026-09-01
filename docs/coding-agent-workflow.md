@@ -65,6 +65,7 @@ moda_architect
 ├── moda_app
 ├── moda_background
 ├── moda_database
+├── moda_gateway
 ├── moda_messaging
 ├── moda_shared
 ├── moda_site
@@ -79,6 +80,7 @@ Each logical agent has a bounded responsibility.
 | `moda_app` | Shopify app, merchant UI, Shopify ingress, onboarding, billing and subscriptions |
 | `moda_background` | BullMQ workers, event processing, recovery workflows, CommerceAgent and retryable background work |
 | `moda_database` | Prisma schema, PostgreSQL migrations, constraints, indexes, canonical/reference seed data and durable integrity |
+| `moda_gateway` | Public ingress, reverse proxy, Render topology, infrastructure-as-code, scaling configuration and infrastructure wiring |
 | `moda_messaging` | Meta/WhatsApp webhook ingress, validation, normalisation and queue publication |
 | `moda_shared` | Canonical cross-service runtime contracts and shared primitives |
 | `moda_admin` | Platform administration, reporting and operational visibility |
@@ -98,6 +100,9 @@ moda_background
 
 moda_database
     -> moda-interact-database/
+
+moda_gateway
+    -> moda-interact-gateway/
 
 moda_shared
     -> moda-interact-shared/
@@ -582,23 +587,88 @@ This allows multiple coding environments to work against the same durable task s
 
 # Standard repository-agent kickoff
 
-### Task-ID launcher
+## Task-ID launcher
 
-The preferred task kickoff is the runtime `moda-task` launcher. It calls
-`scripts/start-agent-task.py`, which deterministically resolves the task file,
-logical agent and repository, then renders `docs/agent-task-execution-template.md`
-in memory. The launcher itself MUST NOT claim or implement the task; the
-receiving logical agent performs the authoritative verify/claim/execute/review
-protocol.
+The preferred task kickoff is the runtime `moda-task` launcher.
 
+The developer supplies the fully qualified task ID, for example:
 
-A standard template is used to start an architecture task:
+```text
+ARCH-002-SHOPIFY-001
+```
+
+Supported entry points include:
+
+```text
+Continue: /moda-task ARCH-002-SHOPIFY-001
+
+Claude:   /moda-task ARCH-002-SHOPIFY-001
+
+Codex:    $moda-task ARCH-002-SHOPIFY-001
+          where the current Codex surface exposes project skill invocation
+
+Copilot:  Use /moda-task for ARCH-002-SHOPIFY-001
+```
+
+The launcher calls:
+
+```text
+scripts/start-agent-task.py
+```
+
+which deterministically resolves:
+
+```text
+TASK_ID
+  |
+  v
+architecture ID
+  |
+  v
+decision domain
+  |
+  v
+task file
+  |
+  v
+logical Moda agent
+  |
+  v
+repository
+  |
+  v
+rendered docs/agent-task-execution-template.md
+```
+
+The launcher and resolver are **routing-only**.
+
+They MUST NOT:
+
+- claim the task;
+- modify task execution state;
+- implement the task;
+- perform architect review;
+- silently substitute a different logical owner.
+
+The receiving logical agent performs the authoritative verify/claim/execute/review protocol.
+
+The resolver can be tested directly from the workspace root:
+
+```bash
+python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
+```
+
+The result includes the resolved task, architecture, domain, logical agent, repository, task file, current status and rendered execution prompt.
+
+## Canonical execution template
+
+The standard template remains:
 
 ```text
 docs/agent-task-execution-template.md
 ```
 
-The template is populated with:
+It is parameterised with:
 
 ```text
 <AGENT>
@@ -607,7 +677,7 @@ The template is populated with:
 <TASK_FILE>
 ```
 
-Example:
+For example:
 
 ```text
 <AGENT>     = moda_shared
@@ -616,45 +686,67 @@ Example:
 <TASK_FILE> = docs/decisions/shared/ARCH-001/SHARED-001-define-recovery-webhook-contracts.md
 ```
 
-The template then requires the repository agent to:
+The template requires the repository agent to:
 
 ```text
-read agent definition
+read logical-agent definition
         |
         v
-read architecture
+read assigned task
         |
         v
-read task
+read parent architecture / relevant architecture context
         |
         v
-read dependencies/contracts
+check dependency metadata
         |
+        +--> read full dependency/contract content only when the current
+        |    task consumes its output, decision or interface
         v
 verify task is ready
         |
         v
-claim task
+claim task using the current execution runtime
         |
         v
 implement bounded scope
         |
         v
-run validation
+run required validation
         |
         v
-complete task report
+complete Completion Report
         |
         v
 status: review
         |
         v
-return to moda_architect
+STOP and return to moda_architect
 ```
 
-The task file remains authoritative.
+Dependency gating should be **metadata-first**.
 
-The kickoff prompt is only an execution wrapper.
+An implementation agent does not need to load the entire body of every completed dependency merely to establish:
+
+```text
+status: complete
+```
+
+It should load a dependency body when the current task actually consumes a contract, decision, migration, generated artifact or other dependency output.
+
+The task file remains authoritative for:
+
+- implementation scope;
+- dependencies;
+- interfaces/contracts;
+- Work Items;
+- Acceptance Criteria;
+- Validation;
+- Completion Report.
+
+The parent architecture remains authoritative for overall architectural intent.
+
+The kickoff template is an execution wrapper, not a competing source of truth.
 
 ---
 
@@ -685,22 +777,148 @@ claude_background
 codex_background
 ```
 
-Agent definitions are stored in runtime-specific formats:
+The durable architecture/task workflow may be entered through Codex, Claude,
+Continue or GitHub Copilot without changing logical ownership.
+
+## Canonical agent definitions
+
+The Codex TOML files are the **canonical authored definitions**:
 
 ```text
 .codex/agents/<name>.toml
+```
+
+Claude agent files are generated runtime representations:
+
+```text
 .claude/agents/<name>.agent.md
 ```
 
-The definitions are intended to remain semantically equivalent.
+Do not independently maintain the same logical-agent rules in both places.
 
-The Codex definitions can be used as the authored source and synchronised into Claude definitions:
+When repository ownership, architecture rules, task protocol or agent-specific
+engineering constraints change, edit the Codex TOML and regenerate Claude.
+
+The normal workflow is:
+
+```text
+edit .codex/agents/moda_background.toml
+        |
+        v
+python3 sync_agents.py
+        |
+        v
+.claude/agents/moda_background.agent.md
+```
+
+The sync script copies the canonical:
+
+```text
+name
+description
+developer_instructions
+```
+
+while leaving Codex-only TOML execution settings such as model or sandbox/runtime
+configuration outside the generated Claude definition.
+
+Generated Claude files should be treated as generated artifacts and should not
+be edited directly.
+
+## Runtime-neutral developer instructions
+
+Although the authored source lives under `.codex/agents/`,
+`developer_instructions` describes the **logical Moda agent**, not Codex itself.
+
+Behavioural instructions must therefore remain runtime-neutral.
+
+Prefer:
+
+```text
+When claiming a task, set `executor` to the identifier for the current
+execution runtime.
+```
+
+Do not hard-code:
+
+```text
+executor: codex
+```
+
+and do not make logical-agent behaviour depend on wording such as:
+
+```text
+In this Codex agent definition...
+Codex must...
+Codex should...
+```
+
+unless Codex is being discussed only as one supported runtime or configuration
+location.
+
+The same logical task may therefore record:
+
+```text
+Codex     -> executor: codex
+Claude    -> executor: claude
+Continue  -> executor: continue
+Copilot   -> executor: copilot
+```
+
+## Synchronising Codex and Claude definitions
+
+Regenerate all Claude definitions with:
 
 ```bash
 python3 sync_agents.py
 ```
 
-This means the engineering organisation can survive a change of AI model or provider.
+Verify synchronization without changing files with:
+
+```bash
+python3 sync_agents.py --check
+```
+
+A missing or stale generated Claude definition causes a non-zero exit status,
+making `--check` suitable for CI or pre-commit verification.
+
+Regenerate one logical agent with:
+
+```bash
+python3 sync_agents.py --agent moda_background
+```
+
+Multiple agents may be selected:
+
+```bash
+python3 sync_agents.py \
+  --agent moda_app \
+  --agent moda_background
+```
+
+Remove obsolete generated Claude definitions whose canonical Codex source has
+been deliberately removed with:
+
+```bash
+python3 sync_agents.py --prune
+```
+
+`--prune` cannot be combined with `--agent`.
+
+A normal agent-definition change should therefore follow:
+
+```text
+1. Edit .codex/agents/<agent>.toml
+2. Keep developer_instructions runtime-neutral
+3. Run python3 sync_agents.py --agent <agent>
+4. Review the generated Claude file
+5. Run python3 sync_agents.py --check
+6. Commit the canonical Codex and generated Claude changes together
+```
+
+The engineering organisation therefore survives a change of AI model or provider
+because the durable role, task and architecture state are not owned by one
+runtime.
 
 ---
 
@@ -807,6 +1025,55 @@ Who accepts completion?
 without relying on hidden chat history.
 
 This is particularly important when tasks may be executed by different models at different times.
+
+---
+
+# Agent startup context and token efficiency
+
+Moda Interact deliberately separates architectural judgement from deterministic
+workflow so coding agents spend as much of their context as possible on the
+actual engineering task.
+
+A typical repository-agent invocation currently loads roughly:
+
+```text
+logical agent definition
+        +
+task execution protocol
+        +
+assigned task
+        +
+parent architecture context
+        +
+relevant dependency/contract context
+```
+
+In practice, this is approximately **9,000–10,000 tokens of startup context for
+a typical implementation task** before substantial code inspection and
+implementation begins.
+
+The goal is not to remove governance rules simply to reduce token usage.
+
+Repository ownership, architectural invariants, task lifecycle rules, security
+constraints, review gates and failure-handling rules remain explicit.
+
+Token efficiency is instead improved by:
+
+- keeping logical-agent definitions focused on durable ownership and engineering rules;
+- keeping task execution lifecycle rules in one canonical execution template;
+- generating Claude definitions from canonical Codex definitions instead of maintaining duplicate rule sets;
+- resolving task IDs, repositories and logical agents deterministically in `scripts/start-agent-task.py`;
+- checking dependency metadata before loading complete dependency task bodies;
+- loading detailed technical reference material only when it is relevant to the current task;
+- moving mechanical workflow operations into deterministic scripts where practical.
+
+The operating principle is:
+
+> **Use model context for judgement and engineering decisions; use deterministic tooling for routing, validation and workflow mechanics.**
+
+As more mechanical task operations are automated and architecture context becomes
+more targeted, startup context can be reduced further without weakening the
+engineering governance model.
 
 ---
 
@@ -972,6 +1239,42 @@ This is a more realistic test of coding-agent reliability.
 
 ---
 
+## 12. Deterministic routing
+
+The agent does not need to infer which repository, task file or logical role owns
+a fully qualified architecture task.
+
+```text
+TASK_ID
+  |
+  v
+scripts/start-agent-task.py
+  |
+  +--> architecture
+  +--> domain
+  +--> logical agent
+  +--> repository
+  +--> task file
+  +--> rendered execution prompt
+```
+
+This reduces both ambiguity and unnecessary model reasoning.
+
+---
+
+## 13. Token-efficient governance
+
+The workflow deliberately distinguishes between rules that require model
+judgement and mechanics that software can enforce.
+
+Governance is retained, but repeated discovery, routing and synchronization work
+is progressively moved into deterministic tooling.
+
+This allows agent context to be spent on implementation and architectural
+reasoning rather than rediscovering stable workspace facts.
+
+---
+
 # How this compares with typical coding-agent usage
 
 A useful maturity spectrum is:
@@ -1072,17 +1375,25 @@ Potential costs include:
 - more documentation;
 - task-file maintenance;
 - coordination overhead for small changes;
-- need to keep agent definitions synchronised;
+- generated agent definitions that must remain synchronized with their canonical source;
 - need to maintain task and architecture indexes;
-- risk of rules becoming stale if not automated.
+- risk of rules becoming stale if deterministic validation does not keep pace with the workflow;
+- context overhead when tasks load more architecture/reference material than they actually require.
 
-The workflow therefore works best when architecture tasks are reserved for changes whose complexity justifies the coordination.
+The workflow therefore works best when architecture tasks are reserved for
+changes whose complexity justifies the coordination.
+
+The objective is not to minimise process at all costs.
+
+It is to keep governance where it protects architecture while moving repeatable
+mechanics into deterministic tooling.
 
 ---
 
 # Current maturity assessment
 
-The workflow is currently strong in design but still has room for more automation.
+The workflow is strong in architecture, durable coordination and provider
+independence, with a growing deterministic automation layer.
 
 Approximate assessment:
 
@@ -1095,25 +1406,27 @@ Approximate assessment:
 | Shared contract governance | 9 / 10 |
 | Review/acceptance model | 9 / 10 |
 | Architecture-level system validation design | 9 / 10 |
-| AI-provider independence | 9 / 10 |
-| Workflow automation | 6.5 / 10 |
-| Overhead control | 7.5 / 10 |
+| AI-provider independence | 9.5 / 10 |
+| Deterministic task routing | 9 / 10 |
+| Agent-definition synchronization | 9 / 10 |
+| Workflow automation | 8 / 10 |
+| Overhead/context control | 8 / 10 |
 
 Overall:
 
 ```text
-~8.5 / 10
+~8.8 / 10
 ```
 
 The main opportunity is not adding more rules.
 
-It is automating the rules that already exist.
+It is continuing to automate and selectively load the rules that already exist.
 
 ---
 
 # Next step: automate workflow validation
 
-The architecture could be strengthened with a workspace validation command such as:
+The next major automation step is a workspace architecture validator such as:
 
 ```bash
 python3 scripts/validate_architecture.py
@@ -1134,14 +1447,36 @@ ready tasks have complete dependencies
 assigned_agent matches repository/domain
 only one active executor has claimed a task
 architecture references are valid
-Codex and Claude definitions are synchronised
 shared-contract tasks exist where required
 required system-test tasks exist for architectures that require integrated validation
 system-test dependencies point to valid implementation tasks
 task indexes are consistent
 ```
 
-Example output:
+Codex/Claude synchronization is already independently enforceable with:
+
+```bash
+python3 sync_agents.py --check
+```
+
+A future architecture validator should call or incorporate that check instead of
+reimplementing synchronization logic.
+
+Further workflow automation can move mechanical task operations out of agent
+prompts, for example:
+
+```text
+claim task
+        -> deterministic validation + state transition
+
+submit task for review
+        -> deterministic Completion Report/state validation
+
+architecture validation
+        -> dependency/ownership/index checks
+```
+
+Example validation output:
 
 ```text
 ✓ ARCH-001-SHARED-001 valid
@@ -1152,27 +1487,67 @@ Example output:
 ✓ architecture task graph valid
 ```
 
-At that point, governance moves from "instructions the agent should remember" to "constraints the workspace can enforce".
+At that point, governance moves further from:
+
+```text
+instructions the agent must remember
+```
+
+toward:
+
+```text
+constraints the workspace can enforce
+```
 
 ---
 
 # Desired end state
 
-The long-term goal is that a completely fresh coding agent can be given only:
+The long-term goal is that a completely fresh coding agent or developer needs to
+provide only:
 
 ```text
-ARCH_ID
 TASK_ID
-TASK_FILE
 ```
 
-and independently determine:
+For example:
+
+```text
+ARCH-002-SHOPIFY-001
+```
+
+Deterministic tooling should then resolve:
+
+```text
+TASK_ID
+  |
+  v
+architecture
+  |
+  v
+task file
+  |
+  v
+domain
+  |
+  v
+logical agent
+  |
+  v
+repository
+  |
+  v
+canonical execution template
+```
+
+The resolved logical agent should then be able to determine:
 
 ```text
 who it is
 what it owns
 what it must read
 what it depends on
+what contracts apply
 what it may change
 how it must validate the change
 whether integrated system validation is required
@@ -1180,7 +1555,19 @@ how it reports completion
 and who must approve it
 ```
 
-If that works consistently across different coding models and execution environments, then the workflow has moved beyond ordinary AI-assisted coding into a durable multi-agent engineering system.
+The desired separation is:
+
+```text
+judgement / architecture / implementation reasoning
+        -> model
+
+routing / ownership lookup / metadata validation / synchronization
+        -> deterministic tooling
+```
+
+If that works consistently across different coding models and execution
+environments, then the workflow has moved beyond ordinary AI-assisted coding
+into a durable multi-agent engineering system.
 
 ---
 
@@ -1190,13 +1577,20 @@ The workflow is implemented through:
 
 ```text
 .codex/agents/
+.codex/skills/moda-task/SKILL.md
 .claude/agents/
+.claude/skills/moda-task/SKILL.md
+.continue/prompts/moda-task.md
 docs/architecture/
 docs/decisions/
 docs/decisions/system-test/
 docs/contracts/
 docs/agent-task-execution-template.md
+scripts/start-agent-task.py
+sync_agents.py
+moda-interact-gateway/
 moda-interact-system-test/
 ```
 
-See the workspace README for repository layout, submodule management and local development guidance.
+See the workspace README for repository layout, submodule management, runtime
+launcher setup, agent synchronization and local development guidance.
