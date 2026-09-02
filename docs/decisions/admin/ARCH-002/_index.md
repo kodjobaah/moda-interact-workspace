@@ -28,7 +28,7 @@ Coordinator:
 | ADMIN-005 | Protect privileged admin pages and server reads | Pending | ADMIN-003 |
 | ADMIN-006 | Protect admin mutations and privileged route handlers | Pending | ADMIN-003 |
 | ADMIN-007 | Add bounded platform-admin security audit logging | Pending | ADMIN-005, ADMIN-006, SHARED-005 |
-| ADMIN-008 | Validate platform-admin security and deployment contract | Pending | ADMIN-003, ADMIN-005, ADMIN-006, ADMIN-007 |
+| ADMIN-008 | Validate platform-admin security and deployment contract | Complete | ADMIN-003, ADMIN-005, ADMIN-006, ADMIN-007 |
 | ADMIN-004 | Add secure private Grafana Cloud observability access | Pending | ADMIN-008, GATEWAY-006 |
 | ADMIN-009 | Adopt shared observability runtime in admin process | Complete | GATEWAY-001, SHARED-010 |
 | ADMIN-010 | Add bounded admin request operational metrics | Superseded | Duplicate standard HTTP telemetry; reuse framework/OpenTelemetry signal |
@@ -89,3 +89,78 @@ The nested database submodule being behind `9a286b7` is expected task input.
 `ADMIN-003` owns updating the Admin gitlink to exact published commit `9a286b7`.
 
 `ADMIN-003` is Ready.
+
+
+## ADMIN-008 attempt 2
+
+Attempt 1's implementation direction is retained, but executable final-gate
+security evidence is incomplete.
+
+`ARCH-002-ADMIN-008` is Ready for attempt 2.
+
+Required focused evidence includes:
+
+```text
+environment fail-closed/bypass matrix
+identity allow/deny/binding matrix
+active-session revocation
+direct mutation rejection before write
+public health/readiness behavior
+session/cookie contract
+deployment/OAuth isolation
+```
+
+`GATEWAY-007`, `GATEWAY-003`, and `ADMIN-004` remain gated.
+
+
+## ADMIN-008 attempt 3
+
+Attempt 2 improved the focused validation harness but four final-gate items
+remain unproved through the actual production security paths:
+
+```text
+existing-session revocation through privileged principal resolution
+direct mutation rejection before FormData/Prisma access
+actual Google first-binding persistence path
+hosted cookie security attributes
+```
+
+`ARCH-002-ADMIN-008` is Ready for attempt 3.
+
+`GATEWAY-007`, `GATEWAY-003`, and `ADMIN-004` remain gated.
+
+
+## ADMIN-008 attempt 4
+
+Attempt 3 closed the direct-mutation and hosted-cookie/session gaps.
+
+Two final executable checks remain:
+
+```text
+resolvePlatformAdminPrincipal() active -> inactive revocation
+production Google subject-binding updateMany/reread race behavior
+```
+
+`ARCH-002-ADMIN-008` is Ready for attempt 4.
+
+`GATEWAY-007`, `GATEWAY-003`, and `ADMIN-004` remain gated.
+
+
+## ADMIN-008 architect acceptance
+
+`ARCH-002-ADMIN-008` is architect-accepted Complete after attempt 4.
+
+Final executable evidence now covers the production-consumed principal resolver
+and provider-subject binding race in addition to the previously accepted
+security matrix.
+
+This acceptance satisfies the Admin-security dependency for:
+
+```text
+GATEWAY-007
+GATEWAY-003
+ADMIN-004
+```
+
+No downstream task is automatically promoted or started. The architect must
+re-evaluate each task's full direct dependency set after developer publication.
