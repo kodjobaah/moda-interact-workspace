@@ -63,7 +63,6 @@ After architect acceptance of `GATEWAY-006`, the unresolved direct
 ```text
 GATEWAY-005
 GATEWAY-007
-MESSAGING-001
 ADMIN-001
 ADMIN-008
 ```
@@ -83,7 +82,6 @@ The current unresolved direct prerequisites for `ARCH-002-GATEWAY-003` are:
 ```text
 ARCH-002-GATEWAY-005
 ARCH-002-GATEWAY-007
-ARCH-002-MESSAGING-001
 ARCH-002-ADMIN-001
 ```
 
@@ -112,8 +110,51 @@ After reconciling the already accepted `GATEWAY-005` state, the remaining
 unresolved direct `GATEWAY-003` prerequisites are:
 
 ```text
-MESSAGING-001
 ADMIN-001
 ```
 
 No downstream task is automatically started.
+
+
+## MESSAGING-001 dependency satisfaction
+
+`ARCH-002-MESSAGING-001` is architect-accepted Complete.
+
+`ARCH-002-GATEWAY-003` remains Pending.
+
+Its only unresolved direct prerequisite is now:
+
+```text
+ARCH-002-ADMIN-001
+```
+
+No gateway task is automatically started.
+
+
+## ADMIN-001 dependency satisfaction
+
+`ARCH-002-ADMIN-001` is architect-accepted Complete.
+
+This clears the final known unresolved direct dependency for
+`ARCH-002-GATEWAY-003`.
+
+Based on the accepted dependency graph:
+
+```text
+GATEWAY-002    Complete
+GATEWAY-005    Complete
+GATEWAY-006    Complete
+GATEWAY-007    Complete
+SHOPIFY-001    Complete
+SHOPIFY-002    Complete
+MESSAGING-001  Complete
+ADMIN-001      Complete
+ADMIN-008      Complete
+BACKGROUND-001 Complete
+BACKGROUND-002 Complete
+```
+
+No known declared direct prerequisite remains unresolved.
+
+`GATEWAY-003` is not automatically promoted here. The architect must inspect
+its authoritative current task file before changing its coordination state.
