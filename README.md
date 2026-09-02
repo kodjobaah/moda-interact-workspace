@@ -7,6 +7,36 @@ This repository is the top-level workspace for the platform. It ties together
 independently versioned services using Git submodules, so a workspace commit
 records the exact compatible service commits that form a platform snapshot.
 
+## Why this project matters
+
+Moda Interact is an AI-enabled customer engagement platform for Shopify merchants.
+It combines Shopify webhooks, BullMQ background workers, WhatsApp messaging,
+PostgreSQL state, and an AI CommerceAgent to recover abandoned checkouts through
+conversational workflows.
+
+Key engineering areas demonstrated:
+- Multi-service architecture
+- Async/event-driven processing
+- AI/LLM orchestration
+- External tool calling
+- PostgreSQL persistence
+- Redis/BullMQ queues
+- Shopify and WhatsApp integrations
+- Idempotency and retry design
+- Production deployment planning
+
+## Engineering relevance
+
+This project demonstrates hands-on experience with:
+
+- Designing a multi-service SaaS platform
+- Building backend services with TypeScript/Node.js
+- Processing high-volume webhook events asynchronously
+- Persisting business state outside the LLM
+- Building AI workflows with tool-calling and conversation state
+- Integrating with Shopify, WhatsApp/Meta, PostgreSQL, Redis and external AI providers
+- Designing for idempotency, retries, observability and independent worker scaling
+
 ## Quick navigation
 
 - [Platform overview](#platform-overview)
