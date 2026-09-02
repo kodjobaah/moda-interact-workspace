@@ -20,7 +20,7 @@ Coordinator:
 | GATEWAY-005 | Validate npm-based shared package production builds | Complete | GATEWAY-001, SHOPIFY-004, BACKGROUND-004 |
 | GATEWAY-006 | Configure OpenTelemetry transport/environment wiring | Complete | GATEWAY-002, SHOPIFY-006, MESSAGING-003, ADMIN-009, BACKGROUND-005 |
 | GATEWAY-003 | Create Render test and production deployment topology | Complete | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
-| GATEWAY-004 | Validate gateway and Render infrastructure | Ready | GATEWAY-003 |
+| GATEWAY-004 | Validate gateway and Render infrastructure | Complete | GATEWAY-003 |
 
 Canonical ARCH-002 Render Blueprints:
 
@@ -198,3 +198,28 @@ GATEWAY-004
 ```
 
 No executor has been claimed and no downstream task has been started.
+
+
+## GATEWAY-004 architect acceptance
+
+`ARCH-002-GATEWAY-004` is architect-accepted Complete.
+
+The accepted infrastructure validation evidence covers the gateway integration
+suite, Blueprint schema/topology validation, observability configuration,
+environment isolation, worker/service boundaries, secret handling and
+deployment/rollback documentation.
+
+The ARCH-002 gateway/infrastructure implementation chain is now:
+
+```text
+GATEWAY-001 Complete
+GATEWAY-002 Complete
+GATEWAY-003 Complete
+GATEWAY-004 Complete
+GATEWAY-005 Complete
+GATEWAY-006 Complete
+GATEWAY-007 Complete
+```
+
+System-test tasks are not automatically promoted; their authoritative direct
+dependency lists remain the eligibility source.
