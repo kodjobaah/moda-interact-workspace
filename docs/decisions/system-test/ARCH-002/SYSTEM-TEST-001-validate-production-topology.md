@@ -14,9 +14,11 @@ attempt: 0
 depends_on:
   - ARCH-002-GATEWAY-004
   - ARCH-002-ADMIN-004
+  - ARCH-002-SYSTEM-TEST-003
+  - ARCH-002-SYSTEM-TEST-004
 enables: []
 created: 2026-08-29
-updated: 2026-08-31
+updated: 2026-09-02
 ---
 
 # Validate Integrated Test and Production-Ready Topology
@@ -65,6 +67,31 @@ It is therefore **not** evidence that the production hardware configuration can
 sustain the production capacity target.
 
 Functional correctness and production capacity are separate assertions.
+
+## Test Dependency Isolation
+
+Integrated ARCH-002 system validation must not rely on shared developer/provider
+test state for Redis or WhatsApp.
+
+This task therefore consumes:
+
+```text
+ARCH-002-SYSTEM-TEST-003
+  isolated ephemeral Redis container fixture
+
+ARCH-002-SYSTEM-TEST-004
+  WhatsApp Cloud API emulator fixture
+```
+
+Redis/BullMQ integration scenarios must use the test-owned Redis instance.
+
+WhatsApp functional scenarios should use the emulator for deterministic
+provider-boundary testing, including signed inbound webhooks, duplicate
+deliveries, outbound API calls and status webhooks.
+
+The emulator is not evidence of full Meta production compatibility or capacity.
+Where final real-provider compatibility is material, retain a bounded
+pre-production smoke test using the real Meta test environment.
 
 ## Scope
 
@@ -318,6 +345,9 @@ If a defect is found:
 ## Dependencies
 
 - `ARCH-002-GATEWAY-004`
+- `ARCH-002-ADMIN-004`
+- `ARCH-002-SYSTEM-TEST-003`
+- `ARCH-002-SYSTEM-TEST-004`
 - `ARCH-002-ADMIN-004`
 
 GATEWAY-004 is the final infrastructure-validation dependency and is expected to

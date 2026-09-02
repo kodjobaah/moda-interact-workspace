@@ -20,6 +20,8 @@ depends_on:
 - ARCH-002-ADMIN-009
 - ARCH-002-GATEWAY-006
 - ARCH-002-GATEWAY-004
+- ARCH-002-SYSTEM-TEST-003
+- ARCH-002-SYSTEM-TEST-004
 enables: []
 created: 2026-08-31
 updated: 2026-09-02
@@ -71,6 +73,29 @@ implementation prerequisites
 
 Do not mark this task Ready solely because the telemetry-emitter and
 GATEWAY-006 dependencies are Complete.
+
+## Test Dependency Isolation
+
+This performance/observability validation must use the isolated fixtures
+introduced by:
+
+```text
+ARCH-002-SYSTEM-TEST-003
+  ephemeral Redis/BullMQ runtime
+
+ARCH-002-SYSTEM-TEST-004
+  WhatsApp Cloud API emulator
+```
+
+The Redis fixture provides uncontaminated queue timing/lag/retry state for each
+run.
+
+The WhatsApp emulator provides deterministic provider HTTP and webhook traffic
+for turn-level tracing and outbound/status-webhook timing.
+
+Emulator timing is suitable for measuring Moda-owned queue/worker/agent
+behavior, but must not be represented as measured Meta provider latency or Meta
+production capacity.
 
 ## Scope
 
