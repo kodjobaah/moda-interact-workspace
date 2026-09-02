@@ -1,236 +1,319 @@
 # Moda Interact Workspace
 
-This repository is the top-level workspace for the **Moda Interact** platform.
+Moda Interact is a multi-service platform for Shopify checkout recovery and
+conversational commerce, including WhatsApp customer interactions.
 
-It ties together the independently versioned Moda Interact services using Git submodules, so the workspace records which exact commit of each service belongs to a given platform version.
+This repository is the top-level workspace for the platform. It ties together
+independently versioned services using Git submodules, so a workspace commit
+records the exact compatible service commits that form a platform snapshot.
 
-## Coding agent workflow
+## Quick navigation
 
-Moda Interact uses a structured multi-agent engineering workflow with explicit
-repository ownership, architecture tasks, dependency tracking, task claiming,
-shared contracts and architect review.
+- [Platform overview](#platform-overview)
+- [High-level architecture](#high-level-architecture)
+- [Architecture initiatives](#architecture-initiatives)
+- [Projects and ownership](#projects-and-ownership)
+- [Getting started](#getting-started)
+- [Architecture-led development](#architecture-led-development)
+- [Launching an architecture task](#launching-an-architecture-task)
+- [Logical agents and AI runtimes](#logical-agents-and-ai-runtimes)
+- [Platform workload and scalability](#platform-workload-and-scalability)
+- [Working with Git submodules](#working-with-git-submodules)
 
-See:
+---
 
-[Moda Interact Coding Agent Workflow](docs/coding-agent-workflow.md)
+## Platform overview
 
-### Using the agent workflow from VS Code
+Moda Interact is designed around a small set of explicit service boundaries:
 
-The durable architecture/task workflow is independent of the chat or coding
-runtime used to execute it. A developer can open the workspace once in VS Code
-and use the same task IDs and logical Moda agents through three supported entry
-points:
+- Shopify-facing authentication, merchant UI and webhook ingress;
+- asynchronous checkout-recovery and CommerceAgent processing;
+- Meta/WhatsApp webhook ingress;
+- durable PostgreSQL state;
+- Redis/BullMQ asynchronous coordination;
+- an internal platform-admin application;
+- a thin deployment gateway;
+- canonical cross-service runtime contracts;
+- architecture-level integrated system testing.
 
-| Entry point | Project integration | Typical task launch |
-| --- | --- | --- |
-| **Continue Chat** | `.continue/prompts/moda-task.md`, registered in the developer's Continue `config.yaml` | `/moda-task ARCH-002-SHOPIFY-001` |
-| **GitHub Copilot Chat / Agent Mode** | shared project skill at `.claude/skills/moda-task/SKILL.md` | ask Copilot to use `/moda-task` for the task ID |
-| **Claude Code or Codex** | Claude skill at `.claude/skills/moda-task/SKILL.md`; Codex skill at `.codex/skills/moda-task/SKILL.md` | Claude: `/moda-task <TASK_ID>`; Codex: `$moda-task <TASK_ID>` when the current Codex surface exposes skill invocation |
+The platform follows several core principles:
 
-All three entry points use the same deterministic resolver:
+- `Shop` / `shopId` is the tenant boundary;
+- PostgreSQL is the durable source of truth;
+- Redis and BullMQ coordinate asynchronous work rather than becoming the sole
+  durable business state;
+- webhook handlers authenticate, validate, normalise and acknowledge quickly;
+- long-running and retryable processing belongs in background workers;
+- cross-service contracts have one canonical owner;
+- platform-admin authentication is separate from merchant Shopify
+  authentication;
+- architecture, task state and review state live in version-controlled files
+  rather than hidden chat history.
+
+For the broader architecture overview, see
+[`docs/architecture/overview.md`](docs/architecture/overview.md).
+
+---
+
+## High-level architecture
+
+The diagram below combines the core application flow with the deployment
+boundary being implemented by ARCH-002.
+
+ARCH-002 is still in progress, so the gateway/private-service boundary should be
+read as the **target deployment topology**, not as a claim that every part is
+already deployed in production.
 
 ```text
-scripts/start-agent-task.py
+                      PUBLIC INTERNET
+                           |
+                 Render public ingress
+                           |
+                           v
+                moda-interact-gateway
+                           |
+                  Render private network
+          +----------------+----------------+
+          |                |                |
+          v                v                v
+   moda-interact   moda-interact-messaging  moda-interact-admin
+   Shopify app       Meta / WhatsApp          Admin console
+          |                |                |
+          +--------+-------+                |
+                   |                        |
+                   v                        |
+             Redis / BullMQ                 |
+                   |                        |
+          +--------+---------+              |
+          |        |         |              |
+          v        v         v              |
+      Shopify   Recovery   Messaging /      |
+       event     worker    CommerceAgent     |
+       worker                              |
+          |        |         |              |
+          +--------+---------+--------------+
+                   |
+                   v
+               PostgreSQL
+
+Background workers
+      |
+      +--> Shopify Admin API
+      +--> AI / CommerceAgent providers
+      +--> messaging/recovery integrations
+
+Public marketing site
+      |
+      v
+moda-interact-site
 ```
 
-The resolver does not implement the task. It:
+`moda-interact-database` is the authoritative owner of the shared Prisma schema
+and migration history.
+
+`moda-interact-shared` is the canonical owner of cross-service runtime
+contracts, schemas, event versions and deterministic identifiers.
+
+---
+
+## Architecture initiatives
+
+Architectural work is organised around stable `ARCH-XXX` initiative IDs.
+
+An architecture ID identifies a **complete architectural outcome**, not one
+implementation task.
+
+| Architecture | Status | High-level architectural goal | Architecture decision | Copilot implementation plan |
+| --- | --- | --- | --- | --- |
+| **ARCH-001** | Agreed | Build a reliable, low-overhead Shopify checkout-recovery event pipeline: keep webhook ingress fast, use Redis/BullMQ for temporary recovery candidates, persist only actual `CheckoutRecovery` state, fetch current Shopify state only when recovery is required, use canonical cross-service contracts, and tolerate duplicate/concurrent asynchronous processing. | [Shopify Checkout Recovery Webhook Processing](docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md) | [Copilot model and task plan](docs/copilot-model-selection.md) |
+| **ARCH-002** | In progress | Establish a production-ready, version-controlled Render topology for test and production: thin public gateway, private application services, independently scalable background workers, environment-isolated PostgreSQL/Redis/telemetry, admin security, observability, deployment validation and capacity testing. | [Render Test and Production Gateway and Infrastructure](docs/architecture/ARCH-002-render-production-gateway-infrastructure.md) | [Copilot model and task plan](docs/copilot-model-selection.md) |
+
+The architecture document is authoritative for **what is being built and how the
+complete system fits together**.
+
+The Copilot plan is an implementation-planning aid. It recommends implementation
+models for repository-agent work and does not override architecture or task
+state. Architect review is performed separately through the `moda_architect`
+workflow.
+
+### Architecture and task documentation
+
+The central architecture and cross-agent coordination state lives under
+[`docs/`](docs/).
 
 ```text
-TASK_ID
-  |
-  v
-parse architecture + domain + task number
-  |
-  v
-resolve docs/decisions/<domain>/<ARCH-ID>/<DOMAIN-NNN>-*.md
-  |
-  v
-verify task metadata
-  |
-  v
-resolve logical agent + repository
-  |
-  v
-render docs/agent-task-execution-template.md in memory
-  |
-  v
-return routing metadata + complete execution prompt
+docs/
+├── architecture/
+│   ├── overview.md
+│   ├── ARCH-001-shopify-checkout-recovery-webhook-processing.md
+│   └── ARCH-002-render-production-gateway-infrastructure.md
+├── decisions/
+│   ├── admin/
+│   ├── background/
+│   ├── database/
+│   ├── gateway/
+│   ├── messaging/
+│   ├── shared/
+│   ├── shopify/
+│   ├── site/
+│   └── system-test/
+├── contracts/
+├── coding-agent-workflow.md
+├── copilot-model-selection.md
+└── agent-task-execution-template.md
 ```
 
-For example:
+The source-of-truth hierarchy is:
+
+| Source | Question answered |
+| --- | --- |
+| `docs/architecture/ARCH-XXX-*.md` | What are we building and how does the complete system fit together? |
+| `docs/decisions/<domain>/ARCH-XXX/_index.md` | What work does this logical agent/domain own for this architecture? |
+| `docs/decisions/<domain>/ARCH-XXX/<TASK>.md` | What exactly must be implemented now? |
+| Repository source code | What has actually been implemented and how does it behave? |
+
+Task YAML metadata is authoritative for task state. The parent architecture
+document is authoritative for overall architectural intent. Source code is
+authoritative for actual runtime behaviour. `moda_architect` must reconcile
+these sources if they drift.
+
+---
+
+## Projects and ownership
+
+Each service is independently versioned and has a bounded responsibility.
+
+| Project | Responsibility |
+| --- | --- |
+| [`moda-interact`](https://github.com/kodjobaah/moda-interact) | Shopify application, merchant UI, Shopify authentication/webhooks, onboarding, billing and subscriptions |
+| `moda-interact-admin` | Next.js platform administration console, platform-admin security, cross-merchant reporting and operational visibility |
+| [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background) | BullMQ workers, high-volume Shopify event inspection/filtering, checkout recovery, CommerceAgent orchestration, retries, entitlements and usage |
+| [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database) | Canonical Prisma schema, PostgreSQL migrations, constraints, indexes, seed/reference data and ERD |
+| `moda-interact-gateway` | Thin public ingress, private-service routing, Render Blueprints/topology, scaling configuration and infrastructure wiring |
+| [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | Meta/WhatsApp webhook verification, normalisation and queue publication |
+| [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared) | Canonical `@modainteract/moda-interact-shared` package for cross-service runtime contracts and reusable primitives |
+| [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public website, product content, SEO and public-facing material |
+| `moda-interact-system-test` | Architecture-level integrated tests, architecture-specific fixtures and environment orchestration |
+
+For more detail, see
+[`docs/architecture/services.md`](docs/architecture/services.md).
+
+---
+
+## Why this workspace exists
+
+Each service remains an independent Git repository with its own commit history
+and deployment lifecycle.
+
+The workspace records Gitlinks to specific service commits:
 
 ```text
-ARCH-002-SHOPIFY-001
-        |
-        +--> architecture: ARCH-002
-        +--> domain: shopify
-        +--> logical agent: moda_app
-        +--> repository: moda-interact
-        +--> task file:
-             docs/decisions/shopify/ARCH-002/SHOPIFY-001-*.md
+moda-interact-workspace
+├── moda-interact            @ <commit>
+├── moda-interact-admin      @ <commit>
+├── moda-interact-background @ <commit>
+├── moda-interact-database   @ <commit>
+├── moda-interact-gateway    @ <commit>
+├── moda-interact-messaging  @ <commit>
+├── moda-interact-shared     @ <commit>
+├── moda-interact-site       @ <commit>
+└── moda-interact-system-test @ <commit>
 ```
 
-The launcher is deliberately small. Task claiming, dependency verification,
-implementation, validation, Completion Report updates and transition to
-`status: review` remain the responsibility of the resolved repository agent.
+This gives the platform both:
 
-#### Workspace-location independence
+```text
+independent service ownership
+        +
+reproducible whole-platform snapshots
+```
 
-Open VS Code at the top-level Moda Interact workspace:
+The workspace coordinates service versions, architecture state and agent
+execution without collapsing all services into one repository.
+
+---
+
+## Workspace structure
+
+```text
+moda-interact-workspace/
+├── .codex/
+│   ├── agents/
+│   └── skills/
+│       └── moda-task/
+│           └── SKILL.md
+├── .claude/
+│   ├── agents/
+│   └── skills/
+│       └── moda-task/
+│           └── SKILL.md
+├── .continue/
+│   └── prompts/
+│       └── moda-task.md
+├── docs/
+│   ├── architecture/
+│   ├── contracts/
+│   ├── decisions/
+│   ├── agent-task-execution-template.md
+│   ├── coding-agent-workflow.md
+│   ├── copilot-model-selection.md
+│   ├── development-baseline.md
+│   └── node-toolchain.md
+├── scripts/
+│   ├── apply-node-agent-policy.py
+│   ├── bootstrap-node.sh
+│   ├── start-agent-task.py
+│   └── workspace-doctor.sh
+├── .gitmodules
+├── .nvmrc
+├── README.md
+├── sync_agents.py
+├── moda-interact/
+├── moda-interact-admin/
+├── moda-interact-background/
+├── moda-interact-database/
+├── moda-interact-gateway/
+├── moda-interact-messaging/
+├── moda-interact-shared/
+├── moda-interact-site/
+├── moda-interact-system-test/
+└── moda-interact.code-workspace
+```
+
+---
+
+## Getting started
+
+### Clone the complete workspace
+
+Because the workspace contains Git submodules, clone it recursively:
+
+```bash
+git clone --recurse-submodules \
+  https://github.com/kodjobaah/moda-interact-workspace.git
+
+cd moda-interact-workspace
+```
+
+If the workspace was cloned without `--recurse-submodules`:
+
+```bash
+git submodule update --init --recursive
+```
+
+The `--recursive` flag matters because some services also consume
+`moda-interact-database` as a nested submodule.
+
+### Open the VS Code workspace
+
+Open the top-level workspace rather than one service in isolation:
 
 ```bash
 code moda-interact.code-workspace
 ```
 
-During execution an agent may change into any service repository or a deeper
-subdirectory. A later task launch must not depend on where the previous agent
-left the shell.
-
-`scripts/start-agent-task.py` derives the workspace root from the location of
-the script itself, so once the resolver is invoked it does not rely on the
-terminal's current working directory. Runtime launcher skills/prompts should
-locate the workspace root, expose it as `MODA_WORKSPACE_ROOT` for the launcher
-command, and then call:
-
-```bash
-python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "<TASK_ID>" --json
-```
-
-#### Continue setup
-
-Continue uses a project prompt rather than a persistent rule so the task
-launcher instructions are loaded only when the launcher is invoked.
-
-The project prompt is stored at:
-
-```text
-.continue/prompts/moda-task.md
-```
-
-Each developer registers that prompt in the Continue configuration stored at:
-
-```text
-~/.continue/config.yaml
-```
-
-For example:
-
-```yaml
-prompts:
-  - uses: file:///absolute/path/to/moda-interact-workspace/.continue/prompts/moda-task.md
-```
-
-The prompt must contain:
-
-```yaml
----
-name: moda-task
-description: Launch a Moda Interact architecture task by task ID.
-invokable: true
----
-```
-
-After Continue reloads the configuration, the launcher is invoked with:
-
-```text
-/moda-task ARCH-002-SHOPIFY-001
-```
-
-Continue may execute the resolved logical role in the current agent context
-rather than spawning the same kind of named subagent available in another
-runtime. The durable task file, agent definition and execution template remain
-the authoritative workflow regardless of runtime.
-
-#### Copilot setup
-
-GitHub Copilot Agent Mode supports project Agent Skills and recognises
-`.claude/skills/` as one of its project skill locations. Moda Interact therefore
-shares the Claude project skill with Copilot:
-
-```text
-.claude/skills/moda-task/SKILL.md
-```
-
-This avoids maintaining a second equivalent Copilot copy under
-`.github/skills/`.
-
-In Copilot Chat / Agent Mode, explicitly ask Copilot to use the `moda-task`
-skill with the architecture task ID, for example:
-
-```text
-Use /moda-task for ARCH-002-SHOPIFY-001
-```
-
-The skill resolves the task through `scripts/start-agent-task.py` and then
-executes/delegates according to the returned logical agent and rendered prompt.
-
-Copilot does not treat `.claude/agents/` as native Copilot custom-agent
-definitions. Unless separate Copilot custom agents are configured, Copilot
-executes the rendered task in its current Agent Mode context while following
-the resolved logical Moda agent's repository ownership and task protocol.
-
-#### Claude Code setup
-
-Claude project agent definitions remain under:
-
-```text
-.claude/agents/
-```
-
-and the reusable task launcher lives at:
-
-```text
-.claude/skills/moda-task/SKILL.md
-```
-
-Launch a task with:
-
-```text
-/moda-task ARCH-002-SHOPIFY-001
-```
-
-The skill is an invocation adapter only. It must not claim or implement the task
-itself.
-
-#### Codex setup
-
-Codex logical agent definitions remain under:
-
-```text
-.codex/agents/
-```
-
-and the Moda task launcher is stored at:
-
-```text
-.codex/skills/moda-task/SKILL.md
-```
-
-Where the current Codex surface exposes project skill invocation, launch with:
-
-```text
-$moda-task ARCH-002-SHOPIFY-001
-```
-
-The Codex launcher must preserve named logical-agent routing. If the current
-runtime cannot select the requested configured logical agent, it should report
-that limitation rather than silently substituting a generic worker with a
-different model or execution profile.
-
-#### Manual resolver test
-
-The launcher can always be tested directly from the workspace root:
-
-```bash
-python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
-```
-
-The JSON result includes the resolved task, architecture, domain, logical agent,
-repository, task file, current task status and rendered execution prompt.
-
-
 <!-- MODA-DEVELOPMENT-BASELINE:START -->
-## Development environment baseline
+### Development environment baseline
 
 Coding-agent shells may be non-interactive and may not inherit the developer's
 NVM environment. The workspace also contains shared runtime dependencies whose
@@ -300,42 +383,20 @@ See:
 
 <!-- MODA-DEVELOPMENT-BASELINE:END -->
 
-## Clone the complete workspace
-
-Because this repository contains Git submodules, clone it recursively:
-
-```bash
-git clone --recurse-submodules \
-  https://github.com/kodjobaah/moda-interact-workspace.git
-```
-
-Then enter the workspace:
-
-```bash
-cd moda-interact-workspace
-```
-
-If you already cloned the workspace without `--recurse-submodules`, initialise all submodules with:
-
-```bash
-git submodule update --init --recursive
-```
-
-The `--recursive` flag is important because some Moda Interact services also include `moda-interact-database` as a nested submodule.
-
-## Node.js development toolchain
+### Node.js development toolchain
 
 Moda Interact uses NVM for the workspace development Node.js toolchain.
 
-The workspace root [`/.nvmrc`](.nvmrc) is the **single source of truth for the Node.js version selected for local development and coding-agent shells**. Scripts and agent definitions must not duplicate a concrete Node version.
+The workspace root [`.nvmrc`](.nvmrc) is the **single source of truth for the
+Node.js version selected for local development and coding-agent shells**.
 
-After entering the workspace, bootstrap the Node environment with:
+After entering the workspace:
 
 ```bash
 source scripts/bootstrap-node.sh
 ```
 
-The bootstrap script:
+The bootstrap flow is:
 
 ```text
 find workspace root
@@ -344,7 +405,7 @@ find workspace root
 read .nvmrc
         |
         v
-load $HOME/.nvm/nvm.sh when available
+load NVM when available
         |
         v
 nvm use <workspace version>
@@ -355,13 +416,16 @@ nvm use <workspace version>
 verify node + npm
 ```
 
-This is necessary because coding-agent shells may be non-interactive and therefore may not load the user's normal NVM shell initialisation. An initial `node: command not found` does **not** mean Node.js is absent from the machine.
+Coding-agent shells may be non-interactive and may not inherit the developer's
+normal NVM initialization. An initial `node: command not found` does not prove
+that Node.js is absent.
 
-Agents must bootstrap the workspace environment before searching for Node, installing another Node version, or reporting `node`, `npm`, `npx`, `corepack` or `shopify` as unavailable.
+Agents must attempt the workspace bootstrap before searching the wider
+filesystem or installing another Node version.
 
-### Installing the selected Node version
+#### Installing the selected Node version
 
-If the version in `.nvmrc` is not yet installed:
+If the `.nvmrc` version is not installed:
 
 ```bash
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -378,246 +442,699 @@ node --version
 npm --version
 ```
 
-### Changing Node versions later
+#### Changing Node versions
 
-Do **not** edit every agent definition when upgrading Node.
+Do not update every agent definition when changing Node.
 
-Change the version once in:
-
-```text
-.nvmrc
-```
-
-then install/select it:
+Change `.nvmrc`, then:
 
 ```bash
 nvm install
 nvm use
 ```
 
-and validate the affected services.
-
-Where a service declares a `package.json` `engines.node` range, keep that compatibility declaration aligned with the workspace version. The responsibilities are intentionally different:
+Where a service declares `package.json` `engines.node`, keep that compatibility
+range aligned intentionally.
 
 ```text
 .nvmrc
-    -> selects the Node version used by developers and coding-agent shells
+    -> selects the development/agent-shell Node version
 
 package.json engines.node
-    -> declares versions the individual package/service supports
+    -> declares versions an individual package supports
 
 deployment configuration
-    -> selects/validates the Node runtime used by the deployed service
+    -> selects/validates the deployed runtime
 ```
 
-Changing `.nvmrc` does not by itself prove that every service supports the new Node version. A platform Node upgrade should therefore run each affected service's tests, typecheck/build and deployment validation before the new version is treated as supported.
+A `.nvmrc` change does not itself prove every service is compatible. Validate
+affected services before treating a new Node version as supported.
 
-Detailed policy and upgrade guidance:
+Detailed guidance:
 
 [Node.js toolchain and agent-shell bootstrap](docs/node-toolchain.md)
 
-## Workspace structure
+---
 
-The workspace root contains the Git metadata, the included workspace file, and the submodule directories for each service. After a normal recursive clone or `git submodule update --init --recursive`, each service directory is populated with its own repository checkout.
+## Architecture-led development
+
+Moda Interact uses coding agents as part of a structured engineering workflow
+rather than as standalone code generators.
+
+The central principle is:
+
+> **Conversation is temporary execution context. The repository is durable
+> engineering state.**
+
+The detailed design and rationale are documented in:
+
+[Moda Interact Coding Agent Workflow](docs/coding-agent-workflow.md)
+
+### Architecture execution workflow
+
+Cross-repository architectural work follows this lifecycle:
 
 ```text
-moda-interact-workspace/
-├── .codex/
-│   ├── agents/
-│   └── skills/
-│       └── moda-task/
-│           └── SKILL.md
-├── .claude/
-│   ├── agents/
-│   └── skills/
-│       └── moda-task/
-│           └── SKILL.md
-├── .continue/
-│   └── prompts/
-│       └── moda-task.md
-├── docs/
-│   ├── agent-task-execution-template.md
-│   ├── architecture/
-│   ├── contracts/
-│   ├── decisions/
-│   └── node-toolchain.md
-├── scripts/
-│   ├── bootstrap-node.sh
-│   ├── apply-node-agent-policy.py
-│   └── start-agent-task.py
-├── .gitignore
-├── .gitmodules
-├── .nvmrc
-├── README.md
-├── sync_agents.py
-├── moda-interact/
-├── moda-interact-background/
-├── moda-interact-database/
-├── moda-interact-admin/
-├── moda-interact-messaging/
-├── moda-interact-site/
-├── moda-interact-shared/
-├── moda-interact-system-test/
-├── moda-interact.code-workspace
-└── .git/
+User / engineering requirement
+        |
+        v
+moda_architect
+        |
+        | inspect code + define architecture
+        v
+docs/architecture/ARCH-XXX-*.md
+        |
+        | decompose into bounded tasks
+        v
+docs/decisions/<domain>/ARCH-XXX/<TASK>.md
+        |
+        | dependencies satisfied
+        v
+repository agent
+        |
+        | claim + implement + validate
+        v
+status: review
+        |
+        v
+moda_architect
+        |
+        +--> changes requested --> same task / owner
+        |
+        +--> accepted --> status: complete
+                              |
+                              v
+                 required implementation complete
+                              |
+                              v
+                    moda_system_test
+                              |
+                    integrated validation
+                              |
+                              v
+                         status: review
+                              |
+                              v
+                        moda_architect
+                              |
+                              v
+                 architecture: implemented
 ```
 
-## Projects
+Repository agents do **not** approve their own architecture tasks.
 
-| Project | Responsibility |
+Only `moda_architect` may accept:
+
+```text
+review -> complete
+```
+
+For architectures requiring integrated runtime validation, repository tasks being
+complete is not sufficient. Required system-test tasks must also be reviewed and
+completed.
+
+### Task lifecycle and claiming
+
+Task files use YAML frontmatter so execution can resume without depending on a
+previous conversation.
+
+Typical states:
+
+```text
+pending
+ready
+in_progress
+review
+complete
+blocked
+superseded
+```
+
+Normal lifecycle:
+
+```text
+pending
+   |
+   v
+ready
+   |
+   | repository agent claims
+   v
+in_progress
+   |
+   | implementation + validation
+   v
+review
+   |
+   | architect accepts
+   v
+complete
+```
+
+Task discovery is not a claim.
+
+Immediately before implementation the agent re-reads the task and verifies:
+
+```text
+status: ready
+assigned_agent: <correct logical agent>
+all depends_on tasks: complete
+```
+
+A claim records the active execution surface:
+
+```yaml
+status: in_progress
+executor: copilot
+claimed_at: <timestamp>
+attempt: 1
+```
+
+Other supported executor values include `codex`, `claude` and `continue`.
+
+An active claim must not be silently overwritten by another executor.
+
+Each task contains checkable Work Items, Acceptance Criteria, Validation,
+Completion Report and Architect Review sections.
+
+### Shared contract workflow
+
+Cross-service runtime contracts have one canonical owner:
+
+```text
+moda-interact-shared/
+        |
+        v
+@modainteract/moda-interact-shared
+```
+
+Before defining a queue payload, runtime event schema, schema version, shared
+enum, deterministic identifier or other cross-service primitive, producers and
+consumers must check the shared package.
+
+A typical dependency sequence is:
+
+```text
+ARCH-XXX-SHARED-001
+Define canonical contract
+        |
+        +-------------------------+
+        |                         |
+        v                         v
+producer task                consumer task
+imports contract             imports contract
+```
+
+Repository agents must not invent competing local versions of a canonical
+cross-service contract.
+
+### Architecture-level system validation
+
+`moda_system_test` owns architecture-level validation after the implementation
+required by the scenario is complete.
+
+It may:
+
+- create architecture-specific fixtures and seed data;
+- start PostgreSQL and required local services;
+- verify Redis connectivity;
+- start Shopify/background/messaging/admin services using their existing
+  commands;
+- use configured development APIs to create/reuse deterministic test fixtures;
+- execute cross-service scenarios;
+- capture logs and evidence.
+
+It may run and inspect other repositories to orchestrate a system test, but that
+does not transfer implementation ownership.
+
+If a system test exposes an implementation defect, it reports the failure to
+`moda_architect`, which routes remediation to the owning repository agent.
+
+---
+
+## Launching an architecture task
+
+### Preferred interface: `moda-task <TASK_ID>`
+
+A fresh developer or coding-agent session should normally need only the fully
+qualified task ID.
+
+Examples:
+
+```text
+Continue: /moda-task ARCH-002-SHOPIFY-001
+
+Claude:   /moda-task ARCH-002-SHOPIFY-001
+
+Codex:    $moda-task ARCH-002-SHOPIFY-001
+          where the current Codex surface exposes project skill invocation
+
+Copilot:  Use /moda-task for ARCH-002-SHOPIFY-001
+```
+
+All entry points route through:
+
+```text
+scripts/start-agent-task.py
+```
+
+The resolver deterministically maps:
+
+```text
+TASK_ID
+  |
+  v
+architecture ID
+  |
+  v
+decision domain
+  |
+  v
+task file
+  |
+  v
+logical Moda agent
+  |
+  v
+repository
+  |
+  v
+rendered docs/agent-task-execution-template.md
+```
+
+The resolver is **routing-only**.
+
+It does not:
+
+- claim the task;
+- modify execution state;
+- implement the task;
+- perform architect review;
+- silently substitute another logical owner.
+
+The receiving logical repository agent performs authoritative pre-claim checks,
+claiming, implementation, validation, Completion Report updates and transition
+to `status: review`.
+
+#### Manual resolver test
+
+From the workspace root:
+
+```bash
+python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
+```
+
+The JSON result includes the resolved architecture, domain, agent, repository,
+task file, task state and execution prompt.
+
+### Workspace-location independence
+
+An agent may change into a service repository during implementation. A later
+task launch must not depend on where the previous shell was left.
+
+`start-agent-task.py` derives the workspace root from the script location.
+Runtime launchers expose `MODA_WORKSPACE_ROOT` and call:
+
+```bash
+python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "<TASK_ID>" --json
+```
+
+### Runtime entry points
+
+| Entry point | Project integration | Typical task launch |
+| --- | --- | --- |
+| **Continue Chat** | `.continue/prompts/moda-task.md` | `/moda-task ARCH-002-SHOPIFY-001` |
+| **GitHub Copilot Chat / Agent Mode** | `.claude/skills/moda-task/SKILL.md` | `Use /moda-task for ARCH-002-SHOPIFY-001` |
+| **Claude Code** | `.claude/skills/moda-task/SKILL.md` | `/moda-task ARCH-002-SHOPIFY-001` |
+| **Codex** | `.codex/skills/moda-task/SKILL.md` | `$moda-task ARCH-002-SHOPIFY-001` where supported |
+
+#### Continue setup
+
+Continue uses a project prompt stored at:
+
+```text
+.continue/prompts/moda-task.md
+```
+
+Register it in the developer's Continue configuration, for example:
+
+```yaml
+prompts:
+  - uses: file:///absolute/path/to/moda-interact-workspace/.continue/prompts/moda-task.md
+```
+
+The prompt is invokable as `moda-task`.
+
+Continue may execute the resolved logical role in its current agent context
+rather than spawning a provider-specific named subagent. The durable task,
+logical-agent rules and execution template remain authoritative.
+
+#### Copilot setup
+
+Copilot Agent Mode uses the shared project skill:
+
+```text
+.claude/skills/moda-task/SKILL.md
+```
+
+This avoids maintaining a duplicate skill under `.github/skills/`.
+
+Copilot executes the rendered task in its Agent Mode context while following the
+resolved logical agent's repository ownership and task protocol.
+
+Copilot implementation should stop when the task reaches:
+
+```text
+status: review
+```
+
+Architect review is performed separately through ChatGPT acting as
+`moda_architect`.
+
+See:
+
+[Copilot model selection for Moda Interact tasks](docs/copilot-model-selection.md)
+
+#### Claude Code setup
+
+Claude logical-agent definitions live under:
+
+```text
+.claude/agents/
+```
+
+and the task launcher is:
+
+```text
+.claude/skills/moda-task/SKILL.md
+```
+
+The launcher is an invocation adapter; it must not become a competing task
+source of truth.
+
+#### Codex setup
+
+Codex logical-agent definitions live under:
+
+```text
+.codex/agents/
+```
+
+and the task launcher is:
+
+```text
+.codex/skills/moda-task/SKILL.md
+```
+
+Where project skill invocation is exposed:
+
+```text
+$moda-task ARCH-002-SHOPIFY-001
+```
+
+The Codex launcher must preserve named logical-agent routing. If the execution
+surface cannot select the configured logical agent, it should report that
+limitation rather than silently substitute a generic worker.
+
+---
+
+## Logical agents and AI runtimes
+
+The engineering organisation is defined in terms of **logical roles**, not AI
+vendors.
+
+```text
+moda_architect
+├── moda_admin
+├── moda_app
+├── moda_background
+├── moda_database
+├── moda_gateway
+├── moda_messaging
+├── moda_shared
+├── moda_site
+└── moda_system_test
+```
+
+The same logical task can be executed through different compatible runtimes
+without changing architectural ownership.
+
+### Agent responsibilities
+
+| Logical agent | Responsibility |
 | --- | --- |
-| [`moda-interact`](https://github.com/kodjobaah/moda-interact) | Shopify app, merchant UI, Shopify webhooks, onboarding, billing and subscription flows |
-| [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background) | BullMQ workers, checkout recovery workflows, commerce agent, Shopify tools, entitlements and usage |
-| [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database) | Shared Prisma schema, PostgreSQL migrations, canonical/reference seed data and ERD |
-| `moda-interact-admin` | Next.js platform administration console for cross-merchant usage and operational visibility |
-| [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | WhatsApp/Meta webhook ingress and queue publishing |
-| [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public Moda Interact website and product-facing content |
-| [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared) | Canonical shared TypeScript package (`@modainteract/moda-interact-shared`) for cross-service runtime contracts, validation schemas, event versions, deterministic identifiers and genuinely reusable code |
-| `moda-interact-system-test` | Architecture-level system tests, architecture-specific test fixtures/seed data, local test-environment orchestration and integrated architecture validation |
+| `moda_architect` | Cross-repository architecture, workload/scalability reasoning, service boundaries, task decomposition, dependency sequencing, implementation review and final integration |
+| `moda_admin` | Internal Next.js administration console, platform-admin authentication/authorization, reporting and operational visibility |
+| `moda_app` | Shopify application, merchant UI, authentication, webhooks, onboarding, billing and subscriptions |
+| `moda_background` | BullMQ workers, event filtering, checkout recovery, order processing, CommerceAgent orchestration, retries, entitlements and usage |
+| `moda_database` | Prisma schema, migrations, relationships, constraints, indexes, durable integrity and canonical/reference seed data |
+| `moda_gateway` | Public ingress, reverse proxy, Render topology/Blueprints, private routing, scaling configuration and infrastructure wiring |
+| `moda_messaging` | Meta/WhatsApp verification, validation, normalisation, ingress and queue publication |
+| `moda_shared` | Canonical cross-service runtime contracts, schemas, event versions, deterministic IDs, enums and reusable primitives |
+| `moda_site` | Public website, responsive UI, SEO, product positioning and marketing-facing content |
+| `moda_system_test` | Integrated architecture validation, architecture-specific fixtures and test-environment orchestration |
 
-## High-level architecture
+Use a specialist agent for bounded repository implementation. Use
+`moda_architect` when work changes repository boundaries, database/shared
+contracts, queue or webhook semantics, deployment sequencing, security
+boundaries or architecture-level behaviour.
 
-```text
-                     Shopify
-                        |
-                        v
-                 moda-interact
-                        |
-                        v
-                  Redis / BullMQ
-                        |
-                        v
-            moda-interact-background
-                 /              \
-                v                v
-          PostgreSQL         Commerce Agent
-                                  |
-                           Shopify / AI tools
+### Canonical agent definitions and synchronization
 
-WhatsApp / Meta
-      |
-      v
-moda-interact-messaging
-      |
-      +----------------------> Redis / BullMQ
-
-Public website
-      |
-      v
-moda-interact-site
-```
-
-`moda-interact-database` is the authoritative owner of the shared Prisma schema and migration history.
-
-## Architecture documentation
-
-The central architecture and cross-agent coordination state is maintained in [`docs/`](docs/).
-
-Architecture work is organised around stable architecture initiative IDs:
+Codex TOML files are the canonical authored logical-agent definitions:
 
 ```text
-ARCH-001
-ARCH-002
-ARCH-003
-...
+.codex/agents/<name>.toml
 ```
 
-An `ARCH-XXX` identifies one architectural initiative, not one implementation task.
-
-Overall architecture documents live under:
+Claude definitions are generated runtime representations:
 
 ```text
-docs/architecture/
+.claude/agents/<name>.agent.md
 ```
 
-For example:
+The intended flow is:
 
 ```text
-docs/architecture/ARCH-001-shopify-webhook-reliability.md
+.codex/agents/*.toml
+        |
+        | canonical logical-agent behaviour
+        v
+   sync_agents.py
+        |
+        v
+.claude/agents/*.agent.md
 ```
 
-Implementation tasks are decomposed by owning domain:
+Do not independently maintain the same logical-agent behaviour in both
+locations.
+
+A normal agent-definition change is:
 
 ```text
-docs/decisions/
-├── admin/
-├── background/
-├── database/
-├── messaging/
-├── shared/
-├── shopify/
-├── site/
-└── system-test/
+1. Edit .codex/agents/<agent>.toml
+2. Keep developer_instructions runtime-neutral
+3. Run python3 sync_agents.py --agent <agent>
+4. Review the generated Claude definition
+5. Run python3 sync_agents.py --check
+6. Commit canonical + generated changes together
 ```
 
-Each affected domain receives an `ARCH-XXX` directory containing its bounded tasks. For example:
+Useful commands:
+
+```bash
+# Regenerate all Claude definitions
+python3 sync_agents.py
+
+# Verify without changing files
+python3 sync_agents.py --check
+
+# Regenerate one logical agent
+python3 sync_agents.py --agent moda_background
+
+# Regenerate selected agents
+python3 sync_agents.py \
+  --agent moda_app \
+  --agent moda_background
+
+# Remove obsolete generated Claude definitions
+python3 sync_agents.py --prune
+```
+
+`--prune` cannot be combined with `--agent`.
+
+#### Runtime-neutral developer instructions
+
+Although the canonical source lives under `.codex/agents/`,
+`developer_instructions` describes the **logical Moda role**, not Codex itself.
+
+Prefer:
 
 ```text
-docs/decisions/
-├── shared/
-│   └── ARCH-001/
-│       ├── _index.md
-│       └── SHARED-001-define-shopify-event-contract.md
-├── shopify/
-│   └── ARCH-001/
-│       ├── _index.md
-│       └── SHOPIFY-001-persist-webhook.md
-├── background/
-│   └── ARCH-001/
-│       ├── _index.md
-│       └── BACKGROUND-001-consume-shopify-event.md
-└── system-test/
-    └── ARCH-001/
-        ├── _index.md
-        └── SYSTEM-TEST-001-validate-recovery-webhook-flow.md
+When claiming a task, set executor to the identifier for the current execution
+runtime.
 ```
 
-The fully qualified task IDs are:
+Do not hard-code logical behaviour to:
 
 ```text
-ARCH-001-SHARED-001
-ARCH-001-SHOPIFY-001
-ARCH-001-BACKGROUND-001
-ARCH-001-SYSTEM-TEST-001
+executor: codex
 ```
 
-The architecture document answers: **What are we building and how does the complete system fit together?**
-
-The domain `_index.md` answers: **What work does this logical agent/domain own for this architecture?**
-
-The individual task file answers: **What exactly must be implemented now?**
-
-The individual task file is authoritative for task state. The parent architecture document is authoritative for overall architectural intent. The source code is authoritative for actual runtime behaviour.
-
-The architect must reconcile these sources if they drift rather than silently allowing documentation and implementation to diverge.
-
-## Why this workspace exists
-
-Each service remains an independent Git repository with its own commit history and deployment lifecycle.
-
-The workspace repository stores Gitlinks to specific service commits:
+The same task may therefore record:
 
 ```text
-moda-interact-workspace
-├── moda-interact            @ <commit>
-├── moda-interact-background @ <commit>
-├── moda-interact-database   @ <commit>
-├── moda-interact-messaging  @ <commit>
-├── moda-interact-site       @ <commit>
-└── moda-interact-system-test @ <commit>
+Copilot   -> executor: copilot
+Codex     -> executor: codex
+Claude    -> executor: claude
+Continue  -> executor: continue
 ```
 
-This makes a workspace commit a reproducible snapshot of the complete platform.
+`sync_agents.py --check` validates synchronization and is suitable for CI or
+pre-commit verification.
 
-## Working with a service
+### Agent Node.js environment
 
-Each service in this workspace is a Git submodule.
+Agent shells may be non-interactive.
 
-A submodule is normally checked out at the exact commit recorded by the workspace. This means that after cloning the workspace or running `git submodule update`, a service can be in a **detached HEAD** state.
+Before concluding that Node/npm/npx/corepack/Shopify CLI is missing, bootstrap:
 
-Before making changes inside a service, switch to the branch you intend to work on.
+```bash
+source scripts/bootstrap-node.sh
+```
 
-For example:
+The concrete development Node version remains in `.nvmrc`; agent definitions do
+not duplicate it.
+
+To propagate the version-independent Node bootstrap policy:
+
+```bash
+python3 scripts/apply-node-agent-policy.py
+python3 sync_agents.py
+```
+
+---
+
+### Agent startup context and token efficiency
+
+Moda Interact deliberately separates model judgement from deterministic workflow
+so context is spent on engineering rather than rediscovering stable workspace
+facts.
+
+A typical repository-agent invocation currently loads roughly:
+
+```text
+logical agent definition
+        +
+task execution protocol
+        +
+assigned task
+        +
+parent architecture context
+        +
+relevant dependency / contract context
+```
+
+In practice this is approximately **9,000-10,000 tokens of startup context for a
+typical implementation task** before substantial code inspection and
+implementation begins.
+
+The goal is not to remove governance simply to save tokens.
+
+Token efficiency instead comes from:
+
+- focused logical-agent definitions;
+- one canonical task execution protocol;
+- generated Claude definitions rather than duplicated rules;
+- deterministic task/repository/agent resolution;
+- metadata-first dependency checks;
+- loading detailed dependency/reference material only when needed;
+- moving mechanical workflow operations into scripts.
+
+The operating principle is:
+
+> **Use model context for judgement and engineering decisions; use deterministic
+> tooling for routing, validation and workflow mechanics.**
+
+---
+
+## Platform workload and scalability
+
+Moda Interact is a multi-tenant event-driven platform. Scale is not treated as
+one generic number.
+
+The platform architecture uses a raw Shopify ingress planning workload of roughly
+**20,000-22,000 Shopify events per minute** depending on the specific
+architecture initiative.
+
+ARCH-002 currently defines a production ingress planning target of approximately:
+
+```text
+22,000 events/minute
+≈ 367 events/second
+```
+
+This is raw Shopify ingress, **not** 22,000 recoveries, WhatsApp messages,
+CommerceAgent turns or LLM requests per minute.
+
+The intended processing shape is:
+
+```text
+Shopify event ingress
+        |
+        v
+thin authenticated ingress
+        |
+        v
+Redis / BullMQ durable acceptance / queue boundary
+        |
+        v
+background event inspection
+        |
+        +--------------------+
+        |                    |
+        v                    v
+irrelevant majority      actionable subset
+                              |
+                              v
+                     recovery/business work
+                              |
+                              v
+                       messaging subset
+                              |
+                              v
+                    CommerceAgent / LLM
+```
+
+Capacity reasoning must distinguish:
+
+- webhook events received;
+- events queued and inspected;
+- events discarded;
+- durable business-state transitions;
+- CheckoutRecovery workflows;
+- queue depth, lag and oldest-event age;
+- PostgreSQL queries/writes;
+- WhatsApp messages;
+- CommerceAgent turns;
+- LLM requests;
+- Shopify Admin API requests;
+- Meta API requests.
+
+Queue lag and oldest-event age are primary asynchronous-capacity signals.
+
+Measured capacity, estimates and assumptions must be labelled separately.
+
+---
+
+## Working with Git submodules
+
+### Working with a service
+
+A submodule is normally checked out at the exact commit recorded by the
+workspace, which may leave the service in detached HEAD state.
+
+Before starting new implementation work:
 
 ```bash
 cd moda-interact-messaging
@@ -627,7 +1144,7 @@ git switch main
 git pull --ff-only origin main
 ```
 
-Then make, commit, and push the service changes normally:
+Make, commit and push the service change normally:
 
 ```bash
 git add .
@@ -642,13 +1159,13 @@ cd ..
 git status
 ```
 
-The workspace will now show that the submodule points at a newer commit, for example:
+The workspace now sees the newer service commit:
 
 ```text
 modified: moda-interact-messaging (new commits)
 ```
 
-Record that new service commit in the workspace:
+Record the new platform snapshot:
 
 ```bash
 git add moda-interact-messaging
@@ -656,778 +1173,49 @@ git commit -m "update messaging service"
 git push
 ```
 
-This two-level commit process is intentional:
+The two-level commit model is intentional:
 
 ```text
 service repository
     |
-    +--> commit and push the code change
+    +--> commit + push implementation
              |
              v
 workspace repository
     |
-    +--> commit the new submodule pointer
+    +--> record compatible service commit
 ```
 
-The service repository owns the code change. The workspace repository records which version of that service belongs to the current platform snapshot.
+### Updating submodules
 
-## Coding-agent runtimes and logical Moda agents
-
-Workspace-level agents exist as logical Moda agent roles. The same durable role
-and architecture-task model can be reached from Claude Code, Codex, GitHub
-Copilot Chat / Agent Mode and Continue Chat.
-
-Claude and Codex have runtime-specific logical-agent definitions. Copilot and
-Continue act as additional VS Code entry points into the same task workflow;
-they do not create a competing task model or source of truth.
-
-The logical roles are:
-
-```text
-moda_architect
-├── moda_admin
-├── moda_app
-├── moda_background
-├── moda_database
-├── moda_messaging
-├── moda_shared
-├── moda_site
-└── moda_system_test
-```
-
-Codex definitions live under `.codex/agents/<name>.toml`. Claude definitions live under `.claude/agents/<name>.agent.md`. The two files represent the same logical role and should express the same repository ownership, architectural responsibilities and task protocol even though runtime-specific configuration may differ.
-
-### Canonical agent definitions and sync
-
-The Codex TOML files are the **canonical authored definitions** for logical Moda
-agents:
-
-```text
-.codex/agents/<name>.toml
-```
-
-Claude agent definitions are generated from those canonical files:
-
-```text
-.claude/agents/<name>.agent.md
-```
-
-Do not maintain the same logical-agent behaviour independently in both
-locations. When repository ownership, architecture rules, task protocol or
-repository-specific instructions change, edit the Codex TOML and regenerate the
-Claude definition.
-
-The normal workflow is:
-
-```text
-edit .codex/agents/moda_background.toml
-        |
-        v
-python3 sync_agents.py
-        |
-        v
-.claude/agents/moda_background.agent.md
-```
-
-Run the sync command from the workspace root:
-
-```bash
-python3 sync_agents.py
-```
-
-The sync script reads each canonical Codex TOML and generates the corresponding
-Claude Markdown definition from:
-
-```text
-name
-description
-developer_instructions
-```
-
-Codex-only execution configuration outside `developer_instructions`, such as
-model or sandbox/runtime settings, is not copied into Claude.
-
-Generated Claude files should be treated as generated artifacts and should not
-be edited directly.
-
-#### Runtime-neutral developer instructions
-
-Although the canonical source lives under `.codex/agents/`,
-`developer_instructions` describes the **logical Moda agent**, not Codex itself.
-
-Behavioural rules inside `developer_instructions` must therefore remain
-execution-runtime neutral.
-
-Prefer:
-
-```text
-When claiming a task, set `executor` to the identifier for the current
-execution runtime.
-```
-
-Do not hard-code:
-
-```text
-executor: codex
-```
-
-and do not write runtime-specific behavioural instructions such as:
-
-```text
-In this Codex agent definition...
-Codex must...
-Codex should...
-```
-
-unless Codex is only being referenced as one supported runtime or as a
-configuration/file location.
-
-The same logical agent can therefore record the execution runtime that actually
-performed the task:
-
-```text
-Codex     -> executor: codex
-Claude    -> executor: claude
-Continue  -> executor: continue
-Copilot   -> executor: copilot
-```
-
-`sync_agents.py` validates this rule and fails rather than silently copying
-Codex-specific behaviour into generated Claude definitions.
-
-#### Check synchronization without changing files
-
-To verify that every generated Claude definition matches its canonical Codex
-source without rewriting anything, run:
-
-```bash
-python3 sync_agents.py --check
-```
-
-The command exits successfully only when the generated definitions are current.
-
-A missing or stale Claude definition causes a non-zero exit status, making this
-suitable for CI or pre-commit verification:
-
-```text
-.codex/agents/*.toml
-        |
-        v
-python3 sync_agents.py --check
-        |
-        +--> synchronized -> exit 0
-        |
-        +--> missing/stale -> exit non-zero
-```
-
-#### Sync a single logical agent
-
-During focused work, regenerate one agent with:
-
-```bash
-python3 sync_agents.py --agent moda_background
-```
-
-The option can be supplied more than once:
-
-```bash
-python3 sync_agents.py \
-  --agent moda_app \
-  --agent moda_background
-```
-
-A full sync should normally be run before committing a change that affects
-multiple agent definitions.
-
-#### Remove obsolete generated Claude agents
-
-If a canonical Codex agent has deliberately been removed, obsolete generated
-Claude definitions can be removed with:
-
-```bash
-python3 sync_agents.py --prune
-```
-
-Only files identified by the sync script as generated Claude definitions are
-eligible for pruning.
-
-`--prune` cannot be combined with `--agent`.
-
-#### Recommended agent-definition workflow
-
-For a normal agent change:
-
-```text
-1. Edit .codex/agents/<agent>.toml
-2. Keep developer_instructions runtime-neutral
-3. Run python3 sync_agents.py --agent <agent>
-4. Review the generated .claude/agents/<agent>.agent.md
-5. Run python3 sync_agents.py --check
-6. Commit the Codex source and generated Claude file together
-```
-
-For a shared policy change affecting several agents:
-
-```text
-1. Update the canonical Codex TOML definitions
-2. Run python3 sync_agents.py
-3. Run python3 sync_agents.py --check
-4. Review the generated Claude changes
-5. Commit both representations together
-```
-
-The intended ownership model is:
-
-```text
-.codex/agents/*.toml
-        |
-        | canonical logical-agent definitions
-        v
-   sync_agents.py
-        |
-        v
-.claude/agents/*.agent.md
-        |
-        | generated runtime representation
-        v
-     Claude Code
-```
-
-The Codex and generated Claude files represent the same logical Moda roles.
-Repository ownership, architecture responsibilities, governance rules and task
-protocol must not diverge between them.
-
-### Agent Node.js environment
-
-Codex and Claude executions may run in non-interactive shells that do not inherit the developer's interactive NVM setup.
-
-Agent definitions therefore refer to the stable bootstrap command:
-
-```bash
-source scripts/bootstrap-node.sh
-```
-
-They do **not** embed a concrete Node version. The selected version remains in `.nvmrc`.
-
-The canonical Node-environment rule should be maintained in the Codex TOML definitions and propagated to Claude with:
-
-```bash
-python3 scripts/apply-node-agent-policy.py
-python3 sync_agents.py
-```
-
-`apply-node-agent-policy.py` is idempotent: it adds the bootstrap policy only when it is absent and does not replace the rest of an agent's instructions.
-
-The agent environment contract is:
-
-```text
-agent needs Node/npm/npx/corepack/Shopify CLI
-        |
-        v
-source scripts/bootstrap-node.sh
-        |
-        v
-workspace .nvmrc determines version
-        |
-        v
-toolchain verified
-        |
-        v
-run repository command
-```
-
-Agents must not search `/usr/local/bin`, `/opt/homebrew/bin` or the wider filesystem merely because Node is initially absent from `PATH`. They must attempt the workspace bootstrap first.
-
-### Agent responsibilities
-
-- **`moda_architect`**: Owns cross-repository architecture, workload/scalability reasoning, service boundaries, architecture documents, task decomposition, dependency sequencing, agent handoff, implementation review and integrated verification.
-- **`moda_admin`**: Owns the Next.js platform administration console, internal authentication, cross-merchant usage views, operational visibility and admin workflows.
-- **`moda_app`**: Owns the Shopify application, authentication, merchant UI, Shopify webhook ingress, onboarding, billing, subscriptions and shop services.
-- **`moda_background`**: Owns BullMQ workers, high-volume Shopify event inspection/filtering, checkout recovery, order processing, commerce-agent orchestration, Shopify tools, retries, entitlements and usage recording.
-- **`moda_database`**: Owns the Prisma schema, PostgreSQL migrations, relationships, constraints, indexes, canonical/reference seed data, durable integrity and ERD generation.
-- **`moda_messaging`**: Owns Meta/WhatsApp webhook verification, signature validation, event normalisation, messaging ingress, queue publication and fast webhook acknowledgement.
-- **`moda_shared`**: Owns the canonical `@modainteract/moda-interact-shared` package for cross-service runtime contracts, validation schemas, event versions, deterministic identifiers, shared enums and genuinely reusable primitives.
-- **`moda_site`**: Owns the public website, responsive UI, SEO, product positioning, documentation links and marketing-facing content.
-- **`moda_system_test`**: Owns `moda-interact-system-test/`, architecture-level system tests, architecture-specific test fixtures/seed data, local test-environment orchestration and integrated validation after implementation tasks are complete.
-
-Use a specialist agent for work contained within one repository. Use `moda_architect` when work changes repository boundaries, shared database models, cross-service contracts, queue payloads, webhook contracts, billing or entitlement semantics, migration order or deployment sequencing.
-
-## Agent startup context and token efficiency
-
-Moda Interact deliberately separates architectural judgement from deterministic
-workflow so coding agents spend as much of their context as possible on the
-actual implementation task.
-
-A typical repository-agent invocation currently loads roughly:
-
-```text
-logical agent definition
-        +
-task execution protocol
-        +
-assigned task
-        +
-parent architecture context
-        +
-relevant dependency/contract context
-```
-
-In practice, this is approximately **9,000–10,000 tokens of startup context for
-a typical implementation task** before substantial code inspection and
-implementation begins.
-
-The goal is not to remove governance rules simply to reduce token usage.
-Repository ownership, architectural invariants, task lifecycle rules, security
-constraints, review gates and failure-handling rules remain explicit.
-
-Token efficiency is instead improved by:
-
-- keeping logical-agent definitions focused on durable ownership and engineering
-  rules;
-- keeping the task execution lifecycle in one canonical execution template;
-- avoiding duplicated rules across Claude and Codex definitions;
-- generating Claude definitions from canonical Codex definitions;
-- resolving task IDs, repositories and logical agents deterministically in
-  `scripts/start-agent-task.py`;
-- reading dependency metadata before loading full dependency task bodies;
-- loading detailed technical reference material only when it is relevant to the
-  current task.
-
-The longer-term principle is:
-
-> **Use model context for judgement and engineering decisions; use deterministic
-> tooling for routing, validation and workflow mechanics.**
-
-As more mechanical task operations are moved into scripts and architecture
-context becomes more targeted, startup context can be reduced further without
-weakening the engineering governance model.
-
-## Architecture execution workflow
-
-Cross-repository architectural work follows a durable filesystem-based workflow. Agents must not rely on hidden Claude/Codex conversation state to coordinate implementation.
-
-```text
-User
-  |
-  v
-moda_architect
-  | inspect current code and discuss the design
-  v
-docs/architecture/ARCH-XXX-*.md
-  | decompose architecture
-  v
-docs/decisions/<domain>/ARCH-XXX/<TASK>.md
-  | implementation tasks become ready when dependencies are complete
-  v
-repository agents
-  | claim + implement + validate
-  v
-status: review
-  |
-  v
-moda_architect
-  |
-  +--> Changes Requested --> same repository agent/task
-  |
-  +--> Accepted --> implementation task status: complete
-                                      |
-                                      v
-                     required implementation tasks complete
-                                      |
-                                      v
-                    ARCH-XXX-SYSTEM-TEST-NNN becomes ready
-                                      |
-                                      v
-                           moda_system_test
-                         /        |         \
-                        v         v          v
-                 start local   prepare    run integrated
-                 environment   fixtures   system scenarios
-                                      |
-                                      v
-                             status: review
-                                      |
-                                      v
-                               moda_architect
-                                      |
-                          +-----------+-----------+
-                          |                       |
-                          v                       v
-                 Changes Requested        system-test complete
-                                                  |
-                                                  v
-                                      architecture: implemented
-```
-
-### Architecture-level system validation
-
-For architectures that require integrated runtime validation, implementation tasks alone are not sufficient for architectural completion.
-
-`moda_system_test` owns:
-
-```text
-moda-interact-system-test/
-```
-
-and receives tasks under:
-
-```text
-docs/decisions/system-test/ARCH-XXX/
-```
-
-with IDs such as:
-
-```text
-ARCH-001-SYSTEM-TEST-001
-```
-
-A system-test task normally depends on all implementation tasks required for the scenario it validates.
-
-Its responsibilities include:
-
-- creating architecture-specific system-test fixtures and seed data;
-- starting the local PostgreSQL Docker environment required by the test;
-- assuming Redis is already running, while verifying that it is reachable;
-- starting the Shopify development environment and other required Moda Interact services using their existing development commands;
-- using the Shopify API to find or create required test customers, reusing existing deterministic fixtures where possible;
-- executing cross-service/end-to-end scenarios;
-- recording test evidence and failures;
-- returning implementation defects to `moda_architect` rather than modifying the owning service repository.
-
-The seed-data ownership boundary is:
-
-```text
-moda_database
-    -> canonical/permanent application or reference seed data
-
-moda_system_test
-    -> architecture-specific system-test fixtures and seed data
-```
-
-`moda_system_test` may **run and inspect** other repositories to prepare and execute the system, but it does not gain implementation ownership of them.
-
-For architectures where integrated system validation is required, `moda_architect` should not mark the architecture `implemented` until the required system-test tasks are `complete`.
-
-### Starting a repository agent
-
-#### Preferred: launch by task ID
-
-For normal architecture-task execution, do not manually copy and edit the
-kickoff template. Use the runtime launcher with the fully qualified task ID:
-
-```text
-Continue: /moda-task ARCH-001-BACKGROUND-001
-
-Claude:   /moda-task ARCH-001-BACKGROUND-001
-
-Codex:    $moda-task ARCH-001-BACKGROUND-001
-          (where project skill invocation is exposed)
-
-Copilot:  Use /moda-task for ARCH-001-BACKGROUND-001
-```
-
-All launchers route through:
-
-```text
-scripts/start-agent-task.py
-```
-
-The resolver maps the task ID to the correct domain, task file, logical agent
-and repository, validates the task metadata, and renders the canonical kickoff
-template in memory.
-
-For example:
-
-```text
-ARCH-001-BACKGROUND-001
-        |
-        v
-moda_background
-        |
-        v
-moda-interact-background
-        |
-        v
-docs/decisions/background/ARCH-001/BACKGROUND-001-*.md
-```
-
-The resolver is routing-only. The receiving repository agent still owns the
-authoritative pre-claim checks, task claim, implementation, validation,
-Completion Report and transition to `status: review`.
-
-#### Manual fallback
-
-The standard kickoff template for architecture tasks is:
-
-```text
-docs/agent-task-execution-template.md
-```
-
-Use this template when handing an executable architecture task to either Codex
-or Claude.
-
-The template is parameterised with:
-
-```text
-<AGENT>
-<ARCH_ID>
-<TASK_ID>
-<TASK_FILE>
-```
-
-For example:
-
-```text
-AGENT:
-moda_background
-
-ARCH_ID:
-ARCH-001
-
-TASK_ID:
-ARCH-001-BACKGROUND-001
-
-TASK_FILE:
-docs/decisions/background/ARCH-001/BACKGROUND-001-consume-shopify-event.md
-```
-
-A completed kickoff prompt therefore starts conceptually as:
-
-```text
-You are acting as the logical moda_background agent for the Moda Interact
-workspace.
-
-Implement the following architectural task:
-
-Architecture:
-ARCH-001
-
-Task:
-ARCH-001-BACKGROUND-001
-
-Task file:
-docs/decisions/background/ARCH-001/BACKGROUND-001-consume-shopify-event.md
-```
-
-The remainder of `agent-task-execution-template.md` defines the standard
-execution protocol and should normally be supplied unchanged.
-
-The template requires the repository agent to:
-
-```text
-read task + architecture + dependencies
-        |
-        v
-verify status: ready
-        |
-        v
-claim task
-        |
-        v
-status: in_progress
-        |
-        v
-implement bounded scope
-        |
-        v
-update Work Items / Acceptance Criteria / Validation
-        |
-        v
-complete Completion Report
-        |
-        v
-status: review
-        |
-        v
-return to moda_architect
-```
-
-The template is execution-environment neutral except for the runtime claim:
-
-```yaml
-executor: codex
-```
-
-or:
-
-```yaml
-executor: claude
-```
-
-The logical owner remains the same in both environments. For example, both
-Codex and Claude may execute a task whose task metadata contains:
-
-```yaml
-assigned_agent: moda_background
-```
-
-The kickoff template does not replace the task file. The task file remains the
-authoritative source for:
-
-- implementation scope;
-- dependencies;
-- interfaces/contracts;
-- Work Items;
-- Acceptance Criteria;
-- Validation;
-- Completion Report.
-
-The kickoff template exists to make every invocation follow the same startup,
-claiming, execution and return-to-architect protocol.
-
-Do not copy architectural requirements into an ad-hoc conversational prompt and
-allow that prompt to become a competing source of truth.
-
-Prefer:
-
-```text
-agent-task-execution-template.md
-        +
-task identity
-        +
-task file
-```
-
-over writing a one-off implementation prompt.
-
-### Task state and claiming
-
-Task files use YAML frontmatter so agents can discover and resume work without conversation history. A typical task begins with metadata such as:
-
-```yaml
----
-id: ARCH-001-BACKGROUND-001
-architecture_id: ARCH-001
-title: Consume versioned Shopify event
-domain: background
-repository: moda-interact-background
-assigned_agent: moda_background
-coordinator: moda_architect
-status: ready
-priority: 20
-executor: null
-claimed_at: null
-attempt: 0
-depends_on:
-  - ARCH-001-SHARED-001
-enables: []
-created: 2026-08-28
-updated: 2026-08-28
----
-```
-
-Supported task states are `pending`, `ready`, `in_progress`, `review`, `complete`, `blocked` and `superseded`. Repository agents may transition assigned work from `ready -> in_progress -> review` or `in_progress -> blocked`. Only `moda_architect` may accept a reviewed task and set `status: complete`.
-
-Task discovery is not a claim. Before starting a `ready` task, an agent re-reads it and claims it by setting the execution metadata for the current runtime, for example:
-
-```yaml
-status: in_progress
-executor: codex
-claimed_at: 2026-08-28T15:30:00+01:00
-attempt: 1
-```
-
-A claimed task must not be silently overwritten by another executor. If a task is stranded in `in_progress`, `moda_architect` reviews the repository and task state before returning it to `ready`.
-
-Each task contains checkable Work Items, Acceptance Criteria and Validation, plus a Completion Report and Architect Review. The repository agent returns implementation with `status: review`; the architect then inspects the actual code and either accepts the work, requests changes within the same task, or blocks the task because a new architectural dependency has been discovered.
-
-### Shared contract workflow
-
-Cross-service runtime contracts have one canonical owner: `moda-interact-shared/`, published as `@modainteract/moda-interact-shared`.
-
-Before a producer or consumer defines a queue payload, runtime event schema, schema-version constant, shared enum, deterministic event/job ID helper or other cross-service primitive, it must first check the shared package. If the canonical definition exists, use it instead of creating a local copy.
-
-When a new shared contract is required, the architect should normally sequence the work as:
-
-```text
-ARCH-001-SHARED-001
-Define canonical shared contract
-        |
-        +--------------------------+
-        |                          |
-        v                          v
-ARCH-001-SHOPIFY-001      ARCH-001-BACKGROUND-001
-producer imports it       consumer imports it
-```
-
-Producer and consumer tasks should depend on the shared-contract task rather than independently inventing matching types. For a shared contract, the architecture should identify the contract owner, package/export name, producer repositories, consumer repositories, runtime validation schema, schema version and compatibility/rollout requirements. The architect reviews producer and consumer implementations to ensure they import the canonical contract and have not introduced duplicate local definitions.
-
-## Platform workload and scalability model
-
-Moda Interact is a multi-tenant event-driven platform. "Scale" is not treated as one generic number.
-
-The reference Shopify ingress workload used for architecture analysis is approximately **20,000 Shopify events per minute** unless an architecture initiative defines another target. This is raw event ingress, not 20,000 recoveries, WhatsApp messages or LLM calls per minute.
-
-```text
-Shopify event ingress
-        |
-        v
-thin authenticated ingress
-        |
-        v
-Redis / BullMQ or another architecture-defined durable acceptance point
-        |
-        v
-background event inspection/filtering
-        |
-        +--------------------+
-        |                    |
-        v                    v
-irrelevant majority      actionable subset
-                             |
-                             v
-                      recovery/business work
-                             |
-                             v
-                       messaging subset
-                             |
-                             v
-                       CommerceAgent / LLM
-```
-
-`moda-interact` should keep Shopify webhook ingress lightweight and acknowledge Shopify quickly after reaching the architecture's defined durable acceptance point. It must not discard an authenticated business event merely because the event looks immediately uninteresting when its relevance depends on evolving order, checkout, recovery, customer, conversation or previous-event state. Most business significance filtering belongs in `moda-interact-background`.
-
-When reasoning about scalability, distinguish Shopify webhook events received, events queued, events inspected, events discarded, durable business-state transitions, CheckoutRecovery workflows, Redis/BullMQ queue depth and queue lag, PostgreSQL queries/writes, WhatsApp messages, CommerceAgent turns, LLM requests, Shopify Admin API requests and Meta API requests. Queue lag and oldest-event age are primary signals for whether asynchronous processing is keeping up.
-
-For capacity claims, distinguish measured results from estimates and assumptions. Do not describe an assumed or estimated throughput as measured capacity.
-
-## Updating submodules
-
-Fetch the commits referenced by the workspace:
+Fetch the commits already referenced by the workspace:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-To fetch newer remote commits for configured submodule branches:
+To inspect/fetch newer configured remote commits:
 
 ```bash
 git submodule update --remote --recursive
 ```
 
-Review changes before committing updated submodule pointers to the workspace.
+Review changes before committing updated workspace pointers.
 
+### Detached HEAD recovery
 
-## Detached HEAD and submodules
+Detached HEAD is normal after recursive clone/update because the workspace
+records commit SHAs rather than branches.
 
-Seeing `HEAD detached at <commit>` inside a service is normal after a recursive clone or `git submodule update`.
+If commits were accidentally made while detached, do not discard them.
 
-The workspace records a commit SHA for each service, not a branch. Git therefore checks out that exact commit.
-
-Before starting new work in a service, use:
-
-```bash
-git switch main
-git pull --ff-only origin main
-```
-
-If you accidentally make commits while detached, do **not** discard them. Recover them with the reflog:
+Find them:
 
 ```bash
 git reflog --oneline
 ```
 
-Then either cherry-pick the detached commit onto `main`:
+Then either cherry-pick:
 
 ```bash
 git switch main
@@ -1435,7 +1223,7 @@ git cherry-pick <detached-commit-sha>
 git push
 ```
 
-or preserve a longer detached series on a temporary branch first:
+or preserve a longer series:
 
 ```bash
 git switch -c recover-work <latest-detached-commit-sha>
@@ -1444,27 +1232,20 @@ git merge recover-work
 git push
 ```
 
-After pushing the recovered service commit, return to the workspace root and update the submodule pointer:
+Afterward, update the top-level workspace submodule pointer.
 
-```bash
-cd ..
-git add <service-directory>
-git commit -m "update <service-name>"
-git push
-```
-
-
-## Checking submodule status
+### Checking submodule status
 
 ```bash
 git submodule status --recursive
 ```
 
-## Database submodule
+### Database submodule
 
-`moda-interact-database` is also consumed as a nested submodule by services that need the shared Prisma schema.
+`moda-interact-database` is also consumed as a nested submodule by services that
+need the canonical Prisma schema.
 
-That means the same database repository can appear in multiple paths:
+The same repository can therefore appear at multiple paths:
 
 ```text
 moda-interact-database/
@@ -1472,85 +1253,28 @@ moda-interact/database/
 moda-interact-background/database/
 ```
 
-These are separate Git submodule checkouts and can theoretically point to different commits.
-
-When making a database change, keep dependent service pointers aligned intentionally.
+These are independent checkouts and can point to different commits.
 
 A typical database change flow is:
 
 ```text
-1. Change, test, commit, and push moda-interact-database
-2. Update the nested database submodule in every affected service
-3. Test, commit, and push each affected service
+1. Change, test, commit and push moda-interact-database
+2. Update the nested database submodule in each affected service
+3. Test, commit and push each affected service
 4. Return to the workspace root
-5. Update the top-level service and database submodule pointers
-6. Commit and push the workspace snapshot
+5. Update top-level service/database submodule pointers
+6. Commit and push the compatible workspace snapshot
 ```
 
-For example, after pushing a new database commit:
+Keep database pointers aligned intentionally when services are meant to consume
+the same schema revision.
 
-```bash
-# Update the database checkout used by moda-interact
-cd moda-interact/database
-git fetch origin
-git switch main
-git pull --ff-only origin main
-
-cd ..
-git add database
-git commit -m "update shared database schema"
-git push
-```
-
-Repeat that for each service that consumes the new schema.
-
-Then, from the workspace root, record the compatible platform versions:
-
-```bash
-git add   moda-interact-database   moda-interact   moda-interact-background   moda-interact-messaging
-
-git commit -m "update platform database dependencies"
-git push
-```
-
-Only include services that actually changed.
-
-The top-level `moda-interact-database/` checkout and nested `database/` submodules are independent Git checkouts. Keep their commit pointers aligned intentionally when they are meant to consume the same schema version.
-
-## VS Code
-
-Open the included workspace at the top-level project root with:
-
-```bash
-code moda-interact.code-workspace
-```
-
-From that workspace, developers have three supported ways to enter the same
-architecture-task workflow:
-
-1. **Continue Chat** — use the registered `/moda-task <TASK_ID>` prompt.
-2. **GitHub Copilot Chat / Agent Mode** — use the shared
-   `.claude/skills/moda-task/SKILL.md` project skill.
-3. **Claude Code or Codex** — use their runtime-specific agent definitions and
-   `moda-task` skill from VS Code/its integrated terminal.
-
-Whichever entry point is used, durable engineering state remains in the
-workspace files:
-
-```text
-docs/architecture/
-docs/decisions/
-docs/agent-task-execution-template.md
-.codex/agents/
-.claude/agents/
-```
-
-The chat session is an execution surface, not the source of truth.
+---
 
 ## Useful commands
 
 ```bash
-# Clone everything
+# Clone the complete workspace
 git clone --recurse-submodules \
   https://github.com/kodjobaah/moda-interact-workspace.git
 
@@ -1563,52 +1287,70 @@ git submodule status --recursive
 # Open the VS Code workspace
 code moda-interact.code-workspace
 
-# Bootstrap the workspace Node/NVM environment
+# Bootstrap Node/NVM
 source scripts/bootstrap-node.sh
 
-# Apply the version-independent Node bootstrap rule to Codex agents
-python3 scripts/apply-node-agent-policy.py
+# Quick workspace environment/dependency validation
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
 
-# Regenerate all Claude agent definitions from canonical Codex TOML files
+# Production-focused workspace validation
+"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --production
+
+# Regenerate Claude agents from canonical Codex definitions
 python3 sync_agents.py
 
-# Verify Claude definitions are synchronized without rewriting files
+# Verify agent synchronization
 python3 sync_agents.py --check
 
-# Regenerate one logical agent
-python3 sync_agents.py --agent moda_background
-
-# Remove obsolete generated Claude agents
-python3 sync_agents.py --prune
-
-# View the standard repository-agent kickoff template
-cat docs/agent-task-execution-template.md
-
-# Resolve and render an architecture task without launching it
+# Resolve an architecture task without launching it
 python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
 
-# Inspect the Claude/Copilot task launcher
-cat .claude/skills/moda-task/SKILL.md
+# Inspect the detailed coding-agent workflow
+cat docs/coding-agent-workflow.md
 
-# Inspect the Codex task launcher
-cat .codex/skills/moda-task/SKILL.md
+# Inspect Copilot implementation-model planning
+cat docs/copilot-model-selection.md
 
-# Inspect the Continue task launcher prompt
-cat .continue/prompts/moda-task.md
+# Inspect current high-level architecture initiatives
+cat docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md
+cat docs/architecture/ARCH-002-render-production-gateway-infrastructure.md
 ```
 
-## Development principle
+---
 
-The workspace coordinates the platform but does not replace the independent ownership of each service.
+## Development principles
+
+The workspace coordinates the platform without replacing independent service
+ownership.
 
 - Shopify-facing concerns belong in `moda-interact`.
-- Long-running, retryable and state-correlating workflows belong in `moda-interact-background`.
+- Platform administration belongs in `moda-interact-admin`.
+- Long-running, retryable and state-correlating workflows belong in
+  `moda-interact-background`.
 - Shared data models and migrations belong in `moda-interact-database`.
-- Messaging provider ingress belongs in `moda-interact-messaging`.
-- Canonical cross-service runtime contracts belong in `moda-interact-shared` and should be consumed through `@modainteract/moda-interact-shared`.
-- Platform administration and cross-merchant operational views belong in `moda-interact-admin`.
+- Public ingress, Render topology and infrastructure routing belong in
+  `moda-interact-gateway`.
+- Messaging-provider ingress belongs in `moda-interact-messaging`.
+- Canonical cross-service runtime contracts belong in `moda-interact-shared`.
 - Public product and marketing content belongs in `moda-interact-site`.
-- Architecture-specific system tests, test fixtures and local system-test orchestration belong in `moda-interact-system-test`.
-- Cross-repository architecture, sequencing, implementation review and final architecture acceptance belong to `moda_architect`.
+- Architecture-specific integrated validation belongs in
+  `moda-interact-system-test`.
+- Cross-repository architecture, sequencing, implementation review and final
+  architecture acceptance belong to `moda_architect`.
 
-The workspace records how those independently deployed parts fit together and provides the durable architecture/task state used across Claude Code, Codex, GitHub Copilot and Continue execution environments.
+The workspace records how these independently deployed parts fit together and
+provides durable architecture/task state across Copilot, Claude Code, Codex and
+Continue.
+
+---
+
+## Related documentation
+
+- [Architecture overview](docs/architecture/overview.md)
+- [Service boundaries](docs/architecture/services.md)
+- [Coding agent workflow](docs/coding-agent-workflow.md)
+- [Copilot model selection](docs/copilot-model-selection.md)
+- [Development baseline](docs/development-baseline.md)
+- [Node.js toolchain](docs/node-toolchain.md)
+- [ARCH-001: Shopify checkout recovery webhook processing](docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md)
+- [ARCH-002: Render test and production gateway and infrastructure](docs/architecture/ARCH-002-render-production-gateway-infrastructure.md)
