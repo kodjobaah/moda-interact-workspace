@@ -23,6 +23,7 @@ Coordinator:
 | BACKGROUND-007 | Add bounded background worker operational metrics | Complete | BACKGROUND-006 |
 | BACKGROUND-008 | Integrate GenAI active spans in messaging worker | Complete | BACKGROUND-006, SHARED-013 |
 | BACKGROUND-009 | Integrate bounded GenAI operational metrics in messaging worker | Complete | BACKGROUND-008 |
+| BACKGROUND-010 | Make outbound WhatsApp API base URL configurable | Complete | - |
 
 Canonical worker deployment units:
 
@@ -69,3 +70,45 @@ The background prerequisite for `GATEWAY-006` and `SYSTEM-TEST-002` is now
 satisfied. Their final readiness still depends on their remaining cross-domain
 prerequisites and must be reconciled by `moda_architect` from the full ARCH-002
 coordination state.
+
+
+## SYSTEM-TEST-004 prerequisite capability
+
+`ARCH-002-SYSTEM-TEST-004` discovered a concrete owning-repository capability
+gap during its required preflight.
+
+The existing outbound WhatsApp client hard-codes the Meta Graph API base URL.
+
+The architect therefore creates:
+
+```text
+ARCH-002-BACKGROUND-010
+  Make outbound WhatsApp API base URL configurable
+  status: Ready
+```
+
+This task is intentionally narrow. It preserves the current Meta
+`https://graph.facebook.com/v25.0` default and adds only the configuration seam
+required for the test-owned WhatsApp emulator.
+
+It enables `ARCH-002-SYSTEM-TEST-004`.
+
+
+## BACKGROUND-010 architect acceptance
+
+`ARCH-002-BACKGROUND-010` is architect-accepted Complete.
+
+The outbound WhatsApp client now supports optional:
+
+```text
+WHATSAPP_API_BASE_URL
+```
+
+while preserving the exact production default:
+
+```text
+https://graph.facebook.com/v25.0
+```
+
+This satisfies the concrete consumer capability required by
+`ARCH-002-SYSTEM-TEST-004`.
