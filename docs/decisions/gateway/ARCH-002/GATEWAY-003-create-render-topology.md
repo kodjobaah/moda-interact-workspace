@@ -6,11 +6,11 @@ domain: gateway
 repository: moda-interact-gateway
 assigned_agent: moda_gateway
 coordinator: moda_architect
-status: pending
+status: complete
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-02T20:52:26Z
+attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-002
   - ARCH-002-GATEWAY-005
@@ -26,7 +26,7 @@ depends_on:
 enables:
   - ARCH-002-GATEWAY-004
 created: 2026-08-29
-updated: 2026-08-31
+updated: 2026-09-02
 ---
 
 # Create Render Test and Production Deployment Topology
@@ -285,24 +285,24 @@ Never commit secret values.
 
 ## Work Items
 
-- [ ] create/update `moda-interact-gateway/render.test.yaml`;
-- [ ] create/update `moda-interact-gateway/render.production.yaml`;
-- [ ] configure public gateway in both environments;
-- [ ] configure accepted private HTTP services in both environments;
-- [ ] configure the accepted worker services in both environments;
-- [ ] configure supported health/readiness behaviour;
-- [ ] configure internal service references;
-- [ ] wire Redis/PostgreSQL environment names securely;
-- [ ] preserve npm-based service-local build assumptions from GATEWAY-005;
-- [ ] wire test/production OpenTelemetry environment identity;
-- [ ] document test/production secret and state isolation;
-- [ ] document deployment order;
-- [ ] document test environment cost assumptions;
-- [ ] document production scaling/cost assumptions;
-- [ ] document the 22,000-webhooks/minute production capacity target;
-- [ ] classify every unmeasured production capacity claim as
+- [x] create/update `moda-interact-gateway/render.test.yaml`;
+- [x] create/update `moda-interact-gateway/render.production.yaml`;
+- [x] configure public gateway in both environments;
+- [x] configure accepted private HTTP services in both environments;
+- [x] configure the accepted worker services in both environments;
+- [x] configure supported health/readiness behaviour;
+- [x] configure internal service references;
+- [x] wire Redis/PostgreSQL environment names securely;
+- [x] preserve npm-based service-local build assumptions from GATEWAY-005;
+- [x] wire test/production OpenTelemetry environment identity;
+- [x] document test/production secret and state isolation;
+- [x] document deployment order;
+- [x] document test environment cost assumptions;
+- [x] document production scaling/cost assumptions;
+- [x] document the 22,000-webhooks/minute production capacity target;
+- [x] classify every unmeasured production capacity claim as
       `ASSUMED`/`ESTIMATED`;
-- [ ] record validation.
+- [x] record validation.
 
 ## Interfaces / Contracts
 
@@ -341,51 +341,51 @@ moda-interact-gateway/render.production.yaml
 
 ## Acceptance Criteria
 
-- [ ] `moda-interact-gateway/render.test.yaml` represents the accepted test
+- [x] `moda-interact-gateway/render.test.yaml` represents the accepted test
       topology;
-- [ ] `moda-interact-gateway/render.production.yaml` represents the accepted
+- [x] `moda-interact-gateway/render.production.yaml` represents the accepted
       production topology;
-- [ ] the two Blueprints manage distinct environment resources;
-- [ ] test and production secrets/state are independently configurable;
-- [ ] the test topology uses the cheapest practical compute without changing
+- [x] the two Blueprints manage distinct environment resources;
+- [x] test and production secrets/state are independently configurable;
+- [x] the test topology uses the cheapest practical compute without changing
       architecture boundaries merely to obtain Free instances;
-- [ ] production capacity configuration preserves the 22,000-webhooks/minute
+- [x] production capacity configuration preserves the 22,000-webhooks/minute
       target without presenting assumptions as measured capacity;
-- [ ] public/private exposure matches architecture in both environments;
-- [ ] `moda-interact-admin` remains a private Render service;
-- [ ] production Admin public-host configuration resolves the accepted
+- [x] public/private exposure matches architecture in both environments;
+- [x] `moda-interact-admin` remains a private Render service;
+- [x] production Admin public-host configuration resolves the accepted
       `admin.modainteract.com` gateway contract without requiring a Next.js
       `/admin` base path;
-- [ ] test Admin host/configuration is isolated from production;
-- [ ] worker definitions use real supported entrypoints;
-- [ ] worker pools are independently scalable;
-- [ ] no HTTP load balancer fronts BullMQ workers;
-- [ ] Redis Cloud remains external where required;
-- [ ] PostgreSQL schema ownership remains with `moda_database`;
-- [ ] no secrets are committed;
-- [ ] health/readiness paths match actual services;
-- [ ] environment declarations match actual requirements;
-- [ ] npm-based service-local build assumptions from GATEWAY-005 are preserved;
-- [ ] OpenTelemetry resource identity distinguishes `test` and `production`
+- [x] test Admin host/configuration is isolated from production;
+- [x] worker definitions use real supported entrypoints;
+- [x] worker pools are independently scalable;
+- [x] no HTTP load balancer fronts BullMQ workers;
+- [x] Redis Cloud remains external where required;
+- [x] PostgreSQL schema ownership remains with `moda_database`;
+- [x] no secrets are committed;
+- [x] health/readiness paths match actual services;
+- [x] environment declarations match actual requirements;
+- [x] npm-based service-local build assumptions from GATEWAY-005 are preserved;
+- [x] OpenTelemetry resource identity distinguishes `test` and `production`
       without changing canonical logical `service.name`;
-- [ ] deployment order is documented;
-- [ ] scaling/cost claims are correctly classified.
+- [x] deployment order is documented;
+- [x] scaling/cost claims are correctly classified.
 
 ## Validation
 
-- [ ] validate both Render Blueprint/config files where practical;
-- [ ] verify no resource is managed by both Blueprints;
-- [ ] service mapping review;
-- [ ] command/port/health cross-check;
-- [ ] worker entrypoint cross-check;
-- [ ] npm/service-local build assumption cross-check;
-- [ ] test/production environment-variable isolation review;
-- [ ] test/production Redis/PostgreSQL isolation review;
-- [ ] OpenTelemetry resource/environment review;
-- [ ] secret scan/review;
-- [ ] test topology cost review;
-- [ ] production capacity classification review;
-- [ ] topology documentation review.
+- [x] validate both Render Blueprint/config files where practical;
+- [x] verify no resource is managed by both Blueprints;
+- [x] service mapping review;
+- [x] command/port/health cross-check;
+- [x] worker entrypoint cross-check;
+- [x] npm/service-local build assumption cross-check;
+- [x] test/production environment-variable isolation review;
+- [x] test/production Redis/PostgreSQL isolation review;
+- [x] OpenTelemetry resource/environment review;
+- [x] secret scan/review;
+- [x] test topology cost review;
+- [x] production capacity classification review;
+- [x] topology documentation review.
 
 ## Implementation Notes
 
@@ -404,58 +404,338 @@ the 22,000-webhooks/minute target.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `moda-interact-gateway/render.test.yaml`
+- `moda-interact-gateway/render.production.yaml`
+- `moda-interact-gateway/docs/render-topology.md`
+- `moda-interact-gateway/README.md`
+- `docs/decisions/gateway/ARCH-002/GATEWAY-003-create-render-topology.md`
 
 ### Work Completed
 
-None.
+- Added isolated test and production Render Blueprints, each with one public
+  gateway, three private HTTP services, three independent background workers,
+  one Render PostgreSQL resource, and an environment-specific observability
+  group.
+- Wired gateway upstreams through Render private `hostport` references, kept
+  Redis Cloud external, and used environment-specific PostgreSQL references.
+- Wired the Shopify migration as `preDeployCommand: npm run migrate`; no seed
+  command is part of replica startup.
+- Declared the source-confirmed Docker/native runtimes and the three accepted
+  worker entrypoints.
+- Added production `admin.modainteract.com` gateway domain/host wiring and kept
+  Admin private without a Next.js base path.
+- Retained the applied correction that reserves `GET /health` as gateway-local
+  liveness in both the default server and the `ADMIN_PUBLIC_HOST` server. This
+  prevents Render custom-domain health checks from falling through to
+  `moda_admin`.
+- Documented runtime contracts, readiness behaviour, secrets/state isolation,
+  deployment order, Render-only checks, and cost/capacity classifications.
 
 ### Validation Results
 
-Not run.
+- Both files parsed successfully as YAML and contained seven services.
+- Both files passed Render's published Draft 2020-12 JSON Schema using
+  `ajv-cli@5` with no deployment or credentials.
+- Structural validation passed: one public web service, three private services,
+  three workers, one database, valid internal references, no Render Redis,
+  no private/worker `healthCheckPath`, and no shared resource names.
+- `tests/run-tests.sh` passed gateway health, application/messaging/Admin
+  routing, forwarding, webhook-body integrity, sensitive-query checks, and the
+  Admin-host `/health` gateway-liveness regression test (49 passed, 0 failed).
+- `tests/validate-observability-config.sh` passed.
+- `git diff --check` passed.
+- VS Code diagnostics reported no errors in either Blueprint or the runbook.
+- Credential-pattern scan returned no matches; `git diff --check` passed.
 
 ### Deviations
 
-None.
+- The applied correction keeps `/health` gateway-local in the `ADMIN_PUBLIC_HOST`
+  server as well as the default server. This is required because Render may
+  send a custom-domain health check with `Host: admin.modainteract.com`; it must
+  not proxy to the private Admin service.
+- Render's current Blueprint schema restricts `healthCheckPath` to public web
+  services. Private Shopify, Messaging, and Admin `/health` and `/ready` routes
+  remain documented for deployment/system checks rather than declared as
+  invalid private-service Blueprint health checks.
 
 ### Assumptions
 
-None beyond those explicitly stated by the task.
+- Test private services/workers use `0.5c-512mb`, the current smallest supported
+  compute plan; the public gateway and PostgreSQL use Free plans.
+- Production plans and counts are `ASSUMED` initial hypotheses. The
+  22,000-webhooks/minute figure is an `ESTIMATED` load-test target, not measured
+  capacity.
 
 ### Unresolved Issues
 
-None recorded yet.
+- Credential-aware Render CLI/API validation, repository access, plan/workspace
+  availability, secret population, private networking, DNS/TLS, migrations,
+  readiness, and production capacity require isolated Render environments and
+  remain deployment-time validation. No Render deployment was performed.
 
 ### Architectural Concerns
 
-None recorded yet.
+- Render supports native health checks only for the public web service in this
+  topology. Operational validation must explicitly probe private readiness and
+  worker readiness commands after deployment.
+- Production capacity remains unknown until GATEWAY-004 load testing; that task
+  was not started.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted / Complete
 
 ### Review Notes
 
-Pending implementation.
+`ARCH-002-GATEWAY-003` is architect-accepted.
 
-### Reviewed Files
+The final submission preserves the approved ARCH-002 deployment boundaries and
+includes the requested custom-domain health correction.
 
-Pending.
+### Blueprint Topology Reviewed
 
-### Validation Reviewed
+Both canonical Blueprint files are present:
 
-Pending.
+```text
+moda-interact-gateway/render.test.yaml
+moda-interact-gateway/render.production.yaml
+```
+
+Architect inspection confirms each environment declares:
+
+```text
+1 public web gateway
+3 private HTTP services
+3 independent background workers
+1 Render PostgreSQL resource
+1 environment-specific observability group
+```
+
+The public/private boundary remains:
+
+```text
+PUBLIC
+  moda-interact-gateway
+
+PRIVATE
+  moda-interact
+  moda-interact-messaging
+  moda-interact-admin
+
+NO INBOUND HTTP
+  moda-shopify-event-worker
+  moda-recovery-worker
+  moda-messaging-worker
+```
+
+Redis remains external Redis Cloud configuration rather than a Render-managed
+Redis/Key Value resource.
+
+### Environment Isolation Reviewed
+
+Test and production use distinct:
+
+```text
+service/resource names
+PostgreSQL resources
+observability groups
+secret placeholders
+Redis credential inputs
+provider credential inputs
+deployment.environment.name
+```
+
+No production secret value is committed.
+
+Canonical OpenTelemetry logical service identity remains source-owned and is
+not environment-suffixed.
+
+### Admin Host / Gateway Health Correction Reviewed
+
+Production attaches:
+
+```text
+admin.modainteract.com
+```
+
+to the public gateway.
+
+The corrected NGINX Admin-host server now reserves:
+
+```text
+GET /health
+```
+
+as gateway-local liveness and returns:
+
+```json
+{"status":"ok","service":"moda-interact-gateway"}
+```
+
+instead of proxying that request to `moda_admin`.
+
+The regression suite contains an explicit Admin-host health request and proves
+the gateway response is returned.
+
+Normal Admin-host routes still proxy to the private Admin service.
+
+### Capacity Classification Reviewed
+
+The approximately:
+
+```text
+22,000 Shopify webhooks/minute
+~367 requests/second
+```
+
+target is documented as an estimated/unmeasured load-test target.
+
+Initial production instance counts and plan choices remain explicitly
+`ASSUMED`; they are not represented as measured capacity.
+
+Shopify ingress, recovery, WhatsApp and CommerceAgent workloads remain separate
+scaling domains.
+
+### Independent Architect Checks
+
+Against the submitted bundle the architect independently confirmed:
+
+```text
+render.test.yaml
+  YAML parse PASS
+  7 services
+  1 database
+  1 env-var group
+
+render.production.yaml
+  YAML parse PASS
+  7 services
+  1 database
+  1 env-var group
+
+tests/run-tests.sh
+  shell syntax PASS
+
+tests/validate-observability-config.sh
+  shell syntax PASS
+
+docker/entrypoint.sh
+  shell syntax PASS
+
+credential-pattern scan
+  no obvious committed credential matches
+```
+
+The architect execution environment did not provide Docker, so the full Docker
+gateway suite was not re-executed independently in this review.
+
+### Repository-Agent Validation Reviewed
+
+The Completion Report records:
+
+```text
+gateway integration suite
+  49 passed
+  0 failed
+
+observability configuration validation
+  PASS
+
+Render published Blueprint JSON-schema validation
+  PASS for test
+  PASS for production
+
+git diff --check
+  PASS
+
+credential-pattern scan
+  no matches
+```
+
+The completion report also correctly leaves credential-aware Render deployment,
+DNS/TLS, private-network connectivity, real secret population, real database
+migration/readiness and measured production capacity to later deployment/system
+validation.
 
 ### Architecture Conformance
 
-Pending.
+Accepted.
 
-### Follow-up
+No application repository ownership was crossed.
 
-Pending.
+No HTTP load balancer was introduced for BullMQ workers.
+
+No OpenTelemetry Collector was introduced.
+
+No production deployment was performed.
+
+### Git / Publication
+
+The repository agent stopped at Review and did not commit or push.
+
+Accepted Gateway changes are ready for developer commit/push.
+
+### Downstream Coordination
+
+`ARCH-002-GATEWAY-003` is Complete.
+
+The authoritative `ARCH-002-GATEWAY-004` task has exactly one direct dependency:
+
+```text
+ARCH-002-GATEWAY-003
+```
+
+That dependency is now Complete.
+
+Therefore:
+
+```text
+ARCH-002-GATEWAY-004
+pending -> ready
+```
+
+No task is automatically claimed or started.
+
+## Architect Readiness Review
+
+### Status
+
+Ready
+
+### Dependency Re-evaluation
+
+The architect re-evaluated the authoritative `depends_on` list on 2026-09-02.
+
+All declared direct prerequisites are architect-accepted Complete:
+
+```text
+ARCH-002-GATEWAY-002
+ARCH-002-GATEWAY-005
+ARCH-002-GATEWAY-006
+ARCH-002-GATEWAY-007
+ARCH-002-SHOPIFY-001
+ARCH-002-SHOPIFY-002
+ARCH-002-MESSAGING-001
+ARCH-002-ADMIN-001
+ARCH-002-ADMIN-008
+ARCH-002-BACKGROUND-001
+ARCH-002-BACKGROUND-002
+```
+
+No declared direct dependency remains unresolved.
+
+`ARCH-002-GATEWAY-003` is therefore eligible for execution and is promoted:
+
+```text
+pending -> ready
+```
+
+No executor has been claimed.
+
+No downstream task is started automatically.

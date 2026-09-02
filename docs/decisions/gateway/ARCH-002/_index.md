@@ -19,8 +19,8 @@ Coordinator:
 | GATEWAY-007 | Implement host-based admin gateway routing | Complete | GATEWAY-002, ADMIN-008 |
 | GATEWAY-005 | Validate npm-based shared package production builds | Complete | GATEWAY-001, SHOPIFY-004, BACKGROUND-004 |
 | GATEWAY-006 | Configure OpenTelemetry transport/environment wiring | Complete | GATEWAY-002, SHOPIFY-006, MESSAGING-003, ADMIN-009, BACKGROUND-005 |
-| GATEWAY-003 | Create Render test and production deployment topology | Pending | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
-| GATEWAY-004 | Validate gateway and Render infrastructure | Pending | GATEWAY-003 |
+| GATEWAY-003 | Create Render test and production deployment topology | Complete | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
+| GATEWAY-004 | Validate gateway and Render infrastructure | Ready | GATEWAY-003 |
 
 Canonical ARCH-002 Render Blueprints:
 
@@ -158,3 +158,43 @@ No known declared direct prerequisite remains unresolved.
 
 `GATEWAY-003` is not automatically promoted here. The architect must inspect
 its authoritative current task file before changing its coordination state.
+
+
+## GATEWAY-003 final readiness promotion
+
+The architect re-read the authoritative `GATEWAY-003` task and re-evaluated
+only its explicit `depends_on` list.
+
+Every declared direct prerequisite is Complete.
+
+```text
+GATEWAY-003
+  pending -> ready
+```
+
+No task has been claimed or started by this coordination update.
+
+`GATEWAY-004` remains Pending.
+
+
+## GATEWAY-003 architect acceptance
+
+`ARCH-002-GATEWAY-003` is architect-accepted Complete.
+
+Accepted canonical topology sources:
+
+```text
+moda-interact-gateway/render.test.yaml
+moda-interact-gateway/render.production.yaml
+```
+
+The Admin custom-domain `/health` correction is included and validated.
+
+The only direct dependency of `ARCH-002-GATEWAY-004` is now Complete, so:
+
+```text
+GATEWAY-004
+  pending -> ready
+```
+
+No executor has been claimed and no downstream task has been started.
