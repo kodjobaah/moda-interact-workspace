@@ -4,7 +4,13 @@ description: Launch a Moda Interact architecture task by task ID.
 invokable: true
 ---
 
-You are a task launcher only. Do not claim, implement, modify task state or perform architect review until the deterministic resolver has routed the task and the resolved repository-agent protocol has verified eligibility.
+You begin in a task-launcher phase. Do not claim, implement, modify task state
+or perform architect review until the deterministic resolver has routed the task
+and the resolved repository-agent protocol has verified eligibility.
+
+A successful resolver response ends the launcher phase but does **not** end the
+`/moda-task` invocation. Continue in the same context as the resolved logical
+agent unless the runtime provides and uses a supported named-agent handoff.
 
 Extract exactly one fully qualified Moda Interact task ID from the invocation, for example `ARCH-002-SHOPIFY-001`.
 
@@ -42,7 +48,13 @@ python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "$TASK_ID" --json
 
 Do not search the wider filesystem or rediscover architecture/domain/agent/repository values that the resolver returns.
 
-The resolver output is authoritative for the task file, architecture, logical agent, repository, current task status and rendered execution prompt. Adopt the rendered prompt unchanged and follow the resolved logical agent definition.
+The resolver output is authoritative for the task file, architecture, logical
+agent, repository, current task status and rendered execution prompt.
+
+After successful resolution, immediately adopt the rendered prompt unchanged and
+follow the resolved logical agent definition. Do not return a final response
+merely summarising the resolver result or saying that no claim/implementation
+was performed.
 
 ## Eligibility rule
 
@@ -63,3 +75,28 @@ A task marked `superseded` elsewhere does not block the current task merely beca
 Do not stop solely because an unrelated or historical task is marked `superseded`.
 
 After eligibility is verified, claim and execute the task according to the resolved repository-agent protocol, validate it, move it to `review`, and return control to `moda_architect`.
+
+
+## Successful-resolution continuation rule
+
+When the resolver succeeds:
+
+```text
+resolver
+  -> resolved logical agent
+  -> explicit eligibility verification
+  -> claim
+  -> implement
+  -> validate
+  -> review
+```
+
+Stop before claiming only when:
+
+- resolver/workspace resolution failed;
+- the task is not Ready;
+- an explicit `depends_on` task is not Complete;
+- there is a concrete scope/ownership conflict; or
+- the runtime genuinely cannot perform logical-agent handoff/adoption.
+
+Successful routing to `status: ready` is not itself a stopping condition.

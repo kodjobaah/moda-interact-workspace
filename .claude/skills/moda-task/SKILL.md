@@ -4,8 +4,16 @@ description: Launch a Moda Interact architecture task by task ID.
 disable-model-invocation: true
 ---
 
-You are a task launcher only. Do not claim, implement, modify task state or
-perform architect review in this launcher context.
+You begin in a task-launcher phase.
+
+The launcher phase exists only to resolve authoritative routing and prepare the
+handoff. While that phase is active, do not claim, implement, modify task state
+or perform architect review.
+
+**A successful resolver response does not finish the `/moda-task` invocation.**
+After successful resolution, continue immediately to the `## Handoff` section.
+Do not return a final response merely stating that routing succeeded or that no
+claim/implementation was performed.
 
 Extract exactly one fully qualified Moda Interact task ID from the invocation,
 for example `ARCH-002-SHOPIFY-001`.
@@ -85,10 +93,54 @@ replace it.
 
 ## Handoff
 
+Successful resolution ends the launcher phase, not the task invocation.
+
+If the resolver returns a valid task route, the next required action is to
+enter the resolved logical-agent execution context using the resolver's
+authoritative `agent`, `repository` and rendered `prompt`.
+
+The following are valid reasons to STOP before task execution:
+
+- workspace-root resolution failed;
+- `start-agent-task.py` failed;
+- the resolved task is not executable after the explicit dependency gate;
+- the runtime genuinely cannot perform either named delegation or same-context
+  logical-agent adoption.
+
+The following are **not** valid reasons to STOP:
+
+- the resolver returned `status: ready`;
+- the resolver successfully identified the agent/repository/task file;
+- the launcher itself is prohibited from claiming during the pre-handoff phase;
+- no implementation has happened yet immediately after resolver execution.
+
+
 ### Claude Code
 
 Invoke the named custom subagent from `.claude/agents` and pass `prompt`
-unchanged. If named delegation is unavailable, report that limitation.
+unchanged.
+
+If named delegation is unavailable but the runtime can continue in the current
+context, read the resolved generated agent definition and adopt that logical
+agent in the current context using `prompt` unchanged.
+
+Only report a delegation limitation and STOP when the runtime genuinely cannot
+perform either named delegation or same-context logical-agent adoption.
+
+### Codex
+
+Read the resolved logical-agent definition from:
+
+```text
+.codex/agents/<resolved-agent>.toml
+```
+
+Adopt that logical agent and the resolver's rendered `prompt` unchanged in the
+current execution context, then continue with eligibility verification, claim
+and execution.
+
+Do **not** stop after successful routing merely because the pre-handoff launcher
+phase itself is not allowed to claim the task.
 
 ### GitHub Copilot Agent Mode
 
@@ -97,6 +149,10 @@ Copilot does not use Claude's named-subagent mechanism.
 Use the resolver's `agent` and `repository` exactly, read the corresponding
 generated definition under `.claude/agents/`, then adopt `prompt` unchanged in
 the current Agent Mode context.
+
+This same-context adoption is the handoff. After adopting the resolved logical
+agent, continue with dependency verification, claim and execution. Do **not**
+finish the `/moda-task` invocation after merely reporting the resolver output.
 
 Before inspecting implementation source, the resolved repository-agent protocol
 MUST verify:
@@ -153,3 +209,14 @@ explicit dependency verification
   v
 claim -> inspect -> implement -> validate -> review
 ```
+
+A successful `status: ready` resolver result must proceed through this flow in
+the same `/moda-task` invocation. A response such as:
+
+```text
+No claim, implementation, or task-state modification was performed.
+```
+
+is only appropriate when execution is actually blocked or handoff is genuinely
+unavailable. It is not an acceptable terminal response after successful routing
+to an executable task.
