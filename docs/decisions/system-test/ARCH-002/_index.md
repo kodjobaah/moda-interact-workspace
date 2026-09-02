@@ -17,12 +17,12 @@ repository: moda-interact-system-test
 
 | Task | Description | Status | Dependencies |
 |------|-------------|--------|--------------|
-| SYSTEM-TEST-001 | Validate integrated test and production-ready topology | Pending | GATEWAY-004 |
+| SYSTEM-TEST-001 | Validate integrated test and production-ready topology | Pending | GATEWAY-004, ADMIN-004 |
 
 ## Unblocking rule
 
-`SYSTEM-TEST-001` remains Pending until `ARCH-002-GATEWAY-004` is
-architect-accepted Complete.
+`SYSTEM-TEST-001` remains Pending until `ARCH-002-GATEWAY-004` and
+`ARCH-002-ADMIN-004` are architect-accepted Complete.
 
 GATEWAY-004 is the final infrastructure validation gate and is expected to be
 Complete only after the required application, build, observability and topology
@@ -41,3 +41,9 @@ that production-capacity claim.
 agent's implementation merely to make a failing scenario pass.
 
 The individual task file is authoritative for task state.
+
+## Observability Validation Extension
+
+| Task | Description | Status | Dependencies |
+|------|-------------|--------|--------------|
+| SYSTEM-TEST-002 | Validate shared observability and WhatsApp worker performance | Pending | SHOPIFY-007, BACKGROUND-007, BACKGROUND-009, MESSAGING-004, MESSAGING-005, ADMIN-009, GATEWAY-006 |

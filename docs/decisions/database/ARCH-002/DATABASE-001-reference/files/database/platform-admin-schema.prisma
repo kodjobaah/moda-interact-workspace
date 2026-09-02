@@ -1,0 +1,26 @@
+// Add to moda-interact-database/prisma/schema.prisma.
+// This is an architect reference snippet; moda_database owns the schema change.
+
+enum PlatformAdminRole {
+  ADMIN
+  SUPER_ADMIN
+
+  @@schema("public")
+}
+
+model PlatformAdmin {
+  id              String            @id @default(cuid())
+  provider        String            @default("google")
+  providerSubject String?
+  email           String            @unique
+  displayName     String?
+  role            PlatformAdminRole @default(ADMIN)
+  active          Boolean           @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([provider, providerSubject])
+  @@index([active, role])
+  @@schema("public")
+}

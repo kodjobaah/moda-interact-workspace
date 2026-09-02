@@ -82,6 +82,48 @@ Service-specific semantic instrumentation is still allowed. It must use the
 global providers installed by the shared runtime and must not install another
 provider/exporter stack.
 
+## Framework-first telemetry reuse
+
+Service-specific does not mean service-duplicated. Before adding a custom
+metric/span, inspect the telemetry already emitted by the enabled framework and
+approved OpenTelemetry/shared instrumentation.
+
+If standard instrumentation already provides an operationally equivalent
+technical signal, use that signal directly. Do not create a Moda metric/span
+solely to rename, re-bucket, relabel or maintain a second route taxonomy for the
+same lifecycle.
+
+Typical generic signals that should be reused when actually available from the
+installed/configured instrumentation include:
+
+```text
+HTTP server request count/duration/status/method/route
+HTTP client request spans/metrics
+framework request spans
+Prisma/database client spans
+BullMQ producer/consumer spans or metrics supplied by the approved adapter
+```
+
+Availability must be established from the installed version/configuration and
+export path; documentation or package presence alone is not enough.
+
+A custom service metric/span is justified when it adds Moda-specific semantic
+meaning that generic instrumentation cannot know, for example a webhook being
+accepted/rejected after provider verification, a recovery transition, a
+privileged admin action, a billing event or a CommerceAgent business outcome. A
+custom signal may also be justified when the required unsampled/aggregated
+operational property is not supplied by the existing signal. Record that gap in
+the task or Completion Report.
+
+Do not maintain a custom route allowlist merely to recreate ordinary framework
+HTTP request telemetry. New application routes should become observable through
+the approved framework/runtime instrumentation without changes to a parallel
+Moda metric schema.
+
+If an implementation task is discovered to duplicate existing approved
+telemetry, return it to `moda_architect` for narrowing or supersession rather
+than implementing the duplicate.
+
 If the published shared version lacks a required generic capability, return the
 gap to `moda_architect`. Do not silently recreate the missing runtime locally.
 

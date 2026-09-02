@@ -15,16 +15,18 @@ depends_on:
   - ARCH-002-GATEWAY-002
   - ARCH-002-GATEWAY-005
   - ARCH-002-GATEWAY-006
+  - ARCH-002-GATEWAY-007
   - ARCH-002-SHOPIFY-001
   - ARCH-002-SHOPIFY-002
   - ARCH-002-MESSAGING-001
   - ARCH-002-ADMIN-001
+  - ARCH-002-ADMIN-008
   - ARCH-002-BACKGROUND-001
   - ARCH-002-BACKGROUND-002
 enables:
   - ARCH-002-GATEWAY-004
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-31
 ---
 
 # Create Render Test and Production Deployment Topology
@@ -91,6 +93,12 @@ Actual service commands, ports, health paths, environment requirements and worke
 entrypoints must come from architect-accepted prerequisite tasks and repository
 inspection.
 
+The Admin service must remain private. Public browser access is provided through
+the gateway using the accepted host-routing contract from `GATEWAY-007`; the
+production value is `admin.modainteract.com`. The Blueprint/deployment runbook
+must wire the environment-specific Admin host/DNS/custom-domain requirement
+without introducing a Next.js `/admin` base path.
+
 The shared package production build boundary is npm-based and is validated by
 `ARCH-002-GATEWAY-005`; the Blueprint must not require workspace-root build
 context solely to resolve `@modainteract/moda-interact-shared`.
@@ -113,7 +121,8 @@ Configure/document where supported:
 - public gateway service;
 - private Shopify application service;
 - private messaging ingress;
-- private admin service where deployed;
+- private admin service;
+- Admin public-host contract from GATEWAY-007 (`admin.modainteract.com` in production);
 - actual supported worker services:
   - `moda-shopify-event-worker`;
   - `moda-recovery-worker`;
@@ -317,10 +326,12 @@ moda-interact-gateway/render.production.yaml
 - `ARCH-002-GATEWAY-002`
 - `ARCH-002-GATEWAY-005`
 - `ARCH-002-GATEWAY-006`
+- `ARCH-002-GATEWAY-007`
 - `ARCH-002-SHOPIFY-001`
 - `ARCH-002-SHOPIFY-002`
 - `ARCH-002-MESSAGING-001`
 - `ARCH-002-ADMIN-001`
+- `ARCH-002-ADMIN-008`
 - `ARCH-002-BACKGROUND-001`
 - `ARCH-002-BACKGROUND-002`
 
@@ -341,6 +352,11 @@ moda-interact-gateway/render.production.yaml
 - [ ] production capacity configuration preserves the 22,000-webhooks/minute
       target without presenting assumptions as measured capacity;
 - [ ] public/private exposure matches architecture in both environments;
+- [ ] `moda-interact-admin` remains a private Render service;
+- [ ] production Admin public-host configuration resolves the accepted
+      `admin.modainteract.com` gateway contract without requiring a Next.js
+      `/admin` base path;
+- [ ] test Admin host/configuration is isolated from production;
 - [ ] worker definitions use real supported entrypoints;
 - [ ] worker pools are independently scalable;
 - [ ] no HTTP load balancer fronts BullMQ workers;

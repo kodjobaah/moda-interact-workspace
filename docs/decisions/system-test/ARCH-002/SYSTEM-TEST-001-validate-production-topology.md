@@ -13,9 +13,10 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-002-GATEWAY-004
+  - ARCH-002-ADMIN-004
 enables: []
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-31
 ---
 
 # Validate Integrated Test and Production-Ready Topology
@@ -75,6 +76,10 @@ Against the deployed test environment validate, where applicable:
 - Shopify routing;
 - Meta/WhatsApp routing;
 - private-service isolation;
+- Admin host-based routing through `admin.modainteract.com` in production
+  configuration;
+- platform-admin authentication/authorisation;
+- secure internal Grafana observability presentation;
 - provider webhook verification compatibility;
 - app/messaging health and readiness;
 - Redis/BullMQ connectivity;
@@ -148,6 +153,17 @@ Render private network
    +--> moda-interact-messaging
    +--> moda-interact-admin
 ```
+
+Production Admin browser routing:
+
+```text
+admin.modainteract.com
+   -> moda-interact-gateway
+   -> moda-interact-admin private service
+```
+
+The Admin application remains rooted at `/`; production validation must not rely
+on a Next.js `/admin` base path.
 
 Background work:
 
@@ -238,6 +254,26 @@ Verify credentials, authorization headers, OAuth codes, Meta verification tokens
 and complete sensitive webhook/job payloads are absent from emitted operational
 telemetry/log evidence.
 
+
+## Admin Security / Observability Assertions
+
+Verify:
+
+- anonymous requests cannot use privileged Admin functionality;
+- an authorised platform administrator can access intended Admin functionality;
+- authenticated non-admin identities cannot perform privileged Admin actions;
+- privileged server actions/route handlers enforce authorisation server-side;
+- `admin.modainteract.com` reaches the private Admin service only through the
+  gateway;
+- non-Admin hosts cannot reach the Admin upstream through `/admin/*`;
+- the Admin `/observability` presentation is restricted to platform
+  administrators;
+- Grafana operational data is not made anonymous/public to satisfy iframe
+  embedding;
+- no Grafana or admin authentication credential is browser/log exposed;
+- test and production observability views remain distinguishable;
+- Grafana unavailability does not break unrelated Admin functionality.
+
 ## Failure-Path Assertions
 
 Where practical validate:
@@ -282,10 +318,14 @@ If a defect is found:
 ## Dependencies
 
 - `ARCH-002-GATEWAY-004`
+- `ARCH-002-ADMIN-004`
 
 GATEWAY-004 is the final infrastructure-validation dependency and is expected to
 be Complete only after GATEWAY-003 and its implementation/observability
 prerequisites are Complete.
+
+ADMIN-004 is the final Admin operational-presentation dependency and must be
+architect-accepted before integrated ARCH-002 validation begins.
 
 If GATEWAY-004 is Complete but a required implementation/observability
 prerequisite is discovered not to be architect-accepted, this task must return
@@ -302,6 +342,14 @@ None.
 - [ ] Meta/WhatsApp traffic reaches the intended private service;
 - [ ] private application services are not directly public where architecture
       requires them private;
+- [ ] production `admin.modainteract.com` routes through the gateway to the
+      private Admin service without a Next.js `/admin` base path;
+- [ ] anonymous and authenticated non-admin users cannot perform privileged Admin
+      operations;
+- [ ] authorised platform administrators can access intended Admin functionality;
+- [ ] the Admin `/observability` page presents the approved private/authenticated
+      Grafana view without anonymous/public dashboard exposure;
+- [ ] Grafana unavailability does not break unrelated Admin functionality;
 - [ ] provider verification remains compatible with gateway proxying;
 - [ ] app/messaging health/readiness behave correctly;
 - [ ] worker readiness/preflight behaves correctly;

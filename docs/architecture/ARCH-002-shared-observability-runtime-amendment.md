@@ -9,9 +9,29 @@ service repository.
 The invariant is:
 
 ```text
+approved framework/instrumentation owns generic technical signals it already emits
 shared owns HOW telemetry is installed and exported
-service owns WHAT business activity means
+service owns only additional Moda-specific business/domain meaning
 ```
+
+## Framework-first reuse correction
+
+Service ownership of telemetry semantics must not be interpreted as a
+requirement to duplicate generic telemetry already emitted by approved
+frameworks or OpenTelemetry instrumentation.
+
+Before creating a service-owned metric/span, inspect the enabled standard
+instrumentation. If it already provides the required technical signal with the
+required operational properties, use/query/display that signal directly.
+
+In particular, ordinary HTTP request count, duration, status, method and route
+telemetry must not be recreated as a parallel Moda metric merely to give it a
+Moda-specific name or bounded route vocabulary when the approved HTTP/framework
+instrumentation already supplies the required signal.
+
+Service-owned custom telemetry remains appropriate for Moda-specific business
+semantics that generic instrumentation cannot know, or for a documented signal
+property that the standard telemetry genuinely does not provide.
 
 `moda-interact-shared` therefore owns the reusable Node observability runtime,
 resource identity, context management, OTLP trace/metric exporters, sampling,
@@ -209,11 +229,11 @@ SHARED-005 accepted Complete
                           |
       +-------------------+----------------------+------------------+
       |                   |                      |                  |
+      v                   v                      v                  v
  SHOPIFY-006         BACKGROUND-003*        MESSAGING-003       ADMIN-009
-      |                                          |                  |
- SHOPIFY-007                            +---------+---------+    ADMIN-010
-                                       |                   |
-                                MESSAGING-004        MESSAGING-005
+      |                                          |\
+      v                                          | +--> MESSAGING-004
+ SHOPIFY-007                                   +----> MESSAGING-005
 
 * BACKGROUND-003 remains a decomposition gate until BACKGROUND-001 establishes
   the actual worker entrypoints.

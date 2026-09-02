@@ -15,7 +15,7 @@ depends_on:
   - ARCH-002-GATEWAY-003
 enables: []
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-31
 ---
 
 # Validate Gateway and Render Infrastructure Configuration
@@ -56,7 +56,10 @@ Validate where practical:
 - routing;
 - forwarded/provider headers;
 - webhook-body compatibility;
-- unavailable-upstream behaviour.
+- unavailable-upstream behaviour;
+- Admin host-based routing;
+- Admin/non-Admin host isolation;
+- root-relative Next.js Admin asset routing.
 
 ### Render topology
 
@@ -103,6 +106,10 @@ If validation discovers an application defect or missing capability:
 - [ ] validate gateway configuration;
 - [ ] validate container build/start;
 - [ ] validate routing/header/body behaviour;
+- [ ] validate `admin.modainteract.com` production host routing contract;
+- [ ] validate test Admin hostname configurability;
+- [ ] validate Admin host/non-Admin host isolation and no Shopify fallthrough;
+- [ ] validate root-relative Admin `/_next/*` asset routing;
 - [ ] validate Blueprint/topology;
 - [ ] validate public/private exposure;
 - [ ] validate real worker commands;
@@ -132,6 +139,11 @@ Complete, `moda_architect` creates `ARCH-002-SYSTEM-TEST-001`.
 - [ ] gateway container builds/starts;
 - [ ] health succeeds;
 - [ ] approved routes target intended services;
+- [ ] production `admin.modainteract.com` targets only the private Admin upstream;
+- [ ] non-Admin hosts cannot reach the Admin upstream through the provisional
+      `/admin/*` path;
+- [ ] Admin host root and `/_next/*` requests resolve through the gateway without
+      requiring a Next.js `/admin` base path;
 - [ ] required headers/body behaviour are preserved;
 - [ ] upstream failure behaviour is predictable;
 - [ ] Render configuration is internally consistent;

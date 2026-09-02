@@ -47,6 +47,13 @@ rules are authoritative for ownership, repository practice and local
 validation. If they conflict in a way that changes architecture or scope, stop
 and return the conflict to `moda_architect`.
 
+For observability tasks, also perform the agent-defined framework-first
+capability-reuse check before adding custom instrumentation. If the task asks for
+a custom metric/span that merely duplicates an equivalent signal already
+provided by architecture-approved framework/runtime/OpenTelemetry/shared
+instrumentation, do not implement the duplicate. Record the evidence and return
+the task to `moda_architect` for narrowing or supersession.
+
 ## 2. Verify and claim
 
 Immediately before implementation, re-read the task and verify:

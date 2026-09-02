@@ -6,20 +6,41 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: ready
+status: superseded
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-002-GATEWAY-001
-enables:
-  - ARCH-002-GATEWAY-006
+- ARCH-002-GATEWAY-001
+- ARCH-002-SHARED-010
+enables: []
 created: 2026-08-29
-updated: 2026-08-29
+updated: '2026-08-31'
 ---
-
 # Add OpenTelemetry to Admin Runtime
+
+## Superseded — Granular Replacement (2026-08-31)
+
+This task must not be executed.
+
+The broad admin observability task is replaced by shared-runtime adoption in
+`ARCH-002-ADMIN-009`. `ARCH-002-ADMIN-010` was later Superseded after architect
+review determined that its generic request metrics duplicated standard
+Next.js/OpenTelemetry HTTP telemetry.
+
+This change applies the current architect task-granularity policy. Historical
+implementation/completion material below is retained only as evidence and does
+not define executable scope.
+
+## Current Architect Instruction — Shared Runtime
+
+This task's executable architecture is the shared-runtime amendment in this
+file plus `docs/observability/shared-observability-runtime.md`. Any earlier
+service-local NodeSDK/provider/exporter/bootstrap instructions or completion
+notes are historical implementation evidence and are superseded where they
+conflict with the shared-runtime amendment. Service/domain semantic telemetry
+remains owned by this repository.
 
 ## Architecture
 
@@ -242,3 +263,41 @@ Pending.
 ### Follow-up
 
 Pending.
+
+## Architect Amendment — Shared Observability Runtime (2026-08-31)
+
+**This amendment supersedes any conflicting service-local NodeSDK/provider/
+exporter/bootstrap instructions earlier in this task.** Admin owns internal
+request/database semantic telemetry; generic runtime plumbing is shared.
+
+Do not resume implementation until `ARCH-002-SHARED-010` is architect-accepted
+Complete.
+
+Then:
+
+1. consume the exact published shared version;
+2. read `docs/observability/shared-observability-runtime.md`;
+3. add a process preload with:
+
+```js
+initNodeObservability({
+  serviceName: "moda-interact-admin",
+  instrument: { http: true, fetch: true, prisma: true },
+});
+```
+
+4. for the current Next.js production shape, preload before the Next CLI:
+
+```text
+node --import ./observability.mjs ./node_modules/next/dist/bin/next start
+```
+
+5. preserve admin-specific request/database semantic telemetry using the global
+   provider installed by shared runtime;
+6. remove obsolete local provider/exporter/bootstrap logic only after parity is
+   proven;
+7. do not put Grafana embedding/presentation code into the shared runtime;
+8. validate tenant/admin data safety and database telemetry sensitivity.
+
+Reference code:
+`docs/decisions/shared/ARCH-002/reference-observability/services/moda-interact-admin/`.

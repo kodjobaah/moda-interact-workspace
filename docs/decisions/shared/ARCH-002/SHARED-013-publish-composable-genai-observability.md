@@ -7,10 +7,10 @@ repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
 task_kind: publication
-status: review
+status: complete
 priority: 27
 executor: codex
-claimed_at: 2026-08-31T18:12:28Z
+claimed_at: 2026-08-31 18:12:28+00:00
 attempt: 1
 depends_on:
 - ARCH-002-SHARED-012
@@ -174,4 +174,47 @@ None.
 
 ### Review Status
 
-Pending
+Accepted
+
+### Review Notes
+
+Accepted by `moda_architect` on 2026-08-31.
+
+The publication-only boundary was respected.
+
+Review findings:
+
+- package metadata moved from exact `0.4.0` to exact `0.5.0`;
+- `package-lock.json` root package metadata moved to `0.5.0`;
+- comparison with the architect-accepted SHARED-012 workspace shows zero
+  implementation-source changes under `moda-interact-shared/src/`;
+- no files were added or removed from the implementation package;
+- no independent unit/integration test, typecheck, lint, or implementation build
+  was rerun;
+- the existing `prepack` build ran once automatically as part of `npm publish`,
+  which is permitted release packaging;
+- the Completion Report records successful publication of
+  `@modainteract/moda-interact-shared@0.5.0`;
+- the recorded registry state reports exact version `0.5.0` and
+  `latest=0.5.0`;
+- the recorded published artifact inspection confirms
+  `./observability/genai` remains exported and exposes the SHARED-012 public
+  controls: `GenAIObservationOptions`, `recordMetrics`,
+  `SpanExceptionMapper`, and `mapException`;
+- the recorded source SHA-256 remained identical before and after publication.
+
+The execution sandbox used for architect review could not independently reach
+the npm registry, so external registry verification was not repeated. The
+publication task's own recorded npm publish output, exact shasum/integrity,
+registry checks, artifact inspection, and the architect-verified zero-source
+diff provide sufficient release evidence for this publication-only review.
+
+`ARCH-002-SHARED-013` is Complete.
+
+Exact consumer release:
+
+```text
+@modainteract/moda-interact-shared@0.5.0
+```
+
+This resolves the shared capability blocker recorded by BACKGROUND-008.

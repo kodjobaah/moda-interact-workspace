@@ -1,30 +1,138 @@
 ---
 name: moda-task
 description: Launch a Moda Interact architecture task by task ID.
+disable-model-invocation: true
 ---
 
-You are a task launcher only. Do not claim, implement or modify task state in
-this launcher context.
+You are a task launcher only. Do not claim, implement, modify task state or
+perform architect review in this launcher context.
 
-Extract exactly one Moda Interact task ID from the invocation, e.g.
-`ARCH-002-SHOPIFY-001`.
+Extract exactly one fully qualified Moda Interact task ID from the invocation,
+for example `ARCH-002-SHOPIFY-001`.
 
-Establish the workspace root by walking upward only through the current parent
-chain until `.nvmrc`, `.codex/agents` and
-`docs/agent-task-execution-template.md` are present. Do not search the wider
-filesystem.
+## Mandatory first action
 
-Run:
+After extracting `TASK_ID`, your **first tool action MUST** invoke the
+deterministic resolver.
+
+Before that action, do NOT:
+
+- search/glob/grep for the task ID or task file;
+- inspect implementation repositories;
+- inspect Git history or VS Code/user prompts;
+- inspect sibling/external directories;
+- infer architecture, domain, agent or repository.
+
+Resolve the workspace root only from:
+
+1. a valid existing `MODA_WORKSPACE_ROOT`; or
+2. the current directory's parent chain.
+
+Do not search the wider filesystem.
+
+Run this as one terminal action, replacing `<TASK_ID>`:
 
 ```bash
-python3 "$ROOT/scripts/start-agent-task.py" "$TASK_ID" --json
+TASK_ID="<TASK_ID>"
+ROOT="${MODA_WORKSPACE_ROOT:-}"
+
+if [ -z "$ROOT" ]; then
+  CANDIDATE="$PWD"
+  while [ "$CANDIDATE" != "/" ]; do
+    if [ -f "$CANDIDATE/.nvmrc" ] &&
+       [ -f "$CANDIDATE/scripts/start-agent-task.py" ] &&
+       [ -f "$CANDIDATE/docs/agent-task-execution-template.md" ]; then
+      ROOT="$CANDIDATE"
+      break
+    fi
+    CANDIDATE="$(dirname "$CANDIDATE")"
+  done
+fi
+
+if [ -z "$ROOT" ] ||
+   [ ! -f "$ROOT/scripts/start-agent-task.py" ] ||
+   [ ! -f "$ROOT/docs/agent-task-execution-template.md" ]; then
+  echo "MODA_TASK_ERROR: unable to resolve Moda Interact workspace root" >&2
+  exit 64
+fi
+
+export MODA_WORKSPACE_ROOT="$ROOT"
+python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "$TASK_ID" --json
 ```
 
-Read the returned JSON. `agent` identifies the configured logical Codex agent;
-`prompt` is the complete rendered execution instruction.
+If workspace-root resolution or `start-agent-task.py` fails, STOP and report the
+failure. Do not fall back to task search, repository search, Git history, prompt
+search or model inference.
 
-Use the current Codex runtime's named custom-agent delegation mechanism to
-invoke `agent` and pass `prompt` unchanged. Do not summarize or weaken it. If
-this Codex surface cannot select the configured logical agent by name, stop and
-report that named-agent delegation is unavailable; do not silently substitute a
-generic worker with a different model/execution profile.
+## Resolver contract
+
+Read the returned JSON.
+
+The resolver output is authoritative for:
+
+- architecture;
+- domain;
+- task/task file;
+- logical `agent`;
+- `repository`;
+- current task status;
+- rendered `prompt`.
+
+Do not rediscover or override those values.
+
+`prompt` is the complete execution instruction. Do not summarize, weaken or
+replace it.
+
+## Handoff
+
+### Claude Code
+
+Invoke the named custom subagent from `.claude/agents` and pass `prompt`
+unchanged. If named delegation is unavailable, report that limitation.
+
+### GitHub Copilot Agent Mode
+
+Copilot does not use Claude's named-subagent mechanism.
+
+Use the resolver's `agent` and `repository` exactly, read the corresponding
+generated definition under `.claude/agents/`, then adopt `prompt` unchanged in
+the current Agent Mode context.
+
+Before inspecting implementation source, the resolved repository-agent protocol
+MUST verify:
+
+```text
+status: ready
+assigned_agent: <resolved agent>
+all depends_on tasks: complete
+```
+
+If the task is not executable, do not claim it, inspect implementation source,
+modify task state or implement anything. Report the blocking state/dependency
+and STOP.
+
+Only after eligibility is verified and the task is claimed may normal
+implementation-repository inspection begin.
+
+Required flow:
+
+```text
+TASK_ID
+  |
+  v
+start-agent-task.py
+  |
+  v
+authoritative routing + prompt
+  |
+  v
+resolved logical agent
+  |
+  v
+eligibility/dependency verification
+  |
+  +--> not executable -> STOP
+  |
+  v
+claim -> inspect -> implement -> validate -> review
+```

@@ -107,7 +107,7 @@ Architectural tasks already at `status: review` are not included in this table b
 | `ARCH-002-ADMIN-007` – Add admin security audit logging | Pending | **GPT-5.6 Terra** | Normal application implementation with clear scope |
 | `ARCH-002-ADMIN-008` – Validate admin security boundary | Pending | **GPT-5.6 Sol** | Validation across several security controls and assumptions |
 | `ARCH-002-ADMIN-009` – Shared observability runtime | In progress | **GPT-5.6 Terra** | Medium-complexity implementation already underway |
-| `ARCH-002-ADMIN-010` – Bounded admin request metrics | Pending | **GPT-5.6 Luna** | Small instrumentation task |
+| `ARCH-002-ADMIN-010` – Bounded admin request metrics | Superseded | — | Duplicated standard framework/OpenTelemetry HTTP telemetry |
 | `ARCH-002-DATABASE-001` – Platform-admin identity registry | Ready | **GPT-5.6 Terra** | Schema, migration and integrity work |
 | `ARCH-002-GATEWAY-003` – Render test/production deployment topology | Pending | **GPT-5.6 Sol** | Large infrastructure task with many dependencies and failure modes |
 | `ARCH-002-GATEWAY-004` – Validate gateway/Render infrastructure | Pending | **GPT-5.6 Terra** | Structured infrastructure verification; escalate only if diagnosis becomes complex |

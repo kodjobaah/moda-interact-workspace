@@ -6,21 +6,24 @@ domain: gateway
 repository: moda-interact-gateway
 assigned_agent: moda_gateway
 coordinator: moda_architect
-status: pending
+status: ready
 priority: 35
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: 
-  - ARCH-002-GATEWAY-002
-  - ARCH-002-SHOPIFY-003
-  - ARCH-002-MESSAGING-002
-  - ARCH-002-ADMIN-002
-  - ARCH-002-BACKGROUND-003
-enables: 
-  - ARCH-002-GATEWAY-003
+depends_on:
+- ARCH-002-GATEWAY-002
+- ARCH-002-SHOPIFY-007
+- ARCH-002-MESSAGING-004
+- ARCH-002-MESSAGING-005
+- ARCH-002-ADMIN-009
+- ARCH-002-BACKGROUND-007
+- ARCH-002-BACKGROUND-009
+enables:
+- ARCH-002-GATEWAY-003
+- ARCH-002-ADMIN-004
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-31
 ---
 
 # Configure OpenTelemetry transport and environment wiring
@@ -88,19 +91,22 @@ Secret values must use Render/provider secret mechanisms.
 
 ## Interfaces / Contracts
 
-Consumes telemetry emitted by SHOPIFY-003, MESSAGING-002, ADMIN-002 and BACKGROUND-003. Produces configuration consumed by GATEWAY-003.
+Consumes telemetry emitted by SHOPIFY-007, MESSAGING-004, MESSAGING-005, ADMIN-009 and the accepted background worker/GenAI observability gates BACKGROUND-007 and BACKGROUND-009. Produces configuration consumed by GATEWAY-003.
 
 ## Dependencies
 
 - `ARCH-002-GATEWAY-002`
-- `ARCH-002-SHOPIFY-003`
-- `ARCH-002-MESSAGING-002`
-- `ARCH-002-ADMIN-002`
-- `ARCH-002-BACKGROUND-003`
+- `ARCH-002-SHOPIFY-007`
+- `ARCH-002-MESSAGING-004`
+- `ARCH-002-MESSAGING-005`
+- `ARCH-002-ADMIN-009`
+- `ARCH-002-BACKGROUND-007`
+- `ARCH-002-BACKGROUND-009`
 
 ## Enables
 
 - `ARCH-002-GATEWAY-003`
+- `ARCH-002-ADMIN-004`
 
 ## Acceptance Criteria
 

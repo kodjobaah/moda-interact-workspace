@@ -32,3 +32,29 @@ The individual task file is authoritative for task state.
 | SHARED-009 | Add GenAI active-span helpers | Complete | SHARED-007 |
 | SHARED-011 | Add bounded GenAI operational metrics | Complete | SHARED-009 |
 | SHARED-010 | Publish complete shared observability runtime | Complete | SHARED-007, SHARED-008, SHARED-009, SHARED-011 |
+
+## GenAI Composability Correction
+
+BACKGROUND-008 exposed a published API boundary gap in `0.4.0`. The background
+consumer must not duplicate shared span mechanics or start its dependent metric
+task early.
+
+| Task | Description | Status | Dependencies |
+|------|-------------|--------|--------------|
+| SHARED-012 | Decouple GenAI span activation and add safe exception mapping | Complete | SHARED-010 |
+| SHARED-013 | Publish composable GenAI observability release (`0.5.0`) | Complete | SHARED-012 |
+
+Execution:
+
+```text
+SHARED-012
+    |
+    v
+SHARED-013
+    |
+    v
+BACKGROUND-008
+```
+
+SHARED-012 is implementation work. SHARED-013 is publication-only.
+
