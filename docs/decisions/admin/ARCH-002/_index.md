@@ -24,7 +24,7 @@ Coordinator:
 |------|-------------|--------|--------------|
 | ADMIN-001 | Add admin service health and readiness | Ready | GATEWAY-001 |
 | ADMIN-002 | Add OpenTelemetry to admin runtime | Superseded | Replaced by ADMIN-009/010 |
-| ADMIN-003 | Implement Google platform-admin authentication and session foundation | Pending | DATABASE-001 |
+| ADMIN-003 | Implement Google platform-admin authentication and session foundation | Ready | DATABASE-001 |
 | ADMIN-005 | Protect privileged admin pages and server reads | Pending | ADMIN-003 |
 | ADMIN-006 | Protect admin mutations and privileged route handlers | Pending | ADMIN-003 |
 | ADMIN-007 | Add bounded platform-admin security audit logging | Pending | ADMIN-005, ADMIN-006, SHARED-005 |
@@ -69,3 +69,23 @@ sanitizer or patch to rewrite them.
 Next.js/OpenTelemetry HTTP instrumentation through the shared runtime. Generic
 request count/duration/status telemetry must be reused from that standard
 instrumentation rather than recreated as Moda-owned metrics.
+
+
+`ADMIN-003` publication gate is satisfied by:
+
+```text
+moda-interact-database@9a286b7
+```
+
+`ADMIN-003` is Ready and must pin the Admin nested database submodule to this
+exact accepted commit before implementation/build validation.
+
+
+## ADMIN-003 blocker resolution
+
+The attempt-1 block was rejected by `moda_architect`.
+
+The nested database submodule being behind `9a286b7` is expected task input.
+`ADMIN-003` owns updating the Admin gitlink to exact published commit `9a286b7`.
+
+`ADMIN-003` is Ready.
