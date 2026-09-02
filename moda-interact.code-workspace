@@ -1,20 +1,9 @@
 {
-	"folders": [
-		{
-			"path": "moda-interact"
-		},
-		{
-			"path": "moda-interact-background"
-		},
-		{
-			"path": "moda-interact-database"
-		},
-		{
-			"path": "moda-interact-messaging"
-		},
-		{
-			"path": "moda-interact-site"
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "name": "Moda Interact Workspace",
+      "path": "."
+    }
+  ],
+  "settings": {}
 }
