@@ -47,7 +47,7 @@ The individual task file is authoritative for task state.
 
 | Task | Description | Status | Dependencies |
 |------|-------------|--------|--------------|
-| SYSTEM-TEST-002 | Validate shared observability and WhatsApp worker performance | Pending | SHOPIFY-007, BACKGROUND-007, BACKGROUND-009, MESSAGING-004, MESSAGING-005, ADMIN-009, GATEWAY-006, GATEWAY-004, SYSTEM-TEST-003, SYSTEM-TEST-004 |
+| SYSTEM-TEST-002 | Validate shared observability and WhatsApp worker performance | Ready | SHOPIFY-007, BACKGROUND-007, BACKGROUND-009, MESSAGING-004, MESSAGING-005, ADMIN-009, GATEWAY-006, GATEWAY-004, SYSTEM-TEST-003, SYSTEM-TEST-004 |
 
 
 `SYSTEM-TEST-002` also requires `ARCH-002-GATEWAY-004` because it validates the
@@ -71,10 +71,10 @@ and `GATEWAY-006` prerequisites are Complete.
 
 | Task | Description | Status | Dependencies |
 |------|-------------|--------|--------------|
-| SYSTEM-TEST-003 | Add isolated ephemeral Redis test infrastructure | Ready | - |
-| SYSTEM-TEST-004 | Add WhatsApp Cloud API emulator test infrastructure | Ready | - |
+| SYSTEM-TEST-003 | Add isolated ephemeral Redis test infrastructure | Complete | - |
+| SYSTEM-TEST-004 | Add WhatsApp Cloud API emulator test infrastructure | Complete | BACKGROUND-010 |
 
-Both tasks are independently executable now.
+`SYSTEM-TEST-003` is Complete. `SYSTEM-TEST-004` is temporarily Blocked by the concrete Background consumer capability identified during its required preflight.
 
 They are direct prerequisites for `SYSTEM-TEST-001` and `SYSTEM-TEST-002`.
 
@@ -105,3 +105,122 @@ If current Moda outbound WhatsApp code cannot inject an emulator base URL,
 `SYSTEM-TEST-004` must return Blocked with the concrete call site. The
 system-test agent must not modify the owning application repository.
 
+
+
+## SYSTEM-TEST-003 architect acceptance
+
+`ARCH-002-SYSTEM-TEST-003` is architect-accepted Complete.
+
+The system-test harness now owns isolated ephemeral Redis lifecycle:
+
+```text
+per-run Redis container
+dynamic host port
+bounded readiness
+outage/restart support
+clean-state recreation
+cleanup
+```
+
+Its direct dependency edges for `SYSTEM-TEST-001` and `SYSTEM-TEST-002` are
+satisfied.
+
+`SYSTEM-TEST-004` remains Ready and is still a direct prerequisite of both
+integrated system-test tasks.
+
+`SYSTEM-TEST-001` additionally remains blocked by `ADMIN-004`.
+
+No downstream task is automatically promoted.
+
+
+## SYSTEM-TEST-004 blocker resolution
+
+The required consumer preflight found:
+
+```text
+moda-interact-background/src/services/whatsapp.service.ts
+  -> hard-coded https://graph.facebook.com/v25.0
+  -> no injectable outbound API base URL
+```
+
+The block is accepted as valid.
+
+The architect creates:
+
+```text
+ARCH-002-BACKGROUND-010
+  Make outbound WhatsApp API base URL configurable
+  status: Ready
+```
+
+`SYSTEM-TEST-004` now has:
+
+```text
+depends_on:
+  - ARCH-002-BACKGROUND-010
+```
+
+and remains Blocked until that task is architect-accepted Complete.
+
+After acceptance, `moda_architect` may transition:
+
+```text
+SYSTEM-TEST-004
+  blocked -> ready
+```
+
+The current system-test agent must not continue the blocked attempt.
+
+
+## SYSTEM-TEST-004 blocker cleared
+
+`ARCH-002-BACKGROUND-010` is architect-accepted Complete.
+
+The outbound client can now be directed at the test-owned emulator through:
+
+```text
+WHATSAPP_API_BASE_URL
+```
+
+Therefore:
+
+```text
+SYSTEM-TEST-004
+  blocked -> ready
+```
+
+The previous claim is cleared. The next claim must increment the task attempt.
+
+`SYSTEM-TEST-001` and `SYSTEM-TEST-002` remain Pending until their complete
+explicit dependency lists are satisfied.
+
+
+## SYSTEM-TEST-004 architect acceptance
+
+`ARCH-002-SYSTEM-TEST-004` is architect-accepted Complete.
+
+The system-test harness now owns a reusable Node-24 WhatsApp Cloud API emulator
+fixture with:
+
+```text
+dynamic lifecycle
+signed inbound webhooks
+duplicate delivery
+outbound/status handling
+synthetic Background client configuration
+cleanup after success/failure
+```
+
+The direct dependency edges for `SYSTEM-TEST-001` and `SYSTEM-TEST-002` are
+satisfied.
+
+All explicit direct dependencies of `SYSTEM-TEST-002` are now Complete, so:
+
+```text
+SYSTEM-TEST-002
+  pending -> ready
+```
+
+`SYSTEM-TEST-001` remains Pending because `ADMIN-004` is still incomplete.
+
+No downstream task is automatically claimed.
