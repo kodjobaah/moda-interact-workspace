@@ -19,12 +19,34 @@ depends_on:
 - ARCH-002-MESSAGING-005
 - ARCH-002-ADMIN-009
 - ARCH-002-GATEWAY-006
+- ARCH-002-GATEWAY-004
 enables: []
 created: 2026-08-31
-updated: 2026-08-31
+updated: 2026-09-02
 ---
 
 # Validate shared observability and WhatsApp worker performance
+
+## Dependency-record reconciliation
+
+The task body and the ARCH-002 system-test index already identify
+`ARCH-002-GATEWAY-004` as the direct infrastructure gate for this integrated
+observability validation.
+
+The YAML frontmatter had drifted and omitted that dependency.
+
+`moda_architect` reconciles the authoritative frontmatter to:
+
+```text
+signal-specific telemetry prerequisites
++ ARCH-002-GATEWAY-006
++ ARCH-002-GATEWAY-004
+```
+
+The task remains `Pending`.
+
+It must not become Ready until `ARCH-002-GATEWAY-004` is architect-accepted
+Complete.
 
 ## Objective
 

@@ -53,3 +53,14 @@ The individual task file is authoritative for task state.
 shared observability runtime across the integrated test topology. Completion of
 the telemetry-emitter tasks and GATEWAY-006 alone is not sufficient to promote
 it to Ready.
+
+
+## SYSTEM-TEST-002 dependency-record reconciliation
+
+The individual `SYSTEM-TEST-002` YAML frontmatter is reconciled to match this
+index and the task's own Infrastructure gate section.
+
+`ARCH-002-GATEWAY-004` is a direct dependency.
+
+Therefore `SYSTEM-TEST-002` remains Pending even though its telemetry-emitter
+and `GATEWAY-006` prerequisites are Complete.

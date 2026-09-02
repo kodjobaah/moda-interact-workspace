@@ -16,7 +16,7 @@ Coordinator:
 |------|-------------|--------|--------------|
 | GATEWAY-001 | Inspect platform and define deployment prerequisites | Complete | - |
 | GATEWAY-002 | Create public Moda Interact gateway | Complete | GATEWAY-001 |
-| GATEWAY-007 | Implement host-based admin gateway routing | Pending | GATEWAY-002, ADMIN-008 |
+| GATEWAY-007 | Implement host-based admin gateway routing | Ready | GATEWAY-002, ADMIN-008 |
 | GATEWAY-005 | Validate npm-based shared package production builds | Pending | GATEWAY-001, SHOPIFY-004, BACKGROUND-004 |
 | GATEWAY-006 | Configure OpenTelemetry transport/environment wiring | Complete | GATEWAY-002, SHOPIFY-006, MESSAGING-003, ADMIN-009, BACKGROUND-005 |
 | GATEWAY-003 | Create Render test and production deployment topology | Pending | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
@@ -69,3 +69,25 @@ ADMIN-008
 ```
 
 The individual `GATEWAY-003` task file remains authoritative.
+
+
+## Post-ADMIN-008 GATEWAY-003 dependency re-evaluation
+
+`ARCH-002-ADMIN-008` is Complete, so it is no longer an unresolved
+`GATEWAY-003` prerequisite.
+
+`ARCH-002-GATEWAY-007` now has all direct dependencies Complete and is Ready.
+
+The current unresolved direct prerequisites for `ARCH-002-GATEWAY-003` are:
+
+```text
+ARCH-002-GATEWAY-005
+ARCH-002-GATEWAY-007
+ARCH-002-MESSAGING-001
+ARCH-002-ADMIN-001
+```
+
+`GATEWAY-005` remains Pending because `ARCH-002-SHOPIFY-004` is Ready but not
+yet Complete.
+
+No downstream task is started automatically.

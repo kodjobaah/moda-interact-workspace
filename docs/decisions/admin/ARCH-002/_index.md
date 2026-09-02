@@ -24,12 +24,12 @@ Coordinator:
 |------|-------------|--------|--------------|
 | ADMIN-001 | Add admin service health and readiness | Ready | GATEWAY-001 |
 | ADMIN-002 | Add OpenTelemetry to admin runtime | Superseded | Replaced by ADMIN-009/010 |
-| ADMIN-003 | Implement Google platform-admin authentication and session foundation | Ready | DATABASE-001 |
-| ADMIN-005 | Protect privileged admin pages and server reads | Pending | ADMIN-003 |
-| ADMIN-006 | Protect admin mutations and privileged route handlers | Pending | ADMIN-003 |
-| ADMIN-007 | Add bounded platform-admin security audit logging | Pending | ADMIN-005, ADMIN-006, SHARED-005 |
+| ADMIN-003 | Implement Google platform-admin authentication and session foundation | Complete | DATABASE-001 |
+| ADMIN-005 | Protect privileged admin pages and server reads | Complete | ADMIN-003 |
+| ADMIN-006 | Protect admin mutations and privileged route handlers | Complete | ADMIN-003 |
+| ADMIN-007 | Add bounded platform-admin security audit logging | Complete | ADMIN-005, ADMIN-006, SHARED-005 |
 | ADMIN-008 | Validate platform-admin security and deployment contract | Complete | ADMIN-003, ADMIN-005, ADMIN-006, ADMIN-007 |
-| ADMIN-004 | Add secure private Grafana Cloud observability access | Pending | ADMIN-008, GATEWAY-006 |
+| ADMIN-004 | Add secure private Grafana Cloud observability access | Ready | ADMIN-008, GATEWAY-006 |
 | ADMIN-009 | Adopt shared observability runtime in admin process | Complete | GATEWAY-001, SHARED-010 |
 | ADMIN-010 | Add bounded admin request operational metrics | Superseded | Duplicate standard HTTP telemetry; reuse framework/OpenTelemetry signal |
 
@@ -164,3 +164,21 @@ ADMIN-004
 
 No downstream task is automatically promoted or started. The architect must
 re-evaluate each task's full direct dependency set after developer publication.
+
+
+## Post-ADMIN-008 dependency re-evaluation
+
+`ARCH-002-ADMIN-008` is architect-accepted Complete.
+
+Consequences:
+
+```text
+ADMIN-004  Pending -> Ready
+GATEWAY-007 dependency edge satisfied
+GATEWAY-003 ADMIN-008 dependency edge satisfied
+```
+
+The Admin index has also been reconciled to the authoritative individual task
+states for `ADMIN-003`, `ADMIN-005`, `ADMIN-006`, and `ADMIN-007`.
+
+No task is started automatically.

@@ -6,7 +6,7 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ depends_on:
 enables:
   - ARCH-002-SYSTEM-TEST-001
 created: 2026-08-31
-updated: 2026-08-31
+updated: 2026-09-02
 ---
 
 # Add Secure Private Grafana Cloud Observability Access
@@ -39,6 +39,27 @@ Presentation amendment:
 Coordinator:
 
 `moda_architect`
+
+## Readiness decision
+
+`moda_architect` re-evaluated the authoritative direct dependencies after
+architect acceptance of `ARCH-002-ADMIN-008`.
+
+```text
+ARCH-002-ADMIN-008    Complete
+ARCH-002-GATEWAY-006  Complete
+```
+
+`ARCH-002-ADMIN-004` is therefore promoted:
+
+```text
+Pending -> Ready
+```
+
+This promotion does not start the task automatically.
+
+The repository agent must stop at `review` and must not commit or push.
+Developer publication remains user-owned.
 
 ## Objective
 

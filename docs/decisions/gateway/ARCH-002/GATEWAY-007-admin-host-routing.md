@@ -6,7 +6,7 @@ domain: gateway
 repository: moda-interact-gateway
 assigned_agent: moda_gateway
 coordinator: moda_architect
-status: pending
+status: ready
 priority: 25
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ depends_on:
 enables:
   - ARCH-002-GATEWAY-003
 created: 2026-08-31
-updated: 2026-08-31
+updated: 2026-09-02
 ---
 
 # Implement Host-Based Admin Gateway Routing
@@ -35,6 +35,27 @@ Architecture document:
 Coordinator:
 
 `moda_architect`
+
+## Readiness decision
+
+`moda_architect` re-evaluated the authoritative direct dependencies after
+architect acceptance of `ARCH-002-ADMIN-008`.
+
+```text
+ARCH-002-GATEWAY-002  Complete
+ARCH-002-ADMIN-008    Complete
+```
+
+`ARCH-002-GATEWAY-007` is therefore promoted:
+
+```text
+Pending -> Ready
+```
+
+This promotion does not start the task automatically.
+
+The repository agent must stop at `review` and must not commit or push.
+Developer publication remains user-owned.
 
 ## Objective
 
