@@ -7,6 +7,17 @@ This repository is the top-level workspace for the platform. It ties together
 independently versioned services using Git submodules, so a workspace commit
 records the exact compatible service commits that form a platform snapshot.
 
+
+## Product status
+
+Moda Interact is being built as a company-backed commercial product, not a demo
+or isolated experiment.
+
+The company has being registered, the public website is live, and the platform is
+being prepared for release in the next few weeks.
+
+Website: https://www.modainteract.com/
+
 ## Why this project matters
 
 Moda Interact is an AI-enabled customer engagement platform for Shopify merchants.
