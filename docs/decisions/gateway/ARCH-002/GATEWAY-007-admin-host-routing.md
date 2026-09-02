@@ -6,11 +6,11 @@ domain: gateway
 repository: moda-interact-gateway
 assigned_agent: moda_gateway
 coordinator: moda_architect
-status: ready
+status: complete
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-02T18:59:01Z
+attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-002
   - ARCH-002-ADMIN-008
@@ -179,17 +179,17 @@ as supplied by Render/private-service configuration.
 
 ## Work Items
 
-- [ ] update gateway configuration/template for Admin host-based routing;
-- [ ] add environment/configuration contract for the Admin public hostname;
-- [ ] route Admin root paths and `/_next/*` assets correctly;
-- [ ] eliminate production reliance on `/admin/* -> moda_admin`;
-- [ ] prevent Admin-host fallthrough to `moda_interact`;
-- [ ] prevent non-Admin hosts from reaching `moda_admin` through provisional
+- [x] update gateway configuration/template for Admin host-based routing;
+- [x] add environment/configuration contract for the Admin public hostname;
+- [x] route Admin root paths and `/_next/*` assets correctly;
+- [x] eliminate production reliance on `/admin/* -> moda_admin`;
+- [x] prevent Admin-host fallthrough to `moda_interact`;
+- [x] prevent non-Admin hosts from reaching `moda_admin` through provisional
       path routing;
-- [ ] preserve request/correlation and forwarded-header behaviour;
-- [ ] add host-routing tests;
-- [ ] document DNS/custom-domain requirements for GATEWAY-003;
-- [ ] record any Render-specific host/custom-domain limitation discovered.
+- [x] preserve request/correlation and forwarded-header behaviour;
+- [x] add host-routing tests;
+- [x] document DNS/custom-domain requirements for GATEWAY-003;
+- [x] record any Render-specific host/custom-domain limitation discovered.
 
 ## Interfaces / Contracts
 
@@ -226,32 +226,32 @@ platform-admin authentication and authorisation. Host routing is not an authenti
 
 ## Acceptance Criteria
 
-- [ ] production Admin traffic is defined by host routing at
+- [x] production Admin traffic is defined by host routing at
       `admin.modainteract.com`;
-- [ ] test Admin host identity is environment-configurable;
-- [ ] Admin remains a private Render upstream rather than a directly public
+- [x] test Admin host identity is environment-configurable;
+- [x] Admin remains a private Render upstream rather than a directly public
       service;
-- [ ] Admin root page and root-relative Next.js `/_next/*` assets route correctly;
-- [ ] production routing does not depend on a Next.js `/admin` base path;
-- [ ] non-Admin hosts cannot reach `moda_admin` through the old `/admin/*`
+- [x] Admin root page and root-relative Next.js `/_next/*` assets route correctly;
+- [x] production routing does not depend on a Next.js `/admin` base path;
+- [x] non-Admin hosts cannot reach `moda_admin` through the old `/admin/*`
       mapping;
-- [ ] Admin-host requests cannot fall through to `moda_interact`;
-- [ ] existing Shopify/Meta provider verification routing remains compatible;
-- [ ] request/correlation and forwarded-header behaviour is preserved;
-- [ ] GATEWAY-003 receives a documented host/DNS/configuration contract.
+- [x] Admin-host requests cannot fall through to `moda_interact`;
+- [x] existing Shopify/Meta provider verification routing remains compatible;
+- [x] request/correlation and forwarded-header behaviour is preserved;
+- [x] GATEWAY-003 receives a documented host/DNS/configuration contract.
 
 ## Validation
 
-- [ ] NGINX/proxy syntax validation;
-- [ ] gateway test suite;
-- [ ] Admin host root routing test;
-- [ ] Admin `/_next/*` routing test;
-- [ ] Admin `/observability` routing test;
-- [ ] non-Admin `/admin/*` isolation test;
-- [ ] Admin-host no-Shopify-fallthrough test;
-- [ ] request/correlation header regression test;
-- [ ] Shopify/Meta routing regression tests;
-- [ ] container build/start where required by repository validation.
+- [x] NGINX/proxy syntax validation;
+- [x] gateway test suite;
+- [x] Admin host root routing test;
+- [x] Admin `/_next/*` routing test;
+- [x] Admin `/observability` routing test;
+- [x] non-Admin `/admin/*` isolation test;
+- [x] Admin-host no-Shopify-fallthrough test;
+- [x] request/correlation header regression test;
+- [x] Shopify/Meta routing regression tests;
+- [x] container build/start where required by repository validation.
 
 ## Implementation Notes
 
@@ -266,58 +266,265 @@ Next.js application model can remain intact.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `moda-interact-gateway/nginx/nginx.conf.template`
+- `moda-interact-gateway/docker/entrypoint.sh`
+- `moda-interact-gateway/tests/run-tests.sh`
+- `moda-interact-gateway/README.md`
+- `moda-interact-gateway/docs/gateway.md`
+- `docs/decisions/gateway/ARCH-002/GATEWAY-007-admin-host-routing.md`
 
 ### Work Completed
 
-None.
+Implemented dedicated NGINX host-based routing for `ADMIN_PUBLIC_HOST`, with
+production set to `admin.modainteract.com` and a deployment-configured test
+hostname. Admin root routes, `/_next/*`, `/observability` and `/api/*` now route
+to the private `moda_admin` upstream without requiring a Next.js `/admin` base
+path. The provisional `/admin` and `/admin/*` mapping is rejected on the
+default/non-Admin host before the Shopify catch-all.
+
+Preserved request/correlation IDs, forwarded headers, provider routing and
+webhook behavior. Added the required host configuration contract and DNS/TLS/
+OAuth documentation for GATEWAY-003.
 
 ### Validation Results
 
-Not run.
+Passed `sh -n docker/entrypoint.sh` and `bash -n tests/run-tests.sh`.
+
+Passed `tests/run-tests.sh`: `48 passed, 0 failed`. This includes container
+build/start and rendered `nginx -t`, Admin root/`/_next/*`/`/observability`
+routing, Admin-host header preservation, non-Admin `/admin/*` isolation, no
+Admin-host Shopify fallthrough, Shopify/Meta routing and provider body/header
+regressions.
+
+The suite emitted the existing Docker legacy-builder deprecation warning. No
+Render-specific custom-domain limitation was encountered; actual DNS, TLS and
+OAuth custom-domain attachment remain deployment configuration consumed by
+GATEWAY-003.
 
 ### Deviations
 
-None.
+The test suite uses `admin.test.local` as the configurable Admin hostname. The
+production contract remains `admin.modainteract.com` and is not hard-coded into
+the test container invocation.
 
 ### Assumptions
 
-None.
+Render provides the configured `ADMIN_PUBLIC_HOST` value and routes its public
+custom domain/TLS to the gateway while `moda_admin` remains private. The Admin
+application continues to serve root-relative paths.
 
 ### Unresolved Issues
 
-None recorded yet.
+None.
 
 ### Architectural Concerns
 
-None recorded yet.
+None. The task does not implement Admin authentication; it relies on the
+accepted ADMIN-008 security boundary.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted / Complete
 
 ### Review Notes
 
-Pending implementation.
+`ARCH-002-GATEWAY-007` is architect-accepted.
 
-### Reviewed Files
+Architect inspection confirms the accepted production routing contract:
 
-Pending.
+```text
+Host: admin.modainteract.com
+    -> public Render gateway
+    -> NGINX ADMIN_PUBLIC_HOST server
+    -> private moda_admin upstream
+```
+
+The test deployment supplies its own non-production `ADMIN_PUBLIC_HOST`.
+
+The Admin application remains rooted at `/`; no `/admin` Next.js `basePath` or
+`assetPrefix` is required.
+
+### Routing Boundary Reviewed
+
+The NGINX template contains a dedicated Admin host server:
+
+```text
+server_name ${ADMIN_PUBLIC_HOST}
+
+location /
+    -> proxy_pass http://moda_admin
+```
+
+Therefore root-relative Admin routes such as:
+
+```text
+/
+/_next/*
+/observability
+/api/*
+```
+
+remain valid behind the public gateway.
+
+The default/non-Admin host explicitly rejects the provisional routing surface:
+
+```text
+/admin
+/admin/*
+    -> 404
+```
+
+before the Shopify catch-all.
+
+Consequently:
+
+```text
+Admin host
+    -> cannot fall through to moda_interact
+
+non-Admin host + /admin/*
+    -> cannot reach moda_admin
+```
+
+Host-based routing is therefore an exposure boundary, not an authentication
+replacement. Application authentication and authorization remain owned by the
+architect-accepted `ADMIN-008` security boundary.
+
+### Header / Provider Compatibility
+
+The Admin host server preserves the existing gateway forwarding contract:
+
+```text
+Host
+X-Real-IP
+X-Forwarded-For
+X-Forwarded-Proto
+X-Forwarded-Host
+X-Request-Id
+X-Correlation-Id
+```
+
+The default host retains the architect-accepted Shopify and Meta routes and raw
+body/provider-header forwarding behavior.
+
+No provider-specific verification logic has moved into the gateway.
+
+### Environment Contract
+
+The container entrypoint fails fast when any of these are missing:
+
+```text
+MODA_INTERACT_UPSTREAM
+MODA_MESSAGING_UPSTREAM
+MODA_ADMIN_UPSTREAM
+ADMIN_PUBLIC_HOST
+```
+
+`ADMIN_PUBLIC_HOST` is non-secret deployment identity.
+
+Accepted production value:
+
+```text
+admin.modainteract.com
+```
+
+Test uses an isolated environment-specific hostname.
 
 ### Validation Reviewed
 
-Pending.
+Architect directly validated shell syntax:
+
+```text
+sh -n docker/entrypoint.sh
+bash -n tests/run-tests.sh
+PASS
+```
+
+The repository agent reports:
+
+```text
+tests/run-tests.sh
+48 passed
+0 failed
+```
+
+The suite includes:
+
+```text
+container build/start
+rendered nginx -t
+Admin root routing
+Admin /_next/* routing
+Admin /observability routing
+Admin request/correlation header preservation
+non-Admin /admin/* isolation
+Admin-host no-Shopify-fallthrough
+Shopify route regressions
+Meta route regressions
+provider body/header preservation
+```
+
+Docker is not available in the architect review environment, so the agent's
+container execution result was reviewed against the submitted test harness
+rather than rerun independently. The harness contains the claimed Admin-host
+and regression assertions.
+
+### Render DNS / TLS Clarification
+
+One gateway documentation sentence describes TLS as being terminated by the
+"gateway service".
+
+The accepted architecture interpretation is:
+
+```text
+public DNS/custom domain
+    -> Render-managed public edge / load balancer
+       (TLS termination)
+    -> moda-interact-gateway container
+    -> private Admin upstream
+```
+
+This is consistent with the gateway's existing forwarded-protocol handling and
+with the rest of its documentation.
+
+Actual Render custom-domain, certificate/TLS, DNS and OAuth callback attachment
+remain deployment wiring owned by `ARCH-002-GATEWAY-003`.
+
+This wording drift does not change the implemented routing boundary and is not
+a blocker for `GATEWAY-007`.
 
 ### Architecture Conformance
 
-Pending.
+Accepted.
 
-### Follow-up
+The task stayed inside `moda-interact-gateway` ownership and coordination
+documentation. It did not modify the Admin application, introduce a Next.js
+base path, make the Admin service directly public, or implement authentication
+inside NGINX.
 
-Pending.
+### Git / Publication
+
+The repository agent stopped at Review and did not commit or push.
+
+Gateway implementation changes are ready for developer commit/push.
+
+### Downstream Coordination
+
+`ARCH-002-GATEWAY-007` is Complete.
+
+Together with the already accepted `GATEWAY-005`, the remaining unresolved
+direct prerequisites for `ARCH-002-GATEWAY-003` are now:
+
+```text
+ARCH-002-MESSAGING-001
+ARCH-002-ADMIN-001
+```
+
+No downstream task is automatically promoted or started.
+

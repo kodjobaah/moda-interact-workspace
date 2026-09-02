@@ -16,8 +16,8 @@ Coordinator:
 |------|-------------|--------|--------------|
 | GATEWAY-001 | Inspect platform and define deployment prerequisites | Complete | - |
 | GATEWAY-002 | Create public Moda Interact gateway | Complete | GATEWAY-001 |
-| GATEWAY-007 | Implement host-based admin gateway routing | Ready | GATEWAY-002, ADMIN-008 |
-| GATEWAY-005 | Validate npm-based shared package production builds | Pending | GATEWAY-001, SHOPIFY-004, BACKGROUND-004 |
+| GATEWAY-007 | Implement host-based admin gateway routing | Complete | GATEWAY-002, ADMIN-008 |
+| GATEWAY-005 | Validate npm-based shared package production builds | Complete | GATEWAY-001, SHOPIFY-004, BACKGROUND-004 |
 | GATEWAY-006 | Configure OpenTelemetry transport/environment wiring | Complete | GATEWAY-002, SHOPIFY-006, MESSAGING-003, ADMIN-009, BACKGROUND-005 |
 | GATEWAY-003 | Create Render test and production deployment topology | Pending | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
 | GATEWAY-004 | Validate gateway and Render infrastructure | Pending | GATEWAY-003 |
@@ -91,3 +91,29 @@ ARCH-002-ADMIN-001
 yet Complete.
 
 No downstream task is started automatically.
+
+
+## GATEWAY-007 architect acceptance
+
+`ARCH-002-GATEWAY-007` is architect-accepted Complete.
+
+The production Admin ingress contract is:
+
+```text
+admin.modainteract.com
+  -> Render public edge
+  -> moda-interact-gateway
+  -> private moda_admin
+```
+
+The default host rejects the former `/admin` and `/admin/*` proxy mapping.
+
+After reconciling the already accepted `GATEWAY-005` state, the remaining
+unresolved direct `GATEWAY-003` prerequisites are:
+
+```text
+MESSAGING-001
+ADMIN-001
+```
+
+No downstream task is automatically started.
