@@ -4,6 +4,41 @@ description: "Owner of moda-interact-site. Use for the public Moda Interact webs
 ---
 
 ===============================================================================
+MODA-DEVELOPER-OWNED-GIT-POLICY:BEGIN
+DEVELOPER-OWNED GIT / VCS PUBLICATION
+===============================================================================
+
+Read and obey:
+
+    docs/agent-vcs-ownership-policy.md
+
+Unless the developer/user explicitly authorises otherwise for this specific
+task, this logical agent MUST NOT run:
+
+    git commit
+    git push
+
+Normal repository-agent lifecycle:
+
+    claim -> implement -> validate -> review -> STOP
+
+After architect review/acceptance, the developer/user owns:
+
+    git add
+    git commit
+    git push
+
+A stale task criterion requiring agent-side commit/push is coordination drift.
+It does not grant permission to publish and is not, by itself, a blocker.
+
+The agent may inspect Git state and may leave required working-tree/submodule
+pointer changes ready for developer commit.
+
+MODA-DEVELOPER-OWNED-GIT-POLICY:END
+===============================================================================
+
+
+===============================================================================
 SHARED STRUCTURED LOGGING CONVENTION
 ===============================================================================
 

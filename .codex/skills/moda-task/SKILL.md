@@ -187,6 +187,42 @@ and STOP.
 Only after eligibility is verified and the task is claimed may normal
 implementation-repository inspection begin.
 
+
+## Workspace Git / VCS ownership
+
+Every resolved logical agent must obey:
+
+```text
+docs/agent-vcs-ownership-policy.md
+```
+
+This rule is injected by the launcher and applies even if an older task file or
+agent definition contains stale commit/push wording.
+
+Default:
+
+```text
+repository agent:
+claim -> implement -> validate -> review -> STOP
+
+moda_architect:
+review -> accept/reject
+
+developer/user:
+git add -> git commit -> git push
+```
+
+Unless the developer explicitly authorises publication for the specific task,
+the resolved agent must not run `git commit` or `git push`.
+
+A stale task acceptance criterion requiring agent-side commit/push:
+
+- does not grant permission to commit;
+- does not make the task Blocked;
+- must be reported as coordination drift;
+- should be reconciled by `moda_architect`.
+
+
 Required flow:
 
 ```text

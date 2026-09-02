@@ -94,31 +94,43 @@ Do not reset or overwrite another executor's active claim.
 
 ## Git / VCS Ownership
 
-Repository agents prepare implementation changes for review but do not commit or
-push them.
+Read and obey:
 
-The developer/user owns:
+```text
+docs/agent-vcs-ownership-policy.md
+```
 
-* selecting the final commit boundary;
-* creating the Git commit;
-* choosing the commit message;
-* pushing branches/commits.
+The developer/user owns commit and push.
 
-Unless the user explicitly authorises otherwise for a specific task, an agent
-must not run:
+Unless explicitly authorised by the developer for this specific task, the
+repository agent must not run:
 
 ```text
 git commit
 git push
 ```
 
-A task-level acceptance criterion that requires the repository agent itself to
-commit/push is coordination drift. Do not satisfy it by committing. Record the
-drift and follow the architect-corrected task wording.
-
-The Completion Report should record Git/VCS state factually, for example:
+Repository-agent lifecycle:
 
 ```text
+implement -> validate -> review -> STOP
+```
+
+Developer lifecycle after architect review:
+
+```text
+git add -> git commit -> git push
+```
+
+A task criterion requiring agent-side commit/push is coordination drift, not
+permission to publish and not a blocker. Leave the implementation ready for the
+developer and record the drift in the Completion Report.
+
+The Completion Report should normally contain:
+
+```text
+### Git / VCS
+
 Implementation ready for developer commit/push.
 Repository agent did not commit or push.
 ```
