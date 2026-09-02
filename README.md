@@ -56,6 +56,7 @@ This project demonstrates hands-on experience with:
 - [Projects and ownership](#projects-and-ownership)
 - [Getting started](#getting-started)
 - [Architecture-led development](#architecture-led-development)
+- [Developer-owned Git and publication](#developer-owned-git-and-publication)
 - [Launching an architecture task](#launching-an-architecture-task)
 - [Logical agents and AI runtimes](#logical-agents-and-ai-runtimes)
 - [Platform workload and scalability](#platform-workload-and-scalability)
@@ -201,6 +202,7 @@ docs/
 ├── contracts/
 ├── coding-agent-workflow.md
 ├── copilot-model-selection.md
+├── agent-vcs-ownership-policy.md
 └── agent-task-execution-template.md
 ```
 
@@ -296,6 +298,7 @@ moda-interact-workspace/
 │   ├── contracts/
 │   ├── decisions/
 │   ├── agent-task-execution-template.md
+│   ├── agent-vcs-ownership-policy.md
 │   ├── coding-agent-workflow.md
 │   ├── copilot-model-selection.md
 │   ├── development-baseline.md
@@ -594,6 +597,62 @@ For architectures requiring integrated runtime validation, repository tasks bein
 complete is not sufficient. Required system-test tasks must also be reviewed and
 completed.
 
+### Developer-owned Git and publication
+
+Git publication is deliberately separated from repository-agent implementation.
+
+The default Moda Interact workflow is:
+
+```text
+repository agent
+    |
+    +--> claim
+    +--> implement
+    +--> validate
+    +--> update Completion Report
+    +--> status: review
+    +--> STOP
+
+moda_architect
+    |
+    +--> inspect actual uncommitted changes
+    +--> request changes, or
+    +--> review -> complete
+
+developer / user
+    |
+    +--> git add
+    +--> git commit
+    +--> git push
+```
+
+Repository agents must not run `git commit` or `git push` unless the developer
+explicitly grants one-off permission for that specific task.
+
+Agents may inspect Git state and may make task-owned working-tree changes,
+including updating a service's nested submodule checkout to an
+architect-approved published commit. They leave the resulting source and gitlink
+changes uncommitted for the developer.
+
+If an older task says that repository changes must be committed/pushed by the
+agent, that wording is coordination drift. It does not grant permission to
+publish and is not, by itself, a reason to block an otherwise completed task.
+
+Some downstream tasks require a **published** upstream commit, especially where
+one repository consumes another through a Git submodule. In that case:
+
+```text
+upstream agent -> review
+architect -> complete
+developer -> commit + push
+architect -> verify published commit
+architect -> promote dependent task to ready
+```
+
+The workspace-wide policy is documented in:
+
+[`docs/agent-vcs-ownership-policy.md`](docs/agent-vcs-ownership-policy.md).
+
 ### Task lifecycle and claiming
 
 Task files use YAML frontmatter so execution can resume without depending on a
@@ -630,6 +689,15 @@ review
    | architect accepts
    v
 complete
+```
+
+`complete` is an architecture/task-review state. It does not mean the
+repository agent committed or pushed the implementation.
+
+After architect acceptance, the developer/user owns publication:
+
+```text
+git add -> git commit -> git push
 ```
 
 Task discovery is not a claim.
@@ -773,9 +841,38 @@ It does not:
 - perform architect review;
 - silently substitute another logical owner.
 
-The receiving logical repository agent performs authoritative pre-claim checks,
-claiming, implementation, validation, Completion Report updates and transition
-to `status: review`.
+The **resolver** being routing-only does not mean the complete `/moda-task`
+invocation stops after resolution.
+
+Successful resolution continues immediately into the resolved logical-agent
+execution context:
+
+```text
+/moda-task <TASK_ID>
+        |
+        v
+start-agent-task.py
+        |
+        | routing only
+        v
+resolved logical agent + repository + rendered prompt
+        |
+        v
+explicit dependency / eligibility verification
+        |
+        v
+claim -> implement -> validate -> review
+        |
+        v
+STOP
+```
+
+A successful resolver result such as `status: ready` is not a stopping
+condition. The receiving logical repository agent performs authoritative
+pre-claim checks, claiming, implementation, validation, Completion Report
+updates and transition to `status: review`.
+
+The agent then stops without committing or pushing.
 
 #### Manual resolver test
 
@@ -848,6 +945,9 @@ Copilot implementation should stop when the task reaches:
 ```text
 status: review
 ```
+
+It must leave implementation changes uncommitted and unpushed unless the
+developer explicitly authorised publication for that task.
 
 Architect review is performed separately through ChatGPT acting as
 `moda_architect`.
@@ -978,7 +1078,7 @@ A normal agent-definition change is:
 3. Run python3 sync_agents.py --agent <agent>
 4. Review the generated Claude definition
 5. Run python3 sync_agents.py --check
-6. Commit canonical + generated changes together
+6. Developer reviews and commits canonical + generated changes together
 ```
 
 Useful commands:
@@ -1185,7 +1285,11 @@ git switch main
 git pull --ff-only origin main
 ```
 
-Make, commit and push the service change normally:
+For an architecture task, the repository agent makes and validates the service
+change, moves the task to `review`, and stops.
+
+After architect acceptance, the **developer/user** commits and pushes the
+accepted service change:
 
 ```bash
 git add .
@@ -1214,17 +1318,28 @@ git commit -m "update messaging service"
 git push
 ```
 
-The two-level commit model is intentional:
+The two-level commit model is intentional, and both publication steps belong to
+the developer/user:
 
 ```text
-service repository
+repository agent
     |
-    +--> commit + push implementation
+    +--> implementation + validation + review
              |
              v
-workspace repository
+moda_architect
     |
-    +--> record compatible service commit
+    +--> accept
+             |
+             v
+developer / user
+    |
+    +--> service repository commit + push
+             |
+             v
+developer / user
+    |
+    +--> workspace repository records compatible service commit
 ```
 
 ### Updating submodules
@@ -1299,12 +1414,18 @@ These are independent checkouts and can point to different commits.
 A typical database change flow is:
 
 ```text
-1. Change, test, commit and push moda-interact-database
-2. Update the nested database submodule in each affected service
-3. Test, commit and push each affected service
-4. Return to the workspace root
-5. Update top-level service/database submodule pointers
-6. Commit and push the compatible workspace snapshot
+1. moda_database changes + validates the database task
+2. moda_database moves the task to review and STOPS
+3. moda_architect accepts the database task
+4. developer commits + pushes moda-interact-database
+5. architect verifies the published database commit
+6. affected repository agent updates its nested database submodule to the
+   architect-approved published commit and implements/validates its task
+7. affected repository agent moves its task to review and STOPS
+8. moda_architect accepts the affected repository task
+9. developer commits + pushes the affected service
+10. developer updates top-level workspace submodule pointers
+11. developer commits + pushes the compatible workspace snapshot
 ```
 
 Keep database pointers aligned intentionally when services are meant to consume
@@ -1349,6 +1470,9 @@ python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
 # Inspect the detailed coding-agent workflow
 cat docs/coding-agent-workflow.md
 
+# Inspect developer-owned Git/VCS publication policy
+cat docs/agent-vcs-ownership-policy.md
+
 # Inspect Copilot implementation-model planning
 cat docs/copilot-model-selection.md
 
@@ -1378,6 +1502,9 @@ ownership.
   `moda-interact-system-test`.
 - Cross-repository architecture, sequencing, implementation review and final
   architecture acceptance belong to `moda_architect`.
+- Repository agents implement and validate work but stop at `status: review`;
+  Git commit/push publication belongs to the developer/user unless explicitly
+  delegated for one task.
 
 The workspace records how these independently deployed parts fit together and
 provides durable architecture/task state across Copilot, Claude Code, Codex and
@@ -1390,6 +1517,7 @@ Continue.
 - [Architecture overview](docs/architecture/overview.md)
 - [Service boundaries](docs/architecture/services.md)
 - [Coding agent workflow](docs/coding-agent-workflow.md)
+- [Git / VCS ownership policy](docs/agent-vcs-ownership-policy.md)
 - [Copilot model selection](docs/copilot-model-selection.md)
 - [Development baseline](docs/development-baseline.md)
 - [Node.js toolchain](docs/node-toolchain.md)
