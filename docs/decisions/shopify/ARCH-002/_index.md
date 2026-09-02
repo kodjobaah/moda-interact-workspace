@@ -17,7 +17,7 @@ Coordinator:
 | SHOPIFY-001 | Add Shopify service health and readiness | Complete | GATEWAY-001 |
 | SHOPIFY-002 | Separate database setup from replica startup | Complete | GATEWAY-001 |
 | SHOPIFY-003 | Add OpenTelemetry to Shopify ingress | Superseded | Replaced by SHOPIFY-006/007 |
-| SHOPIFY-004 | Use published shared package in Shopify application | Ready | GATEWAY-001 |
+| SHOPIFY-004 | Use published shared package in Shopify application | Complete | GATEWAY-001 |
 | SHOPIFY-005 | Eliminate existing Shopify application TypeScript baseline debt | Ready | SHOPIFY-002 |
 | SHOPIFY-006 | Adopt shared observability runtime in Shopify process | Complete | GATEWAY-001, SHARED-010 |
 | SHOPIFY-007 | Wire shared BullMQ telemetry on Shopify queue producers | Complete | SHOPIFY-006 |
@@ -41,3 +41,20 @@ The individual task file is authoritative for task state.
 shared Node runtime and BullMQ adapter instead of maintaining service-local
 NodeSDK/provider/exporter plumbing. Shopify-specific semantic telemetry remains
 owned by `moda_app`.
+
+
+## SHOPIFY-004 architect acceptance
+
+`ARCH-002-SHOPIFY-004` is architect-accepted Complete.
+
+The Shopify application uses the exact published shared-package dependency:
+
+```text
+@modainteract/moda-interact-shared@0.4.0
+```
+
+with registry-backed lockfile resolution and no sibling `file:` dependency.
+
+This satisfies the `SHOPIFY-004` dependency edge for `GATEWAY-005`.
+
+No downstream task is automatically promoted or started.

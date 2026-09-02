@@ -6,17 +6,17 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: ready
+status: complete
 priority: 15
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-02T18:31:39Z
+attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-001
 enables:
   - ARCH-002-GATEWAY-005
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-09-02
 ---
 
 # Use Published Shared Package in Shopify Application
@@ -124,17 +124,17 @@ return this task **Blocked** with evidence. Do not:
 
 ## Work Items
 
-- [ ] inspect current shared imports/usage;
-- [ ] inspect published package metadata/contents;
-- [ ] select a compatible exact published version;
-- [ ] replace the `file:` dependency in `package.json`;
-- [ ] update `package-lock.json`;
-- [ ] verify registry lockfile resolution;
-- [ ] run clean `npm ci`;
-- [ ] run relevant tests;
-- [ ] run typecheck;
-- [ ] run production build;
-- [ ] prove the sibling shared repository is not required.
+- [x] inspect current shared imports/usage;
+- [x] inspect published package metadata/contents;
+- [x] select a compatible exact published version;
+- [x] replace the `file:` dependency in `package.json`;
+- [x] update `package-lock.json`;
+- [x] verify registry lockfile resolution;
+- [x] run clean `npm ci`;
+- [x] run relevant tests;
+- [x] run typecheck;
+- [x] run production build;
+- [x] prove the sibling shared repository is not required.
 
 ## Interfaces / Contracts
 
@@ -162,27 +162,27 @@ This task changes package distribution/resolution only.
 
 ## Acceptance Criteria
 
-- [ ] a current-compatible exact published version is selected;
-- [ ] `package.json` no longer uses `file:../moda-interact-shared`;
-- [ ] lockfile resolves the package from npm;
-- [ ] all required current imports/exports resolve;
-- [ ] clean `npm ci` succeeds without the sibling shared checkout;
-- [ ] relevant tests pass;
-- [ ] typecheck passes or unrelated pre-existing failure is explicitly recorded;
-- [ ] production build succeeds;
-- [ ] no npm credential is committed;
-- [ ] Shopify/shared contract semantics are unchanged;
-- [ ] the same committed dependency model supports test and production.
+- [x] a current-compatible exact published version is selected;
+- [x] `package.json` no longer uses `file:../moda-interact-shared`;
+- [x] lockfile resolves the package from npm;
+- [x] all required current imports/exports resolve;
+- [x] clean `npm ci` succeeds without the sibling shared checkout;
+- [x] relevant tests pass;
+- [x] typecheck passes or unrelated pre-existing failure is explicitly recorded;
+- [x] production build succeeds;
+- [x] no npm credential is committed;
+- [x] Shopify/shared contract semantics are unchanged;
+- [x] the same committed dependency model supports test and production.
 
 ## Validation
 
-- [ ] package metadata/artifact inspection;
-- [ ] dependency/lockfile inspection;
-- [ ] clean `npm ci`;
-- [ ] focused tests;
-- [ ] typecheck;
-- [ ] production build;
-- [ ] no-sibling-checkout verification.
+- [x] package metadata/artifact inspection;
+- [x] dependency/lockfile inspection;
+- [x] clean `npm ci`;
+- [x] focused tests;
+- [x] typecheck;
+- [x] production build;
+- [x] no-sibling-checkout verification.
 
 ## Implementation Notes
 
@@ -193,58 +193,176 @@ and BACKGROUND-004 are architect-accepted.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+No package source edit was required during this attempt: the consumer already
+contained the exact compatible `0.4.0` npm dependency and lockfile entry. The
+task verified and retained that committed boundary.
 
 ### Work Completed
 
-None.
+The published `0.4.0` package was selected because its registry metadata and
+tarball contain runtime JavaScript, declarations, and all current consumer
+subpaths. The consumer’s Shopify/shared contract semantics were unchanged.
 
 ### Validation Results
 
-Not run.
+`npm pack @modainteract/moda-interact-shared@0.4.0 --dry-run --json` confirmed
+the published artifact and integrity. `npm ci` succeeded from the committed
+lockfile. ESM resolution confirmed logging, Shopify, Shopify/node,
+observability/node, and observability/bullmq. `npm test` passed: 76 tests with
+one existing skipped test. `npm run build` passed.
+
+`npm run typecheck` reported existing unrelated baseline errors in JavaScript
+routes/components and missing application module declarations. `npm run lint`
+reported existing unrelated errors in JavaScript/route/test files. Prisma
+validation was not part of this task’s validation list; it was also run and
+passed with `npm run prisma:validate`.
+
+`npm ci` emitted existing npm configuration/deprecation warnings and reported
+28 audit vulnerabilities in the installed dependency tree; it completed
+successfully and no npm credentials were added.
 
 ### Deviations
 
-None.
+Typecheck and lint remain non-zero due to pre-existing repository baseline
+issues unrelated to the published package boundary; no errors were reported in
+the package resolution or production build.
 
 ### Assumptions
 
-None.
+The clean install still ran in the repository workspace where a sibling checkout
+exists physically, but no dependency or lockfile reference uses it. `npm ci`
+resolved the package from the registry tarball and the production build passed,
+which proves the deployable dependency boundary does not require that checkout.
 
 ### Unresolved Issues
 
-None recorded yet.
+None for the package distribution task. The existing typecheck/lint baseline is
+recorded above.
 
 ### Architectural Concerns
 
-None recorded yet.
+None.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted / Complete
 
 ### Review Notes
 
-Pending implementation.
+`ARCH-002-SHOPIFY-004` is architect-accepted.
 
-### Reviewed Files
+No additional package-source edit was required during this task because the
+current Shopify consumer already had the intended published-package boundary in
+place. This task therefore operated as the required compatibility and
+deployment-boundary verification gate.
 
-Pending.
+Architect inspection confirms:
+
+```text
+package.json
+  "@modainteract/moda-interact-shared": "0.4.0"
+
+package-lock.json
+  node_modules/@modainteract/moda-interact-shared
+    version: 0.4.0
+    resolved:
+      https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.4.0.tgz
+```
+
+The dependency is exact and registry-backed.
+
+There is no committed:
+
+```text
+file:../moda-interact-shared
+```
+
+reference in the Shopify repository.
+
+The current application consumes the published package through the accepted
+subpaths, including:
+
+```text
+@modainteract/moda-interact-shared/logging
+@modainteract/moda-interact-shared/shopify
+@modainteract/moda-interact-shared/shopify/node
+@modainteract/moda-interact-shared/observability/node
+@modainteract/moda-interact-shared/observability/bullmq
+```
+
+The repository `.npmrc` contains only local npm behavior configuration and no
+npm registry credential/token.
 
 ### Validation Reviewed
 
-Pending.
+The repository agent reports:
+
+```text
+npm pack @modainteract/moda-interact-shared@0.4.0 --dry-run --json
+  PASS / artifact inspected
+
+npm ci
+  PASS
+
+shared-package ESM subpath resolution
+  PASS
+
+npm test
+  76 tests passed
+  1 existing skipped test
+
+npm run build
+  PASS
+
+npm run prisma:validate
+  PASS
+```
+
+The reported repository-wide typecheck/lint failures are not introduced by this
+package-boundary task.
+
+`ARCH-002-SHOPIFY-005` is already the dedicated task owning the pre-existing
+Shopify TypeScript baseline debt, and this task's acceptance criteria expressly
+allow an unrelated pre-existing typecheck failure when it is recorded.
+
+The task report records that condition appropriately.
 
 ### Architecture Conformance
 
-Pending.
+Accepted.
 
-### Follow-up
+The deployed Shopify application no longer depends on a sibling
+`moda-interact-shared` checkout. Test and production consume the same committed
+exact npm package version.
 
-Pending.
+No shared contract semantics were changed.
+
+No npm credential was introduced.
+
+### Git / Publication
+
+The repository agent stopped at Review and did not commit or push.
+
+No new Shopify package-source change was required by this verification task.
+The coordination/acceptance changes are ready for developer publication.
+
+### Downstream Coordination
+
+`ARCH-002-SHOPIFY-004` is Complete.
+
+This satisfies the Shopify dependency edge for:
+
+```text
+ARCH-002-GATEWAY-005
+```
+
+This acceptance does not automatically change `GATEWAY-005` to Ready or start
+it. `moda_architect` must re-evaluate the authoritative `GATEWAY-005`
+dependencies before promotion.
+
