@@ -19,7 +19,7 @@ Coordinator:
 | GATEWAY-007 | Implement host-based admin gateway routing | Pending | GATEWAY-002, ADMIN-008 |
 | GATEWAY-005 | Validate npm-based shared package production builds | Pending | GATEWAY-001, SHOPIFY-004, BACKGROUND-004 |
 | GATEWAY-006 | Configure OpenTelemetry transport/environment wiring | Complete | GATEWAY-002, SHOPIFY-006, MESSAGING-003, ADMIN-009, BACKGROUND-005 |
-| GATEWAY-003 | Create Render test and production deployment topology | Pending | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-003, BACKGROUND-001, BACKGROUND-002 |
+| GATEWAY-003 | Create Render test and production deployment topology | Pending | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
 | GATEWAY-004 | Validate gateway and Render infrastructure | Pending | GATEWAY-003 |
 
 Canonical ARCH-002 Render Blueprints:
@@ -53,3 +53,19 @@ accepted GATEWAY-002 task.
 `GATEWAY-004` infrastructure-validation gate.
 
 The individual task file is authoritative for task state.
+
+
+## Current unresolved GATEWAY-003 prerequisites
+
+After architect acceptance of `GATEWAY-006`, the unresolved direct
+`GATEWAY-003` prerequisites are:
+
+```text
+GATEWAY-005
+GATEWAY-007
+MESSAGING-001
+ADMIN-001
+ADMIN-008
+```
+
+The individual `GATEWAY-003` task file remains authoritative.

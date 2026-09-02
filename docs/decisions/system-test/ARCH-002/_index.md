@@ -46,4 +46,10 @@ The individual task file is authoritative for task state.
 
 | Task | Description | Status | Dependencies |
 |------|-------------|--------|--------------|
-| SYSTEM-TEST-002 | Validate shared observability and WhatsApp worker performance | Pending | SHOPIFY-007, BACKGROUND-007, BACKGROUND-009, MESSAGING-004, MESSAGING-005, ADMIN-009, GATEWAY-006 |
+| SYSTEM-TEST-002 | Validate shared observability and WhatsApp worker performance | Pending | SHOPIFY-007, BACKGROUND-007, BACKGROUND-009, MESSAGING-004, MESSAGING-005, ADMIN-009, GATEWAY-006, GATEWAY-004 |
+
+
+`SYSTEM-TEST-002` also requires `ARCH-002-GATEWAY-004` because it validates the
+shared observability runtime across the integrated test topology. Completion of
+the telemetry-emitter tasks and GATEWAY-006 alone is not sufficient to promote
+it to Ready.

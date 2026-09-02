@@ -733,13 +733,13 @@ as owner-specific tasks by `moda_architect`.
 | ARCH-002-SHOPIFY-002 | moda_app | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-SHOPIFY-003 | moda_app | Superseded | SHOPIFY-006/007 |
 | ARCH-002-SHOPIFY-004 | moda_app | Ready | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-006 | moda_app | Ready | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-SHOPIFY-007 | moda_app | Pending | ARCH-002-SHOPIFY-006 |
+| ARCH-002-SHOPIFY-006 | moda_app | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-SHOPIFY-007 | moda_app | Complete | ARCH-002-SHOPIFY-006 |
 | ARCH-002-MESSAGING-001 | moda_messaging | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-MESSAGING-002 | moda_messaging | Superseded | MESSAGING-003/004/005 |
-| ARCH-002-MESSAGING-003 | moda_messaging | Ready | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-MESSAGING-004 | moda_messaging | Pending | ARCH-002-MESSAGING-003 |
-| ARCH-002-MESSAGING-005 | moda_messaging | Pending | ARCH-002-MESSAGING-003 |
+| ARCH-002-MESSAGING-003 | moda_messaging | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-MESSAGING-004 | moda_messaging | Complete | ARCH-002-MESSAGING-003 |
+| ARCH-002-MESSAGING-005 | moda_messaging | Complete | ARCH-002-MESSAGING-003 |
 | ARCH-002-ADMIN-001 | moda_admin | Ready | ARCH-002-GATEWAY-001 |
 | ARCH-002-ADMIN-002 | moda_admin | Superseded | ADMIN-009/010 |
 | ARCH-002-DATABASE-001 | moda_database | Ready | - |
@@ -751,12 +751,12 @@ as owner-specific tasks by `moda_architect`.
 | ARCH-002-ADMIN-004 | moda_admin | Pending | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006 |
 | ARCH-002-ADMIN-009 | moda_admin | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
 | ARCH-002-ADMIN-010 | moda_admin | Superseded | Duplicate of standard framework/OpenTelemetry HTTP request telemetry |
-| ARCH-002-BACKGROUND-001 | moda_background | Ready | ARCH-002-GATEWAY-001 |
-| ARCH-002-BACKGROUND-002 | moda_background | Pending | ARCH-002-BACKGROUND-001 |
+| ARCH-002-BACKGROUND-001 | moda_background | Complete | ARCH-002-GATEWAY-001 |
+| ARCH-002-BACKGROUND-002 | moda_background | Complete | ARCH-002-BACKGROUND-001 |
 | ARCH-002-BACKGROUND-003 | moda_background | Superseded | Replaced by BACKGROUND-005/006/007/008/009 |
-| ARCH-002-BACKGROUND-004 | moda_background | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-BACKGROUND-004 | moda_background | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-GATEWAY-005 | moda_gateway | Pending | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004 |
-| ARCH-002-GATEWAY-006 | moda_gateway | Ready | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-006, ARCH-002-MESSAGING-003, ARCH-002-ADMIN-009, ARCH-002-BACKGROUND-005 |
+| ARCH-002-GATEWAY-006 | moda_gateway | Complete | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-006, ARCH-002-MESSAGING-003, ARCH-002-ADMIN-009, ARCH-002-BACKGROUND-005 |
 | ARCH-002-GATEWAY-007 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008 |
 | ARCH-002-GATEWAY-003 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
 | ARCH-002-GATEWAY-004 | moda_gateway | Pending | ARCH-002-GATEWAY-003 |
@@ -991,16 +991,19 @@ BACKGROUND-003 is Superseded. The accepted background observability gates are
 BACKGROUND-007 for worker operational metrics and BACKGROUND-009 for the final
 GenAI operational metrics chain.
 
-GATEWAY-006 depends on the final granular consumer gates rather than superseded
-broad tasks and is Ready once those accepted emitters are present. SYSTEM-TEST-002
-also consumes those granular gates and waits for architect-accepted GATEWAY-006
-transport/backend wiring before integrated observability validation.
+GATEWAY-006 depends on deployable runtime/exporter contracts rather than superseded
+broad tasks and is architect-accepted Complete. SYSTEM-TEST-002 consumes the
+granular semantic telemetry gates plus the accepted observability transport model,
+but integrated observability validation must also wait for the infrastructure
+validation gate that establishes the integrated test topology.
 
 
 ### 2026-09-02 — Observability coordination reconciliation
 
 `ARCH-002-SYSTEM-TEST-002` remains Pending on SHOPIFY-007, MESSAGING-004,
-MESSAGING-005, ADMIN-009, BACKGROUND-007, BACKGROUND-009 and GATEWAY-006.
+MESSAGING-005, ADMIN-009, BACKGROUND-007, BACKGROUND-009, GATEWAY-006 and
+GATEWAY-004. GATEWAY-004 is required because SYSTEM-TEST-002 validates the
+integrated test topology rather than only repository-local telemetry.
 Superseded ADMIN-010 and BACKGROUND-003 must not satisfy active dependencies.
 
 
@@ -1013,3 +1016,53 @@ Superseded ADMIN-010 and BACKGROUND-003 must not satisfy active dependencies.
 - retained SHOPIFY-007, MESSAGING-004, MESSAGING-005, BACKGROUND-007 and
   BACKGROUND-009 as SYSTEM-TEST-002 integration prerequisites;
 - recorded GATEWAY-006 as enabling GATEWAY-003, ADMIN-004 and SYSTEM-TEST-002.
+
+### 2026-09-02 — Post-GATEWAY-006 dependency re-evaluation
+
+`ARCH-002-GATEWAY-006` is architect-accepted Complete.
+
+The authoritative `GATEWAY-003` task remains **Pending**. Its currently
+unresolved direct prerequisites are:
+
+```text
+ARCH-002-GATEWAY-005
+ARCH-002-GATEWAY-007
+ARCH-002-MESSAGING-001
+ARCH-002-ADMIN-001
+ARCH-002-ADMIN-008
+```
+
+The current executable frontier is:
+
+```text
+ARCH-002-DATABASE-001
+ARCH-002-SHOPIFY-004
+ARCH-002-SHOPIFY-005
+ARCH-002-MESSAGING-001
+ARCH-002-ADMIN-001
+```
+
+`ARCH-002-DATABASE-001` is the recommended next task because it starts the
+longest remaining dependency chain blocking GATEWAY-003:
+
+```text
+DATABASE-001
+    -> ADMIN-003
+        -> ADMIN-005
+        -> ADMIN-006
+            -> ADMIN-007
+                -> ADMIN-008
+                    -> GATEWAY-007
+                        -> GATEWAY-003
+```
+
+`SHOPIFY-004` remains an important independent blocker because it enables
+`GATEWAY-005`. `MESSAGING-001` and `ADMIN-001` are direct GATEWAY-003
+prerequisites. `SHOPIFY-005` is executable but is not currently a declared
+GATEWAY-003 dependency.
+
+`SYSTEM-TEST-002` is not promoted merely because its former telemetry-only
+dependencies are Complete. Its objective requires validation across the
+integrated test topology, and ARCH-002 rollout places integration/system
+validation after the test Blueprint/infrastructure gate. It therefore also
+depends on `ARCH-002-GATEWAY-004`.

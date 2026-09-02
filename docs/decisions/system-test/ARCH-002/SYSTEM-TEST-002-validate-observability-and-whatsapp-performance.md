@@ -32,6 +32,24 @@ Validate the shared observability runtime across the integrated test topology an
 establish a measurable WhatsApp/CommerceAgent performance baseline before any
 worker split decision.
 
+## Infrastructure gate
+
+This task requires an architect-accepted integrated test topology.
+
+`ARCH-002-GATEWAY-004` is therefore a direct dependency in addition to the
+signal-specific observability prerequisites. This keeps the task aligned with
+the ARCH-002 rollout order:
+
+```text
+implementation prerequisites
+    -> test Blueprint deployment
+    -> infrastructure validation
+    -> integration/system validation
+```
+
+Do not mark this task Ready solely because the telemetry-emitter and
+GATEWAY-006 dependencies are Complete.
+
 ## Scope
 
 - verify HTTP -> BullMQ -> worker trace continuity;
