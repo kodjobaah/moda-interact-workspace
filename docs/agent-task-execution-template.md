@@ -78,59 +78,68 @@ If the task is no longer Ready, has already been claimed, or its explicit depend
 
 ## Claim the Task
 
+Read and obey:
+
+```text
+docs/agent-executor-normalization-policy.md
+```
+
+Normalize the current runtime to one canonical Moda executor value:
+
+```text
+GitHub Copilot / github-copilot / copilot -> copilot
+Codex                                  -> codex
+Claude Code / claude-code / claude     -> claude
+Continue                               -> continue
+```
+
 Claim the task according to the workspace execution protocol.
 
 Update together:
 
 * `status: in_progress`
-* `executor: codex` or `executor: claude`
+* `executor: <copilot|codex|claude|continue>`
 * `claimed_at: <current timestamp>`
 * increment `attempt`
 * update `updated`
 * set Completion Report status to `In Progress`
+
+Never persist a provider-specific display label such as `github-copilot` or
+`claude-code`.
+
+When checking an existing active claim, compare executor values after
+normalization. Alias-equivalent values represent the same executor identity.
 
 Do not reset or overwrite another executor's active claim.
 
 
 ## Git / VCS Ownership
 
-Read and obey:
+Repository agents prepare implementation changes for review but do not commit or
+push them.
 
-```text
-docs/agent-vcs-ownership-policy.md
-```
+The developer/user owns:
 
-The developer/user owns commit and push.
+* selecting the final commit boundary;
+* creating the Git commit;
+* choosing the commit message;
+* pushing branches/commits.
 
-Unless explicitly authorised by the developer for this specific task, the
-repository agent must not run:
+Unless the user explicitly authorises otherwise for a specific task, an agent
+must not run:
 
 ```text
 git commit
 git push
 ```
 
-Repository-agent lifecycle:
+A task-level acceptance criterion that requires the repository agent itself to
+commit/push is coordination drift. Do not satisfy it by committing. Record the
+drift and follow the architect-corrected task wording.
+
+The Completion Report should record Git/VCS state factually, for example:
 
 ```text
-implement -> validate -> review -> STOP
-```
-
-Developer lifecycle after architect review:
-
-```text
-git add -> git commit -> git push
-```
-
-A task criterion requiring agent-side commit/push is coordination drift, not
-permission to publish and not a blocker. Leave the implementation ready for the
-developer and record the drift in the Completion Report.
-
-The Completion Report should normally contain:
-
-```text
-### Git / VCS
-
 Implementation ready for developer commit/push.
 Repository agent did not commit or push.
 ```

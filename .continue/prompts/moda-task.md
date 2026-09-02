@@ -102,20 +102,18 @@ Stop before claiming only when:
 Successful routing to `status: ready` is not itself a stopping condition.
 
 
-## Git / VCS ownership
+## Canonical executor identity
 
-Read and obey `docs/agent-vcs-ownership-policy.md`.
+For Continue, task YAML must use:
 
-The resolved repository agent must leave implementation changes uncommitted and
-unpushed unless the developer explicitly grants one-off permission for the
-specific task.
-
-The normal terminal state is:
-
-```text
-task -> review
-agent -> STOP
-developer -> commit/push after architect review
+```yaml
+executor: continue
 ```
 
-Do not treat stale "commit/push required" wording as permission or as a blocker.
+Read and obey:
+
+```text
+docs/agent-executor-normalization-policy.md
+```
+
+Never persist a raw provider/runtime display name in `executor`.

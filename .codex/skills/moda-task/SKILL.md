@@ -11,7 +11,52 @@ handoff. While that phase is active, do not claim, implement, modify task state
 or perform architect review.
 
 **A successful resolver response does not finish the `/moda-task` invocation.**
-After successful resolution, continue immediately to the `## Handoff` section.
+After successful resolution, continue immediately to the `
+## Canonical executor identity
+
+The resolved logical agent must use the workspace executor normalization policy:
+
+```text
+docs/agent-executor-normalization-policy.md
+```
+
+Before claiming, normalize the execution surface to exactly one of:
+
+```text
+copilot
+codex
+claude
+continue
+```
+
+Required mappings include:
+
+```text
+GitHub Copilot / github-copilot / copilot -> copilot
+Codex                                  -> codex
+Claude Code / claude-code / claude     -> claude
+Continue                               -> continue
+```
+
+Do not store raw provider/runtime labels in task YAML.
+
+For GitHub Copilot Agent Mode specifically:
+
+```yaml
+executor: copilot
+```
+
+not:
+
+```yaml
+executor: github-copilot
+```
+
+When an existing active claim uses an alias-equivalent value, treat it as the
+same executor identity rather than as a competing claim.
+
+
+## Handoff` section.
 Do not return a final response merely stating that routing succeeded or that no
 claim/implementation was performed.
 
@@ -117,6 +162,12 @@ The following are **not** valid reasons to STOP:
 
 ### Claude Code
 
+For task metadata, the canonical executor value is:
+
+```text
+claude
+```
+
 Invoke the named custom subagent from `.claude/agents` and pass `prompt`
 unchanged.
 
@@ -128,6 +179,12 @@ Only report a delegation limitation and STOP when the runtime genuinely cannot
 perform either named delegation or same-context logical-agent adoption.
 
 ### Codex
+
+For task metadata, the canonical executor value is:
+
+```text
+codex
+```
 
 Read the resolved logical-agent definition from:
 
@@ -143,6 +200,15 @@ Do **not** stop after successful routing merely because the pre-handoff launcher
 phase itself is not allowed to claim the task.
 
 ### GitHub Copilot Agent Mode
+
+For task metadata, the canonical executor value is:
+
+```text
+copilot
+```
+
+Do not use `github-copilot`, `github_copilot`, or another provider display
+label.
 
 Copilot does not use Claude's named-subagent mechanism.
 
@@ -186,42 +252,6 @@ and STOP.
 
 Only after eligibility is verified and the task is claimed may normal
 implementation-repository inspection begin.
-
-
-## Workspace Git / VCS ownership
-
-Every resolved logical agent must obey:
-
-```text
-docs/agent-vcs-ownership-policy.md
-```
-
-This rule is injected by the launcher and applies even if an older task file or
-agent definition contains stale commit/push wording.
-
-Default:
-
-```text
-repository agent:
-claim -> implement -> validate -> review -> STOP
-
-moda_architect:
-review -> accept/reject
-
-developer/user:
-git add -> git commit -> git push
-```
-
-Unless the developer explicitly authorises publication for the specific task,
-the resolved agent must not run `git commit` or `git push`.
-
-A stale task acceptance criterion requiring agent-side commit/push:
-
-- does not grant permission to commit;
-- does not make the task Blocked;
-- must be reported as coordination drift;
-- should be reconciled by `moda_architect`.
-
 
 Required flow:
 

@@ -2711,7 +2711,7 @@ executor identifies the execution environment currently performing the work.
 For example:
 
 assigned_agent: moda_background
-executor: codex
+executor: <normalized current runtime>
 
 The executor field is execution state only. It does not change architectural
 ownership.
@@ -2722,7 +2722,7 @@ before claiming it.
 To claim a task, update together:
 
 status: in_progress
-executor: claude | codex
+executor: <normalized current runtime>
 claimed_at: <timestamp>
 attempt: <previous attempt + 1>
 

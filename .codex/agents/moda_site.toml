@@ -290,16 +290,31 @@ Before beginning an architecture task:
 4. verify assigned_agent, repository, status and dependencies;
 5. do not proceed if the task has already been claimed or is no longer Ready.
 
-Claim a task using the current execution runtime identifier by updating its YAML metadata
-together to:
+Before claiming a task, normalize the current execution runtime to the canonical
+Moda executor vocabulary:
+
+GitHub Copilot / github-copilot / copilot -> copilot
+Codex                                  -> codex
+Claude Code / claude-code / claude     -> claude
+Continue                               -> continue
+
+Then update the task YAML metadata together to:
 
 status: in_progress
-executor: <current runtime>
+executor: <copilot|codex|claude|continue>
 claimed_at: <current ISO-8601 timestamp>
 attempt: <previous attempt + 1>
 updated: <current date>
 
-If another executor has already claimed the task, do not overwrite the claim.
+Never persist a provider-specific runtime label such as github-copilot or
+claude-code.
+
+When checking an existing active claim, compare executor identities after
+normalization. Alias-equivalent values such as github-copilot and copilot are
+the same executor identity.
+
+If another normalized executor has already claimed the task, do not overwrite
+the claim.
 
 While implementing an architecture task you may update only your assigned task
 file under docs/decisions/ as an explicit exception to normal repository
