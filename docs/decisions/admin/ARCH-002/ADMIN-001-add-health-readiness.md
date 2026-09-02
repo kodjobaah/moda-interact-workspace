@@ -6,16 +6,16 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: ready
+status: complete
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-02T20:25:41Z
+attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-001
 enables: []
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-09-02
 ---
 
 # Add Admin Service Health and Readiness
@@ -105,14 +105,14 @@ application route/base-path question.
 
 ## Work Items
 
-- [ ] implement `GET /health`;
-- [ ] implement `GET /ready`;
-- [ ] add bounded PostgreSQL readiness;
-- [ ] add success/failure tests;
-- [ ] verify health/readiness do not require admin authentication;
-- [ ] verify liveness performs no database/provider work;
-- [ ] add sensitive-response validation;
-- [ ] document endpoint/status semantics.
+- [x] implement `GET /health`;
+- [x] implement `GET /ready`;
+- [x] add bounded PostgreSQL readiness;
+- [x] add success/failure tests;
+- [x] verify health/readiness do not require admin authentication;
+- [x] verify liveness performs no database/provider work;
+- [x] add sensitive-response validation;
+- [x] document endpoint/status semantics.
 
 ## Interfaces / Contracts
 
@@ -149,25 +149,25 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] `GET /health` succeeds for a healthy process without PostgreSQL/provider
+- [x] `GET /health` succeeds for a healthy process without PostgreSQL/provider
       calls;
-- [ ] `GET /ready` reflects PostgreSQL availability;
-- [ ] readiness is bounded and non-mutating;
-- [ ] health/readiness routes do not require an admin session;
-- [ ] no sensitive/admin/tenant data is returned;
-- [ ] admin authentication/business behaviour is unchanged;
-- [ ] test and production share the same health/readiness contract;
-- [ ] production build succeeds.
+- [x] `GET /ready` reflects PostgreSQL availability;
+- [x] readiness is bounded and non-mutating;
+- [x] health/readiness routes do not require an admin session;
+- [x] no sensitive/admin/tenant data is returned;
+- [x] admin authentication/business behaviour is unchanged;
+- [x] test and production share the same health/readiness contract;
+- [x] production build succeeds.
 
 ## Validation
 
-- [ ] tests;
-- [ ] typecheck/lint as applicable;
-- [ ] production build;
-- [ ] PostgreSQL success/failure tests;
-- [ ] liveness no-dependency-call test;
-- [ ] unauthenticated operational-route test;
-- [ ] sensitive-output review.
+- [x] tests;
+- [x] typecheck/lint as applicable;
+- [x] production build;
+- [x] PostgreSQL success/failure tests;
+- [x] liveness no-dependency-call test;
+- [x] unauthenticated operational-route test;
+- [x] sensitive-output review.
 
 ## Implementation Notes
 
@@ -179,58 +179,237 @@ Do not solve the gateway/admin base-path concern in this task.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+`moda-interact-admin/src/app/health/route.ts`
+
+`moda-interact-admin/src/app/ready/route.ts`
+
+`moda-interact-admin/src/lib/health/readiness.ts`
+
+`moda-interact-admin/tests/security/admin-health-readiness.test.mjs`
+
+`moda-interact-admin/tests/security/admin-security-boundary.test.mjs`
+
+`moda-interact-admin/README.md`
 
 ### Work Completed
 
-None.
+Added dependency-free `/health` liveness and bounded PostgreSQL-aware `/ready`
+readiness routes. Production readiness performs a non-mutating `SELECT 1`
+through Prisma; tests validate the injectable database probe contract without
+requiring PostgreSQL. Both routes remain outside admin authentication and
+return only bounded status JSON. Added readiness success/failure/timeout
+coverage, liveness and unauthenticated-route checks, sensitive-output checks,
+and endpoint documentation.
 
 ### Validation Results
 
-Not run.
+`npm test`: passed, 24 tests passed, including executable `/health` liveness and
+readiness success, failure, and bounded-timeout probe evidence.
+
+Focused health/readiness and security tests: passed, 12 tests passed.
+
+The executable readiness checks use injected probes and verify `200
+{"status":"ready"}`, `503 {"status":"unavailable"}`, and bounded handling of
+a never-settling probe without requiring PostgreSQL.
+
+`npm run lint`: passed with no warnings.
+
+`npm run prisma:validate`: passed.
+
+`npm run build`: passed, including Next.js TypeScript validation and route
+generation for `/health` and `/ready`. Next.js emitted an existing warning about
+multiple lockfiles and inferred workspace root; it did not affect the build.
+
+Sensitive-output review: passed. Operational responses expose only documented
+status values and no credentials, connection strings, tenant data, or admin
+data.
+
+Repository agent did not commit or push; changes are ready for developer-owned
+VCS publication.
 
 ### Deviations
 
-None.
+No deviations from the task contract. The repository has no standalone
+typecheck script; the production build performed Next.js TypeScript validation.
 
 ### Assumptions
 
-None.
+Production `/ready` requires the existing Prisma configuration and
+`DATABASE_URL`. Repository tests use the injected probe seam and do not require
+PostgreSQL.
 
 ### Unresolved Issues
 
-None recorded yet.
+None.
 
 ### Architectural Concerns
 
-None recorded yet.
+None.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted / Complete
 
 ### Review Notes
 
-Pending implementation.
+`ARCH-002-ADMIN-001` is architect-accepted.
 
-### Reviewed Files
+The previously requested behavioral validation correction has been completed.
 
-Pending.
+Architect inspection confirms the runtime contract:
 
-### Validation Reviewed
+```text
+GET /health
+  -> dependency-free liveness
+  -> HTTP 200
+  -> {"status":"ok"}
 
-Pending.
+GET /ready
+  -> prisma.$queryRaw`SELECT 1`
+  -> bounded PostgreSQL readiness
+  -> HTTP 200 {"status":"ready"} on success
+  -> HTTP 503 {"status":"unavailable"} on failure or timeout
+```
+
+The routes remain outside the protected Admin route group and do not require a
+platform-admin session.
+
+### Behavioral Validation Independently Re-run
+
+Architect independently executed:
+
+```text
+node --test tests/security/admin-health-readiness.test.mjs
+```
+
+against the submitted repository bundle.
+
+Result:
+
+```text
+tests 5
+pass 5
+fail 0
+```
+
+The focused suite executes the real liveness route and the actual
+`createReadinessResponse()` helper.
+
+It proves:
+
+```text
+successful probe
+  -> 200
+  -> {"status":"ready"}
+  -> probe invoked once
+
+rejected probe
+  -> 503
+  -> {"status":"unavailable"}
+  -> probe invoked once
+
+never-settling probe
+  -> bounded completion
+  -> 503
+  -> {"status":"unavailable"}
+  -> probe invoked once
+
+GET /health
+  -> 200
+  -> {"status":"ok"}
+```
+
+The source-level guards additionally verify that liveness does not import/call
+Prisma, authentication or provider dependencies and that operational responses
+do not expose sensitive values.
+
+### Production Dependency Path Reviewed
+
+The production `/ready` route remains:
+
+```text
+createReadinessResponse(
+  () => prisma.$queryRaw`SELECT 1`
+)
+```
+
+The injected probe seam is used only to make repository tests deterministic.
+
+No real PostgreSQL instance is required for repository-level behavioral tests.
+
+### Completion Report Reviewed
+
+The repository agent reports:
+
+```text
+npm test
+  PASS — 24 tests
+
+focused health/readiness + security
+  PASS — 12 tests
+
+npm run lint
+  PASS
+
+npm run prisma:validate
+  PASS
+
+npm run build
+  PASS
+```
+
+The repository has no separate typecheck script; the Next.js production build
+performs TypeScript validation.
+
+The existing Next.js multiple-lockfile/workspace-root warning is unrelated to
+the bounded health/readiness task and did not prevent the build.
 
 ### Architecture Conformance
 
-Pending.
+Accepted.
 
-### Follow-up
+The Admin operational contract is now concrete for Render/gateway consumption:
 
-Pending.
+```text
+liveness target:
+  /health
+
+recommended deployment readiness target:
+  /ready
+```
+
+`/ready` is bounded, dependency-specific and non-mutating.
+
+No gateway routing, authentication behavior, database schema or Admin business
+functionality was changed by this task.
+
+### Git / Publication
+
+The repository agent stopped at Review and did not commit or push.
+
+Accepted Admin changes are ready for developer commit/push.
+
+### Downstream Coordination
+
+`ARCH-002-ADMIN-001` is Complete.
+
+This satisfies the final known unresolved direct dependency edge for:
+
+```text
+ARCH-002-GATEWAY-003
+```
+
+Based on the currently accepted dependency graph, all declared direct
+prerequisites of `GATEWAY-003` are now Complete.
+
+`GATEWAY-003` is not automatically promoted in this acceptance overlay.
+`moda_architect` must inspect the authoritative current `GATEWAY-003` task file
+before changing its state from Pending to Ready.
+
+No downstream task is automatically started.

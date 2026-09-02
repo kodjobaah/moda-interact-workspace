@@ -22,7 +22,7 @@ Coordinator:
 
 | Task | Description | Status | Dependencies |
 |------|-------------|--------|--------------|
-| ADMIN-001 | Add admin service health and readiness | Ready | GATEWAY-001 |
+| ADMIN-001 | Add admin service health and readiness | Complete | GATEWAY-001 |
 | ADMIN-002 | Add OpenTelemetry to admin runtime | Superseded | Replaced by ADMIN-009/010 |
 | ADMIN-003 | Implement Google platform-admin authentication and session foundation | Complete | DATABASE-001 |
 | ADMIN-005 | Protect privileged admin pages and server reads | Complete | ADMIN-003 |
@@ -182,3 +182,27 @@ The Admin index has also been reconciled to the authoritative individual task
 states for `ADMIN-003`, `ADMIN-005`, `ADMIN-006`, and `ADMIN-007`.
 
 No task is started automatically.
+
+
+## ADMIN-001 architect acceptance
+
+`ARCH-002-ADMIN-001` is architect-accepted Complete.
+
+Accepted operational endpoints:
+
+```text
+GET /health
+  -> dependency-free liveness
+
+GET /ready
+  -> bounded PostgreSQL `SELECT 1` readiness
+```
+
+The behavioral correction was independently re-run by the architect:
+
+```text
+5 focused tests passed
+0 failed
+```
+
+This satisfies the task's direct `GATEWAY-003` dependency edge.
