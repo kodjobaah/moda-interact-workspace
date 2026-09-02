@@ -189,7 +189,7 @@ Each service is independently versioned and has a bounded responsibility.
 | [`moda-interact-admin`](https://github.com/kodjobaah/moda-interact-admin) | Next.js platform administration console, platform-admin security, cross-merchant reporting and operational visibility |
 | [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background) | BullMQ workers, high-volume Shopify event inspection/filtering, checkout recovery, CommerceAgent orchestration, retries, entitlements and usage |
 | [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database) | Canonical Prisma schema, PostgreSQL migrations, constraints, indexes, seed/reference data and ERD |
-| `moda-interact-gateway` | Thin public ingress, private-service routing, Render Blueprints/topology, scaling configuration and infrastructure wiring |
+| [`moda-interact-gateway`](https://github.com/kodjobaah/moda-interact-gateway) | Thin public ingress, private-service routing, Render Blueprints/topology, scaling configuration and infrastructure wiring |
 | [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | Meta/WhatsApp webhook verification, normalisation and queue publication |
 | [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared) | Canonical `@modainteract/moda-interact-shared` package for cross-service runtime contracts and reusable primitives |
 | [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public website, product content, SEO and public-facing material |
