@@ -30,7 +30,7 @@ Coordinator:
 | ADMIN-007 | Add bounded platform-admin security audit logging | Complete | ADMIN-005, ADMIN-006, SHARED-005 |
 | ADMIN-008 | Validate platform-admin security and deployment contract | Complete | ADMIN-003, ADMIN-005, ADMIN-006, ADMIN-007 |
 | ADMIN-004 | Add secure private Grafana Cloud observability access | Complete | ADMIN-008, GATEWAY-006 |
-| ADMIN-009 | Adopt shared observability runtime in admin process | Complete | GATEWAY-001, SHARED-010 |
+| ADMIN-009 | Adopt shared observability runtime in admin process | Ready (Changes Requested) | GATEWAY-001, SHARED-010 |
 | ADMIN-010 | Add bounded admin request operational metrics | Superseded | Duplicate standard HTTP telemetry; reuse framework/OpenTelemetry signal |
 
 Security and presentation chain:
@@ -232,3 +232,29 @@ ARCH-002-SYSTEM-TEST-001
 ```
 
 No downstream task is automatically claimed.
+
+
+## ADMIN-009 post-acceptance validation correction
+
+`ARCH-002-SYSTEM-TEST-002` exposed an over-specific assertion in the accepted
+ADMIN-009 bootstrap test: it requires literal `SELECT 1` SQL text even though
+ARCH-002/SHARED-008 require Prisma span emission, not SQL-text attribute
+presence.
+
+The same task is reopened under the architect Changes Requested path:
+
+```text
+ARCH-002-ADMIN-009
+  complete -> ready (Changes Requested reissue)
+
+ARCH-002-SYSTEM-TEST-002
+  ready -> blocked
+```
+
+The correction is validation-only unless `moda_admin` proves a genuine Prisma
+instrumentation defect. `GATEWAY-006` remains Complete because its OTLP/runtime
+wiring contract is unchanged.
+
+The launcher-compatible reissue state is `ready` with the prior executor/claim
+cleared. `Architect Review: Changes Requested` remains in the task. The next
+`/moda-task ARCH-002-ADMIN-009` claim increments the task attempt to 2.

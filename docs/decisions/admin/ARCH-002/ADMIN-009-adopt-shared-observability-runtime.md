@@ -7,11 +7,11 @@ repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
 task_kind: implementation
-status: complete
+status: review
 priority: 30
-executor: claude
-claimed_at: 2026-09-01T22:07:26+01:00
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-03T07:42:18Z
+attempt: 2
 depends_on:
   - ARCH-002-GATEWAY-001
   - ARCH-002-SHARED-010
@@ -19,7 +19,7 @@ enables:
   - ARCH-002-GATEWAY-006
   - ARCH-002-SYSTEM-TEST-002
 created: 2026-08-31
-updated: 2026-09-01
+updated: 2026-09-03
 ---
 
 # Adopt shared observability runtime in admin process
@@ -75,31 +75,32 @@ attributes.
 
 ## Acceptance Criteria
 
-- [ ] shared runtime starts before Next.js/framework imports;
-- [ ] canonical `service.name=moda-interact-admin` is emitted;
-- [ ] HTTP/fetch and Prisma instrumentation are enabled through shared runtime;
-- [ ] Moda-owned preload/configuration/application telemetry does not explicitly
+- [x] shared runtime starts before Next.js/framework imports;
+- [x] canonical `service.name=moda-interact-admin` is emitted;
+- [x] HTTP/fetch and Prisma instrumentation are enabled through shared runtime;
+- [x] Moda-owned preload/configuration/application telemetry does not explicitly
       capture sensitive admin/tenant/database values;
-- [ ] approved framework/OpenTelemetry telemetry is allowed to pass through
+- [x] approved framework/OpenTelemetry telemetry is allowed to pass through
       without Moda-specific attribute rewriting;
-- [ ] no repository-local sanitizer/Span patch is introduced for third-party
+- [x] no repository-local sanitizer/Span patch is introduced for third-party
       telemetry;
-- [ ] no competing local provider/exporter/sampler stack exists;
-- [ ] local/test hosted export remains disableable;
-- [ ] temporary telemetry diagnostic routes/scaffolding are absent from the final
+- [x] no competing local provider/exporter/sampler stack exists;
+- [x] local/test hosted export remains disableable;
+- [x] temporary telemetry diagnostic routes/scaffolding are absent from the final
       implementation.
 
 ## Validation
 
-- [ ] focused preload/bootstrap tests;
-- [ ] Moda-owned telemetry ownership/data-safety review;
-- [ ] confirm third-party framework/instrumentation attributes are not treated as
+- [x] focused preload/bootstrap tests;
+- [x] Moda-owned telemetry ownership/data-safety review;
+- [x] confirm third-party framework/instrumentation attributes are not treated as
       Moda-owned safety-contract failures;
-- [ ] confirm temporary telemetry diagnostic routes/scaffolding are removed;
-- [ ] affected repository tests;
-- [ ] repository-defined typecheck/lint as applicable;
-- [ ] production build;
-- [ ] duplicate provider/exporter ownership review.
+- [x] confirm temporary telemetry diagnostic routes/scaffolding are removed;
+- [x] affected repository tests;
+- [x] repository-defined lint as applicable (no `typecheck` script is defined;
+  the production build completed its TypeScript check);
+- [x] production build;
+- [x] duplicate provider/exporter ownership review.
 
 ## Stop Condition
 
@@ -108,11 +109,56 @@ to `review`, write the Completion Report, return to `moda_architect`, and STOP.
 
 ADMIN-010 is superseded by the framework-first telemetry reuse decision. Do not implement duplicate generic request metrics.
 
+## Architect Correction Request — 2026-09-03
+
+`ARCH-002-SYSTEM-TEST-002` exposed a validation-contract defect in the accepted
+ADMIN-009 focused bootstrap test. The current test requires a literal
+`SELECT 1` value to appear in `db.statement` or `db.query.text`, but neither the
+ARCH-002 parent architecture nor ADMIN-009/SHARED-008 requires Prisma
+instrumentation to export SQL text. The accepted contract requires Prisma spans
+to be emitted when instrumentation is enabled.
+
+This is a correction within the original ADMIN-009 scope. Do not create a new
+Admin task and do not redesign the runtime.
+
+Required correction:
+
+- keep the production preload and shared-runtime configuration unchanged unless
+  investigation proves a genuine runtime instrumentation defect;
+- make the focused bootstrap test prove Prisma instrumentation from exported
+  Prisma spans rather than requiring the literal SQL text `SELECT 1`;
+- if `db.statement` or `db.query.text` is present, continue validating that it
+  contains no prohibited credential/parameter values;
+- absence of SQL-text attributes must not fail the observability contract;
+- keep exporter/backend failure isolation and canonical resource-identity
+  coverage intact;
+- prefer the canonical `/ready` operational boundary when practical, but do not
+  broaden this correction into unrelated health-route refactoring;
+- rerun the focused ADMIN-009 validation, repository tests, lint/typecheck as
+  declared by the repository, and production build on the workspace Node
+  runtime;
+- reconcile the ADMIN-009 Acceptance Criteria, Validation checklist and
+  Completion Report before returning the task to `review`.
+
+Repository-local ADMIN-009 validation remains independent of the system-test
+fixture. Do not make `moda-interact-admin` depend on
+`moda-interact-system-test`. If a developer-local PostgreSQL instance is absent,
+the focused owning-repository bootstrap test may still observe the bounded
+unavailable readiness path, provided it validates the actual Prisma span
+contract without demanding SQL-text attributes.
+
+`ARCH-002-SYSTEM-TEST-002` will separately use the new
+`ARCH-002-SYSTEM-TEST-005` ephemeral PostgreSQL fixture to prove the healthy
+production-representative database path with a reachable `DATABASE_URL`.
+
+The correction must not introduce custom SQL telemetry or a competing Prisma
+instrumentation mechanism merely to make `SELECT 1` visible.
+
 ## Completion Report
 
 ### Status
 
-In Progress
+Ready for Review
 
 ### Files Changed
 
@@ -158,8 +204,8 @@ In Progress
 - Realigned the focused validation to the architecture-owned telemetry boundary:
   - Moda-owned telemetry safety is asserted directly: canonical resource
     attributes carry no sensitive values, no exported span attribute contains
-    database connection credentials, and Prisma SQL telemetry contains no
-    credentials/parameter values.
+    database connection credentials, and any optional Prisma SQL attributes
+    contain no credentials/parameter values.
   - Approved framework/OpenTelemetry telemetry (legacy `http.target` with the
     raw query string and related framework span metadata) is asserted to pass
     through unchanged — no repository-local sanitizer, rewrite, monkey-patch or
@@ -192,6 +238,10 @@ In Progress
   contains database connection credentials; approved framework/OpenTelemetry
   telemetry passes through unchanged; exporter/backend failure does not break
   valid admin requests; observability does not change application correctness.
+- `npm test` — 28/28 pass.
+- `npm run lint` — pass.
+- `npm run build` — pass; the build completed its TypeScript check and the route
+  listing contains no `/telemetry-probe` route.
 - The health route returns 200 when the local database is reachable and 503
   otherwise; the tests accept either status while still validating span capture,
   ownership and failure isolation. Local Postgres via `DATABASE_URL` (or
@@ -205,8 +255,11 @@ In Progress
 
 ### Deviations
 
-No repository-local sanitizer or patch of OpenTelemetry/framework internals is
-authorised or required.
+The focused test no longer requires `db.statement` or `db.query.text` to contain
+literal `SELECT 1`; those attributes are optional under the accepted Prisma span
+contract. When present, they remain covered by the sensitive-value checks. No
+repository-local sanitizer or patch of OpenTelemetry/framework internals was
+introduced.
 
 ### Assumptions
 
@@ -222,34 +275,35 @@ is not required for the remaining acceptance criteria.
 
 ### Architectural Concerns
 
-The former shared-runtime sanitization blocker is resolved by the ARCH-002
-telemetry ownership boundary. ADMIN-009 introduces no local workaround.
+None. The former shared-runtime sanitization blocker remains resolved by the
+ARCH-002 telemetry ownership boundary, and ADMIN-009 introduces no local
+workaround.
 
 ## Architect Review
 
 ### Review Status
 
-Complete
+Changes Requested
 
 ### Review Notes
 
-The earlier ADMIN-009 block was based on treating framework-generated
-Next.js/OpenTelemetry attributes as if they were Moda-owned telemetry. The
-parent ARCH-002 architecture now explicitly distinguishes these ownership
-boundaries and treats approved third-party telemetry as trusted operational
-telemetry that may be exported unchanged.
+Post-acceptance integrated system validation revealed that the ADMIN-009
+bootstrap test over-specifies the third-party Prisma telemetry contract by
+requiring literal SQL text. ARCH-002 requires Prisma instrumentation/spans, not
+`db.statement`/`db.query.text` presence. SHARED-008 likewise accepts Prisma span
+emission as the generic contract.
 
-No SHARED-014/SHARED-015 sanitizer or publication dependency is required for
-this finding.
+Return this same task to `moda_admin` for the bounded validation correction
+described above. No new runtime behavior is required unless the corrected test
+shows that Prisma spans themselves are absent.
 
-### Follow-up
+The task is reissued with `status: ready`, `executor: null` and `claimed_at: null`
+because the canonical `/moda-task` launcher only claims Ready tasks. The receiving
+agent must claim it normally, incrementing `attempt` from 1 to 2 and setting its
+current executor. `Architect Review: Changes Requested` remains the durable record
+of why the task was reopened.
 
-The resumed ADMIN-009 work described in the Completion Report above has now been
-executed: the focused validation is aligned to the architecture-owned telemetry
-boundary, the temporary `/telemetry-probe` route is removed from production
-source, Undici/fetch span coverage comes from a test-only preload fixture, an
-exporter/backend failure-isolation test was added, and validation passes
-(ownership tests 7/7, bootstrap tests 3/3, production build).
-
-Remaining before review: set this task to `review` and return to
-`moda_architect` per the Stop Condition, without implementing the superseded ADMIN-010 custom request metrics.
+`ARCH-002-SYSTEM-TEST-002` remains Blocked until this task is returned to
+`review` and architect-accepted again. `ARCH-002-GATEWAY-006` remains Complete:
+its accepted OTLP/environment wiring is not affected by this test-contract
+correction.
