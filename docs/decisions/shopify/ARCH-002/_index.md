@@ -21,6 +21,7 @@ Coordinator:
 | SHOPIFY-005 | Eliminate existing Shopify application TypeScript baseline debt | Ready | SHOPIFY-002 |
 | SHOPIFY-006 | Adopt shared observability runtime in Shopify process | Complete | GATEWAY-001, SHARED-010 |
 | SHOPIFY-007 | Wire shared BullMQ telemetry on Shopify queue producers | Complete | SHOPIFY-006 |
+| SHOPIFY-008 | Fix Shopify Render Docker build dependency installation | Complete | SHOPIFY-002 |
 
 Environment model:
 
@@ -58,3 +59,14 @@ with registry-backed lockfile resolution and no sibling `file:` dependency.
 This satisfies the `SHOPIFY-004` dependency edge for `GATEWAY-005`.
 
 No downstream task is automatically promoted or started.
+
+
+## SHOPIFY-008 deployment-unblock task
+
+A real Render deployment of `moda-interact-test` exposed a Docker dependency
+ordering defect: the image installs with `--omit=dev` before executing the
+Vite/React Router production build, while required build tooling is declared as
+development dependencies.
+
+`SHOPIFY-008` is architect-accepted Complete. Redeploy `moda-interact-test` using the accepted Dockerfile before resuming deployed-topology validation. The task must
+also preserve the existing Render pre-deploy Prisma migration capability.
