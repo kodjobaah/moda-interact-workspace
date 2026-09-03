@@ -954,7 +954,7 @@ Architect review is performed separately through ChatGPT acting as
 
 See:
 
-[Copilot model selection for Moda Interact tasks](docs/copilot-model-selection.md)
+[Copilot model selection for Moda Interact tasks](docs/models/ARCH-002copilot-model-selection.md)
 
 #### Claude Code setup
 
