@@ -29,7 +29,7 @@ Coordinator:
 | ADMIN-006 | Protect admin mutations and privileged route handlers | Complete | ADMIN-003 |
 | ADMIN-007 | Add bounded platform-admin security audit logging | Complete | ADMIN-005, ADMIN-006, SHARED-005 |
 | ADMIN-008 | Validate platform-admin security and deployment contract | Complete | ADMIN-003, ADMIN-005, ADMIN-006, ADMIN-007 |
-| ADMIN-004 | Add secure private Grafana Cloud observability access | Ready | ADMIN-008, GATEWAY-006 |
+| ADMIN-004 | Add secure private Grafana Cloud observability access | Complete | ADMIN-008, GATEWAY-006 |
 | ADMIN-009 | Adopt shared observability runtime in admin process | Complete | GATEWAY-001, SHARED-010 |
 | ADMIN-010 | Add bounded admin request operational metrics | Superseded | Duplicate standard HTTP telemetry; reuse framework/OpenTelemetry signal |
 
@@ -206,3 +206,29 @@ The behavioral correction was independently re-run by the architect:
 ```
 
 This satisfies the task's direct `GATEWAY-003` dependency edge.
+
+
+## ADMIN-004 architect acceptance
+
+`ARCH-002-ADMIN-004` is architect-accepted Complete.
+
+Accepted behaviour:
+
+```text
+platform-admin authorisation
+  -> Admin /observability
+  -> validated private Grafana Cloud navigation
+  -> Grafana Cloud authentication/authorisation
+```
+
+No iframe, anonymous/public dashboard, browser-visible Grafana credential, or
+Grafana authentication proxy was introduced. Missing/invalid Grafana URL
+configuration remains a bounded page-level condition.
+
+This satisfies the Admin presentation dependency for:
+
+```text
+ARCH-002-SYSTEM-TEST-001
+```
+
+No downstream task is automatically claimed.

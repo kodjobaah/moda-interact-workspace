@@ -6,18 +6,18 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: ready
+status: complete
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-03T06:30:55Z
+attempt: 1
 depends_on:
   - ARCH-002-ADMIN-008
   - ARCH-002-GATEWAY-006
 enables:
   - ARCH-002-SYSTEM-TEST-001
 created: 2026-08-31
-updated: 2026-09-02
+updated: 2026-09-03
 ---
 
 # Add Secure Private Grafana Cloud Observability Access
@@ -183,17 +183,17 @@ No secret Grafana credential belongs in these variables.
 
 ## Work Items
 
-- [ ] inspect the current `/observability` page and static screenshot usage;
-- [ ] consume the accepted platform-admin page guard from `ADMIN-008`;
-- [ ] implement a server-side Grafana navigation configuration helper;
-- [ ] validate configured URLs and environment identity;
-- [ ] replace the screenshot with dashboard/logs/traces/metrics access cards;
-- [ ] add a clear environment indicator;
-- [ ] implement safe external-link attributes;
-- [ ] implement missing/unavailable configuration state;
-- [ ] remove runtime dependence on `public/grafana-dashboard.png`;
-- [ ] document Render test/production URL configuration;
-- [ ] add regression tests covering access, configuration and secret safety.
+- [x] inspect the current `/observability` page and static screenshot usage;
+- [x] consume the accepted platform-admin page guard from `ADMIN-008`;
+- [x] implement a server-side Grafana navigation configuration helper;
+- [x] validate configured URLs and environment identity;
+- [x] replace the screenshot with dashboard/logs/traces/metrics access cards;
+- [x] add a clear environment indicator;
+- [x] implement safe external-link attributes;
+- [x] implement missing/unavailable configuration state;
+- [x] remove runtime dependence on `public/grafana-dashboard.png`;
+- [x] document Render test/production URL configuration;
+- [x] add regression tests covering access, configuration and secret safety.
 
 ## Interfaces / Contracts
 
@@ -226,37 +226,37 @@ No authenticated Grafana proxy contract is produced by this task.
 
 ## Acceptance Criteria
 
-- [ ] `/observability` is accessible only to authorised platform administrators;
-- [ ] the static dashboard screenshot is no longer the operational presentation;
-- [ ] the page provides configured private Grafana Cloud navigation;
-- [ ] Grafana remains privately authenticated and is not anonymous/public;
-- [ ] no iframe or public-dashboard workaround is introduced;
-- [ ] no Grafana credential/token/password is present in browser-visible source,
+- [x] `/observability` is accessible only to authorised platform administrators;
+- [x] the static dashboard screenshot is no longer the operational presentation;
+- [x] the page provides configured private Grafana Cloud navigation;
+- [x] Grafana remains privately authenticated and is not anonymous/public;
+- [x] no iframe or public-dashboard workaround is introduced;
+- [x] no Grafana credential/token/password is present in browser-visible source,
       logs or committed configuration;
-- [ ] configured URLs are validated before use;
-- [ ] test and production destinations remain distinguishable and independently
+- [x] configured URLs are validated before use;
+- [x] test and production destinations remain distinguishable and independently
       configurable;
-- [ ] external links use safe new-window semantics;
-- [ ] missing Grafana configuration produces a bounded page-level unavailable
+- [x] external links use safe new-window semantics;
+- [x] missing Grafana configuration produces a bounded page-level unavailable
       state;
-- [ ] Grafana unavailability does not break unrelated Admin functionality;
-- [ ] merchant/tenant-facing users cannot access the internal operational page;
-- [ ] deployment configuration and security assumptions are documented.
+- [x] Grafana unavailability does not break unrelated Admin functionality;
+- [x] merchant/tenant-facing users cannot access the internal operational page;
+- [x] deployment configuration and security assumptions are documented.
 
 ## Validation
 
 - [ ] repository tests;
-- [ ] typecheck/lint as applicable;
-- [ ] production build;
-- [ ] authorised observability-page test;
-- [ ] anonymous/non-admin rejection test;
-- [ ] configured dashboard-link render test;
-- [ ] malformed/unsafe URL rejection test;
-- [ ] missing configuration state test;
-- [ ] external-link security attribute review;
-- [ ] browser-visible secret/credential review;
-- [ ] test/production configuration-isolation review;
-- [ ] verify `public/grafana-dashboard.png` is no longer required by the live page.
+- [x] typecheck/lint as applicable;
+- [x] production build;
+- [x] authorised observability-page test;
+- [x] anonymous/non-admin rejection test;
+- [x] configured dashboard-link render test;
+- [x] malformed/unsafe URL rejection test;
+- [x] missing configuration state test;
+- [x] external-link security attribute review;
+- [x] browser-visible secret/credential review;
+- [x] test/production configuration-isolation review;
+- [x] verify `public/grafana-dashboard.png` is no longer required by the live page.
 
 ## Implementation Notes
 
@@ -278,59 +278,117 @@ blindly.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+`moda-interact-admin/src/app/(protected)/observability/page.tsx` — preserves
+the platform-admin guard and loads server-side navigation configuration.
+
+`moda-interact-admin/src/components/admin/observability-panel.tsx` — replaces
+the screenshot with environment-aware Grafana links and unavailable state.
+
+`moda-interact-admin/src/lib/observability/grafana.ts` — validates non-secret
+Grafana destinations and exposes only safe URLs to the page.
+
+`moda-interact-admin/tests/security/grafana-observability.test.mjs` — covers
+configuration, URL safety, environment isolation, guard wiring, and removal of
+the screenshot dependency.
+
+`moda-interact-admin/.env.example` and `moda-interact-admin/README.md` —
+document the non-secret Render configuration contract.
 
 ### Work Completed
 
-None.
+Implemented private Grafana Cloud navigation for authorised platform admins.
+Configured destinations are validated as HTTPS, with HTTP permitted only for
+localhost/127.0.0.1 development URLs. Invalid or absent configuration produces
+a bounded unavailable state. External links use `target="_blank"` and
+`rel="noopener noreferrer"`; no iframe, credential, token, or public-dashboard
+path was introduced. Grafana remains separately authenticated.
 
 ### Validation Results
 
-Not run.
+`node --test tests/security/grafana-observability.test.mjs`: pass, 4 passed.
+
+`npm run lint`: pass.
+
+`npm run prisma:validate`: pass.
+
+`npm run build`: pass; Next.js compiled successfully and `/observability` is
+server-rendered.
+
+`npm test`: 27 passed, 1 failed. The unrelated existing
+`tests/observability/admin-telemetry-bootstrap.test.mjs` test failed because it
+did not observe the expected `SELECT 1` health statement. All four new Grafana
+tests passed.
+
+Diagnostics for all changed TypeScript/TSX/test files: no errors.
 
 ### Deviations
 
-None.
+The full repository test command remains non-green because of the unrelated
+telemetry bootstrap failure described above.
 
 ### Assumptions
 
-Grafana Cloud remains private and separately authenticated.
+Grafana Cloud remains private and separately authenticated. Render supplies
+matching non-secret destinations independently for test and production.
 
 ### Unresolved Issues
 
-Exact Grafana dashboard/Explore URLs are deployment configuration and may not be
-known until `GATEWAY-006` is accepted.
+Exact Grafana dashboard/Explore URLs remain deployment configuration and are not
+committed.
 
 ### Architectural Concerns
 
-None recorded yet.
+None. The unavailable `server-only` package was not added; the server page
+loads the helper and passes its validated data to the presentation component.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Accepted. The implementation preserves the accepted ADMIN-008 platform-admin
+guard, replaces the static dashboard image with explicit private Grafana Cloud
+navigation, validates destinations server-side, fails closed for malformed or
+unsafe URLs, and does not introduce iframe/public-dashboard or credential
+proxying behaviour.
+
+The Completion Report names `moda-interact-admin/.env.example`, but that file
+was not present in the reviewed compressed workspace. This is non-blocking
+because the complete non-secret Render URL contract is documented in
+`moda-interact-admin/README.md`.
 
 ### Reviewed Files
 
-Pending.
+See Completion Report Files Changed.
 
 ### Validation Reviewed
 
-Pending.
+Focused Grafana suite: 4/4 passed. Lint, Prisma validation, and the production
+build passed according to the repository-agent Completion Report. The full
+repository suite reported 27 passed and one unrelated existing telemetry
+bootstrap failure; ADMIN-004 does not modify that readiness/telemetry path.
+
+Independent rerun in the architect review environment was not possible because
+the workspace requires Node 24.19.0 and the canonical bootstrap reported that
+version unavailable. No alternate Node version was substituted.
 
 ### Architecture Conformance
 
-Pending.
+Accepted as conformant with ARCH-002 and the Grafana Cloud Free access
+amendment: private platform-admin access precedes explicit Grafana navigation,
+Grafana retains its own authentication boundary, test and production URLs are
+independently configured, and Grafana availability is not an Admin correctness
+dependency.
 
 ### Follow-up
 
-Pending.
+`ARCH-002-ADMIN-004` is Complete. Its dependency edge into
+`ARCH-002-SYSTEM-TEST-001` is satisfied; the architect may promote that task to
+Ready after reconciling its remaining direct dependencies.
