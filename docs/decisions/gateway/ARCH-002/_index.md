@@ -22,6 +22,9 @@ Coordinator:
 | GATEWAY-003 | Create Render test and production deployment topology | Complete | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
 | GATEWAY-004 | Validate gateway and Render infrastructure | Complete | GATEWAY-003 |
 | GATEWAY-008 | Fix Admin Render build dependency installation | Complete | GATEWAY-003, ADMIN-004, ADMIN-009 |
+| GATEWAY-009 | Codify Render test custom domains in the canonical Blueprint | Complete | GATEWAY-003, GATEWAY-008, GATEWAY-010, GATEWAY-011 |
+| GATEWAY-010 | Establish concrete Moda Interact deployment configuration groups | Complete | GATEWAY-008 |
+| GATEWAY-011 | Move externally supplied Render configuration into reusable environment groups | Complete | GATEWAY-010 |
 
 Canonical ARCH-002 Render Blueprints:
 
@@ -235,3 +238,82 @@ defect: the service has `NODE_ENV=production`, while its Blueprint uses plain
 
 `GATEWAY-008` is architect-accepted Complete and owns the canonical test/production Blueprint correction. No Admin source/dependency reclassification is required by the
 current evidence.
+
+
+## GATEWAY-009 test custom-domain IaC task
+
+The Render test gateway is live and Cloudflare now has DNS-only CNAME records
+for:
+
+```text
+admin-test.modainteract.com
+app-test.modainteract.com
+```
+
+both targeting `moda-interact-gateway-test.onrender.com`.
+
+`GATEWAY-009` is Ready to codify those two test custom domains on the canonical
+Render test gateway service. Production custom domains remain out of scope.
+
+
+## GATEWAY-010 deployment configuration naming correction
+
+The live Render test environment proved that the shared group is functioning as
+deployment configuration, not as an observability-only resource.
+
+Canonical names are now:
+
+```text
+moda-interact-test-config
+moda-interact-production-config
+```
+
+`GATEWAY-010` is Ready. `GATEWAY-009` waits for this rename so custom-domain
+work applies to the final canonical Blueprint state.
+
+
+## GATEWAY-010 architect acceptance / GATEWAY-011 promotion
+
+`ARCH-002-GATEWAY-010` is architect-accepted Complete after review of the
+actual gateway workspace.
+
+`ARCH-002-GATEWAY-011` is now Ready and owns the follow-on conversion from
+repeated service-level `sync: false` declarations to purpose-scoped,
+Dashboard-populated Render Environment Groups.
+
+`GATEWAY-009` remains Pending until GATEWAY-011 is Complete so both tasks do
+not concurrently modify the canonical test Blueprint.
+
+
+## GATEWAY-011 architect changes requested — attempt 1
+
+Attempt 1 broadened the Shopify API credential group to the Shopify event
+worker, which did not consume those credentials in the accepted pre-GATEWAY-011
+Blueprint.
+
+The same task is Ready for correction. The Shopify event worker must retain
+only its common/telemetry + Redis group attachments (plus direct Render
+database wiring), and validation must reject attaching the Shopify API group to
+that worker.
+
+
+## GATEWAY-011 architect acceptance — attempt 2
+
+Attempt 2 is architect-accepted Complete.
+
+The Shopify event workers no longer receive Shopify API credentials, the
+positive attachment matrix matches that boundary, and an explicit negative
+regression rejects reintroducing the credential group.
+
+`GATEWAY-009` is now Ready. Its scope remains the test gateway custom-domain
+declarations and deterministic validation.
+
+
+## GATEWAY-009 architect acceptance
+
+`ARCH-002-GATEWAY-009` is architect-accepted Complete.
+
+The canonical test gateway owns both test custom domains, private services own
+neither, and missing/wrong-domain regression coverage is in place.
+
+Live Render verification remains part of `SYSTEM-TEST-006`.
