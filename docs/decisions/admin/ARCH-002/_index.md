@@ -30,7 +30,7 @@ Coordinator:
 | ADMIN-007 | Add bounded platform-admin security audit logging | Complete | ADMIN-005, ADMIN-006, SHARED-005 |
 | ADMIN-008 | Validate platform-admin security and deployment contract | Complete | ADMIN-003, ADMIN-005, ADMIN-006, ADMIN-007 |
 | ADMIN-004 | Add secure private Grafana Cloud observability access | Complete | ADMIN-008, GATEWAY-006 |
-| ADMIN-009 | Adopt shared observability runtime in admin process | Ready (Changes Requested) | GATEWAY-001, SHARED-010 |
+| ADMIN-009 | Adopt shared observability runtime in admin process | Complete | GATEWAY-001, SHARED-010 |
 | ADMIN-010 | Add bounded admin request operational metrics | Superseded | Duplicate standard HTTP telemetry; reuse framework/OpenTelemetry signal |
 
 Security and presentation chain:
@@ -258,3 +258,11 @@ wiring contract is unchanged.
 The launcher-compatible reissue state is `ready` with the prior executor/claim
 cleared. `Architect Review: Changes Requested` remains in the task. The next
 `/moda-task ARCH-002-ADMIN-009` claim increments the task attempt to 2.
+
+## ADMIN-009 attempt 2 architect acceptance
+
+`ARCH-002-ADMIN-009` is architect-accepted Complete after the narrow validation-contract correction.
+
+The production shared-observability preload remains unchanged. The focused bootstrap test proves Prisma instrumentation from emitted `prisma:*` spans and no longer requires third-party instrumentation to expose literal `SELECT 1` SQL text. Optional SQL attributes remain subject to sensitive-value validation when present.
+
+This satisfies the ADMIN-009 dependency edge for `ARCH-002-SYSTEM-TEST-002`. That system-test task remains Blocked only because `ARCH-002-SYSTEM-TEST-005` is still not Complete.

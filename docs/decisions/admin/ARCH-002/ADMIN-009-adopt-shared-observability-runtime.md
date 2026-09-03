@@ -7,7 +7,7 @@ repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
 task_kind: implementation
-status: review
+status: complete
 priority: 30
 executor: copilot
 claimed_at: 2026-09-03T07:42:18Z
@@ -283,27 +283,31 @@ workaround.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Post-acceptance integrated system validation revealed that the ADMIN-009
-bootstrap test over-specifies the third-party Prisma telemetry contract by
-requiring literal SQL text. ARCH-002 requires Prisma instrumentation/spans, not
-`db.statement`/`db.query.text` presence. SHARED-008 likewise accepts Prisma span
-emission as the generic contract.
+Accepted on 2026-09-03 after attempt 2. The bounded correction is exactly within
+the Architect Correction Request:
 
-Return this same task to `moda_admin` for the bounded validation correction
-described above. No new runtime behavior is required unless the corrected test
-shows that Prisma spans themselves are absent.
+- the production `observability.mjs` preload/shared-runtime configuration is
+  unchanged;
+- the bootstrap test still requires exported `prisma:*` spans;
+- `db.statement` / `db.query.text` are treated as optional third-party
+  attributes rather than required Prisma contract fields;
+- when SQL-text attributes are present, the existing sensitive-value checks
+  remain in force;
+- the literal `SELECT 1` assertion has been removed;
+- no custom SQL telemetry, Prisma patch, sanitizer or competing instrumentation
+  mechanism was introduced;
+- canonical resource identity and exporter/backend failure-isolation coverage
+  remain intact.
 
-The task is reissued with `status: ready`, `executor: null` and `claimed_at: null`
-because the canonical `/moda-task` launcher only claims Ready tasks. The receiving
-agent must claim it normally, incrementing `attempt` from 1 to 2 and setting its
-current executor. `Architect Review: Changes Requested` remains the durable record
-of why the task was reopened.
+The agent records focused bootstrap 3/3, ownership 7/7, repository test 28/28,
+lint pass and production build pass. The correction therefore closes the
+ADMIN-009 validation-contract drift discovered by SYSTEM-TEST-002 attempt 1.
 
-`ARCH-002-SYSTEM-TEST-002` remains Blocked until this task is returned to
-`review` and architect-accepted again. `ARCH-002-GATEWAY-006` remains Complete:
-its accepted OTLP/environment wiring is not affected by this test-contract
-correction.
+`ARCH-002-SYSTEM-TEST-002` is not yet promoted because its new direct
+`ARCH-002-SYSTEM-TEST-005` ephemeral-PostgreSQL prerequisite remains Ready and
+must be architect-accepted Complete first. `ARCH-002-GATEWAY-006` remains
+Complete and unchanged.
