@@ -21,6 +21,7 @@ Coordinator:
 | GATEWAY-006 | Configure OpenTelemetry transport/environment wiring | Complete | GATEWAY-002, SHOPIFY-006, MESSAGING-003, ADMIN-009, BACKGROUND-005 |
 | GATEWAY-003 | Create Render test and production deployment topology | Complete | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
 | GATEWAY-004 | Validate gateway and Render infrastructure | Complete | GATEWAY-003 |
+| GATEWAY-008 | Fix Admin Render build dependency installation | Complete | GATEWAY-003, ADMIN-004, ADMIN-009 |
 
 Canonical ARCH-002 Render Blueprints:
 
@@ -223,3 +224,14 @@ GATEWAY-007 Complete
 
 System-test tasks are not automatically promoted; their authoritative direct
 dependency lists remain the eligibility source.
+
+
+## GATEWAY-008 Admin Render build unblock
+
+A real `moda-interact-admin-test` deployment exposed a Render build-contract
+defect: the service has `NODE_ENV=production`, while its Blueprint uses plain
+`npm ci` even though Next/PostCSS build tooling is intentionally in
+`devDependencies`.
+
+`GATEWAY-008` is architect-accepted Complete and owns the canonical test/production Blueprint correction. No Admin source/dependency reclassification is required by the
+current evidence.
