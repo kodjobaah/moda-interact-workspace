@@ -25,6 +25,8 @@ Coordinator:
 | GATEWAY-009 | Codify Render test custom domains in the canonical Blueprint | Complete | GATEWAY-003, GATEWAY-008, GATEWAY-010, GATEWAY-011 |
 | GATEWAY-010 | Establish concrete Moda Interact deployment configuration groups | Complete | GATEWAY-008 |
 | GATEWAY-011 | Move externally supplied Render configuration into reusable environment groups | Complete | GATEWAY-010 |
+| GATEWAY-012 | Bootstrap Render Environment Groups with explicit placeholder values | Complete | GATEWAY-009, GATEWAY-011 |
+| GATEWAY-013 | Finalize production Render Environment Group ownership | Pending | GATEWAY-012 |
 
 Canonical ARCH-002 Render Blueprints:
 
@@ -317,3 +319,42 @@ The canonical test gateway owns both test custom domains, private services own
 neither, and missing/wrong-domain regression coverage is in place.
 
 Live Render verification remains part of `SYSTEM-TEST-006`.
+
+
+
+
+## GATEWAY-012 test placeholder policy
+
+For test, `__SET_IN_RENDER_DASHBOARD__` remains permanently in
+`render.test.yaml`.
+
+A future Blueprint sync may reset test Dashboard overrides; re-entering test
+values is an accepted operational cost before live integration testing.
+
+`GATEWAY-013` is production-only and does not block SYSTEM-TEST-009 or
+SYSTEM-TEST-006.
+
+
+## GATEWAY-012 architect changes requested — Shopify app URL ownership
+
+Attempt 1 fixed the Render key/value schema, but test `SHOPIFY_APP_URL` remains
+a direct service-level value.
+
+The same task is Ready for correction. Move `SHOPIFY_APP_URL` into
+`moda-interact-test-shopify-app-config` with the standard placeholder, remove
+the direct service value, and update validation/checklists accordingly.
+
+
+## GATEWAY-012 architect acceptance
+
+GATEWAY-012 Attempt 2 is architect-accepted Complete.
+
+The real Render test Blueprint now passes schema validation and instantiates the
+full resource topology. Test `SHOPIFY_APP_URL` is Environment Group-owned and
+Dashboard-editable, with redeployment still required for changes to take
+effect.
+
+`SYSTEM-TEST-009` may resume. `SYSTEM-TEST-006` remains blocked until real live
+test values and required probe inputs are available.
+
+`GATEWAY-013` remains production-only.
