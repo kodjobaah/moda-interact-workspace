@@ -38,6 +38,122 @@ MODA-DEVELOPER-OWNED-GIT-POLICY:END
 ===============================================================================
 
 ===============================================================================
+MODA-DEVELOPER-OWNED-LIVE-VALIDATION-POLICY:BEGIN
+DEVELOPER-OWNED LIVE / DEPLOYED-ENVIRONMENT VALIDATION HARD STOP
+===============================================================================
+
+Read and obey:
+
+    docs/agent-live-validation-execution-policy.md
+
+Unless the developer/user explicitly authorises a specific live command for the
+current execution, this logical agent MUST NOT execute any command that makes
+network requests to a deployed/shared environment.
+
+This prohibition applies regardless of whether the command is:
+
+    fast;
+    bounded;
+    read-only;
+    called a validator;
+    listed in historical task Validation text;
+    supplied with all required environment variables;
+    able to access existing credentials/secrets.
+
+For the current Render test validator, developer-owned examples include:
+
+    npm run validate:render:test
+    node scripts/validate-render-deployment.js --environment test
+    ./scripts/validate-render-test.sh
+    ./scripts/developer-validation.sh <TASK_ID> -- ./scripts/validate-render-test.sh
+
+Older architecture-prefixed aliases, while they still exist during migration,
+are developer-owned too:
+
+    npm run validate:arch002-render-test
+    node scripts/run-arch002-render-test-topology.js
+    ./scripts/system-test-006-developer-validation.sh
+
+The agent MUST NOT inspect, enumerate, echo, or reason over live secret values in
+the developer environment merely to decide whether a live validator can run.
+
+The agent MUST NOT fill a missing deployed-environment input and then launch a
+live validator on its own initiative.
+
+Agent-owned validation remains local/unit/static validation only unless the
+developer explicitly authorises otherwise.
+
+When live evidence is required:
+
+    1. implement/fix the validator and deterministic local coverage;
+    2. run only agent-owned checks;
+    3. return the task to review;
+    4. provide the exact developer-owned command;
+    5. STOP.
+
+Developer-provided successful validation evidence is first-class evidence and
+MUST NOT be rerun merely because the agent did not launch it.
+
+MODA-DEVELOPER-OWNED-LIVE-VALIDATION-POLICY:END
+===============================================================================
+
+===============================================================================
+MODA-REUSABLE-VALIDATION-NAMING-POLICY:BEGIN
+REUSABLE VALIDATION NAMING
+===============================================================================
+
+Read and obey:
+
+    docs/validation-command-naming.md
+
+Reusable validators MUST be named for the capability/environment they validate,
+not for the architecture task that first introduced them.
+
+Architecture/task identifiers such as:
+
+    ARCH-002
+    SYSTEM-TEST-006
+
+belong in:
+
+    task files;
+    validation evidence/report metadata;
+    .validation result directories;
+    historical completion records.
+
+They SHOULD NOT appear in the permanent executable/package-script name of a
+validator expected to be reused by later architecture work.
+
+For the Render test deployment validator, the target naming is:
+
+    npm run validate:render:test
+
+implemented by:
+
+    scripts/validate-render-deployment.js --environment test
+
+with developer-side secure input bootstrap:
+
+    scripts/validate-render-test.sh
+
+and generic evidence capture:
+
+    scripts/developer-validation.sh <TASK_ID> -- <command>
+
+For the current ARCH-002-SYSTEM-TEST-006 migration, read:
+
+    docs/validation-migrations/render-test-validator-naming.md
+
+Historical task text and old Completion Reports MUST NOT be rewritten merely to
+hide the old command names. History remains history.
+
+Do not broaden the current task by renaming unrelated ARCH-002 validators unless
+the task or architect explicitly includes them.
+
+MODA-REUSABLE-VALIDATION-NAMING-POLICY:END
+===============================================================================
+
+===============================================================================
 SHARED STRUCTURED LOGGING CONVENTION
 ===============================================================================
 

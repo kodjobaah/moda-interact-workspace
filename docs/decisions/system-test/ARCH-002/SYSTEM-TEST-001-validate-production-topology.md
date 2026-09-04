@@ -1,7 +1,7 @@
 ---
 id: ARCH-002-SYSTEM-TEST-001
 architecture_id: ARCH-002
-title: Validate integrated test and production-ready topology
+title: Aggregate final ARCH-002 validation evidence
 domain: system-test
 repository: moda-interact-system-test
 assigned_agent: moda_system_test
@@ -12,422 +12,212 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-002-GATEWAY-004
-  - ARCH-002-ADMIN-004
-  - ARCH-002-SYSTEM-TEST-003
-  - ARCH-002-SYSTEM-TEST-004
+  - ARCH-002-SYSTEM-TEST-002
+  - ARCH-002-SYSTEM-TEST-006
+  - ARCH-002-SYSTEM-TEST-007
+  - ARCH-002-SYSTEM-TEST-008
 enables: []
 created: 2026-08-29
-updated: 2026-09-02
+updated: 2026-09-03
 ---
 
-# Validate Integrated Test and Production-Ready Topology
+# Aggregate Final ARCH-002 Validation Evidence
 
-## Architecture
+## Current Execution State
 
-Architecture ID:
+This task is **Pending**.
 
-`ARCH-002`
+Do not claim it until all four direct dependencies are architect-accepted
+Complete:
 
-Architecture document:
+```text
+ARCH-002-SYSTEM-TEST-002  local deterministic observability/integration
+ARCH-002-SYSTEM-TEST-006  deployed Render test topology
+ARCH-002-SYSTEM-TEST-007  production Blueprint/readiness
+ARCH-002-SYSTEM-TEST-008  production-sized capacity-gate assessment
+```
 
-`docs/architecture/ARCH-002-render-production-gateway-infrastructure.md`
-
-Coordinator:
-
-`moda_architect`
+This task is intentionally a final evidence-aggregation task. It must not repeat
+the implementation or broad runtime work owned by those prerequisite tasks.
 
 ## Objective
 
-Validate the integrated ARCH-002 architecture after required implementation,
-infrastructure and observability work is architect-accepted.
+Produce the final ARCH-002 system-validation evidence matrix from accepted
+prerequisite results and identify whether the architecture is ready for final
+`moda_architect` completion review.
 
-The primary functional system-test environment is the isolated Render **test**
-environment.
-
-The task also validates production-readiness invariants and requires measured
-capacity evidence before ARCH-002 may claim that the production topology
-supports the approximately 22,000-Shopify-webhooks-per-minute target.
-
-This task proves the architecture. It does not own fixes in application,
-gateway, database or worker repositories.
-
-## Context
-
-ARCH-002 uses two canonical Blueprints:
+This task answers:
 
 ```text
-moda-interact-gateway/render.test.yaml
-moda-interact-gateway/render.production.yaml
+What has ARCH-002 actually proven?
+What remains unproven or unmet?
+Are the accepted validation results mutually consistent?
 ```
 
-The test environment intentionally uses the cheapest practical compute.
+## Evidence Boundaries
 
-It is therefore **not** evidence that the production hardware configuration can
-sustain the production capacity target.
+Use the accepted Completion Reports and reviewed evidence from:
 
-Functional correctness and production capacity are separate assertions.
+### SYSTEM-TEST-002 — local deterministic integration
 
-## Test Dependency Isolation
+Owns evidence for:
 
-Integrated ARCH-002 system validation must not rely on shared developer/provider
-test state for Redis or WhatsApp.
+- isolated Redis/PostgreSQL/WhatsApp-emulator integration;
+- shared OpenTelemetry runtime behavior;
+- HTTP -> BullMQ -> worker trace continuity;
+- Admin Prisma span behavior;
+- WhatsApp/CommerceAgent local performance measurements;
+- telemetry backend failure isolation.
 
-This task therefore consumes:
+Do not rerun that scenario here.
+
+### SYSTEM-TEST-006 — deployed Render test topology
+
+Owns evidence for:
+
+- actual deployed test gateway reachability;
+- externally observable gateway routing boundaries;
+- deployed test isolation and service exposure;
+- bounded webhook integrity checks through the gateway;
+- deployed test health/readiness evidence that can be obtained without exposing
+  private services publicly.
+
+Do not reproduce its live probes here.
+
+### SYSTEM-TEST-007 — production Blueprint/readiness
+
+Owns static evidence for:
+
+- test/production isolation;
+- public/private Render service topology;
+- production Admin host routing configuration;
+- independently scalable worker declarations;
+- production PostgreSQL/Redis/telemetry wiring boundaries;
+- assumed/unmeasured capacity labelling;
+- deployment/rollback documentation.
+
+Do not rewrite the Blueprint validator here.
+
+### SYSTEM-TEST-008 — production capacity gate
+
+Owns one explicit outcome:
 
 ```text
-ARCH-002-SYSTEM-TEST-003
-  isolated ephemeral Redis container fixture
-
-ARCH-002-SYSTEM-TEST-004
-  WhatsApp Cloud API emulator fixture
+PROVEN
 ```
 
-Redis/BullMQ integration scenarios must use the test-owned Redis instance.
+or:
 
-WhatsApp functional scenarios should use the emulator for deterministic
-provider-boundary testing, including signed inbound webhooks, duplicate
-deliveries, outbound API calls and status webhooks.
+```text
+UNMET
+```
 
-The emulator is not evidence of full Meta production compatibility or capacity.
-Where final real-provider compatibility is material, retain a bounded
-pre-production smoke test using the real Meta test environment.
+`UNMET` is a valid completed validation outcome when the production-sized
+environment is unavailable or measured evidence does not establish the target.
+It is not permission to claim production capacity.
 
-## Scope
+## Required Evidence Matrix
 
-### Phase A — test environment functional validation
+Record at minimum:
 
-Against the deployed test environment validate, where applicable:
+| Validation Area | Owning Task | Result | Evidence Reference |
+|-----------------|-------------|--------|--------------------|
+| Local deterministic integration | SYSTEM-TEST-002 | PASS/FAIL | ... |
+| Shared observability / failure isolation | SYSTEM-TEST-002 | PASS/FAIL | ... |
+| Deployed Render test topology | SYSTEM-TEST-006 | PASS/FAIL | ... |
+| Gateway/public-private routing | SYSTEM-TEST-006 | PASS/FAIL | ... |
+| Production Blueprint/readiness | SYSTEM-TEST-007 | PASS/FAIL | ... |
+| Test/production resource isolation | SYSTEM-TEST-007 | PASS/FAIL | ... |
+| Production capacity target | SYSTEM-TEST-008 | PROVEN/UNMET | ... |
 
-- public gateway reachability;
-- Shopify routing;
-- Meta/WhatsApp routing;
-- private-service isolation;
-- Admin host-based routing through `admin.modainteract.com` in production
-  configuration;
-- platform-admin authentication/authorisation;
-- secure internal Grafana observability presentation;
-- provider webhook verification compatibility;
-- app/messaging health and readiness;
-- Redis/BullMQ connectivity;
-- the three worker service boundaries;
-- background readiness/preflight behaviour;
-- PostgreSQL state transitions;
-- retry/duplicate behaviour relevant to exercised flows;
-- correlation/request identifiers;
-- asynchronous trace context where implemented;
-- recovery flow;
-- messaging/CommerceAgent flow;
-- dependency failure behaviour;
-- telemetry arrival/resource identity;
-- telemetry failure isolation;
-- secret/sensitive-data absence from logs/telemetry.
+Do not change a prerequisite task's result while aggregating it.
 
-### Phase B — production configuration/readiness validation
+If accepted prerequisite evidence conflicts, stop and return the inconsistency to
+`moda_architect` rather than choosing one result.
 
-Validate that the production Blueprint/configuration:
+## Capacity Interpretation
 
-- is isolated from test resources/secrets;
-- preserves public/private boundaries;
-- uses independently scalable worker services;
-- uses production telemetry environment identity;
-- does not present assumed hardware as measured capacity;
-- has a documented deployment/rollback path.
-
-### Phase C — production capacity evidence
-
-Before ARCH-002 is described as production-capacity validated, execute or review
-a controlled load test against a production-sized pre-cutover environment or
-the production environment before live traffic.
-
-The target is approximately:
+The ARCH-002 reference production target remains approximately:
 
 ```text
 22,000 Shopify webhook requests/minute
 ≈ 367 requests/second
 ```
 
-The load scenario must distinguish raw webhook ingress from recoveries, WhatsApp
-messages and CommerceAgent/LLM work.
+If SYSTEM-TEST-008 reports `UNMET`, this task may still complete its evidence
+aggregation, but it must state prominently:
 
-Do **not** infer production capacity from the cheap test environment.
+```text
+ARCH-002 production capacity gate: UNMET
+```
 
-If a production-sized capacity environment is not available, record the
-capacity gate as unmet rather than marking the 22,000/minute requirement proven.
+and:
+
+```text
+ARCH-002 must not be marked Implemented while the architecture still requires
+that capacity gate to be proven.
+```
+
+Do not convert `UNMET` into an assumed pass.
+
+## Scope
+
+- read the four accepted prerequisite task files and Completion Reports;
+- inspect their reviewed evidence where needed to resolve references;
+- create one final evidence matrix;
+- identify any contradiction or unresolved blocking result;
+- record the production capacity gate exactly as accepted by SYSTEM-TEST-008;
+- return the aggregation to `moda_architect` for final architecture review.
 
 ## Out of Scope
 
-- modifying another repository to make a test pass;
-- weakening service exposure for test convenience;
-- destructive production-data tests;
-- using production customer data as test fixtures;
-- silently changing capacity requirements;
-- implementing an autoscaling controller.
+- changing another repository;
+- rerunning SYSTEM-TEST-002's local observability scenario;
+- recreating SYSTEM-TEST-006 deployed probes;
+- recreating SYSTEM-TEST-007 Blueprint validation;
+- rerunning SYSTEM-TEST-008 load generation;
+- repairing defects discovered in prerequisite evidence;
+- changing production capacity assumptions;
+- marking ARCH-002 Implemented.
 
-## Required Topology Assertions
+## Work Items
 
-Test/production logical HTTP boundary:
-
-```text
-Internet
-   |
-Render public load balancer
-   |
-moda-interact-gateway
-   |
-Render private network
-   +--> moda-interact
-   +--> moda-interact-messaging
-   +--> moda-interact-admin
-```
-
-Production Admin browser routing:
-
-```text
-admin.modainteract.com
-   -> moda-interact-gateway
-   -> moda-interact-admin private service
-```
-
-The Admin application remains rooted at `/`; production validation must not rely
-on a Next.js `/admin` base path.
-
-Background work:
-
-```text
-moda-interact / moda-interact-messaging
-   |
-Redis Cloud / BullMQ
-   |
-   +--> moda-shopify-event-worker
-   +--> moda-recovery-worker
-   +--> moda-messaging-worker
-```
-
-Background workers must not be treated as HTTP upstreams.
-
-## Webhook Integrity Assertions
-
-Where test facilities support it:
-
-- confirm Shopify webhook HMAC verification succeeds through the gateway;
-- confirm Meta/WhatsApp verification succeeds through the gateway;
-- confirm required signature headers survive proxying;
-- confirm raw/body handling remains verification-compatible;
-- confirm sensitive query values such as Shopify OAuth codes and Meta
-  verification tokens do not appear in gateway logs.
-
-## Health / Readiness Assertions
-
-Verify:
-
-```text
-moda-interact
-  GET /health
-  GET /ready
-
-moda-interact-messaging
-  GET /health
-  GET /ready
-```
-
-and worker non-network preflight/readiness commands defined by BACKGROUND-002.
-
-Verify required dependency outages produce the expected not-ready/failure
-behaviour without exposing credentials.
-
-## Observability Assertions
-
-Verify canonical service identity for at least:
-
-```text
-moda-interact-gateway
-moda-interact
-moda-interact-messaging
-moda-shopify-event-worker
-moda-recovery-worker
-moda-messaging-worker
-moda-interact-admin
-```
-
-where instrumentation is required by accepted tasks.
-
-Verify:
-
-```text
-service.namespace=moda-interact
-deployment.environment.name=test
-```
-
-for test and:
-
-```text
-deployment.environment.name=production
-```
-
-for production evidence.
-
-Test and production telemetry must remain distinguishable.
-
-Verify telemetry backend outage does not cause:
-
-- Shopify webhook rejection solely due to telemetry;
-- durable event acceptance failure solely due to telemetry;
-- BullMQ job failure solely due to telemetry;
-- recovery/WhatsApp/CommerceAgent failure solely due to telemetry;
-- database transaction failure solely due to telemetry.
-
-Verify credentials, authorization headers, OAuth codes, Meta verification tokens
-and complete sensitive webhook/job payloads are absent from emitted operational
-telemetry/log evidence.
-
-
-## Admin Security / Observability Assertions
-
-Verify:
-
-- anonymous requests cannot use privileged Admin functionality;
-- an authorised platform administrator can access intended Admin functionality;
-- authenticated non-admin identities cannot perform privileged Admin actions;
-- privileged server actions/route handlers enforce authorisation server-side;
-- `admin.modainteract.com` reaches the private Admin service only through the
-  gateway;
-- non-Admin hosts cannot reach the Admin upstream through `/admin/*`;
-- the Admin `/observability` presentation is restricted to platform
-  administrators;
-- Grafana operational data is not made anonymous/public to satisfy iframe
-  embedding;
-- no Grafana or admin authentication credential is browser/log exposed;
-- test and production observability views remain distinguishable;
-- Grafana unavailability does not break unrelated Admin functionality.
-
-## Failure-Path Assertions
-
-Where practical validate:
-
-- unavailable private HTTP upstream;
-- Redis unavailable;
-- PostgreSQL unavailable where required;
-- worker startup/readiness failure;
-- transient worker/job failure;
-- retryable work;
-- duplicate event delivery;
-- invalid provider signature;
-- telemetry backend outage;
-- invalid/missing deployment configuration.
-
-Do not introduce destructive production-data operations merely for validation.
-
-## Ownership Boundary
-
-`moda_system_test` may:
-
-- execute/deploy architecture-approved test facilities;
-- call public interfaces;
-- invoke documented worker readiness commands;
-- observe queues/services;
-- inspect resulting state;
-- query/inspect architecture-approved telemetry;
-- run architecture test/load scenarios;
-- record failures/evidence.
-
-`moda_system_test` must not modify another repository's implementation just to
-make the test pass.
-
-If a defect is found:
-
-1. record the failing scenario and evidence;
-2. identify the apparent owning component;
-3. return the defect to `moda_architect`;
-4. allow `moda_architect` to reopen/create the owning task;
-5. rerun the affected validation only after the fix is architect-accepted.
-
-## Dependencies
-
-- `ARCH-002-GATEWAY-004`
-- `ARCH-002-ADMIN-004`
-- `ARCH-002-SYSTEM-TEST-003`
-- `ARCH-002-SYSTEM-TEST-004`
-- `ARCH-002-ADMIN-004`
-
-GATEWAY-004 is the final infrastructure-validation dependency and is expected to
-be Complete only after GATEWAY-003 and its implementation/observability
-prerequisites are Complete.
-
-ADMIN-004 is the final Admin operational-presentation dependency and must be
-architect-accepted before integrated ARCH-002 validation begins.
-
-If GATEWAY-004 is Complete but a required implementation/observability
-prerequisite is discovered not to be architect-accepted, this task must return
-the coordination inconsistency to `moda_architect`.
-
-## Enables
-
-None.
+- [ ] Confirm all four direct dependencies are Complete before claiming.
+- [ ] Read each accepted Completion Report and Architect Review.
+- [ ] Build the final evidence matrix.
+- [ ] Verify no accepted results contradict each other.
+- [ ] Record functional/topology result.
+- [ ] Record observability/failure-isolation result.
+- [ ] Record production Blueprint/readiness result.
+- [ ] Record capacity gate as exactly `PROVEN` or `UNMET`.
+- [ ] Record any unresolved architecture blocker without attempting a repair.
+- [ ] Update this Completion Report.
+- [ ] Return this task to `status: review` and stop.
 
 ## Acceptance Criteria
 
-- [ ] deployed test gateway is reachable;
-- [ ] Shopify traffic reaches the intended private service;
-- [ ] Meta/WhatsApp traffic reaches the intended private service;
-- [ ] private application services are not directly public where architecture
-      requires them private;
-- [ ] production `admin.modainteract.com` routes through the gateway to the
-      private Admin service without a Next.js `/admin` base path;
-- [ ] anonymous and authenticated non-admin users cannot perform privileged Admin
-      operations;
-- [ ] authorised platform administrators can access intended Admin functionality;
-- [ ] the Admin `/observability` page presents the approved private/authenticated
-      Grafana view without anonymous/public dashboard exposure;
-- [ ] Grafana unavailability does not break unrelated Admin functionality;
-- [ ] provider verification remains compatible with gateway proxying;
-- [ ] app/messaging health/readiness behave correctly;
-- [ ] worker readiness/preflight behaves correctly;
-- [ ] Redis/BullMQ connectivity works for required producers/consumers;
-- [ ] the three worker service boundaries process only their owned work;
-- [ ] PostgreSQL state transitions required by exercised flows are observable;
-- [ ] retry/duplicate behaviour is validated where applicable;
-- [ ] request/correlation context is preserved where required;
-- [ ] async trace context is preserved where required;
-- [ ] recovery flow is validated where applicable;
-- [ ] messaging/CommerceAgent flow is validated where applicable;
-- [ ] relevant dependency failure behaviour is validated;
-- [ ] test and production resource/secrets are isolated;
-- [ ] OTel service/environment identity is correct;
-- [ ] telemetry backend failure does not become a business correctness
-      dependency;
-- [ ] prohibited secrets/sensitive payloads are absent from tested logs/telemetry;
-- [ ] production Blueprint does not represent assumed capacity as measured;
-- [ ] measured evidence exists before claiming approximately 22,000
-      webhooks/minute production capacity;
-- [ ] defects are returned to the architect rather than silently repaired;
-- [ ] test/capacity evidence is recorded;
-- [ ] task is ready for architect acceptance.
+- [ ] every direct dependency was Complete before execution;
+- [ ] every material ARCH-002 validation area has an evidence owner;
+- [ ] no prerequisite result was silently reinterpreted;
+- [ ] contradictions are explicitly returned to `moda_architect`;
+- [ ] the capacity outcome is exactly preserved as `PROVEN` or `UNMET`;
+- [ ] no duplicate implementation or load-test work was introduced;
+- [ ] the final evidence matrix is sufficient for architectural completion review;
+- [ ] task returns to `review` and stops.
 
 ## Validation
 
-- [ ] test-environment functional suite;
-- [ ] provider webhook integrity suite;
-- [ ] health/readiness suite;
-- [ ] worker boundary/readiness suite;
-- [ ] failure-path suite;
-- [ ] observability identity/isolation suite;
-- [ ] sensitive-data review;
-- [ ] test/production isolation review;
-- [ ] production Blueprint review;
-- [ ] controlled production-sized capacity/load test or explicit unmet-capacity
-      gate;
-- [ ] rollback/deployment evidence review.
+This task is an evidence aggregation task.
 
-## Architecture Completion Gate
+Required validation is:
 
-Completion of this task is required before `ARCH-002` may be marked Implemented,
-unless `moda_architect` explicitly records a particular validation area as not
-applicable.
+- verify prerequisite task status/Architect Review state;
+- verify evidence references exist;
+- verify the matrix does not claim evidence absent from prerequisite reports;
+- verify capacity language does not turn assumptions into measurements.
 
-`ARCH-002` must not claim that production sustains the approximately
-22,000-webhooks-per-minute target until measured capacity evidence has been
-accepted.
+Do not rerun implementation lint/typecheck/build suites merely to aggregate
+already accepted system-test evidence.
 
 ## Completion Report
 
@@ -435,41 +225,33 @@ accepted.
 
 Not Started
 
-### Environment / Topology Tested
+### Evidence Matrix
 
-None.
+Pending.
 
-### Scenarios Executed
+### Functional / Topology Result
 
-None.
+Pending.
 
-### Results
+### Observability / Failure-Isolation Result
 
-Not run.
+Pending.
 
-### Capacity Evidence
+### Production Blueprint / Readiness Result
 
-Not run.
+Pending.
 
-### Defects Identified
+### Production Capacity Gate
 
-None.
+Pending: must be copied from SYSTEM-TEST-008 as `PROVEN` or `UNMET`.
 
-### Follow-up Tasks Requested
+### Contradictions / Blockers
 
-None.
+None recorded yet.
 
 ### Deviations
 
 None.
-
-### Assumptions
-
-None.
-
-### Unresolved Issues
-
-None recorded yet.
 
 ### Architectural Concerns
 
@@ -483,20 +265,4 @@ Pending
 
 ### Review Notes
 
-Pending implementation.
-
-### Reviewed Evidence
-
-Pending.
-
-### Validation Reviewed
-
-Pending.
-
-### Architecture Conformance
-
-Pending.
-
-### Follow-up
-
-Pending.
+Pending final evidence aggregation.

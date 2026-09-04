@@ -4,7 +4,7 @@ title: Render test and production gateway and infrastructure
 status: in_progress
 coordinator: moda_architect
 created: 2026-08-29
-updated: 2026-08-31
+updated: 2026-09-03
 ---
 
 # ARCH-002: Render Test and Production Gateway and Infrastructure
@@ -732,63 +732,105 @@ as owner-specific tasks by `moda_architect`.
 | ARCH-002-SHOPIFY-001 | moda_app | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-SHOPIFY-002 | moda_app | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-SHOPIFY-003 | moda_app | Superseded | SHOPIFY-006/007 |
-| ARCH-002-SHOPIFY-004 | moda_app | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-004 | moda_app | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-SHOPIFY-006 | moda_app | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
 | ARCH-002-SHOPIFY-007 | moda_app | Complete | ARCH-002-SHOPIFY-006 |
-| ARCH-002-MESSAGING-001 | moda_messaging | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-008 | moda_app | Complete | ARCH-002-SHOPIFY-002 |
+| ARCH-002-MESSAGING-001 | moda_messaging | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-MESSAGING-002 | moda_messaging | Superseded | MESSAGING-003/004/005 |
 | ARCH-002-MESSAGING-003 | moda_messaging | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
 | ARCH-002-MESSAGING-004 | moda_messaging | Complete | ARCH-002-MESSAGING-003 |
 | ARCH-002-MESSAGING-005 | moda_messaging | Complete | ARCH-002-MESSAGING-003 |
-| ARCH-002-ADMIN-001 | moda_admin | Ready | ARCH-002-GATEWAY-001 |
+| ARCH-002-ADMIN-001 | moda_admin | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-ADMIN-002 | moda_admin | Superseded | ADMIN-009/010 |
-| ARCH-002-DATABASE-001 | moda_database | Ready | - |
-| ARCH-002-ADMIN-003 | moda_admin | Pending | ARCH-002-DATABASE-001 |
-| ARCH-002-ADMIN-005 | moda_admin | Pending | ARCH-002-ADMIN-003 |
-| ARCH-002-ADMIN-006 | moda_admin | Pending | ARCH-002-ADMIN-003 |
-| ARCH-002-ADMIN-007 | moda_admin | Pending | ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-SHARED-005 |
-| ARCH-002-ADMIN-008 | moda_admin | Pending | ARCH-002-ADMIN-003, ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-ADMIN-007 |
-| ARCH-002-ADMIN-004 | moda_admin | Pending | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006 |
+| ARCH-002-DATABASE-001 | moda_database | Complete | - |
+| ARCH-002-ADMIN-003 | moda_admin | Complete | ARCH-002-DATABASE-001 |
+| ARCH-002-ADMIN-005 | moda_admin | Complete | ARCH-002-ADMIN-003 |
+| ARCH-002-ADMIN-006 | moda_admin | Complete | ARCH-002-ADMIN-003 |
+| ARCH-002-ADMIN-007 | moda_admin | Complete | ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-SHARED-005 |
+| ARCH-002-ADMIN-008 | moda_admin | Complete | ARCH-002-ADMIN-003, ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-ADMIN-007 |
+| ARCH-002-ADMIN-004 | moda_admin | Complete | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006 |
 | ARCH-002-ADMIN-009 | moda_admin | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
 | ARCH-002-ADMIN-010 | moda_admin | Superseded | Duplicate of standard framework/OpenTelemetry HTTP request telemetry |
+| ARCH-002-ADMIN-011 | moda_admin | Complete | ARCH-002-ADMIN-005 |
 | ARCH-002-BACKGROUND-001 | moda_background | Complete | ARCH-002-GATEWAY-001 |
 | ARCH-002-BACKGROUND-002 | moda_background | Complete | ARCH-002-BACKGROUND-001 |
 | ARCH-002-BACKGROUND-003 | moda_background | Superseded | Replaced by BACKGROUND-005/006/007/008/009 |
 | ARCH-002-BACKGROUND-004 | moda_background | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-GATEWAY-005 | moda_gateway | Pending | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004 |
+| ARCH-002-GATEWAY-005 | moda_gateway | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004 |
 | ARCH-002-GATEWAY-006 | moda_gateway | Complete | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-006, ARCH-002-MESSAGING-003, ARCH-002-ADMIN-009, ARCH-002-BACKGROUND-005 |
-| ARCH-002-GATEWAY-007 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008 |
-| ARCH-002-GATEWAY-003 | moda_gateway | Pending | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
-| ARCH-002-GATEWAY-004 | moda_gateway | Pending | ARCH-002-GATEWAY-003 |
-| ARCH-002-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-002-GATEWAY-004, ARCH-002-ADMIN-004 |
+| ARCH-002-GATEWAY-007 | moda_gateway | Complete | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008 |
+| ARCH-002-GATEWAY-008 | moda_gateway | Complete | ARCH-002-GATEWAY-003, ARCH-002-ADMIN-004, ARCH-002-ADMIN-009 |
+| ARCH-002-GATEWAY-009 | moda_gateway | Pending | ARCH-002-GATEWAY-003, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-010 |
+| ARCH-002-GATEWAY-010 | moda_gateway | Ready | ARCH-002-GATEWAY-008 |
+| ARCH-002-GATEWAY-003 | moda_gateway | Complete | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
+| ARCH-002-GATEWAY-004 | moda_gateway | Complete | ARCH-002-GATEWAY-003 |
+| ARCH-002-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-008 |
+| ARCH-002-SYSTEM-TEST-002 | moda_system_test | Complete | ARCH-002-SHOPIFY-007, ARCH-002-BACKGROUND-007, ARCH-002-BACKGROUND-009, ARCH-002-MESSAGING-004, ARCH-002-MESSAGING-005, ARCH-002-ADMIN-009, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-004, ARCH-002-SYSTEM-TEST-003, ARCH-002-SYSTEM-TEST-004, ARCH-002-SYSTEM-TEST-005 |
+| ARCH-002-SYSTEM-TEST-003 | moda_system_test | Complete | - |
+| ARCH-002-SYSTEM-TEST-004 | moda_system_test | Complete | ARCH-002-BACKGROUND-010 |
+| ARCH-002-SYSTEM-TEST-005 | moda_system_test | Complete | - |
+| ARCH-002-SYSTEM-TEST-006 | moda_system_test | Complete | ARCH-002-GATEWAY-004, ARCH-002-ADMIN-004, ARCH-002-SHOPIFY-008, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-010 |
+| ARCH-002-SYSTEM-TEST-007 | moda_system_test | Complete | ARCH-002-GATEWAY-004 |
+| ARCH-002-SYSTEM-TEST-008 | moda_system_test | Pending | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-009 |
+| ARCH-002-SYSTEM-TEST-009 | moda_system_test | Pending | ARCH-002-GATEWAY-010, ARCH-002-SYSTEM-TEST-007 |
 
-`ARCH-002-GATEWAY-003` remains Pending.
+`ARCH-002-GATEWAY-003` and `ARCH-002-GATEWAY-004` are Complete.
 
-Before it becomes Ready:
+The current system-validation frontier is intentionally decomposed by environment and evidence boundary:
 
-1. every declared prerequisite must be Complete;
-2. GATEWAY-005 must prove service-local npm-based app/background builds;
-3. GATEWAY-006 must establish the accepted OTLP/environment wiring model;
-4. application health/startup/worker prerequisites must be accepted;
-5. the final platform-admin security gate (`ADMIN-008`) must be accepted;
-6. host-based Admin gateway routing (`GATEWAY-007`) must be accepted;
-7. the two canonical Blueprint files defined by this architecture must remain the
-   task target.
+```text
+ARCH-002-SYSTEM-TEST-002   Complete local deterministic observability/integration
+ARCH-002-SHOPIFY-008       Complete fix Shopify Render Docker build
+ARCH-002-GATEWAY-008       Complete fix Admin Render build dependencies
+ARCH-002-GATEWAY-010       Ready   rename deployment config groups
+ARCH-002-GATEWAY-009       Pending codify test gateway custom domains
+ARCH-002-SYSTEM-TEST-006   Complete deployed Render test topology
+ARCH-002-SYSTEM-TEST-007   Complete production Blueprint/readiness
+              \             |             /
+               \            |            /
+                +------> ARCH-002-SYSTEM-TEST-008 Pending
+                         production-sized capacity gate
+                                   |
+                                   v
+                         ARCH-002-SYSTEM-TEST-001 Pending
+                         final evidence aggregation
+```
 
-`ARCH-002-SYSTEM-TEST-001` already exists as the integrated validation task.
+`SYSTEM-TEST-002` is architect-accepted Complete. Its local deterministic
+evidence includes cross-service trace continuity, worker/GenAI metrics,
+telemetry-backend failure isolation, Admin Prisma telemetry against isolated
+PostgreSQL, and bounded synthetic WhatsApp timing evidence.
 
-Its durable dependencies are `ARCH-002-GATEWAY-004`, the final infrastructure
-validation gate, and `ARCH-002-ADMIN-004`, the secure internal Grafana
-presentation task. GATEWAY-004 is expected to become Complete only after
-GATEWAY-003 and all transitive application/build/observability prerequisites are
-architect-accepted.
+`SYSTEM-TEST-006` is architect-accepted Complete for the current Render
+deployment-topology milestone. The remaining Meta verification GET `403` is
+explicitly deferred to the later WhatsApp/Messaging integration validation and
+is not recorded as a passing assertion. The next active Render investigation is
+the Shopify checkout -> queue -> background-worker processing path. No further
+probe implementation work is currently required.
 
-SYSTEM-TEST-001 performs full functional validation in the isolated test
-environment, validates production configuration/isolation, and requires measured
-capacity evidence before ARCH-002 claims the approximately 22,000-webhooks/minute
-production target.
+The local ephemeral Redis/PostgreSQL/WhatsApp fixtures belong to
+`SYSTEM-TEST-002`. They are not direct dependencies of deployed Render test
+validation and must not be represented as infrastructure consumed by Render
+services.
 
-The cheap test environment is not production-capacity evidence.
+`SYSTEM-TEST-006` validates the actual deployed Render test boundary and must
+return Blocked if mandatory live test-environment inputs are unavailable rather
+than substituting local processes.
+
+`SYSTEM-TEST-007` statically validates the actual current production/test
+Blueprint and gateway-readiness configuration without requiring live production.
+
+`SYSTEM-TEST-007` is architect-accepted Complete. `SYSTEM-TEST-006` remains Blocked on the five live Render test inputs.
+
+`SYSTEM-TEST-008` becomes Ready only after SYSTEM-TEST-002/006/007 are accepted.
+It records the approximately 22,000-webhooks/minute production ingress capacity
+gate as exactly `PROVEN` or `UNMET`; the cheap Render test environment cannot
+produce `PROVEN` production-capacity evidence.
+
+`SYSTEM-TEST-001` is now a final evidence-aggregation task. It becomes Ready only
+after SYSTEM-TEST-002/006/007/008 are architect-accepted Complete and must not
+repeat their implementation or broad validation work.
 
 The architecture must not mark system testing Ready merely because the gateway
 itself is deployable.
@@ -830,6 +872,77 @@ ARCH-002 discovery should reuse accepted ARCH-001 deployment findings and must
 not duplicate or silently override them.
 
 ## Change History
+
+### 2026-09-03 — Deployment environment-group resource naming
+
+- live Render deployment evidence established that the shared environment group
+  is deployment configuration, not an observability-only runtime resource;
+- feature-oriented names `moda-observability-test` and
+  `moda-observability-production` are therefore deprecated as infrastructure
+  resource names;
+- canonical names are `moda-interact-test-config` and
+  `moda-interact-production-config`;
+- created `ARCH-002-GATEWAY-010` to establish the canonical Blueprint resource
+  names and all gateway-owned references for clean recreation;
+- the previous Blueprint instance and test Environment Group were deleted before
+  implementation, so the operational path is now clean recreation rather than a
+  live rename;
+- `GATEWAY-009` waits for `GATEWAY-010` so custom-domain work applies to the
+  final recreated Blueprint state;
+- created `ARCH-002-SYSTEM-TEST-009` to update the accepted static readiness
+  validator to the new concrete resource names;
+- `SYSTEM-TEST-008` now also waits for SYSTEM-TEST-009.
+
+
+### 2026-09-03 — Render test custom domains
+
+- the Render test gateway is live at
+  `moda-interact-gateway-test.onrender.com`;
+- Cloudflare DNS-only CNAME records were created for
+  `admin-test.modainteract.com` and `app-test.modainteract.com`, both targeting
+  the test gateway;
+- created `ARCH-002-GATEWAY-009` to codify those two custom domains directly on
+  the canonical `render.test.yaml` web-service declaration;
+- production custom domains remain out of scope pending explicit production
+  hostname decisions;
+- `SYSTEM-TEST-006` remains Blocked until the Blueprint is synchronized,
+  domains are verified/TLS-enabled, test services are healthy and live test
+  inputs are supplied.
+
+
+### 2026-09-03 — Render test Admin build failure
+
+- deployment of `moda-interact-admin-test` reached the Next/PostCSS build but
+  failed because `@tailwindcss/postcss` was unavailable;
+- the Admin repository already declares the package as a build-time
+  `devDependency`;
+- the canonical Blueprints run plain `npm ci` while supplying
+  `NODE_ENV=production`, creating a Render build dependency mismatch;
+- created and architect-accepted `ARCH-002-GATEWAY-008`, using explicit
+  dev-inclusive locked dependency installation for both test and production
+  Admin build commands;
+- no Admin source/dependency reclassification was required;
+- the corrected Admin test service must now be redeployed;
+- deployed topology validation `SYSTEM-TEST-006` remains Blocked until the
+  Admin test service is healthy and its live environment inputs are available.
+
+
+### 2026-09-03 — Render test Shopify build failure
+
+- deployment of `moda-interact-test` exposed a Docker build dependency-order
+  defect: the image runs production-only `npm ci --omit=dev` before the
+  Vite/React Router build, while `@tailwindcss/vite` and related build tooling
+  are development dependencies;
+- created `ARCH-002-SHOPIFY-008` as a bounded `moda_app` task;
+- required the correction to preserve Render's accepted
+  `preDeployCommand: npm run migrate` lifecycle;
+- added `SHOPIFY-008` as a dependency of deployed Render validation
+  `SYSTEM-TEST-006`;
+- `SHOPIFY-008` is architect-accepted Complete; a fresh Render deployment of
+  `moda-interact-test` must now use the corrected image contract;
+- `SYSTEM-TEST-006` remains Blocked until that deployment is healthy and the
+  five live test inputs are available.
+
 
 ### 2026-08-29
 
@@ -1042,18 +1155,19 @@ ARCH-002-MESSAGING-001
 ARCH-002-ADMIN-001
 ```
 
-`ARCH-002-DATABASE-001` is the recommended next task because it starts the
-longest remaining dependency chain blocking GATEWAY-003:
+`ARCH-002-DATABASE-001` is architect-accepted Complete and its accepted
+implementation has been published at `moda-interact-database@9a286b7`.
+`ADMIN-003` is therefore Ready and is now the next task on this critical path:
 
 ```text
-DATABASE-001
-    -> ADMIN-003
+DATABASE-001  Complete @ 9a286b7
+    -> ADMIN-003  Complete
         -> ADMIN-005
-        -> ADMIN-006
-            -> ADMIN-007
-                -> ADMIN-008
-                    -> GATEWAY-007
-                        -> GATEWAY-003
+            -> ADMIN-006
+                -> ADMIN-007
+                    -> ADMIN-008
+                        -> GATEWAY-007
+                            -> GATEWAY-003
 ```
 
 `SHOPIFY-004` remains an important independent blocker because it enables
@@ -1066,3 +1180,969 @@ dependencies are Complete. Its objective requires validation across the
 integrated test topology, and ARCH-002 rollout places integration/system
 validation after the test Blueprint/infrastructure gate. It therefore also
 depends on `ARCH-002-GATEWAY-004`.
+
+
+### 2026-09-02 — DATABASE-001 architect acceptance
+
+- accepted `ARCH-002-DATABASE-001` as Complete;
+- retained `ARCH-002-ADMIN-003` as Pending until the accepted database changes
+  are committed/pushed by the developer and therefore available as a real
+  submodule target;
+- once publication is confirmed, `ADMIN-003` becomes the next task on the
+  platform-admin security critical path.
+
+
+### 2026-09-02 — DATABASE-001 publication gate satisfied
+
+Developer publication confirmed:
+
+```text
+moda-interact-database
+main
+9a286b7 feat(database): added admin tables
+origin/main
+working tree clean
+```
+
+Consequences:
+
+- `ARCH-002-DATABASE-001` remains Complete;
+- `ARCH-002-ADMIN-003` is promoted `Pending -> Ready`;
+- `ADMIN-003` must pin its nested database submodule to `9a286b7`;
+- no downstream Admin task is promoted automatically.
+
+
+### 2026-09-02 — ADMIN-003 architect acceptance
+
+`ARCH-002-ADMIN-003` is architect-accepted Complete.
+
+Accepted implementation properties:
+
+```text
+Google/Auth.js identity
+verified Google email
+PlatformAdmin allow-list
+providerSubject binding/mismatch enforcement
+bounded JWT session
+fail-closed development-only bypass
+local identity-only provisioning CLI
+nested database gitlink -> 9a286b7
+```
+
+Final focused Admin validation includes:
+
+```text
+npm test
+10 passed
+0 failed
+```
+
+The repository agent did not commit or push.
+
+The developer/user owns Admin repository publication after architect
+acceptance.
+
+No downstream task is promoted or started automatically by this acceptance.
+The ARCH-002 executable frontier must be re-evaluated separately.
+
+
+### 2026-09-02 — ADMIN-005 architect acceptance
+
+`ARCH-002-ADMIN-005` is architect-accepted Complete.
+
+Accepted boundary:
+
+```text
+privileged page
+    -> direct page guard
+    -> privileged data helper
+    -> direct read guard
+    -> Prisma
+```
+
+The protected route-group layout remains defence in depth rather than the sole
+authorization control.
+
+Current public auth/login/health routes remain outside that protected route
+group.
+
+The repository agent did not commit or push. The developer/user owns
+publication after architect acceptance.
+
+No downstream task is promoted or started automatically by this acceptance.
+
+
+### 2026-09-02 — ADMIN-006 architect acceptance
+
+`ARCH-002-ADMIN-006` is architect-accepted Complete.
+
+The existing tenant mutation now enforces the platform-admin authorization
+boundary before input handling or Prisma writes.
+
+Current Admin source inventory found no additional privileged custom
+server-action/API boundaries. Auth.js and bounded health routes remain public.
+
+The repository agent did not commit or push. The developer/user owns
+publication after architect acceptance.
+
+No downstream task is promoted or started automatically by this acceptance.
+
+
+### 2026-09-02 — ADMIN-007 ready
+
+All explicit direct dependencies are architect-accepted Complete:
+
+```text
+ARCH-002-ADMIN-005
+ARCH-002-ADMIN-006
+ARCH-002-SHARED-005
+```
+
+`ARCH-002-ADMIN-007` is promoted `Pending -> Ready`.
+
+This promotion does not start the task automatically and does not promote
+`ADMIN-008`.
+
+
+### 2026-09-02 — ADMIN-007 architect acceptance
+
+`ARCH-002-ADMIN-007` is architect-accepted Complete.
+
+The accepted Admin security-audit layer emits bounded domain events through the
+shared logging facade without introducing a repository-local generic
+logger/redaction/exporter stack.
+
+The current Admin package remains pinned to the later accepted shared release:
+
+```text
+@modainteract/moda-interact-shared@0.4.0
+```
+
+which retains the shared logging capability.
+
+The repository agent did not commit or push. The developer/user owns
+publication after architect acceptance.
+
+No downstream task is promoted or started automatically by this acceptance.
+
+
+### 2026-09-02 — ADMIN-008 ready
+
+All explicit direct dependencies are architect-accepted Complete:
+
+```text
+ARCH-002-ADMIN-003
+ARCH-002-ADMIN-005
+ARCH-002-ADMIN-006
+ARCH-002-ADMIN-007
+```
+
+`ARCH-002-ADMIN-008` is promoted `Pending -> Ready`.
+
+It is the final Admin application security/deployment validation gate before
+`GATEWAY-007`, `GATEWAY-003`, and `ADMIN-004` may consume the accepted Admin
+security boundary.
+
+Repository-agent Git publication remains prohibited; the developer/user owns
+commit and push after architect review.
+
+
+### 2026-09-02 — ADMIN-008 attempt 2 ready
+
+Attempt 1 confirmed the intended code shape but did not provide executable
+coverage for several required final-gate matrix cases.
+
+`ARCH-002-ADMIN-008` is returned:
+
+```text
+Review -> Ready
+```
+
+for attempt 2.
+
+Downstream gates remain closed:
+
+```text
+ARCH-002-GATEWAY-007
+ARCH-002-GATEWAY-003
+ARCH-002-ADMIN-004
+```
+
+Acceptance requires focused security validation of the identity, revocation,
+direct-mutation, environment and deployment matrix.
+
+Repository-agent commit/push remains prohibited; the developer/user owns
+publication after architect acceptance.
+
+
+### 2026-09-02 — ADMIN-008 architect accepted
+
+`ARCH-002-ADMIN-008` is Complete after four implementation/validation attempts.
+
+The final accepted Admin security boundary has executable evidence for:
+
+```text
+environment bypass/fail-closed rules
+Google verified/allow-listed identity rules
+provider-subject binding and race handling
+current-record revocation with an existing session
+privileged page/read/mutation boundaries
+guard-before-mutation behavior
+bounded public health/readiness routes
+hosted cookie/session security contract
+bounded Admin security audit fields
+test/production OAuth and environment isolation
+```
+
+This satisfies the `ADMIN-008` dependency edge for downstream tasks, but no
+downstream status is changed by this acceptance record.
+
+Developer publication of the accepted Admin module and parent-workspace
+submodule pointer should occur before the next downstream task is started.
+
+### 2026-09-02 — Post-ADMIN-008 dependency re-evaluation
+
+`ARCH-002-ADMIN-008` is architect-accepted Complete.
+
+A fresh evaluation of the authoritative individual task frontmatter produces
+the following executable frontier:
+
+```text
+ARCH-002-SHOPIFY-004     Ready
+ARCH-002-SHOPIFY-005     Ready
+ARCH-002-MESSAGING-001   Ready
+ARCH-002-ADMIN-001       Ready
+ARCH-002-GATEWAY-007     Ready   <- newly unblocked
+ARCH-002-ADMIN-004       Ready   <- newly unblocked
+```
+
+`ARCH-002-GATEWAY-003` remains Pending.
+
+Its unresolved direct prerequisites are now:
+
+```text
+ARCH-002-GATEWAY-005
+ARCH-002-GATEWAY-007
+ARCH-002-MESSAGING-001
+ARCH-002-ADMIN-001
+```
+
+The `ADMIN-008` dependency edge is satisfied.
+
+`GATEWAY-005` remains Pending on:
+
+```text
+ARCH-002-SHOPIFY-004
+```
+
+because its other direct dependencies are already Complete.
+
+The topology critical path now converges as:
+
+```text
+SHOPIFY-004 -> GATEWAY-005 ---+
+GATEWAY-007 ------------------+
+MESSAGING-001 ----------------+--> GATEWAY-003 -> GATEWAY-004
+ADMIN-001 --------------------+
+```
+
+Separately:
+
+```text
+ADMIN-004 ---------------------------> SYSTEM-TEST-001
+GATEWAY-004 -------------------------+-> SYSTEM-TEST-001
+GATEWAY-004 + telemetry prerequisites -> SYSTEM-TEST-002
+```
+
+`SYSTEM-TEST-002` remains Pending. Its body and system-test index already state
+that `GATEWAY-004` is a direct infrastructure dependency; its YAML frontmatter
+is reconciled in this update to include that missing dependency explicitly.
+
+For strictly sequential execution, `ARCH-002-SHOPIFY-004` is the recommended
+next critical-path task because it is the only currently Ready task that
+unlocks another unresolved direct `GATEWAY-003` prerequisite
+(`ARCH-002-GATEWAY-005`).
+
+No Ready task is started automatically.
+
+
+### 2026-09-02 — GATEWAY-005 architect accepted
+
+`ARCH-002-GATEWAY-005` is Complete.
+
+The accepted service-local production shared-package boundary is:
+
+```text
+moda-interact
+  -> exact @modainteract/moda-interact-shared@0.4.0
+  -> npm registry
+
+moda-interact-background
+  -> exact @modainteract/moda-interact-shared@0.5.0
+  -> npm registry
+```
+
+The Background version differs from the historical `BACKGROUND-004` acceptance
+because later architect-accepted GenAI observability work advanced that consumer
+to `0.5.0`. The current effective accepted state has been validated without a
+sibling shared checkout.
+
+`ARCH-002-GATEWAY-003` remains Pending.
+
+Its unresolved direct prerequisites are now:
+
+```text
+ARCH-002-GATEWAY-007
+ARCH-002-MESSAGING-001
+ARCH-002-ADMIN-001
+```
+
+The longest `SHOPIFY-004 -> GATEWAY-005` prerequisite chain has therefore been
+cleared.
+
+The remaining three branches are each one accepted task away from
+`GATEWAY-003`:
+
+```text
+GATEWAY-007 ---+
+MESSAGING-001 -+--> GATEWAY-003
+ADMIN-001 -----+
+```
+
+No downstream task is started automatically.
+
+
+### 2026-09-02 — GATEWAY-007 architect accepted
+
+`ARCH-002-GATEWAY-007` is Complete.
+
+The accepted Admin public ingress contract is host-based:
+
+```text
+admin.modainteract.com
+    -> Render-managed public edge / TLS
+    -> moda-interact-gateway
+    -> private moda-interact-admin
+```
+
+The Admin Next.js application remains rooted at `/`.
+
+The default/non-Admin host rejects:
+
+```text
+/admin
+/admin/*
+```
+
+rather than proxying them to the Admin service.
+
+With both `GATEWAY-005` and `GATEWAY-007` accepted, only two unresolved direct
+prerequisites remain before `GATEWAY-003`:
+
+```text
+ARCH-002-MESSAGING-001
+ARCH-002-ADMIN-001
+```
+
+The remaining convergence is therefore:
+
+```text
+MESSAGING-001 ---+
+                 +--> GATEWAY-003 -> GATEWAY-004
+ADMIN-001 -------+
+```
+
+No downstream task is started automatically.
+
+
+### 2026-09-02 — Isolated system-test dependency infrastructure
+
+ARCH-002 adds two test-harness prerequisite tasks:
+
+```text
+ARCH-002-SYSTEM-TEST-003
+  Add isolated ephemeral Redis test infrastructure
+
+ARCH-002-SYSTEM-TEST-004
+  Add WhatsApp Cloud API emulator test infrastructure
+```
+
+Both are owned by `moda_system_test` and are Ready independently.
+
+The accepted test dependency model is:
+
+```text
+SYSTEM TEST
+   |
+   +--> ephemeral per-run Redis container
+   |
+   +--> @whatsapp-cloudapi/emulator test instance
+```
+
+This is intentionally different from production:
+
+```text
+PRODUCTION
+   |
+   +--> Redis Cloud
+   |
+   +--> real Meta / WhatsApp Cloud API
+```
+
+`SYSTEM-TEST-001` and `SYSTEM-TEST-002` now depend directly on both new
+test-infrastructure tasks in addition to their existing implementation and
+gateway prerequisites.
+
+The Redis fixture must be isolated, dynamically addressed, clean per run and
+destroyed after execution.
+
+The WhatsApp fixture must support deterministic outbound API calls, signed
+inbound webhooks, duplicate delivery and status webhooks without sending to
+real WhatsApp users.
+
+The emulator is not accepted as proof of full Meta production compatibility,
+Meta latency or production capacity.
+
+If source inspection finds that Moda's outbound WhatsApp client cannot accept
+an injected emulator base URL, the system-test task must return Blocked and the
+architect will create the missing capability task for the owning repository.
+
+Current test-preparation graph:
+
+```text
+SYSTEM-TEST-003 Ready ---+
+                         +--> SYSTEM-TEST-001 Pending
+SYSTEM-TEST-004 Ready ---+        ^
+                                  |
+                         GATEWAY-004 + ADMIN-004
+
+
+SYSTEM-TEST-003 Ready ---+
+                         +--> SYSTEM-TEST-002 Pending
+SYSTEM-TEST-004 Ready ---+        ^
+                                  |
+                         GATEWAY-004 + telemetry prerequisites
+```
+
+These tasks do not change the remaining `GATEWAY-003` implementation
+prerequisites and are not started automatically.
+
+
+### 2026-09-02 — MESSAGING-001 architect accepted
+
+`ARCH-002-MESSAGING-001` is Complete.
+
+The accepted Messaging deployment-health contract is:
+
+```text
+GET /health
+  -> dependency-free liveness
+
+GET /ready
+  -> bounded Redis PING readiness
+```
+
+Repository-level tests use an injected probe for deterministic failure/timeout
+coverage. Real Redis connectivity and outage validation are delegated to the
+isolated ephemeral Redis system-test infrastructure in
+`ARCH-002-SYSTEM-TEST-003`.
+
+The corrected React Router mapping uses distinct route modules for `/health`
+and `/ready`.
+
+The critical `GATEWAY-003` convergence is now:
+
+```text
+ARCH-002-ADMIN-001
+        |
+        v
+ARCH-002-GATEWAY-003
+        |
+        v
+ARCH-002-GATEWAY-004
+```
+
+`ARCH-002-ADMIN-001` is the only unresolved direct prerequisite for
+`GATEWAY-003`.
+
+No downstream task is started automatically.
+
+
+### 2026-09-02 — ADMIN-001 architect accepted
+
+`ARCH-002-ADMIN-001` is Complete.
+
+The accepted Admin operational endpoint contract is:
+
+```text
+GET /health
+  -> dependency-free process liveness
+
+GET /ready
+  -> bounded PostgreSQL `SELECT 1` readiness
+```
+
+The architect independently re-ran the focused behavioral health/readiness
+suite and observed:
+
+```text
+5 passed
+0 failed
+```
+
+`ADMIN-001` was the final known unresolved direct prerequisite of
+`ARCH-002-GATEWAY-003`.
+
+The accepted dependency graph therefore has no known unresolved direct
+`GATEWAY-003` prerequisite.
+
+Before changing `GATEWAY-003` from Pending to Ready, `moda_architect` must
+inspect the authoritative current task file and re-evaluate only its explicit
+`depends_on` list.
+
+No downstream task is started automatically.
+
+
+### 2026-09-02 — GATEWAY-003 Ready
+
+The authoritative `ARCH-002-GATEWAY-003` direct dependency list was
+re-evaluated after architect acceptance of `ADMIN-001`.
+
+Every declared prerequisite is Complete.
+
+The task is promoted:
+
+```text
+ARCH-002-GATEWAY-003
+  Pending -> Ready
+```
+
+This coordination change does not claim the task and does not start
+`GATEWAY-004`.
+
+
+### 2026-09-02 — GATEWAY-003 architect accepted
+
+`ARCH-002-GATEWAY-003` is Complete.
+
+The accepted canonical Render topology is represented by:
+
+```text
+moda-interact-gateway/render.test.yaml
+moda-interact-gateway/render.production.yaml
+```
+
+Both environments preserve the same service boundaries while isolating names,
+state, credentials and telemetry environment identity.
+
+The corrected public gateway reserves `/health` as gateway-local liveness even
+when Render supplies the verified Admin custom domain as the Host header.
+
+Production sizing remains an assumed starting hypothesis pending measured load
+evidence.
+
+The next infrastructure gate is now:
+
+```text
+ARCH-002-GATEWAY-004
+  Ready
+```
+
+No downstream task is automatically claimed.
+
+
+### 2026-09-02 — GATEWAY-004 architect accepted
+
+`ARCH-002-GATEWAY-004` is Complete.
+
+The ARCH-002 gateway/Render infrastructure chain is architect-accepted through
+configuration validation.
+
+Local/container evidence validates the accepted topology and gateway behavior;
+credential-aware live Render validation, DNS/TLS, real private networking,
+external dependency connectivity and measured capacity remain system/deployment
+validation concerns.
+
+The system-test preparation graph remains:
+
+```text
+SYSTEM-TEST-003 Ready ---+
+                         +--> SYSTEM-TEST-001 Pending
+SYSTEM-TEST-004 Ready ---+        ^
+                                  |
+                         ADMIN-004 + accepted infrastructure
+
+
+SYSTEM-TEST-003 Ready ---+
+                         +--> SYSTEM-TEST-002 Pending
+SYSTEM-TEST-004 Ready ---+        ^
+                                  |
+                         accepted infrastructure + telemetry prerequisites
+```
+
+No system-test task is automatically started or promoted without re-reading its
+authoritative direct dependency list.
+
+
+### 2026-09-02 — SYSTEM-TEST-003 architect accepted
+
+`ARCH-002-SYSTEM-TEST-003` is Complete.
+
+The accepted system-test Redis boundary is:
+
+```text
+system-test run
+    -> dedicated ephemeral Redis 7 Alpine container
+    -> dynamic mapped host port
+    -> bounded PING readiness
+    -> generated REDIS_URL
+    -> outage/restart/clean-state controls
+    -> teardown
+```
+
+This is test-only infrastructure and does not replace production Redis Cloud.
+
+The next independently executable system-test infrastructure task remains:
+
+```text
+ARCH-002-SYSTEM-TEST-004
+  Ready
+```
+
+Integrated `SYSTEM-TEST-001` and `SYSTEM-TEST-002` remain Pending until all of
+their explicit direct prerequisites are Complete.
+
+
+### 2026-09-02 — SYSTEM-TEST-004 consumer preflight blocker
+
+`ARCH-002-SYSTEM-TEST-004` correctly stopped during its required outbound
+consumer capability preflight.
+
+Current Background outbound behavior contains a hard-coded Meta Graph API base:
+
+```text
+https://graph.facebook.com/v25.0
+```
+
+so a real Moda outbound request cannot be directed to the architecture-owned
+WhatsApp emulator without an owning-repository configuration seam.
+
+The architect creates:
+
+```text
+ARCH-002-BACKGROUND-010
+  Make outbound WhatsApp API base URL configurable
+  status: Ready
+```
+
+The production default must remain unchanged.
+
+The dependency is now:
+
+```text
+BACKGROUND-010 Ready
+        |
+        v
+SYSTEM-TEST-004 Blocked
+        |
+        +--------------------+
+        |                    |
+        v                    v
+SYSTEM-TEST-001        SYSTEM-TEST-002
+   Pending                 Pending
+```
+
+No test-only network interception is approved.
+
+`SYSTEM-TEST-004` may resume only after `BACKGROUND-010` is
+architect-accepted Complete and the architect changes it `blocked -> ready`.
+
+
+### 2026-09-02 — BACKGROUND-010 accepted; SYSTEM-TEST-004 unblocked
+
+`ARCH-002-BACKGROUND-010` is Complete.
+
+The Background outbound WhatsApp client now supports a configurable provider
+base URL while preserving the existing production Meta v25.0 default.
+
+The prior system-test blocker is resolved:
+
+```text
+BACKGROUND-010 Complete
+        |
+        v
+SYSTEM-TEST-004 Ready
+```
+
+`SYSTEM-TEST-004` may now be claimed as a new execution attempt.
+
+Integrated `SYSTEM-TEST-001` and `SYSTEM-TEST-002` remain Pending until all of
+their explicit direct prerequisites are Complete.
+
+
+### 2026-09-02 — SYSTEM-TEST-004 architect accepted
+
+`ARCH-002-SYSTEM-TEST-004` is Complete.
+
+The architecture now has both isolated test-provider dependencies:
+
+```text
+SYSTEM-TEST-003 Complete
+  -> ephemeral Redis
+
+SYSTEM-TEST-004 Complete
+  -> WhatsApp Cloud API emulator
+```
+
+The WhatsApp fixture uses synthetic provider identity and can exercise the
+real Background outbound client through `WHATSAPP_API_BASE_URL` without
+cross-repository interception.
+
+The direct dependency graph now permits:
+
+```text
+SYSTEM-TEST-002 Ready
+```
+
+because all of its explicit dependencies are Complete.
+
+`SYSTEM-TEST-001` remains Pending only on its remaining explicit prerequisite:
+
+```text
+ARCH-002-ADMIN-004
+```
+
+No integrated system-test task is automatically claimed.
+
+
+### 2026-09-03 — ADMIN-004 architect accepted; SYSTEM-TEST-001 ready
+
+`ARCH-002-ADMIN-004` is Complete after architect review of the actual Admin
+implementation. The accepted boundary keeps `/observability` behind the
+platform-admin guard and navigates explicitly to separately authenticated,
+private Grafana Cloud destinations using validated non-secret URLs.
+
+Its final direct dependency edge into integrated topology validation is now
+satisfied. Together with the already accepted GATEWAY-004, SYSTEM-TEST-003, and
+SYSTEM-TEST-004 tasks:
+
+```text
+ARCH-002-SYSTEM-TEST-001
+  pending -> ready
+```
+
+`ARCH-002-SYSTEM-TEST-002` also remains Ready. Neither system-test task is
+automatically claimed. ARCH-002 remains In Progress until the required
+integrated validation/capacity gates are reviewed and accepted.
+
+
+### 2026-09-03 — SYSTEM-TEST-002 attempt 1 blocked; ADMIN-009 validation correction
+
+`ARCH-002-SYSTEM-TEST-002` correctly stopped at the Admin owning-repository
+validation boundary after its preceding observability and WhatsApp checks
+passed.
+
+The failing ADMIN-009 bootstrap assertion requires a literal `SELECT 1` value in
+`db.statement` or `db.query.text`. That is stricter than the architecture-owned
+contract. ARCH-002 and accepted SHARED-008 require Prisma instrumentation to
+emit Prisma spans when enabled; they do not require third-party Prisma
+instrumentation to expose SQL text.
+
+This is classified as validation-contract drift inside the original ADMIN-009
+scope, not a new architecture requirement and not yet evidence of an Admin
+runtime defect. Under the Changes Requested path:
+
+```text
+ARCH-002-ADMIN-009
+  complete -> in_progress
+
+ARCH-002-SYSTEM-TEST-002
+  ready -> blocked
+```
+
+`moda_admin` must correct the focused bootstrap validation so Prisma span
+emission proves the instrumentation boundary without requiring SQL-text
+attributes. If SQL text is present it remains subject to the existing safety
+checks. The correction must not add custom SQL telemetry or a second Prisma
+instrumentation mechanism.
+
+`ARCH-002-GATEWAY-006` remains Complete because this correction does not change
+Admin runtime/exporter configuration or OTLP/environment wiring.
+
+The valid SYSTEM-TEST-002 attempt-1 runner/evidence is preserved. After
+ADMIN-009 is architect-accepted Complete again, SYSTEM-TEST-002 may return to
+Ready for attempt 2. SYSTEM-TEST-001 remains independently Ready.
+
+
+### 2026-09-03 — Add local ephemeral PostgreSQL prerequisite for SYSTEM-TEST-002
+
+The attempt-1 `SYSTEM-TEST-002` blocker also established a local harness gap:
+the deterministic system-test runner provisions isolated Redis and a WhatsApp
+emulator but did not provision PostgreSQL for the Admin production-bootstrap
+boundary. Both deployed ARCH-002 environments include PostgreSQL.
+
+The architecture therefore creates:
+
+```text
+ARCH-002-SYSTEM-TEST-005
+  Add isolated ephemeral PostgreSQL test infrastructure
+  status: Ready
+```
+
+`SYSTEM-TEST-005` owns a reusable disposable PostgreSQL 17 lifecycle for local
+integration/system tests: unique container, dynamic host port, bounded database
+readiness, generated `DATABASE_URL`, clean state and guaranteed teardown. It does
+not replace the Render PostgreSQL resource used by deployed `SYSTEM-TEST-001`
+validation.
+
+`ARCH-002-SYSTEM-TEST-002` gains `SYSTEM-TEST-005` as a direct dependency. Its
+next attempt must run the Admin production bootstrap against the accepted
+ephemeral PostgreSQL fixture so the healthy readiness/Prisma instrumentation
+path is exercised. It must still avoid requiring literal SQL text from
+third-party Prisma/OpenTelemetry instrumentation.
+
+The integrated frontier is now:
+
+```text
+ADMIN-009 Complete ----------+
+                             +--> SYSTEM-TEST-002 Blocked
+SYSTEM-TEST-005 Ready -------+
+
+SYSTEM-TEST-001 Ready
+```
+
+ADMIN-009 and SYSTEM-TEST-005 are independently executable by their owning
+logical agents. Neither is automatically claimed.
+
+### 2026-09-03 — ADMIN-009 attempt 2 accepted
+
+`ARCH-002-ADMIN-009` is architect-accepted Complete after correcting only the over-specific Prisma SQL-text validation contract. Production runtime configuration is unchanged; the focused test continues to require emitted Prisma spans while treating `db.statement`/`db.query.text` as optional third-party attributes.
+
+The remaining local-harness gate for `ARCH-002-SYSTEM-TEST-002` is now:
+
+```text
+ARCH-002-SYSTEM-TEST-005  Ready
+        |
+        v
+ARCH-002-SYSTEM-TEST-002  Blocked
+```
+
+After SYSTEM-TEST-005 is architect-accepted Complete, SYSTEM-TEST-002 may be returned to Ready for attempt 2 using its preserved attempt-1 runner/evidence.
+
+
+### 2026-09-03 — SYSTEM-TEST-005 attempt 2 accepted; SYSTEM-TEST-002 unblocked
+
+`ARCH-002-SYSTEM-TEST-005` is architect-accepted Complete. The reusable local
+PostgreSQL 17 fixture preserves dynamic host ports, isolated state/credentials,
+bounded readiness and guaranteed teardown, and attempt 2 adds the missing proof
+that an external consumer process can connect through the generated host
+`DATABASE_URL` and execute bounded `SELECT 1`.
+
+`pg@8.16.3` is test-only infrastructure and does not move application schema or
+Prisma ownership into `moda-interact-system-test`.
+
+Together with the accepted `ARCH-002-ADMIN-009` validation correction, every
+direct dependency of `ARCH-002-SYSTEM-TEST-002` is now Complete. Therefore:
+
+```text
+SYSTEM-TEST-002
+  blocked -> ready
+  next claim: attempt 2
+```
+
+The valid attempt-1 observability/WhatsApp runner and evidence must be reused.
+The resumed task adds the accepted PostgreSQL fixture to the Admin bootstrap
+path rather than rewriting the scenario. `SYSTEM-TEST-001` remains independently
+Ready against the deployed Render test topology.
+
+### 2026-09-03 — System-validation plan decomposed for deterministic execution
+
+The former broad `ARCH-002-SYSTEM-TEST-001` mixed three distinct execution
+environments and duplicated evidence already owned by other system-test work:
+
+```text
+local deterministic fixtures
+deployed Render test topology
+production static readiness / production-sized capacity
+```
+
+`moda_architect` decomposes the remaining validation into environment-specific
+Luna-sized tasks:
+
+```text
+SYSTEM-TEST-002  local deterministic observability/integration          Ready
+SYSTEM-TEST-006  deployed Render test topology                          Ready
+SYSTEM-TEST-007  production Blueprint/readiness                         Ready
+SYSTEM-TEST-008  production-sized Shopify ingress capacity gate         Pending
+SYSTEM-TEST-001  final accepted-evidence aggregation                    Pending
+```
+
+The new dependency graph is:
+
+```text
+SYSTEM-TEST-002 Ready -----+
+                           |
+SYSTEM-TEST-006 Ready -----+--> SYSTEM-TEST-008 Pending --> SYSTEM-TEST-001 Pending
+                           |
+SYSTEM-TEST-007 Complete --+
+```
+
+`SYSTEM-TEST-008` depends on all three preceding validation boundaries so a
+production-sized capacity run is interpreted using accepted topology and
+observability evidence. Its outcome is exactly `PROVEN` or `UNMET`; an unavailable
+or unsuccessful capacity environment is recorded as `UNMET` rather than being
+silently treated as success.
+
+`SYSTEM-TEST-001` no longer owns local Redis/WhatsApp/PostgreSQL fixtures or live
+capacity generation. It aggregates architect-accepted results and preserves any
+`UNMET` production-capacity gate for final architecture review.
+
+This refactor does not change application/gateway runtime architecture and does
+not modify the approximately 22,000 Shopify webhook requests/minute reference
+target.
+
+
+
+### 2026-09-04 — Add bounded Admin Redis queue monitor for Render checkout investigation
+
+The current developer investigation is focused on the deployed Shopify event path:
+
+```text
+Shopify checkout webhook
+  -> moda-interact
+  -> BullMQ / Redis
+  -> moda-interact-background
+  -> checkout processing
+```
+
+To improve immediate operational visibility without changing another runtime
+boundary, the architecture creates `ARCH-002-ADMIN-011` as an Admin-only,
+read-only queue-monitor task. It consumes the existing shared Shopify queue
+contracts and polls server-side Redis through a protected Admin route.
+
+The monitor covers the existing `checkout-events` and `order-events` queues,
+current waiting/active/delayed/failed/worker state, and a bounded latest BullMQ
+event-stream activity marker. It does not alter queue producers, consumers,
+retention, payloads or the database.
+
+Refresh frequency is browser-local UI state (Paused/2/5/10/30/60 seconds), so
+no schema/migration is required. `REDIS_URL` remains server-only. Because the
+current Blueprint does not inject Redis configuration into Admin, missing
+`REDIS_URL` must degrade only the monitor; this task does not modify Gateway
+Blueprints.
+
+Successful Shopify jobs currently use `removeOnComplete: true`. The monitor must
+therefore not represent completed-job counts as durable processing history.
+Recent BullMQ event-stream activity is operational evidence only.
+
+
+### 2026-09-04 — ADMIN-011 attempt 2 accepted
+
+`ARCH-002-ADMIN-011` is architect-accepted Complete. The Admin-only queue monitor
+now satisfies the bounded Render diagnostic requirement, including the corrected
+5-second first-use polling default and browser-local refresh persistence.
+
+The implementation remains read-only and consumes the existing Shopify queue
+contracts without changing Redis/BullMQ producer, consumer, retention or payload
+semantics. Manual Render `REDIS_URL` configuration remains developer-owned
+deployment setup rather than an application-code dependency change.

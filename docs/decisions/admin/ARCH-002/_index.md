@@ -32,6 +32,7 @@ Coordinator:
 | ADMIN-004 | Add secure private Grafana Cloud observability access | Complete | ADMIN-008, GATEWAY-006 |
 | ADMIN-009 | Adopt shared observability runtime in admin process | Complete | GATEWAY-001, SHARED-010 |
 | ADMIN-010 | Add bounded admin request operational metrics | Superseded | Duplicate standard HTTP telemetry; reuse framework/OpenTelemetry signal |
+| ADMIN-011 | Add protected Redis Shopify queue monitor to Tenant Directory | Complete | ADMIN-005 |
 
 Security and presentation chain:
 
@@ -266,3 +267,66 @@ cleared. `Architect Review: Changes Requested` remains in the task. The next
 The production shared-observability preload remains unchanged. The focused bootstrap test proves Prisma instrumentation from emitted `prisma:*` spans and no longer requires third-party instrumentation to expose literal `SELECT 1` SQL text. Optional SQL attributes remain subject to sensitive-value validation when present.
 
 This satisfies the ADMIN-009 dependency edge for `ARCH-002-SYSTEM-TEST-002`. That system-test task remains Blocked only because `ARCH-002-SYSTEM-TEST-005` is still not Complete.
+
+
+## ADMIN-011 initial Redis queue monitor handoff
+
+`ARCH-002-ADMIN-011` was initially made Ready as a bounded Admin-only diagnostic
+task for the current Render checkout-event investigation. Attempt 1 has since
+been reviewed; the current authoritative state is recorded in the correction
+section below.
+
+It adds a protected read-only Redis/BullMQ queue monitor to the Tenant Directory
+for the two existing Shopify event queues:
+
+```text
+checkout-events
+  checkout-created
+  checkout-updated
+
+order-events
+  order-completed
+```
+
+The refresh interval is browser-local UI state and must not create a database
+change. The task may consume server-side `REDIS_URL` but must not modify the
+Gateway/Render Blueprints, workers, producers, shared contracts or queue
+retention semantics. Missing Redis configuration must degrade the monitor only,
+not the existing Admin page.
+
+Because successful Shopify jobs currently use `removeOnComplete: true`, this
+monitor is recent/current queue evidence rather than durable processing history.
+A bounded latest BullMQ event-stream timestamp/type is included so recent Redis
+queue activity remains visible even when completed jobs are removed.
+
+## ADMIN-011 Attempt 1 architect review correction
+
+`ARCH-002-ADMIN-011` was reviewed with Architect Review status
+`Changes Requested`. The previous execution claim is no longer active, so
+`moda_architect` has reset the stranded correction handoff to `Ready` for a new
+repository-agent claim. The next successful claim is Attempt 2.
+
+The correction remains within the original Admin-only scope:
+
+```text
+fix first-use refresh default so absent localStorage -> 5 seconds
+preserve explicitly saved Paused (0) and other valid choices
+add focused refresh-initialisation coverage
+remove duplicated stale Completion Report template sections
+rerun task validation and return the same task to review
+```
+
+No database, gateway, Shopify, background, messaging, shared-contract or Render
+Blueprint change is authorised by this correction.
+
+
+## ADMIN-011 architect acceptance
+
+`ARCH-002-ADMIN-011` is architect-accepted Complete after Attempt 2.
+
+The accepted correction restores the required first-use 5-second refresh default
+while preserving explicit Paused and other saved interval choices. The protected
+read-only Redis/BullMQ monitor remains confined to `moda-interact-admin`.
+
+Manual Render `REDIS_URL` configuration is developer-owned deployment setup and
+does not reopen this implementation task.
