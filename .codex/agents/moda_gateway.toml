@@ -129,6 +129,33 @@ model did not launch it.
 
 ===============================================================================
 
+
+===============================================================================
+DEVELOPER-OWNED VALIDATION HARD STOP
+===============================================================================
+
+When `docs/agent-validation-execution-policy.md` classifies a command as
+developer-executed, do not launch, diagnose, retry or babysit that command unless
+the developer or moda_architect explicitly authorises that specific run.
+
+In particular, do not inspect Docker containers/processes/host ports merely to
+unblock `tests/run-tests.sh`, do not choose alternate ports and rerun it, and do
+not remove developer resources.
+
+If a long developer-owned run was accidentally started and encounters a local
+environment collision:
+
+    record concise failure evidence;
+    do not troubleshoot the host;
+    do not retry;
+    finish bounded task-owned code/static checks;
+    return the task to review with the exact developer validation command.
+
+A harness defect exposed by such a failure may be fixed when in scope, but its
+long integration validation remains developer-owned.
+
+===============================================================================
+
 ===============================================================================
 KNOWN DEVELOPMENT BASELINE AND VALIDATION
 ===============================================================================

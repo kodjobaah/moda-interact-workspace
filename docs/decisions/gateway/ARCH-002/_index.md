@@ -27,6 +27,7 @@ Coordinator:
 | GATEWAY-011 | Move externally supplied Render configuration into reusable environment groups | Complete | GATEWAY-010 |
 | GATEWAY-012 | Bootstrap Render Environment Groups with explicit placeholder values | Complete | GATEWAY-009, GATEWAY-011 |
 | GATEWAY-013 | Finalize production Render Environment Group ownership | Pending | GATEWAY-012 |
+| GATEWAY-014 | Migrate test gateway to HAProxy with explicit host routing | Complete | GATEWAY-009, GATEWAY-012 |
 
 Canonical ARCH-002 Render Blueprints:
 
@@ -358,3 +359,267 @@ effect.
 test values and required probe inputs are available.
 
 `GATEWAY-013` remains production-only.
+
+## GATEWAY-014 Attempt 2 — HAProxy redesign
+
+Attempt 1 introduced the dedicated test Messaging hostname using NGINX, but the
+developer/architect completed the ingress design before acceptance.
+
+The same task is Ready for Attempt 2 and now owns the reverse-proxy migration:
+
+```text
+NGINX
+  -> HAProxy 3.4.4
+
+APP_PUBLIC_HOST=app-test.modainteract.com
+  -> moda_interact
+
+ADMIN_PUBLIC_HOST=admin-test.modainteract.com
+  -> moda_admin
+
+MESSAGING_PUBLIC_HOST=messaging-test.modainteract.com
+  -> moda_messaging
+
+unknown non-health Host
+  -> reject
+```
+
+Final gateway rule:
+
+```text
+HOST selects service.
+PATH belongs to selected service.
+UNKNOWN HOST is rejected.
+```
+
+`/health` remains gateway-local so Render can validate the gateway independently
+of application backends.
+
+GATEWAY-014 remains **test-only**. `render.production.yaml` must not be modified
+and no production app/messaging hostname may be invented.
+
+`SYSTEM-TEST-006` remains blocked until the HAProxy implementation is
+architect-accepted and the developer deploys the updated test gateway.
+
+## GATEWAY-014 Attempt 2 architect review
+
+Attempt 2 established the correct HAProxy test ingress architecture but was
+interrupted before normal task closure.
+
+Architect review accepts the core migration and requests only bounded Attempt-3
+corrections:
+
+```text
+1. restore the accepted forwarded-header chain/original-client semantics;
+2. make Docker integration resource names run-scoped and setup fail-fast;
+3. remove stale active NGINX/default-app documentation and test wording;
+4. write the Completion Report and return the same task to review.
+```
+
+Do not reopen the reverse-proxy choice or Host-routing design.
+
+`SYSTEM-TEST-006` remains blocked until GATEWAY-014 is accepted and the updated
+test gateway is deployed.
+
+## Developer-executed long validation policy
+
+GATEWAY-014 Attempt 3 adopts the workspace validation execution policy:
+
+```text
+Luna/repository agent:
+  fast syntax/static/config validation
+
+Developer:
+  long deterministic Docker integration suite
+```
+
+For this task Luna must **not** run:
+
+```text
+bash tests/run-tests.sh
+```
+
+during normal execution.
+
+Luna returns the task to `review` with the exact command. The developer runs the
+suite and supplies the exit/result evidence to `moda_architect`.
+
+This changes who waits for expensive deterministic validation; it does not
+remove or weaken the validation requirement.
+
+## GATEWAY-014 Attempt 4 — host-port isolation
+
+Attempt 3 proved run-scoped container names work but exposed a remaining
+collision on the fixed host port `18080`.
+
+Attempt 4 requires:
+
+```text
+default Docker-assigned ephemeral loopback ports;
+explicit GATEWAY_PORT* values only as optional overrides;
+no implicit 18080/18081/18082 defaults;
+no Luna execution/diagnosis/retry of the long integration suite.
+```
+
+Luna performs implementation + bounded validation and returns to review.
+
+Developer then runs:
+
+```bash
+cd moda-interact-gateway
+bash tests/run-tests.sh
+echo "exit=$?"
+```
+
+## GATEWAY-014 Attempt 5 — developer validation changes requested
+
+Attempt-4 developer validation returned:
+
+```text
+50 passed, 9 failed
+exit=1
+```
+
+Architect review reduces the failures to:
+
+```text
+1. duplicate/incorrect effective X-Forwarded-For handling + last-hop X-Real-IP;
+2. recovery-path gateway restarts combined with ephemeral host ports, causing
+   stale-port status 000 cascades;
+3. line-wrap-sensitive observability contract validation;
+4. stale "default host" test wording.
+```
+
+Keep the accepted HAProxy Host architecture and Attempt-4 ephemeral-port
+isolation.
+
+Next claim is Attempt 5.
+
+Luna performs bounded validation only and returns to review. Developer then
+reruns:
+
+```bash
+cd moda-interact-gateway
+bash tests/run-tests.sh
+echo "exit=$?"
+```
+
+`SYSTEM-TEST-006` remains blocked until GATEWAY-014 is accepted and deployed.
+
+## GATEWAY-014 Attempt 6 — forwarding snapshot + runtime DNS
+
+Attempt-5 developer validation returned:
+
+```text
+55 passed, 5 failed
+exit=1
+```
+
+Architect review identifies:
+
+```text
+1. XFF construction still uses a comma-splitting fetch instead of the full
+   original header and computes X-Real-IP after mutation;
+
+2. HAProxy resolves private-service hostnames at startup but has no runtime
+   resolver, so backend address renewal behind the stable service hostname does
+   not recover while the gateway remains running;
+
+3. observability validation remains line-wrap sensitive.
+```
+
+Attempt 6 must use the runtime resolver from `/etc/resolv.conf`, keep recovery
+through the running gateway, and preserve the full original forwarding chain.
+
+Next claim is Attempt 6.
+
+Developer validation remains external to Luna.
+
+## GATEWAY-014 Attempt 7 — runtime DNS initial readiness
+
+Attempt-6 developer validation failed before ordinary integration assertions:
+
+```text
+app backend did not become ready through the gateway
+```
+
+Attempt 7 keeps the runtime-DNS architecture and the Attempt-6 forwarding
+snapshot, but tunes resolver behaviour for dynamic service discovery:
+
+```text
+accepted_payload_size 4096
+explicit IPv4 preference
+negative DNS holds shorter than the bounded readiness window
+safe readiness-failure DNS/network diagnostics
+```
+
+Next claim is Attempt 7.
+
+The long Docker suite remains developer-executed.
+
+## GATEWAY-014 Attempt 8 — live Render hostport correction
+
+Attempt-7 local integration passed:
+
+```text
+58 passed, 0 failed
+```
+
+Live Render then showed all three private backends as `<NOSRV>` while Host routing
+was correct.
+
+The developer manually removed HAProxy runtime resolvers from the three normal
+Render `hostport` backend servers and redeployed.
+
+Live result after that change:
+
+```text
+gateway 200
+app 200
+admin 200
+admin /login 200
+messaging 200
+```
+
+Attempt 8 makes this live-proven configuration authoritative and corrects the
+Docker recovery test so it validates health recovery of the same service
+identity rather than recreated-container IP rediscovery.
+
+Next claim is Attempt 8.
+
+## GATEWAY-014 final architect acceptance — Attempt 8
+
+`GATEWAY-014` is Complete after the live Render test deployment corrected the
+earlier runtime-DNS assumption.
+
+Final accepted model:
+
+```text
+Render fromService hostport
+    ->
+normal HAProxy/system startup resolution
+    ->
+HAProxy health checks
+```
+
+Final evidence:
+
+```text
+local Docker:
+  58 passed, 0 failed
+  exit=0
+
+live Render:
+  gateway 200
+  app 200
+  admin 200
+  admin /login 200
+  messaging 200
+
+unknown public Host:
+  403 at Cloudflare edge
+```
+
+Local/direct HAProxy retains strict unknown-Host `404`.
+
+This clears the GATEWAY-014 dependency for `SYSTEM-TEST-006`.

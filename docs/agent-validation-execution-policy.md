@@ -279,3 +279,36 @@ This policy determines the default **execution owner** for expensive validation.
 
 An explicit developer/architect instruction for a specific command overrides
 the execution-owner default.
+
+## Hard Stop for Developer-Owned Validation
+
+When a command is classified as developer-executed validation, repository agents
+must not try to make that command run on the developer's behalf.
+
+Without an explicit developer/architect request for the specific run, do not:
+
+```text
+launch the long validation;
+inspect which local process/container owns a required host port;
+run docker ps/lsof/netstat solely to unblock the long validation;
+remove or stop unrelated/stale developer containers;
+select alternate ports and retry;
+relaunch after an environment collision;
+poll a long-running validation repeatedly;
+re-read large validation logs while waiting.
+```
+
+If a developer-owned validation command was accidentally started and fails due
+to local environment state:
+
+```text
+capture the concise failure;
+do not troubleshoot the developer host;
+do not retry;
+continue with bounded implementation/static validation;
+return to review with the exact developer command.
+```
+
+The repository agent may, of course, fix a **test-harness defect** revealed by
+the failure when that defect is in task scope. It should prove the correction
+with cheap/static checks and then hand the long suite back to the developer.
