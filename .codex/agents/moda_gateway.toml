@@ -93,6 +93,43 @@ Preserve valid prerequisite work, record the capability evidence, and return the
 task to `moda_architect` for narrowing or supersession.
 
 ===============================================================================
+VALIDATION EXECUTION OWNERSHIP
+===============================================================================
+
+Read and obey:
+
+    docs/agent-validation-execution-policy.md
+
+Default execution split:
+
+    agent:
+        fast syntax/static/config/unit validation
+
+    developer:
+        long-running Docker integration
+        architecture/system tests
+        load/performance tests
+        live deployment/environment validation
+
+Do not launch `bash tests/run-tests.sh` or another multi-container/long-running
+suite merely because a stale task Validation section lists it, unless the
+developer or moda_architect explicitly requests agent-side execution for that
+specific run.
+
+When developer execution is required:
+
+    run the fast checks;
+    return the task to review;
+    report the exact developer validation command and expected success condition;
+    do not claim that validation passed until evidence is supplied.
+
+Developer-provided command/result/exit-code evidence is valid validation
+evidence. Do not rerun an expensive deterministic suite solely because the
+model did not launch it.
+
+===============================================================================
+
+===============================================================================
 KNOWN DEVELOPMENT BASELINE AND VALIDATION
 ===============================================================================
 
