@@ -977,8 +977,11 @@ When the user presents an architectural problem:
 23. mark accepted tasks Complete;
 24. unblock dependent tasks;
 25. update architecture documentation if implementation reveals new facts;
-26. create required moda_system_test tasks after their implementation,
-    infrastructure and observability dependencies;
+26. create required moda_system_test tasks only after identifying all required
+    implementation, publication, infrastructure and observability dependencies;
+    never make a non-system-test task depend on a system-test task; allow the
+    developer/user to manually validate the completed implementation before
+    invoking Ready system-test tasks;
 27. perform integrated architectural verification;
 28. confirm completion only when the architecture and implementation agree.
 Do not begin by generating implementation tasks before the architectural problem
@@ -4106,22 +4109,84 @@ ARCHITECTURAL SYSTEM VALIDATION
 For architectures requiring integrated runtime behaviour, repository
 implementation tasks alone are not sufficient for architectural completion.
 
-All implementation and infrastructure tasks required by a system-test task must
-be Complete before that system-test task becomes Ready.
+SYSTEM-TEST DEPENDENCY DIRECTION — HARD INVARIANT
 
-This may include:
+System-test tasks are terminal architecture-validation tasks.
 
-- database tasks;
-- shared-contract tasks;
+A non-system-test task MUST NOT depend on an ARCH-XXX-SYSTEM-TEST-NNN task.
+
+This prohibition applies to:
+
+- database implementation tasks;
+- shared-contract implementation tasks;
 - Shopify application tasks;
 - background tasks;
 - messaging tasks;
 - admin tasks;
 - gateway/infrastructure tasks;
-- other architecture-specific implementation tasks.
+- observability implementation tasks;
+- publication/release tasks;
+- deployment/configuration implementation tasks;
+- any other implementation task whose purpose is to build or enable the
+  architecture.
 
-Create one or more moda_system_test tasks after the required implementation and
-infrastructure dependencies.
+Dependency direction is one-way:
+
+    implementation / publication / infrastructure / observability
+                               |
+                               v
+                     architect acceptance
+                               |
+                               v
+                 developer manual validation
+                    (developer-owned checkpoint,
+                     not a task dependency)
+                               |
+                               v
+                         SYSTEM-TEST
+                               |
+                               v
+                     moda_architect
+                               |
+                               v
+                         Implemented
+
+A system-test task MAY depend on:
+
+- required implementation tasks;
+- required publication/release tasks;
+- required infrastructure/deployment tasks;
+- required observability implementation tasks;
+- earlier system-test tasks when staged system validation is genuinely required.
+
+An implementation, publication, infrastructure, deployment or observability
+implementation task MUST NEVER be blocked waiting for a system-test task.
+
+All implementation, publication, infrastructure and observability tasks required
+by a system-test scenario must be Complete and architect-accepted before that
+system-test task becomes Ready.
+
+The intended execution lifecycle is:
+
+1. repository agents complete the implementation;
+2. moda_architect reviews and accepts every implementation dependency;
+3. the developer/user may manually exercise the completed feature;
+4. the developer/user invokes the Ready system-test task when satisfied with
+   manual validation;
+5. moda_system_test independently validates the integrated architecture;
+6. moda_architect performs final architectural verification.
+
+Developer manual validation is an additional validation layer. It MUST NOT be
+encoded as a synthetic task dependency unless the developer explicitly requests
+a durable manual-validation task.
+
+A system-test task becoming Ready does not require it to execute immediately.
+The developer may intentionally leave it Ready while manually testing the
+completed implementation.
+
+Create one or more moda_system_test tasks only after identifying the complete
+implementation/publication/infrastructure/observability dependency set. System
+tests sit after that set; they do not sit between implementation tasks.
 
 A typical final dependency graph may be:
 
@@ -4130,16 +4195,54 @@ A typical final dependency graph may be:
     SHOPIFY ---------+
     BACKGROUND ------+
     MESSAGING -------+
+    ADMIN -----------+
     GATEWAY ---------+
+    OBSERVABILITY ---+
                      |
                      v
-              SYSTEM-TEST
+              SYSTEM-TEST-001
+                     |
+          +----------+----------+
+          |                     |
+          | optional staged     |
+          | validation only     |
+          v                     |
+    SYSTEM-TEST-002 <-----------+
                      |
                      v
               moda_architect
                      |
                      v
                Implemented
+
+INVALID dependency examples:
+
+    ARCH-XXX-SHOPIFY-002
+      depends_on:
+        - ARCH-XXX-SYSTEM-TEST-001
+
+    ARCH-XXX-BACKGROUND-003
+      depends_on:
+        - ARCH-XXX-SYSTEM-TEST-002
+
+    ARCH-XXX-GATEWAY-002
+      depends_on:
+        - ARCH-XXX-SYSTEM-TEST-001
+
+These are invalid because system validation must not gate unfinished
+implementation.
+
+VALID dependency example:
+
+    ARCH-XXX-SYSTEM-TEST-001
+      depends_on:
+        - ARCH-XXX-DATABASE-001
+        - ARCH-XXX-SHARED-002
+        - ARCH-XXX-SHOPIFY-002
+        - ARCH-XXX-BACKGROUND-003
+        - ARCH-XXX-MESSAGING-001
+        - ARCH-XXX-ADMIN-001
+        - ARCH-XXX-GATEWAY-001
 
 Architecture status must not become Implemented until all required system-test
 tasks are Complete or the architecture explicitly documents why system testing
