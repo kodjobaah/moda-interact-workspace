@@ -6,9 +6,26 @@
 | ARCH-005-SHARED-002 | Publish internationalisation shared contract release | Complete | SHARED-001 |
 | ARCH-005-SHARED-003 | Extend Shopify recovery events with canonical international context | Complete | SHARED-002 |
 | ARCH-005-SHARED-004 | Publish Shopify international-context event contract | Complete | SHARED-003 |
+| ARCH-005-SHARED-005 | Implement reusable ICU MessageFormat internationalisation runtime | Complete | SHARED-004 |
+| ARCH-005-SHARED-006 | Publish shared ICU internationalisation runtime | Complete | SHARED-005 |
 
-There is no remaining executable ARCH-005 Shared task. The published contract
-now hands execution to the Background consumer.
+There is currently no executable ARCH-005 Shared task.
+
+SHARED-006 is architect-accepted and published as:
+
+```text
+@modainteract/moda-interact-shared@0.6.3
+```
+
+Shopify and Admin may now consume that exact developer-published revision.
+
+New ICU rollout:
+
+```text
+SHARED-005 implement ICU runtime
+  -> SHARED-006 publish exact package revision
+  -> SHOPIFY-002 / ADMIN-001 consumer adoption
+```
 
 The new tasks are required because the existing Shopify V2 recovery event
 schemas are strict. SHARED-001 created `InternationalContext`, but intentionally
@@ -153,3 +170,71 @@ ARCH-005-SHOPIFY-003      Pending
 
 Background must adopt the published parser before Shopify begins emitting the
 optional international context.
+
+
+## Architect review — SHARED-005 attempt 1
+
+```text
+Changes Requested
+```
+
+The ICU architecture is retained, but explicit formatter dimensions must be
+non-overridable, direction resolution must use the current `getTextInfo()` API
+with legacy/deterministic fallback, and the built `./internationalization`
+package subpath must be proven before acceptance.
+
+Current Shared state:
+
+```text
+ARCH-005-SHARED-005   Ready — Attempt 2 bounded correction
+ARCH-005-SHARED-006   Pending
+```
+
+Consumers remain blocked/pending until SHARED-006 publishes the architect-
+accepted runtime.
+
+
+## Architect review — SHARED-005 attempt 2
+
+```text
+Accepted
+```
+
+The explicit currency/percent/time-zone invariants, standards-aware direction
+resolution and built `./internationalization` package-entrypoint validation are
+accepted.
+
+Current Shared state:
+
+```text
+ARCH-005-SHARED-005   Complete
+ARCH-005-SHARED-006   Ready
+```
+
+Consumer adoption remains gated on the publication task.
+
+
+## Architect review — SHARED-006 attempt 1
+
+```text
+Accepted
+```
+
+Published release:
+
+```text
+@modainteract/moda-interact-shared@0.6.3
+```
+
+Recorded registry integrity:
+
+```text
+sha512-QdGfpV+hX5ut/vmR+RD3fQ/Tyy978A1J58hVf9+Ro2f6jq+f09jB4Jf5fPFxzgsAIsXx0/ftO+FChpa+w1cAAg==
+```
+
+Dependency result:
+
+```text
+ARCH-005-SHOPIFY-002   Ready — next claim Attempt 5
+ARCH-005-ADMIN-001     Ready — first claim Attempt 1
+```
