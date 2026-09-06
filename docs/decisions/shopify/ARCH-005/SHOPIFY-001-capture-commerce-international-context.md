@@ -7,18 +7,18 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 3
 depends_on:
   - ARCH-005-SHARED-002
   - ARCH-005-DATABASE-001
 enables:
   - ARCH-005-SYSTEM-TEST-001
 created: 2026-09-05
-updated: 2026-09-05T21:27:16Z
+updated: 2026-09-06
 ---
 
 # Initialise Shopify merchant international defaults
@@ -163,6 +163,46 @@ market currency -> language mapping
 
 as `defaultLanguageTag`.
 
+#### Attempt 3 GraphQL shape correction
+
+`shopLocales` is a Shopify Admin GraphQL **QueryRoot** field in API `2026-07`;
+it is not a field on the `Shop` object. Keep this as one authenticated Admin
+GraphQL request, but query `shop` and `shopLocales` as sibling top-level
+selections:
+
+```graphql
+query ResolveModaInteractShop {
+  shop {
+    shopifyShopId: id
+    myshopifyDomain
+    ianaTimezone
+    shopAddress {
+      countryCodeV2
+    }
+  }
+  shopLocales {
+    locale
+    primary
+    published
+  }
+}
+```
+
+The response typing and lookup must therefore read locales from:
+
+```text
+result.data.shopLocales
+```
+
+not from:
+
+```text
+result.data.shop.shopLocales
+```
+
+Do not split this into a second Shopify request. Do not change the already
+approved merchant-default semantics while making this correction.
+
 ### 3. Canonical validation
 
 Use the accepted shared helpers to canonicalise/validate:
@@ -226,16 +266,18 @@ cannot be adopted through the submodule, do not copy the schema into
 
 ## Work Items
 
-- [ ] Verify the active Shopify app config file and add `read_locales,read_markets` read scopes.
-- [ ] Adopt shared `0.6.1` without local validator duplication.
-- [ ] Update the database submodule pointer to the accepted DATABASE-001 revision when available.
-- [ ] Extend `resolveShopifyShop()` merchant configuration query.
-- [ ] Canonicalise Shopify merchant defaults using shared helpers.
-- [ ] Create missing `ShopSettings` idempotently.
-- [ ] Preserve existing `ShopSettings` values on subsequent resolutions.
-- [ ] Add focused tests for first creation and repeated resolution.
-- [ ] Add a regression proving `Session.locale` is not used as merchant default language.
-- [ ] Add a regression proving shop currency does not become recovery/customer currency.
+- [x] Verify the active Shopify app config file and add `read_locales,read_markets` read scopes.
+- [x] Adopt the published shared internationalization helpers without local validator duplication.
+- [x] Verify the accepted DATABASE-001 submodule revision is already adopted.
+- [x] Extend `resolveShopifyShop()` merchant configuration query.
+- [x] Canonicalise Shopify merchant defaults using shared helpers.
+- [x] Create missing `ShopSettings` idempotently.
+- [x] Preserve existing `ShopSettings` values on subsequent resolutions.
+- [x] Add focused tests for first creation and repeated resolution.
+- [x] Add a regression proving `Session.locale` is not used as merchant default language.
+- [x] Add a regression proving shop currency does not become recovery/customer currency.
+- [x] Correct `shopLocales` to a QueryRoot sibling of `shop` and update response typing/lookup.
+- [x] Add a regression that structurally proves `shopLocales` is not nested inside `shop`.
 
 ## Interfaces / Contracts
 
@@ -270,19 +312,22 @@ The relationship is merchant fallback only. It is not customer identity.
 
 ## Acceptance Criteria
 
-- [ ] active Shopify app config includes `read_locales` and `read_markets` as required read scopes.
-- [ ] no write-locales/write-markets scope is added.
-- [ ] `ShopSettings` is created for a resolved shop when missing.
-- [ ] primary `ShopLocale` seeds `defaultLanguageTag`.
-- [ ] Shopify IANA timezone seeds `defaultTimeZone`.
-- [ ] Shopify shop-address country seeds `defaultCountryCode`.
-- [ ] invalid/missing optional provider values remain null.
-- [ ] existing merchant settings are not overwritten on repeat resolution.
-- [ ] `Session.locale` cannot seed `defaultLanguageTag`.
-- [ ] shop currency cannot seed a checkout/recovery currency.
-- [ ] no per-webhook Shopify API lookup is introduced.
-- [ ] existing Shop identity/domain checks remain intact.
-- [ ] focused/full tests, typecheck, lint, build and diff checks pass subject to baseline.
+- [x] active Shopify app config includes `read_locales` and `read_markets` as required read scopes.
+- [x] no write-locales/write-markets scope is added.
+- [x] `ShopSettings` is created for a resolved shop when missing.
+- [x] primary `ShopLocale` seeds `defaultLanguageTag`.
+- [x] Shopify IANA timezone seeds `defaultTimeZone`.
+- [x] Shopify shop-address country seeds `defaultCountryCode`.
+- [x] invalid/missing optional provider values remain null.
+- [x] existing merchant settings are not overwritten on repeat resolution.
+- [x] `Session.locale` cannot seed `defaultLanguageTag`.
+- [x] shop currency cannot seed a checkout/recovery currency.
+- [x] no per-webhook Shopify API lookup is introduced.
+- [x] existing Shop identity/domain checks remain intact.
+- [x] `shopLocales` is queried as a top-level QueryRoot field, sibling to `shop`.
+- [x] locale selection reads `result.data.shopLocales`, not a nested `Shop.shopLocales` value.
+- [x] focused query-shape coverage would fail if `shopLocales` were moved back under `shop`.
+- [x] focused/full tests, build, Prisma validation, focused lint and diff checks pass; repository-wide typecheck/lint baseline failures are documented below.
 
 ## Validation
 
@@ -299,6 +344,10 @@ existing ShopSettings with merchant-edited values
 
 no primary locale / invalid optional source
     -> corresponding default remains null
+
+Admin GraphQL request
+    -> QueryRoot contains sibling `shop` and `shopLocales` selections
+    -> `shop` selection does NOT contain `shopLocales`
 ```
 
 Run repository-standard implementation validation including focused tests,
@@ -316,8 +365,7 @@ and is handled independently.
 
 ### Status
 
-Attempt 1 returned blocked before implementation. No Shopify runtime source was
-changed.
+In Progress
 
 ### Attempt 1 Findings
 
@@ -337,6 +385,107 @@ The architect has therefore narrowed this canonical task to merchant-default
 initialisation and created separate cross-repository tasks for buyer event
 context.
 
+### Attempt 2 Files Changed
+
+- `app/services/shop/shop.service.ts`
+- `shopify.app.moda-interact.toml`
+- `tests/unit/services/shop.service.test.ts`
+
+### Attempt 2 Work Completed
+
+- Extended the authenticated shop query with primary locale, IANA timezone and
+  shop-address country fields.
+- Canonicalized optional provider values using the published shared helpers,
+  preserving null for missing or invalid values.
+- Added idempotent `ShopSettings` creation with `update: {}` so merchant edits
+  remain authoritative on repeat shop resolution.
+- Added read-only `read_locales` and `read_markets` scopes without write scopes.
+- Added focused regressions for initial creation, repeat preservation, invalid
+  values, session-locale independence and currency independence.
+
+### Attempt 2 Validation Results
+
+- Focused ShopService tests: 3 passed.
+- Full test suite: 107 passed, 1 skipped.
+- Focused ESLint for changed implementation and test: passed.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- Repository-wide `npm run typecheck` remains blocked by existing baseline errors
+  in unrelated JSX/module-resolution files; no changed ShopService error was
+  reported.
+- Repository-wide `npm run lint` retains existing unrelated errors in onboarding,
+  billing, privacy and webhook telemetry files; the task-local test lint error
+  was fixed and the changed files lint cleanly.
+
+### Attempt 2 Deviations
+
+The repository already consumed published shared `0.6.2`, which includes the
+required `0.6.1` internationalization helpers, so no downgrade was made. The
+DATABASE-001 submodule revision was already adopted at `61337e1`; no pointer
+change was necessary.
+
+### Attempt 2 Unresolved Issues
+
+Repository-wide typecheck and lint baseline failures remain outside this task's
+changed files.
+
+## Attempt 3 Completion Report
+
+### Status
+
+Ready for Review
+
+### Files Changed
+
+- `app/services/shop/shop.service.ts`
+- `tests/unit/services/shop.service.test.ts`
+
+The Attempt 2 scope/configuration changes remain preserved.
+
+### Work Completed
+
+- Moved `shopLocales` from the `Shop` selection to the top-level Admin GraphQL
+  QueryRoot selection beside `shop`.
+- Updated the response type and primary-locale lookup to use
+  `result.data.shopLocales`.
+- Added structural focused coverage proving the query closes the `shop` object
+  before selecting top-level `shopLocales`.
+
+### Validation Results
+
+- Shopify Admin GraphQL `2026-07` validation: passed; required scopes reported
+  as `read_locales, read_markets_home`.
+- Focused ShopService tests: 3 passed.
+- Full test suite: 107 passed, 1 skipped.
+- Focused ESLint for changed implementation and test: passed, with the existing
+  TypeScript-version support warning.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm run typecheck`: remains blocked by existing unrelated JSX implicit-any
+  and module-resolution baseline errors; no changed ShopService error was
+  reported.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+The existing Attempt 2 scope/configuration and merchant-default implementation
+are retained unchanged; Attempt 3 is limited to the architect-requested
+GraphQL query-shape correction.
+
+### Unresolved Issues
+
+Repository-wide typecheck baseline failures remain outside this task's changed
+files.
+
+### Architectural Concerns
+
+None.
+
 ## Architect Review
 
 ### Review Status
@@ -354,3 +503,66 @@ initialisation capability described above.
 
 Do not start SHOPIFY-003 from this task. Return this task to `review` and STOP.
 No commit or push.
+
+### Attempt 2 Review
+
+**Review Status:** Changes Requested — GraphQL query-shape correction
+
+The merchant-default lifecycle, canonical normalization, scope additions and
+`ShopSettings.upsert({ update: {} })` preservation behaviour are acceptable.
+
+However, the implementation queried:
+
+```graphql
+shop {
+  ...
+  shopLocales { ... }
+}
+```
+
+Shopify Admin GraphQL API `2026-07` exposes `shopLocales` on QueryRoot, not on
+`Shop`. The current focused tests mirror the invalid nested mock response and
+therefore do not catch the provider-runtime failure.
+
+Attempt 3 is intentionally narrow:
+
+1. move `shopLocales` to a sibling top-level selection beside `shop`;
+2. update `ShopifyShopResponse` so `shopLocales` is under `data`;
+3. resolve the primary locale from `result.data?.shopLocales`;
+4. add structural regression coverage for the real query shape;
+5. leave scopes, normalization, `ShopSettings` persistence, buyer-event logic
+   and unrelated code unchanged.
+
+Return this same task to `review` after validation and STOP. No commit or push.
+
+### Attempt 3 Review
+
+**Review Status:** Accepted — Complete
+
+The Attempt 3 correction is accepted. The authenticated Shopify Admin GraphQL
+request now selects `shop` and `shopLocales` as sibling QueryRoot fields, and
+primary-locale selection reads `result.data.shopLocales`. This matches Shopify
+Admin GraphQL API `2026-07`.
+
+The previously accepted merchant-default lifecycle remains intact:
+
+- `ShopSettings` is created idempotently when missing;
+- `upsert({ update: {} })` preserves later merchant edits;
+- primary shop locale, IANA timezone and shop-address country are independently
+  canonicalised and persisted as merchant fallback values;
+- missing or invalid optional provider values remain null;
+- no Session-locale, country-to-language, currency-to-language or shop-currency
+  inference is introduced;
+- `read_locales` and `read_markets` remain configured without write scopes;
+- no Shopify Admin API lookup was added to webhook hot paths.
+
+The focused structural regression would fail if `shopLocales` were nested under
+`shop` again. Reported validation passed for Shopify API `2026-07` schema
+validation, focused/full tests, focused lint, build, Prisma validation and
+`git diff --check`. Repository-wide typecheck/lint baseline failures remain
+unrelated to this task.
+
+`ARCH-005-SHOPIFY-001` is Complete. `ARCH-005-SHOPIFY-002` remains Ready and is
+the next Shopify implementation task. `ARCH-005-SYSTEM-TEST-001` remains
+Pending until its remaining implementation dependencies are complete.
+

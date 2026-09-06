@@ -2,34 +2,30 @@
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-005-SHOPIFY-001 | Initialise Shopify merchant international defaults | Ready — Attempt 2 scope correction | SHARED-002, DATABASE-001 |
-| ARCH-005-SHOPIFY-002 | Introduce merchant UI locale and standards-aware formatting | Ready | SHARED-002, DATABASE-001 |
+| ARCH-005-SHOPIFY-001 | Initialise Shopify merchant international defaults | Complete | SHARED-002, DATABASE-001 |
+| ARCH-005-SHOPIFY-002 | Introduce merchant UI locale and standards-aware formatting | Complete | SHARED-006, DATABASE-001 |
 | ARCH-005-SHOPIFY-003 | Emit canonical buyer international context on Shopify recovery events | Complete | SHARED-004, BACKGROUND-001 |
 
-Immediate executable Shopify tasks:
+
+Current executable Shopify task:
 
 ```text
-ARCH-005-SHOPIFY-001
-ARCH-005-SHOPIFY-002
+None for ARCH-005
 ```
 
-`SHOPIFY-001` now owns only merchant-default initialisation at authenticated
-shop resolution, including `read_locales` and `read_markets` pre-production
-scope configuration. It no longer owns the cross-service event contract.
+All three Shopify ARCH-005 implementation tasks are Complete.
 
-`SHOPIFY-003` is Complete. Its consumer-first rollout was satisfied and the producer now emits the accepted optional buyer-specific context:
+`ARCH-005-SHARED-006` is Complete and published as:
 
 ```text
-SHARED-004 published
-    -> BACKGROUND-001 accepts the optional context
-    -> SHOPIFY-003 emits it  [complete]
+@modainteract/moda-interact-shared@0.6.3
 ```
 
-Currency, language and country remain independent. `presentment_currency` must
-never be used to infer `customer_locale`, and country must never be used to
-choose language.
+`SHOPIFY-002` now consumes the Shared ICU runtime through the public
+`@modainteract/moda-interact-shared/internationalization` subpath and owns its
+merchant UI translations as 20 independent JSON catalogues under
+`moda-interact/app/i18n/locales/`.
 
-Architect acceptance note:
-
-- `SHOPIFY-003` passed producer-contract review and is Complete.
-- Its completion does not independently make system testing Ready; Shopify 001/002 and remaining Messaging implementation must still complete.
+Country, language, currency and timezone remain independent. Integrated ARCH-005
+system validation may advance when the authoritative system-test task/index is
+reconciled against its complete dependency set.

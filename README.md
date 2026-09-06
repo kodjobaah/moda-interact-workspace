@@ -53,6 +53,7 @@ This project demonstrates hands-on experience with:
 - [Platform overview](#platform-overview)
 - [High-level architecture](#high-level-architecture)
 - [Architecture initiatives](#architecture-initiatives)
+- [Internationalisation and merchant communications](#internationalisation-and-merchant-communications)
 - [Projects and ownership](#projects-and-ownership)
 - [Getting started](#getting-started)
 - [Architecture-led development](#architecture-led-development)
@@ -169,6 +170,10 @@ implementation task.
 | --- | --- | --- | --- | --- |
 | **ARCH-001** | Agreed | Build a reliable, low-overhead Shopify checkout-recovery event pipeline: keep webhook ingress fast, use Redis/BullMQ for temporary recovery candidates, persist only actual `CheckoutRecovery` state, fetch current Shopify state only when recovery is required, use canonical cross-service contracts, and tolerate duplicate/concurrent asynchronous processing. | [Shopify Checkout Recovery Webhook Processing](docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md) | [Copilot model and task plan] |
 | **ARCH-002** | In progress | Establish a production-ready, version-controlled Render topology for test and production: thin public gateway, private application services, independently scalable background workers, environment-isolated PostgreSQL/Redis/telemetry, admin security, observability, deployment validation and capacity testing. | [Render Test and Production Gateway and Infrastructure](docs/architecture/ARCH-002-render-production-gateway-infrastructure.md) | [Copilot model and task plan](docs//models/ARCH-002/copilot-model-selection.md) |
+| **ARCH-003** | In progress | Provide tenant-aware operational visibility for the asynchronous recovery platform: Admin queue health and failed-job diagnostics, safe tenant attribution, shop-scoped pending-recovery visibility in the merchant Usage experience, bounded refresh/pagination, complete BullMQ queue-performance telemetry and integrated evidence of tenant isolation. | [Admin Operational Queue Observability UI](docs/architecture/ARCH-003-admin-operational-ui.md) · [Readable overview](docs/architecture/ARCH-003-operational-observability-overview.md) | Task plans live under `docs/decisions/*/ARCH-003/` |
+| **ARCH-004** | In progress | Make pending recovery an inactivity-based workflow: deterministically correlate checkout/cart activity to an existing candidate, advance a monotonic `lastActivityAt` clock, reschedule the same BullMQ candidate and shop index, ignore stale/out-of-order events, cancel confirmed empty carts and preserve existing order-cancellation semantics. | [Correlated Cart Activity Recovery Rescheduling](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md) · [Readable overview](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling-overview.md) | Task plans live under `docs/decisions/*/ARCH-004/` |
+| **ARCH-005** | In progress | Make Moda Interact internationally correct by design across WhatsApp markets: keep country, language, currency, time zone and telephone country independent; use standards-based locale contracts; capture Shopify international commerce context; select approved WhatsApp template variants; support multilingual active conversations; and localise merchant-facing formatting. | [Global Internationalisation and WhatsApp Markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md) · [Readable overview](docs/architecture/ARCH-005-internationalisation-overview.md) | Task plans live under `docs/decisions/*/ARCH-005/` |
+| **ARCH-006** | In progress | Add a shop-scoped internal support inbox between Moda administrators and merchants: immutable originals, multilingual translations, read state, distinct administrative/system/merchant messages, versioned automated notifications, tenant-safe access and an observable `merchant-communications` queue. | [Merchant Communications, Support Inbox and System Notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md) · [Readable overview](docs/architecture/ARCH-006-merchant-communications-overview.md) | Task plans live under `docs/decisions/*/ARCH-006/` |
 
 The architecture document is authoritative for **what is being built and how the
 complete system fits together**.
@@ -177,6 +182,29 @@ The Copilot plan is an implementation-planning aid. It recommends implementation
 models for repository-agent work and does not override architecture or task
 state. Architect review is performed separately through the `moda_architect`
 workflow.
+
+### Internationalisation and merchant communications
+
+Two current cross-service initiatives extend the platform beyond the original
+checkout-recovery path:
+
+- **ARCH-005 — Internationalisation and Global WhatsApp Markets** keeps
+  language, country, currency, time zone and telephone country independent;
+  uses standards-based locale identifiers; captures international Shopify
+  commerce context; selects approved WhatsApp template variants; and lets active
+  CommerceAgent conversations follow the customer's resolved language. See the
+  [internationalisation overview](docs/architecture/ARCH-005-internationalisation-overview.md).
+- **ARCH-006 — Merchant Communications, Support Inbox and System
+  Notifications** adds a separate internal Moda-to-merchant communication
+  channel. One thread belongs to a `Shop`; administrators and merchants can
+  exchange messages, originals remain immutable, translations are stored
+  separately, read state is tracked, and automated `SYSTEM` messages remain
+  distinct from human administrative messages. See the
+  [merchant communications overview](docs/architecture/ARCH-006-merchant-communications-overview.md).
+
+ARCH-006 reuses ARCH-005's canonical language primitives rather than defining a
+second locale model. The merchant support inbox is also deliberately separate
+from shopper WhatsApp `ConversationMessage` state.
 
 ### Architecture and task documentation
 
@@ -188,7 +216,15 @@ docs/
 ├── architecture/
 │   ├── overview.md
 │   ├── ARCH-001-shopify-checkout-recovery-webhook-processing.md
-│   └── ARCH-002-render-production-gateway-infrastructure.md
+│   ├── ARCH-002-render-production-gateway-infrastructure.md
+│   ├── ARCH-003-admin-operational-ui.md
+│   ├── ARCH-003-operational-observability-overview.md
+│   ├── ARCH-004-cart-activity-recovery-rescheduling.md
+│   ├── ARCH-004-cart-activity-recovery-rescheduling-overview.md
+│   ├── ARCH-005-global-internationalisation-whatsapp-markets.md
+│   ├── ARCH-005-internationalisation-overview.md
+│   ├── ARCH-006-merchant-communications-support-inbox.md
+│   └── ARCH-006-merchant-communications-overview.md
 ├── decisions/
 │   ├── admin/
 │   ├── background/
@@ -1523,3 +1559,11 @@ Continue.
 - [Node.js toolchain](docs/node-toolchain.md)
 - [ARCH-001: Shopify checkout recovery webhook processing](docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md)
 - [ARCH-002: Render test and production gateway and infrastructure](docs/architecture/ARCH-002-render-production-gateway-infrastructure.md)
+- [ARCH-003: Admin operational queue observability UI](docs/architecture/ARCH-003-admin-operational-ui.md)
+- [ARCH-003 readable operational observability overview](docs/architecture/ARCH-003-operational-observability-overview.md)
+- [ARCH-004: Correlated cart activity recovery rescheduling](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md)
+- [ARCH-004 readable cart activity recovery overview](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling-overview.md)
+- [ARCH-005: Global internationalisation and WhatsApp markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md)
+- [ARCH-005 readable internationalisation overview](docs/architecture/ARCH-005-internationalisation-overview.md)
+- [ARCH-006: Merchant communications, support inbox and system notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md)
+- [ARCH-006 readable merchant communications overview](docs/architecture/ARCH-006-merchant-communications-overview.md)

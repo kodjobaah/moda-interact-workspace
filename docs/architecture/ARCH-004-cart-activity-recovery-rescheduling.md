@@ -13,11 +13,26 @@ updated: 2026-09-05
 
 In Progress.
 
-Immediate executable task:
+Implementation phase:
 
 ```text
-ARCH-004-SHARED-001
+Complete
 ```
+
+Developer checkpoint:
+
+```text
+Manual validation of the completed ARCH-004 behavior
+```
+
+Terminal system validation:
+
+```text
+ARCH-004-SYSTEM-TEST-001   Ready
+```
+
+The Ready system-test task should be invoked after the developer is satisfied
+with manual testing.
 
 ## Problem
 
@@ -461,6 +476,10 @@ package release.
 `SYSTEM-TEST-001` also depends on the Shopify producer path, even though the
 diagram emphasises the candidate/UI chain.
 
+All implementation nodes in this graph are now Complete and architect-accepted.
+The system-test task is terminal validation. It may remain Ready while the
+developer manually exercises the completed implementation.
+
 ## Tasks
 
 ```text
@@ -485,6 +504,25 @@ ARCH-004-SHOPIFY-002
 ARCH-004-SYSTEM-TEST-001
   Verify correlated cart activity resets the recovery inactivity clock
 ```
+
+
+## Current execution state
+
+```text
+ARCH-004-SHARED-001        Complete
+ARCH-004-SHARED-002        Complete
+ARCH-004-SHOPIFY-001       Complete
+ARCH-004-BACKGROUND-001    Complete
+ARCH-004-BACKGROUND-002    Complete
+ARCH-004-SHOPIFY-002       Complete
+ARCH-004-SYSTEM-TEST-001   Ready
+```
+
+Implementation is complete.
+
+ARCH-004 remains `In Progress` until terminal system validation has completed.
+The developer may perform manual validation before invoking the Ready
+system-test task.
 
 ## Architecture acceptance
 
