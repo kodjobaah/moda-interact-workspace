@@ -15,7 +15,7 @@ In Progress.
 
 The architecture was refined on 2026-09-06 before `ARCH-006-DATABASE-001` was claimed. The revised design uses OpenAI Batch for translation cost, minute-scale polling rather than provider webhooks, and PostgreSQL-driven reconciliation that can reconstruct BullMQ execution after Redis loss.
 
-`ARCH-006-DATABASE-001`, `ARCH-006-DATABASE-002`, `ARCH-006-SHARED-001/002/003/004` and `ARCH-006-BACKGROUND-001` are architect-accepted Complete. `0.7.0` remains historical; corrected `@modainteract/moda-interact-shared@0.7.1` is published and clean-consumer verified. `ARCH-006-BACKGROUND-004` and `ARCH-006-ADMIN-001` are Ready for their bounded Attempt 2 corrections, and `ARCH-006-SHOPIFY-001` is Ready for its first implementation attempt. Repository agents execute one architecture task per invocation and must return that task to Review and STOP; only `moda_architect` promotes downstream work.
+`ARCH-006-DATABASE-001`, `ARCH-006-DATABASE-002`, `ARCH-006-SHARED-001/002/003/004`, `ARCH-006-BACKGROUND-001` and `ARCH-006-BACKGROUND-004` are architect-accepted Complete. `0.7.0` remains historical; corrected `@modainteract/moda-interact-shared@0.7.1` is published and clean-consumer verified. BACKGROUND-004 additionally passed its required real PostgreSQL concurrency validation, so `ARCH-006-BACKGROUND-005` is Ready. `ARCH-006-ADMIN-001` is Ready for a bounded Attempt 3 correction after Attempt 2 review found that non-English PROCESSING replies clear the pending-response boundary before translation availability; `ARCH-006-ADMIN-003` therefore remains Pending. `ARCH-006-SHOPIFY-001` is Ready for its first implementation attempt. A separate `SHARED-005 -> SHARED-006 -> BACKGROUND-008` chain standardises disposable PostgreSQL/Redis integration testing and is explicitly non-gating for product implementation. Repository agents execute one architecture task per invocation and must return that task to Review and STOP; only `moda_architect` promotes downstream work.
 
 Detailed translation concurrency, provider-failure and recovery mechanics are defined in [`ARCH-006-translation-batching-reliability.md`](ARCH-006-translation-batching-reliability.md). This canonical document owns the cross-domain decision; the companion owns the step-by-step reliability process.
 
@@ -174,6 +174,32 @@ READY
 ```
 
 `SUBMISSION_UNKNOWN` means provider create may have succeeded but the worker did not safely persist the returned provider ID. It is never automatically changed back to READY for blind resubmission.
+
+
+### Disposable integration-test infrastructure
+
+ARCH-006 integration validation must become reproducible without a permanently provisioned local PostgreSQL or Redis service. The reusable container lifecycle belongs in a **Node-only testing subpath of `moda-interact-shared`**. It does not belong in the manual-gated `moda-interact-system-test` repository, because application implementation tasks must never depend on system-test tasks; and it does not belong in `moda-interact-database`, because Redis/container orchestration is not database ownership.
+
+The ownership boundary is:
+
+```text
+moda-interact-database
+    owns Prisma schema + migrations
+              |
+              | caller supplies schema path
+              v
+@modainteract/moda-interact-shared/testing/node
+    owns disposable PostgreSQL + Redis lifecycle
+    + readiness
+    + prisma migrate deploy orchestration
+    + cleanup
+              |
+              v
+repository-specific integration runner
+    Background / Admin / Shopify / Messaging as adopted
+```
+
+A disposable PostgreSQL instance starts empty and receives the **real** migration chain with `prisma migrate deploy`; `prisma db push`, copied migrations and synthetic test DDL are prohibited. The harness returns dynamic database/Redis URLs to the consumer process and tears down both containers on pass or failure. Unit tests remain Docker-free. This quality-infrastructure chain runs in parallel with product implementation and does not gate BACKGROUND-005/006/007 or other unfinished application work.
 
 ### BullMQ worker topology for the shared queue
 
@@ -506,13 +532,16 @@ Stateless development workers may be recreated from infrastructure-as-code; Post
 | ARCH-006-SHARED-002 | moda_shared | Complete | SHARED-001 |
 | ARCH-006-SHARED-003 | moda_shared | Complete | SHARED-002 |
 | ARCH-006-SHARED-004 | moda_shared | Complete | SHARED-003 |
+| ARCH-006-SHARED-005 | moda_shared | Ready | SHARED-004 |
+| ARCH-006-SHARED-006 | moda_shared | Pending | SHARED-005 |
 | ARCH-006-BACKGROUND-001 | moda_background | Complete | DATABASE-002, SHARED-002 |
-| ARCH-006-BACKGROUND-004 | moda_background | Ready — Attempt 2 correction | BACKGROUND-001, SHARED-004 |
-| ARCH-006-BACKGROUND-005 | moda_background | Pending | BACKGROUND-004 |
+| ARCH-006-BACKGROUND-004 | moda_background | Complete | BACKGROUND-001, SHARED-004 |
+| ARCH-006-BACKGROUND-005 | moda_background | Ready | BACKGROUND-004 |
 | ARCH-006-BACKGROUND-006 | moda_background | Pending | BACKGROUND-005 |
 | ARCH-006-BACKGROUND-007 | moda_background | Pending | BACKGROUND-006 |
+| ARCH-006-BACKGROUND-008 | moda_background | Pending | BACKGROUND-004, SHARED-006 |
 | ARCH-006-GATEWAY-001 | moda_gateway | Pending | BACKGROUND-007 |
-| ARCH-006-ADMIN-001 | moda_admin | Ready — Attempt 2 correction | DATABASE-002, SHARED-002, SHARED-004, ARCH-005-ADMIN-001 |
+| ARCH-006-ADMIN-001 | moda_admin | Ready — Attempt 3 bounded correction | DATABASE-002, SHARED-002, SHARED-004, ARCH-005-ADMIN-001 |
 | ARCH-006-ADMIN-003 | moda_admin | Pending | ADMIN-001 |
 | ARCH-006-ADMIN-004 | moda_admin | Pending | ADMIN-003, BACKGROUND-007 |
 | ARCH-006-ADMIN-002 | moda_admin | Pending | BACKGROUND-007 |
@@ -538,6 +567,10 @@ SHARED-002 + DATABASE-002
 SHARED-004 + BACKGROUND-001
     -> BACKGROUND-004 -> BACKGROUND-005 -> BACKGROUND-006 -> BACKGROUND-007 -> GATEWAY-001
 
+parallel/non-gating integration-test infrastructure:
+SHARED-004 -> SHARED-005 -> SHARED-006 -> BACKGROUND-008
+BACKGROUND-004 ------------------------------^
+
 SHARED-004 + DATABASE-002 + ARCH-005-ADMIN-001
     -> ADMIN-001 -> ADMIN-003 -> ADMIN-004 (also waits BACKGROUND-007)
 
@@ -558,6 +591,7 @@ None blocking task creation. Operational values for Batch size and minute pollin
 
 ## Change History
 
+- 2026-09-06: architect review of `ARCH-006-ADMIN-001` Attempt 2 found that non-English PROCESSING administrative compose clears `needsAdminResponse` and advances `lastAdministrativeMessageAt` before the required translation becomes AVAILABLE. Returned ADMIN-001 to Ready for a bounded Attempt 3 correction; ADMIN-003 remains Pending. The single stale ARCH-005 Shared `0.7.0` assertion remains a known out-of-scope baseline failure.
 - 2026-09-06: architect accepted SHARED-004 after `0.7.1` publication, registry metadata/integrity evidence and isolated clean-consumer Node-subpath execution. Returned BACKGROUND-004 and ADMIN-001 to Ready for bounded Attempt 2 corrections and SHOPIFY-001 to Ready for its first attempt. No downstream child or system-test task was promoted.
 - 2026-09-06: architect review of `ARCH-006-BACKGROUND-004` exposed a broken `0.7.0` `merchant-communications/node` export, a mock test-contract defect, missing real PostgreSQL `SKIP LOCKED` concurrency evidence, and an unsafe per-job Worker pattern on the shared queue. Added SHARED-003/004 remediation, blocked affected consumers, and made BACKGROUND-007 the sole process-level `merchant-communications` Worker/router owner.
 

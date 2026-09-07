@@ -69,27 +69,31 @@ The detailed companion defines the PostgreSQL `FOR UPDATE SKIP LOCKED` batch-cla
 
 ```text
 DATABASE-001  COMPLETE
-    |
-    v
 DATABASE-002  COMPLETE
-    |
-    v
 SHARED-001    COMPLETE
-    |
-    v
-SHARED-002    COMPLETE / published 0.7.0
-    |
-    +--> SHARED-003 READY   (correct broken Node export)
-            |
-            v
-         SHARED-004 PENDING (publish + clean-consumer verify 0.7.1)
-            |
-            +--> BACKGROUND-004 BLOCKED
-            +--> ADMIN-001      BLOCKED
-            +--> SHOPIFY-001    BLOCKED
+SHARED-002    COMPLETE / published 0.7.0 (historical)
+SHARED-003    COMPLETE
+SHARED-004    COMPLETE / published + clean-consumer verified 0.7.1
+BACKGROUND-001 COMPLETE
+BACKGROUND-004 COMPLETE / real PostgreSQL concurrency validated
+BACKGROUND-005 READY
+
+parallel quality-infrastructure chain:
+SHARED-005 READY -> SHARED-006 PENDING -> BACKGROUND-008 PENDING
+
+ADMIN-001   READY / Attempt 3 bounded correction (non-English response boundary)
+
+Attempt 2 Admin review found early pending-response clearing for PROCESSING non-English replies; BACKGROUND-006 remains the owner of the eventual AVAILABLE transition and response-boundary clear.
+SHOPIFY-001 READY / first attempt
 ```
 
-`SHARED-002`/`0.7.0` remain historical. SHARED-003 corrected the Node export and SHARED-004 published `@modainteract/moda-interact-shared@0.7.1`, then proved the exact registry artifact from a clean consumer. The three affected consumer tasks are now released by `moda_architect`; downstream children remain dependency-gated. `BACKGROUND-001` remains Complete. System tests remain terminal/manual-gated and do not block implementation.
+The disposable integration-test chain is intentionally parallel and non-gating. It standardises repeatable PostgreSQL/Redis integration testing but does not prevent BACKGROUND-005, Admin, Shopify or other implementation work from proceeding. System tests remain terminal/manual-gated.
+
+### Shared disposable integration-test substrate
+
+Reusable disposable PostgreSQL/Redis lifecycle belongs in the Node-only testing boundary of `@modainteract/moda-interact-shared`, not in the manual-gated `moda-interact-system-test` repository and not in the database repository. The database repository remains sole owner of Prisma schema/migrations. Consumers pass the authoritative schema path (normally their `database/prisma/schema.prisma` submodule path) to the shared harness, which starts fresh containers, runs `prisma migrate deploy`, exposes test URLs, executes consumer integration work, and always cleans up.
+
+The existing `moda-interact-system-test/src/ephemeral-postgres.js` and `ephemeral-redis.js` are useful prior art, but application repositories must not acquire a dependency on the system-test repository. SHARED-005 promotes the reusable mechanism into a normal Node-only package surface; SHARED-006 publishes it; BACKGROUND-008 adopts it.
 
 ## Luna-sized task decomposition
 
@@ -102,12 +106,15 @@ SHARED-001 validation + queue contracts
 SHARED-002 publish 0.7.0
 SHARED-003 correct Node export
 SHARED-004 publish/consumer-verify 0.7.1
+SHARED-005 disposable PostgreSQL/Redis + migration test harness
+SHARED-006 publish reusable testing subpath
 
 BACKGROUND-001 provider adapter
 BACKGROUND-004 batch assembly
 BACKGROUND-005 one-time provider submission
 BACKGROUND-006 polling + result application
 BACKGROUND-007 reconciliation + deployable worker runtime
+BACKGROUND-008 adopt disposable integration-test harness (parallel/non-gating)
 GATEWAY-001 Render worker/env wiring
 
 ADMIN-001 server support capability

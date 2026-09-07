@@ -1,0 +1,142 @@
+{
+  "shopId": "<authenticated-internal-shop-id>",
+  "shopDomain": "<authenticated-shop-domain.myshopify.com>",
+  "index": {
+    "memberJobId": "<active-pending-job-id>",
+    "job": {
+      "id": "<active-pending-job-id>",
+      "name": "evaluate-pending-recovery",
+      "state": "delayed",
+      "data": {
+        "shopId": "<authenticated-internal-shop-id>",
+        "shopDomain": "<authenticated-shop-domain.myshopify.com>"
+      }
+    }
+  },
+  "merchant": {
+    "initial": {
+      "available": true,
+      "page": 1,
+      "pageSize": 10,
+      "total": 1,
+      "totalPages": 1,
+      "items": [
+        {
+          "id": "<active-pending-job-id>",
+          "status": "delayed",
+          "checkoutCreatedAt": "2026-09-05T00:00:00.000Z",
+          "scheduledFor": "2026-09-05T00:30:00.000Z"
+        }
+      ]
+    },
+    "page2": {
+      "available": true,
+      "page": 2,
+      "pageSize": 10,
+      "total": 11,
+      "totalPages": 2,
+      "items": [
+        {
+          "id": "<page-2-job-id>",
+          "status": "waiting",
+          "checkoutCreatedAt": "2026-09-05T00:00:00.000Z",
+          "scheduledFor": "2026-09-05T00:30:00.000Z"
+        }
+      ]
+    },
+    "refreshed": {
+      "available": true,
+      "page": 1,
+      "pageSize": 10,
+      "total": 1,
+      "totalPages": 1,
+      "items": [
+        {
+          "id": "<active-pending-job-id>",
+          "status": "delayed",
+          "checkoutCreatedAt": "2026-09-05T00:00:00.000Z",
+          "scheduledFor": "2026-09-05T00:30:00.000Z"
+        }
+      ]
+    },
+    "page2Refresh": {
+      "requestedPage": 2,
+      "response": {
+        "available": true,
+        "page": 2,
+        "pageSize": 10,
+        "total": 11,
+        "totalPages": 2,
+        "items": [
+          {
+            "id": "<page-2-job-id>",
+            "status": "waiting",
+            "checkoutCreatedAt": "2026-09-05T00:00:00.000Z",
+            "scheduledFor": "2026-09-05T00:30:00.000Z"
+          }
+        ]
+      }
+    },
+    "fallbackRefresh": {
+      "requestedPage": 2,
+      "response": {
+        "available": true,
+        "page": 1,
+        "pageSize": 10,
+        "total": 1,
+        "totalPages": 1,
+        "items": [
+          {
+            "id": "<remaining-job-id>",
+            "status": "delayed",
+            "checkoutCreatedAt": "2026-09-05T00:00:00.000Z",
+            "scheduledFor": "2026-09-05T00:30:00.000Z"
+          }
+        ]
+      },
+      "subsequentRequestedPage": 1
+    },
+    "renderedText": "Scheduled Waiting Processing",
+    "reloadCount": 0,
+    "manualRefreshExposed": true,
+    "lastUpdatedBefore": "2026-09-05T09:00:00.000Z",
+    "lastUpdatedAfter": "2026-09-05T09:01:00.000Z"
+  },
+  "lifecycle": {
+    "action": "matured",
+    "indexContainsJobAfter": false,
+    "merchantAfter": {
+      "available": true,
+      "page": 1,
+      "pageSize": 10,
+      "total": 0,
+      "totalPages": 0,
+      "items": []
+    }
+  },
+  "otherTenant": {
+    "response": {
+      "available": true,
+      "page": 1,
+      "pageSize": 10,
+      "total": 0,
+      "totalPages": 0,
+      "items": []
+    }
+  },
+  "redisUnavailable": {
+    "response": {
+      "available": false,
+      "page": 1,
+      "pageSize": 10,
+      "total": 0,
+      "totalPages": 0,
+      "items": []
+    }
+  },
+  "usage": {
+    "current": true,
+    "past": true
+  },
+  "automaticPollingDetected": false
+}
