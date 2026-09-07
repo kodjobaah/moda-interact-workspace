@@ -250,6 +250,36 @@ If the task is not executable, do not claim it, inspect implementation source,
 modify task state or implement anything. Report the blocking state/dependency
 and STOP.
 
+## Architect Review rework gate
+
+After the resolver identifies an executable `status: ready` task and BEFORE
+claiming or inspecting implementation source, read the assigned task file in
+full.
+
+If the task's existing YAML `attempt` is greater than `0`, or the task contains
+`## Architect Review`, you MUST:
+
+1. read through the complete latest Architect Review; do not stop at an arbitrary
+   line limit before the section;
+2. determine the latest Architect Review outcome;
+3. when it is `Changes Requested`, treat the complete latest correction list as
+   mandatory execution scope for this attempt;
+4. create an explicit correction checklist and ensure every item is implemented
+   or returned as blocked with concrete conflict evidence;
+5. never substitute "existing tests pass" or "no source changes are needed" for
+   an Architect Review item that explicitly requires changed behaviour/source/
+   tests;
+6. ensure the Completion Report maps every requested correction to changed files
+   and focused validation.
+
+Task identity consistency is a hard gate. The resolver task ID, claimed task ID,
+logical-agent handoff, progress/TODO labels, Completion Report and final response
+must all refer to the same task. A stale progress label naming another task is
+not harmless metadata: stop, clear/repair that stale execution state, and only
+continue when the identity is consistent.
+
+Repository agents may not edit Architect Review or self-accept the task.
+
 Only after eligibility is verified and the task is claimed may normal
 implementation-repository inspection begin.
 

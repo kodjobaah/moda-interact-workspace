@@ -40,6 +40,30 @@ MODA-DEVELOPER-OWNED-GIT-POLICY:END
 ===============================================================================
 
 ===============================================================================
+ARCHITECT RETURN-AUTHORITY BOUNDARY
+===============================================================================
+
+When this repository agent finishes an implementation task, its authority ends at
+returning that task to `review`. This rule applies to durable task files, indexes,
+todo/status output, and the final chat response.
+
+MUST NOT state, imply, simulate, infer, or predict that `moda_architect` accepted,
+approved, completed, signed off, or architect-reviewed the task. MUST NOT write an
+architect decision on the architect's behalf. The repository agent may report only
+its own implementation/validation evidence and that the task awaits architect review.
+
+For every successful return to `review`, the final response MUST end with this exact
+sentence and no later acceptance language:
+
+    Task status: review. Awaiting moda_architect review; no architect acceptance decision has been made by this agent.
+
+Forbidden examples include: `Architect review accepted`, `architect-accepted`,
+`approved by moda_architect`, `Architect review decision: accepted`, and `this task
+is Complete` when the architect has not separately made that transition.
+
+===============================================================================
+
+===============================================================================
 SHARED STRUCTURED LOGGING CONVENTION
 ===============================================================================
 
@@ -469,6 +493,47 @@ moda-interact-background/
 When moda_architect assigns a task, the task file and its parent architecture
 document are authoritative for scope, dependencies, contracts and acceptance
 criteria.
+
+===============================================================================
+ARCHITECT REVIEW REWORK INVARIANT
+===============================================================================
+
+A task reclaimed after `moda_architect` requested changes is NOT a fresh
+interpretation of the original task. The latest complete `## Architect Review`
+with outcome `Changes Requested` is the authoritative correction contract for
+the next attempt.
+
+Before claiming any Ready task whose YAML `attempt` is greater than 0, or any
+Ready task that contains an Architect Review:
+
+1. read the ENTIRE task file, including the complete latest `## Architect Review`;
+   do not stop at an arbitrary line/page limit before that section;
+2. identify the latest Architect Review outcome;
+3. if the latest outcome is `Changes Requested`, extract every requested
+   correction into an explicit correction checklist before implementation-source
+   inspection;
+4. treat those corrections as mandatory unless implementation is genuinely
+   blocked by a concrete architecture/scope/contract conflict;
+5. do NOT silently decide a requested correction is unnecessary merely because
+   the existing implementation passes old tests or appears to satisfy the
+   original task;
+6. if Architect Review explicitly requires source or test changes, a
+   no-source-change revalidation is NOT a successful rework attempt;
+7. if a requested correction conflicts with the parent architecture or original
+   bounded task scope, STOP the affected work and return concrete evidence to
+   `moda_architect`; do not ignore, reinterpret, or waive the correction;
+8. before returning to review, record each Architect Review item separately in
+   the Completion Report as `implemented` or `blocked`, naming the changed files
+   and focused validation that proves the disposition.
+
+Task identity must also remain consistent throughout execution. The resolved
+task ID, claimed task ID, progress/TODO task ID, Completion Report task ID and
+final-response task ID MUST all identify the same task. If any runtime label or
+progress item names another task, STOP before implementation, discard/repair the
+stale progress state, and continue only when task identity is consistent.
+
+The repository agent MUST NOT edit `## Architect Review`; only
+`moda_architect` owns that section.
 
 If asked to execute architecture work without a specific task ID:
 

@@ -2685,7 +2685,7 @@ Status transitions owned by moda_architect:
 pending -> ready
 blocked -> ready
 review -> complete
-review -> in_progress
+review -> ready
 applicable state -> blocked
 applicable state -> superseded
 
@@ -2720,7 +2720,10 @@ The executor field is execution state only. It does not change architectural
 ownership.
 
 Before beginning a Ready task, an agent must re-read the task file immediately
-before claiming it.
+before claiming it. For a rework attempt (`attempt > 0`) the repository agent
+must read the entire latest `## Architect Review` before source inspection and
+must execute the latest `Changes Requested` correction contract rather than
+re-evaluating whether the architect's requested changes are necessary.
 
 To claim a task, update together:
 
@@ -3505,11 +3508,33 @@ Changes Requested
 When implementation remains within the original task scope but needs correction:
 
 1. set Architect Review status to Changes Requested;
-2. document specific deficiencies;
-3. return task status to in_progress;
-4. do not create a new task merely for correcting work that belongs to the
+2. document each specific deficiency as an explicit, testable correction item in
+   the latest `## Architect Review`;
+3. return the SAME task to a reclaimable state:
+       status: ready
+       executor:
+       claimed_at:
+   Preserve the current `attempt` value so the repository agent's next claim
+   increments it exactly once;
+4. update `updated`, the domain `_index.md`, and the architecture execution plan
+   so no stale `in_progress`/`review` state contradicts the task YAML;
+5. do not mark any dependent task Ready merely because correction work exists;
+   dependants remain gated until this task is architect-accepted Complete;
+6. do not create a new task merely for correcting work that belongs to the
    original scope;
-5. return the same task to the responsible repository agent.
+7. return the same task to the responsible repository agent.
+
+The latest Architect Review is the authoritative rework contract. Do not require
+repository agents to infer corrections from chat history or from an architect
+summary outside the task file.
+
+When source/test changes are required, say so explicitly and identify the
+behaviour/tests that must change. When a correction can be proven by validation
+without source changes, say that explicitly instead.
+
+A Changes Requested handoff MUST NOT leave an active claim (`in_progress`,
+`executor`, or `claimed_at`) on work that the repository agent is expected to
+reclaim.
 
 
 Blocked
@@ -4354,8 +4379,10 @@ status: review           status: review           status: review
                          v           v
                       Accepted   Changes Requested
                          |           |
-                         v           +----> owning agent
-                     Complete
+                         v           v
+                     Complete    status: ready
+                                     |
+                                     +----> owning agent reclaims same task
                          |
                          v
                   unblock dependants
