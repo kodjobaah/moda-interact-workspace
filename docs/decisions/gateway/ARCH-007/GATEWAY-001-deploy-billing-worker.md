@@ -57,11 +57,11 @@ Billing publication/reconciliation must not run inside recovery/messaging worker
 
 ## Work Items
 
-- [ ] Inspect current test/production worker declarations.
-- [ ] Add billing worker to both blueprints.
-- [ ] Add env/secret placeholders and OTel identity.
-- [ ] Update topology docs/blueprint validators.
-- [ ] Run existing gateway blueprint/observability validation.
+- [x] Inspect current test/production worker declarations.
+- [x] Add billing worker to both blueprints.
+- [x] Add env/secret placeholders and OTel identity.
+- [x] Update topology docs/blueprint validators.
+- [x] Run existing gateway blueprint/observability validation.
 
 ## Interfaces / Contracts
 
@@ -85,11 +85,11 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 
 ## Acceptance Criteria
 
-- [ ] Billing worker is private/background and independently scalable.
-- [ ] Commands match accepted Background implementation.
-- [ ] No secret values committed.
-- [ ] Test and production telemetry remain distinguishable.
-- [ ] Blueprint validators and gateway tests pass.
+- [x] Billing worker is private/background and independently scalable.
+- [x] Commands match accepted Background implementation.
+- [x] No secret values committed.
+- [x] Test and production telemetry remain distinguishable.
+- [x] Blueprint validators and gateway tests pass.
 
 ## Validation
 
@@ -114,41 +114,53 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 1)
+Complete, returned to architect review (Attempt 1)
 
 ### Files Changed
 
-None
+- `render.test.yaml`
+- `render.production.yaml`
+- `tests/validate-render-blueprints.sh`
+- `tests/validate-render-blueprints-negative.sh`
+- `docs/render-topology.md`
 
 ### Work Completed
 
-None
+- Added `moda-billing-worker-test` and `moda-billing-worker-production` as private Docker workers using `npm run start:billing-worker`, one initial instance, and the Background repository.
+- Attached each worker to the environment common group, Shopify App/Partner Events group, and environment-specific PostgreSQL connection; no Redis, domains, or worker health check were added.
+- Documented `npm run readiness:billing-worker`, PostgreSQL-only dependencies, independent scaling, and deployment ordering.
+- Extended positive validation and added billing-specific negative fixtures for the command and Shopify App group contract.
 
 ### Validation Results
 
-None
+- `bash tests/validate-render-blueprints.sh` passed for test and production.
+- `bash tests/validate-render-blueprints-negative.sh` passed, including billing command and missing Shopify App group cases.
+- `bash tests/validate-observability-config.sh` passed.
+- `git diff --check` passed.
+- Repository has no `package.json`; no npm typecheck/lint/build command applies. Docker/integration validation remains developer-owned per policy and was not launched.
 
 ### Deviations
 
-None
+- The existing test Blueprint convention uses Render-managed `sync: false` secrets, so the validator accepts that test form while retaining strict production placeholder checks.
 
 ### Assumptions
 
-None
+- Existing `0.5c-512mb` worker plan and one-instance initial count are conservative starting values; independent Render worker scaling remains available.
+- Background-008 source owns canonical telemetry identity (`moda-billing-worker`, namespace `moda-interact`); the Blueprint supplies common environment-specific observability configuration.
 
 ### Unresolved Issues
 
-None
+- Render deployment-time schema, credentials, connectivity, readiness, and capacity evidence remain to be validated in isolated test/production environments.
 
 ### Architectural Concerns
 
-None
+- None introduced. The billing worker has no Redis dependency and readiness does not call Shopify App Events.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Pending architect review
 
 ### Review Notes
 
@@ -156,16 +168,16 @@ None
 
 ### Reviewed Files
 
-None
+Implementation commit `2821832` on pushed branch `task/ARCH-007-GATEWAY-001`.
 
 ### Validation Reviewed
 
-None
+Static Render Blueprint, negative fixture, observability, and whitespace checks listed above passed. Parent report branch is `task/ARCH-007-GATEWAY-001`; no parent submodule gitlink was staged.
 
 ### Architecture Conformance
 
-Pending
+Conforms to ARCH-007 objective and accepted Background-008 start/readiness contracts.
 
 ### Follow-up
 
-None
+Architect/developer to review and merge the implementation branch; system-test tasks remain enabled but were not started.
