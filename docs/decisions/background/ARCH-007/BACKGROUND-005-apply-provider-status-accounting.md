@@ -7,11 +7,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: ready
+status: complete
 priority: 100
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: 
   - ARCH-007-BACKGROUND-004
   - ARCH-007-MESSAGING-001
@@ -60,11 +60,11 @@ Messaging queue consumer/handler and durable Background service/tests for normal
 
 ## Work Items
 
-- [ ] Implement status consumer handler/service.
-- [ ] Add monotonic/idempotent transition logic.
-- [ ] Create delivered usage once.
-- [ ] Persist optional bounded metadata.
-- [ ] Add duplicate/out-of-order/unknown-provider-id/cross-tenant focused tests.
+- [x] Implement status consumer handler/service.
+- [x] Add monotonic/idempotent transition logic.
+- [x] Create delivered usage once.
+- [x] Persist optional bounded metadata.
+- [x] Add duplicate/out-of-order/unknown-provider-id/cross-tenant focused tests.
 
 ## Interfaces / Contracts
 
@@ -81,12 +81,12 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 
 ## Acceptance Criteria
 
-- [ ] Duplicate/out-of-order statuses cannot duplicate delivered usage or regress final state.
-- [ ] Unknown provider ID cannot update another shop.
-- [ ] No producer-supplied or fabricated `shopId` is required for provider-status routing.
-- [ ] No raw webhook parsing exists in Background.
-- [ ] No exact Meta monetary amount is fabricated.
-- [ ] Tests and worker validation pass.
+- [x] Duplicate/out-of-order statuses cannot duplicate delivered usage or regress final state.
+- [x] Unknown provider ID cannot update another shop.
+- [x] No producer-supplied or fabricated `shopId` is required for provider-status routing.
+- [x] No raw webhook parsing exists in Background.
+- [x] No exact Meta monetary amount is fabricated.
+- [x] Tests and worker validation pass.
 
 ## Validation
 
@@ -111,31 +111,60 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-Not Started
+Ready for Review (Attempt 2)
 
 ### Files Changed
 
-None
+src/services/whatsapp-provider-status.service.ts
+src/workers/whatsapp.worker.ts
+tests/unit/services/whatsapp-provider-status.service.test.ts
 
 ### Work Completed
 
-None
+Added the schema-validated `message-status` consumer to the existing `whatsapp-events` worker. The consumer resolves ownership from the durable outbound message relation, applies monotonic SENT/DELIVERED/READ/FAILED lifecycle updates, creates one deterministic NOT_APPLICABLE delivered usage event, and stores bounded accepted provider metadata in `providerResponseSummary`. Unknown and unowned messages are bounded no-ops with structured operational logging.
+
+Attempt 2 addressed every Architect Review correction: lifecycle writes now use serializable transactions, conditional status CAS updates, and bounded `P2034`/CAS retries; provider status is rejected for matching inbound messages; and focused tests cover concurrent READ/DELIVERED and DELIVERED/FAILED races, inbound-boundary isolation, and provider-identity versus durable-shop accounting.
 
 ### Validation Results
 
-None
+Focused: `npm exec vitest run tests/unit/services/whatsapp-provider-status.service.test.ts` passed (10 tests).
+Build: `npm run build` passed.
+Prisma: `npm run prisma:validate` passed.
+Full suite: `npm test` reported 369 passed, 7 skipped, and 2 pre-existing failures in `tests/unit/services/pending-recovery-candidate.service.test.ts` (null-context preservation/merge cases); no provider-status tests failed.
+Formatting/diff: `git diff --check` passed.
+Diagnostics: no errors reported for the changed source files.
 
 ### Deviations
 
-None
+The task Implementation Notes name Shared `0.7.4`, while the current architecture and Background package consume the accepted Shared `0.8.0` release. The provider-status v2 billing exports used here are present in `0.8.0`; no dependency downgrade was made.
 
 ### Assumptions
 
-None
+None.
 
 ### Unresolved Issues
 
-None
+The two unrelated `pending-recovery-candidate` baseline failures remain for architect/developer follow-up.
+
+### Git / VCS
+
+Task branch: task/ARCH-007-BACKGROUND-005
+
+Implementation repository:
+  repository: moda-interact-background
+  commit: de619dc
+  remote branch: origin/task/ARCH-007-BACKGROUND-005
+  pushed: yes
+
+Parent workspace:
+  task file: docs/decisions/background/ARCH-007/BACKGROUND-005-apply-provider-status-accounting.md
+  commit: 77ece72
+  remote branch: origin/task/ARCH-007-BACKGROUND-005
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ### Architectural Concerns
 
@@ -145,24 +174,54 @@ None
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 is architect-accepted Complete.
+
+All Changes Requested from Attempt 1 are resolved:
+
+1. Provider lifecycle transitions are now concurrency-safe. Status writes use a conditional CAS on the durable message id, `OUTBOUND` direction, and previously observed status inside a Prisma `Serializable` transaction. CAS losers and Prisma `P2034` conflicts retry the whole transaction with a bounded retry policy, so a weaker concurrent status cannot overwrite a stronger durable state.
+
+2. Provider-status accounting is now explicitly outbound-only. A matching inbound `ConversationMessage` is a bounded ignored case and cannot be lifecycle-mutated or create `DELIVERED_WHATSAPP_MESSAGE` usage.
+
+3. Focused regression coverage now exercises concurrent READ/DELIVERED and DELIVERED/FAILED races, exactly-once delivered usage during those races, inbound-message isolation, and provider-identity versus durable-shop ownership.
+
+The accepted Attempt 1 behavior remains intact: Shared provider-status v2 validation occurs at the consumer boundary; tenant ownership is derived only from durable local message/conversation/recovery state; unknown/unowned ids are bounded no-ops; the existing `whatsapp-events` Worker remains the single queue consumer topology; delivered usage is deterministic and `NOT_APPLICABLE` for Shopify; provider metadata is bounded; and no exact Meta monetary amount is fabricated.
+
+The repository's accepted Shared `0.8.0` dependency is retained. The older `0.7.4` wording in this task's Implementation Notes is superseded by the current accepted ARCH-007 Shared release and is not a reason to downgrade.
 
 ### Reviewed Files
 
-None
+Implementation branch cumulative task surface:
+
+- `moda-interact-background/src/services/whatsapp-provider-status.service.ts`
+- `moda-interact-background/src/workers/whatsapp.worker.ts`
+- `moda-interact-background/tests/unit/services/whatsapp-provider-status.service.test.ts`
+
+Attempt 2 implementation commit:
+
+- `de619dc7dd49756598d9e853f4b2555cf754bf34`
+
+Parent task-report commit reviewed:
+
+- `77ece727ac4b7fc4d7f9b5cd50fb1724b0079a8d`
 
 ### Validation Reviewed
 
-None
+- Focused provider-status suite reported passed: 10/10.
+- `npm run build` reported passed.
+- `npm run prisma:validate` reported passed.
+- `git diff --check` reported passed.
+- Full suite reported 369 passed, 7 skipped, with the same 2 unrelated existing `pending-recovery-candidate` failures; no provider-status regression failed.
+- GitHub exposes no commit status checks for `de619dc7dd49756598d9e853f4b2555cf754bf34`.
+- The supplied archive does not contain the Background submodule working tree; the pushed implementation commit and exact source/tests were therefore independently reviewed from GitHub.
 
 ### Architecture Conformance
 
-Pending
+Accepted. The implementation now satisfies the ARCH-007 provider-status ownership, monotonic lifecycle, idempotent delivered-usage, bounded metadata, and existing-worker-topology requirements.
 
 ### Follow-up
 
-None
+`ARCH-007-BACKGROUND-005` is Complete. `ARCH-007-BACKGROUND-008` remains Pending until its other incomplete dependency or dependencies are architect-accepted Complete. System-test work remains manual/terminal-gated and is not automatically started by this acceptance.
