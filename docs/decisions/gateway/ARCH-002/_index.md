@@ -13,14 +13,14 @@ Coordinator:
 `moda_architect`
 
 | Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
-| GATEWAY-001 | Inspect platform and define deployment prerequisites | Complete | - |
+|---|---|---|---|
+| GATEWAY-001 | Inspect platform and define production deployment prerequisites | Complete | — |
 | GATEWAY-002 | Create public Moda Interact gateway | Complete | GATEWAY-001 |
-| GATEWAY-007 | Implement host-based admin gateway routing | Complete | GATEWAY-002, ADMIN-008 |
-| GATEWAY-005 | Validate npm-based shared package production builds | Complete | GATEWAY-001, SHOPIFY-004, BACKGROUND-004 |
-| GATEWAY-006 | Configure OpenTelemetry transport/environment wiring | Complete | GATEWAY-002, SHOPIFY-006, MESSAGING-003, ADMIN-009, BACKGROUND-005 |
 | GATEWAY-003 | Create Render test and production deployment topology | Complete | GATEWAY-002, GATEWAY-005, GATEWAY-006, GATEWAY-007, SHOPIFY-001, SHOPIFY-002, MESSAGING-001, ADMIN-001, ADMIN-008, BACKGROUND-001, BACKGROUND-002 |
-| GATEWAY-004 | Validate gateway and Render infrastructure | Complete | GATEWAY-003 |
+| GATEWAY-004 | Validate gateway and Render infrastructure configuration | Complete | GATEWAY-003 |
+| GATEWAY-005 | Validate npm-based shared package production builds | Complete | GATEWAY-001, SHOPIFY-004, BACKGROUND-004 |
+| GATEWAY-006 | Configure OpenTelemetry transport and environment wiring | Complete | GATEWAY-002, SHOPIFY-006, MESSAGING-003, ADMIN-009, BACKGROUND-005 |
+| GATEWAY-007 | Implement host-based admin gateway routing | Complete | GATEWAY-002, ADMIN-008 |
 | GATEWAY-008 | Fix Admin Render build dependency installation | Complete | GATEWAY-003, ADMIN-004, ADMIN-009 |
 | GATEWAY-009 | Codify Render test custom domains in the canonical Blueprint | Complete | GATEWAY-003, GATEWAY-008, GATEWAY-010, GATEWAY-011 |
 | GATEWAY-010 | Establish concrete Moda Interact deployment configuration groups | Complete | GATEWAY-008 |
@@ -28,7 +28,7 @@ Coordinator:
 | GATEWAY-012 | Bootstrap Render Environment Groups with explicit placeholder values | Complete | GATEWAY-009, GATEWAY-011 |
 | GATEWAY-013 | Finalize production Render Environment Group ownership | Pending | GATEWAY-012 |
 | GATEWAY-014 | Migrate test gateway to HAProxy with explicit host routing | Complete | GATEWAY-009, GATEWAY-012 |
-
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Canonical ARCH-002 Render Blueprints:
 
 ```text

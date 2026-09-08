@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 41
-executor: copilot
-claimed_at: 2026-09-04T22:06:39Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-003-ADMIN-010
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
-
 # Recompose Shopify Queues into main table and right details drawer
 
 ## Objective

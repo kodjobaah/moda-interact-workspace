@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: implementation
 status: complete
 priority: 31
-executor: copilot
-claimed_at: 2026-09-04T17:03:33Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-002-ADMIN-005
@@ -18,7 +18,6 @@ enables: []
 created: 2026-09-04
 updated: 2026-09-04
 ---
-
 # Add Protected Redis Shopify Queue Monitor to Admin Tenant Directory
 
 ## Architecture

@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-05T13:19:18Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-003-BACKGROUND-002
@@ -18,7 +18,6 @@ enables: []
 created: 2026-09-05
 updated: 2026-09-05T13:35:00Z
 ---
-
 # Emit complete BullMQ queue performance telemetry
 
 ## Architecture

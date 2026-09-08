@@ -8,8 +8,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 26
-executor: github-copilot
-claimed_at: 2026-09-02T15:04:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-ADMIN-003
@@ -18,7 +18,6 @@ enables:
 created: 2026-08-31
 updated: 2026-09-02
 ---
-
 # Protect Privileged Admin Pages and Server Reads
 
 ## Objective

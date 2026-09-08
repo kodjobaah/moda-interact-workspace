@@ -2,11 +2,11 @@
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-005-BACKGROUND-001 | Adopt and materialise Shopify international context | Complete — architect accepted (Attempt 4) | SHARED-004, DATABASE-001 |
-| ARCH-005-BACKGROUND-002 | Select approved WhatsApp templates by locale and market capability | Complete — architect accepted (Attempt 1) | BACKGROUND-001, DATABASE-002 |
-| ARCH-005-BACKGROUND-003 | Send selected approved WhatsApp template for proactive recovery | Complete — architect accepted (Attempt 2) | BACKGROUND-002 |
-| ARCH-005-BACKGROUND-004 | Resolve conversation language and localise CommerceAgent responses | Complete — architect accepted (Attempt 4) | BACKGROUND-001 |
-
+| BACKGROUND-001 | Adopt and materialise Shopify international context | Complete | SHARED-004, DATABASE-001 |
+| BACKGROUND-002 | Select approved WhatsApp templates by locale and market capability | Complete | BACKGROUND-001, DATABASE-002 |
+| BACKGROUND-003 | Send selected approved WhatsApp template for proactive recovery | Complete | BACKGROUND-002 |
+| BACKGROUND-004 | Resolve conversation language through CommerceAgent validated final result | Complete | BACKGROUND-001 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 ## Ownership correction
 
 Architect review of `ARCH-005-MESSAGING-001` confirmed that template selection,

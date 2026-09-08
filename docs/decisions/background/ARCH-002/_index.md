@@ -13,18 +13,18 @@ Coordinator:
 `moda_architect`
 
 | Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
+|---|---|---|---|
 | BACKGROUND-001 | Create independently deployable worker entrypoints | Complete | GATEWAY-001 |
 | BACKGROUND-002 | Add worker dependency readiness | Complete | BACKGROUND-001 |
-| BACKGROUND-003 | Add OpenTelemetry to background workers | Superseded | Replaced by BACKGROUND-005/006/007/008/009 |
+| BACKGROUND-003 | Add OpenTelemetry to background workers | Superseded | BACKGROUND-001, SHARED-010 |
 | BACKGROUND-004 | Use published shared package in background service | Complete | GATEWAY-001, SHARED-010 |
 | BACKGROUND-005 | Adopt shared observability runtime in production workers | Complete | BACKGROUND-001, BACKGROUND-002, BACKGROUND-004, SHARED-010 |
 | BACKGROUND-006 | Wire shared BullMQ telemetry in background processing | Complete | BACKGROUND-005 |
 | BACKGROUND-007 | Add bounded background worker operational metrics | Complete | BACKGROUND-006 |
 | BACKGROUND-008 | Integrate GenAI active spans in messaging worker | Complete | BACKGROUND-006, SHARED-013 |
 | BACKGROUND-009 | Integrate bounded GenAI operational metrics in messaging worker | Complete | BACKGROUND-008 |
-| BACKGROUND-010 | Make outbound WhatsApp API base URL configurable | Complete | - |
-
+| BACKGROUND-010 | Make outbound WhatsApp API base URL configurable | Complete | — |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Canonical worker deployment units:
 
 ```text

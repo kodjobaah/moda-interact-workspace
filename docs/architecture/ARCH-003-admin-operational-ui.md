@@ -9,6 +9,19 @@ updated: 2026-09-04
 
 # ARCH-003: Admin operational queue observability UI
 
+## Current durable task state
+
+> **Synchronized 2026-09-08.** This section is the current task-state snapshot.
+> Earlier task-state tables or frontier prose later in this architecture document may be historical.
+> For exact current status/dependencies, use the individual task YAML and
+> [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md).
+
+Counts: `blocked` 1, `complete` 23, `pending` 1, `review` 1, `superseded` 1.
+
+In architect review: `ARCH-003-ADMIN-019`.
+
+Blocked: `ARCH-003-SYSTEM-TEST-002`.
+
 ## Status
 
 In Progress.

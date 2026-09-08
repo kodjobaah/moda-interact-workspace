@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-09-06T18:44:42Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-006-BACKGROUND-005
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T18:50:51Z
 ---
-
 # ARCH-006-BACKGROUND-006: Poll OpenAI batches in minutes and apply translation results idempotently
 
 ## Architecture

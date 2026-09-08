@@ -8,16 +8,16 @@ Coordinator: `moda_architect`
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| BACKGROUND-001 | OpenAI Batch translation provider adapter | Complete | DATABASE-002, SHARED-002 |
-| BACKGROUND-004 | Assemble pending translations into logical batches | Complete | BACKGROUND-001, SHARED-004 |
-| BACKGROUND-005 | Submit each logical Batch at most once | Complete | BACKGROUND-004 |
-| BACKGROUND-006 | Minute polling and idempotent result application | Complete | BACKGROUND-005 |
-| BACKGROUND-007 | Self-healing reconciliation and single queue-worker runtime | Complete | BACKGROUND-006 |
-| BACKGROUND-008 | Adopt disposable PostgreSQL/Redis integration-test infrastructure | Complete | BACKGROUND-004, SHARED-006 |
-| BACKGROUND-009 | Correct PostgreSQL enum parameter bindings in translation lifecycle | Ready | BACKGROUND-005, BACKGROUND-006, BACKGROUND-007, BACKGROUND-008 |
-| BACKGROUND-002 | Versioned system notification service (superseded) | Superseded | - |
-| BACKGROUND-003 | Separate queue telemetry task (superseded) | Superseded | - |
-
+| BACKGROUND-001 | Implement the OpenAI Batch translation provider adapter | Complete | DATABASE-002, SHARED-002 |
+| BACKGROUND-002 | Implement versioned merchant system notifications | Superseded | — |
+| BACKGROUND-003 | Extend queue telemetry to merchant-communications | Superseded | — |
+| BACKGROUND-004 | Assemble pending translations into durable logical batches | Complete | BACKGROUND-001, SHARED-004 |
+| BACKGROUND-005 | Submit each logical translation Batch to OpenAI at most once | Complete | BACKGROUND-004 |
+| BACKGROUND-006 | Poll OpenAI batches in minutes and apply translation results idempotently | Complete | BACKGROUND-005 |
+| BACKGROUND-007 | Add self-healing translation reconciliation and worker runtime | Complete | BACKGROUND-006 |
+| BACKGROUND-008 | Adopt disposable integration-test infrastructure in Background | Complete | BACKGROUND-004, SHARED-006 |
+| BACKGROUND-009 | Correct PostgreSQL enum parameter bindings in translation lifecycle | **Review — Attempt 1** | BACKGROUND-005, BACKGROUND-006, BACKGROUND-007, BACKGROUND-008 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task file YAML metadata is authoritative.
 
 Architect state: BACKGROUND-004, BACKGROUND-005, BACKGROUND-006, BACKGROUND-007 and BACKGROUND-008 are architect-accepted Complete. Repository agents must execute one task per invocation, return only their owned task to `review`, and STOP.

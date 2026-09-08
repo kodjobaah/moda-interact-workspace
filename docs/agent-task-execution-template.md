@@ -32,6 +32,12 @@ Before making any implementation changes:
 
 5. Read any relevant repository-local development instructions.
 
+6. Read `docs/agent-vcs-ownership-policy.md` and establish/restore the
+   mirrored `task/<TASK_ID>` branch in both:
+   * the parent workspace repository; and
+   * the assigned implementation repository.
+
+
 The architecture/task documents are authoritative for:
 
 * scope;
@@ -76,6 +82,36 @@ Only the former blocks claiming. When in doubt, cite the exact current-task fiel
 
 If the task is no longer Ready, has already been claimed, or its explicit dependencies are not Complete, do not execute it.
 
+## Establish the Mirrored Task Branches
+
+Before claiming, establish or restore the same branch name:
+
+```text
+task/<TASK_ID>
+```
+
+in **both** Git repositories:
+
+```text
+parent workspace repository
+assigned implementation repository
+```
+
+These are separate Git histories. The shared `<TASK_ID>` is the correlation key.
+
+The parent workspace branch owns only the current task report/state file during
+repository-agent execution.
+
+The implementation branch owns the implementation code/tests.
+
+Do not stage the implementation repository/submodule gitlink in the parent
+workspace.
+
+If `origin/task/<TASK_ID>` already exists in the parent workspace, inspect that
+branch before claiming. It may contain an existing active claim or review state.
+
+Do not claim while another task's uncommitted work is present in either checkout.
+
 ## Claim the Task
 
 Read and obey:
@@ -113,36 +149,129 @@ normalization. Alias-equivalent values represent the same executor identity.
 Do not reset or overwrite another executor's active claim.
 
 
-## Git / VCS Ownership
+## Git / VCS Isolation and Ownership
 
-Repository agents prepare implementation changes for review but do not commit or
-push them.
-
-The developer/user owns:
-
-* selecting the final commit boundary;
-* creating the Git commit;
-* choosing the commit message;
-* pushing branches/commits.
-
-Unless the user explicitly authorises otherwise for a specific task, an agent
-must not run:
+Read and obey:
 
 ```text
-git commit
-git push
+docs/agent-vcs-ownership-policy.md
 ```
 
-A task-level acceptance criterion that requires the repository agent itself to
-commit/push is coordination drift. Do not satisfy it by committing. Record the
-drift and follow the architect-corrected task wording.
+For VCS workflow, that policy supersedes legacy generic task boilerplate saying
+repository agents may never commit/push.
 
-The Completion Report should record Git/VCS state factually, for example:
+### Parent workspace branch
+
+Use:
 
 ```text
-Implementation ready for developer commit/push.
-Repository agent did not commit or push.
+task/<TASK_ID>
 ```
+
+The agent may commit/push the **current task file only** (plus an explicitly
+task-owned evidence artifact).
+
+Do not independently commit:
+
+```text
+domain _index.md
+parent architecture/frontier
+workspace state rollup
+another task
+.codex/.claude definitions
+submodule gitlink
+```
+
+`moda_architect` owns shared-state reconciliation.
+
+The initial task claim should be committed/pushed promptly on the parent task
+branch so the remote branch acts as the durable claim.
+
+### Implementation repository branch
+
+Use the same branch name:
+
+```text
+task/<TASK_ID>
+```
+
+Implement, validate, commit and push that branch.
+
+### No merge authority
+
+The repository agent may push both feature branches but must never:
+
+```text
+merge either branch into main
+push directly to main
+force-push
+stage/publish another task's work
+```
+
+The developer/user owns both final merges.
+
+### Submodule rule
+
+When the implementation repository is a submodule, checking out its feature
+branch may make the parent workspace report the submodule path as modified.
+
+That is expected.
+
+Stage the task file explicitly:
+
+```bash
+git add <TASK_FILE>
+```
+
+Never stage the submodule path while the feature branch is unmerged.
+
+The developer updates the parent gitlink only after the implementation feature
+branch has been accepted and merged into the implementation repository's main.
+
+### Changes Requested
+
+Continue on the SAME mirrored branch pair:
+
+```text
+parent task/<TASK_ID>
+implementation task/<TASK_ID>
+```
+
+Append correction commits; do not create Attempt-specific branches.
+
+### Literal concurrency
+
+If two task agents run at the same time in the same repository, use separate
+workspace/repository worktrees or clones. One physical checkout cannot host two
+checked-out task branches simultaneously.
+
+### Completion Report
+
+Record both repositories:
+
+```text
+### Git / VCS
+
+Task branch: task/<TASK_ID>
+
+Implementation repository:
+  repository: <repo>
+  commit: <sha>
+  remote branch: origin/task/<TASK_ID>
+  pushed: yes|no
+
+Parent workspace:
+  task file: <TASK_FILE>
+  commit: <sha>
+  remote branch: origin/task/<TASK_ID>
+  pushed: yes|no
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+```
+
+Pushing either feature branch is not architect acceptance.
 
 ## Implementation
 
@@ -248,10 +377,22 @@ Record architectural concerns, or `None`.
 
 When all required Work Items, Acceptance Criteria and Validation are complete:
 
-* set Completion Report status to `Ready for Review`;
-* change task `status` from `in_progress` to `review`;
+* in the assigned implementation repository:
+  * stage only current-task implementation files;
+  * inspect the staged diff;
+  * commit on `task/<TASK_ID>`;
+  * push `origin/task/<TASK_ID>`;
+* in the parent workspace:
+  * update only the current task file with the Completion Report and `status: review`;
+  * stage that task file explicitly;
+  * verify the submodule/repository gitlink is NOT staged;
+  * commit on the matching `task/<TASK_ID>` parent branch;
+  * push the matching parent task branch;
+* record both branch commits/push results in the Completion Report;
 * update `updated`;
-* leave `executor` and execution history intact.
+* leave executor/execution history intact;
+* return control to `moda_architect`;
+* STOP.
 
 Do NOT mark the task `complete`.
 

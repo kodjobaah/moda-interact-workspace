@@ -9,8 +9,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-09-06T17:08:50Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-DATABASE-002
@@ -23,7 +23,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
-
 # ARCH-006-SHOPIFY-001: Implement merchant support server capability
 
 ## Architecture

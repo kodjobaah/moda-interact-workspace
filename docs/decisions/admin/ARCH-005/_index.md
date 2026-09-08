@@ -2,8 +2,8 @@
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-005-ADMIN-001 | Adopt shared ICU internationalisation runtime across the current Admin UI | Complete | SHARED-006 |
-
+| ADMIN-001 | Adopt shared ICU internationalisation runtime in Admin | Complete | SHARED-006 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Current executable ARCH-005 Admin task:
 
 ```text

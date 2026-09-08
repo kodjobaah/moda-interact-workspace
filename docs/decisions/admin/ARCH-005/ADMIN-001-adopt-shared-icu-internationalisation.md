@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 55
-executor: copilot
-claimed_at: 2026-09-06T12:09:12Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-005-SHARED-006
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06T12:36:00Z
 ---
-
 # Adopt shared ICU internationalisation runtime in Admin
 
 ## Objective

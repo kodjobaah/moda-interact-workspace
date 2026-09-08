@@ -10,7 +10,7 @@ coordinator: moda_architect
 status: complete
 priority: 70
 executor: null
-claimed_at: 2026-09-06T18:48:40Z
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-006-SHOPIFY-001
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
-
 # ARCH-006-SHOPIFY-002: Emit one subscription-ended SYSTEM message from the authoritative billing transition
 
 ## Architecture

@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-09-06T18:20:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-006-DATABASE-002
@@ -22,7 +22,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T17:02:14Z
 ---
-
 # ARCH-006-ADMIN-001: Implement Admin merchant-support server capability
 
 ## Architecture

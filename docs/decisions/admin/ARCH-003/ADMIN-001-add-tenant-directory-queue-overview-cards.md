@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-09-04T19:03:54Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-002-ADMIN-011
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
-
 # Add compact queue activity overview cards to Tenant Directory
 
 ## Architecture

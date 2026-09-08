@@ -8,13 +8,13 @@ Coordinator: `moda_architect`
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| SHARED-001 | Merchant communications validation and BullMQ contracts | Complete | ARCH-005-SHARED-001, DATABASE-002 |
-| SHARED-002 | Publish shared release `0.7.0` | Complete | SHARED-001 |
-| SHARED-003 | Correct broken `merchant-communications/node` export | Complete | SHARED-002 |
-| SHARED-004 | Publish corrected release `0.7.1` and verify from clean consumer | Complete | SHARED-003 |
-| SHARED-005 | Standardise disposable PostgreSQL/Redis integration-test infrastructure | Complete | SHARED-004 |
+| SHARED-001 | Define merchant-communications validation and BullMQ contracts | Complete | ARCH-005-SHARED-001, DATABASE-002 |
+| SHARED-002 | Publish merchant-communications shared release | Complete | SHARED-001 |
+| SHARED-003 | Correct merchant-communications Node package export | Complete | SHARED-002 |
+| SHARED-004 | Publish corrected merchant-communications shared release | Complete | SHARED-003 |
+| SHARED-005 | Standardise disposable PostgreSQL and Redis integration-test infrastructure | Complete | SHARED-004 |
 | SHARED-006 | Publish reusable integration-test infrastructure release | Complete | SHARED-005 |
-
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task file YAML metadata is authoritative.
 
 Architect finding on 2026-09-06: `0.7.0` is genuinely published but its new Node subpath export does not resolve to the files emitted by the accepted build. The historical SHARED-001/002 tasks remain Complete; remediation is SHARED-003 -> SHARED-004. Consumers that require ARCH-006 deterministic job-ID helpers are blocked until SHARED-004 is architect-accepted Complete.

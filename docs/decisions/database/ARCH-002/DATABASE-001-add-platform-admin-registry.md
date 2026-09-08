@@ -8,8 +8,8 @@ assigned_agent: moda_database
 coordinator: moda_architect
 status: complete
 priority: 25
-executor: github-copilot
-claimed_at: 2026-09-02T12:30:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -17,7 +17,6 @@ enables:
 created: 2026-08-31
 updated: 2026-09-02
 ---
-
 # Add Platform-Admin Identity Registry
 
 ## Objective

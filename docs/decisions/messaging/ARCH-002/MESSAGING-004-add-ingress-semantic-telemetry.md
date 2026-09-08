@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: implementation
 status: complete
 priority: 31
-executor: codex
-claimed_at: 2026-08-31 16:12:14+00:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-002-MESSAGING-003
@@ -20,7 +20,6 @@ enables:
 created: 2026-08-31
 updated: '2026-08-31'
 ---
-
 # Add bounded Meta ingress semantic telemetry
 
 ## Objective

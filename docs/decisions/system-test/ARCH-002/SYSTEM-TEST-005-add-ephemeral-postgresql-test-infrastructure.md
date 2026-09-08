@@ -8,8 +8,8 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 status: complete
 priority: 32
-executor: copilot
-claimed_at: 2026-09-03T08:12:07Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -17,7 +17,6 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
-
 # Add Isolated Ephemeral PostgreSQL Test Infrastructure
 
 ## Architecture

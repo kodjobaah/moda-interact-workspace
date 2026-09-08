@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: publication
 status: complete
 priority: 25
-executor: codex
-claimed_at: 2026-08-31 14:17:23+00:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-002-SHARED-007
@@ -25,7 +25,6 @@ enables:
 created: 2026-08-31
 updated: '2026-08-31'
 ---
-
 # Publish shared observability runtime release
 
 ## Architecture

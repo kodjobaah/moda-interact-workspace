@@ -9,8 +9,8 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 status: complete
 priority: 65
-executor: copilot
-claimed_at: 2026-09-06T12:47:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-005-BACKGROUND-002
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06T12:51:25Z
 ---
-
 # Remove superseded WhatsApp template-selector residue
 
 ## Architecture

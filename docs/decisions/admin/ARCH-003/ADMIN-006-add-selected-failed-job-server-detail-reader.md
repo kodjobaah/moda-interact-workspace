@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-09-04T20:27:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-003-ADMIN-005
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
-
 # Add selected failed-job server detail reader
 
 ## Architecture

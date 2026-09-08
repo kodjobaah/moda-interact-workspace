@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 42
-executor: copilot
-claimed_at: 2026-09-04T23:22:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-003-ADMIN-016
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-04
 updated: 2026-09-05
 ---
-
 # Populate queue details drawer with metrics and filtered recent jobs
 
 ## Objective

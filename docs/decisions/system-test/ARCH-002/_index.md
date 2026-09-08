@@ -49,18 +49,18 @@ architect-accepted Complete.
 ## Tasks
 
 | Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
-| SYSTEM-TEST-001 | Aggregate final ARCH-002 validation evidence | Pending | SYSTEM-TEST-002, SYSTEM-TEST-006, SYSTEM-TEST-007, SYSTEM-TEST-008 |
+|---|---|---|---|
+| SYSTEM-TEST-001 | Aggregate final ARCH-002 validation evidence | Pending / manual-gated | SYSTEM-TEST-002, SYSTEM-TEST-006, SYSTEM-TEST-007, SYSTEM-TEST-008 |
 | SYSTEM-TEST-002 | Validate shared observability and WhatsApp worker performance | Complete | SHOPIFY-007, BACKGROUND-007, BACKGROUND-009, MESSAGING-004, MESSAGING-005, ADMIN-009, GATEWAY-006, GATEWAY-004, SYSTEM-TEST-003, SYSTEM-TEST-004, SYSTEM-TEST-005 |
-| SYSTEM-TEST-003 | Add isolated ephemeral Redis test infrastructure | Complete | - |
+| SYSTEM-TEST-003 | Add isolated ephemeral Redis test infrastructure | Complete | — |
 | SYSTEM-TEST-004 | Add WhatsApp Cloud API emulator test infrastructure | Complete | BACKGROUND-010 |
-| SYSTEM-TEST-005 | Add isolated ephemeral PostgreSQL test infrastructure | Complete | - |
-| SYSTEM-TEST-006 | Validate deployed Render test topology | Complete | GATEWAY-004, ADMIN-004, GATEWAY-012, GATEWAY-014 |
+| SYSTEM-TEST-005 | Add isolated ephemeral PostgreSQL test infrastructure | Complete | — |
+| SYSTEM-TEST-006 | Validate deployed Render test topology | Complete | GATEWAY-004, ADMIN-004, SHOPIFY-008, GATEWAY-008, GATEWAY-009, GATEWAY-010, GATEWAY-012, GATEWAY-014 |
 | SYSTEM-TEST-007 | Validate production Blueprint and readiness configuration | Complete | GATEWAY-004 |
-| SYSTEM-TEST-008 | Assess production-sized Shopify ingress capacity gate | Pending | SYSTEM-TEST-002, SYSTEM-TEST-006, SYSTEM-TEST-007, SYSTEM-TEST-009 |
-| SYSTEM-TEST-009 | Revalidate deployment environment-group naming and isolation | Complete | GATEWAY-010, GATEWAY-011, GATEWAY-012, SYSTEM-TEST-007 |
-| SYSTEM-TEST-010 | Reconcile production-readiness validator with accepted HAProxy gateway | Ready | GATEWAY-014 |
-
+| SYSTEM-TEST-008 | Assess production-sized Shopify ingress capacity gate | Pending / manual-gated | SYSTEM-TEST-002, SYSTEM-TEST-006, SYSTEM-TEST-007, SYSTEM-TEST-009 |
+| SYSTEM-TEST-009 | Revalidate deployment environment-group naming, ownership and isolation | Complete | GATEWAY-010, GATEWAY-011, GATEWAY-012, SYSTEM-TEST-007 |
+| SYSTEM-TEST-010 | Reconcile production-readiness validator with accepted HAProxy gateway | **Ready** | GATEWAY-014 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task frontmatter is authoritative for task state.
 
 ## Environment Ownership

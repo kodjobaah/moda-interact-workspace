@@ -9,8 +9,8 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 26
-executor: copilot
-claimed_at: 2026-09-06T14:20:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-SHARED-002
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06T14:47:00Z
 ---
-
 # ARCH-006-SHARED-003: Correct merchant-communications Node package export
 
 ## Architecture

@@ -8,8 +8,8 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 25
-executor: codex
-claimed_at: 2026-08-30T16:34:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-001
@@ -18,7 +18,6 @@ enables:
 created: 2026-08-30
 updated: 2026-08-30
 ---
-
 # Implement Reusable Structured Logging Library
 
 ## Architecture

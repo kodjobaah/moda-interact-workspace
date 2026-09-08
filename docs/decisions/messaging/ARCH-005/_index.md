@@ -2,10 +2,10 @@
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-005-MESSAGING-001 | Select approved WhatsApp templates by locale and market capability | Superseded — rehomed to BACKGROUND-002/003 | SHARED-002, DATABASE-001, DATABASE-002, BACKGROUND-001 |
-| ARCH-005-MESSAGING-002 | Resolve conversation language and localise CommerceAgent responses | Superseded — rehomed to BACKGROUND-004 | MESSAGING-001 |
-| ARCH-005-MESSAGING-003 | Remove superseded WhatsApp template-selector residue | Complete | BACKGROUND-002, BACKGROUND-003 |
-
+| MESSAGING-001 | Select approved WhatsApp templates by locale and market capability | Superseded | SHARED-002, DATABASE-001, DATABASE-002, BACKGROUND-001 |
+| MESSAGING-002 | Resolve conversation language and localise CommerceAgent responses | Superseded | MESSAGING-001 |
+| MESSAGING-003 | Remove superseded WhatsApp template-selector residue | Complete | BACKGROUND-002, BACKGROUND-003 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 ## Architect ownership correction
 
 `moda-interact-messaging` remains the stateless Meta/WhatsApp inbound ingress

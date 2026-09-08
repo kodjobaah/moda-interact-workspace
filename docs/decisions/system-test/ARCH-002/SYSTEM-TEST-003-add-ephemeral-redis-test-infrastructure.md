@@ -8,8 +8,8 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-02T22:19:58Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -17,6 +17,7 @@ enables:
   - ARCH-002-SYSTEM-TEST-002
 created: 2026-09-02
 updated: 2026-09-02
+---
 
 # Add Isolated Ephemeral Redis Test Infrastructure
 

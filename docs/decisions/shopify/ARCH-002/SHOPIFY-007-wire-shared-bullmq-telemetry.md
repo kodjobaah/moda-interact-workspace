@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: implementation
 status: complete
 priority: 31
-executor: codex
-claimed_at: 2026-08-31 15:34:21+00:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-002-SHOPIFY-006
@@ -20,7 +20,6 @@ enables:
 created: 2026-08-31
 updated: '2026-08-31'
 ---
-
 # Wire shared BullMQ telemetry on Shopify queue producers
 
 ## Objective

@@ -1,0 +1,267 @@
+# Workspace current durable task state
+
+> Synchronized by `moda_architect` on 2026-09-08 from individual task YAML frontmatter,
+> with explicit restoration of previously accepted task records where the supplied workspace had drifted.
+> Individual task files remain authoritative for execution/correction contracts.
+
+## Workflow rules
+
+- `complete` tasks are architect-accepted and must have no active executor/claim.
+- `review` tasks await architect decision.
+- `in_progress` tasks retain their active claim and must not be re-claimed.
+- `ready` tasks may be claimed when repository concurrency rules allow.
+- system-test tasks are terminal/manual-gated and are not auto-run merely because dependencies complete.
+
+## ARCH-001
+
+Current counts: `complete` 9, `ready` 1
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-001-SHARED-001 | shared | Complete | 1 | — |
+| ARCH-001-SHOPIFY-001 | shopify | Complete | 2 | ARCH-001-SHARED-001 |
+| ARCH-001-SHOPIFY-002 | shopify | Complete | 1 | ARCH-001-SHOPIFY-001 |
+| ARCH-001-BACKGROUND-001 | background | Complete | 2 | ARCH-001-SHARED-001 |
+| ARCH-001-BACKGROUND-002 | background | Complete | 1 | ARCH-001-BACKGROUND-001 |
+| ARCH-001-BACKGROUND-003 | background | Complete | 2 | ARCH-001-BACKGROUND-001 |
+| ARCH-001-BACKGROUND-004 | background | Complete | 1 | ARCH-001-BACKGROUND-002, ARCH-001-BACKGROUND-003 |
+| ARCH-001-BACKGROUND-005 | background | Complete | 1 | ARCH-001-BACKGROUND-004 |
+| ARCH-001-BACKGROUND-006 | background | Complete | 1 | ARCH-001-BACKGROUND-003 |
+| ARCH-001-GATEWAY-001 | gateway | **Ready** | 0 | ARCH-001-SHARED-001, ARCH-001-SHOPIFY-001, ARCH-001-BACKGROUND-001 |
+
+## ARCH-002
+
+Current counts: `complete` 61, `pending` 3, `ready` 2, `superseded` 5
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-002-DATABASE-001 | database | Complete | 1 | — |
+| ARCH-002-SHARED-002 | shared | Complete | 1 | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHARED-003 | shared | Complete | 1 | ARCH-002-SHARED-002 |
+| ARCH-002-SHARED-004 | shared | Complete | 1 | ARCH-002-SHARED-003 |
+| ARCH-002-SHARED-005 | shared | Complete | 1 | ARCH-002-SHARED-004, ARCH-002-SHARED-006 |
+| ARCH-002-SHARED-006 | shared | Complete | 1 | ARCH-002-SHARED-004 |
+| ARCH-002-SHARED-007 | shared | Complete | 1 | ARCH-002-SHARED-005 |
+| ARCH-002-SHARED-008 | shared | Complete | 1 | ARCH-002-SHARED-007 |
+| ARCH-002-SHARED-009 | shared | Complete | 1 | ARCH-002-SHARED-007 |
+| ARCH-002-SHARED-010 | shared | Complete | 1 | ARCH-002-SHARED-007, ARCH-002-SHARED-008, ARCH-002-SHARED-009, ARCH-002-SHARED-011 |
+| ARCH-002-SHARED-011 | shared | Complete | 1 | ARCH-002-SHARED-009 |
+| ARCH-002-SHARED-012 | shared | Complete | 1 | ARCH-002-SHARED-010 |
+| ARCH-002-SHARED-013 | shared | Complete | 1 | ARCH-002-SHARED-012 |
+| ARCH-002-SHOPIFY-001 | shopify | Complete | 0 | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-002 | shopify | Complete | 1 | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-003 | shopify | Superseded | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-SHOPIFY-004 | shopify | Complete | 1 | ARCH-002-GATEWAY-001 |
+| ARCH-002-SHOPIFY-005 | shopify | **Ready** | 0 | ARCH-002-SHOPIFY-002 |
+| ARCH-002-SHOPIFY-006 | shopify | Complete | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-SHOPIFY-007 | shopify | Complete | 1 | ARCH-002-SHOPIFY-006 |
+| ARCH-002-SHOPIFY-008 | shopify | Complete | 1 | ARCH-002-SHOPIFY-002 |
+| ARCH-002-MESSAGING-001 | messaging | Complete | 1 | ARCH-002-GATEWAY-001 |
+| ARCH-002-MESSAGING-002 | messaging | Superseded | 0 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-MESSAGING-003 | messaging | Complete | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-MESSAGING-004 | messaging | Complete | 1 | ARCH-002-MESSAGING-003 |
+| ARCH-002-MESSAGING-005 | messaging | Complete | 1 | ARCH-002-MESSAGING-003 |
+| ARCH-002-BACKGROUND-001 | background | Complete | 1 | ARCH-002-GATEWAY-001 |
+| ARCH-002-BACKGROUND-002 | background | Complete | 1 | ARCH-002-BACKGROUND-001 |
+| ARCH-002-BACKGROUND-003 | background | Superseded | 0 | ARCH-002-BACKGROUND-001, ARCH-002-SHARED-010 |
+| ARCH-002-BACKGROUND-004 | background | Complete | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-BACKGROUND-005 | background | Complete | 1 | ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002, ARCH-002-BACKGROUND-004, ARCH-002-SHARED-010 |
+| ARCH-002-BACKGROUND-006 | background | Complete | 1 | ARCH-002-BACKGROUND-005 |
+| ARCH-002-BACKGROUND-007 | background | Complete | 1 | ARCH-002-BACKGROUND-006 |
+| ARCH-002-BACKGROUND-008 | background | Complete | 2 | ARCH-002-BACKGROUND-006, ARCH-002-SHARED-013 |
+| ARCH-002-BACKGROUND-009 | background | Complete | 1 | ARCH-002-BACKGROUND-008 |
+| ARCH-002-BACKGROUND-010 | background | Complete | 1 | — |
+| ARCH-002-ADMIN-001 | admin | Complete | 1 | ARCH-002-GATEWAY-001 |
+| ARCH-002-ADMIN-002 | admin | Superseded | 0 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-ADMIN-003 | admin | Complete | 2 | ARCH-002-DATABASE-001 |
+| ARCH-002-ADMIN-004 | admin | Complete | 1 | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006 |
+| ARCH-002-ADMIN-005 | admin | Complete | 1 | ARCH-002-ADMIN-003 |
+| ARCH-002-ADMIN-006 | admin | Complete | 1 | ARCH-002-ADMIN-003 |
+| ARCH-002-ADMIN-007 | admin | Complete | 1 | ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-SHARED-005 |
+| ARCH-002-ADMIN-008 | admin | Complete | 4 | ARCH-002-ADMIN-003, ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-ADMIN-007 |
+| ARCH-002-ADMIN-009 | admin | Complete | 2 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
+| ARCH-002-ADMIN-010 | admin | Superseded | 1 | ARCH-002-ADMIN-009 |
+| ARCH-002-ADMIN-011 | admin | Complete | 2 | ARCH-002-ADMIN-005 |
+| ARCH-002-GATEWAY-001 | gateway | Complete | 1 | — |
+| ARCH-002-GATEWAY-002 | gateway | Complete | 1 | ARCH-002-GATEWAY-001 |
+| ARCH-002-GATEWAY-003 | gateway | Complete | 1 | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
+| ARCH-002-GATEWAY-004 | gateway | Complete | 1 | ARCH-002-GATEWAY-003 |
+| ARCH-002-GATEWAY-005 | gateway | Complete | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004 |
+| ARCH-002-GATEWAY-006 | gateway | Complete | 1 | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-006, ARCH-002-MESSAGING-003, ARCH-002-ADMIN-009, ARCH-002-BACKGROUND-005 |
+| ARCH-002-GATEWAY-007 | gateway | Complete | 1 | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008 |
+| ARCH-002-GATEWAY-008 | gateway | Complete | 1 | ARCH-002-GATEWAY-003, ARCH-002-ADMIN-004, ARCH-002-ADMIN-009 |
+| ARCH-002-GATEWAY-009 | gateway | Complete | 1 | ARCH-002-GATEWAY-003, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-011 |
+| ARCH-002-GATEWAY-010 | gateway | Complete | 1 | ARCH-002-GATEWAY-008 |
+| ARCH-002-GATEWAY-011 | gateway | Complete | 2 | ARCH-002-GATEWAY-010 |
+| ARCH-002-GATEWAY-012 | gateway | Complete | 2 | ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-011 |
+| ARCH-002-GATEWAY-013 | gateway | Pending | 0 | ARCH-002-GATEWAY-012 |
+| ARCH-002-GATEWAY-014 | gateway | Complete | 8 | ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-012 |
+| ARCH-002-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-008 |
+| ARCH-002-SYSTEM-TEST-002 | system-test | Complete | 3 | ARCH-002-SHOPIFY-007, ARCH-002-BACKGROUND-007, ARCH-002-BACKGROUND-009, ARCH-002-MESSAGING-004, ARCH-002-MESSAGING-005, ARCH-002-ADMIN-009, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-004, ARCH-002-SYSTEM-TEST-003, ARCH-002-SYSTEM-TEST-004, ARCH-002-SYSTEM-TEST-005 |
+| ARCH-002-SYSTEM-TEST-003 | system-test | Complete | 1 | — |
+| ARCH-002-SYSTEM-TEST-004 | system-test | Complete | 2 | ARCH-002-BACKGROUND-010 |
+| ARCH-002-SYSTEM-TEST-005 | system-test | Complete | 2 | — |
+| ARCH-002-SYSTEM-TEST-006 | system-test | Complete | 11 | ARCH-002-GATEWAY-004, ARCH-002-ADMIN-004, ARCH-002-SHOPIFY-008, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-012, ARCH-002-GATEWAY-014 |
+| ARCH-002-SYSTEM-TEST-007 | system-test | Complete | 3 | ARCH-002-GATEWAY-004 |
+| ARCH-002-SYSTEM-TEST-008 | system-test | Pending / manual-gated | 0 | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-009 |
+| ARCH-002-SYSTEM-TEST-009 | system-test | Complete | 3 | ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-011, ARCH-002-GATEWAY-012, ARCH-002-SYSTEM-TEST-007 |
+| ARCH-002-SYSTEM-TEST-010 | system-test | **Ready** | 0 | ARCH-002-GATEWAY-014 |
+
+## ARCH-003
+
+Current counts: `blocked` 1, `complete` 23, `pending` 1, `review` 1, `superseded` 1
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-003-SHOPIFY-001 | shopify | Complete | 1 | — |
+| ARCH-003-SHOPIFY-002 | shopify | Complete | 3 | ARCH-003-SHOPIFY-001, ARCH-003-BACKGROUND-002 |
+| ARCH-003-SHOPIFY-003 | shopify | Complete | 1 | ARCH-003-SHOPIFY-002 |
+| ARCH-003-BACKGROUND-001 | background | Complete | 1 | ARCH-003-ADMIN-013 |
+| ARCH-003-BACKGROUND-002 | background | Complete | 1 | ARCH-003-BACKGROUND-001 |
+| ARCH-003-BACKGROUND-003 | background | Complete | 3 | ARCH-003-BACKGROUND-002 |
+| ARCH-003-ADMIN-001 | admin | Complete | 3 | ARCH-002-ADMIN-011 |
+| ARCH-003-ADMIN-002 | admin | Complete | 1 | ARCH-003-ADMIN-001 |
+| ARCH-003-ADMIN-003 | admin | Complete | 1 | ARCH-003-ADMIN-008 |
+| ARCH-003-ADMIN-004 | admin | Complete | 1 | ARCH-003-ADMIN-003 |
+| ARCH-003-ADMIN-005 | admin | Complete | 1 | ARCH-003-ADMIN-004 |
+| ARCH-003-ADMIN-006 | admin | Complete | 2 | ARCH-003-ADMIN-005 |
+| ARCH-003-ADMIN-007 | admin | Complete | 1 | ARCH-003-ADMIN-006 |
+| ARCH-003-ADMIN-008 | admin | Complete | 2 | ARCH-003-ADMIN-002 |
+| ARCH-003-ADMIN-009 | admin | Superseded | 0 | ARCH-003-ADMIN-008 |
+| ARCH-003-ADMIN-010 | admin | Complete | 1 | ARCH-003-ADMIN-007 |
+| ARCH-003-ADMIN-011 | admin | Complete | 4 | ARCH-003-ADMIN-010, ARCH-003-ADMIN-014 |
+| ARCH-003-ADMIN-012 | admin | Complete | 1 | ARCH-003-ADMIN-016 |
+| ARCH-003-ADMIN-013 | admin | Complete | 1 | ARCH-003-ADMIN-012 |
+| ARCH-003-ADMIN-014 | admin | Complete | 2 | ARCH-003-ADMIN-010 |
+| ARCH-003-ADMIN-015 | admin | Complete | 1 | ARCH-003-ADMIN-011 |
+| ARCH-003-ADMIN-016 | admin | Complete | 1 | ARCH-003-ADMIN-015 |
+| ARCH-003-ADMIN-017 | admin | Complete | 1 | ARCH-003-BACKGROUND-001 |
+| ARCH-003-ADMIN-018 | admin | Complete | 1 | ARCH-003-ADMIN-017 |
+| ARCH-003-ADMIN-019 | admin | **Review — Attempt 1** | 1 | ARCH-003-ADMIN-018 |
+| ARCH-003-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-003-BACKGROUND-001, ARCH-003-ADMIN-019 |
+| ARCH-003-SYSTEM-TEST-002 | system-test | **Blocked** | 2 | ARCH-003-SHOPIFY-002 |
+
+## ARCH-004
+
+Current counts: `complete` 6, `ready` 1
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-004-SHARED-001 | shared | Complete | 1 | — |
+| ARCH-004-SHARED-002 | shared | Complete | 1 | ARCH-004-SHARED-001 |
+| ARCH-004-SHOPIFY-001 | shopify | Complete | 1 | ARCH-004-SHARED-002 |
+| ARCH-004-SHOPIFY-002 | shopify | Complete | 1 | ARCH-004-BACKGROUND-002 |
+| ARCH-004-BACKGROUND-001 | background | Complete | 2 | ARCH-004-SHARED-002 |
+| ARCH-004-BACKGROUND-002 | background | Complete | 1 | ARCH-004-BACKGROUND-001 |
+| ARCH-004-SYSTEM-TEST-001 | system-test | **Ready** | 0 | ARCH-004-SHARED-002, ARCH-004-SHOPIFY-001, ARCH-004-BACKGROUND-002, ARCH-004-SHOPIFY-002 |
+
+## ARCH-005
+
+Current counts: `complete` 17, `pending` 2, `ready` 1, `superseded` 2
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-005-DATABASE-001 | database | Complete | 2 | ARCH-005-SHARED-001 |
+| ARCH-005-DATABASE-002 | database | Complete | 2 | ARCH-005-DATABASE-001 |
+| ARCH-005-SHARED-001 | shared | Complete | 4 | — |
+| ARCH-005-SHARED-002 | shared | Complete | 1 | ARCH-005-SHARED-001 |
+| ARCH-005-SHARED-003 | shared | Complete | 1 | ARCH-005-SHARED-002 |
+| ARCH-005-SHARED-004 | shared | Complete | 1 | ARCH-005-SHARED-003 |
+| ARCH-005-SHARED-005 | shared | Complete | 2 | ARCH-005-SHARED-004 |
+| ARCH-005-SHARED-006 | shared | Complete | 1 | ARCH-005-SHARED-005 |
+| ARCH-005-SHOPIFY-001 | shopify | Complete | 3 | ARCH-005-SHARED-002, ARCH-005-DATABASE-001 |
+| ARCH-005-SHOPIFY-002 | shopify | Complete | 6 | ARCH-005-SHARED-006, ARCH-005-DATABASE-001 |
+| ARCH-005-SHOPIFY-003 | shopify | Complete | 1 | ARCH-005-SHARED-004, ARCH-005-BACKGROUND-001 |
+| ARCH-005-SHOPIFY-004 | shopify | **Ready** | 0 | ARCH-005-SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-007-SHOPIFY-002 |
+| ARCH-005-MESSAGING-001 | messaging | Superseded | 1 | ARCH-005-SHARED-002, ARCH-005-DATABASE-001, ARCH-005-DATABASE-002, ARCH-005-BACKGROUND-001 |
+| ARCH-005-MESSAGING-002 | messaging | Superseded | 0 | ARCH-005-MESSAGING-001 |
+| ARCH-005-MESSAGING-003 | messaging | Complete | 1 | ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003 |
+| ARCH-005-BACKGROUND-001 | background | Complete | 4 | ARCH-005-SHARED-004, ARCH-005-DATABASE-001 |
+| ARCH-005-BACKGROUND-002 | background | Complete | 1 | ARCH-005-BACKGROUND-001, ARCH-005-DATABASE-002 |
+| ARCH-005-BACKGROUND-003 | background | Complete | 2 | ARCH-005-BACKGROUND-002 |
+| ARCH-005-BACKGROUND-004 | background | Complete | 4 | ARCH-005-BACKGROUND-001 |
+| ARCH-005-ADMIN-001 | admin | Complete | 4 | ARCH-005-SHARED-006 |
+| ARCH-005-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-005-SHOPIFY-001, ARCH-005-SHOPIFY-003, ARCH-005-BACKGROUND-001, ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003, ARCH-005-SHOPIFY-002, ARCH-005-SHOPIFY-004, ARCH-005-MESSAGING-003 |
+| ARCH-005-SYSTEM-TEST-002 | system-test | Pending / manual-gated | 0 | ARCH-005-SYSTEM-TEST-001, ARCH-005-BACKGROUND-004 |
+
+## ARCH-006
+
+Current counts: `complete` 21, `pending` 3, `review` 3, `superseded` 2
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-006-DATABASE-001 | database | Complete | 1 | — |
+| ARCH-006-DATABASE-002 | database | Complete | 1 | ARCH-006-DATABASE-001 |
+| ARCH-006-SHARED-001 | shared | Complete | 1 | ARCH-005-SHARED-001, ARCH-006-DATABASE-002 |
+| ARCH-006-SHARED-002 | shared | Complete | 1 | ARCH-006-SHARED-001 |
+| ARCH-006-SHARED-003 | shared | Complete | 1 | ARCH-006-SHARED-002 |
+| ARCH-006-SHARED-004 | shared | Complete | 1 | ARCH-006-SHARED-003 |
+| ARCH-006-SHARED-005 | shared | Complete | 1 | ARCH-006-SHARED-004 |
+| ARCH-006-SHARED-006 | shared | Complete | 1 | ARCH-006-SHARED-005 |
+| ARCH-006-SHOPIFY-001 | shopify | Complete | 1 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002, ARCH-006-SHARED-004, ARCH-005-DATABASE-001 |
+| ARCH-006-SHOPIFY-002 | shopify | Complete | 5 | ARCH-006-SHOPIFY-001 |
+| ARCH-006-SHOPIFY-003 | shopify | Complete | 4 | ARCH-006-SHOPIFY-001, ARCH-006-BACKGROUND-007, ARCH-005-SHOPIFY-002 |
+| ARCH-006-BACKGROUND-001 | background | Complete | 1 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002 |
+| ARCH-006-BACKGROUND-002 | background | Superseded | 0 | — |
+| ARCH-006-BACKGROUND-003 | background | Superseded | 0 | — |
+| ARCH-006-BACKGROUND-004 | background | Complete | 2 | ARCH-006-BACKGROUND-001, ARCH-006-SHARED-004 |
+| ARCH-006-BACKGROUND-005 | background | Complete | 2 | ARCH-006-BACKGROUND-004 |
+| ARCH-006-BACKGROUND-006 | background | Complete | 3 | ARCH-006-BACKGROUND-005 |
+| ARCH-006-BACKGROUND-007 | background | Complete | 3 | ARCH-006-BACKGROUND-006 |
+| ARCH-006-BACKGROUND-008 | background | Complete | 1 | ARCH-006-BACKGROUND-004, ARCH-006-SHARED-006 |
+| ARCH-006-BACKGROUND-009 | background | **Review — Attempt 1** | 1 | ARCH-006-BACKGROUND-005, ARCH-006-BACKGROUND-006, ARCH-006-BACKGROUND-007, ARCH-006-BACKGROUND-008 |
+| ARCH-006-ADMIN-001 | admin | Complete | 3 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002, ARCH-006-SHARED-004, ARCH-005-ADMIN-001 |
+| ARCH-006-ADMIN-002 | admin | Complete | 1 | ARCH-006-BACKGROUND-007 |
+| ARCH-006-ADMIN-003 | admin | Complete | 1 | ARCH-006-ADMIN-001 |
+| ARCH-006-ADMIN-004 | admin | Complete | 6 | ARCH-006-ADMIN-003, ARCH-006-BACKGROUND-007 |
+| ARCH-006-ADMIN-005 | admin | **Review — Attempt 2** | 2 | ARCH-006-ADMIN-004 |
+| ARCH-006-GATEWAY-001 | gateway | **Review — Attempt 2** | 2 | ARCH-006-BACKGROUND-007 |
+| ARCH-006-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-006-ADMIN-004, ARCH-006-SHOPIFY-003, ARCH-006-GATEWAY-001 |
+| ARCH-006-SYSTEM-TEST-002 | system-test | Pending / manual-gated | 0 | ARCH-006-SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-006-GATEWAY-001 |
+| ARCH-006-SYSTEM-TEST-003 | system-test | Pending / manual-gated | 0 | ARCH-006-BACKGROUND-007, ARCH-006-GATEWAY-001, ARCH-006-ADMIN-001, ARCH-006-SHOPIFY-001 |
+
+## ARCH-007
+
+Current counts: `complete` 21, `pending` 13, `ready` 5
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-007-DATABASE-001 | database | Complete | 2 | — |
+| ARCH-007-DATABASE-002 | database | Complete | 2 | ARCH-007-DATABASE-001 |
+| ARCH-007-DATABASE-003 | database | Complete | 1 | ARCH-007-DATABASE-002 |
+| ARCH-007-DATABASE-004 | database | Complete | 1 | ARCH-007-DATABASE-003 |
+| ARCH-007-DATABASE-005 | database | Complete | 2 | ARCH-007-DATABASE-004 |
+| ARCH-007-DATABASE-006 | database | Complete | 1 | ARCH-007-DATABASE-005 |
+| ARCH-007-SHARED-001 | shared | Complete | 6 | ARCH-007-DATABASE-003 |
+| ARCH-007-SHARED-002 | shared | Complete | 1 | ARCH-007-SHARED-001 |
+| ARCH-007-SHARED-003 | shared | Complete | 1 | ARCH-007-SHARED-002 |
+| ARCH-007-SHARED-004 | shared | Complete | 1 | ARCH-007-SHARED-003 |
+| ARCH-007-SHARED-005 | shared | Complete | 1 | ARCH-007-DATABASE-005 |
+| ARCH-007-SHARED-006 | shared | Complete | 1 | ARCH-007-SHARED-005 |
+| ARCH-007-SHOPIFY-001 | shopify | Complete | 3 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003 |
+| ARCH-007-SHOPIFY-002 | shopify | Complete | 3 | ARCH-007-SHOPIFY-001 |
+| ARCH-007-SHOPIFY-003 | shopify | **Ready** | 1 | ARCH-007-SHOPIFY-001 |
+| ARCH-007-SHOPIFY-004 | shopify | Pending | 0 | ARCH-007-SHOPIFY-002, ARCH-007-DATABASE-005, ARCH-007-SHARED-006, ARCH-007-ADMIN-005 |
+| ARCH-007-MESSAGING-001 | messaging | Complete | 3 | ARCH-007-SHARED-002, ARCH-007-SHARED-004 |
+| ARCH-007-BACKGROUND-001 | background | Complete | 2 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003 |
+| ARCH-007-BACKGROUND-002 | background | Complete | 2 | ARCH-007-BACKGROUND-001 |
+| ARCH-007-BACKGROUND-003 | background | Complete | 2 | ARCH-007-BACKGROUND-002, ARCH-007-SHOPIFY-001 |
+| ARCH-007-BACKGROUND-004 | background | Complete | 4 | ARCH-007-BACKGROUND-003, ARCH-007-DATABASE-004 |
+| ARCH-007-BACKGROUND-005 | background | **Ready** | 0 | ARCH-007-BACKGROUND-004, ARCH-007-MESSAGING-001, ARCH-007-SHARED-004 |
+| ARCH-007-BACKGROUND-006 | background | Complete | 2 | ARCH-007-SHARED-002, ARCH-007-DATABASE-002 |
+| ARCH-007-BACKGROUND-007 | background | Complete | 3 | ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-006 |
+| ARCH-007-BACKGROUND-008 | background | Pending | 0 | ARCH-007-BACKGROUND-005, ARCH-007-BACKGROUND-007, ARCH-007-BACKGROUND-009, ARCH-007-SHOPIFY-001 |
+| ARCH-007-BACKGROUND-009 | background | **Ready** | 0 | ARCH-007-DATABASE-005, ARCH-007-SHARED-006, ARCH-007-BACKGROUND-007 |
+| ARCH-007-BACKGROUND-010 | background | **Ready** | 0 | ARCH-007-DATABASE-006, ARCH-007-BACKGROUND-004 |
+| ARCH-007-BACKGROUND-011 | background | Pending | 0 | ARCH-007-BACKGROUND-010 |
+| ARCH-007-ADMIN-001 | admin | **Ready** | 0 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003 |
+| ARCH-007-ADMIN-002 | admin | Pending | 0 | ARCH-007-ADMIN-001 |
+| ARCH-007-ADMIN-003 | admin | Pending | 0 | ARCH-007-ADMIN-002, ARCH-007-BACKGROUND-007, ARCH-007-SHOPIFY-001 |
+| ARCH-007-ADMIN-004 | admin | Pending | 0 | ARCH-007-ADMIN-003, ARCH-007-BACKGROUND-008 |
+| ARCH-007-ADMIN-005 | admin | Pending | 0 | ARCH-007-ADMIN-001, ARCH-007-DATABASE-005, ARCH-007-SHARED-006 |
+| ARCH-007-GATEWAY-001 | gateway | Pending | 0 | ARCH-007-BACKGROUND-008 |
+| ARCH-007-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-007-SHOPIFY-002, ARCH-007-BACKGROUND-003, ARCH-007-ADMIN-002 |
+| ARCH-007-SYSTEM-TEST-002 | system-test | Pending / manual-gated | 0 | ARCH-007-SHOPIFY-002, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-004, ARCH-007-GATEWAY-001 |
+| ARCH-007-SYSTEM-TEST-003 | system-test | Pending / manual-gated | 0 | ARCH-007-SHOPIFY-003, ARCH-007-MESSAGING-001, ARCH-007-BACKGROUND-005, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-004, ARCH-007-GATEWAY-001 |
+| ARCH-007-SYSTEM-TEST-004 | system-test | Pending / manual-gated | 0 | ARCH-007-SHOPIFY-004, ARCH-007-BACKGROUND-009, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-005 |
+| ARCH-007-SYSTEM-TEST-005 | system-test | Pending / manual-gated | 0 | ARCH-007-BACKGROUND-010, ARCH-007-BACKGROUND-004, ARCH-007-BACKGROUND-011 |

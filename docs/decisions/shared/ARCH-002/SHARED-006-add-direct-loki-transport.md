@@ -8,8 +8,8 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 27
-executor: codex
-claimed_at: 2026-08-30T23:15:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-SHARED-004
@@ -18,7 +18,6 @@ enables:
 created: 2026-08-30
 updated: 2026-08-31
 ---
-
 # Add Direct Grafana Loki Transport to Shared Logger
 
 ## Objective

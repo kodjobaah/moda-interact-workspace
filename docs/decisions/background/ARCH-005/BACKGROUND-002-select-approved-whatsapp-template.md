@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-09-06T00:32:03Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-005-BACKGROUND-001
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06
 ---
-
 # Select approved WhatsApp templates by locale and market capability
 
 ## Architecture

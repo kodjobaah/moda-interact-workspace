@@ -13,16 +13,16 @@ Coordinator:
 `moda_architect`
 
 | Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
+|---|---|---|---|
 | SHOPIFY-001 | Add Shopify service health and readiness | Complete | GATEWAY-001 |
-| SHOPIFY-002 | Separate database setup from replica startup | Complete | GATEWAY-001 |
-| SHOPIFY-003 | Add OpenTelemetry to Shopify ingress | Superseded | Replaced by SHOPIFY-006/007 |
+| SHOPIFY-002 | Separate database setup from Shopify replica startup | Complete | GATEWAY-001 |
+| SHOPIFY-003 | Add OpenTelemetry to Shopify ingress | Superseded | GATEWAY-001, SHARED-010 |
 | SHOPIFY-004 | Use published shared package in Shopify application | Complete | GATEWAY-001 |
-| SHOPIFY-005 | Eliminate existing Shopify application TypeScript baseline debt | Ready | SHOPIFY-002 |
+| SHOPIFY-005 | Eliminate existing Shopify application TypeScript baseline debt | **Ready** | SHOPIFY-002 |
 | SHOPIFY-006 | Adopt shared observability runtime in Shopify process | Complete | GATEWAY-001, SHARED-010 |
 | SHOPIFY-007 | Wire shared BullMQ telemetry on Shopify queue producers | Complete | SHOPIFY-006 |
 | SHOPIFY-008 | Fix Shopify Render Docker build dependency installation | Complete | SHOPIFY-002 |
-
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Environment model:
 
 ```text

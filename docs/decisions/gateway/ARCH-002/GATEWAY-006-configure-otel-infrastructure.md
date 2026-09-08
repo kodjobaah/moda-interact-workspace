@@ -8,8 +8,8 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 status: complete
 priority: 35
-executor: github-copilot
-claimed_at: 2026-09-02T12:15:40Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-002-GATEWAY-002
@@ -24,7 +24,6 @@ enables:
 created: 2026-08-29
 updated: 2026-09-02
 ---
-
 # Configure OpenTelemetry transport and environment wiring
 
 ## Architecture

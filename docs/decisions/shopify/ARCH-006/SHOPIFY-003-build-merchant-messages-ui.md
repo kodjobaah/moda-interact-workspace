@@ -10,7 +10,7 @@ coordinator: moda_architect
 status: complete
 priority: 80
 executor: null
-claimed_at: 2026-09-06T22:07:20Z
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-006-SHOPIFY-001
@@ -21,7 +21,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
-
 # ARCH-006-SHOPIFY-003: Build the merchant Messages UI
 
 ## Architecture

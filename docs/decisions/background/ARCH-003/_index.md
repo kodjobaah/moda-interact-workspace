@@ -2,12 +2,12 @@
 
 ## Tasks
 
-| Task | Title | Status | Depends On |
+| Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-003-BACKGROUND-001 | Preserve tenant metadata on pending-recovery candidate jobs | Complete | ARCH-003-ADMIN-013 |
-| ARCH-003-BACKGROUND-002 | Maintain shop-scoped active pending-recovery listing index | Complete | ARCH-003-BACKGROUND-001 |
-| ARCH-003-BACKGROUND-003 | Emit complete BullMQ queue performance telemetry | Complete | ARCH-003-BACKGROUND-002 |
-
+| BACKGROUND-001 | Preserve tenant metadata on pending-recovery candidate jobs | Complete | ADMIN-013 |
+| BACKGROUND-002 | Maintain shop-scoped active pending-recovery listing index | Complete | BACKGROUND-001 |
+| BACKGROUND-003 | Emit complete BullMQ queue performance telemetry | Complete | BACKGROUND-002 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 ## Current executable work
 
 No ARCH-003 Background implementation task is currently executable.

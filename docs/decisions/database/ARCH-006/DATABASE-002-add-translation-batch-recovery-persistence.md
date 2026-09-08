@@ -9,8 +9,8 @@ assigned_agent: moda_database
 coordinator: moda_architect
 status: complete
 priority: 15
-executor: copilot
-claimed_at: 2026-09-06T12:19:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-DATABASE-001
@@ -22,7 +22,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T12:23:15Z
 ---
-
 # ARCH-006-DATABASE-002: Add durable translation, Batch and reconciliation lifecycle state
 
 ## Architecture

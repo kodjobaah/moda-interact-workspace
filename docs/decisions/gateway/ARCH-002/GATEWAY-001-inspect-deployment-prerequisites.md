@@ -8,8 +8,8 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-08-29T12:10:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: 
@@ -17,7 +17,6 @@ enables:
 created: 2026-08-29
 updated: 2026-08-29
 ---
-
 # Inspect Platform and Define Production Deployment Prerequisites
 
 ## Architecture

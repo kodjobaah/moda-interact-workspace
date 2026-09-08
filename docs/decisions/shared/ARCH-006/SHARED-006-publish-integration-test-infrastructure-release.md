@@ -9,8 +9,8 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 75
-executor: copilot
-claimed_at: 2026-09-06T16:58:33Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-SHARED-005
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06T17:06:00Z
 ---
-
 # ARCH-006-SHARED-006: Publish reusable integration-test infrastructure release
 
 ## Architecture

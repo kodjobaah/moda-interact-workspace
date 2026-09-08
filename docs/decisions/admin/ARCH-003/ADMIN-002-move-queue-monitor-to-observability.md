@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-09-04T19:16:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-003-ADMIN-001
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
-
 # Move detailed queue diagnostics to Observability page shell
 
 ## Architecture

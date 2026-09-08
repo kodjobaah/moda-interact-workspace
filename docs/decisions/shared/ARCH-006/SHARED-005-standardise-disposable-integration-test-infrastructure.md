@@ -9,8 +9,8 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 70
-executor: copilot
-claimed_at: 2026-09-06T17:45:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-SHARED-004
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06
 ---
-
 # ARCH-006-SHARED-005: Standardise disposable PostgreSQL and Redis integration-test infrastructure
 
 ## Architecture

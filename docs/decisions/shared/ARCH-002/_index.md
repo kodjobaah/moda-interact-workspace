@@ -13,13 +13,20 @@ Coordinator:
 `moda_architect`
 
 | Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
+|---|---|---|---|
 | SHARED-002 | Implement reusable structured logging library | Complete | GATEWAY-001 |
 | SHARED-003 | Document and publish shared logging package release | Complete | SHARED-002 |
 | SHARED-004 | Add OpenTelemetry log emission to shared structured logger | Complete | SHARED-003 |
+| SHARED-005 | Publish OpenTelemetry and Loki shared logger release | Complete | SHARED-004, SHARED-006 |
 | SHARED-006 | Add direct Grafana Loki transport to shared logger | Complete | SHARED-004 |
-| SHARED-005 | Publish OTel + Loki shared logger release | Complete | SHARED-004, SHARED-006 |
-
+| SHARED-007 | Add reusable Node observability runtime | Complete | SHARED-005 |
+| SHARED-008 | Add Prisma and BullMQ observability adapters | Complete | SHARED-007 |
+| SHARED-009 | Add GenAI active-span helpers | Complete | SHARED-007 |
+| SHARED-010 | Publish shared observability runtime release | Complete | SHARED-007, SHARED-008, SHARED-009, SHARED-011 |
+| SHARED-011 | Add bounded GenAI operational metrics | Complete | SHARED-009 |
+| SHARED-012 | Decouple GenAI span activation and add safe exception mapping | Complete | SHARED-010 |
+| SHARED-013 | Publish composable GenAI observability release | Complete | SHARED-012 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task file is authoritative for task state.
 
 ## Shared Observability Runtime Extension

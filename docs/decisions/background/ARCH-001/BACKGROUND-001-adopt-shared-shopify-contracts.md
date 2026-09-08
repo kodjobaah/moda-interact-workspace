@@ -6,17 +6,16 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: review
+status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-08-28T18:10:27Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-001-SHARED-001"]
 enables: ["ARCH-001-BACKGROUND-002", "ARCH-001-BACKGROUND-003"]
 created: 2026-08-28
-updated: 2026-08-29
+updated: 2026-09-08
 ---
-
 # Adopt Canonical Shopify Webhook Contracts
 
 ## Architecture
@@ -197,33 +196,24 @@ None.
 
 ### Review Status
 
-Changes Requested - Corrections Addressed, Re-review Required
+Accepted
+
 ### Review Notes
 
-All three round-1 requested corrections have been implemented and validated.
+State synchronized from `docs/architecture/ARCH-001-architect-review-round2.md`.
 
-1. **Canonical queue/job constants imported.** `checkout.worker.ts` and `orders.worker.ts` now use `SHOPIFY_WEBHOOK_QUEUE_CONTRACTS` from `@modainteract/moda-interact-shared/shopify` for queue name and all job names; no duplicated queue/job literals remain in the consumer.
+That existing architect review explicitly records `ARCH-001-BACKGROUND-001` as **Complete / Accepted** after the round-1 corrections were re-reviewed:
 
-2. **Legacy v1 compatibility path removed.** `shopify-contract-adapter.ts` no longer falls back to `parseShopifyCommerceEvent`. The `RuntimeShopifyEvent`/`LegacyCheckoutCreatedTransitionEvent` types and the `legacyV1Transition` correlation field are deleted, and `checkoutRecoveryService.handleCheckoutCreatedContract` no longer reports a `legacy-v1` source.
+- canonical queue/job constants are sourced from Shared;
+- the legacy v1 compatibility path is removed;
+- Background consumes only the agreed v2 recovery event contract.
 
-3. **Only the agreed contract is consumed.** `parseRuntimeShopifyEvent` parses `ShopifyRecoveryEventV2` directly and throws visibly on invalid or legacy payloads; the three mappers accept the v2 event only and guard on the correct event type.
+This task file had drifted back to `status: review` even though the architecture-level Round 2 review had already accepted it.
 
-Validation re-run: contract-adapter tests pass (4/4, including a new legacy-v1 rejection test), build and `tsc --noEmit` pass, Prisma validate passes. Repository-wide `npm test` is green except the pre-existing, unrelated `recovery-routing.service.test.ts` failure.
-### Reviewed Files
-
-- `moda-interact-background/src/events/shopify-contract-adapter.ts`
-- `moda-interact-background/src/workers/checkout.worker.ts`
-- `moda-interact-background/src/workers/orders.worker.ts`
-- `moda-interact-background/src/services/checkout-recovery.service.ts`
-- `moda-interact-background/tests/unit/events/shopify-contract-adapter.test.ts`
-- `moda-interact-shared/src/shopify/queue-contracts.ts`
-### Validation Reviewed
-
-Agent re-ran contract-adapter tests (4/4 pass), `npm run build`, `npx tsc --noEmit` and `npm run prisma:validate`, all pass. Repository-wide `npm test` remains green apart from the pre-existing unrelated `recovery-routing.service.test.ts` failure.
 ### Architecture Conformance
 
-Pending re-review. The round-1 findings (rolling-deployment locator loss and canonical queue-contract drift) are resolved: queue/job naming is shared-sourced and the legacy v1 fallback is removed, so workers consume only the agreed ARCH-001 contract.
+Accepted.
+
 ### Follow-up
 
-Return this same task to `moda_background`. Re-review the three round-1 corrections (shared queue constants, v1 removal, v2-only consumption). If accepted, transition to `complete`; otherwise reproduce the remaining finding. Downstream BACKGROUND-002/003 remain blocked meanwhile.
-
+ARCH-001-BACKGROUND-002 and ARCH-001-BACKGROUND-003 may rely on this task as Complete.

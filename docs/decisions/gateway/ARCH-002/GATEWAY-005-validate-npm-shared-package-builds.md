@@ -8,8 +8,8 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 status: complete
 priority: 15
-executor: copilot
-claimed_at: 2026-09-02T18:43:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-001
@@ -20,7 +20,6 @@ enables:
 created: 2026-08-29
 updated: 2026-09-02
 ---
-
 # Validate npm-based shared package production builds
 
 ## Architecture

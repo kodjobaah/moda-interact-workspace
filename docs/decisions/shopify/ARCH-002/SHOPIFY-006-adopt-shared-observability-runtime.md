@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: implementation
 status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-08-31T14:57:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-001
@@ -20,7 +20,6 @@ enables:
 created: 2026-08-31
 updated: 2026-08-31
 ---
-
 # Adopt shared observability runtime in Shopify process
 
 ## Objective

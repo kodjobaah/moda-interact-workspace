@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-09-06T17:33:44Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-006-BACKGROUND-004
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T17:45:46Z
 ---
-
 # ARCH-006-BACKGROUND-005: Submit each logical translation Batch to OpenAI at most once
 
 ## Architecture

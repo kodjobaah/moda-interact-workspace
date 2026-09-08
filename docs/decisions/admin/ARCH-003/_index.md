@@ -17,24 +17,27 @@ Coordinator:
 `moda_architect`
 
 | Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
+|---|---|---|---|
 | ADMIN-001 | Add compact queue activity overview cards to Tenant Directory | Complete | ARCH-002-ADMIN-011 |
-| ADMIN-002 | Move detailed queue diagnostics to Observability page shell | Complete | ARCH-003-ADMIN-001 |
-| ADMIN-008 | Fix Tenant Directory queue overview readiness and unavailable-state containment | Complete | ARCH-003-ADMIN-002 |
-| ADMIN-009 | Repair KPI card JSX compile regression | Superseded | Correction completed in ADMIN-008 Attempt 2 |
-| ADMIN-003 | Present the four queues in a compact summary table | Complete | ARCH-003-ADMIN-008 |
-| ADMIN-004 | Add bounded failed-job server reader/API | Complete | ARCH-003-ADMIN-003 |
-| ADMIN-005 | Add sortable failed-job browser UI | Complete | ARCH-003-ADMIN-004 |
-| ADMIN-006 | Add selected failed-job server detail reader | Complete | ARCH-003-ADMIN-005 |
-| ADMIN-007 | Add failed-job detail panel UI | Complete | ARCH-003-ADMIN-006 |
-| ADMIN-010 | Align Admin sidebar shell and Observability navigation with approved UI | Complete | ARCH-003-ADMIN-007 |
-| ADMIN-014 | Fix detailed queue snapshot cold-connection readiness | Complete | ARCH-003-ADMIN-010 |
-| ADMIN-011 | Recompose Shopify Queues into main table and right details drawer | Complete | ARCH-003-ADMIN-010, ARCH-003-ADMIN-014 |
-| ADMIN-015 | Add bounded shop and status queue-job reader API | Complete | ARCH-003-ADMIN-011 |
-| ADMIN-016 | Add selected active and failed queue-job detail API | Complete | ARCH-003-ADMIN-015 |
-| ADMIN-012 | Populate queue details drawer with metrics and filtered recent jobs | Complete | ARCH-003-ADMIN-016 |
-| ADMIN-013 | Integrate paginated filtered queue-job diagnostics into drawer workflow | Complete | ARCH-003-ADMIN-012 |
-
+| ADMIN-002 | Move detailed queue diagnostics to Observability page shell | Complete | ADMIN-001 |
+| ADMIN-003 | Present the four queues in a compact summary table | Complete | ADMIN-008 |
+| ADMIN-004 | Add bounded failed-job server reader and API | Complete | ADMIN-003 |
+| ADMIN-005 | Add sortable failed-job browser UI | Complete | ADMIN-004 |
+| ADMIN-006 | Add selected failed-job server detail reader | Complete | ADMIN-005 |
+| ADMIN-007 | Add failed-job detail panel UI | Complete | ADMIN-006 |
+| ADMIN-008 | Fix Tenant Directory queue overview readiness and unavailable-state containment | Complete | ADMIN-002 |
+| ADMIN-009 | Repair KPI card JSX compile regression | Superseded | ADMIN-008 |
+| ADMIN-010 | Align Admin sidebar shell and Observability navigation with approved UI | Complete | ADMIN-007 |
+| ADMIN-011 | Recompose Shopify Queues into main table and right details drawer | Complete | ADMIN-010, ADMIN-014 |
+| ADMIN-012 | Populate queue details drawer with metrics and filtered recent jobs | Complete | ADMIN-016 |
+| ADMIN-013 | Integrate paginated filtered queue-job diagnostics into drawer workflow | Complete | ADMIN-012 |
+| ADMIN-014 | Fix detailed queue snapshot cold-connection readiness | Complete | ADMIN-010 |
+| ADMIN-015 | Add bounded shop and status queue-job reader API | Complete | ADMIN-011 |
+| ADMIN-016 | Add selected active and failed queue-job detail API | Complete | ADMIN-015 |
+| ADMIN-017 | Project pending-recovery tenant metadata in queue diagnostics | Complete | BACKGROUND-001 |
+| ADMIN-018 | Distinguish unresolved WhatsApp jobs from orphan tenant metadata | Complete | ADMIN-017 |
+| ADMIN-019 | Simplify Observability navigation and remove queue CTA from Grafana page | **Review — Attempt 1** | ADMIN-018 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Execution chain:
 
 ```text

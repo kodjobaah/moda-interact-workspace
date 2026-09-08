@@ -8,10 +8,10 @@ Coordinator: `moda_architect`
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| SYSTEM-TEST-001 | Verify inbox, ownership, language and read semantics | Pending | ADMIN-004, SHOPIFY-003, GATEWAY-001 |
-| SYSTEM-TEST-002 | Verify subscription-ended notification | Pending | SHOPIFY-002, SHOPIFY-003, GATEWAY-001 |
-| SYSTEM-TEST-003 | Verify Batch idempotency and self-healing | Pending | BACKGROUND-007, GATEWAY-001, ADMIN-001, SHOPIFY-001 |
-
+| SYSTEM-TEST-001 | Verify merchant/Admin inbox, ownership, language routing and read semantics | Pending / manual-gated | ADMIN-004, SHOPIFY-003, GATEWAY-001 |
+| SYSTEM-TEST-002 | Verify subscription-ended SYSTEM notification idempotency and translation | Pending / manual-gated | SHOPIFY-002, SHOPIFY-003, GATEWAY-001 |
+| SYSTEM-TEST-003 | Verify Batch idempotency and translation self-healing | Pending / manual-gated | BACKGROUND-007, GATEWAY-001, ADMIN-001, SHOPIFY-001 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task file YAML metadata is authoritative. This index is a navigation/planning aid and must be corrected if it drifts.
 
 ## Manual invocation gate

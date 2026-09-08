@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 65
-executor: copilot
-claimed_at: 2026-09-06T17:48:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-ADMIN-001
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T18:01:08Z
 ---
-
 # ARCH-006-ADMIN-003: Implement pending-support queries and exclusive ownership commands
 
 ## Architecture

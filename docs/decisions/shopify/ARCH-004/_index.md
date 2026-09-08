@@ -8,9 +8,9 @@ docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-004-SHOPIFY-001 | Publish Shopify cart activity events | Complete | SHARED-002 |
-| ARCH-004-SHOPIFY-002 | Show last activity for pending recoveries | Complete | BACKGROUND-002 |
-
+| SHOPIFY-001 | Publish Shopify cart activity events | Complete | SHARED-002 |
+| SHOPIFY-002 | Show last activity for pending recoveries | Complete | BACKGROUND-002 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Shopify ARCH-004 implementation is complete:
 
 ```text

@@ -8,8 +8,8 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-09-03T08:46:13Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-002-SHOPIFY-007
@@ -29,7 +29,6 @@ enables:
 created: 2026-08-31
 updated: 2026-09-03
 ---
-
 # Validate shared observability and WhatsApp worker performance
 
 ## Current Execution State

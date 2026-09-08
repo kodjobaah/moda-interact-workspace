@@ -1,11 +1,11 @@
 # ARCH-003 — Shopify Decisions
 
-| Task | Title | Status | Depends On |
+| Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-003-SHOPIFY-001 | Correct dashboard conversation relation | Complete | — |
-| ARCH-003-SHOPIFY-002 | Show active pending recoveries on merchant Usage overview | Complete | SHOPIFY-001, BACKGROUND-002 |
-| ARCH-003-SHOPIFY-003 | Make pending-recovery resource an explicit JSON response | Complete | ARCH-003-SHOPIFY-002 |
-
+| SHOPIFY-001 | Correct Shopify dashboard CheckoutRecovery conversation relation | Complete | — |
+| SHOPIFY-002 | Show active pending recoveries on merchant Usage overview | Complete | SHOPIFY-001, BACKGROUND-002 |
+| SHOPIFY-003 | Make pending-recovery resource an explicit JSON response | Complete | SHOPIFY-002 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 ## Immediate executable task
 
 ```text

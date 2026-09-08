@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-09-08",
+  "source_workspace": "moda-interact-workspace(20260908-104421).zip",
+  "changed_files_count": 192,
+  "decision_indexes_synchronized": 41,
+  "malformed_frontmatter_repaired": [
+    "ARCH-002-SYSTEM-TEST-003"
+  ],
+  "complete_task_claims_cleared": 128,
+  "key_state_corrections": [
+    "ARCH-007-BACKGROUND-001 -> Complete Attempt 2",
+    "ARCH-007-BACKGROUND-006 -> Complete Attempt 2",
+    "ARCH-007-MESSAGING-001 -> Complete Attempt 3",
+    "ARCH-007-SHOPIFY-001 -> Complete Attempt 3",
+    "ARCH-007-SHARED-002 -> completed publication record restored",
+    "ARCH-001-BACKGROUND-001 -> Complete (existing Round-2 acceptance)",
+    "ARCH-001-SHOPIFY-001 -> Complete (existing Round-2 acceptance)",
+    "ARCH-002-SYSTEM-TEST-003 malformed frontmatter repaired",
+    "ARCH-007-SHOPIFY-003 active Attempt 1 claim preserved",
+    "ARCH-007 current Shared -> 0.8.0",
+    "ARCH-007-BACKGROUND-009 -> Ready",
+    "ARCH-007-BACKGROUND-010 -> Ready",
+    "ARCH-005-SHOPIFY-004 -> Ready",
+    "ARCH-007-SYSTEM-TEST-004 dependency -> BACKGROUND-008"
+  ]
+}

@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 80
-executor: copilot
-claimed_at: 2026-09-06T17:22:58Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-BACKGROUND-004
@@ -19,7 +19,6 @@ enables: []
 created: 2026-09-06
 updated: 2026-09-06T17:30:00Z
 ---
-
 # ARCH-006-BACKGROUND-008: Adopt disposable integration-test infrastructure in Background
 ## Architecture
 

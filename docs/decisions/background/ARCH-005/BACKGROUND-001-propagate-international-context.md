@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-09-05T23:57:28Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-005-SHARED-004
@@ -22,7 +22,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
-
 # Adopt and materialise Shopify international context
 
 ## Architecture

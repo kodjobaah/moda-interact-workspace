@@ -13,13 +13,13 @@ Coordinator:
 `moda_architect`
 
 | Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
+|---|---|---|---|
 | MESSAGING-001 | Add messaging service health and readiness | Complete | GATEWAY-001 |
-| MESSAGING-002 | Add OpenTelemetry to Meta ingress | Superseded | Replaced by MESSAGING-003/004/005 |
+| MESSAGING-002 | Add OpenTelemetry to Meta ingress | Superseded | GATEWAY-001, SHARED-010 |
 | MESSAGING-003 | Adopt shared observability runtime in messaging ingress | Complete | GATEWAY-001, SHARED-010 |
 | MESSAGING-004 | Add bounded Meta ingress semantic telemetry | Complete | MESSAGING-003 |
 | MESSAGING-005 | Wire shared BullMQ telemetry on inbound message queue | Complete | MESSAGING-003 |
-
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Messaging tasks must preserve the same logical runtime contract in test and
 production while infrastructure supplies isolated Redis, Meta and telemetry
 configuration.

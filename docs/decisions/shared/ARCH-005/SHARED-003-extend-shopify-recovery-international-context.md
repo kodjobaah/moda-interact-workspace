@@ -9,8 +9,8 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 25
-executor: copilot
-claimed_at: 2026-09-05T21:35:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-005-SHARED-002
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T22:21:00Z
 ---
-
 # Extend Shopify recovery events with canonical international context
 
 ## Architecture

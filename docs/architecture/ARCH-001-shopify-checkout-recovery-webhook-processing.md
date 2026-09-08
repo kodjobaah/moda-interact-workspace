@@ -9,6 +9,17 @@ updated: 2026-08-28
 
 # ARCH-001: Shopify Checkout Recovery Webhook Processing
 
+## Current durable task state
+
+> **Synchronized 2026-09-08.** This section is the current task-state snapshot.
+> Earlier task-state tables or frontier prose later in this architecture document may be historical.
+> For exact current status/dependencies, use the individual task YAML and
+> [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md).
+
+Counts: `complete` 9, `ready` 1.
+
+Ready: `ARCH-001-GATEWAY-001`.
+
 ## Status
 
 **Agreed**

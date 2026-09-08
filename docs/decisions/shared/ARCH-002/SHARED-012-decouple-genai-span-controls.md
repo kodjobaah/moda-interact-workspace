@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: implementation
 status: complete
 priority: 26
-executor: codex
-claimed_at: 2026-08-31 18:04:29+00:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-002-SHARED-010
@@ -19,7 +19,6 @@ enables:
 created: 2026-08-31
 updated: '2026-08-31'
 ---
-
 # Decouple GenAI span activation and add safe exception mapping
 
 ## Objective

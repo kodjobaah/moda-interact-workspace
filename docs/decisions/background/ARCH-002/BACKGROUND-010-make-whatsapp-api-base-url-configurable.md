@@ -8,8 +8,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 32
-executor: copilot
-claimed_at: 2026-09-02T22:39:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -17,7 +17,6 @@ enables:
 created: 2026-09-02
 updated: 2026-09-02
 ---
-
 # Make Outbound WhatsApp API Base URL Configurable
 
 ## Architecture

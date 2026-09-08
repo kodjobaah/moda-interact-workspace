@@ -2,218 +2,316 @@
 
 ## Decision
 
-The developer/user owns Git commit and push operations for Moda Interact.
-
-This is a workspace-wide execution rule.
-
-Unless the developer explicitly grants one-off permission for a specific task,
-logical repository agents must **not** run:
+Every executable repository task uses a **mirrored task-branch pair**:
 
 ```text
-git commit
-git push
+parent workspace repository:
+  task/<TASK_ID>
+
+assigned implementation repository:
+  task/<TASK_ID>
 ```
 
-This applies to:
+The two branches have the same name because the same architecture task owns
+both histories, but they are independent Git branches with independent commits.
+
+The repository agent may commit and push both task branches.
+
+The developer/user retains exclusive ownership of merging either branch into
+`main` and of pushing/updating `main`.
+
+This is the workspace-wide VCS execution rule.
+
+## Why two task branches are required
+
+Moda Interact keeps architecture/task state in the parent workspace:
 
 ```text
-moda_app
-moda_admin
-moda_background
-moda_database
-moda_gateway
-moda_messaging
-moda_shared
-moda_site
-moda_system_test
+moda-interact-workspace/
+  docs/decisions/**
+  docs/architecture/**
+  .codex/**
+  .claude/**
 ```
 
-`moda_architect` also must not commit or push repository implementation changes
-on the developer's behalf.
-
-## Required task lifecycle
-
-Repository implementation tasks use:
+while implementation lives in repository/submodule directories such as:
 
 ```text
-Ready
-  -> repository agent claims task
-  -> In Progress
-  -> inspect
-  -> implement
-  -> validate
-  -> Completion Report
-  -> Review
-  -> STOP
-  -> moda_architect reviews actual changes
-  -> architect accepts/rejects
-  -> developer chooses commit boundary/message
-  -> developer commits
-  -> developer pushes
+moda-interact-background/
+moda-interact/
+moda-interact-admin/
+moda-interact-database/
+...
 ```
 
-The repository agent's responsibility ends at `review`.
-
-Architect acceptance does not itself create a Git commit.
-
-
-## Repository-agent task authority hard stop
-
-This section is a workspace-wide execution gate and is mandatory for every
-repository agent listed above. It is intentionally redundant with individual
-agent instructions because task-status ownership must never be inferred.
-
-### One invocation, one architecture task
-
-A repository-agent invocation may claim and execute **at most one** architecture
-task. Once that task is returned to `review` or `blocked`, the invocation is
-over except for the final user-facing summary.
-
-The agent must **not**, in the same invocation:
-
-- discover another task for execution;
-- claim another Ready task;
-- continue into a task named by the current task's `enables` list;
-- begin a downstream task because its dependency now appears satisfied;
-- change any downstream task from `pending`/`blocked` to `ready`;
-- update another task's execution state;
-- update a domain `_index.md` or architecture execution table to promote work.
-
-`enables` is descriptive dependency metadata only. It means **moda_architect may
-recalculate readiness after review**; it is never permission for the repository
-agent to promote or execute the enabled task.
-
-Todo/progress systems are also non-authoritative. Completing the last local todo
-item does not change task ownership and does not authorize another task.
-
-### Status transitions owned by repository agents
-
-For the single task the agent has successfully claimed, the only architecture
-status transitions it may perform are:
+A branch inside `moda-interact-background` cannot contain a change to:
 
 ```text
-ready -> in_progress
-in_progress -> review
-in_progress -> blocked
+../docs/decisions/background/...
 ```
 
-No other architecture-task status transition is permitted. In particular, a
-repository agent must never perform:
+because the parent workspace and Background repository have separate Git
+histories.
+
+Therefore one task uses the same branch identity in both repositories.
+
+Example:
 
 ```text
-review -> complete
-pending -> ready
-blocked -> ready
-applicable state -> superseded
+ARCH-007-BACKGROUND-010
+
+parent workspace:
+  task/ARCH-007-BACKGROUND-010
+    -> task YAML claim
+    -> Completion Report
+    -> review state
+
+moda-interact-background:
+  task/ARCH-007-BACKGROUND-010
+    -> worker/service/test implementation
 ```
 
-and must never perform a status transition on a different task.
+The common `<TASK_ID>` is the correlation key.
 
-Those transitions belong to `moda_architect`.
-
-### Architect-owned text is write-protected
-
-A repository agent must not create, replace, or edit the substantive
-`## Architect Review` decision for its current task. It must not write phrases
-such as:
+## Core task lifecycle
 
 ```text
-Accepted by moda_architect
-Architect accepted
-Architect-approved
-status: complete
+parent main
+  |
+  +-- task/<TASK_ID> -------------------------------+
+        claim commit                                 |
+        task report / review commit                  |
+                                                     |
+implementation main                                  |
+  |                                                  |
+  +-- task/<TASK_ID>                                 |
+        implementation commit(s)                     |
+        push feature branch                          |
+                                                     v
+                                              moda_architect review
+                                                     |
+                         +---------------------------+-------------------+
+                         |                                               |
+                   Changes Requested                                Accepted
+                         |                                               |
+                         v                                               v
+              same task branches continue                       developer merges
+              correction commits pushed                         implementation branch
+                                                                into implementation main
+                                                                       |
+                                                                       v
+                                                                developer applies/
+                                                                commits acceptance docs
+                                                                on parent task branch
+                                                                       |
+                                                                       v
+                                                                developer updates parent
+                                                                submodule pointer to the
+                                                                final merged implementation
+                                                                main commit when applicable
+                                                                       |
+                                                                       v
+                                                                developer merges parent
+                                                                task branch into parent main
 ```
 
-as though architect review has occurred.
+Repository agents never perform the final merge.
 
-The repository agent owns the Completion Report. The architect owns the
-Architect Review and acceptance/rejection decision. Existing Architect Review
-text from an earlier attempt must be preserved unless the task explicitly
-authorizes an architect-owned correction overlay.
+## Canonical branch name
 
-### Mandatory end-of-task sequence
-
-When implementation and repository-owned validation are finished, the agent
-must perform exactly this sequence:
+Both repositories use:
 
 ```text
-1. finish the Completion Report
-2. set Completion Report status to Ready for Review
-3. set only the current task status to review
-4. update the current task's updated timestamp
-5. do not modify downstream task/index/architecture readiness
-6. do not run task discovery again
-7. send the final summary
-8. STOP
+task/<TASK_ID>
 ```
 
-The final summary should say that implementation was completed and the task was
-**returned to architect review**. It must not claim the task itself is Complete
-or architect-accepted.
-
-Even when the repository agent can prove that a downstream dependency would be
-satisfied if the current work is accepted, it must stop. `moda_architect` first
-reviews the actual implementation, then owns `review -> complete`, dependency
-recalculation, `_index.md`/architecture-plan updates, and any downstream
-`pending -> ready` transition.
-
-If a repository agent encounters a task/index that already contains a
-self-authored false Complete/Ready/architect-accepted state, it must not use that
-state as authority to continue. It must stop and report the coordination drift
-to `moda_architect`.
-
-
-## Final-response authority gate
-
-The repository-agent authority boundary applies to **chat/prose output as well as
-durable task files**. A repository agent must never simulate, infer, role-play or
-announce an architect decision for its own current task. Passing tests, satisfying
-Acceptance Criteria, completing local todos or believing the implementation is
-correct does not grant architect authority.
-
-For the current task, the repository agent MUST NOT use wording such as:
+Example:
 
 ```text
-Architect review decision: accepted
-Architect review: accepted
-Architect accepted this task
-architect-accepted
-approved by moda_architect
-this task is Complete
+task/ARCH-007-BACKGROUND-010
 ```
 
-unless that wording is a verbatim quotation of a **pre-existing architect decision
-about a different dependency** and the context makes that distinction explicit.
-
-The repository agent must not perform an "architect review" step in its plan or
-final response. The correct step is **return for architect review**. Self-review is
-allowed only when described as repository validation/self-check and must never be
-labelled architect review.
-
-Before sending its final response, the agent MUST perform a final authority check:
+Do not create separate names such as:
 
 ```text
-current task status == review or blocked
-no current-task architect acceptance/approval claim
-no downstream promotion claim
-no claim that the current task is Complete
+docs/ARCH-007-BACKGROUND-010
+implementation/ARCH-007-BACKGROUND-010
+task/ARCH-007-BACKGROUND-010-attempt-2
+fix/ARCH-007-BACKGROUND-010
 ```
 
-For a successfully implemented task returned to review, the final response MUST end
-with this exact sentence:
+The repository itself distinguishes which history the branch belongs to.
+
+## One stable branch per task
+
+A task keeps the same branch pair across all attempts:
 
 ```text
-Task status: review. Awaiting moda_architect review; no architect acceptance decision has been made by this agent.
+Attempt 1
+  parent:         task/<TASK_ID>
+  implementation task/<TASK_ID>
+
+Changes Requested
+
+Attempt 2
+  parent:         same task/<TASK_ID>
+  implementation same task/<TASK_ID>
 ```
 
-This final-response rule is mandatory even when the agent has already written a
-valid Completion Report and even when the durable task state remains correctly set
-to `review`. A prose-only self-acceptance is still a workflow violation.
+Later attempts append corrective commits to the same branches.
 
-## Permitted Git usage
+## Parent workspace branch authority
 
-Agents may use read-only or inspection-oriented Git commands when needed, for
-example:
+The repository agent may commit/push the matching parent workspace task branch,
+but its write authority there is intentionally narrow.
+
+The repository agent MAY stage/commit:
+
+```text
+the current task file:
+  docs/decisions/<domain>/<ARCH>/<TASK>.md
+```
+
+and, only when the current task contract explicitly owns it, a directly
+task-local evidence/report artifact.
+
+The repository agent MUST NOT independently stage/commit:
+
+```text
+docs/decisions/<domain>/<ARCH>/_index.md
+docs/architecture/**
+docs/product/**
+WORKSPACE-CURRENT-TASK-STATE.md
+another task file
+.codex/**
+.claude/**
+.gitmodules
+a submodule gitlink/pointer
+```
+
+Those are architect/developer coordination surfaces unless the task explicitly
+assigns ownership.
+
+This restriction is important: repository agents report the task they executed;
+`moda_architect` reconciles shared indexes, parent architecture frontiers,
+dependency promotion and architect-review state.
+
+## Never stage the submodule gitlink from the task agent
+
+Checking out `task/<TASK_ID>` inside a submodule/repository can make the parent
+workspace show that submodule path as modified.
+
+That is expected.
+
+For example, the parent may show:
+
+```text
+ M moda-interact-background
+ M docs/decisions/background/ARCH-007/BACKGROUND-010-....md
+```
+
+The repository agent may stage:
+
+```bash
+git add docs/decisions/background/ARCH-007/BACKGROUND-010-....md
+```
+
+It MUST NOT stage:
+
+```bash
+git add moda-interact-background
+```
+
+and MUST NOT use:
+
+```bash
+git add -A
+git add .
+```
+
+from the parent workspace when that would stage a changed submodule pointer or
+unrelated coordination files.
+
+The parent workspace task branch must not point at an unmerged implementation
+feature commit.
+
+The developer updates the parent submodule pointer only **after** the accepted
+implementation branch has been merged into the implementation repository's
+`main` (or other protected integration branch).
+
+This remains true even if the implementation feature commit itself is later
+squashed/rebased during developer-owned integration.
+
+## Claim protocol
+
+The remote parent task branch is part of the durable claim mechanism.
+
+Before claiming:
+
+```bash
+TASK_ID="<TASK_ID>"
+TASK_BRANCH="task/${TASK_ID}"
+
+git -C <workspace-root> fetch origin --prune
+git -C <workspace-root> status --short
+```
+
+Check whether:
+
+```text
+origin/task/<TASK_ID>
+```
+
+already exists in the parent workspace repository.
+
+If it exists, restore that branch and read the task state there before claiming.
+
+If it contains an active claim by another executor, do not claim it.
+
+If it does not exist, create it from the current parent workspace base:
+
+```bash
+git -C <workspace-root> switch -c "${TASK_BRANCH}" origin/main
+```
+
+Then set the task YAML to `in_progress`, populate executor/claimed_at/attempt,
+commit **only the task file**, and push the parent task branch promptly:
+
+```bash
+git -C <workspace-root> add <TASK_FILE>
+git -C <workspace-root> diff --cached -- <TASK_FILE>
+git -C <workspace-root> commit -m "task(<TASK_ID>): claim task"
+git -C <workspace-root> push -u origin "${TASK_BRANCH}"
+```
+
+That pushed parent branch is the durable remote claim.
+
+Only after the claim is durable should implementation begin.
+
+## Implementation branch creation
+
+Inside the assigned implementation repository:
+
+```bash
+git fetch origin --prune
+git status --short
+```
+
+If another task has uncommitted work, STOP.
+
+If `task/<TASK_ID>` already exists locally or remotely, restore it.
+
+Otherwise create it from the implementation repository's current remote base:
+
+```bash
+git switch -c "task/<TASK_ID>" origin/main
+```
+
+Do not create a task branch from a sibling task branch.
+
+## Implementation commit authority
+
+Repository agents may use task-local commands including:
 
 ```text
 git status
@@ -221,106 +319,325 @@ git diff
 git diff --check
 git log
 git show
-git branch --show-current
-git submodule status
-git remote -v
 git fetch
-```
-
-Agents may also perform repository-owned working-tree changes required by the
-task, including checking out an architect-approved submodule commit and leaving
-the resulting gitlink change for developer commit.
-
-## Prohibited automatic publication
-
-Without explicit one-off developer authorization, agents must not:
-
-```text
+git switch
+git checkout
+git add <specific-files>
+git restore --staged
 git commit
-git push
-git push --force
-git push --force-with-lease
-git tag
-git push --tags
+git push -u origin task/<TASK_ID>
+git pull --ff-only
 ```
 
-Agents must not create a commit merely because:
+Before committing:
 
-- a task acceptance criterion says "committed/pushed";
-- a Completion Report requests a commit hash;
-- a dependency needs a published commit;
-- a submodule pointer changed;
-- a build/release step would be easier after committing.
+```bash
+git status --short
+git diff --cached
+```
 
-If a task requires publication before a downstream task can execute:
+Verify that the staged diff contains only the current task.
+
+Never use broad staging when it could absorb sibling work:
 
 ```text
-repository agent -> review -> architect acceptance -> STOP
-developer -> commit/push
-architect -> verify publication -> promote downstream task
+git add .
+git add -A
 ```
 
-## Stale task wording
+unless the agent has positively verified the entire repository diff belongs to
+the current task.
 
-Any task criterion that requires the repository agent itself to commit or push
-is coordination drift.
+Preferred implementation commit:
 
-The agent must not satisfy such wording by committing.
+```text
+task(<TASK_ID>): <short implementation summary>
+```
 
-Instead:
+Changes Requested correction:
 
-1. complete implementation and validation;
-2. leave the changes ready for developer commit/push;
-3. record the stale criterion in the Completion Report;
-4. return the task to `review`;
-5. allow `moda_architect` to reconcile the task wording.
+```text
+task(<TASK_ID>): address architect review
+```
 
-Stale VCS wording is not, by itself, a reason to mark an otherwise-complete
-implementation task Blocked.
+## Completion / review submission
 
-## Completion Report
+When implementation and validation are complete:
 
-Use factual wording such as:
+### Assigned implementation repository
+
+Commit and push the implementation branch:
+
+```bash
+git add <current-task implementation files>
+git diff --cached
+git commit -m "task(<TASK_ID>): <summary>"
+git push -u origin "task/<TASK_ID>"
+```
+
+### Parent workspace repository
+
+Update only the current task file:
+
+```text
+Completion Report
+status: review
+updated
+```
+
+Then commit and push only that file:
+
+```bash
+git add <TASK_FILE>
+git diff --cached -- <TASK_FILE>
+git commit -m "task(<TASK_ID>): submit for architect review"
+git push -u origin "task/<TASK_ID>"
+```
+
+Do not stage the implementation repository/submodule path.
+
+The agent then returns control to `moda_architect` and STOPs.
+
+## Required Completion Report VCS evidence
+
+The task Completion Report must record both repositories:
 
 ```text
 ### Git / VCS
 
-Implementation ready for developer commit/push.
-Repository agent did not commit or push.
+Task branch:
+  task/<TASK_ID>
+
+Implementation repository:
+  repository: <repo>
+  commit: <implementation-sha>
+  remote branch: origin/task/<TASK_ID>
+  pushed: yes|no
+
+Parent workspace:
+  task file: <TASK_FILE>
+  commit: <workspace-doc-sha>
+  remote branch: origin/task/<TASK_ID>
+  pushed: yes|no
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 ```
 
-If a submodule pointer changed:
+If a remote push cannot be performed, state the exact failure. Do not invent
+evidence.
+
+## Changes Requested
+
+When `moda_architect` returns Changes Requested:
+
+- keep the same branch name in both repositories;
+- do not create attempt-specific branches;
+- make only the requested implementation corrections on the implementation task
+  branch;
+- update the same parent task file on the parent task branch;
+- append commits;
+- push both task branches;
+- return to review.
+
+Architect acceptance/Changes Requested overlays should be applied to the
+matching parent workspace `task/<TASK_ID>` branch, not blindly to `main`.
+
+`moda_architect` does not commit/push those overlays. The developer applies and
+commits/pushes them, or explicitly delegates that mechanical parent-branch
+operation.
+
+## Merge prohibition
+
+Repository agents must never:
 
 ```text
-Nested submodule updated in the working tree to architect-approved commit
-<hash>. Parent repository gitlink change is ready for developer commit/push.
+merge implementation task branch into implementation main
+merge parent workspace task branch into parent main
+push directly to main
+push task/<TASK_ID>:main
+use a remote "Merge pull request" action
 ```
 
-## Architect review
-
-`moda_architect` reviews the actual uncommitted implementation.
-
-When accepted:
+They must never force-push:
 
 ```text
-task: review -> complete
+git push --force
+git push --force-with-lease
+git push --mirror
 ```
 
-The architect then gives the developer an appropriate commit message when
-requested.
+unless the developer explicitly authorizes that exact operation.
 
-The developer remains responsible for:
+The developer/user owns all final integration decisions.
+
+## Developer merge order for submodule tasks
+
+For an accepted task in a submodule/repository, the recommended integration
+order is:
 
 ```text
-git add
-git commit
-git push
+1. Merge task/<TASK_ID> into implementation repository main.
+2. Push implementation repository main.
+3. Determine the final merged implementation main commit.
+4. On parent workspace task/<TASK_ID>, apply/commit architect acceptance docs.
+5. Update the parent submodule gitlink to the final merged implementation main
+   commit.
+6. Commit that gitlink update on the parent workspace task branch.
+7. Merge parent workspace task/<TASK_ID> into parent workspace main.
+8. Push parent workspace main.
 ```
 
-## Explicit exception
+This ordering prevents the parent workspace from permanently pointing at an
+unmerged feature commit.
 
-The developer may explicitly authorize an agent to commit or push for one
-specific task.
+If the developer uses squash/rebase merge, step 3 is especially important
+because the final implementation main SHA may differ from the agent's feature
+branch SHA.
 
-That exception must be clear and task-specific. It does not change this
-workspace-wide default for later tasks.
+## Sequential tasks while an earlier task waits for review
+
+Once the current task has:
+
+```text
+implementation branch committed + pushed
+parent task branch committed + pushed
+```
+
+there is no reason to leave uncommitted task work in the shared checkout.
+
+The developer/automation may return each repository checkout to an appropriate
+clean base and start another independent task on another `task/<TASK_ID>`
+branch.
+
+Do not delete the waiting task branches; architect review refers to them.
+
+## Literal concurrent agents
+
+Mirrored feature branches solve sequential overlap; they do not make one physical
+working tree support two checked-out branches at the same instant.
+
+If two tasks in the same implementation repository run literally concurrently,
+use separate clones/worktrees.
+
+Because the parent workspace also has a task branch per task, literal concurrent
+execution should also use separate parent workspace worktrees/clones (or another
+isolation mechanism that gives each task its own workspace checkout).
+
+Safest model:
+
+```text
+workspace clone/worktree A
+  parent branch task/TASK-A
+  implementation checkout/worktree task/TASK-A
+
+workspace clone/worktree B
+  parent branch task/TASK-B
+  implementation checkout/worktree task/TASK-B
+```
+
+Never let two agents mutate one physical parent or implementation checkout
+simultaneously.
+
+## Architect authority
+
+`moda_architect` reviews:
+
+```text
+implementation repository task branch/commit
++
+parent workspace task branch/task report
+```
+
+and decides:
+
+```text
+review -> complete
+```
+
+or Changes Requested on the same task.
+
+`moda_architect` must not:
+
+```text
+implement repository task code
+commit/push implementation branches
+merge branches
+push main
+```
+
+Architect-owned shared-state synchronization includes:
+
+```text
+domain _index.md
+canonical parent architecture
+implementation handoff
+workspace task-state rollup
+dependency promotions
+architect review/acceptance overlays
+```
+
+## Older task boilerplate
+
+Historical task files frequently say:
+
+```text
+Do not run git commit or git push.
+Developer owns commit/push.
+```
+
+That generic boilerplate is superseded by this policy.
+
+For VCS workflow, this file is authoritative unless:
+
+- the developer explicitly instructs otherwise for the current task; or
+- a task has a specific non-boilerplate release/safety restriction.
+
+Historical task files do not need mass edits.
+
+## Publication tasks
+
+Git branch publication and package/service publication are separate.
+
+A release task may publish its approved package/service when its task contract
+authorizes that external publication, and it may commit/push its mirrored task
+branches.
+
+It still must not merge/push `main`.
+
+## Parent-workspace-only tasks
+
+If a task's assigned repository is the parent workspace itself, there is only
+one Git repository involved.
+
+Use:
+
+```text
+task/<TASK_ID>
+```
+
+there and apply the same no-merge/no-main-push rule.
+
+## Developer/user authority
+
+The developer/user owns:
+
+- merging accepted implementation branches into implementation `main`;
+- merging accepted parent task branches into workspace `main`;
+- squash/rebase/reword choices;
+- integration conflict resolution;
+- final submodule gitlink selection;
+- pushing `main`;
+- deleting feature branches after integration;
+- deciding whether two tasks run sequentially or in separate worktrees/clones.
+
+The design deliberately makes the correlation explicit:
+
+```text
+TASK_ID
+  -> implementation task branch
+  -> parent task/report branch
+  -> architect review
+  -> developer-owned integration
+```

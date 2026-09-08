@@ -8,8 +8,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 15
-executor: codex
-claimed_at: 2026-08-31 17:04:35+00:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-002-GATEWAY-001
@@ -20,7 +20,6 @@ enables:
 created: 2026-08-29
 updated: '2026-08-31'
 ---
-
 # Use Published Shared Package in Background Service
 
 ## Current Architect Instruction — Exact Shared Release

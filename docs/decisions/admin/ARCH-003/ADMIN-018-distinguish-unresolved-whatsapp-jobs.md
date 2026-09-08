@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-05T06:19:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-003-ADMIN-017
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
-
 # Distinguish unresolved WhatsApp jobs from orphan tenant metadata
 
 ## Architecture

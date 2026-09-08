@@ -8,9 +8,9 @@ docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-004-BACKGROUND-001 | Add pending candidate inactivity clock | Complete | SHARED-002 |
-| ARCH-004-BACKGROUND-002 | Apply checkout and cart activity to pending recovery | Complete | BACKGROUND-001 |
-
+| BACKGROUND-001 | Add pending candidate inactivity clock | Complete | SHARED-002 |
+| BACKGROUND-002 | Apply checkout and cart activity to pending recovery | Complete | BACKGROUND-001 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Background ARCH-004 implementation state:
 
 ```text

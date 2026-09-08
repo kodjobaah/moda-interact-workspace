@@ -8,15 +8,14 @@ assigned_agent: moda_app
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-08-28T17:57:49Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-001-SHOPIFY-001"]
 enables: []
 created: 2026-08-28
 updated: 2026-08-28
 ---
-
 # Publish Recovery Webhook Events Immediately
 
 ## Architecture

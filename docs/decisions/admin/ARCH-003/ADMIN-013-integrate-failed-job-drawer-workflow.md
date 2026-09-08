@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 43
-executor: copilot
-claimed_at: 2026-09-05
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-003-ADMIN-012
@@ -18,7 +18,6 @@ enables: []
 created: 2026-09-04
 updated: 2026-09-05
 ---
-
 # Integrate paginated filtered queue-job diagnostics into drawer workflow
 
 ## Objective

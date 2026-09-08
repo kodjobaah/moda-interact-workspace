@@ -8,12 +8,12 @@ Coordinator: `moda_architect`
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ADMIN-001 | Admin support server capability | Complete | DATABASE-002, SHARED-002, SHARED-004, ARCH-005-ADMIN-001 |
-| ADMIN-003 | Pending-support and ownership server capability | Complete | ADMIN-001 |
-| ADMIN-004 | Admin merchant-support UI | Complete | ADMIN-003, BACKGROUND-007 |
-| ADMIN-002 | Add queue to read-only monitor | Complete | BACKGROUND-007 |
-| ADMIN-005 | Merchant Messages autocomplete + 20-language selector | Ready — Attempt 2 selector correction | ADMIN-004 |
-
+| ADMIN-001 | Implement Admin merchant-support server capability | Complete | DATABASE-002, SHARED-002, SHARED-004, ARCH-005-ADMIN-001 |
+| ADMIN-002 | Add merchant-communications to the existing Admin queue monitor | Complete | BACKGROUND-007 |
+| ADMIN-003 | Implement pending-support queries and exclusive ownership commands | Complete | ADMIN-001 |
+| ADMIN-004 | Build the Admin merchant-support inbox UI | Complete | ADMIN-003, BACKGROUND-007 |
+| ADMIN-005 | Improve Merchant Messages search and translation language selection | **Review — Attempt 2** | ADMIN-004 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task file YAML metadata is authoritative.
 
 `ADMIN-001` Attempt 3 is architect-accepted Complete. The non-English `PROCESSING` compose path now preserves `needsAdminResponse` and `lastAdministrativeMessageAt` until BACKGROUND-006 makes the merchant-language translation AVAILABLE; the English AVAILABLE path may complete the matching response boundary immediately.

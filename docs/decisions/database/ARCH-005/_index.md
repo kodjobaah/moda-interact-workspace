@@ -2,9 +2,9 @@
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-005-DATABASE-001 | Persist merchant and conversation international context | Complete | SHARED-001 |
-| ARCH-005-DATABASE-002 | Persist locale-aware WhatsApp template variants | Complete | DATABASE-001 |
-
+| DATABASE-001 | Persist merchant and conversation international context | Complete | SHARED-001 |
+| DATABASE-002 | Persist locale-aware WhatsApp template variants | Complete | DATABASE-001 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Immediate executable Database task:
 
 ```text

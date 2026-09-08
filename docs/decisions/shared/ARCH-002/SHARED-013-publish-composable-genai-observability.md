@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: publication
 status: complete
 priority: 27
-executor: codex
-claimed_at: 2026-08-31 18:12:28+00:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-002-SHARED-012
@@ -19,7 +19,6 @@ enables:
 created: 2026-08-31
 updated: '2026-08-31'
 ---
-
 # Publish composable GenAI observability release
 
 ## Objective

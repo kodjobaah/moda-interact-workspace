@@ -9,8 +9,8 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 26
-executor: copilot
-claimed_at: 2026-09-05T22:30:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-005-SHARED-003
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T22:35:42Z
 ---
-
 # Publish Shopify international-context event contract
 
 ## Architecture

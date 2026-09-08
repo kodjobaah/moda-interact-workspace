@@ -2,18 +2,18 @@
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-005-SHOPIFY-001 | Initialise Shopify merchant international defaults | Complete | SHARED-002, DATABASE-001 |
-| ARCH-005-SHOPIFY-002 | Introduce merchant UI locale and standards-aware formatting | Complete | SHARED-006, DATABASE-001 |
-| ARCH-005-SHOPIFY-003 | Emit canonical buyer international context on Shopify recovery events | Complete | SHARED-004, BACKGROUND-001 |
-
-
+| SHOPIFY-001 | Initialise Shopify merchant international defaults | Complete | SHARED-002, DATABASE-001 |
+| SHOPIFY-002 | Introduce merchant UI locale and standards-aware formatting | Complete | SHARED-006, DATABASE-001 |
+| SHOPIFY-003 | Emit canonical buyer international context on Shopify recovery events | Complete | SHARED-004, BACKGROUND-001 |
+| SHOPIFY-004 | Complete authenticated Shopify merchant UI internationalisation coverage | **Ready** | SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-007-SHOPIFY-002 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Current executable Shopify task:
 
 ```text
-None for ARCH-005
+ARCH-005-SHOPIFY-004 — Ready, next claim Attempt 1
 ```
 
-All three Shopify ARCH-005 implementation tasks are Complete.
+`ARCH-005-SHOPIFY-004` is now Ready. `ARCH-005-SHOPIFY-002`, `ARCH-006-SHOPIFY-003`, and `ARCH-007-SHOPIFY-002` are all architect-accepted Complete. Claim it as Attempt 1 and follow the standalone 32-key i18n manifest exactly.
 
 `ARCH-005-SHARED-006` is Complete and published as:
 

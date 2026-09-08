@@ -2,11 +2,11 @@
 
 ## Tasks
 
-| Task | Title | Status | Depends On |
+| Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-003-SYSTEM-TEST-001 | Verify queue tenant attribution | Pending | Existing ARCH-003 chain |
-| ARCH-003-SYSTEM-TEST-002 | Verify merchant pending-recovery visibility and tenant isolation | Blocked — live evidence | ARCH-003-SHOPIFY-002 |
-
+| SYSTEM-TEST-001 | Verify tenant attribution across operational queues | Pending / manual-gated | BACKGROUND-001, ADMIN-019 |
+| SYSTEM-TEST-002 | Verify merchant pending-recovery visibility and tenant isolation | **Blocked** | SHOPIFY-002 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 ## SYSTEM-TEST-002 state
 
 Validator implementation:

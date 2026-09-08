@@ -9,8 +9,8 @@ assigned_agent: moda_database
 coordinator: moda_architect
 status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-09-06T10:15:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -18,7 +18,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T10:30:00Z
 ---
-
 # ARCH-006-DATABASE-001: Add core merchant-support thread and message persistence
 
 ## Architecture

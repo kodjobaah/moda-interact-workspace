@@ -4,22 +4,29 @@ title: Global internationalisation and WhatsApp market support
 status: in_progress
 coordinator: moda_architect
 created: 2026-09-05
-updated: 2026-09-06
+updated: 2026-09-08
 ---
 
 # ARCH-005: Global internationalisation and WhatsApp market support
+
+## Current durable task state
+
+> **Synchronized 2026-09-08.** This section is the current task-state snapshot.
+> Earlier task-state tables or frontier prose later in this architecture document may be historical.
+> For exact current status/dependencies, use the individual task YAML and
+> [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md).
+
+Counts: `complete` 17, `pending` 2, `ready` 1, `superseded` 2.
+
+Ready: `ARCH-005-SHOPIFY-004`.
 
 ## Status
 
 In Progress.
 
-Immediate executable task:
+All previously defined ARCH-005 runtime implementation is architect-accepted Complete, including `MESSAGING-003`. A new bounded Shopify follow-on task, `ARCH-005-SHOPIFY-004`, completes residual authenticated `/app/**` merchant UI internationalisation introduced or left outside the original Shopify coverage.
 
-```text
-ARCH-005-MESSAGING-003
-```
-
-All accepted runtime internationalisation implementation has completed. The remaining implementation work is a bounded Messaging cleanup that removes the unused selector left by the superseded MESSAGING-001 attempt before terminal system validation begins.
+`ARCH-005-SHOPIFY-004` is now **Ready** because `ARCH-005-SHOPIFY-002`, `ARCH-006-SHOPIFY-003`, and `ARCH-007-SHOPIFY-002` are architect-accepted Complete. Terminal system-test tasks remain Pending/manual-gated and include SHOPIFY-004 in the implementation-completion gate.
 
 The Shopify buyer-context producer/consumer rollout is complete:
 
@@ -41,9 +48,9 @@ separate runtime-ownership issue: proactive template selection/send and active
 conversation/CommerceAgent processing execute in Background, not the stateless
 Messaging ingress service. Those capabilities are now rehomed to
 `BACKGROUND-002`, `BACKGROUND-003` and `BACKGROUND-004`. `SHOPIFY-001` and
-`SHOPIFY-002` remain independently Ready.
+`SHOPIFY-002` are architect-accepted Complete.
 
-Architect review has accepted `BACKGROUND-002`, `BACKGROUND-003` and `BACKGROUND-004`. The proactive approved-template selection/send path and active-conversation language/CommerceAgent path are Complete. A final bounded Messaging cleanup (`MESSAGING-003`) removes the unused selector residue from the superseded Messaging attempt before terminal system validation.
+Architect review has accepted `BACKGROUND-002`, `BACKGROUND-003`, `BACKGROUND-004` and the final bounded Messaging cleanup `MESSAGING-003`. The proactive approved-template selection/send path and active-conversation language/CommerceAgent path are Complete. The only remaining Ready implementation work is SHOPIFY-004 residual embedded merchant-UI internationalisation; its ARCH-007 overlap dependency is now satisfied.
 
 ## Goal
 
@@ -1040,6 +1047,9 @@ ARCH-005-BACKGROUND-001
 ARCH-005-SHOPIFY-003
   Emit canonical buyer international context on Shopify recovery events
 
+ARCH-005-SHOPIFY-004
+  Complete authenticated Shopify merchant UI internationalisation coverage
+
 ARCH-005-MESSAGING-001
   Superseded — runtime template selection belongs to Background
 
@@ -1078,9 +1088,10 @@ ARCH-005-BACKGROUND-001  Complete
 ARCH-005-SHOPIFY-001     Complete
 ARCH-005-SHOPIFY-002     Complete
 ARCH-005-SHOPIFY-003     Complete
+ARCH-005-SHOPIFY-004     Ready
 ARCH-005-MESSAGING-001   Superseded
 ARCH-005-MESSAGING-002   Superseded
-ARCH-005-MESSAGING-003   Ready
+ARCH-005-MESSAGING-003   Complete
 ARCH-005-BACKGROUND-002  Complete
 ARCH-005-BACKGROUND-003  Complete
 ARCH-005-BACKGROUND-004  Complete
@@ -1088,13 +1099,7 @@ ARCH-005-SYSTEM-TEST-001 Pending
 ARCH-005-SYSTEM-TEST-002 Pending
 ```
 
-Immediate implementation work is:
-
-```text
-MESSAGING-003
-```
-
-After `MESSAGING-003` is architect-accepted, `SYSTEM-TEST-001` may become Ready because all of its implementation dependencies will then be Complete.
+`ARCH-005-SHOPIFY-004` is currently Ready for Attempt 1. After SHOPIFY-004 is accepted, the implementation dependency set for `SYSTEM-TEST-001` is complete; the system-test task still remains terminal/manual-gated until the developer explicitly invokes it.
 
 For the proactive WhatsApp path:
 
@@ -1141,6 +1146,11 @@ ARCH-005 is Complete only when:
 - active conversations can resolve/update customer language;
 - telephone country cannot overwrite customer language;
 - merchant UI uses locale-aware formatting primitives;
+- authenticated embedded Shopify merchant chrome/support/billing-status surfaces in SHOPIFY-004 contain no residual hard-coded English copy identified by that task and all 20 declared catalogues remain complete;
 - representative multi-market system tests pass;
 - adding a new supported language/template variant is primarily data/config,
   not a new country switch in application logic.
+
+## Change History
+
+- 2026-09-08 — MESSAGING-003 verified Complete in durable task state. Added SHOPIFY-004 as a bounded residual embedded merchant-UI internationalisation task; it is Pending behind ARCH-007-SHOPIFY-002 to avoid overlapping merchant-support/locale edits, and SYSTEM-TEST-001 now includes SHOPIFY-004 in its terminal dependency set.

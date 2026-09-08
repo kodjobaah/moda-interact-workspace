@@ -8,15 +8,14 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 50
-executor: codex
-claimed_at: 2026-08-28T22:05:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-001-BACKGROUND-004"]
 enables: []
 created: 2026-08-28
 updated: 2026-08-28
 ---
-
 # Handle Order Recovery Correlation and Cancellation
 
 ## Architecture

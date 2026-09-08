@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 15
-executor: copilot
-claimed_at: 2026-09-04T19:46:09Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-003-ADMIN-002
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
-
 # Fix Tenant Directory queue overview readiness and unavailable-state containment
 
 ## Architecture

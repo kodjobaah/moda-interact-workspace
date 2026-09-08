@@ -6,17 +6,16 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: review
+status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-08-28T17:42:16Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-001-SHARED-001"]
 enables: ["ARCH-001-SHOPIFY-002"]
 created: 2026-08-28
-updated: 2026-08-29
+updated: 2026-09-08
 ---
-
 # Produce Recovery-Focused Shopify Webhook Events
 
 ## Architecture
@@ -202,32 +201,20 @@ None.
 
 ### Review Status
 
-Changes Requested - Corrections Addressed, Re-review Required
+Accepted
+
 ### Review Notes
 
-Both round-1 requested corrections have been implemented and validated.
+State synchronized from `docs/architecture/ARCH-001-architect-review-round2.md`.
 
-1. **Shopify timestamps normalized to canonical UTC ISO.** Added `webhook-normalization-utils.ts` with `normalizeTimestamp()`; `checkoutCreatedAt` and order `completedAt` (with `updated_at` fallback) now normalize valid provider timestamps via `Date.toISOString()` and reject invalid ones. Tests use the actual supplied fixture offset timestamp `2021-12-31T19:00:00-05:00` and assert the normalized UTC ISO form (`2022-01-01T00:00:00.000Z`) through both the normalizers and the full ingress -> envelope -> shared-schema parse path.
+That existing architect review explicitly records `ARCH-001-SHOPIFY-001` as **Complete / Accepted** after re-review of the timestamp-normalisation and Shared schema-version corrections.
 
-2. **Shared schema-version constant used.** `buildShopifyEventEnvelope()` now sets `schemaVersion` from `SHOPIFY_COMMERCE_EVENT_SCHEMA_VERSION_V2`.
+This task file had drifted back to `status: review` even though the architecture-level Round 2 review had already accepted it.
 
-Validation re-run: `npm test -- --run` passes (31 tests). Repository-level typecheck/lint remain red from the same pre-existing, out-of-scope issues noted previously; none of the files changed by this task produce typecheck or lint errors.
-### Reviewed Files
-
-- `moda-interact/app/services/webhooks/checkout-normalization.ts`
-- `moda-interact/app/services/webhooks/order-normalization.ts`
-- `moda-interact/app/services/webhooks/webhook-normalization-utils.ts`
-- `moda-interact/app/services/webhooks/shopify-webhook-ingress.service.ts`
-- relevant webhook normalization/ingress tests
-- supplied `shopify-webhook-payloads/checkouts/create.json` and `orders/create.json` timestamp shapes
-
-### Validation Reviewed
-
-Agent re-ran `npm test -- --run` (31 tests pass) and confirmed the offset-timestamp and shared-version-constant corrections compile cleanly within their changed files. Repository-wide typecheck/lint remain red from pre-existing, unrelated issues.
 ### Architecture Conformance
 
-Pending re-review. The round-1 conformance finding (producer not reliably satisfying the canonical runtime contract for real Shopify offset timestamps) is believed resolved by timestamp normalization; the producer versioning is now bound to the shared schema-version constant.
+Accepted.
+
 ### Follow-up
 
-Return this same task to `moda_app`. Re-review the two round-1 corrections (timestamp normalization + shared schema-version constant). If accepted, transition to `complete`; otherwise reproduce the remaining finding.
-
+ARCH-001-SHOPIFY-002 and ARCH-001-GATEWAY-001 may rely on this task as Complete.

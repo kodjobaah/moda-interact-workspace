@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-09-05T06:02:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-003-ADMIN-013
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
-
 # Preserve tenant metadata on pending-recovery candidate jobs
 
 ## Architecture

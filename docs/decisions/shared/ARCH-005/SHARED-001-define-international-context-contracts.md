@@ -9,8 +9,8 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-09-05T19:00:36Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on: []
 enables:
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T19:05:00Z
 ---
-
 # Define canonical international context contracts
 
 ## Objective

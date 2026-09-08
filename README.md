@@ -53,6 +53,7 @@ This project demonstrates hands-on experience with:
 - [Platform overview](#platform-overview)
 - [High-level architecture](#high-level-architecture)
 - [Architecture initiatives](#architecture-initiatives)
+- [Pricing and billing model](#pricing-and-billing-model)
 - [Internationalisation and merchant communications](#internationalisation-and-merchant-communications)
 - [Projects and ownership](#projects-and-ownership)
 - [Getting started](#getting-started)
@@ -174,6 +175,7 @@ implementation task.
 | **ARCH-004** | In progress | Make pending recovery an inactivity-based workflow: deterministically correlate checkout/cart activity to an existing candidate, advance a monotonic `lastActivityAt` clock, reschedule the same BullMQ candidate and shop index, ignore stale/out-of-order events, cancel confirmed empty carts and preserve existing order-cancellation semantics. | [Correlated Cart Activity Recovery Rescheduling](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md) · [Readable overview](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling-overview.md) | Task plans live under `docs/decisions/*/ARCH-004/` |
 | **ARCH-005** | In progress | Make Moda Interact internationally correct by design across WhatsApp markets: keep country, language, currency, time zone and telephone country independent; use standards-based locale contracts; capture Shopify international commerce context; select approved WhatsApp template variants; support multilingual active conversations; and localise merchant-facing formatting. | [Global Internationalisation and WhatsApp Markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md) · [Readable overview](docs/architecture/ARCH-005-internationalisation-overview.md) | Task plans live under `docs/decisions/*/ARCH-005/` |
 | **ARCH-006** | In progress | Add a shop-scoped internal support inbox between Moda administrators and merchants: immutable originals, multilingual translations, read state, distinct administrative/system/merchant messages, versioned automated notifications, tenant-safe access and an observable `merchant-communications` queue. | [Merchant Communications, Support Inbox and System Notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md) · [Readable overview](docs/architecture/ARCH-006-merchant-communications-overview.md) | Task plans live under `docs/decisions/*/ARCH-006/` |
+| **ARCH-007** | In progress | Implement plan-aware Shopify billing and cost control: Free lifetime recovery allowance, paid included recovery allowances with overage, repeatable prepaid recovery-credit packs for every tier, durable/idempotent usage reporting, per-conversation automated-message safety limits and bounded CommerceAgent execution. | [Shopify Billing, Usage and Cost Control](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md) · [Pricing and billing model](docs/product/pricing-and-billing-model.md) | Task plans live under `docs/decisions/*/ARCH-007/` |
 
 The architecture document is authoritative for **what is being built and how the
 complete system fits together**.
@@ -182,6 +184,62 @@ The Copilot plan is an implementation-planning aid. It recommends implementation
 models for repository-agent work and does not override architecture or task
 state. Architect review is performed separately through the `moda_architect`
 workflow.
+
+### Pricing and billing model
+
+Moda Interact uses **recovery conversations** as the primary merchant-facing
+commercial unit. Message-level WhatsApp and CommerceAgent controls are separate
+internal safety mechanisms that bound variable provider/AI cost; they are not a
+second merchant billing unit.
+
+The current target subscription model is:
+
+| Plan | Monthly price | Included recovery conversations | Standard overage |
+| --- | ---: | ---: | ---: |
+| **Free** | $0 | 5 lifetime | No automatic overage; repeatable prepaid recovery-credit packs may be purchased |
+| **Starter** | $35/month | 200/month | $0.05 per additional recovery |
+| **Growth** | $75/month | 500/month | $0.04 per additional recovery |
+| **Scale** | $149/month | 1,200/month | $0.03 per additional recovery |
+
+All tiers may use **repeatable recovery-credit packs**. A merchant can buy
+another pack after an earlier pack is exhausted. Pack prices are configured in
+Shopify App Pricing rather than duplicated as Moda database price fields, and
+higher paid tiers can be configured with preferential per-credit pack rates.
+
+The intended recovery-capacity order is:
+
+```text
+Free:
+  lifetime Free allowance
+  -> purchased recovery credits
+  -> block new recovery until another pack is purchased or the merchant upgrades
+
+Paid:
+  current-period included recoveries
+  -> purchased recovery credits
+  -> normal plan overage
+```
+
+Purchased recovery credits are durable prepaid capacity: they do not reset at
+the monthly billing boundary and may be replenished repeatedly.
+
+For controlled testing/support, a specific Free shop may receive an audited signed
+allowance adjustment. The canonical Free plan stays at 5 lifetime recoveries; the
+shop-specific **effective** allowance changes without rewriting historical usage.
+
+For the commercial rationale, Shopify billing mechanism, durable state,
+idempotency rules, top-up lifecycle and message-level cost controls, see:
+
+**[Pricing and billing model](docs/product/pricing-and-billing-model.md)**
+
+For a new architect or resumed implementation session, see the
+**[ARCH-007 implementation handoff](docs/architecture/ARCH-007-implementation-handoff.md)**.
+
+The implementation source of truth remains
+**[ARCH-007 — Shopify Billing, Usage and Cost Control](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md)**.
+The top-up and fragmented-message/coalescing portions of this model are being
+implemented through bounded ARCH-007 tasks and should not be read as a claim
+that every described path is already live in production.
 
 ### Internationalisation and merchant communications
 
@@ -333,6 +391,7 @@ moda-interact-workspace/
 │   ├── architecture/
 │   ├── contracts/
 │   ├── decisions/
+│   ├── product/
 │   ├── agent-task-execution-template.md
 │   ├── agent-vcs-ownership-policy.md
 │   ├── coding-agent-workflow.md
@@ -1567,3 +1626,6 @@ Continue.
 - [ARCH-005 readable internationalisation overview](docs/architecture/ARCH-005-internationalisation-overview.md)
 - [ARCH-006: Merchant communications, support inbox and system notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md)
 - [ARCH-006 readable merchant communications overview](docs/architecture/ARCH-006-merchant-communications-overview.md)
+- [ARCH-007: Shopify billing, usage and cost control](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md)
+- [Pricing and billing model](docs/product/pricing-and-billing-model.md)
+- [ARCH-007 implementation handoff](docs/architecture/ARCH-007-implementation-handoff.md)

@@ -9,8 +9,8 @@ assigned_agent: moda_database
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-05T20:20:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-005-DATABASE-001
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T20:45:00Z
 ---
-
 # Persist locale-aware WhatsApp template variants
 
 ## Objective

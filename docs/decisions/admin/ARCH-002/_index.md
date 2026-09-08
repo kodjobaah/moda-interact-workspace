@@ -21,19 +21,19 @@ Coordinator:
 `moda_architect`
 
 | Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
+|---|---|---|---|
 | ADMIN-001 | Add admin service health and readiness | Complete | GATEWAY-001 |
-| ADMIN-002 | Add OpenTelemetry to admin runtime | Superseded | Replaced by ADMIN-009/010 |
+| ADMIN-002 | Add OpenTelemetry to admin runtime | Superseded | GATEWAY-001, SHARED-010 |
 | ADMIN-003 | Implement Google platform-admin authentication and session foundation | Complete | DATABASE-001 |
+| ADMIN-004 | Add secure private Grafana Cloud observability access | Complete | ADMIN-008, GATEWAY-006 |
 | ADMIN-005 | Protect privileged admin pages and server reads | Complete | ADMIN-003 |
 | ADMIN-006 | Protect admin mutations and privileged route handlers | Complete | ADMIN-003 |
 | ADMIN-007 | Add bounded platform-admin security audit logging | Complete | ADMIN-005, ADMIN-006, SHARED-005 |
 | ADMIN-008 | Validate platform-admin security and deployment contract | Complete | ADMIN-003, ADMIN-005, ADMIN-006, ADMIN-007 |
-| ADMIN-004 | Add secure private Grafana Cloud observability access | Complete | ADMIN-008, GATEWAY-006 |
 | ADMIN-009 | Adopt shared observability runtime in admin process | Complete | GATEWAY-001, SHARED-010 |
-| ADMIN-010 | Add bounded admin request operational metrics | Superseded | Duplicate standard HTTP telemetry; reuse framework/OpenTelemetry signal |
-| ADMIN-011 | Add protected Redis Shopify queue monitor to Tenant Directory | Complete | ADMIN-005 |
-
+| ADMIN-010 | Add bounded admin request operational metrics | Superseded | ADMIN-009 |
+| ADMIN-011 | Add protected Redis Shopify queue monitor to Admin tenant directory | Complete | ADMIN-005 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Security and presentation chain:
 
 ```text

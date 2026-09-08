@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 85
-executor: copilot
-claimed_at: 2026-09-06T19:55:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-BACKGROUND-007
@@ -18,7 +18,6 @@ enables: []
 created: 2026-09-05
 updated: 2026-09-06T19:30:00Z
 ---
-
 # ARCH-006-ADMIN-002: Add merchant-communications to the existing Admin queue monitor
 
 ## Architecture

@@ -2,13 +2,13 @@
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-005-SHARED-001 | Define canonical international context contracts | Complete | — |
-| ARCH-005-SHARED-002 | Publish internationalisation shared contract release | Complete | SHARED-001 |
-| ARCH-005-SHARED-003 | Extend Shopify recovery events with canonical international context | Complete | SHARED-002 |
-| ARCH-005-SHARED-004 | Publish Shopify international-context event contract | Complete | SHARED-003 |
-| ARCH-005-SHARED-005 | Implement reusable ICU MessageFormat internationalisation runtime | Complete | SHARED-004 |
-| ARCH-005-SHARED-006 | Publish shared ICU internationalisation runtime | Complete | SHARED-005 |
-
+| SHARED-001 | Define canonical international context contracts | Complete | — |
+| SHARED-002 | Publish internationalisation shared contract release | Complete | SHARED-001 |
+| SHARED-003 | Extend Shopify recovery events with canonical international context | Complete | SHARED-002 |
+| SHARED-004 | Publish Shopify international-context event contract | Complete | SHARED-003 |
+| SHARED-005 | Implement reusable ICU MessageFormat internationalisation runtime | Complete | SHARED-004 |
+| SHARED-006 | Publish shared ICU internationalisation runtime | Complete | SHARED-005 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 There is currently no executable ARCH-005 Shared task.
 
 SHARED-006 is architect-accepted and published as:

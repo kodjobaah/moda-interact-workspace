@@ -9,8 +9,8 @@ assigned_agent: moda_database
 coordinator: moda_architect
 status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-09-05T19:31:35Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-005-SHARED-001
@@ -23,7 +23,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T19:38:00Z
 ---
-
 # Persist merchant and conversation international context
 
 ## Objective

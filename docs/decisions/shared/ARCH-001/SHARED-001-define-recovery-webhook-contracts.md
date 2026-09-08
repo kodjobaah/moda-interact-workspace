@@ -8,15 +8,14 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-08-28T17:02:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-001-SHOPIFY-001", "ARCH-001-BACKGROUND-001"]
 created: 2026-08-28
 updated: 2026-08-28
 ---
-
 # Define Recovery-Focused Shopify Webhook Contracts
 
 ## Architecture

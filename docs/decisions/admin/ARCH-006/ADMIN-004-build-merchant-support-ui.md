@@ -9,8 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 status: complete
 priority: 80
-executor: copilot
-claimed_at: 2026-09-06T23:37:00Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-006-ADMIN-003
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-07T08:35:00Z
 ---
-
 # ARCH-006-ADMIN-004: Build the Admin merchant-support inbox UI
 
 ## Architecture

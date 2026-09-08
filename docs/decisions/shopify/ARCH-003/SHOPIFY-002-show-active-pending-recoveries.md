@@ -9,8 +9,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-05T09:12:07Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-003-SHOPIFY-001
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
-
 # Show active pending recoveries on merchant Usage overview
 
 ## Architecture

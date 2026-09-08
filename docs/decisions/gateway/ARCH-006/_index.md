@@ -8,8 +8,8 @@ Coordinator: `moda_architect`
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| GATEWAY-001 | Deploy merchant-communications worker | Ready | BACKGROUND-007 |
-
+| GATEWAY-001 | Deploy the independently scalable merchant-communications worker | **Review — Attempt 2** | BACKGROUND-007 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task file YAML metadata is authoritative. This index is a navigation/planning aid and must be corrected if it drifts.
 
 Architect coordination on 2026-09-06: BACKGROUND-007 is independently architect-accepted Complete, so GATEWAY-001 is Ready. System-test tasks enabled by this deployment remain Pending/manual-gated until all of their implementation dependencies are Complete and the developer chooses to run them.

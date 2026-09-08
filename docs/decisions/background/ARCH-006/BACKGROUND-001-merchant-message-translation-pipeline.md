@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-06T13:31:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-006-DATABASE-002
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T14:40:45Z
 ---
-
 # ARCH-006-BACKGROUND-001: Implement the OpenAI Batch translation provider adapter
 
 ## Architecture

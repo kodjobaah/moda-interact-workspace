@@ -8,8 +8,8 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 status: complete
 priority: 47
-executor: copilot
-claimed_at: 2026-09-03T17:06:55Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-002-GATEWAY-010
@@ -19,7 +19,6 @@ depends_on:
 enables:
   - ARCH-002-SYSTEM-TEST-008
 ---
-
 # Revalidate Deployment Environment-Group Naming and Isolation
 
 This task is **Ready — Architect Changes Requested remain applicable**.

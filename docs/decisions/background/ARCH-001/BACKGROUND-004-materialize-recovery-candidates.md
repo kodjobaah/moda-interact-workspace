@@ -8,15 +8,14 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-08-28T21:07:12Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-001-BACKGROUND-002", "ARCH-001-BACKGROUND-003"]
 enables: ["ARCH-001-BACKGROUND-005"]
 created: 2026-08-28
 updated: 2026-08-28
 ---
-
 # Materialize Matured Recovery Candidates
 
 ## Architecture

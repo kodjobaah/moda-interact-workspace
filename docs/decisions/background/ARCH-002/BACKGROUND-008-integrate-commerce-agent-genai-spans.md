@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: implementation
 status: complete
 priority: 32
-executor: codex
-claimed_at: 2026-08-31 18:20:30+00:00
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-002-BACKGROUND-006
@@ -20,7 +20,6 @@ enables:
 created: 2026-08-31
 updated: '2026-08-31'
 ---
-
 # Integrate GenAI active spans in messaging worker
 
 ## Objective

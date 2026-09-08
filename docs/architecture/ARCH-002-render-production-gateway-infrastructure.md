@@ -9,6 +9,17 @@ updated: 2026-09-03
 
 # ARCH-002: Render Test and Production Gateway and Infrastructure
 
+## Current durable task state
+
+> **Synchronized 2026-09-08.** This section is the current task-state snapshot.
+> Earlier task-state tables or frontier prose later in this architecture document may be historical.
+> For exact current status/dependencies, use the individual task YAML and
+> [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md).
+
+Counts: `complete` 61, `pending` 3, `ready` 2, `superseded` 5.
+
+Ready: `ARCH-002-SHOPIFY-005`, `ARCH-002-SYSTEM-TEST-010`.
+
 ## Status
 
 In Progress.

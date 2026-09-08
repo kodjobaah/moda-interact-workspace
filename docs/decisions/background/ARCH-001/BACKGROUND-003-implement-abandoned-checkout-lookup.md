@@ -8,8 +8,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-08-28T19:50:06Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-001-BACKGROUND-001
@@ -19,7 +19,6 @@ enables:
 created: 2026-08-28
 updated: 2026-08-28
 ---
-
 # Implement Bounded Shopify Abandoned Checkout Lookup
 
 ## Architecture

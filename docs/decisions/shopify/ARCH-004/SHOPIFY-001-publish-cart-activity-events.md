@@ -9,8 +9,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-05T17:19:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-004-SHARED-002
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
-
 # Publish Shopify cart activity events
 
 ## Objective

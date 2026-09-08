@@ -8,8 +8,8 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 status: complete
 priority: 5
-executor: copilot
-claimed_at: 2026-09-03T11:20:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-003
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
-
 # Fix Admin Render Build Dependency Installation
 
 ## Architecture

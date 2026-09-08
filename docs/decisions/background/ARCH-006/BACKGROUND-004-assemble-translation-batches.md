@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 35
-executor: copilot
-claimed_at: 2026-09-06T14:48:37Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-006-BACKGROUND-001
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T16:05:00Z
 ---
-
 # ARCH-006-BACKGROUND-004: Assemble pending translations into durable logical batches
 
 ## Architecture

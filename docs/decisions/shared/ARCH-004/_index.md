@@ -8,9 +8,9 @@ docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-004-SHARED-001 | Define canonical cart activity recovery event | Complete | — |
-| ARCH-004-SHARED-002 | Publish cart activity shared contract release | Complete | SHARED-001 |
-
+| SHARED-001 | Define canonical cart activity recovery event | Complete | — |
+| SHARED-002 | Publish cart activity shared contract release | Complete | SHARED-001 |
+> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 Shared release tasks are complete.
 
 

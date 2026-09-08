@@ -8,8 +8,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 status: complete
 priority: 5
-executor: copilot
-claimed_at: 2026-09-03T10:58:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-SHOPIFY-002
@@ -18,7 +18,6 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
-
 # Fix Shopify Render Docker Build Dependency Installation
 
 ## Architecture

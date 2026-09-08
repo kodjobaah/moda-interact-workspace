@@ -9,8 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-09-05T08:29:22Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-003-BACKGROUND-001
@@ -19,7 +19,6 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
-
 # Maintain shop-scoped active pending-recovery listing index
 
 ## Architecture

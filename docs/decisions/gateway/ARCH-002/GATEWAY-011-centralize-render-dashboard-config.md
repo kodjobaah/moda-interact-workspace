@@ -8,8 +8,8 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 status: complete
 priority: 5
-executor: copilot
-claimed_at: 2026-09-03T15:30:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-002-GATEWAY-010
@@ -20,7 +20,6 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
-
 # Move Externally Supplied Render Configuration into Reusable Environment Groups
 
 ## Architecture

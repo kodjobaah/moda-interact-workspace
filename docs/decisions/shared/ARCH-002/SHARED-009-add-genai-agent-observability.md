@@ -9,8 +9,8 @@ coordinator: moda_architect
 task_kind: implementation
 status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-08-31T13:56:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-SHARED-007
@@ -19,7 +19,6 @@ enables:
 created: 2026-08-31
 updated: 2026-08-31
 ---
-
 # Add GenAI active-span helpers
 
 ## Architecture
