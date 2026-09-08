@@ -7,7 +7,7 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 120
 executor: copilot
 claimed_at: 2026-09-08T21:24:43Z
@@ -119,49 +119,51 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 2)
+Ready for architect review (Attempt 2)
 
 ### Files Changed
 
-- `moda-interact-admin/src/lib/admin/billing.ts`
-- `moda-interact-admin/src/lib/admin/types.ts`
 - `moda-interact-admin/src/app/(protected)/billing/page.tsx`
-- `moda-interact-admin/src/app/(protected)/page.tsx`
 - `moda-interact-admin/src/components/admin/billing-overview.tsx`
 - `moda-interact-admin/src/components/admin/tenant-billing.tsx`
-- `moda-interact-admin/src/components/admin/tenant-detail-panel.tsx`
-- `moda-interact-admin/src/components/admin/tenant-table.tsx`
+- `moda-interact-admin/src/i18n/index.ts`
 - `moda-interact-admin/src/i18n/locales/en.json`
 - `moda-interact-admin/src/i18n/required-keys.ts`
+- `moda-interact-admin/src/lib/admin/billing.ts`
+- `moda-interact-admin/src/lib/admin/types.ts`
 - `moda-interact-admin/tests/security/admin-billing-visibility.test.mjs`
 
 ### Work Completed
 
-- Added authenticated, bounded billing overview reads for mapped Free/paid distribution, unmapped/sync-error subscriptions, Free exhaustion, reported paid recovery usage, and App Event report-state counts.
-- Added filtered, date-ranged, shop-scoped, state-scoped, paginated App Event ledger visibility with safe provider status fields and no bearer-token/customer-payload display.
-- Added a tenant Billing tab showing observed/current/pending plan state, exact billing cycle, Free base/adjustment/committed/reserved/remaining values, current-cycle paid meter usage, active policy override values, ledger rows, and an explicit unavailable reconciliation state.
-- Added required-key catalogue entries and focused security/contract tests.
-- Admin implementation commit: `66c5730`; pushed to `origin/task/ARCH-007-ADMIN-003`.
+- Synchronized the implementation branch with accepted Admin-002 via merge commit `23f62da`, preserving platform controls, tenant overrides, append-only allowance adjustments, and the absolute platform cap.
+- Corrected the billing page merge integration while retaining both the overview/ledger and Admin-002 controls.
+- Made Free exhaustion explicitly unavailable (`null`) instead of inferring it from a counter threshold.
+- Added inclusive date-only filter boundaries, localized report-state labels, locale-formatted quantities, and all bounded ledger diagnostics in both platform and tenant views.
+- Added current-period automated-message usage, active/expired override state, platform-bounded effective hard caps, pause-state visibility, and required i18n keys.
+- Kept reconciliation explicitly unavailable because no accepted durable provider snapshot/discrepancy model exists.
+- Added focused regression coverage for report-state fallback behavior, diagnostics, date boundaries, unavailable exhaustion, message aggregation, override expiry, and Admin-002 preservation.
+- Admin implementation commit: `f096d68`; pushed to `origin/task/ARCH-007-ADMIN-003`.
 
 ### Validation Results
 
 - `npm run build`: passed; existing BullMQ dynamic dependency warnings remain.
-- `npm test -- --runInBand`: passed, 111 tests.
-- Focused `node --test tests/security/admin-billing-visibility.test.mjs`: passed, 2 tests.
+- `npm test`: passed; existing Node module-type warnings remain.
+- Focused `node --test tests/security/admin-billing-visibility.test.mjs`: passed, 6 tests.
+- `npx tsc --noEmit`: passed.
 - `npm run lint`: passed with 2 pre-existing queue-monitor hook warnings and no errors.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
-- `npm run format:check`: repository-wide check reports 78 pre-existing files; all task-changed files were formatted with the repository Prettier binary.
+- `npm run format:check`: repository-wide check reports unrelated pre-existing formatting drift; all task-changed files were formatted with the repository Prettier binary.
 
 ### Deviations
 
 - The accepted Admin Prisma schema has no durable Shopify usage snapshot or discrepancy table. Reconciliation is therefore rendered as explicitly unavailable (`discrepancy: null`) rather than fabricated or obtained with raw SQL.
-- Overview Free exhaustion uses the bounded indexed counter threshold of 5; tenant detail computes the exact base plus signed adjustments versus committed and reserved quantities. A schema-supported aggregate for per-plan allowance plus adjustments would be needed for exact cross-tenant overview counts without loading all shops.
+- Free exhaustion remains unavailable until a schema-supported aggregate or accepted persisted exhaustion outcome exists; the former counter-threshold proxy was removed.
 
 ### Assumptions
 
-- `BillingPlan.freeLifetimeConversationAllowance` is the configured Free allowance and the current accepted Free policy threshold is 5.
 - Paid current-cycle usage is represented by reported `UsageEvent` rows matching the subscription billing period and mapped Shopify usage-event handle.
+- Automated-message usage is represented by all current-period `OUTBOUND_AUTOMATED_MESSAGE` events; it is `null` when no billing period exists.
 
 ### Unresolved Issues
 
