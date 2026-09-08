@@ -7,11 +7,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: ready
+status: in_progress
 priority: 100
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-08T15:32:26Z
+attempt: 1
 depends_on: 
   - ARCH-007-BACKGROUND-004
   - ARCH-007-MESSAGING-001
@@ -20,7 +20,7 @@ enables:
   - ARCH-007-BACKGROUND-008
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08
+updated: 2026-09-08T15:32:26Z
 ---
 
 # ARCH-007-BACKGROUND-005: Apply normalized Meta provider status to durable message and usage accounting
@@ -111,7 +111,7 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-Not Started
+In Progress
 
 ### Files Changed
 
