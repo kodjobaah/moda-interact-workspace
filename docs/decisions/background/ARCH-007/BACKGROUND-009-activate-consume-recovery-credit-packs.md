@@ -237,6 +237,39 @@ Merged to workspace main: no
 
 ## Architect Review
 
+#### Attempt 3 — Accepted
+
+Attempt 3 is architect-accepted Complete.
+
+The two remaining Attempt 2 corrections are implemented correctly:
+
+1. Recovery-credit reconciliation now selects `REPORTED` purchases first
+   within the bounded reconciliation limit, then spends only remaining capacity
+   on `NEEDS_ATTENTION` and non-terminal billing states. Stable historical
+   `NEEDS_ATTENTION` rows can therefore no longer starve a newer successfully
+   billed purchase awaiting activation.
+
+2. Purchased-credit reservation concurrency coverage now deterministically
+   exercises the intended CAS-loss/retry path. Both contenders read the same
+   pre-update counter state, exactly one conditional CAS loses, the loser
+   retries in a new transaction, and the retry observes exhausted capacity.
+
+The previously accepted B009 behaviour remains intact, including:
+
+- Shopify-reported pack activation grants credits exactly once;
+- activation failure after successful Shopify reporting cannot move the
+  UsageEvent back into provider retry/attention handling;
+- PENDING/RETRYABLE/NEEDS_ATTENTION billing states grant no credits;
+- Free capacity is consumed before purchased capacity;
+- purchased capacity is consumed before paid overage;
+- definitive failures release purchased reservations;
+- ambiguous provider outcomes retain reserved capacity;
+- purchased credits remain durable across billing periods and plan changes.
+
+Implementation reviewed at `125f1a9`.
+
+No further implementation changes are required for ARCH-007-BACKGROUND-009.
+
 ### Review Status
 
 Changes Requested
