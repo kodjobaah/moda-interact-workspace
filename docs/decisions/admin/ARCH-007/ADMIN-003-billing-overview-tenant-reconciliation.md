@@ -7,10 +7,10 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: review
+status: ready
 priority: 120
-executor: copilot
-claimed_at: 2026-09-08T21:24:43Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: 
   - ARCH-007-ADMIN-002
@@ -442,33 +442,411 @@ When all corrections and required tests pass:
 
 The existing reconciliation-unavailable decision is accepted for this task: keep `discrepancy: null` until an accepted durable Background/Database contract provides a Shopify usage snapshot/comparison.
 
+
+#### Attempt 2 — Changes Requested
+
+Attempt 2 materially corrected the Attempt 1 issues. Preserve the following accepted Attempt 2 behavior exactly unless a correction below explicitly requires touching it:
+
+```text
+ADMIN-002 is integrated into the ADMIN-003 branch
+Free exhaustion overview is null/unavailable rather than committed>=5
+from/to date-only parsing uses inclusive UTC day boundaries
+platform ledger exposes the complete safe reporting diagnostics
+report-state labels use the existing Admin i18n path
+automated-message usage is scoped to the current billing period
+expired hard overrides do not affect the effective hard cap
+reconciliation remains discrepancy=null because no accepted durable provider snapshot exists
+```
+
+Attempt 3 is a **narrow correction pass**. Do not redesign ADMIN-003 or reopen already-corrected architecture. Execute the following steps in order.
+
+##### Step 0 — Verify the task branch baseline before editing
+
+Work only on `moda-interact-admin` branch `task/ARCH-007-ADMIN-003` and the mirrored parent-workspace branch of the same name.
+
+Run:
+
+```bash
+git fetch origin
+git branch --show-current
+git merge-base --is-ancestor origin/main HEAD
+```
+
+Required result:
+
+```text
+branch == task/ARCH-007-ADMIN-003
+origin/main is an ancestor of HEAD
+```
+
+If `git merge-base --is-ancestor origin/main HEAD` exits non-zero because `main` advanced after this review, merge `origin/main` into the existing task branch before continuing:
+
+```bash
+git merge origin/main
+```
+
+Do not rebase and do not force-push.
+
+Before changing ADMIN-003, verify the accepted ADMIN-002 implementation still exists, including:
+
+```text
+src/app/(protected)/billing/controls/page.tsx
+src/app/actions/billing-controls.ts
+src/components/admin/billing-controls.tsx
+src/lib/admin/billing-controls.ts
+src/lib/admin/billing-control-validation.ts
+```
+
+If those accepted dependency files are absent, STOP and record the integration problem in this task. Do not reimplement ADMIN-002.
+
+##### Step 1 — Complete the tenant ledger diagnostics
+
+File to change:
+
+```text
+src/components/admin/tenant-billing.tsx
+```
+
+The platform ledger already displays the accepted safe diagnostic set. Make the tenant ledger display the same diagnostic data for each row.
+
+The tenant ledger MUST visibly render all of these fields:
+
+```text
+metric
+quantity
+shopifyReportState
+providerErrorCode
+providerResponseSummary
+reportAttemptCount
+lastReportAttemptAt
+reportedAt
+shopifyEventHandle
+```
+
+Presentation rules:
+
+```text
+shopifyReportState       -> adminBillingReportStateLabel(...)
+quantity                 -> adminI18n.formatNumber(...)
+reportAttemptCount       -> adminI18n.formatNumber(...)
+lastReportAttemptAt      -> adminI18n.formatDateTime(...) when present
+reportedAt               -> adminI18n.formatDateTime(...) when present
+null diagnostic value    -> existing localized empty/not-recorded label
+```
+
+Do not expose bearer tokens, provider secrets or customer payloads. `providerResponseSummary` is the maximum provider-response detail permitted by this task.
+
+Do not remove the diagnostics already present in the platform ledger.
+
+##### Step 2 — Preserve expired override values as history while ignoring them for effective policy
+
+Files to inspect/change:
+
+```text
+src/lib/admin/billing.ts
+src/components/admin/tenant-billing.tsx
+src/lib/admin/types.ts   # only if the read-model shape needs a narrow correction
+```
+
+The current implementation correctly ignores an expired override when calculating the **effective** hard cap. Preserve that behavior.
+
+The remaining bug is presentation/history: an expired override's configured pause values are currently converted to `null` before the UI renders them.
+
+Use this exact distinction:
+
+```text
+RECORDED/HISTORICAL OVERRIDE VALUES
+    come from the persisted ShopBillingPolicyOverride row
+    remain visible for ACTIVE and EXPIRED overrides
+
+EFFECTIVE RUNTIME POLICY
+    may use override values only when overrideState == ACTIVE
+    must ignore the override when overrideState == EXPIRED
+```
+
+For an existing override, the tenant Billing UI MUST display the persisted configured values regardless of expiry:
+
+```text
+override.outboundSoftLimit
+override.outboundHardLimit
+override.recoverySafetyCeiling
+override.pauseNewRecoveries
+override.pauseAutomatedWhatsapp
+override.reason
+override.expiresAt
+```
+
+Deterministic example:
+
+```text
+stored override:
+  state after evaluation = EXPIRED
+  pauseNewRecoveries = true
+  pauseAutomatedWhatsapp = true
+  outboundHardLimit = 40
+  reason = "temporary support hold"
+
+UI history MUST show:
+  state = Expired
+  pause new recoveries = Enabled
+  pause automated WhatsApp = Enabled
+  hard override = 40
+  reason = temporary support hold
+
+Effective hard-cap calculation MUST ignore the expired 40 value.
+```
+
+Do not render root-level derived `pauseNewRecoveries` / `pauseAutomatedWhatsapp` fields as the historical configured values if those fields intentionally represent only active/effective behavior. Render the persisted `billing.override.*` values for override history, or rename/remove ambiguous derived fields if necessary.
+
+##### Step 3 — Fail closed when the platform absolute hard cap is unavailable
+
+File to change:
+
+```text
+src/lib/admin/billing.ts
+```
+
+The effective outbound hard cap is valid only when both of these inputs exist:
+
+```text
+configuredHardLimit
+PlatformBillingPolicy.absoluteOutboundHardLimit
+```
+
+Use this exact contract:
+
+```text
+configuredHardLimit == null
+    -> effectiveOutboundHardCap = null
+
+platform policy == null
+    -> effectiveOutboundHardCap = null
+
+both values exist
+    -> effectiveOutboundHardCap = min(configuredHardLimit, platformAbsoluteOutboundHardLimit)
+```
+
+Do NOT return the plan/override configured hard limit as an "effective" value when the platform absolute hard cap is unavailable.
+
+Required truth table:
+
+| configured hard limit | platform absolute cap | effective hard cap |
+| ---: | ---: | ---: |
+| `50` | `100` | `50` |
+| `150` | `100` | `100` |
+| `50` | unavailable | unavailable / `null` |
+| unavailable | `100` | unavailable / `null` |
+
+The UI already knows how to render nullable values as localized unavailable; preserve that behavior.
+
+##### Step 4 — Finish the remaining ARCH-005 Admin i18n/locale formatting
+
+Files to inspect/change:
+
+```text
+src/components/admin/billing-overview.tsx
+src/components/admin/tenant-billing.tsx
+src/i18n/index.ts
+src/i18n/locales/*
+src/i18n/required-keys.ts
+```
+
+Correct these exact remaining presentation paths:
+
+1. **Paid-recovery overview quantity**
+
+Current semantic problem:
+
+```text
+overview.paidRecoveryUsage is displayed as a raw numeric string
+```
+
+Required:
+
+```text
+Number(overview.paidRecoveryUsage)
+    -> existing adminI18n.formatNumber(...)
+```
+
+2. **Overview report-state cards**
+
+The raw enum value MUST NOT be used as visible copy inside `billing.reportState`.
+
+Required:
+
+```text
+state enum
+    -> adminBillingReportStateLabel(state)
+    -> pass localized label to billing.reportState
+```
+
+3. **Ledger filter options**
+
+The `<option value>` MUST remain the operational enum because it is the query/filter contract:
+
+```text
+value="PENDING"
+value="IN_FLIGHT"
+value="RETRYABLE"
+value="REPORTED"
+value="NEEDS_ATTENTION"
+```
+
+But the visible option label MUST be `adminBillingReportStateLabel(value)`, not the raw enum text.
+
+4. **Override numeric values**
+
+When present, render these through `adminI18n.formatNumber(...)`:
+
+```text
+billing.override.outboundSoftLimit
+billing.override.outboundHardLimit
+billing.override.recoverySafetyCeiling
+```
+
+Continue using the existing Admin ICU runtime/catalogue. Do not create a second translation system. Add/update catalogue keys only if genuinely required, and keep `src/i18n/required-keys.ts` complete.
+
+##### Step 5 — Replace source-presence-only assertions with real behavioral regression coverage
+
+Current `tests/security/admin-billing-visibility.test.mjs` primarily uses `readFile(...)` plus `assert.match(...)`. Those source-contract checks may remain, but they are **not sufficient** for the Attempt 3 acceptance tests below.
+
+The new tests MUST execute the production logic or a pure helper extracted from production. Do not copy/reimplement the production formula inside the test.
+
+If direct execution is awkward because the logic is embedded in a Prisma read function or TSX component, extract the smallest pure production helper required for deterministic testing. Keep that helper in the normal Admin source tree and make production code call the same helper the test executes.
+
+Attempt 3 MUST behaviorally prove these cases:
+
+```text
+A. Effective hard cap — active override below platform cap
+   plan default = 80
+   active override hard limit = 50
+   platform cap = 100
+   -> effective = 50
+
+B. Effective hard cap — active override above platform cap
+   active override hard limit = 150
+   platform cap = 100
+   -> effective = 100
+
+C. Effective hard cap — expired override
+   plan default = 80
+   expired override hard limit = 50
+   platform cap = 100
+   -> effective = 80
+   -> historical override hard limit remains 50
+
+D. Effective hard cap — missing platform policy
+   configured hard limit = 50
+   platform policy = null
+   -> effective = null
+
+E. Expired override history
+   expired override pauseNewRecoveries=true
+   expired override pauseAutomatedWhatsapp=true
+   -> historical presentation/read model preserves true/true
+   -> override state is EXPIRED
+
+F. Date boundaries execute the production date helper
+   billingDateBoundary("2026-09-08", false)
+       -> 2026-09-08T00:00:00.000Z
+   billingDateBoundary("2026-09-08", true)
+       -> 2026-09-08T23:59:59.999Z
+
+G. Report-state presentation executes the production label helper
+   PENDING  -> localized Pending label
+   REPORTED -> localized Reported label
+
+H. Tenant ledger diagnostic presentation
+   a row containing providerResponseSummary, reportAttemptCount,
+   lastReportAttemptAt, reportedAt and shopifyEventHandle
+   -> all five values are represented by the tenant ledger presentation path
+```
+
+For case H, a rendered-component assertion is preferred. If the repository test runtime cannot render TSX directly, extract a minimal production presentation/view-model helper and test that helper; do not fall back to regex-only assertions for the values themselves.
+
+Also retain the existing source/security guards that prove:
+
+```text
+bounded pagination remains present
+provider secrets/customer payloads are not selected/displayed
+ADMIN-002 control routes/services remain present
+no merge-conflict markers remain
+```
+
+##### Step 6 — Validation, commits and stop condition
+
+After implementing only the corrections above, run the repository-declared validation that exists:
+
+```text
+focused ADMIN-003 tests
+full npm test
+npx tsc --noEmit
+npm run prisma:validate
+npm run lint
+npm run build
+git diff --check
+```
+
+If `format:check` still reports repository-wide pre-existing drift, format every file changed by Attempt 3 and record the baseline separately; do not mass-format unrelated files.
+
+Then:
+
+1. Update this same task's Completion Report to **Attempt 3** and record exact files changed, behavioral tests added, validation results and implementation commit SHA.
+2. Commit and push `moda-interact-admin` branch `task/ARCH-007-ADMIN-003`.
+3. Commit and push the mirrored parent-workspace `task/ARCH-007-ADMIN-003` branch.
+4. Set this task to `review`.
+5. **STOP.** Do not start or modify ADMIN-004 and do not claim architect acceptance.
+
+##### Explicit non-goals for Attempt 3
+
+Do **not**:
+
+- implement ADMIN-004 retry/correction actions;
+- add or change database schema/migrations;
+- add raw SQL;
+- query Shopify directly from Admin;
+- create a new reconciliation persistence mechanism;
+- change the accepted `discrepancy: null` behavior;
+- change ADMIN-002 billing-control semantics;
+- remove already-correct platform-ledger diagnostics;
+- replace bounded DB reads with load-all/application-memory aggregation;
+- rebase or force-push;
+- merge the task branch into `main`.
+
+The accepted reconciliation decision remains:
+
+```text
+BACKGROUND-008 completion does not itself create a durable Admin-queryable
+Shopify usage snapshot/discrepancy model. Keep reconciliation unavailable in
+ADMIN-003 until an accepted durable contract exists.
+```
+
 ### Reviewed Files
 
-- `moda-interact-admin/src/lib/admin/billing.ts`
-- `moda-interact-admin/src/lib/admin/types.ts`
 - `moda-interact-admin/src/app/(protected)/billing/page.tsx`
-- `moda-interact-admin/src/app/(protected)/page.tsx`
 - `moda-interact-admin/src/components/admin/billing-overview.tsx`
 - `moda-interact-admin/src/components/admin/tenant-billing.tsx`
-- `moda-interact-admin/src/components/admin/tenant-detail-panel.tsx`
-- `moda-interact-admin/src/components/admin/tenant-table.tsx`
+- `moda-interact-admin/src/i18n/index.ts`
 - `moda-interact-admin/src/i18n/locales/en.json`
 - `moda-interact-admin/src/i18n/required-keys.ts`
+- `moda-interact-admin/src/lib/admin/billing.ts`
+- `moda-interact-admin/src/lib/admin/types.ts`
 - `moda-interact-admin/tests/security/admin-billing-visibility.test.mjs`
-- implementation commit `66c5730`
-- parent task-report commit `815280c`
+- accepted ADMIN-002 integration present in the supplied tree
+- implementation commit `f096d68`
+- parent task-report commit `39659d2`
 
 ### Validation Reviewed
 
-- Agent-reported full Admin suite: 111 passed.
-- Agent-reported build, Prisma validation, lint and `git diff --check`: passed.
-- Focused ADMIN-003 security tests were independently inspected; their current coverage is insufficient for the behavioral corrections above.
-- Git branch ancestry was reviewed: implementation commit `66c5730` diverges from the Admin main line containing the architect-accepted ADMIN-002 merge, so Step 0 is required before Attempt 2 can be accepted.
-
+- Agent-reported full Admin suite: 121 passed.
+- Agent-reported TypeScript, Prisma validation, build, lint and `git diff --check`: passed.
+- Focused `tests/security/admin-billing-visibility.test.mjs` was independently executed: 6/6 passed.
+- Git ancestry reviewed: `f096d68` is ahead of current Admin `main` and no longer behind it; accepted ADMIN-002 is integrated.
+- Existing focused ADMIN-003 tests are still primarily source-regex assertions and do not behaviorally prove the Attempt 3 cases above.
 ### Architecture Conformance
 
-Changes required. Bounded/read-only ownership and reconciliation-unavailable handling conform; ledger diagnostics, Free-exhaustion semantics, tenant cap/message visibility, date boundaries, i18n presentation and same-repository dependency integration require correction.
+Changes required, but the remaining scope is narrow. Branch integration, bounded/read-only ownership, reconciliation-unavailable handling, nullable Free-exhaustion semantics, inclusive date boundaries, platform-ledger diagnostics, current-period message aggregation and expired-override exclusion from effective hard-cap calculations now conform. Tenant-ledger diagnostic completeness, expired override history presentation, fail-closed effective-cap semantics, remaining locale formatting and behavioral regression quality require Attempt 3 correction.
 
 ### Follow-up
 
-No new task. Continue the same `ARCH-007-ADMIN-003` task as Attempt 2.
+No new task. Continue the same `ARCH-007-ADMIN-003` task as Attempt 3. `ARCH-007-ADMIN-004` remains blocked/pending until ADMIN-003 is architect-accepted `complete`.
