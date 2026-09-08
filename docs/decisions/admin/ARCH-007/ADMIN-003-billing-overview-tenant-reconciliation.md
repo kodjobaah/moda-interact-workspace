@@ -7,10 +7,10 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: review
+status: ready
 priority: 120
-executor: copilot
-claimed_at: 2026-09-08T19:30:49Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: 
   - ARCH-007-ADMIN-002
@@ -20,7 +20,7 @@ depends_on:
 enables: 
   - ARCH-007-ADMIN-004
 created: 2026-09-07
-updated: 2026-09-08T21:15:00Z
+updated: 2026-09-08T21:16:00Z
 ---
 
 # ARCH-007-ADMIN-003: Build billing overview, tenant detail and Shopify reconciliation visibility
@@ -175,24 +175,298 @@ Ready for Architect Review (Attempt 1)
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Implementation is complete and awaits `moda_architect` review. No architect acceptance decision has been made by this agent.
+#### Attempt 1 — Changes Requested
+
+The implementation direction is accepted, including the decision to render Shopify-vs-Moda reconciliation as unavailable while the accepted schema has no durable provider usage snapshot. Do **not** add raw SQL, direct Shopify provider calls, a duplicate reconciliation table, or any ADMIN-004 retry/correction behavior in this task.
+
+Attempt 2 is a narrow correction pass. Execute the following steps **in order**. Do not broaden scope or redesign billing.
+
+##### Step 0 — Synchronize the implementation task branch with accepted ADMIN-002
+
+The reviewed Admin implementation commit `66c5730` was created from a branch that diverges from the current Admin `main`; it does not contain the architect-accepted ADMIN-002 implementation even though ADMIN-003 depends on ADMIN-002. ADMIN-003 also edits files that ADMIN-002 changed, including the billing page, Admin types, locale catalogue and required-key manifest.
+
+Before making Attempt 2 code changes, in `moda-interact-admin` while checked out on `task/ARCH-007-ADMIN-003`:
+
+```bash
+git fetch origin
+git merge origin/main
+```
+
+Rules:
+
+- Merge `origin/main` **into the existing task branch**. Do not rebase and do not force-push.
+- Resolve conflicts by preserving **both** the accepted ADMIN-002 billing-control functionality and ADMIN-003 billing visibility additions.
+- Do not merge `task/ARCH-007-ADMIN-003` into `main`.
+- After conflict resolution, verify the accepted ADMIN-002 control-plane files/features still exist, including platform billing controls, tenant billing overrides and append-only Free allowance adjustments.
+- If `origin/main` does not yet contain the architect-accepted ADMIN-002 implementation, STOP implementation work and record the dependency/integration problem in this task instead of reimplementing ADMIN-002 locally.
+
+##### Step 1 — Correct App Event ledger diagnostics and report-state rendering
+
+Current data loading already selects these fields in `src/lib/admin/billing.ts` and they MUST remain bounded/paginated:
+
+```text
+occurredAt
+quantity
+shopifyReportState
+reportAttemptCount
+lastReportAttemptAt
+reportedAt
+providerErrorCode
+providerResponseSummary
+```
+
+Update **both** ledger presentations:
+
+```text
+src/components/admin/billing-overview.tsx
+src/components/admin/tenant-billing.tsx
+```
+
+Each ledger row MUST visibly expose:
+
+```text
+occurredAt
+metric
+quantity
+report state
+reportAttemptCount
+lastReportAttemptAt
+reportedAt
+providerErrorCode
+providerResponseSummary
+```
+
+Use the existing Admin ICU/i18n path for column labels, empty values and visible report-state labels. Use existing locale-aware date/number formatters.
+
+The following behavior is mandatory:
+
+| UsageEvent state | providerErrorCode | UI result |
+| --- | --- | --- |
+| `PENDING` | `null` | show localized Pending state; MUST NOT show `Reported` |
+| `IN_FLIGHT` | `null` | show localized In-flight state; MUST NOT show `Reported` |
+| `RETRYABLE` | any/null | show localized Retryable state plus error fields when present |
+| `NEEDS_ATTENTION` | any/null | show localized Needs-attention state plus error fields when present |
+| `REPORTED` | `null` | show localized Reported state |
+
+Delete/replace the current fallback equivalent to:
+
+```ts
+providerErrorCode ?? adminI18n.t("billing.reported")
+```
+
+because absence of an error code does not mean the event was reported.
+
+Do not expose bearer tokens or customer payloads. `providerResponseSummary` is the only provider response detail permitted by this task.
+
+##### Step 2 — Stop fabricating the cross-tenant Free-exhaustion KPI
+
+The current overview counts `FREE_RECOVERY_LIFETIME` counters with `committedQuantity >= 5`. That is not the ARCH-007 exhaustion definition because it ignores reserved capacity, the plan's configured base allowance and signed ADMIN-002 allowance adjustments.
+
+The correct tenant-level formula remains:
+
+```text
+effectiveAllowance = baseAllowance + signedAdjustments
+remaining = max(effectiveAllowance - committed - reserved, 0)
+exhausted = remaining == 0
+```
+
+The accepted schema does not currently provide an index-supported/materialized cross-tenant aggregate for that exact calculation, and this task MUST NOT load all shops/adjustments into application memory or add raw SQL.
+
+Therefore Attempt 2 MUST use this contract:
+
+```ts
+BillingOverview.freeExhausted: number | null
+```
+
+and:
+
+```text
+getBillingOverview() -> freeExhausted = null
+BillingOverviewCards -> localized "Unavailable" when freeExhausted is null
+```
+
+Do not use `committedQuantity >= 5` or any other constant threshold as a proxy. Keep the tenant-level exact allowance calculation unchanged.
+
+##### Step 3 — Add the required tenant message-count/cap visibility
+
+Extend the existing bounded `getTenantBilling()` read model; do not create a second billing read service.
+
+Use accepted database fields only:
+
+```text
+UsageEvent.metric = OUTBOUND_AUTOMATED_MESSAGE
+Subscription.billingPeriod.id
+BillingPlan.defaultOutboundHardLimit
+PlatformBillingPolicy.absoluteOutboundHardLimit
+ShopBillingPolicyOverride.outboundHardLimit
+ShopBillingPolicyOverride.pauseNewRecoveries
+ShopBillingPolicyOverride.pauseAutomatedWhatsapp
+ShopBillingPolicyOverride.reason
+ShopBillingPolicyOverride.expiresAt
+```
+
+Required behavior:
+
+1. `currentPeriodAutomatedMessageQuantity`
+   - If a current `billingPeriod.id` exists, aggregate the tenant's `UsageEvent.quantity` for that `billingPeriodId` and `metric = OUTBOUND_AUTOMATED_MESSAGE`.
+   - This is Moda's local current-period count. Do not require Shopify `REPORTED` state for this local count.
+   - If no current billing period exists, represent the value as unavailable (`null`), not a fabricated zero.
+
+2. Override state
+   - `ACTIVE` when an override exists and `expiresAt` is `null` or strictly later than the evaluation time.
+   - `EXPIRED` when an override exists and `expiresAt <= evaluation time`.
+   - An expired override MUST remain visible historically, including reason and configured values.
+   - An expired override MUST NOT affect the effective hard cap.
+
+3. Effective outbound hard cap
+
+```text
+candidateHardCap =
+    activeOverride.outboundHardLimit
+    ?? BillingPlan.defaultOutboundHardLimit
+
+effectiveOutboundHardCap =
+    min(candidateHardCap, PlatformBillingPolicy.absoluteOutboundHardLimit)
+```
+
+   - If a required source value is genuinely unavailable, return/display unavailable rather than inventing a default.
+   - Display the plan default hard cap, platform absolute hard cap, shop hard override (if recorded), effective hard cap, override state, override reason, `pauseNewRecoveries` and `pauseAutomatedWhatsapp`.
+   - Clearly label the automated-message quantity as a tenant/current-billing-period aggregate. Do not imply that the aggregate quantity is itself a per-conversation cap.
+
+Use the existing ADMIN-002 `PlatformBillingPolicy` and `ShopBillingPolicyOverride` records after Step 0. Do not duplicate those models or business rules.
+
+##### Step 4 — Correct date-range boundary semantics
+
+The Billing ledger `from`/`to` form is date-based. For a valid `YYYY-MM-DD` input:
+
+```text
+from -> YYYY-MM-DDT00:00:00.000Z
+to   -> YYYY-MM-DDT23:59:59.999Z
+```
+
+A `to=2026-09-08` filter MUST include events occurring at any time on 8 September 2026. Do not parse the `to` value as midnight at the start of the day.
+
+Keep the database query bounded/paginated and index-aligned. Do not switch to application-memory filtering.
+
+##### Step 5 — Complete the ARCH-005 i18n invariant
+
+All new or changed visible Admin copy in Attempt 2 MUST use the existing Admin ICU runtime/catalogue and required-key manifest.
+
+Mandatory presentation rules:
+
+- Format displayed billing quantities with the existing locale-aware number formatter instead of rendering raw decimal strings directly where they represent numeric quantities.
+- Render visible Shopify report-state labels through i18n. Operational form/query values may remain `PENDING`, `IN_FLIGHT`, `RETRYABLE`, `REPORTED`, `NEEDS_ATTENTION`.
+- Add every new key to every Admin locale catalogue currently declared by the repository and update `src/i18n/required-keys.ts` according to the existing convention.
+- Do not create a second translation helper/runtime and do not hard-code new user-visible English in TSX.
+
+##### Step 6 — Required behavioral regression coverage
+
+Do not satisfy these checks with source-regex assertions alone. Add/extend deterministic behavioral tests that exercise the read/presentation logic or extracted pure helpers.
+
+The focused Attempt 2 coverage MUST prove all of the following:
+
+```text
+A. PENDING + providerErrorCode=null
+   -> rendered state is Pending
+   -> "Reported" is not used as a fallback
+
+B. REPORTED + providerErrorCode=null
+   -> rendered state is Reported
+
+C. Ledger presentation exposes:
+   reportAttemptCount
+   lastReportAttemptAt
+   reportedAt
+   providerErrorCode
+   providerResponseSummary
+
+D. Billing overview with exact cross-tenant Free exhaustion unavailable
+   -> freeExhausted is null
+   -> UI renders localized Unavailable
+   -> no committed>=5 proxy query remains
+
+E. Active shop hard override
+   -> participates in effective hard-cap calculation
+   -> effective hard cap is also bounded by platform absolute hard limit
+
+F. Expired shop hard override
+   -> remains visible as EXPIRED with reason/configured values
+   -> is ignored when calculating effective hard cap
+
+G. Current billing period exists
+   -> OUTBOUND_AUTOMATED_MESSAGE quantity is aggregated for that shop + billingPeriodId
+
+H. No current billing period
+   -> current-period automated-message quantity is unavailable/null
+
+I. Date filter
+   from=2026-09-08 -> 2026-09-08T00:00:00.000Z
+   to=2026-09-08   -> 2026-09-08T23:59:59.999Z
+
+J. ADMIN-002 integration preservation after merging main
+   -> platform billing-control route/service still exists
+   -> tenant override path still exists
+   -> Free allowance adjustment path still exists
+```
+
+Run the focused ADMIN-003 tests plus the repository-declared full Admin validation required by this task (`test`, TypeScript/typecheck if declared, Prisma generate/validate if declared, lint, build, and `git diff --check`). Do not invent missing scripts.
+
+##### Explicit non-goals for Attempt 2
+
+Do **not** do any of the following:
+
+- Do not implement `ARCH-007-ADMIN-004` retry/correction actions.
+- Do not implement `ARCH-007-BACKGROUND-008` reconciliation persistence.
+- Do not query Shopify directly from Admin for provider usage.
+- Do not add a reconciliation table/model/migration.
+- Do not add raw SQL or load all shops/events/adjustments into memory for aggregation.
+- Do not change billing policy semantics established by ADMIN-002.
+- Do not remove or rewrite accepted ADMIN-002 functionality while resolving the branch merge.
+- Do not merge the task branch into `main`.
+
+##### Completion/stop condition
+
+When all corrections and required tests pass:
+
+1. Update this same task's Completion Report for **Attempt 2** with exact files changed, validation results, and implementation commit SHA.
+2. Commit and push `moda-interact-admin` on `task/ARCH-007-ADMIN-003`.
+3. Commit and push this task report on the mirrored parent `task/ARCH-007-ADMIN-003` branch.
+4. Set this task to `review`.
+5. **STOP.** Do not start ADMIN-004 and do not claim architect acceptance.
+
+The existing reconciliation-unavailable decision is accepted for this task: keep `discrepancy: null` until an accepted durable Background/Database contract provides a Shopify usage snapshot/comparison.
 
 ### Reviewed Files
 
-Pending architect review.
+- `moda-interact-admin/src/lib/admin/billing.ts`
+- `moda-interact-admin/src/lib/admin/types.ts`
+- `moda-interact-admin/src/app/(protected)/billing/page.tsx`
+- `moda-interact-admin/src/app/(protected)/page.tsx`
+- `moda-interact-admin/src/components/admin/billing-overview.tsx`
+- `moda-interact-admin/src/components/admin/tenant-billing.tsx`
+- `moda-interact-admin/src/components/admin/tenant-detail-panel.tsx`
+- `moda-interact-admin/src/components/admin/tenant-table.tsx`
+- `moda-interact-admin/src/i18n/locales/en.json`
+- `moda-interact-admin/src/i18n/required-keys.ts`
+- `moda-interact-admin/tests/security/admin-billing-visibility.test.mjs`
+- implementation commit `66c5730`
+- parent task-report commit `815280c`
 
 ### Validation Reviewed
 
-Pending architect review.
+- Agent-reported full Admin suite: 111 passed.
+- Agent-reported build, Prisma validation, lint and `git diff --check`: passed.
+- Focused ADMIN-003 security tests were independently inspected; their current coverage is insufficient for the behavioral corrections above.
+- Git branch ancestry was reviewed: implementation commit `66c5730` diverges from the Admin main line containing the architect-accepted ADMIN-002 merge, so Step 0 is required before Attempt 2 can be accepted.
 
 ### Architecture Conformance
 
-Pending
+Changes required. Bounded/read-only ownership and reconciliation-unavailable handling conform; ledger diagnostics, Free-exhaustion semantics, tenant cap/message visibility, date boundaries, i18n presentation and same-repository dependency integration require correction.
 
 ### Follow-up
 
-None
+No new task. Continue the same `ARCH-007-ADMIN-003` task as Attempt 2.
