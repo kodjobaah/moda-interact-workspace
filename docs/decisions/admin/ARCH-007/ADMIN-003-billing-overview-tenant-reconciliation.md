@@ -7,7 +7,7 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: pending
+status: ready
 priority: 120
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables: 
   - ARCH-007-ADMIN-004
 created: 2026-09-07
-updated: 2026-09-08T21:16:00+01:00
+updated: 2026-09-08
 ---
 
 # ARCH-007-ADMIN-003: Build billing overview, tenant detail and Shopify reconciliation visibility

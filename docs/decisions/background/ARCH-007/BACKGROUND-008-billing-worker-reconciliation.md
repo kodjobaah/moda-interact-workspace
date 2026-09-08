@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: review
+status: complete
 priority: 120
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ enables:
   - ARCH-007-SYSTEM-TEST-002
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T22:05:00+01:00
+updated: 2026-09-08
 ---
 
 # ARCH-007-BACKGROUND-008: Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain
@@ -94,6 +94,7 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 
 ## Enables
 
+- ARCH-007-ADMIN-003
 - ARCH-007-ADMIN-004
 - ARCH-007-GATEWAY-001
 - ARCH-007-SYSTEM-TEST-002
@@ -101,14 +102,14 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 
 ## Acceptance Criteria
 
-- [ ] Billing work survives Redis/job loss because PostgreSQL scans recover due state.
-- [ ] A `RECOVERY_CREDIT_PACK_PURCHASE` whose billing UsageEvent is already REPORTED but whose purchase activation was interrupted is rediscovered and activated idempotently through BACKGROUND-009.
-- [ ] External Shopify plan changes are reflected without requiring merchant callback.
-- [ ] Partner failure cannot become no-contract/free.
-- [ ] Unknown plan maps after Admin registration on later reconciliation with no deploy.
-- [ ] Usage discrepancy is visible but not auto-fudged.
-- [ ] Post-uninstall cutoff is enforced.
-- [ ] Independent entrypoint/readiness/tests/validation pass.
+- [x] Billing work survives Redis/job loss because PostgreSQL scans recover due state.
+- [x] A `RECOVERY_CREDIT_PACK_PURCHASE` whose billing UsageEvent is already REPORTED but whose purchase activation was interrupted is rediscovered and activated idempotently through BACKGROUND-009.
+- [x] External Shopify plan changes are reflected without requiring merchant callback.
+- [x] Partner failure cannot become no-contract/free.
+- [x] Unknown plan maps after Admin registration on later reconciliation with no deploy.
+- [x] Usage discrepancy is visible but not auto-fudged.
+- [x] Post-uninstall cutoff is enforced.
+- [x] Independent entrypoint/readiness/tests/validation pass.
 
 ## Validation
 
@@ -288,11 +289,88 @@ Merged to workspace main: no
 
 ### Review Status
 
-Changes Requested — Attempt 3
+Accepted
 
 ### Review Notes
 
-#### Attempt 3 — Changes Requested
+#### Attempt 4 — Accepted
+
+Attempt 4 is architect-accepted Complete.
+
+The final close-out contract is satisfied without redesigning the accepted B008
+runtime:
+
+1. `reportBillingReconciliationFailure()` bounds `errorName` to 64 characters
+   and `errorMessage` to 256 characters and emits only bounded scalar metadata
+   through the Shared logger under
+   `billing.reconciliation.scan_failed`.
+2. The production entrypoint source-contract regression proves that
+   `billing.ts` imports Shared `createLogger`, uses
+   `serviceName: "moda-billing-worker"`, wires
+   `reportBillingReconciliationFailure` into the scheduler, applies both bounds,
+   and does not pass the raw Error object as structured log metadata.
+3. The Partner provider regression now proves the `pendingUpdate` block itself
+   contains both `billingPeriod` and `legacySubscriptionId`; current-item
+   `description` parity remains covered.
+4. The discrepancy regression is explicitly labelled `B008-R7`, and the full
+   B008-R1 through B008-R8 matrix remains represented.
+5. The accepted Attempt 1/2/3 runtime corrections remain intact: rotating
+   bounded shop scans, Partner failure isolation, single-flight scheduling,
+   PostgreSQL-only billing readiness/resource cleanup, uninstall-priority
+   publication, permanent Shopify idempotency identity, B007 publisher
+   semantics, B009 activation reconciliation, and fail-closed subscription
+   projection.
+
+Attempt 4 implementation commit reviewed:
+
+```text
+c11185d69e11797e93bacce2d3194da3513f3c2d
+```
+
+The pushed delta is limited to the exact close-out surface requested in Attempt
+3: `src/entrypoints/billing.ts` and the three focused test files. No billing
+reconciliation, publisher, scheduler algorithm, readiness, database schema, or
+credit-grant behavior changed.
+
+Validation recorded by the Completion Report:
+
+- focused close-out suite: 38 passed;
+- build: passed;
+- Prisma validation: passed;
+- diagnostics: clean;
+- `git diff --check`: passed;
+- full unit suite: 423 passed with the same two unrelated
+  `pending-recovery-candidate.service.test.ts` baseline failures.
+
+The supplied archive contains no `node_modules`, so the architect did not
+independently rerun the Node/Vitest commands. Source was inspected directly and
+the pushed implementation commit was independently verified.
+
+The two unrelated baseline failures are not a B008 acceptance blocker.
+
+### Architecture Conformance
+
+Accepted. `ARCH-007-BACKGROUND-008` now satisfies the independent billing-worker
+architecture and all four correction rounds.
+
+### Follow-up
+
+`ARCH-007-BACKGROUND-008` is Complete.
+
+Dependency propagation from this acceptance:
+
+- `ARCH-007-ADMIN-003` is Ready because ADMIN-002, BACKGROUND-007,
+  SHOPIFY-001 and BACKGROUND-008 are all Complete.
+- `ARCH-007-GATEWAY-001` is Ready because its sole dependency,
+  BACKGROUND-008, is Complete.
+- `ARCH-007-ADMIN-004` remains Pending behind ADMIN-003.
+- `ARCH-007-SYSTEM-TEST-002` and `ARCH-007-SYSTEM-TEST-003` remain Pending /
+  manual-terminal-gated and must not be auto-started.
+
+Developer/user retains ownership of merging the accepted implementation task
+branch into Background `main` and integrating the parent workspace branch.
+
+#### Attempt 3 — Changes Requested (historical)
 
 Attempt 3 resolves the substantive B008 close-out corrections from Attempt 2.
 

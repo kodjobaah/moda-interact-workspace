@@ -15,7 +15,7 @@ Coordinator: `moda_architect`
 | BACKGROUND-005 | Apply normalized Meta provider status to durable message and usage accounting | Complete | BACKGROUND-004, MESSAGING-001, SHARED-004 |
 | BACKGROUND-006 | Implement Shopify App Events 2026-07 adapter and expiring token cache | Complete | SHARED-002, DATABASE-002 |
 | BACKGROUND-007 | Publish paid UsageEvents idempotently with retries and compensating corrections | Complete | BACKGROUND-003, BACKGROUND-006 |
-| BACKGROUND-008 | Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain | **Ready — Changes Requested; next claim Attempt 4** | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
+| BACKGROUND-008 | Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain | Complete | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
 | BACKGROUND-009 | Activate billed recovery packs and consume purchased credits before overage | Complete | DATABASE-005, SHARED-006, BACKGROUND-007 |
 | BACKGROUND-010 | Coalesce fragmented inbound WhatsApp messages into one CommerceAgent turn | Complete | DATABASE-006, BACKGROUND-004 |
 | BACKGROUND-011 | Add inbound WhatsApp abuse admission before routing and CommerceAgent work | **Ready** | BACKGROUND-010 |
