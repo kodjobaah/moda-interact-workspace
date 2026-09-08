@@ -7,10 +7,10 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 120
-executor: copilot
-claimed_at: 2026-09-08T21:03:25Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-007-BACKGROUND-005
@@ -24,7 +24,7 @@ enables:
   - ARCH-007-SYSTEM-TEST-002
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T21:30:00+01:00
+updated: 2026-09-08T22:05:00+01:00
 ---
 
 # ARCH-007-BACKGROUND-008: Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain
@@ -133,7 +133,43 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 4)
+Ready for architect review (Attempt 4)
+
+### Attempt 4 Completion Report
+
+Attempt 4 applies the two requested close-out corrections without changing the
+accepted billing runtime behavior. The production reconciliation failure
+reporter now bounds `errorName` to 64 characters and `errorMessage` to 256
+characters while emitting only scalar metadata through the Shared logger.
+
+The entrypoint-isolation regression now proves the production `billing.ts`
+wiring: Shared `createLogger`, `moda-billing-worker`, the exact
+`billing.reconciliation.scan_failed` event, scheduler callback wiring, both
+field bounds, and the absence of raw Error metadata. The Partner provider test
+now proves the pending query block contains both `billingPeriod` and
+`legacySubscriptionId`, and the discrepancy regression is explicitly labelled
+B008-R7. B008-R1 through R8 remain covered.
+
+### Attempt 4 Validation
+
+Passed:
+
+- `npx vitest run tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/runtime/billing-scheduler.test.ts tests/unit/providers/shopify-partner-billing.provider.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/shopify-usage-event-publisher.service.test.ts` (38 tests passed)
+- `npm run build`
+- `npm run prisma:validate`
+- `git diff --check`
+- editor diagnostics for all changed files (no errors)
+
+The full `npm run test:unit` suite completed with 423 passing tests and the
+same two unrelated pre-existing failures in
+`pending-recovery-candidate.service.test.ts`.
+
+### Attempt 4 Git / VCS
+
+Implementation repository commit `c11185d` is pushed to
+`origin/task/ARCH-007-BACKGROUND-008`. No implementation submodule gitlink was
+staged. The parent report is being committed and pushed on the matching task
+branch now.
 
 ### Attempt 3 Completion Report
 
