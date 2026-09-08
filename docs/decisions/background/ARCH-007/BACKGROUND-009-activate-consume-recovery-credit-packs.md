@@ -7,19 +7,20 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: review
+status: complete
 priority: 67
-executor: copilot
-claimed_at: 2026-09-08T16:27:38Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-007-DATABASE-005
   - ARCH-007-SHARED-006
   - ARCH-007-BACKGROUND-007
 enables:
+  - ARCH-007-BACKGROUND-008
   - ARCH-007-SYSTEM-TEST-004
 created: 2026-09-08
-updated: 2026-09-08T17:30:11Z
+updated: 2026-09-08T20:02:00+01:00
 ---
 # ARCH-007-BACKGROUND-009: Activate billed recovery packs and consume purchased credits before overage
 
@@ -274,7 +275,7 @@ No further implementation changes are required for ARCH-007-BACKGROUND-009.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
@@ -606,32 +607,21 @@ Architect static review additionally verified:
 
 ### Architecture Conformance
 
-Changes required within this SAME task.
+Accepted. Attempt 3 resolves all requested B009 corrections and no further
+implementation changes are required for this task.
 
 ### Follow-up
 
-Return this SAME task to `moda_background`.
+`ARCH-007-BACKGROUND-009` is Complete.
 
-Durable state:
+Dependency propagation:
 
-```text
-status: ready
-attempt: 1
-executor: null
-claimed_at: null
-```
+- `ARCH-007-BACKGROUND-008` is now Ready because BACKGROUND-005,
+  BACKGROUND-007, BACKGROUND-009 and SHOPIFY-001 are all
+  architect-accepted Complete.
+- `ARCH-007-SYSTEM-TEST-004` remains Pending / manual-gated because
+  SHOPIFY-004, BACKGROUND-008 and ADMIN-005 are still incomplete.
+- No system-test task is started automatically.
 
-The next claim becomes **Attempt 2**.
-
-Preserve the Attempt 1 implementation and correct only the reconciliation,
-publisher activation error boundary, and missing focused regressions described
-above.
-
-Do not begin or modify BACKGROUND-010 as part of this correction.
-
-Because BACKGROUND-010 has already been started separately in the developer's
-live workspace, this review overlay intentionally does not update the Background
-domain `_index.md` or parent architecture frontier from the older B009 review
-snapshot. The current task YAML remains authoritative and the shared indexes
-should be regenerated from live task state after the active B010 claim is
-available.
+The implementation reviewed at `125f1a9` has already been merged into
+`moda-interact-background` `main` through the developer-owned merge flow.

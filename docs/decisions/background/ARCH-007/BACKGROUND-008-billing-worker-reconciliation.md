@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: pending
+status: ready
 priority: 120
 executor: null
 claimed_at: null
@@ -23,7 +23,7 @@ enables:
   - ARCH-007-SYSTEM-TEST-002
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08
+updated: 2026-09-08T20:02:00+01:00
 ---
 
 # ARCH-007-BACKGROUND-008: Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain
