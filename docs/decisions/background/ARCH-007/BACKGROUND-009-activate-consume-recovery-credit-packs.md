@@ -7,11 +7,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: review
+status: in_progress
 priority: 67
 executor: copilot
-claimed_at: 2026-09-08T15:49:11Z
-attempt: 2
+claimed_at: 2026-09-08T16:27:38Z
+attempt: 3
 depends_on:
   - ARCH-007-DATABASE-005
   - ARCH-007-SHARED-006
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-007-SYSTEM-TEST-004
 created: 2026-09-08
-updated: 2026-09-08T16:53:30Z
+updated: 2026-09-08T16:27:38Z
 ---
 # ARCH-007-BACKGROUND-009: Activate billed recovery packs and consume purchased credits before overage
 
@@ -157,7 +157,7 @@ ACTIVATION/IDEMPOTENCY:
 ## Completion Report
 
 ### Status
-Review (Attempt 2)
+In Progress (Attempt 3)
 
 ### Files Changed
 - `moda-interact-background/package.json`
@@ -215,6 +215,132 @@ None.
 Changes Requested
 
 ### Review Notes
+
+#### Attempt 2 — Changes Requested
+
+Attempt 2 correctly fixes both production defects identified in Attempt 1:
+
+- post-REPORTED purchase activation failures are isolated from the Shopify
+  provider retry/attention state machine; and
+- reconciliation now prioritizes terminal UsageEvent states over older
+  non-terminal PENDING / IN_FLIGHT / RETRYABLE rows.
+
+Those corrections must be preserved. Two narrow issues remain before this task
+can be architect-accepted.
+
+##### Correction 1 — REPORTED activation must outrank stable NEEDS_ATTENTION
+
+The Attempt 2 terminal query groups `REPORTED` and `NEEDS_ATTENTION` together
+and orders them only by purchase `createdAt` / `id`. A bounded page of old
+already-stable NEEDS_ATTENTION purchases can therefore continue to occupy the
+entire reconciliation limit and indefinitely hide a newer REPORTED purchase.
+
+Example with `limit = 50`:
+
+```text
+50 old purchases:
+  purchase.status = NEEDS_ATTENTION
+  usageEvent.shopifyReportState = NEEDS_ATTENTION
+
+1 newer purchase:
+  purchase.status = PENDING_BILLING
+  usageEvent.shopifyReportState = REPORTED
+```
+
+The 50 old rows remain eligible on every pass, while the REPORTED purchase is
+the state that actually requires durable credit activation.
+
+Required Attempt 3 behavior:
+
+1. Select REPORTED purchases first, within the same bounded reconciliation
+   limit.
+2. REPORTED must not be starved by older stable NEEDS_ATTENTION rows.
+3. Preserve REPORTED -> ACTIVE exactly once + grant.
+4. Preserve NEEDS_ATTENTION -> NEEDS_ATTENTION + zero grant.
+5. Keep the total reconciliation work bounded.
+6. Do not replace the bounded scan with an unbounded read.
+
+A clean implementation may use separate bounded priority buckets, for example:
+
+```text
+1. REPORTED
+2. actionable NEEDS_ATTENTION / normalization work
+3. non-terminal normalization using remaining capacity
+```
+
+but the exact query shape is left to the Background agent provided the stated
+invariant is met.
+
+Required regression:
+
+```text
+more than <limit> old stable NEEDS_ATTENTION purchases
++ one later REPORTED purchase
+-> the REPORTED purchase is selected/activated in that reconciliation pass
+-> total selected work remains <= limit
+```
+
+##### Correction 2 — purchased-credit concurrency test must exercise CAS loss + retry
+
+The Attempt 2 `Promise.all()` reservation unit test produces the correct final
+count, but its shared mutable mock allows the second request to observe the
+first request's updated counter before attempting its own version-CAS. It can
+therefore return `credits-exhausted` without ever executing the intended losing
+CAS path:
+
+```text
+updateMany(version = staleVersion) -> count 0
+-> ReservationConcurrencyConflict
+-> withRetry()
+-> reread current counter
+-> credits-exhausted
+```
+
+That means the production CAS design remains sound, but the explicit Attempt 1
+review requirement has not yet been proven by the regression.
+
+Required Attempt 3 test behavior:
+
+- either use the repository's existing disposable PostgreSQL integration
+  harness for the concurrency assertion; or
+- use a deterministic unit barrier so two logical reservations both read the
+  same original counter version/capacity before either CAS update proceeds.
+
+The test must prove that one request loses the version-CAS, enters the retry
+path, and then observes exhausted capacity. Assert the retry/conflict path
+directly rather than inferring it only from the final balance.
+
+The concurrent activation unit test may remain as replay/idempotency coverage,
+but do not describe that shared-mock test as strong database concurrency proof
+unless it similarly forces the competing conditional-update path.
+
+##### Attempt 3 scope
+
+Attempt 3 is limited to:
+
+1. REPORTED-before-stable-NEEDS_ATTENTION reconciliation priority;
+2. its bounded starvation regression;
+3. a purchased-reservation concurrency regression that genuinely exercises
+   CAS loss + retry; and
+4. completion-report wording that accurately describes the concurrency proof.
+
+Do not redesign purchased credits. Do not broaden into BACKGROUND-008,
+BACKGROUND-010, BACKGROUND-011, Admin, Shopify UI, or database schema changes.
+Preserve the accepted Attempt 2 publisher isolation and all previously sound
+B009 behavior.
+
+Current durable state after this review:
+
+```text
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+The next claim becomes **Attempt 3**.
+
+#### Attempt 1 — Changes Requested (preserved)
 
 Attempt 1 implements the core recovery-credit model correctly, but two bounded
 reliability defects and several explicit regression gaps remain.
