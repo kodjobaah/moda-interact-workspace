@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 67
 executor: copilot
 claimed_at: 2026-09-08T16:27:38Z
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-007-SYSTEM-TEST-004
 created: 2026-09-08
-updated: 2026-09-08T16:27:38Z
+updated: 2026-09-08T17:30:11Z
 ---
 # ARCH-007-BACKGROUND-009: Activate billed recovery packs and consume purchased credits before overage
 
@@ -157,7 +157,7 @@ ACTIVATION/IDEMPOTENCY:
 ## Completion Report
 
 ### Status
-In Progress (Attempt 3)
+Ready for Review (Attempt 3)
 
 ### Files Changed
 - `moda-interact-background/package.json`
@@ -181,13 +181,15 @@ In Progress (Attempt 3)
 - Corrected reconciliation to prioritize bounded terminal `REPORTED` and `NEEDS_ATTENTION` purchases ahead of older non-terminal billing events.
 - Isolated post-report purchase activation failures from the Shopify provider retry/attention state machine; successfully reported UsageEvents remain `REPORTED`.
 - Added Attempt 2 regressions for capacity restoration after pack activation, `RETRYABLE` zero-grant behavior, replay/concurrent activation idempotency, ambiguous reservation capacity, concurrent reservation CAS bounds, reconciliation starvation, and all publisher activation outcomes.
+- Attempt 3 selects `REPORTED` purchases before stable `NEEDS_ATTENTION` purchases, then fills the remaining bounded reconciliation capacity with attention and non-terminal states.
+- Attempt 3 adds a deterministic reservation barrier proving both contenders read the same counter version, one loses the conditional CAS, retries in a new transaction, and observes exhausted capacity.
 
 ### Validation Results
 - `npm run prisma:validate` passed.
 - `npm run prisma:generate` passed.
 - `npm run build` passed.
 - Focused B009 suites passed: 37 tests across recovery billing, purchase activation, purchased reservation, and Shopify usage publisher services.
-- Full unit suite: 366 passed, 7 skipped, 2 unrelated existing failures in pending recovery candidate behavior.
+- Full unit suite: 368 passed, 7 skipped, 2 unrelated existing failures in pending recovery candidate behavior.
 - `git diff --check` passed.
 
 ### Deviations
@@ -207,6 +209,31 @@ None.
 - Correction 1 files/tests: `src/services/recovery-credit-purchase.service.ts`, `tests/unit/services/recovery-credit-purchase.service.test.ts`.
 - Correction 2 files/tests: `src/services/shopify-usage-event-publisher.service.ts`, `tests/unit/services/shopify-usage-event-publisher.service.test.ts`.
 - Required reservation and admission regressions: `tests/unit/services/purchased-recovery-reservation.service.test.ts`, `tests/unit/services/recovery-billing.service.test.ts`.
+
+### Attempt 3 Implementation
+- Implementation commit: `125f1a9`
+- REPORTED-first bounded reconciliation: `src/services/recovery-credit-purchase.service.ts`, `tests/unit/services/recovery-credit-purchase.service.test.ts`.
+- CAS-loss/retry concurrency proof: `tests/unit/services/purchased-recovery-reservation.service.test.ts`.
+
+### Git / VCS
+
+Task branch: `task/ARCH-007-BACKGROUND-009`
+
+Implementation repository:
+  repository: `moda-interact-background`
+  commit: `125f1a9`
+  remote branch: `origin/task/ARCH-007-BACKGROUND-009`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/background/ARCH-007/BACKGROUND-009-activate-consume-recovery-credit-packs.md`
+  commit: pending
+  remote branch: `origin/task/ARCH-007-BACKGROUND-009`
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
