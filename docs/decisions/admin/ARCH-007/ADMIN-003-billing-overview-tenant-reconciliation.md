@@ -7,7 +7,7 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 120
 executor: copilot
 claimed_at: 2026-09-08T22:12:49Z
@@ -88,13 +88,13 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 
 ## Acceptance Criteria
 
-- [ ] Admin can identify unmapped plan and failed billing event without database shell access.
-- [ ] Tenant view explains Free remaining and paid current-cycle usage.
-- [ ] Reconciliation discrepancy is visible and bounded.
-- [ ] Pages are paginated/index-aligned and secure.
-- [ ] No secret/PII leakage.
-- [ ] All new Admin-visible copy uses the existing ARCH-005 ICU/i18n catalogues; no task-introduced user-visible English literal bypasses that path.
-- [ ] Tests/build/validation pass.
+- [x] Admin can identify unmapped plan and failed billing event without database shell access.
+- [x] Tenant view explains Free remaining and paid current-cycle usage.
+- [x] Reconciliation discrepancy is visible and bounded.
+- [x] Pages are paginated/index-aligned and secure.
+- [x] No secret/PII leakage.
+- [x] All new Admin-visible copy uses the existing ARCH-005 ICU/i18n catalogues; no task-introduced user-visible English literal bypasses that path.
+- [x] Tests/build/validation pass.
 
 ## Validation
 
@@ -119,18 +119,15 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 3)
+Ready for architect review (Attempt 3)
 
 ### Files Changed
 
-- `moda-interact-admin/src/app/(protected)/billing/page.tsx`
 - `moda-interact-admin/src/components/admin/billing-overview.tsx`
 - `moda-interact-admin/src/components/admin/tenant-billing.tsx`
 - `moda-interact-admin/src/i18n/index.ts`
-- `moda-interact-admin/src/i18n/locales/en.json`
-- `moda-interact-admin/src/i18n/required-keys.ts`
 - `moda-interact-admin/src/lib/admin/billing.ts`
-- `moda-interact-admin/src/lib/admin/types.ts`
+- `moda-interact-admin/src/lib/admin/billing-presentation.mjs`
 - `moda-interact-admin/tests/security/admin-billing-visibility.test.mjs`
 
 ### Work Completed
@@ -142,23 +139,28 @@ In Progress (Attempt 3)
 - Added current-period automated-message usage, active/expired override state, platform-bounded effective hard caps, pause-state visibility, and required i18n keys.
 - Kept reconciliation explicitly unavailable because no accepted durable provider snapshot/discrepancy model exists.
 - Added focused regression coverage for report-state fallback behavior, diagnostics, date boundaries, unavailable exhaustion, message aggregation, override expiry, and Admin-002 preservation.
-- Admin implementation commit: `f096d68`; pushed to `origin/task/ARCH-007-ADMIN-003`.
+- Attempt 3 completed the remaining tenant ledger diagnostic presentation, preserved expired override values as historical data while ignoring them for effective policy, failed closed when the platform absolute hard cap is unavailable, and routed overview/filter/report-state copy through the existing ICU runtime.
+- Added production-owned behavioral helpers for hard-cap calculation, override state, inclusive date boundaries, localized report-state labels, and tenant ledger presentation; tests execute those same helpers.
+- Admin implementation commit: `a1ef38d`; pushed to `origin/task/ARCH-007-ADMIN-003`.
 
 ### Validation Results
 
-- `npm run build`: passed; existing BullMQ dynamic dependency warnings remain.
-- `npm test`: passed; existing Node module-type warnings remain.
-- Focused `node --test tests/security/admin-billing-visibility.test.mjs`: passed, 6 tests.
+- `node --test tests/security/admin-billing-visibility.test.mjs`: passed, 9 tests.
+- `npm test`: passed, 124 tests; existing Node module-type warnings remain.
 - `npx tsc --noEmit`: passed.
 - `npm run lint`: passed with 2 pre-existing queue-monitor hook warnings and no errors.
+- `npm run build`: passed; existing BullMQ dynamic dependency and optional `@valkey/valkey-glide` warnings remain.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
-- `npm run format:check`: repository-wide check reports unrelated pre-existing formatting drift; all task-changed files were formatted with the repository Prettier binary.
+- Targeted Prettier check: passed for all Attempt 3 files.
+- `npm run format:check`: reports 70 unrelated pre-existing formatting-drift files; all Attempt 3 files were formatted with the repository Prettier binary.
+- Nested Admin `database` gitlink staged: no.
 
 ### Deviations
 
 - The accepted Admin Prisma schema has no durable Shopify usage snapshot or discrepancy table. Reconciliation is therefore rendered as explicitly unavailable (`discrepancy: null`) rather than fabricated or obtained with raw SQL.
 - Free exhaustion remains unavailable until a schema-supported aggregate or accepted persisted exhaustion outcome exists; the former counter-threshold proxy was removed.
+- No new locale keys were required; all changed visible copy continues to use existing Admin ICU catalogue keys.
 
 ### Assumptions
 
@@ -172,6 +174,27 @@ In Progress (Attempt 3)
 ### Architectural Concerns
 
 - The discrepancy requirement is a cross-repository contract gap, not an Admin presentation gap. `ADMIN-004` should not add a local duplicate or raw provider query; it should consume the accepted shared/database snapshot contract when available.
+
+### Git / VCS
+
+Task branch: `task/ARCH-007-ADMIN-003`
+
+Implementation repository:
+   repository: `moda-interact-admin`
+   commit: `a1ef38d`
+   remote branch: `origin/task/ARCH-007-ADMIN-003`
+   pushed: yes
+
+Parent workspace:
+   task file: `docs/decisions/admin/ARCH-007/ADMIN-003-billing-overview-tenant-reconciliation.md`
+   claim commit: `2d1988c`
+   review report commit: pending
+   remote branch: `origin/task/ARCH-007-ADMIN-003`
+   pushed: claim yes; review report pending
+   submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
