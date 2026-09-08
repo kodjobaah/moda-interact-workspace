@@ -7,17 +7,17 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: ready
+status: review
 priority: 69
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-08T19:35:00Z
+attempt: 3
 depends_on:
   - ARCH-007-BACKGROUND-010
 enables:
   - ARCH-007-SYSTEM-TEST-005
 created: 2026-09-08
-updated: 2026-09-08
+updated: 2026-09-08T19:24:00Z
 ---
 # ARCH-007-BACKGROUND-011: Add inbound WhatsApp abuse admission before routing and CommerceAgent work
 
@@ -471,23 +471,23 @@ Do not create files merely because they are listed if the accepted post-BACKGROU
 
 ## Acceptance criteria
 
-- [ ] Raw sender/global admission happens before tenant/DB routing work.
-- [ ] Settled-turn admission happens after coalescing/lease claim and before outbound reservation/AI.
-- [ ] Redis decisions are atomic across all applicable scopes.
-- [ ] Rolling windows use Redis server time.
-- [ ] Raw/provider and settled-turn retries are idempotent.
-- [ ] No raw phone/message body appears in Redis key names or metric labels.
-- [ ] Ambiguous/unknown routing behavior remains fail closed.
-- [ ] Abuse denial never creates merchant billing usage.
-- [ ] Settled denial never creates `OUTBOUND_AUTOMATED_MESSAGE`.
-- [ ] Raw denial never creates ConversationMessage rows.
-- [ ] Settled denial retains already-persisted ConversationMessage rows.
-- [ ] Limiter failure fails closed for AI/provider work without retry amplification.
-- [ ] BACKGROUND-004 terminal/outbound safety behavior is unchanged.
-- [ ] BACKGROUND-010 coalescing/lease/stale-response behavior is unchanged.
+- [x] Raw sender/global admission happens before tenant/DB routing work.
+- [x] Settled-turn admission happens after coalescing/lease claim and before outbound reservation/AI.
+- [x] Redis decisions are atomic across all applicable scopes.
+- [x] Rolling windows use Redis server time.
+- [x] Raw/provider and settled-turn retries are idempotent.
+- [x] No raw phone/message body appears in Redis key names or metric labels.
+- [x] Ambiguous/unknown routing behavior remains fail closed.
+- [x] Abuse denial never creates merchant billing usage.
+- [x] Settled denial never creates `OUTBOUND_AUTOMATED_MESSAGE`.
+- [x] Raw denial never creates ConversationMessage rows.
+- [x] Settled denial retains already-persisted ConversationMessage rows.
+- [x] Limiter failure fails closed for AI/provider work without retry amplification.
+- [x] BACKGROUND-004 terminal/outbound safety behavior is unchanged.
+- [x] BACKGROUND-010 coalescing/lease/stale-response behavior is unchanged.
 - [ ] Required regressions pass.
-- [ ] Full repository test suite is run and unrelated baseline failures are documented.
-- [ ] Build/typecheck, Prisma validation where repository convention requires it, diagnostics and `git diff --check` pass.
+- [x] Full repository test suite is run and unrelated baseline failures are documented.
+- [x] Build/typecheck, Prisma validation where repository convention requires it, diagnostics and `git diff --check` pass.
 
 ## Luna execution rules
 
@@ -505,45 +505,361 @@ Do not create files merely because they are listed if the accepted post-BACKGROU
 ## Completion Report
 
 ### Status
-Pending
+Ready for Review (Attempt 3)
 
 ### Files Changed
-None.
+- `src/services/inbound-whatsapp-abuse-admission.service.ts`
+- `src/services/conversation-turn-processor.service.ts`
+- `src/workers/whatsapp.worker.ts`
+- `tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts`
+- `tests/unit/services/conversation-turn-processor.service.test.ts`
 
 ### Work Completed
-None.
+- Added a Background-local atomic Lua sliding-window limiter using `connectionRedis`, Redis server time, all-or-none scope insertion, bounded expiry, replay idempotency, and SHA-256 sender key hashing.
+- Corrected mixed-window settled replay handling so a member remembered by any applicable scope is never re-added to naturally expired short scopes.
+- Added raw admission before routing and persistence, including fail-closed limiter errors.
+- Added settled-turn admission after claim/load and before outbound reservation or CommerceAgent work; denied and unavailable decisions use `completeTurn` cleanup.
+- Preserved B004 outbound admission and B010 settle, lease, and stale-response paths.
+- Strengthened the stateful Redis harness and focused service regressions to prove sender and conversation short/long limits independently, all six settled scopes, all-or-none rejection, and mixed-window replay idempotency.
 
 ### Validation Results
-Not run.
+- `npx vitest run tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts tests/unit/services/conversation-turn-processor.service.test.ts`: passed, 50 tests.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- Diagnostics for all touched source/test files: no errors.
+- `git diff --check`: passed.
+- `npm test`: 397 passed, 7 skipped, 2 failed. The two failures remain unrelated baseline failures in `tests/unit/services/pending-recovery-candidate.service.test.ts` concerning stale/rescheduled candidate context behavior.
 
 ### Deviations
-None.
+- The repository has no supported Redis integration harness; the Lua contract is unit-tested through the existing Vitest conventions, as permitted by the task.
+- No dedicated worker test file exists in the accepted repository organization; raw ordering is covered by the production call path and settled handling by the processor regression.
 
 ### Assumptions
-None.
+- `conversation.messages` is the accepted Prisma relation for the persisted inbound fragments of the settled turn.
+- The loaded outbound customer phone is the normalized sender identity used by the settled-turn limiter.
 
 ### Unresolved Issues
-None.
+- Full suite remains red only on the two documented unrelated pending-recovery-candidate baseline failures.
+- Pending-recovery-candidate baseline status remains unchanged and is outside this task's allowed file surface.
 
 ### Architectural Concerns
 None.
 
+### Attempt 3 Correction Coverage
+- Mixed-window settled replay no longer re-adds expired short-scope capacity.
+- `B011-08` proves sender-short and conversation-short independently.
+- `B011-09` proves sender-long and conversation-long independently.
+- `B011-10` proves discovery sender and conversation short/long limits independently.
+- `B011-17` is a settled new-observedVersion expiry regression.
+- `B011-20` checks candidate absence from all six applicable scopes.
+- `B011-21` checks all six scopes plus immediate and mixed-window replay.
+- `B011-01` through `B011-21`: pass.
+- `B011-R1`: pass; obsolete settled-turn leases are released and newer versions are re-enqueued without outbound or agent work.
+- `B011-R2`: pass; limiter-unavailable cleanup follows the same race-safe newer-version path.
+- Full-suite baseline: 397 passed, 7 skipped, 2 unrelated failures, unchanged in scope and documented above.
+
 ## Architect Review
 
 ### Review Status
-Pending
+
+Changes Requested — Attempt 2
 
 ### Review Notes
-None.
+
+Attempt 2 resolves the major architectural defects from Attempt 1. Preserve the following implementation unchanged unless a correction below explicitly requires otherwise:
+
+- raw abuse admission remains before routing, Prisma persistence and turn enqueue;
+- settled abuse admission remains mandatory after the B010 lease claim and before outbound reservation / CommerceAgent / provider work;
+- `LoadedConversationTurn` keeps mandatory `customerPhone`, full durable conversation type, `checkoutRecoveryId` and `hasReplyContext`;
+- `RECOVERY`, `PRODUCT_DISCOVERY`, `PRODUCT_SUPPORT` and `POST_PURCHASE` remain represented explicitly, with lower limits only for unbound `PRODUCT_DISCOVERY`;
+- `finishSuppressedTurn()` remains the single version-safe denial / `LIMITER_UNAVAILABLE` cleanup path;
+- Shared structured logging remains the B011 telemetry surface;
+- thresholds, Redis `TIME`, one atomic `EVAL`, B004 outbound semantics and B010 quiet/max-settle/lease constants remain unchanged.
+
+Attempt 3 is a narrow deterministic correction. Do not redesign the processor, worker topology, billing model, Redis namespaces, thresholds, database schema, Shared contracts or infrastructure.
+
+#### Attempt 3 — exact correction contract
+
+##### A. Allowed file surface
+
+Modify only:
+
+```text
+src/services/inbound-whatsapp-abuse-admission.service.ts
+tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts
+```
+
+`tests/unit/services/conversation-turn-processor.service.test.ts` may be touched only if a formatting/type-only adjustment is forced by compilation. Do not alter production processor or worker behavior in Attempt 3.
+
+##### B. Fix replay idempotency when short scopes have expired but long scopes still remember the turn
+
+Attempt 2 correctly stopped unconditional score refresh for a member that is still present in a given ZSET. One mixed-window replay case is still wrong.
+
+For a standard settled turn at `t0`, the member is inserted into:
+
+```text
+sender 60s
+sender 600s
+conversation 60s
+conversation 600s
+shop 60s
+global 60s
+```
+
+At `t0 + 60_001ms`, the 60-second scopes have expired/pruned but the 600-second sender/conversation scopes still contain the same `conversationId:observedVersion`.
+
+The current script then treats the member as absent in the short scopes and re-adds it there with the new `nowMs`. That replay consumes short-window capacity a second time.
+
+Change the Lua decision order exactly as follows:
+
+```text
+PASS 1
+- get Redis TIME once;
+- for EVERY scope:
+    - prune expired members;
+    - check ZSCORE(member);
+    - if present in ANY scope, set seenAnywhere = true;
+- after all scopes have been inspected:
+    - if seenAnywhere == true:
+        return allowed immediately;
+        perform NO ZADD;
+        perform NO EXPIRE refresh;
+        do not reject because another currently-empty scope is at capacity.
+
+PASS 2  (only when seenAnywhere == false)
+- inspect cardinality of EVERY applicable scope;
+- if any scope is at its limit:
+    - return that scope index;
+    - mutate NONE of the scope windows.
+
+PASS 3  (only when new member has capacity everywhere)
+- ZADD the member to ALL applicable scopes with the same Redis nowMs;
+- set the existing bounded expiry for each touched key;
+- return allowed.
+```
+
+This preserves one atomic `EVAL` and the existing ZSET design.
+
+Do NOT add:
+
+```text
+a new replay-marker key
+a database idempotency table
+another Redis connection
+an environment variable
+a longer-lived persistent abuse history
+```
+
+The intended invariant is:
+
+```text
+while ANY applicable rolling-window scope still remembers this idempotency member,
+a replay is an already-admitted decision and must not consume capacity again in scopes
+that have naturally expired sooner.
+```
+
+Once every applicable scope has naturally forgotten the member, normal rolling-window state may treat a later call as new.
+
+##### C. Strengthen the stateful Redis harness to prove every sender AND conversation scope
+
+Keep the existing test-only stateful `RedisLike.eval` harness. Update it to model the corrected three-pass production contract above.
+
+Add exact-key/snapshot helpers so tests can distinguish:
+
+```text
+turn:sender:<hash>:60s
+turn:sender:<hash>:600s
+turn:conversation:<id>:60s
+turn:conversation:<id>:600s
+turn:shop:<shopId>:60s
+turn:global:60s
+```
+
+Do not use a helper that returns only the first key whose text contains `turn:sender` or `turn:conversation` when the assertion claims to cover all scopes.
+
+##### D. Correct the overstated B011 test mappings
+
+The following named tests currently do not prove the full scenario stated in the task.
+
+###### B011-08 — independently prove both short scopes
+
+Keep/extend B011-08 so it proves:
+
+```text
+sender short:
+- same sender
+- varying conversations
+- 12 distinct settled members allowed
+- 13th denied by TURN_SENDER_SHORT
+
+conversation short:
+- same conversation
+- varying senders
+- unique observedVersion members
+- 12 allowed
+- 13th denied by TURN_CONVERSATION_SHORT
+```
+
+The shop/global scopes must remain below their limits.
+
+###### B011-09 — independently prove both 10-minute scopes
+
+Prove separately:
+
+```text
+TURN_SENDER_LONG = 60/10m
+TURN_CONVERSATION_LONG = 60/10m
+```
+
+Use batches and `advanceTime(60_001)` so the corresponding 60-second scope reopens while the 600-second scope retains the previous members.
+
+For the conversation-long case, keep one conversation and vary senders so no individual sender reaches its own long limit.
+
+###### B011-10 — independently prove discovery sender AND conversation limits
+
+For unbound `PRODUCT_DISCOVERY`, prove both:
+
+```text
+sender:       4/min and 12/10m
+conversation: 4/min and 12/10m
+```
+
+Use varying conversations to isolate sender scope and varying senders to isolate conversation scope.
+
+Do not infer conversation coverage merely because the production scope array contains conversation keys.
+
+###### B011-17 — this must be a settled new observedVersion, not a raw event
+
+Replace the current raw-window B011-17 test.
+
+Required regression:
+
+```text
+- exhaust a settled short-window limit;
+- prove a NEW settled member / observedVersion is denied;
+- advance beyond the relevant 60-second window while remaining below the 600-second limit;
+- submit another NEW observedVersion;
+- prove it is allowed.
+```
+
+Use either a standard or discovery settled limit, but it must exercise `admitSettledTurn()`.
+
+###### B011-20 — prove NONE means all applicable scopes
+
+For a rejected multi-scope decision, snapshot every applicable key before the decision and verify the candidate member is added to none of:
+
+```text
+sender 60s
+sender 600s
+conversation 60s
+conversation 600s
+shop 60s
+global 60s
+```
+
+Existing seeded members may remain. The rejected candidate itself must appear in zero scopes.
+
+###### B011-21 — prove all six scopes and the mixed-window replay case
+
+B011-21 must inspect all six actual settled scope keys, not four key-name categories.
+
+Add two subcases (names may be `B011-21a` / `B011-21b`):
+
+```text
+immediate replay:
+- admit one settled member;
+- snapshot cardinality + member score in all six scopes;
+- replay same member without advancing time;
+- all six snapshots are unchanged.
+
+mixed-window replay:
+- admit one standard settled member at t0;
+- capture both 600-second scores;
+- advance 60_001ms;
+- replay the SAME conversationId:observedVersion;
+- 60-second scopes are allowed to be pruned naturally but MUST NOT re-add the member;
+- sender-600s and conversation-600s member scores remain exactly the original t0 score;
+- no scope receives a new score for that replay.
+```
+
+This mixed-window regression must fail against the current Attempt 2 Lua and pass after correction B.
+
+##### E. Preserve the already-passing Attempt 2 corrections
+
+Do not weaken or remove:
+
+```text
+B011-01..07
+B011-11..16
+B011-18..20 (except strengthen B011-20 as above)
+B011-19 final-slot race
+B011-R1
+B011-R2
+RECOVERY conversation-type regression
+structured logging privacy assertions
+mandatory settled admission in every processor harness
+```
+
+No new worker test is required in Attempt 3 unless an existing test stops compiling.
+
+##### F. Validation and Completion Report
+
+Run:
+
+```text
+npx vitest run tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts tests/unit/services/conversation-turn-processor.service.test.ts
+npm run build
+npm run prisma:validate
+git diff --check
+npm test
+```
+
+In the Attempt 3 Completion Report state explicitly:
+
+```text
+- mixed-window settled replay no longer re-adds expired short-scope capacity;
+- B011-08 proves sender-short AND conversation-short independently;
+- B011-09 proves sender-long AND conversation-long independently;
+- B011-10 proves discovery sender AND conversation short/long limits independently;
+- B011-17 is a settled new-observedVersion expiry regression;
+- B011-20 checks candidate absence from all six applicable scopes;
+- B011-21 checks all six scopes plus mixed-window replay;
+- B011-01 through B011-21: pass;
+- B011-R1: pass;
+- B011-R2: pass;
+- exact focused test count;
+- full-suite pass/fail/skip count;
+- whether the two unrelated `pending-recovery-candidate` baseline failures remain unchanged.
+```
+
+Return only `ARCH-007-BACKGROUND-011` to `review` and STOP. Do not start SYSTEM-TEST-005. Continue on the same existing B011 task branches/worktree; the next claim increments `attempt` from 2 to 3.
 
 ### Reviewed Files
-None.
+
+Attempt 2 supplied workspace:
+
+- `src/services/inbound-whatsapp-abuse-admission.service.ts`
+- `src/services/conversation-turn-processor.service.ts`
+- `src/workers/whatsapp.worker.ts`
+- `tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts`
+- `tests/unit/services/conversation-turn-processor.service.test.ts`
+- `docs/decisions/background/ARCH-007/BACKGROUND-011-inbound-whatsapp-abuse-admission.md`
 
 ### Validation Reviewed
-None.
+
+- Focused suite reported 49 passing tests.
+- `npm run build` reported passed.
+- `npm run prisma:validate` reported passed.
+- diagnostics reported no errors.
+- `git diff --check` reported passed.
+- Full suite reported 396 passed, 7 skipped, with the same 2 unrelated `pending-recovery-candidate` baseline failures.
+- The supplied archive contains no `node_modules`, so those commands could not be independently re-run in this review environment.
+- Attempt 2 was intentionally uncommitted/unpushed; review was performed from the supplied task-worktree snapshot.
 
 ### Architecture Conformance
-Pending
+
+Not yet accepted. Attempt 2 resolves the processor/worker/typing/logging defects from Attempt 1. The remaining production defect is limited to mixed-window replay idempotency in the Lua limiter. The remaining test corrections are bounded to making the explicit B011 regression matrix prove the sender/conversation scopes it claims to cover.
 
 ### Follow-up
-None.
+
+Return `ARCH-007-BACKGROUND-011` to `ready`, clear `executor` / `claimed_at`, preserve `attempt: 2`, and reclaim the same task as Attempt 3. `ARCH-007-SYSTEM-TEST-005` remains untouched and manual/terminal-gated.
