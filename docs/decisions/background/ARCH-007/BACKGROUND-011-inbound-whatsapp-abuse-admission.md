@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 69
 executor: copilot
 claimed_at: 2026-09-08T16:40:50Z
@@ -17,7 +17,7 @@ depends_on:
 enables:
   - ARCH-007-SYSTEM-TEST-005
 created: 2026-09-08
-updated: 2026-09-08T16:40:50Z
+updated: 2026-09-08T16:56:04Z
 ---
 # ARCH-007-BACKGROUND-011: Add inbound WhatsApp abuse admission before routing and CommerceAgent work
 
@@ -471,20 +471,20 @@ Do not create files merely because they are listed if the accepted post-BACKGROU
 
 ## Acceptance criteria
 
-- [ ] Raw sender/global admission happens before tenant/DB routing work.
-- [ ] Settled-turn admission happens after coalescing/lease claim and before outbound reservation/AI.
-- [ ] Redis decisions are atomic across all applicable scopes.
-- [ ] Rolling windows use Redis server time.
-- [ ] Raw/provider and settled-turn retries are idempotent.
-- [ ] No raw phone/message body appears in Redis key names or metric labels.
-- [ ] Ambiguous/unknown routing behavior remains fail closed.
-- [ ] Abuse denial never creates merchant billing usage.
-- [ ] Settled denial never creates `OUTBOUND_AUTOMATED_MESSAGE`.
-- [ ] Raw denial never creates ConversationMessage rows.
-- [ ] Settled denial retains already-persisted ConversationMessage rows.
-- [ ] Limiter failure fails closed for AI/provider work without retry amplification.
-- [ ] BACKGROUND-004 terminal/outbound safety behavior is unchanged.
-- [ ] BACKGROUND-010 coalescing/lease/stale-response behavior is unchanged.
+- [x] Raw sender/global admission happens before tenant/DB routing work.
+- [x] Settled-turn admission happens after coalescing/lease claim and before outbound reservation/AI.
+- [x] Redis decisions are atomic across all applicable scopes.
+- [x] Rolling windows use Redis server time.
+- [x] Raw/provider and settled-turn retries are idempotent.
+- [x] No raw phone/message body appears in Redis key names or metric labels.
+- [x] Ambiguous/unknown routing behavior remains fail closed.
+- [x] Abuse denial never creates merchant billing usage.
+- [x] Settled denial never creates `OUTBOUND_AUTOMATED_MESSAGE`.
+- [x] Raw denial never creates ConversationMessage rows.
+- [x] Settled denial retains already-persisted ConversationMessage rows.
+- [x] Limiter failure fails closed for AI/provider work without retry amplification.
+- [x] BACKGROUND-004 terminal/outbound safety behavior is unchanged.
+- [x] BACKGROUND-010 coalescing/lease/stale-response behavior is unchanged.
 - [ ] Required regressions pass.
 - [ ] Full repository test suite is run and unrelated baseline failures are documented.
 - [ ] Build/typecheck, Prisma validation where repository convention requires it, diagnostics and `git diff --check` pass.
@@ -505,25 +505,40 @@ Do not create files merely because they are listed if the accepted post-BACKGROU
 ## Completion Report
 
 ### Status
-In Progress (Attempt 1)
+Complete for Review (Attempt 1)
 
 ### Files Changed
-None.
+- `src/services/inbound-whatsapp-abuse-admission.service.ts`
+- `src/services/conversation-turn-processor.service.ts`
+- `src/workers/whatsapp.worker.ts`
+- `tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts`
+- `tests/unit/services/conversation-turn-processor.service.test.ts`
 
 ### Work Completed
-None.
+- Added a Background-local atomic Lua sliding-window limiter using `connectionRedis`, Redis server time, all-or-none scope insertion, bounded expiry, replay idempotency, and SHA-256 sender key hashing.
+- Added raw admission before routing and persistence, including fail-closed limiter errors.
+- Added settled-turn admission after claim/load and before outbound reservation or CommerceAgent work; denied and unavailable decisions use `completeTurn` cleanup.
+- Preserved B004 outbound admission and B010 settle, lease, and stale-response paths.
+- Added focused service and processor regression coverage.
 
 ### Validation Results
-Not run.
+- `npx vitest run tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts tests/unit/services/conversation-turn-processor.service.test.ts`: passed, 27 tests.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- Diagnostics for all touched source/test files: no errors.
+- `git diff --check`: passed.
+- `npm test`: 374 passed, 7 skipped, 2 failed. The two failures are unrelated baseline failures in `tests/unit/services/pending-recovery-candidate.service.test.ts` concerning stale/rescheduled candidate context behavior.
 
 ### Deviations
-None.
+- The repository has no supported Redis integration harness; the Lua contract is unit-tested through the existing Vitest conventions, as permitted by the task.
+- No dedicated worker test file exists in the accepted repository organization; raw ordering is covered by the production call path and settled handling by the processor regression.
 
 ### Assumptions
-None.
+- `conversation.messages` is the accepted Prisma relation for the persisted inbound fragments of the settled turn.
+- The loaded outbound customer phone is the normalized sender identity used by the settled-turn limiter.
 
 ### Unresolved Issues
-None.
+- Full suite remains red only on the two documented unrelated pending-recovery-candidate baseline failures.
 
 ### Architectural Concerns
 None.
