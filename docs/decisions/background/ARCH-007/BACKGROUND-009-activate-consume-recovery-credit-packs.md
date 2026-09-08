@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 67
 executor: copilot
 claimed_at: 2026-09-08T15:49:11Z
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-007-SYSTEM-TEST-004
 created: 2026-09-08
-updated: 2026-09-08T15:49:11Z
+updated: 2026-09-08T16:53:30Z
 ---
 # ARCH-007-BACKGROUND-009: Activate billed recovery packs and consume purchased credits before overage
 
@@ -157,7 +157,7 @@ ACTIVATION/IDEMPOTENCY:
 ## Completion Report
 
 ### Status
-In Progress
+Review (Attempt 2)
 
 ### Files Changed
 - `moda-interact-background/package.json`
@@ -178,13 +178,16 @@ In Progress
 - Added Free and paid admission ordering so purchased credits are consumed before paid overage, while preserving the normal paid path for invalid configuration and exhausted purchased balance.
 - Added publisher activation after successful `RECOVERY_CREDIT_PACK_PURCHASE` reporting.
 - Updated the Shared runtime dependency to the accepted `0.8.0` contract.
+- Corrected reconciliation to prioritize bounded terminal `REPORTED` and `NEEDS_ATTENTION` purchases ahead of older non-terminal billing events.
+- Isolated post-report purchase activation failures from the Shopify provider retry/attention state machine; successfully reported UsageEvents remain `REPORTED`.
+- Added Attempt 2 regressions for capacity restoration after pack activation, `RETRYABLE` zero-grant behavior, replay/concurrent activation idempotency, ambiguous reservation capacity, concurrent reservation CAS bounds, reconciliation starvation, and all publisher activation outcomes.
 
 ### Validation Results
 - `npm run prisma:validate` passed.
 - `npm run prisma:generate` passed.
 - `npm run build` passed.
-- Focused reservation, activation, policy, publisher, and recovery billing suites passed.
-- Full unit suite: 326 passed, 2 unrelated existing failures in pending recovery candidate behavior.
+- Focused B009 suites passed: 37 tests across recovery billing, purchase activation, purchased reservation, and Shopify usage publisher services.
+- Full unit suite: 366 passed, 7 skipped, 2 unrelated existing failures in pending recovery candidate behavior.
 - `git diff --check` passed.
 
 ### Deviations
@@ -198,6 +201,12 @@ In Progress
 
 ### Architectural Concerns
 None.
+
+### Attempt 2 Implementation
+- Implementation commit: `68a16f0093beebc8469107403ebc46a8b3eb6076`
+- Correction 1 files/tests: `src/services/recovery-credit-purchase.service.ts`, `tests/unit/services/recovery-credit-purchase.service.test.ts`.
+- Correction 2 files/tests: `src/services/shopify-usage-event-publisher.service.ts`, `tests/unit/services/shopify-usage-event-publisher.service.test.ts`.
+- Required reservation and admission regressions: `tests/unit/services/purchased-recovery-reservation.service.test.ts`, `tests/unit/services/recovery-billing.service.test.ts`.
 
 ## Architect Review
 
