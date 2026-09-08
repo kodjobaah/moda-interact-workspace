@@ -7,11 +7,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: ready
+status: review
 priority: 67
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-08T16:27:38Z
+attempt: 3
 depends_on:
   - ARCH-007-DATABASE-005
   - ARCH-007-SHARED-006
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-007-SYSTEM-TEST-004
 created: 2026-09-08
-updated: 2026-09-08
+updated: 2026-09-08T17:30:11Z
 ---
 # ARCH-007-BACKGROUND-009: Activate billed recovery packs and consume purchased credits before overage
 
@@ -157,7 +157,7 @@ ACTIVATION/IDEMPOTENCY:
 ## Completion Report
 
 ### Status
-Review (Attempt 1)
+Ready for Review (Attempt 3)
 
 ### Files Changed
 - `moda-interact-background/package.json`
@@ -178,13 +178,18 @@ Review (Attempt 1)
 - Added Free and paid admission ordering so purchased credits are consumed before paid overage, while preserving the normal paid path for invalid configuration and exhausted purchased balance.
 - Added publisher activation after successful `RECOVERY_CREDIT_PACK_PURCHASE` reporting.
 - Updated the Shared runtime dependency to the accepted `0.8.0` contract.
+- Corrected reconciliation to prioritize bounded terminal `REPORTED` and `NEEDS_ATTENTION` purchases ahead of older non-terminal billing events.
+- Isolated post-report purchase activation failures from the Shopify provider retry/attention state machine; successfully reported UsageEvents remain `REPORTED`.
+- Added Attempt 2 regressions for capacity restoration after pack activation, `RETRYABLE` zero-grant behavior, replay/concurrent activation idempotency, ambiguous reservation capacity, concurrent reservation CAS bounds, reconciliation starvation, and all publisher activation outcomes.
+- Attempt 3 selects `REPORTED` purchases before stable `NEEDS_ATTENTION` purchases, then fills the remaining bounded reconciliation capacity with attention and non-terminal states.
+- Attempt 3 adds a deterministic reservation barrier proving both contenders read the same counter version, one loses the conditional CAS, retries in a new transaction, and observes exhausted capacity.
 
 ### Validation Results
 - `npm run prisma:validate` passed.
 - `npm run prisma:generate` passed.
 - `npm run build` passed.
-- Focused reservation, activation, policy, publisher, and recovery billing suites passed.
-- Full unit suite: 326 passed, 2 unrelated existing failures in pending recovery candidate behavior.
+- Focused B009 suites passed: 37 tests across recovery billing, purchase activation, purchased reservation, and Shopify usage publisher services.
+- Full unit suite: 368 passed, 7 skipped, 2 unrelated existing failures in pending recovery candidate behavior.
 - `git diff --check` passed.
 
 ### Deviations
@@ -199,13 +204,203 @@ Review (Attempt 1)
 ### Architectural Concerns
 None.
 
+### Attempt 2 Implementation
+- Implementation commit: `68a16f0093beebc8469107403ebc46a8b3eb6076`
+- Correction 1 files/tests: `src/services/recovery-credit-purchase.service.ts`, `tests/unit/services/recovery-credit-purchase.service.test.ts`.
+- Correction 2 files/tests: `src/services/shopify-usage-event-publisher.service.ts`, `tests/unit/services/shopify-usage-event-publisher.service.test.ts`.
+- Required reservation and admission regressions: `tests/unit/services/purchased-recovery-reservation.service.test.ts`, `tests/unit/services/recovery-billing.service.test.ts`.
+
+### Attempt 3 Implementation
+- Implementation commit: `125f1a9`
+- REPORTED-first bounded reconciliation: `src/services/recovery-credit-purchase.service.ts`, `tests/unit/services/recovery-credit-purchase.service.test.ts`.
+- CAS-loss/retry concurrency proof: `tests/unit/services/purchased-recovery-reservation.service.test.ts`.
+
+### Git / VCS
+
+Task branch: `task/ARCH-007-BACKGROUND-009`
+
+Implementation repository:
+  repository: `moda-interact-background`
+  commit: `125f1a9`
+  remote branch: `origin/task/ARCH-007-BACKGROUND-009`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/background/ARCH-007/BACKGROUND-009-activate-consume-recovery-credit-packs.md`
+  commit: `6644b41`
+  remote branch: `origin/task/ARCH-007-BACKGROUND-009`
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+
 ## Architect Review
+
+#### Attempt 3 — Accepted
+
+Attempt 3 is architect-accepted Complete.
+
+The two remaining Attempt 2 corrections are implemented correctly:
+
+1. Recovery-credit reconciliation now selects `REPORTED` purchases first
+   within the bounded reconciliation limit, then spends only remaining capacity
+   on `NEEDS_ATTENTION` and non-terminal billing states. Stable historical
+   `NEEDS_ATTENTION` rows can therefore no longer starve a newer successfully
+   billed purchase awaiting activation.
+
+2. Purchased-credit reservation concurrency coverage now deterministically
+   exercises the intended CAS-loss/retry path. Both contenders read the same
+   pre-update counter state, exactly one conditional CAS loses, the loser
+   retries in a new transaction, and the retry observes exhausted capacity.
+
+The previously accepted B009 behaviour remains intact, including:
+
+- Shopify-reported pack activation grants credits exactly once;
+- activation failure after successful Shopify reporting cannot move the
+  UsageEvent back into provider retry/attention handling;
+- PENDING/RETRYABLE/NEEDS_ATTENTION billing states grant no credits;
+- Free capacity is consumed before purchased capacity;
+- purchased capacity is consumed before paid overage;
+- definitive failures release purchased reservations;
+- ambiguous provider outcomes retain reserved capacity;
+- purchased credits remain durable across billing periods and plan changes.
+
+Implementation reviewed at `125f1a9`.
+
+No further implementation changes are required for ARCH-007-BACKGROUND-009.
 
 ### Review Status
 
 Changes Requested
 
 ### Review Notes
+
+#### Attempt 2 — Changes Requested
+
+Attempt 2 correctly fixes both production defects identified in Attempt 1:
+
+- post-REPORTED purchase activation failures are isolated from the Shopify
+  provider retry/attention state machine; and
+- reconciliation now prioritizes terminal UsageEvent states over older
+  non-terminal PENDING / IN_FLIGHT / RETRYABLE rows.
+
+Those corrections must be preserved. Two narrow issues remain before this task
+can be architect-accepted.
+
+##### Correction 1 — REPORTED activation must outrank stable NEEDS_ATTENTION
+
+The Attempt 2 terminal query groups `REPORTED` and `NEEDS_ATTENTION` together
+and orders them only by purchase `createdAt` / `id`. A bounded page of old
+already-stable NEEDS_ATTENTION purchases can therefore continue to occupy the
+entire reconciliation limit and indefinitely hide a newer REPORTED purchase.
+
+Example with `limit = 50`:
+
+```text
+50 old purchases:
+  purchase.status = NEEDS_ATTENTION
+  usageEvent.shopifyReportState = NEEDS_ATTENTION
+
+1 newer purchase:
+  purchase.status = PENDING_BILLING
+  usageEvent.shopifyReportState = REPORTED
+```
+
+The 50 old rows remain eligible on every pass, while the REPORTED purchase is
+the state that actually requires durable credit activation.
+
+Required Attempt 3 behavior:
+
+1. Select REPORTED purchases first, within the same bounded reconciliation
+   limit.
+2. REPORTED must not be starved by older stable NEEDS_ATTENTION rows.
+3. Preserve REPORTED -> ACTIVE exactly once + grant.
+4. Preserve NEEDS_ATTENTION -> NEEDS_ATTENTION + zero grant.
+5. Keep the total reconciliation work bounded.
+6. Do not replace the bounded scan with an unbounded read.
+
+A clean implementation may use separate bounded priority buckets, for example:
+
+```text
+1. REPORTED
+2. actionable NEEDS_ATTENTION / normalization work
+3. non-terminal normalization using remaining capacity
+```
+
+but the exact query shape is left to the Background agent provided the stated
+invariant is met.
+
+Required regression:
+
+```text
+more than <limit> old stable NEEDS_ATTENTION purchases
++ one later REPORTED purchase
+-> the REPORTED purchase is selected/activated in that reconciliation pass
+-> total selected work remains <= limit
+```
+
+##### Correction 2 — purchased-credit concurrency test must exercise CAS loss + retry
+
+The Attempt 2 `Promise.all()` reservation unit test produces the correct final
+count, but its shared mutable mock allows the second request to observe the
+first request's updated counter before attempting its own version-CAS. It can
+therefore return `credits-exhausted` without ever executing the intended losing
+CAS path:
+
+```text
+updateMany(version = staleVersion) -> count 0
+-> ReservationConcurrencyConflict
+-> withRetry()
+-> reread current counter
+-> credits-exhausted
+```
+
+That means the production CAS design remains sound, but the explicit Attempt 1
+review requirement has not yet been proven by the regression.
+
+Required Attempt 3 test behavior:
+
+- either use the repository's existing disposable PostgreSQL integration
+  harness for the concurrency assertion; or
+- use a deterministic unit barrier so two logical reservations both read the
+  same original counter version/capacity before either CAS update proceeds.
+
+The test must prove that one request loses the version-CAS, enters the retry
+path, and then observes exhausted capacity. Assert the retry/conflict path
+directly rather than inferring it only from the final balance.
+
+The concurrent activation unit test may remain as replay/idempotency coverage,
+but do not describe that shared-mock test as strong database concurrency proof
+unless it similarly forces the competing conditional-update path.
+
+##### Attempt 3 scope
+
+Attempt 3 is limited to:
+
+1. REPORTED-before-stable-NEEDS_ATTENTION reconciliation priority;
+2. its bounded starvation regression;
+3. a purchased-reservation concurrency regression that genuinely exercises
+   CAS loss + retry; and
+4. completion-report wording that accurately describes the concurrency proof.
+
+Do not redesign purchased credits. Do not broaden into BACKGROUND-008,
+BACKGROUND-010, BACKGROUND-011, Admin, Shopify UI, or database schema changes.
+Preserve the accepted Attempt 2 publisher isolation and all previously sound
+B009 behavior.
+
+Current durable state after this review:
+
+```text
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+The next claim becomes **Attempt 3**.
+
+#### Attempt 1 — Changes Requested (preserved)
 
 Attempt 1 implements the core recovery-credit model correctly, but two bounded
 reliability defects and several explicit regression gaps remain.
