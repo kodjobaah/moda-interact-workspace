@@ -173,9 +173,9 @@ Implementation repository:
 Parent workspace:
    task file: `docs/decisions/admin/ARCH-007/ADMIN-005-recovery-credit-pack-plan-mapping.md`
    claim commit: `4be95a1`
-   review report commit: pending
+   review report commit: `7d7c4f0`
    remote branch: `origin/task/ARCH-007-ADMIN-005`
-   pushed: claim yes; review report pending
+   pushed: claim yes; review report yes
    submodule gitlink staged: no
 
 Merged to implementation main: no
