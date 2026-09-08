@@ -227,9 +227,9 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-007/BACKGROUND-009-activate-consume-recovery-credit-packs.md`
-  commit: pending
+  commit: `3a487d8`
   remote branch: `origin/task/ARCH-007-BACKGROUND-009`
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
