@@ -52,6 +52,7 @@ This project demonstrates hands-on experience with:
 
 - [Platform overview](#platform-overview)
 - [High-level architecture](#high-level-architecture)
+- [Inbound WhatsApp recovery flow](#inbound-whatsapp-recovery-flow)
 - [Architecture initiatives](#architecture-initiatives)
 - [Pricing and billing model](#pricing-and-billing-model)
 - [Internationalisation and merchant communications](#internationalisation-and-merchant-communications)
@@ -157,6 +158,43 @@ and migration history.
 
 `moda-interact-shared` is the canonical owner of cross-service runtime
 contracts, schemas, event versions and deterministic identifiers.
+
+---
+
+## Inbound WhatsApp recovery flow
+
+The shopper-facing WhatsApp path crosses several architectural boundaries: Meta
+webhook ingress, raw abuse admission, tenant/recovery routing, durable message
+persistence, fragmented-message coalescing, multi-basket clarification,
+settled-turn abuse admission, outbound safety admission and CommerceAgent/provider
+execution.
+
+The canonical end-to-end description is:
+
+**[Inbound WhatsApp recovery and multi-basket runtime flow](docs/architecture/inbound-whatsapp-recovery-flow.md)**
+
+That document also makes the identity model explicit:
+
+```text
+CheckoutRecovery
+    = one abandoned-basket recovery lifecycle
+
+Conversation
+    = one durable conversational processing/safety scope
+
+customer / WhatsApp sender
+    = abuse boundary spanning that customer's conversations
+```
+
+A customer may have several active abandoned baskets and therefore several
+candidate recoveries/conversation contexts. Those baskets do **not** multiply the
+customer's sender-level abuse allowance: sender limits span conversations and
+recoveries, while conversation limits remain independent per durable
+`Conversation` and shop/global limits provide wider protection.
+
+Detailed task files remain the implementation/review evidence. The consolidated
+runtime-flow document is the preferred starting point for understanding how those
+decisions fit together.
 
 ---
 
@@ -273,6 +311,8 @@ The central architecture and cross-agent coordination state lives under
 docs/
 ├── architecture/
 │   ├── overview.md
+│   ├── runtime-flows.md
+│   ├── inbound-whatsapp-recovery-flow.md
 │   ├── ARCH-001-shopify-checkout-recovery-webhook-processing.md
 │   ├── ARCH-002-render-production-gateway-infrastructure.md
 │   ├── ARCH-003-admin-operational-ui.md
@@ -1611,6 +1651,8 @@ Continue.
 
 - [Architecture overview](docs/architecture/overview.md)
 - [Service boundaries](docs/architecture/services.md)
+- [Inbound WhatsApp recovery and multi-basket runtime flow](docs/architecture/inbound-whatsapp-recovery-flow.md)
+- [Runtime flows index](docs/architecture/runtime-flows.md)
 - [Coding agent workflow](docs/coding-agent-workflow.md)
 - [Git / VCS ownership policy](docs/agent-vcs-ownership-policy.md)
 - [Copilot model selection](docs/copilot-model-selection.md)

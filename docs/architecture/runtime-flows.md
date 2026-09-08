@@ -79,10 +79,22 @@ The order worker should not create a recovery when no matching recovery exists.
 It should record enough context for diagnosis without logging customer message
 content or access tokens.
 
+## Inbound WhatsApp recovery and conversational-commerce flow
+
+The canonical end-to-end inbound WhatsApp flow, including raw/settled abuse
+admission, durable conversation routing, fragmented-message coalescing,
+multiple-abandoned-basket clarification and outbound CommerceAgent safety, is
+documented in:
+
+[`inbound-whatsapp-recovery-flow.md`](inbound-whatsapp-recovery-flow.md)
+
+That document is the preferred starting point for understanding how a customer
+with several active abandoned baskets is routed without multiplying sender-level
+abuse capacity.
+
 ## Other flows
 
 - checkout recovery
-- inbound WhatsApp message processing
 - product discovery
 - billing and entitlement synchronization
 - platform-admin reporting
