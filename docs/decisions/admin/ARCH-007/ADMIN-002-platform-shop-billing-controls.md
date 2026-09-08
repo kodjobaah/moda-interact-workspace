@@ -54,6 +54,7 @@ Admin platform billing policy screen plus tenant billing-controls panel/actions/
 - Every mutation writes BillingAuditEvent with actor/reason/before/after and shop when applicable.
 - Use existing PlatformAdmin ADMIN/SUPER_ADMIN authorization; hard platform/correction-level controls require SUPER_ADMIN.
 
+
 ## Work Items
 
 - [ ] Build platform policy page/actions.
@@ -61,6 +62,7 @@ Admin platform billing policy screen plus tenant billing-controls panel/actions/
 - [ ] Implement adjustment ledger action/display.
 - [ ] Implement server-side bounds/expiry validation and audit transactions.
 - [ ] Add security/validation/audit tests.
+- [ ] Any components created make sure icu internationalization is supported using the same approach as the current components.
 
 ## Interfaces / Contracts
 
