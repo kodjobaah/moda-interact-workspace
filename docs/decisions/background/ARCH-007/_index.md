@@ -15,7 +15,7 @@ Coordinator: `moda_architect`
 | BACKGROUND-005 | Apply normalized Meta provider status to durable message and usage accounting | Complete | BACKGROUND-004, MESSAGING-001, SHARED-004 |
 | BACKGROUND-006 | Implement Shopify App Events 2026-07 adapter and expiring token cache | Complete | SHARED-002, DATABASE-002 |
 | BACKGROUND-007 | Publish paid UsageEvents idempotently with retries and compensating corrections | Complete | BACKGROUND-003, BACKGROUND-006 |
-| BACKGROUND-008 | Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain | **Ready — Changes Requested; next claim Attempt 3** | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
+| BACKGROUND-008 | Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain | **Ready — Changes Requested; next claim Attempt 4** | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
 | BACKGROUND-009 | Activate billed recovery packs and consume purchased credits before overage | Complete | DATABASE-005, SHARED-006, BACKGROUND-007 |
 | BACKGROUND-010 | Coalesce fragmented inbound WhatsApp messages into one CommerceAgent turn | Complete | DATABASE-006, BACKGROUND-004 |
 | BACKGROUND-011 | Add inbound WhatsApp abuse admission before routing and CommerceAgent work | **Ready** | BACKGROUND-010 |
@@ -27,6 +27,6 @@ Current frontier:
 - BACKGROUND-005 Attempt 2 is architect-accepted Complete.
 - BACKGROUND-007 Attempt 3 is architect-accepted Complete.
 - BACKGROUND-009 Attempt 3 is architect-accepted Complete.
-- BACKGROUND-008 Attempt 2 received Changes Requested; the core runtime corrections are preserved and the same task is Ready for a narrow Attempt 3 close-out.
+- BACKGROUND-008 Attempt 3 received Changes Requested; substantive runtime behavior is accepted and the same task is Ready for a final telemetry/test-hardening Attempt 4.
 - BACKGROUND-010 Attempt 4 is architect-accepted Complete.
 - BACKGROUND-011 is Ready because BACKGROUND-010 is architect-accepted Complete. It adds raw sender/global abuse admission and settled-turn sender/conversation/shop/global admission. It is operational safety, not merchant billing.

@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: review
+status: ready
 priority: 120
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ enables:
   - ARCH-007-SYSTEM-TEST-002
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T21:16:00+01:00
+updated: 2026-09-08T21:30:00+01:00
 ---
 
 # ARCH-007-BACKGROUND-008: Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain
@@ -249,6 +249,265 @@ Merged to implementation main: no
 Merged to workspace main: no
 
 ## Architect Review
+
+### Review Status
+
+Changes Requested — Attempt 3
+
+### Review Notes
+
+#### Attempt 3 — Changes Requested
+
+Attempt 3 resolves the substantive B008 close-out corrections from Attempt 2.
+
+Accepted in this attempt and to be preserved:
+
+1. The Background Shopify Partner provider now includes current-item
+   `description` in the frozen ActiveSubscription query/response shape and
+   models `pendingUpdate.billingPeriod` as nullable.
+2. The production billing entrypoint now creates the Shared structured logger
+   for `moda-billing-worker` and passes an explicit reconciliation-failure
+   reporter into the already-accepted single-flight scheduler.
+3. The scheduler default no longer emits a raw `console.error`; the scheduler
+   remains generic and delegates reporting to the production entrypoint.
+4. B008-R1 through B008-R8 behavior is now represented in focused tests:
+   current-plan later-scan change, UNMAPPED-to-mapped later scan, genuine
+   NO_CONTRACT, pending-plan boundary, billing-cycle transition, B009 activation
+   rediscovery, no financial auto-correction on discrepancy, and stale
+   IN_FLIGHT permanent-idempotency reuse.
+5. The Attempt 2 runtime corrections remain intact: rotating bounded shop scan,
+   no overlapping scans, PostgreSQL-only billing readiness/resource cleanup,
+   and uninstall-priority bounded publication.
+
+No reconciliation, billing, publisher, readiness, Partner classification or
+scheduler-algorithm redesign is required.
+
+One bounded production-hardening correction and one explicit regression-evidence
+correction remain.
+
+#### Correction 1 — bound every structured failure field
+
+Current production reporter:
+
+```ts
+const message = error instanceof Error
+  ? error.message.slice(0, 256)
+  : "unknown failure";
+
+logger.error("billing.reconciliation.scan_failed", {
+  errorName: error instanceof Error ? error.name : "UnknownError",
+  errorMessage: message,
+});
+```
+
+`errorMessage` is bounded, but `errorName` is not. `Error.name` is mutable and
+must not be treated as inherently bounded.
+
+Attempt 4 must bound it deterministically, for example:
+
+```ts
+const errorName = error instanceof Error
+  ? error.name.slice(0, 64)
+  : "UnknownError";
+```
+
+and emit only bounded scalar metadata:
+
+```text
+event        = billing.reconciliation.scan_failed
+errorName    <= 64 characters
+errorMessage <= 256 characters
+```
+
+Do not add raw `error`, stack, Partner payload, access token, request headers,
+`DATABASE_URL`, `REDIS_URL` or other environment values to the log metadata.
+
+This is the only required production-code correction.
+
+#### Correction 2 — prove the production entrypoint reporter, not only the generic scheduler callback
+
+The Attempt 3 scheduler regression:
+
+```text
+reports scheduled failures through the supplied bounded reporter
+```
+
+correctly proves that the generic scheduler forwards a failure to its supplied
+callback. It does **not** prove the production `billing.ts` callback uses the
+Shared logger or that raw Error objects are excluded from structured metadata.
+
+Attempt 4 must add a focused production-wiring regression. Keep it simple and
+consistent with the repository's existing entrypoint-isolation/source-contract
+tests.
+
+A valid deterministic regression may read:
+
+```text
+src/entrypoints/billing.ts
+```
+
+as source and prove all of the following:
+
+1. it imports/uses `createLogger` from
+   `@modainteract/moda-interact-shared/logging`;
+2. logger service name is `moda-billing-worker`;
+3. it emits exactly `billing.reconciliation.scan_failed`;
+4. it passes `reportBillingReconciliationFailure` into
+   `startBillingReconciliationScheduler`;
+5. `errorName` is bounded to the agreed maximum;
+6. `errorMessage` is bounded to 256;
+7. the structured log metadata does not contain/pass the raw `error` object.
+
+Do not import the executable entrypoint into the test if doing so would start
+the worker. Follow the current `entrypoint-isolation.test.ts` source-inspection
+pattern unless an already-existing safer test seam is available.
+
+Also strengthen the Partner query assertion so the test proves the
+`pendingUpdate` block itself contains both `billingPeriod` and
+`legacySubscriptionId`, rather than relying on a generic occurrence of
+`legacySubscriptionId` elsewhere in the query.
+
+For traceability, rename or label the existing discrepancy regression as
+`B008-R7`; its current assertions already satisfy the required behavior and no
+production change is needed.
+
+### Attempt 4 allowed change surface
+
+Production:
+
+```text
+src/entrypoints/billing.ts
+```
+
+Tests:
+
+```text
+tests/unit/runtime/entrypoint-isolation.test.ts
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+`src/runtime/billing-scheduler.ts` must not change unless compilation/type
+cleanup is strictly necessary.
+
+Do not modify:
+
+- `src/services/billing-reconciliation.service.ts`;
+- `src/services/shopify-usage-event-publisher.service.ts`;
+- `src/runtime/readiness.ts`;
+- `src/entrypoints/billing-resources.ts`;
+- database schema/migrations;
+- B007 publisher semantics;
+- B009 activation semantics;
+- shop pagination/rotation;
+- uninstall priority/cutoff;
+- discrepancy representation;
+- system-test tasks.
+
+### Required Attempt 4 validation
+
+Run:
+
+```text
+npx vitest run   tests/unit/runtime/entrypoint-isolation.test.ts   tests/unit/runtime/billing-scheduler.test.ts   tests/unit/providers/shopify-partner-billing.provider.test.ts   tests/unit/services/billing-reconciliation.service.test.ts   tests/unit/services/shopify-usage-event-publisher.service.test.ts
+
+npm run build
+npm run prisma:validate
+git diff --check
+npm run test:unit
+```
+
+Completion Report must state:
+
+- production `errorName` bound;
+- production entrypoint Shared-logger wiring regression passes;
+- raw Error is not structured log metadata;
+- Partner pending-block parity assertion passes;
+- B008-R1..R8 all remain covered;
+- exact focused pass count;
+- full-suite pass/fail counts;
+- the two `pending-recovery-candidate` baseline failures remain unchanged if
+  still present.
+
+### Reviewed Files
+
+Attempt 3 implementation reviewed at:
+
+- `7da9aae37f3846b9b5e5c9dade15bad156a17492`
+
+Attempt 3 is a single commit ahead of Attempt 2
+`e3960d5e9295778de0f82efddd488d032924f377`.
+
+The reviewed delta is limited to:
+
+- `src/entrypoints/billing.ts`;
+- `src/providers/shopify-partner-billing.provider.ts`;
+- `src/runtime/billing-scheduler.ts`;
+- `tests/unit/providers/shopify-partner-billing.provider.test.ts`;
+- `tests/unit/runtime/billing-scheduler.test.ts`;
+- `tests/unit/services/billing-reconciliation.service.test.ts`;
+- `tests/unit/services/shopify-usage-event-publisher.service.test.ts`.
+
+### Validation Reviewed
+
+Attempt 3 Completion Report records:
+
+- focused tests: 37 passed;
+- build: passed;
+- Prisma validation: passed;
+- diagnostics: clean;
+- `git diff --check`: passed;
+- full unit suite: 422 passed with the same two unrelated
+  `pending-recovery-candidate.service.test.ts` baseline failures.
+
+The supplied archive contains no `node_modules`, so the architect did not rerun
+Vitest/build locally. Source and pushed implementation commit were independently
+inspected.
+
+The two unrelated baseline failures are not a B008 rejection reason.
+
+### Architecture Conformance
+
+Changes required within this SAME task.
+
+All substantive B008 runtime behavior is now conformant. Attempt 4 is a
+test-and-telemetry hardening close-out only.
+
+### Follow-up
+
+Return `ARCH-007-BACKGROUND-008` to `ready`.
+
+Durable state:
+
+```text
+status: ready
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+Next claim becomes **Attempt 4** on the SAME mirrored:
+
+```text
+task/ARCH-007-BACKGROUND-008
+```
+
+branches/worktree.
+
+Do not create an `attempt-4` branch.
+
+Do not start:
+
+- `ARCH-007-ADMIN-003`;
+- `ARCH-007-ADMIN-004`;
+- `ARCH-007-GATEWAY-001`;
+- `ARCH-007-SYSTEM-TEST-002`;
+- `ARCH-007-SYSTEM-TEST-003`.
+
+System-test tasks remain terminal/manual-gated.
+
+#### Attempt 2 — Changes Requested (preserved)
+
 
 ### Review Status
 
