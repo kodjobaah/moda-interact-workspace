@@ -7,7 +7,7 @@ domain: gateway
 repository: moda-interact-gateway
 assigned_agent: moda_gateway
 coordinator: moda_architect
-status: review
+status: complete
 priority: 140
 executor: copilot
 claimed_at: 2026-09-08T21:38:27Z
@@ -118,6 +118,8 @@ Complete, returned to architect review (Attempt 1)
 
 ### Files Changed
 
+Implementation commit `2821832` on `task/ARCH-007-GATEWAY-001`:
+
 - `render.test.yaml`
 - `render.production.yaml`
 - `tests/validate-render-blueprints.sh`
@@ -155,16 +157,99 @@ Complete, returned to architect review (Attempt 1)
 ### Architectural Concerns
 
 - None introduced. The billing worker has no Redis dependency and readiness does not call Shopify App Events.
+- Added `moda-billing-worker-test` and `moda-billing-worker-production` as
+  private Render worker services using the accepted Background repository and
+  exact `npm run start:billing-worker` command.
+- Configured one conservative initial instance per environment while preserving
+  independent horizontal scaling.
+- Attached each billing worker to the common observability/environment group,
+  the existing Shopify Partner/App configuration group and the corresponding
+  environment-specific PostgreSQL connection.
+- Kept the billing worker Redis-independent and without public domains or web
+  health-check exposure.
+- Documented `npm run readiness:billing-worker`, PostgreSQL-only readiness and
+  deployment ordering in `docs/render-topology.md`.
+- Extended positive Blueprint validation and added billing-specific negative
+  fixtures.
+
+### Validation Results
+
+Passed:
+
+- `bash tests/validate-render-blueprints.sh`
+- `bash tests/validate-render-blueprints-negative.sh`
+- `bash tests/validate-observability-config.sh`
+- `git diff --check`
+
+The Gateway repository has no `package.json`, so no npm typecheck/lint/build
+command applies. Render deployment-time connectivity/credential/capacity
+validation remains deployment/system-test evidence.
+
+### Deviations
+
+The existing test Blueprint convention uses Render-managed `sync: false`
+secrets; no secret values are committed.
+
+### Assumptions
+
+- The existing `0.5c-512mb` worker plan and one initial instance are the
+  conservative starting topology.
+- Background owns the canonical `moda-billing-worker` telemetry service identity
+  and PostgreSQL-only readiness behavior.
+
+### Unresolved Issues
+
+Render deployment-time schema, credentials, connectivity and measured capacity
+remain to be validated in the appropriate deployment/system-test stage.
+
+### Architectural Concerns
+
+None introduced.
 
 ## Architect Review
 
 ### Review Status
 
-Pending architect review
+Accepted
 
 ### Review Notes
 
-None
+#### Attempt 1 — Accepted
+
+Attempt 1 is architect-accepted Complete.
+
+The implementation satisfies the GATEWAY-001 deployment contract:
+
+1. `moda-billing-worker-test` and `moda-billing-worker-production` are private
+   Render `worker` services, not public web services.
+2. Both use the accepted Background repository and exact
+   `npm run start:billing-worker` command.
+3. Each starts at one conservative instance and remains independently scalable.
+4. Each receives the common environment/observability group, the existing
+   Shopify Partner/App configuration group, and the environment-specific
+   PostgreSQL connection.
+5. Neither billing worker receives the Redis group.
+6. The topology documentation records
+   `npm run readiness:billing-worker` and PostgreSQL-only readiness without
+   inventing a live Shopify provider readiness dependency.
+7. Positive validation covers worker type, runtime, repository, command,
+   private exposure, initial scale, exact environment-group attachments and
+   environment-specific database wiring.
+8. Negative fixtures cover invalid billing command and missing Shopify
+   Partner/App group, while the exact attachment checks also reject accidental
+   Redis or unrelated group attachment.
+9. Test and production remain distinguishable through their environment-specific
+   groups and database resources, with no committed secret values.
+
+The architect reran the supplied Gateway validation scripts from the uploaded
+repository and all passed.
+
+The accepted Background-008 contract was cross-checked: the package exposes
+`start:billing-worker` / `readiness:billing-worker`, and billing readiness
+requires PostgreSQL only.
+
+No further implementation changes are required for
+`ARCH-007-GATEWAY-001`.
 
 ### Reviewed Files
 
@@ -172,12 +257,43 @@ Implementation commit `2821832` on pushed branch `task/ARCH-007-GATEWAY-001`.
 
 ### Validation Reviewed
 
+- Render Blueprint validation: passed.
+- Negative Blueprint fixtures: passed.
+- Observability validation: passed.
+- Completion Report `git diff --check`: passed.
+- Render deployment-time credentials/connectivity/platform validation remains
+  system/deployment evidence and is not an implementation acceptance blocker.
+
 Static Render Blueprint, negative fixture, observability, and whitespace checks listed above passed. Parent report branch is `task/ARCH-007-GATEWAY-001`; no parent submodule gitlink was staged.
 
 ### Architecture Conformance
 
 Conforms to ARCH-007 objective and accepted Background-008 start/readiness contracts.
+Accepted. The billing worker is independently deployable, private,
+PostgreSQL-recoverable, Redis-independent and aligned with the accepted
+Background-008 runtime contract.
 
 ### Follow-up
 
 Architect/developer to review and merge the implementation branch; system-test tasks remain enabled but were not started.
+Implementation represented by Gateway commit `2821832` and the supplied
+workspace archive:
+
+- `moda-interact-gateway/render.test.yaml`
+- `moda-interact-gateway/render.production.yaml`
+- `moda-interact-gateway/tests/validate-render-blueprints.sh`
+- `moda-interact-gateway/tests/validate-render-blueprints-negative.sh`
+- `moda-interact-gateway/tests/validate-observability-config.sh`
+- `moda-interact-gateway/docs/render-topology.md`
+
+Parent report evidence was independently verified at workspace commit
+`31c84e5bea7715c6705519a6aba91a0d67adbf58`.
+
+`ARCH-007-GATEWAY-001` is Complete.
+
+`ARCH-007-SYSTEM-TEST-002` and `ARCH-007-SYSTEM-TEST-003` now have
+GATEWAY-001 as a satisfied dependency, but both remain Pending /
+manual-terminal-gated. Do not auto-start or auto-promote either system-test task.
+
+Developer/user retains ownership of merging/pushing implementation `main` and
+integrating the parent workspace state.
