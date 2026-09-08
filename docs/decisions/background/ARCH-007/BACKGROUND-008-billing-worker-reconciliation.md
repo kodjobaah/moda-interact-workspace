@@ -7,11 +7,11 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: ready
+status: in_progress
 priority: 120
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-08T19:10:31Z
+attempt: 1
 depends_on:
   - ARCH-007-BACKGROUND-005
   - ARCH-007-BACKGROUND-007
@@ -23,7 +23,7 @@ enables:
   - ARCH-007-SYSTEM-TEST-002
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T20:02:00+01:00
+updated: 2026-09-08T19:10:31Z
 ---
 
 # ARCH-007-BACKGROUND-008: Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain
@@ -132,7 +132,7 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-Not Started
+In Progress (Attempt 1)
 
 ### Files Changed
 
