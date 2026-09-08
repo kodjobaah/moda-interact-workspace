@@ -188,9 +188,9 @@ Implementation repository:
 Parent workspace:
    task file: `docs/decisions/admin/ARCH-007/ADMIN-003-billing-overview-tenant-reconciliation.md`
    claim commit: `2d1988c`
-   review report commit: pending
+   review report commit: `25957aa`
    remote branch: `origin/task/ARCH-007-ADMIN-003`
-   pushed: claim yes; review report pending
+   pushed: claim yes; review report yes
    submodule gitlink staged: no
 
 Merged to implementation main: no
