@@ -7,11 +7,11 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: ready
+status: in_progress
 priority: 65
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-08T22:37:19Z
+attempt: 2
 depends_on:
   - ARCH-007-ADMIN-001
   - ARCH-007-DATABASE-005
@@ -108,7 +108,7 @@ a behavioral i18n test helper available.
 ## Completion Report
 
 ### Status
-Implementation complete; returned to review (Attempt 1)
+In Progress (Attempt 2)
 
 ### Files Changed
 In `moda-interact-admin`:
