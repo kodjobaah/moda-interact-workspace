@@ -7,7 +7,7 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 70
 executor: copilot
 claimed_at: 2026-09-08T16:59:11Z
@@ -18,7 +18,7 @@ enables:
   - ARCH-007-ADMIN-003
   - ARCH-007-SYSTEM-TEST-001
 created: 2026-09-07
-updated: 2026-09-08T16:59:11Z
+updated: 2026-09-08T18:05:00Z
 ---
 # ARCH-007-ADMIN-002: Build platform safety, shop overrides and Free allowance adjustment administration
 
@@ -57,12 +57,12 @@ Admin platform billing policy screen plus tenant billing-controls panel/actions/
 
 ## Work Items
 
-- [ ] Build platform policy page/actions.
-- [ ] Add shop controls section to tenant detail or dedicated Billing tab.
-- [ ] Implement adjustment ledger action/display.
-- [ ] Implement server-side bounds/expiry validation and audit transactions.
-- [ ] Add security/validation/audit tests.
-- [ ] Any components created make sure icu internationalization is supported using the same approach as the current components.
+- [x] Build platform policy page/actions.
+- [x] Add shop controls section to tenant detail or dedicated Billing tab.
+- [x] Implement adjustment ledger action/display.
+- [x] Implement server-side bounds/expiry validation and audit transactions.
+- [x] Add security/validation/audit tests.
+- [x] Any components created make sure icu internationalization is supported using the same approach as the current components.
 
 ## Interfaces / Contracts
 
@@ -79,12 +79,12 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 
 ## Acceptance Criteria
 
-- [ ] Platform hard ceiling cannot be bypassed by tenant override.
-- [ ] Support credit changes effective allowance without changing committed usage.
-- [ ] All controls are durable/audited and survive process restart.
-- [ ] Expired override semantics are visible and safe.
-- [ ] Unauthorized mutation is rejected.
-- [ ] Tests/validation pass.
+- [x] Platform hard ceiling cannot be bypassed by tenant override.
+- [x] Support credit changes effective allowance without changing committed usage.
+- [x] All controls are durable/audited and survive process restart.
+- [x] Expired override semantics are visible and safe.
+- [x] Unauthorized mutation is rejected.
+- [x] Tests/validation pass.
 
 ## Validation
 
@@ -107,31 +107,53 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 1)
+Ready for Architect Review (Attempt 1)
 
 ### Files Changed
 
-None
+- `src/app/(protected)/billing/page.tsx`
+- `src/app/(protected)/billing/controls/page.tsx`
+- `src/app/actions/billing-controls.ts`
+- `src/components/admin/billing-controls.tsx`
+- `src/components/admin/tenant-administration.tsx`
+- `src/i18n/locales/en.json`
+- `src/i18n/required-keys.ts`
+- `src/lib/admin/billing-control-validation.ts`
+- `src/lib/admin/billing-controls.ts`
+- `src/lib/admin/data.ts`
+- `src/lib/admin/types.ts`
+- `tests/security/admin-billing-controls.test.mjs`
 
 ### Work Completed
 
-None
+- Added SUPER_ADMIN platform policy controls with bounded hard cap and warning threshold validation.
+- Added audited per-shop nullable overrides, expiry/history display, platform ceiling enforcement, and effective soft/hard validation.
+- Added append-only signed Free allowance adjustments and effective allowance display without mutating entitlement counters.
+- Added transactional `BillingAuditEvent` writes for every mutation and canonical ICU catalogue keys for the new UI.
 
 ### Validation Results
 
-None
+- Focused ADMIN-002 security tests: 4 passed.
+- Full admin test suite: 113 passed, 0 failed.
+- `npx tsc --noEmit`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run lint`: passed with two pre-existing queue-monitor hook warnings.
+- `npm run build`: passed with existing BullMQ optional Valkey/dynamic dependency warnings.
+- `git diff --check`: passed.
+- Repository-wide `npm run format:check` remains a baseline failure across existing files; changed ADMIN-002 files were formatted directly.
 
 ### Deviations
 
-None
+- No database schema changes were required; the accepted database submodule already exposed the required Prisma delegates.
 
 ### Assumptions
 
-None
+- Runtime consumers continue to ignore expired overrides; Admin displays expiry/history and allows audited replacement or clearing.
 
 ### Unresolved Issues
 
-None
+- None identified in the implemented scope.
 
 ### Architectural Concerns
 
