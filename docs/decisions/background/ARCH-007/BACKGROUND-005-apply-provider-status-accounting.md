@@ -156,9 +156,9 @@ Implementation repository:
 
 Parent workspace:
   task file: docs/decisions/background/ARCH-007/BACKGROUND-005-apply-provider-status-accounting.md
-  commit: pending
+  commit: 1d79ff204e17b61d4aff03c5bd7f7025c2c2787d
   remote branch: origin/task/ARCH-007-BACKGROUND-005
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
