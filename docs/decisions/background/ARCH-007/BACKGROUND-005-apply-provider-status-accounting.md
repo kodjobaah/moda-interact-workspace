@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 100
 executor: copilot
 claimed_at: 2026-09-08T15:32:26Z
@@ -20,7 +20,7 @@ enables:
   - ARCH-007-BACKGROUND-008
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T15:32:26Z
+updated: 2026-09-08T15:40:30Z
 ---
 
 # ARCH-007-BACKGROUND-005: Apply normalized Meta provider status to durable message and usage accounting
@@ -60,11 +60,11 @@ Messaging queue consumer/handler and durable Background service/tests for normal
 
 ## Work Items
 
-- [ ] Implement status consumer handler/service.
-- [ ] Add monotonic/idempotent transition logic.
-- [ ] Create delivered usage once.
-- [ ] Persist optional bounded metadata.
-- [ ] Add duplicate/out-of-order/unknown-provider-id/cross-tenant focused tests.
+- [x] Implement status consumer handler/service.
+- [x] Add monotonic/idempotent transition logic.
+- [x] Create delivered usage once.
+- [x] Persist optional bounded metadata.
+- [x] Add duplicate/out-of-order/unknown-provider-id/cross-tenant focused tests.
 
 ## Interfaces / Contracts
 
@@ -81,12 +81,12 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 
 ## Acceptance Criteria
 
-- [ ] Duplicate/out-of-order statuses cannot duplicate delivered usage or regress final state.
-- [ ] Unknown provider ID cannot update another shop.
-- [ ] No producer-supplied or fabricated `shopId` is required for provider-status routing.
-- [ ] No raw webhook parsing exists in Background.
-- [ ] No exact Meta monetary amount is fabricated.
-- [ ] Tests and worker validation pass.
+- [x] Duplicate/out-of-order statuses cannot duplicate delivered usage or regress final state.
+- [x] Unknown provider ID cannot update another shop.
+- [x] No producer-supplied or fabricated `shopId` is required for provider-status routing.
+- [x] No raw webhook parsing exists in Background.
+- [x] No exact Meta monetary amount is fabricated.
+- [x] Tests and worker validation pass.
 
 ## Validation
 
@@ -111,31 +111,58 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress
+Ready for Review (Attempt 1)
 
 ### Files Changed
 
-None
+src/services/whatsapp-provider-status.service.ts
+src/workers/whatsapp.worker.ts
+tests/unit/services/whatsapp-provider-status.service.test.ts
 
 ### Work Completed
 
-None
+Added the schema-validated `message-status` consumer to the existing `whatsapp-events` worker. The consumer resolves ownership from the durable outbound message relation, applies monotonic SENT/DELIVERED/READ/FAILED lifecycle updates, creates one deterministic NOT_APPLICABLE delivered usage event, and stores bounded accepted provider metadata in `providerResponseSummary`. Unknown and unowned messages are bounded no-ops with structured operational logging.
 
 ### Validation Results
 
-None
+Focused: `npm exec vitest run tests/unit/services/whatsapp-provider-status.service.test.ts` passed (6 tests).
+Build: `npm run build` passed.
+Prisma: `npm run prisma:validate` passed.
+Full suite: `npm test` reported 365 passed, 7 skipped, and 2 pre-existing failures in `tests/unit/services/pending-recovery-candidate.service.test.ts` (null-context preservation/merge cases); no provider-status tests failed.
+Formatting/diff: targeted Prettier check and `git diff --check` passed.
+Diagnostics: no errors reported for the changed source files.
 
 ### Deviations
 
-None
+The task Implementation Notes name Shared `0.7.4`, while the current architecture and Background package consume the accepted Shared `0.8.0` release. The provider-status v2 billing exports used here are present in `0.8.0`; no dependency downgrade was made.
 
 ### Assumptions
 
-None
+None.
 
 ### Unresolved Issues
 
-None
+The two unrelated `pending-recovery-candidate` baseline failures remain for architect/developer follow-up.
+
+### Git / VCS
+
+Task branch: task/ARCH-007-BACKGROUND-005
+
+Implementation repository:
+  repository: moda-interact-background
+  commit: 2bdbe865415feab303e0f17a40cdab1a62c19b1d
+  remote branch: origin/task/ARCH-007-BACKGROUND-005
+  pushed: yes
+
+Parent workspace:
+  task file: docs/decisions/background/ARCH-007/BACKGROUND-005-apply-provider-status-accounting.md
+  commit: pending
+  remote branch: origin/task/ARCH-007-BACKGROUND-005
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ### Architectural Concerns
 
