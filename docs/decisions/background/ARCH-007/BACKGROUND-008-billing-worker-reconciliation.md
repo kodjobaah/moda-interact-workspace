@@ -7,10 +7,10 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 120
-executor: copilot
-claimed_at: 2026-09-08T20:38:54Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-007-BACKGROUND-005
@@ -74,7 +74,7 @@ Background billing entrypoint/runtime/router/scheduler, Partner API subscription
 - [x] Wire bounded BACKGROUND-009 recovery-credit purchase activation reconciliation into the recurring billing worker scan.
 - [x] Implement Shopify-vs-Moda usage comparison/discrepancy visibility using the accepted structured operational representation.
 - [x] Implement uninstall prioritization/cutoff.
-- [ ] Complete the explicit B008 regression matrix required by the latest Architect Review.
+- [x] Complete the explicit B008 regression matrix required by the latest Architect Review.
 
 ## Interfaces / Contracts
 
@@ -133,7 +133,42 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 3)
+Ready for architect review (Attempt 3)
+
+### Attempt 3 Completion Report
+
+Attempt 3 implements the three requested close-out corrections. The Background
+Partner provider now mirrors the frozen SHOPIFY-001 minimum query by selecting
+current item descriptions and typing nullable pending billing periods. The
+billing entrypoint creates the Shared structured logger for
+`moda-billing-worker` and passes a bounded `billing.reconciliation.scan_failed`
+reporter into the single-flight scheduler; raw Error objects and sensitive
+provider/runtime data are not passed as log metadata.
+
+The focused B008 regression matrix now explicitly covers B008-R1 through R8:
+external plan changes, post-registration UNMAPPED mapping, genuine
+NO_CONTRACT, pending plan/effective boundary, billing-cycle transition,
+BACKGROUND-009 activation rediscovery, discrepancy without financial
+correction, and stale IN_FLIGHT recovery with the permanent idempotency key.
+
+### Attempt 3 Validation
+
+Passed:
+
+- `npx vitest run tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/shopify-usage-event-publisher.service.test.ts tests/unit/providers/shopify-partner-billing.provider.test.ts tests/unit/runtime/billing-scheduler.test.ts tests/unit/runtime/entrypoint-isolation.test.ts` (37 tests passed)
+- `npm run build`
+- `npm run prisma:validate`
+- `git diff --check`
+
+### Attempt 3 Git / VCS
+
+Implementation repository commit `7da9aae` is pushed to
+`origin/task/ARCH-007-BACKGROUND-008`. The parent task branch contains the
+Attempt 3 claim and this report update. No implementation submodule gitlink was
+staged.
+
+The full unit suite completed with 422 passing tests and the same two unrelated
+pre-existing failures in `pending-recovery-candidate.service.test.ts`.
 
 ### Files Changed
 
