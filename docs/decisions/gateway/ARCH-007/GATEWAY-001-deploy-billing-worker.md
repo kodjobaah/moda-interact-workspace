@@ -9,8 +9,8 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 status: complete
 priority: 140
-executor: null
-claimed_at: null
+executor: copilot
+claimed_at: 2026-09-08T21:38:27Z
 attempt: 1
 depends_on: 
   - ARCH-007-BACKGROUND-008
@@ -128,6 +128,35 @@ Implementation commit `2821832` on `task/ARCH-007-GATEWAY-001`:
 
 ### Work Completed
 
+- Added `moda-billing-worker-test` and `moda-billing-worker-production` as private Docker workers using `npm run start:billing-worker`, one initial instance, and the Background repository.
+- Attached each worker to the environment common group, Shopify App/Partner Events group, and environment-specific PostgreSQL connection; no Redis, domains, or worker health check were added.
+- Documented `npm run readiness:billing-worker`, PostgreSQL-only dependencies, independent scaling, and deployment ordering.
+- Extended positive validation and added billing-specific negative fixtures for the command and Shopify App group contract.
+
+### Validation Results
+
+- `bash tests/validate-render-blueprints.sh` passed for test and production.
+- `bash tests/validate-render-blueprints-negative.sh` passed, including billing command and missing Shopify App group cases.
+- `bash tests/validate-observability-config.sh` passed.
+- `git diff --check` passed.
+- Repository has no `package.json`; no npm typecheck/lint/build command applies. Docker/integration validation remains developer-owned per policy and was not launched.
+
+### Deviations
+
+- The existing test Blueprint convention uses Render-managed `sync: false` secrets, so the validator accepts that test form while retaining strict production placeholder checks.
+
+### Assumptions
+
+- Existing `0.5c-512mb` worker plan and one-instance initial count are conservative starting values; independent Render worker scaling remains available.
+- Background-008 source owns canonical telemetry identity (`moda-billing-worker`, namespace `moda-interact`); the Blueprint supplies common environment-specific observability configuration.
+
+### Unresolved Issues
+
+- Render deployment-time schema, credentials, connectivity, readiness, and capacity evidence remain to be validated in isolated test/production environments.
+
+### Architectural Concerns
+
+- None introduced. The billing worker has no Redis dependency and readiness does not call Shopify App Events.
 - Added `moda-billing-worker-test` and `moda-billing-worker-production` as
   private Render worker services using the accepted Background repository and
   exact `npm run start:billing-worker` command.
@@ -224,6 +253,29 @@ No further implementation changes are required for
 
 ### Reviewed Files
 
+Implementation commit `2821832` on pushed branch `task/ARCH-007-GATEWAY-001`.
+
+### Validation Reviewed
+
+- Render Blueprint validation: passed.
+- Negative Blueprint fixtures: passed.
+- Observability validation: passed.
+- Completion Report `git diff --check`: passed.
+- Render deployment-time credentials/connectivity/platform validation remains
+  system/deployment evidence and is not an implementation acceptance blocker.
+
+Static Render Blueprint, negative fixture, observability, and whitespace checks listed above passed. Parent report branch is `task/ARCH-007-GATEWAY-001`; no parent submodule gitlink was staged.
+
+### Architecture Conformance
+
+Conforms to ARCH-007 objective and accepted Background-008 start/readiness contracts.
+Accepted. The billing worker is independently deployable, private,
+PostgreSQL-recoverable, Redis-independent and aligned with the accepted
+Background-008 runtime contract.
+
+### Follow-up
+
+Architect/developer to review and merge the implementation branch; system-test tasks remain enabled but were not started.
 Implementation represented by Gateway commit `2821832` and the supplied
 workspace archive:
 
@@ -236,23 +288,6 @@ workspace archive:
 
 Parent report evidence was independently verified at workspace commit
 `31c84e5bea7715c6705519a6aba91a0d67adbf58`.
-
-### Validation Reviewed
-
-- Render Blueprint validation: passed.
-- Negative Blueprint fixtures: passed.
-- Observability validation: passed.
-- Completion Report `git diff --check`: passed.
-- Render deployment-time credentials/connectivity/platform validation remains
-  system/deployment evidence and is not an implementation acceptance blocker.
-
-### Architecture Conformance
-
-Accepted. The billing worker is independently deployable, private,
-PostgreSQL-recoverable, Redis-independent and aligned with the accepted
-Background-008 runtime contract.
-
-### Follow-up
 
 `ARCH-007-GATEWAY-001` is Complete.
 
