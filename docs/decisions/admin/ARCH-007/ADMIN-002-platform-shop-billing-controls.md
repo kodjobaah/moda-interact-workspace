@@ -7,18 +7,18 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: ready
+status: in_progress
 priority: 70
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-08T16:59:11Z
+attempt: 1
 depends_on: 
   - ARCH-007-ADMIN-001
 enables: 
   - ARCH-007-ADMIN-003
   - ARCH-007-SYSTEM-TEST-001
 created: 2026-09-07
-updated: 2026-09-08
+updated: 2026-09-08T16:59:11Z
 ---
 # ARCH-007-ADMIN-002: Build platform safety, shop overrides and Free allowance adjustment administration
 
@@ -107,7 +107,7 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-Not Started
+In Progress (Attempt 1)
 
 ### Files Changed
 
