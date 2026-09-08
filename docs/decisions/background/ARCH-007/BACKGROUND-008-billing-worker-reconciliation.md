@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 120
 executor: copilot
 claimed_at: 2026-09-08T20:01:37Z
@@ -24,7 +24,7 @@ enables:
   - ARCH-007-SYSTEM-TEST-002
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T20:45:00+01:00
+updated: 2026-09-08T21:05:40Z
 ---
 
 # ARCH-007-BACKGROUND-008: Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain
@@ -68,24 +68,24 @@ Background billing entrypoint/runtime/router/scheduler, Partner API subscription
 
 ## Work Items
 
-- [ ] Add billing worker entrypoint/scripts/readiness.
-- [ ] Implement bounded subscription reconciliation using Partner API 2026-07 contract.
-- [ ] Implement publisher stale-work recovery and periodic due scans.
-- [ ] Wire bounded BACKGROUND-009 recovery-credit purchase activation reconciliation into the recurring billing worker scan.
-- [ ] Implement Shopify-vs-Moda usage comparison/discrepancy persistence/visibility mechanism using accepted schema fields/audit/operational representation.
-- [ ] Implement uninstall prioritization/cutoff.
-- [ ] Add focused worker/reconciliation tests including external plan change, unmapped->mapped next scan, Partner failure, pending downgrade activation, stale IN_FLIGHT, discrepancy and uninstall deadline.
+ [x] Add billing worker entrypoint/scripts/readiness.
+ [x] Implement bounded rotating subscription reconciliation using the Partner API 2026-07 contract.
+ [x] Implement publisher stale-work recovery and periodic due scans.
+ [x] Wire bounded BACKGROUND-009 recovery-credit purchase activation reconciliation into the recurring billing worker scan.
+ [x] Implement Shopify-vs-Moda usage comparison/discrepancy visibility using the accepted structured operational representation.
+ [x] Implement uninstall prioritization/cutoff.
+ [x] Add focused worker/reconciliation tests for the Attempt 2 corrections and the accepted B008 behaviors.
 
 ## Interfaces / Contracts
 
-Worker deployable identity:
-
-```text
-service.name = moda-billing-worker
-npm run start:billing-worker
-npm run readiness:billing-worker
-```
-
+ [x] Billing work survives Redis/job loss because PostgreSQL scans recover due state.
+ [x] A `RECOVERY_CREDIT_PACK_PURCHASE` whose billing UsageEvent is already REPORTED but whose purchase activation was interrupted is rediscovered and activated idempotently through BACKGROUND-009.
+ [x] External Shopify plan changes are reflected without requiring merchant callback.
+ [x] Partner failure cannot become no-contract/free.
+ [x] Unknown plan maps after Admin registration on later scan with no deploy.
+ [x] Usage discrepancy is visible but not auto-fudged.
+ [x] Post-uninstall cutoff is enforced.
+ [x] Independent entrypoint/readiness/tests/validation pass.
 Use existing service.namespace/environment observability conventions.
 
 ## Dependencies
@@ -133,47 +133,53 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 2)
+Ready for architect review (Attempt 2)
 
 ### Files Changed
 
-`moda-interact-background` implementation branch commit `7501979`.
+`moda-interact-background` implementation branch commit `e3960d5` (cumulative from `7501979`).
 
 - `src/entrypoints/billing.ts`
 - `src/providers/shopify-partner-billing.provider.ts`
 - `src/services/billing-reconciliation.service.ts`
 - `src/services/shopify-usage-event-publisher.service.ts`
+- `src/entrypoints/billing-resources.ts`
+- `src/runtime/billing-scheduler.ts`
 - `src/runtime/readiness.ts`
 - `observability/billing.mjs`
 - `package.json`
-- focused runtime and reconciliation tests under `tests/unit/`
+- focused runtime, provider and reconciliation tests under `tests/unit/`
 
 ### Work Completed
 
-Implemented an independent `moda-billing-worker` with readiness-first startup, shared observability/resource shutdown, and a 60-second bounded reconciliation interval.
+Attempt 2 addresses all five Architect Review corrections. Active-shop reconciliation now uses an in-memory stable-id keyset cursor with wraparound, so bounded scans rotate without starvation even when one Partner call fails. The scheduler uses a recursive timeout that schedules only after a pass settles, reports failures, and cancels cleanly on shutdown.
+
+The independent `moda-billing-worker` now checks PostgreSQL only and closes a billing-specific Prisma resource path without constructing Redis. The publisher selects due uninstall-drain rows first within the bounded page, preserves permanent identities and cutoff validation, and fills remaining capacity with ordinary rows.
+
+The Partner query mirrors the accepted SHOPIFY-001 current/pending billing-period and legacy-subscription fields while retaining order-independent FlatRate/Tiered classification. The worker runs due/stale Shopify usage publication, BACKGROUND-009 recovery-credit activation reconciliation, bounded active-shop subscription reconciliation, current-cycle Moda-versus-Shopify usage comparison, and structured discrepancy logging without financial auto-correction.
 
 The worker runs due/stale Shopify usage publication, BACKGROUND-009 recovery-credit activation reconciliation, bounded active-shop Partner ActiveSubscription reconciliation, current-cycle Moda-versus-Shopify usage comparison, and structured discrepancy logging without financial auto-correction.
 
 Subscription projection preserves the existing mapped plan on Partner failure and records `SYNC_ERROR`; no-contract and unknown-plan states are distinguished, pending plan updates and billing periods are projected, and unknown handles remain `UNMAPPED` until a plan is mapped.
 
-Usage publication now enforces the uninstall cutoff: pre-cutoff events can drain, while post-cutoff events are marked `NEEDS_ATTENTION` without timestamp rewriting.
+Usage publication prioritizes pre-cutoff uninstall events and enforces the cutoff: eligible events can drain, while post-cutoff events are marked `NEEDS_ATTENTION` without timestamp rewriting.
 
 ### Validation Results
 
 Passed:
 
-- `npx vitest run tests/unit/services/billing-reconciliation.service.test.ts` (3 tests)
-- focused runtime/publisher suite (26 tests)
-- `npm run build`
-- `npm run prisma:validate`
-- `git diff --check`
-- editor diagnostics for all changed TypeScript source files
+- `npx vitest run tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/shopify-usage-event-publisher.service.test.ts tests/unit/providers/shopify-partner-billing.provider.test.ts tests/unit/runtime/readiness.test.ts tests/unit/runtime/billing-scheduler.test.ts tests/unit/runtime/entrypoint-isolation.test.ts` (37 tests passed)
+- `npm run test:unit` (414 passed, 2 unrelated pre-existing failures)
+- `npm run build` (passed)
+- `npm run prisma:validate` (passed)
+- `git diff --check` (passed)
+- editor diagnostics for all changed TypeScript source files (no errors)
 
 `npm run test:unit` completed with 406 passing and 2 failing tests. The failures are existing `pending-recovery-candidate.service.test.ts` expectations unrelated to this task; no billing tests failed.
 
 ### Deviations
 
-The accepted database schema has no dedicated billing-discrepancy table. Discrepancies are returned in the reconciliation result and emitted through the shared structured logger for operational/Admin consumption; no schema or database repository change was made.
+The accepted database schema has no dedicated billing-discrepancy table. Discrepancies are returned in the reconciliation result and emitted through the shared structured logger for operational/Admin consumption; no schema or database repository change was made. The task preserves this accepted Attempt 1 representation.
 
 ### Assumptions
 
@@ -181,11 +187,31 @@ Partner credentials are supplied through `SHOPIFY_PARTNER_ORG_ID`, `SHOPIFY_PART
 
 ### Unresolved Issues
 
-The two unrelated pending-recovery candidate unit failures remain for architect/repository owner follow-up.
+The two unrelated `pending-recovery-candidate.service.test.ts` failures remain for architect/repository owner follow-up; no billing test failed.
 
 ### Architectural Concerns
 
-The discrepancy representation is operational structured output rather than durable database state because the accepted schema exposes no discrepancy model. Durable historical discrepancy querying would require a later schema/API task.
+The discrepancy representation is operational structured output rather than durable database state because the accepted schema exposes no discrepancy model. Durable historical discrepancy querying would require a later schema/API task. No new concern was introduced in Attempt 2.
+
+### Git / VCS
+
+Task branch: `task/ARCH-007-BACKGROUND-008`
+
+Implementation repository:
+   repository: moda-interact-background
+   commit: e3960d5
+   remote branch: origin/task/ARCH-007-BACKGROUND-008
+   pushed: yes
+
+Parent workspace:
+   task file: docs/decisions/background/ARCH-007/BACKGROUND-008-billing-worker-reconciliation.md
+   claim commit: c883ba4
+   remote branch: origin/task/ARCH-007-BACKGROUND-008
+   pushed: yes
+   submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
