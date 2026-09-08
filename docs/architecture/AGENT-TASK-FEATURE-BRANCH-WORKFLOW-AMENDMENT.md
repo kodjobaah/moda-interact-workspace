@@ -33,7 +33,7 @@ they are separate repositories.
 
 ## Repository agent permissions
 
-The agent may commit/push:
+The agent MUST commit/push both mirrored task branches during the normal claim/review lifecycle:
 
 ```text
 implementation task/<TASK_ID>

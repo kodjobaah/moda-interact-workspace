@@ -62,4 +62,4 @@ restore an obsolete NGINX fixture.
 - [ ] `npm test` returns green except for explicitly opt-in Docker tests.
 - [ ] typecheck/lint/diff checks pass.
 - [ ] no live deployed environment is required.
-- [ ] no agent commit/push.
+- [ ] implementation changes are committed/pushed on `task/ARCH-002-SYSTEM-TEST-010`, and the mirrored parent task/report branch is committed/pushed before `review`; neither branch is merged into `main` by the repository agent.

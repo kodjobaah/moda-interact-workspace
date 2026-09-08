@@ -184,7 +184,7 @@ Luna must translate every manifest value naturally into all 20 declared locale l
 
 ## System-test rule
 
-ARCH-007 SYSTEM-TEST-001..005 and ARCH-005 system tests are terminal/manual-gated. SYSTEM-TEST-005 now covers inbound abuse admission as well as turn coalescing. They may remain `pending` after dependencies complete until the developer explicitly chooses to run expensive integrated validation.
+ARCH-007 SYSTEM-TEST-001..005 and ARCH-005 system tests are terminal/manual-gated. SYSTEM-TEST-005 now covers inbound abuse admission as well as turn coalescing. Once all explicit YAML dependencies are Complete they may be promoted to `ready`, but `ready` is dependency-readiness only: they must remain dormant until the developer explicitly invokes expensive integrated validation.
 
 No implementation, publication or infrastructure task may depend on a system-test task.
 
@@ -195,7 +195,7 @@ Root-level `ARCH-007-*.zip` / `.patch` files are historical transport artifacts 
 
 ## Git/publication rule
 
-Repository agents implement/validate and stop at `review`. `moda_architect` accepts or returns Changes Requested. Developer/user owns `git add`, `git commit`, `git push` and workspace submodule-pointer publication unless explicit one-off permission says otherwise.
+Repository agents implement/validate, commit and push both mirrored `task/<TASK_ID>` branches, return the task to `review`, and STOP. `moda_architect` accepts or returns Changes Requested. Repository agents must not merge/push `main` or stage an unmerged implementation submodule gitlink; developer/user owns final merges, `main` publication and final workspace submodule-pointer integration.
 
 ## Architect review hygiene
 
@@ -206,7 +206,7 @@ When accepting a task:
 - write final `Architect Review: Accepted` evidence;
 - update the domain `_index.md` and canonical ARCH-007 frontier/dependencies;
 - only promote downstream implementation tasks when **all** YAML dependencies are Complete;
-- never auto-promote/auto-run terminal system tests.
+- promote a terminal/manual-gated system-test task to `ready` when all of its explicit YAML dependencies are Complete, but never auto-claim/auto-run it; execution requires explicit developer invocation.
 
 When requesting changes:
 - return the **same** task to `ready` unless a true external dependency makes it `blocked`;

@@ -15,7 +15,11 @@ assigned implementation repository:
 The two branches have the same name because the same architecture task owns
 both histories, but they are independent Git branches with independent commits.
 
-The repository agent may commit and push both task branches.
+During the normal task lifecycle, the repository agent MUST commit and push
+both mirrored `task/<TASK_ID>` branches: the implementation branch and the
+parent-workspace task/report branch. If a push is technically impossible, the
+agent must record the exact failure in the Completion Report rather than omit
+publication silently.
 
 The developer/user retains exclusive ownership of merging either branch into
 `main` and of pushing/updating `main`.
@@ -162,8 +166,9 @@ Later attempts append corrective commits to the same branches.
 
 ## Parent workspace branch authority
 
-The repository agent may commit/push the matching parent workspace task branch,
-but its write authority there is intentionally narrow.
+The repository agent MUST commit/push the matching parent workspace task branch
+at claim and review-submission boundaries, but its write authority there is
+intentionally narrow.
 
 The repository agent MAY stage/commit:
 
@@ -578,31 +583,42 @@ dependency promotions
 architect review/acceptance overlays
 ```
 
-## Older task boilerplate
+## VCS instruction precedence
 
-Historical task files frequently say:
+For Git/VCS workflow, this file is authoritative over generic task boilerplate,
+architecture summaries, handoff prose and domain-index summaries.
+
+A repository agent executing a normal task MUST therefore:
 
 ```text
-Do not run git commit or git push.
-Developer owns commit/push.
+commit + push implementation task/<TASK_ID>
+commit + push parent-workspace task/<TASK_ID>
+STOP at review
 ```
 
-That generic boilerplate is superseded by this policy.
+and MUST NOT:
 
-For VCS workflow, this file is authoritative unless:
+```text
+merge either task branch into main
+push/update main
+stage the parent submodule gitlink to an unmerged feature commit
+```
 
-- the developer explicitly instructs otherwise for the current task; or
-- a task has a specific non-boilerplate release/safety restriction.
+Only a current, explicit developer instruction or a task-specific VCS exception
+that clearly identifies itself as such may override this policy.
 
-Historical task files do not need mass edits.
+Executable/current task files must not retain generic wording that says
+repository agents never commit/push. Historical Completion Reports may continue
+to record that an older execution did not commit/push; those statements are
+historical evidence, not instructions for a new execution.
 
 ## Publication tasks
 
 Git branch publication and package/service publication are separate.
 
 A release task may publish its approved package/service when its task contract
-authorizes that external publication, and it may commit/push its mirrored task
-branches.
+authorizes that external publication, and it still MUST commit/push its mirrored
+task branches as part of the normal task lifecycle.
 
 It still must not merge/push `main`.
 

@@ -12,6 +12,6 @@ Coordinator: `moda_architect`
 > **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task YAML metadata is authoritative.
 
-ARCH-007 rollout is pre-production/breaking: normal Prisma migration artifacts are required for database schema changes, but production-preservation backfills, dual reads and compatibility adapters are not required. The current architect-accepted/published Shared release is `@modainteract/moda-interact-shared@0.8.0`; MESSAGING-001 was accepted against provider-status release 0.7.4. Repository agents execute exactly one task per invocation, return it to `review`, and STOP. Developer/user owns git commit/push after architect acceptance.
+ARCH-007 rollout is pre-production/breaking: normal Prisma migration artifacts are required for database schema changes, but production-preservation backfills, dual reads and compatibility adapters are not required. The current architect-accepted/published Shared release is `@modainteract/moda-interact-shared@0.8.0`; MESSAGING-001 was accepted against provider-status release 0.7.4. Repository agents execute exactly one task per invocation, commit/push both mirrored `task/<TASK_ID>` branches, return it to `review`, and STOP. Developer/user owns merges into `main`, pushes/updates of `main`, and final submodule-pointer integration after architect acceptance.
 
 `ARCH-007-MESSAGING-001` Attempt 3 is architect-accepted Complete.

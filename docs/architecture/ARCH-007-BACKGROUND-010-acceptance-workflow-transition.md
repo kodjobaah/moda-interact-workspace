@@ -33,8 +33,8 @@ implementation repository:
   task/<TASK_ID>
 ```
 
-The agent may commit/push both task branches but must not merge either branch
-into main.
+The agent MUST commit/push both task branches during the normal task lifecycle but must not merge either branch
+into main or push/update main.
 
 Do not retrofit feature-branch history onto ADMIN-001 or BACKGROUND-010.
 

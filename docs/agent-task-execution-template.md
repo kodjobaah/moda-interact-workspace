@@ -82,6 +82,14 @@ Only the former blocks claiming. When in doubt, cite the exact current-task fiel
 
 If the task is no longer Ready, has already been claimed, or its explicit dependencies are not Complete, do not execute it.
 
+### Manual-gated system-test exception
+
+If `assigned_agent: moda_system_test` and the task/architecture marks the task as
+terminal/manual-gated, `status: ready` means **dependency-ready only**. Do not
+claim or execute it merely because its dependencies are Complete. A current,
+explicit developer invocation of that system-test task is additionally required.
+This manual gate never blocks implementation/publication/infrastructure tasks.
+
 ## Establish the Mirrored Task Branches
 
 Before claiming, establish or restore the same branch name:
@@ -168,8 +176,8 @@ Use:
 task/<TASK_ID>
 ```
 
-The agent may commit/push the **current task file only** (plus an explicitly
-task-owned evidence artifact).
+The agent MUST commit/push the **current task file only** (plus an explicitly
+task-owned evidence artifact) at the claim and review-submission boundaries.
 
 Do not independently commit:
 
@@ -199,16 +207,18 @@ Implement, validate, commit and push that branch.
 
 ### No merge authority
 
-The repository agent may push both feature branches but must never:
+The repository agent MUST push both mirrored feature branches before returning
+the task to `review` (unless the push fails and that exact failure is recorded),
+but must not:
 
 ```text
 merge either branch into main
 push directly to main
-force-push
+force-push unless the developer explicitly authorizes that exact operation
 stage/publish another task's work
 ```
 
-The developer/user owns both final merges.
+The developer/user owns both final merges and every push/update of `main`.
 
 ### Submodule rule
 

@@ -66,7 +66,9 @@ Do not publish in this task.
 - Do not modify another repository unless this task explicitly authorises a dependency pointer/version update.
 - Do not start a task listed under `enables`.
 - Return only this task to `review` and STOP.
-- Do not run `git commit` or `git push`.
+- Follow `docs/agent-vcs-ownership-policy.md` for all Git/VCS operations.
+- Before returning this task to `review`, commit and push the assigned implementation `task/ARCH-007-SHARED-005` branch and the mirrored parent-workspace `task/ARCH-007-SHARED-005` branch; the parent commit is limited to the current task file plus explicitly task-owned evidence.
+- Do not merge either task branch into `main`, push `main`, force-push, or stage the parent-workspace implementation submodule gitlink.
 
 ## Completion Report
 

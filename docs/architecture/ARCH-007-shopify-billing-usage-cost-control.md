@@ -814,7 +814,7 @@ Classification: **PRE-PRODUCTION / BREAKING ROLLOUT**.
 - Shared contract implementation is published before consumer tasks that import it.
 - No theoretical backwards-compatibility adapters are required.
 
-Recommended implementation order is encoded by task dependencies. Developer/user owns git commit/push publication after architect acceptance.
+Recommended implementation order is encoded by task dependencies. Repository agents commit/push their mirrored `task/<TASK_ID>` branches before architect review; developer/user owns all merges into `main`, pushes/updates of `main`, and final submodule-pointer integration after architect acceptance.
 
 ## Decisions / Tasks
 

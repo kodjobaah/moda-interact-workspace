@@ -114,8 +114,13 @@ The test remains required; the developer normally executes it.
 
 ## Explicit Override
 
-The developer or `moda_architect` may explicitly authorise the agent to run a
-long validation command for a specific task.
+The developer or `moda_architect` may explicitly authorise an implementation
+agent to run a long validation command for a specific already-claimed
+implementation task.
+
+For a terminal/manual-gated `moda_system_test` task, only an explicit developer
+invocation authorises the task to be claimed/run. Architect dependency promotion
+to `ready` does not authorise execution.
 
 When explicitly authorised:
 

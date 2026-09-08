@@ -18,4 +18,4 @@ The individual task YAML metadata is authoritative.
 These are terminal/manual-gated validation tasks. No implementation/publication/infrastructure task may depend on them. Do not invoke merely because a task becomes Ready; wait for explicit developer invocation after manual validation.
 
 
-ARCH-007 rollout is pre-production/breaking: no ARCH-007 data migrations/backfills are required. Repository agents execute exactly one task per invocation, return it to `review`, and STOP. Developer/user owns git commit/push after architect acceptance.
+ARCH-007 rollout is pre-production/breaking: no ARCH-007 data migrations/backfills are required. Repository agents execute exactly one task per invocation, commit/push both mirrored `task/<TASK_ID>` branches, return it to `review`, and STOP. Developer/user owns merges into `main`, pushes/updates of `main`, and final submodule-pointer integration after architect acceptance.

@@ -76,7 +76,7 @@ Each logical agent has a bounded responsibility.
 
 | Agent | Primary responsibility |
 | --- | --- |
-| `moda_architect` | Cross-repository architecture, decomposition, dependencies, sequencing, review and integration |
+| `moda_architect` | Cross-repository architecture, decomposition, dependencies, sequencing, review and integration coordination; never Git merge/push of `main` |
 | `moda_app` | Shopify app, merchant UI, Shopify ingress, onboarding, billing and subscriptions |
 | `moda_background` | BullMQ workers, event processing, recovery workflows, CommerceAgent and retryable background work |
 | `moda_database` | Prisma schema, PostgreSQL migrations, constraints, indexes, canonical/reference seed data and durable integrity |
@@ -151,6 +151,10 @@ moda_architect
 implementation task: complete
   |
   | once all dependencies required for integrated validation are complete
+  v
+system-test task: ready (dependency-ready only)
+  |
+  | explicit developer invocation required
   v
 moda_system_test
   |
@@ -356,8 +360,9 @@ For architectures that require integrated system validation:
 implementation tasks complete
           |
           v
-system-test task ready
+system-test task ready (dependency-ready only)
           |
+          | explicit developer invocation
           v
 moda_system_test executes scenarios
           |
@@ -507,7 +512,11 @@ updated: 2026-08-29
 ---
 ```
 
-The task becomes `ready` only when the dependencies required for integrated validation are `complete`.
+The system-test task becomes `ready` only when the dependencies required for
+integrated validation are `complete`. `ready` is eligibility, not execution
+authorization: terminal/manual-gated system tests require explicit developer
+invocation before `moda_system_test` may claim or run them. No non-system-test
+task may depend on a terminal/manual-gated system-test task.
 
 ---
 
@@ -553,6 +562,28 @@ in_progress -> blocked
 ```
 
 when the implementation reveals a missing dependency, architectural conflict or unsafe assumption.
+
+---
+
+# Git / VCS task branches
+
+Every executable repository task follows `docs/agent-vcs-ownership-policy.md`.
+The same branch name is used in the two independent repositories:
+
+```text
+parent workspace:         task/<TASK_ID>
+implementation repository: task/<TASK_ID>
+```
+
+The repository agent MUST commit and push the parent task claim before
+implementation begins. Before returning the task to `review`, it MUST commit and
+push the implementation task branch and then commit and push the current task
+Completion Report/state on the mirrored parent task branch.
+
+Repository agents never merge either branch into `main` and never push/update
+`main`. Final merge/integration and final submodule-gitlink publication belong
+to the developer/user. Pushing task branches is evidence publication, not
+architect acceptance.
 
 ---
 
