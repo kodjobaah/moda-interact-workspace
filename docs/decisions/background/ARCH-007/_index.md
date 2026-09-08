@@ -18,7 +18,7 @@ Coordinator: `moda_architect`
 | BACKGROUND-008 | Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain | **Ready** | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
 | BACKGROUND-009 | Activate billed recovery packs and consume purchased credits before overage | Complete | DATABASE-005, SHARED-006, BACKGROUND-007 |
 | BACKGROUND-010 | Coalesce fragmented inbound WhatsApp messages into one CommerceAgent turn | Complete | DATABASE-006, BACKGROUND-004 |
-| BACKGROUND-011 | Add inbound WhatsApp abuse admission before routing and CommerceAgent work | **Ready** | BACKGROUND-010 |
+| BACKGROUND-011 | Add inbound WhatsApp abuse admission before routing and CommerceAgent work | Complete | BACKGROUND-010 |
 > **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task YAML metadata is authoritative.
 
@@ -29,4 +29,4 @@ Current frontier:
 - BACKGROUND-009 Attempt 3 is architect-accepted Complete.
 - BACKGROUND-008 is Ready because BACKGROUND-005, BACKGROUND-007, BACKGROUND-009 and SHOPIFY-001 are architect-accepted Complete.
 - BACKGROUND-010 Attempt 4 is architect-accepted Complete.
-- BACKGROUND-011 is Ready because BACKGROUND-010 is architect-accepted Complete. It adds raw sender/global abuse admission and settled-turn sender/conversation/shop/global admission. It is operational safety, not merchant billing.
+- BACKGROUND-011 Attempt 3 is architect-accepted Complete. Raw sender/global abuse admission and settled-turn sender/conversation/shop/global admission are operational safety, not merchant billing. SYSTEM-TEST-005 remains pending/manual-gated.

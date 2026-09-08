@@ -7,17 +7,17 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: review
+status: complete
 priority: 69
-executor: copilot
-claimed_at: 2026-09-08T19:35:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-007-BACKGROUND-010
 enables:
   - ARCH-007-SYSTEM-TEST-005
 created: 2026-09-08
-updated: 2026-09-08T19:24:00Z
+updated: 2026-09-08T20:02:00+01:00
 ---
 # ARCH-007-BACKGROUND-011: Add inbound WhatsApp abuse admission before routing and CommerceAgent work
 
@@ -485,7 +485,7 @@ Do not create files merely because they are listed if the accepted post-BACKGROU
 - [x] Limiter failure fails closed for AI/provider work without retry amplification.
 - [x] BACKGROUND-004 terminal/outbound safety behavior is unchanged.
 - [x] BACKGROUND-010 coalescing/lease/stale-response behavior is unchanged.
-- [ ] Required regressions pass.
+- [x] Required regressions pass.
 - [x] Full repository test suite is run and unrelated baseline failures are documented.
 - [x] Build/typecheck, Prisma validation where repository convention requires it, diagnostics and `git diff --check` pass.
 
@@ -564,9 +564,71 @@ None.
 
 ### Review Status
 
-Changes Requested — Attempt 2
+Accepted
 
 ### Review Notes
+
+#### Attempt 3 — Accepted
+
+Attempt 3 is architect-accepted Complete.
+
+The deterministic Attempt 2 correction contract is satisfied:
+
+1. The Lua limiter now uses the required three-pass decision order. It prunes
+   every applicable scope and checks replay presence across all scopes first.
+   If the idempotency member is still present in any applicable scope, the
+   decision returns allowed without `ZADD`, without score refresh and without
+   expiry refresh. A mixed 60-second/600-second replay therefore cannot consume
+   short-window capacity a second time.
+
+2. Capacity rejection remains all-or-none. Cardinality is inspected only after
+   replay detection completes across every scope, and a rejected candidate is
+   inserted into none of the applicable windows.
+
+3. Attempt 3 stayed within the exact allowed implementation surface. Direct
+   comparison with the supplied Attempt 2 snapshot shows production changes
+   only in `src/services/inbound-whatsapp-abuse-admission.service.ts` and test
+   changes only in
+   `tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts`.
+   The accepted processor and worker behavior from Attempt 2 was not redesigned.
+
+4. The stateful Redis harness now models the same three-pass contract and
+   exposes exact settled-scope snapshots rather than ambiguous partial-key
+   checks.
+
+5. The focused regressions now prove the previously overstated cases:
+   - B011-08 independently proves sender-short and conversation-short limits;
+   - B011-09 independently proves sender-long and conversation-long limits;
+   - B011-10 independently proves PRODUCT_DISCOVERY sender and conversation
+     short/long limits;
+   - B011-17 exercises a new settled member after short-window expiry;
+   - B011-20 proves a rejected candidate is absent from all six settled scopes;
+   - B011-21a proves immediate replay leaves all six scopes unchanged;
+   - B011-21b proves mixed-window replay does not re-add expired 60-second
+     scopes and preserves the original 600-second scores.
+
+The accepted Attempt 2 behavior remains intact: raw admission precedes routing
+and persistence; settled admission is mandatory before outbound
+reservation/CommerceAgent work; limiter denial/unavailability uses the
+version-safe suppression cleanup; durable conversation types are represented
+correctly; lower discovery limits apply only to unbound PRODUCT_DISCOVERY;
+sender keys are hashed; telemetry uses the Shared structured logger; B004
+outbound admission and B010 coalescing/lease/stale-response semantics are
+unchanged.
+
+Attempt 3 Completion Report records 50 focused tests passing, build and Prisma
+validation passing, diagnostics clean, `git diff --check` passing, and the full
+suite at 397 passed / 7 skipped with the same 2 unrelated
+`pending-recovery-candidate` baseline failures. The supplied archive contains no
+`node_modules`, so the architect did not independently rerun those commands.
+
+Current Background `main` was also inspected and contains the corrected
+three-pass Lua implementation and the strengthened B011 focused regressions.
+
+No further implementation changes are required for
+`ARCH-007-BACKGROUND-011`.
+
+#### Attempt 2 — Changes Requested (preserved)
 
 Attempt 2 resolves the major architectural defects from Attempt 1. Preserve the following implementation unchanged unless a correction below explicitly requires otherwise:
 
@@ -860,8 +922,15 @@ Attempt 2 supplied workspace:
 
 ### Architecture Conformance
 
-Not yet accepted. Attempt 2 resolves the processor/worker/typing/logging defects from Attempt 1. The remaining production defect is limited to mixed-window replay idempotency in the Lua limiter. The remaining test corrections are bounded to making the explicit B011 regression matrix prove the sender/conversation scopes it claims to cover.
+Accepted. B011 now satisfies the two-stage inbound abuse-admission architecture,
+atomic Redis scope semantics, replay idempotency, privacy constraints,
+fail-closed behavior and B004/B010 integration boundaries.
 
 ### Follow-up
 
-Return `ARCH-007-BACKGROUND-011` to `ready`, clear `executor` / `claimed_at`, preserve `attempt: 2`, and reclaim the same task as Attempt 3. `ARCH-007-SYSTEM-TEST-005` remains untouched and manual/terminal-gated.
+`ARCH-007-BACKGROUND-011` is Complete.
+
+`ARCH-007-SYSTEM-TEST-005` now has its B011 implementation prerequisite
+satisfied, but it remains `pending` / manual-terminal-gated. Do not auto-start
+or auto-promote the system-test task solely because its implementation
+dependencies are complete.
