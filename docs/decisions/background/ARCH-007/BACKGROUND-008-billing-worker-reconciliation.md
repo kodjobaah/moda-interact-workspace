@@ -7,10 +7,10 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: review
+status: ready
 priority: 120
-executor: copilot
-claimed_at: 2026-09-08T20:01:37Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-BACKGROUND-005
@@ -24,7 +24,7 @@ enables:
   - ARCH-007-SYSTEM-TEST-002
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T21:05:40Z
+updated: 2026-09-08T21:16:00+01:00
 ---
 
 # ARCH-007-BACKGROUND-008: Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain
@@ -68,13 +68,13 @@ Background billing entrypoint/runtime/router/scheduler, Partner API subscription
 
 ## Work Items
 
- [x] Add billing worker entrypoint/scripts/readiness.
- [x] Implement bounded rotating subscription reconciliation using the Partner API 2026-07 contract.
- [x] Implement publisher stale-work recovery and periodic due scans.
- [x] Wire bounded BACKGROUND-009 recovery-credit purchase activation reconciliation into the recurring billing worker scan.
- [x] Implement Shopify-vs-Moda usage comparison/discrepancy visibility using the accepted structured operational representation.
- [x] Implement uninstall prioritization/cutoff.
- [x] Add focused worker/reconciliation tests for the Attempt 2 corrections and the accepted B008 behaviors.
+- [x] Add billing worker entrypoint/scripts/readiness.
+- [x] Implement bounded rotating subscription reconciliation using the Partner API 2026-07 contract.
+- [x] Implement publisher stale-work recovery and periodic due scans.
+- [x] Wire bounded BACKGROUND-009 recovery-credit purchase activation reconciliation into the recurring billing worker scan.
+- [x] Implement Shopify-vs-Moda usage comparison/discrepancy visibility using the accepted structured operational representation.
+- [x] Implement uninstall prioritization/cutoff.
+- [ ] Complete the explicit B008 regression matrix required by the latest Architect Review.
 
 ## Interfaces / Contracts
 
@@ -217,320 +217,346 @@ Merged to workspace main: no
 
 ### Review Status
 
-Changes Requested — Attempt 1
+Changes Requested — Attempt 2
 
 ### Review Notes
 
-Attempt 1 establishes the correct B008 direction: a dedicated
-`moda-billing-worker` entrypoint, PostgreSQL-driven publisher recovery,
-BACKGOUND-009 purchase activation reconciliation, Shopify Partner subscription
-projection, usage comparison, uninstall cutoff validation, readiness wiring and
-shared observability. The two unrelated pending-recovery baseline failures are
-not a B008 rejection reason.
+#### Attempt 2 — Changes Requested
 
-Four production corrections and one contract/test correction are required
-before acceptance.
+Attempt 2 correctly resolves the four major runtime defects from Attempt 1.
+Preserve these corrections unchanged unless a regression requires a minimal
+adjustment:
 
-#### Correction 1 — active-shop reconciliation must rotate; the fixed first page can starve tenants
+1. active-shop reconciliation rotates with a bounded stable-`Shop.id` keyset
+   cursor and wraps rather than permanently re-reading the first page;
+2. recurring reconciliation is single-flight through recursive timeout
+   scheduling rather than overlapping `setInterval` calls;
+3. `moda-billing-worker` readiness is PostgreSQL-only and the billing entrypoint
+   closes Prisma through a billing-specific resource path without constructing
+   `connectionRedis`; and
+4. due rows for `UNINSTALLED` shops are selected ahead of ordinary due rows,
+   while the existing uninstall cutoff, permanent Shopify idempotency key and
+   original `occurredAt` identity remain intact.
 
-The current reconciliation scan always executes the equivalent of:
+Attempt 2 also brings most of the Background Shopify Partner query into
+alignment with the accepted SHOPIFY-001 contract.
 
-```text
-WHERE shopifyShopId IS NOT NULL
-  AND status = ACTIVE
-ORDER BY id ASC
-TAKE <bounded limit>
-```
+Two narrow implementation corrections and one focused regression/evidence
+correction remain before B008 can be accepted.
 
-with no cursor or rotation state.
+#### Correction 1 — complete the frozen ARCH-007 / SHOPIFY-001 Partner query shape
 
-With the default limit of 50, a workspace with more than 50 active Shopify
-shops repeatedly reconciles the same lowest-id page every minute. Shops after
-that page can therefore remain permanently stale, so an external Shopify plan
-change, pending update or new billing cycle for those shops is never
-discovered.
-
-Attempt 2 must implement a bounded rotating/keyset scan across active shops.
-
-Required behavior:
-
-1. Keep the existing default page size 50 and hard cap 200.
-2. Use stable `Shop.id` keyset progression; do not use an unbounded read.
-3. A successful scan advances the cursor to the last selected shop.
-4. When the end of the active-shop set is reached, wrap to the beginning.
-5. A Partner failure for one selected shop must not prevent cursor progression
-   or the remaining selected shops from being processed.
-6. Process restart may reset the in-memory cursor; durable correctness must not
-   depend on preserving the cursor across restarts.
-7. Do not introduce raw SQL or a new database schema solely for the scan cursor.
-
-A clean implementation is an in-memory `lastScannedShopId` owned by the
-singleton reconciliation service plus `id > lastScannedShopId` keyset
-selection. Other equivalent bounded rotation is acceptable if it proves the
-same no-starvation invariant.
-
-Required regressions:
+The frozen minimum ActiveSubscription shape includes the current subscription
+item description:
 
 ```text
-page size = 2
-active shops = A, B, C, D
-
-scan 1 -> A, B
-scan 2 -> C, D
-scan 3 -> wraps to A, B
+activeSubscription {
+  billingPeriod
+  currentBillingCycle { startTime endTime }
+  legacySubscriptionId
+  items {
+    handle
+    description
+    price { ... }
+    usage { quantity cost { amount currencyCode } }
+  }
+  pendingUpdate {
+    billingPeriod
+    legacySubscriptionId
+    items { handle price { ... } }
+  }
+}
 ```
 
-and:
+Attempt 2 still omits `items.description`.
+
+Attempt 3 must make the Background provider mirror the frozen minimum without
+redesigning classification:
+
+- add `description: string | null` to the current-item Partner response type;
+- select `description` immediately beside `handle` in
+  `ACTIVE_SUBSCRIPTION_QUERY`;
+- preserve order-independent FlatRate/Tiered classification;
+- preserve current `billingPeriod`, `currentBillingCycle`,
+  `legacySubscriptionId`, `pendingUpdate.billingPeriod` and
+  `pendingUpdate.legacySubscriptionId`;
+- type `pendingUpdate.billingPeriod` as nullable where the accepted
+  SHOPIFY-001 response contract permits null;
+- do not add a Shared-package change solely for this local provider mirror.
+
+Required provider regression:
+
+- capture the actual GraphQL request body;
+- assert the query contains current `billingPeriod`, `currentBillingCycle`,
+  current `legacySubscriptionId`, `items.description`,
+  `pendingUpdate.billingPeriod`, and
+  `pendingUpdate.legacySubscriptionId`;
+- retain the existing item-order classification regression.
+
+#### Correction 2 — scheduled reconciliation failures must use bounded Shared structured logging
+
+The single-flight scheduler itself is accepted.
+
+The remaining defect is the production failure reporter. When no reporter is
+provided, `startBillingReconciliationScheduler()` currently falls back to:
+
+```ts
+console.error("billing reconciliation failed", error)
+```
+
+That emits the raw `Error` object and bypasses the Background Shared structured
+logging convention.
+
+Attempt 3 must keep the scheduler generic/single-flight and wire the production
+billing entrypoint to a Shared structured logger from:
 
 ```text
-A Partner call fails
-B succeeds
-next scan still progresses beyond the A/B page
+@modainteract/moda-interact-shared/logging
 ```
 
-#### Correction 2 — the 60-second scheduler must not overlap scans
-
-The billing entrypoint currently starts the recurring work with `setInterval`.
-A reconciliation pass performs sequential Partner calls and can legitimately
-take longer than 60 seconds. When that happens, `setInterval` starts another
-`reconcileOnce()` while the previous one is still running.
-
-B008 must have at most one reconciliation pass in flight per billing-worker
-process.
-
-Attempt 2 must replace the overlapping interval behavior with one of:
-
-- a recursive `setTimeout` scheduled only after the previous pass settles; or
-- an explicit single-flight/in-progress guard with equivalent shutdown
-  behavior.
-
-Required invariants:
+Required production outcome:
 
 ```text
-max concurrent reconcileOnce() calls per process = 1
+event = billing.reconciliation.scan_failed
+service.name = moda-billing-worker
 ```
+
+Use only bounded scalar fields. A sanitized error name/code or bounded message
+is acceptable. Do not log the raw Error object, Partner access token, request
+headers, DATABASE_URL, REDIS_URL, or provider response payload.
+
+A clean implementation is:
 
 ```text
-failed scan
-  -> bounded structured error
-  -> future scan remains scheduled
+billing.ts
+  -> create/use Shared logger
+  -> pass bounded onError(error) callback into
+     startBillingReconciliationScheduler(...)
 ```
 
-```text
-shutdown
-  -> pending timer cancelled
-  -> no new reconciliation pass is scheduled
-```
-
-Keep the cadence minute-scale. Do not add a sub-second loop or BullMQ job for
-this scheduler.
-
-Required regression should use fake timers/a deferred reconciliation promise
-and prove that advancing beyond 60 seconds while one pass is still unresolved
-does not start a second pass.
-
-#### Correction 3 — the independent billing worker must not require Redis when it does not use Redis
-
-The B008 runtime is PostgreSQL/Shopify driven and intentionally exists so
-durable billing work can be recovered independently of Redis/BullMQ scheduling.
-However Attempt 1 declares:
-
-```text
-moda-billing-worker -> redis + postgresql
-```
-
-and the billing entrypoint imports the shared `entrypoints/resources` module.
-That module imports `connectionRedis`, whose module initialization itself
-requires `REDIS_URL`.
-
-As a result, a billing worker that performs no Redis operation cannot start
-without Redis.
-
-Attempt 2 must make the billing worker's actual dependency set match the
-runtime:
-
-```text
-moda-billing-worker -> postgresql
-```
-
-Required implementation behavior:
-
-1. Do not weaken Redis readiness for the queue-backed Shopify/recovery/
-   messaging workers.
-2. Billing readiness checks PostgreSQL but does not require a Redis probe.
-3. `src/entrypoints/billing.ts` must not import a resource bundle whose only
-   additional effect is constructing/closing Redis.
-4. Close the Prisma/database resource and observability cleanly using a
-   billing-specific close path or another existing non-Redis-safe pattern.
-5. Do not remove Redis from other worker entrypoints.
-
-Required regressions:
-
-- billing readiness succeeds with a successful PostgreSQL probe and no Redis
-  probe;
-- queue-backed workers retain their current Redis requirement;
-- the billing entrypoint does not import/instantiate `connectionRedis`.
-
-#### Correction 4 — uninstall drain work must be selected with priority, not only validated after claim
-
-Attempt 1 correctly prevents an event with:
-
-```text
-occurredAt > shop.uninstalledAt
-```
-
-from being sent and marks it `NEEDS_ATTENTION`.
-
-It also correctly allows a pre-uninstall event through validation.
-
-But the bounded due query does not prioritize uninstall-drain work. It selects
-all due rows together by `nextReportAt`, `occurredAt`, `id`. A large ordinary
-backlog can therefore consume the page while valid pre-uninstall events wait,
-which conflicts with the explicit B008/INV-021 requirement to prioritize
-pre-uninstall billable events while Shopify's post-uninstall reporting window
-is still available.
-
-Attempt 2 must use bounded priority selection.
-
-Required behavior:
-
-1. Spend page capacity on due events belonging to `UNINSTALLED` shops first.
-2. Preserve the existing permanent idempotency key and conditional claim.
-3. For selected uninstall rows:
-   - `occurredAt <= uninstalledAt` -> provider publication remains eligible;
-   - `occurredAt > uninstalledAt` -> `NEEDS_ATTENTION`, zero provider call.
-4. Fill only the remaining page capacity with ordinary due rows.
-5. Total selected/processed work remains `<= pageSize`.
-6. Do not use raw SQL.
-
-The exact Prisma query split is local implementation detail. A two-bucket
-bounded selection (uninstall-drain candidates first, then ordinary due rows)
-is acceptable.
+Do not introduce a second logging framework.
 
 Required regression:
 
+1. force a scheduled reconciliation failure;
+2. prove the scheduler schedules a later pass after the failure;
+3. prove the production reporter uses the Shared logger;
+4. prove the reporter does not pass the original raw Error object as log
+   metadata.
+
+#### Correction 3 — complete the explicit B008 reconciliation regression matrix
+
+Attempt 2 adds good coverage for:
+
 ```text
-ordinary due backlog >= page size
-+ one due pre-uninstall event
--> pre-uninstall event is selected in this pass
--> total selected <= page size
--> provider receives original occurredAt/idempotency identity
+rotating shop pages
+Partner failure does not stop page progression
+single-flight scheduling
+scheduler shutdown/recovery
+PostgreSQL-only readiness
+billing entrypoint Redis isolation
+uninstall-first bounded selection
+post-uninstall cutoff
+FlatRate/Tiered order-independent classification
+usage discrepancy output
+publisher idempotency
 ```
 
-Retain the existing post-cutoff zero-provider regression.
+The following behaviors were explicitly required by the Attempt 1 correction
+contract and still need deterministic B008-focused tests.
 
-#### Correction 5 — mirror the accepted SHOPIFY-001 Partner contract and complete the explicit B008 regressions
+##### B008-R1 — external current plan change on a later reconciliation
 
-The Background Partner query/classifier is intentionally behaviorally aligned
-with SHOPIFY-001, but its GraphQL selection is currently narrower than the
-ARCH-007 external-contract baseline. Do not allow the two implementations to
-drift.
+Arrange one shop and two sequential Partner snapshots:
 
-Attempt 2 must mirror the accepted SHOPIFY-001 ActiveSubscription query shape
-for the fields frozen by ARCH-007, including the current/pending billing-period
-and pending legacy-subscription fields even where B008 does not currently need
-every returned scalar.
+```text
+scan N     -> plan A
+scan N + 1 -> plan B
+```
 
-Do not create a new Shared package contract just for this task.
+Assert the durable Subscription projection changes to plan B without a merchant
+callback or process restart.
 
-The Attempt 1 reconciliation test file contains only three B008-specific
-service tests. Attempt 2 must add deterministic focused coverage for the task's
-explicit scenarios, including:
+##### B008-R2 — UNMAPPED becomes mapped after Admin registration without deploy
 
-1. external current-plan change is projected on a later scan;
-2. unknown plan -> `UNMAPPED`, then after plan mapping exists a later scan
-   becomes mapped without deploy;
-3. Partner HTTP/GraphQL failure -> `SYNC_ERROR` while existing `planId` is
-   preserved;
-4. `activeSubscription = null` -> `NO_CONTRACT`, not Free;
-5. FlatRate/Tiered item ordering cannot change plan/meter classification;
-6. pending plan update/effective boundary is projected;
-7. current billing-cycle transition updates the current subscription period
-   link;
-8. stale `IN_FLIGHT` usage remains recoverable with the same permanent
-   idempotency key;
-9. a REPORTED recovery-credit purchase with interrupted activation is
-   rediscovered through the B009 reconciler;
-10. discrepancy emits the bounded structured domain outcome and does not create
-    a compensating financial event;
-11. uninstall priority/cutoff cases from Correction 4;
-12. rotating-shop no-starvation and non-overlap scheduler cases from
-    Corrections 1/2.
+```text
+scan N:
+  Partner handle = future-plan
+  no active BillingPlan mapping
+  -> Subscription.status = UNMAPPED
+  -> planId = null
 
-Existing B007/B009 tests may remain as supporting coverage, but the B008
-Completion Report must identify which focused tests prove each B008 behavior.
+between scans:
+  create/enable BillingPlan mapping for future-plan
 
-#### Discrepancy representation — preserve Attempt 1 for this correction pass
+scan N + 1:
+  same Partner handle
+  -> mapped ACTIVE/TRIALING projection
+  -> planId = newly mapped plan
+```
 
-The current schema has no dedicated reconciliation-discrepancy model.
-ARCH-007 explicitly permits `reconciliation discrepancy` as a structured
-domain/observability outcome, and B008 explicitly allowed an accepted
-schema/audit/operational representation.
+No restart/deploy may be required.
 
-Therefore Attempt 2 must preserve the bounded structured discrepancy result and
-must NOT invent a database migration, synthetic UsageEvent, fake
-PlatformAdmin/BillingAuditEvent actor, or automatic financial correction inside
-B008.
+##### B008-R3 — genuine no-contract state
 
-The downstream ADMIN-003 task is being dependency-corrected to wait for B008 so
-its final read/display contract can be reconciled against the accepted B008
-representation before implementation.
+Partner returns:
+
+```text
+activeSubscription = null
+```
+
+Assert durable projection becomes:
+
+```text
+Subscription.status = NO_CONTRACT
+planId = null
+```
+
+and is not converted to Free.
+
+##### B008-R4 — pending plan/effective boundary persistence
+
+Partner returns a valid current plan plus a pending plan.
+
+Assert:
+
+```text
+pendingShopifyPlanHandle
+pendingPlanId
+pendingEffectiveAt
+```
+
+are persisted from the accepted pending projection/current-cycle boundary
+without changing the current entitlement early.
+
+##### B008-R5 — current billing-cycle transition
+
+Two sequential Partner snapshots expose distinct current billing cycles.
+
+Assert the second reconciliation:
+
+- persists/links the new OPEN BillingPeriod;
+- updates `Subscription.billingPeriodId`;
+- updates current period start/end;
+- does not retain the old cycle as the current subscription period.
+
+##### B008-R6 — interrupted B009 pack activation is rediscovered by the B008 scan
+
+Use a mocked/stubbed accepted B009 reconciler whose pending purchase represents:
+
+```text
+RECOVERY_CREDIT_PACK_PURCHASE UsageEvent = REPORTED
+purchase activation = not yet committed
+```
+
+Assert `reconcileOnce()` invokes `reconcilePending()` and reports the activated
+result. Do not duplicate B009 credit-grant logic inside the B008 test/service.
+
+##### B008-R7 — discrepancy never manufactures financial correction
+
+For a paid current cycle where:
+
+```text
+Moda net REPORTED quantity != Shopify usage quantity
+```
+
+assert:
+
+- one bounded discrepancy outcome is returned/logged;
+- no new compensating UsageEvent is created by reconciliation;
+- existing billing quantities/report identities are not rewritten merely to
+  force equality.
+
+##### B008-R8 — stale IN_FLIGHT retains the permanent reporting identity
+
+Retain/prove the B007 publisher behavior from the B008 worker perspective:
+
+```text
+stale IN_FLIGHT
+  -> recover to retryable under bounded lease rule
+  -> later provider attempt uses the same shopifyIdempotencyKey
+```
+
+Do not generate a replacement key.
+
+Existing B007/B009 unit tests may remain supporting evidence, but the B008
+Completion Report must name the B008-focused regression(s) that prove each
+B008-R1..R8 behavior.
+
+#### Accepted Attempt 2 behavior that must not be redesigned
+
+Attempt 3 must preserve:
+
+- default shop reconciliation page size 50 and hard cap 200;
+- in-memory stable-id cursor with wraparound;
+- Partner failure isolation per selected shop;
+- recursive/single-flight minute-scale scheduler;
+- PostgreSQL-only billing readiness;
+- billing-specific Prisma shutdown path;
+- Redis readiness for queue-backed workers;
+- uninstall-priority bounded selection;
+- existing post-uninstall `NEEDS_ATTENTION` behavior;
+- permanent Shopify idempotency identity;
+- accepted B007 publisher semantics;
+- accepted B009 purchase activation semantics;
+- existing fail-closed subscription mapping;
+- bounded structured discrepancy representation without auto-correction.
+
+Do not add a database migration, raw SQL, BullMQ scheduler, new Shared contract,
+new financial correction policy, or a second credit-grant implementation.
 
 ### Reviewed Files
 
-Attempt 1 implementation reviewed at:
+Attempt 2 implementation reviewed at:
 
-- `7501979764d92750ad671fb69e02d2aa8fe94ea4`
+- `e3960d5e9295778de0f82efddd488d032924f377`
 
-Primary reviewed production files:
+Attempt 2 was compared directly with Attempt 1
+`7501979764d92750ad671fb69e02d2aa8fe94ea4`.
+
+Production files reviewed include:
 
 - `src/entrypoints/billing.ts`
+- `src/entrypoints/billing-resources.ts`
 - `src/providers/shopify-partner-billing.provider.ts`
+- `src/runtime/billing-scheduler.ts`
+- `src/runtime/readiness.ts`
 - `src/services/billing-reconciliation.service.ts`
 - `src/services/shopify-usage-event-publisher.service.ts`
-- `src/runtime/readiness.ts`
-- `src/entrypoints/resources.ts`
-- `src/lib/redis.ts`
-- `observability/billing.mjs`
-- `package.json`
 
-Focused tests reviewed:
+Focused tests reviewed include:
 
+- `tests/unit/providers/shopify-partner-billing.provider.test.ts`
+- `tests/unit/runtime/billing-scheduler.test.ts`
+- `tests/unit/runtime/entrypoint-isolation.test.ts`
+- `tests/unit/runtime/readiness.test.ts`
 - `tests/unit/services/billing-reconciliation.service.test.ts`
 - `tests/unit/services/shopify-usage-event-publisher.service.test.ts`
-- `tests/unit/runtime/readiness.test.ts`
-- `tests/unit/runtime/entrypoint-isolation.test.ts`
-
-The accepted SHOPIFY-001 Partner provider was also compared for behavioral/query
-contract alignment.
 
 ### Validation Reviewed
 
-Completion Report records:
+Attempt 2 Completion Report records:
 
-- B008 reconciliation focused tests: 3 passed;
-- focused runtime/publisher suite: 26 passed;
+- focused B008 suite: 37 passed;
 - build: passed;
 - Prisma validation: passed;
 - diagnostics: clean;
 - `git diff --check`: passed;
-- full unit suite: 406 passed with 2 unrelated existing
-  `pending-recovery-candidate` failures.
+- full unit suite: 414 passed with the same 2 unrelated
+  `pending-recovery-candidate.service.test.ts` baseline failures.
 
-The supplied archive does not include `node_modules`, so the architect did not
-independently rerun the Node/Vitest commands. The implementation source was
-inspected directly from the archive and commit `7501979` was independently
-verified from GitHub.
+No GitHub commit-status checks are configured for implementation commit
+`e3960d5`; this is not an acceptance blocker.
 
-The two unrelated pending-recovery failures are not a B008 acceptance blocker.
+The two unrelated pending-recovery failures remain outside B008 scope.
 
 ### Architecture Conformance
 
 Changes required within this SAME task.
 
-Attempt 1 has the correct architectural shape, but fixed-first-page tenant
-starvation, overlapping scheduler execution, the false Redis runtime
-dependency and missing uninstall-drain selection priority prevent acceptance.
+The core B008 runtime shape is now substantially conformant. Attempt 3 is a
+bounded close-out pass for Partner contract parity, structured scheduled-scan
+failure telemetry, and explicit reconciliation regression evidence.
 
 ### Follow-up
 
@@ -540,21 +566,36 @@ Durable state after this review:
 
 ```text
 status: ready
-attempt: 1
+attempt: 2
 executor: null
 claimed_at: null
 ```
 
-The next claim becomes **Attempt 2** on the SAME mirrored
-`task/ARCH-007-BACKGROUND-008` branches/worktree.
+The next claim becomes **Attempt 3** on the SAME mirrored:
 
-Attempt 2 is limited to the five corrections above and their focused
-regressions. Preserve the accepted B007 publisher semantics, B009 activation
-semantics, existing subscription fail-closed mapping, structured discrepancy
-outcome and independent billing-worker identity.
+```text
+task/ARCH-007-BACKGROUND-008
+```
 
-Do not start `ARCH-007-GATEWAY-001`, `ARCH-007-ADMIN-004`,
-`ARCH-007-SYSTEM-TEST-002` or `ARCH-007-SYSTEM-TEST-003`.
+branches/worktree.
 
-`ARCH-007-ADMIN-003` is dependency-corrected to include B008 and must remain
-Pending until B008 is architect-accepted Complete.
+Do not create an `attempt-3` branch.
+
+Do not start:
+
+- `ARCH-007-ADMIN-003`;
+- `ARCH-007-ADMIN-004`;
+- `ARCH-007-GATEWAY-001`;
+- `ARCH-007-SYSTEM-TEST-002`;
+- `ARCH-007-SYSTEM-TEST-003`.
+
+System-test tasks remain terminal/manual-gated.
+
+`ARCH-007-ADMIN-003` depends on B008 and must remain Pending until B008 is
+architect-accepted Complete.
+
+#### Attempt 1 — Changes Requested (preserved)
+
+The full Attempt 1 Architect Review remains in repository history immediately
+before this Attempt 2 decision and continues to explain the defects already
+corrected by Attempt 2.
