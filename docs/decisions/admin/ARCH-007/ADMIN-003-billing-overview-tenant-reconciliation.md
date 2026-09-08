@@ -7,7 +7,7 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 120
 executor: copilot
 claimed_at: 2026-09-08T19:30:49Z
@@ -19,7 +19,7 @@ depends_on:
 enables: 
   - ARCH-007-ADMIN-004
 created: 2026-09-07
-updated: 2026-09-08T19:30:49Z
+updated: 2026-09-08T21:15:00Z
 ---
 
 # ARCH-007-ADMIN-003: Build billing overview, tenant detail and Shopify reconciliation visibility
@@ -59,12 +59,12 @@ Admin billing overview, paginated UsageEvent/report-state views and tenant Billi
 
 ## Work Items
 
-- [ ] Add Billing overview navigation/page.
-- [ ] Add paginated report-state/event listing.
-- [ ] Extend tenant detail with Billing section.
-- [ ] Implement bounded queries and filters for plan/state/date/shop.
-- [ ] Add security/pagination/empty-state/reconciliation tests.
-- [ ] Add focused i18n coverage proving every new Admin-visible key resolves through the existing Admin ICU catalogue path and required-key validation remains complete.
+- [x] Add Billing overview navigation/page.
+- [x] Add paginated report-state/event listing.
+- [x] Extend tenant detail with Billing section.
+- [x] Implement bounded queries and filters for plan/state/date/shop.
+- [x] Add security/pagination/empty-state/reconciliation tests.
+- [x] Add focused i18n coverage proving every new Admin-visible key resolves through the existing Admin ICU catalogue path and required-key validation remains complete.
 
 ## Interfaces / Contracts
 
@@ -118,35 +118,57 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 1)
+Ready for Architect Review (Attempt 1)
 
 ### Files Changed
 
-None
+- `moda-interact-admin/src/lib/admin/billing.ts`
+- `moda-interact-admin/src/lib/admin/types.ts`
+- `moda-interact-admin/src/app/(protected)/billing/page.tsx`
+- `moda-interact-admin/src/app/(protected)/page.tsx`
+- `moda-interact-admin/src/components/admin/billing-overview.tsx`
+- `moda-interact-admin/src/components/admin/tenant-billing.tsx`
+- `moda-interact-admin/src/components/admin/tenant-detail-panel.tsx`
+- `moda-interact-admin/src/components/admin/tenant-table.tsx`
+- `moda-interact-admin/src/i18n/locales/en.json`
+- `moda-interact-admin/src/i18n/required-keys.ts`
+- `moda-interact-admin/tests/security/admin-billing-visibility.test.mjs`
 
 ### Work Completed
 
-None
+- Added authenticated, bounded billing overview reads for mapped Free/paid distribution, unmapped/sync-error subscriptions, Free exhaustion, reported paid recovery usage, and App Event report-state counts.
+- Added filtered, date-ranged, shop-scoped, state-scoped, paginated App Event ledger visibility with safe provider status fields and no bearer-token/customer-payload display.
+- Added a tenant Billing tab showing observed/current/pending plan state, exact billing cycle, Free base/adjustment/committed/reserved/remaining values, current-cycle paid meter usage, active policy override values, ledger rows, and an explicit unavailable reconciliation state.
+- Added required-key catalogue entries and focused security/contract tests.
+- Admin implementation commit: `66c5730`; pushed to `origin/task/ARCH-007-ADMIN-003`.
 
 ### Validation Results
 
-None
+- `npm run build`: passed; existing BullMQ dynamic dependency warnings remain.
+- `npm test -- --runInBand`: passed, 111 tests.
+- Focused `node --test tests/security/admin-billing-visibility.test.mjs`: passed, 2 tests.
+- `npm run lint`: passed with 2 pre-existing queue-monitor hook warnings and no errors.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm run format:check`: repository-wide check reports 78 pre-existing files; all task-changed files were formatted with the repository Prettier binary.
 
 ### Deviations
 
-None
+- The accepted Admin Prisma schema has no durable Shopify usage snapshot or discrepancy table. Reconciliation is therefore rendered as explicitly unavailable (`discrepancy: null`) rather than fabricated or obtained with raw SQL.
+- Overview Free exhaustion uses the bounded indexed counter threshold of 5; tenant detail computes the exact base plus signed adjustments versus committed and reserved quantities. A schema-supported aggregate for per-plan allowance plus adjustments would be needed for exact cross-tenant overview counts without loading all shops.
 
 ### Assumptions
 
-None
+- `BillingPlan.freeLifetimeConversationAllowance` is the configured Free allowance and the current accepted Free policy threshold is 5.
+- Paid current-cycle usage is represented by reported `UsageEvent` rows matching the subscription billing period and mapped Shopify usage-event handle.
 
 ### Unresolved Issues
 
-None
+- Shopify-vs-Moda numeric discrepancy remains unavailable until Background or Database provides a durable provider usage snapshot/comparison contract.
 
 ### Architectural Concerns
 
-None
+- The discrepancy requirement is a cross-repository contract gap, not an Admin presentation gap. `ADMIN-004` should not add a local duplicate or raw provider query; it should consume the accepted shared/database snapshot contract when available.
 
 ## Architect Review
 
@@ -156,15 +178,15 @@ Pending
 
 ### Review Notes
 
-None
+Implementation is complete and awaits `moda_architect` review. No architect acceptance decision has been made by this agent.
 
 ### Reviewed Files
 
-None
+Pending architect review.
 
 ### Validation Reviewed
 
-None
+Pending architect review.
 
 ### Architecture Conformance
 
