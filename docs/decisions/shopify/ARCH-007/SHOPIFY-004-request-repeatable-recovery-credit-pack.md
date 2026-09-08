@@ -61,6 +61,29 @@ existing billing unit tests
 
 Do not create a second billing page.
 
+### ARCH-005 merchant UI internationalisation requirement
+
+This task extends an authenticated merchant UI that is already governed by
+ARCH-005. Every new or changed merchant-visible string MUST use the existing
+merchant ICU/i18n implementation and application-owned `app/i18n/locales/*`
+catalogues.
+
+Deterministic requirements:
+
+- do not hard-code new merchant-visible English copy in `app.billing.tsx` or
+  server-action UI responses;
+- add every new key introduced by this task to all 20 currently declared Shopify
+  merchant locale catalogues;
+- translate the values naturally for each declared locale rather than copying the
+  English value into non-English catalogues;
+- preserve ICU placeholder names/semantics exactly;
+- reuse the existing ARCH-005 locale resolver/runtime and locale-aware formatting
+  helpers;
+- do not create a second translation/runtime mechanism.
+
+Any English copy quoted later in this task is source-language meaning, not
+permission to embed that literal directly in the component.
+
 ## Provider verification change
 
 When the mapped current BillingPlan has `recoveryCreditPackEnabled=true`, current Shopify Active Subscription verification must require the configured `shopifyRecoveryCreditPackEventHandle` to appear as an active usage/TieredPrice item.
@@ -146,7 +169,8 @@ ACTIVE balance appears only after Background activation.
 7. created UsageEvent is metric `RECOVERY_CREDIT_PACK_PURCHASE`, value 1, PENDING, exact mapped meter.
 8. no direct Shopify billing/App Events network call is made in the request transaction.
 9. credits are not granted before Background reports/activates the purchase.
-10. all new merchant-visible copy is translated across the existing locale catalogues.
+10. all new merchant-visible copy is translated naturally across all 20 existing locale catalogues using the established ARCH-005 ICU/i18n path; no task-introduced merchant-visible English literal bypasses that path.
+11. focused i18n coverage proves every new key exists in all 20 catalogues and resolves through the existing merchant i18n runtime with ICU placeholders preserved.
 
 ## Luna execution rules
 

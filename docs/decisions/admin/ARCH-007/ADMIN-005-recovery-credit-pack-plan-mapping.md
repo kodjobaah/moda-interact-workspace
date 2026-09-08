@@ -71,6 +71,14 @@ and:
 "Configure a cheaper recovery-credit-pack meter rate on higher paid plans in Shopify if that is the intended commercial policy."
 ```
 
+INTERNATIONALISATION: these quoted English strings define the required
+source-language meaning only. They MUST be implemented as keys in the existing
+ARCH-005 Admin ICU/i18n catalogue path, not embedded as English literals in the
+component. Reuse the current Admin locale resolver/runtime and
+`src/i18n/locales/*`; update `src/i18n/required-keys.ts` when that is the
+repository convention. Add each new key to every Admin locale catalogue currently
+declared by the repository. Do not create a second i18n mechanism.
+
 ## Audit
 
 Every change uses existing `PLAN_CATALOG_CHANGED` audit semantics with bounded before/after data. Include the four new fields.
@@ -78,6 +86,11 @@ Every change uses existing `PLAN_CATALOG_CHANGED` audit semantics with bounded b
 ## Tests
 
 Prove all validation combinations above, SUPER_ADMIN mutation protection, audit writing, and that no price field exists in the action schema/UI.
+
+Also prove the new recovery-credit-pack Admin copy resolves through the existing
+Admin ICU catalogue path and that required-key/catalogue validation remains
+complete. A source-regex assertion alone is not sufficient if the repository has
+a behavioral i18n test helper available.
 
 ## Luna execution rules
 

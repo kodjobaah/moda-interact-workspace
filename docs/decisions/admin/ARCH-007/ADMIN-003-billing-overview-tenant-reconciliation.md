@@ -55,6 +55,7 @@ Admin billing overview, paginated UsageEvent/report-state views and tenant Billi
 - Show reconciliation discrepancy between Moda net REPORTED recovery usage for current meter/cycle and Shopify TieredPrice usage quantity when BACKGROUND-008 records/provides it.
 - Every named shop route remains tenant-parameter-safe and Admin-authenticated; cross-shop lookup cannot be influenced by merchant-controlled identifiers without authorization.
 - Use Grafana/OTel only for generic operational telemetry already present; billing ledger/reconciliation is domain data and can be queried from DB.
+- INTERNATIONALISATION — every new or changed Admin user-visible string in this task MUST use the existing ARCH-005 Admin ICU/i18n path. Reuse the current Admin locale resolver/runtime and `src/i18n/locales/*`; update `src/i18n/required-keys.ts` when that is the repository convention. Do not hard-code English labels, headings, filters, empty states, reconciliation/status copy or help text in TSX/server UI responses. Add each new key to every Admin locale catalogue currently declared by the repository and use the existing locale-aware formatting helpers for dates/numbers. Do not create a second i18n mechanism.
 
 ## Work Items
 
@@ -63,6 +64,7 @@ Admin billing overview, paginated UsageEvent/report-state views and tenant Billi
 - [ ] Extend tenant detail with Billing section.
 - [ ] Implement bounded queries and filters for plan/state/date/shop.
 - [ ] Add security/pagination/empty-state/reconciliation tests.
+- [ ] Add focused i18n coverage proving every new Admin-visible key resolves through the existing Admin ICU catalogue path and required-key validation remains complete.
 
 ## Interfaces / Contracts
 
@@ -90,6 +92,7 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 - [ ] Reconciliation discrepancy is visible and bounded.
 - [ ] Pages are paginated/index-aligned and secure.
 - [ ] No secret/PII leakage.
+- [ ] All new Admin-visible copy uses the existing ARCH-005 ICU/i18n catalogues; no task-introduced user-visible English literal bypasses that path.
 - [ ] Tests/build/validation pass.
 
 ## Validation

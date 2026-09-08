@@ -55,6 +55,7 @@ Admin server actions/UI confirmations/audit/tests for retry and correction only.
 - Prevent correction beyond net original quantity unless architect-approved semantics explicitly allow it; repeated form submit must be idempotent and cannot create multiple identical corrections.
 - Every action writes BillingAuditEvent with actor/reason/original/correction/retry before-after state in same DB transaction where practical.
 - UI includes clear confirmation that financial billing may change; do not expose an arbitrary numeric event editor unless task validation proves bounded correction semantics.
+- INTERNATIONALISATION — every new or changed confirmation, warning, retry/correction status, validation message and other Admin-visible string MUST use the existing ARCH-005 Admin ICU/i18n path. Reuse the current Admin locale resolver/runtime and `src/i18n/locales/*`; update `src/i18n/required-keys.ts` when that is the repository convention. Do not hard-code the financial warning or action/status copy directly in TSX/server UI responses. Add each new key to every Admin locale catalogue currently declared by the repository. Do not create a second i18n mechanism.
 - Worker remains sole App Events network publisher.
 
 ## Work Items
@@ -64,6 +65,7 @@ Admin server actions/UI confirmations/audit/tests for retry and correction only.
 - [ ] Add confirmation/status UI from ADMIN-003 event detail.
 - [ ] Write audit events.
 - [ ] Add security, repeated-submit, over-correction and field-immutability tests.
+- [ ] Add focused i18n coverage proving the new confirmation/warning/status keys resolve through the existing Admin ICU catalogue path and required-key validation remains complete.
 
 ## Interfaces / Contracts
 
@@ -85,6 +87,7 @@ Explicit task dependencies are authoritative in YAML frontmatter. Do not begin u
 - [ ] Repeated correction request cannot double-credit.
 - [ ] Unauthorized roles/actions are rejected.
 - [ ] Every financial action is audited.
+- [ ] All new Admin-visible copy uses the existing ARCH-005 ICU/i18n catalogues; no task-introduced user-visible English literal bypasses that path.
 - [ ] Tests/validation pass.
 
 ## Validation

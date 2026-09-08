@@ -310,6 +310,43 @@ As work progresses:
 
 Where the task consumes a shared cross-service contract, use the canonical contract defined by the architecture/task rather than creating a repository-local duplicate.
 
+### UI internationalisation invariant
+
+This rule applies whenever a task adds or changes user-visible UI, components,
+forms, buttons, labels, help text, confirmations, empty states, validation
+messages or status copy in an application that already has an internationalisation
+foundation.
+
+The implementation agent MUST:
+
+* inspect and reuse that application's existing locale resolver, ICU runtime,
+  catalogue files and required-key/catalogue-validation convention before adding
+  user-visible copy;
+* represent every new user-visible string as an application-owned catalogue key
+  rather than hard-coded English in JSX/TSX/templates or server-action UI
+  responses;
+* add every new key to every locale catalogue currently declared by that
+  application. If the application currently has only an English catalogue, the
+  string still belongs in that catalogue rather than inline code;
+* preserve ICU placeholder names and semantics exactly across locale values;
+* use the application's existing locale-aware number/date/time/currency/percentage
+  formatting helpers rather than introducing a second formatting/localisation
+  mechanism;
+* add focused regression coverage proving the new keys are available through the
+  existing application i18n path and, where the application maintains a
+  required-key manifest, update that manifest.
+
+For `moda-interact`, this means the ARCH-005 merchant UI internationalisation
+foundation and `app/i18n/locales/*`. For `moda-interact-admin`, this means the
+ARCH-005 Admin ICU foundation and `src/i18n/locales/*` plus the repository's
+required-key mechanism where present.
+
+Task prose showing required English copy defines source-language meaning; it does
+NOT authorise embedding that English literal directly in a component.
+
+Do not create a second i18n runtime, a task-local translation helper, or a new
+locale model unless the task explicitly changes the architecture.
+
 ## Architectural Concerns
 
 If implementation reveals something affecting:

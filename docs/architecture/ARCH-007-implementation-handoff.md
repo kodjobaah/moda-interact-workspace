@@ -174,6 +174,18 @@ ADMIN-002 + BACKGROUND-007 + SHOPIFY-001
 
 ## ARCH-005 cross-architecture internationalisation gate
 
+ARCH-005 internationalisation remains a cross-cutting invariant for later
+architectures. ARCH-007 does not reset UI localisation ownership:
+
+- any new/changed `moda-interact` merchant UI must use the established ARCH-005
+  merchant ICU runtime and application-owned locale catalogues;
+- any new/changed `moda-interact-admin` UI must use the established ARCH-005
+  Admin ICU runtime and application-owned locale catalogues;
+- required English copy in an ARCH-007 task is source-language meaning, not
+  permission to hard-code that literal in a component;
+- task agents must extend the application's existing catalogue/key-validation
+  path rather than create a second i18n mechanism.
+
 `ARCH-005-SHOPIFY-004` is now Ready because `ARCH-005-SHOPIFY-002`, `ARCH-006-SHOPIFY-003`, and `ARCH-007-SHOPIFY-002` are all architect-accepted Complete.
 
 The exact key/copy contract is:
