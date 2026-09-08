@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 120
 executor: copilot
 claimed_at: 2026-09-08T19:10:31Z
@@ -23,7 +23,7 @@ enables:
   - ARCH-007-SYSTEM-TEST-002
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T19:10:31Z
+updated: 2026-09-08T20:19:00Z
 ---
 
 # ARCH-007-BACKGROUND-008: Add independent billing worker for publication, subscription sync, reconciliation and uninstall drain
@@ -132,57 +132,81 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-In Progress (Attempt 1)
+Ready for architect review (Attempt 1)
 
 ### Files Changed
 
-None
+`moda-interact-background` implementation branch commit `7501979`.
+
+- `src/entrypoints/billing.ts`
+- `src/providers/shopify-partner-billing.provider.ts`
+- `src/services/billing-reconciliation.service.ts`
+- `src/services/shopify-usage-event-publisher.service.ts`
+- `src/runtime/readiness.ts`
+- `observability/billing.mjs`
+- `package.json`
+- focused runtime and reconciliation tests under `tests/unit/`
 
 ### Work Completed
 
-None
+Implemented an independent `moda-billing-worker` with readiness-first startup, shared observability/resource shutdown, and a 60-second bounded reconciliation interval.
+
+The worker runs due/stale Shopify usage publication, BACKGROUND-009 recovery-credit activation reconciliation, bounded active-shop Partner ActiveSubscription reconciliation, current-cycle Moda-versus-Shopify usage comparison, and structured discrepancy logging without financial auto-correction.
+
+Subscription projection preserves the existing mapped plan on Partner failure and records `SYNC_ERROR`; no-contract and unknown-plan states are distinguished, pending plan updates and billing periods are projected, and unknown handles remain `UNMAPPED` until a plan is mapped.
+
+Usage publication now enforces the uninstall cutoff: pre-cutoff events can drain, while post-cutoff events are marked `NEEDS_ATTENTION` without timestamp rewriting.
 
 ### Validation Results
 
-None
+Passed:
+
+- `npx vitest run tests/unit/services/billing-reconciliation.service.test.ts` (3 tests)
+- focused runtime/publisher suite (26 tests)
+- `npm run build`
+- `npm run prisma:validate`
+- `git diff --check`
+- editor diagnostics for all changed TypeScript source files
+
+`npm run test:unit` completed with 406 passing and 2 failing tests. The failures are existing `pending-recovery-candidate.service.test.ts` expectations unrelated to this task; no billing tests failed.
 
 ### Deviations
 
-None
+The accepted database schema has no dedicated billing-discrepancy table. Discrepancies are returned in the reconciliation result and emitted through the shared structured logger for operational/Admin consumption; no schema or database repository change was made.
 
 ### Assumptions
 
-None
+Partner credentials are supplied through `SHOPIFY_PARTNER_ORG_ID`, `SHOPIFY_PARTNER_ACCESS_TOKEN`, and `SHOPIFY_APP_ID`, matching SHOPIFY-001. Active-shop reconciliation is bounded to 200 rows per scan and defaults to 50.
 
 ### Unresolved Issues
 
-None
+The two unrelated pending-recovery candidate unit failures remain for architect/repository owner follow-up.
 
 ### Architectural Concerns
 
-None
+The discrepancy representation is operational structured output rather than durable database state because the accepted schema exposes no discrepancy model. Durable historical discrepancy querying would require a later schema/API task.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Pending architect acceptance
 
 ### Review Notes
 
-None
+No architect acceptance decision has been made by this agent.
 
 ### Reviewed Files
 
-None
+Implementation branch commit `7501979` contains the files listed in the Completion Report.
 
 ### Validation Reviewed
 
-None
+Focused billing/runtime tests, build, Prisma validation, diff check, and source diagnostics passed. Full unit-suite result includes the two unrelated failures recorded above.
 
 ### Architecture Conformance
 
-Pending
+Pending architect acceptance
 
 ### Follow-up
 
