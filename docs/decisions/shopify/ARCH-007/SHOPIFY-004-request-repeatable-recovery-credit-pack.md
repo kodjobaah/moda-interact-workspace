@@ -7,7 +7,7 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: pending
+status: ready
 priority: 66
 executor: null
 claimed_at: null

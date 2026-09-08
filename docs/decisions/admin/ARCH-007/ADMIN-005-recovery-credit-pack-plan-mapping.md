@@ -7,10 +7,10 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: review
+status: complete
 priority: 65
-executor: copilot
-claimed_at: 2026-09-08T22:37:19Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-ADMIN-001
@@ -184,9 +184,66 @@ Merged to workspace main: no
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Accepted
 
 ### Review Notes
+
+#### Attempt 2 — Accepted
+
+Attempt 2 is architect-accepted Complete.
+
+The correction commit `8c3adfe9e6d73776baf0d4b93bbba8380565120b`
+is intentionally test-only relative to Attempt 1 production commit
+`e1e4017d8b349f1da8ccc3eeffa790ec447893f6`. That matches the prior
+architect correction contract: no production redesign was required unless the
+new regressions exposed an implementation defect.
+
+Attempt 2 closes every requested evidence gap:
+
+1. the focused validation matrix proves FREE + enabled top-ups, missing/blank/
+   zero/negative pack sizes, missing/blank pack meter, disabled-pack supplied
+   fields, PAID_METERED zero included allowance, negative included allowance and
+   distinct normal/top-up meters;
+2. the audit regressions include concrete before/after values for all four new
+   recovery-credit fields and prove the action retains exactly three
+   `BillingAuditAction.PLAN_CATALOG_CHANGED` mutation branches;
+3. server form-contract and UI source-contract checks prove no pack
+   price/amount/currency form field exists without rejecting the required help
+   prose;
+4. behavioral internationalisation coverage validates the catalogue against
+   required keys and resolves both required recovery-credit help strings through
+   the existing Shared ICU runtime;
+5. the existing SUPER_ADMIN, immutable plan-handle, Prisma-first and general
+   billing-plan regressions remain intact.
+
+No new production defect surfaced from the expanded regression matrix.
+
+The architect also verified that the Attempt 2 implementation commit is one
+commit ahead of Attempt 1 and changes only:
+
+```text
+tests/security/admin-billing-plan.test.mjs
+```
+
+Validation recorded in the Completion Report:
+
+- focused ADMIN-005 tests: 10/10 passed;
+- full Admin tests: 119/119 passed;
+- Prisma validation: passed;
+- lint: passed with the same two pre-existing warnings;
+- targeted formatting: passed;
+- `git diff --check`: passed;
+- production build: passed when Prisma was generated from canonical
+  DATABASE-005-containing commit
+  `ebe43c0466b555ea4919dc55915e28e40c25ae24`.
+
+The nested Admin database pointer remains on the older schema revision. That is
+a normal dependency-integration item owned outside this task and is not an
+ADMIN-005 implementation rejection reason. The pointer must be integrated
+before clean-checkout Prisma regeneration/runtime deployment.
+
+#### Attempt 1 — Changes Requested (historical)
+
 
 Attempt 1 implements the ADMIN-005 production behavior in the correct
 architectural location and does not require a production redesign. The four
@@ -321,31 +378,27 @@ GitHub rather than treating the ZIP as implementation evidence.
 
 ### Architecture Conformance
 
-Changes required within this SAME task, limited to the focused regression
-contract above.
-
-The production ADMIN-005 implementation is directionally conformant. No schema,
-pricing-policy, Shopify monetary-pricing, or adjacent billing redesign is
-requested.
+Accepted. ADMIN-005 now satisfies the recovery-credit pack plan-mapping,
+validation, audit, no-monetary-price and Admin ICU/i18n contracts.
 
 ### Follow-up
 
-Return `ARCH-007-ADMIN-005` to `ready`.
+`ARCH-007-ADMIN-005` is Complete.
 
 Durable state:
 
 ```text
-status: ready
-attempt: 1
+status: complete
+attempt: 2
 executor: null
 claimed_at: null
 ```
 
-The next claim becomes **Attempt 2** on the same mirrored
-`task/ARCH-007-ADMIN-005` branches/worktree.
+`ARCH-007-SHOPIFY-004` is now Ready because SHOPIFY-002, DATABASE-005,
+SHARED-006 and ADMIN-005 are all architect-accepted Complete.
 
-Attempt 2 should be test-only unless one of the newly required regressions
-exposes an actual implementation defect.
+`ARCH-007-SYSTEM-TEST-004` remains Pending / manual-terminal-gated and must not
+be auto-started.
 
-Do not start `ARCH-007-SHOPIFY-004`. It remains Pending until ADMIN-005 is
-architect-accepted Complete.
+Developer/user retains ownership of normal database-submodule dependency
+integration and merging/pushing accepted implementation `main`.
