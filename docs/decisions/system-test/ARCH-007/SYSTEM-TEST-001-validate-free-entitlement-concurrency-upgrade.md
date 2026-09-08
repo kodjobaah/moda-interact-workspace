@@ -7,7 +7,7 @@ domain: system-test
 repository: moda-interact-system-test
 assigned_agent: moda_system_test
 coordinator: moda_architect
-status: pending
+status: ready
 priority: 210
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-007-ADMIN-002
 enables: []
 created: 2026-09-07
-updated: 2026-09-07
+updated: 2026-09-08T19:20:00+01:00
 ---
 
 # ARCH-007-SYSTEM-TEST-001: Validate Free lifetime entitlement, concurrency and merchant upgrade flow
