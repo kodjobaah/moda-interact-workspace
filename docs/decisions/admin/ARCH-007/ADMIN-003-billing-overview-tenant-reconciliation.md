@@ -20,7 +20,7 @@ depends_on:
 enables: 
   - ARCH-007-ADMIN-004
 created: 2026-09-07
-updated: 2026-09-08T21:16:00Z
+updated: 2026-09-08
 ---
 
 # ARCH-007-ADMIN-003: Build billing overview, tenant detail and Shopify reconciliation visibility
