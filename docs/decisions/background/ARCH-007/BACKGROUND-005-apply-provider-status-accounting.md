@@ -7,10 +7,10 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-status: review
+status: complete
 priority: 100
-executor: copilot
-claimed_at: 2026-09-08T16:15:07Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: 
   - ARCH-007-BACKGROUND-004
@@ -20,7 +20,7 @@ enables:
   - ARCH-007-BACKGROUND-008
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
-updated: 2026-09-08T16:21:49Z
+updated: 2026-09-08
 ---
 
 # ARCH-007-BACKGROUND-005: Apply normalized Meta provider status to durable message and usage accounting
@@ -174,39 +174,54 @@ None
 
 ### Review Status
 
-Changes Requested — Attempt 1
+Accepted
 
 ### Review Notes
 
-1. Make provider-status lifecycle transitions concurrency-safe. The current implementation reads the message status and then performs an unconditional `conversationMessage.update` inside a normal transaction. Because the existing WhatsApp worker processes jobs concurrently, two statuses for the same `providerMessageId` can both read the same weaker state and then overwrite each other. A concurrent READ/DELIVERED pair can finish as DELIVERED, and a concurrent DELIVERED/FAILED pair can finish as FAILED. Replace the read/compute/unconditional-write pattern with a conditional/CAS transition (or an equivalent serializable retry design) so a weaker state can never overwrite a stronger durable state. Concurrent delivery/read handling must still create exactly one `DELIVERED_WHATSAPP_MESSAGE` UsageEvent.
+Attempt 2 is architect-accepted Complete.
 
-2. Enforce the task's outbound-message boundary. `ConversationMessage.providerMessageId` is also used by persisted inbound CUSTOMER messages, but the new service resolves only by `providerMessageId` and does not verify `direction`. A provider-status job must only mutate a durable `OUTBOUND` message. A matching inbound message must be treated as a bounded ignored/invalid ownership case and must not create delivered usage.
+All Changes Requested from Attempt 1 are resolved:
 
-3. Add the missing focused regressions required by this task. The Attempt 1 test file covers sequential duplicate/out-of-order handling, invalid/unknown ids and bounded metadata, but it does not contain the checked-off cross-tenant case and it does not exercise the concurrency race above. Add tests proving: (a) concurrent READ/DELIVERED and DELIVERED/FAILED cannot regress final state and delivered usage remains exactly-once; (b) an inbound message cannot be updated/accounted as outbound delivery; and (c) providerAccountId/providerPhoneNumberId (or any rejected producer `shopId`) cannot redirect accounting away from the shop derived from the durable outbound message.
+1. Provider lifecycle transitions are now concurrency-safe. Status writes use a conditional CAS on the durable message id, `OUTBOUND` direction, and previously observed status inside a Prisma `Serializable` transaction. CAS losers and Prisma `P2034` conflicts retry the whole transaction with a bounded retry policy, so a weaker concurrent status cannot overwrite a stronger durable state.
+
+2. Provider-status accounting is now explicitly outbound-only. A matching inbound `ConversationMessage` is a bounded ignored case and cannot be lifecycle-mutated or create `DELIVERED_WHATSAPP_MESSAGE` usage.
+
+3. Focused regression coverage now exercises concurrent READ/DELIVERED and DELIVERED/FAILED races, exactly-once delivered usage during those races, inbound-message isolation, and provider-identity versus durable-shop ownership.
+
+The accepted Attempt 1 behavior remains intact: Shared provider-status v2 validation occurs at the consumer boundary; tenant ownership is derived only from durable local message/conversation/recovery state; unknown/unowned ids are bounded no-ops; the existing `whatsapp-events` Worker remains the single queue consumer topology; delivered usage is deterministic and `NOT_APPLICABLE` for Shopify; provider metadata is bounded; and no exact Meta monetary amount is fabricated.
+
+The repository's accepted Shared `0.8.0` dependency is retained. The older `0.7.4` wording in this task's Implementation Notes is superseded by the current accepted ARCH-007 Shared release and is not a reason to downgrade.
 
 ### Reviewed Files
 
-Implementation commit `2bdbe865415feab303e0f17a40cdab1a62c19b1d`:
+Implementation branch cumulative task surface:
 
-- `src/services/whatsapp-provider-status.service.ts`
-- `src/workers/whatsapp.worker.ts`
-- `tests/unit/services/whatsapp-provider-status.service.test.ts`
+- `moda-interact-background/src/services/whatsapp-provider-status.service.ts`
+- `moda-interact-background/src/workers/whatsapp.worker.ts`
+- `moda-interact-background/tests/unit/services/whatsapp-provider-status.service.test.ts`
 
-Cross-checked against the current inbound `ConversationMessage.providerMessageId` persistence path and the accepted Shared provider-status v2 contract.
+Attempt 2 implementation commit:
+
+- `de619dc7dd49756598d9e853f4b2555cf754bf34`
+
+Parent task-report commit reviewed:
+
+- `77ece727ac4b7fc4d7f9b5cd50fb1724b0079a8d`
 
 ### Validation Reviewed
 
-- Focused provider-status tests reported passed: 6 tests.
+- Focused provider-status suite reported passed: 10/10.
 - `npm run build` reported passed.
 - `npm run prisma:validate` reported passed.
-- targeted formatting and `git diff --check` reported passed.
-- full suite reported 365 passed, 7 skipped, with the same 2 unrelated `pending-recovery-candidate` failures already present in prior accepted ARCH-007 Background reviews.
-- GitHub exposes no commit status checks for implementation commit `2bdbe865`.
+- `git diff --check` reported passed.
+- Full suite reported 369 passed, 7 skipped, with the same 2 unrelated existing `pending-recovery-candidate` failures; no provider-status regression failed.
+- GitHub exposes no commit status checks for `de619dc7dd49756598d9e853f4b2555cf754bf34`.
+- The supplied archive does not contain the Background submodule working tree; the pushed implementation commit and exact source/tests were therefore independently reviewed from GitHub.
 
 ### Architecture Conformance
 
-Not accepted on Attempt 1. Shared schema validation, tenant derivation from durable local state, existing-worker routing, bounded provider metadata, NOT_APPLICABLE delivered usage and no fabricated monetary cost are directionally correct. Concurrency-safe monotonic lifecycle state and the explicit outbound-message boundary remain incomplete.
+Accepted. The implementation now satisfies the ARCH-007 provider-status ownership, monotonic lifecycle, idempotent delivered-usage, bounded metadata, and existing-worker-topology requirements.
 
 ### Follow-up
 
-Return the same task to `ready`, clear the claim, preserve `attempt: 1`, and reclaim it as Attempt 2. `ARCH-007-BACKGROUND-008` remains Pending until BACKGROUND-005 is architect-accepted Complete. Do not create a separate correction task.
+`ARCH-007-BACKGROUND-005` is Complete. `ARCH-007-BACKGROUND-008` remains Pending until its other incomplete dependency or dependencies are architect-accepted Complete. System-test work remains manual/terminal-gated and is not automatically started by this acceptance.
