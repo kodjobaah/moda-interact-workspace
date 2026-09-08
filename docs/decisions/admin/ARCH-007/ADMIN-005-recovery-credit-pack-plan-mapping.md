@@ -7,7 +7,7 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-09-08T21:50:19Z
@@ -108,28 +108,50 @@ a behavioral i18n test helper available.
 ## Completion Report
 
 ### Status
-In Progress (Attempt 1)
+Implementation complete; returned to review (Attempt 1)
 
 ### Files Changed
-None.
+In `moda-interact-admin`:
+
+- `src/app/actions/billing-plan.ts`
+- `src/components/admin/billing-plan-catalog.tsx`
+- `src/i18n/locales/en.json`
+- `src/i18n/required-keys.ts`
+- `src/lib/admin/billing-plan-audit.ts`
+- `src/lib/admin/billing-plan-validation.ts`
+- `tests/security/admin-billing-plan.test.mjs`
 
 ### Work Completed
-None.
+- Added validation and persistence mapping for `recoveryCreditPackEnabled`, `recoveryCreditsPerPack`, `shopifyRecoveryCreditPackEventHandle`, and `includedRecoveryConversationAllowance`.
+- Enforced disabled-pack clearing, positive pack size, non-empty distinct Shopify meter handle, and non-negative paid-plan included allowance rules.
+- Added the recovery-credit pack controls and required ICU help copy to the BillingPlan catalog without adding a monetary price input.
+- Extended `PLAN_CATALOG_CHANGED` audit before/after snapshots to include all four fields, including toggle mutations.
+- Added focused validation, security, audit, no-price-field, and ICU catalogue coverage.
+- Implementation commit: `e1e4017` (`feat(admin): map recovery credit pack billing fields`).
+- Implementation branch pushed: `task/ARCH-007-ADMIN-005`.
 
 ### Validation Results
-Not run.
+- `npm test -- --test-name-pattern='billing plan|recovery-credit pack|recovery-credit'`: passed, 117/117.
+- `npm test`: passed, 117/117.
+- `npm run prisma:validate`: passed.
+- `npx tsc --noEmit`: passed using the accepted DATABASE-005 schema revision for generated Prisma client validation.
+- `npm run lint`: passed with two pre-existing `queue-monitor.tsx` exhaustive-deps warnings and no errors.
+- Targeted Prettier check: passed for all seven changed files.
+- `npm run build`: passed against the accepted DATABASE-005 schema revision; existing Next.js workspace-root, BullMQ dynamic dependency, and missing optional `@valkey/valkey-glide` warnings remained.
+- `git diff --check`: passed.
+- Nested `database` submodule gitlink staged: no.
 
 ### Deviations
-None.
+- The Admin checkout's nested `database` submodule remains pinned at `7ed22538d1a6f04bc3b7c48924add6add0f74801`, before DATABASE-005. Prisma client generation and production build validation temporarily used the accepted DATABASE-005 revision `b5a184ca53459bdd6c58e7f01bdcceb1aa652918`; the submodule checkout was restored and no gitlink update was staged.
 
 ### Assumptions
-None.
+- The accepted DATABASE-005 schema revision is available to the Admin validation environment and will be present through the dependency integration path before runtime deployment.
 
 ### Unresolved Issues
-None.
+- The Admin repository's nested database pointer still requires the normal dependency integration/update outside this task before a clean checkout can regenerate the new Prisma client without the accepted DATABASE-005 schema revision.
 
 ### Architectural Concerns
-None.
+- None introduced by this implementation. Admin continues to store Shopify meter mappings and allowance configuration, while Shopify App Pricing remains the source of monetary pack pricing.
 
 ## Architect Review
 
