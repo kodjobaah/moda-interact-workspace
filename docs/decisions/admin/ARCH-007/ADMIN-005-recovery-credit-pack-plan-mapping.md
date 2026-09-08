@@ -7,7 +7,7 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-09-08T22:37:19Z
@@ -108,7 +108,7 @@ a behavioral i18n test helper available.
 ## Completion Report
 
 ### Status
-In Progress (Attempt 2)
+Ready for architect review (Attempt 2)
 
 ### Files Changed
 In `moda-interact-admin`:
@@ -121,37 +121,65 @@ In `moda-interact-admin`:
 - `src/lib/admin/billing-plan-validation.ts`
 - `tests/security/admin-billing-plan.test.mjs`
 
+Attempt 2 correction file:
+
+- `tests/security/admin-billing-plan.test.mjs`
+
 ### Work Completed
 - Added validation and persistence mapping for `recoveryCreditPackEnabled`, `recoveryCreditsPerPack`, `shopifyRecoveryCreditPackEventHandle`, and `includedRecoveryConversationAllowance`.
 - Enforced disabled-pack clearing, positive pack size, non-empty distinct Shopify meter handle, and non-negative paid-plan included allowance rules.
 - Added the recovery-credit pack controls and required ICU help copy to the BillingPlan catalog without adding a monetary price input.
 - Extended `PLAN_CATALOG_CHANGED` audit before/after snapshots to include all four fields, including toggle mutations.
 - Added focused validation, security, audit, no-price-field, and ICU catalogue coverage.
-- Implementation commit: `e1e4017` (`feat(admin): map recovery credit pack billing fields`).
-- Implementation branch pushed: `task/ARCH-007-ADMIN-005`.
+- Completed the full recovery-credit validation matrix: Free enabled packs, independent missing/blank/zero/negative pack fields, disabled-pack rejection, paid zero allowance acceptance, negative allowance rejection, and distinct meter handles.
+- Added concrete before/after assertions for all four recovery-credit fields and confirmed create, update, and toggle branches retain `PLAN_CATALOG_CHANGED` audit semantics.
+- Added separate server form-contract and UI input-name checks that reject monetary fields without rejecting the required explanatory copy.
+- Preserved behavioral ICU runtime validation, required-key completeness, and runtime resolution assertions for both required help strings.
+- Attempt 1 implementation commit: `e1e4017`; Attempt 2 correction commit: `8c3adfe`; implementation branch pushed to `origin/task/ARCH-007-ADMIN-005`.
 
 ### Validation Results
-- `npm test -- --test-name-pattern='billing plan|recovery-credit pack|recovery-credit'`: passed, 117/117.
-- `npm test`: passed, 117/117.
+- `node --test tests/security/admin-billing-plan.test.mjs`: passed, 10/10 focused tests.
+- `npm test`: passed, 119/119.
 - `npm run prisma:validate`: passed.
-- `npx tsc --noEmit`: passed using the accepted DATABASE-005 schema revision for generated Prisma client validation.
+- `npx tsc --noEmit`: passed earlier with the generated client containing DATABASE-005 fields; a clean regeneration from the current nested pointer fails because that pointer predates DATABASE-005.
 - `npm run lint`: passed with two pre-existing `queue-monitor.tsx` exhaustive-deps warnings and no errors.
 - Targeted Prettier check: passed for all seven changed files.
-- `npm run build`: passed against the accepted DATABASE-005 schema revision; existing Next.js workspace-root, BullMQ dynamic dependency, and missing optional `@valkey/valkey-glide` warnings remained.
+- `npm run build`: production build passed after generating Prisma from canonical database commit `ebe43c0` (DATABASE-005-containing); existing Next.js workspace-root, BullMQ dynamic dependency, and missing optional `@valkey/valkey-glide` warnings remained. A clean build from the current nested pointer fails with the documented stale-schema type errors.
 - `git diff --check`: passed.
 - Nested `database` submodule gitlink staged: no.
 
 ### Deviations
-- The Admin checkout's nested `database` submodule remains pinned at `7ed22538d1a6f04bc3b7c48924add6add0f74801`, before DATABASE-005. Prisma client generation and production build validation temporarily used the accepted DATABASE-005 revision `b5a184ca53459bdd6c58e7f01bdcceb1aa652918`; the submodule checkout was restored and no gitlink update was staged.
+- The Admin checkout's nested `database` submodule remains pinned at `7ed22538d1a6f04bc3b7c48924add6add0f74801`, before DATABASE-005. Validation temporarily used canonical database commit `ebe43c0466b555ea4919dc55915e28e40c25ae24`; the submodule checkout was restored and no gitlink update was staged.
 
 ### Assumptions
-- The accepted DATABASE-005 schema revision is available to the Admin validation environment and will be present through the dependency integration path before runtime deployment.
+- The developer will integrate the accepted DATABASE-005 pointer before runtime deployment and clean-checkout Prisma generation.
 
 ### Unresolved Issues
-- The Admin repository's nested database pointer still requires the normal dependency integration/update outside this task before a clean checkout can regenerate the new Prisma client without the accepted DATABASE-005 schema revision.
+- The Admin repository's nested database pointer still requires the normal dependency integration/update outside this task before a clean checkout can regenerate the new Prisma client without stale-schema type errors.
 
 ### Architectural Concerns
 - None introduced by this implementation. Admin continues to store Shopify meter mappings and allowance configuration, while Shopify App Pricing remains the source of monetary pack pricing.
+
+### Git / VCS
+
+Task branch: `task/ARCH-007-ADMIN-005`
+
+Implementation repository:
+   repository: `moda-interact-admin`
+   commit: `8c3adfe`
+   remote branch: `origin/task/ARCH-007-ADMIN-005`
+   pushed: yes
+
+Parent workspace:
+   task file: `docs/decisions/admin/ARCH-007/ADMIN-005-recovery-credit-pack-plan-mapping.md`
+   claim commit: `4be95a1`
+   review report commit: pending
+   remote branch: `origin/task/ARCH-007-ADMIN-005`
+   pushed: claim yes; review report pending
+   submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
