@@ -7,11 +7,11 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: ready
+status: in_progress
 priority: 120
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-08T19:30:49Z
+attempt: 1
 depends_on: 
   - ARCH-007-ADMIN-002
   - ARCH-007-BACKGROUND-007
@@ -19,7 +19,7 @@ depends_on:
 enables: 
   - ARCH-007-ADMIN-004
 created: 2026-09-07
-updated: 2026-09-08T19:20:00+01:00
+updated: 2026-09-08T19:30:49Z
 ---
 
 # ARCH-007-ADMIN-003: Build billing overview, tenant detail and Shopify reconciliation visibility
@@ -118,7 +118,7 @@ Luna deterministic-execution guardrails:
 
 ### Status
 
-Not Started
+In Progress (Attempt 1)
 
 ### Files Changed
 
