@@ -179,7 +179,8 @@ Review — developer attempt 2 completed with test-only corrections.
 ### Files Changed
 
 Implementation branch contains the previously published folder-based route
-migration and intentional visual changes. Attempt 2 changed only tests:
+migration. Attempt 2 reverted the incidental production/UI commit and changed
+only tests afterward:
 
 - `tests/unit/billing-period-compatibility.test.ts`
 - `tests/unit/dashboard/dashboard-conversation-relation.test.js`
@@ -188,10 +189,11 @@ migration and intentional visual changes. Attempt 2 changed only tests:
 ### Work Completed
 
 Developer attempt 1 implemented the route migration and published it on
-`task/ARCH-008-SHOPIFY-002` through merge commit `8af8cbc`. Attempt 2 updated
-stale flat-route test paths, relaxed one formatting-sensitive source assertion,
-and added a regression test preventing retired flat route modules from returning.
-No application source code was changed during attempt 2.
+`task/ARCH-008-SHOPIFY-002` through merge commit `8af8cbc`. Attempt 2 reverted
+the later incidental production/UI commit `8541c2c` with explicit revert
+`7134a06`, updated stale flat-route test paths, relaxed one formatting-sensitive
+source assertion, and added a regression test preventing retired flat route
+modules from returning.
 
 ### Validation Results
 
@@ -204,7 +206,8 @@ Validation evidence:
 - `npm run typecheck` and `npm run lint` retain the previously observed
   repository diagnostics; no application source was changed during attempt 2,
   per the requested test-only correction scope.
-- Implementation worktree is clean and published at test-only commit `835a97a`.
+- Implementation worktree is clean and published through test commit `835a97a`
+  and production rollback commit `7134a06`.
 
 ### Deviations
 
@@ -223,7 +226,8 @@ modified because this cycle was restricted to tests.
 
 ### Architectural Concerns
 
-None. The previously flagged visual changes are intentional and remain in scope.
+None. The previously flagged visual/UI changes were explicitly reverted; the
+folder-based route migration remains the task implementation.
 
 ## Developer Self-Review - Accepted
 
@@ -235,8 +239,8 @@ None. The previously flagged visual changes are intentional and remain in scope.
 
 1. Updated all identified stale source-path assertions to folder-based routes.
 2. Added a regression test for removal of retired flat route modules.
-3. Preserved the intentional visual changes and made no application-source
-   edits during attempt 2.
+3. Reverted the incidental production/UI commit while preserving the route
+  migration, then made no further application-source edits.
 
 ### Review Result
 
