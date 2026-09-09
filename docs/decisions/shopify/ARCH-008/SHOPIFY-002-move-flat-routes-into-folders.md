@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-09-09T18:25:00Z
+attempt: 1
 depends_on: []
 enables: []
 created: 2026-09-09
@@ -174,7 +174,7 @@ pass.
 
 ### Status
 
-Pending implementation.
+In Progress — developer attempt 1 claimed after task materialization.
 
 ### Files Changed
 
@@ -182,12 +182,12 @@ None.
 
 ### Work Completed
 
-Task definition materialized for developer execution. Implementation has not
-started.
+Task definition materialized and developer attempt 1 claimed. Implementation
+has not started.
 
 ### Validation Results
 
-Task-definition preflight only; implementation validation is pending.
+Task-definition preflight passed; implementation validation is pending.
 
 ### Deviations
 
