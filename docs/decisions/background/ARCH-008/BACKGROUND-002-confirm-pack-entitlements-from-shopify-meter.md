@@ -1,0 +1,337 @@
+---
+id: ARCH-008-BACKGROUND-002
+architecture_id: ARCH-008
+title: Confirm recovery-credit pack entitlements from Shopify meter usage
+task_kind: implementation
+domain: background
+repository: moda-interact-background
+assigned_agent: moda_background
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: pending
+priority: 30
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+  - ARCH-008-BACKGROUND-001
+  - ARCH-007-BACKGROUND-008
+  - ARCH-007-BACKGROUND-009
+  - ARCH-007-SHOPIFY-001
+enables:
+  - ARCH-008-ADMIN-001
+created: 2026-09-09
+updated: 2026-09-09
+---
+
+# ARCH-008-BACKGROUND-002: Confirm recovery-credit pack entitlements from Shopify meter usage
+
+## Architecture
+
+Canonical: `docs/architecture/ARCH-008-shopify-app-pricing-conformance.md`
+
+## Objective
+
+Stop granting recovery-credit packs from App Events transport success and activate exactly the provider-confirmed aggregate number of current-cycle pack purchases using Partner `activeSubscription` pack-meter usage.
+
+## Architectural invariant
+
+```text
+UsageEvent.REPORTED alone MUST NOT activate a RecoveryCreditPurchase.
+```
+
+Shopify provider `usage.quantity` is an aggregate confirmation signal. It does not identify a particular App Events idempotency key. Implementation must not claim otherwise.
+
+## Required preflight — do before editing
+
+1. Work only in the launcher-resolved ARCH-008-BACKGROUND-002 task worktree after normal synchronisation.
+2. Confirm `ARCH-008-BACKGROUND-001` is Complete and its 409/submission behavior is present.
+3. Confirm accepted ARCH-007 reconciliation capability is present on current source. Expected accepted capability/files include equivalents of:
+   - `src/services/billing-reconciliation.service.ts`
+   - `src/providers/shopify-partner-billing.provider.ts`
+   - recurring billing reconciliation scheduler/worker entrypoint from ARCH-007-BACKGROUND-008;
+   - recovery-credit reconciliation work from ARCH-007-BACKGROUND-009.
+4. Confirm the Partner projection exposes:
+   - current billing cycle identity/boundaries;
+   - plan/meter identity sufficient to select the **exact recovery-credit pack meter**;
+   - finite `usage.quantity` for that meter.
+5. Confirm existing durable local data can associate candidate pack purchases with the same billing cycle + pack-meter configuration without fuzzy guesswork. Prefer existing `UsageEvent.billingPeriodId`, billing-period state, plan/meter snapshots and accepted ARCH-007 linkage.
+6. If any capability above is absent after synchronisation, or exact cycle/meter identity cannot be recovered durably from accepted state, **STOP** and return the concrete gap to `moda_architect`. Do not:
+   - add a database migration yourself;
+   - edit `moda-interact-database`;
+   - modify Shopify app producer behavior outside task ownership;
+   - approximate cycle membership using an arbitrary date window.
+
+## Primary files
+
+Expected implementation boundary:
+
+- `moda-interact-background/src/services/shopify-usage-event-publisher.service.ts`
+- `moda-interact-background/src/services/recovery-credit-purchase.service.ts`
+- accepted ARCH-007 Partner reconciliation service/provider equivalents
+- focused recovery-credit/reconciliation unit tests
+
+Do not create a second Partner billing client if ARCH-007 already provides one.
+
+## Required implementation
+
+### A. Remove pack activation from App Events HTTP-success path
+
+In the durable App Events publisher:
+
+- remove the success-path dependency/callback that activates a `RECOVERY_CREDIT_PACK_PURCHASE` solely after `markReported`;
+- leave successful UsageEvent transition to `REPORTED` intact;
+- leave normal usage publication and retry semantics intact.
+
+After 202:
+
+```text
+UsageEvent = REPORTED
+RecoveryCreditPurchase = PENDING_BILLING
+purchased credit counter unchanged
+```
+
+### B. Make RecoveryCreditPurchase activation provider-confirmation-only
+
+Any existing public method such as `activateFromUsageEvent` / `activateForUsageEvent` that activates solely because linked UsageEvent is `REPORTED` must no longer be used as a transport-success activator.
+
+Refactor narrowly so activation occurs only through the provider reconciliation path with an explicit confirmed-unit budget.
+
+Keep the existing exactly-once durable transaction semantics:
+
+- purchase transitions to ACTIVE once;
+- `activatedAt` is set once;
+- `PURCHASED_RECOVERY_CREDITS.grantedQuantity` is incremented once by that purchase's `creditsGranted` snapshot;
+- repeated reconciliation cannot increment again.
+
+Do not revoke ACTIVE purchases automatically if a later provider quantity falls below previously matched units. Surface discrepancy/attention instead.
+
+### C. Provider aggregate calculation
+
+For one **shop + provider current billing cycle + exact pack meter**:
+
+```text
+providerUnits = Partner activeSubscription pack usage.quantity
+```
+
+Validate before using:
+
+- finite number;
+- integer;
+- >= 0;
+- belongs to exact configured pack meter for the effective plan/current cycle.
+
+If provider quantity is missing/non-finite/negative/non-integer or the meter cannot be identified exactly, activate nothing and route through the existing reconciliation attention/diagnostic outcome.
+
+### D. Local matched/eligible sets
+
+Calculate within the same shop/cycle/meter scope:
+
+```text
+alreadyMatchedUnits = count of ACTIVE pack purchases already matched for this provider cycle/meter
+```
+
+Each pack purchase represents one provider App Event unit regardless of `creditsGranted`.
+
+Eligible pending candidates must satisfy **all** of:
+
+- `RecoveryCreditPurchase.status == PENDING_BILLING` (or an accepted retryable attention state only if ARCH-007 explicitly allows safe re-entry);
+- linked UsageEvent exists;
+- linked UsageEvent metric is `RECOVERY_CREDIT_PACK_PURCHASE`;
+- linked UsageEvent quantity is exactly `+1`;
+- linked UsageEvent `shopifyReportState == REPORTED`;
+- candidate belongs to the provider current billing cycle;
+- candidate corresponds to the exact pack meter/effective plan configuration being reconciled;
+- candidate is not already ACTIVE/cancelled.
+
+Do not count a merely-created local purchase whose App Event was never submitted.
+
+### E. Confirmed unit budget
+
+```text
+confirmedDelta = providerUnits - alreadyMatchedUnits
+```
+
+Rules:
+
+1. `confirmedDelta <= 0`
+   - activate no new purchases;
+   - if `< 0`, surface provider-under-local discrepancy/attention; do not revoke.
+2. `confirmedDelta == eligibleCandidateCount`
+   - all eligible candidates are provider-covered; activate all deterministically.
+3. `confirmedDelta > eligibleCandidateCount`
+   - activate all eligible candidates only;
+   - surface provider-over-local discrepancy for unmatched provider units;
+   - do not fabricate local purchases.
+4. `0 < confirmedDelta < eligibleCandidateCount`
+   - provider confirms only a subset; apply the ambiguity rule below.
+
+### F. Ambiguous partial matching rule
+
+Shopify does not expose which App Event produced an aggregate unit. Therefore when only a subset is confirmed:
+
+- order equivalent candidates deterministically by `createdAt ASC`, then `id ASC`;
+- **but** do not arbitrarily choose across candidates whose entitlement value/configuration differs.
+
+Define an equivalent candidate group as candidates that share all provider-relevant/configuration snapshots required to make one unit interchangeable, including at minimum the same effective pack-meter identity and same `creditsGranted` snapshot.
+
+For partial confirmation:
+
+- if every eligible candidate is equivalent, activate the earliest `confirmedDelta` candidates by `createdAt`, then `id`;
+- if the partial boundary crosses candidates with different `creditsGranted` or different pack/meter/plan snapshots, **activate none from the ambiguous subset**, surface `NEEDS_ATTENTION`/reconciliation discrepancy, and require operator resolution;
+- never choose the most valuable/least valuable/newest candidate heuristically.
+
+If current accepted state already records a stronger deterministic provider correlation, use it only if it comes from a supported Shopify API and is documented in Completion Report. Do not invent correlation from request timing.
+
+### G. Reconciliation replay and concurrency
+
+Reuse the accepted ARCH-007 transaction/isolation/locking approach. The implementation must remain correct when:
+
+- two billing reconciliation runs overlap;
+- reconciliation is retried after process failure;
+- provider quantity has not changed;
+- a purchase is activated by the other transaction first.
+
+The final durable counter must equal the sum of ACTIVE purchase `creditsGranted` snapshots, never double-counting the same purchase.
+
+### H. Normal recovery isolation
+
+Do not gate ordinary checkout recovery completion, customer messaging or paid-recovery UsageEvent creation on Partner reconciliation. Only **advance pack entitlement grant** waits for provider aggregate confirmation.
+
+## Required tests
+
+Add/adjust focused tests proving:
+
+1. 202/`REPORTED` leaves pack PENDING and counter unchanged.
+2. Provider quantity increment of 1 activates exactly one equivalent eligible pending purchase.
+3. Re-running same provider quantity grants nothing twice.
+4. Provider increment 2 activates two equivalent candidates deterministically.
+5. Provider quantity lower than ACTIVE matched units revokes nothing and surfaces discrepancy.
+6. Provider quantity greater than local eligible + active units fabricates nothing and surfaces discrepancy.
+7. Partial confirmation across candidates with different `creditsGranted` fails closed for the ambiguous subset.
+8. Non-REPORTED candidate is never activated.
+9. Wrong cycle/wrong meter candidate is never consumed by current reconciliation.
+10. Concurrent/replayed reconciliation remains exactly once.
+11. Normal recovery path remains independent of provider reconciliation availability.
+
+## Out of Scope / MUST NOT
+
+- No database migration unless architect creates a separate database task after a reported gap.
+- No Shopify app UI/plan-selection changes.
+- No App Events endpoint redesign.
+- No Admin layout work.
+- No automatic credit clawback.
+- No synthetic “provider confirmed event id” field based on local assumptions.
+- No date-window approximation when durable billing-cycle identity is missing.
+- No cross-repository edits.
+
+## Acceptance Criteria
+
+- [ ] Transport success no longer activates a recovery-credit purchase.
+- [ ] Provider current-cycle exact pack-meter quantity is required for activation.
+- [ ] Aggregate matching never claims per-event Shopify confirmation.
+- [ ] Exact provider-confirmed unit budget is respected.
+- [ ] Equivalent partial candidates use deterministic `createdAt`, then `id` ordering.
+- [ ] Non-equivalent ambiguous partial matching fails closed.
+- [ ] ACTIVE purchase credit is granted exactly once under replay/concurrency.
+- [ ] Provider under/over-count discrepancies are surfaced without destructive correction/fabrication.
+- [ ] Normal recovery remains independent of reconciliation latency/failure.
+- [ ] No schema/cross-repository change is introduced silently.
+
+## Validation — run from `moda-interact-background`
+
+Run exact focused unit tests for changed services first, for example:
+
+```bash
+npx vitest run \
+  tests/unit/services/recovery-credit-purchase.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  <any-new-focused-test>
+```
+
+Use actual current filenames if accepted ARCH-007 uses different names.
+
+Then run:
+
+```bash
+npm run test:unit
+npm run build
+npm run prisma:validate
+git diff --check
+```
+
+Do not invent a lint command if none exists.
+
+## Stop / return rule
+
+If preflight reveals a missing durable cycle/meter identity, return `blocked`/architectural concern with exact evidence instead of implementing a heuristic.
+
+Otherwise, after successful implementation/validation:
+
+1. complete Completion Report;
+2. set status `review`;
+3. return to `moda_architect`;
+4. STOP.
+
+Do not begin ADMIN-001.
+
+## Completion Report
+
+### Status
+
+Not Started
+
+### Files Changed
+
+None
+
+### Work Completed
+
+None
+
+### Validation Results
+
+None
+
+### Deviations
+
+None
+
+### Assumptions
+
+None
+
+### Unresolved Issues
+
+None
+
+### Architectural Concerns
+
+None
+
+## Architect Review
+
+### Review Status
+
+Pending
+
+### Review Notes
+
+None
+
+### Reviewed Files
+
+None
+
+### Validation Reviewed
+
+None
+
+### Architecture Conformance
+
+Pending
+
+### Follow-up
+
+None
