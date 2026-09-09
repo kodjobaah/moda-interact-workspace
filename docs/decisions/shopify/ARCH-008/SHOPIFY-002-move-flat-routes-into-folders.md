@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -127,16 +127,16 @@ flat route module remains under `app/routes` for a moved route.
 
 ## Acceptance criteria
 
-- [ ] Nested Shopify application routes are represented by folders in source.
-- [ ] Existing application URLs and HTTP behavior are unchanged.
-- [ ] Parent layout and `<Outlet>` behavior remain intact.
-- [ ] Billing, webhook, health/readiness, privacy, and authentication boundaries
+- [x] Nested Shopify application routes are represented by folders in source.
+- [x] Existing application URLs and HTTP behavior are unchanged.
+- [x] Parent layout and `<Outlet>` behavior remain intact.
+- [x] Billing, webhook, health/readiness, privacy, and authentication boundaries
       remain functional.
-- [ ] Focused tests and imports use the new folder-based route modules.
-- [ ] Generated route types/build output regenerate successfully.
-- [ ] No duplicate compatibility route files or hand-edited generated artifacts
+- [x] Focused tests and imports use the new folder-based route modules.
+- [x] Generated route types/build output regenerate successfully.
+- [x] No duplicate compatibility route files or hand-edited generated artifacts
       are introduced.
-- [ ] No database, Background, Admin, Shared, gateway, pricing, or entitlement
+- [x] No database, Background, Admin, Shared, gateway, pricing, or entitlement
       changes are introduced.
 
 ## Validation
@@ -174,7 +174,7 @@ pass.
 
 ### Status
 
-Review — developer attempt 2 completed with test-only corrections.
+Complete — developer explicitly completed accepted attempt 2.
 
 ### Files Changed
 
@@ -244,15 +244,34 @@ folder-based route migration remains the task implementation.
 
 ### Review Result
 
-Attempt 2 passes developer self-review and is submitted for developer completion.
-Because `completion_mode: developer`, explicit `/moda_developer_update
-ARCH-008-SHOPIFY-002 complete` remains required.
+Attempt 2 passed developer self-review and was explicitly completed by the
+developer.
+
+## Developer Completion Decision
+
+### Attempt
+
+2
+
+### Decision
+
+Accepted and complete. The task is materialized, the accepted review is durable,
+all required implementation and test changes are committed and published on the
+canonical implementation branch, and the parent task report is committed and
+published on the canonical parent branch. No merge to `main` was performed.
+
+### Completion Evidence
+
+- Implementation branch: `7134a06` (origin synchronized).
+- Parent report branch: `2905822` (origin synchronized).
+- Full test suite: 28 files passed, 1 skipped; 207 tests passed, 1 skipped.
+- `git diff --check` passed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Pending independent architect review; developer completion is recorded above.
 
 ### Review Notes
 
