@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
 executor: copilot
 claimed_at: 2026-09-09T15:05:51Z
@@ -248,14 +248,14 @@ Add/adjust focused tests proving:
 
 ## Acceptance Criteria
 
-- [ ] Every newly created pack UsageEvent has a non-null exact billingPeriodId.
-- [ ] Provider and local current-cycle boundaries must match before creation.
-- [ ] Stale cycle changes are caught inside the write transaction.
-- [ ] Existing purchase replay remains provider-independent.
-- [ ] Trial/no-current-cycle state cannot create a new pack purchase.
-- [ ] Existing purchased balance remains visible.
-- [ ] No entitlement is granted by the request path.
-- [ ] No schema/cross-repository change is introduced.
+- [x] Every newly created pack UsageEvent has a non-null exact billingPeriodId.
+- [x] Provider and local current-cycle boundaries must match before creation.
+- [x] Stale cycle changes are caught inside the write transaction.
+- [x] Existing purchase replay remains provider-independent.
+- [x] Trial/no-current-cycle state cannot create a new pack purchase.
+- [x] Existing purchased balance remains visible.
+- [x] No entitlement is granted by the request path.
+- [x] No schema/cross-repository change is introduced.
 
 ## Validation
 
@@ -296,35 +296,46 @@ Do not begin `ARCH-008-BACKGROUND-002`.
 
 ### Status
 
-In Progress
+Implemented and ready for review.
 
 ### Files Changed
 
-None
+- `app/services/billing/billing.service.ts`
+- `app/routes/app.billing.tsx`
+- `tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
 
-None
+- Added exact local BillingPeriod identity validation, including linked period and boundary equality.
+- Added provider/local current-cycle boundary equality validation before new purchase creation.
+- Revalidated the current cycle inside the write transaction before creating the UsageEvent.
+- Preserved early same-shop replay before provider and cycle checks.
+- Persisted the exact non-null current BillingPeriod ID on new pack UsageEvents.
+- Added server-derived purchase eligibility while keeping purchased-credit balance rendering independent.
+- Added regression coverage for missing durable cycle identity; existing freshness, replay, meter, and entitlement-counter tests remain passing.
 
 ### Validation Results
 
-None
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts`: passed, 34 tests.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm run typecheck`: exits nonzero on pre-existing unrelated untyped JSX and test-fixture diagnostics; no diagnostics were reported for changed production files.
 
 ### Deviations
 
-None
+- No schema, migration, Background, Admin, Shared, pricing, App Events, or entitlement changes.
 
 ### Assumptions
 
-None
+- The accepted Subscription projection continues to include `billingPeriod` whenever `billingPeriodId` is populated.
 
 ### Unresolved Issues
 
-None
+- Repository-wide typecheck remains blocked by existing diagnostics outside the changed production files.
 
 ### Architectural Concerns
 
-None
+- None identified.
 
 ## Architect Review
 
