@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 25
-executor: copilot
-claimed_at: 2026-09-09T16:18:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-SHOPIFY-004
@@ -390,87 +390,63 @@ Merged to workspace main: no
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
 #### Attempt 1 — Changes Requested
 
-The implementation is directionally correct and preserves the ARCH-007 pack
-purchase model, early provider-independent replay, provider/local cycle matching,
-non-null persisted `billingPeriodId`, and no request-path entitlement grant.
-However, Attempt 1 does not yet satisfy the complete ARCH-008-SHOPIFY-001
-contract.
+Attempt 1 was directionally correct but required five bounded corrections: local
+durable-cycle admission before provider access, exact BillingPeriod identity
+revalidation inside the write transaction, the explicit current-cycle rejection
+matrix, stronger merchant eligibility/presentation regression coverage, and
+mandatory worktree/synchronisation evidence.
 
-Required corrections for Attempt 2:
+#### Attempt 2 — Accepted
 
-1. **Perform local durable-cycle admission before the Shopify provider call.**
-   For a new purchase, validate the local Subscription + BillingPeriod invariant
-   before `getActiveSubscription()`:
-   - `billingPeriodId != null`;
-   - `currentPeriodStart != null`;
-   - `currentPeriodEnd != null`;
-   - linked BillingPeriod exists and its id equals `billingPeriodId`;
-   - linked BillingPeriod boundaries equal the Subscription current-period
-     boundaries.
+Attempt 2 closes the requested gaps without broadening the ARCH-008 producer
+scope.
 
-   The current implementation combines local and provider validation in
-   `hasMatchingBillingCycle()` only *after* the provider call. This violates the
-   task's required ordering and causes a locally invalid request to contact
-   Shopify unnecessarily. Add a regression proving the provider is not called
-   when local durable-cycle admission fails.
+Accepted findings:
 
-2. **Revalidate the exact billing-period identity inside the write
-   transaction.** Capture the provider-verified local `billingPeriodId` from the
-   pre-provider admission state and require the transactional re-read to retain
-   that same id. The current transaction only calls
-   `hasMatchingBillingCycle(currentSubscription, providerSubscription)`. That
-   proves the re-read relation/boundaries still match the provider cycle, but it
-   does not explicitly prove `currentSubscription.billingPeriodId` is the same
-   durable identity that was verified before the provider call, as required by
-   section D of this task.
+1. New-purchase local durable-cycle admission now occurs before Shopify access.
+   `hasDurableBillingPeriod(...)` requires the non-null local BillingPeriod id,
+   Subscription current-period boundaries, linked BillingPeriod identity and
+   exact boundary equality. Invalid local state fails closed before
+   `getActiveSubscription(...)`.
+2. Provider verification still requires the accepted plan/meter mapping and now
+   requires provider current-cycle boundaries to equal the verified local cycle.
+3. The pre-provider `billingPeriodId` is captured and passed into the
+   transactional freshness check. A replacement BillingPeriod with identical
+   dates is therefore rejected, as is boundary drift.
+4. Successful creation persists the exact non-null transactional BillingPeriod
+   id while preserving quantity `+1`, the pack meter, `PENDING` report state and
+   the existing Shared Shopify usage idempotency helper.
+5. Existing same-shop durable purchase replay remains before provider/current-
+   cycle admission, so replay remains provider-independent.
+6. The request path still does not grant `PURCHASED_RECOVERY_CREDITS`; entitlement
+   activation remains owned by the dependent Background reconciliation task.
+7. Merchant presentation keeps purchased-credit balance independent from new-
+   purchase eligibility, and the Buy form is guarded by the server-derived exact
+   current-cycle eligibility boolean plus the existing pack/meter checks.
+8. Focused regressions now cover local null/missing boundary, provider missing/
+   mismatched cycle, transaction BillingPeriod identity/boundary drift, and
+   balance visibility while purchase eligibility is false.
+9. No schema, Background, Admin, Shared, pricing, pack-size or App Events publisher
+   change was introduced.
 
-   Add regressions for a changed transactional `billingPeriodId` and for changed
-   transactional cycle boundaries. Both must roll back with no UsageEvent or
-   RecoveryCreditPurchase.
+GitHub review verified implementation commit `3960b75` as the tip of
+`task/ARCH-008-SHOPIFY-001`, directly following Attempt 1 commit `37f4a93`. The
+implementation branch is two commits ahead of `main`, zero behind, and its full
+diff is limited to the four authorised Shopify files. The parent task branch tip
+is Completion Report commit `2355395`.
 
-3. **Complete the required current-cycle rejection matrix.** Focused tests must
-   explicitly prove, rather than infer from one all-null case:
-   - local `billingPeriodId = null`;
-   - a missing local current-period boundary;
-   - provider current cycle missing;
-   - provider/local current-cycle boundary mismatch;
-   - transactional billing-period identity/boundary drift.
-
-   Each case must prove no UsageEvent and no RecoveryCreditPurchase are created.
-
-4. **Strengthen merchant eligibility/presentation regressions.** The existing
-   `billing-ui.test.ts` source-order assertion predates this ARCH-008 boolean and
-   does not prove the new contract. Add focused coverage proving:
-   - `recoveryCreditPackPurchaseEligible` is false when the exact current cycle
-     is unavailable or mismatched;
-   - the Buy form is not rendered in that state;
-   - the already-purchased credit balance remains presented independently when
-     new-pack eligibility is false.
-
-5. **Add the mandatory Git/worktree evidence to the Completion Report.** The
-   supplied Completion Report omits the physical worktree isolation and
-   start-of-attempt synchronization evidence required by
-   `docs/agent-worktree-isolation-policy.md`, and it also omits the canonical
-   Git/VCS evidence block. Missing evidence is workflow non-conformance.
-
-   If Attempt 1 actually ran in the launcher-resolved dedicated parent and
-   implementation worktrees, record those exact paths/branches and the
-   synchronization results, then rerun the required validation from the
-   canonical implementation worktree before returning to review. If it did not,
-   restore/create the canonical task worktrees, check out the already-pushed
-   `task/ARCH-008-SHOPIFY-001` branches there, rerun validation, and correct the
-   Completion Report. Do not create code churn solely to manufacture another
-   implementation commit.
-
-No database, Background, Admin, Shared, pricing, pack-size, App Events publisher
-or entitlement-lifecycle redesign is requested. Keep the correction on this
-same task and same branch pair.
+The combined review archive intentionally excludes `.git`, so physical execution
+inside the recorded macOS worktree paths cannot be reconstructed from the ZIP
+alone. The Completion Report now supplies the mandatory canonical parent and
+implementation worktree paths plus start-of-attempt synchronisation evidence,
+and the review archive structure is consistent with the documented combined
+worktree helper contract. No contradictory workflow evidence was found.
 
 ### Reviewed Files
 
@@ -478,35 +454,39 @@ same task and same branch pair.
 - `app/routes/app.billing.tsx`
 - `tests/unit/services/billing.service.test.ts`
 - `tests/unit/billing-ui.test.ts`
-- `database/prisma/schema.prisma` (read-only architecture verification)
 - `docs/decisions/shopify/ARCH-008/SHOPIFY-001-require-current-cycle-for-pack-purchase.md`
 - `docs/architecture/ARCH-008-shopify-app-pricing-conformance.md`
+- `docs/architecture/ARCH-008-recovery-credit-reconciliation-preflight-2026-09-09.md`
 - `docs/agent-worktree-isolation-policy.md`
+- `docs/development-baseline.md`
 
 ### Validation Reviewed
 
-- Completion Report: focused suite reports 34 passing tests.
-- Completion Report: build passed.
-- Completion Report: `git diff --check` passed.
-- Completion Report: repository-wide typecheck retains unrelated baseline
-  diagnostics and reports no changed-production-file diagnostic.
-- Review archive: source/test implementation inspected directly.
-- Review archive has no usable implementation Git metadata and no `node_modules`,
-  so commit ancestry, remote pushes, physical worktree state and an independent
-  test rerun could not be verified from the archive itself.
+- Focused suite reported by the implementing agent: 40 tests passed.
+- Build reported passed.
+- `git diff --check` reported passed.
+- Repository-wide typecheck remains non-zero in the documented
+  `TYPECHECK-001` baseline; Completion Report states changed production files
+  introduced no diagnostic.
+- Independent source/test inspection completed from the combined review archive.
+- GitHub commit inspection confirmed implementation commit `3960b75` and parent
+  Completion Report commit `2355395` are published on the expected task branches.
+- GitHub branch comparison confirmed the implementation branch modifies only the
+  four task-authorised files.
+- The archive excludes `node_modules`, so the focused suite/build/typecheck could
+  not be independently rerun in the review container.
 
 ### Architecture Conformance
 
-Partial. The producer now fails closed for provider/local cycle mismatch and
-persists a non-null cycle identity when creation succeeds, while replay remains
-provider-independent and no entitlement counter is mutated. Conformance remains
-incomplete because local durable-cycle admission occurs after provider access,
-transactional freshness does not explicitly retain the same pre-provider
-`billingPeriodId`, the ARCH-008 cycle/merchant-eligibility regression matrix is
-incomplete, and mandatory worktree evidence is absent.
+Conforms. ARCH-008-SHOPIFY-001 now provides the exact durable provider/local
+current-cycle identity required by downstream provider aggregate reconciliation,
+while preserving provider-independent replay, existing App Events economics and
+the ownership boundary that defers purchased-credit activation to Background.
 
 ### Follow-up
 
-Return `ARCH-008-SHOPIFY-001` to the same `moda_app` execution path for Attempt
-2. `ARCH-008-BACKGROUND-002` remains Pending until this task is architect-
-accepted Complete.
+`ARCH-008-SHOPIFY-001` is architect-accepted Complete.
+
+All dependencies of `ARCH-008-BACKGROUND-002` are now Complete, so promote
+`ARCH-008-BACKGROUND-002` from Pending to Ready for `moda_background`. Do not
+start `ARCH-008-ADMIN-001` until BACKGROUND-002 is architect-accepted Complete.
