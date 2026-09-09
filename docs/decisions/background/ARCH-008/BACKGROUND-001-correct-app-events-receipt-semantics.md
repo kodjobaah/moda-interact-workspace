@@ -163,14 +163,14 @@ Do not write a test that asserts `REPORTED` means provider billing confirmation.
 
 ## Acceptance Criteria
 
-- [ ] 409 is retryable through the existing retry path.
-- [ ] Retry preserves the permanent App Events idempotency key.
-- [ ] 202 success still becomes `REPORTED` but no internal summary calls it billing-confirmed.
-- [ ] Successful summary is `submitted-to-shopify-app-events`.
-- [ ] No database migration/state enum change is introduced.
-- [ ] No entitlement behaviour is deliberately redesigned in this task.
-- [ ] Focused provider/publisher tests cover 202 + 409 + identity reuse.
-- [ ] Repository validation passes except unchanged documented baseline failures.
+- [x] 409 is retryable through the existing retry path.
+- [x] Retry preserves the permanent App Events idempotency key.
+- [x] 202 success still becomes `REPORTED` but no internal summary calls it billing-confirmed.
+- [x] Successful summary is `submitted-to-shopify-app-events`.
+- [x] No database migration/state enum change is introduced.
+- [x] No entitlement behaviour is deliberately redesigned in this task.
+- [x] Focused provider/publisher tests cover 202 + 409 + identity reuse.
+- [x] Repository validation passes except unchanged documented baseline failures.
 
 ## Validation — run from `moda-interact-background`
 
@@ -299,17 +299,6 @@ Merged to workspace main: no
 - [x] Record successful submission as `submitted-to-shopify-app-events`.
 - [x] Leave recovery-credit activation unchanged for BACKGROUND-002.
 - [x] Add focused 202, 409, summary, and identity-reuse coverage.
-
-## Acceptance Criteria
-
-- [x] 409 is retryable through the existing retry path.
-- [x] Retry preserves the permanent App Events idempotency key.
-- [x] 202 success still becomes `REPORTED` without billing-confirmed wording.
-- [x] Successful summary is `submitted-to-shopify-app-events`.
-- [x] No database migration or state enum change is introduced.
-- [x] No entitlement behavior is redesigned in this task.
-- [x] Focused provider/publisher tests cover 202, 409, and identity reuse.
-- [x] Repository validation passes except documented baseline failures.
 
 ## Architect Review
 
