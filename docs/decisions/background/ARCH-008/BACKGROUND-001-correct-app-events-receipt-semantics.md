@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-007-BACKGROUND-006
   - ARCH-007-BACKGROUND-007
@@ -163,14 +163,14 @@ Do not write a test that asserts `REPORTED` means provider billing confirmation.
 
 ## Acceptance Criteria
 
-- [ ] 409 is retryable through the existing retry path.
-- [ ] Retry preserves the permanent App Events idempotency key.
-- [ ] 202 success still becomes `REPORTED` but no internal summary calls it billing-confirmed.
-- [ ] Successful summary is `submitted-to-shopify-app-events`.
-- [ ] No database migration/state enum change is introduced.
-- [ ] No entitlement behaviour is deliberately redesigned in this task.
-- [ ] Focused provider/publisher tests cover 202 + 409 + identity reuse.
-- [ ] Repository validation passes except unchanged documented baseline failures.
+- [x] 409 is retryable through the existing retry path.
+- [x] Retry preserves the permanent App Events idempotency key.
+- [x] 202 success still becomes `REPORTED` but no internal summary calls it billing-confirmed.
+- [x] Successful summary is `submitted-to-shopify-app-events`.
+- [x] No database migration/state enum change is introduced.
+- [x] No entitlement behaviour is deliberately redesigned in this task.
+- [x] Focused provider/publisher tests cover 202 + 409 + identity reuse.
+- [x] Repository validation passes except unchanged documented baseline failures.
 
 ## Validation — run from `moda-interact-background`
 
@@ -206,58 +206,210 @@ Do not start BACKGROUND-002.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/providers/shopify-app-events.provider.ts`
+- `src/services/shopify-usage-event-publisher.service.ts`
+- `tests/unit/providers/shopify-app-events.provider.test.ts`
+- `tests/unit/services/shopify-usage-event-publisher.service.test.ts`
 
 ### Work Completed
 
-None
+- Classified HTTP 409 as the existing retryable `transient` App Events error.
+- Preserved the durable publisher `REPORTED` state, `reportedAt`, retry bounds,
+   401 refresh behavior, and recovery-credit activation call.
+- Changed the successful provider summary to the exact neutral wording
+   `submitted-to-shopify-app-events`.
+- Extended focused coverage for HTTP 409 classification, successful submission
+   summary, and permanent idempotency-key reuse across retries/replays.
 
 ### Validation Results
 
-None
+- `npm exec vitest -- run tests/unit/providers/shopify-app-events.provider.test.ts tests/unit/services/shopify-usage-event-publisher.service.test.ts`: 34 passed across 2 files.
+- `npm run test:unit`: 424 passed, 2 unchanged baseline failures in
+   `tests/unit/services/pending-recovery-candidate.service.test.ts` concerning
+   stale/reschedule behavior and context merging.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+The isolated worktree required `git submodule update --init database` before
+Prisma generation; the database submodule was already declared by the branch.
 
 ### Assumptions
 
-None
+HTTP 202 remains represented by the existing `REPORTED` state because that
+state is the durable transport-acceptance state defined by ARCH-008.
 
 ### Unresolved Issues
 
-None
+The full unit suite retains two pre-existing failures in
+`pending-recovery-candidate.service.test.ts`; they are outside this task's
+files and behavior.
 
 ### Architectural Concerns
 
 None
 
+### Git / VCS
+
+Task branch: `task/ARCH-008-BACKGROUND-001`
+
+Physical worktree isolation:
+   canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+   parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-BACKGROUND-001`
+   parent branch: `task/ARCH-008-BACKGROUND-001`
+   implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-BACKGROUND-001`
+   implementation branch: `task/ARCH-008-BACKGROUND-001`
+   shared workspace checkout switched/mutated for task work: no
+   shared implementation checkout switched/mutated for task work: no
+   another task worktree reused: no
+
+Start-of-attempt synchronization:
+   parent remote task branch fast-forwarded: not-needed
+   parent origin/main incorporated: already-current
+   implementation remote task branch fast-forwarded: not-needed
+   implementation origin/main incorporated: already-current
+
+Implementation repository:
+   repository: `moda-interact-background`
+   commit: `3e863c611409523b9a1c8f819d4fc6f52b1d2add`
+   remote branch: `origin/task/ARCH-008-BACKGROUND-001`
+   pushed: yes
+
+Parent workspace:
+   task file: `docs/decisions/background/ARCH-008/BACKGROUND-001-correct-app-events-receipt-semantics.md`
+   commit: `2641183` claim; review commit to follow
+   remote branch: `origin/task/ARCH-008-BACKGROUND-001`
+   pushed: yes
+   submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+
+## Work Items
+
+- [x] Preserve `REPORTED` and `reportedAt` as the transport-acceptance state.
+- [x] Classify HTTP 409 through the existing retryable transient path.
+- [x] Preserve the permanent App Events idempotency key across retries.
+- [x] Record successful submission as `submitted-to-shopify-app-events`.
+- [x] Leave recovery-credit activation unchanged for BACKGROUND-002.
+- [x] Add focused 202, 409, summary, and identity-reuse coverage.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+#### Attempt 1 — Accepted
+
+`ARCH-008-BACKGROUND-001` is architect-accepted Complete.
+
+The implementation is intentionally narrow and conforms to the task boundary:
+
+1. HTTP `409` is classified through the existing `transient` App Events error
+   kind, making it retryable without introducing a new state/error model.
+2. Successful App Events submission remains the durable
+   `ShopifyReportState.REPORTED` transition with existing `reportedAt`.
+3. The bounded provider summary is exactly
+   `submitted-to-shopify-app-events`, so local durable wording no longer
+   implies provider billing confirmation.
+4. Permanent Shopify App Events idempotency identity is unchanged.
+5. Existing retry bounds, 401 refresh behavior, 429/server/transient handling,
+   event economics and meter handles are unchanged.
+6. Recovery-credit activation after `markReported` is deliberately preserved in
+   this task. Removal/replacement belongs exclusively to
+   `ARCH-008-BACKGROUND-002`.
+
+The focused evidence is compositional and sufficient:
+
+- provider tests prove HTTP `409 -> transient`;
+- publisher tests prove retryable/transient failures transition to `RETRYABLE`
+  rather than immediate `NEEDS_ATTENTION`;
+- existing publisher retry/replay tests prove the permanent
+  `shopifyIdempotencyKey` is reused across attempts;
+- success-path tests prove `REPORTED` rows record
+  `submitted-to-shopify-app-events`;
+- recovery-credit publisher tests prove pack activation behavior remains
+  unchanged for this task.
+
+No unrelated implementation change was found in the pushed commit.
 
 ### Reviewed Files
 
-None
+Implementation commit:
+
+```text
+3e863c611409523b9a1c8f819d4fc6f52b1d2add
+```
+
+Reviewed implementation files:
+
+- `src/providers/shopify-app-events.provider.ts`
+- `src/services/shopify-usage-event-publisher.service.ts`
+- `tests/unit/providers/shopify-app-events.provider.test.ts`
+- `tests/unit/services/shopify-usage-event-publisher.service.test.ts`
+
+Parent task report reviewed at:
+
+```text
+a3a596957b1ab35f2d9955a1b2f3231a21634957
+```
 
 ### Validation Reviewed
 
-None
+Completion Report records:
+
+- focused App Events provider/publisher tests: **34 passed across 2 files**;
+- full unit suite: **424 passed** with the same 2 documented unrelated
+  `pending-recovery-candidate.service.test.ts` baseline failures;
+- `npm run build`: passed;
+- `npm run prisma:validate`: passed;
+- `git diff --check`: passed.
+
+The supplied review archive excludes `node_modules`, so the architect did not
+rerun Vitest from the archive. Source, task evidence and pushed commit diff were
+inspected directly.
 
 ### Architecture Conformance
 
-Pending
+Accepted.
+
+`REPORTED` now correctly means transport submission/receipt at the App Events
+boundary, not billing confirmation. `409` follows the existing retryable path
+with permanent identity reuse. Entitlement confirmation remains intentionally
+unchanged until `ARCH-008-BACKGROUND-002`.
 
 ### Follow-up
 
-None
+`ARCH-008-BACKGROUND-001` is Complete.
+
+Durable state:
+
+```text
+status: complete
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+`ARCH-008-BACKGROUND-002` is now Ready because all of its declared dependencies
+are architect-accepted Complete:
+
+- `ARCH-008-BACKGROUND-001`
+- `ARCH-007-BACKGROUND-008`
+- `ARCH-007-BACKGROUND-009`
+- `ARCH-007-SHOPIFY-001`
+
+Do not begin `ARCH-008-ADMIN-001`; it remains dependency-gated behind
+`ARCH-008-BACKGROUND-002`.
+
+The ARCH-008 system-test task remains terminal/manual-gated and must not be
+auto-started.
