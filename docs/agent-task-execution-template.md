@@ -11,32 +11,75 @@ Task:
 Task file:
 `<TASK_FILE>`
 
+## Launcher-resolved execution topology
+
+The launcher has already resolved the canonical workspace and task topology.
+These values are authoritative for this execution:
+
+```text
+workspace root:                 <WORKSPACE_ROOT>
+workspace parent:               <WORKSPACE_PARENT>
+task branch:                    <TASK_BRANCH>
+parent task worktree:           <PARENT_WORKTREE>
+implementation repository:      <REPOSITORY_PATH>
+implementation task worktree:  <IMPLEMENTATION_WORKTREE>
+```
+
+Do not recompute these paths from `$PWD`, assume a machine-specific checkout
+location, or substitute another physical checkout. `<REPOSITORY_PATH>` is the
+canonical repository source/reference checkout used for Git worktree
+registration; it is NOT the task implementation checkout. Task implementation
+may occur only in `<IMPLEMENTATION_WORKTREE>`.
+
 ## Startup
 
 Before making any implementation changes:
 
-1. Read the assigned task file in full.
+1. From `<WORKSPACE_ROOT>`, read:
 
-2. Read the parent architecture document referenced by the task.
+   * `docs/agent-worktree-isolation-policy.md`;
+   * `docs/agent-vcs-ownership-policy.md`.
 
-3. Read every task/document referenced under:
+2. Establish or restore the dedicated **parent task worktree** at exactly:
 
-   * `Dependencies`
-   * `Interfaces / Contracts`
-     where relevant.
+   `<PARENT_WORKTREE>`
 
-4. Read your logical agent definition for the current execution environment:
+   A missing directory is normal on first claim and MUST be created. An existing
+   correct task worktree MUST be reused on later attempts. An existing wrong
+   repository/branch/path mapping is a hard `MODA_WORKTREE_ISOLATION_ERROR`; do
+   not repair it by switching a shared checkout or another task's worktree.
 
-   * Codex: `.codex/agents/<AGENT>.toml`
-   * Claude: `.claude/agents/<AGENT>.agent.md`
+3. Synchronize the parent task worktree according to
+   `docs/agent-worktree-isolation-policy.md`:
 
-5. Read any relevant repository-local development instructions.
+   * fetch `origin --prune`;
+   * fast-forward from `origin/<TASK_BRANCH>` when that remote task branch
+     exists;
+   * merge current `origin/main` INTO `<TASK_BRANCH>` when needed;
+   * never rebase/force/reset published task history merely to synchronize;
+   * never merge `<TASK_BRANCH>` into `main`.
 
-6. Read `docs/agent-vcs-ownership-policy.md` and establish/restore the
-   mirrored `task/<TASK_ID>` branch in both:
-   * the parent workspace repository; and
-   * the assigned implementation repository.
+4. Read the assigned task file in full from:
 
+   `<PARENT_WORKTREE>/<TASK_FILE>`
+
+5. Read the parent architecture document referenced by the task from the parent
+   task worktree.
+
+6. Read every task/document referenced under:
+
+   * `Dependencies`;
+   * `Interfaces / Contracts`, where relevant.
+
+7. Read your logical agent definition for the current execution environment
+   from `<WORKSPACE_ROOT>`:
+
+   * Codex: `.codex/agents/<AGENT>.toml`;
+   * Claude/Copilot: `.claude/agents/<AGENT>.agent.md`.
+
+8. Do not inspect or modify implementation source yet. First complete the
+   eligibility gate below, establish/synchronize the dedicated implementation
+   worktree, and make the parent claim durable.
 
 The architecture/task documents are authoritative for:
 
@@ -52,7 +95,8 @@ The repository agent definition is authoritative for:
 * repository-specific development practice;
 * local validation/testing requirements.
 
-If these conflict in a way that changes architecture or scope, stop and return the conflict to `moda_architect`.
+If these conflict in a way that changes architecture or scope, stop and return
+the conflict to `moda_architect`.
 
 ## Verify Before Claiming
 
@@ -90,35 +134,33 @@ claim or execute it merely because its dependencies are Complete. A current,
 explicit developer invocation of that system-test task is additionally required.
 This manual gate never blocks implementation/publication/infrastructure tasks.
 
-## Establish the Mirrored Task Branches
+## Establish the Implementation Task Worktree
 
-Before claiming, establish or restore the same branch name:
+Only after the task passes the eligibility/manual gate above, establish or
+restore the dedicated implementation worktree at exactly:
 
-```text
-task/<TASK_ID>
-```
+`<IMPLEMENTATION_WORKTREE>`
 
-in **both** Git repositories:
+Use `<REPOSITORY_PATH>` only as the canonical Git source/reference repository
+for worktree registration. It is not an authorized task implementation checkout.
 
-```text
-parent workspace repository
-assigned implementation repository
-```
+Apply the same state machine as the parent worktree:
 
-These are separate Git histories. The shared `<TASK_ID>` is the correlation key.
+* missing canonical directory + no conflicting registration: create it;
+* existing correct canonical worktree: reuse it;
+* task branch checked out at another/shared path, wrong repository/branch, or
+  unrelated dirty state: `MODA_WORKTREE_ISOLATION_ERROR` and STOP.
 
-The parent workspace branch owns only the current task report/state file during
-repository-agent execution.
+Synchronize it before claiming:
 
-The implementation branch owns the implementation code/tests.
+* fetch `origin --prune`;
+* fast-forward from `origin/<TASK_BRANCH>` when present;
+* merge current `origin/main` INTO `<TASK_BRANCH>` when needed;
+* on unexpected task-branch divergence or merge conflict, STOP and report; do
+  not rebase, reset, force-push, or merge the task branch into `main`.
 
-Do not stage the implementation repository/submodule gitlink in the parent
-workspace.
-
-If `origin/task/<TASK_ID>` already exists in the parent workspace, inspect that
-branch before claiming. It may contain an existing active claim or review state.
-
-Do not claim while another task's uncommitted work is present in either checkout.
+Do not inspect implementation source until the parent claim has been committed
+and pushed.
 
 ## Claim the Task
 
@@ -249,31 +291,49 @@ implementation task/<TASK_ID>
 
 Append correction commits; do not create Attempt-specific branches.
 
-### Literal concurrency
+### Physical worktree isolation
 
-If two task agents run at the same time in the same repository, use separate
-workspace/repository worktrees or clones. One physical checkout cannot host two
-checked-out task branches simultaneously.
+Dedicated physical worktrees are mandatory for every executable repository
+task, not only for literal concurrency. Branch cleanliness does not substitute
+for physical isolation. The agent MUST use the launcher-resolved
+`<PARENT_WORKTREE>` and `<IMPLEMENTATION_WORKTREE>` paths for this task and MUST
+NOT switch a shared/default checkout onto `<TASK_BRANCH>`.
 
 ### Completion Report
 
-Record both repositories:
+Record both repositories and the physical isolation evidence:
 
 ```text
 ### Git / VCS
 
-Task branch: task/<TASK_ID>
+Task branch: <TASK_BRANCH>
+
+Physical worktree isolation:
+  canonical workspace root: <WORKSPACE_ROOT>
+  parent worktree: <PARENT_WORKTREE>
+  parent branch: <TASK_BRANCH>
+  implementation worktree: <IMPLEMENTATION_WORKTREE>
+  implementation branch: <TASK_BRANCH>
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
 
 Implementation repository:
   repository: <repo>
   commit: <sha>
-  remote branch: origin/task/<TASK_ID>
+  remote branch: origin/<TASK_BRANCH>
   pushed: yes|no
 
 Parent workspace:
   task file: <TASK_FILE>
   commit: <sha>
-  remote branch: origin/task/<TASK_ID>
+  remote branch: origin/<TASK_BRANCH>
   pushed: yes|no
   submodule gitlink staged: no
 
@@ -424,17 +484,17 @@ Record architectural concerns, or `None`.
 
 When all required Work Items, Acceptance Criteria and Validation are complete:
 
-* in the assigned implementation repository:
+* in `<IMPLEMENTATION_WORKTREE>`:
   * stage only current-task implementation files;
   * inspect the staged diff;
-  * commit on `task/<TASK_ID>`;
-  * push `origin/task/<TASK_ID>`;
-* in the parent workspace:
+  * commit on `<TASK_BRANCH>`;
+  * push `origin/<TASK_BRANCH>`;
+* in `<PARENT_WORKTREE>`:
   * update only the current task file with the Completion Report and `status: review`;
   * stage that task file explicitly;
   * verify the submodule/repository gitlink is NOT staged;
-  * commit on the matching `task/<TASK_ID>` parent branch;
-  * push the matching parent task branch;
+  * commit on the matching `<TASK_BRANCH>` parent branch;
+  * push `origin/<TASK_BRANCH>`;
 * record both branch commits/push results in the Completion Report;
 * update `updated`;
 * leave executor/execution history intact;

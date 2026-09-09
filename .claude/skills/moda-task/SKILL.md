@@ -78,12 +78,16 @@ Before that action, do NOT:
 - inspect sibling/external directories;
 - infer architecture, domain, agent or repository.
 
-Resolve the workspace root only from:
+Resolve the canonical workspace root only from:
 
-1. a valid existing `MODA_WORKSPACE_ROOT`; or
-2. the current directory's parent chain.
+1. a valid existing `MODA_WORKSPACE_ROOT`;
+2. the current directory's parent chain; or
+3. the current Git repository's `--git-common-dir` parent chain.
 
-Do not search the wider filesystem.
+The third case deliberately supports launching from an existing parent task
+worktree or implementation worktree. Do not assume a fixed user home, checkout
+parent directory, `/Users/...`, `~/project`, or any other machine-specific path.
+Do not search the wider filesystem or guess a sibling checkout by name.
 
 Run this as one terminal action, replacing `<TASK_ID>`:
 
@@ -91,12 +95,23 @@ Run this as one terminal action, replacing `<TASK_ID>`:
 TASK_ID="<TASK_ID>"
 ROOT="${MODA_WORKSPACE_ROOT:-}"
 
+is_moda_workspace() {
+  [ -n "$1" ] &&
+  [ -f "$1/.nvmrc" ] &&
+  [ -f "$1/scripts/start-agent-task.py" ] &&
+  [ -f "$1/docs/agent-task-execution-template.md" ] &&
+  [ -d "$1/.codex/agents" ]
+}
+
+if [ -n "$ROOT" ] && ! is_moda_workspace "$ROOT"; then
+  echo "MODA_TASK_ERROR: MODA_WORKSPACE_ROOT is not a valid Moda Interact workspace" >&2
+  exit 64
+fi
+
 if [ -z "$ROOT" ]; then
   CANDIDATE="$PWD"
   while [ "$CANDIDATE" != "/" ]; do
-    if [ -f "$CANDIDATE/.nvmrc" ] &&
-       [ -f "$CANDIDATE/scripts/start-agent-task.py" ] &&
-       [ -f "$CANDIDATE/docs/agent-task-execution-template.md" ]; then
+    if is_moda_workspace "$CANDIDATE"; then
       ROOT="$CANDIDATE"
       break
     fi
@@ -104,13 +119,24 @@ if [ -z "$ROOT" ]; then
   done
 fi
 
-if [ -z "$ROOT" ] ||
-   [ ! -f "$ROOT/scripts/start-agent-task.py" ] ||
-   [ ! -f "$ROOT/docs/agent-task-execution-template.md" ]; then
+if [ -z "$ROOT" ]; then
+  GIT_COMMON_DIR="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+  CANDIDATE="$GIT_COMMON_DIR"
+  while [ -n "$CANDIDATE" ] && [ "$CANDIDATE" != "/" ]; do
+    if is_moda_workspace "$CANDIDATE"; then
+      ROOT="$CANDIDATE"
+      break
+    fi
+    CANDIDATE="$(dirname "$CANDIDATE")"
+  done
+fi
+
+if ! is_moda_workspace "$ROOT"; then
   echo "MODA_TASK_ERROR: unable to resolve Moda Interact workspace root" >&2
   exit 64
 fi
 
+ROOT="$(cd "$ROOT" && pwd -P)"
 export MODA_WORKSPACE_ROOT="$ROOT"
 python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "$TASK_ID" --json
 ```
@@ -130,10 +156,20 @@ The resolver output is authoritative for:
 - task/task file;
 - logical `agent`;
 - `repository`;
+- canonical `workspace_root`;
+- `workspace_parent`;
+- `task_branch`;
+- `parent_worktree_path`;
+- `implementation_worktree_path`;
+- canonical repository source/reference `repository_path`;
 - current task status;
 - rendered `prompt`.
 
-Do not rediscover or override those values.
+Do not rediscover, recompute, weaken or override those values. In particular,
+do not infer task execution paths from `$PWD`. `repository_path` is the
+canonical repository source/reference checkout used to create or inspect Git
+worktree registrations; it is NOT the task implementation checkout. Actual
+implementation work must occur only at `implementation_worktree_path`.
 
 `prompt` is the complete execution instruction. Do not summarize, weaken or
 replace it.

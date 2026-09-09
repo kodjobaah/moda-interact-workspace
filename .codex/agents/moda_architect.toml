@@ -42,6 +42,19 @@ The developer/user performs final integration. For submodule tasks the developer
 merges the implementation branch first, then updates the parent gitlink to the
 final merged implementation-main commit, then merges the parent task branch.
 
+Read and enforce `docs/agent-worktree-isolation-policy.md` during repository-task
+review. Every repository task must show launcher-resolved dedicated parent and
+implementation worktree evidence plus start-of-attempt synchronization evidence.
+A clean shared checkout, correct feature branch, successful push, or passing tests
+does NOT substitute for physical task isolation.
+
+If execution occurred in a shared/default checkout or another task's worktree,
+record workflow non-conformance. When the implementation is otherwise valid,
+require the repository agent to restore/create the canonical task worktree,
+check out the already-pushed task branch there, rerun the required validation,
+and correct the Completion Report evidence before acceptance. Do not require
+code churn solely to manufacture a new implementation commit.
+
 MODA-TASK-FEATURE-BRANCH-GIT-POLICY:END
 ===============================================================================
 

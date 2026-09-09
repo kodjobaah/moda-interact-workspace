@@ -24,7 +24,22 @@ publication silently.
 The developer/user retains exclusive ownership of merging either branch into
 `main` and of pushing/updating `main`.
 
+An optional combined review archive produced from the two physical task
+worktrees is not a third VCS history and does not change these ownership rules.
+See `docs/task-worktree-review-archive-helper.md`.
+
 This is the workspace-wide VCS execution rule.
+
+Physical task isolation is also mandatory. Read and obey:
+
+```text
+docs/agent-worktree-isolation-policy.md
+```
+
+Every executable repository task uses its launcher-resolved dedicated parent
+worktree and dedicated implementation worktree. This is required even for
+sequential/single-agent execution. A clean shared checkout does not satisfy the
+policy.
 
 ## Why two task branches are required
 
@@ -249,70 +264,79 @@ squashed/rebased during developer-owned integration.
 
 ## Claim protocol
 
-The remote parent task branch is part of the durable claim mechanism.
+The remote parent task branch is part of the durable claim mechanism. Physical
+branch establishment and synchronization MUST follow
+`docs/agent-worktree-isolation-policy.md`.
 
-Before claiming:
-
-```bash
-TASK_ID="<TASK_ID>"
-TASK_BRANCH="task/${TASK_ID}"
-
-git -C <workspace-root> fetch origin --prune
-git -C <workspace-root> status --short
-```
-
-Check whether:
+Use the launcher-resolved values rather than substituting a current/shared
+checkout:
 
 ```text
-origin/task/<TASK_ID>
+WORKSPACE_ROOT
+TASK_BRANCH
+PARENT_TASK_WORKTREE
+IMPLEMENTATION_TASK_WORKTREE
+REPOSITORY_PATH
 ```
 
-already exists in the parent workspace repository.
+Before claiming, establish or restore the canonical parent task worktree. A
+missing directory is the normal first-claim case and must be created. An
+existing correct task worktree is reused. An inconsistent mapping is
+`MODA_WORKTREE_ISOLATION_ERROR` and must not be repaired by switching the shared
+workspace checkout.
 
-If it exists, restore that branch and read the task state there before claiming.
+Synchronize the parent task branch before reading/claiming:
 
-If it contains an active claim by another executor, do not claim it.
-
-If it does not exist, create it from the current parent workspace base:
-
-```bash
-git -C <workspace-root> switch -c "${TASK_BRANCH}" origin/main
+```text
+fetch origin --prune
+fast-forward from origin/task/<TASK_ID> when present
+merge current origin/main INTO task/<TASK_ID> when needed
 ```
+
+Do not rebase, reset or force published task history merely to synchronize.
+
+Read the task file from the canonical parent task worktree. If it contains an
+active claim by another executor, do not claim it.
 
 Then set the task YAML to `in_progress`, populate executor/claimed_at/attempt,
-commit **only the task file**, and push the parent task branch promptly:
+commit **only the task file** in the parent task worktree, and push the parent
+task branch promptly:
 
 ```bash
-git -C <workspace-root> add <TASK_FILE>
-git -C <workspace-root> diff --cached -- <TASK_FILE>
-git -C <workspace-root> commit -m "task(<TASK_ID>): claim task"
-git -C <workspace-root> push -u origin "${TASK_BRANCH}"
+git -C <PARENT_TASK_WORKTREE> add <TASK_FILE>
+git -C <PARENT_TASK_WORKTREE> diff --cached -- <TASK_FILE>
+git -C <PARENT_TASK_WORKTREE> commit -m "task(<TASK_ID>): claim task"
+git -C <PARENT_TASK_WORKTREE> push -u origin "task/<TASK_ID>"
 ```
 
 That pushed parent branch is the durable remote claim.
 
 Only after the claim is durable should implementation begin.
 
-## Implementation branch creation
+## Implementation task worktree
 
-Inside the assigned implementation repository:
+Implementation MUST occur only in the launcher-resolved implementation task
+worktree. `<REPOSITORY_PATH>` is the canonical repository source/reference
+checkout used to create/inspect Git worktrees; it is not the implementation
+execution checkout.
 
-```bash
-git fetch origin --prune
-git status --short
+A missing implementation task worktree is normal on first claim and must be
+created from the task branch according to
+`docs/agent-worktree-isolation-policy.md`. Existing correct task worktrees are
+reused for later attempts.
+
+Before implementation, synchronize it:
+
+```text
+fetch origin --prune
+fast-forward from origin/task/<TASK_ID> when present
+merge current origin/main INTO task/<TASK_ID> when needed
 ```
 
-If another task has uncommitted work, STOP.
-
-If `task/<TASK_ID>` already exists locally or remotely, restore it.
-
-Otherwise create it from the implementation repository's current remote base:
-
-```bash
-git switch -c "task/<TASK_ID>" origin/main
-```
-
-Do not create a task branch from a sibling task branch.
+Do not create the task branch from a sibling task branch. Do not use `git switch`
+in the shared/default implementation checkout as a substitute for a dedicated
+worktree. If the task branch is registered at a non-canonical task path, STOP
+with `MODA_WORKTREE_ISOLATION_ERROR`.
 
 ## Implementation commit authority
 
@@ -325,8 +349,7 @@ git diff --check
 git log
 git show
 git fetch
-git switch
-git checkout
+git worktree list --porcelain
 git add <specific-files>
 git restore --staged
 git commit
@@ -405,13 +428,30 @@ The agent then returns control to `moda_architect` and STOPs.
 
 ## Required Completion Report VCS evidence
 
-The task Completion Report must record both repositories:
+The task Completion Report must record both repositories plus physical
+worktree/synchronization evidence:
 
 ```text
 ### Git / VCS
 
 Task branch:
   task/<TASK_ID>
+
+Physical worktree isolation:
+  canonical workspace root: <launcher-resolved path>
+  parent worktree: <launcher-resolved path>
+  parent branch: task/<TASK_ID>
+  implementation worktree: <launcher-resolved path>
+  implementation branch: task/<TASK_ID>
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
 
 Implementation repository:
   repository: <repo>
@@ -501,49 +541,34 @@ If the developer uses squash/rebase merge, step 3 is especially important
 because the final implementation main SHA may differ from the agent's feature
 branch SHA.
 
-## Sequential tasks while an earlier task waits for review
+## Dedicated worktrees across sequential and concurrent tasks
 
-Once the current task has:
+Dedicated task worktrees are mandatory for every executable repository task,
+not only when agents run concurrently.
 
-```text
-implementation branch committed + pushed
-parent task branch committed + pushed
-```
+Once a task has committed/pushed both mirrored branches, leave its canonical
+worktrees associated with that task while it waits for review. A later Changes
+Requested attempt reuses those same physical paths and branches.
 
-there is no reason to leave uncommitted task work in the shared checkout.
+A different task receives its own different canonical parent and implementation
+worktree paths. Do not switch the waiting task worktree onto the next task and do
+not switch a shared/default checkout onto the next task.
 
-The developer/automation may return each repository checkout to an appropriate
-clean base and start another independent task on another `task/<TASK_ID>`
-branch.
-
-Do not delete the waiting task branches; architect review refers to them.
-
-## Literal concurrent agents
-
-Mirrored feature branches solve sequential overlap; they do not make one physical
-working tree support two checked-out branches at the same instant.
-
-If two tasks in the same implementation repository run literally concurrently,
-use separate clones/worktrees.
-
-Because the parent workspace also has a task branch per task, literal concurrent
-execution should also use separate parent workspace worktrees/clones (or another
-isolation mechanism that gives each task its own workspace checkout).
-
-Safest model:
+This produces natural concurrency isolation without requiring agents to decide
+whether concurrent execution is likely:
 
 ```text
-workspace clone/worktree A
-  parent branch task/TASK-A
-  implementation checkout/worktree task/TASK-A
+TASK-A
+  <workspace>-task-TASK-A
+  <workspace>.worktrees/TASK-A
 
-workspace clone/worktree B
-  parent branch task/TASK-B
-  implementation checkout/worktree task/TASK-B
+TASK-B
+  <workspace>-task-TASK-B
+  <workspace>.worktrees/TASK-B
 ```
 
-Never let two agents mutate one physical parent or implementation checkout
-simultaneously.
+The developer may remove obsolete worktrees after accepted branch integration,
+but active/review/rework task worktrees must not be repurposed for another task.
 
 ## Architect authority
 
@@ -553,7 +578,12 @@ simultaneously.
 implementation repository task branch/commit
 +
 parent workspace task branch/task report
++
+physical worktree/synchronization evidence
 ```
+
+Missing/mismatched physical worktree evidence is workflow non-conformance. A
+clean branch or passing validation does not prove dedicated physical isolation.
 
 and decides:
 
@@ -591,6 +621,8 @@ architecture summaries, handoff prose and domain-index summaries.
 A repository agent executing a normal task MUST therefore:
 
 ```text
+create/reuse the launcher-resolved dedicated task worktrees
+synchronize both task branches from their remote task branch and current origin/main
 commit + push implementation task/<TASK_ID>
 commit + push parent-workspace task/<TASK_ID>
 STOP at review
@@ -646,7 +678,7 @@ The developer/user owns:
 - final submodule gitlink selection;
 - pushing `main`;
 - deleting feature branches after integration;
-- deciding whether two tasks run sequentially or in separate worktrees/clones.
+- removing obsolete task worktrees after accepted branch integration.
 
 The design deliberately makes the correlation explicit:
 

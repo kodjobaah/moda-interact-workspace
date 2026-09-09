@@ -19,6 +19,26 @@ moda-interact-background.git
     └── tests/...
 ```
 
+
+## Physical task worktrees
+
+The branches above must be checked out in two task-specific physical worktrees
+whose absolute paths are supplied by `scripts/start-agent-task.py` through the
+`/moda-task` launcher:
+
+```text
+parent task worktree:
+  <WORKSPACE_PARENT>/<WORKSPACE_NAME>-task-<TASK_ID>
+
+implementation task worktree:
+  <WORKSPACE_PARENT>/<WORKSPACE_NAME>.worktrees/<TASK_ID>
+```
+
+The launcher derives these paths from the actual workspace checkout, so no
+user-home or parent-directory layout is assumed. Missing worktrees are created
+on first claim; later attempts reuse them. Never switch a shared checkout or a
+different task's worktree onto the branch as a substitute.
+
 ## Agent completion
 
 ```text

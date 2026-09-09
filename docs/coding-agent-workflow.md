@@ -571,9 +571,19 @@ Every executable repository task follows `docs/agent-vcs-ownership-policy.md`.
 The same branch name is used in the two independent repositories:
 
 ```text
-parent workspace:         task/<TASK_ID>
+parent workspace:          task/<TASK_ID>
 implementation repository: task/<TASK_ID>
 ```
+
+Every task also uses dedicated physical worktrees according to
+`docs/agent-worktree-isolation-policy.md`. Missing canonical worktrees are
+created on first claim; later attempts reuse them. A shared/default checkout is
+never an implementation substitute, even when it is clean and only one agent is
+running.
+
+At the start of every attempt, both task branches fetch remote state,
+fast-forward from their own remote task branches when present, and incorporate
+current `origin/main` **into** the task branch before new implementation work.
 
 The repository agent MUST commit and push the parent task claim before
 implementation begins. Before returning the task to `review`, it MUST commit and
@@ -584,6 +594,12 @@ Repository agents never merge either branch into `main` and never push/update
 `main`. Final merge/integration and final submodule-gitlink publication belong
 to the developer/user. Pushing task branches is evidence publication, not
 architect acceptance.
+
+For developer/reviewer convenience, the two task worktrees may later be combined
+into a single filesystem ZIP using the external `compress-workspace-work-tree`
+helper documented in `docs/task-worktree-review-archive-helper.md`. That helper
+is not part of agent execution and its archive is not authoritative Git/VCS
+evidence.
 
 ---
 
@@ -653,23 +669,29 @@ which deterministically resolves:
 TASK_ID
   |
   v
-architecture ID
+architecture ID / domain / task file
   |
   v
-decision domain
+logical Moda agent / implementation repository
   |
   v
-task file
+canonical workspace root
   |
   v
-logical Moda agent
+task/<TASK_ID>
   |
-  v
-repository
+  +--> dedicated parent task worktree
+  |
+  +--> dedicated implementation task worktree
   |
   v
 rendered docs/agent-task-execution-template.md
 ```
+
+The worktree paths are derived from the actual resolved workspace root and its
+parent directory. No developer-specific absolute layout is assumed. The
+resolver's emitted paths are authoritative even when the runtime was launched
+from a different current directory.
 
 The launcher and resolver are **routing-only**.
 
@@ -683,13 +705,28 @@ They MUST NOT:
 
 The receiving logical agent performs the authoritative verify/claim/execute/review protocol.
 
+The canonical `/moda-task` skill is authored under `.codex/skills/moda-task` and
+mirrored to Claude/Copilot by `scripts/sync-skills.py`. After changing the
+launcher skill or its supporting files, regenerate and verify the generated
+runtime copy:
+
+```bash
+python3 scripts/sync-skills.py --skill moda-task
+python3 scripts/sync-skills.py --check
+```
+
+Similarly, changes to `.codex/agents/*.toml` must be mirrored with
+`scripts/sync_agents.py` before publication.
+
 The resolver can be tested directly from the workspace root:
 
 ```bash
 python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
 ```
 
-The result includes the resolved task, architecture, domain, logical agent, repository, task file, current status and rendered execution prompt.
+The result includes the resolved task, architecture, domain, logical agent,
+repository, task file, current status, canonical workspace root, task branch,
+parent task worktree, implementation task worktree and rendered execution prompt.
 
 ## Canonical execution template
 
@@ -699,13 +736,20 @@ The standard template remains:
 docs/agent-task-execution-template.md
 ```
 
-It is parameterised with:
+It is parameterised with both task identity and launcher-resolved execution
+topology:
 
 ```text
 <AGENT>
 <ARCH_ID>
 <TASK_ID>
 <TASK_FILE>
+<TASK_BRANCH>
+<WORKSPACE_ROOT>
+<WORKSPACE_PARENT>
+<PARENT_WORKTREE>
+<IMPLEMENTATION_WORKTREE>
+<REPOSITORY_PATH>
 ```
 
 For example:
@@ -836,7 +880,7 @@ The normal workflow is:
 edit .codex/agents/moda_background.toml
         |
         v
-python3 sync_agents.py
+python3 scripts/sync_agents.py
         |
         v
 .claude/agents/moda_background.agent.md
@@ -901,13 +945,13 @@ Copilot   -> executor: copilot
 Regenerate all Claude definitions with:
 
 ```bash
-python3 sync_agents.py
+python3 scripts/sync_agents.py
 ```
 
 Verify synchronization without changing files with:
 
 ```bash
-python3 sync_agents.py --check
+python3 scripts/sync_agents.py --check
 ```
 
 A missing or stale generated Claude definition causes a non-zero exit status,
@@ -916,13 +960,13 @@ making `--check` suitable for CI or pre-commit verification.
 Regenerate one logical agent with:
 
 ```bash
-python3 sync_agents.py --agent moda_background
+python3 scripts/sync_agents.py --agent moda_background
 ```
 
 Multiple agents may be selected:
 
 ```bash
-python3 sync_agents.py \
+python3 scripts/sync_agents.py \
   --agent moda_app \
   --agent moda_background
 ```
@@ -931,7 +975,7 @@ Remove obsolete generated Claude definitions whose canonical Codex source has
 been deliberately removed with:
 
 ```bash
-python3 sync_agents.py --prune
+python3 scripts/sync_agents.py --prune
 ```
 
 `--prune` cannot be combined with `--agent`.
@@ -941,9 +985,9 @@ A normal agent-definition change should therefore follow:
 ```text
 1. Edit .codex/agents/<agent>.toml
 2. Keep developer_instructions runtime-neutral
-3. Run python3 sync_agents.py --agent <agent>
+3. Run python3 scripts/sync_agents.py --agent <agent>
 4. Review the generated Claude file
-5. Run python3 sync_agents.py --check
+5. Run python3 scripts/sync_agents.py --check
 6. Commit the canonical Codex and generated Claude changes together
 ```
 
@@ -1487,7 +1531,7 @@ task indexes are consistent
 Codex/Claude synchronization is already independently enforceable with:
 
 ```bash
-python3 sync_agents.py --check
+python3 scripts/sync_agents.py --check
 ```
 
 A future architecture validator should call or incorporate that check instead of

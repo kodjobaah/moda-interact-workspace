@@ -19,30 +19,26 @@ instructions must remain version-independent.
 
 ## Workspace root contract
 
-Agent tasks are expected to start from the `moda-interact-workspace` root.
-Before changing directories, verify and anchor that root without invoking Node:
+Agent shells are not required to begin with `$PWD` equal to the canonical
+workspace root. The `/moda-task` launcher resolves the canonical workspace and
+exports `MODA_WORKSPACE_ROOT` before repository-agent execution. Its value is
+independent of the developer's home directory or checkout parent.
+
+When `MODA_WORKSPACE_ROOT` is already present, validate it rather than replacing
+it from `$PWD`:
 
 ```bash
-test -f .nvmrc && test -d .codex/agents
-export MODA_WORKSPACE_ROOT="$PWD"
+test -f "$MODA_WORKSPACE_ROOT/.nvmrc"
+test -d "$MODA_WORKSPACE_ROOT/.codex/agents"
 ```
 
-If this check fails, stop and report the unexpected working directory. Do not
-search the filesystem for the project and do not reconstruct a user-specific
-absolute workspace path.
+If the variable is unavailable, use the bounded discovery contract in
+`.codex/skills/moda-task/SKILL.md` / `docs/development-baseline.md`; do not
+search the wider filesystem or reconstruct a user-specific absolute path.
 
-Use workspace-relative repository navigation from the root:
-
-```bash
-cd moda-interact
-cd moda-interact-shared
-```
-
-Return to the verified root with:
-
-```bash
-cd "$MODA_WORKSPACE_ROOT"
-```
+The launcher's canonical task worktree paths, rather than the shell's starting
+directory, determine where task source mutations occur. See
+`docs/agent-worktree-isolation-policy.md`.
 
 ## Lean bootstrap contract
 
@@ -138,7 +134,7 @@ continue   source workspace bootstrap
 After changing canonical Codex definitions, regenerate Claude definitions with:
 
 ```bash
-python3 sync_agents.py
+python3 scripts/sync_agents.py
 ```
 
 Changing `.nvmrc` therefore does not require editing every agent.

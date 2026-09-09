@@ -58,8 +58,27 @@ Legacy task boilerplate saying `Do not run git commit or git push` is superseded
 by `docs/agent-vcs-ownership-policy.md` unless a specific current-task exception
 or direct developer instruction says otherwise.
 
-Literal concurrent execution requires separate parent/implementation worktrees
-or clones.
+Read and obey `docs/agent-worktree-isolation-policy.md`.
+
+Dedicated physical parent and implementation worktrees are mandatory for EVERY
+executable repository task, including sequential/single-agent execution. The
+`/moda-task` launcher-supplied `parent_worktree_path`,
+`implementation_worktree_path`, `task_branch`, `workspace_root` and
+`repository_path` are authoritative. Do not recompute them from `$PWD` or from a
+machine-specific directory layout.
+
+Missing canonical worktrees are the normal first-claim case and MUST be created.
+Existing correct canonical worktrees MUST be reused on later attempts. A wrong
+repository/branch/path mapping is `MODA_WORKTREE_ISOLATION_ERROR`; do not repair
+it by switching a shared/default checkout or another task's worktree.
+
+At the start of EVERY attempt, fetch both repositories, fast-forward each local
+task branch from its own `origin/task/<TASK_ID>` when present, then merge current
+`origin/main` INTO the task branch before new work. Never reverse that direction.
+
+A task is not ready for architect review until current-task changes are committed
+and pushed on BOTH mirrored `task/<TASK_ID>` branches. This agent MUST NOT merge
+either task branch into `main` or push/update `main`.
 
 MODA-TASK-FEATURE-BRANCH-GIT-POLICY:END
 ===============================================================================

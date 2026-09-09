@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Combines a Moda Interact workspace worktree with the matching repository
+# worktree for a task, then creates a single archive.
+#
+# Expected layout (relative to this script):
+#
+#   moda-interact-workspace-task-ARCH-007-BACKGROUND-011/
+#   moda-interact-workspace.worktrees/ARCH-007-BACKGROUND-011/
+#
+# The repository worktree is overlaid into the appropriate submodule path in
+# a temporary staging directory. Neither source worktree is modified.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TASK_ID="${1:-}"
+
+WORKSPACE_WORKTREE_PREFIX="moda-interact-workspace-task-"
+REPOSITORY_WORKTREES_DIR="moda-interact-workspace.worktrees"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  ./compress-workspace-work-tree ARCH-007-BACKGROUND-011
+  ./compress-workspace-work-tree ARCH-007-ADMIN-002
+  ./compress-workspace-work-tree ARCH-007-MESSAGING-001
+
+What it does:
+  1. Finds the workspace worktree:
+       moda-interact-workspace-task-<TASK_ID>
+  2. Finds the repository worktree:
+       moda-interact-workspace.worktrees/<TASK_ID>
+  3. Determines the repository from the task name.
+  4. Copies the workspace worktree to a temporary staging directory.
+  5. Replaces the matching submodule in staging with the repository worktree.
+  6. Creates:
+       moda-interact-workspace-<TASK_ID>.zip
+
+The source worktrees are never modified.
+USAGE
+}
+
+if [[ -z "$TASK_ID" || "$TASK_ID" == "-h" || "$TASK_ID" == "--help" ]]; then
+  usage
+  if [[ -z "$TASK_ID" ]]; then
+    exit 1
+  fi
+  exit 0
+fi
+
+# Map the component embedded in the architecture task ID to its repository.
+# Use a case statement rather than associative arrays because macOS still
+# commonly ships with Bash 3.2.
+case "$TASK_ID" in
+  *-SYSTEM-TEST-*)
+    COMPONENT="system-test"
+    REPOSITORY="moda-interact-system-test"
+    ;;
+  *-SHOPIFY-*)
+    COMPONENT="shopify"
+    REPOSITORY="moda-interact"
+    ;;
+  *-ADMIN-*)
+    COMPONENT="admin"
+    REPOSITORY="moda-interact-admin"
+    ;;
+  *-BACKGROUND-*)
+    COMPONENT="background"
+    REPOSITORY="moda-interact-background"
+    ;;
+  *-DATABASE-*)
+    COMPONENT="database"
+    REPOSITORY="moda-interact-database"
+    ;;
+  *-GATEWAY-*)
+    COMPONENT="gateway"
+    REPOSITORY="moda-interact-gateway"
+    ;;
+  *-MESSAGING-*)
+    COMPONENT="messaging"
+    REPOSITORY="moda-interact-messaging"
+    ;;
+  *-SHARED-*)
+    COMPONENT="shared"
+    REPOSITORY="moda-interact-shared"
+    ;;
+  *-SITE-*)
+    COMPONENT="site"
+    REPOSITORY="moda-interact-site"
+    ;;
+  *)
+    echo "Error: cannot determine the repository from task '$TASK_ID'." >&2
+    echo >&2
+    echo "Expected the task ID to contain one of:" >&2
+    echo "  SHOPIFY, ADMIN, BACKGROUND, DATABASE, GATEWAY," >&2
+    echo "  MESSAGING, SHARED, SITE, SYSTEM-TEST" >&2
+    exit 1
+    ;;
+esac
+
+WORKSPACE_WORKTREE_NAME="${WORKSPACE_WORKTREE_PREFIX}${TASK_ID}"
+WORKSPACE_WORKTREE_PATH="${SCRIPT_DIR}/${WORKSPACE_WORKTREE_NAME}"
+REPOSITORY_WORKTREE_PATH="${SCRIPT_DIR}/${REPOSITORY_WORKTREES_DIR}/${TASK_ID}"
+OUTPUT_PATH="${SCRIPT_DIR}/moda-interact-workspace-${TASK_ID}.zip"
+
+if [[ ! -d "$WORKSPACE_WORKTREE_PATH" ]]; then
+  echo "Error: workspace worktree was not found:" >&2
+  echo "  $WORKSPACE_WORKTREE_PATH" >&2
+  exit 1
+fi
+
+if [[ ! -d "$REPOSITORY_WORKTREE_PATH" ]]; then
+  echo "Error: repository worktree was not found:" >&2
+  echo "  $REPOSITORY_WORKTREE_PATH" >&2
+  exit 1
+fi
+
+if ! command -v rsync >/dev/null 2>&1; then
+  echo "Error: rsync is required but was not found." >&2
+  exit 1
+fi
+
+if ! command -v zip >/dev/null 2>&1; then
+  echo "Error: zip is required but was not found." >&2
+  exit 1
+fi
+
+STAGING_PARENT="$(mktemp -d "${TMPDIR:-/tmp}/moda-interact-worktree-zip.XXXXXX")"
+STAGING_WORKSPACE="${STAGING_PARENT}/${WORKSPACE_WORKTREE_NAME}"
+
+cleanup() {
+  rm -rf "$STAGING_PARENT"
+}
+trap cleanup EXIT INT TERM
+
+# Keep the same exclusions as the previous compression script, while allowing
+# safe environment templates such as .env.example back into the archive.
+RSYNC_FILTERS=(
+  --exclude='.git'
+  --exclude='node_modules/'
+  --exclude='.venv/'
+  --exclude='dist/'
+  --exclude='build/'
+  --exclude='coverage/'
+  --exclude='.next/'
+  --exclude='.cache/'
+  --exclude='.DS_Store'
+  --exclude='copilot-worktrees/'
+  --exclude='shopify-webhook-payloads/'
+  --exclude='*.mp4'
+  --exclude='tmp/'
+  --exclude='.validation/'
+  --exclude='.system-test-002*'
+  --include='.env.example'
+  --include='.env.sample'
+  --include='.env.template'
+  --include='.env.*.example'
+  --include='.env.*.sample'
+  --include='.env.*.template'
+  --exclude='.env'
+  --exclude='.env.*'
+)
+
+echo "Task:                 $TASK_ID"
+echo "Component:            $COMPONENT"
+echo "Repository:           $REPOSITORY"
+echo "Workspace worktree:   $WORKSPACE_WORKTREE_PATH"
+echo "Repository worktree:  $REPOSITORY_WORKTREE_PATH"
+echo
+
+echo "1/3 Copying workspace worktree into temporary staging area..."
+mkdir -p "$STAGING_WORKSPACE"
+rsync -a "${RSYNC_FILTERS[@]}" \
+  "${WORKSPACE_WORKTREE_PATH}/" \
+  "${STAGING_WORKSPACE}/"
+
+# The workspace worktree may contain the normal submodule checkout, an empty
+# gitlink directory, or no directory at all. Remove whatever is there only in
+# staging, then overlay the task-specific repository worktree.
+STAGING_REPOSITORY_PATH="${STAGING_WORKSPACE}/${REPOSITORY}"
+
+echo "2/3 Overlaying $REPOSITORY from its task worktree..."
+rm -rf "$STAGING_REPOSITORY_PATH"
+mkdir -p "$STAGING_REPOSITORY_PATH"
+rsync -a "${RSYNC_FILTERS[@]}" \
+  "${REPOSITORY_WORKTREE_PATH}/" \
+  "${STAGING_REPOSITORY_PATH}/"
+
+# Sanity check before creating the archive.
+if [[ ! -d "$STAGING_REPOSITORY_PATH" ]]; then
+  echo "Error: staged repository overlay was not created." >&2
+  exit 1
+fi
+
+rm -f "$OUTPUT_PATH"
+
+echo "3/3 Creating archive..."
+(
+  cd "$STAGING_PARENT"
+  zip -qr "$OUTPUT_PATH" "$WORKSPACE_WORKTREE_NAME"
+)
+
+echo
+echo "Created: $OUTPUT_PATH"
+echo
+echo "Archive root:"
+echo "  $WORKSPACE_WORKTREE_NAME/"
+echo
+echo "Overlaid repository:"
+echo "  $WORKSPACE_WORKTREE_NAME/$REPOSITORY/"

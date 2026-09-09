@@ -26,6 +26,10 @@ GENERATED_NOTICE = (
 # Canonical developer_instructions must describe the logical Moda agent, not
 # Codex-specific execution behaviour. General references to Codex are allowed
 # when discussing supported runtimes, file locations, or Claude/Codex parity.
+WORKTREE_POLICY_REFERENCE = "docs/agent-worktree-isolation-policy.md"
+VCS_POLICY_REFERENCE = "docs/agent-vcs-ownership-policy.md"
+
+
 FORBIDDEN_RUNTIME_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     (
         re.compile(r"(?im)^\s*executor\s*:\s*codex\s*$"),
@@ -131,6 +135,23 @@ def validate_runtime_neutrality(*, toml_path: Path, instructions: str) -> None:
         )
 
 
+def validate_execution_policy_references(
+    *, toml_path: Path, instructions: str
+) -> None:
+    missing = [
+        reference
+        for reference in (VCS_POLICY_REFERENCE, WORKTREE_POLICY_REFERENCE)
+        if reference not in instructions
+    ]
+
+    if missing:
+        formatted = "\n".join(f"  - {item}" for item in missing)
+        raise SyncError(
+            f"{toml_path}: canonical developer instructions are missing "
+            f"required task-execution policy reference(s):\n{formatted}"
+        )
+
+
 def load_agent(toml_path: Path) -> AgentDefinition:
     try:
         with toml_path.open("rb") as f:
@@ -170,6 +191,10 @@ def load_agent(toml_path: Path) -> AgentDefinition:
     normalized_instructions = instructions.replace("\r\n", "\n").strip()
 
     validate_runtime_neutrality(
+        toml_path=toml_path,
+        instructions=normalized_instructions,
+    )
+    validate_execution_policy_references(
         toml_path=toml_path,
         instructions=normalized_instructions,
     )

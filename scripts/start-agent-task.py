@@ -343,6 +343,12 @@ def render_template(
         "<ARCH_ID>",
         "<TASK_ID>",
         "<TASK_FILE>",
+        "<TASK_BRANCH>",
+        "<WORKSPACE_ROOT>",
+        "<WORKSPACE_PARENT>",
+        "<PARENT_WORKTREE>",
+        "<IMPLEMENTATION_WORKTREE>",
+        "<REPOSITORY_PATH>",
     }
 
     missing = sorted(
@@ -362,12 +368,26 @@ def render_template(
         )
 
     task_file_relative = task.task_file.relative_to(workspace_root)
+    workspace_root = workspace_root.resolve()
+    workspace_parent = workspace_root.parent
+    task_branch = f"task/{task.task_id}"
+    parent_worktree = workspace_parent / f"{workspace_root.name}-task-{task.task_id}"
+    implementation_worktree = (
+        workspace_parent / f"{workspace_root.name}.worktrees" / task.task_id
+    )
+    repository_path = workspace_root / task.repository
 
     replacements = {
         "<AGENT>": task.agent,
         "<ARCH_ID>": task.architecture_id,
         "<TASK_ID>": task.task_id,
         "<TASK_FILE>": task_file_relative.as_posix(),
+        "<TASK_BRANCH>": task_branch,
+        "<WORKSPACE_ROOT>": workspace_root.as_posix(),
+        "<WORKSPACE_PARENT>": workspace_parent.as_posix(),
+        "<PARENT_WORKTREE>": parent_worktree.as_posix(),
+        "<IMPLEMENTATION_WORKTREE>": implementation_worktree.as_posix(),
+        "<REPOSITORY_PATH>": repository_path.as_posix(),
     }
 
     rendered = template
@@ -384,6 +404,15 @@ def build_result(
     metadata: dict[str, str],
     prompt: str,
 ) -> dict:
+    workspace_root = workspace_root.resolve()
+    workspace_parent = workspace_root.parent
+    task_branch = f"task/{task.task_id}"
+    parent_worktree = workspace_parent / f"{workspace_root.name}-task-{task.task_id}"
+    implementation_worktree = (
+        workspace_parent / f"{workspace_root.name}.worktrees" / task.task_id
+    )
+    repository_path = workspace_root / task.repository
+
     return {
         "task_id": task.task_id,
         "architecture_id": task.architecture_id,
@@ -391,7 +420,14 @@ def build_result(
         "folder": task.folder,
         "agent": task.agent,
         "repository": task.repository,
-        "repository_path": (workspace_root / task.repository).as_posix(),
+        # `repository_path` is the canonical repository source/reference checkout.
+        # Task implementation MUST happen in `implementation_worktree_path`.
+        "repository_path": repository_path.as_posix(),
+        "workspace_root": workspace_root.as_posix(),
+        "workspace_parent": workspace_parent.as_posix(),
+        "task_branch": task_branch,
+        "parent_worktree_path": parent_worktree.as_posix(),
+        "implementation_worktree_path": implementation_worktree.as_posix(),
         "task_file": task.task_file.relative_to(
             workspace_root
         ).as_posix(),
@@ -409,6 +445,10 @@ def print_human_result(result: dict) -> None:
     print(f"Agent:         {result['agent']}")
     print(f"Repository:    {result['repository']}")
     print(f"Task file:     {result['task_file']}")
+    print(f"Task branch:   {result['task_branch']}")
+    print(f"Workspace:     {result['workspace_root']}")
+    print(f"Parent WT:     {result['parent_worktree_path']}")
+    print(f"Impl WT:       {result['implementation_worktree_path']}")
     print(f"Status:        {result['status'] or 'unknown'}")
     print()
     print("=" * 80)

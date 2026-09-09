@@ -57,34 +57,36 @@ For deliberate deep dependency/Zod diagnostics when relevant:
 
 **Disposition:** EXPECTED
 
-Agent tasks are expected to start from the `moda-interact-workspace` root.
-Before changing directories, verify that root without invoking Node or running
-diagnostics:
+Agent tasks are **not required to start with `$PWD` equal to the canonical
+workspace root**. They may be invoked from the canonical workspace, a parent
+workspace task worktree, an implementation task worktree, or a nested repository
+path.
 
-```bash
-test -f .nvmrc && test -d .codex/agents
-export MODA_WORKSPACE_ROOT="$PWD"
-```
+The canonical workspace root is resolved by the `/moda-task` launcher and
+`scripts/start-agent-task.py`. The resolver derives the workspace from the
+launcher script's own location and emits the authoritative absolute execution
+topology. Agents must not infer the canonical workspace from the current Git
+repository or from machine-specific paths.
 
-`MODA_WORKSPACE_ROOT` is the stable shell anchor for the lifetime of the task.
-Establishing it does not require a Node bootstrap or doctor run.
+When the launcher skill itself must locate `scripts/start-agent-task.py`, it may
+use only:
 
-Use workspace-relative paths for ordinary repository navigation from the root:
+1. a valid `MODA_WORKSPACE_ROOT` supplied by the runtime/developer;
+2. the current directory's ancestor chain; or
+3. the current Git repository's absolute `--git-common-dir` ancestor chain.
 
-```bash
-cd moda-interact
-cd moda-interact-shared
-```
+This supports invocation from dedicated parent/implementation worktrees without
+assuming `/Users/...`, `~/project`, `/home/...`, or any fixed checkout parent.
+If those bounded mechanisms cannot establish the workspace, report
+`MODA_TASK_ERROR` rather than searching the wider filesystem.
 
-Do not reconstruct a developer-specific absolute path such as
-`/Users/.../moda-interact-workspace/...` for normal navigation. Return to the
-verified workspace root with:
+Once resolved, `MODA_WORKSPACE_ROOT` is the stable shell anchor for the lifetime
+of the task. The launcher's `workspace_root`, `repository_path`,
+`parent_worktree_path`, and `implementation_worktree_path` values are
+authoritative; do not recompute them from `$PWD`.
 
-```bash
-cd "$MODA_WORKSPACE_ROOT"
-```
-
-When diagnostic tooling is actually needed after changing directories, use:
+When diagnostic tooling is actually needed, invoke it through the resolved
+workspace root:
 
 ```bash
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
@@ -98,11 +100,10 @@ and refer to the baseline as:
 $MODA_WORKSPACE_ROOT/docs/development-baseline.md
 ```
 
-Agents must not search for those support files or repeatedly rediscover the
-workspace root during the same task.
-
-If an agent task unexpectedly starts outside the workspace root, report that
-condition rather than performing broad filesystem searches.
+Task source changes must occur only in the launcher-resolved dedicated task
+worktrees described by `docs/agent-worktree-isolation-policy.md`. The fact that
+an agent started in a shared/default checkout does not authorize mutation of
+that checkout.
 
 <!-- MODA-WORKSPACE-ROOT-CONTRACT:END -->
 

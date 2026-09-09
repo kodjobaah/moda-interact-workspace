@@ -71,10 +71,16 @@ implementation-main commit, then merges the parent task branch.
 This prevents the parent workspace from pointing permanently at an unmerged
 feature commit.
 
-## Concurrent tasks
+## Dedicated physical task worktrees
 
-Sequential tasks can safely reuse the same physical checkout after both branches
-for the earlier task have been committed/pushed and the checkout is clean.
+Every executable repository task uses dedicated physical parent and
+implementation worktrees, even when tasks run sequentially. Agents do not decide
+whether isolation is necessary based on perceived concurrency.
 
-Literal simultaneous tasks require separate workspace/repository worktrees or
-clones.
+The canonical `/moda-task` launcher derives the exact paths from the resolved
+workspace root. Missing worktrees are created on first claim; existing correct
+worktrees are reused for later attempts/Changes Requested; inconsistent mappings
+are a hard stop.
+
+Read `docs/agent-worktree-isolation-policy.md` for the canonical create/reuse,
+synchronization and physical-isolation rules.
