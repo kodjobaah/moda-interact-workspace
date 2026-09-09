@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-09T16:18:00Z
+attempt: 2
 depends_on:
   - ARCH-007-SHOPIFY-004
 enables:
@@ -296,7 +296,7 @@ Do not begin `ARCH-008-BACKGROUND-002`.
 
 ### Status
 
-Implemented and ready for review.
+In Progress
 
 ### Files Changed
 
@@ -306,20 +306,17 @@ Implemented and ready for review.
 
 ### Work Completed
 
-- Added exact local BillingPeriod identity validation, including linked period and boundary equality.
-- Added provider/local current-cycle boundary equality validation before new purchase creation.
-- Revalidated the current cycle inside the write transaction before creating the UsageEvent.
-- Preserved early same-shop replay before provider and cycle checks.
-- Persisted the exact non-null current BillingPeriod ID on new pack UsageEvents.
-- Added server-derived purchase eligibility while keeping purchased-credit balance rendering independent.
-- Added regression coverage for missing durable cycle identity; existing freshness, replay, meter, and entitlement-counter tests remain passing.
+Attempt 2 correction checklist:
+
+- [ ] Perform local durable-cycle admission before calling Shopify.
+- [ ] Capture and compare the pre-provider BillingPeriod identity inside the transaction.
+- [ ] Add explicit local-null, missing-boundary, provider-null, provider-mismatch, and transaction-drift regressions.
+- [ ] Strengthen server-derived eligibility and UI balance/Buy-form regressions.
+- [ ] Record complete start-of-attempt synchronization and Git/worktree evidence.
 
 ### Validation Results
 
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts`: passed, 34 tests.
-- `npm run build`: passed.
-- `git diff --check`: passed.
-- `npm run typecheck`: exits nonzero on pre-existing unrelated untyped JSX and test-fixture diagnostics; no diagnostics were reported for changed production files.
+Pending Attempt 2 implementation.
 
 ### Deviations
 
