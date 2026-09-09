@@ -7,11 +7,11 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: ready
+status: complete
 priority: 66
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-007-SHOPIFY-002
   - ARCH-007-DATABASE-005
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-007-SYSTEM-TEST-004
 created: 2026-09-08
-updated: 2026-09-08
+updated: 2026-09-09
 ---
 
 # ARCH-007-SHOPIFY-004: Let merchants request repeatable recovery-credit packs
@@ -188,46 +188,488 @@ ACTIVE balance appears only after Background activation.
 ## Completion Report
 
 ### Status
-Pending
+Ready for Review
 
 ### Files Changed
-None.
+Implementation branch changes:
+- `app/routes/app.billing.tsx`
+- `app/services/billing/billing.service.ts`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-i18n.test.ts`
+- `tests/unit/billing-ui.test.ts`
+- `app/i18n/locales/da.json`
+- `app/i18n/locales/de.json`
+- `app/i18n/locales/en.json`
+- `app/i18n/locales/es.json`
+- `app/i18n/locales/fr.json`
+- `app/i18n/locales/it.json`
+- `app/i18n/locales/nl.json`
+- `app/i18n/locales/pt-BR.json`
+- `app/i18n/locales/pt-PT.json`
+- `app/i18n/locales/cs.json`
+- `app/i18n/locales/fi.json`
+- `app/i18n/locales/ja.json`
+- `app/i18n/locales/ko.json`
+- `app/i18n/locales/nb.json`
+- `app/i18n/locales/pl.json`
+- `app/i18n/locales/sv.json`
+- `app/i18n/locales/th.json`
+- `app/i18n/locales/tr.json`
+- `app/i18n/locales/zh-Hans.json`
+- `app/i18n/locales/zh-Hant.json`
 
 ### Work Completed
-None.
+Implemented repeatable recovery-credit pack requests using durable `RecoveryCreditPurchase` and pending `UsageEvent` records. Requests validate the server-generated UUID, reload current subscription/plan state, verify the configured Shopify pack meter, snapshot the current plan configuration, and do not grant credits or call Shopify billing/App Events directly. Duplicate purchase IDs return the existing purchase and different IDs support repeat purchases. The billing page displays the purchased-credit balance and only renders the Buy form when the mapped subscription, pack configuration, and Shopify meter verification are safe.
+
+Attempt 2 adopts Shared's canonical Shopify usage idempotency helper, performs early and transactional replay checks, re-reads and validates current subscription/plan state inside the write transaction, and fails closed when provider-verified facts no longer match durable state. Purchased balance presentation is independent from new-pack eligibility. Added regressions for provider-unavailable replay, stale configuration, disabled/missing/unsafe states, ignored client fields, provider-before-transaction ordering, exact event fields, and canonical idempotency.
+
+Integrated the architect-supplied translations for all eleven remaining locale catalogues without changing the nine previously completed catalogues. Strengthened i18n coverage for all 20 catalogues, ICU placeholder parity, runtime resolution, and literal-copy bypasses; added UI source coverage for independent balance presentation.
+
+Attempt 3 preserves provider verification outside the transaction and recovers
+concurrent same-purchase unique-conflict losers by re-reading the committed
+purchase for the same shop while rethrowing unrelated database errors. The i18n
+regression constructs the merchant runtime inside the locale loop, and focused
+regressions explicitly cover unsafe `UNMAPPED` projections and the absence of
+entitlement counter mutation before Background activation. The recovery-credit
+test fixture was restored so this matrix executes.
 
 ### Validation Results
-Not run.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/billing-i18n.test.ts tests/unit/billing-ui.test.ts`: 43 passed across 4 files.
+- `npm run typecheck`: repository baseline failures remain; the task-introduced nullable `recoveryCreditsPerPack` error was fixed. Remaining failures include pre-existing implicit-any and legacy route/test typing errors.
+- `git diff --check`: passed.
 
 ### Deviations
-None.
+No task-specific deviation remains. The architect-supplied eleven-locale handoff is integrated unchanged, and the nine previously completed locale updates were preserved.
 
 ### Assumptions
-None.
+Shopify meter verification remains a read-only provider check outside the Prisma write transaction; no direct Shopify billing/App Events network call is made by the purchase transaction.
 
 ### Unresolved Issues
-None.
+Repository-wide typecheck remains blocked by pre-existing JavaScript/legacy typing diagnostics outside the touched billing files. Focused billing, provider, UI, and i18n validation passes.
 
 ### Architectural Concerns
-None.
+The implementation remains subject to architect review; no acceptance decision is made here.
+
+### Git / VCS
+
+Task branch: `task/ARCH-007-SHOPIFY-004`
+
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-007-SHOPIFY-004
+  parent branch: task/ARCH-007-SHOPIFY-004
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-007-SHOPIFY-004
+  implementation branch: task/ARCH-007-SHOPIFY-004
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Implementation repository:
+  repository: moda-interact
+  commits: `06a963e`, `be5a325`, `bc4cd5f64fb6502bbc44313f4083959407f812c7`, `ea39724`
+  remote branch: origin/task/ARCH-007-SHOPIFY-004
+  pushed: yes
+
+Parent workspace:
+  task file: docs/decisions/shopify/ARCH-007/SHOPIFY-004-request-repeatable-recovery-credit-pack.md
+  remote branch: origin/task/ARCH-007-SHOPIFY-004
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted
 
 ### Review Notes
-None.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 is architect-accepted Complete.
+
+The narrow close-out contract from Attempt 2 is satisfied:
+
+1. concurrent same-purchase idempotency now handles Prisma `P2002` by
+   re-reading the durable `RecoveryCreditPurchase` after the failed transaction;
+   same-shop replay returns the committed purchase, cross-shop replay is
+   rejected, and unrelated/no-purchase conflicts are rethrown;
+2. provider verification remains outside the Prisma write transaction;
+3. the merchant i18n runtime is now constructed inside the locale loop and each
+   declared locale proves its own `catalogueLocale` while resolving all five
+   SHOPIFY-004 keys;
+4. focused coverage now uses an actual `Subscription.status = UNMAPPED` unsafe
+   projection and proves zero UsageEvents;
+5. successful request coverage explicitly proves no entitlement-counter
+   update/upsert occurs before Background activation;
+6. the recovery-credit purchase fixture required by those tests is restored.
+
+The accepted Attempt 1/2 behavior remains intact:
+
+- Shopify App Pricing/App Events remains the billing mechanism;
+- no direct one-time purchase/subscription billing API is called by this task;
+- Shared owns the canonical Shopify usage idempotency helper;
+- existing-purchase replay occurs before provider availability is required;
+- current subscription/plan configuration is re-read and fail-closed inside the
+  transaction before creating a new UsageEvent/purchase;
+- purchased-credit balance is shown independently from eligibility to buy a new
+  pack;
+- the request path creates a PENDING
+  `RECOVERY_CREDIT_PACK_PURCHASE` UsageEvent but grants no credits;
+- all 20 merchant locale catalogues contain the five task keys with exact ICU
+  placeholder parity.
+
+Implementation branch head reviewed:
+
+```text
+ea39724f6d1436150b0a4b4ea3eea90db64e8d51
+```
+
+Attempt 3 is two commits ahead of Attempt 2 head
+`bc4cd5f64fb6502bbc44313f4083959407f812c7` and is confined to the requested
+billing-service/i18n/focused-test close-out surface.
+
+The parent report was independently verified at:
+
+```text
+1c4aa94fe9c5d3b3ace6a80e244c6485d714b731
+```
+
+#### Attempt 2 — Changes Requested (historical)
+
+Attempt 2 resolves the three substantive production corrections from Attempt 1:
+Shared's canonical Shopify usage idempotency helper is used, existing replay is
+checked before provider verification and durable configuration is re-read inside
+the write transaction, and purchased-credit balance presentation is independent
+from new-pack eligibility. All 20 locale catalogues now contain the five
+SHOPIFY-004 keys with exact English ICU placeholder parity.
+
+Two narrow close-out corrections remain.
+
+##### Correction 1 — concurrent same-purchase replay must recover the unique-conflict loser
+
+Two concurrent requests can both observe no existing purchase before one
+transaction commits. Database uniqueness protects durable state, but the losing
+request currently surfaces Prisma `P2002`.
+
+Attempt 3 must preserve provider verification outside the transaction and add:
+
+```text
+transaction create
+  -> P2002
+  -> re-read RecoveryCreditPurchase(id=purchaseId)
+  -> same shop: return committed purchase
+  -> different shop: reject
+  -> no purchase: rethrow original error
+```
+
+Do not swallow unrelated database errors.
+
+Add a deterministic regression proving the concurrent loser resolves to the
+committed same-shop purchase while durable state contains one purchase and one
+UsageEvent.
+
+##### Correction 2 — finish the explicit i18n and fail-closed evidence
+
+`billing-i18n.test.ts` loops over all 20 catalogues but constructs the merchant
+runtime only once with `locale: "en"`. Move runtime creation into the locale loop
+and prove every locale selects its own catalogue and resolves all five keys.
+
+Also add explicit regressions proving:
+
+- a subscription whose projection status is actually `UNMAPPED`/unsafe creates
+  no UsageEvent; the current case labelled `unmapped` only sets the plan
+  `active=false`;
+- successful pack request does not update/upsert
+  `PURCHASED_RECOVERY_CREDITS` or any entitlement counter before Background
+  activation.
+
+No translation changes are requested.
+
+##### Completion-report evidence
+
+The parent Completion Report still contains:
+
+```text
+commits: 06a963e, be5a325, Attempt 2 correction commit to follow
+```
+
+Attempt 3 must replace the placeholder with
+`bc4cd5f64fb6502bbc44313f4083959407f812c7` and then record the new Attempt 3
+close-out commit.
+
+#### Attempt 1 — Changes Requested (historical)
+
+
+Attempt 1 establishes the correct overall Shopify App Pricing mechanism, but it
+is not yet architect-acceptable. The interrupted translation work is no longer
+an open design question: `moda_architect` has supplied completed translations
+for the eleven remaining locale catalogues. Attempt 2 must integrate those
+files unchanged unless a repository validation rule exposes a concrete ICU
+problem.
+
+Three implementation corrections are also required.
+
+#### Correction 1 — use Shared's canonical Shopify usage idempotency key helper
+
+Attempt 1 defines a local helper:
+
+```ts
+export function createShopifyUsageIdempotencyKey(
+  shopId: string,
+  usageEventId: string,
+): string {
+  return `shopify:${shopId}:${usageEventId}`.slice(0, 64);
+}
+```
+
+This duplicates and weakens the architect-accepted Shared contract. Shared
+already exports `createShopifyUsageIdempotencyKey` from
+`@modainteract/moda-interact-shared/billing`; its bounded-key implementation
+hashes overlength identities rather than truncating their distinguishing tail.
+
+Attempt 2 must:
+
+- delete the local helper;
+- import `createShopifyUsageIdempotencyKey` from the accepted Shared billing
+  contract;
+- keep the task-required stable identity derived from the newly created
+  UsageEvent id;
+- add a regression proving the persisted `shopifyIdempotencyKey` equals the
+  Shared helper result and is stable on replay.
+
+Do not introduce a second idempotency-key algorithm.
+
+#### Correction 2 — preserve replay idempotency and revalidate current plan state inside the write transaction
+
+Attempt 1 loads the current subscription/plan, performs Shopify meter
+verification, and only then enters the Prisma transaction. Inside the
+transaction it checks for an existing purchase but creates the UsageEvent from
+the earlier plan snapshot without re-reading current durable plan state.
+
+That violates the deterministic purchase sequence in this task:
+
+```text
+transaction
+  1. existing purchase -> return existing
+  2. require current safe mapped plan/top-up config
+  3. create UsageEvent
+  4. create RecoveryCreditPurchase snapshot
+```
+
+Attempt 2 must keep provider network verification outside the transaction but
+close both races:
+
+1. perform an early durable lookup for `RecoveryCreditPurchase(id=purchaseId)`;
+   if it exists for this shop, return it without requiring Shopify/provider
+   availability again;
+2. perform the current provider verification for a new purchase;
+3. enter one Prisma transaction and repeat the existing-purchase check for
+   concurrency safety;
+4. re-read the current subscription + plan inside that transaction;
+5. require ACTIVE/TRIALING, active plan, top-ups enabled, positive pack size,
+   correct meter rules, and confirm that the in-transaction plan identity /
+   handles / pack quantity still match the provider-verified facts;
+6. if durable configuration changed between verification and write, fail closed
+   and create neither UsageEvent nor purchase;
+7. otherwise create the UsageEvent and RecoveryCreditPurchase atomically.
+
+Do not make a Shopify network call while holding the Prisma transaction open.
+
+Required regressions:
+
+- replay of an already-created purchase succeeds even if the provider is now
+  unavailable or current top-up configuration has subsequently changed;
+- a plan/meter/pack-size change between provider verification and transaction
+  re-read fails closed with zero new UsageEvents;
+- concurrent/same-id replay still results in one purchase and one UsageEvent.
+
+#### Correction 3 — purchased credit balance is durable entitlement state, not purchase-button state
+
+The task separately requires:
+
+```text
+Show purchased recovery credits:
+  grantedQuantity - committedQuantity - reservedQuantity
+
+Show Buy button only when:
+  safe mapped subscription
+  + top-ups enabled
+  + positive pack size
+  + verified top-up meter
+```
+
+Attempt 1 renders the purchased-credit balance inside the same condition that
+controls top-up purchase availability. This hides already-purchased durable
+credits whenever a merchant changes to a plan with top-ups disabled or Shopify
+meter verification is temporarily unavailable. Purchased credits persist
+across cycles/plan changes and must remain visible independently of whether a
+new pack can currently be purchased.
+
+Attempt 2 must:
+
+- render `billing.purchasedRecoveryCredits` for a safe mapped billing page
+  independently of `recoveryCreditPackEnabled` / meter verification;
+- keep pack-size description, Shopify meter explanation and Buy form behind the
+  purchase-eligibility checks;
+- keep the Buy form fail-closed exactly as today.
+
+Add focused UI/source behavior coverage proving a non-zero purchased balance is
+still presented when top-up purchasing is disabled or meter verification is
+false.
+
+#### Correction 4 — complete the required regression matrix
+
+In addition to the corrections above, the task-required focused tests must
+explicitly prove:
+
+- top-up disabled -> no UsageEvent;
+- configured pack meter missing/blank -> no UsageEvent;
+- unmapped/unsafe subscription -> no UsageEvent;
+- client-supplied pack size / plan id / meter / price fields are ignored because
+  the action accepts only server-resolved shop identity plus intent/purchaseId;
+- Shopify/provider verification occurs outside the Prisma write transaction;
+- the request path does not mutate `PURCHASED_RECOVERY_CREDITS` or otherwise
+  grant credits before Background activation;
+- the created event remains quantity `1`, metric
+  `RECOVERY_CREDIT_PACK_PURCHASE`, state `PENDING`, exact current mapped pack
+  meter and current billingPeriodId when available.
+
+Existing Free/paid creation and repeated-purchase tests may remain.
+
+#### Correction 5 — integrate the architect-supplied eleven locale catalogues and strengthen i18n proof
+
+The remaining locales are:
+
+```text
+cs
+fi
+ja
+ko
+nb
+pl
+sv
+th
+tr
+zh-Hans
+zh-Hant
+```
+
+The architect handoff supplies all five new keys in each catalogue:
+
+```text
+billing.purchasedRecoveryCredits
+billing.recoveryCreditPackDescription
+billing.recoveryCreditPackShopifyMeter
+billing.buyRecoveryCreditPack
+billing.recoveryCreditPurchasePending
+```
+
+The supplied translations preserve the exact ICU placeholder sets required by
+the English source. Attempt 2 must apply the handoff and keep the nine existing
+completed translations.
+
+Extend `billing-i18n.test.ts` so it proves more than key presence:
+
+- all five task keys exist in all 20 declared catalogues;
+- each catalogue preserves the same placeholder set as English for each key;
+- each new key resolves through the existing merchant ICU runtime with sample
+  values without throwing;
+- no task-introduced merchant-visible English literal bypasses the i18n path in
+  `app.billing.tsx`.
+
+Do not broaden this task into retranslating pre-existing unrelated billing keys.
 
 ### Reviewed Files
-None.
+
+Attempt 3 implementation head:
+
+```text
+ea39724f6d1436150b0a4b4ea3eea90db64e8d51
+```
+
+Attempt 2 implementation head:
+
+```text
+bc4cd5f64fb6502bbc44313f4083959407f812c7
+```
+
+Primary final implementation files reviewed:
+
+- `app/routes/app.billing.tsx`
+- `app/services/billing/billing.service.ts`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-ui.test.ts`
+- `tests/unit/billing-i18n.test.ts`
+- all 20 `app/i18n/locales/*.json` merchant catalogues
+
+Parent task report reviewed at:
+
+```text
+1c4aa94fe9c5d3b3ace6a80e244c6485d714b731
+```
+
+Cross-repository contracts checked:
+
+- Shared canonical `createShopifyUsageIdempotencyKey`;
+- DATABASE-005 `UsageEvent` / `RecoveryCreditPurchase` uniqueness and durable
+  fields;
+- accepted Background recovery-credit publication/activation contracts.
 
 ### Validation Reviewed
-None.
+
+Attempt 3 Completion Report records:
+
+```text
+npm test -- --run   tests/unit/services/billing.service.test.ts   tests/unit/services/shopify-billing.provider.test.ts   tests/unit/billing-i18n.test.ts   tests/unit/billing-ui.test.ts
+```
+
+Result: **43 tests passed across 4 files**.
+
+`git diff --check` passed.
+
+Repository-wide typecheck still reports the documented pre-existing legacy
+typing diagnostics outside the touched SHOPIFY-004 billing surface. No
+task-introduced type error is reported.
+
+The supplied review archive intentionally contains no `node_modules`, so the
+architect could not independently rerun Vitest from the archive. The final
+source and focused regressions were inspected directly.
+
+The architect independently validated the actual 20 locale JSON files in the
+Attempt 3 archive:
+
+- 20/20 catalogues parse as JSON;
+- all five SHOPIFY-004 keys are present in every catalogue;
+- ICU placeholder sets match English exactly for every key/catalogue.
 
 ### Architecture Conformance
-Pending
+
+Accepted.
+
+`ARCH-007-SHOPIFY-004` now satisfies repeatable recovery-credit-pack request
+creation, fail-closed Shopify meter verification, durable/idempotent request
+semantics, transactional freshness, no-preactivation-credit-grant behavior,
+persistent purchased-balance presentation and all-locale merchant i18n.
 
 ### Follow-up
-None.
 
+`ARCH-007-SHOPIFY-004` is Complete.
+
+Durable state:
+
+```text
+status: complete
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+`ARCH-007-SYSTEM-TEST-004` now has SHOPIFY-004 as a satisfied dependency, but it
+remains **Pending / manual-terminal-gated**. Do not auto-promote or auto-start
+the system-test task.
+
+Developer/user retains ownership of merging the accepted Shopify implementation
+branch into `main`, integrating the parent workspace branch, and explicitly
+invoking terminal system testing when desired.
