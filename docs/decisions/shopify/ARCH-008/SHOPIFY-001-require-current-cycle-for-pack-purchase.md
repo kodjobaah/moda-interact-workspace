@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-09T16:18:00Z
+attempt: 2
 depends_on:
   - ARCH-007-SHOPIFY-004
 enables:
@@ -248,14 +248,14 @@ Add/adjust focused tests proving:
 
 ## Acceptance Criteria
 
-- [ ] Every newly created pack UsageEvent has a non-null exact billingPeriodId.
-- [ ] Provider and local current-cycle boundaries must match before creation.
-- [ ] Stale cycle changes are caught inside the write transaction.
-- [ ] Existing purchase replay remains provider-independent.
-- [ ] Trial/no-current-cycle state cannot create a new pack purchase.
-- [ ] Existing purchased balance remains visible.
-- [ ] No entitlement is granted by the request path.
-- [ ] No schema/cross-repository change is introduced.
+- [x] Every newly created pack UsageEvent has a non-null exact billingPeriodId.
+- [x] Provider and local current-cycle boundaries must match before creation.
+- [x] Stale cycle changes are caught inside the write transaction.
+- [x] Existing purchase replay remains provider-independent.
+- [x] Trial/no-current-cycle state cannot create a new pack purchase.
+- [x] Existing purchased balance remains visible.
+- [x] No entitlement is granted by the request path.
+- [x] No schema/cross-repository change is introduced.
 
 ## Validation
 
@@ -296,58 +296,217 @@ Do not begin `ARCH-008-BACKGROUND-002`.
 
 ### Status
 
-Not Started
+Implemented and ready for architect review.
 
 ### Files Changed
 
-None
+- `app/services/billing/billing.service.ts`
+- `app/routes/app.billing.tsx`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-ui.test.ts`
 
 ### Work Completed
 
-None
+Attempt 2 correction checklist:
+
+- [x] Perform local durable-cycle admission before calling Shopify.
+- [x] Capture and compare the pre-provider BillingPeriod identity inside the transaction.
+- [x] Add explicit local-null, missing-boundary, provider-null, provider-mismatch, and transaction-drift regressions.
+- [x] Strengthen server-derived eligibility and UI balance/Buy-form regressions.
+- [x] Record complete start-of-attempt synchronization and Git/worktree evidence.
+
+Implemented correction details:
+
+- Split local durable BillingPeriod validation from provider-cycle comparison.
+- Captured the pre-provider BillingPeriod ID and required the transactional re-read to retain that identity and matching boundaries.
+- Added explicit no-provider-call coverage for invalid local cycles and no-purchase/no-UsageEvent assertions for every rejection path.
+- Added UI coverage proving server-derived ineligibility hides the Buy form while preserving purchased balance presentation.
 
 ### Validation Results
 
-None
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts`: passed, 40 tests.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm run typecheck`: exits nonzero on existing legacy JSX and test-fixture diagnostics; no diagnostics were reported for changed production files.
 
 ### Deviations
 
-None
+- No schema, migration, Background, Admin, Shared, pricing, App Events, or entitlement changes.
 
 ### Assumptions
 
-None
+- The accepted Subscription projection continues to include `billingPeriod` whenever `billingPeriodId` is populated.
 
 ### Unresolved Issues
 
-None
+- Repository-wide typecheck remains blocked by existing diagnostics outside the changed production files.
 
 ### Architectural Concerns
 
-None
+- None identified.
+
+### Git / VCS
+
+Task branch: `task/ARCH-008-SHOPIFY-001`
+
+Physical worktree isolation:
+
+   canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+   parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-SHOPIFY-001`
+   parent branch: `task/ARCH-008-SHOPIFY-001`
+   implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-SHOPIFY-001`
+   implementation branch: `task/ARCH-008-SHOPIFY-001`
+   shared workspace checkout switched/mutated for task work: no
+   shared implementation checkout switched/mutated for task work: no
+   another task worktree reused: no
+
+Start-of-attempt synchronization:
+
+   parent remote task branch fast-forward: already up to date
+   parent `origin/main` merge: already unnecessary
+   implementation remote task branch fast-forward: already up to date
+   implementation `origin/main` merge: already unnecessary
+   unexpected divergence/conflict: none
+
+Implementation repository:
+
+   repository: `moda-interact`
+   correction commit: `3960b75`
+   remote branch: `origin/task/ARCH-008-SHOPIFY-001`
+   pushed: yes
+
+Parent workspace:
+
+   task file: `docs/decisions/shopify/ARCH-008/SHOPIFY-001-require-current-cycle-for-pack-purchase.md`
+   claim commit: `5482bf8`
+   remote branch: `origin/task/ARCH-008-SHOPIFY-001`
+   completion-report commit: pending
+   submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+#### Attempt 1 — Changes Requested
+
+The implementation is directionally correct and preserves the ARCH-007 pack
+purchase model, early provider-independent replay, provider/local cycle matching,
+non-null persisted `billingPeriodId`, and no request-path entitlement grant.
+However, Attempt 1 does not yet satisfy the complete ARCH-008-SHOPIFY-001
+contract.
+
+Required corrections for Attempt 2:
+
+1. **Perform local durable-cycle admission before the Shopify provider call.**
+   For a new purchase, validate the local Subscription + BillingPeriod invariant
+   before `getActiveSubscription()`:
+   - `billingPeriodId != null`;
+   - `currentPeriodStart != null`;
+   - `currentPeriodEnd != null`;
+   - linked BillingPeriod exists and its id equals `billingPeriodId`;
+   - linked BillingPeriod boundaries equal the Subscription current-period
+     boundaries.
+
+   The current implementation combines local and provider validation in
+   `hasMatchingBillingCycle()` only *after* the provider call. This violates the
+   task's required ordering and causes a locally invalid request to contact
+   Shopify unnecessarily. Add a regression proving the provider is not called
+   when local durable-cycle admission fails.
+
+2. **Revalidate the exact billing-period identity inside the write
+   transaction.** Capture the provider-verified local `billingPeriodId` from the
+   pre-provider admission state and require the transactional re-read to retain
+   that same id. The current transaction only calls
+   `hasMatchingBillingCycle(currentSubscription, providerSubscription)`. That
+   proves the re-read relation/boundaries still match the provider cycle, but it
+   does not explicitly prove `currentSubscription.billingPeriodId` is the same
+   durable identity that was verified before the provider call, as required by
+   section D of this task.
+
+   Add regressions for a changed transactional `billingPeriodId` and for changed
+   transactional cycle boundaries. Both must roll back with no UsageEvent or
+   RecoveryCreditPurchase.
+
+3. **Complete the required current-cycle rejection matrix.** Focused tests must
+   explicitly prove, rather than infer from one all-null case:
+   - local `billingPeriodId = null`;
+   - a missing local current-period boundary;
+   - provider current cycle missing;
+   - provider/local current-cycle boundary mismatch;
+   - transactional billing-period identity/boundary drift.
+
+   Each case must prove no UsageEvent and no RecoveryCreditPurchase are created.
+
+4. **Strengthen merchant eligibility/presentation regressions.** The existing
+   `billing-ui.test.ts` source-order assertion predates this ARCH-008 boolean and
+   does not prove the new contract. Add focused coverage proving:
+   - `recoveryCreditPackPurchaseEligible` is false when the exact current cycle
+     is unavailable or mismatched;
+   - the Buy form is not rendered in that state;
+   - the already-purchased credit balance remains presented independently when
+     new-pack eligibility is false.
+
+5. **Add the mandatory Git/worktree evidence to the Completion Report.** The
+   supplied Completion Report omits the physical worktree isolation and
+   start-of-attempt synchronization evidence required by
+   `docs/agent-worktree-isolation-policy.md`, and it also omits the canonical
+   Git/VCS evidence block. Missing evidence is workflow non-conformance.
+
+   If Attempt 1 actually ran in the launcher-resolved dedicated parent and
+   implementation worktrees, record those exact paths/branches and the
+   synchronization results, then rerun the required validation from the
+   canonical implementation worktree before returning to review. If it did not,
+   restore/create the canonical task worktrees, check out the already-pushed
+   `task/ARCH-008-SHOPIFY-001` branches there, rerun validation, and correct the
+   Completion Report. Do not create code churn solely to manufacture another
+   implementation commit.
+
+No database, Background, Admin, Shared, pricing, pack-size, App Events publisher
+or entitlement-lifecycle redesign is requested. Keep the correction on this
+same task and same branch pair.
 
 ### Reviewed Files
 
-None
+- `app/services/billing/billing.service.ts`
+- `app/routes/app.billing.tsx`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-ui.test.ts`
+- `database/prisma/schema.prisma` (read-only architecture verification)
+- `docs/decisions/shopify/ARCH-008/SHOPIFY-001-require-current-cycle-for-pack-purchase.md`
+- `docs/architecture/ARCH-008-shopify-app-pricing-conformance.md`
+- `docs/agent-worktree-isolation-policy.md`
 
 ### Validation Reviewed
 
-None
+- Completion Report: focused suite reports 34 passing tests.
+- Completion Report: build passed.
+- Completion Report: `git diff --check` passed.
+- Completion Report: repository-wide typecheck retains unrelated baseline
+  diagnostics and reports no changed-production-file diagnostic.
+- Review archive: source/test implementation inspected directly.
+- Review archive has no usable implementation Git metadata and no `node_modules`,
+  so commit ancestry, remote pushes, physical worktree state and an independent
+  test rerun could not be verified from the archive itself.
 
 ### Architecture Conformance
 
-Pending
+Partial. The producer now fails closed for provider/local cycle mismatch and
+persists a non-null cycle identity when creation succeeds, while replay remains
+provider-independent and no entitlement counter is mutated. Conformance remains
+incomplete because local durable-cycle admission occurs after provider access,
+transactional freshness does not explicitly retain the same pre-provider
+`billingPeriodId`, the ARCH-008 cycle/merchant-eligibility regression matrix is
+incomplete, and mandatory worktree evidence is absent.
 
 ### Follow-up
 
-None
+Return `ARCH-008-SHOPIFY-001` to the same `moda_app` execution path for Attempt
+2. `ARCH-008-BACKGROUND-002` remains Pending until this task is architect-
+accepted Complete.
