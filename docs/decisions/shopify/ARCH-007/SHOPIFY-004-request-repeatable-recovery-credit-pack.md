@@ -7,7 +7,7 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 66
 executor: copilot
 claimed_at: 2026-09-09T00:00:00Z
@@ -188,7 +188,7 @@ ACTIVE balance appears only after Background activation.
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 
 ### Files Changed
 Implementation branch changes:
@@ -225,8 +225,16 @@ Attempt 2 adopts Shared's canonical Shopify usage idempotency helper, performs e
 
 Integrated the architect-supplied translations for all eleven remaining locale catalogues without changing the nine previously completed catalogues. Strengthened i18n coverage for all 20 catalogues, ICU placeholder parity, runtime resolution, and literal-copy bypasses; added UI source coverage for independent balance presentation.
 
+Attempt 3 preserves provider verification outside the transaction and recovers
+concurrent same-purchase unique-conflict losers by re-reading the committed
+purchase for the same shop while rethrowing unrelated database errors. The i18n
+regression constructs the merchant runtime inside the locale loop, and focused
+regressions explicitly cover unsafe `UNMAPPED` projections and the absence of
+entitlement counter mutation before Background activation. The recovery-credit
+test fixture was restored so this matrix executes.
+
 ### Validation Results
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/billing-i18n.test.ts tests/unit/billing-ui.test.ts`: 41 passed.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/billing-i18n.test.ts tests/unit/billing-ui.test.ts`: 43 passed across 4 files.
 - `npm run typecheck`: repository baseline failures remain; the task-introduced nullable `recoveryCreditsPerPack` error was fixed. Remaining failures include pre-existing implicit-any and legacy route/test typing errors.
 - `git diff --check`: passed.
 
@@ -258,7 +266,7 @@ Physical worktree isolation:
 
 Implementation repository:
   repository: moda-interact
-  commits: `06a963e`, `be5a325`, Attempt 2 correction commit to follow
+  commits: `06a963e`, `be5a325`, `bc4cd5f64fb6502bbc44313f4083959407f812c7`, `ea39724`
   remote branch: origin/task/ARCH-007-SHOPIFY-004
   pushed: yes
 
