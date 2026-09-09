@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor:
-claimed_at:
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-09T22:08:51Z
+attempt: 2
 depends_on:
   - ARCH-008-BACKGROUND-001
   - ARCH-008-SHOPIFY-001
@@ -365,7 +365,7 @@ Do not begin ADMIN-001.
 
 ### Status
 
-Review — implementation complete; awaiting architect acceptance.
+In Progress — attempt 2 addressing the architect-requested corrections.
 
 ### Files Changed
 
