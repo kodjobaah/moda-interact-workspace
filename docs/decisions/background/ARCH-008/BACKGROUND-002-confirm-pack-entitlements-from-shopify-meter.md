@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-09T22:08:51Z
@@ -313,16 +313,16 @@ Add/adjust focused tests proving:
 
 ## Acceptance Criteria
 
-- [ ] Transport success no longer activates a recovery-credit purchase.
-- [ ] Provider current-cycle exact pack-meter quantity is required for activation.
-- [ ] Aggregate matching never claims per-event Shopify confirmation.
-- [ ] Exact provider-confirmed unit budget is respected.
-- [ ] Equivalent partial candidates use deterministic `createdAt`, then `id` ordering.
-- [ ] Non-equivalent ambiguous partial matching fails closed.
-- [ ] ACTIVE purchase credit is granted exactly once under replay/concurrency.
-- [ ] Provider under/over-count discrepancies are surfaced without destructive correction/fabrication.
-- [ ] Normal recovery remains independent of reconciliation latency/failure.
-- [ ] No schema/cross-repository change is introduced silently.
+- [x] Transport success no longer activates a recovery-credit purchase.
+- [x] Provider current-cycle exact pack-meter quantity is required for activation.
+- [x] Aggregate matching never claims per-event Shopify confirmation.
+- [x] Exact provider-confirmed unit budget is respected.
+- [x] Equivalent partial candidates use deterministic `createdAt`, then `id` ordering.
+- [x] Non-equivalent ambiguous partial matching fails closed.
+- [x] ACTIVE purchase credit is granted exactly once under replay/concurrency.
+- [x] Provider under/over-count discrepancies are surfaced without destructive correction/fabrication.
+- [x] Normal recovery remains independent of reconciliation latency/failure.
+- [x] No schema/cross-repository change is introduced silently.
 
 ## Validation — run from `moda-interact-background`
 
@@ -365,33 +365,31 @@ Do not begin ADMIN-001.
 
 ### Status
 
-In Progress — attempt 2 addressing the architect-requested corrections.
+Review — attempt 2 implementation complete; awaiting architect acceptance.
 
 ### Files Changed
 
 - `moda-interact-background/src/services/shopify-usage-event-publisher.service.ts`
 - `moda-interact-background/src/services/recovery-credit-purchase.service.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
-- Focused service tests for publisher, purchase reconciliation, and billing reconciliation.
+- `moda-interact-background/tests/unit/services/shopify-usage-event-publisher.service.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-credit-purchase.service.test.ts`
+- `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
 
-Implemented provider-confirmed recovery-credit pack reconciliation. App Events transport success now leaves pack purchases pending; billing reconciliation resolves the exact current cycle, plan, and pack meter, then applies a Serializable deterministic aggregate budget with replay/concurrency protection and under/over/ambiguous discrepancy reporting. No schema or cross-repository change was introduced.
+Attempt 2 closes the architect-requested gaps. Linked UsageEvents are now scoped to the exact shop, billing period, and pack meter for both active matching and candidate selection. Repaired `NEEDS_ATTENTION` purchases re-enter only when their linked event is `REPORTED`, guarded activation permits only the accepted source states, and the returned activation count reflects successful durable transitions. Present Partner subscriptions without exact current-cycle boundaries now surface `invalid-scope` without activation. The focused harness honors nested predicates and covers excluded scope dimensions, repaired attention, exact pack-meter quantity, and overlapping replay. No schema or cross-repository change was introduced.
 
 ### Validation Results
 
 Preflight and implementation evidence:
 
-- Parent task worktree synchronized from `origin/main` to `0d12fe8` and is clean.
-- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-BACKGROUND-002` is published at commit `c90aa39` on branch `task/ARCH-008-BACKGROUND-002`.
-- The resolver-selected implementation worktree is at commit `9abae33` from `origin/main`; its tracked `database` submodule was uninitialized, so `database/prisma/schema.prisma` was absent locally even though `package.json` and `prisma.config.ts` reference it.
-- Initialized the tracked `database` submodule at gitlink commit `ebe43c0466b555ea4919dc55915e28e40c25ae24`; the required `Subscription`, `BillingPeriod`, `UsageEvent`, and `RecoveryCreditPurchase` schema models are now available in the implementation worktree.
-- The canonical Background checkout and implementation worktree agree on the database gitlink; no source checkout divergence remains.
-- `npm run prisma:validate` passed against `database/prisma/schema.prisma`.
-- Focused service tests passed: 3 files, 29 tests.
+- Parent claim published at `ec8d703`; implementation worktree is clean before publication on `task/ARCH-008-BACKGROUND-002`.
+- Focused tests passed: 3 files, 37 tests.
 - `npm run build` passed, including Prisma client generation and TypeScript compilation.
+- `npm run prisma:validate` passed against `database/prisma/schema.prisma`.
 - `git diff --check` passed.
-- Full `npm run test:unit` ran 43 files / 424 tests; 422 passed and 2 unrelated pre-existing `pending-recovery-candidate.service.test.ts` tests failed.
+- Full `npm run test:unit` ran 43 files / 432 tests; 430 passed and 2 unrelated `pending-recovery-candidate.service.test.ts` tests failed.
 
 ### Deviations
 
