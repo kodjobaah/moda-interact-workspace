@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-09-09T18:25:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -174,20 +174,34 @@ pass.
 
 ### Status
 
-In Progress — developer attempt 1 claimed after task materialization.
+Changes Requested — developer attempt 1 reviewed; implementation requires route-test and validation corrections.
 
 ### Files Changed
 
-None.
+Implementation branch contains the folder-based route migration, explicit route
+configuration, focused route-test updates, and additional route-local UI changes.
 
 ### Work Completed
 
-Task definition materialized and developer attempt 1 claimed. Implementation
-has not started.
+Developer attempt 1 implemented the route migration and published it on
+`task/ARCH-008-SHOPIFY-002` through merge commit `8af8cbc`.
 
 ### Validation Results
 
-Task-definition preflight passed; implementation validation is pending.
+Validation evidence:
+
+- Focused route tests passed: 5 files, 37 tests.
+- `npm run build` passed.
+- `npm run typecheck` failed with implicit-`any` and JSX diagnostics in moved
+  route modules, including `app/home`, `app/route`, `app/usage`, and
+  `app/merchant-support`.
+- `npm run lint` failed with 11 errors, including moved route files and existing
+  test/component diagnostics.
+- Full `npm test` failed 3 tests because
+  `tests/unit/dashboard/dashboard-conversation-relation.test.js` and
+  `tests/unit/billing-period-compatibility.test.ts` still read deleted flat
+  paths such as `app/routes/app._index.jsx` and `app/routes/app.usage.jsx`.
+- The implementation worktree is clean and its branch is published.
 
 ### Deviations
 
@@ -200,11 +214,39 @@ selected during implementation without changing public route URLs.
 
 ### Unresolved Issues
 
-None known before implementation preflight.
+The implementation is not review-ready until all source-path assertions/imports
+are updated to the folder modules and the required typecheck/lint failures are
+either fixed in touched files or proven pre-existing with exact evidence.
 
 ### Architectural Concerns
 
-None known before implementation preflight.
+The implementation includes substantial home-page/onboarding visual changes in
+addition to route migration. Confirm these changes are intentional and within
+scope, or remove them before resubmission.
+
+## Developer Self-Review - Changes Requested
+
+### Attempt
+
+1
+
+### Required Corrections
+
+1. Update every remaining test/source-path assertion that references deleted
+  flat route files, especially `dashboard-conversation-relation.test.js` and
+  `billing-period-compatibility.test.ts`, and rerun the full test suite.
+2. Resolve the typecheck diagnostics introduced or exposed by the moved route
+  modules, or document exact pre-existing diagnostics while proving the moved
+  production modules add none.
+3. Resolve the lint errors in moved route files and rerun `npm run lint`.
+4. Review the home-page/onboarding visual changes and keep only changes required
+  for route migration.
+
+### Review Result
+
+Attempt 1 is returned to `ready`. The next `/moda_developer_create
+ARCH-008-SHOPIFY-002` invocation must claim attempt 2; this review does not
+increment the attempt.
 
 ## Architect Review
 
