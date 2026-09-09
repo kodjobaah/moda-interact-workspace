@@ -1,5 +1,7 @@
 # Developer-Executed Architecture Task Workflow
 
+> New contributor? Start with [`docs/task-workflow-quickstart.md`](task-workflow-quickstart.md) for the concise end-to-end flow, then return here for the detailed rules.
+
 ## Purpose
 
 Moda Interact uses one architecture-task system for repository-agent work and

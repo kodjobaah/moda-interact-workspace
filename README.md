@@ -58,9 +58,10 @@ This project demonstrates hands-on experience with:
 - [Internationalisation and merchant communications](#internationalisation-and-merchant-communications)
 - [Projects and ownership](#projects-and-ownership)
 - [Getting started](#getting-started)
+- [Task workflow quick start](#task-workflow-quick-start)
 - [Architecture-led development](#architecture-led-development)
-- [Developer-owned Git and publication](#developer-owned-git-and-publication)
-- [Launching an architecture task](#launching-an-architecture-task)
+- [Task branches and publication](#task-branches-and-publication)
+- [Launching and updating tasks](#launching-and-updating-tasks)
 - [Logical agents and AI runtimes](#logical-agents-and-ai-runtimes)
 - [Platform workload and scalability](#platform-workload-and-scalability)
 - [Working with Git submodules](#working-with-git-submodules)
@@ -304,40 +305,27 @@ from shopper WhatsApp `ConversationMessage` state.
 
 ### Architecture and task documentation
 
-The central architecture and cross-agent coordination state lives under
-[`docs/`](docs/).
+The central architecture and execution state lives under [`docs/`](docs/). New
+contributors should start with
+[`docs/task-workflow-quickstart.md`](docs/task-workflow-quickstart.md) before
+reading the deeper policy documents.
 
 ```text
 docs/
 ├── architecture/
-│   ├── overview.md
-│   ├── runtime-flows.md
-│   ├── inbound-whatsapp-recovery-flow.md
-│   ├── ARCH-001-shopify-checkout-recovery-webhook-processing.md
-│   ├── ARCH-002-render-production-gateway-infrastructure.md
-│   ├── ARCH-003-admin-operational-ui.md
-│   ├── ARCH-003-operational-observability-overview.md
-│   ├── ARCH-004-cart-activity-recovery-rescheduling.md
-│   ├── ARCH-004-cart-activity-recovery-rescheduling-overview.md
-│   ├── ARCH-005-global-internationalisation-whatsapp-markets.md
-│   ├── ARCH-005-internationalisation-overview.md
-│   ├── ARCH-006-merchant-communications-support-inbox.md
-│   └── ARCH-006-merchant-communications-overview.md
 ├── decisions/
-│   ├── admin/
-│   ├── background/
-│   ├── database/
-│   ├── gateway/
-│   ├── messaging/
-│   ├── shared/
-│   ├── shopify/
-│   ├── site/
-│   └── system-test/
 ├── contracts/
+├── product/
+├── task-workflow-quickstart.md
+├── task-definition-materialization.md
+├── developer-task-workflow.md
 ├── coding-agent-workflow.md
-├── copilot-model-selection.md
+├── agent-worktree-isolation-policy.md
 ├── agent-vcs-ownership-policy.md
-└── agent-task-execution-template.md
+├── agent-task-execution-template.md
+├── task-worktree-review-archive-helper.md
+├── development-baseline.md
+└── node-toolchain.md
 ```
 
 The source-of-truth hierarchy is:
@@ -346,13 +334,21 @@ The source-of-truth hierarchy is:
 | --- | --- |
 | `docs/architecture/ARCH-XXX-*.md` | What are we building and how does the complete system fit together? |
 | `docs/decisions/<domain>/ARCH-XXX/_index.md` | What work does this logical agent/domain own for this architecture? |
-| `docs/decisions/<domain>/ARCH-XXX/<TASK>.md` | What exactly must be implemented now? |
+| `docs/decisions/<domain>/ARCH-XXX/<TASK>.md` | What exactly must be implemented, what state is it in, and how was it reviewed? |
 | Repository source code | What has actually been implemented and how does it behave? |
+| Git history | What exact source versions existed and in what sequence? |
+
+A task may first exist as a **portable task definition** outside Git. It becomes a
+durable workspace task only when materialised into its canonical decision path on
+`task/<TASK_ID>`. Task definition, materialisation and implementation are separate
+phases; see
+[`docs/task-definition-materialization.md`](docs/task-definition-materialization.md).
 
 Task YAML metadata is authoritative for task state. The parent architecture
 document is authoritative for overall architectural intent. Source code is
-authoritative for actual runtime behaviour. `moda_architect` must reconcile
-these sources if they drift.
+authoritative for actual runtime behaviour. Git is version history rather than a
+substitute for Completion Reports or architectural review records.
+
 
 ---
 
@@ -417,36 +413,38 @@ moda-interact-workspace/
 ├── .codex/
 │   ├── agents/
 │   └── skills/
-│       └── moda-task/
-│           └── SKILL.md
+│       ├── moda-task/
+│       ├── moda_developer_create/
+│       └── moda_developer_update/
 ├── .claude/
 │   ├── agents/
 │   └── skills/
-│       └── moda-task/
-│           └── SKILL.md
+│       ├── moda-task/
+│       ├── moda_developer_create/
+│       └── moda_developer_update/
 ├── .continue/
 │   └── prompts/
-│       └── moda-task.md
 ├── docs/
 │   ├── architecture/
 │   ├── contracts/
 │   ├── decisions/
 │   ├── product/
-│   ├── agent-task-execution-template.md
-│   ├── agent-vcs-ownership-policy.md
+│   ├── task-workflow-quickstart.md
+│   ├── task-definition-materialization.md
+│   ├── developer-task-workflow.md
 │   ├── coding-agent-workflow.md
-│   ├── copilot-model-selection.md
-│   ├── development-baseline.md
-│   └── node-toolchain.md
+│   ├── agent-worktree-isolation-policy.md
+│   ├── agent-vcs-ownership-policy.md
+│   └── task-worktree-review-archive-helper.md
 ├── scripts/
-│   ├── apply-node-agent-policy.py
-│   ├── bootstrap-node.sh
 │   ├── start-agent-task.py
+│   ├── sync_agents.py
+│   ├── sync-skills.py
+│   ├── bootstrap-node.sh
 │   └── workspace-doctor.sh
 ├── .gitmodules
 ├── .nvmrc
 ├── README.md
-├── sync_agents.py
 ├── moda-interact/
 ├── moda-interact-admin/
 ├── moda-interact-background/
@@ -458,6 +456,11 @@ moda-interact-workspace/
 ├── moda-interact-system-test/
 └── moda-interact.code-workspace
 ```
+
+Task execution uses dedicated worktrees **beside** this canonical workspace. Their
+absolute locations are derived by `scripts/start-agent-task.py`; no workflow may
+assume a fixed `/Users/...`, `~/project`, `/home/...` or other checkout path.
+
 
 ---
 
@@ -494,40 +497,28 @@ code moda-interact.code-workspace
 <!-- MODA-DEVELOPMENT-BASELINE:START -->
 ### Development environment baseline
 
-Coding-agent shells may be non-interactive and may not inherit the developer's
-NVM environment. The workspace also contains shared runtime dependencies whose
-resolution must remain consistent across services.
+The IDE should normally open the canonical `moda-interact-workspace`, but task
+commands and agent sessions are not required to begin with `$PWD` at that root.
+The launcher resolves the canonical workspace independently and exposes the
+resolved root/worktree topology to the execution workflow.
 
-The development IDE should be opened at the `moda-interact-workspace` project
-root. In VS Code, open the included `moda-interact.code-workspace`. Agent task
-startup therefore begins by bootstrapping from the workspace root:
+When manually bootstrapping from the workspace root:
 
 ```bash
 source scripts/bootstrap-node.sh
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
 ```
 
-`bootstrap-node.sh` resolves and exports:
+`MODA_WORKSPACE_ROOT` is the stable canonical workspace path for the rest of the
+session. If execution later moves into a task-specific implementation worktree,
+continue to invoke workspace tooling through that resolved root rather than
+searching for repository-local copies.
 
-```text
-MODA_WORKSPACE_ROOT
-```
+`.nvmrc` remains the single source of truth for the workspace development Node
+version. Agent definitions and task workflow documents do not embed a concrete
+Node version.
 
-That variable is the stable workspace path for the rest of the task. If the
-agent later changes into a service repository, it must continue to use:
-
-```bash
-"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
-```
-
-rather than looking for a repository-local `scripts/workspace-doctor.sh`.
-
-`.nvmrc` is the single source of truth for the workspace development Node
-version. Agent definitions and bootstrap scripts do not embed a concrete Node
-version.
-
-The workspace doctor classifies known environment/dependency conditions so
-agents do not repeatedly investigate the same baseline:
+The workspace doctor classifies known environment/dependency conditions as:
 
 ```text
 EXPECTED
@@ -548,17 +539,15 @@ For deeper dependency diagnostics:
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --full
 ```
 
-The baseline documentation is always:
-
-```text
-$MODA_WORKSPACE_ROOT/docs/development-baseline.md
-```
-
 See:
 
 - [`docs/development-baseline.md`](docs/development-baseline.md)
+- [`docs/node-toolchain.md`](docs/node-toolchain.md)
+- [`docs/agent-worktree-isolation-policy.md`](docs/agent-worktree-isolation-policy.md)
 - [`scripts/bootstrap-node.sh`](scripts/bootstrap-node.sh)
 - [`scripts/workspace-doctor.sh`](scripts/workspace-doctor.sh)
+
+<!-- MODA-DEVELOPMENT-BASELINE:END -->
 
 <!-- MODA-DEVELOPMENT-BASELINE:END -->
 
@@ -655,211 +644,206 @@ Detailed guidance:
 
 ---
 
+## Task workflow quick start
+
+All architecture work uses the same task system whether implementation is performed
+by a repository agent or directly by a developer. The task owns the architectural
+contract and review history; Git remains ordinary version control.
+
+Start here:
+
+**[Task workflow quick start](docs/task-workflow-quickstart.md)**
+
+The primary commands are:
+
+| Command | Purpose |
+| --- | --- |
+| `/moda-task <TASK_ID>` | Materialise/prepare an agent task if needed, create or reuse canonical worktrees, claim it and hand execution to the assigned repository agent. |
+| `/moda_developer_create <TASK_ID>` | Define/materialise a missing developer task when needed, or prepare/resume an existing developer task, then claim it for the developer. |
+| `/moda_developer_update <TASK_ID>` | Reconcile the real implementation, validation and task record for the current developer attempt. |
+| `/moda_developer_update <TASK_ID> complete` | Explicitly complete a task whose `completion_mode` is `developer`. |
+| `/moda_developer_update <TASK_ID> reopen` | Reopen a completed task to `ready`; the next claim creates Attempt N+1. |
+
+Four supported entry paths are first-class:
+
+```text
+Architect defines -> Agent implements
+Architect defines -> Developer implements
+Developer defines -> Developer implements
+Developer reopens -> Developer implements next attempt
+```
+
+An architect may define a task outside any development environment. In that case,
+the portable task definition may exist while **no branch or worktree exists yet**.
+Materialisation later creates the parent task branch/worktree; the implementation
+worktree is created only when execution actually starts.
+
+Every executable task ultimately uses the launcher-resolved pair:
+
+```text
+parent task worktree:
+  <workspace-parent>/<workspace-name>-task-<TASK_ID>
+
+implementation task worktree:
+  <workspace-parent>/<workspace-name>.worktrees/<TASK_ID>
+
+branch in both repositories:
+  task/<TASK_ID>
+```
+
+The launcher supplies the actual absolute paths for the current checkout. Do not
+copy path examples from another developer's machine.
+
+---
+
 ## Architecture-led development
 
-Moda Interact uses coding agents as part of a structured engineering workflow
-rather than as standalone code generators.
+Moda Interact treats conversation as temporary execution context and the repository
+as durable engineering state. One task format supports repository-agent and
+developer execution.
 
-The central principle is:
+Detailed specifications:
 
-> **Conversation is temporary execution context. The repository is durable
-> engineering state.**
-
-The detailed design and rationale are documented in:
-
-[Moda Interact Coding Agent Workflow](docs/coding-agent-workflow.md)
+- [Task workflow quick start](docs/task-workflow-quickstart.md)
+- [Coding agent workflow](docs/coding-agent-workflow.md)
+- [Developer-executed task workflow](docs/developer-task-workflow.md)
+- [Task definition and materialisation](docs/task-definition-materialization.md)
+- [Task worktree isolation](docs/agent-worktree-isolation-policy.md)
+- [Git/VCS ownership](docs/agent-vcs-ownership-policy.md)
 
 ### Architecture execution workflow
 
-Cross-repository architectural work follows this lifecycle:
+Architecture and execution are deliberately separate:
 
 ```text
-User / engineering requirement
-        |
-        v
-moda_architect
-        |
-        | inspect code + define architecture
-        v
-docs/architecture/ARCH-XXX-*.md
-        |
-        | decompose into bounded tasks
-        v
-docs/decisions/<domain>/ARCH-XXX/<TASK>.md
-        |
-        | dependencies satisfied
-        v
-repository agent
-        |
-        | claim + implement + validate
-        v
-status: review
-        |
-        v
-moda_architect
-        |
-        +--> changes requested --> same task / owner
-        |
-        +--> accepted --> status: complete
-                              |
-                              v
-                 required implementation complete
-                              |
-                              v
-                    moda_system_test
-                              |
-                    integrated validation
-                              |
-                              v
-                         status: review
-                              |
-                              v
-                        moda_architect
-                              |
-                              v
-                 architecture: implemented
-```
-
-Repository agents do **not** approve their own architecture tasks.
-
-Only `moda_architect` may accept:
-
-```text
-review -> complete
-```
-
-For architectures requiring integrated runtime validation, repository tasks being
-complete is not sufficient. Required system-test tasks must also be reviewed and
-completed.
-
-### Developer-owned Git and publication
-
-Git publication is deliberately separated from repository-agent implementation.
-
-The default Moda Interact workflow is:
-
-```text
-repository agent
+requirement
     |
-    +--> claim
-    +--> implement
-    +--> validate
-    +--> update Completion Report
-    +--> status: review
-    +--> STOP
-
-moda_architect
+    v
+moda_architect / developer-as-architect
     |
-    +--> inspect actual uncommitted changes
-    +--> request changes, or
-    +--> review -> complete
-
-developer / user
+    +--> define architecture/task
     |
-    +--> git add
-    +--> git commit
-    +--> git push
-```
-
-Repository agents must not run `git commit` or `git push` unless the developer
-explicitly grants one-off permission for that specific task.
-
-Agents may inspect Git state and may make task-owned working-tree changes,
-including updating a service's nested submodule checkout to an
-architect-approved published commit. They leave the resulting source and gitlink
-changes uncommitted for the developer.
-
-If an older task says that repository changes must be committed/pushed by the
-agent, that wording is coordination drift. It does not grant permission to
-publish and is not, by itself, a reason to block an otherwise completed task.
-
-Some downstream tasks require a **published** upstream commit, especially where
-one repository consumes another through a Git submodule. In that case:
-
-```text
-upstream agent -> review
-architect -> complete
-developer -> commit + push
-architect -> verify published commit
-architect -> promote dependent task to ready
-```
-
-The workspace-wide policy is documented in:
-
-[`docs/agent-vcs-ownership-policy.md`](docs/agent-vcs-ownership-policy.md).
-
-### Task lifecycle and claiming
-
-Task files use YAML frontmatter so execution can resume without depending on a
-previous conversation.
-
-Typical states:
-
-```text
-pending
-ready
-in_progress
-review
-complete
-blocked
-superseded
-```
-
-Normal lifecycle:
-
-```text
-pending
-   |
-   v
-ready
-   |
-   | repository agent claims
-   v
-in_progress
-   |
-   | implementation + validation
-   v
-review
-   |
-   | architect accepts
-   v
-complete
-```
-
-`complete` is an architecture/task-review state. It does not mean the
-repository agent committed or pushed the implementation.
-
-After architect acceptance, the developer/user owns publication:
-
-```text
-git add -> git commit -> git push
-```
-
-Task discovery is not a claim.
-
-Immediately before implementation the agent re-reads the task and verifies:
-
-```text
+    +--> portable definition may exist outside Git
+    |
+    v
+materialise task when a development environment is available
+    |
+    v
 status: ready
-assigned_agent: <correct logical agent>
-all depends_on tasks: complete
+    |
+    +--> /moda-task                 -> agent execution
+    |
+    +--> /moda_developer_create     -> developer execution
+    |
+    v
+status: in_progress
+    |
+    v
+implementation + validation
+    |
+    v
+status: review
+    |
+    +--> automatic completion path -> authorised review -> complete
+    |
+    +--> developer completion mode -> explicit developer decision -> complete
 ```
 
-A claim records the active execution surface:
+Task frontmatter distinguishes implementation and completion authority:
 
 ```yaml
-status: in_progress
-executor: copilot
-claimed_at: <timestamp>
-attempt: 1
+execution_mode: agent | developer
+completion_mode: automatic | developer
 ```
 
-Other supported executor values include `codex`, `claude` and `continue`.
+Legacy tasks without these fields are interpreted as `agent` / `automatic`.
+`assigned_agent` always remains the architectural/domain owner, even when the
+developer is the executor.
 
-An active claim must not be silently overwritten by another executor.
+A developer-executed task may ask its assigned agent for bounded assistance. The
+agent may inspect, debug, edit explicitly requested code, add tests and run
+validation in the canonical developer worktree, but it does not claim, complete,
+reopen or change lifecycle ownership of the task.
 
-Each task contains checkable Work Items, Acceptance Criteria, Validation,
-Completion Report and Architect Review sections.
+### Task branches and publication
+
+Every executable task uses two independent Git histories with the same branch name:
+
+```text
+parent workspace repository:       task/<TASK_ID>
+implementation repository:         task/<TASK_ID>
+```
+
+At the beginning of each attempt, the task workflow fetches remote state,
+fast-forwards from the corresponding remote task branch when possible, and
+incorporates current `origin/main` **into** the task branch before new work.
+
+At the end of an implementation/review submission, task-owned changes are committed
+and pushed on the task branches. The executor must never merge the task branch into
+`main`, push/update `main`, force-push, or use a remote merge action. Mainline
+integration remains an explicit developer/repository-owner action outside task
+execution.
+
+```text
+origin/main -> task/<TASK_ID>     allowed for synchronization
+task/<TASK_ID> -> origin/main     forbidden to task executors
+```
+
+Git is not the semantic work report. One workflow attempt may contain many normal
+commits, corrections, experiments and reverts. The task Completion Report explains
+what was ultimately implemented and validated.
+
+### Task lifecycle, completion and reopening
+
+The canonical task statuses remain:
+
+```text
+pending -> ready -> in_progress -> review -> complete
+```
+
+`defined` and `materialised` are lifecycle concepts, not additional YAML states. A
+portable architect definition can exist before the task is materialised into Git.
+
+Claiming a ready task records an executor and increments the attempt. `reopen` does
+not claim the next attempt:
+
+```text
+complete (Attempt N)
+        |
+        | /moda_developer_update TASK reopen
+        v
+ready (Attempt N, unclaimed)
+        |
+        | /moda_developer_create TASK
+        v
+in_progress (Attempt N+1, executor: developer)
+```
+
+Reopening preserves the previous accepted attempt and review history. Unstarted
+downstream tasks may have their readiness recalculated; downstream tasks that
+already have implementation history are never silently rewritten and instead
+require dependency-regression review.
+
+For `completion_mode: developer`, a successful `/moda_developer_update TASK` may
+place the task in `review`, but only the explicit:
+
+```text
+/moda_developer_update TASK complete
+```
+
+records the developer's completion decision. Complete tasks from either completion
+mode may later be reopened explicitly.
+
+### Dedicated task worktrees
+
+Task execution never switches shared/default service checkouts onto task branches.
+The launcher derives and returns the canonical parent and implementation worktree
+paths from the actual workspace root.
+
+Missing worktrees are normal on first execution and are created. Existing correct
+worktrees are reused across later attempts. An existing wrong repository/branch/path
+mapping is workflow non-conformance and must not be repaired by repurposing a shared
+checkout.
 
 ### Shared contract workflow
 
@@ -916,221 +900,102 @@ If a system test exposes an implementation defect, it reports the failure to
 
 ---
 
-## Launching an architecture task
+## Launching and updating tasks
 
-### Preferred interface: `moda-task <TASK_ID>`
+### Agent execution: `/moda-task <TASK_ID>`
 
-A fresh developer or coding-agent session should normally need only the fully
-qualified task ID.
-
-Examples:
-
-```text
-Continue: /moda-task ARCH-002-SHOPIFY-001
-
-Claude:   /moda-task ARCH-002-SHOPIFY-001
-
-Codex:    $moda-task ARCH-002-SHOPIFY-001
-          where the current Codex surface exposes project skill invocation
-
-Copilot:  Use /moda-task for ARCH-002-SHOPIFY-001
-```
-
-All entry points route through:
+Use `/moda-task` when `execution_mode` is `agent` (or on legacy tasks where the
+field is absent). The command routes through `scripts/start-agent-task.py`, resolves
+the logical agent/repository/canonical task topology, materialises an available
+portable task definition when necessary, creates or reuses the dedicated task
+worktrees, synchronises task branches, performs eligibility checks and hands the
+task to the assigned repository agent.
 
 ```text
-scripts/start-agent-task.py
+/moda-task ARCH-007-BACKGROUND-015
 ```
 
-The resolver deterministically maps:
+The launcher itself is routing/topology tooling: it does not invent architecture,
+claim tasks, implement code or approve reviews.
+
+### Developer execution: `/moda_developer_create <TASK_ID>`
+
+Use `/moda_developer_create` when the developer will perform the implementation. It
+is intentionally idempotent:
 
 ```text
-TASK_ID
-  |
-  v
-architecture ID
-  |
-  v
-decision domain
-  |
-  v
-task file
-  |
-  v
-logical Moda agent
-  |
-  v
-repository
-  |
-  v
-rendered docs/agent-task-execution-template.md
+missing portable/materialised task -> architect-definition/materialisation -> prepare -> claim
+ready developer task               -> prepare -> claim
+in_progress developer task         -> verify/reuse -> resume
+review developer task              -> use /moda_developer_update
+complete task                      -> explicit reopen first
 ```
 
-The resolver is **routing-only**.
+An architect-created developer task may exist only as a portable Markdown definition
+until this command is run in a development environment. No parent or implementation
+worktree is assumed to exist merely because the architect defined the task.
 
-It does not:
-
-- claim the task;
-- modify execution state;
-- implement the task;
-- perform architect review;
-- silently substitute another logical owner.
-
-The **resolver** being routing-only does not mean the complete `/moda-task`
-invocation stops after resolution.
-
-Successful resolution continues immediately into the resolved logical-agent
-execution context:
+### Developer review/update
 
 ```text
-/moda-task <TASK_ID>
-        |
-        v
-start-agent-task.py
-        |
-        | routing only
-        v
-resolved logical agent + repository + rendered prompt
-        |
-        v
-explicit dependency / eligibility verification
-        |
-        v
-claim -> implement -> validate -> review
-        |
-        v
-STOP
+/moda_developer_update <TASK_ID>
+/moda_developer_update <TASK_ID> complete
+/moda_developer_update <TASK_ID> reopen
 ```
 
-A successful resolver result such as `status: ready` is not a stopping
-condition. The receiving logical repository agent performs authoritative
-pre-claim checks, claiming, implementation, validation, Completion Report
-updates and transition to `status: review`.
+The base update action analyses the actual implementation, working tree, task-branch
+history, tests and task contract; it updates the Completion Report/review evidence
+rather than reconstructing work from commit messages alone. `complete` is the
+explicit completion authority for developer-controlled completion. `reopen` moves a
+completed task back to `ready` without incrementing the attempt; the next claim
+creates Attempt N+1.
 
-The agent then stops without committing or pushing.
+### Portable definitions and route-only resolution
 
-#### Manual resolver test
+When architecture occurs outside the development environment, the architect may
+return the exact canonical task Markdown as a portable definition. It can later be
+materialised by the relevant task command.
 
-From the workspace root:
+For topology inspection before a task exists in Git:
 
 ```bash
-python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
+python3 scripts/start-agent-task.py ARCH-007-BACKGROUND-015 --route-only --json
 ```
 
-The JSON result includes the resolved architecture, domain, agent, repository,
-task file, task state and execution prompt.
+An unmaterialised route reports task topology but does **not** guess
+`execution_mode` or `completion_mode`; those values come from the actual portable or
+materialised task frontmatter.
 
 ### Workspace-location independence
 
-An agent may change into a service repository during implementation. A later
-task launch must not depend on where the previous shell was left.
+`start-agent-task.py` resolves the canonical workspace from its own verified script
+location and derives the parent/implementation worktree paths from that workspace.
+Task commands must not infer canonical paths from `$PWD`, user names, home-directory
+layouts or examples copied from another machine.
 
-`start-agent-task.py` derives the workspace root from the script location.
-Runtime launchers expose `MODA_WORKSPACE_ROOT` and call:
+### Runtime integration
+
+Canonical skills live under `.codex/skills/` and generated Claude/Copilot mirrors
+live under `.claude/skills/`:
+
+```text
+moda-task
+moda_developer_create
+moda_developer_update
+```
+
+After changing canonical agent/skill definitions:
 
 ```bash
-python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "<TASK_ID>" --json
+python3 scripts/sync_agents.py
+python3 scripts/sync-skills.py
+python3 scripts/sync_agents.py --check
+python3 scripts/sync-skills.py --check
 ```
 
-### Runtime entry points
+Continue/Copilot/Claude/Codex are runtime adapters around the same durable task
+state and policies; they must not invent a parallel lifecycle.
 
-| Entry point | Project integration | Typical task launch |
-| --- | --- | --- |
-| **Continue Chat** | `.continue/prompts/moda-task.md` | `/moda-task ARCH-002-SHOPIFY-001` |
-| **GitHub Copilot Chat / Agent Mode** | `.claude/skills/moda-task/SKILL.md` | `Use /moda-task for ARCH-002-SHOPIFY-001` |
-| **Claude Code** | `.claude/skills/moda-task/SKILL.md` | `/moda-task ARCH-002-SHOPIFY-001` |
-| **Codex** | `.codex/skills/moda-task/SKILL.md` | `$moda-task ARCH-002-SHOPIFY-001` where supported |
-
-#### Continue setup
-
-Continue uses a project prompt stored at:
-
-```text
-.continue/prompts/moda-task.md
-```
-
-Register it in the developer's Continue configuration, for example:
-
-```yaml
-prompts:
-  - uses: file:///absolute/path/to/moda-interact-workspace/.continue/prompts/moda-task.md
-```
-
-The prompt is invokable as `moda-task`.
-
-Continue may execute the resolved logical role in its current agent context
-rather than spawning a provider-specific named subagent. The durable task,
-logical-agent rules and execution template remain authoritative.
-
-#### Copilot setup
-
-Copilot Agent Mode uses the shared project skill:
-
-```text
-.claude/skills/moda-task/SKILL.md
-```
-
-This avoids maintaining a duplicate skill under `.github/skills/`.
-
-Copilot executes the rendered task in its Agent Mode context while following the
-resolved logical agent's repository ownership and task protocol.
-
-Copilot implementation should stop when the task reaches:
-
-```text
-status: review
-```
-
-It must leave implementation changes uncommitted and unpushed unless the
-developer explicitly authorised publication for that task.
-
-Architect review is performed separately through ChatGPT acting as
-`moda_architect`.
-
-See:
-
-[Copilot model selection for Moda Interact tasks](docs/models/ARCH-002copilot-model-selection.md)
-
-#### Claude Code setup
-
-Claude logical-agent definitions live under:
-
-```text
-.claude/agents/
-```
-
-and the task launcher is:
-
-```text
-.claude/skills/moda-task/SKILL.md
-```
-
-The launcher is an invocation adapter; it must not become a competing task
-source of truth.
-
-#### Codex setup
-
-Codex logical-agent definitions live under:
-
-```text
-.codex/agents/
-```
-
-and the task launcher is:
-
-```text
-.codex/skills/moda-task/SKILL.md
-```
-
-Where project skill invocation is exposed:
-
-```text
-$moda-task ARCH-002-SHOPIFY-001
-```
-
-The Codex launcher must preserve named logical-agent routing. If the execution
-surface cannot select the configured logical agent, it should report that
-limitation rather than silently substitute a generic worker.
 
 ---
 
@@ -1196,7 +1061,7 @@ The intended flow is:
         |
         | canonical logical-agent behaviour
         v
-   sync_agents.py
+   scripts/sync_agents.py
         |
         v
 .claude/agents/*.agent.md
@@ -1210,9 +1075,9 @@ A normal agent-definition change is:
 ```text
 1. Edit .codex/agents/<agent>.toml
 2. Keep developer_instructions runtime-neutral
-3. Run python3 sync_agents.py --agent <agent>
+3. Run python3 scripts/sync_agents.py --agent <agent>
 4. Review the generated Claude definition
-5. Run python3 sync_agents.py --check
+5. Run python3 scripts/sync_agents.py --check
 6. Developer reviews and commits canonical + generated changes together
 ```
 
@@ -1220,21 +1085,21 @@ Useful commands:
 
 ```bash
 # Regenerate all Claude definitions
-python3 sync_agents.py
+python3 scripts/sync_agents.py
 
 # Verify without changing files
-python3 sync_agents.py --check
+python3 scripts/sync_agents.py --check
 
 # Regenerate one logical agent
-python3 sync_agents.py --agent moda_background
+python3 scripts/sync_agents.py --agent moda_background
 
 # Regenerate selected agents
-python3 sync_agents.py \
+python3 scripts/sync_agents.py \
   --agent moda_app \
   --agent moda_background
 
 # Remove obsolete generated Claude definitions
-python3 sync_agents.py --prune
+python3 scripts/sync_agents.py --prune
 ```
 
 `--prune` cannot be combined with `--agent`.
@@ -1266,7 +1131,7 @@ Claude    -> executor: claude
 Continue  -> executor: continue
 ```
 
-`sync_agents.py --check` validates synchronization and is suitable for CI or
+`scripts/sync_agents.py --check` validates synchronization and is suitable for CI or
 pre-commit verification.
 
 ### Agent Node.js environment
@@ -1286,7 +1151,7 @@ To propagate the version-independent Node bootstrap policy:
 
 ```bash
 python3 scripts/apply-node-agent-policy.py
-python3 sync_agents.py
+python3 scripts/sync_agents.py
 ```
 
 ---
@@ -1405,81 +1270,36 @@ Measured capacity, estimates and assumptions must be labelled separately.
 
 ## Working with Git submodules
 
-### Working with a service
+The canonical workspace records exact compatible service commits as Gitlinks, but
+architecture-task implementation does **not** happen by switching the shared
+submodule checkout to a task branch. Executable tasks use the launcher-resolved
+dedicated implementation worktree instead.
 
-A submodule is normally checked out at the exact commit recorded by the
-workspace, which may leave the service in detached HEAD state.
+### Task implementation
 
-Before starting new implementation work:
-
-```bash
-cd moda-interact-messaging
-
-git status
-git switch main
-git pull --ff-only origin main
-```
-
-For an architecture task, the repository agent makes and validates the service
-change, moves the task to `review`, and stops.
-
-After architect acceptance, the **developer/user** commits and pushes the
-accepted service change:
-
-```bash
-git add .
-git commit -m "describe the change"
-git push
-```
-
-Return to the workspace root:
-
-```bash
-cd ..
-git status
-```
-
-The workspace now sees the newer service commit:
+For a task such as `ARCH-007-MESSAGING-005`, execution occurs conceptually at:
 
 ```text
-modified: moda-interact-messaging (new commits)
+<workspace-parent>/<workspace-name>.worktrees/ARCH-007-MESSAGING-005
+branch: task/ARCH-007-MESSAGING-005
 ```
 
-Record the new platform snapshot:
+The shared workspace submodule remains a reference/source checkout. The task workflow
+fetches/synchronises the dedicated task branch before implementation and commits/pushes
+task-owned changes there. It never merges the task branch to `main`.
 
-```bash
-git add moda-interact-messaging
-git commit -m "update messaging service"
-git push
-```
+### Recording accepted service commits in the workspace
 
-The two-level commit model is intentional, and both publication steps belong to
-the developer/user:
-
-```text
-repository agent
-    |
-    +--> implementation + validation + review
-             |
-             v
-moda_architect
-    |
-    +--> accept
-             |
-             v
-developer / user
-    |
-    +--> service repository commit + push
-             |
-             v
-developer / user
-    |
-    +--> workspace repository records compatible service commit
-```
+Mainline merge/integration is a separate developer/repository-owner action. After an
+accepted implementation branch has been intentionally integrated/published to the
+service's `main`, update the canonical workspace Gitlink intentionally and review the
+resulting platform snapshot before committing it on `main`. Task executors do not
+automatically update the parent workspace's service Gitlink merely to record a task
+report commit.
 
 ### Updating submodules
 
-Fetch the commits already referenced by the workspace:
+To fetch commits already referenced by the workspace:
 
 ```bash
 git submodule update --init --recursive
@@ -1491,39 +1311,15 @@ To inspect/fetch newer configured remote commits:
 git submodule update --remote --recursive
 ```
 
-Review changes before committing updated workspace pointers.
+Review all resulting Gitlink changes before integrating them.
 
 ### Detached HEAD recovery
 
-Detached HEAD is normal after recursive clone/update because the workspace
-records commit SHAs rather than branches.
-
-If commits were accidentally made while detached, do not discard them.
-
-Find them:
-
-```bash
-git reflog --oneline
-```
-
-Then either cherry-pick:
-
-```bash
-git switch main
-git cherry-pick <detached-commit-sha>
-git push
-```
-
-or preserve a longer series:
-
-```bash
-git switch -c recover-work <latest-detached-commit-sha>
-git switch main
-git merge recover-work
-git push
-```
-
-Afterward, update the top-level workspace submodule pointer.
+Detached HEAD is normal for a submodule reference checkout because the workspace
+records commit SHAs. If manual commits were accidentally made while detached, preserve
+them with `git reflog` and recover them onto an intentional branch; do not discard
+unknown work. New architecture tasks should use their dedicated task worktree rather
+than repairing the shared submodule into a task execution checkout.
 
 ### Checking submodule status
 
@@ -1531,40 +1327,18 @@ Afterward, update the top-level workspace submodule pointer.
 git submodule status --recursive
 ```
 
-### Database submodule
+### Database repository and nested Gitlinks
 
-`moda-interact-database` is also consumed as a nested submodule by services that
-need the canonical Prisma schema.
+`moda-interact-database` may appear both as a top-level workspace submodule and as a
+nested submodule in services. These are independent reference checkouts and may point
+to different commits. A database architecture task is implemented/published on its
+own task branch first. Consumer tasks should consume only the architect-approved
+published database commit required by their dependency contract and must update their
+nested Gitlink deliberately inside their own dedicated task worktree.
 
-The same repository can therefore appear at multiple paths:
+Publication to `main` and top-level platform-snapshot Gitlink integration remain
+separate developer/repository-owner operations after task acceptance.
 
-```text
-moda-interact-database/
-moda-interact/database/
-moda-interact-background/database/
-```
-
-These are independent checkouts and can point to different commits.
-
-A typical database change flow is:
-
-```text
-1. moda_database changes + validates the database task
-2. moda_database moves the task to review and STOPS
-3. moda_architect accepts the database task
-4. developer commits + pushes moda-interact-database
-5. architect verifies the published database commit
-6. affected repository agent updates its nested database submodule to the
-   architect-approved published commit and implements/validates its task
-7. affected repository agent moves its task to review and STOPS
-8. moda_architect accepts the affected repository task
-9. developer commits + pushes the affected service
-10. developer updates top-level workspace submodule pointers
-11. developer commits + pushes the compatible workspace snapshot
-```
-
-Keep database pointers aligned intentionally when services are meant to consume
-the same schema revision.
 
 ---
 
@@ -1584,37 +1358,34 @@ git submodule status --recursive
 # Open the VS Code workspace
 code moda-interact.code-workspace
 
-# Bootstrap Node/NVM
+# Bootstrap Node/NVM when working from the canonical workspace
 source scripts/bootstrap-node.sh
 
 # Quick workspace environment/dependency validation
 "$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick
 
-# Production-focused workspace validation
-"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --production
+# Resolve an existing architecture task
+python3 scripts/start-agent-task.py ARCH-007-BACKGROUND-015 --json
 
-# Regenerate Claude agents from canonical Codex definitions
-python3 sync_agents.py
+# Resolve topology for a task that may not yet be materialised
+python3 scripts/start-agent-task.py ARCH-007-BACKGROUND-015 --route-only --json
 
-# Verify agent synchronization
-python3 sync_agents.py --check
+# Regenerate/check Claude/Copilot agent mirrors
+python3 scripts/sync_agents.py
+python3 scripts/sync_agents.py --check
 
-# Resolve an architecture task without launching it
-python3 scripts/start-agent-task.py ARCH-002-SHOPIFY-001 --json
+# Regenerate/check Claude/Copilot skill mirrors
+python3 scripts/sync-skills.py
+python3 scripts/sync-skills.py --check
 
-# Inspect the detailed coding-agent workflow
-cat docs/coding-agent-workflow.md
-
-# Inspect developer-owned Git/VCS publication policy
+# Workflow onboarding
+cat docs/task-workflow-quickstart.md
+cat docs/developer-task-workflow.md
+cat docs/task-definition-materialization.md
+cat docs/agent-worktree-isolation-policy.md
 cat docs/agent-vcs-ownership-policy.md
-
-# Inspect Copilot implementation-model planning
-cat docs/copilot-model-selection.md
-
-# Inspect current high-level architecture initiatives
-cat docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md
-cat docs/architecture/ARCH-002-render-production-gateway-infrastructure.md
 ```
+
 
 ---
 
@@ -1635,39 +1406,54 @@ ownership.
 - Public product and marketing content belongs in `moda-interact-site`.
 - Architecture-specific integrated validation belongs in
   `moda-interact-system-test`.
-- Cross-repository architecture, sequencing, implementation review and final
-  architecture acceptance belong to `moda_architect`.
-- Repository agents implement and validate work but stop at `status: review`;
-  Git commit/push publication belongs to the developer/user unless explicitly
-  delegated for one task.
+- Cross-repository architecture, sequencing and dependency governance belong to
+  `moda_architect`; developer-mode tasks may additionally exercise explicit
+  developer-as-architect completion/reopen authority.
+- Agent and developer task execution uses dedicated physical worktrees and mirrored
+  `task/<TASK_ID>` branches.
+- Task executors commit and push task-owned task branches, but never merge or push
+  `main`.
+- Git records source history; task documents record architectural intent, final
+  implementation evidence, validation and review decisions.
+- A Complete task may be explicitly reopened by the developer; reopening preserves
+  history and returns the task to `ready` before the next attempt is claimed.
+- System-test tasks may become dependency-ready automatically but remain manual-gated
+  until explicitly invoked where the architecture requires that gate.
 
-The workspace records how these independently deployed parts fit together and
-provides durable architecture/task state across Copilot, Claude Code, Codex and
-Continue.
+The workspace provides durable architecture/task state across Copilot, Claude Code,
+Codex, Continue and direct developer execution without creating separate workflow
+systems for each runtime.
+
 
 ---
 
 ## Related documentation
 
+### Start here for engineering workflow
+
+- [Task workflow quick start](docs/task-workflow-quickstart.md)
+- [Developer-executed architecture task workflow](docs/developer-task-workflow.md)
+- [Task definition and materialisation](docs/task-definition-materialization.md)
+- [Coding agent workflow](docs/coding-agent-workflow.md)
+- [Task worktree isolation policy](docs/agent-worktree-isolation-policy.md)
+- [Git / VCS ownership policy](docs/agent-vcs-ownership-policy.md)
+- [Task review archive helper](docs/task-worktree-review-archive-helper.md)
+- [Development baseline](docs/development-baseline.md)
+- [Node.js toolchain](docs/node-toolchain.md)
+
+### Architecture and product
+
 - [Architecture overview](docs/architecture/overview.md)
 - [Service boundaries](docs/architecture/services.md)
 - [Inbound WhatsApp recovery and multi-basket runtime flow](docs/architecture/inbound-whatsapp-recovery-flow.md)
 - [Runtime flows index](docs/architecture/runtime-flows.md)
-- [Coding agent workflow](docs/coding-agent-workflow.md)
-- [Git / VCS ownership policy](docs/agent-vcs-ownership-policy.md)
-- [Copilot model selection](docs/copilot-model-selection.md)
-- [Development baseline](docs/development-baseline.md)
-- [Node.js toolchain](docs/node-toolchain.md)
+- [Copilot model selection](docs/models/ARCH-002/copilot-model-selection.md)
 - [ARCH-001: Shopify checkout recovery webhook processing](docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md)
 - [ARCH-002: Render test and production gateway and infrastructure](docs/architecture/ARCH-002-render-production-gateway-infrastructure.md)
 - [ARCH-003: Admin operational queue observability UI](docs/architecture/ARCH-003-admin-operational-ui.md)
-- [ARCH-003 readable operational observability overview](docs/architecture/ARCH-003-operational-observability-overview.md)
 - [ARCH-004: Correlated cart activity recovery rescheduling](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md)
-- [ARCH-004 readable cart activity recovery overview](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling-overview.md)
 - [ARCH-005: Global internationalisation and WhatsApp markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md)
-- [ARCH-005 readable internationalisation overview](docs/architecture/ARCH-005-internationalisation-overview.md)
 - [ARCH-006: Merchant communications, support inbox and system notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md)
-- [ARCH-006 readable merchant communications overview](docs/architecture/ARCH-006-merchant-communications-overview.md)
 - [ARCH-007: Shopify billing, usage and cost control](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md)
 - [Pricing and billing model](docs/product/pricing-and-billing-model.md)
 - [ARCH-007 implementation handoff](docs/architecture/ARCH-007-implementation-handoff.md)

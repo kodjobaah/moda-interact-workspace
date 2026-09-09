@@ -1,5 +1,7 @@
 # Moda Interact Coding Agent Workflow
 
+> New contributor? Start with [`docs/task-workflow-quickstart.md`](task-workflow-quickstart.md) for the concise end-to-end flow, then return here for the detailed rules.
+
 ## Overview
 
 Moda Interact uses coding agents as part of a structured engineering workflow rather than as standalone coding assistants.

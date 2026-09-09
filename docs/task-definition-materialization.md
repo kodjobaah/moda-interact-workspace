@@ -1,5 +1,7 @@
 # Architecture Task Definition and Materialisation
 
+> New contributor? Start with [`docs/task-workflow-quickstart.md`](task-workflow-quickstart.md) for the concise end-to-end flow, then return here for the detailed rules.
+
 ## Purpose
 
 Moda Interact separates **defining work** from **materialising that work in a
