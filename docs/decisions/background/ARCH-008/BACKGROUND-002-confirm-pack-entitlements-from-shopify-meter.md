@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-09T16:45:36Z
@@ -365,33 +365,41 @@ Do not begin ADMIN-001.
 
 ### Status
 
-In Progress — implementation worktree dependency checkout repaired.
+Review — implementation complete; awaiting architect acceptance.
 
 ### Files Changed
 
-None. The implementation worktree remains clean; no implementation source was modified.
+- `moda-interact-background/src/services/shopify-usage-event-publisher.service.ts`
+- `moda-interact-background/src/services/recovery-credit-purchase.service.ts`
+- `moda-interact-background/src/services/billing-reconciliation.service.ts`
+- Focused service tests for publisher, purchase reconciliation, and billing reconciliation.
 
 ### Work Completed
 
-Completed the required task routing, dependency verification, dedicated worktree setup, fresh synchronization, and ARCH-008 preflight.
+Implemented provider-confirmed recovery-credit pack reconciliation. App Events transport success now leaves pack purchases pending; billing reconciliation resolves the exact current cycle, plan, and pack meter, then applies a Serializable deterministic aggregate budget with replay/concurrency protection and under/over/ambiguous discrepancy reporting. No schema or cross-repository change was introduced.
 
 ### Validation Results
 
-Preflight evidence:
+Preflight and implementation evidence:
 
 - Parent task worktree synchronized from `origin/main` to `0d12fe8` and is clean.
-- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-BACKGROUND-002` is clean at `9abae33`, branch `task/ARCH-008-BACKGROUND-002`.
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-BACKGROUND-002` is published at commit `c90aa39` on branch `task/ARCH-008-BACKGROUND-002`.
 - The resolver-selected implementation worktree is at commit `9abae33` from `origin/main`; its tracked `database` submodule was uninitialized, so `database/prisma/schema.prisma` was absent locally even though `package.json` and `prisma.config.ts` reference it.
 - Initialized the tracked `database` submodule at gitlink commit `ebe43c0466b555ea4919dc55915e28e40c25ae24`; the required `Subscription`, `BillingPeriod`, `UsageEvent`, and `RecoveryCreditPurchase` schema models are now available in the implementation worktree.
 - The canonical Background checkout and implementation worktree agree on the database gitlink; no source checkout divergence remains.
+- `npm run prisma:validate` passed against `database/prisma/schema.prisma`.
+- Focused service tests passed: 3 files, 29 tests.
+- `npm run build` passed, including Prisma client generation and TypeScript compilation.
+- `git diff --check` passed.
+- Full `npm run test:unit` ran 43 files / 424 tests; 422 passed and 2 unrelated pre-existing `pending-recovery-candidate.service.test.ts` tests failed.
 
 ### Deviations
 
-Implementation has not started yet. The preflight blocker was caused by an uninitialized tracked submodule, not source drift. No migration, schema repair, heuristic, or cross-repository change was introduced.
+The implementation branch is ready for architect review. The full suite retains two failures in `pending-recovery-candidate.service.test.ts` concerning checkout-context refresh behavior; those tests and their owning service are outside this task's changed files. No migration, schema repair, heuristic, or cross-repository change was introduced.
 
 ### Assumptions
 
-None.
+No task-specific unresolved implementation issues. Full-suite residual risk is limited to the two unrelated pending-recovery-candidate failures noted above.
 
 ### Unresolved Issues
 
