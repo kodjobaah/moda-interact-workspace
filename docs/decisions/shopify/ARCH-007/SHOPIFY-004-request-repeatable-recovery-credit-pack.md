@@ -7,7 +7,7 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 66
 executor: copilot
 claimed_at: 2026-09-09T11:20:00Z
@@ -188,13 +188,15 @@ ACTIVE balance appears only after Background activation.
 ## Completion Report
 
 ### Status
-In Progress (Attempt 2)
+Ready for Review
 
 ### Files Changed
 Implementation branch changes:
 - `app/routes/app.billing.tsx`
 - `app/services/billing/billing.service.ts`
 - `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-i18n.test.ts`
+- `tests/unit/billing-ui.test.ts`
 - `app/i18n/locales/da.json`
 - `app/i18n/locales/de.json`
 - `app/i18n/locales/en.json`
@@ -204,29 +206,41 @@ Implementation branch changes:
 - `app/i18n/locales/nl.json`
 - `app/i18n/locales/pt-BR.json`
 - `app/i18n/locales/pt-PT.json`
+- `app/i18n/locales/cs.json`
+- `app/i18n/locales/fi.json`
+- `app/i18n/locales/ja.json`
+- `app/i18n/locales/ko.json`
+- `app/i18n/locales/nb.json`
+- `app/i18n/locales/pl.json`
+- `app/i18n/locales/sv.json`
+- `app/i18n/locales/th.json`
+- `app/i18n/locales/tr.json`
+- `app/i18n/locales/zh-Hans.json`
+- `app/i18n/locales/zh-Hant.json`
 
 ### Work Completed
 Implemented repeatable recovery-credit pack requests using durable `RecoveryCreditPurchase` and pending `UsageEvent` records. Requests validate the server-generated UUID, reload current subscription/plan state, verify the configured Shopify pack meter, snapshot the current plan configuration, and do not grant credits or call Shopify billing/App Events directly. Duplicate purchase IDs return the existing purchase and different IDs support repeat purchases. The billing page displays the purchased-credit balance and only renders the Buy form when the mapped subscription, pack configuration, and Shopify meter verification are safe.
 
-Added focused coverage for Free and paid mapped plans, idempotency, repeated purchases, client identity validation, and fail-closed meter verification. Completed translations were preserved in the nine locale catalogues already changed on the interrupted attempt.
+Attempt 2 adopts Shared's canonical Shopify usage idempotency helper, performs early and transactional replay checks, re-reads and validates current subscription/plan state inside the write transaction, and fails closed when provider-verified facts no longer match durable state. Purchased balance presentation is independent from new-pack eligibility. Added regressions for provider-unavailable replay, stale configuration, disabled/missing/unsafe states, ignored client fields, provider-before-transaction ordering, exact event fields, and canonical idempotency.
+
+Integrated the architect-supplied translations for all eleven remaining locale catalogues without changing the nine previously completed catalogues. Strengthened i18n coverage for all 20 catalogues, ICU placeholder parity, runtime resolution, and literal-copy bypasses; added UI source coverage for independent balance presentation.
 
 ### Validation Results
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/billing-ui.test.ts`: 30 passed.
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/billing-i18n.test.ts tests/unit/billing-ui.test.ts`: 30 passed; the existing catalogue-completeness test fails because eleven declared catalogues still lack the five new billing keys.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/billing-i18n.test.ts tests/unit/billing-ui.test.ts`: 41 passed.
 - `npm run typecheck`: repository baseline failures remain; the task-introduced nullable `recoveryCreditsPerPack` error was fixed. Remaining failures include pre-existing implicit-any and legacy route/test typing errors.
 - `git diff --check`: passed.
 
 ### Deviations
-Per developer instruction, translation work is paused. Do not delete the nine completed locale updates. The remaining eleven locale catalogues and the failing catalogue-completeness check require architect coordination before translation work continues.
+No task-specific deviation remains. The architect-supplied eleven-locale handoff is integrated unchanged, and the nine previously completed locale updates were preserved.
 
 ### Assumptions
 Shopify meter verification remains a read-only provider check outside the Prisma write transaction; no direct Shopify billing/App Events network call is made by the purchase transaction.
 
 ### Unresolved Issues
-The following locales still need the five new billing keys: `cs`, `fi`, `ja`, `ko`, `nb`, `pl`, `sv`, `th`, `tr`, `zh-Hans`, and `zh-Hant`. The architect should assign or authorize completion of those translations and rerun the focused i18n test.
+Repository-wide typecheck remains blocked by pre-existing JavaScript/legacy typing diagnostics outside the touched billing files. Focused billing, provider, UI, and i18n validation passes.
 
 ### Architectural Concerns
-Translation completion is intentionally deferred and is the only task acceptance gap identified in this interrupted continuation.
+The implementation remains subject to architect review; no acceptance decision is made here.
 
 ### Git / VCS
 
@@ -244,7 +258,7 @@ Physical worktree isolation:
 
 Implementation repository:
   repository: moda-interact
-  commit: 06a963e
+  commits: `06a963e`, `be5a325`, Attempt 2 correction commit to follow
   remote branch: origin/task/ARCH-007-SHOPIFY-004
   pushed: yes
 
