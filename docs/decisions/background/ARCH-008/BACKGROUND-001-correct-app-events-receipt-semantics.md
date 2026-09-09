@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-09-09T13:05:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-007-BACKGROUND-006
@@ -304,24 +304,112 @@ Merged to workspace main: no
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+#### Attempt 1 — Accepted
+
+`ARCH-008-BACKGROUND-001` is architect-accepted Complete.
+
+The implementation is intentionally narrow and conforms to the task boundary:
+
+1. HTTP `409` is classified through the existing `transient` App Events error
+   kind, making it retryable without introducing a new state/error model.
+2. Successful App Events submission remains the durable
+   `ShopifyReportState.REPORTED` transition with existing `reportedAt`.
+3. The bounded provider summary is exactly
+   `submitted-to-shopify-app-events`, so local durable wording no longer
+   implies provider billing confirmation.
+4. Permanent Shopify App Events idempotency identity is unchanged.
+5. Existing retry bounds, 401 refresh behavior, 429/server/transient handling,
+   event economics and meter handles are unchanged.
+6. Recovery-credit activation after `markReported` is deliberately preserved in
+   this task. Removal/replacement belongs exclusively to
+   `ARCH-008-BACKGROUND-002`.
+
+The focused evidence is compositional and sufficient:
+
+- provider tests prove HTTP `409 -> transient`;
+- publisher tests prove retryable/transient failures transition to `RETRYABLE`
+  rather than immediate `NEEDS_ATTENTION`;
+- existing publisher retry/replay tests prove the permanent
+  `shopifyIdempotencyKey` is reused across attempts;
+- success-path tests prove `REPORTED` rows record
+  `submitted-to-shopify-app-events`;
+- recovery-credit publisher tests prove pack activation behavior remains
+  unchanged for this task.
+
+No unrelated implementation change was found in the pushed commit.
 
 ### Reviewed Files
 
-None
+Implementation commit:
+
+```text
+3e863c611409523b9a1c8f819d4fc6f52b1d2add
+```
+
+Reviewed implementation files:
+
+- `src/providers/shopify-app-events.provider.ts`
+- `src/services/shopify-usage-event-publisher.service.ts`
+- `tests/unit/providers/shopify-app-events.provider.test.ts`
+- `tests/unit/services/shopify-usage-event-publisher.service.test.ts`
+
+Parent task report reviewed at:
+
+```text
+a3a596957b1ab35f2d9955a1b2f3231a21634957
+```
 
 ### Validation Reviewed
 
-None
+Completion Report records:
+
+- focused App Events provider/publisher tests: **34 passed across 2 files**;
+- full unit suite: **424 passed** with the same 2 documented unrelated
+  `pending-recovery-candidate.service.test.ts` baseline failures;
+- `npm run build`: passed;
+- `npm run prisma:validate`: passed;
+- `git diff --check`: passed.
+
+The supplied review archive excludes `node_modules`, so the architect did not
+rerun Vitest from the archive. Source, task evidence and pushed commit diff were
+inspected directly.
 
 ### Architecture Conformance
 
-Pending
+Accepted.
+
+`REPORTED` now correctly means transport submission/receipt at the App Events
+boundary, not billing confirmation. `409` follows the existing retryable path
+with permanent identity reuse. Entitlement confirmation remains intentionally
+unchanged until `ARCH-008-BACKGROUND-002`.
 
 ### Follow-up
 
-None
+`ARCH-008-BACKGROUND-001` is Complete.
+
+Durable state:
+
+```text
+status: complete
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+`ARCH-008-BACKGROUND-002` is now Ready because all of its declared dependencies
+are architect-accepted Complete:
+
+- `ARCH-008-BACKGROUND-001`
+- `ARCH-007-BACKGROUND-008`
+- `ARCH-007-BACKGROUND-009`
+- `ARCH-007-SHOPIFY-001`
+
+Do not begin `ARCH-008-ADMIN-001`; it remains dependency-gated behind
+`ARCH-008-BACKGROUND-002`.
+
+The ARCH-008 system-test task remains terminal/manual-gated and must not be
+auto-started.
