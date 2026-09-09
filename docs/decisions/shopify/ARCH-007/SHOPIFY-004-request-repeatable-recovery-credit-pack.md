@@ -7,10 +7,10 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: review
+status: ready
 priority: 66
-executor: copilot
-claimed_at: 2026-09-09T11:20:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-SHOPIFY-002
@@ -273,9 +273,75 @@ Merged to workspace main: no
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Changes Requested — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 — Changes Requested
+
+Attempt 2 resolves the three substantive production corrections from Attempt 1:
+Shared's canonical Shopify usage idempotency helper is used, existing replay is
+checked before provider verification and durable configuration is re-read inside
+the write transaction, and purchased-credit balance presentation is independent
+from new-pack eligibility. All 20 locale catalogues now contain the five
+SHOPIFY-004 keys with exact English ICU placeholder parity.
+
+Two narrow close-out corrections remain.
+
+##### Correction 1 — concurrent same-purchase replay must recover the unique-conflict loser
+
+Two concurrent requests can both observe no existing purchase before one
+transaction commits. Database uniqueness protects durable state, but the losing
+request currently surfaces Prisma `P2002`.
+
+Attempt 3 must preserve provider verification outside the transaction and add:
+
+```text
+transaction create
+  -> P2002
+  -> re-read RecoveryCreditPurchase(id=purchaseId)
+  -> same shop: return committed purchase
+  -> different shop: reject
+  -> no purchase: rethrow original error
+```
+
+Do not swallow unrelated database errors.
+
+Add a deterministic regression proving the concurrent loser resolves to the
+committed same-shop purchase while durable state contains one purchase and one
+UsageEvent.
+
+##### Correction 2 — finish the explicit i18n and fail-closed evidence
+
+`billing-i18n.test.ts` loops over all 20 catalogues but constructs the merchant
+runtime only once with `locale: "en"`. Move runtime creation into the locale loop
+and prove every locale selects its own catalogue and resolves all five keys.
+
+Also add explicit regressions proving:
+
+- a subscription whose projection status is actually `UNMAPPED`/unsafe creates
+  no UsageEvent; the current case labelled `unmapped` only sets the plan
+  `active=false`;
+- successful pack request does not update/upsert
+  `PURCHASED_RECOVERY_CREDITS` or any entitlement counter before Background
+  activation.
+
+No translation changes are requested.
+
+##### Completion-report evidence
+
+The parent Completion Report still contains:
+
+```text
+commits: 06a963e, be5a325, Attempt 2 correction commit to follow
+```
+
+Attempt 3 must replace the placeholder with
+`bc4cd5f64fb6502bbc44313f4083959407f812c7` and then record the new Attempt 3
+close-out commit.
+
+#### Attempt 1 — Changes Requested (historical)
+
 
 Attempt 1 establishes the correct overall Shopify App Pricing mechanism, but it
 is not yet architect-acceptable. The interrupted translation work is no longer
@@ -515,13 +581,17 @@ Durable state:
 
 ```text
 status: ready
-attempt: 1
+attempt: 2
 executor: null
 claimed_at: null
 ```
 
-The next claim is **Attempt 2** on the same mirrored
+The next claim is **Attempt 3** on the same mirrored
 `task/ARCH-007-SHOPIFY-004` branches/worktree.
+
+Attempt 3 is a narrow close-out pass. Preserve the accepted Attempt 2 provider
+verification, transactional freshness checks, balance presentation, all 20
+translations and canonical Shared idempotency helper.
 
 Do not create an attempt-specific branch.
 
