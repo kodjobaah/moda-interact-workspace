@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-09-09T16:45:36Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-008-BACKGROUND-001
@@ -413,24 +413,160 @@ None. The apparent divergence was resolved by initializing the implementation wo
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+#### Attempt 1 — Changes Requested
+
+The implementation correctly removes transport-success pack activation, moves
+new entitlement grants behind Partner aggregate reconciliation, scopes the
+budget to the current provider plan/BillingPeriod/purchase meter snapshots, uses
+a Serializable transaction with retry, preserves deterministic ordering for
+equivalent packs, and surfaces under/over/ambiguous provider discrepancies.
+The implementation branch is also cleanly scoped to the expected Background
+services/tests.
+
+Attempt 1 nevertheless has correctness and required-regression gaps that must be
+closed before acceptance.
+
+Required corrections for Attempt 2:
+
+1. **Scope the linked UsageEvent to the exact reconciliation shop and pack
+   meter.**
+
+   `RecoveryCreditPurchaseService.reconcileProviderConfirmed()` currently
+   filters the purchase snapshot by `shopifyEventHandleSnapshot`, but its nested
+   `usageEvent` predicate checks only metric, quantity, report state and
+   `billingPeriodId`. The linked UsageEvent itself must also satisfy the exact
+   reconciliation identity:
+
+   - `usageEvent.shopId == input.shopId`;
+   - `usageEvent.shopifyEventHandle == input.packMeterHandle`;
+   - existing exact `billingPeriodId`, metric `RECOVERY_CREDIT_PACK_PURCHASE`,
+     quantity `+1` and `REPORTED` checks remain.
+
+   Apply the same exact nested scope to both ACTIVE matched-unit counting and
+   pending/attention candidate selection. A wrong/null UsageEvent meter must
+   never be consumed merely because the RecoveryCreditPurchase snapshot has the
+   expected meter.
+
+2. **Preserve ARCH-007's accepted repaired-attention re-entry.**
+
+   `ARCH-007-BACKGROUND-009` explicitly accepted that a
+   `RecoveryCreditPurchase.NEEDS_ATTENTION` may later become ACTIVE exactly once
+   when its linked UsageEvent is repaired/retried and becomes `REPORTED`.
+   Attempt 1 now selects only `PENDING_BILLING`, which strands those previously
+   valid rows across the ARCH-008 rollout.
+
+   For provider-confirmed reconciliation, treat the accepted repaired-attention
+   state as eligible only when the linked UsageEvent is now `REPORTED` and all
+   exact shop/cycle/plan/meter predicates pass. The guarded activation update
+   must allow that same accepted source state. Do not make a non-REPORTED
+   attention row eligible and do not invent any new retryable state.
+
+3. **Do not silently suppress a present provider subscription with a missing
+   current-cycle boundary.**
+
+   `BillingReconciliationService.reconcilePackPurchases()` currently returns
+   `{ activatedCount: 0, discrepancy: null }` whenever
+   `currentPeriodStart/currentPeriodEnd` is absent. `provider == null` may
+   legitimately mean no current contract, but a *present* Partner subscription
+   without an exact current cycle is invalid reconciliation scope and must be
+   surfaced through the existing discrepancy/attention path. Activate nothing
+   and return/log an `invalid-scope` diagnostic (or the existing equivalent)
+   rather than silently skipping it.
+
+4. **Report the actual number of durable activations and prove overlapping
+   reconciliation.**
+
+   The reconciliation loop returns `activatedCount: selected.length` even when
+   a guarded `updateMany()` returns zero for a selected candidate. Count only
+   successful `PENDING_BILLING`/accepted repaired-attention -> `ACTIVE`
+   transitions for the returned `activatedCount`. Preserve the exactly-once
+   counter increment inside the same transaction.
+
+   Add a deterministic overlap/concurrency regression proving two reconciliation
+   attempts for the same provider quantity cannot double-grant and cannot report
+   two successful activations for one durable transition. A Prisma `P2034`
+   retry simulation is acceptable if it deterministically proves the intended
+   Serializable retry path; do not weaken transaction isolation.
+
+5. **Complete the required ARCH-008 reconciliation regression matrix.**
+
+   The current purchase-test harness ignores the Prisma `where` predicate, so it
+   cannot prove the task's exact scope exclusions. Strengthen the tests/harness
+   so the following are explicit and meaningful:
+
+   - non-`REPORTED` linked UsageEvent is not eligible;
+   - wrong `billingPeriodId` is not eligible;
+   - wrong/null linked `UsageEvent.shopifyEventHandle` is not eligible;
+   - wrong linked UsageEvent shop is not eligible;
+   - repaired `NEEDS_ATTENTION` + `REPORTED` re-enters and activates exactly once;
+   - present Partner subscription with missing current-cycle boundary surfaces
+     invalid scope and activates nothing;
+   - provider pack usage is passed as the exact pack-meter quantity (update the
+     B008-R6 fixture to contain the pack meter and assert the concrete quantity,
+     rather than `expect.any(Number)` which also accepts `NaN`-typed values);
+   - overlapping/replayed reconciliation remains exactly once;
+   - preserve a focused proof that normal recovery/customer messaging does not
+     become dependent on Partner reconciliation. If the existing separate-worker
+     boundary already proves this, a structural regression is sufficient and no
+     recovery production-code change is requested.
+
+   Keep the existing equivalent-pack deterministic ordering, under/over
+   discrepancy, invalid-provider-units, transport `REPORTED` semantics, build,
+   Prisma validation and full-suite baseline coverage.
+
+No database migration, Shared contract change, Shopify app change, Admin change,
+new provider client, timestamp heuristic or entitlement clawback is requested.
+Keep all corrections on this same task and mirrored branch pair.
 
 ### Reviewed Files
 
-None
+- `src/services/shopify-usage-event-publisher.service.ts`
+- `src/services/recovery-credit-purchase.service.ts`
+- `src/services/billing-reconciliation.service.ts`
+- `src/providers/shopify-partner-billing.provider.ts` (read-only contract verification)
+- `tests/unit/services/shopify-usage-event-publisher.service.test.ts`
+- `tests/unit/services/recovery-credit-purchase.service.test.ts`
+- `tests/unit/services/billing-reconciliation.service.test.ts`
+- `database/prisma/schema.prisma` (read-only architecture verification)
+- `docs/decisions/background/ARCH-007/BACKGROUND-009-activate-consume-recovery-credit-packs.md`
+- `docs/decisions/background/ARCH-008/BACKGROUND-002-confirm-pack-entitlements-from-shopify-meter.md`
+- `docs/architecture/ARCH-008-shopify-app-pricing-conformance.md`
+- `docs/architecture/ARCH-008-recovery-credit-reconciliation-preflight-2026-09-09.md`
 
 ### Validation Reviewed
 
-None
+- Published implementation commit `c90aa39` inspected.
+- GitHub branch comparison: `task/ARCH-008-BACKGROUND-002` is one commit ahead
+  of Background `main`, zero behind, with only the six authorised service/test
+  files changed.
+- Published parent report commit `29e0bd6` inspected; parent task branch is
+  based on current workspace `main` and contains only task-report history.
+- Completion Report: 3 focused files / 29 tests passed.
+- Completion Report: `npm run build` passed.
+- Completion Report: `npm run prisma:validate` passed against the initialized
+  tracked database submodule at `ebe43c0`.
+- Completion Report: `git diff --check` passed.
+- Completion Report: full unit suite 422/424 passed; the two
+  `pending-recovery-candidate.service.test.ts` failures match the pre-existing
+  unrelated Background baseline and are outside this task's changed files.
+- Review archive inspected directly. It contains no `node_modules`, so tests
+  were not independently rerun in the review container.
 
 ### Architecture Conformance
 
-Pending
+Partial. The core provider-confirmed budget architecture is implemented and
+transport acknowledgement no longer grants credits. Conformance remains
+incomplete because the linked UsageEvent is not scoped to the exact pack meter
+(and shop), accepted ARCH-007 repaired-attention re-entry is lost, a present
+provider subscription with no current cycle is silently skipped, and the
+required exact-scope/concurrency/isolation regression matrix is incomplete.
 
 ### Follow-up
 
-None
+Return `ARCH-008-BACKGROUND-002` to `moda_background` for Attempt 2 on the same
+mirrored `task/ARCH-008-BACKGROUND-002` branches. `ARCH-008-ADMIN-001` remains
+Pending until BACKGROUND-002 is architect-accepted Complete.
