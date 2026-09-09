@@ -7,11 +7,11 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: ready
+status: in_progress
 priority: 66
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-09T08:48:22Z
+attempt: 1
 depends_on:
   - ARCH-007-SHOPIFY-002
   - ARCH-007-DATABASE-005
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-007-SYSTEM-TEST-004
 created: 2026-09-08
-updated: 2026-09-08
+updated: 2026-09-09
 ---
 
 # ARCH-007-SHOPIFY-004: Let merchants request repeatable recovery-credit packs
@@ -188,7 +188,7 @@ ACTIVE balance appears only after Background activation.
 ## Completion Report
 
 ### Status
-Pending
+In Progress (Attempt 1)
 
 ### Files Changed
 None.
