@@ -7,7 +7,7 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-status: in_progress
+status: review
 priority: 66
 executor: copilot
 claimed_at: 2026-09-09T08:48:22Z
@@ -188,28 +188,73 @@ ACTIVE balance appears only after Background activation.
 ## Completion Report
 
 ### Status
-In Progress (Attempt 1)
+Ready for Review
 
 ### Files Changed
-None.
+Implementation branch changes:
+- `app/routes/app.billing.tsx`
+- `app/services/billing/billing.service.ts`
+- `tests/unit/services/billing.service.test.ts`
+- `app/i18n/locales/da.json`
+- `app/i18n/locales/de.json`
+- `app/i18n/locales/en.json`
+- `app/i18n/locales/es.json`
+- `app/i18n/locales/fr.json`
+- `app/i18n/locales/it.json`
+- `app/i18n/locales/nl.json`
+- `app/i18n/locales/pt-BR.json`
+- `app/i18n/locales/pt-PT.json`
 
 ### Work Completed
-None.
+Implemented repeatable recovery-credit pack requests using durable `RecoveryCreditPurchase` and pending `UsageEvent` records. Requests validate the server-generated UUID, reload current subscription/plan state, verify the configured Shopify pack meter, snapshot the current plan configuration, and do not grant credits or call Shopify billing/App Events directly. Duplicate purchase IDs return the existing purchase and different IDs support repeat purchases. The billing page displays the purchased-credit balance and only renders the Buy form when the mapped subscription, pack configuration, and Shopify meter verification are safe.
+
+Added focused coverage for Free and paid mapped plans, idempotency, repeated purchases, client identity validation, and fail-closed meter verification. Completed translations were preserved in the nine locale catalogues already changed on the interrupted attempt.
 
 ### Validation Results
-Not run.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/billing-ui.test.ts`: 30 passed.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/billing-i18n.test.ts tests/unit/billing-ui.test.ts`: 30 passed; the existing catalogue-completeness test fails because eleven declared catalogues still lack the five new billing keys.
+- `npm run typecheck`: repository baseline failures remain; the task-introduced nullable `recoveryCreditsPerPack` error was fixed. Remaining failures include pre-existing implicit-any and legacy route/test typing errors.
+- `git diff --check`: passed.
 
 ### Deviations
-None.
+Per developer instruction, translation work is paused. Do not delete the nine completed locale updates. The remaining eleven locale catalogues and the failing catalogue-completeness check require architect coordination before translation work continues.
 
 ### Assumptions
-None.
+Shopify meter verification remains a read-only provider check outside the Prisma write transaction; no direct Shopify billing/App Events network call is made by the purchase transaction.
 
 ### Unresolved Issues
-None.
+The following locales still need the five new billing keys: `cs`, `fi`, `ja`, `ko`, `nb`, `pl`, `sv`, `th`, `tr`, `zh-Hans`, and `zh-Hant`. The architect should assign or authorize completion of those translations and rerun the focused i18n test.
 
 ### Architectural Concerns
-None.
+Translation completion is intentionally deferred and is the only task acceptance gap identified in this interrupted continuation.
+
+### Git / VCS
+
+Task branch: `task/ARCH-007-SHOPIFY-004`
+
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-007-SHOPIFY-004
+  parent branch: task/ARCH-007-SHOPIFY-004
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-007-SHOPIFY-004
+  implementation branch: task/ARCH-007-SHOPIFY-004
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Implementation repository:
+  repository: moda-interact
+  commit: 06a963e
+  remote branch: origin/task/ARCH-007-SHOPIFY-004
+  pushed: yes
+
+Parent workspace:
+  task file: docs/decisions/shopify/ARCH-007/SHOPIFY-004-request-repeatable-recovery-credit-pack.md
+  remote branch: origin/task/ARCH-007-SHOPIFY-004
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
