@@ -178,9 +178,40 @@ Complete — developer explicitly completed accepted attempt 2.
 
 ### Files Changed
 
-Implementation branch contains the previously published folder-based route
-migration. Attempt 2 reverted the incidental production/UI commit and changed
-only tests afterward:
+The completed implementation includes the explicit route manifest and these
+folder-based route modules:
+
+```text
+app/routes/
+  _index/route.jsx
+  app/route.jsx
+  app/additional/route.jsx
+  app/billing/route.tsx
+  app/billing/callback/route.tsx
+  app/billing/select/route.jsx
+  app/home/route.jsx
+  app/merchant-support/route.jsx
+  app/pending-recoveries/route.jsx
+  app/usage/route.jsx
+  auth/catchall/route.jsx
+  auth/login/route.jsx
+  auth/login/error.server.jsx
+  public/home/route.jsx
+  public/home/styles.module.css
+  public/privacy/route.tsx
+  system/health/route.ts
+  system/ready/route.ts
+  system/telemetry-probe/route.ts
+  webhooks/root/route.jsx
+  webhooks/app/scopes-update/route.jsx
+  webhooks/app/uninstalled/route.jsx
+  webhooks/customers/data-request/route.jsx
+  webhooks/customers/redact/route.jsx
+  webhooks/shop/redact/route.jsx
+```
+
+The route manifest is defined in `app/routes.ts`. Attempt 2 reverted the
+incidental production/UI commit and changed only tests afterward:
 
 - `tests/unit/billing-period-compatibility.test.ts`
 - `tests/unit/dashboard/dashboard-conversation-relation.test.js`
