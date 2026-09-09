@@ -381,9 +381,9 @@ Preflight evidence:
 
 - Parent task worktree synchronized from `origin/main` to `0d12fe8` and is clean.
 - Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-BACKGROUND-002` is clean at `9abae33`, branch `task/ARCH-008-BACKGROUND-002`.
-- The implementation repository contains only `prisma/schema.prisma` as its Prisma schema.
-- That schema does not define `Subscription`, `BillingPeriod`, `UsageEvent`, or `RecoveryCreditPurchase`, nor the required provider-reconciliation fields.
-- Existing Background services reference those absent Prisma models, so the accepted reconciliation capability is not present in the synchronized implementation branch.
+- The resolver-selected implementation worktree is at commit `9abae33` from `origin/main` and contains only `prisma/schema.prisma`; it has no `database/prisma/schema.prisma`, even though `package.json` and `prisma.config.ts` reference `database/prisma/schema.prisma`.
+- The canonical Background source checkout is detached at commit `125f1a9` and does contain `database/prisma/schema.prisma` with `Subscription`, `BillingPeriod`, `UsageEvent`, and `RecoveryCreditPurchase`.
+- The canonical checkout is not a valid replacement implementation base for this task: `125f1a9` is not an ancestor of `origin/main` and its diff removes the accepted reconciliation service/provider surface present at `9abae33`.
 
 ### Deviations
 
@@ -395,11 +395,11 @@ None.
 
 ### Unresolved Issues
 
-`ARCH-008-BACKGROUND-002` cannot implement provider-confirmed reconciliation until the durable billing schema/capability is restored or the task scope is explicitly redefined by `moda_architect`. The task requires stopping rather than creating a replacement schema or migration.
+`ARCH-008-BACKGROUND-002` cannot implement provider-confirmed reconciliation until `moda_architect` reconciles the stale `origin/main` implementation base with the canonical schema-bearing checkout and publishes an authorized task branch. The task requires stopping rather than copying files, switching a shared checkout, creating a replacement schema, or inventing a migration.
 
 ### Architectural Concerns
 
-Source drift: the synchronized `moda-interact-background` branch has an older Prisma schema that lacks the durable billing models and fields explicitly required by ARCH-008. This conflicts with the task preflight and requires architect/database coordination before implementation can safely proceed.
+Source/worktree drift: the canonical Background checkout contains the required durable schema at `125f1a9`, while the resolver-selected implementation branch is based on stale `origin/main` `9abae33` and lacks that schema path while retaining service references to it. This requires architect coordination to publish/reconcile the correct implementation base before work can safely proceed.
 
 ## Architect Review
 
