@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
 executor: copilot
 claimed_at: 2026-09-09T16:18:00Z
@@ -296,27 +296,38 @@ Do not begin `ARCH-008-BACKGROUND-002`.
 
 ### Status
 
-In Progress
+Implemented and ready for architect review.
 
 ### Files Changed
 
 - `app/services/billing/billing.service.ts`
 - `app/routes/app.billing.tsx`
 - `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-ui.test.ts`
 
 ### Work Completed
 
 Attempt 2 correction checklist:
 
-- [ ] Perform local durable-cycle admission before calling Shopify.
-- [ ] Capture and compare the pre-provider BillingPeriod identity inside the transaction.
-- [ ] Add explicit local-null, missing-boundary, provider-null, provider-mismatch, and transaction-drift regressions.
-- [ ] Strengthen server-derived eligibility and UI balance/Buy-form regressions.
-- [ ] Record complete start-of-attempt synchronization and Git/worktree evidence.
+- [x] Perform local durable-cycle admission before calling Shopify.
+- [x] Capture and compare the pre-provider BillingPeriod identity inside the transaction.
+- [x] Add explicit local-null, missing-boundary, provider-null, provider-mismatch, and transaction-drift regressions.
+- [x] Strengthen server-derived eligibility and UI balance/Buy-form regressions.
+- [x] Record complete start-of-attempt synchronization and Git/worktree evidence.
+
+Implemented correction details:
+
+- Split local durable BillingPeriod validation from provider-cycle comparison.
+- Captured the pre-provider BillingPeriod ID and required the transactional re-read to retain that identity and matching boundaries.
+- Added explicit no-provider-call coverage for invalid local cycles and no-purchase/no-UsageEvent assertions for every rejection path.
+- Added UI coverage proving server-derived ineligibility hides the Buy form while preserving purchased balance presentation.
 
 ### Validation Results
 
-Pending Attempt 2 implementation.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts`: passed, 40 tests.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm run typecheck`: exits nonzero on existing legacy JSX and test-fixture diagnostics; no diagnostics were reported for changed production files.
 
 ### Deviations
 
@@ -333,6 +344,47 @@ Pending Attempt 2 implementation.
 ### Architectural Concerns
 
 - None identified.
+
+### Git / VCS
+
+Task branch: `task/ARCH-008-SHOPIFY-001`
+
+Physical worktree isolation:
+
+   canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+   parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-SHOPIFY-001`
+   parent branch: `task/ARCH-008-SHOPIFY-001`
+   implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-SHOPIFY-001`
+   implementation branch: `task/ARCH-008-SHOPIFY-001`
+   shared workspace checkout switched/mutated for task work: no
+   shared implementation checkout switched/mutated for task work: no
+   another task worktree reused: no
+
+Start-of-attempt synchronization:
+
+   parent remote task branch fast-forward: already up to date
+   parent `origin/main` merge: already unnecessary
+   implementation remote task branch fast-forward: already up to date
+   implementation `origin/main` merge: already unnecessary
+   unexpected divergence/conflict: none
+
+Implementation repository:
+
+   repository: `moda-interact`
+   correction commit: `3960b75`
+   remote branch: `origin/task/ARCH-008-SHOPIFY-001`
+   pushed: yes
+
+Parent workspace:
+
+   task file: `docs/decisions/shopify/ARCH-008/SHOPIFY-001-require-current-cycle-for-pack-purchase.md`
+   claim commit: `5482bf8`
+   remote branch: `origin/task/ARCH-008-SHOPIFY-001`
+   completion-report commit: pending
+   submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
