@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-09T22:08:51Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-008-BACKGROUND-001
@@ -411,9 +411,44 @@ None. The apparent divergence was resolved by initializing the implementation wo
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
+
+#### Attempt 2 — Accepted
+
+`ARCH-008-BACKGROUND-002` is architect-accepted Complete.
+
+Attempt 2 closes every correction requested after Attempt 1:
+
+1. ACTIVE matched-unit counting and candidate selection now scope the linked
+   `UsageEvent` to the exact shop, exact pack meter, exact BillingPeriod, metric
+   `RECOVERY_CREDIT_PACK_PURCHASE`, quantity `+1`, and `REPORTED` transport state.
+2. Accepted ARCH-007 repaired-attention compatibility is preserved: a
+   `NEEDS_ATTENTION` purchase can re-enter only through the same exact provider
+   scope after its linked UsageEvent is `REPORTED`, and activation remains
+   exactly once.
+3. A present Partner subscription without exact current-period boundaries now
+   produces an `invalid-scope` reconciliation discrepancy and grants nothing.
+4. `activatedCount` now counts successful durable state transitions rather than
+   the number of selected candidates. The counter increment remains inside the
+   same Serializable transaction and occurs only after a successful guarded
+   transition.
+5. Focused tests now exercise nested Prisma scope exclusions for non-REPORTED,
+   wrong cycle, wrong/null UsageEvent meter and wrong UsageEvent shop; repaired
+   attention re-entry; exact provider pack-meter quantity; missing provider
+   cycle diagnostics; replay/overlap; and the existing transport-success
+   no-activation boundary.
+
+The normal recovery/customer-message path remains architecturally independent:
+provider reconciliation is invoked from the dedicated billing reconciliation
+entrypoint/scheduler, and this task changes no checkout/recovery/messaging worker
+production path.
+
+The two remaining full-suite failures are the documented unrelated
+`pending-recovery-candidate.service.test.ts` baseline and are outside the six
+changed task files. No schema, Shared contract, Shopify app, Admin, gateway or
+other cross-repository change was introduced.
 
 #### Attempt 1 — Changes Requested
 
@@ -556,7 +591,18 @@ Keep all corrections on this same task and mirrored branch pair.
 
 ### Architecture Conformance
 
-Partial. The core provider-confirmed budget architecture is implemented and
+Accepted.
+
+Attempt 2 conforms to ARCH-008 provider-confirmed pack entitlement semantics:
+App Events `REPORTED` remains transport submission only; provider aggregate
+current-cycle pack-meter quantity is the entitlement confirmation input; local
+matching is exact and deterministic; ambiguous/non-matching scope fails closed;
+provider under/over discrepancies do not revoke or fabricate purchases; and
+activation/counter grant is exactly-once under the existing Serializable retry
+boundary.
+
+Attempt 1 was Partial before the corrections recorded above.
+ The core provider-confirmed budget architecture is implemented and
 transport acknowledgement no longer grants credits. Conformance remains
 incomplete because the linked UsageEvent is not scoped to the exact pack meter
 (and shop), accepted ARCH-007 repaired-attention re-entry is lost, a present
@@ -565,6 +611,5 @@ required exact-scope/concurrency/isolation regression matrix is incomplete.
 
 ### Follow-up
 
-Return `ARCH-008-BACKGROUND-002` to `moda_background` for Attempt 2 on the same
-mirrored `task/ARCH-008-BACKGROUND-002` branches. `ARCH-008-ADMIN-001` remains
-Pending until BACKGROUND-002 is architect-accepted Complete.
+`ARCH-008-ADMIN-001` is now dependency-eligible and may remain/be promoted
+`ready`. Do not begin ADMIN-002 until ADMIN-001 is architect-accepted Complete.
