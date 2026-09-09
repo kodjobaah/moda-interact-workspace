@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-09-09T13:05:47Z
@@ -206,35 +206,110 @@ Do not start BACKGROUND-002.
 
 ### Status
 
-In Progress
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/providers/shopify-app-events.provider.ts`
+- `src/services/shopify-usage-event-publisher.service.ts`
+- `tests/unit/providers/shopify-app-events.provider.test.ts`
+- `tests/unit/services/shopify-usage-event-publisher.service.test.ts`
 
 ### Work Completed
 
-None
+- Classified HTTP 409 as the existing retryable `transient` App Events error.
+- Preserved the durable publisher `REPORTED` state, `reportedAt`, retry bounds,
+   401 refresh behavior, and recovery-credit activation call.
+- Changed the successful provider summary to the exact neutral wording
+   `submitted-to-shopify-app-events`.
+- Extended focused coverage for HTTP 409 classification, successful submission
+   summary, and permanent idempotency-key reuse across retries/replays.
 
 ### Validation Results
 
-None
+- `npm exec vitest -- run tests/unit/providers/shopify-app-events.provider.test.ts tests/unit/services/shopify-usage-event-publisher.service.test.ts`: 34 passed across 2 files.
+- `npm run test:unit`: 424 passed, 2 unchanged baseline failures in
+   `tests/unit/services/pending-recovery-candidate.service.test.ts` concerning
+   stale/reschedule behavior and context merging.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+The isolated worktree required `git submodule update --init database` before
+Prisma generation; the database submodule was already declared by the branch.
 
 ### Assumptions
 
-None
+HTTP 202 remains represented by the existing `REPORTED` state because that
+state is the durable transport-acceptance state defined by ARCH-008.
 
 ### Unresolved Issues
 
-None
+The full unit suite retains two pre-existing failures in
+`pending-recovery-candidate.service.test.ts`; they are outside this task's
+files and behavior.
 
 ### Architectural Concerns
 
 None
+
+### Git / VCS
+
+Task branch: `task/ARCH-008-BACKGROUND-001`
+
+Physical worktree isolation:
+   canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+   parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-BACKGROUND-001`
+   parent branch: `task/ARCH-008-BACKGROUND-001`
+   implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-BACKGROUND-001`
+   implementation branch: `task/ARCH-008-BACKGROUND-001`
+   shared workspace checkout switched/mutated for task work: no
+   shared implementation checkout switched/mutated for task work: no
+   another task worktree reused: no
+
+Start-of-attempt synchronization:
+   parent remote task branch fast-forwarded: not-needed
+   parent origin/main incorporated: already-current
+   implementation remote task branch fast-forwarded: not-needed
+   implementation origin/main incorporated: already-current
+
+Implementation repository:
+   repository: `moda-interact-background`
+   commit: `3e863c611409523b9a1c8f819d4fc6f52b1d2add`
+   remote branch: `origin/task/ARCH-008-BACKGROUND-001`
+   pushed: yes
+
+Parent workspace:
+   task file: `docs/decisions/background/ARCH-008/BACKGROUND-001-correct-app-events-receipt-semantics.md`
+   commit: `2641183` claim; review commit to follow
+   remote branch: `origin/task/ARCH-008-BACKGROUND-001`
+   pushed: yes
+   submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+
+## Work Items
+
+- [x] Preserve `REPORTED` and `reportedAt` as the transport-acceptance state.
+- [x] Classify HTTP 409 through the existing retryable transient path.
+- [x] Preserve the permanent App Events idempotency key across retries.
+- [x] Record successful submission as `submitted-to-shopify-app-events`.
+- [x] Leave recovery-credit activation unchanged for BACKGROUND-002.
+- [x] Add focused 202, 409, summary, and identity-reuse coverage.
+
+## Acceptance Criteria
+
+- [x] 409 is retryable through the existing retry path.
+- [x] Retry preserves the permanent App Events idempotency key.
+- [x] 202 success still becomes `REPORTED` without billing-confirmed wording.
+- [x] Successful summary is `submitted-to-shopify-app-events`.
+- [x] No database migration or state enum change is introduced.
+- [x] No entitlement behavior is redesigned in this task.
+- [x] Focused provider/publisher tests cover 202, 409, and identity reuse.
+- [x] Repository validation passes except documented baseline failures.
 
 ## Architect Review
 
