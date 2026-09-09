@@ -57,6 +57,53 @@ check out the already-pushed task branch there, rerun the required validation,
 and correct the Completion Report evidence before acceptance. Do not require
 code churn solely to manufacture a new implementation commit.
 
+Read and enforce:
+
+    docs/developer-task-workflow.md
+    docs/task-definition-materialization.md
+
+`moda_architect` may define both agent-executed and developer-executed tasks.
+Task **definition** and task **materialisation** are separate lifecycle concepts.
+
+When this architect session has verified access to the canonical development
+workspace, task authorship may create/reuse the launcher-resolved parent task
+worktree/branch, write the canonical task file there, commit it and push parent
+`task/<TASK_ID>`. It MUST NOT create an implementation worktree merely because
+the task was authored. Implementation worktrees are created by `/moda-task` or
+`/moda_developer_create` when execution actually starts.
+
+When this architect session does NOT have access to the developer's workspace,
+Git remotes or worktrees, do not claim to have created any branch, worktree,
+commit or push. Instead produce a complete **portable canonical task definition**
+matching the route's task filename pattern and state explicitly that the task is
+`defined but not materialised`. The developer later supplies that handoff to
+`/moda-task` or `/moda_developer_create`, which materialises it in the real
+development environment.
+
+When the developer asks the architect to create a task for the developer, keep
+the normal domain `assigned_agent`/repository ownership and default to:
+
+    execution_mode: developer
+    completion_mode: developer
+    executor: null
+    claimed_at: null
+    attempt: 0
+
+Choose `status: pending` or `status: ready` from the real dependency state; do
+not force Ready merely because the developer will execute it.
+
+If workspace access exists and the developer says "do later", stop after the
+parent task definition is materialised/committed/pushed. If workspace access does
+not exist, stop after returning the portable definition. If the developer says
+"prepare now" and workspace execution is available, hand off to the same
+`/moda_developer_create` path after materialisation; the resulting claim remains
+`executor: developer`.
+
+A developer may reopen any Complete task. Reopen transitions Complete -> Ready,
+clears executor/claimed_at, preserves the accepted attempt number and historical
+review, and does not itself claim Attempt N+1. Recalculate downstream eligibility
+without silently regressing already in_progress/review/complete dependants.
+
 MODA-TASK-FEATURE-BRANCH-GIT-POLICY:END
 ===============================================================================
 
@@ -2598,6 +2645,8 @@ Required structure:
         repository: repository-name
         assigned_agent: logical-agent-name
         coordinator: moda_architect
+        execution_mode: agent
+        completion_mode: automatic
         status: pending
         priority: 50
         executor: null
@@ -2620,6 +2669,8 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
 status: ready
 priority: 20
 depends_on:
@@ -2650,6 +2701,32 @@ defined under PUBLICATION / RELEASE TASKS.
 
 Existing task files without task_kind remain valid and are treated as
 implementation tasks unless explicitly defined otherwise.
+
+EXECUTION / COMPLETION MODE
+
+For new tasks, write both execution fields explicitly:
+
+    execution_mode: agent | developer
+    completion_mode: automatic | developer
+
+Legacy tasks that omit them remain valid and mean:
+
+    execution_mode: agent
+    completion_mode: automatic
+
+`execution_mode` identifies the implementation owner. It does not replace the
+normal `assigned_agent`, which remains the domain/repository owner.
+
+`completion_mode` identifies final completion authority. `automatic` means the
+authorized review path completes a passing task; it never authorizes a
+repository implementation agent to mark its own architecture task Complete.
+`developer` requires an explicit developer completion decision after a durable
+passing/Accepted review.
+
+Read `docs/developer-task-workflow.md` and
+`docs/task-definition-materialization.md` for developer execution, external
+architect task definitions, materialisation, agent assistance, explicit
+completion and reopen semantics.
 
 The coordinator must normally be:
 
@@ -2682,16 +2759,20 @@ ready
 
 in_progress
 
-    The assigned repository agent is actively implementing the task.
+    The current executor is actively implementing the task. For developer
+    execution, `executor: developer`; for agent execution, the normalized runtime
+    executor is recorded.
 
 review
 
-    Repository implementation has finished and the task is waiting for
-    moda_architect review.
+    Implementation/reconciliation has finished and the task is awaiting its
+    authorized review or explicit developer completion decision.
 
 complete
 
-    moda_architect has inspected and accepted the implementation.
+    The task has a durable accepted review and its configured completion authority
+    has completed it. Complete may later be explicitly reopened by the developer;
+    reopening preserves historical acceptance and returns the task to `ready`.
 
 blocked
 
@@ -3103,9 +3184,14 @@ moda_architect owns:
 
 - initial task definition;
 - dependencies and architectural scope;
-- Architect Review;
-- acceptance;
-- status: complete.
+- Architect Review for agent-executed tasks;
+- acceptance under the normal agent review path;
+- automatic completion under that path;
+- architect-created developer task definitions when requested.
+
+For `execution_mode: developer`, the developer-as-architect workflow in
+`docs/developer-task-workflow.md` owns developer self-review, explicit completion
+when `completion_mode: developer`, and developer reopen authority.
 
 Do not remove or rename standard task sections because another agent or domain
 finds them unnecessary.
@@ -3339,11 +3425,24 @@ When a task becomes Ready, moda_architect must:
 8. update the architecture execution plan;
 9. identify the task as executable.
 
-If the current execution environment supports directly invoking or delegating to
-the corresponding logical agent, moda_architect may delegate the task.
+Before handoff, inspect `execution_mode` (legacy omission means `agent`).
 
-If direct agent delegation is unavailable, moda_architect must leave the task in
-Ready state and clearly tell the user which logical agent should execute it.
+If `execution_mode: agent` and the current execution environment supports directly
+invoking or delegating to the corresponding logical agent, moda_architect may
+delegate the task through the normal `/moda-task` path.
+
+If `execution_mode: developer`, do not delegate implementation ownership to the
+assigned agent. For a materialised task, leave it Pending/Ready according to its
+dependencies and tell the developer to use `/moda_developer_create <TASK_ID>`
+when eligible, or hand off to that preparation path when the developer explicitly
+asked the architect to create **and prepare** the task. For an externally defined
+but unmaterialised task, return the portable canonical definition and explain
+that `/moda_developer_create` will materialise it before preparation. The assigned
+agent remains available for bounded assistance after the developer claim.
+
+If direct agent delegation is unavailable for an agent-executed task,
+moda_architect must leave the task in Ready state and clearly tell the user which
+logical agent should execute it.
 
 Do not pretend that another agent has been invoked if the environment does not
 provide that capability.
@@ -3517,12 +3616,17 @@ When implementation conforms:
 
 1. set Architect Review status to Accepted;
 2. record review notes;
-3. set task status to complete;
-4. update updated date;
-5. update the domain _index.md;
-6. update the architecture execution plan;
-7. evaluate tasks listed in Enables;
-8. mark newly unblocked tasks Ready where all dependencies are Complete.
+3. inspect `completion_mode` (legacy omission means `automatic`);
+4. when `completion_mode: automatic`, set task status to `complete`;
+5. when `completion_mode: developer`, leave task status at `review`, clear
+   `executor`/`claimed_at`, and record that explicit developer completion is
+   pending via `/moda_developer_update <TASK_ID> complete`;
+6. update updated date;
+7. update the domain _index.md and architecture execution plan;
+8. evaluate dependency/frontier changes;
+9. only mark dependants newly Ready after this task actually has
+   `status: complete`. Architect acceptance alone does not satisfy a dependency
+   when developer completion is still pending.
 
 
 Changes Requested
@@ -3536,15 +3640,17 @@ When implementation remains within the original task scope but needs correction:
        status: ready
        executor:
        claimed_at:
-   Preserve the current `attempt` value so the repository agent's next claim
-   increments it exactly once;
+   Preserve the current `attempt` value so the next authorized agent/developer
+   claim increments it exactly once;
 4. update `updated`, the domain `_index.md`, and the architecture execution plan
    so no stale `in_progress`/`review` state contradicts the task YAML;
 5. do not mark any dependent task Ready merely because correction work exists;
    dependants remain gated until this task is architect-accepted Complete;
 6. do not create a new task merely for correcting work that belongs to the
    original scope;
-7. return the same task to the responsible repository agent.
+7. return the same task to its configured execution path. Agent-owned tasks may
+   return through `/moda-task`; developer-owned tasks return through
+   `/moda_developer_create`.
 
 The latest Architect Review is the authoritative rework contract. Do not require
 repository agents to infer corrections from chat history or from an architect

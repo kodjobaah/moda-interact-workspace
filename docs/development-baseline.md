@@ -62,11 +62,13 @@ workspace root**. They may be invoked from the canonical workspace, a parent
 workspace task worktree, an implementation task worktree, or a nested repository
 path.
 
-The canonical workspace root is resolved by the `/moda-task` launcher and
-`scripts/start-agent-task.py`. The resolver derives the workspace from the
-launcher script's own location and emits the authoritative absolute execution
-topology. Agents must not infer the canonical workspace from the current Git
-repository or from machine-specific paths.
+The canonical workspace root is resolved by the Moda task launchers and
+`scripts/start-agent-task.py`. `/moda-task`, `/moda_developer_create` and
+`/moda_developer_update` share this topology contract. The resolver derives the
+workspace from the launcher script's own location and emits the authoritative
+absolute execution topology. Agents/developer workflow commands must not infer
+the canonical workspace from the current Git repository or from machine-specific
+paths.
 
 When the launcher skill itself must locate `scripts/start-agent-task.py`, it may
 use only:
@@ -84,6 +86,12 @@ Once resolved, `MODA_WORKSPACE_ROOT` is the stable shell anchor for the lifetime
 of the task. The launcher's `workspace_root`, `repository_path`,
 `parent_worktree_path`, and `implementation_worktree_path` values are
 authoritative; do not recompute them from `$PWD`.
+
+An architecture task may have been defined outside this development environment.
+In that case no local task branch/worktree is expected until the portable task
+definition is materialised according to
+`docs/task-definition-materialization.md`. Workspace-root resolution must not
+assume that a conceptual architect-created task already has local Git state.
 
 When diagnostic tooling is actually needed, invoke it through the resolved
 workspace root:

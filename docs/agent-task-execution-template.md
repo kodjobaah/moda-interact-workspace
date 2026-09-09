@@ -23,6 +23,8 @@ task branch:                    <TASK_BRANCH>
 parent task worktree:           <PARENT_WORKTREE>
 implementation repository:      <REPOSITORY_PATH>
 implementation task worktree:  <IMPLEMENTATION_WORKTREE>
+execution mode:                  <EXECUTION_MODE>
+completion mode:                 <COMPLETION_MODE>
 ```
 
 Do not recompute these paths from `$PWD`, assume a machine-specific checkout
@@ -30,6 +32,26 @@ location, or substitute another physical checkout. `<REPOSITORY_PATH>` is the
 canonical repository source/reference checkout used for Git worktree
 registration; it is NOT the task implementation checkout. Task implementation
 may occur only in `<IMPLEMENTATION_WORKTREE>`.
+
+Read `docs/developer-task-workflow.md` and
+`docs/task-definition-materialization.md`. This rendered implementation template
+is used only after the task definition is materialised and the normal resolver
+has succeeded. This normal repository-agent execution template is claimable only
+for:
+
+```text
+execution mode: agent
+```
+
+Legacy omission is resolved by the launcher as `agent`. If `<EXECUTION_MODE>` is
+`developer`, do not claim or increment the task. A `/moda-task` invocation must
+return control to the developer workflow; explicit assigned-agent assistance is
+allowed only under the bounded developer-assistance rules and does not transfer
+lifecycle ownership.
+
+`<COMPLETION_MODE>` controls final completion authority after review; it does not
+change implementation ownership. A repository implementation agent never marks
+its own architecture task Complete.
 
 ## Startup
 
@@ -104,6 +126,7 @@ Immediately before starting implementation, re-read the task file and verify:
 
 * `status: ready`
 * `assigned_agent: <AGENT>`
+* `execution_mode: agent` (legacy omission means `agent`)
 * every task listed in `depends_on` has `status: complete`
 
 Dependency gating is metadata-first. Only tasks explicitly listed in the current task's `depends_on` participate in the dependency-completion gate.

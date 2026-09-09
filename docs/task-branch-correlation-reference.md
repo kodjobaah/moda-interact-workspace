@@ -35,9 +35,16 @@ implementation task worktree:
 ```
 
 The launcher derives these paths from the actual workspace checkout, so no
-user-home or parent-directory layout is assumed. Missing worktrees are created
-on first claim; later attempts reuse them. Never switch a shared checkout or a
-different task's worktree onto the branch as a substitute.
+user-home or parent-directory layout is assumed. An architect may first define a
+task outside Git with **no branch/worktree at all**; see
+`docs/task-definition-materialization.md`. Materialisation creates/reuses the
+parent worktree/branch. The implementation worktree is created on first execution
+and later attempts reuse it. Never switch a shared checkout or a different
+task's worktree onto the branch as a substitute.
+
+Developer execution uses exactly the same branch pair. See
+`docs/developer-task-workflow.md` for `/moda_developer_create`,
+`/moda_developer_update`, explicit completion and reopen semantics.
 
 ## Agent completion
 

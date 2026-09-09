@@ -80,6 +80,28 @@ A task is not ready for architect review until current-task changes are committe
 and pushed on BOTH mirrored `task/<TASK_ID>` branches. This agent MUST NOT merge
 either task branch into `main` or push/update `main`.
 
+Read and obey `docs/developer-task-workflow.md`.
+
+Developer execution is a first-class mode of the same architecture task system.
+Before claiming a task, inspect `execution_mode` (legacy omission means `agent`).
+This agent may claim through the normal repository-agent path only when
+`execution_mode: agent`.
+
+If `execution_mode: developer`, do NOT claim, increment the attempt, change
+`executor`/`claimed_at`, submit, accept, complete or reopen the task. A normal
+`/moda-task` execution request for a developer-owned task must stop and direct
+the developer to `/moda_developer_create` or `/moda_developer_update` as
+appropriate.
+
+When the developer explicitly asks this assigned agent for assistance on an
+active developer task, enter developer-assistance mode. Assistance may inspect,
+explain, debug, make explicitly requested source/test edits in the canonical
+implementation worktree, and run validation. Assistance does not transfer
+lifecycle ownership: `executor: developer` remains authoritative. Do not mutate
+task lifecycle metadata or autonomously commit/push developer work unless the
+developer explicitly requests that exact publication action. Never merge/push
+`main`.
+
 MODA-TASK-FEATURE-BRANCH-GIT-POLICY:END
 ===============================================================================
 

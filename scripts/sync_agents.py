@@ -28,6 +28,8 @@ GENERATED_NOTICE = (
 # when discussing supported runtimes, file locations, or Claude/Codex parity.
 WORKTREE_POLICY_REFERENCE = "docs/agent-worktree-isolation-policy.md"
 VCS_POLICY_REFERENCE = "docs/agent-vcs-ownership-policy.md"
+DEVELOPER_TASK_POLICY_REFERENCE = "docs/developer-task-workflow.md"
+TASK_DEFINITION_POLICY_REFERENCE = "docs/task-definition-materialization.md"
 
 
 FORBIDDEN_RUNTIME_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
@@ -140,9 +142,16 @@ def validate_execution_policy_references(
 ) -> None:
     missing = [
         reference
-        for reference in (VCS_POLICY_REFERENCE, WORKTREE_POLICY_REFERENCE)
+        for reference in (
+            VCS_POLICY_REFERENCE,
+            WORKTREE_POLICY_REFERENCE,
+            DEVELOPER_TASK_POLICY_REFERENCE,
+        )
         if reference not in instructions
     ]
+
+    if toml_path.stem == "moda_architect" and TASK_DEFINITION_POLICY_REFERENCE not in instructions:
+        missing.append(TASK_DEFINITION_POLICY_REFERENCE)
 
     if missing:
         formatted = "\n".join(f"  - {item}" for item in missing)

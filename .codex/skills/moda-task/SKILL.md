@@ -6,12 +6,37 @@ disable-model-invocation: true
 
 You begin in a task-launcher phase.
 
-The launcher phase exists only to resolve authoritative routing and prepare the
-handoff. While that phase is active, do not claim, implement, modify task state
-or perform architect review.
+The launcher phase exists only to resolve authoritative routing, materialise a
+supplied architect definition when necessary, and prepare the handoff. While
+that phase is active, do not claim, implement or perform architect review.
 
-**A successful resolver response does not finish the `/moda-task` invocation.**
-After successful resolution, continue immediately to the `
+A successful resolver response does not finish the `/moda-task` invocation.
+After successful resolution/materialisation, continue immediately to the
+`## Handoff` section.
+
+Read and obey:
+
+```text
+docs/task-definition-materialization.md
+docs/developer-task-workflow.md
+docs/agent-worktree-isolation-policy.md
+docs/agent-vcs-ownership-policy.md
+```
+
+Canonical forms are:
+
+```text
+/moda-task <TASK_ID>
+/moda-task <TASK_ID> --definition <portable-task.md>
+```
+
+The optional `--definition` notation identifies a portable architect task
+handoff. A matching attached/current-session definition may be used without an
+explicit filesystem path.
+
+Extract exactly one fully qualified Moda Interact task ID from the invocation,
+for example `ARCH-002-SHOPIFY-001`.
+
 ## Canonical executor identity
 
 The resolved logical agent must use the workspace executor normalization policy:
@@ -55,14 +80,6 @@ executor: github-copilot
 When an existing active claim uses an alias-equivalent value, treat it as the
 same executor identity rather than as a competing claim.
 
-
-## Handoff` section.
-Do not return a final response merely stating that routing succeeded or that no
-claim/implementation was performed.
-
-Extract exactly one fully qualified Moda Interact task ID from the invocation,
-for example `ARCH-002-SHOPIFY-001`.
-
 ## Mandatory first action
 
 After extracting `TASK_ID`, your **first tool action MUST** invoke the
@@ -87,7 +104,7 @@ worktree or implementation worktree. Do not assume a fixed user home, checkout
 parent directory, `/Users/...`, `~/project`, or any other machine-specific path.
 Do not search the wider filesystem or guess a sibling checkout by name.
 
-Run this as one terminal action, replacing `<TASK_ID>`:
+Run the normal resolver first, replacing `<TASK_ID>`:
 
 ```bash
 TASK_ID="<TASK_ID>"
@@ -139,15 +156,69 @@ export MODA_WORKSPACE_ROOT="$ROOT"
 python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "$TASK_ID" --json
 ```
 
-If workspace-root resolution or `start-agent-task.py` fails, STOP and report the
-failure. Do not fall back to task search, repository search, Git history, prompt
+### Task-file-not-found exception: materialisation
+
+Workspace-root failure or any resolver failure other than **task file not found**
+is a hard stop.
+
+If and only if the normal resolver reports that the task file does not exist:
+
+1. immediately invoke:
+
+   ```bash
+   python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" \
+     "$TASK_ID" --route-only --json
+   ```
+
+2. treat the route-only result as authoritative topology; for an
+   unmaterialised route, `execution_mode`/`completion_mode` may be `null` and must
+   not be guessed;
+3. if a matching portable architect task definition is supplied through
+   `--definition`, attachment, or current-session artifact, materialise it using
+   `docs/task-definition-materialization.md`;
+4. commit/push the materialised definition on the canonical parent
+   `task/<TASK_ID>` branch;
+5. rerun the normal resolver and continue only after it succeeds.
+
+If no portable definition is available, STOP with:
+
+```text
+TASK_DEFINITION_NOT_MATERIALIZED
+```
+
+and explain that `/moda-task` executes architect-defined tasks but does not invent
+an architecture task from the ID alone.
+
+Do not fall back to broad task search, repository search, Git history, prompt
 search or model inference.
+
+## Portable-definition materialisation boundary
+
+When `/moda-task` materialises an external architect definition:
+
+- the architect may have created **no local branch/worktree at all**;
+- create/reuse only the canonical parent task worktree needed to publish the
+  definition first;
+- validate filename/frontmatter identity against the route-only output;
+- preserve its architectural scope/dependencies/status/modes;
+- do not manufacture `ready` from `pending`;
+- rerun the normal resolver after publication;
+- only then create/reuse the implementation worktree and enter agent execution.
+
+If the materialised task resolves to:
+
+```text
+execution_mode: developer
+```
+
+then `/moda-task` MUST NOT claim it. Direct execution to
+`/moda_developer_create <TASK_ID>`.
 
 ## Resolver contract
 
 Read the returned JSON.
 
-The resolver output is authoritative for:
+The normal resolver output is authoritative for:
 
 - architecture;
 - domain;
@@ -160,7 +231,10 @@ The resolver output is authoritative for:
 - `parent_worktree_path`;
 - `implementation_worktree_path`;
 - canonical repository source/reference `repository_path`;
+- `task_materialized` / `task_definition_state`;
 - current task status;
+- `execution_mode`;
+- `completion_mode`;
 - rendered `prompt`.
 
 Do not rediscover, recompute, weaken or override those values. In particular,
@@ -171,6 +245,18 @@ implementation work must occur only at `implementation_worktree_path`.
 
 `prompt` is the complete execution instruction. Do not summarize, weaken or
 replace it.
+
+Legacy omission of `execution_mode` means `agent`. If the resolver returns:
+
+```text
+execution_mode: developer
+```
+
+this is not a normal repository-agent execution. Do not claim it through
+`/moda-task`. Direct the developer to `/moda_developer_create <TASK_ID>` when the
+task is Ready/inactive, or `/moda_developer_update <TASK_ID>` for an active/review
+developer cycle. The assigned agent may assist only when the developer explicitly
+requests developer-assistance mode under that policy.
 
 ## Handoff
 

@@ -34,7 +34,12 @@ Physical task isolation is also mandatory. Read and obey:
 
 ```text
 docs/agent-worktree-isolation-policy.md
+docs/developer-task-workflow.md
 ```
+
+The same mirrored task-branch pair is used for developer-executed tasks.
+Developer mode changes lifecycle authority, not branch identity or repository
+ownership.
 
 Every executable repository task uses its launcher-resolved dedicated parent
 worktree and dedicated implementation worktree. This is required even for
@@ -262,6 +267,37 @@ implementation branch has been merged into the implementation repository's
 This remains true even if the implementation feature commit itself is later
 squashed/rebased during developer-owned integration.
 
+## Task definition/materialisation before execution
+
+Read `docs/task-definition-materialization.md`. A task may be **defined** before
+it exists in any Git repository. An external architect definition has no branch,
+worktree, commit or push evidence until a development environment materialises
+it.
+
+When task materialisation occurs, create/reuse only the canonical **parent task
+worktree** and parent `task/<TASK_ID>` branch needed to write, commit and push the
+task definition.
+
+Do not create the implementation worktree merely because a task has been defined
+or materialised. The implementation worktree is established when `/moda-task`
+or `/moda_developer_create` actually starts execution.
+
+Both states are valid:
+
+```text
+portable task definition: exists outside Git
+parent task branch/worktree: absent
+implementation task worktree: absent
+
+materialised task definition: exists on parent task branch/worktree
+implementation task worktree: absent
+implementation task branch: may be absent
+```
+
+The launcher searches the canonical parent task worktree as an authoritative
+task-definition location, so a materialised task does not have to be merged into
+parent `main` before execution can begin.
+
 ## Claim protocol
 
 The remote parent task branch is part of the durable claim mechanism. Physical
@@ -300,7 +336,8 @@ active claim by another executor, do not claim it.
 
 Then set the task YAML to `in_progress`, populate executor/claimed_at/attempt,
 commit **only the task file** in the parent task worktree, and push the parent
-task branch promptly:
+task branch promptly. Agent execution uses a normalized runtime executor;
+developer execution uses exactly `executor: developer`:
 
 ```bash
 git -C <PARENT_TASK_WORKTREE> add <TASK_FILE>
@@ -472,6 +509,25 @@ Merged to workspace main: no
 
 If a remote push cannot be performed, state the exact failure. Do not invent
 evidence.
+
+## Developer-executed task publication
+
+Developer-executed tasks use the same task branches and publication boundary. A
+developer may create any number of natural commits during an attempt. Git commit
+granularity is not task-report granularity.
+
+Before developer completion, task-owned implementation changes must be committed
+and pushed on implementation `task/<TASK_ID>`, and the final task/report/review
+record must be committed and pushed on parent `task/<TASK_ID>`.
+
+`/moda_developer_update` may perform the workflow publication steps needed to
+make the reviewed state durable, but it must not merge either task branch into
+`main`. `completion_mode: developer` requires an explicit developer completion
+decision after a durable passing review.
+
+A developer may explicitly reopen any Complete task. Reopen preserves the same
+branch identity, prior history and accepted attempt; it returns the task to
+`ready`. The next claim appends Attempt N+1 on the same branch pair.
 
 ## Changes Requested
 

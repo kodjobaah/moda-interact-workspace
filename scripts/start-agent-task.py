@@ -66,6 +66,9 @@ TASK_ID_PATTERN = re.compile(
 
 TEMPLATE_PATH = Path("docs/agent-task-execution-template.md")
 
+EXECUTION_MODES = {"agent", "developer"}
+COMPLETION_MODES = {"automatic", "developer"}
+
 
 @dataclass(frozen=True)
 class ResolvedTask:
@@ -78,6 +81,7 @@ class ResolvedTask:
     agent: str
     repository: str
     task_file: Path
+    task_file_relative: Path
 
 
 class LauncherError(RuntimeError):
@@ -159,62 +163,112 @@ def parse_task_id(task_id: str) -> tuple[str, str, str]:
     return architecture_id, domain, task_number
 
 
+def task_route(
+    workspace_root: Path,
+    architecture_id: str,
+    domain: str,
+    task_number: str,
+) -> dict[str, object]:
+    config = DOMAIN_CONFIG[domain]
+    folder = config["folder"]
+    agent = config["agent"]
+    repository = config["repository"]
+    task_local_id = f"{domain}-{task_number}"
+    full_task_id = f"{architecture_id}-{task_local_id}"
+
+    workspace_root = workspace_root.resolve()
+    workspace_parent = workspace_root.parent
+    task_branch = f"task/{full_task_id}"
+    parent_worktree = workspace_parent / f"{workspace_root.name}-task-{full_task_id}"
+    implementation_worktree = (
+        workspace_parent / f"{workspace_root.name}.worktrees" / full_task_id
+    )
+    repository_path = workspace_root / repository
+    task_directory_relative = Path("docs") / "decisions" / folder / architecture_id
+    pattern = f"{task_local_id}-*.md"
+
+    return {
+        "task_id": full_task_id,
+        "architecture_id": architecture_id,
+        "domain": domain,
+        "task_number": task_number,
+        "task_local_id": task_local_id,
+        "folder": folder,
+        "agent": agent,
+        "repository": repository,
+        "workspace_root": workspace_root,
+        "workspace_parent": workspace_parent,
+        "task_branch": task_branch,
+        "parent_worktree": parent_worktree,
+        "implementation_worktree": implementation_worktree,
+        "repository_path": repository_path,
+        "task_directory_relative": task_directory_relative,
+        "task_pattern": pattern,
+    }
+
+
+def _find_task_matches(route: dict[str, object]) -> list[tuple[Path, Path]]:
+    workspace_root = route["workspace_root"]
+    parent_worktree = route["parent_worktree"]
+    task_directory_relative = route["task_directory_relative"]
+    pattern = route["task_pattern"]
+
+    assert isinstance(workspace_root, Path)
+    assert isinstance(parent_worktree, Path)
+    assert isinstance(task_directory_relative, Path)
+    assert isinstance(pattern, str)
+
+    roots = [workspace_root]
+    if parent_worktree.is_dir():
+        roots.insert(0, parent_worktree)
+
+    by_relative: dict[Path, Path] = {}
+    for root in roots:
+        task_directory = root / task_directory_relative
+        for match in sorted(task_directory.glob(pattern)):
+            relative = match.relative_to(root)
+            by_relative.setdefault(relative, match)
+
+    return [(relative, by_relative[relative]) for relative in sorted(by_relative)]
+
+
 def resolve_task_file(
     workspace_root: Path,
     architecture_id: str,
     domain: str,
     task_number: str,
 ) -> ResolvedTask:
-    config = DOMAIN_CONFIG[domain]
-
-    folder = config["folder"]
-    agent = config["agent"]
-    repository = config["repository"]
-
-    task_local_id = f"{domain}-{task_number}"
-    full_task_id = f"{architecture_id}-{task_local_id}"
-
-    task_directory = (
-        workspace_root
-        / "docs"
-        / "decisions"
-        / folder
-        / architecture_id
-    )
-
-    pattern = f"{task_local_id}-*.md"
-
-    matches = sorted(task_directory.glob(pattern))
+    route = task_route(workspace_root, architecture_id, domain, task_number)
+    matches = _find_task_matches(route)
 
     if not matches:
         raise LauncherError(
-            f"Task file not found for {full_task_id}.\n\n"
+            f"Task file not found for {route['task_id']}.\n\n"
             "Expected exactly one file matching:\n"
-            f"  docs/decisions/{folder}/{architecture_id}/{pattern}"
+            f"  {route['task_directory_relative']}/{route['task_pattern']}"
         )
 
     if len(matches) > 1:
-        relative_matches = "\n".join(
-            f"  - {path.relative_to(workspace_root)}"
-            for path in matches
-        )
-
+        relative_matches = "\n".join(f"  - {relative}" for relative, _ in matches)
         raise LauncherError(
-            f"Multiple task files found for {full_task_id}:\n\n"
+            f"Multiple task files found for {route['task_id']}:\n\n"
             f"{relative_matches}\n\n"
             "Task IDs must resolve to exactly one task file."
         )
 
+    task_file_relative, task_file = matches[0]
+
     return ResolvedTask(
-        task_id=full_task_id,
+        task_id=str(route["task_id"]),
         architecture_id=architecture_id,
         domain=domain,
         task_number=task_number,
-        task_local_id=task_local_id,
-        folder=folder,
-        agent=agent,
-        repository=repository,
-        task_file=matches[0],
+        task_local_id=str(route["task_local_id"]),
+        folder=str(route["folder"]),
+        agent=str(route["agent"]),
+        repository=str(route["repository"]),
+        task_file=task_file,
+        task_file_relative=task_file_relative,
     )
 
 
@@ -243,6 +297,8 @@ def read_frontmatter(path: Path) -> dict[str, str]:
       assigned_agent
       repository
       status
+      execution_mode
+      completion_mode
     """
 
     text = path.read_text(encoding="utf-8")
@@ -286,6 +342,25 @@ def read_frontmatter(path: Path) -> dict[str, str]:
     return result
 
 
+def task_modes(metadata: dict[str, str]) -> tuple[str, str]:
+    execution_mode = metadata.get("execution_mode") or "agent"
+    completion_mode = metadata.get("completion_mode") or "automatic"
+
+    if execution_mode not in EXECUTION_MODES:
+        raise LauncherError(
+            f"Invalid execution_mode: {execution_mode!r}. "
+            f"Expected one of: {', '.join(sorted(EXECUTION_MODES))}."
+        )
+
+    if completion_mode not in COMPLETION_MODES:
+        raise LauncherError(
+            f"Invalid completion_mode: {completion_mode!r}. "
+            f"Expected one of: {', '.join(sorted(COMPLETION_MODES))}."
+        )
+
+    return execution_mode, completion_mode
+
+
 def verify_task_metadata(
     task: ResolvedTask,
     metadata: dict[str, str],
@@ -323,10 +398,13 @@ def verify_task_metadata(
             "The launcher will not repair task metadata automatically."
         )
 
+    task_modes(metadata)
+
 
 def render_template(
     workspace_root: Path,
     task: ResolvedTask,
+    metadata: dict[str, str],
 ) -> str:
     template_file = workspace_root / TEMPLATE_PATH
 
@@ -349,6 +427,8 @@ def render_template(
         "<PARENT_WORKTREE>",
         "<IMPLEMENTATION_WORKTREE>",
         "<REPOSITORY_PATH>",
+        "<EXECUTION_MODE>",
+        "<COMPLETION_MODE>",
     }
 
     missing = sorted(
@@ -367,7 +447,7 @@ def render_template(
             "The launcher never modifies the canonical template."
         )
 
-    task_file_relative = task.task_file.relative_to(workspace_root)
+    task_file_relative = task.task_file_relative
     workspace_root = workspace_root.resolve()
     workspace_parent = workspace_root.parent
     task_branch = f"task/{task.task_id}"
@@ -376,6 +456,7 @@ def render_template(
         workspace_parent / f"{workspace_root.name}.worktrees" / task.task_id
     )
     repository_path = workspace_root / task.repository
+    execution_mode, completion_mode = task_modes(metadata)
 
     replacements = {
         "<AGENT>": task.agent,
@@ -388,6 +469,8 @@ def render_template(
         "<PARENT_WORKTREE>": parent_worktree.as_posix(),
         "<IMPLEMENTATION_WORKTREE>": implementation_worktree.as_posix(),
         "<REPOSITORY_PATH>": repository_path.as_posix(),
+        "<EXECUTION_MODE>": execution_mode,
+        "<COMPLETION_MODE>": completion_mode,
     }
 
     rendered = template
@@ -412,6 +495,7 @@ def build_result(
         workspace_parent / f"{workspace_root.name}.worktrees" / task.task_id
     )
     repository_path = workspace_root / task.repository
+    execution_mode, completion_mode = task_modes(metadata)
 
     return {
         "task_id": task.task_id,
@@ -428,12 +512,14 @@ def build_result(
         "task_branch": task_branch,
         "parent_worktree_path": parent_worktree.as_posix(),
         "implementation_worktree_path": implementation_worktree.as_posix(),
-        "task_file": task.task_file.relative_to(
-            workspace_root
-        ).as_posix(),
+        "task_file": task.task_file_relative.as_posix(),
         "codex_agent_definition": f".codex/agents/{task.agent}.toml",
         "claude_agent_definition": f".claude/agents/{task.agent}.agent.md",
         "status": metadata.get("status"),
+        "execution_mode": execution_mode,
+        "completion_mode": completion_mode,
+        "task_materialized": True,
+        "task_definition_state": "materialized",
         "prompt": prompt,
     }
 
@@ -450,6 +536,9 @@ def print_human_result(result: dict) -> None:
     print(f"Parent WT:     {result['parent_worktree_path']}")
     print(f"Impl WT:       {result['implementation_worktree_path']}")
     print(f"Status:        {result['status'] or 'unknown'}")
+    print(f"Execution:     {result['execution_mode']}")
+    print(f"Completion:    {result['completion_mode']}")
+    print(f"Materialized:  {result['task_materialized']}")
     print()
     print("=" * 80)
     print("RENDERED AGENT PROMPT")
@@ -469,6 +558,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "task_id",
         help="Architecture task ID, e.g. ARCH-002-BACKGROUND-009",
+    )
+
+    parser.add_argument(
+        "--route-only",
+        action="store_true",
+        help=(
+            "Resolve task identity/topology without requiring an existing task "
+            "definition. Used by architect/developer task-creation flows."
+        ),
     )
 
     output = parser.add_mutually_exclusive_group()
@@ -504,6 +602,72 @@ def main() -> int:
             args.task_id
         )
 
+        if args.route_only:
+            route = task_route(
+                workspace_root, architecture_id, domain, task_number
+            )
+            matches = _find_task_matches(route)
+            if len(matches) > 1:
+                relative_matches = "\n".join(
+                    f"  - {relative}" for relative, _ in matches
+                )
+                raise LauncherError(
+                    f"Multiple task files found for {route['task_id']}:\n\n"
+                    f"{relative_matches}"
+                )
+
+            metadata: dict[str, str] = {}
+            task_file_relative = None
+            if matches:
+                task = resolve_task_file(
+                    workspace_root=workspace_root,
+                    architecture_id=architecture_id,
+                    domain=domain,
+                    task_number=task_number,
+                )
+                task_file_relative = task.task_file_relative
+                metadata = read_frontmatter(task.task_file)
+                verify_task_metadata(task, metadata)
+                execution_mode, completion_mode = task_modes(metadata)
+            else:
+                # Route-only resolution knows topology, not task execution/completion
+                # policy. Those modes become authoritative only after a task
+                # definition is materialised and its frontmatter is read.
+                execution_mode, completion_mode = None, None
+
+            result = {
+                "task_id": route["task_id"],
+                "architecture_id": route["architecture_id"],
+                "domain": route["domain"],
+                "folder": route["folder"],
+                "agent": route["agent"],
+                "repository": route["repository"],
+                "repository_path": route["repository_path"].as_posix(),
+                "workspace_root": route["workspace_root"].as_posix(),
+                "workspace_parent": route["workspace_parent"].as_posix(),
+                "task_branch": route["task_branch"],
+                "parent_worktree_path": route["parent_worktree"].as_posix(),
+                "implementation_worktree_path": route["implementation_worktree"].as_posix(),
+                "task_directory": route["task_directory_relative"].as_posix(),
+                "task_pattern": route["task_pattern"],
+                "task_file": task_file_relative.as_posix() if task_file_relative else None,
+                "task_exists": bool(matches),
+                "task_materialized": bool(matches),
+                "task_definition_state": "materialized" if matches else "unmaterialized",
+                "portable_task_filename_pattern": route["task_pattern"],
+                "status": metadata.get("status"),
+                "execution_mode": execution_mode,
+                "completion_mode": completion_mode,
+            }
+
+            if args.agent_only:
+                print(result["agent"])
+            elif args.json or args.prompt_only:
+                print(json.dumps(result, indent=2))
+            else:
+                print(json.dumps(result, indent=2))
+            return 0
+
         task = resolve_task_file(
             workspace_root=workspace_root,
             architecture_id=architecture_id,
@@ -518,6 +682,7 @@ def main() -> int:
         prompt = render_template(
             workspace_root=workspace_root,
             task=task,
+            metadata=metadata,
         )
 
         result = build_result(

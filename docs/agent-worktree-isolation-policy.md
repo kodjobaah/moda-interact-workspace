@@ -22,10 +22,12 @@ task/<TASK_ID>
 This rule applies even when only one agent is running. A clean branch in a
 shared/default checkout is not equivalent to a dedicated task worktree.
 
-The canonical `/moda-task` launcher renders the absolute paths for the current
-machine. Those launcher-supplied paths are authoritative. Agents must not infer
-paths from `$PWD`, user names, home-directory conventions or examples from
-another developer's machine.
+The canonical launcher renders the absolute paths for the current machine. Those
+launcher-supplied paths are authoritative. The same topology is consumed by
+`/moda-task`, `/moda_developer_create` and `/moda_developer_update`; read
+`docs/developer-task-workflow.md` for developer lifecycle semantics. Agents and
+developer workflow commands must not infer paths from `$PWD`, user names,
+home-directory conventions or examples from another developer's machine.
 
 ## Canonical topology
 
@@ -59,11 +61,43 @@ The canonical implementation repository path inside `WORKSPACE_ROOT` is a Git
 source/reference checkout used to create and inspect implementation worktrees.
 It is not an authorized task implementation checkout.
 
+## Definition, materialisation and execution
+
+Read `docs/task-definition-materialization.md`. Task definition, task
+materialisation and task execution are separate.
+
+An architect may define a task outside the development environment. In that
+case **no task worktree is required yet** and the architect must not claim that
+one exists. The portable canonical task definition is materialised later by an
+execution/materialisation workflow.
+
+When a task definition is materialised in a workspace, create/reuse the canonical
+**parent task worktree** so the task file can be committed/pushed on parent
+`task/<TASK_ID>` without modifying `main`.
+
+The implementation worktree is not required merely for definition or
+materialisation and SHOULD remain absent until an executor actually starts the
+task. Both states below are normal:
+
+```text
+external portable task definition exists
+parent task worktree absent
+implementation worktree absent
+
+materialised pending/ready task exists in parent task worktree
+implementation worktree absent
+```
+
+When `/moda-task` or `/moda_developer_create` starts the task, apply the state
+machine below independently to the implementation repository.
+
 ## Task-worktree state machine
 
-### State A — first claim / worktree absent
+### State A — first use / worktree absent
 
-A missing canonical task-worktree directory is normal.
+A missing canonical task-worktree directory is normal. For the parent repository,
+first use may be task authorship before any claim. For the implementation
+repository, first use normally occurs when execution begins.
 
 After fetching remote refs, create the missing worktree at the exact
 launcher-supplied path:
@@ -118,9 +152,11 @@ For the implementation worktree, creating the containing
 `<WORKSPACE_NAME>.worktrees` directory with `mkdir -p` is allowed. Do not create
 or switch the task branch in the shared/default implementation checkout.
 
-### State B — later attempt / canonical worktree exists
+### State B — later use / canonical worktree exists
 
-Reuse the same physical worktree and the same `task/<TASK_ID>` branch.
+Reuse the same physical worktree and the same `task/<TASK_ID>` branch. This
+includes a parent worktree created during task authorship and implementation
+worktrees reused across later attempts/reopens.
 
 Changes Requested, retries and re-entry do not create attempt-specific branches
 or replacement worktrees.

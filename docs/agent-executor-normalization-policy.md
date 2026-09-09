@@ -13,7 +13,11 @@ copilot
 codex
 claude
 continue
+developer
 ```
+
+`developer` is the explicit human/developer executor used only by
+`execution_mode: developer`. It is not an AI runtime alias.
 
 ## Normalization
 
@@ -41,6 +45,9 @@ claude
 Continue
 continue
     -> continue
+
+Developer / human developer execution
+    -> developer
 ```
 
 Case and separator differences do not create new executor identifiers.
@@ -65,14 +72,16 @@ executor: claude-code
 
 ## Claim rule
 
-Immediately before a claim, determine the current runtime and normalize it to
-one of the canonical values above.
+Immediately before an agent claim, determine the current runtime and normalize it
+to one of the AI/runtime values above. For `/moda_developer_create`, use the
+explicit human executor value `developer`; do not normalize it to the AI runtime
+that happens to be assisting with orchestration.
 
 Write only the canonical value:
 
 ```yaml
 status: in_progress
-executor: <copilot|codex|claude|continue>
+executor: <copilot|codex|claude|continue|developer>
 claimed_at: <timestamp>
 attempt: <previous + 1>
 ```
@@ -116,5 +125,6 @@ executor: copilot
 
 `assigned_agent` identifies Moda repository ownership.
 
-`executor` identifies the normalized AI/runtime surface carrying out that
-attempt.
+`executor` identifies the normalized execution owner carrying out that attempt.
+For agent execution this is the AI/runtime surface; for developer execution it is
+`developer`, even when an assigned agent provides bounded assistance.

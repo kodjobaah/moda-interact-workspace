@@ -178,15 +178,47 @@ The implementation agent does **not** decide that its own architectural task is 
 
 Likewise, `moda_system_test` does not decide that its own system-test task is complete.
 
-Only `moda_architect` can transition:
-
-```text
-review -> complete
-```
+For legacy/normal agent tasks (`completion_mode: automatic`), `moda_architect`
+performs the accepted `review -> complete` transition. Developer-executed or
+developer-controlled tasks follow `docs/developer-task-workflow.md`; when
+`completion_mode: developer`, even a passing review waits for the explicit
+developer completion decision.
 
 For architectures that require integrated runtime validation, repository implementation tasks being complete does **not** by itself make the architecture implemented. The required system-test task or tasks must also be reviewed and completed.
 
 This creates a separation similar to implementation, independent system validation and review in a human engineering team.
+
+## Developer execution is the same task system
+
+A task may be implemented by its assigned repository agent or directly by the
+developer. The task schema, dependencies, branches, worktrees, attempts and
+validation remain the same. Read:
+
+```text
+docs/developer-task-workflow.md
+docs/task-definition-materialization.md
+```
+
+An architect may define a task outside the development environment. That
+definition may initially exist only as a portable canonical task file; no Git
+branch/worktree is implied until a later materialisation step.
+
+The four supported entry paths are:
+
+```text
+Architect creates -> Agent implements
+Architect creates -> Developer implements
+Developer creates -> Developer implements
+Developer reopens -> Developer or Agent implements next attempt
+```
+
+Task definition, materialisation and execution preparation are intentionally
+separate. When the architect has workspace access it may materialise the task
+immediately through the parent task worktree/branch. When it does not, it returns
+a portable task definition and **no worktree needs to exist yet**. `/moda-task`
+or `/moda_developer_create` materialises that definition in the development
+environment and creates/reuses the implementation worktree only when actual
+execution starts.
 
 ---
 
@@ -464,6 +496,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
 status: ready
 priority: 20
 executor: null
@@ -496,6 +530,8 @@ domain: system-test
 repository: moda-interact-system-test
 assigned_agent: moda_system_test
 coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
 status: pending
 priority: 90
 executor: null
@@ -542,7 +578,7 @@ pending
    v
 ready
    |
-   | repository agent claims task
+   | agent or developer claims task
    v
 in_progress
    |
@@ -550,9 +586,15 @@ in_progress
    v
 review
    |
-   | architect accepts
+   | authorized review / completion decision
    v
 complete
+
+complete
+   |
+   | explicit developer reopen
+   v
+ready
 ```
 
 A repository agent may also return:
@@ -624,7 +666,9 @@ claimed_at: 2026-08-28T15:30:00+01:00
 attempt: 1
 ```
 
-where `<current runtime>` identifies the active execution surface, for example `codex`, `claude`, `continue` or `copilot`.
+where `<current runtime>` identifies the active execution surface, for example
+`codex`, `claude`, `continue` or `copilot`. Developer execution uses the explicit
+executor value `developer`; an assisting AI runtime does not replace that owner.
 
 The agent must not overwrite another executor's active claim.
 
@@ -717,6 +761,26 @@ python3 scripts/sync-skills.py --check
 
 Similarly, changes to `.codex/agents/*.toml` must be mirrored with
 `scripts/sync_agents.py` before publication.
+
+## Developer task commands
+
+Developer execution uses two commands:
+
+```text
+/moda_developer_create <TASK_ID>
+/moda_developer_update <TASK_ID> [complete|reopen]
+```
+
+`/moda_developer_create` means define (when missing), prepare, resume or claim a
+developer task. `/moda_developer_update` reconciles actual work and performs the
+developer self-review; `complete` is explicit developer completion authority and
+`reopen` returns any Complete task to `ready` without incrementing its attempt.
+The next claim creates Attempt N+1.
+
+Architect-created tasks use the same commands. If an architect creates a task for
+a developer, the architect authors/pushes the task definition on the canonical
+parent task worktree/branch and leaves the implementation worktree absent until
+`/moda_developer_create` actually starts it.
 
 The resolver can be tested directly from the workspace root:
 

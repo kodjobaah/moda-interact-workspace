@@ -1,0 +1,210 @@
+---
+name: moda_developer_update
+description: Reconcile, self-review, complete, or reopen a developer-controlled Moda Interact architecture task.
+disable-model-invocation: true
+---
+
+Use this skill for:
+
+```text
+/moda_developer_update <TASK_ID>
+/moda_developer_update <TASK_ID> complete
+/moda_developer_update <TASK_ID> reopen
+```
+
+Read and obey:
+
+```text
+docs/developer-task-workflow.md
+docs/agent-worktree-isolation-policy.md
+docs/agent-vcs-ownership-policy.md
+```
+
+The task document is the semantic work record; Git remains version control.
+Never infer completion solely from commit messages.
+
+## 1. Resolve the route
+
+Resolve the canonical workspace in the same location-independent way as
+`/moda-task`, then invoke:
+
+```bash
+python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" \
+  "$TASK_ID" --route-only --json
+```
+
+The task must exist. Use the returned parent/implementation worktree paths and
+task branch exactly. Do not derive alternatives from `$PWD`.
+
+## 2. Actions
+
+The optional action is one of:
+
+```text
+complete
+reopen
+```
+
+No action means reconcile/review the current developer implementation cycle.
+
+## 3. Reconcile/review (no action)
+
+Normally require `execution_mode: developer` and either:
+
+```text
+status: in_progress, executor: developer
+```
+
+or an existing developer review awaiting a decision.
+
+Inspect the actual task worktree/branch state. Recreate a deliberately removed
+canonical worktree only when permitted by the worktree policy; never substitute
+a shared/default checkout.
+
+Reconcile at least:
+
+- task definition and current attempt;
+- implementation diff and changed behavior;
+- uncommitted task-owned changes;
+- task-branch commits and remote publication state;
+- Work Items and Acceptance Criteria;
+- required/focused validation;
+- deviations, scope amendments and unresolved issues;
+- material assigned-agent assistance;
+- physical worktree/synchronization evidence.
+
+Update the task to describe the implementation that actually exists, not a
+narrative reconstructed from commit-message granularity.
+
+### Review fails
+
+Append `Developer Self-Review - Changes Requested` with explicit/testable
+corrections and transition:
+
+```yaml
+status: ready
+executor: null
+claimed_at: null
+attempt: <attempt just reviewed>
+```
+
+Commit/push the parent task record. Do not create Attempt N+1 here. The next
+`/moda_developer_create` claim increments exactly once.
+
+### Review passes + `completion_mode: automatic`
+
+Ensure task-owned implementation changes are committed/pushed on the
+implementation task branch. Append a Developer Self-Review Accepted record,
+update the Completion Report, perform the completion transition and push the
+parent task branch:
+
+```yaml
+status: complete
+executor: null
+claimed_at: null
+attempt: <accepted attempt; unchanged>
+```
+
+Then perform architect dependency-frontier reconciliation. Do not merge either
+task branch into `main`.
+
+### Review passes + `completion_mode: developer`
+
+Ensure the passing review/report is durable, but do not decide completion for
+the developer. Transition to:
+
+```yaml
+status: review
+executor: null
+claimed_at: null
+attempt: <reviewed attempt>
+```
+
+Append a Developer Self-Review Passed/Accepted record stating that explicit
+developer completion is pending. Commit/push the parent task record.
+
+The developer completes explicitly with:
+
+```text
+/moda_developer_update <TASK_ID> complete
+```
+
+## 4. Explicit `complete`
+
+This is the developer's completion authority, not an instruction to fabricate a
+passing review.
+
+Require:
+
+- task exists;
+- current attempt has a durable passing/Accepted review record;
+- no known required Work Item/Acceptance Criterion is incomplete;
+- task-owned implementation branch is committed/pushed;
+- parent task/report changes can be committed/pushed;
+- no merge to `main` is required for task completion.
+
+Then append/record the explicit Developer Completion Decision and set:
+
+```yaml
+status: complete
+executor: null
+claimed_at: null
+attempt: <accepted attempt; unchanged>
+```
+
+Commit/push the parent task branch and recalculate the architecture dependency
+frontier. Newly unblocked normal tasks may become `ready`; system-test tasks may
+become dependency-ready but remain manual-gated.
+
+Do not merge/push `main`.
+
+## 5. Explicit `reopen`
+
+A developer may reopen any task with `status: complete`, regardless of whether
+completion was automatic or developer-controlled.
+
+Reopen is NOT a claim.
+
+Append a durable Developer Override record containing the previous accepted
+attempt and reason for reopening. Preserve historical acceptance/review content.
+Transition only to:
+
+```yaml
+status: ready
+executor: null
+claimed_at: null
+attempt: <previous accepted attempt; unchanged>
+```
+
+Do not increment the attempt and do not set `in_progress`.
+
+By default preserve `execution_mode` and `completion_mode`.
+
+After reopen:
+
+- `/moda-task <TASK_ID>` may claim Attempt N+1 when execution remains agent-owned;
+- `/moda_developer_create <TASK_ID>` may claim Attempt N+1 for developer
+  execution and is an explicit takeover if the task was agent-owned.
+
+### Downstream dependency regression
+
+Recalculate downstream eligibility after reopen.
+
+For unclaimed downstream `pending`/`ready` tasks, update eligibility according to
+their explicit `depends_on`; a `ready` task whose dependency is no longer
+Complete becomes `pending`.
+
+Do not silently regress downstream tasks already `in_progress`, `review` or
+`complete`. Record/report each dependency regression and leave its historical
+status intact until the developer-as-architect decides whether another attempt
+is required.
+
+Commit/push all task-owned parent records affected by the authorized frontier
+reconciliation. Do not merge/push `main`.
+
+## 6. Assigned-agent assistance
+
+Material agent assistance may appear in the implementation history while
+`execution_mode: developer`. This is valid when explicitly requested by the
+developer. Record it in the Completion Report where material, but do not convert
+execution ownership merely because assistance occurred.
