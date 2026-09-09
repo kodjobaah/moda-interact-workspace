@@ -15,6 +15,8 @@ Agreed.
 
 This is a **pre-production correction architecture**. ARCH-008 preserves the ARCH-007 commercial model and corrects both the asynchronous Shopify App Events boundary and the Admin presentation of billing state.
 
+Architect reconciliation preflight: `docs/architecture/ARCH-008-recovery-credit-reconciliation-preflight-2026-09-09.md`.
+
 ## Decision
 
 Moda Interact will use **Shopify App Pricing** (formerly Managed Pricing), not Manual Pricing.
@@ -82,7 +84,8 @@ Low-level event handles, provider response summaries, retry attempts and policy 
 9. Replace Admin billing information overload with tabbed progressive disclosure.
 10. Use right-side drawers for low-frequency detail/edit/diagnostic interactions.
 11. Preserve existing authorization, server-side data access, i18n, pagination, billing calculations and mutation semantics.
-12. Make implementation tasks deterministic enough that a GPT-5.6 Luna repository agent should not need to invent architecture during execution.
+12. Require exact durable current-cycle identity before a new recovery-credit pack enters provider reconciliation.
+13. Make implementation tasks deterministic enough that a GPT-5.6 Luna repository agent should not need to invent architecture during execution.
 
 ## Non-Goals
 
@@ -237,17 +240,29 @@ Global Billing creates reusable drawer shell/detail components in `ARCH-008-ADMI
 
 ## Data Model
 
-No schema change is authorised at the design baseline.
+The 2026-09-09 architect reconciliation preflight proved that **no schema change
+is required** for provider-confirmed pack reconciliation.
 
-Existing durable concepts remain authoritative:
+Existing durable concepts are sufficient and remain authoritative:
 
-- `UsageEvent`
-- `RecoveryCreditPurchase`
-- `BillingPeriod`
-- plan/policy state
-- entitlement counters
+- `UsageEvent`, including `billingPeriodId`, metric, quantity, report state and
+  snapshotted Shopify meter handle;
+- `RecoveryCreditPurchase`, including plan/meter snapshots, `creditsGranted`,
+  status and linked UsageEvent;
+- `BillingPeriod`, uniquely identified by
+  `shopId + periodStart + periodEnd`;
+- plan/policy state;
+- entitlement counters.
 
-If exact current-cycle pack-meter matching cannot be implemented from the accepted integrated state without adding a durable identity/constraint, `ARCH-008-BACKGROUND-002` must stop and return the concrete schema/producer gap to `moda_architect`. Background may not silently edit the database repository.
+The required producer invariant is implemented separately by
+`ARCH-008-SHOPIFY-001`: every newly created pack UsageEvent must have an exact
+non-null BillingPeriod whose boundaries equal the Partner current billing cycle.
+
+No `ARCH-008-DATABASE-001` task is created.
+
+Background may not silently edit the database repository. If later source drift
+removes one of these proven durable identities, return the concrete drift to
+`moda_architect`.
 
 ## Contracts
 
@@ -318,20 +333,22 @@ Classification: **pre-production correction**.
 Expected order:
 
 1. correct App Events submission/retry semantics;
-2. correct pack provider-confirmation lifecycle;
-3. add shared Admin billing read/presentation primitives;
-4. simplify global Admin Billing;
-5. simplify Tenant Billing inspection;
-6. developer manual validation;
-7. terminal system-test validation.
+2. harden Shopify pack creation so every new purchase has exact current-cycle identity;
+3. correct pack provider-confirmation lifecycle;
+4. add shared Admin billing read/presentation primitives;
+5. simplify global Admin Billing;
+6. simplify Tenant Billing inspection;
+7. developer manual validation;
+8. terminal system-test validation.
 
-No database migration is planned. If a schema gap is proven, stop and re-plan before implementation continues.
+Architect preflight result: no database migration is required.
 
 ## Decisions / Tasks
 
 | Task | Repository | Purpose |
 |---|---|---|
 | `ARCH-008-BACKGROUND-001` | moda-interact-background | Correct App Events receipt/409 retry semantics without changing entitlement confirmation yet. |
+| `ARCH-008-SHOPIFY-001` | moda-interact | Require exact provider/local current-cycle identity before creating a new recovery-credit-pack UsageEvent. |
 | `ARCH-008-BACKGROUND-002` | moda-interact-background | Remove pack activation from 202 and reconcile provider-confirmed aggregate pack units. |
 | `ARCH-008-ADMIN-001` | moda-interact-admin | Establish accurate asynchronous billing labels plus bounded safe read primitives used by redesigned surfaces. |
 | `ARCH-008-ADMIN-002` | moda-interact-admin | Replace global Billing information overload with five URL-backed tabs and detail drawers. |
@@ -341,21 +358,30 @@ No database migration is planned. If a schema gap is proven, stop and re-plan be
 ## Dependency Graph
 
 ```text
-BACKGROUND-001
-    |
-    v
+ARCH-007-SHOPIFY-004
+        |
+        v
+SHOPIFY-001
+        |
+        +--------------------+
+                             |
+BACKGROUND-001              |
+        |                    |
+        +---------+----------+
+                  |
+                  v
 BACKGROUND-002
-    |
-    v
+        |
+        v
 ADMIN-001
-    |
-    v
+        |
+        v
 ADMIN-002
-    |
-    v
+        |
+        v
 ADMIN-003
-    |
-    v
+        |
+        v
 SYSTEM-TEST-001
 ```
 

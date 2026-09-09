@@ -9,13 +9,14 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-008-BACKGROUND-001
+  - ARCH-008-SHOPIFY-001
   - ARCH-007-BACKGROUND-008
   - ARCH-007-BACKGROUND-009
   - ARCH-007-SHOPIFY-001
@@ -43,25 +44,63 @@ UsageEvent.REPORTED alone MUST NOT activate a RecoveryCreditPurchase.
 
 Shopify provider `usage.quantity` is an aggregate confirmation signal. It does not identify a particular App Events idempotency key. Implementation must not claim otherwise.
 
+## Architect reconciliation preflight — completed 2026-09-09
+
+The architecture preflight is complete.
+
+Decision:
+
+```text
+DATABASE TASK REQUIRED: NO
+SHOPIFY PRODUCER HARDENING REQUIRED: YES
+```
+
+The existing schema is sufficient because exact reconciliation can use:
+
+```text
+provider current cycle start/end
+-> exact BillingPeriod [shopId, periodStart, periodEnd]
+-> UsageEvent.billingPeriodId
+-> UsageEvent metric/quantity/report state/meter
+-> RecoveryCreditPurchase plan/meter/credits snapshots
+-> RecoveryCreditPurchase status
+```
+
+`ARCH-008-SHOPIFY-001` now guarantees that every **new** pack UsageEvent enters
+this flow with a non-null exact current `billingPeriodId` and matching
+provider/local cycle boundaries.
+
+Do not create a database migration.
+
+If a legacy/unexpected row with null or wrong cycle identity is encountered,
+never infer cycle membership from timestamps. Exclude it from activation and
+surface the existing attention/diagnostic outcome.
+
 ## Required preflight — do before editing
 
 1. Work only in the launcher-resolved ARCH-008-BACKGROUND-002 task worktree after normal synchronisation.
 2. Confirm `ARCH-008-BACKGROUND-001` is Complete and its 409/submission behavior is present.
-3. Confirm accepted ARCH-007 reconciliation capability is present on current source. Expected accepted capability/files include equivalents of:
-   - `src/services/billing-reconciliation.service.ts`
-   - `src/providers/shopify-partner-billing.provider.ts`
-   - recurring billing reconciliation scheduler/worker entrypoint from ARCH-007-BACKGROUND-008;
-   - recovery-credit reconciliation work from ARCH-007-BACKGROUND-009.
-4. Confirm the Partner projection exposes:
-   - current billing cycle identity/boundaries;
-   - plan/meter identity sufficient to select the **exact recovery-credit pack meter**;
-   - finite `usage.quantity` for that meter.
-5. Confirm existing durable local data can associate candidate pack purchases with the same billing cycle + pack-meter configuration without fuzzy guesswork. Prefer existing `UsageEvent.billingPeriodId`, billing-period state, plan/meter snapshots and accepted ARCH-007 linkage.
-6. If any capability above is absent after synchronisation, or exact cycle/meter identity cannot be recovered durably from accepted state, **STOP** and return the concrete gap to `moda_architect`. Do not:
-   - add a database migration yourself;
-   - edit `moda-interact-database`;
-   - modify Shopify app producer behavior outside task ownership;
-   - approximate cycle membership using an arbitrary date window.
+3. Confirm `ARCH-008-SHOPIFY-001` is Complete and the integrated Shopify
+   purchase path now requires exact non-null current-cycle identity.
+4. Confirm accepted ARCH-007 capability is present:
+   - `src/services/billing-reconciliation.service.ts`;
+   - `src/providers/shopify-partner-billing.provider.ts`;
+   - recurring billing worker from ARCH-007-BACKGROUND-008;
+   - recovery-credit transaction/counter logic from ARCH-007-BACKGROUND-009.
+5. Confirm the Partner projection still exposes:
+   - current billing cycle start/end;
+   - current plan handle;
+   - provider usage snapshots with meter handle + quantity.
+6. Confirm the Prisma schema still exposes:
+   - `BillingPeriod` unique by `shopId + periodStart + periodEnd`;
+   - `UsageEvent.billingPeriodId`;
+   - `UsageEvent.shopifyEventHandle`;
+   - `RecoveryCreditPurchase.shopifyPlanHandleSnapshot`;
+   - `RecoveryCreditPurchase.shopifyEventHandleSnapshot`;
+   - `RecoveryCreditPurchase.creditsGranted`.
+7. If any of those **previously verified** capabilities has disappeared after
+   synchronisation, STOP and report source drift to `moda_architect`.
+   Do not invent a replacement schema or heuristic.
 
 ## Primary files
 
@@ -75,6 +114,50 @@ Expected implementation boundary:
 Do not create a second Partner billing client if ARCH-007 already provides one.
 
 ## Required implementation
+
+### Reconciliation orchestration — normative
+
+Replace the current global transport-state purchase activation order:
+
+```text
+publishDue()
+-> reconcilePending()   # must be removed as an activation source
+-> fetch Partner subscriptions
+```
+
+with:
+
+```text
+publishDue()
+-> select bounded rotating shop page
+-> for each shop:
+     fetch Partner activeSubscription
+     apply/sync exact current subscription + BillingPeriod
+     resolve exact configured pack meter
+     reconcile provider-confirmed pack units for that shop/current cycle/meter
+     compare normal recovery usage
+```
+
+`RecoveryCreditPurchaseService.reconcilePending()` must no longer activate
+`REPORTED` pack purchases merely from local transport state. Remove it from the
+billing-worker activation path or refactor it so it cannot grant without an
+explicit provider-confirmed budget.
+
+Introduce/reuse one bounded provider-confirmed reconciliation operation with an
+input equivalent to:
+
+```text
+shopId
+billingPeriodId
+providerPlanHandle
+packMeterHandle
+providerUnits
+```
+
+The operation must perform ACTIVE matched-unit counting, candidate selection,
+ambiguity evaluation and all new grants inside one Serializable transaction so
+concurrent reconciliation retries the entire budget calculation.
+
 
 ### A. Remove pack activation from App Events HTTP-success path
 
@@ -143,6 +226,8 @@ Eligible pending candidates must satisfy **all** of:
 - linked UsageEvent `shopifyReportState == REPORTED`;
 - candidate belongs to the provider current billing cycle;
 - candidate corresponds to the exact pack meter/effective plan configuration being reconciled;
+- `RecoveryCreditPurchase.shopifyPlanHandleSnapshot` equals the current provider plan handle;
+- `RecoveryCreditPurchase.shopifyEventHandleSnapshot` equals the exact pack meter;
 - candidate is not already ACTIVE/cancelled.
 
 Do not count a merely-created local purchase whose App Event was never submitted.
