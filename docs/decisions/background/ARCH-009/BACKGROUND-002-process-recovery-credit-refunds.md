@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-09-10T21:57:25Z
@@ -221,31 +221,39 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 ### Files Changed
-- `moda-interact-background/src/services/recovery-credit-refund.service.ts`
-- `moda-interact-background/src/services/purchased-recovery-reservation.service.ts`
+- `moda-interact-background/database`
+- `moda-interact-background/package.json`
+- `moda-interact-background/package-lock.json`
 - `moda-interact-background/src/entrypoints/billing.ts`
+- `moda-interact-background/src/services/purchased-recovery-reservation.service.ts`
+- `moda-interact-background/src/services/recovery-credit-purchase.service.ts`
+- `moda-interact-background/src/services/recovery-credit-refund.service.ts`
+- `moda-interact-background/tests/unit/runtime/observability-startup.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-credit-purchase.service.test.ts`
 - `moda-interact-background/tests/unit/services/recovery-credit-refund.service.test.ts`
 ### Work Completed
+- Attempt 2 restored the implementation branch to `origin/main` and reapplied only BACKGROUND-002-owned changes, retaining only the accepted ARCH-009 database prerequisite and Shared `0.9.0` adoption.
 - Added serializable full-pack approval holds using Shared 0.9.0 purchased-credit availability, exact purchase/event snapshot validation, versioned counter updates, and durable `NEEDS_ATTENTION` outcomes when a hold cannot be safely applied.
-- Added current-cycle correction creation with deterministic idempotency, exact cycle/plan/meter checks, publisher-state mapping, replay-safe correction linkage, and provider-action gating.
-- Added Partner Dashboard refund action-required handling, human-confirmed exactly-once finalization, counter/purchase state transitions, safe pre-provider hold release, and exactly-once `BILLING_REFUND_COMPLETED` support messaging.
-- Added `refundingQuantity` to purchased-credit admission so held credits cannot be consumed by concurrent recovery work.
-- Integrated refund progression into the existing billing worker cycle after usage publication and reconciliation.
+- Added current-cycle correction creation with deterministic idempotency, exact cycle/plan/meter checks, fail-closed publisher-state mapping, replay-safe correction linkage, and provider-action gating.
+- Added Partner Dashboard refund action-required handling, refund-aware reconciliation, human-confirmed exactly-once finalization, all-or-nothing counter/purchase/refund transitions, safe automatic pre-provider hold release, and exactly-once `BILLING_REFUND_COMPLETED` support messaging.
+- Added `refundingQuantity` to purchased-credit admission so held credits cannot be consumed by concurrent recovery work, including CAS retry behavior.
+- Expanded regression coverage for insufficient balance, concurrent admission, correction identity/state rules, replay, dashboard refunds, and forced CAS rollback failures.
 ### Validation Results
-- `npx vitest run tests/unit/services/recovery-credit-refund.service.test.ts`: passed, 3 tests.
-- Focused billing regression suite: passed, 32 tests.
-- `npm run test:unit`: passed, 45 files and 445 tests.
+- `npx vitest run tests/unit/services/recovery-credit-refund.service.test.ts tests/unit/services/recovery-credit-purchase.service.test.ts`: passed, 32 tests.
+- `npm run test:unit`: passed, 44 files and 451 tests.
 - `npm run build`: passed, including Prisma client generation and TypeScript compilation.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
 ### Deviations
-The accepted ARCH-009-BACKGROUND-001 implementation commit was carried onto this dependent task branch because `origin/main` does not yet contain accepted ARCH-009 prerequisite artifacts. No prerequisite source was changed by this task.
+`origin/main` did not contain the accepted ARCH-009 database prerequisite or Shared `0.9.0`, so this task adopts those direct prerequisites. The stale remote task tip contained unaccepted BACKGROUND-001 and an earlier BACKGROUND-002 attempt; it was replaced with the isolated Attempt 2 implementation using lease-protected force publication.
 ### Assumptions
 Admin confirmation writes `PROVIDER_CONFIRMED` and the provider confirmation fields before Background finalization, as defined by ARCH-009.
 ### Unresolved Issues
+None.
 ### Architectural Concerns
+None.
 
 ### Git / VCS
 
@@ -269,13 +277,13 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-background`
-  commit: `47c9bf417b0c4dd3c86dc66359d9e1aac7cfc441`
+  commit: `3dec78ea19ca6ac738ea0fcb4d252dc2436f16e2`
   remote branch: `origin/task/ARCH-009-BACKGROUND-002`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-002-process-recovery-credit-refunds.md`
-  commit: `ea9d28e5013845f98d0985a5ff67cd869f906d58`
+  commit: `3b875395c7e3a075e9195d434a965d5c5af61df9`
   remote branch: `origin/task/ARCH-009-BACKGROUND-002`
   pushed: yes
   submodule gitlink staged: no
