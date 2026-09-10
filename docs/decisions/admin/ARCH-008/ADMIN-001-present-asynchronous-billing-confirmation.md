@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-10T00:08:16Z
@@ -282,31 +282,46 @@ After successful validation, complete Completion Report, set task `review`, retu
 
 ### Status
 
-In Progress — attempt 1 implementation underway.
+Review — attempt 1 implementation complete and returned to `moda_architect`.
 
 ### Files Changed
 
-None
+- `src/lib/admin/billing.ts`
+- `src/lib/admin/types.ts`
+- `src/lib/admin/billing-presentation.mjs`
+- `src/i18n/required-keys.ts`
+- `src/i18n/locales/en.json`
+- `tests/security/admin-billing-visibility.test.mjs`
 
 ### Work Completed
 
-None
+- Added the exact asynchronous report-state and recovery-pack status presentation mappings.
+- Added protected, bounded recovery-pack list/detail and ledger-detail read helpers with database-level tenant scoping, durable status allowlisting, stable newest-first ordering, safe projections, and bounded provider summaries.
+- Added the ARCH-008 Admin ICU keys and changed the existing reported-at label to `Submitted at` without changing the `reportedAt` data contract.
+- Preserved the existing Admin layout and made no provider network calls.
+- Implementation commit: `79a2397` on `task/ARCH-008-ADMIN-001`.
 
 ### Validation Results
 
-None
+- Focused ADMIN-001 tests: 33 passed, 0 failed.
+- Full Admin tests: 126 passed, 3 skipped, 0 failed.
+- `npx tsc --noEmit`: passed.
+- `npm run lint`: passed with two pre-existing `queue-monitor.tsx` hook warnings.
+- `npm run build`: passed with existing BullMQ dependency/critical-dependency warnings.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+- The tracked database submodule was initialized locally because the Admin worktree did not have `database/prisma/schema.prisma`; no schema changes or parent gitlink changes were made.
 
 ### Assumptions
 
-None
+- `reportedAt` remains the durable field name; Admin presentation now localizes its label as `Submitted at`.
 
 ### Unresolved Issues
 
-None
+- None for ADMIN-001.
 
 ### Architectural Concerns
 
