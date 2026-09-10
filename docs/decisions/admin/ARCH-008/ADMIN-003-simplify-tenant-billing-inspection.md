@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-008-ADMIN-002
 enables:
@@ -34,6 +34,7 @@ Replace the Tenant Directory Billing tab's single stacked diagnostic surface wit
 
 ## Current inspected baseline
 
+
 The supplied snapshot currently renders all of the following together in `src/components/admin/tenant-billing.tsx`:
 
 - subscription and billing period;
@@ -46,15 +47,16 @@ The supplied snapshot currently renders all of the following together in `src/co
 
 That top-level navigation stays unchanged.
 
+
 ## Required preflight
 
 1. Work in launcher-resolved ADMIN-003 task worktree after synchronisation.
 2. Confirm ADMIN-002 is Complete and reusable Admin billing drawer/tab primitives exist.
 3. Confirm Tenant Billing current equivalent of:
-   - `src/app/(protected)/page.tsx`
-   - `src/components/admin/tenant-detail-panel.tsx`
-   - `src/components/admin/tenant-billing.tsx`
-   - `src/lib/admin/billing.ts`
+  - `src/app/(protected)/page.tsx`
+  - `src/components/admin/tenant-detail-panel.tsx`
+  - `src/components/admin/tenant-billing.tsx`
+  - `src/lib/admin/billing.ts`
 4. Confirm tenant detail reads can pass the selected `shopId` into ADMIN-001 detail helpers so another shop's event/purchase cannot be opened by changing only the detail id.
 5. If ADMIN-002 did not produce a reusable drawer shell/detail component as accepted, STOP and return dependency mismatch rather than creating a competing drawer mechanism.
 
@@ -272,17 +274,17 @@ Add focused `tests/security/admin-tenant-billing-progressive-disclosure.test.mjs
 
 ## Acceptance Criteria
 
-- [ ] Tenant top-level navigation remains unchanged.
-- [ ] Billing defaults to Overview and has four deep-linkable sub-tabs.
-- [ ] Overview contains only concise business/health information.
-- [ ] Usage groups entitlement counters and hides advanced limit internals behind disclosure.
-- [ ] Empty billing override no longer consumes a full panel.
-- [ ] Shopify provider state/reconciliation is isolated to Shopify subview.
-- [ ] Activity contains compact pack + App Event history with drawers.
-- [ ] Low-level App Event diagnostics are no longer primary table columns.
-- [ ] All detail reads are server-side and tenant-scoped.
-- [ ] ADMIN-002 drawer primitives are reused.
-- [ ] No billing calculation/mutation/provider architecture changes.
+- [x] Tenant top-level navigation remains unchanged.
+- [x] Billing defaults to Overview and has four deep-linkable sub-tabs.
+- [x] Overview contains only concise business/health information.
+- [x] Usage groups entitlement counters and hides advanced limit internals behind disclosure.
+- [x] Empty billing override no longer consumes a full panel.
+- [x] Shopify provider state/reconciliation is isolated to Shopify subview.
+- [x] Activity contains compact pack + App Event history with drawers.
+- [x] Low-level App Event diagnostics are no longer primary table columns.
+- [x] All detail reads are server-side and tenant-scoped.
+- [x] ADMIN-002 drawer primitives are reused.
+- [x] No billing calculation/mutation/provider architecture changes.
 
 ## Validation — run from `moda-interact-admin`
 
@@ -315,58 +317,163 @@ After successful validation, complete Completion Report, set task `review`, retu
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/app/(protected)/page.tsx`
+- `src/components/admin/billing-drawers.tsx`
+- `src/components/admin/tenant-billing.tsx`
+- `src/components/admin/tenant-detail-panel.tsx`
+- `src/components/admin/tenant-table.tsx`
+- `src/i18n/locales/en.json`
+- `src/i18n/required-keys.ts`
+- `src/lib/admin/billing.ts`
+- `tests/security/admin-billing-visibility.test.mjs`
+- `tests/security/admin-tenant-billing-progressive-disclosure.test.mjs`
 
 ### Work Completed
 
-None
+- Restored the canonical task-definition sections after the prior handoff had overwritten them with completion notes.
+- Completed Attempt 3 corrections for pending plan timing and `UNMAPPED` attention-state visibility in Overview.
+- Exposed override hard limit, reason, state, and expiry metadata in Usage -> Advanced limits for active and expired records.
+- Rendered business-level Moda and Shopify quantities when discrepancy data exists while retaining the exact unavailable message when it does not.
+- Added focused regressions for all requested correction behavior and catalogue keys.
+- Confirmed the earlier ADMIN-002 dependency-base blocker was resolved before implementation; shared drawer primitives are present on the synchronized mainline.
 
 ### Validation Results
 
-None
+- Focused correction suite: 24 passed, 0 failed.
+- Full `npm test`: 145 passed, 0 failed, 0 skipped after the production build generated `.next/BUILD_ID`.
+- `npx tsc --noEmit`: passed.
+- `npm run lint`: passed with 2 pre-existing `queue-monitor.tsx` hook warnings.
+- `npm run build`: passed; existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+
+### Git / VCS
+
+Task branch: `task/ARCH-008-ADMIN-003`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-003`
+  parent branch: `task/ARCH-008-ADMIN-003`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-003`
+  implementation branch: `task/ARCH-008-ADMIN-003`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-admin`
+  commit: `87664de`
+  remote branch: `origin/task/ARCH-008-ADMIN-003`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/admin/ARCH-008/ADMIN-003-simplify-tenant-billing-inspection.md`
+  commit: `80e0890`
+  remote branch: `origin/task/ARCH-008-ADMIN-003`
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ### Deviations
 
-None
+The prior Attempt 2 handoff had replaced canonical task-definition sections and left an obsolete blocked Completion Report; Attempt 3 restores both structures. No source, schema, or provider architecture deviation was introduced.
 
 ### Assumptions
 
-None
+The tracked `database` submodule is initialized in the implementation worktree for Prisma generation and validation; no schema or submodule pointer changes are part of this task.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None introduced.
+
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 3 closes the complete Attempt 2 Changes Requested contract and conforms to ARCH-008.
 
-### Reviewed Files
+Verified corrections:
 
-None
+1. Overview now renders the pending plan effective date through `subscription.pendingEffectiveAt` and surfaces both `SYNC_ERROR` and `UNMAPPED` as concise attention warnings near the top.
+2. Usage -> Advanced limits now preserves override hard limit, reason, state and expiry metadata whenever an override record exists, including EXPIRED historical overrides, without reintroducing a large standalone override panel.
+3. Shopify now renders business-level Moda and Shopify quantities when persisted discrepancy data exists, while retaining the exact short unavailable message when the discrepancy projection is null.
+4. The canonical task-definition sections and actual `## Completion Report` are restored. The Completion Report records the resolved ADMIN-002 dependency-base condition, dedicated mirrored task worktrees, synchronization evidence, implementation commit, validation results, deviations, and no unresolved issues.
+5. The required production build is now reported as completed successfully.
+
+The small duplicated restored preflight items 4/5 were documentation-only and are deduplicated by this architect acceptance overlay; no implementation rework is required.
+
+The previously conformant ADMIN-003 structure remains intact:
+
+- top-level `Administration | Recovery Logs | Billing` navigation is unchanged;
+- Billing uses exactly `billingView=overview|usage|shopify|activity`;
+- missing/invalid Billing view defaults to Overview;
+- billing-only URL/detail state is cleared when changing tenant or top-level navigation;
+- the existing bounded tenant billing summary may load for Billing views, while App Event and recovery-pack activity pages are loaded only for Activity;
+- Activity uses independent `packPage` and `billingPage` pagination with page size 10;
+- selected purchase/event detail reads pass the selected tenant `shopId` at the Prisma query boundary;
+- accepted ADMIN-002 recovery-pack and App Event drawer primitives are reused and return correctly to the tenant route;
+- primary Activity tables remain compact and low-level diagnostics remain in drawers;
+- `REPORTED` remains `Submitted to Shopify`;
+- Overview does not expose raw provider/App Event diagnostics;
+- Usage keeps advanced limits behind accessible `<details>`;
+- no billing mutation, entitlement calculation, schema migration, provider network call, or competing drawer architecture was introduced;
+- `ARCH-008-SYSTEM-TEST-001` was not executed during implementation.
 
 ### Validation Reviewed
 
-None
+Agent-reported Attempt 3 validation:
+
+- focused correction suite: 24 passed;
+- full Admin tests: 145 passed;
+- TypeScript: passed;
+- lint: passed with two pre-existing `queue-monitor.tsx` warnings;
+- Prisma validation: passed;
+- `git diff --check`: passed;
+- production build: passed, with the existing BullMQ dynamic-dependency / optional `@valkey/valkey-glide` warnings.
+
+The supplied review archive does not contain `node_modules`, so validation commands were not independently rerun in the architect container. The changed source/tests and published Git state were inspected directly.
+
+Published verification:
+
+- implementation task branch tip: `87664de57711f202f6658d87ffafc82a157fd206`;
+- Attempt 3 commit directly follows Attempt 2 `aa11e5a06cf89736a85fe5f243c947ebc13598ea`;
+- cumulative Admin task branch is two commits ahead of Admin `main`, zero behind;
+- cumulative changes remain limited to the ten declared ADMIN-003 source/test files;
+- parent review handoff commit: `80e0890c91715279236825960fc89e9dedd8804c`;
+- final parent report correction / branch tip: `4ee567a0d936ddec53436e81566e97c336a01c3a`.
 
 ### Architecture Conformance
 
-Pending
+Accepted.
+
+The ARCH-008 implementation dependency set is now complete and architect-accepted.
 
 ### Follow-up
 
-None
+`ARCH-008-SYSTEM-TEST-001` is now Ready because every dependency in its authoritative YAML is Complete.
+
+This is a terminal/manual-gated system-test task. Do NOT execute it automatically. The developer may manually exercise the integrated implementation first and must explicitly invoke `ARCH-008-SYSTEM-TEST-001` before `moda_system_test` runs.
+
+ARCH-008 architecture status remains non-final until the required terminal system test is Complete (unless system testing is explicitly documented as not applicable).
