@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-10T21:47:39Z
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-002
 created: 2026-09-09
-updated: 2026-09-10
+updated: 2026-09-10T21:50:11Z
 ---
 
 # ARCH-009-BACKGROUND-001
@@ -245,34 +245,25 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 ### Files Changed
- - `database` submodule pointer to accepted `ARCH-009-DATABASE-001` revision
- - `package.json`
- - `package-lock.json`
- - `src/entrypoints/billing.ts`
- - `src/providers/shopify-partner-billing.provider.ts`
  - `src/services/subscription-cancellation.service.ts`
  - `tests/unit/providers/shopify-partner-billing.provider.test.ts`
  - `tests/unit/services/subscription-cancellation.service.test.ts`
- - `tests/unit/runtime/observability-startup.test.ts`
 ### Work Completed
-- Adopted Shared `@modainteract/moda-interact-shared@0.9.0` and the accepted ARCH-009 database schema revision.
-- Added Partner API 2026-07 `appSubscriptionCancel` using the exact Shared cancellation mapping and bounded provider error classification.
-- Added the batch-25 cancellation worker with APPROVED/RETRYABLE/PROVIDER_ACCEPTED eligibility, deterministic ordering, ten-minute lease recovery, version/status CAS claims, identity verification, already-achieved handling, retry/permanent handling, provider-accepted transitions, confirmation, and exactly-once completion messaging.
-- Wired cancellation processing into the existing billing worker scan.
-- Added focused mode-mapping and lifecycle concurrency/idempotency coverage.
+- Corrected cancellation claims to compare the selected request status as part of the `id + version + status` CAS.
+- Cleared stale `providerErrorCode` when a successful Partner mutation enters `PROVIDER_ACCEPTED`.
+- Added Attempt 2 regressions for exact claim races, batch/due ordering, confirmation/no-contract rules, retry identity preservation, stale lease paths, exactly-once completion replay, HTTP/GraphQL/configuration/invalid-mode classification, and secret-safe provider errors.
 ### Validation Results
-- `npm run test:unit`: passed, 44 files and 442 tests.
-- Focused provider/cancellation tests: passed, 2 files and 12 tests.
+- Focused provider/cancellation tests: passed, 2 files and 34 tests.
+- `npm run test:unit`: passed, 44 files and 464 tests.
 - `npm run build`: passed.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
 ### Deviations
-The existing observability startup test required its exact Shared-version assertion to be updated from `0.8.0` to the ARCH-009-required `0.9.0`.
+None.
 ### Assumptions
-- The accepted ARCH-009 database task revision `6e91680` is consumed through the implementation repository's database submodule pointer.
-- A bounded neutral provider summary is sufficient because Partner acceptance is not local completion.
+The Attempt 1 implementation and accepted Shared/database revisions remain the baseline; Attempt 2 changes only the Architect-requested service behavior and regressions.
 ### Unresolved Issues
 None.
 ### Architectural Concerns
@@ -293,22 +284,23 @@ Physical worktree isolation:
   another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed; branch did not exist
+  parent remote task branch fast-forwarded: already-current
   parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed; branch did not exist
+  implementation remote task branch fast-forwarded: already-current
   implementation origin/main incorporated: already-current
 
 Implementation repository:
   repository: `moda-interact-background`
-  commit: `52664ce`
+  commit: `e7ad61e`
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
-  claim commit: `b74ad09`
+  claim commit: `681d7ff`
+  review handoff commit: pending
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
-  pushed: yes
+  pushed: pending
   submodule gitlink staged: no
 
 Merged to implementation main: no
