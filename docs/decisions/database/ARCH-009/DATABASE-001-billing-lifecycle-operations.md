@@ -446,9 +446,9 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/database/ARCH-009/DATABASE-001-billing-lifecycle-operations.md`
-  commit: `PENDING` (Attempt 1 review handoff commit)
+  commit: `54409e6`
   remote branch: `origin/task/ARCH-009-DATABASE-001`
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
