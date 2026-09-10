@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-10T21:26:12Z
@@ -245,21 +245,74 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 ### Files Changed
-None
+ - `database` submodule pointer to accepted `ARCH-009-DATABASE-001` revision
+ - `package.json`
+ - `package-lock.json`
+ - `src/entrypoints/billing.ts`
+ - `src/providers/shopify-partner-billing.provider.ts`
+ - `src/services/subscription-cancellation.service.ts`
+ - `tests/unit/providers/shopify-partner-billing.provider.test.ts`
+ - `tests/unit/services/subscription-cancellation.service.test.ts`
+ - `tests/unit/runtime/observability-startup.test.ts`
 ### Work Completed
-None
+- Adopted Shared `@modainteract/moda-interact-shared@0.9.0` and the accepted ARCH-009 database schema revision.
+- Added Partner API 2026-07 `appSubscriptionCancel` using the exact Shared cancellation mapping and bounded provider error classification.
+- Added the batch-25 cancellation worker with APPROVED/RETRYABLE/PROVIDER_ACCEPTED eligibility, deterministic ordering, ten-minute lease recovery, version/status CAS claims, identity verification, already-achieved handling, retry/permanent handling, provider-accepted transitions, confirmation, and exactly-once completion messaging.
+- Wired cancellation processing into the existing billing worker scan.
+- Added focused mode-mapping and lifecycle concurrency/idempotency coverage.
 ### Validation Results
-None
+- `npm run test:unit`: passed, 44 files and 442 tests.
+- Focused provider/cancellation tests: passed, 2 files and 12 tests.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
 ### Deviations
-None
+The existing observability startup test required its exact Shared-version assertion to be updated from `0.8.0` to the ARCH-009-required `0.9.0`.
 ### Assumptions
-None
+- The accepted ARCH-009 database task revision `6e91680` is consumed through the implementation repository's database submodule pointer.
+- A bounded neutral provider summary is sufficient because Partner acceptance is not local completion.
 ### Unresolved Issues
-None
+None.
 ### Architectural Concerns
-None
+None.
+
+### Git / VCS
+
+Task branch: `task/ARCH-009-BACKGROUND-001`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-009-BACKGROUND-001`
+  parent branch: `task/ARCH-009-BACKGROUND-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-009-BACKGROUND-001`
+  implementation branch: `task/ARCH-009-BACKGROUND-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed; branch did not exist
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed; branch did not exist
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-background`
+  commit: `52664ce`
+  remote branch: `origin/task/ARCH-009-BACKGROUND-001`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
+  claim commit: `b74ad09`
+  remote branch: `origin/task/ARCH-009-BACKGROUND-001`
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
