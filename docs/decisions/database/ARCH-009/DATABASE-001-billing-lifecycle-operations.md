@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: copilot
-claimed_at: 2026-09-10T03:00:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-008-BACKGROUND-002
@@ -457,14 +457,168 @@ Merged to workspace main: no
 ## Architect Review
 
 ### Review Status
-Pending
+
+Changes Requested
+
 ### Review Notes
-None
-### Reviewed Files
-None
+
+Attempt 1 is architecturally sound at the schema and migration level, but the task's required validation contract is not fully implemented.
+
+The new schema currently conforms to the task:
+
+- the five ARCH-009 enums contain exactly the specified values;
+- `RecoveryCreditPurchaseStatus` appends `REFUNDED`;
+- `BillingAuditAction` preserves the existing values and appends `SUBSCRIPTION_CANCELLATION` and `RECOVERY_CREDIT_REFUND`;
+- `ShopEntitlementCounter.refundingQuantity Int @default(0)` is present;
+- `SubscriptionCancellationRequest` matches the specified persistence model;
+- `RecoveryCreditRefund` matches the specified persistence model;
+- the required Shop / MerchantSupportMessage / PlatformAdmin / RecoveryCreditPurchase / UsageEvent back-relations are present;
+- `purchaseId`, `correctionUsageEventId`, and both `requestKey` fields have the required uniqueness;
+- the required lifecycle indexes are present;
+- the single `add_billing_lifecycle_operations` migration creates the required enum/table/index/foreign-key state and does not modify historical migration files;
+- the generated ERD contains the new lifecycle entities, enums, refund hold counter and relationships;
+- the only existing validator adjustment is whitespace-tolerance for Prisma formatting and does not change the recovery-credit contract;
+- no price field, partial-refund persistence, app/provider logic, UI, or shared-database deployment was introduced.
+
+### Required Correction — exact enum validation
+
+The task explicitly requires `scripts/validate-billing-lifecycle-schema.mjs` to assert:
+
+```text
+exact new enums
+```
+
+The current validator uses `includesAll(...)` for each new enum. This proves that the required values exist, but it does not prove exact membership.
+
+For example, this invalid schema would currently pass:
+
+```prisma
+enum SubscriptionCancellationMode {
+  END_OF_CYCLE
+  IMMEDIATE_NO_PRORATION
+  IMMEDIATE_PRORATED
+  IMMEDIATE_SKIP_FINAL_USAGE
+  UNAUTHORISED_EXTRA_MODE
+}
+```
+
+That is incompatible with ARCH-009's deterministic cancellation contract.
+
+Attempt 2 must:
+
+1. replace inclusion-only validation for the five new enums with exact ordered membership assertions;
+2. parse/normalize enum values and use an equality assertion (for example `assert.deepEqual`) against these exact arrays:
+
+```text
+BillingLifecycleRequestSource
+[
+  MERCHANT_UI,
+  MERCHANT_SUPPORT,
+  ADMIN
+]
+
+SubscriptionCancellationMode
+[
+  END_OF_CYCLE,
+  IMMEDIATE_NO_PRORATION,
+  IMMEDIATE_PRORATED,
+  IMMEDIATE_SKIP_FINAL_USAGE
+]
+
+SubscriptionCancellationStatus
+[
+  REQUESTED,
+  APPROVED,
+  PROCESSING,
+  RETRYABLE,
+  PROVIDER_ACCEPTED,
+  COMPLETED,
+  REJECTED,
+  WITHDRAWN,
+  NEEDS_ATTENTION
+]
+
+RecoveryCreditRefundSettlementMode
+[
+  CURRENT_CYCLE_APP_EVENT_CORRECTION,
+  PARTNER_DASHBOARD_REFUND
+]
+
+RecoveryCreditRefundStatus
+[
+  REQUESTED,
+  APPROVED,
+  PROCESSING,
+  PROVIDER_PENDING,
+  PROVIDER_ACTION_REQUIRED,
+  PROVIDER_CONFIRMED,
+  COMPLETED,
+  REJECTED,
+  WITHDRAWN,
+  NEEDS_ATTENTION
+]
+```
+
+3. strengthen migration-side validation so the migration is also proven to contain:
+   - `RecoveryCreditPurchaseStatus ADD VALUE 'REFUNDED'`;
+   - `BillingAuditAction ADD VALUE 'SUBSCRIPTION_CANCELLATION'`;
+   - `BillingAuditAction ADD VALUE 'RECOVERY_CREDIT_REFUND'`;
+   - the exact SQL value lists for the five newly-created enums;
+4. retain the existing uniqueness/index/default/model assertions;
+5. do not change `prisma/schema.prisma` or the migration unless the strengthened validator exposes an actual discrepancy;
+6. do not add new lifecycle states or persistence fields.
+
+This is deliberately a validator-only correction unless exact validation discovers genuine source drift.
+
 ### Validation Reviewed
-None
+
+The architect directly reran from the supplied archive:
+
+```text
+node scripts/validate-billing-lifecycle-schema.mjs
+-> Billing lifecycle schema assertions passed.
+
+node scripts/validate-recovery-credit-pack-schema.mjs
+-> Recovery credit pack schema assertions passed.
+```
+
+The archive does not contain `node_modules`, so Prisma validate/generate and ERD regeneration were not independently rerun in the architect container.
+
+Agent-reported validation:
+
+- `npm run prisma:validate`: passed;
+- `npm run prisma:generate`: passed;
+- `npm run test:recovery-credit-packs`: passed;
+- `npm run test:billing-lifecycle`: passed;
+- `npm run erd:puml`: passed;
+- `git diff --check`: passed.
+
+### Published Git Verification
+
+- database task branch tip: `98bf7e1648c10a5fb5993f1daa4ea425ab1c7057`;
+- database branch is one commit ahead of `main`, zero behind;
+- changed implementation files are limited to the six declared database/schema/migration/validator/ERD/package files;
+- parent task branch tip: `dca3542dfa158dc895e62feae15e58ee5965df4e`;
+- worktree and start-of-attempt synchronization evidence is present and conforms to the workflow.
+
 ### Architecture Conformance
-Pending
+
+Changes required only in validation coverage.
+
 ### Follow-up
-None
+
+Attempt 2 must stay on the SAME `ARCH-009-DATABASE-001` task and mirrored `task/ARCH-009-DATABASE-001` branches.
+
+After the validator correction:
+
+1. rerun `npm run prisma:validate`;
+2. rerun `npm run prisma:generate`;
+3. rerun `npm run test:recovery-credit-packs`;
+4. rerun `npm run test:billing-lifecycle`;
+5. rerun `npm run erd:puml`;
+6. rerun `git diff --check`;
+7. update the Completion Report with the Attempt 2 implementation commit and validation results;
+8. return the same task to `review`;
+9. STOP.
+
+`ARCH-009-SHARED-001` remains Pending until DATABASE-001 is architect-accepted Complete.
