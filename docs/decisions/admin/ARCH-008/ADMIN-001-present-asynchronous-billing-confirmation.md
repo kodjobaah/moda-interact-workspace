@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-10T00:26:57Z
@@ -282,7 +282,7 @@ After successful validation, complete Completion Report, set task `review`, retu
 
 ### Status
 
-In Progress — attempt 2 correction work underway.
+Review — attempt 2 corrections complete and returned to `moda_architect`.
 
 ### Files Changed
 
@@ -295,16 +295,24 @@ In Progress — attempt 2 correction work underway.
 
 ### Work Completed
 
-- Added the exact asynchronous report-state and recovery-pack status presentation mappings.
-- Added protected, bounded recovery-pack list/detail and ledger-detail read helpers with database-level tenant scoping, durable status allowlisting, stable newest-first ordering, safe projections, and bounded provider summaries.
-- Added the ARCH-008 Admin ICU keys and changed the existing reported-at label to `Submitted at` without changing the `reportedAt` data contract.
+- Corrected all twelve Architect Review catalogue mismatches to the normative ARCH-008 English wording.
+- Added direct regression assertions against the shipped `en.json` catalogue for the submitted state, submitted-at label, help text, pack statuses, and every corrected value.
+- Strengthened read-helper security coverage for `id + shopId` detail predicates, the bounded provider response summary, and the default 20 / maximum 50 pagination contract.
 - Preserved the existing Admin layout and made no provider network calls.
-- Implementation commits: `79a2397`, `e6361c9` on `task/ARCH-008-ADMIN-001`.
+- Attempt 2 implementation commit: `d372bfb` on `task/ARCH-008-ADMIN-001`.
+
+### Correction Checklist
+
+- [x] Corrected all twelve normative catalogue values.
+- [x] Added actual-catalogue regression coverage for the corrected wording.
+- [x] Proved both detail helpers apply `id` and optional `shopId` at the Prisma query boundary.
+- [x] Covered provider response bounding and 20-default / 50-maximum pagination.
+- [x] Recorded canonical worktree and synchronization evidence below.
 
 ### Validation Results
 
-- Focused ADMIN-001 tests: 33 passed, 0 failed.
-- Full Admin tests: 126 passed, 3 skipped, 0 failed.
+- Focused ADMIN-001 tests: 34 passed, 0 failed.
+- Full Admin tests: 130 passed, 0 failed.
 - `npx tsc --noEmit`: passed.
 - `npm run lint`: passed with two pre-existing `queue-monitor.tsx` hook warnings.
 - `npm run build`: passed with existing BullMQ dependency/critical-dependency warnings.
@@ -322,6 +330,42 @@ In Progress — attempt 2 correction work underway.
 ### Unresolved Issues
 
 - None for ADMIN-001.
+
+### Git / VCS
+
+Task branch: `task/ARCH-008-ADMIN-001`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-001`
+  parent branch: `task/ARCH-008-ADMIN-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-001`
+  implementation branch: `task/ARCH-008-ADMIN-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: already-current
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: already-current
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-admin`
+  commit: `d372bfbcd68aa459974a2d64b0da2adaa8b1658f`
+  remote branch: `origin/task/ARCH-008-ADMIN-001`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/admin/ARCH-008/ADMIN-001-present-asynchronous-billing-confirmation.md`
+  commit: `033a6cf0588ede8af99b86a707d7d30c317b4ea4`
+  remote branch: `origin/task/ARCH-008-ADMIN-001`
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ### Architectural Concerns
 
