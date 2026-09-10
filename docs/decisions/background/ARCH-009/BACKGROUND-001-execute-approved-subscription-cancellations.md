@@ -298,9 +298,9 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
   claim commit: `b9d8955`
-  review handoff commit: pending
+  review handoff commit: `cec6e92ff597dc555c28e940846f5f3a8429644f`
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
