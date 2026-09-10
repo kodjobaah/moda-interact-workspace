@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-09-10T03:00:00Z
@@ -387,21 +387,72 @@ Complete report -> review -> push mirrored task branches -> architect -> STOP.
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 ### Files Changed
-None
+- `prisma/schema.prisma`
+- `prisma/migrations/20260910030000_add_billing_lifecycle_operations/migration.sql`
+- `scripts/validate-billing-lifecycle-schema.mjs`
+- `scripts/validate-recovery-credit-pack-schema.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 ### Work Completed
-None
+- Added the exact billing lifecycle request/refund enums and appended `REFUNDED`, `SUBSCRIPTION_CANCELLATION`, and `RECOVERY_CREDIT_REFUND` values.
+- Added `ShopEntitlementCounter.refundingQuantity` with a zero default.
+- Added durable `SubscriptionCancellationRequest` and `RecoveryCreditRefund` models with explicit approval, provider, retry, idempotency, uniqueness, indexing, and relation boundaries.
+- Added the single `add_billing_lifecycle_operations` migration without modifying historical migrations.
+- Added the billing lifecycle schema validator and package script; updated the existing recovery-credit validator to tolerate Prisma formatter alignment.
+- Regenerated the PlantUML ERD with the new lifecycle schema.
 ### Validation Results
-None
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed with Prisma 6.19.3.
+- `npm run test:recovery-credit-packs`: passed.
+- `npm run test:billing-lifecycle`: passed.
+- `npm run erd:puml`: passed.
+- `git diff --check`: passed after normalizing generator-emitted trailing whitespace.
 ### Deviations
-None
+Prisma formatting aligns existing fields with additional whitespace; the existing recovery-credit validator was made whitespace-tolerant so it continues to validate the same contract. No schema scope was changed.
 ### Assumptions
-None
+The tracked database repository remains the authoritative owner of the Prisma schema and migration history; no live/shared database deployment was performed.
 ### Unresolved Issues
 None
 ### Architectural Concerns
 None
+
+### Git / VCS
+
+Task branch: `task/ARCH-009-DATABASE-001`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-009-DATABASE-001`
+  parent branch: `task/ARCH-009-DATABASE-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-009-DATABASE-001`
+  implementation branch: `task/ARCH-009-DATABASE-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-database`
+  commit: `98bf7e1`
+  remote branch: `origin/task/ARCH-009-DATABASE-001`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/database/ARCH-009/DATABASE-001-billing-lifecycle-operations.md`
+  commit: `PENDING` (Attempt 1 review handoff commit)
+  remote branch: `origin/task/ARCH-009-DATABASE-001`
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
