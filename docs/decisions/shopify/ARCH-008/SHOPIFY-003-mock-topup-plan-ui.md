@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-09-10T10:31:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-007-SHOPIFY-002
@@ -37,6 +37,18 @@ that plan changes are completed through Shopify-hosted pricing and that recovery
 top-ups are pending Shopify confirmation. Reuse the existing `Onboarding.jsx`,
 merchant i18n runtime, and onboarding stylesheet conventions.
 
+The app also resolves the current Shopify shop from authenticated route
+loaders. That resolution must not reactivate a merchant suspended for abuse or
+another platform-level reason. Lifecycle reactivation is an installation
+concern, not a normal page-load side effect.
+
+Access decisions may also depend on the requested route and capability, not
+only on the shop lifecycle status. Denied access must provide a useful merchant
+flow: operational capability denials redirect to merchant support, while an
+uninstalled shop attempting to access support redirects to the login/start
+flow. A newly installed shop that has not completed onboarding continues to
+start at the billing/onboarding page.
+
 ## Scope
 
 Modify only the `moda-interact` repository surfaces needed for this prototype:
@@ -47,8 +59,55 @@ Modify only the `moda-interact` repository surfaces needed for this prototype:
 - focused onboarding component/source tests, if the repository has an applicable
   test surface.
 
-Do not change billing services, routes, database schemas, Shopify provider code,
-shared packages, or the package/export architecture.
+Do not change billing services, database schemas, Shopify provider code, shared
+packages, or the package/export architecture. Route/auth changes are limited
+to wiring the explicit installation reactivation operation.
+
+## Shop Lifecycle Safety Requirement
+
+- Normal `resolveShopifyShop()` calls must preserve the existing `Shop.status`
+  and `uninstalledAt` values.
+- A normal page load must never transition `SUSPENDED` to `ACTIVE`.
+- A genuine installation or reinstallation may transition
+  `UNINSTALLED -> ACTIVE` through an explicit installation-scoped operation.
+- The explicit reactivation operation must not transition `SUSPENDED` to
+  `ACTIVE`.
+- Tests must cover new-shop creation, repeated resolution, suspended-shop
+  preservation, uninstalled-shop reactivation, and duplicate/repeated
+  installation handling.
+
+## Contextual Access and Redirect Requirement
+
+- Access-policy checks must receive the originating route and, when relevant,
+  the requested capability so future policy rules can distinguish actions such
+  as reading usage, managing billing, reading messages, and sending messages.
+- Access-policy checks must receive an explicit safe redirect destination.
+- A suspended shop denied an operational capability must be redirected to
+  `/app/merchant-support`, where it can contact Moda Interact.
+- An uninstalled shop denied support access must be redirected to
+  `/auth/login` rather than shown a raw forbidden response or sent into a
+  redirect loop.
+- Incomplete onboarding for a newly installed shop must continue to redirect
+  to `/app/billing`.
+- The policy must not add message quotas, abuse limits, or other capability
+  restrictions unless those are separately specified and implemented as a
+  persisted policy requirement.
+
+## Merchant Support Internationalisation Requirement
+
+- The merchant-support page must use the existing merchant ICU/i18n runtime for
+  every merchant-visible UI string, including thread headings, empty states,
+  pagination, compose controls, validation feedback, action errors, author
+  labels, translation states, and original/translated message toggles.
+- Reuse the existing `merchantUiContext()` and `createMerchantI18n()` flow; do
+  not introduce a second translation mechanism or translate persisted message
+  bodies in the route component.
+- Add the merchant-support catalogue keys to every locale registered in
+  `app/i18n/catalogues.js`, preserving ICU placeholder names such as `{page}`
+  and `{totalPages}`.
+- Generic action failures must be represented by catalogue keys. Existing
+  validation details may remain in the response when they are needed for
+  diagnostics, but the rendered merchant-facing fallback must be localized.
 
 ## Required UI
 
@@ -100,6 +159,23 @@ Do not create a second translation runtime or locale mechanism.
 - [ ] Controls are keyboard accessible, labelled, and responsive on mobile.
 - [ ] Focused tests or source-level tests prove the mock controls and the absence
       of direct billing/provider calls.
+- [ ] Shop resolution does not reset an existing shop to `ACTIVE`.
+- [ ] Only the explicit installation lifecycle path reactivates an uninstalled
+  shop; suspended shops remain suspended.
+- [ ] Focused shop lifecycle tests cover the status transitions and preservation
+  rules above.
+- [ ] Access-policy checks receive route/capability context and an explicit
+  redirect destination.
+- [ ] Suspended operational denials redirect to merchant support instead of
+  returning a raw forbidden response.
+- [ ] Uninstalled support denials redirect to the login/start flow.
+- [ ] Incomplete first-install onboarding still redirects to `/app/billing`.
+- [ ] Merchant-support UI strings are rendered through the merchant i18n
+  runtime, with no hard-coded merchant-visible English copy.
+- [ ] Merchant-support locale keys exist in every declared locale and preserve
+  the required ICU placeholders.
+- [ ] Merchant-support i18n tests validate catalogue completeness and the
+  localized page/action states.
 
 ## Validation
 
@@ -123,45 +199,67 @@ When the implementation and validation are complete, use
 ## Completion Report
 
 ### Status
-In Progress
+Changes Requested — Attempt 1
 
 ### Files Changed
-None
+- Implementation branch commit `d265060` changes 44 files, including the new dashboard billing components, 20 locale catalogues, billing routes, shop lifecycle/access-policy code, and related tests.
+- The implementation worktree also contains uncommitted changes to `app/i18n/locales/zh-Hant.json`, `app/routes/app/merchant-support/route.jsx`, `.vscode/`, and `merge-locales.sh`; these were not modified or discarded during review.
 
 ### Work Completed
-None
+- The published implementation adds a dashboard billing/options surface and locale keys, plus partial shop lifecycle and access-policy changes.
+- It does not yet implement the required onboarding prototype or the complete interaction/access/i18n contract.
 
 ### Validation Results
-None
+- `npm test`: 216 passed, 1 skipped.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm run typecheck`: failed with 175 diagnostics, including errors in each new billing prototype component, billing options route, merchant-support route, shop service, and related tests.
 
 ### Deviations
-None
+- The implementation is materially broader than the declared prototype scope and places the UI in `app/components/dashboard` and `/app/billing/options` while leaving `app/components/onboarding/Onboarding.jsx` unchanged.
 
 ### Assumptions
-None
+- None accepted for this review; the required onboarding integration and task-surface type safety remain unresolved.
 
 ### Unresolved Issues
-None
+- See Developer Self-Review - Changes Requested below.
 
 ### Architectural Concerns
-None
+- The task currently mixes a mock billing surface with production billing-route and merchant-support changes without proving the required no-network/local-state boundary.
 
 ### Architect Review
 
 #### Review Status
-Pending
+Changes Requested
 
 #### Review Notes
-None
+- See Developer Self-Review - Changes Requested below.
 
 #### Reviewed Files
 None
 
 #### Validation Reviewed
-None
+- Full tests, build, diff check, and typecheck were run in the canonical implementation worktree.
 
 #### Architecture Conformance
-Pending
+Changes Requested
 
 #### Follow-up
-None
+The developer must address the explicit corrections below and re-run the required validation before the next reconciliation.
+
+## Developer Self-Review - Changes Requested
+
+### Blocking Corrections
+
+1. Implement the prototype in the existing onboarding experience required by the task. `app/components/onboarding/Onboarding.jsx` is unchanged, and no onboarding stylesheet or focused onboarding tests were added. The rendered onboarding flow must contain distinct recovery top-up and plan-upgrade sections.
+2. Make top-up interaction local and demonstrable: add a bounded pack selector or equivalent selection state, show the selected quantity, and transition to a translated pending-confirmation state after the mock action. Do not rely only on an optional parent callback or console logging.
+3. Make plan selection local and Shopify-hosted: expose at least two higher plans, allow selecting a higher plan, and provide a CTA that clearly continues to the existing Shopify-hosted pricing flow. Do not present downgrade actions as part of this upgrade prototype, and do not imply that the app directly approves or charges the plan.
+4. Add focused component/source tests proving the two mock controls, local pending/selection state, accessibility labels/focusable controls, absence of network/provider/billing calls, and the hosted-pricing CTA. Existing tests do not exercise the new dashboard components.
+5. Resolve all typecheck errors introduced by the task surface. The current run reports 175 diagnostics, including implicit-any/invalid inferred-prop errors in `BillingPurchaseHub.jsx`, `TopUpPurchasePanel.jsx`, `SubscriptionChangePanel.jsx`, `app/routes/app/billing/options/route.tsx`, `app/routes/app/merchant-support/route.jsx`, `shop.service.ts`, and the new policy/service tests. At minimum, the changed files must not add diagnostics relative to a synchronized baseline.
+6. Complete the shop lifecycle contract with tests for new-shop creation, repeated resolution, suspended preservation, explicit uninstalled reactivation, and duplicate installation handling. The current `markInstalled` tests only assert the `UNINSTALLED` filter and do not prove the returned/persisted lifecycle state.
+7. Make access-policy context meaningful and cover the actual route behavior. Tests must prove route and capability are passed to the policy, suspended operational access redirects to `/app/merchant-support`, uninstalled support access redirects to `/auth/login`, and incomplete first-install onboarding still redirects to `/app/billing`. The app shell currently resolves a shop and reads support data without an access-policy check.
+8. Finish merchant-support localization behavior: generic action failures must render catalogue keys rather than raw `fetcher.data.error` text, all declared locales must have the complete key set with placeholder parity, and focused tests must cover localized page/action states. Correct the `session.userId` type error while doing so.
+
+### Required State Transition
+
+This review does not increment the attempt. The task remains Attempt 1 and is returned to `ready` for the developer to continue on the same task branches.
