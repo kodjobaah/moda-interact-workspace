@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-09-10T00:00:00Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-008-ADMIN-001
@@ -415,24 +415,147 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is directionally strong and implements the intended progressive-disclosure structure, but three in-scope correctness gaps prevent acceptance.
+
+#### 1. App Events filter submission drops the selected `events` view
+
+`BillingLedger` renders a GET filter form for `shopId`, `state`, `from`, and `to`, but the form does not submit:
+
+```text
+view=events
+```
+
+Because `/billing` defaults missing/invalid `view` to `overview`, applying an App Events filter currently navigates away from the App Events view and lands on Overview.
+
+This violates the required URL/deep-link contract and the requirement to preserve the existing ledger filters inside the `events` view.
+
+Required correction:
+
+- add the canonical hidden `view=events` field to the App Events GET filter form;
+- keep `eventPage` reset-on-filter behavior;
+- do not preserve `eventId` when a new filter submission is made;
+- add a focused regression that proves App Events filter submission preserves `view=events`.
+
+#### 2. Recovery-pack drawer can falsely claim Shopify received an event
+
+`RecoveryCreditPurchaseDrawer` always renders:
+
+```text
+billing.asyncReceiptHelp
+```
+
+whose normative copy is:
+
+```text
+Shopify has received the App Event. Billing validation is asynchronous.
+```
+
+A newly-created `RecoveryCreditPurchase` is `PENDING_BILLING` while its linked `UsageEvent` may still be `PENDING`, `IN_FLIGHT`, `RETRYABLE`, or `NEEDS_ATTENTION`. In those states, the Admin UI must not state that Shopify has received the App Event.
+
+ARCH-008 requires transport receipt semantics to remain truthful: only the durable `REPORTED` state represents "Submitted to Shopify".
+
+Required correction:
+
+- render `billing.asyncReceiptHelp` in the recovery-pack drawer only when the linked UsageEvent state is `REPORTED`;
+- gate the Dev Dashboard guidance so it is shown only when provider-side reconciliation/diagnosis is actually appropriate, and never as evidence that Shopify received an event that has not reached `REPORTED`;
+- retain the linked event state and Submitted-at fields as the authoritative transport indicators;
+- add focused regressions for at least `PENDING` versus `REPORTED` linked events.
+
+#### 3. Compact plan cards omit the required pack-credit summary
+
+The task requires each compact plan row/card to show:
+
+```text
+pack enabled + pack credits summary where present
+```
+
+The compact card currently shows whether recovery-credit packs are enabled, but does not display `recoveryCreditsPerPack`.
+
+Required correction:
+
+- when the plan has a configured pack size, surface the pack-credit quantity in the compact primary summary using the existing translation/catalogue path;
+- do not re-expand the full PlanForm or add new billing calculations;
+- add focused regression coverage proving the compact plan representation includes the pack-credit summary.
+
+### Positive Findings
+
+The following parts conform and should be preserved:
+
+- exactly five URL-backed views: `overview|plans|packs|events|controls`;
+- missing/invalid view defaults to Overview;
+- view-specific server-side data loading replaces the previous all-datasets `Promise.all`;
+- Overview no longer renders the ledger, plan forms, or platform controls;
+- Plans use compact cards plus right-side register/edit drawers;
+- Recovery packs have their own bounded lifecycle list and reusable drawer;
+- App Events primary table is reduced to the required primary columns and diagnostics live in the drawer;
+- `AdminDetailDrawer` follows the existing server-rendered link/aside pattern;
+- drawer close links preserve current tab/filter/page state;
+- ADMIN-001 protected detail reads are reused;
+- `REPORTED` presentation remains `Submitted to Shopify`;
+- existing plan mutation server actions, authorization, and audit path remain unchanged;
+- the pre-existing activate/deactivate row action already used the same bounded hard-coded audit reason on `main`, so ADMIN-002 did not introduce a new relaxation there;
+- no schema change, provider network call, client-state library, or Tenant Billing redesign was introduced;
+- worktree and synchronization evidence is present and conforms to the required workflow.
 
 ### Reviewed Files
 
-None
+- `src/app/(protected)/billing/page.tsx`
+- `src/components/admin/admin-detail-drawer.tsx`
+- `src/components/admin/billing-drawers.tsx`
+- `src/components/admin/billing-overview.tsx`
+- `src/components/admin/billing-plan-catalog.tsx`
+- `src/components/admin/billing-recovery-packs.tsx`
+- `src/components/admin/billing-tabs.tsx`
+- `src/components/admin/billing-controls.tsx`
+- `src/lib/admin/billing-plan.ts`
+- `src/lib/admin/billing.ts`
+- `src/i18n/locales/en.json`
+- `src/i18n/required-keys.ts`
+- `tests/security/admin-billing-progressive-disclosure.test.mjs`
+- `tests/security/admin-billing-visibility.test.mjs`
+- task Completion Report
+- published Admin implementation commit `a54673e`
+- published parent report commit `333da89`
 
 ### Validation Reviewed
 
-None
+Agent-reported:
+
+- focused tests: 41 passed;
+- full Admin suite: 134 passed, 3 skipped;
+- TypeScript: passed;
+- Prisma validation: passed;
+- lint: passed with two pre-existing warnings;
+- build: passed;
+- `git diff --check`: passed.
+
+Published branch verification:
+
+- `task/ARCH-008-ADMIN-002` is one commit ahead of Admin `main`, zero behind;
+- implementation changes are limited to the thirteen declared ADMIN-002 source/test files;
+- parent report commit is published at `333da89`.
+
+The existing test suite does not catch the three defects above, so passing validation is not sufficient for acceptance.
 
 ### Architecture Conformance
 
-Pending
+Changes required.
 
 ### Follow-up
 
-None
+Attempt 2 must remain on the SAME task and SAME mirrored `task/ARCH-008-ADMIN-002` branches.
+
+Required Attempt 2 checklist:
+
+1. preserve `view=events` on App Events filter submission;
+2. make recovery-pack asynchronous receipt/help copy conditional on the linked UsageEvent actually being `REPORTED`, with Dev Dashboard guidance only when appropriate;
+3. show configured recovery credits per pack in the compact Plans summary;
+4. add focused regressions for all three corrections;
+5. rerun the required focused tests, full Admin tests, TypeScript, lint, build, Prisma validation, and `git diff --check`;
+6. update the Completion Report, return the same task to `review`, and STOP.
+
+Do not begin `ARCH-008-ADMIN-003` until ADMIN-002 is architect-accepted Complete.

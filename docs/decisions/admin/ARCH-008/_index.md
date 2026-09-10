@@ -2,12 +2,12 @@
 
 Architecture: `docs/architecture/ARCH-008-shopify-app-pricing-conformance.md`
 
-Current frontier: `ARCH-008-ADMIN-002` is Ready after architect acceptance of ADMIN-001.
+Current frontier: `ARCH-008-ADMIN-002` is Ready for Attempt 2 after architect Changes Requested on Attempt 1.
 
 | Task | Status | Purpose |
 |---|---|---|
 | `ARCH-008-ADMIN-001` | Complete | Establish truthful asynchronous billing terminology and safe bounded read primitives. |
-| `ARCH-008-ADMIN-002` | Ready | Simplify the global Billing workspace into five URL-backed tabs and detail drawers. |
+| `ARCH-008-ADMIN-002` | Ready | Attempt 2 required: preserve Events filters/view, truthful pack receipt help, and compact pack-credit summary. |
 | `ARCH-008-ADMIN-003` | Pending | Simplify Tenant Directory -> Billing into four URL-backed sub-tabs with progressive disclosure. |
 
 Execution order:
