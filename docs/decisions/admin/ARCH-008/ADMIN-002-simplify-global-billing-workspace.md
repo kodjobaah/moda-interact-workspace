@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-008-ADMIN-003
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # ARCH-008-ADMIN-002: Simplify the global Admin Billing workspace

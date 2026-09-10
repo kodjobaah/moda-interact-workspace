@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-09-10T00:26:57Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-008-BACKGROUND-002
@@ -239,14 +239,14 @@ Update/add focused tests to prove:
 
 ## Acceptance Criteria
 
-- [ ] All Admin surfaces can consume one truthful `REPORTED` label: `Submitted to Shopify`.
-- [ ] `reportedAt` is presented as `Submitted at`.
-- [ ] Pack statuses have exact bounded user-facing labels.
-- [ ] Protected bounded pack list/detail + ledger detail helpers exist.
-- [ ] Tenant detail helper enforces `shopId` at query boundary.
-- [ ] No provider network call is added to Admin.
-- [ ] ARCH-008 tab/drawer copy is present in required i18n coverage.
-- [ ] No global/tenant layout redesign is performed prematurely.
+- [x] All Admin surfaces can consume one truthful `REPORTED` label: `Submitted to Shopify`.
+- [x] `reportedAt` is presented as `Submitted at`.
+- [x] Pack statuses have exact bounded user-facing labels.
+- [x] Protected bounded pack list/detail + ledger detail helpers exist.
+- [x] Tenant detail helper enforces `shopId` at query boundary.
+- [x] No provider network call is added to Admin.
+- [x] ARCH-008 tab/drawer copy is present in required i18n coverage.
+- [x] No global/tenant layout redesign is performed prematurely.
 
 ## Validation — run from `moda-interact-admin`
 
@@ -375,109 +375,40 @@ None
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 is directionally correct and the protected read primitives are implemented within the intended Admin boundary, but the task is not yet acceptable.
+Attempt 2 closes the complete Attempt 1 Changes Requested contract and conforms to ARCH-008.
 
-The task specification makes the ARCH-008 English catalogue wording normative. The implementation added the required keys, but twelve task-owned values do not match the canonical copy:
+Verified outcomes:
 
-```text
-billing.tab.appEvents
-  expected: App Events
-  actual:   App events
+- the shipped `en.json` values now match the normative ARCH-008 English copy exactly, including `App Events`, `Submitted to Shopify`, `Submitted at`, the asynchronous receipt explanation, Shopify Dev Dashboard App Billing Event guidance, all four recovery-pack statuses, and every previously mismatched catalogue value;
+- focused regression coverage now reads the actual shipped `src/i18n/locales/en.json` catalogue rather than validating only key presence or synthetic labels;
+- `getRecoveryCreditPurchaseDetail(id, shopId?)` and `getBillingLedgerItem(id, shopId?)` retain platform-admin authorization and apply `id + optional shopId` in the Prisma query boundary;
+- recovery-pack list/detail projection remains bounded and secret-safe, including the provider response summary bound;
+- recovery-pack pagination retains the 20 default and 50 hard maximum through the existing bounded pagination helper;
+- no provider network call, billing mutation, schema migration, entitlement change, client-state framework, or premature global/tenant layout redesign was introduced;
+- the Completion Report now records the canonical parent and implementation worktrees and start-of-attempt synchronization evidence after the Attempt 1 workflow issue was repaired;
+- validation was rerun from the corrected implementation worktree and passed: 34 focused tests, 130 full Admin tests, TypeScript, lint, build, Prisma validation, and `git diff --check`.
 
-billing.asyncReceiptHelp
-  expected: Shopify has received the App Event. Billing validation is asynchronous.
-  actual:   This is an asynchronous receipt. Shopify confirmation may arrive later.
+Published implementation branch verification:
 
-billing.devDashboardHelp
-  expected: If provider usage does not reconcile, inspect App Billing Event logs in the Shopify Dev Dashboard.
-  actual:   Use the Shopify Partner Dashboard for provider-side billing details.
+- `task/ARCH-008-ADMIN-001` tip: `d372bfbcd68aa459974a2d64b0da2adaa8b1658f`;
+- Attempt 2 commit directly follows Attempt 1 tip `e6361c95f64aa01387c337abcc720770a71b6539`;
+- cumulative Admin branch changes remain limited to the six task-authorised source/test files;
+- parent coordination branch tip is `a3645e9901a49b1d26761992e97e9e445d38aa26`.
 
-billing.eventDetails
-  expected: App Event details
-  actual:   Event details
-
-billing.creditsGranted
-  expected: Credits
-  actual:   Credits granted
-
-billing.planSnapshot
-  expected: Plan handle snapshot
-  actual:   Plan snapshot
-
-billing.noRecoveryPacks
-  expected: No recovery-credit purchases match the current filters.
-  actual:   No recovery packs found
-
-billing.billingHealth
-  expected: Billing status
-  actual:   Billing health
-
-billing.overrideActiveWarning
-  expected: Billing policy override active
-  actual:   An active billing override is applied.
-
-billing.overrideExpiredNotice
-  expected: An expired billing policy override is recorded.
-  actual:   This billing override has expired.
-
-billing.activity
-  expected: Billing activity
-  actual:   Activity
-
-billing.reconciliationUnavailableShort
-  expected: Shopify usage comparison is not available for this tenant.
-  actual:   Reconciliation unavailable
-```
-
-The `billing.devDashboardHelp` mismatch is materially incorrect, not merely stylistic: the task explicitly directs operators to App Billing Event logs in the Shopify Dev Dashboard and explicitly warns against implying unavailable provider detail.
-
-The current tests do not detect these catalogue errors. `admin-internationalization.test.mjs` validates key presence/ICU validity, while `admin-billing-visibility.test.mjs` constructs its own in-memory labels for report/purchase-state tests. Therefore the test suite can pass while the shipped catalogue violates the task contract.
-
-The read-helper implementation itself is architecture-conformant on inspection: authorization is server-side, tenant scoping is placed in the Prisma query, default/max page sizes are 20/50, ordering is `createdAt DESC, id DESC`, the recovery-pack provider summary is bounded, and no provider network call or layout redesign was introduced.
-
-### Reviewed Files
-
-- `moda-interact-admin/src/lib/admin/billing.ts`
-- `moda-interact-admin/src/lib/admin/types.ts`
-- `moda-interact-admin/src/lib/admin/billing-presentation.mjs`
-- `moda-interact-admin/src/i18n/locales/en.json`
-- `moda-interact-admin/src/i18n/required-keys.ts`
-- `moda-interact-admin/tests/security/admin-billing-visibility.test.mjs`
-- `moda-interact-admin/tests/security/admin-internationalization.test.mjs`
-- `docs/architecture/ARCH-008-shopify-app-pricing-conformance.md`
-- this task's Completion Report
-- published implementation commits `79a2397`, `e6361c9`
-- published parent report commit `97de144`
-
-### Validation Reviewed
-
-- Agent-reported focused ADMIN-001 tests: 33 passed.
-- Agent-reported full Admin tests: 126 passed, 3 skipped.
-- Agent-reported TypeScript, build, Prisma validation and `git diff --check`: passed.
-- Agent-reported lint: passed with two pre-existing `queue-monitor.tsx` warnings.
-- Published implementation branch is two commits ahead of Admin `main`, zero behind, and limited to the six task-authorised source/test files.
-- The above passing tests are insufficient to validate the normative catalogue values because they do not assert those shipped values directly.
+The task is therefore Complete under automatic completion mode.
 
 ### Architecture Conformance
 
-Changes required.
+Accepted.
 
-The protected read-model architecture and asynchronous billing state model conform. The user-facing catalogue does not yet conform to the canonical ARCH-008 wording, and the task-required regression proof is incomplete.
+The Admin read/presentation layer now exposes truthful asynchronous Shopify billing semantics and safe bounded primitives for the later progressive-disclosure UI tasks without changing the billing business model.
 
 ### Follow-up
 
-Attempt 2 must remain on the SAME task and SAME mirrored `task/ARCH-008-ADMIN-001` branches.
+`ARCH-008-ADMIN-002` is now Ready.
 
-Required corrections:
-
-1. Correct the twelve catalogue values listed above to the canonical task wording. Do not substitute alternate wording or a different Shopify dashboard/location.
-2. Add focused regression assertions against the actual `src/i18n/locales/en.json` catalogue for the ARCH-008 normative values. At minimum cover `REPORTED`, `Submitted at`, both explanatory/help strings, all four pack statuses, and every value corrected in item 1.
-3. Strengthen the read-helper security/contract regression so it specifically proves the two detail helpers apply `id + shopId` at the Prisma query boundary, rather than relying on the current broad `/shopId,/` source match. Also explicitly cover the `providerResponseSummary` bound and the 20-default/50-maximum pagination contract.
-4. Record the mandatory launcher-resolved physical parent/implementation worktree evidence and start-of-attempt synchronisation evidence in the Completion Report. If Attempt 1 did use the canonical isolated worktrees, record that evidence accurately; do not invent it. If it did not, restore/use the canonical task worktrees, rerun required validation there, and record the workflow non-conformance and corrected validation. No source churn is required solely for this evidence item.
-5. Rerun the task's focused tests, full Admin test suite, TypeScript, lint, build, Prisma validation and `git diff --check`; record the results and return the task to `review`.
-
-Do not start `ARCH-008-ADMIN-002` until this task is architect-accepted Complete.
+Do not begin `ARCH-008-ADMIN-003` until ADMIN-002 is architect-accepted Complete.
