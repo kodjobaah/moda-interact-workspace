@@ -381,7 +381,7 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/admin/ARCH-008/ADMIN-003-simplify-tenant-billing-inspection.md`
-  commit: `PENDING` (Attempt 3 review handoff commit)
+  commit: `80e0890`
   remote branch: `origin/task/ARCH-008-ADMIN-003`
   pushed: yes
   submodule gitlink staged: no
