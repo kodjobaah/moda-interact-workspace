@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-09-10T10:31:10Z
+attempt: 1
 depends_on:
   - ARCH-007-SHOPIFY-002
 enables: []
@@ -123,7 +123,7 @@ When the implementation and validation are complete, use
 ## Completion Report
 
 ### Status
-Not Started
+In Progress
 
 ### Files Changed
 None
