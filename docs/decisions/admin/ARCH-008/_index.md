@@ -2,7 +2,7 @@
 
 Architecture: `docs/architecture/ARCH-008-shopify-app-pricing-conformance.md`
 
-Current frontier: `ARCH-008-ADMIN-001` is Ready after architect acceptance of `ARCH-008-BACKGROUND-002` Attempt 2.
+Current frontier: `ARCH-008-ADMIN-001` is Ready for Attempt 2 after architect Changes Requested on Attempt 1.
 
 | Task | Status | Purpose |
 |---|---|---|
