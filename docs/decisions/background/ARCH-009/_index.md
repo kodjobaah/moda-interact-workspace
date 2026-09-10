@@ -2,8 +2,7 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| ARCH-009-BACKGROUND-001 | Ready | Attempt 2: exact claim CAS, successful-state error cleanup, and complete cancellation lifecycle regression coverage. |
-| ARCH-009-BACKGROUND-002 | Ready | Process full-pack refunds and refund-aware reconciliation. |
+| ARCH-009-BACKGROUND-001 | Ready | Attempt 3: test-only completion of stale-lease, confirmation, due-retry, identity, message-idempotency and persisted secret-safety regressions. |
+| ARCH-009-BACKGROUND-002 | Ready | Attempt 2 required under its separate Architect Changes Requested review. |
 
-Current frontier: `ARCH-009-BACKGROUND-001` is Ready for Attempt 2; `ARCH-009-BACKGROUND-002` remains independently Ready.
-s
+Current frontier: `ARCH-009-BACKGROUND-001` is Ready for Attempt 3; `ARCH-009-BACKGROUND-002` remains in its independent correction cycle.

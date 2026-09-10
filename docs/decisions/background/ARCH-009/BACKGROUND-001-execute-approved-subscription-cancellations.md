@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-09-10T21:47:39Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-009-DATABASE-001
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-002
 created: 2026-09-09
-updated: 2026-09-10T21:50:11Z
+updated: 2026-09-10
 ---
 
 # ARCH-009-BACKGROUND-001
@@ -313,221 +313,254 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 gets the main architecture right: Background is the only component invoking Partner `appSubscriptionCancel`; the four modes are sourced from Shared `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS`; the worker is bounded to 25 and ordered `createdAt ASC, id ASC`; provider identity is re-read before mutation; already-achieved cancellation is handled without another mutation; provider acceptance is separated from confirmation; completion is guarded by the claimed version/state and the completion SYSTEM message uses an idempotent source key.
+Attempt 2 closes both production-code defects from Attempt 1:
 
-Three corrections are required before acceptance.
+- claim CAS now uses the exact selected `id + version + status`;
+- successful Partner acceptance now clears stale `providerErrorCode`.
 
-#### 1. Claim CAS must use the exact status that was selected
+The production cancellation path is therefore acceptable as implemented. No further service/provider redesign is requested.
 
-The task requires:
+The remaining issue is regression completeness. The prior Architect Review explicitly required deterministic coverage of the stale-lease/no-blind-repeat, confirmation, retry identity, message-idempotency and secret-safety paths. Attempt 2 materially expands the suite, but several of those required proofs are still only partial or are asserted as mock call shapes rather than exercised as lifecycle behavior.
 
-```text
-CAS on id+version+status
-```
+Attempt 3 is TEST-ONLY unless a new test exposes a genuine implementation defect.
 
-The current `claim(id, version, now)` uses:
+#### 1. Exercise stale provider-accepted lease recovery end-to-end
 
-```ts
-status: {
-  in: [APPROVED, RETRYABLE, PROVIDER_ACCEPTED]
-}
-```
-
-That proves only that the row is in some eligible state, not that it is still in the same status that was selected.
-
-Attempt 2 must:
-
-- pass the selected request status into `claim`;
-- use exact equality in the `updateMany` predicate:
+The current test:
 
 ```text
-id == selected id
-version == selected version
-status == selected status
+"recovers stale processing leases into retry and provider verification paths"
 ```
 
-- retain the existing winner transition:
-  - `PROCESSING`;
-  - `processingStartedAt = now`;
-  - `lastAttemptAt = now`;
-  - `attemptCount + 1`;
-  - `version + 1`;
-- do not broaden the claim predicate back to an eligible-status set;
-- add a regression proving that a row selected as one lifecycle state cannot be claimed if its status has changed before the CAS, even where the version is unchanged in the test fixture;
-- retain the existing concurrent single-winner regression.
+only proves that the two recovery `updateMany` calls are issued. Its fake does not mutate the durable row into the recovered status and therefore does not exercise the subsequent provider-verification path.
 
-This is an exact task-contract correction, not a schema change.
-
-#### 2. Successful provider acceptance must clear a prior provider error code
-
-A request may enter `RETRYABLE` with `providerErrorCode` populated and later succeed.
-
-The current successful mutation transition writes:
+Add a stateful regression that starts with:
 
 ```text
-status = PROVIDER_ACCEPTED
-providerAcceptedAt = now
-providerResponseSummary = neutral accepted summary
+status = PROCESSING
+processingStartedAt <= now - 10 minutes
+providerAcceptedAt != null
 ```
 
-but leaves the old `providerErrorCode` untouched.
+and proves one `processDue()` pass:
 
-That can produce a truthful lifecycle status paired with a stale error code from a previous attempt.
+1. recovers the row to `PROVIDER_ACCEPTED`;
+2. selects/claims that recovered row for verification;
+3. calls `getActiveSubscription`;
+4. NEVER calls `cancelSubscription`;
+5. if the provider already reports the required achieved state:
+   - END_OF_CYCLE + same identity + `cancelAtPeriodEnd=true`, or
+   - an immediate mode + `activeSubscription=null`,
+   then the request completes and emits the completion message without another Partner cancellation mutation.
 
-Attempt 2 must set:
+Also add the sibling stale path:
 
 ```text
-providerErrorCode = null
+status = PROCESSING
+processingStartedAt <= now - 10 minutes
+providerAcceptedAt = null
 ```
 
-when the mutation is successfully recorded as `PROVIDER_ACCEPTED`.
+and prove it becomes RETRYABLE/due and does not inherit a false provider-accepted state.
 
-Preserve:
+Use a stateful Prisma-shaped fake or focused DB integration; do not satisfy this by only inspecting the recovery query arguments.
 
-- the bounded neutral provider summary;
-- `providerAcceptedAt`;
-- no completion message at provider acceptance;
-- confirmation-only processing on the next provider verification pass.
+#### 2. Complete explicit confirmation coverage
 
-Add a regression beginning from a retryable/error-bearing request and proving successful provider acceptance clears the old error code.
+Add direct PROVIDER_ACCEPTED confirmation tests for:
 
-#### 3. Complete the mandatory cancellation regression matrix
+- `END_OF_CYCLE` + exact identity + `cancelAtPeriodEnd=true`
+  -> COMPLETED, no `cancelSubscription`;
+- `END_OF_CYCLE` + exact identity + `cancelAtPeriodEnd=false`
+  -> RETRYABLE, no `cancelSubscription`;
+- `END_OF_CYCLE` + `activeSubscription=null`
+  -> RETRYABLE / not completed;
+- each of:
+  - `IMMEDIATE_NO_PRORATION`;
+  - `IMMEDIATE_PRORATED`;
+  - `IMMEDIATE_SKIP_FINAL_USAGE`;
+  with `activeSubscription=null`
+  -> COMPLETED, no `cancelSubscription`;
+- each immediate mode with the original exact active subscription still present
+  -> RETRYABLE verification, no repeated `cancelSubscription`.
 
-The current focused cancellation service file covers identity mismatch, already-deferred completion, immediate/no-contract completion, provider-accepted-not-completed, one immediate confirmation case, and a simplified concurrent winner case.
+Attempt 2 already proves several halves of these branches; consolidate them into an explicit parameterized confirmation matrix rather than relying on inference from production source.
 
-The authoritative task also requires explicit proof of the remaining lifecycle/retry/lease/message/security behavior.
+#### 3. Prove due RETRYABLE selection rather than only query shape
 
-Attempt 2 must add deterministic focused tests for:
+The batch/order test correctly checks:
 
-1. **batch and ordering**
-   - default `take: 25`;
-   - `createdAt ASC, id ASC`;
-   - RETRYABLE is selected only when due;
-   - PROVIDER_ACCEPTED is selected for verification.
+```text
+take: 25
+createdAt ASC
+id ASC
+```
 
-2. **exact claim CAS**
-   - exact selected status is part of the CAS;
-   - changed status loses the claim;
-   - two concurrent claimants still yield one provider mutation.
+but it only checks that a RETRYABLE branch exists in the query.
 
-3. **confirmation rules**
-   - END_OF_CYCLE + same identity + `cancelAtPeriodEnd=true` -> COMPLETED without another cancellation mutation;
-   - END_OF_CYCLE + same identity + `cancelAtPeriodEnd=false` after provider acceptance -> RETRYABLE, not another mutation;
-   - END_OF_CYCLE + `activeSubscription=null` after provider acceptance -> not falsely COMPLETED;
-   - each immediate mode completes only when `activeSubscription=null`;
-   - immediate mode with the original subscription still active remains verification/retry and does not blindly issue another cancellation after `providerAcceptedAt`.
+Add exact assertions proving the selection condition contains:
 
-4. **retry classification**
-   - network failure -> RETRYABLE;
-   - HTTP 408/409/425/429 and representative 5xx -> retryable;
-   - HTTP 400/401/403/404 -> permanent / NEEDS_ATTENTION;
-   - missing Partner configuration -> permanent / NEEDS_ATTENTION;
-   - GraphQL `userErrors` -> permanent / NEEDS_ATTENTION;
-   - invalid cancellation mode -> permanent / NEEDS_ATTENTION.
+```text
+nextAttemptAt = null
+OR
+nextAttemptAt <= now
+```
 
-   Provider-level tests may assert `ShopifyPartnerBillingError.retryable` and service-level tests must prove the corresponding lifecycle transition where useful.
+and a stateful behavior test showing:
 
-5. **retry identity preservation**
-   - a retry must retain the approved:
-     `providerSubscriptionIdSnapshot`,
-     `planHandleSnapshot`,
-     `mode`,
-     and request identity;
-   - the next provider attempt must still verify/cancel against those approved snapshots rather than a newer local projection.
+- due RETRYABLE is processed;
+- future RETRYABLE is not processed;
+- PROVIDER_ACCEPTED remains eligible for verification.
 
-6. **stale lease recovery / no blind repeat**
-   - stale PROCESSING with `providerAcceptedAt = null` returns to RETRYABLE;
-   - stale PROCESSING with `providerAcceptedAt != null` returns to PROVIDER_ACCEPTED verification;
-   - the provider-accepted stale path must call `getActiveSubscription` for verification and must not call `cancelSubscription`;
-   - if a recovered request already exposes the required achieved provider state, it completes without a duplicate cancellation call.
+#### 4. Strengthen retry-identity preservation
 
-7. **message exactly once**
-   - first successful COMPLETED transition creates/upserts exactly one
-     `BILLING_CANCELLATION_COMPLETED` message;
-   - replay/concurrent completion cannot create a second logical message;
-   - provider-accepted and retryable states emit no completion message.
+The current retry test proves the same cancellation mode is sent, but the prior review also required the approved identity snapshots to remain authoritative.
 
-8. **no secrets**
-   - Partner token is never present in `providerErrorCode` or persisted `providerResponseSummary`;
-   - missing-config and HTTP failure summaries remain bounded/non-secret;
-   - cancellation provider tests must not assert or snapshot the actual token value into error output.
+Add a regression where an unrelated/newer local projection would differ, while the approved request retains:
 
-The tests may use a stateful in-memory Prisma-shaped fake. Prefer that over mocks which return `{count: 1}` for every non-claim update, because lifecycle/CAS behavior needs to be proved rather than assumed.
+```text
+providerSubscriptionIdSnapshot = original
+planHandleSnapshot = original
+mode = approved mode
+```
 
-### Positive Findings To Preserve
+Prove the worker verifies against the request snapshots and does not substitute a newer local identity.
 
-- exact Shared dependency `@modainteract/moda-interact-shared@0.9.0`;
-- accepted ARCH-009 database submodule revision;
-- Partner API `2026-07`;
-- mutation variables come only from Shared's cancellation mapping;
-- no consumer-created cancellation boolean mapping;
-- `getActiveSubscription` verifies provider subscription id and plan handle;
-- identity mismatch becomes `NEEDS_ATTENTION / SUBSCRIPTION_IDENTITY_CHANGED` with no mutation;
-- END_OF_CYCLE already deferred is idempotently completed;
-- immediate no-contract is idempotently completed;
-- successful mutation moves to `PROVIDER_ACCEPTED`, not directly to COMPLETED;
-- 10-minute stale recovery separates provider-accepted verification from ordinary retry;
-- completion uses a Serializable transaction and an idempotent SYSTEM-message source key;
-- normal subscription projection is not directly rewritten to Free by this worker;
-- cancellation processing is wired into the existing billing worker scheduler;
-- worktree isolation and start-of-attempt synchronization evidence are present and conformant.
+If the service intentionally has no local Subscription read at all, assert that contract explicitly through the database fake and provider inputs.
+
+#### 5. Prove completion-message logical idempotency
+
+The existing `"emits one completion message when completion is replayed"` test gets one message because the simple fake allows only one claim. That is useful concurrency coverage, but it does not directly prove the deterministic message identity.
+
+Add assertions that first completion uses:
+
+```text
+systemCode = BILLING_CANCELLATION_COMPLETED
+sourceKey = createMerchantBillingSystemSourceKey(
+  shopId,
+  BILLING_CANCELLATION_COMPLETED,
+  request.id,
+  ARCH007_BILLING_CONTRACT_SCHEMA_VERSION
+)
+```
+
+and that replay/upsert of the same logical completion cannot create a second logical message.
+
+This can be proved with a stateful message fake keyed by `sourceKey`.
+
+Also retain:
+
+- PROVIDER_ACCEPTED emits no completion message;
+- RETRYABLE verification emits no completion message.
+
+#### 6. Prove persisted error summaries are secret-safe
+
+Provider tests correctly prove classification and that provider-thrown errors do not expose the access token.
+
+Add service-level persistence assertions showing a retry/permanent provider failure stores:
+
+```text
+providerErrorCode
+providerResponseSummary
+```
+
+without the Partner access token or credential material.
+
+At minimum cover:
+
+- one retryable provider failure;
+- one permanent/provider-attention failure.
+
+The persisted summary must remain bounded to the existing maximum.
+
+#### 7. Preserve all accepted production behavior
+
+Do NOT change the following unless a new regression exposes an actual defect:
+
+- exact selected-status CAS;
+- `providerErrorCode = null` on successful `PROVIDER_ACCEPTED`;
+- Shared 0.9.0 mapping;
+- Partner API 2026-07 mutation;
+- identity verification;
+- already-achieved cancellation behavior;
+- retry/backoff;
+- stale lease transitions;
+- provider-accepted intermediate state;
+- Serializable completion transaction;
+- idempotent completion-message source key;
+- billing worker integration;
+- database schema/submodule pointer.
 
 ### Validation Reviewed
 
-Agent-reported Attempt 1:
+Agent-reported Attempt 2:
 
 ```text
-npm run test:unit:       442 passed
-focused cancellation:    12 passed
-npm run build:           passed
-npm run prisma:validate: passed
-git diff --check:        passed
+focused provider/cancellation: 34 passed
+npm run test:unit:              464 passed
+npm run build:                  passed
+npm run prisma:validate:        passed
+git diff --check:               passed
 ```
 
-The supplied review archive does not contain `node_modules`, so npm validation was not independently rerun by the architect. Source, focused tests, package state, schema pointer and published Git diffs were inspected directly.
+The supplied archive does not contain `node_modules`, so npm validation was not independently rerun by the architect.
+
+Architect source review confirmed the two production corrections and inspected the full focused test files.
 
 ### Published Git Verification
 
-Implementation:
+Implementation branch:
 
 ```text
 repository: moda-interact-background
 branch: task/ARCH-009-BACKGROUND-001
-commit: 52664cebe7dca8133ce41386cbe7f036af750bd6
-ahead of main: 1
+Attempt 1: 52664cebe7dca8133ce41386cbe7f036af750bd6
+Attempt 2: e7ad61ebafcf5ea572ad78394deadea5f75632a4
+Attempt 2 parent: 52664cebe7dca8133ce41386cbe7f036af750bd6
+ahead of main: 2
 behind main: 0
 ```
 
-Parent task handoff:
+Attempt 2 changes only:
+
+- `src/services/subscription-cancellation.service.ts`;
+- `tests/unit/providers/shopify-partner-billing.provider.test.ts`;
+- `tests/unit/services/subscription-cancellation.service.test.ts`.
+
+Parent workspace branch tip:
 
 ```text
-repository: moda-interact-workspace
-branch: task/ARCH-009-BACKGROUND-001
-commit: a29b2443b56f0955ce795b4676fc480b1ed3f965
+3b4b446c464caa0b62f1dc51d060b9dad511562c
 ```
 
-The published implementation diff is limited to the expected ARCH-009 database/shared adoption, billing entrypoint, Partner provider, cancellation service, and focused tests.
+which follows review handoff:
+
+```text
+130890946675e207f0df73feb0069de72c936284
+```
+
+Worktree isolation and start-of-attempt synchronization evidence are present and conformant.
 
 ### Architecture Conformance
-Changes required.
+Production implementation accepted in principle; regression contract remains incomplete.
 
 ### Follow-up
 
-Attempt 2 must remain on the SAME `ARCH-009-BACKGROUND-001` task and mirrored `task/ARCH-009-BACKGROUND-001` branches.
+Attempt 3 remains on the SAME `ARCH-009-BACKGROUND-001` task and canonical mirrored task branches/worktrees.
 
-Attempt 2 scope is intentionally narrow:
+Attempt 3 scope:
 
-1. make claim CAS exact on selected `id + version + status`;
-2. clear stale `providerErrorCode` on successful PROVIDER_ACCEPTED transition;
-3. complete the mandatory regression matrix above;
-4. do not redesign the provider mutation, schema, Shared mapping, or worker topology;
+1. TEST-ONLY unless a new regression exposes an actual production defect;
+2. implement the six missing proof areas above;
+3. prefer a small stateful Prisma-shaped fake for lifecycle/lease/message behavior;
+4. do not churn provider/service production code merely to create a new commit;
 5. rerun:
-   - `npm run test:unit`;
    - focused provider/cancellation tests;
+   - `npm run test:unit`;
    - `npm run build`;
    - `npm run prisma:validate`;
    - `git diff --check`;
-6. update the Completion Report with Attempt 2 files, validation, worktree/sync evidence, implementation commit and parent handoff commit;
+6. update the Completion Report with Attempt 3 files, test counts, validation, physical worktrees, start sync, implementation commit and final parent handoff;
 7. preserve this Architect Review until the next architect decision;
 8. return the same task to `review`;
 9. STOP.
