@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-09-10T01:01:51Z
@@ -328,7 +328,7 @@ After successful validation, complete Completion Report, set task `review`, retu
 
 ### Status
 
-In Progress
+Review
 
 ### Files Changed
 
@@ -354,6 +354,10 @@ In Progress
 - Added the recovery-pack lifecycle view using ADMIN-001 bounded protected reads.
 - Preserved existing server actions, authorization, pagination, filters, audit semantics, and asynchronous `Submitted to Shopify` wording.
 - Added focused progressive-disclosure and deep-link contract coverage and aligned the existing visibility regression with drawer-only diagnostics.
+- Corrected App Events filter submission to preserve `view=events`.
+- Gated recovery-pack receipt and Dev Dashboard guidance on a linked `REPORTED` App Event.
+- Added the configured recovery credits per pack to compact plan metadata.
+- Added focused regression coverage for all three Architect Review corrections.
 
 ### Git / VCS
 
@@ -375,29 +379,30 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-admin`
-  commit: `a54673e`
+  commit: `52440be`
   remote branch: `origin/task/ARCH-008-ADMIN-002`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/admin/ARCH-008/ADMIN-002-simplify-global-billing-workspace.md`
-  claim commit: `88a4e03`
+  claim commit: `322b602`
   remote branch: `origin/task/ARCH-008-ADMIN-002`
   pushed: yes
 
 ### Validation Results
 
 - `npx tsc --noEmit`: passed after initializing the tracked database submodule and generating Prisma Client.
-- Focused Node tests: 41 passed, 0 failed.
-- Full `npm test`: 134 passed, 0 failed, 3 skipped.
+- Focused Node tests: 43 passed, 0 failed, 0 skipped.
+- Full `npm test`: 139 passed, 0 failed, 0 skipped.
 - `npm run lint`: passed with two pre-existing `queue-monitor.tsx` hook warnings.
 - `npm run prisma:validate`: passed.
 - `npm run build`: passed; existing BullMQ dynamic dependency and optional `@valkey/valkey-glide` warnings remain.
 - `git diff --check`: passed.
+- Attempt 2 implementation commit `52440be` is pushed to `origin/task/ARCH-008-ADMIN-002`.
 
 ### Deviations
 
-The fresh implementation worktree required `git submodule update --init database` before the declared Prisma generation/typecheck commands could run. No schema or submodule pointer changes were made.
+The fresh implementation worktree required `git submodule update --init database` before the declared Prisma generation/typecheck commands could run. No schema or submodule pointer changes were made. Lint retains two pre-existing `queue-monitor.tsx` hook warnings, and the build retains existing BullMQ dynamic/optional dependency warnings.
 
 ### Assumptions
 
@@ -405,11 +410,11 @@ The resolver-authoritative ADMIN-001 dependency was complete before claim; no ad
 
 ### Unresolved Issues
 
-None.
+None for the requested Architect Review corrections.
 
 ### Architectural Concerns
 
-None.
+None introduced by Attempt 2.
 
 ## Architect Review
 
