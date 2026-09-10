@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-09-10T00:00:00Z
@@ -328,35 +328,88 @@ After successful validation, complete Completion Report, set task `review`, retu
 
 ### Status
 
-In Progress
+Review
 
 ### Files Changed
 
-None
+- `src/app/(protected)/billing/page.tsx`
+- `src/components/admin/admin-detail-drawer.tsx`
+- `src/components/admin/billing-drawers.tsx`
+- `src/components/admin/billing-overview.tsx`
+- `src/components/admin/billing-plan-catalog.tsx`
+- `src/components/admin/billing-recovery-packs.tsx`
+- `src/components/admin/billing-tabs.tsx`
+- `src/components/admin/billing-controls.tsx`
+- `src/lib/admin/billing-plan.ts`
+- `src/i18n/locales/en.json`
+- `src/i18n/required-keys.ts`
+- `tests/security/admin-billing-progressive-disclosure.test.mjs`
+- `tests/security/admin-billing-visibility.test.mjs`
 
 ### Work Completed
 
-None
+- Added URL-backed `overview`, `plans`, `packs`, `events`, and `controls` views with Overview as the invalid/missing fallback.
+- Changed the route to load only the selected view data and selected drawer detail.
+- Replaced expanded plan forms and inline event diagnostics with compact summaries and reusable server-rendered right-side drawers.
+- Added the recovery-pack lifecycle view using ADMIN-001 bounded protected reads.
+- Preserved existing server actions, authorization, pagination, filters, audit semantics, and asynchronous `Submitted to Shopify` wording.
+- Added focused progressive-disclosure and deep-link contract coverage and aligned the existing visibility regression with drawer-only diagnostics.
+
+### Git / VCS
+
+Task branch: `task/ARCH-008-ADMIN-002`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-002`
+  parent branch: `task/ARCH-008-ADMIN-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-002`
+  implementation branch: `task/ARCH-008-ADMIN-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent origin/main incorporated: already-current
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-admin`
+  commit: `a54673e`
+  remote branch: `origin/task/ARCH-008-ADMIN-002`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/admin/ARCH-008/ADMIN-002-simplify-global-billing-workspace.md`
+  claim commit: `88a4e03`
+  remote branch: `origin/task/ARCH-008-ADMIN-002`
+  pushed: yes
 
 ### Validation Results
 
-None
+- `npx tsc --noEmit`: passed after initializing the tracked database submodule and generating Prisma Client.
+- Focused Node tests: 41 passed, 0 failed.
+- Full `npm test`: 134 passed, 0 failed, 3 skipped.
+- `npm run lint`: passed with two pre-existing `queue-monitor.tsx` hook warnings.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed; existing BullMQ dynamic dependency and optional `@valkey/valkey-glide` warnings remain.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+The fresh implementation worktree required `git submodule update --init database` before the declared Prisma generation/typecheck commands could run. No schema or submodule pointer changes were made.
 
 ### Assumptions
 
-None
+The resolver-authoritative ADMIN-001 dependency was complete before claim; no additional sibling or transitive dependency gates were introduced.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
