@@ -299,7 +299,7 @@ Review — attempt 1 implementation complete and returned to `moda_architect`.
 - Added protected, bounded recovery-pack list/detail and ledger-detail read helpers with database-level tenant scoping, durable status allowlisting, stable newest-first ordering, safe projections, and bounded provider summaries.
 - Added the ARCH-008 Admin ICU keys and changed the existing reported-at label to `Submitted at` without changing the `reportedAt` data contract.
 - Preserved the existing Admin layout and made no provider network calls.
-- Implementation commit: `79a2397` on `task/ARCH-008-ADMIN-001`.
+- Implementation commits: `79a2397`, `e6361c9` on `task/ARCH-008-ADMIN-001`.
 
 ### Validation Results
 
