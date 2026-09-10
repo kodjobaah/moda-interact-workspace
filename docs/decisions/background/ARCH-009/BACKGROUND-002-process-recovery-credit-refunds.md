@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-09-10T21:34:45Z
@@ -221,21 +221,67 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 ### Files Changed
-None
+- `moda-interact-background/src/services/recovery-credit-refund.service.ts`
+- `moda-interact-background/src/services/purchased-recovery-reservation.service.ts`
+- `moda-interact-background/src/entrypoints/billing.ts`
+- `moda-interact-background/tests/unit/services/recovery-credit-refund.service.test.ts`
 ### Work Completed
-None
+- Added serializable full-pack approval holds using Shared 0.9.0 purchased-credit availability, exact purchase/event snapshot validation, versioned counter updates, and durable `NEEDS_ATTENTION` outcomes when a hold cannot be safely applied.
+- Added current-cycle correction creation with deterministic idempotency, exact cycle/plan/meter checks, publisher-state mapping, replay-safe correction linkage, and provider-action gating.
+- Added Partner Dashboard refund action-required handling, human-confirmed exactly-once finalization, counter/purchase state transitions, safe pre-provider hold release, and exactly-once `BILLING_REFUND_COMPLETED` support messaging.
+- Added `refundingQuantity` to purchased-credit admission so held credits cannot be consumed by concurrent recovery work.
+- Integrated refund progression into the existing billing worker cycle after usage publication and reconciliation.
 ### Validation Results
-None
+- `npx vitest run tests/unit/services/recovery-credit-refund.service.test.ts`: passed, 3 tests.
+- Focused billing regression suite: passed, 32 tests.
+- `npm run test:unit`: passed, 45 files and 445 tests.
+- `npm run build`: passed, including Prisma client generation and TypeScript compilation.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
 ### Deviations
-None
+The accepted ARCH-009-BACKGROUND-001 implementation commit was carried onto this dependent task branch because `origin/main` does not yet contain accepted ARCH-009 prerequisite artifacts. No prerequisite source was changed by this task.
 ### Assumptions
-None
+Admin confirmation writes `PROVIDER_CONFIRMED` and the provider confirmation fields before Background finalization, as defined by ARCH-009.
 ### Unresolved Issues
-None
 ### Architectural Concerns
-None
+
+### Git / VCS
+
+Task branch: `task/ARCH-009-BACKGROUND-002`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-009-BACKGROUND-002`
+  parent branch: `task/ARCH-009-BACKGROUND-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-009-BACKGROUND-002`
+  implementation branch: `task/ARCH-009-BACKGROUND-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-background`
+  commit: `47c9bf417b0c4dd3c86dc66359d9e1aac7cfc441`
+  remote branch: `origin/task/ARCH-009-BACKGROUND-002`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/background/ARCH-009/BACKGROUND-002-process-recovery-credit-refunds.md`
+  commit: pending report commit
+  remote branch: `origin/task/ARCH-009-BACKGROUND-002`
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
