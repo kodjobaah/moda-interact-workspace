@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-10T11:15:20Z
@@ -208,21 +208,37 @@ Refund availability warning
 Placeholder parity.
 
 ## Tests
-
+Review
 1. paid plan does not mutate Free counter;
-2. hosted Change plan;
+- `app/routes/app/billing/route.tsx`
+- `app/services/billing/billing.service.ts`
+- `app/i18n/locales/*.json`
+- `tests/unit/billing-i18n.test.ts`
+- `package.json`, `package-lock.json`
+- database submodule prepared at accepted ARCH-009 revision `4b8ef9c` (gitlink intentionally not staged)
 3. hosted Switch to Free;
-4. no forbidden create APIs;
+- Added hosted Change plan/Switch to Free navigation.
+- Added end-of-cycle cancellation request flow with durable replay identity.
+- Added same-shop active full-pack refund request flow with immutable purchase snapshots.
+- Added refund-aware purchased-credit availability and merchant-visible lifecycle status.
+- Routed billing system messages through merchant language selection and translation dispatch.
+- Pinned Shared dependency to exact `0.9.0`.
 5. cancellation always END_OF_CYCLE;
-6. immediate mode cannot be supplied;
+- `npm test`: 207 passed, 1 skipped.
+- Focused billing tests: 43 passed.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm run typecheck`: repository baseline remains nonzero on unrelated dashboard/test diagnostics; no diagnostics remain in touched billing service or route.
 7. cancellation replay one row;
-8. no provider call;
+- Non-English locale additions use English fallback copy where translations were not already maintained in the catalogue.
 9. refund ignores client price/credits/meter;
-10. cross-shop purchase rejected;
+- Existing `/app/billing/select` is the canonical Shopify-hosted plan-selection route.
+- Background/admin workers consume the persisted cancellation and refund requests asynchronously.
 11. refund replay one row;
-12. no hold/decrement on request;
+- Full typecheck baseline remains unresolved outside this task’s touched billing files.
 13. availability subtracts refunding;
-14. plan-change SYSTEM CTA exact;
+- None identified in the implemented slice.
 15. all 20 locales resolve.
 
 ## Validation
