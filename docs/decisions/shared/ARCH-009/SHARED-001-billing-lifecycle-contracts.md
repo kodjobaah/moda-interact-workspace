@@ -237,9 +237,9 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/shared/ARCH-009/SHARED-001-billing-lifecycle-contracts.md`
-  commit: `PENDING` (review handoff commit)
+  commit: `10a4945`
   remote branch: `origin/task/ARCH-009-SHARED-001`
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
