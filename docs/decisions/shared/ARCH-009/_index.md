@@ -2,8 +2,8 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| ARCH-009-SHARED-001 | Ready | Publish exact lifecycle/cancellation/availability contracts. |
+| ARCH-009-SHARED-001 | Complete | Publish exact lifecycle/cancellation/availability contracts. |
 
 Target Shared version 0.9.0.
 
-Current frontier: `ARCH-009-SHARED-001` is Ready after architect acceptance of DATABASE-001.
+Current frontier: Shared 0.9.0 contract is Complete; SHOPIFY-001, BACKGROUND-001 and BACKGROUND-002 are dependency-Ready.

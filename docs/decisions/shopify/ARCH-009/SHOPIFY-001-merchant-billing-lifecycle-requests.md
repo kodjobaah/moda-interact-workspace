@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-001
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # ARCH-009-SHOPIFY-001
