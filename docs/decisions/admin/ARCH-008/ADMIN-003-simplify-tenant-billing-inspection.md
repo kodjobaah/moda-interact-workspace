@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-008-SYSTEM-TEST-001
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # ARCH-008-ADMIN-003: Simplify Tenant Directory billing inspection

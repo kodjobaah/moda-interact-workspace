@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-09-10T01:01:51Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-008-ADMIN-001
@@ -284,17 +284,17 @@ If current test style uses static/source contract tests rather than DOM renderin
 
 ## Acceptance Criteria
 
-- [ ] `/billing` defaults to Overview.
-- [ ] Five required URL-backed tabs work and are deep-linkable.
-- [ ] Data is loaded only for selected view plus selected detail.
-- [ ] Overview shows business summary without ledger/forms/controls overload.
-- [ ] Plans are compact and register/edit happens in drawers.
-- [ ] Recovery packs have their own compact lifecycle view + drawer.
-- [ ] App Events has a compact primary table + diagnostic drawer.
-- [ ] Controls contains existing policy controls only.
-- [ ] `REPORTED` is `Submitted to Shopify` everywhere in this surface.
-- [ ] Existing billing mutations/authorization/audit semantics are unchanged.
-- [ ] Shared drawer shell/detail components are reusable by ADMIN-003.
+- [x] `/billing` defaults to Overview.
+- [x] Five required URL-backed tabs work and are deep-linkable.
+- [x] Data is loaded only for selected view plus selected detail.
+- [x] Overview shows business summary without ledger/forms/controls overload.
+- [x] Plans are compact and register/edit happens in drawers.
+- [x] Recovery packs have their own compact lifecycle view + drawer.
+- [x] App Events has a compact primary table + diagnostic drawer.
+- [x] Controls contains existing policy controls only.
+- [x] `REPORTED` is `Submitted to Shopify` everywhere in this surface.
+- [x] Existing billing mutations/authorization/audit semantics are unchanged.
+- [x] Shared drawer shell/detail components are reusable by ADMIN-003.
 
 ## Validation — run from `moda-interact-admin`
 
@@ -420,6 +420,7 @@ None introduced by Attempt 2.
 
 ### Review Status
 
+<<<<<<< HEAD
 Changes Requested
 
 ### Review Notes
@@ -505,9 +506,17 @@ The following parts conform and should be preserved:
 - the pre-existing activate/deactivate row action already used the same bounded hard-coded audit reason on `main`, so ADMIN-002 did not introduce a new relaxation there;
 - no schema change, provider network call, client-state library, or Tenant Billing redesign was introduced;
 - worktree and synchronization evidence is present and conforms to the required workflow.
+=======
+Accepted
 
-### Reviewed Files
+### Review Notes
 
+Attempt 2 closes the full Attempt 1 Changes Requested contract and preserves the previously accepted ADMIN-002 architecture.
+>>>>>>> 2bf0e66 (chore(workspace): completed ARCH-002-ADMIN-002)
+
+Verified corrections:
+
+<<<<<<< HEAD
 - `src/app/(protected)/billing/page.tsx`
 - `src/components/admin/admin-detail-drawer.tsx`
 - `src/components/admin/billing-drawers.tsx`
@@ -564,3 +573,59 @@ Required Attempt 2 checklist:
 6. update the Completion Report, return the same task to `review`, and STOP.
 
 Do not begin `ARCH-008-ADMIN-003` until ADMIN-002 is architect-accepted Complete.
+=======
+1. App Events filter submission now includes the canonical hidden `view=events` field. The filter form therefore remains in the App Events URL-backed view; `eventPage` and `eventId` are not submitted by the filter form and consequently reset as required.
+2. `RecoveryCreditPurchaseDrawer` now derives receipt/help presentation from the linked UsageEvent. `billing.asyncReceiptHelp` is rendered only when `shopifyReportState === "REPORTED"`, and the Dev Dashboard guidance is further constrained to `REPORTED + PENDING_BILLING`. Pending/in-flight/retryable/non-reported events no longer receive a false Shopify-receipt statement.
+3. Compact Plans cards now render configured `recoveryCreditsPerPack` through the existing translation/number-formatting path without re-expanding `PlanForm`.
+
+Focused regression coverage was added for all three corrections.
+
+The previously accepted ADMIN-002 structure remains intact:
+
+- exactly five URL-backed views: `overview|plans|packs|events|controls`;
+- missing/invalid `view` falls back to Overview;
+- route data loading is selected-view plus selected-detail only;
+- Overview remains free of the full ledger, plan forms, and controls;
+- Plans remain compact with register/edit drawers;
+- Recovery packs remain a bounded lifecycle list plus reusable detail drawer;
+- App Events keeps the compact primary table and moves diagnostics to a reusable drawer;
+- Controls continue to use the existing policy-control component;
+- ADMIN-001 protected detail reads are reused;
+- `REPORTED` remains presented as `Submitted to Shopify`;
+- existing plan mutation/authorization/audit behavior is unchanged;
+- no schema, provider-network, client-state-library, or Tenant Billing implementation was introduced.
+
+Workflow evidence remains conformant: the launcher-resolved parent and implementation worktrees are recorded, synchronization evidence is present, and ADMIN-003 was not started.
+
+### Validation Reviewed
+
+Agent-reported Attempt 2 validation:
+
+- focused tests: 43 passed;
+- full Admin tests: 139 passed;
+- TypeScript: passed;
+- build: passed;
+- Prisma validation: passed;
+- `git diff --check`: passed;
+- lint: passed with only the two pre-existing `queue-monitor.tsx` warnings.
+
+The supplied review archive does not include `node_modules`, so these commands were not independently rerun in the review container. The changed source/tests and published Git diff were inspected directly.
+
+Published verification:
+
+- implementation branch tip: `52440be1aea9fe0414b5fa3a0175476e9a065bc3`;
+- Attempt 2 directly follows Attempt 1 `a54673ed5d8956a4040207b797464efa36858a3a`;
+- cumulative Admin task branch is two commits ahead of `main`, zero behind;
+- Attempt 2 correction commit is limited to the three affected components and focused regression file;
+- parent coordination branch tip: `ca5a63a8b609e47be35b6a06a9291068d0a1553d`.
+
+### Architecture Conformance
+
+Accepted.
+
+### Follow-up
+
+`ARCH-008-ADMIN-003` is now Ready.
+
+ADMIN-003 must reuse the accepted ADMIN-002 billing drawer/tab primitives and retain strict tenant-scoped detail reads. `ARCH-008-SYSTEM-TEST-001` remains terminal/manual-gated and must not be started merely because ADMIN-003 becomes executable.
+>>>>>>> 2bf0e66 (chore(workspace): completed ARCH-002-ADMIN-002)
