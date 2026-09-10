@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-09-10T02:27:42Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-008-ADMIN-002
@@ -57,8 +57,6 @@ That top-level navigation stays unchanged.
   - `src/components/admin/tenant-detail-panel.tsx`
   - `src/components/admin/tenant-billing.tsx`
   - `src/lib/admin/billing.ts`
-4. Confirm tenant detail reads can pass the selected `shopId` into ADMIN-001 detail helpers so another shop's event/purchase cannot be opened by changing only the detail id.
-5. If ADMIN-002 did not produce a reusable drawer shell/detail component as accepted, STOP and return dependency mismatch rather than creating a competing drawer mechanism.
 4. Confirm tenant detail reads can pass the selected `shopId` into ADMIN-001 detail helpers so another shop's event/purchase cannot be opened by changing only the detail id.
 5. If ADMIN-002 did not produce a reusable drawer shell/detail component as accepted, STOP and return dependency mismatch rather than creating a competing drawer mechanism.
 
@@ -410,199 +408,72 @@ None introduced.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 establishes the intended tenant Billing progressive-disclosure structure and is correctly scoped to the Admin repository, but it is not yet acceptable.
+Attempt 3 closes the complete Attempt 2 Changes Requested contract and conforms to ARCH-008.
 
-There are four implementation/validation corrections plus one task-report correction.
+Verified corrections:
 
-#### 1. Overview omits the pending-plan effective date
+1. Overview now renders the pending plan effective date through `subscription.pendingEffectiveAt` and surfaces both `SYNC_ERROR` and `UNMAPPED` as concise attention warnings near the top.
+2. Usage -> Advanced limits now preserves override hard limit, reason, state and expiry metadata whenever an override record exists, including EXPIRED historical overrides, without reintroducing a large standalone override panel.
+3. Shopify now renders business-level Moda and Shopify quantities when persisted discrepancy data exists, while retaining the exact short unavailable message when the discrepancy projection is null.
+4. The canonical task-definition sections and actual `## Completion Report` are restored. The Completion Report records the resolved ADMIN-002 dependency-base condition, dedicated mirrored task worktrees, synchronization evidence, implementation commit, validation results, deviations, and no unresolved issues.
+5. The required production build is now reported as completed successfully.
 
-The task requires Overview to show:
+The small duplicated restored preflight items 4/5 were documentation-only and are deduplicated by this architect acceptance overlay; no implementation rework is required.
 
-```text
-pending plan name/effective date when present
-```
+The previously conformant ADMIN-003 structure remains intact:
 
-The implementation shows `subscription.pendingPlan?.name`, but does not render `subscription.pendingEffectiveAt` in Overview.
-
-Required correction:
-
-- keep the pending plan name;
-- when `pendingEffectiveAt` is present, render it in Overview using the existing `billing.pendingEffectiveAt` translation and `adminI18n.formatDateTime`;
-- when absent, use the existing intentional empty/not-recorded presentation;
-- add focused regression coverage.
-
-Also preserve the requirement that attention states are visible near the top. `SYNC_ERROR` is already warned. Ensure other genuine projection-attention states represented by the existing model (at minimum `UNMAPPED`) are not silently presented as ordinary healthy state.
-
-#### 2. Usage -> Advanced limits drops required override metadata
-
-The task requires Advanced limits to expose, when present and safe:
-
-```text
-plan/default outbound hard limit
-platform absolute hard cap
-override hard limit
-override reason/effective/expiry metadata
-```
-
-The current implementation shows:
-
-- plan/default hard limit;
-- platform hard cap;
-- override state;
-- override reason only while the override is ACTIVE.
-
-It does not show `billing.override.outboundHardLimit`, and an expired historical override loses its reason and `expiresAt` detail even though the task explicitly says expired historical overrides belong in Usage -> Advanced limits/details.
-
-Required correction:
-
-- render override hard limit when an override record exists;
-- render override reason when an override record exists, including EXPIRED;
-- render `expiresAt` when present;
-- retain `overrideState` so Active/Expired remains explicit;
-- do not reintroduce a large standalone override panel;
-- do not add or change mutation controls;
-- add focused regressions for both ACTIVE and EXPIRED override presentation.
-
-There is no requirement to invent an effective timestamp if the current read model does not contain one.
-
-#### 3. Shopify discrepancy-present branch does not show business quantities
-
-The task requires:
-
-```text
-when discrepancy data exists, display business-level local/provider quantities first
-```
-
-The current `billing.discrepancy` branch renders only the generic `billing.discrepancyDetected` text.
-
-Required correction:
-
-- when `billing.discrepancy` is non-null, render the existing business-level `modaQuantity` and `shopifyQuantity` (and meter handle only if useful and already safe);
-- keep the exact short unavailable message when `billing.discrepancy === null`:
-  `Shopify usage comparison is not available for this tenant.`
-- do not add a live Partner/Shopify request;
-- do not expose raw provider payload/error details here;
-- add focused regression coverage for null and non-null discrepancy cases.
-
-#### 4. Required production build validation did not complete
-
-The task's validation contract includes:
-
-```text
-npm run build
-```
-
-Attempt 2 reports that Next.js production compilation started but the process exited `130` before completion. Exit 130 is an interrupted build, not a successful validation result.
-
-Required correction:
-
-- rerun `npm run build` from the canonical ADMIN-003 implementation worktree;
-- it must complete successfully before the task returns to review;
-- if it fails with a source/build error, fix the in-scope cause and rerun;
-- if the environment interrupts it again, report the exact reproducible environment blocker rather than marking validation successful.
-
-The archive does not contain `node_modules`, so the architect could not independently rerun the build in the review container.
-
-#### 5. Completion Report / task document is stale and internally contradictory
-
-The parent handoff commit changes frontmatter to `status: review` and adds implementation/validation statements near the top of the task file, but the canonical `## Completion Report` section still says:
-
-```text
-Status: In Progress
-implementation blocked
-required shared drawer absent
-implementation commit: none
-```
-
-Those statements are obsolete after ADMIN-002 was merged and `aa11e5a` was implemented.
-
-The handoff also overwrote canonical task-specification sections (`# title`, canonical Architecture/Objectives/preflight prose) with completion data rather than putting that data solely in the Completion Report.
-
-Required correction:
-
-- restore the task specification sections to their canonical task-definition content; do not use Architecture/Objectives/current-baseline sections as a substitute Completion Report;
-- update the actual `## Completion Report` with Attempt 3 status, files changed, work completed, canonical worktree/synchronization evidence, implementation commit(s), validation results, deviations, unresolved issues and architecture concerns;
-- explicitly record that the earlier dependency-base blocker was resolved because ADMIN-002 was merged before Attempt 2/3 implementation;
-- do not alter or delete this Architect Review;
-- return the same task to `status: review` after successful validation.
-
-### Positive Findings To Preserve
-
-The following parts conform and should not be regressed:
-
-- top-level `Administration | Recovery Logs | Billing` navigation remains unchanged;
+- top-level `Administration | Recovery Logs | Billing` navigation is unchanged;
 - Billing uses exactly `billingView=overview|usage|shopify|activity`;
 - missing/invalid Billing view defaults to Overview;
-- billing-only page/detail params are cleared on tenant/top-level navigation transitions;
-- App Event and recovery-pack activity datasets are loaded only for Activity;
-- selected event/purchase reads pass the current tenant `shopId` at the database query boundary;
-- recovery-pack and App Event pagination use independent `packPage` and `billingPage`, page size 10;
-- Activity primary columns are compact;
-- accepted ADMIN-002 `RecoveryCreditPurchaseDrawer` and `BillingEventDrawer` primitives are reused rather than forked;
-- drawers can return to the tenant route;
+- billing-only URL/detail state is cleared when changing tenant or top-level navigation;
+- the existing bounded tenant billing summary may load for Billing views, while App Event and recovery-pack activity pages are loaded only for Activity;
+- Activity uses independent `packPage` and `billingPage` pagination with page size 10;
+- selected purchase/event detail reads pass the selected tenant `shopId` at the Prisma query boundary;
+- accepted ADMIN-002 recovery-pack and App Event drawer primitives are reused and return correctly to the tenant route;
+- primary Activity tables remain compact and low-level diagnostics remain in drawers;
 - `REPORTED` remains `Submitted to Shopify`;
-- Overview does not render raw App Event/provider diagnostics;
-- Usage uses an accessible `<details>` disclosure for advanced limits;
-- no tenant billing mutation, entitlement calculation, schema migration, or provider-network architecture change was introduced;
-- SYSTEM-TEST-001 was correctly not executed.
-
-### Reviewed Files
-
-- `src/app/(protected)/page.tsx`
-- `src/components/admin/billing-drawers.tsx`
-- `src/components/admin/tenant-billing.tsx`
-- `src/components/admin/tenant-detail-panel.tsx`
-- `src/components/admin/tenant-table.tsx`
-- `src/i18n/locales/en.json`
-- `src/i18n/required-keys.ts`
-- `src/lib/admin/billing.ts`
-- `src/lib/admin/types.ts`
-- `tests/security/admin-billing-visibility.test.mjs`
-- `tests/security/admin-tenant-billing-progressive-disclosure.test.mjs`
-- this task's published parent handoff/report
-- published implementation commit `aa11e5a`
-- published parent commit `4ced8ec`
+- Overview does not expose raw provider/App Event diagnostics;
+- Usage keeps advanced limits behind accessible `<details>`;
+- no billing mutation, entitlement calculation, schema migration, provider network call, or competing drawer architecture was introduced;
+- `ARCH-008-SYSTEM-TEST-001` was not executed during implementation.
 
 ### Validation Reviewed
 
-Agent-reported:
+Agent-reported Attempt 3 validation:
 
-- focused tests: 31 passed;
-- full Admin tests: 140 passed, 3 skipped;
+- focused correction suite: 24 passed;
+- full Admin tests: 145 passed;
 - TypeScript: passed;
 - lint: passed with two pre-existing `queue-monitor.tsx` warnings;
 - Prisma validation: passed;
 - `git diff --check`: passed;
-- build: NOT complete — process exited 130 during Next.js production build.
+- production build: passed, with the existing BullMQ dynamic-dependency / optional `@valkey/valkey-glide` warnings.
 
-Published branch verification:
+The supplied review archive does not contain `node_modules`, so validation commands were not independently rerun in the architect container. The changed source/tests and published Git state were inspected directly.
 
-- `task/ARCH-008-ADMIN-003` implementation tip is `aa11e5a06cf89736a85fe5f243c947ebc13598ea`;
-- implementation branch is one commit ahead of Admin `main`, zero behind;
-- implementation commit is based directly on `2d254c723a6b401b51a2c991e8c9f70a5abf13a8`;
-- changed Admin files are limited to the ten declared ADMIN-003 source/test files;
-- parent task branch tip is `4ced8ec7f9d7528913a7abb81d882eb9b066ce01`.
+Published verification:
+
+- implementation task branch tip: `87664de57711f202f6658d87ffafc82a157fd206`;
+- Attempt 3 commit directly follows Attempt 2 `aa11e5a06cf89736a85fe5f243c947ebc13598ea`;
+- cumulative Admin task branch is two commits ahead of Admin `main`, zero behind;
+- cumulative changes remain limited to the ten declared ADMIN-003 source/test files;
+- parent review handoff commit: `80e0890c91715279236825960fc89e9dedd8804c`;
+- final parent report correction / branch tip: `4ee567a0d936ddec53436e81566e97c336a01c3a`.
 
 ### Architecture Conformance
 
-Changes required.
+Accepted.
+
+The ARCH-008 implementation dependency set is now complete and architect-accepted.
 
 ### Follow-up
 
-Attempt 3 must remain on the SAME task and SAME mirrored `task/ARCH-008-ADMIN-003` branches.
+`ARCH-008-SYSTEM-TEST-001` is now Ready because every dependency in its authoritative YAML is Complete.
 
-Attempt 3 checklist:
+This is a terminal/manual-gated system-test task. Do NOT execute it automatically. The developer may manually exercise the integrated implementation first and must explicitly invoke `ARCH-008-SYSTEM-TEST-001` before `moda_system_test` runs.
 
-1. add pending-plan effective date and proper attention-state warning behavior to Overview;
-2. complete Advanced limits override hard-limit/reason/expiry presentation, including expired overrides;
-3. render local/provider quantities when discrepancy data exists while retaining the exact unavailable message when it does not;
-4. add focused regressions for all above corrections;
-5. restore/update the canonical task specification + Completion Report structure;
-6. rerun focused tests, full Admin tests, TypeScript, lint, Prisma validation, `git diff --check`, and a production build that completes successfully;
-7. return the same task to `review` and STOP.
-
-Do not start or execute `ARCH-008-SYSTEM-TEST-001`. It remains terminal/manual-gated.
+ARCH-008 architecture status remains non-final until the required terminal system test is Complete (unless system testing is explicitly documented as not applicable).
