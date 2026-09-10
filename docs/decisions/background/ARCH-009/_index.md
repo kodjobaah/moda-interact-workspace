@@ -2,8 +2,8 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| ARCH-009-BACKGROUND-001 | Ready | Execute approved subscription cancellation. |
+| ARCH-009-BACKGROUND-001 | Ready | Attempt 2: exact claim CAS, successful-state error cleanup, and complete cancellation lifecycle regression coverage. |
 | ARCH-009-BACKGROUND-002 | Ready | Process full-pack refunds and refund-aware reconciliation. |
 
-Current frontier: `ARCH-009-BACKGROUND-001` and `ARCH-009-BACKGROUND-002` are Ready after SHARED-001 acceptance; exact Shared 0.9.0 must be available at execution preflight.
+Current frontier: `ARCH-009-BACKGROUND-001` is Ready for Attempt 2; `ARCH-009-BACKGROUND-002` remains independently Ready.
 s
