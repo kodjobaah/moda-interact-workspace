@@ -299,9 +299,9 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
   claim commit: `f544549`
-  review handoff commit: `pending final parent metadata commit`
-  metadata/report commit(s): `pending final parent metadata commit`
-  final parent branch tip: `pending final parent metadata commit`
+  review handoff commit: `c64061aad065f554c555ab0afd8de1e1e5c3a315`
+  metadata/report commit(s): `c64061aad065f554c555ab0afd8de1e1e5c3a315` and this metadata update
+  final parent branch tip: published branch tip after this metadata update
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
   pushed: yes
   submodule gitlink staged: no
