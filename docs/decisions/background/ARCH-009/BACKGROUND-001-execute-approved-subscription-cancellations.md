@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-10T22:57:27Z
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-002
 created: 2026-09-09
-updated: 2026-09-10T22:57:27Z
+updated: 2026-09-10T22:59:23Z
 ---
 
 # ARCH-009-BACKGROUND-001
@@ -245,7 +245,7 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 ### Files Changed
 - `src/services/subscription-cancellation.service.ts`
 - `tests/unit/services/subscription-cancellation.service.test.ts`
@@ -254,9 +254,10 @@ In Progress
 - Added explicit confirmation coverage for END_OF_CYCLE and all three immediate cancellation modes, including no-contract and still-active provider states.
 - Added exact due selection assertions for `nextAttemptAt = null` or `nextAttemptAt <= now`, and replay assertions keyed by `createMerchantBillingSystemSourceKey`.
 - A new secret-safety regression exposed that arbitrary provider error summaries were persisted verbatim; bounded credential-labelled values are now redacted before persistence. No other production behavior changed.
+- Attempt 4 fixed the `Authorization: Bearer <token>` ordering defect by redacting complete authorization-bearer, Shopify access-token, access-token, and standalone bearer forms before fallback matching. Added table-driven persistence regressions for all requested credential variants; no cancellation lifecycle behavior changed.
 ### Validation Results
-- Focused provider/cancellation tests: passed, 2 files and 50 tests.
-- `npm run test:unit`: passed, 44 files and 480 tests.
+- Focused cancellation-service tests: passed, 1 file and 38 tests.
+- `npm run test:unit`: passed, 44 files and 487 tests.
 - `npm run build`: passed.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
@@ -291,16 +292,16 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-background`
-  commit: `3828b8fccf4260b6736318ff347c8390da97cea0`
+  commit: `c92da43d21d042653338e2000d62327718523d21`
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
-  claim commit: `b9d8955`
-  review handoff commit: `cec6e92ff597dc555c28e940846f5f3a8429644f`
-  metadata finalization commit: `ae22676`
-  final parent branch tip: `0e1d4074bf4e87385fd8ad57c97596f9ef4a50d4`
+  claim commit: `f544549`
+  review handoff commit: `pending final parent metadata commit`
+  metadata/report commit(s): `pending final parent metadata commit`
+  final parent branch tip: `pending final parent metadata commit`
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
   pushed: yes
   submodule gitlink staged: no
