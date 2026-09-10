@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-002
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # ARCH-009-BACKGROUND-001

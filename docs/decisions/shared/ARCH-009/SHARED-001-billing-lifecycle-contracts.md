@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-09-10T10:07:49Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-009-DATABASE-001
@@ -248,14 +248,81 @@ Merged to workspace main: no
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted
+
 ### Review Notes
-None
-### Reviewed Files
-None
+
+Attempt 1 conforms to the exact ARCH-009 Shared 0.9.0 contract.
+
+Verified implementation:
+
+- the preflight package baseline was `0.8.0` in `package.json`;
+- package version is now exactly `0.9.0`;
+- the existing package `exports` map is unchanged;
+- the six pre-existing billing SYSTEM message codes retain their exact values and order;
+- exactly seven ARCH-009 billing SYSTEM message codes are appended:
+  - `BILLING_PLAN_CHANGE_ACTION_REQUIRED`;
+  - `BILLING_CANCELLATION_REQUEST_RECEIVED`;
+  - `BILLING_CANCELLATION_COMPLETED`;
+  - `BILLING_CANCELLATION_REJECTED`;
+  - `BILLING_REFUND_REQUEST_RECEIVED`;
+  - `BILLING_REFUND_COMPLETED`;
+  - `BILLING_REFUND_REJECTED`;
+- those values are included in the canonical Zod billing SYSTEM-message tuple;
+- `SUBSCRIPTION_CANCELLATION_MODES` is exactly the four DATABASE-001 cancellation modes and the Zod schema derives from that tuple;
+- `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS` exactly matches the required mode-to-provider mapping and is statically constrained with `satisfies Readonly<Record<SubscriptionCancellationMode, ShopifySubscriptionCancellationArgs>>`;
+- no consumer-side duplicate of the cancellation boolean mapping exists in the supplied workspace;
+- `availablePurchasedRecoveryCredits` validates every counter as a non-negative integer and computes:
+  `max(granted - committed - reserved - refunding, 0)`;
+- focused tests cover the exact SYSTEM code list, exact mode tuple, exact provider mapping, prohibited prorate+skip-final combinations, required availability examples, clamp-to-zero, and invalid negative/non-integer input;
+- package-lock root version is reconciled to `0.9.0`;
+- the package was not published, which is permitted by this task when publishing is not authorized.
+
+The full-suite observability cancellation is not task-owned. The Shared task branch changes only:
+
+- `package.json`;
+- `package-lock.json`;
+- `src/billing.ts`;
+- `src/billing.test.ts`.
+
+`src/observability/preload.test.ts` and the observability runtime are unchanged from the 0.8.0 base. Focused billing tests, typecheck and build all pass.
+
 ### Validation Reviewed
-None
+
+Agent-reported:
+
+- focused billing tests: 8 passed;
+- `npm run typecheck`: passed;
+- `npm run build`: passed, including declarations;
+- `git diff --check`: passed;
+- full `npm test`: 105 passed, 1 cancelled, 1 skipped due to the pre-existing `src/observability/preload.test.ts` pending-Promise issue.
+
+The supplied archive does not contain `node_modules`, so npm validation was not independently rerun in the architect container. Source, tests and published Git diffs were inspected directly.
+
+### Published Git Verification
+
+- implementation task branch tip: `ecb69e0e581609a47906e8703896d6887512e27a`;
+- implementation branch is one commit ahead of Shared `main`, zero behind;
+- implementation commit is based directly on `b68c51d001e264ddf51f3019d122d70cc420cd08`;
+- cumulative implementation changes are limited to the four declared Shared package/billing files;
+- parent task branch tip: `e96146b56717a5f70f1dc9f05379fe95fd68f3df`;
+- dedicated parent/implementation worktree and start-of-attempt synchronization evidence is present;
+- no implementation or workspace `main` branch was modified;
+- package 0.9.0 was not published.
+
 ### Architecture Conformance
-Pending
+Accepted.
+
 ### Follow-up
-None
+
+The following tasks now satisfy their authoritative YAML dependency gates and are Ready:
+
+- `ARCH-009-SHOPIFY-001`;
+- `ARCH-009-BACKGROUND-001`;
+- `ARCH-009-BACKGROUND-002`.
+
+`ARCH-009-ADMIN-001` remains Pending because it also depends on `ARCH-009-SHOPIFY-001`.
+
+Operational availability is separate from task eligibility: the three Ready consumer tasks require exact Shared 0.9.0 and instruct the executor to STOP if it is unavailable. Since 0.9.0 has not been published, publish/verify the package (when authorized) before claiming those consumer tasks, or they may correctly block at preflight.
+
+Do not start downstream Admin tasks until their individual dependencies are Complete.
