@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-09-10T12:35:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-009-DATABASE-001
@@ -208,21 +208,21 @@ Refund availability warning
 Placeholder parity.
 
 ## Tests
-Ready for architect review
+
 1. paid plan does not mutate Free counter;
-`moda-interact/app/services/billing/billing.service.ts`; `moda-interact/app/routes/app/billing/route.tsx`; `moda-interact/app/services/merchant-support/system-message-actions.ts`; all 20 `moda-interact/app/i18n/locales/*.json` catalogues; focused billing service/UI/i18n tests.
+2. hosted Change plan;
 3. hosted Switch to Free;
-Added hosted Change plan and Switch to Free entry points, durable end-of-cycle cancellation requests, same-shop full-pack refund requests with purchase snapshots, bounded active-purchase loading, pending-refund and pooled-capacity-safe availability UX, post-commit translation dispatch, duplicate/race replay handling, plan-change support CTA mapping, and all required locale meanings with placeholder parity.
+4. no forbidden create APIs;
 5. cancellation always END_OF_CYCLE;
-`npm test`: passed, 28 files / 211 tests / 1 skipped. Focused billing suite: passed, 47 tests. `npm run build`: passed. `npm run prisma:validate`: passed. `git diff --check`: passed. `npm run typecheck`: blocked by 151 existing workspace diagnostics, including unrelated JSX/Redis/shop-service errors and pre-existing billing-test fixture typing errors; no new diagnostics were identified in the changed application files.
+6. immediate mode cannot be supplied;
 7. cancellation replay one row;
-Typecheck remains non-zero because of the repository baseline diagnostics described above; no task behavior was intentionally deferred.
+8. no provider call;
 9. refund ignores client price/credits/meter;
-Shopify-hosted pricing remains the source of truth for plan changes; request-time cancellation/refund flows do not call providers or mutate entitlement counters.
+10. cross-shop purchase rejected;
 11. refund replay one row;
-None within the task scope.
+12. no hold/decrement on request;
 13. availability subtracts refunding;
-None identified; implementation is stopped at `review` per workflow.
+14. plan-change SYSTEM CTA exact;
 15. all 20 locales resolve.
 
 ## Validation
@@ -242,39 +242,49 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
-In Progress — Attempt 2
+Review — Attempt 2
 
 ### Files Changed
 
-Implementation branch `task/ARCH-009-SHOPIFY-001` changes:
+Cumulative implementation branch changes include:
 
 - `app/routes/app/billing/route.tsx`
 - `app/services/billing/billing.service.ts`
+- `app/services/merchant-support/system-message-actions.ts`
 - `app/i18n/locales/*.json` (20 merchant locales)
 - `tests/unit/billing-i18n.test.ts`
+- `tests/unit/billing-ui.test.ts`
+- `tests/unit/services/billing.service.test.ts`
 - `package.json`
 - `package-lock.json`
+- `database` submodule gitlink to accepted ARCH-009 DB revision
 
 ### Work Completed
 
-- Pinned `@modainteract/moda-interact-shared` to exact `0.9.0`.
-- Added Shopify-hosted billing navigation.
-- Added durable merchant cancellation-request persistence.
-- Added durable same-shop recovery-credit refund-request persistence.
-- Added refund-aware purchased-credit availability calculation.
-- Added merchant billing copy across the locale catalogues.
-- Added translation-row creation for new lifecycle SYSTEM messages.
+Attempt 2 added/preserved:
+
+- bounded same-shop ACTIVE recovery-credit purchase loading (`take: 20`, deterministic ordering);
+- separate hosted Change plan and Switch to Free links;
+- refund-aware purchased-credit display including Pending refund;
+- refund-availability warning and pooled-credit-safe full-pack wording;
+- exact `BILLING_PLAN_CHANGE_ACTION_REQUIRED -> /app/billing -> billing.changePlan` mapping;
+- post-transaction translation dispatch;
+- ordinary lifecycle replay handling plus cancellation P2002 recovery;
+- all required locale keys in all 20 catalogues;
+- additional focused service/i18n regressions.
 
 ### Validation Results
 
-Agent-reported:
+Agent-reported Attempt 2:
 
-- `npm test`: 207 passed, 1 skipped.
-- focused billing tests: 43 passed.
-- `npm run build`: passed.
-- `npm run prisma:validate`: passed.
-- `git diff --check`: passed.
-- `npm run typecheck`: nonzero on reported pre-existing dashboard/test diagnostics; no touched billing-route/service diagnostics were reported.
+- `npm test`: 211 passed, 1 skipped;
+- focused billing suite: 47 passed;
+- `npm run build`: passed;
+- `npm run prisma:validate`: passed;
+- `git diff --check`: passed;
+- `npm run typecheck`: nonzero on 151 reported pre-existing workspace diagnostics.
+
+The supplied archive does not contain `node_modules`, so npm commands were not independently rerun in the architect container.
 
 ### Git / VCS
 
@@ -282,30 +292,29 @@ Implementation repository:
 
 - repository: `moda-interact`
 - branch: `task/ARCH-009-SHOPIFY-001`
-- commit: `5a22f51d8af6890f9c1f7a992715b774c55496d0`
+- Attempt 1 commit: `5a22f51d8af6890f9c1f7a992715b774c55496d0`
+- Attempt 2 commit: `2cf3586e46320dea674b113cee94a3d6b6a339dd`
+- Attempt 2 is the direct child of Attempt 1
+- cumulative branch: 2 commits ahead of `main`, 0 behind
 - pushed: yes
-- branch base: `c6790f099c4c115bcdb26eeda20d33a2872060ab`
-- ahead of `main`: 1
-- behind `main`: 0
 
 Parent workspace:
 
 - branch: `task/ARCH-009-SHOPIFY-001`
-- claim commit: `feed089f94433be03e89a82af0a0083d5fe648cb`
-- review handoff commit: `69f861b5907145e8a70f13c6f113b25d67da95b7`
+- Attempt 2 review handoff commit: `930eeb9564627f38a57d2656ec8e4cb48d18d229`
 - pushed: yes
 
-Mandatory physical parent/implementation worktree paths and start-of-attempt synchronization evidence were not preserved in the Attempt 1 Completion Report. Attempt 2 must restore that evidence.
+The Attempt 2 handoff did not preserve the mandatory physical worktree paths, synchronization evidence, or exact baseline typecheck diagnostics in the canonical Completion Report. Attempt 3 must correct that documentation.
 
 ### Deviations
 
-- Full TypeScript validation remains nonzero on reported unrelated baseline diagnostics.
-- The Attempt 1 parent handoff accidentally overwrote the canonical `## Tests` section with Completion Report content and left the actual Completion Report stale.
+- Full TypeScript validation remains nonzero on a reported pre-existing repository baseline.
+- The Attempt 2 parent handoff again overwrote the canonical `## Tests` section instead of updating this Completion Report.
 
 ### Assumptions
 
-- `/app/billing/select` remains the accepted internal bridge to Shopify-hosted App Pricing.
-- Shared `0.9.0` is available from npm.
+- Shared `0.9.0` remains available from npm.
+- The `database` gitlink points at the accepted ARCH-009 database revision needed by the Shopify consumer.
 
 ### Unresolved Issues
 
@@ -323,252 +332,211 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 establishes much of the merchant lifecycle request plumbing, but it does not yet satisfy the authoritative SHOPIFY-001 contract.
+Attempt 2 closes most of the Attempt 1 implementation gaps. The merchant UI/i18n, bounded purchase query, support CTA and post-commit dispatch placement are now materially correct. The task is not yet acceptable because two lifecycle-hardening points and the authoritative behavioural/reporting contract remain incomplete.
 
-#### 1. Refund purchase list is not bounded
+#### 1. Cancellation P2002 recovery must reuse the exact attempted request key
 
-The task explicitly requires a bounded same-shop purchase list.
-
-Current code uses:
-
-```ts
-recoveryCreditPurchase.findMany({
-  where: { shopId, status: "ACTIVE" },
-  orderBy: { createdAt: "desc" },
-  include: { usageEvent: true, refund: true },
-})
-```
-
-with no `take`.
-
-Attempt 2 must:
-
-- introduce a fixed merchant refund-list bound of **20**;
-- query only `shopId + ACTIVE`;
-- use deterministic ordering:
-  `createdAt DESC, id DESC`;
-- keep the `usageEvent` and `refund` includes;
-- add a focused regression proving the DB query is same-shop, ACTIVE-only, `take: 20`, and deterministically ordered.
-
-Do not add client-side filtering as a substitute for the DB bound.
-
-#### 2. Required merchant meanings are missing from the UI/i18n contract
-
-The task requires all of these merchant-visible meanings:
+The transaction correctly derives:
 
 ```text
-Change plan
-Switch to Free
-Request cancellation
-Cancellation requested
-Request refund
-Refund requested
-Pending refund
-Full-pack refund only
-Refund availability warning
+subscription-cancel:<shopId>:<providerSubscriptionId>
 ```
 
-Attempt 1 adds some new billing copy, but three required meanings are absent entirely:
+from the validated durable Subscription row.
+
+However, on `P2002`, the catch block currently performs a **new Subscription read** and reconstructs the request key from whatever `providerSubscriptionId` exists at that later moment.
+
+That is not deterministic. If the subscription projection changes between the aborted transaction and race recovery, the code can look up a different key and fail to return the request that actually won the uniqueness race.
+
+Attempt 3 must:
+
+- capture the exact `requestKey` used by the transaction in an outer variable before the create attempt;
+- on `P2002`, re-read `subscriptionCancellationRequest` by that exact captured key;
+- do not re-read Subscription merely to reconstruct the key;
+- if no exact attempted key is available, rethrow rather than inventing one;
+- preserve the current request-key format and persistence model;
+- add a regression where the Subscription's provider id changes after the simulated `P2002`; recovery must still return the winner under the original attempted key.
+
+Refund replay already has a stable key derived only from immutable `purchaseId`; preserve that behavior.
+
+#### 2. Post-commit translation dispatch must be truly best-effort
+
+Attempt 2 correctly moved `dispatchTranslation(...)` outside `$transaction(...)`.
+
+But both lifecycle methods still directly `await` the injected dispatcher. If that dispatcher rejects, the durable cancellation/refund request has already committed but the merchant action rejects as though the operation failed.
+
+The established merchant-support contract treats translation queue dispatch as a best-effort hint after durable state commit.
+
+Attempt 3 must:
+
+- keep request + SYSTEM message + optional translation row inside the transaction;
+- keep dispatch strictly after commit;
+- wrap lifecycle translation dispatch as best-effort so a queue/dispatcher failure does **not** reject an already-committed cancellation/refund request;
+- do not delete or roll back the persisted translation row;
+- add focused regressions for cancellation and refund proving a rejecting dispatcher still returns the committed request.
+
+Do not move queue dispatch back into the transaction.
+
+#### 3. The authoritative behavioural test matrix remains incomplete
+
+Attempt 2 added useful tests for:
+
+- bounded active purchase loading;
+- cancellation persistence and post-commit dispatch ordering;
+- refund snapshot + ordinary replay;
+- cancellation P2002 recovery;
+- locale presence/placeholder parity.
+
+However, the task explicitly requires all 15 behavioural items, and several remain untested in tracked runtime regressions.
+
+Attempt 3 must add focused coverage for the following missing cases:
+
+1. **paid plan does not mutate Free counter**  
+   Exercise the paid billing lifecycle/read/request path and assert no Free-counter `update`/`upsert` mutation is performed.
+
+2. **hosted Change plan**  
+   Verify the merchant Billing surface exposes Change plan to the existing `/app/billing/select` hosted-pricing bridge.
+
+3. **hosted Switch to Free**  
+   Verify a paid merchant gets a distinct Switch to Free action targeting the same hosted-pricing bridge.
+
+4. **no forbidden create APIs**  
+   Keep a static regression proving the plan-change implementation contains none of:
+   `appSubscriptionCreate`, `billing.request`, `appPurchaseOneTimeCreate`.
+
+5. **immediate mode cannot be supplied**  
+   Exercise the actual route `action` with forged cancellation fields such as `mode=IMMEDIATE_PRORATED`, provider id and plan. Verify the service call receives only the accepted action contract and persistence remains `END_OF_CYCLE`.
+
+6. **ordinary cancellation replay yields one row/message**  
+   Call cancellation twice for the same subscription identity and prove only one request and one lifecycle SYSTEM message/translation are created.
+
+7. **no provider call for cancellation**  
+   Inject/spy on the billing provider and prove merchant cancellation request performs no Partner/provider operation.
+
+8. **refund ignores forged client billing fields**  
+   Exercise the route action with forged `credits`, `price`, `plan`, `meter`, `billingPeriod`, and `settlementMode`; prove these are not passed to the service and persisted snapshots come from DB truth.
+
+9. **cross-shop refund rejection**  
+   Add an exact service regression for a purchase belonging to another shop.
+
+10. **refund P2002 race recovery**  
+    Simulate a uniqueness race and prove the same-shop winning refund request is returned rather than surfacing `P2002`.
+
+11. **no hold/decrement/correction/provider call on refund request**  
+    Prove request-time refund persistence does not mutate purchased-credit counters, create correction UsageEvents, select settlement, or call a provider.
+
+12. **availability subtracts `refundingQuantity` in this consumer**  
+    Exercise `getMerchantBillingState` with a purchased-credit counter containing a non-zero refunding quantity and assert the returned available balance is reduced accordingly.
+
+13. **exact plan-change SYSTEM CTA**  
+    Extend `billing-ui.test.ts` to assert:
+    ```ts
+    getMerchantSystemMessageAction("BILLING_PLAN_CHANGE_ACTION_REQUIRED")
+    ```
+    returns exactly:
+    ```ts
+    { href: "/app/billing", labelKey: "billing.changePlan" }
+    ```
+    while unknown codes remain non-actionable.
+
+14. Preserve the existing **all 20 locales + placeholder parity** coverage.
+
+These tests may be grouped efficiently; one test can satisfy multiple matrix items if its assertions genuinely cover each behavior.
+
+#### 4. Parent task document / Completion Report is again corrupted
+
+The Attempt 2 handoff commit wrote report text directly into the authoritative `## Tests` numbered list and left the actual Completion Report describing Attempt 1.
+
+The published parent diff shows entries such as:
 
 ```text
-Switch to Free
-Pending refund
-Refund availability warning
-```
-
-The purchased-credit state already contains `refundingQuantity`, but the route does not display it.
-
-Attempt 2 must:
-
-- add a localized **Switch to Free** CTA for a paid merchant;
-- route it to the same existing `/app/billing/select` Shopify-hosted pricing bridge;
-- keep **Change plan** as a separate hosted-pricing action;
-- visibly display the five purchased-credit values required by the task:
-  Granted, Committed, Reserved, Pending refund, Available;
-- ensure the displayed Available value remains the Shared `availablePurchasedRecoveryCredits(...)` result;
-- add a localized refund-availability warning explaining that approval requires enough available purchased credits for the complete pack;
-- correct the current `billing.fullPackRefundOnly` wording so it does **not** claim that a particular pack is "unused". ARCH-009 uses pooled purchased-credit capacity and deliberately does not invent per-pack credit provenance. Use semantics equivalent to:
-  `Only complete recovery-credit packs can be refunded.`
-- add the required keys/copy to all 20 merchant locale catalogues and preserve ICU placeholder parity.
-
-Suggested stable keys:
-
-```text
-billing.switchToFree
-billing.pendingRefund
-billing.refundAvailabilityWarning
-```
-
-Existing locale fallback policy may be used where a maintained translation is unavailable, but every locale catalogue must contain the keys.
-
-#### 3. Required plan-change SYSTEM CTA is absent
-
-The authoritative contract requires:
-
-```text
-BILLING_PLAN_CHANGE_ACTION_REQUIRED
--> /app/billing
--> Change plan
-```
-
-The current `system-message-actions.ts` has no case for this ARCH-009 code, and its `labelKey` union cannot currently return `billing.changePlan`.
-
-Attempt 2 must:
-
-- add `billing.changePlan` to the allowed `MerchantSystemMessageAction.labelKey` union;
-- map `BILLING_PLAN_CHANGE_ACTION_REQUIRED` exactly to:
-  `{ href: "/app/billing", labelKey: "billing.changePlan" }`;
-- preserve existing mappings;
-- preserve unknown-code => `null`;
-- add a focused exact regression.
-
-#### 4. Translation dispatch occurs before transaction commit
-
-`createBillingSystemMessage(...)` currently creates a durable translation row and immediately calls `dispatchTranslation(...)` while still inside the cancellation/refund database transaction.
-
-That violates the existing merchant-support invariant: the queue hint is best-effort and the durable translation state must be committed before enqueue.
-
-Attempt 2 must restructure the lifecycle request flow so:
-
-1. request row + SYSTEM message + optional translation row are created atomically in the DB transaction;
-2. the transaction returns the persisted request plus an optional `translationId`;
-3. only **after `$transaction(...)` resolves successfully** may `dispatchTranslation(translationId)` run;
-4. replay of an existing request does not create or dispatch a second SYSTEM message/translation;
-5. queue failure remains best-effort and does not roll back a committed lifecycle request.
-
-Add a focused ordering/idempotency regression.
-
-#### 5. Cancellation/refund replay is not race-safe
-
-Both new methods perform:
-
-```text
-find existing
-then create
-```
-
-inside a transaction, but unlike the existing recovery-credit-pack path they do not recover from a `P2002` uniqueness race.
-
-Two concurrent merchant submissions can therefore produce one durable row but one user-visible failure.
-
-Attempt 2 must:
-
-- preserve the existing unique `requestKey` identities;
-- recover a `P2002` race by re-reading the winner outside the aborted transaction;
-- for refunds, retain the same-shop check on replay;
-- return the already-persisted request rather than surfacing a duplicate-request error;
-- guarantee only the winning transaction creates the lifecycle SYSTEM message;
-- add replay regressions that cover both ordinary replay and the uniqueness-race path.
-
-Do not introduce a second request identity or additional persistence field.
-
-#### 6. The required behavioural test matrix was not implemented
-
-The authoritative task explicitly lists 15 required tests. The published implementation commit changes only `tests/unit/billing-i18n.test.ts`; it does not add tracked cancellation/refund/service/CTA behaviour tests.
-
-Attempt 2 must add focused tracked regressions covering **all 15 authoritative test items**:
-
+## Tests
+Ready for architect review
 1. paid plan does not mutate Free counter;
-2. hosted Change plan;
+<report prose>
 3. hosted Switch to Free;
-4. no forbidden `appSubscriptionCreate`, `billing.request`, or `appPurchaseOneTimeCreate` plan-change implementation;
-5. cancellation persists `END_OF_CYCLE`;
-6. browser-supplied immediate mode cannot alter the persisted cancellation mode;
-7. cancellation replay yields one row;
-8. merchant cancellation makes no Partner/provider cancellation call;
-9. refund ignores forged client price/credits/meter/billing-period/settlement values and snapshots DB truth;
-10. cross-shop purchase is rejected;
-11. refund replay yields one row;
-12. refund request performs no counter hold/decrement and no correction/provider call;
-13. merchant purchased-credit availability subtracts `refundingQuantity`;
-14. `BILLING_PLAN_CHANGE_ACTION_REQUIRED` CTA is exact;
-15. all 20 locale catalogues resolve the task-visible keys with placeholder parity.
+...
+```
 
-Also add explicit coverage for the bounded refund list and committed-before-enqueue translation ordering from this Architect Review.
+This overlay restores the canonical test matrix and reconstructs the Attempt 2 report.
 
-Tests must exercise the actual service/route/action contracts, not merely search for source strings where runtime behaviour can be tested.
+Attempt 3 must update the **actual `## Completion Report` only** and preserve all task-definition sections.
 
-#### 7. Parent task document / Completion Report was corrupted
+The final report must include:
 
-The published parent handoff inserted report material into the canonical `## Tests` section and left the actual `## Completion Report` at `In Progress / None`.
-
-This overlay restores the canonical test list and reconstructs the Attempt 1 report, but Attempt 2 must finish the workflow properly.
-
-Attempt 2 Completion Report must record:
-
-- exact files changed;
-- work completed;
-- all validation results;
-- exact TypeScript baseline diagnostics if `npm run typecheck` remains nonzero, with evidence that no touched ARCH-009 billing file introduces a new diagnostic;
-- physical canonical parent task worktree path;
-- physical canonical implementation task worktree path;
+- exact Attempt 3 files changed;
+- exact work completed;
+- full/focused test counts;
+- build/Prisma/diff results;
+- exact `npm run typecheck` diagnostics if still nonzero;
+- evidence that the same diagnostics exist on the synchronized baseline or otherwise pre-date this task;
+- evidence that no changed ARCH-009 application/test file adds a new diagnostic;
+- physical canonical parent worktree path;
+- physical canonical implementation worktree path;
 - both branch names;
 - start-of-attempt synchronization evidence;
-- implementation commit;
-- parent review-handoff commit;
-- deviations/unresolved issues.
+- Attempt 3 implementation commit;
+- final parent review-handoff commit;
+- deviations, unresolved issues and architecture concerns.
 
-Do not overwrite task-definition sections when updating the Completion Report, and preserve this Architect Review unchanged until the next architect decision.
+Do not rewrite `## Tests`, `## Validation`, `## Stop`, or this Architect Review when preparing the Completion Report.
 
 ### Positive Findings To Preserve
 
-The following implementation decisions are correct and should not regress:
+Attempt 2 correctly implements and must preserve:
 
-- exact Shared dependency is pinned to `0.9.0`;
-- hosted App Pricing remains the plan-change mechanism;
-- no `appSubscriptionCreate`, `billing.request`, or `appPurchaseOneTimeCreate` plan creation path was introduced;
-- cancellation form sends only intent + server-generated request UUID;
-- server derives cancellation provider/plan identity from durable Subscription state;
-- cancellation persists `MERCHANT_UI`, snapshot identity, `END_OF_CYCLE`, and `REQUESTED`;
-- cancellation performs no Partner cancellation call;
-- refund form sends only intent + server-generated refund UUID + purchase ID;
-- refund server reloads purchase + UsageEvent and enforces same-shop + ACTIVE;
-- refund snapshots durable UsageEvent/plan/meter/credits state;
-- refund request performs no hold, decrement, negative UsageEvent, settlement selection, or provider call;
-- Shared refund-aware availability is already used in `getMerchantBillingState`;
-- lifecycle SYSTEM messages are persisted through the merchant support domain;
-- all 20 locale files remain structurally present;
-- build and Prisma validation were reported successful;
-- implementation branch is one commit ahead of main and zero behind;
-- no downstream ADMIN task was started.
+- exact Shared dependency `0.9.0`;
+- accepted ARCH-009 database gitlink adoption;
+- hosted Shopify App Pricing rather than Manual Billing APIs;
+- bounded refund list: same-shop + ACTIVE, `take: 20`, `createdAt DESC, id DESC`;
+- separate Change plan and Switch to Free links to `/app/billing/select`;
+- purchased-credit display includes Granted, Committed, Reserved, Pending refund and Available;
+- Available is computed through Shared refund-aware availability;
+- pooled-credit-safe full-pack wording no longer claims per-pack unused provenance;
+- refund-availability warning is present;
+- all 20 locale catalogues contain the new keys with placeholder parity;
+- `BILLING_PLAN_CHANGE_ACTION_REQUIRED` implementation maps to `/app/billing` + `billing.changePlan`;
+- cancellation request remains server-derived, `MERCHANT_UI`, `END_OF_CYCLE`, `REQUESTED`, with no cancellation provider call in production code;
+- refund request remains same-shop + ACTIVE and snapshots DB truth;
+- refund request performs no hold/decrement/correction/provider settlement in production code;
+- request/SYSTEM-message/translation persistence remains atomic;
+- translation dispatch has been moved after transaction commit;
+- ordinary refund replay and cancellation uniqueness-race recovery are present;
+- no schema changes were introduced in the Shopify repository.
 
 ### Validation Reviewed
 
-Agent-reported Attempt 1:
+Agent-reported Attempt 2:
 
 ```text
-npm test:               207 passed, 1 skipped
-focused billing tests:  43 passed
+npm test:               211 passed, 1 skipped
+focused billing suite:  47 passed
 npm run build:          passed
 npm run prisma:validate passed
 git diff --check:       passed
-npm run typecheck:      nonzero on reported unrelated baseline diagnostics
+npm run typecheck:      nonzero on 151 reported baseline diagnostics
 ```
 
-The supplied archive does not contain `node_modules`, so npm validation was not independently rerun in the architect container.
+The supplied review archive does not contain `node_modules`, so npm commands were not independently rerun in the architect container.
 
-Architect source review confirmed:
+Architect static review independently confirmed:
 
-- 20 merchant locale files exist;
-- `billing.switchToFree` is absent from all 20;
-- `billing.pendingRefund` is absent from all 20;
-- `billing.refundAvailabilityWarning` is absent from all 20;
-- no tracked behavioural test file other than `billing-i18n.test.ts` changed in the implementation commit;
-- `system-message-actions.ts` does not implement the required ARCH-009 plan-change action;
-- recovery-credit purchase lookup has no server-side bound;
-- translation dispatch is currently invoked from inside the lifecycle transaction.
+- all 20 locale files contain the required new keys;
+- ICU placeholder sets match the English catalogue for the task-visible keys;
+- the refund list is DB-bounded to 20 and deterministically ordered;
+- the exact plan-change CTA mapping exists in production source;
+- `dispatchTranslation` now occurs after `$transaction` resolves;
+- only four new lifecycle-focused service tests were added in Attempt 2, leaving the matrix above incomplete.
 
 ### Published Git Verification
 
-- implementation branch tip:
+- Attempt 2 implementation:
+  `2cf3586e46320dea674b113cee94a3d6b6a339dd`;
+- Attempt 2 is exactly one commit after Attempt 1:
   `5a22f51d8af6890f9c1f7a992715b774c55496d0`;
-- implementation branch base:
-  `c6790f099c4c115bcdb26eeda20d33a2872060ab`;
-- implementation branch: one commit ahead of `main`, zero behind;
-- parent claim commit:
-  `feed089f94433be03e89a82af0a0083d5fe648cb`;
-- parent review-handoff / branch-tip commit:
-  `69f861b5907145e8a70f13c6f113b25d67da95b7`.
+- cumulative Shopify task branch is 2 commits ahead of `main`, 0 behind;
+- parent Attempt 2 handoff:
+  `930eeb9564627f38a57d2656ec8e4cb48d18d229`.
 
 ### Architecture Conformance
 
@@ -576,25 +544,25 @@ Changes required.
 
 ### Follow-up
 
-Attempt 2 must remain on the SAME `ARCH-009-SHOPIFY-001` task and mirrored `task/ARCH-009-SHOPIFY-001` branches.
+Attempt 3 must remain on the SAME `ARCH-009-SHOPIFY-001` task and mirrored `task/ARCH-009-SHOPIFY-001` branches.
 
-After corrections:
+Attempt 3 scope is deliberately narrow:
 
-1. synchronize both canonical task worktrees;
-2. implement only the corrections above;
-3. run the authoritative 15-test matrix plus the new bounded-list, replay-race and post-commit-translation regressions;
-4. rerun:
+1. make cancellation P2002 recovery use the exact attempted request key;
+2. make post-commit lifecycle translation dispatch genuinely best-effort;
+3. complete the missing behavioural regression matrix;
+4. repair the actual Completion Report and mandatory worktree/typecheck-baseline evidence;
+5. do not churn the already-correct UI/i18n/schema contracts;
+6. rerun:
    - `npm test`;
-   - focused billing tests;
+   - the focused ARCH-009 billing tests;
    - `npm run typecheck`;
    - `npm run build`;
    - `npm run prisma:validate`;
    - `git diff --check`;
-5. if typecheck remains nonzero only because of unchanged baseline files, record exact diagnostics and baseline evidence rather than changing unrelated code;
-6. update the actual Completion Report without modifying task-specification sections;
-7. set this same task to `review`;
+7. return this same task to `review`;
 8. STOP.
 
 `ARCH-009-ADMIN-001` remains Pending until SHOPIFY-001 is architect-accepted Complete.
 
-`ARCH-009-BACKGROUND-001` and `ARCH-009-BACKGROUND-002` are independent of this rework and may continue under their own Ready task gates.
+`ARCH-009-BACKGROUND-001` and `ARCH-009-BACKGROUND-002` remain independent and may continue under their own task gates.
