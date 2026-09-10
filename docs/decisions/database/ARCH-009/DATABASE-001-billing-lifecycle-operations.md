@@ -393,7 +393,7 @@ Complete report -> review -> push mirrored task branches -> architect -> STOP.
 - Attempt 2 `npm run erd:puml`: passed; generated output was unchanged.
 - Attempt 2 `git diff --check`: passed.
   commit: `6e91680`
-  commit: `PENDING` (Attempt 2 review handoff commit)
+  commit: `6991efb`
 - `docs/generated/prisma-erd.puml`
 ### Unresolved Issues
 None
