@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-10T14:57:17Z
@@ -55,74 +55,60 @@ Do not introduce:
 appSubscriptionCreate
 billing.request
 appPurchaseOneTimeCreate
-```
+Ready for architect review — Attempt 3
 
 Merchant chooses/approves plan in Shopify.
 
-## Cancellation request
+Attempt 3 changed exactly:
 
-Merchant exposes only:
-
-```text
-Request cancellation at end of billing cycle
-```
-
-Form:
-
-```text
-intent = REQUEST_SUBSCRIPTION_CANCELLATION
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/tests/unit/billing-ui.test.ts`
+- `moda-interact/tests/unit/services/billing.service.test.ts`
 requestId = server/loader UUID
 ```
 
-Browser cannot submit mode/provider ID/plan.
-
-Server reloads Shop+Subscription and requires:
-
-```text
-ACTIVE or TRIALING
-providerSubscriptionId non-null
-observedShopifyPlanHandle non-null
-```
-
-Create/replay key:
+- preserved the Attempt 2 billing UX, hosted Shopify App Pricing bridge, bounded purchase query, refund-aware display, i18n catalogues, CTA mapping, and durable lifecycle persistence;
+- cancellation P2002 recovery now replays by the exact request key attempted before the transaction race, even if the Subscription projection changes;
+- cancellation and refund translation dispatch is best-effort after commit, without rolling back durable request/message/translation rows;
+- added route regressions for hosted actions, forbidden APIs, forged cancellation/refund fields, and the exact plan-change CTA;
+- added service regressions for paid-state counter safety, cancellation replay/provider isolation/key-drift recovery, refund ownership/race recovery, best-effort dispatch, refunding availability, and request-time mutation isolation.
 
 ```text
 subscription-cancel:<shopId>:<providerSubscriptionId>
-```
-
-Persist:
-
-```text
-source MERCHANT_UI
-providerSubscriptionIdSnapshot
-planHandleSnapshot
-currentPeriodEndSnapshot
-mode END_OF_CYCLE
+- `npm test`: 224 passed, 1 skipped across 28 passed and 1 skipped test files;
+- focused billing service/UI suites: 57 passed;
+- `npm run build`: passed;
+- `npm run prisma:validate`: passed;
+- `git diff --check`: passed;
+- `npm run typecheck`: exit 2 with 151 diagnostics;
+- a clean detached worktree at pre-edit implementation commit `2cf3586` also reported exactly 151 diagnostics; normalized comparison found no new diagnostic set from Attempt 3, and changed ARCH-009 application/test files added no new diagnostic category;
+- build emitted only existing dependency/React Router warnings.
 status REQUESTED
 ```
 
 Create exactly one:
 
 ```text
+- physical canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-009-SHOPIFY-001`
 BILLING_CANCELLATION_REQUEST_RECEIVED
 ```
 
-SYSTEM message.
+- Attempt 3 implementation commit: `4201d2b`
 
 No Partner call.
 
 ## Refund request
 
+- physical canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-009-SHOPIFY-001`
 Bounded same-shop purchase list.
-
-Refund action only for ACTIVE purchase.
-
-Form:
+- Attempt 3 start synchronization: parent was clean at `c78ee88` after the claim; implementation was clean and at `2cf3586`, with both canonical worktrees on `task/ARCH-009-SHOPIFY-001` and no uncommitted changes before implementation edits.
+- Attempt 3 parent review-handoff commit: recorded in the follow-up parent metadata commit after this report update.
+- pushed: pending final parent report/status push.
 
 ```text
 intent = REQUEST_RECOVERY_CREDIT_REFUND
 refundRequestId = server/loader UUID
-purchaseId
+- No implementation or schema deviation was introduced in Attempt 3.
 ```
 
 Ignore client:
@@ -295,7 +281,7 @@ Implementation repository:
 - Attempt 1 commit: `5a22f51d8af6890f9c1f7a992715b774c55496d0`
 - Attempt 2 commit: `2cf3586e46320dea674b113cee94a3d6b6a339dd`
 - Attempt 2 is the direct child of Attempt 1
-- cumulative branch: 2 commits ahead of `main`, 0 behind
+- cumulative branch: 3 commits ahead of `main`, 0 behind
 - pushed: yes
 
 Parent workspace:
@@ -318,11 +304,11 @@ The Attempt 2 handoff did not preserve the mandatory physical worktree paths, sy
 
 ### Unresolved Issues
 
-See Architect Review.
+- The synchronized repository typecheck baseline remains nonzero with 151 existing diagnostics; no new Attempt 3 diagnostics were identified.
 
 ### Architectural Concerns
 
-See Architect Review.
+- None introduced by Attempt 3. Architect review remains authoritative below.
 
 ## Architect Review
 
