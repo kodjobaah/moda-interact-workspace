@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: copilot
 claimed_at: 2026-09-10T02:00:00Z
@@ -22,35 +22,56 @@ created: 2026-09-09
 updated: 2026-09-10
 ---
 
-# ARCH-008-ADMIN-003: Simplify Tenant Directory billing inspection
+Implementation complete; awaiting `moda_architect` review.
 
 ## Architecture
 
-Canonical: `docs/architecture/ARCH-008-shopify-app-pricing-conformance.md`
+- `src/app/(protected)/page.tsx`
+- `src/components/admin/billing-drawers.tsx`
+- `src/components/admin/tenant-billing.tsx`
+- `src/components/admin/tenant-detail-panel.tsx`
+- `src/components/admin/tenant-table.tsx`
+- `src/i18n/locales/en.json`
+- `src/i18n/required-keys.ts`
+- `src/lib/admin/billing.ts`
+- `tests/security/admin-billing-visibility.test.mjs`
+- `tests/security/admin-tenant-billing-progressive-disclosure.test.mjs`
 
 ## Objective
 
-Replace the Tenant Directory Billing tab's single stacked diagnostic surface with four tenant-scoped URL-backed sub-tabs so support operators see plan/health first and open usage/provider/activity detail only when needed.
+- Synchronized the Admin implementation worktree to `origin/main` at `2d254c7` after ADMIN-002 was merged.
+- Replaced the monolithic Tenant Directory Billing surface with URL-backed `Overview`, `Usage`, `Shopify`, and `Activity` sub-tabs.
+- Kept Activity pack/event reads on demand, with independent pagination and tenant-scoped detail reads.
+- Reused the ADMIN-002 recovery purchase and billing event drawers, including tenant-route return paths.
+- Preserved top-level tenant navigation and cleared billing-only URL state when switching top-level tabs or tenants.
+- Kept overview/provider fields concise and moved advanced limits and low-level event diagnostics behind progressive disclosure/drawers.
+- Published implementation branch `task/ARCH-008-ADMIN-003` at commit `aa11e5a`.
 
 ## Current inspected baseline
 
-The supplied snapshot currently renders all of the following together in `src/components/admin/tenant-billing.tsx`:
+- Focused suite: 31 passed, 0 failed.
+- Full `npm test`: 140 passed, 0 failed, 3 skipped.
+- `npx tsc --noEmit`: passed.
+- `npm run lint`: passed with 2 pre-existing warnings in `src/components/admin/queue-monitor.tsx`.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm run build`: reached Next.js optimized production build, then the local process exited 130 before completion.
 
 - subscription and billing period;
 - entitlement usage and limits;
-- billing policy override;
+- Production build did not complete in this environment; no source error was emitted before exit 130.
 - Shopify reconciliation;
 - a wide App Event ledger.
 
-`src/app/(protected)/page.tsx` selects the top-level tenant tab and fetches tenant billing, while `src/components/admin/tenant-detail-panel.tsx` owns `Administration | Recovery Logs | Billing` navigation.
+- The tracked `database` submodule is initialized in the validation worktree; Prisma generation and validation use `database/prisma/schema.prisma`.
 
 That top-level navigation stays unchanged.
 
-## Required preflight
+- Full production build completion remains to be confirmed by the reviewer/CI environment.
 
 1. Work in launcher-resolved ADMIN-003 task worktree after synchronisation.
 2. Confirm ADMIN-002 is Complete and reusable Admin billing drawer/tab primitives exist.
-3. Confirm Tenant Billing current equivalent of:
+None identified. No schema, mutation, entitlement-calculation, or provider-call architecture changes were introduced.
    - `src/app/(protected)/page.tsx`
    - `src/components/admin/tenant-detail-panel.tsx`
    - `src/components/admin/tenant-billing.tsx`
