@@ -275,9 +275,9 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-002-process-recovery-credit-refunds.md`
-  commit: pending report commit
+  commit: `ea9d28e5013845f98d0985a5ff67cd869f906d58`
   remote branch: `origin/task/ARCH-009-BACKGROUND-002`
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
