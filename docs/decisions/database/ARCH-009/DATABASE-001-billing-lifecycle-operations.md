@@ -381,41 +381,42 @@ git diff --check
 No app logic/provider/UI/partial refund/price field.
 
 ## Stop
-Ready for Review
 Complete report -> review -> push mirrored task branches -> architect -> STOP.
+## Completion Report
+
+### Status
+Ready for Review
+
+### Files Changed
+- `prisma/schema.prisma`
+- `prisma/migrations/20260910030000_add_billing_lifecycle_operations/migration.sql`
+- `scripts/validate-billing-lifecycle-schema.mjs`
+- `scripts/validate-recovery-credit-pack-schema.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
+
+### Work Completed
+- Attempt 1 added the exact ARCH-009 durable schema, migration, relation arrays, validator, package script, and ERD.
 - Attempt 2 strengthened `scripts/validate-billing-lifecycle-schema.mjs` with exact ordered enum membership assertions for all five new enums.
 - Attempt 2 added exact migration SQL assertions for the three appended enum values and five newly-created enum value lists.
 
-- Attempt 2 `npm run prisma:validate`: passed.
-- Attempt 2 `npm run prisma:generate`: passed with Prisma 6.19.3.
-- Attempt 2 `npm run test:recovery-credit-packs`: passed.
-- Attempt 2 `npm run test:billing-lifecycle`: passed with exact enum and migration assertions.
-- Attempt 2 `npm run erd:puml`: passed; generated output was unchanged.
-- Attempt 2 `git diff --check`: passed.
-  commit: `6e91680`
-  commit: `6991efb`
-- `docs/generated/prisma-erd.puml`
-### Unresolved Issues
-None
-- Added the exact billing lifecycle request/refund enums and appended `REFUNDED`, `SUBSCRIPTION_CANCELLATION`, and `RECOVERY_CREDIT_REFUND` values.
-- Added `ShopEntitlementCounter.refundingQuantity` with a zero default.
-- Added durable `SubscriptionCancellationRequest` and `RecoveryCreditRefund` models with explicit approval, provider, retry, idempotency, uniqueness, indexing, and relation boundaries.
-- Added the single `add_billing_lifecycle_operations` migration without modifying historical migrations.
-- Added the billing lifecycle schema validator and package script; updated the existing recovery-credit validator to tolerate Prisma formatter alignment.
-- Regenerated the PlantUML ERD with the new lifecycle schema.
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed with Prisma 6.19.3.
 - `npm run test:recovery-credit-packs`: passed.
-- `npm run test:billing-lifecycle`: passed.
-- `npm run erd:puml`: passed.
-- `git diff --check`: passed after normalizing generator-emitted trailing whitespace.
+- `npm run test:billing-lifecycle`: passed with exact enum and migration assertions.
+- `npm run erd:puml`: passed; generated output was unchanged in Attempt 2.
+- `git diff --check`: passed.
+
 ### Deviations
-Prisma formatting aligns existing fields with additional whitespace; the existing recovery-credit validator was made whitespace-tolerant so it continues to validate the same contract. No schema scope was changed.
+Attempt 2 was validator-only as requested. No schema, migration, or ERD changes were needed.
+
 ### Assumptions
 The tracked database repository remains the authoritative owner of the Prisma schema and migration history; no live/shared database deployment was performed.
+
 ### Unresolved Issues
 None
+
 ### Architectural Concerns
 None
 
@@ -434,22 +435,22 @@ Physical worktree isolation:
   another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
+  parent remote task branch fast-forwarded: already-current
   parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
+  implementation remote task branch fast-forwarded: already-current
   implementation origin/main incorporated: already-current
 
 Implementation repository:
   repository: `moda-interact-database`
-  commit: `98bf7e1`
+  commit: `6e91680`
   remote branch: `origin/task/ARCH-009-DATABASE-001`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/database/ARCH-009/DATABASE-001-billing-lifecycle-operations.md`
-  commit: `54409e6`
+  commit: `PENDING` (final Attempt 2 report commit)
   remote branch: `origin/task/ARCH-009-DATABASE-001`
-  pushed: yes
+  pushed: pending
   submodule gitlink staged: no
 
 Merged to implementation main: no
