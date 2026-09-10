@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-002
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # ARCH-009-BACKGROUND-002
@@ -32,6 +32,9 @@ updated: 2026-09-09
 Full-pack refund hold, correction and exactly-once finalization.
 
 ## Availability
+
+Registry availability was confirmed on 2026-09-10 for `@modainteract/moda-interact-shared@0.9.0`.
+The executor must still resolve and verify exactly `0.9.0` during task preflight.
 
 All touched purchased-credit availability uses Shared 0.9.0:
 
