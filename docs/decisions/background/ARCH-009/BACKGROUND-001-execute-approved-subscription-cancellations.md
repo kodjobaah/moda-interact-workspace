@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-10T22:06:13Z
@@ -245,25 +245,25 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 ### Files Changed
- - `src/services/subscription-cancellation.service.ts`
- - `tests/unit/providers/shopify-partner-billing.provider.test.ts`
- - `tests/unit/services/subscription-cancellation.service.test.ts`
+- `src/services/subscription-cancellation.service.ts`
+- `tests/unit/services/subscription-cancellation.service.test.ts`
 ### Work Completed
-- Corrected cancellation claims to compare the selected request status as part of the `id + version + status` CAS.
-- Cleared stale `providerErrorCode` when a successful Partner mutation enters `PROVIDER_ACCEPTED`.
-- Added Attempt 2 regressions for exact claim races, batch/due ordering, confirmation/no-contract rules, retry identity preservation, stale lease paths, exactly-once completion replay, HTTP/GraphQL/configuration/invalid-mode classification, and secret-safe provider errors.
+- Attempt 3 completed the six Architect Review proof areas with a stateful Prisma-shaped lifecycle fake covering stale lease recovery, provider verification, due/future RETRYABLE selection, confirmation outcomes, deterministic completion messaging, approved identity snapshots, and secret-safe persisted provider failures.
+- Added explicit confirmation coverage for END_OF_CYCLE and all three immediate cancellation modes, including no-contract and still-active provider states.
+- Added exact due selection assertions for `nextAttemptAt = null` or `nextAttemptAt <= now`, and replay assertions keyed by `createMerchantBillingSystemSourceKey`.
+- A new secret-safety regression exposed that arbitrary provider error summaries were persisted verbatim; bounded credential-labelled values are now redacted before persistence. No other production behavior changed.
 ### Validation Results
-- Focused provider/cancellation tests: passed, 2 files and 34 tests.
-- `npm run test:unit`: passed, 44 files and 464 tests.
+- Focused provider/cancellation tests: passed, 2 files and 50 tests.
+- `npm run test:unit`: passed, 44 files and 480 tests.
 - `npm run build`: passed.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
 ### Deviations
-None.
+The Attempt 3 scope was test-only unless a regression exposed a genuine defect. The secret-summary regression exposed a real persistence safety defect, so `errorSummary` now redacts credential-labelled values before applying the existing 2,000-character bound.
 ### Assumptions
-The Attempt 1 implementation and accepted Shared/database revisions remain the baseline; Attempt 2 changes only the Architect-requested service behavior and regressions.
+The accepted Attempt 1/2 cancellation implementation, Shared 0.9.0 contract, database schema, Partner API 2026-07 mutation, and billing-worker integration remain the baseline. The provider contract does not expose credential material in normal errors; the service redaction is defense in depth for credential-labelled provider exceptions.
 ### Unresolved Issues
 None.
 ### Architectural Concerns
@@ -291,16 +291,16 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-background`
-  commit: `e7ad61e`
+  commit: `3828b8fccf4260b6736318ff347c8390da97cea0`
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
-  claim commit: `681d7ff`
-  review handoff commit: `1308909`
+  claim commit: `b9d8955`
+  review handoff commit: pending
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
-  pushed: yes
+  pushed: pending
   submodule gitlink staged: no
 
 Merged to implementation main: no
