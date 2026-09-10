@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-10T12:35:00Z
@@ -208,21 +208,21 @@ Refund availability warning
 Placeholder parity.
 
 ## Tests
-
+Ready for architect review
 1. paid plan does not mutate Free counter;
-2. hosted Change plan;
+`moda-interact/app/services/billing/billing.service.ts`; `moda-interact/app/routes/app/billing/route.tsx`; `moda-interact/app/services/merchant-support/system-message-actions.ts`; all 20 `moda-interact/app/i18n/locales/*.json` catalogues; focused billing service/UI/i18n tests.
 3. hosted Switch to Free;
-4. no forbidden create APIs;
+Added hosted Change plan and Switch to Free entry points, durable end-of-cycle cancellation requests, same-shop full-pack refund requests with purchase snapshots, bounded active-purchase loading, pending-refund and pooled-capacity-safe availability UX, post-commit translation dispatch, duplicate/race replay handling, plan-change support CTA mapping, and all required locale meanings with placeholder parity.
 5. cancellation always END_OF_CYCLE;
-6. immediate mode cannot be supplied;
+`npm test`: passed, 28 files / 211 tests / 1 skipped. Focused billing suite: passed, 47 tests. `npm run build`: passed. `npm run prisma:validate`: passed. `git diff --check`: passed. `npm run typecheck`: blocked by 151 existing workspace diagnostics, including unrelated JSX/Redis/shop-service errors and pre-existing billing-test fixture typing errors; no new diagnostics were identified in the changed application files.
 7. cancellation replay one row;
-8. no provider call;
+Typecheck remains non-zero because of the repository baseline diagnostics described above; no task behavior was intentionally deferred.
 9. refund ignores client price/credits/meter;
-10. cross-shop purchase rejected;
+Shopify-hosted pricing remains the source of truth for plan changes; request-time cancellation/refund flows do not call providers or mutate entitlement counters.
 11. refund replay one row;
-12. no hold/decrement on request;
+None within the task scope.
 13. availability subtracts refunding;
-14. plan-change SYSTEM CTA exact;
+None identified; implementation is stopped at `review` per workflow.
 15. all 20 locales resolve.
 
 ## Validation
