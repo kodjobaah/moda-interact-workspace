@@ -237,7 +237,7 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/shared/ARCH-009/SHARED-001-billing-lifecycle-contracts.md`
-  commit: `10a4945`
+  commit: `3a6bdae`
   remote branch: `origin/task/ARCH-009-SHARED-001`
   pushed: yes
   submodule gitlink staged: no
