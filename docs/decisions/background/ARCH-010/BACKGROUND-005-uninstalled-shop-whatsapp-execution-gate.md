@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 46
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-006
@@ -21,7 +21,7 @@ enables:
   - ARCH-010-BACKGROUND-017
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T21:45:20Z
 ---
 
 # ARCH-010-BACKGROUND-005: Stop WhatsApp business execution for inactive shops
@@ -51,9 +51,11 @@ No heuristic tenant inference may be added by this task.
 ## Inspect before editing
 
 At minimum inspect:
-
+status: in_progress
 ```text
+executor: copilot
 src/workers/whatsapp.worker.ts
+claimed_at: 2026-09-11T19:12:55Z
 src/services/recovery-routing.service.ts
 src/services/conversation-turn-processor.service.ts
 src/services/conversation.service.ts
@@ -195,19 +197,568 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review
 
 ### Files Changed
-Populate during implementation.
+- `src/services/shop-execution-eligibility.service.ts`
+- `src/workers/whatsapp.worker.ts`
+- `src/services/conversation-turn-processor.service.ts`
+- `tests/unit/services/whatsapp-provider-status.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
+- `tests/unit/services/conversation-turn-processor.service.test.ts`
+- `tests/unit/services/recovery-routing.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Preserved the B004 `ShopExecutionRecord`, `resolveShopByDomain`, and `isShopExecutionActive` helper API.
+- Preserved the accepted inbound and delayed-turn worker boundaries and their durable Shop.status checks.
+- Added worker tests proving active context-linked inbound persists/enqueues, while UNINSTALLED and SUSPENDED routes do neither.
+- Added durable delayed-turn loader tests proving inactive shops stop before context construction, plus processor coverage proving an inactive version race releases without enqueueing a replacement turn.
+- Preserved provider-status finalization and delivered usage semantics for existing outbound messages; added explicit inactive-Shop independence coverage for DELIVERED/READ finalization.
+- Added mixed ownership coverage proving one inactive owner is filtered while two remaining ACTIVE owners stay `ambiguous-tenant`.
+- Attempt 2/3 review corrections: all implemented; no scope guard or stop condition was triggered.
 
 ### Validation Results
-Populate during implementation.
+- `npm test -- --run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts`: 3 files passed, 45 tests passed.
+- `npm test -- --run tests/unit/services/recovery-routing.service.test.ts`: 22 passed, 1 pre-existing fixture failure because the mocked Prisma namespace does not expose `PrismaClientKnownRequestError` as a constructor.
+- `npm test -- --run tests/unit/services/recovery-routing.service.test.ts -t 'mixed inactive and active ownership'`: 1 passed, 22 skipped.
+- `npm test -- --run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/recovery-routing.service.test.ts`: 67 passed; the same single pre-existing routing fixture failed.
+- `npm test -- --run tests/unit/services/effective-billing-policy.service.test.ts`: blocked during import because `@prisma/client` was not generated.
+- `npm run prisma:validate`: blocked; `database/prisma/schema.prisma` is absent.
+- `npm run prisma:generate`: blocked by the same absent schema.
+- `npm run build`: blocked during Prisma generation by the same absent schema.
+- `npm run test:unit`: blocked during collection by the ungenerated Prisma client; routing retains the same pre-existing constructor fixture failure.
+- `git diff --check`: passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
+- Negative isolation assertions: parent is not the primary/shared workspace: yes; implementation is not the shared repository checkout: yes.
+- Start-of-attempt synchronization: parent remote task branch fast-forwarded: yes; parent `origin/main` incorporated: yes; implementation remote task branch fast-forwarded: yes; implementation `origin/main` incorporated: yes.
+- Implementation commit: `2c3d8b1`, pushed to `origin/task/ARCH-010-BACKGROUND-005`.
+- Parent report commit: final parent report publication commit, with its hash recorded in the task-return summary because a commit cannot embed its own final hash.
+- Branches pushed: implementation yes; parent yes after report commit.
+- Worktrees clean: yes after publication.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Changes Requested
+
+The overall WhatsApp inactive-shop execution-gate design is directionally correct,
+but this submission is not yet safe to accept.
+
+Architect review found one cross-task regression, incomplete required behavioural
+coverage, and incomplete mandatory workflow evidence.
+
+##### Accepted implementation direction
+
+The following approach is accepted and should not be redesigned:
+
+- durable `Shop.status` is checked only after WhatsApp ownership is deterministically
+  resolved;
+- context-linked `UNINSTALLED` / `SUSPENDED` ownership returns the terminal
+  `shop-unavailable` route;
+- context-free recovery ownership filters inactive shops before choosing actionable
+  merchant ownership;
+- product-only ownership checks shop activity before standalone-conversation
+  creation;
+- `processInboundMessage()` returns before inbound persistence when routing reports
+  `shop-unavailable`;
+- delayed conversation turns expose a `shopUnavailable` load result and suppress
+  settled-turn abuse admission, CommerceAgent and outbound reservation/send;
+- provider-status handling remains separate and continues finalising already-created
+  outbound provider state;
+- the existing `EffectiveBillingPolicyResolver` non-ACTIVE guard remains defense in
+  depth.
+
+Do not redesign those boundaries in Attempt 2.
+
+##### Correction 1 — preserve the accepted BACKGROUND-004 helper API
+
+The submitted BACKGROUND-005 branch changes:
+
+```text
+src/services/shop-execution-eligibility.service.ts
+```
+
+but its version contains only:
+
+```ts
+isShopExecutionActive(shopId)
+```
+
+The already-reviewed BACKGROUND-004 implementation of the same helper also contains
+the `ShopExecutionRecord` contract and:
+
+```ts
+resolveShopByDomain(domain)
+```
+
+which BACKGROUND-004 uses for recovery scheduling/execution.
+
+BACKGROUND-005 must not regress or replace that accepted helper API.
+
+Synchronize/reconcile against the current canonical BACKGROUND-004 implementation
+and preserve the **union** of the helper capabilities:
+
+```text
+resolveShopByDomain(...)
+isShopExecutionActive(...)
+```
+
+Do not use a wholesale ours/theirs conflict resolution that deletes either task's
+accepted behaviour.
+
+If BACKGROUND-004 has not yet been integrated into the canonical mainline when
+Attempt 2 starts, stop and coordinate with `moda_architect` rather than publishing
+a helper version known to conflict with that accepted task.
+
+##### Correction 2 — complete the required context-linked/worker coverage
+
+The new routing tests prove that `UNINSTALLED` and `SUSPENDED` context-linked
+ownership returns `shop-unavailable`.
+
+They do **not** yet prove the task's worker-level acceptance requirements that the
+terminal route prevents actual inbound persistence and delayed-turn enqueue.
+
+Add focused executable coverage proving:
+
+1. ACTIVE context-linked inbound still follows the existing route;
+2. UNINSTALLED context-linked inbound causes no
+   `conversationService.receiveMessage(...)`;
+3. UNINSTALLED context-linked inbound enqueues no
+   `process-conversation-turn`;
+4. SUSPENDED context-linked inbound has the same terminal worker behaviour.
+
+Prefer a focused worker/handler test with mocked dependencies. A deterministic
+existing repository source-structure test is acceptable only if it genuinely
+proves the terminal branch occurs before both persistence and enqueue; do not rely
+only on the routing-service result.
+
+##### Correction 3 — prove the real delayed-job ownership/status boundary
+
+The processor test currently sets:
+
+```ts
+test.loaded.shopUnavailable = true
+```
+
+and correctly proves that the processor does not call settled abuse admission,
+outbound admission or CommerceAgent.
+
+That is useful but does not prove the actual Background loader turns durable
+`Shop.status = UNINSTALLED | SUSPENDED` into that terminal result.
+
+Add focused coverage around the real `loadConversationTurn`/worker boundary proving:
+
+- a queued turn whose durable owning Shop is now `UNINSTALLED` completes/no-ops;
+- `SUSPENDED` behaves the same way;
+- no agent context is loaded after the inactive status determination;
+- CommerceAgent is not invoked;
+- outbound reservation/send is not invoked;
+- no retry/new turn is scheduled solely because the shop is inactive;
+- ACTIVE ownership continues through the existing path.
+
+A small testability export/refactor of the existing loader is acceptable if needed;
+do not redesign the worker architecture.
+
+##### Correction 4 — explicitly protect provider-status finalisation
+
+Required Tests 11 and 12 are not explicitly covered by the submitted changes.
+
+Add focused regression evidence that an already-existing outbound message can still
+receive `DELIVERED` / `READ` provider finalisation even when its merchant is now
+inactive, and that provider-status handling does not:
+
+- enqueue a conversation turn;
+- invoke CommerceAgent;
+- create/send a new outbound message;
+- restart a recovery.
+
+Preserve the current delivered-usage semantics. Do not introduce a new commercial
+metering decision in this task.
+
+##### Correction 5 — keep actionable-routing ambiguity semantics explicit
+
+Retain the existing rule:
+
+```text
+inactive ownership is ignored for actionable merchant selection
+multiple ACTIVE ownership pairs remain ambiguous
+all otherwise-matching ownership inactive -> shop-unavailable
+```
+
+Keep/extend focused tests so the mixed inactive/active filtering does not
+accidentally turn multiple active owners into a guessed tenant.
+
+The existing all-active multi-owner ambiguity coverage may be reused if it remains
+passing.
+
+##### Correction 6 — mandatory worktree/synchronisation evidence
+
+The Completion Report records paths/branches and an implementation commit, but it
+does not contain the mandatory negative-isolation assertions or all four
+start-of-attempt synchronization outcomes.
+
+The recorded parent path is also nested under the BACKGROUND-004 task-worktree
+naming lineage, so Attempt 2 must use the resolver-selected canonical
+`ARCH-010-BACKGROUND-005` worktrees and state the evidence explicitly.
+
+Record:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Do not treat a clean task branch or successful push as a substitute for this
+physical isolation/synchronisation evidence.
+
+##### Validation
+
+The current submission reports useful focused routing results but the delayed-turn
+suite was blocked by an ungenerated Prisma client and repository-wide checks have
+baseline blockers.
+
+Attempt 2 must run executable focused tests for every changed acceptance path above.
+At minimum record the exact commands/results for:
+
+```text
+recovery-routing focused tests
+WhatsApp inbound worker/handler inactive-gate tests
+conversation-turn inactive delayed-job tests
+provider-status finalisation tests
+EffectiveBillingPolicyResolver non-ACTIVE regression
+git diff --check
+```
+
+Run the repository-declared broader validation scripts that are actually available.
+If Prisma/build/typecheck remain blocked by pre-existing unchanged repository
+defects, document those blockers separately and precisely; they do not waive
+task-local focused validation.
+
+##### Scope guard
+
+Do not:
+
+- add `shopId` to the normalized WhatsApp ingress contract;
+- move tenant discovery into `moda-interact-messaging`;
+- redesign Meta ingress;
+- alter subscription/credit/refund semantics;
+- suppress historical provider-status finalisation;
+- remove legitimate pre-uninstall usage accounting;
+- modify another repository.
+
+Return the same task to `review` after the corrections.
+
+#### Attempt 2 — Changes Requested
+
+Attempt 2 closes several important Attempt 1 issues, but one runtime edge case and
+the durable review evidence still prevent acceptance.
+
+##### Corrections now accepted
+
+Architect re-review verified:
+
+- `ShopExecutionEligibilityService` now preserves the accepted BACKGROUND-004 API
+  exactly, including:
+  - `ShopExecutionRecord`;
+  - `resolveShopByDomain(...)`;
+  - `isShopExecutionActive(...)`;
+- the current helper is compatible with the architect-accepted BACKGROUND-004
+  implementation rather than replacing it;
+- `processInboundMessage()` returns before `receiveMessage()` and turn enqueue when
+  routing returns `shop-unavailable`;
+- focused worker coverage now proves active context-linked inbound persists/enqueues
+  while inactive terminal routing does neither;
+- `loadConversationTurn()` now reads the durable owning Shop status from either the
+  recovery-owned Shop or standalone Conversation Shop before clarification or agent
+  context construction;
+- `UNINSTALLED` and `SUSPENDED` delayed-turn loader cases return
+  `shopUnavailable: true`;
+- the loader tests are constructed so an attempted downstream agent-context load
+  would fail, therefore the passing tests prove context construction is bypassed;
+- provider-status finalisation remains separated from new conversation/agent work;
+- the existing provider-status tests continue to preserve DELIVERED/READ monotonic
+  finalisation and delivered-usage behaviour;
+- context-free routing still filters inactive ownership before actionable selection,
+  and existing multi-owner ambiguity behaviour remains fail-closed;
+- the implementation reports `git diff --check` passing.
+
+Do not redesign those accepted pieces.
+
+##### Correction 1 — inactive delayed turns must never enqueue a replacement turn
+
+The task contract requires an inactive delayed job to:
+
+```text
+return success/no-op
+do not retry solely because the shop is inactive
+do not enqueue another turn
+```
+
+The current processor does:
+
+```ts
+if (loaded.shopUnavailable) {
+  await this.finishSuppressedTurn(conversationId, observedVersion);
+  return;
+}
+```
+
+but `finishSuppressedTurn()` is a generic suppression helper. If
+`completeTurn(conversationId, observedVersion)` returns `false`, it releases the
+lease, reads the latest turn state and can call:
+
+```ts
+await this.enqueue(conversationId, latest.inboundVersion);
+```
+
+That means an inactive-shop execution path can still schedule another
+`process-conversation-turn` job after a version race.
+
+Use a dedicated inactive-shop terminal path, or otherwise make the inactive branch
+guarantee that it does not call `enqueue()` even when `completeTurn()` loses a
+version race.
+
+Do not change the existing generic abuse-suppression retry/coalescing behaviour
+unless that behaviour is independently required to change.
+
+Add a focused regression equivalent to:
+
+```text
+loaded.shopUnavailable = true
+completeTurn(...) = false
+releaseTurn(...) succeeds
+latest state has a newer pending inbound version
+-> processor returns successfully
+-> queue.add / enqueue is NOT called
+-> runAgent is NOT called
+-> outbound admission is NOT called
+```
+
+Retain the existing successful inactive-completion test as well.
+
+##### Correction 2 — strengthen provider-status evidence rather than only naming it inactive
+
+The new provider-status test is titled:
+
+```text
+finalizes an existing outbound message after its shop becomes inactive
+```
+
+but its harness contains no durable inactive Shop state and therefore does not
+actually distinguish that case from the existing normal DELIVERED test.
+
+The architectural behaviour is correct: provider-status finalisation must remain
+independent of current Shop execution eligibility.
+
+Make that invariant explicit in the regression. For example, provide a Shop lookup
+dependency/mock that would report `UNINSTALLED` (or throw if provider-status code
+tries to introduce an execution-eligibility lookup) and prove DELIVERED/READ
+finalisation still applies without any new turn/outbound/agent side effect.
+
+Do not add a production Shop-status gate to provider-status handling.
+
+##### Correction 3 — add the missing mixed-ownership ambiguity regression
+
+Attempt 1 explicitly required preservation of:
+
+```text
+inactive ownership is ignored for actionable selection
+multiple ACTIVE ownership pairs remain ambiguous
+all otherwise-matching ownership inactive -> shop-unavailable
+```
+
+The submitted routing suite covers all-inactive and all-active ambiguity, but does
+not directly cover the mixed case.
+
+Add a focused context-free regression with at least three matching ownerships:
+
+```text
+one inactive owner
+two ACTIVE owners
+```
+
+and prove the result remains `ambiguous-tenant` rather than selecting one active
+merchant.
+
+A complementary one-inactive/one-active case may prove the single ACTIVE owner is
+selected if that is the existing routing contract.
+
+##### Correction 4 — Completion Report / worktree evidence is still stale
+
+The uploaded Attempt 2 archive does not contain the current handoff evidence stated
+externally by the executor.
+
+Its Completion Report still records:
+
+```text
+implementation commit: c54a6e4
+parent claim commit: 36f4d40
+```
+
+and still records worktree paths nested under the BACKGROUND-004 worktree lineage.
+
+It does not record the submitted Attempt 2 implementation commit `c1d9ea3`, the
+submitted parent review commit `03b1b35`, the required negative-isolation
+assertions, or the four synchronization outcomes.
+
+Attempt 3 must run in the resolver-selected canonical BACKGROUND-005 worktrees and
+record:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+The final parent report commit may remain external handoff evidence because a commit
+cannot self-embed its own final hash, but the task report itself must contain the
+current Attempt 3 execution/synchronization evidence rather than the stale Attempt 1
+report.
+
+##### Validation for Attempt 3
+
+Run executable focused validation for the corrected paths and record exact commands
+and results:
+
+```text
+WhatsApp worker inactive-routing / durable-loader tests
+ConversationTurnProcessor inactive terminal/no-reenqueue tests
+RecoveryRouting mixed active/inactive ambiguity tests
+WhatsApp provider-status finalisation tests
+git diff --check
+```
+
+Also rerun the EffectiveBillingPolicy non-ACTIVE regression if the generated Prisma
+client is available.
+
+If `database/prisma/schema.prisma` and the generated Prisma client remain absent in
+the task worktree, continue to document Prisma/build/repository-wide suite failures
+as baseline infrastructure blockers. They do not require unrelated fixes in this
+task, but they also do not substitute for the focused tests above, which should be
+kept independent of those blockers where feasible.
+
+##### Scope guard
+
+Do not:
+
+- add `shopId` to normalized WhatsApp ingress;
+- move ownership discovery to `moda-interact-messaging`;
+- change Meta ingress topology;
+- change billing/credit/refund semantics;
+- suppress historical provider-status finalisation;
+- alter generic abuse-suppression/coalescing behaviour just to fix the inactive
+  terminal path;
+- modify another repository.
+
+Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining runtime, regression and workflow-evidence
+requirements.
+
+Architect re-review verified:
+
+- the accepted BACKGROUND-004 helper API remains preserved:
+  - `ShopExecutionRecord`;
+  - `resolveShopByDomain(...)`;
+  - `isShopExecutionActive(...)`;
+- the inactive delayed-turn branch no longer uses generic abuse suppression;
+  it calls the dedicated `finishInactiveTurn(...)` terminal path;
+- if `completeTurn(...)` loses a version race for an inactive shop, the terminal
+  path releases the turn but does **not** query newer turn state and does **not**
+  enqueue a replacement `process-conversation-turn` job;
+- focused regression coverage explicitly proves the inactive race case does not
+  call queue enqueue, CommerceAgent or outbound admission;
+- durable delayed-turn loading still derives `shopUnavailable` from current
+  `Shop.status` before clarification/agent-context construction;
+- worker coverage proves ACTIVE context-linked inbound persists/enqueues while
+  terminal inactive routing persists/enqueues nothing;
+- context-free routing now explicitly covers the mixed case:
+  one inactive owner plus two ACTIVE owners remains `ambiguous-tenant`;
+- existing all-inactive and all-active ambiguity semantics remain intact;
+- provider-status regression evidence now constructs a database Shop lookup that
+  would throw if execution eligibility were consulted, and proves an existing
+  outbound message can still advance to READ while no Shop-status lookup occurs;
+- DELIVERED/READ monotonic finalisation and delivered-usage semantics remain
+  unchanged;
+- the three worker/processor/provider focused suites report 45 passing tests;
+- the mixed inactive/active routing test passes independently;
+- the combined focused routing/worker run reports 67 passing tests with one
+  documented pre-existing routing fixture failure caused by the mocked Prisma
+  namespace not exposing `PrismaClientKnownRequestError` as a constructor;
+- Prisma generation/validation, build, EffectiveBillingPolicy import and broad
+  unit collection remain blocked by the documented missing
+  `database/prisma/schema.prisma` / ungenerated Prisma client baseline issue;
+- `git diff --check` passed;
+- the canonical BACKGROUND-005 parent and implementation worktrees are recorded;
+- both negative-isolation assertions are recorded;
+- all four start-of-attempt synchronization outcomes are recorded explicitly;
+- both task branches are pushed and both worktrees are clean;
+- implementation commit `2c3d8b1` is the reviewed Attempt 3 implementation head.
+
+The submitted handoff identifies final parent report commit `024db0c`. That hash is
+external handoff evidence and is not required to be self-embedded into the commit
+that contains this same task file.
+
+The documented baseline Prisma/test-fixture blockers do not invalidate the
+task-local acceptance because the changed inactive execution paths have executable,
+focused regression coverage, including isolated execution of the newly added mixed
+ownership case.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 3` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-BACKGROUND-006` remains pending because
+  `ARCH-010-BACKGROUND-001`, `ARCH-010-BACKGROUND-003`, and
+  `ARCH-010-BACKGROUND-007` are still additional prerequisites in this task
+  snapshot;
+- `ARCH-010-BACKGROUND-013` remains pending because
+  `ARCH-010-BACKGROUND-012` is still an additional prerequisite;
+- `ARCH-010-BACKGROUND-017` remains pending because
+  `ARCH-010-BACKGROUND-013` and `ARCH-010-BACKGROUND-016` remain additional
+  prerequisites;
+- `ARCH-010-SHOPIFY-005` is already superseded by
+  `ARCH-010-SHOPIFY-006`.
+
+No dependent task is promoted by this acceptance overlay.
+
