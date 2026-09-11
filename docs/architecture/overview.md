@@ -78,6 +78,9 @@ Platform administrator
 
 - [Service boundaries](services.md)
 - [Runtime flows](runtime-flows.md)
+- [ARCH-010 merchant lifecycle and billing architecture](ARCH-010-merchant-lifecycle-state-transitions.md)
+- [Current pricing, billing and recovery-capacity model](../product/pricing-and-billing-model.md)
+- [ARCH-010 supersession map](ARCH-010-supersession-map.md)
 - [Data architecture](data-architecture.md)
 - [Security architecture](security.md)
 - [Deployment architecture](deployment.md)

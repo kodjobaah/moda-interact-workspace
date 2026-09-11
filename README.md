@@ -214,7 +214,8 @@ implementation task.
 | **ARCH-004** | In progress | Make pending recovery an inactivity-based workflow: deterministically correlate checkout/cart activity to an existing candidate, advance a monotonic `lastActivityAt` clock, reschedule the same BullMQ candidate and shop index, ignore stale/out-of-order events, cancel confirmed empty carts and preserve existing order-cancellation semantics. | [Correlated Cart Activity Recovery Rescheduling](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md) · [Readable overview](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling-overview.md) | Task plans live under `docs/decisions/*/ARCH-004/` |
 | **ARCH-005** | In progress | Make Moda Interact internationally correct by design across WhatsApp markets: keep country, language, currency, time zone and telephone country independent; use standards-based locale contracts; capture Shopify international commerce context; select approved WhatsApp template variants; support multilingual active conversations; and localise merchant-facing formatting. | [Global Internationalisation and WhatsApp Markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md) · [Readable overview](docs/architecture/ARCH-005-internationalisation-overview.md) | Task plans live under `docs/decisions/*/ARCH-005/` |
 | **ARCH-006** | In progress | Add a shop-scoped internal support inbox between Moda administrators and merchants: immutable originals, multilingual translations, read state, distinct administrative/system/merchant messages, versioned automated notifications, tenant-safe access and an observable `merchant-communications` queue. | [Merchant Communications, Support Inbox and System Notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md) · [Readable overview](docs/architecture/ARCH-006-merchant-communications-overview.md) | Task plans live under `docs/decisions/*/ARCH-006/` |
-| **ARCH-007** | In progress | Implement plan-aware Shopify billing and cost control: Free lifetime recovery allowance, paid included recovery allowances with overage, repeatable prepaid recovery-credit packs for every tier, durable/idempotent usage reporting, per-conversation automated-message safety limits and bounded CommerceAgent execution. | [Shopify Billing, Usage and Cost Control](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md) · [Pricing and billing model](docs/product/pricing-and-billing-model.md) | Task plans live under `docs/decisions/*/ARCH-007/` |
+| **ARCH-007** | Partially superseded | Historical billing/cost-control foundation and completed implementation evidence. Merchant subscription, entitlement, recovery-capacity, top-up, refund and lifecycle semantics are superseded by ARCH-010; retained ARCH-007 message/provider safety primitives remain valid unless explicitly replaced. | [Historical ARCH-007 architecture](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md) · [ARCH-010 supersession map](docs/architecture/ARCH-010-supersession-map.md) | Historical task records live under `docs/decisions/*/ARCH-007/` |
+| **ARCH-010** | Agreed / implementation-ready | Define the current merchant subscription and lifecycle state machine: one-time shop-lifetime Free grant, period-scoped paid allowance, promotional/purchased/lifetime capacity ordering, App Pricing top-ups, plan changes, cancellation, freeze, uninstall/reinstall, partial top-up refunds and exact execution gates. | [Merchant lifecycle state transitions](docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md) · [Current pricing/billing model](docs/product/pricing-and-billing-model.md) · [Supersession map](docs/architecture/ARCH-010-supersession-map.md) | [Implementation handoff](docs/architecture/ARCH-010-implementation-handoff.md) |
 
 The architecture document is authoritative for **what is being built and how the
 complete system fits together**.
@@ -226,59 +227,52 @@ workflow.
 
 ### Pricing and billing model
 
-Moda Interact uses **recovery conversations** as the primary merchant-facing
-commercial unit. Message-level WhatsApp and CommerceAgent controls are separate
-internal safety mechanisms that bound variable provider/AI cost; they are not a
-second merchant billing unit.
+Merchant billing and lifecycle behaviour is now governed by **ARCH-010**. ARCH-007 remains historical implementation/review evidence and retains non-superseded cost/safety primitives, but its old automatic-overage, Free-allowance-adjustment and capacity-order rules are not current product policy.
 
-The current target subscription model is:
+The current target catalogue is:
 
-| Plan | Monthly price | Included recovery conversations | Standard overage |
-| --- | ---: | ---: | ---: |
-| **Free** | $0 | 5 lifetime | No automatic overage; repeatable prepaid recovery-credit packs may be purchased |
-| **Starter** | $35/month | 200/month | $0.05 per additional recovery |
-| **Growth** | $75/month | 500/month | $0.04 per additional recovery |
-| **Scale** | $149/month | 1,200/month | $0.03 per additional recovery |
+| Plan | Shopify recurring price* | Paid monthly included recoveries | Shop-lifetime Free grant | Automatic paid overage |
+| --- | ---: | ---: | ---: | --- |
+| **Free** | $0 | none | 5 once per shop | none |
+| **Starter** | $35/month | 200/current verified period | 5 once per shop | none |
+| **Growth** | $75/month | 500/current verified period | 5 once per shop | none |
+| **Scale** | $149/month | 1,200/current verified period | 5 once per shop | none |
 
-All tiers may use **repeatable recovery-credit packs**. A merchant can buy
-another pack after an earlier pack is exhausted. Pack prices are configured in
-Shopify App Pricing rather than duplicated as Moda database price fields, and
-higher paid tiers can be configured with preferential per-credit pack rates.
+\* Shopify App Pricing is authoritative for the live commercial price, currency, billing cycle and pending plan change.
 
-The intended recovery-capacity order is:
+The five lifetime Free credits belong to the **Shop**, not to the Free subscription. They are granted once at first verified activation even when the merchant starts directly on a Paid plan, and they never reset on renewal, upgrade, downgrade, cancellation, uninstall or reinstall.
+
+The canonical recovery-capacity order is:
 
 ```text
-Free:
-  lifetime Free allowance
-  -> purchased recovery credits
-  -> block new recovery until another pack is purchased or the merchant upgrades
-
 Paid:
-  current-period included recoveries
-  -> purchased recovery credits
-  -> normal plan overage
+  current-period monthly included
+  -> promotional
+  -> purchased lifetime top-ups
+  -> shop-lifetime Free
+  -> BLOCK NEW RECOVERY ADMISSION
+
+Free:
+  promotional
+  -> purchased lifetime top-ups
+  -> shop-lifetime Free
+  -> BLOCK NEW RECOVERY ADMISSION
 ```
 
-Purchased recovery credits are durable prepaid capacity: they do not reset at
-the monthly billing boundary and may be replenished repeatedly.
+`BLOCK NEW RECOVERY ADMISSION` means capacity exhaustion stops a **new** recovery from being admitted. It does not disable the merchant dashboard and does not terminate an already-admitted conversation solely because capacity later reaches zero.
 
-For controlled testing/support, a specific Free shop may receive an audited signed
-allowance adjustment. The canonical Free plan stays at 5 lifetime recoveries; the
-shop-specific **effective** allowance changes without rewriting historical usage.
+Promotional credits are a separate Moda-funded, non-refundable shop-specific bucket for targeted campaigns, beta/test merchants, goodwill and support. Purchased top-ups are merchant-funded lifetime credits with FIFO purchase-lot accounting and partial-unused-credit refund support.
 
-For the commercial rationale, Shopify billing mechanism, durable state,
-idempotency rules, top-up lifecycle and message-level cost controls, see:
+Top-ups use the current Shopify App Pricing **usage meter + App Event** mechanism. A Free `$0` App Pricing plan may therefore still have a Shopify provider billing cycle for App Event scope; that billing cycle never replenishes the five lifetime Free credits.
 
-**[Pricing and billing model](docs/product/pricing-and-billing-model.md)**
+For the current product model and exact supersession boundary, start with:
 
-For a new architect or resumed implementation session, see the
-**[ARCH-007 implementation handoff](docs/architecture/ARCH-007-implementation-handoff.md)**.
+- **[Current pricing, billing and recovery-capacity model](docs/product/pricing-and-billing-model.md)**
+- **[ARCH-010 merchant lifecycle state transitions](docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md)**
+- **[ARCH-010 billing/lifecycle supersession map](docs/architecture/ARCH-010-supersession-map.md)**
+- **[ARCH-010 implementation handoff](docs/architecture/ARCH-010-implementation-handoff.md)**
 
-The implementation source of truth remains
-**[ARCH-007 — Shopify Billing, Usage and Cost Control](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md)**.
-The top-up and fragmented-message/coalescing portions of this model are being
-implemented through bounded ARCH-007 tasks and should not be read as a claim
-that every described path is already live in production.
+Do not use the historical ARCH-007 overage/allowance-adjustment model to infer current merchant billing behaviour.
 
 ### Internationalisation and merchant communications
 
@@ -337,6 +331,8 @@ The source-of-truth hierarchy is:
 | `docs/decisions/<domain>/ARCH-XXX/<TASK>.md` | What exactly must be implemented, what state is it in, and how was it reviewed? |
 | Repository source code | What has actually been implemented and how does it behave? |
 | Git history | What exact source versions existed and in what sequence? |
+
+When a later architecture explicitly supersedes overlapping behaviour, the newer architecture governs that overlap. Older architecture/task files remain valid historical implementation and review evidence, but they must not override the newer current contract. For merchant billing/lifecycle, see [`ARCH-010-supersession-map.md`](docs/architecture/ARCH-010-supersession-map.md).
 
 A task may first exist as a **portable task definition** outside Git. It becomes a
 durable workspace task only when materialised into its canonical decision path on
@@ -1454,6 +1450,9 @@ systems for each runtime.
 - [ARCH-004: Correlated cart activity recovery rescheduling](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md)
 - [ARCH-005: Global internationalisation and WhatsApp markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md)
 - [ARCH-006: Merchant communications, support inbox and system notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md)
-- [ARCH-007: Shopify billing, usage and cost control](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md)
+- [Historical ARCH-007: Shopify billing, usage and cost control](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md)
+- [ARCH-010: Merchant lifecycle state transitions and behavioural access](docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md)
+- [ARCH-010 implementation handoff](docs/architecture/ARCH-010-implementation-handoff.md)
+- [ARCH-010 billing/lifecycle supersession map](docs/architecture/ARCH-010-supersession-map.md)
 - [Pricing and billing model](docs/product/pricing-and-billing-model.md)
-- [ARCH-007 implementation handoff](docs/architecture/ARCH-007-implementation-handoff.md)
+- [Historical ARCH-007 implementation handoff](docs/architecture/ARCH-007-implementation-handoff.md)

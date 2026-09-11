@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: superseded
 priority: 30
 executor: null
 claimed_at: null
@@ -18,10 +18,14 @@ depends_on:
   - ARCH-007-SHOPIFY-002
 enables: []
 created: 2026-09-10
-updated: 2026-09-10
+updated: 2026-09-11
 ---
 
 # ARCH-008-SHOPIFY-003: Add mock UI components for recovery top-ups and plan upgrades
+
+## Supersession — ARCH-010
+
+Superseded on 2026-09-11 by `ARCH-010-SHOPIFY-008`. The existing `/app/billing/options` screen is retained, but its mock-only implementation direction is replaced by a real server-backed capacity-management implementation. Do not continue this task as a separate prototype. Historical review/completion evidence below is preserved for audit.
 
 ## Objective
 
