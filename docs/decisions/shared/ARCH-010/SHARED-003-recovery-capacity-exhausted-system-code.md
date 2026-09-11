@@ -9,17 +9,17 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 51
-executor: copilot
-claimed_at: 2026-09-11T16:54:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-SHARED-001
 enables:
   - ARCH-010-SHARED-004
 created: 2026-09-11
-updated: 2026-09-11T16:54:55Z
+updated: 2026-09-11T16:57:52Z
 ---
 
 # ARCH-010-SHARED-003: Add generic recovery-capacity-exhausted billing system code
@@ -94,19 +94,48 @@ STOP if ARCH-010-SHARED-001 has not been reconciled into the task worktree or an
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `src/billing.ts`
+- `src/billing.test.ts`
+- `scripts/validate-billing-entrypoint.mjs`
 
 ### Work Completed
-Populate during implementation.
+- Added `RECOVERY_CAPACITY_EXHAUSTED` to the canonical `BILLING_SYSTEM_MESSAGE_CODES` registry and strict `BillingSystemMessageCodeSchema`.
+- Preserved the historical `BILLING_FREE_ALLOWANCE_EXHAUSTED` code and all existing system-message values.
+- Added focused coverage for the new code, legacy-code compatibility, unknown-code rejection, and unchanged v1 queue payload semantics.
+- Extended the existing public `./billing` entrypoint validation to verify the updated registry and exact new code value.
 
 ### Validation Results
-Populate during implementation.
+- `npm test -- src/billing.test.ts` passed; Redis integration remains skipped because `TEST_REDIS_URL` is not configured.
+- `npm run typecheck` passed.
+- `npm run build` passed.
+- `npm run validate:billing-entrypoint` passed, including built runtime and declaration/package-target validation.
+- `git diff --check` passed.
+- `npm ci` completed in the isolated implementation worktree; npm reported one low-severity audit finding and pending install-script approvals, with no task-source impact.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Task branch: `task/ARCH-010-SHARED-003`
+- Physical worktree isolation:
+  - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-003`
+  - parent branch: `task/ARCH-010-SHARED-003`
+  - implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-003`
+  - implementation branch: `task/ARCH-010-SHARED-003`
+  - shared workspace checkout switched/mutated for task work: no
+  - shared implementation checkout switched/mutated for task work: no
+  - another task worktree reused: no
+- Start-of-attempt synchronization:
+  - parent remote task branch fast-forwarded: not-needed; branch created from current `origin/main`
+  - parent `origin/main` incorporated: already-current at worktree creation
+  - implementation remote task branch fast-forwarded: not-needed; branch created from current `origin/main`
+  - implementation `origin/main` incorporated: already-current at worktree creation
+- Implementation repository: `moda-interact-shared`, commit `a81215e`, remote `origin/task/ARCH-010-SHARED-003`, pushed: yes.
+- Parent workspace task file: this file, claim/review commit pending, remote `origin/task/ARCH-010-SHARED-003`, pushed: no.
+- Submodule gitlink staged: no.
+- Merged to implementation main: no.
+- Merged to workspace main: no.
 
 ### Architect Review
 Pending.
