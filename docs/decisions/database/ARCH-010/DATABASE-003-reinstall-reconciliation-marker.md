@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 48
-executor: copilot
-claimed_at: 2026-09-11T23:14:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-DATABASE-001
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-006
   - ARCH-010-SHOPIFY-006
 created: 2026-09-11
-updated: 2026-09-11T23:36:00Z
+updated: 2026-09-11T23:28:04Z
 ---
 
 # ARCH-010-DATABASE-003: Persist authenticated reinstall reconciliation state
@@ -231,4 +231,79 @@ Merged to implementation main: no
 Merged to workspace main: no
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Accepted
+
+Architect review verified:
+
+- `commerce.Shop` adds exactly one new lifecycle marker:
+  `reinstallPendingAt DateTime?`;
+- the existing `status`, `installedAt` and `uninstalledAt` fields and semantics are
+  preserved;
+- the schema adds the required reconstruction index:
+  `@@index([status, reinstallPendingAt])`;
+- `ShopStatus` remains exactly `ACTIVE`, `UNINSTALLED`, `SUSPENDED`;
+- `billing.Subscription.nextReconcileAt DateTime?` and its existing index remain
+  present and unchanged, so reconciliation scheduling is not duplicated onto Shop;
+- the migration is additive:
+  - one nullable `reinstallPendingAt TIMESTAMP(3)` column;
+  - one `Shop_status_reinstallPendingAt_idx` composite index;
+  - no default;
+  - no `NOT NULL`;
+  - no backfill;
+  - no UPDATE/DELETE/DROP;
+- the migration does not mutate Subscription, BillingPeriod, entitlement,
+  reservation, purchase or refund data;
+- existing Shop rows therefore remain valid with `reinstallPendingAt = NULL`;
+- the billing-lifecycle validator checks:
+  - Shop marker presence/nullability;
+  - generated Prisma scalar/type/nullability;
+  - composite index;
+  - exact ShopStatus lifecycle values;
+  - preserved `Subscription.nextReconcileAt`;
+  - additive/no-backfill migration safety;
+  - absence of billing/entitlement/purchase/refund mutation in this migration;
+- the generated PlantUML ERD contains the nullable Shop reinstall marker;
+- the declared static/schema validation completed successfully:
+  - `npm run format`;
+  - `npm run validate`;
+  - `npm run prisma:generate`;
+  - `npm run test:billing-lifecycle`;
+  - `npm run erd:puml`;
+  - `git diff --check`;
+- the additional live `npm run status` check reached the intended local
+  PostgreSQL connection configuration and failed only with Prisma `P1001` because
+  no server was listening at `localhost:5432`; no migration was applied;
+- that `P1001` is an environment-availability limitation, not evidence of a schema
+  or migration defect, and migration application is not required for acceptance of
+  this additive task;
+- the Completion Report records canonical parent and implementation worktrees,
+  confirms the shared workspace/shared implementation checkout and another task
+  worktree were not reused, and records all four start-of-attempt synchronization
+  outcomes;
+- implementation commit `a6c2af8` is the reviewed implementation head;
+- the submitted handoff identifies parent report commits `2ec0674` and `25eeb5e`.
+
+The final parent report commit is external handoff evidence and need not be
+self-embedded into the commit containing this same task file.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 1` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-BACKGROUND-006` remains pending because, in addition to this task, it
+  still depends on `ARCH-010-BACKGROUND-001`, `ARCH-010-BACKGROUND-003` and
+  `ARCH-010-BACKGROUND-007` (with its already-completed Shared/BACKGROUND-004/-005
+  prerequisites not sufficient on their own);
+- `ARCH-010-SHOPIFY-006` remains pending because
+  `ARCH-010-BACKGROUND-006` is not yet complete.
+
+No dependent task is promoted by this acceptance overlay.
+
