@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 executor: null
 claimed_at: null
 priority: 45
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-BACKGROUND-018
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11T18:32:05Z
+updated: 2026-09-11T19:14:30Z
 ---
 
 # ARCH-010-BACKGROUND-004: Stop queued recovery work for inactive shops
@@ -294,7 +294,7 @@ Merged to workspace main: no
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested
 
@@ -583,4 +583,59 @@ After synchronization, rerun the same focused B004 regression command(s) and
 remain documented unchanged.
 
 Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining workflow-evidence correction.
+
+Architect re-review verified:
+
+- the implementation remains at reviewed implementation commit `c03027b`;
+- compared with Attempt 2, no implementation or focused-test file changed; only
+  this task report changed;
+- the canonical parent worktree is recorded as:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004`;
+- the canonical implementation worktree is recorded as:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-004`;
+- the report explicitly confirms the parent is not the primary/shared workspace;
+- the report explicitly confirms the implementation worktree is not the shared
+  repository checkout;
+- all four start-of-attempt synchronization outcomes are recorded individually:
+  - parent remote task branch fast-forwarded: not-needed/already current;
+  - parent origin/main incorporated: already-current;
+  - implementation remote task branch fast-forwarded: not-needed/already current;
+  - implementation origin/main incorporated: already-current;
+- both mirrored `task/ARCH-010-BACKGROUND-004` branches are recorded as pushed and
+  both canonical worktrees are clean;
+- the exact focused validation command is recorded and reports five files / 83
+  passing tests;
+- `git diff --check` passed;
+- the previously reviewed inactive-shop guards, order status projection,
+  `discarded-shop-unavailable` result typing, inactive checkout/cart/order/matured
+  coverage and worker `finally` cleanup remain unchanged and accepted;
+- repository-wide Prisma, build, TypeScript and unrelated baseline-test blockers
+  remain separately documented and are not regressions introduced by this task.
+
+The submitted handoff identifies final parent review-report commit `26c5c29`.
+That final parent hash is external handoff evidence and is not required to be
+self-embedded into the commit that contains this same task file.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and
+`claimed_at` remain cleared while `attempt: 3` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-BACKGROUND-006` remains pending because additional prerequisites are
+  unfinished;
+- `ARCH-010-BACKGROUND-013` remains pending because additional prerequisites are
+  unfinished;
+- `ARCH-010-BACKGROUND-017` remains pending because additional prerequisites are
+  unfinished;
+- `ARCH-010-BACKGROUND-018` remains pending because `ARCH-010-BACKGROUND-016`
+  is not yet complete in this task snapshot;
+- `ARCH-010-SHOPIFY-005` is already `superseded` by `ARCH-010-SHOPIFY-006`.
+
+No dependent task is promoted by this acceptance overlay.
 
