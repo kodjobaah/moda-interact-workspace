@@ -4,7 +4,7 @@
 |---|---|---|
 | ARCH-010-DATABASE-001 | Complete | Add nullable `Subscription.nextReconcileAt` plus index so pending subscription verification can be rebuilt after Redis loss. |
 | ARCH-010-DATABASE-002 | Complete | Add period-scoped included-credit counter and dual UsageReservation linkage for concurrency-safe paid allowance consumption. |
-| ARCH-010-DATABASE-003 | Ready | Add nullable `Shop.reinstallPendingAt` plus index so an authenticated reinstall can remain execution-disabled until subscription reconciliation completes. |
+| ARCH-010-DATABASE-003 | Complete | Add nullable `Shop.reinstallPendingAt` plus index so an authenticated reinstall can remain execution-disabled until subscription reconciliation completes. |
 | ARCH-010-DATABASE-004 | Ready | Add Subscription-owned Free/Paid Shopify BillingPeriod history, plan snapshots, Paid-only allowance snapshots, close metadata, reservation release reason, legacy OPEN-period normalization and one-OPEN-period integrity. |
 | ARCH-010-DATABASE-005 | Complete | Persist the durable reason/timestamp when a DETECTED recovery is blocked because all recovery-capacity sources are exhausted. |
 | ARCH-010-DATABASE-006 | Complete | Move the one-time lifetime Free grant default to platform policy and snapshot/backfill the shop-level `FREE_RECOVERY_LIFETIME` grant independently of current plan. |
