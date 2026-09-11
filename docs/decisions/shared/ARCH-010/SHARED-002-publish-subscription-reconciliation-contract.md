@@ -13,7 +13,7 @@ status: review
 priority: 21
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 2
 depends_on:
   - ARCH-010-SHARED-001
 enables:
@@ -30,7 +30,7 @@ enables:
   - ARCH-010-SHOPIFY-007
   - ARCH-010-SHOPIFY-015
 created: 2026-09-11
-updated: 2026-09-11T17:24:30Z
+updated: 2026-09-11T17:28:41Z
 ---
 
 # ARCH-010-SHARED-002: Publish subscription reconciliation Shared contract
@@ -56,27 +56,33 @@ Use publication mechanics only, following the repository's established Shared re
 ## Completion Report
 
 ### Status
-Blocked - returned to Architect Review.
+Ready for Review.
 
 ### Files Changed
-None. Publication was not attempted.
+- `package.json`
+- `package-lock.json`
 
 ### Work Completed
-- Recreated the canonical parent and implementation worktrees and synchronized both task branches with current `origin/main`.
-- Confirmed the accepted SHARED-001 reconciliation source is present on the implementation branch, including the required billing constants, schema/parser and deterministic job-ID helper.
-- Confirmed local `package.json` and `package-lock.json` are both version `0.9.0`.
-- Confirmed npm registry version and `latest` dist-tag are both `0.9.0`.
-- Stopped before publication because the repository and registry version had already advanced beyond the task's expected `0.9.0` release target; the existing version cannot be overwritten.
+- Applied the architect-authorized release version `0.10.0` to `package.json` and `package-lock.json` only.
+- Preserved the accepted SHARED-001 reconciliation implementation unchanged.
+- Published exactly `@modainteract/moda-interact-shared@0.10.0`; the existing `0.9.0` release was not modified.
 
 ### Validation Results
-- `npm view @modainteract/moda-interact-shared version dist-tags --json`: version `0.9.0`, `latest: 0.9.0`.
-- Published `@modainteract/moda-interact-shared@0.9.0` tarball inspection found `dist/billing.js` and `dist/billing.d.ts`, but no ARCH-010 reconciliation symbols in the published artifacts.
-- Implementation source inspection confirmed the accepted symbols are present in `src/billing.ts` and `src/billing.test.ts`.
-- `git diff --check` passed in the implementation worktree.
-- Publication, package version edits, build, and package tests were not run because the explicit advanced-version stop condition was reached before publication mechanics.
+- Release preflight: local `package.json` and lockfile were `0.9.0`; npm `latest` was `0.9.0`; npm returned `E404` for `0.10.0` before editing.
+- `npm test`: 110 passed, 0 failed, 1 skipped, 111 total.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
+- `npm run validate:billing-entrypoint`: passed; runtime and declaration exports validated.
+- `npm pack --dry-run`: passed; included `dist/billing.js` and `dist/billing.d.ts`.
+- `git diff --check`: passed.
+- Published registry metadata: version `0.10.0`, `latest: 0.10.0`.
+- Published artifact shasum: `219601ddc1689f5cbeb6a8b4ab82326445b16654`.
+- Published artifact integrity: `sha512-4kEEcEOFpSn98wDmUItscVZSSObKQo2R2+H1rjs9H9yLjkSc7qz+tbKHWtsrCyhgPq/lN4nqd9eOexyT4z6yfQ==`.
+- Clean consumer install verified the `@modainteract/moda-interact-shared/billing` runtime subpath exports all 8 required reconciliation symbols and parses a valid v1 payload.
+- Clean consumer declaration inspection verified the reconciliation constants, schema/type, parsers, and deterministic job-ID helper declarations.
 
 ### Git / VCS
-- Task branch: `task/ARCH-010-SHARED-002`
+- Task branch: `task/ARCH-010-SHARED-002`; attempt 2.
 - Physical worktree isolation:
   - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
   - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-002`
@@ -87,18 +93,18 @@ None. Publication was not attempted.
   - shared implementation checkout switched/mutated for task work: no
   - another task worktree reused: no
 - Start-of-attempt synchronization:
-  - parent remote task branch fast-forwarded: already-current before merge
-  - parent `origin/main` incorporated: yes, merge commit `a4641e4`
-  - implementation remote task branch fast-forwarded: no remote branch existed
+  - parent remote task branch fast-forwarded: already-current before attempt 2
+  - parent `origin/main` incorporated: already-current from prior synchronization merge `a4641e4`
+  - implementation remote task branch fast-forwarded: already-current at `200d486`
   - implementation `origin/main` incorporated: already-current at `200d486`
-- Implementation repository: clean task branch pushed at `200d486`, remote `origin/task/ARCH-010-SHARED-002`, pushed: yes.
-- Parent workspace task file: claim commit `ebb3e7e`; this review report commit pending, remote `origin/task/ARCH-010-SHARED-002`, pushed: no.
+- Implementation repository: release metadata commit `583a7d6`, remote `origin/task/ARCH-010-SHARED-002`, pushed: yes.
+- Parent workspace task file: claim commit `ebb3e7e`; completion report commit pending, remote `origin/task/ARCH-010-SHARED-002`, pushed: no.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no.
 - Merged to workspace main: no.
 
 ### Architect Review
-Pending - coordinate the already-published `0.9.0` release and determine the authorized next release/version before retrying publication.
+Pending.
 
 ## Non-goals
 
