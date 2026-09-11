@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-11T13:02:11Z
@@ -193,7 +193,7 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress — Attempt 3 correction
+Implementation complete; returned to `moda_architect` for review.
 
 ### Files Changed
 - `moda-interact-database/prisma/schema.prisma`
@@ -261,10 +261,46 @@ Start-of-attempt synchronization:
 - `npm run erd` passed.
 - `git diff --check` passed.
 
+### Attempt 3 Completion Report
+
+#### Physical worktree isolation
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-006
+  parent branch: task/ARCH-010-DATABASE-006
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-006
+  implementation branch: task/ARCH-010-DATABASE-006
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+```
+
+#### Attempt 3 correction and validation
+
+- Confirmed `ARCH-007-DATABASE-002` and `ARCH-007-DATABASE-003` remain complete before claiming Attempt 3.
+- Updated `scripts/validate-billing-policy-schema.mjs` to reject `settings."plan"` and equivalent plan-handle eligibility references, closing the remaining plan-independence guard identified by architect review.
+- Preserved the reviewed schema and migration without changes.
+- `npm run format` passed.
+- `npm run prisma:generate` passed.
+- `npm run validate` passed.
+- `npm run test:billing-policy` passed.
+- `npm run test:recovery-credit-packs` passed.
+- `npm run test:billing-lifecycle` passed.
+- `npm run erd` passed.
+- `git diff --check` passed.
+
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-006`
 - Implementation branch: `task/ARCH-010-DATABASE-006`
-- Published commits: `a8ca715`, `6a0a711`
+- Published commits: `a8ca715`, `6a0a711`, `449dba7`, `7523f49`
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-006`
 - Parent branch: `task/ARCH-010-DATABASE-006`
 
