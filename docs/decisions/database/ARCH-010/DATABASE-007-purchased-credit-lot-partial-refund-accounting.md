@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 67
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T14:05:00Z
+updated: 2026-09-11T13:59:50Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -830,4 +830,83 @@ Passed from the canonical implementation worktree: `npm run format`, `npm run pr
 - Parent task branch and implementation branch were pushed to their respective `origin` remotes.
 - Both worktrees were clean after their respective commits and pushes.
 - No main branch was pushed, no Architect Review text was edited, and no submodule gitlink was staged.
+
+#### Attempt 3 — Changes Requested (one remaining aggregate-fixture fidelity issue)
+
+Attempt 3 successfully closes the strict FIFO and synchronization-evidence corrections from Attempt 2.
+
+Architect re-review verified:
+
+- the migration remains byte-for-byte unchanged from Attempt 2;
+- the FIFO fixture now selects the first lot with `remaining > 0` and fails if that specific FIFO lot is too small;
+- an explicit strict no-split regression now proves an undersized earlier positive lot is not skipped in favour of a later lot;
+- zero-capacity refunded lots are skipped and later grant-bearing lots may fund a reservation;
+- partially reduced earlier lots that remain positive but are too small fail rather than being skipped;
+- `RELEASED` does not decrement current capacity and therefore does not block later current reservation usage;
+- `REJECTED` and `WITHDRAWN` legacy refunds are excluded from active-hold reconstruction;
+- aggregate mismatch is asserted to fail rather than being silently adjusted;
+- the validator statically rejects `UPDATE "billing"."ShopEntitlementCounter"` in the migration;
+- all four start-of-attempt synchronization outcomes are now durably recorded;
+- the complete Attempt 3 validation contract passed and `npm run status` remained inspection-only.
+
+One focused validator requirement from the prior review is still incomplete.
+
+##### Required correction — make aggregate reconstruction status-aware
+
+The SQL aggregate reconciliation correctly includes only grant-bearing purchases:
+
+```sql
+WHERE purchase."status"::text IN ('ACTIVE', 'REFUNDED')
+```
+
+The JavaScript `allocateFifo()` helper mirrors that status filter, but
+`reconcileAggregate()` currently sums every purchase supplied to it:
+
+```js
+const reconstructed = purchases.reduce(...)
+```
+
+Therefore the validator proves that a `NEEDS_ATTENTION`-only purchase cannot fund a reservation, but it does **not** prove the other half of the requested invariant:
+
+```text
+NEEDS_ATTENTION contributes zero reconstructed granted quantity.
+```
+
+Make the aggregate fixture mirror the migration by filtering to the same grant-bearing statuses before summing, for example:
+
+```js
+const grantBearingPurchases = purchases.filter(({ status }) =>
+  ["ACTIVE", "REFUNDED"].includes(status),
+);
+```
+
+and perform reconstruction from `grantBearingPurchases`.
+
+Update the aggregate fixtures so they include at least one `NEEDS_ATTENTION` purchase with a non-zero historical `creditsGranted` value and prove that it contributes zero to reconstructed grant/counters.
+
+Keep the existing aggregate equality and mismatch-failure assertions.
+
+##### Scope guard
+
+This is now a single validator-only correction.
+
+Do not modify the accepted DATABASE-007 Prisma schema or
+`20260911130000_add_purchased_credit_lot_accounting/migration.sql`.
+
+After the normal Attempt 4 synchronization/claim, rerun:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:purchased-credit-lots
+npm run test:checkout-recovery-capacity
+npm run test:recovery-credit-packs
+npm run test:billing-lifecycle
+npm run status
+npm run erd:puml
+git diff --check
+```
+
+`npm run status` remains inspection-only. Return the same task to `review`.
 
