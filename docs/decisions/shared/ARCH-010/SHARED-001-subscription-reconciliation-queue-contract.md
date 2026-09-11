@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-11T16:13:07Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-SHARED-006
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-SHARED-002
   - ARCH-010-SHARED-003
 created: 2026-09-11
-updated: 2026-09-11T16:01:47Z
+updated: 2026-09-11T16:15:21Z
 ---
 
 # ARCH-010-SHARED-001: Define subscription reconciliation BullMQ contract
@@ -105,17 +105,19 @@ Do not publish in this task. Do not edit consumers/producers, Prisma, Render, bi
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 
 ### Attempt 2 Correction Checklist
-- [ ] Add a focused runtime smoke assertion through the built public `./billing` package entrypoint for all required reconciliation exports.
-- [ ] Prove the generated public billing declaration exposes `BillingSubscriptionReconcileJob`.
-- [ ] Run the required test, typecheck, build, public-entrypoint validation, and `git diff --check` commands.
-- [ ] Return the same mirrored task branches to `review` with evidence for each correction.
+- [x] Add a focused runtime smoke assertion through the built public `./billing` package entrypoint for all required reconciliation exports.
+- [x] Prove the generated public billing declaration exposes `BillingSubscriptionReconcileJob`.
+- [x] Run the required test, typecheck, build, public-entrypoint validation, and `git diff --check` commands.
+- [x] Return the same mirrored task branches to `review` with evidence for each correction.
 
 ### Files Changed
 - `src/billing.ts`
 - `src/billing.test.ts`
+- `package.json`
+- `scripts/validate-billing-entrypoint.mjs`
 
 ### Work Completed
 - Added the strict v1 subscription reconciliation payload schema, parser, safe parser, and inferred type.
@@ -123,6 +125,8 @@ In Progress
 - Added a deterministic, colon-free, bounded BullMQ job ID derived from subscription ID and expected reconciliation timestamp.
 - Exported all contract symbols through the existing public billing entrypoint.
 - Added rejection and determinism coverage, including proof that the drain constant is not serialized into the payload.
+- Added the declared `validate:billing-entrypoint` check without duplicating the billing contract.
+- Proved the built `@modainteract/moda-interact-shared/billing` runtime subpath exposes every required reconciliation export, the generated declaration exports `BillingSubscriptionReconcileJob`, and the packed artifact contains both public billing targets.
 
 ### Validation Results
 - `npm run test -- src/billing.test.ts` passed: 109 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is not configured; the declared test glob runs the repository test suite.
@@ -130,6 +134,11 @@ In Progress
 - `npm run build` passed, including public billing declarations.
 - `git diff --check` passed.
 - `npm ci` installed the repository lockfile dependencies in the new worktree; npm reported one low-severity audit finding and pending install-script approvals, with no task-source impact.
+- Attempt 2 `npm test -- src/billing.test.ts` passed: 109 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is not configured.
+- Attempt 2 `npm run validate:billing-entrypoint` passed: built package runtime exports, generated declaration type/export, and packed artifact targets validated.
+- Attempt 2 `npm run typecheck` passed.
+- Attempt 2 `npm run build` passed.
+- Attempt 2 `git diff --check` passed.
 
 ### Git / VCS
 - Task branch: `task/ARCH-010-SHARED-001`.
@@ -143,12 +152,12 @@ In Progress
   - shared implementation checkout switched/mutated for task work: no;
   - another task worktree reused: no.
 - Start-of-attempt synchronization:
-  - parent remote task branch fast-forwarded: not-needed; branch created from current `origin/main`;
-  - parent `origin/main` incorporated: already-current;
-  - implementation remote task branch fast-forwarded: not-needed; branch created from current `origin/main`;
+  - parent remote task branch fast-forwarded: already-current;
+  - parent `origin/main` incorporated: yes, merge commit `2fb9212`;
+  - implementation remote task branch fast-forwarded: already-current;
   - implementation `origin/main` incorporated: already-current.
-- Implementation repository: `moda-interact-shared`, commit `6ba830d`, remote `origin/task/ARCH-010-SHARED-001`, pushed: yes.
-- Parent workspace task file: this file, claim commit `5ef8118`, review commit `3729dc1`, pushed: yes.
+- Implementation repository: `moda-interact-shared`, Attempt 2 commit `3520437`, remote `origin/task/ARCH-010-SHARED-001`, pushed: yes.
+- Parent workspace task file: this file, Attempt 2 claim commit `58b6bbd`, review commit pending, pushed: yes.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no.
 - Merged to workspace main: no.
