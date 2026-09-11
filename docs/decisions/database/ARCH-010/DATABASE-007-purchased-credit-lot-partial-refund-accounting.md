@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 67
 executor: copilot
 claimed_at: 2026-09-11T12:25:17Z
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T12:25:17Z
+updated: 2026-09-11T13:55:00Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -307,4 +307,42 @@ Do not invent a balancing adjustment.
 
 ## Completion Report
 
-Populate all standard completion evidence, including exact migration/backfill fixtures and any legacy rows encountered.
+### Status
+Implemented; awaiting Architect Review
+
+### Files Changed
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260911130000_add_purchased_credit_lot_accounting/migration.sql`
+- `moda-interact-database/scripts/validate-purchased-credit-lot-schema.mjs`
+- `moda-interact-database/scripts/validate-billing-lifecycle-schema.mjs`
+- `moda-interact-database/package.json`
+
+### Work Completed
+- Added durable purchased-credit lot counters and versioning without persisting `availableQuantity`.
+- Added exact purchased reservation lot ownership, one-to-many purchase refunds, explicit partial-refund quantities, provider action evidence, and required lookup/FIFO indexes.
+- Added a deterministic additive migration ordered by purchase `activatedAt ASC NULLS LAST, createdAt ASC, id ASC` and reservation `createdAt ASC, id ASC`.
+- Mapped `COMMITTED`, `RESERVED`/`AMBIGUOUS`, and `RELEASED` reservations as specified, and made invalid quantities, unsplittable allocation, missing counters, and aggregate mismatch fail loudly.
+- Preserved legacy refund fields and settlement modes. Deterministic fixtures cover completed and active-hold legacy refund mapping; no live legacy rows were encountered because the migration was not applied.
+- Updated the billing lifecycle regression for the new multi-refund contract.
+
+### Validation Results
+- `npm ci` completed; installation reported existing audit warnings for three high-severity transitive vulnerabilities.
+- `npm run format`, `npm run prisma:generate`, and `npm run prisma:validate` passed.
+- `npm run test:purchased-credit-lots`, `npm run test:recovery-credit-packs`, and `npm run test:billing-lifecycle` passed.
+- The focused validator passed DMMF, FIFO, ambiguity-failure, legacy refund, migration constraint/index, and destructive-change guards.
+- `npm run status` completed without applying migrations; the pre-existing subscription reconciliation migration and this task's migration remain pending.
+- `npm run erd:puml` completed with no tracked ERD artifact change; `git diff --check` passed.
+- Implementation commit: `0329323` (`feat(database): add purchased credit lot accounting`).
+
+### Deviations
+- The migration was not executed against the configured remote Render PostgreSQL database. Validation is schema-, migration-text-, fixture-, and generated-client-based to avoid mutating shared data.
+
+### Assumptions
+- Existing purchased-credit reservations use positive whole-credit quantities and can be allocated without splitting; the migration stops if that is false.
+- Existing aggregate counters must already reconcile exactly; the migration does not invent balancing adjustments.
+
+### Unresolved Issues
+- Live database legacy-row contents and migration execution remain unverified because no migration was applied.
+
+### Architectural Concerns
+- Runtime reservation/refund orchestration must populate and maintain the new lot fields in dependent background, Admin, and Shopify tasks; this task intentionally implements schema, migration, and validation only.
