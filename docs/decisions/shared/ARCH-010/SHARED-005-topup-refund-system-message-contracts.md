@@ -11,9 +11,9 @@ execution_mode: agent
 completion_mode: automatic
 status: ready
 priority: 22
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-11T16:08:10Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-010-SHARED-006
@@ -86,7 +86,7 @@ STOP if equivalent refund message codes already exist with different values/sema
 ## Completion Report
 
 ### Status
-Not started.
+In Progress.
 
 ### Files Changed
 Populate during implementation.
