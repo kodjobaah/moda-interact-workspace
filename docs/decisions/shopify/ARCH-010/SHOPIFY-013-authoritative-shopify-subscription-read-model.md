@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 52
-executor: copilot
-claimed_at: 2026-09-11T22:09:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-008-SHOPIFY-001
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-016
   - ARCH-010-SHOPIFY-018
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T22:27:45Z
 ---
 
 # ARCH-010-SHOPIFY-013: Expose authoritative Shopify commercial subscription read model
@@ -393,3 +393,77 @@ Parent workspace:
 
 Merged to implementation main: no
 Merged to workspace main: no
+
+### Architect Review
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Accepted
+
+Architect review verified:
+
+- the existing `ProviderSubscription` contract is extended additively rather than
+  replaced, preserving existing reconciliation fields including `planHandle`,
+  `usageEventHandles`, pending handle/effective-at fields, provider usage
+  snapshots, current period dates and provider subscription identity;
+- `ShopifyBillingProvider.getActiveSubscription()` still performs the existing
+  single Partner `activeSubscription(appId:, shopId:)` query and does not add a
+  second Partner request;
+- the provider preserves the current active flat-rate item's handle, description,
+  amount and currency;
+- provider `billingPeriod`, current billing-cycle boundaries, trial end and
+  `cancelAtEndOfCycle` remain preserved;
+- pending flat-rate handle/price is preserved and its effective boundary remains
+  the current cycle end, consistent with the existing pending-effective-at
+  semantics;
+- active tiered usage items are now exposed with description, tier pricing and
+  provider usage snapshots while the existing `usageEventHandles` and
+  `providerUsageSnapshot` surfaces remain unchanged for existing consumers;
+- the exactly-one-active-current-flat-rate invariant remains enforced, with
+  at-most-one active pending flat-rate item;
+- Free mapped subscriptions are not treated as cycle-less or usage-less:
+  provider billing-cycle facts, a zero recurring price and active recovery-pack
+  usage items remain visible exactly as for Paid subscriptions;
+- `BillingService.getMerchantShopifySubscriptionState(shopId)`:
+  - resolves the durable Shop and requires `shopifyShopId`;
+  - calls `provider.getActiveSubscription()` exactly once;
+  - returns explicit `NO_ACTIVE_SUBSCRIPTION` when Shopify returns null;
+  - returns Shopify current/pending commercial facts without substituting local
+    plan prices/handles/cycles;
+  - looks up current and pending `BillingPlan` mappings independently by exact
+    Shopify handle;
+  - returns `MAPPED` / `UNMAPPED` without manufacturing a local plan;
+  - preserves an unmapped Shopify contract as an active Shopify subscription;
+  - propagates Partner failures rather than falling back to local Subscription
+    commercial state;
+- no local plan catalogue, hosted-pricing scrape, Admin plan creation, UI change,
+  top-up mutation or Background change was introduced;
+- the focused provider/service command reports 43 passing tests;
+- `npm run build`, Prisma generation/validation and `git diff --check` passed;
+- the three full-suite failures are unrelated i18n-catalogue assertions outside
+  this task's changed surface;
+- repository-wide TypeScript diagnostics are baseline issues, while a direct
+  `tsc --noEmit` check reports no diagnostics in the five task-touched files;
+- the Completion Report records the canonical parent and implementation
+  worktrees, negative shared/reused-worktree assertions and all four
+  start-of-attempt synchronization outcomes;
+- implementation commit `8ef0786` is the reviewed implementation head;
+- the submitted handoff identifies parent review-report commit `ebe8195`.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 1` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-SHOPIFY-018` depends on `ARCH-010-DATABASE-008` and this task.
+  DATABASE-008 is already Complete, so SHOPIFY-018 is promoted to `ready`.
+- `ARCH-010-SHOPIFY-011`, `SHOPIFY-012`, `SHOPIFY-014`, `SHOPIFY-015` and
+  `SHOPIFY-016` remain pending because each still has additional unfinished
+  prerequisites.
+
+The final parent report commit is external handoff evidence and is not required
+to be self-embedded into the commit that contains this same task file.

@@ -14,12 +14,12 @@
 | ARCH-010-SHOPIFY-010 | Pending | Present the real SHOPIFY-014 recovery top-up lifecycle in `TopUpPurchasePanel` without mock/local price authority or legacy one-time-charge APIs. |
 | ARCH-010-SHOPIFY-011 | Pending | Present Shopify-authoritative current/pending subscription state and route plan management through the SHOPIFY-015 hosted plan-change flow. |
 | ARCH-010-SHOPIFY-012 | Pending | Integrate `/app/billing/options` by composing Shopify commercial truth, Moda capacity, real top-up lifecycle and real Shopify-hosted plan-change actions; remove mock authority. |
-| ARCH-010-SHOPIFY-013 | Ready | Extend provider/service contract to expose Shopify-authoritative current/pending flat-rate state plus active usage-item pricing/usage needed by top-up billing. |
+| ARCH-010-SHOPIFY-013 | Complete | Extend provider/service contract to expose Shopify-authoritative current/pending flat-rate state plus active usage-item pricing/usage needed by top-up billing. |
 | ARCH-010-SHOPIFY-014 | Pending | Expose the server-side top-up purchase lifecycle for both Free and Paid using the exact current provider/local BillingPeriod and accepted App Events mechanism. |
 | ARCH-010-SHOPIFY-015 | Pending | Handle Shopify-hosted plan-change return, classify current vs pending provider state, schedule reconciliation, and never mutate effective entitlement in the HTTP callback. |
 | ARCH-010-SHOPIFY-016 | Pending | Present scheduled/effective Shopify cancellation, keep onboarded NO_CONTRACT merchants on dashboard/history, disable top-ups/business execution, and never expose local cancellation authority. |
 | ARCH-010-SHOPIFY-017 | Pending | Present unused purchased-credit refund policy and route merchants to support without self-service provider money movement. |
-| ARCH-010-SHOPIFY-018 | Pending | Expose Shopify-authoritative subscription lifecycle state by combining activeSubscription with latest bounded Partner subscription-status event. |
+| ARCH-010-SHOPIFY-018 | Ready | Expose Shopify-authoritative subscription lifecycle state by combining activeSubscription with latest bounded Partner subscription-status event. |
 | ARCH-010-SHOPIFY-019 | Pending | Keep frozen merchants on dashboard/history, show Shopify billing-pause guidance and disable top-up/plan/product mutations until restoration. |
 | ARCH-010-SHOPIFY-020 | Pending | Present promotional credits as a separate non-refundable balance/capacity source without exposing internal campaign provenance. |
 
