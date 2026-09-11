@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 46
-executor: copilot
-claimed_at: 2026-09-11T19:12:55Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -197,31 +197,28 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Implementation complete; returned to `review` for architect acceptance.
 
 ### Files Changed
-- `moda-interact-background/src/services/shop-execution-eligibility.service.ts`
-- `moda-interact-background/src/services/recovery-routing.service.ts`
-- `moda-interact-background/src/services/conversation-turn-processor.service.ts`
-- `moda-interact-background/src/workers/whatsapp.worker.ts`
-- `moda-interact-background/tests/unit/services/recovery-routing.service.test.ts`
-- `moda-interact-background/tests/unit/services/conversation-turn-processor.service.test.ts`
+- `src/services/shop-execution-eligibility.service.ts`
+- `src/workers/whatsapp.worker.ts`
+- `tests/unit/services/whatsapp-provider-status.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
 
 ### Work Completed
-- Added a shared ACTIVE-shop eligibility lookup.
-- Context-linked inbound routing now checks durable recovery/conversation ownership before message persistence.
-- Context-free recovery and product-only routing ignore inactive shops and return a terminal `shop-unavailable` route when no actionable owner remains.
-- The WhatsApp worker exits before inbound persistence or turn enqueue for unavailable shops.
-- Delayed conversation turns re-check current shop status before abuse admission, agent work, outbound reservation, or provider send, and complete as a no-op when inactive.
-- Provider-status handling and existing effective billing-policy enforcement were left unchanged.
+- Preserved the B004 `ShopExecutionRecord`, `resolveShopByDomain`, and `isShopExecutionActive` helper API.
+- Exported the inbound and delayed-turn worker boundaries for focused verification.
+- Added worker tests proving active context-linked inbound persists/enqueues, while uninstalled and suspended routes do neither.
+- Added durable delayed-turn loader tests proving inactive shops stop before context construction.
+- Preserved provider-status finalization and delivered usage semantics for existing outbound messages.
 
 ### Validation Results
-- `npm test -- tests/unit/services/recovery-routing.service.test.ts -t 'inactive|returns product-only when|returns the only active recovery'`: passed, 5/5 selected tests.
-- Full routing suite: 20/21 passed; the remaining pre-existing uniqueness-race fixture fails because `Prisma.PrismaClientKnownRequestError` is not constructible in this ungenerated client environment.
-- Delayed-turn focused suite: blocked before test collection because `@prisma/client` was not generated.
-- `npm run test:unit`: 243 tests passed; 24 suites were blocked by the ungenerated Prisma client, with the same pre-existing race-fixture failure.
-- `npm run prisma:validate`: blocked because `database/prisma/schema.prisma` is absent in this checkout.
-- `npx tsc --noEmit`: blocked by pre-existing `src/entrypoints/billing.ts:37` syntax error (`TS1135`); changed files have no editor diagnostics.
+- `npm test -- --run tests/unit/workers/whatsapp.worker.test.ts`: 5 passed.
+- `npm test -- --run tests/unit/services/recovery-routing.service.test.ts`: 21 passed, 1 pre-existing fixture failure because the mocked Prisma namespace does not expose `PrismaClientKnownRequestError` as a constructor.
+- `npm run prisma:validate`: blocked because `database/prisma/schema.prisma` is absent.
+- `npm run prisma:generate`: blocked by the same missing schema.
+- `npm run build`: blocked by Prisma generation and the missing schema.
+- `npm run test:unit`: blocked during collection by the ungenerated Prisma client; the routing suite also retains the pre-existing Prisma constructor fixture failure.
 - `git diff --check`: passed.
 
 ### Git / VCS
