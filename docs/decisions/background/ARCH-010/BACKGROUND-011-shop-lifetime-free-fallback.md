@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 41
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-BACKGROUND-019
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T17:44:41Z
 ---
 
 # ARCH-010-BACKGROUND-011: Make the lifetime Free recovery entitlement plan-independent and consume it after purchased credits

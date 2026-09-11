@@ -12,7 +12,7 @@
 | ARCH-010-BACKGROUND-008 | Pending | Make paid recovery initiation boundary-safe with the drain window, pre-provider revalidation, period-specific source identity and bounded WhatsApp sends. |
 | ARCH-010-BACKGROUND-009 | Pending | Persist full capacity exhaustion, notify once per exhaustion epoch and resume blocked recoveries after any higher-priority capacity source becomes available. |
 | ARCH-010-BACKGROUND-010 | Pending | Apply Shopify-authoritative paid/free plan changes at the proven effective boundary while preserving promotional, purchased and lifetime Free balances. |
-| ARCH-010-BACKGROUND-011 | Pending | Make lifetime Free recovery capacity plan-independent and provide the final fallback after promotional/purchased capacity is exhausted. |
+| ARCH-010-BACKGROUND-011 | Ready | Make lifetime Free recovery capacity plan-independent and provide the final fallback after promotional/purchased capacity is exhausted. |
 | ARCH-010-BACKGROUND-012 | Pending | Reconcile Shopify-scheduled/effective full cancellation, close the final provider BillingPeriod and transition the installed merchant to NO_CONTRACT without touching lifetime balances. |
 | ARCH-010-BACKGROUND-013 | Pending | Extend shop execution gates so NO_CONTRACT stops new recovery and WhatsApp/conversation business execution while preserving bounded historical bookkeeping. |
 | ARCH-010-BACKGROUND-014 | Pending | Make purchased recovery reservations FIFO lot-aware and keep provider top-up activation reconciliation stable across partial/manual refund history. |

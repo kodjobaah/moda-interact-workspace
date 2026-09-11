@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-010-SHARED-004
 created: 2026-09-11
-updated: 2026-09-11T17:05:05Z
+updated: 2026-09-11T17:44:41Z
 ---
 
 # ARCH-010-SHARED-003: Add generic recovery-capacity-exhausted billing system code

@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 21
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-010-SHARED-001
 enables:
@@ -30,7 +30,7 @@ enables:
   - ARCH-010-SHOPIFY-007
   - ARCH-010-SHOPIFY-015
 created: 2026-09-11
-updated: 2026-09-11T16:50:27Z
+updated: 2026-09-11T17:44:41Z
 ---
 
 # ARCH-010-SHARED-002: Publish subscription reconciliation Shared contract
@@ -56,22 +56,85 @@ Use publication mechanics only, following the repository's established Shared re
 ## Completion Report
 
 ### Status
-Not started.
+Complete — architect accepted.
 
 ### Files Changed
-Populate during implementation.
+Publication/version metadata and task report only, as required by this publication task.
+The architect-accepted SHARED-001 implementation source was not redesigned by this task.
 
 ### Work Completed
-Populate during implementation.
+Published the architect-authorized package release:
+
+`@modainteract/moda-interact-shared@0.10.0`
+
+The release was built from a Shared source state containing the accepted ARCH-010
+Shared contracts already present at publication time. For SHARED-002, the required
+subscription-reconciliation public contract is therefore physically published in
+`0.10.0`.
+
+The pre-existing `0.9.0` release was treated as immutable and was not overwritten.
 
 ### Validation Results
-Populate during implementation.
+Publication handoff evidence records:
+
+- package tests: `110 passed, 1 skipped`;
+- typecheck: passed;
+- build: passed;
+- public billing-entrypoint validation: passed;
+- package dry-run / packed-artifact verification: passed;
+- `git diff --check`: passed;
+- published runtime exports verified;
+- published declaration exports verified;
+- npm `latest`: `0.10.0`;
+- published shasum:
+  `219601ddc1689f5cbeb6a8b4ab82326445b16654`.
+
+The single skipped Redis integration test is unrelated to this publication contract.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Reviewed publication handoff:
+
+- implementation commit: `583a7d6`;
+- parent Completion Report commit: `d658adc`;
+- publication/task branches were pushed;
+- no main branch was modified as part of the implementation-agent handoff.
+
+The final parent-report commit is external handoff evidence and is not required to
+be self-embedded into the commit that contains this task file.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+Accepted
+
+#### Attempt 1 — Accepted
+
+Architect review accepts the coordinated `0.10.0` publication as satisfying
+`ARCH-010-SHARED-002`.
+
+Verified from the publication handoff:
+
+- `0.9.0` remained immutable;
+- architect explicitly authorized `0.10.0` after the original publication
+  stop condition correctly prevented the agent from guessing a replacement version;
+- `@modainteract/moda-interact-shared@0.10.0` was successfully published;
+- npm `latest` resolves to `0.10.0`;
+- the published package exposes the accepted subscription-reconciliation runtime
+  and declaration surface required by SHARED-001/SHARED-002;
+- the published artifact shasum is
+  `219601ddc1689f5cbeb6a8b4ab82326445b16654`;
+- validation, build, entrypoint and package-artifact checks passed;
+- there was no attempt to overwrite an existing npm release.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and
+`claimed_at` are cleared and `attempt: 1` is preserved.
+
+This overlay intentionally does **not** modify any enabled Background or Shopify
+task. Dependency/readiness reconciliation remains the responsibility of
+`moda_architect` against the current canonical task graph.
+
 
 ## Non-goals
 
