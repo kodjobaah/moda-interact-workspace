@@ -9,18 +9,18 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-007-SHOPIFY-001
   - ARCH-007-SHOPIFY-002
 enables:
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T22:53:34Z
 ---
 
 # ARCH-010-SHOPIFY-001: Establish fresh-install no-plan state and onboarding-only merchant access
@@ -252,6 +252,14 @@ Do NOT implement in this task:
 - Admin UI;
 - system tests.
 
+## Work Items
+
+- [x] Preserve the reviewed fresh-install Subscription projection and existing-subscription safety.
+- [x] Preserve onboarding-first `/app` loading without dashboard/recovery/usage queries.
+- [x] Preserve fail-closed `/app/usage` and `/app/pending-recoveries` behavior.
+- [x] Re-synchronize both canonical task worktrees and record isolation evidence.
+- [x] Re-run focused acceptance tests and required repository validation.
+
 ## Required tests
 
 Add/adjust focused tests that prove at least:
@@ -289,16 +297,16 @@ A documented pre-existing baseline failure may be referenced only if it still ex
 
 The task is acceptable only if all are true:
 
-- new shops obtain a durable, replay-safe `NO_CONTRACT` projection;
-- existing subscription projections are never downgraded/reset by shop resolution;
-- `/app` actually renders the existing onboarding UI for incomplete onboarding;
-- no-plan onboarding does not execute unnecessary dashboard/recovery/usage queries;
-- plan selection continues through Shopify-hosted pricing;
-- product/usage data surfaces fail closed before plan activation;
-- merchant support remains available;
-- no credit grant, BillingPeriod or App Event is created merely because the app was installed;
-- no merchant access to `moda-interact-admin` is introduced;
-- validation shows no task-introduced regression.
+- [x] New shops obtain a durable, replay-safe `NO_CONTRACT` projection.
+- [x] Existing subscription projections are never downgraded/reset by shop resolution.
+- [x] `/app` actually renders the existing onboarding UI for incomplete onboarding.
+- [x] No-plan onboarding does not execute unnecessary dashboard/recovery/usage queries.
+- [x] Plan selection continues through Shopify-hosted pricing.
+- [x] Product/usage data surfaces fail closed before plan activation.
+- [x] Merchant support remains available.
+- [x] No credit grant, BillingPeriod or App Event is created merely because the app was installed.
+- [x] No merchant access to `moda-interact-admin` is introduced.
+- [x] Validation shows no task-introduced regression; remaining failures are documented repository baselines.
 
 ## Stop conditions
 
@@ -315,24 +323,317 @@ STOP and return to `moda_architect` if any of the following is discovered:
 
 ### Status
 
-Not started.
+Ready for Review (Attempt 3).
 
 ### Files Changed
 
-Populate during implementation.
+- `moda-interact/app/services/shop/shop.service.ts`
+- `moda-interact/app/routes/app/home/route.jsx`
+- `moda-interact/app/routes/app/usage/route.jsx`
+- `moda-interact/app/routes/app/pending-recoveries/route.jsx`
+- `moda-interact/tests/unit/services/shop.service.test.ts`
+- `moda-interact/tests/unit/home-route.test.ts`
+- `moda-interact/tests/unit/usage-route.test.ts`
+- `moda-interact/tests/unit/pending-recoveries-route.test.ts`
 
 ### Work Completed
 
-Populate during implementation.
+- Added an idempotent `Subscription` upsert keyed by `shopId` that creates only
+  the accepted `NO_CONTRACT` projection and leaves existing subscription rows
+  unchanged.
+- Preserved the existing active shop and onboarding projection without adding
+  billing periods, credit grants, purchases, or Shopify app events.
+- Changed `/app` to return the minimal onboarding loader result for incomplete
+  onboarding and for missing or non-active subscriptions, without dashboard,
+  recovery, billing-period, or usage dataset queries.
+- Kept the existing onboarding billing CTA and Shopify-hosted pricing route
+  unchanged.
+- Redirected `/app/usage` to `/app` unless onboarding is complete and the
+  subscription is `ACTIVE` or `TRIALING`.
+- Made `/app/pending-recoveries` return an empty unavailable response for
+  incomplete onboarding or a non-active subscription.
+- Added focused coverage for projection replay, existing `ACTIVE` and
+  `TRIALING` preservation, onboarding query avoidance, usage redirects, and
+  pending-recoveries fail-closed behavior.
+- Attempt 2 revalidated the prior implementation against the complete declared
+  validation set. The latest Architect Review entry is explicitly workflow
+  evidence only and contains no additional source or test correction; the
+  existing implementation remains unchanged and all prior behavior is
+  preserved.
+- Attempt 3 performed the requested report-only correction. The reviewed
+  implementation remains unchanged; the required synchronization and isolation
+  evidence is now recorded below.
 
 ### Validation Results
 
-Populate during implementation.
+- Focused Vitest: `node ./node_modules/vitest/vitest.mjs run tests/unit/services/shop.service.test.ts tests/unit/home-route.test.ts tests/unit/usage-route.test.ts tests/unit/pending-recoveries-route.test.ts` — 4 files / 20 tests passed.
+- Reported merchant-i18n test: failed because every catalogue is missing
+  `billingCommerce.actions.manageCapacity`; this is outside the task's changed
+  files and matches the documented full-suite baseline.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm test`: 29 files passed, 1 skipped, 2 files failed with 3 existing
+  internationalization catalogue failures for missing
+  `billingCommerce.actions.manageCapacity`; no focused task test failed.
+- `npm run typecheck`: non-zero with documented baseline `TYPECHECK-001`; the
+  reported error set remains the known pre-existing baseline and no new
+  task-specific error was introduced.
 
 ### Git / VCS
 
-Populate exact canonical parent/implementation worktree, branch, commits and push evidence according to the workspace VCS/worktree policies.
+Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-001`
+
+- Branch: `task/ARCH-010-SHOPIFY-001`
+- Commit: `ea15631` (`fix: gate fresh installs until subscription activation`)
+- Synchronization merge: `75ea98f` (`Merge remote-tracking branch 'origin/main' into task/ARCH-010-SHOPIFY-001`).
+- Both `ea15631` and `75ea98f` are published to `origin/task/ARCH-010-SHOPIFY-001`.
+- Parent task worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-001`
+- Parent worktree is not the primary/shared workspace: yes.
+- Implementation worktree is not the shared repository checkout: yes.
+- Start-of-attempt synchronization:
+  - parent remote task branch fast-forwarded: not-needed (already current);
+  - parent `origin/main` incorporated: already-current (merge commit `58963db`);
+  - implementation remote task branch fast-forwarded: not-needed (already current);
+  - implementation `origin/main` incorporated: yes (merge commit `75ea98f`).
+- Parent claim commit: `5656f39` (`chore: claim ARCH-010-SHOPIFY-001 attempt 3`).
+- Parent report commit: this task-report publication commit.
+- Branches pushed: parent and implementation `task/ARCH-010-SHOPIFY-001`.
+- Worktrees clean: yes, both canonical worktrees.
+- Parent submodule gitlink was not staged or changed.
 
 ### Architect Review
 
 Pending.
+
+#### Attempt 1 — Changes Requested (workflow evidence only)
+
+The implementation and focused acceptance behaviour pass architectural review.
+No production or test-code correction is requested.
+
+Architect review verified:
+
+- `ShopService.resolveShopifyShop()` creates the fresh-install Subscription with
+  `status = NO_CONTRACT`, null current/pending plan/provider/billing-period fields
+  required by the task, and `cancelAtPeriodEnd = false`;
+- the Subscription write is an upsert by the unique `shopId` with `update: {}`,
+  so repeated merchant-route resolution is replay-safe and existing `ACTIVE`,
+  `TRIALING` or other lifecycle projections are not reset by initialization;
+- fresh shop resolution does not create a BillingPeriod, entitlement reservation,
+  purchased-credit grant/purchase or Shopify App Event;
+- the `/app` loader now builds merchant locale/time-zone context and returns the
+  onboarding result before subscription/dashboard/recovery/billing-period/usage
+  presentation queries when onboarding is incomplete;
+- a completed-settings shop without an `ACTIVE`/`TRIALING` local projection also
+  receives the existing Onboarding component rather than product/dashboard data;
+- the existing Onboarding CTA still targets `/app/billing`, and the existing
+  `/app/billing/select` route redirects to Shopify-hosted App Pricing;
+- no `appSubscriptionCreate`, `billing.request` or
+  `appPurchaseOneTimeCreate` flow was introduced;
+- `/app/usage` redirects to `/app` for incomplete onboarding or a missing /
+  non-`ACTIVE`/non-`TRIALING` subscription before product usage datasets are read;
+- `/app/pending-recoveries` returns the existing fail-closed unavailable resource
+  shape for incomplete onboarding / no-contract state without reading pending
+  recoveries;
+- `/app/merchant-support` remains governed by Shop execution status and does not
+  require a commercial Subscription, so an `ACTIVE` no-plan merchant remains able
+  to reach support;
+- no merchant route or CTA changed by this task targets `moda-interact-admin`;
+- focused task tests report 20 passing tests;
+- `npm run build`, `npm run prisma:validate` and `git diff --check` passed;
+- the three full-suite failures are internationalisation-catalogue assertions
+  outside this task's changed files, while the task-focused tests pass;
+- the reported TypeScript failures are documented baseline diagnostics and no
+  task-focused compile/build failure is present;
+- implementation commit `ea15631` is the reviewed Attempt 1 implementation head;
+- the submitted handoff identifies parent review-report commit `712c374`.
+
+One mandatory workflow-policy item remains incomplete.
+
+##### Required correction — record full isolation/synchronization evidence
+
+The Completion Report records the canonical implementation and parent worktree
+paths, but it does not durably state the required negative-isolation assertions
+and all four start-of-attempt synchronization outcomes.
+
+On Attempt 2, using the resolver-selected canonical worktrees, record exactly:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Also record the exact focused Vitest command(s) that produced the 20 passing task
+tests.
+
+This is an evidence/report-only correction.
+
+Do **not** change the accepted SHOPIFY-001 implementation or focused tests merely to
+manufacture another implementation commit. If start-of-attempt synchronization
+introduces a genuine semantic conflict, stop and return that conflict to
+`moda_architect`.
+
+After synchronization, rerun:
+
+```text
+the same focused SHOPIFY-001 test command(s)
+npm run build
+npm run prisma:validate
+git diff --check
+```
+
+The already-documented unrelated full-suite i18n and baseline TypeScript failures
+may remain documented unchanged.
+
+Return the same task to `review`.
+
+#### Attempt 2 — Changes Requested (durable evidence still missing)
+
+Attempt 2 correctly preserves the already-reviewed implementation.
+
+Architect re-review verified:
+
+- the entire `moda-interact` implementation tree in the submitted Attempt 2
+  archive is byte-for-byte unchanged from Attempt 1;
+- implementation head therefore remains the accepted code at `ea15631`;
+- the external handoff identifies parent claim commit `6bba7a8` and final parent
+  Completion Report commit `c03ca72`;
+- the external handoff states the focused tests, build, Prisma validation and
+  `git diff --check` passed, with the same three unrelated i18n catalogue failures;
+- no production or focused-test code change is required.
+
+However, the required workflow evidence was not durably written into the task
+Completion Report.
+
+The uploaded task file still contains the old Git/VCS section and then repeats the
+Attempt 1 Architect Review request. It does **not** record the actual values for:
+
+```text
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+It also does not record the exact focused Vitest command(s) used to produce the
+20 passing tests.
+
+The external summary cannot substitute for the durable task report because it does
+not state those four synchronization outcomes individually.
+
+##### Attempt 3 correction
+
+This remains report/evidence-only.
+
+Using the resolver-selected canonical SHOPIFY-001 worktrees, perform the normal
+start-of-attempt synchronization and write the actual observed evidence into the
+Completion Report:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit: ea15631
+Parent claim/report commits:
+Branches pushed:
+Worktrees clean:
+```
+
+Record the exact focused Vitest command(s) and result (`20 passed`), then rerun:
+
+```text
+the same focused SHOPIFY-001 test command(s)
+npm run build
+npm run prisma:validate
+git diff --check
+```
+
+Do not change production or test code merely to create a new implementation commit.
+The implementation is already accepted.
+
+The three unrelated i18n catalogue failures and documented baseline typecheck
+diagnostics may remain unchanged.
+
+Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining durable workflow-evidence requirement.
+
+Architect re-review verified:
+
+- the accepted implementation behaviour remains unchanged from the earlier
+  architectural review;
+- the focused validation command is now recorded exactly:
+
+  `node ./node_modules/vitest/vitest.mjs run tests/unit/services/shop.service.test.ts tests/unit/home-route.test.ts tests/unit/usage-route.test.ts tests/unit/pending-recoveries-route.test.ts`;
+
+- that focused command reports 4 files / 20 passing tests;
+- `npm run build` passed;
+- `npm run prisma:validate` passed;
+- `git diff --check` passed;
+- the full suite still contains only the documented unrelated i18n catalogue
+  failures and no SHOPIFY-001 focused failure;
+- the parent worktree is recorded as:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-001`;
+- the implementation worktree is recorded as:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-001`;
+- the report explicitly confirms the parent is not the primary/shared workspace;
+- the report explicitly confirms the implementation worktree is not the shared
+  repository checkout;
+- all four start-of-attempt synchronization outcomes are recorded individually;
+- the implementation branch includes synchronization merge `75ea98f`, which
+  incorporates current `origin/main` without redesigning the accepted
+  SHOPIFY-001 behaviour;
+- original implementation commit `ea15631` remains the reviewed task change;
+- parent claim commit `5656f39` is recorded;
+- both mirrored task branches are pushed and both canonical worktrees are clean;
+- the submitted handoff identifies final parent report commit `1405370`.
+
+The final parent report hash is external handoff evidence and is not required to
+be self-embedded into the commit that contains this same task file.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 3` is preserved.
+
+Dependency reconciliation:
+
+`ARCH-010-SHOPIFY-002` is **not** promoted by this acceptance because it still
+depends on `ARCH-010-DATABASE-004`, which is not Complete in the submitted
+canonical task graph. Its other already-completed dependencies do not remove that
+remaining gate.
+
