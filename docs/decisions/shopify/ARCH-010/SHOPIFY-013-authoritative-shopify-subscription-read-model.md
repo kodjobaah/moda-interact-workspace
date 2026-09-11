@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
 executor: copilot
 claimed_at: 2026-09-11T22:09:08Z
@@ -312,4 +312,84 @@ STOP if implementation would require local `BillingPlan` rows to substitute for 
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review
+
+### Files Changed
+
+- `app/services/billing/billing.types.ts`
+- `app/services/billing/providers/shopify-billing.provider.ts`
+- `app/services/billing/billing.service.ts`
+- `tests/unit/services/shopify-billing.provider.test.ts`
+- `tests/unit/services/billing.service.test.ts`
+
+### Work Completed
+
+- Extended `ProviderSubscription` backwards-compatibly with billing period, current/pending flat-rate commercial facts, and active tiered usage items while preserving existing usage handles, snapshots, dates and reconciliation fields.
+- Preserved the existing exactly-one-active-flat-rate invariant and existing Partner failure path.
+- Added `BillingService.getMerchantShopifySubscriptionState(shopId)` with durable Shop/Shopify ID validation, exactly one provider read, explicit `NO_ACTIVE_SUBSCRIPTION`, Shopify-authoritative current/pending commercial data, independent current/pending local mapping lookups, and first-class unmapped results.
+- Preserved Free-plan billing cycles and usage items without converting provider data into local monetary fields or a fabricated catalogue.
+- Added focused regression coverage for commercial fields, billing cycles, cancellation, pending mappings, Free usage meters, unmapped handles, provider failures, no active subscription, and one-call behavior.
+
+### Validation Results
+
+- `npm run prisma:generate`: passed after initializing the pinned existing `database` submodule for validation; no database files or schema changes made.
+- `npm test -- --run tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing.service.test.ts`: passed, 2 files and 43 tests.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm test`: 27 files passed, 1 skipped, 3 failures out of 220 tests. The failures are the pre-existing missing `billingCommerce.actions.manageCapacity` i18n catalogue key in `tests/unit/merchant-i18n.test.ts` and `tests/unit/billing-i18n.test.ts`; unrelated to this task.
+- `npm run typecheck`: exits 2 on existing repository-wide diagnostics in unrelated JSX/routes/services/tests. A current direct `npx tsc --noEmit --pretty false` check reports no diagnostics in the five task-touched files.
+- Targeted ESLint reports two existing test-fixture unused-variable errors at `tests/unit/services/billing.service.test.ts` lines 68 and 409; no production-file lint errors.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+- An existing `BillingPlan` row is the Moda mapping signal; Shopify remains authoritative for live handle, price, billing period, cycle dates, cancellation and pending commercial state.
+- Active tiered provider items are exposed unchanged for downstream exact pack-meter matching.
+
+### Unresolved Issues
+
+- Repository baseline failures remain as recorded under Validation Results; they are outside this task's bounded provider/service scope.
+
+### Architectural Concerns
+
+None.
+
+### Git / VCS
+
+Task branch: `task/ARCH-010-SHOPIFY-013`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-013`
+  parent branch: `task/ARCH-010-SHOPIFY-013`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-013`
+  implementation branch: `task/ARCH-010-SHOPIFY-013`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact`
+  commit: `8ef0786`
+  remote branch: `origin/task/ARCH-010-SHOPIFY-013`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-013-authoritative-shopify-subscription-read-model.md`
+  claim commit: `49c36ed`
+  review submission commit: pending until this report is committed
+  remote branch: `origin/task/ARCH-010-SHOPIFY-013`
+  pushed: yes for claim; review submission follows this commit
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
