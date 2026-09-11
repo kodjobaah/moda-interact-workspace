@@ -9,17 +9,17 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 19
-executor: copilot
-claimed_at: 2026-09-11T12:58:56Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-016
   - ARCH-010-SHOPIFY-018
 created: 2026-09-11
-updated: 2026-09-11T12:58:56Z
+updated: 2026-09-11T13:06:28Z
 ---
 
 # ARCH-010-DATABASE-008: Persist Shopify subscription freeze projection and lifecycle evidence
@@ -229,4 +229,133 @@ Merged to implementation main: no
 Merged to workspace main: no
 
 ### Architect Review
-Pending
+
+#### Review Status
+
+Changes Requested
+
+#### Review-history note
+
+The previous architect-generated overlay reset this task for Attempt 2 but, due to an overlay-generation defect, did not actually embed the intended Architect Review text into the task file. The correction below therefore reconstructs the durable review history. This is an architect-tooling issue, not evidence that the repository agent deliberately ignored the prior review.
+
+#### Attempt 1 — Changes Requested (focused validation only)
+
+The ARCH-010-DATABASE-008 schema, migration, ERD and workflow evidence were architecturally correct. No schema or migration change was requested.
+
+The required correction was to prove that the generated Prisma client exposes the new enum vocabulary, not only that `schema.prisma` contains the enum declarations and that generated DMMF contains the new fields.
+
+The requested proof was equivalent to asserting generated-client exposure for:
+
+```text
+SubscriptionProjectionStatus.FROZEN
+
+ProviderSubscriptionLifecycleState.CREATED
+ProviderSubscriptionLifecycleState.UPDATED
+ProviderSubscriptionLifecycleState.CANCELLATION_SCHEDULED
+ProviderSubscriptionLifecycleState.CANCELED
+ProviderSubscriptionLifecycleState.FROZEN
+ProviderSubscriptionLifecycleState.UNFROZEN
+```
+
+#### Attempt 2 — Changes Requested (remaining validator/VCS evidence only)
+
+Attempt 2 successfully synchronized the task branch and preserved the accepted DATABASE-008 implementation.
+
+Architect re-review verified:
+
+- the implementation now incorporates the accepted DATABASE-005 recovery-capacity migration/schema/validator through synchronization;
+- the DATABASE-008 provider-lifecycle migration is unchanged from Attempt 1;
+- the DATABASE-008 schema semantics remain additive and correct;
+- `FROZEN` remains distinct from `NO_CONTRACT`;
+- lifecycle evidence fields remain nullable;
+- no BillingPeriod/counter/entitlement/pending-plan/cancellation/`nextReconcileAt` semantics were changed;
+- the Attempt 2 Completion Report contains complete physical worktree isolation and all four start-of-attempt synchronization outcomes;
+- the reported validation suite passed and `npm run status` remained inspection-only.
+
+However, `scripts/validate-billing-lifecycle-schema.mjs` is byte-for-byte unchanged from Attempt 1 with respect to the requested enum-exposure proof. It still:
+
+- parses `SubscriptionProjectionStatus` and `ProviderSubscriptionLifecycleState` from `schema.prisma`; and
+- uses `Prisma.dmmf` only to inspect the generated `Subscription` fields.
+
+It does not directly prove that the generated Prisma client exports the enum values required by Acceptance Criterion 6.
+
+##### Required correction 1 — assert generated enum exports
+
+Make the focused validator directly consume the generated Prisma enum exports.
+
+A suitable implementation is:
+
+```js
+import {
+  Prisma,
+  ProviderSubscriptionLifecycleState,
+  SubscriptionProjectionStatus,
+} from "@prisma/client";
+
+assert.equal(SubscriptionProjectionStatus.FROZEN, "FROZEN");
+
+assert.deepEqual(
+  Object.values(ProviderSubscriptionLifecycleState),
+  [
+    "CREATED",
+    "UPDATED",
+    "CANCELLATION_SCHEDULED",
+    "CANCELED",
+    "FROZEN",
+    "UNFROZEN",
+  ],
+);
+```
+
+Equivalent deterministic generated-client assertions are acceptable.
+
+Keep the existing schema-level exact-enum checks as well; the generated-client assertion supplements rather than replaces them.
+
+Do not change the Prisma schema or DATABASE-008 migration.
+
+##### Required correction 2 — make current branch/head evidence durable
+
+The current task file still records:
+
+```text
+Implementation repository commit: 14e0281
+Parent claim commit: 3cb2d53
+```
+
+while the Attempt 2 handoff identifies the synchronized implementation head as `3abf1a5` and the parent review-report commit as `9e670b2`.
+
+Update the Completion Report / Git-VCS section on the next handoff so it records the actual current implementation branch head used for validation and the current parent handoff/report commit. Preserve earlier commit history where useful, but do not leave the durable handoff pointing only at stale Attempt 1 commits.
+
+##### Validation
+
+After normal Attempt 3 synchronization/claim, rerun:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:recovery-credit-packs
+npm run test:billing-lifecycle
+npm run status
+npm run erd:puml
+git diff --check
+```
+
+`npm run status` remains inspection-only.
+
+##### Scope guard
+
+This is a validator/evidence-only correction.
+
+Do not modify:
+
+- `prisma/schema.prisma`;
+- `20260911140000_add_subscription_provider_lifecycle_evidence/migration.sql`;
+- lifecycle semantics;
+- billing-period/counter state;
+- runtime Shopify reconciliation.
+
+Synchronization-generated ERD changes are acceptable only if they reflect already-integrated mainline schema.
+
+Return the same task to `review`.
+
