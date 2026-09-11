@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 81
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-SHOPIFY-009
   - ARCH-010-SHOPIFY-020
 created: 2026-09-11
-updated: 2026-09-11T15:41:55Z
+updated: 2026-09-11T15:47:10Z
 ---
 
 # ARCH-010-DATABASE-009: Add durable promotional recovery-credit grants and aggregate entitlement counter
@@ -358,4 +358,89 @@ Return the same task to `review` with the updated Completion Report and publishe
 #### Attempt 2 — Ready for Review
 
 Implemented the requested additive entitlement enum migration and validator alignment. No other scope was changed. The corrected implementation is published at `ba0f8b7`, and the parent claim/report branch is published with the Attempt-2 lifecycle evidence.
+
+#### Attempt 2 — Changes Requested (one remaining validator/evidence correction)
+
+Attempt 2 fixes the blocking migration defect from Attempt 1.
+
+Architect re-review verified:
+
+- `20260911150000_add_promotional_credit_grants/migration.sql` now contains:
+  `ALTER TYPE "billing"."EntitlementCounter" ADD VALUE 'PROMOTIONAL_RECOVERY_CREDITS'`;
+- the migration continues to add `PROMOTIONAL_CREDITS_GRANTED` to `BillingAuditAction`;
+- the migration remains additive and row-free;
+- the accepted promotional grant schema/provenance model is unchanged;
+- the validator now proves the Prisma entitlement enum retains:
+  `FREE_RECOVERY_LIFETIME`,
+  `PURCHASED_RECOVERY_CREDITS`,
+  and `PROMOTIONAL_RECOVERY_CREDITS`;
+- the validator proves both required PostgreSQL enum extensions;
+- the required Attempt 2 validation commands passed;
+- canonical parent/implementation worktrees and all four start-of-attempt synchronization outcomes are recorded.
+
+One explicit validator requirement from Attempt 1 is still not proven.
+
+##### Required correction 1 — prove restrictive Shop/Admin provenance relations
+
+The schema and migration are correct:
+
+```prisma
+shop Shop @relation(fields: [shopId], references: [id], onDelete: Restrict)
+
+platformAdmin PlatformAdmin
+  @relation(fields: [platformAdminId], references: [id], onDelete: Restrict)
+```
+
+and the migration contains `ON DELETE RESTRICT` on both foreign keys.
+
+However, `validate-billing-policy-schema.mjs` does not assert either of those
+relation-delete semantics.
+
+Add deterministic assertions proving both provenance relations remain restrictive.
+Either of these approaches is acceptable:
+
+1. schema assertions that match both `@relation(... onDelete: Restrict)` clauses; or
+2. migration assertions that match both foreign keys and `ON DELETE RESTRICT`.
+
+Prefer proving both schema and migration alignment if the assertions remain simple.
+
+##### Required correction 2 — correct the Completion Report status
+
+The top-level task metadata is `review`, but the Completion Report still says:
+
+```text
+### Status
+In Progress
+```
+
+On the next handoff, make the Completion Report status accurately reflect that the
+implementation is complete and awaiting architect review, e.g.:
+
+```text
+### Status
+Ready for Review
+```
+
+or the repository's canonical equivalent.
+
+##### Scope guard
+
+This is a validator/report-only correction.
+
+Do not modify the accepted Prisma schema or promotional-credit migration merely to
+create another implementation change.
+
+After the normal Attempt 3 synchronization/claim, rerun:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:billing-policy
+git diff --check
+```
+
+Do not apply DATABASE-009 to the shared database solely for review.
+
+Return the same task to `review`.
 
