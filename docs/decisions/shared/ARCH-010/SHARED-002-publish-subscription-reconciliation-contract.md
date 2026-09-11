@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 21
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-11T17:09:28Z
+attempt: 1
 depends_on:
   - ARCH-010-SHARED-001
 enables:
@@ -30,7 +30,7 @@ enables:
   - ARCH-010-SHOPIFY-007
   - ARCH-010-SHOPIFY-015
 created: 2026-09-11
-updated: 2026-09-11T16:24:34Z
+updated: 2026-09-11T17:09:28Z
 ---
 
 # ARCH-010-SHARED-002: Publish subscription reconciliation Shared contract
@@ -56,7 +56,7 @@ Use publication mechanics only, following the repository's established Shared re
 ## Completion Report
 
 ### Status
-Not started.
+In Progress.
 
 ### Files Changed
 Populate during implementation.
