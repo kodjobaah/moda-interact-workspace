@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 67
-executor: copilot
-claimed_at: 2026-09-11T13:08:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T13:18:00Z
+updated: 2026-09-11T13:22:39Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -665,4 +665,122 @@ Passed in the implementation worktree: `npm run format`, `npm run prisma:generat
 - Both worktrees were clean at synchronization/claim boundaries and after their respective pushes.
 - `origin/main` was fetched and verified as an ancestor of implementation `HEAD` after the additive union merge; the parent was fast-forward synchronized to `origin/task/ARCH-010-DATABASE-007`.
 - No main branch was merged or pushed, Architect Review text was not edited, and no submodule gitlink was staged.
+
+#### Attempt 2 — Changes Requested (validator fidelity / durable sync evidence)
+
+Attempt 2 corrects the substantive migration defects identified in Attempt 1.
+
+Architect re-review verified:
+
+- grant-bearing lot selection is now restricted to `ACTIVE` and legacy `REFUNDED`; `NEEDS_ATTENTION` no longer contributes lot capacity or aggregate grant reconstruction;
+- legacy completed-refund and active-hold quantities are seeded into `refundedQuantity` / `refundingQuantity` before temporary FIFO capacity is created;
+- temporary lot capacity is initialized as `creditsGranted - refundedQuantity - refundingQuantity`;
+- `RELEASED` reservations may receive deterministic lot identity but do not decrement current temporary capacity and do not increase committed/reserved quantities;
+- aggregate reconciliation remains read/compare/fail-loudly and does not invent balancing adjustments;
+- the DATABASE-007 migration remains unapplied in the shared database;
+- the implementation branch incorporates the architect-approved additive DATABASE-005 synchronization resolution.
+
+Two acceptance items remain.
+
+##### 1. Make `validate-purchased-credit-lot-schema.mjs` actually mirror the SQL FIFO allocator
+
+The Completion Report says:
+
+```text
+The purchased-credit validator now mirrors the SQL algorithm
+```
+
+but the current fixture still differs from the migration.
+
+The migration does:
+
+```text
+choose the first FIFO lot with remainingQuantity > 0
+then fail if that first lot has less than reservation.quantity
+```
+
+The validator currently does:
+
+```js
+remaining.find((candidate) => candidate.remaining >= reservation.quantity)
+```
+
+which skips an undersized earlier FIFO lot and allocates from a later lot. That validates behaviour the SQL intentionally rejects.
+
+Change the fixture allocator to mirror the migration exactly:
+
+```js
+const lot = remaining.find((candidate) => candidate.remaining > 0);
+if (!lot || lot.remaining < reservation.quantity) {
+  throw new Error("ambiguous allocation");
+}
+if (reservation.status !== "RELEASED") {
+  lot.remaining -= reservation.quantity;
+}
+```
+
+Add an explicit strict-boundary regression:
+
+```text
+lot A remaining = 2
+lot B remaining = 5
+next reservation = 3
+-> fail rather than skip A and allocate B
+```
+
+Also complete the remaining deterministic fixtures from Attempt 1:
+
+- prove a `NEEDS_ATTENTION`-only purchase cannot fund a purchased reservation and contributes zero reconstructed grant;
+- prove an older lot reduced to zero by refund/hold is skipped and a later grant can fund the reservation;
+- prove a partially reduced earlier lot that remains positive but is too small causes strict no-split failure rather than being skipped;
+- include `REJECTED` and `WITHDRAWN` legacy refund fixtures and prove neither contributes an active hold;
+- model aggregate reconstruction and compare it with an expected aggregate, including at least one mismatch case that fails rather than being silently adjusted;
+- add a static guard that the migration does not `UPDATE`/reset `ShopEntitlementCounter` aggregate quantities.
+
+The existing RELEASED fixture can remain, but after correcting the allocator it must continue to prove that RELEASED does not decrement current capacity and therefore does not block a later current reservation.
+
+Do not change the now-correct migration merely to make it match the old JavaScript helper. The validator must follow the migration/task contract.
+
+##### 2. Record all four synchronization outcomes explicitly
+
+The Attempt 2 addendum records useful synchronization information, but it does not durably state all four policy outcomes individually.
+
+On the next claim, record exactly:
+
+```text
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Retain the existing canonical parent/implementation worktree paths and negative shared-worktree assertions.
+
+##### Attempt 3 validation
+
+After the normal successful Attempt 3 synchronization and claim, rerun:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:purchased-credit-lots
+npm run test:checkout-recovery-capacity
+npm run test:recovery-credit-packs
+npm run test:billing-lifecycle
+npm run status
+npm run erd:puml
+git diff --check
+```
+
+`npm run status` remains inspection-only. Do not apply the migration to the shared database for review.
+
+##### Scope guard
+
+This is now a focused validator/evidence correction.
+
+Do not redesign the accepted schema or the corrected migration unless synchronization exposes a new semantic conflict. Do not implement runtime FIFO reservation, Admin/merchant refund UI, provider refund calls, negative App Events, Free entitlement changes, or plan/cancellation changes.
+
+Return the same task to `review`.
 
