@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 executor: copilot
 claimed_at: 2026-09-11T19:12:00Z
 priority: 45
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-BACKGROUND-018
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11T17:48:10Z
+updated: 2026-09-11T19:18:00Z
 ---
 
 # ARCH-010-BACKGROUND-004: Stop queued recovery work for inactive shops
@@ -231,13 +231,16 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Architect Review
 
 ### Files Changed
 - `moda-interact-background/src/services/shop-execution-eligibility.service.ts`
 - `moda-interact-background/src/services/pending-recovery-candidate.service.ts`
 - `moda-interact-background/src/services/checkout-recovery.service.ts`
-- Focused service tests for pending candidates, matured materialization, checkout refresh, and order correlation.
+- `moda-interact-background/tests/unit/services/checkout-refresh.test.ts`
+- `moda-interact-background/tests/unit/services/order-recovery-correlation.test.ts`
+- `moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts`
+- `moda-interact-background/tests/unit/workers/pending-recovery-candidate.worker.test.ts`
 
 ### Work Completed
 - Added a Background-owned durable `Shop.status` eligibility service.
@@ -245,22 +248,33 @@ In Progress
 - Added inactive-shop gates for matured candidates, checkout updates, cart activity, and order completion before Shopify or recovery-domain work.
 - Preserved missing-shop semantics, ACTIVE scheduling/materialization behavior, billing reconciliation selection, and existing usage publisher cutoff behavior.
 - Added explicit ACTIVE fixtures and regression coverage proving inactive checkout-created events create no job or index.
-- Implementation commit: `cfa2d35` (`fix(background): gate recovery work for inactive shops`).
+- Added inactive checkout-update, cart-activity, order-completion, and matured-candidate assertions, including the required order-shop status projection.
+- Added worker-level coverage proving matured inactive candidates still run pending-candidate cleanup in `finally`.
+- Implementation commit: `c03027b` (`fix(background): gate inactive recovery execution`).
 
 ### Validation
-- Passed: focused pending-candidate suite, 36 tests.
-- Initial focused service run after ACTIVE fixture repair: 55 passed; remaining checkout/order suites are blocked during module loading because the existing test mock leaves `SubscriptionProjectionStatus.ACTIVE` undefined.
+- Passed: complete focused B004 regression set, 83 tests across five suites.
+- Passed: `git diff --check`.
+- The adjacent EffectiveBillingPolicy, billing reconciliation, and usage publisher suites remain blocked during module loading because `@prisma/client` has not been generated in this checkout.
 - `npx tsc --noEmit` remains blocked by the existing syntax error in `src/entrypoints/billing.ts:37`.
-- `npm run build` remains blocked because its existing Prisma path `database/prisma/schema.prisma` does not exist in this checkout.
+- `npm run build` and `npm run prisma:validate` remain blocked because their configured Prisma path `database/prisma/schema.prisma` does not exist in this checkout.
 - `npm run typecheck` is not declared in `package.json`.
-- Full `npm run test:unit` remains blocked by existing module-load failures and one unrelated recovery-routing race test.
-- `git diff --check` passed before commit.
+- Full `npm run test:unit` was not run after the focused validation because the repository-level Prisma and TypeScript blockers remain unresolved.
 
 ### Validation Results
-Populate during implementation.
+- Focused B004 suites: 5 files, 83 tests passed.
+- Implementation worktree branch published: `task/ARCH-010-BACKGROUND-004` at `c03027b`.
+- Parent task branch synchronized from `main` before attempt-2 claim; implementation branch was published after the corrections.
+- No architect acceptance decision has been made by this agent.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-004`.
+- Parent branch: `task/ARCH-010-BACKGROUND-004`.
+- Implementation branch: `task/ARCH-010-BACKGROUND-004`.
+- Parent claim commit: `abdf404`.
+- Implementation commit: `c03027b`, pushed to `origin/task/ARCH-010-BACKGROUND-004`.
+- Task metadata handoff is published on the parent branch; no merge or acceptance was performed.
 
 ### Architect Review
 
