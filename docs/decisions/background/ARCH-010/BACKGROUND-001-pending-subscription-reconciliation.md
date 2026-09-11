@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -25,7 +25,7 @@ enables:
   - ARCH-010-BACKGROUND-006
   - ARCH-010-BACKGROUND-007
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T23:49:38Z
 ---
 
 # ARCH-010-BACKGROUND-001: Reconcile pending subscription activation with durable BullMQ recovery

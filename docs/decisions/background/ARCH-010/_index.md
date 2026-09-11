@@ -2,7 +2,7 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| ARCH-010-BACKGROUND-001 | Pending | Add BullMQ pending-subscription reconciliation, retry scheduling, stale-job guards and PostgreSQL queue reconstruction to the existing billing worker; first verified Free activation creates the one-time lifetime Free grant. |
+| ARCH-010-BACKGROUND-001 | Ready | Add BullMQ pending-subscription reconciliation, retry scheduling, stale-job guards and PostgreSQL queue reconstruction to the existing billing worker; first verified Free activation creates the one-time lifetime Free grant. |
 | ARCH-010-BACKGROUND-002 | Pending | Replace paid included-allowance aggregate routing with concurrency-safe current-period reservations and delegate included exhaustion into the canonical shop-level fallback chain without automatic overage. |
 | ARCH-010-BACKGROUND-003 | Pending | Extend subscription reconciliation to complete first paid activation, create the first paid BillingPeriod/included counter, and create the one-time lifetime Free grant when absent. |
 | ARCH-010-BACKGROUND-004 | Ready | Gate queued Shopify/recovery work on current Shop.status so pre-uninstall jobs become terminal no-ops without breaking pre-uninstall accounting finalisation. |
