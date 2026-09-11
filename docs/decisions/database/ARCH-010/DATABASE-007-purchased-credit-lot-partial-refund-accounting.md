@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 67
-executor: copilot
-claimed_at: 2026-09-11T12:25:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T13:55:00Z
+updated: 2026-09-11T12:41:45Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -346,3 +346,174 @@ Implemented; awaiting Architect Review
 
 ### Architectural Concerns
 - Runtime reservation/refund orchestration must populate and maintain the new lot fields in dependent background, Admin, and Shopify tasks; this task intentionally implements schema, migration, and validation only.
+
+### Architect Review
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+The target schema is directionally correct, but the deterministic legacy backfill has correctness defects that can either attribute purchased-credit usage to a non-granting purchase or fail a reconstructable migration. Workflow evidence is also incomplete.
+
+##### Accepted schema/model findings
+
+The following parts do not require redesign:
+
+- `RecoveryCreditPurchase` has non-negative lot counters for committed, reserved, refunding and refunded quantities plus `version`, while retaining immutable `creditsGranted` and no persisted `availableQuantity`.
+- `UsageReservation` has a distinct nullable `purchasedCreditPurchaseId` / relation and the required lookup index.
+- purchase-to-refund cardinality is one-to-many and the old unique purchase-refund index is removed.
+- explicit refund quantities and `RecoveryCreditProviderActionKind { REFUND, CREDIT }` are present.
+- existing provider reference / confirmation evidence is retained and provider amount/currency are added without making a locally computed amount authoritative.
+- legacy settlement/status vocabulary remains readable.
+- database CHECKs and required FIFO/refund/reservation indexes are present.
+
+Do not redesign these accepted schema surfaces merely to manufacture churn.
+
+##### Correction 1 — exclude non-granting `NEEDS_ATTENTION` purchases from lot capacity
+
+The migration currently seeds `_purchased_credit_lots` and aggregate reconciliation from:
+
+```text
+ACTIVE
+NEEDS_ATTENTION
+REFUNDED
+```
+
+That is incorrect for the existing durable semantics. The accepted ARCH-007 purchase activation contract is:
+
+```text
+UsageEvent REPORTED       -> purchase ACTIVE          -> grant credits exactly once
+UsageEvent NEEDS_ATTENTION -> purchase NEEDS_ATTENTION -> grant 0 credits
+```
+
+Therefore a `NEEDS_ATTENTION` purchase is not a provider-confirmed granted-credit lot and must not contribute `creditsGranted`, FIFO capacity, or aggregate granted reconciliation.
+
+Use only grant-bearing historical purchases. Under the integrated status model this means `ACTIVE` plus legacy `REFUNDED` purchases that were previously activated/granted and subsequently refunded, unless inspection reveals a more precise durable provider-confirmation predicate. Do not count `PENDING_BILLING`, `NEEDS_ATTENTION`, or `CANCELLED` as granted lots.
+
+Add deterministic validation proving a `NEEDS_ATTENTION` purchase cannot fund an existing reservation and cannot contribute to reconstructed aggregate granted quantity.
+
+##### Correction 2 — current refund/hold quantities must reduce FIFO capacity before active reservation allocation
+
+The migration currently initializes each temporary lot with:
+
+```text
+remainingQuantity = creditsGranted
+```
+
+allocates reservations, and only afterwards backfills `refundedQuantity` / `refundingQuantity`.
+
+That can incorrectly allocate a current `COMMITTED`, `RESERVED`, or `AMBIGUOUS` reservation to an older purchase whose credits were already refunded or held for refund. The final CHECK may then fail even when a later purchase can deterministically fund the reservation.
+
+Backfill durable legacy refund/hold quantities before current active reservation allocation, or otherwise initialize FIFO availability equivalently to:
+
+```text
+creditsGranted
+- refundedQuantity
+- refundingQuantity
+```
+
+before applying current committed/reserved usage.
+
+The migration must still fail loudly when the resulting canonical FIFO history genuinely requires splitting or cannot reconcile. It must not fail merely because already-refunded/held units were incorrectly treated as available reservation capacity.
+
+Add a regression fixture where an earlier purchase is fully or partially refunded/held and a later grant deterministically funds the active reservation.
+
+##### Correction 3 — `RELEASED` reservations must not consume current lot capacity
+
+The reservation loop currently decrements `_purchased_credit_lots.remainingQuantity` before examining reservation status. Therefore `RELEASED` reservations consume temporary capacity even though the task contract explicitly requires:
+
+```text
+RELEASED -> no current lot consumption/hold
+```
+
+A historical relation may be assigned deterministically, but a released reservation must not reduce current lot availability, must not increment committed/reserved/refunding lot quantities, and must not prevent a later current reservation from using capacity that has been released.
+
+Correct the migration and add a regression fixture demonstrating:
+
+```text
+older RELEASED reservation
+same purchased-credit lot capacity released
+later COMMITTED/RESERVED reservation
+-> later active reservation can still use that capacity
+```
+
+The released row may retain its deterministic `purchasedCreditPurchaseId`.
+
+##### Correction 4 — make the focused validator mirror the migration algorithm
+
+The current JavaScript `allocateFifo` fixture is not equivalent to the SQL algorithm:
+
+- the fixture searches for the first lot with `remaining >= reservation.quantity`;
+- the SQL chooses the first lot with any positive remaining quantity and then fails if that lot is too small;
+- the fixture does not model refunded/refunding capacity;
+- the fixture does not model `RELEASED`;
+- the fixture does not model exclusion of non-granting `NEEDS_ATTENTION` purchases.
+
+After correcting the migration, update `validate-purchased-credit-lot-schema.mjs` so its deterministic fixtures mirror the implemented rules rather than validating a different allocator.
+
+At minimum cover:
+
+1. two grant-bearing purchases with committed/reserved usage reconcile exactly;
+2. strict no-splitting failure at the canonical FIFO boundary;
+3. a `NEEDS_ATTENTION` purchase contributes zero grant/capacity;
+4. refunded/refunding quantities reduce allocatable capacity before active reservations;
+5. `RELEASED` does not consume current capacity;
+6. completed legacy refund maps to `refundedQuantity`;
+7. active legacy hold maps to `refundingQuantity`;
+8. rejected/withdrawn refund does not create an active hold;
+9. aggregate granted/committed/reserved/refunding equality is checked without resetting aggregate counters.
+
+##### Correction 5 — restore mandatory worktree/synchronization evidence
+
+The Completion Report does not contain the complete physical isolation and start-of-attempt synchronization evidence required for repository tasks.
+
+Attempt 2 must record:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <launcher-resolved path>
+  parent worktree: <launcher-resolved path>
+  parent branch: task/ARCH-010-DATABASE-007
+  implementation worktree: <launcher-resolved path>
+  implementation branch: task/ARCH-010-DATABASE-007
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Synchronize both canonical worktrees before making Attempt 2 changes and record the actual outcomes.
+
+##### Required Attempt 2 validation
+
+Run the validation commands actually declared by the repository/task after synchronization, including:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:purchased-credit-lots
+npm run test:recovery-credit-packs
+npm run test:billing-lifecycle
+npm run status
+npm run erd:puml
+git diff --check
+```
+
+`npm run status` remains inspection-only. Do not apply this migration to the shared remote database merely to satisfy architect review.
+
+##### Scope guard
+
+Keep Attempt 2 within `ARCH-010-DATABASE-007`.
+
+Do not implement runtime FIFO reservation, Admin refund workflows, merchant UI, provider refund calls, negative App Events, Free lifetime entitlement changes, or plan/cancellation changes.
+
+Return the same task to `review` after publishing the corrected implementation and parent Completion Report.
+
