@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-09-11T13:02:11Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-007-DATABASE-002
@@ -26,7 +26,7 @@ enables:
   - ARCH-010-SHOPIFY-003
   - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11T13:02:11Z
+updated: 2026-09-11T13:08:31Z
 ---
 
 # ARCH-010-DATABASE-006: Move the one-time lifetime Free recovery grant to platform policy and snapshot it per shop
@@ -308,7 +308,7 @@ Start-of-attempt synchronization:
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested
 
@@ -450,4 +450,27 @@ git diff --check
 ```
 
 Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining validator and workflow contract.
+
+Architect re-review verified:
+
+- the canonical parent and implementation worktrees are recorded and both use `task/ARCH-010-DATABASE-006`;
+- all four start-of-attempt synchronization outcomes are recorded as current;
+- the reviewed Prisma schema, DATABASE-006 migration, seed semantics, and package script are unchanged from Attempt 2;
+- `scripts/validate-billing-policy-schema.mjs` now rejects plan-based migration eligibility through `settings."plan"` and `planHandle` in addition to the previously guarded BillingPlan/plan-id/plan-kind terms;
+- the validator continues to require explicit `grantedQuantity = 5`, the `grantedQuantity = 0` preservation predicate, and no writes to committed/reserved/refunding quantities in the existing-counter update;
+- the complete task-required validation contract was rerun successfully;
+- implementation commit `7523f49` is recorded in the durable Git/VCS evidence;
+- no schema or migration churn was introduced solely for Attempt 3.
+
+The schema/migration findings accepted in Attempt 1 therefore remain valid: the lifetime Free allowance is platform-policy owned, the legacy plan field remains compatibility-only, existing onboarded merchants are backfilled independently of plan, usage state is preserved, incomplete onboarding is excluded, and the shop-level lifetime counter remains the durable snapshot.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and `claimed_at` are cleared while `attempt: 3` is preserved.
+
+The parent handoff commit is not embedded into this task file because a file cannot durably contain the hash of the commit that is created from that same file without changing the hash again. The submitted handoff identifies parent report commit `3515ff0`; that external handoff evidence is sufficient and is not an acceptance blocker.
 
