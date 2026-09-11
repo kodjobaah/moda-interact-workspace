@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 41
 executor: copilot
 claimed_at: 2026-09-11T18:05:00Z
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-003
   - ARCH-010-SHOPIFY-004
 created: 2026-09-11
-updated: 2026-09-11T18:05:00Z
+updated: 2026-09-11T18:26:00Z
 ---
 
 # ARCH-010-DATABASE-002: Add period-scoped paid included-credit reservation state
@@ -231,19 +231,53 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260911160000_add_billing_period_entitlement_reservations/migration.sql`
+- `scripts/validate-billing-lifecycle-schema.mjs`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Added `BillingPeriodEntitlementCounterKind.INCLUDED_RECOVERY_CREDITS` and `BillingPeriodEntitlementCounter` with the billing-period uniqueness rule, shop/period access index, reverse relations, and quantity fields.
+- Extended `UsageReservation` with nullable `counterId` and optional `billingPeriodEntitlementCounterId`, preserving the existing named shop-counter relation and adding the indexed period-counter relation.
+- Added an additive migration that preserves the existing `UsageReservation_counterId_fkey`, makes only its column nullable, adds the new period-counter FK/index, and rejects both/neither counter families through an XOR CHECK.
+- Added non-negative checks for all period-counter quantities and a capacity check allowing close logic to move remaining capacity into `forfeitedQuantity` without exceeding the grant.
+- Kept `FREE_RECOVERY_LIFETIME`, `PURCHASED_RECOVERY_CREDITS`, purchased-credit purchase/refund models, and lot accounting unchanged. No application or worker repositories were modified.
+- Updated the billing lifecycle validator with all ten required period-reservation and legacy-counter assertions; regenerated the PlantUML ERD.
 
 ### Validation Results
-Populate during implementation.
+- `npm ci` passed in the isolated implementation worktree to restore declared dependencies; npm reported three existing high-severity audit findings.
+- `npm run format` passed.
+- `npm run validate` passed.
+- `npm run prisma:generate` passed with Prisma Client `6.19.3`.
+- `npm run test:recovery-credit-packs` passed.
+- `npm run test:billing-lifecycle` passed, including all ten required assertions.
+- `npm run erd:puml` passed and emitted the new period counter/relation edges.
+- `git diff --check` passed after removing two generator-produced trailing spaces from the updated ERD.
+- No migration was applied to a database; the migration is additive and preserves existing rows/FKs without backfill or destructive table/row operations.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-002`
+  parent branch: `task/ARCH-010-DATABASE-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-002`
+  implementation branch: `task/ARCH-010-DATABASE-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Implementation commit: `8a68686 feat(database): add paid period credit reservations`; implementation branch pushed to origin.
+Parent claim commit: `d6e770b chore: claim ARCH-010-DATABASE-002`; parent report branch updated below and pushed to origin.
+Neither task branch was merged to `main`; parent submodule gitlink was not staged.
 
 ### Architect Review
 Pending.
