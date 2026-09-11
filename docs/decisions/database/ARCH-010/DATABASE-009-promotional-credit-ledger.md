@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 81
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-SHOPIFY-009
   - ARCH-010-SHOPIFY-020
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T15:18:24Z
 ---
 
 # ARCH-010-DATABASE-009: Add durable promotional recovery-credit grants and aggregate entitlement counter
@@ -255,4 +255,98 @@ Implemented; awaiting Architect Review.
 - Implementation `origin/main` incorporated: already-current.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+The ARCH-010-DATABASE-009 target schema is directionally correct, but the migration does not actually migrate the PostgreSQL `billing.EntitlementCounter` enum to the new schema value. This creates schema/migration drift and is a blocking database correctness issue.
+
+##### Accepted implementation findings
+
+Architect review verified the following and does not request redesign of them:
+
+- `EntitlementCounter` in `schema.prisma` contains `PROMOTIONAL_RECOVERY_CREDITS` alongside the existing lifetime-Free and purchased-credit counters;
+- `PromotionalCreditGrantType` contains the required grant provenance vocabulary;
+- `PromotionalCreditGrant` has positive quantity, mandatory bounded reason, optional campaign reference, globally unique request key, PlatformAdmin provenance and created timestamp;
+- Shop and PlatformAdmin reverse relations are present;
+- the Shop and PlatformAdmin relations use `onDelete: Restrict`;
+- the migration creates the grant type/table, unique request-key index, shop/campaign/admin provenance indexes, restrictive foreign keys, and the positive-quantity CHECK;
+- `BillingAuditAction.PROMOTIONAL_CREDITS_GRANTED` is present in the Prisma schema and the migration adds it to the PostgreSQL enum;
+- the migration is row-free: it creates no promotional counter/grant for existing shops and does not reinterpret `BillingAllowanceAdjustment`, lifetime-Free balances, purchased-credit balances/lots, BillingPeriods, or subscription state;
+- no promotional expiry field or Shopify billing identifier/event is introduced;
+- the Completion Report contains the canonical parent/implementation worktrees and all four start-of-attempt synchronization outcomes.
+
+##### Correction 1 — migrate the PostgreSQL entitlement enum
+
+The Prisma schema adds:
+
+```prisma
+enum EntitlementCounter {
+  FREE_RECOVERY_LIFETIME
+  PURCHASED_RECOVERY_CREDITS
+  PROMOTIONAL_RECOVERY_CREDITS
+}
+```
+
+but `20260911150000_add_promotional_credit_grants/migration.sql` never adds the new value to the existing PostgreSQL enum.
+
+No migration anywhere in the submitted database history contains `PROMOTIONAL_RECOVERY_CREDITS`.
+
+Add the migration operation, using the repository's existing PostgreSQL enum convention, equivalent to:
+
+```sql
+ALTER TYPE "billing"."EntitlementCounter"
+  ADD VALUE 'PROMOTIONAL_RECOVERY_CREDITS';
+```
+
+Do not create a replacement enum or rewrite existing counter rows. This must remain an additive enum extension.
+
+##### Correction 2 — make the validator prove schema/migration alignment
+
+The current billing-policy validator proves that the Prisma schema contains the promotional counter, but it does not prove that the migration adds that value to the database enum. That allowed this defect to pass validation.
+
+Strengthen `scripts/validate-billing-policy-schema.mjs` so it deterministically proves at least:
+
+1. the Prisma `EntitlementCounter` still contains the pre-existing:
+   - `FREE_RECOVERY_LIFETIME`;
+   - `PURCHASED_RECOVERY_CREDITS`;
+   - and the new `PROMOTIONAL_RECOVERY_CREDITS`;
+2. the DATABASE-009 migration contains the `ALTER TYPE "billing"."EntitlementCounter" ... ADD VALUE 'PROMOTIONAL_RECOVERY_CREDITS'` operation;
+3. the DATABASE-009 migration contains the `PROMOTIONAL_CREDITS_GRANTED` BillingAuditAction enum extension;
+4. the Shop and PlatformAdmin relations are present with `onDelete: Restrict` in the Prisma model and/or equivalent restrictive foreign-key evidence in the migration;
+5. the existing no-row/no-reinterpretation guards remain intact.
+
+Keep the existing positive quantity, uniqueness, optional campaign reference, index, and migration no-rewrite assertions.
+
+##### Scope guard
+
+Do not redesign the accepted promotional-credit schema.
+
+Attempt 2 should be limited to:
+
+- the missing additive PostgreSQL enum migration operation;
+- focused validator strengthening;
+- any normal formatting/generated artifact refresh genuinely required by those changes;
+- Completion Report/VCS evidence.
+
+Do not implement Admin actions/UI, credit consumption, campaign expiry, Shopify App Events, refunds, bulk campaigns, or runtime entitlement behaviour.
+
+##### Attempt 2 validation
+
+After the normal canonical-worktree synchronization and successful Attempt 2 claim, rerun the task's repository-declared validation contract:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:billing-policy
+git diff --check
+```
+
+If the repository/task already uses migration-status inspection in this worktree, it may remain inspection-only. Do not apply DATABASE-009 to the shared database merely for architect review.
+
+Return the same task to `review` with the updated Completion Report and published implementation/parent branches.
+
