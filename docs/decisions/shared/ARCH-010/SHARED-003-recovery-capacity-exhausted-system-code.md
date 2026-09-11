@@ -19,7 +19,11 @@ depends_on:
 enables:
   - ARCH-010-SHARED-004
 created: 2026-09-11
+<<<<<<< HEAD
 updated: 2026-09-11T16:24:34Z
+=======
+updated: 2026-09-11T16:50:27Z
+>>>>>>> 891e216 (chore(workspace): added overlay for ARCH-010-SHARED)
 ---
 
 # ARCH-010-SHARED-003: Add generic recovery-capacity-exhausted billing system code
