@@ -449,7 +449,7 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/database/ARCH-010/DATABASE-004-billing-period-lifecycle-history.md`
   claim commit: `763b1c9`
-  review-report commit: pending publication
+  review-report commit: `202bbdf`
   remote branch: `origin/task/ARCH-010-DATABASE-004`
   pushed: yes
   submodule gitlink staged: no
