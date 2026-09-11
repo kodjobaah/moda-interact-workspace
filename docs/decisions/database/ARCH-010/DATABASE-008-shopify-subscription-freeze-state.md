@@ -9,17 +9,17 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 19
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: 2026-09-11T13:24:26Z
+attempt: 3
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-016
   - ARCH-010-SHOPIFY-018
 created: 2026-09-11
-updated: 2026-09-11T13:06:28Z
+updated: 2026-09-11T13:24:26Z
 ---
 
 # ARCH-010-DATABASE-008: Persist Shopify subscription freeze projection and lifecycle evidence
