@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-09-11T23:41:32Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-010-DATABASE-002
@@ -27,7 +27,7 @@ enables:
   - ARCH-010-SHOPIFY-007
   - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11T23:43:19Z
+updated: 2026-09-11T23:49:38Z
 ---
 
 # ARCH-010-DATABASE-004: Strengthen BillingPeriod ownership and close/open lifecycle integrity
@@ -675,4 +675,96 @@ Do not redesign:
 - Background/Admin/merchant UI behavior.
 
 Return the same task to `review`.
+
+#### Attempt 2 — Accepted
+
+Attempt 2 satisfies both migration-safety corrections from Attempt 1.
+
+Architect re-review verified:
+
+- the lifecycle migration is now explicitly wrapped in:
+
+  ```sql
+  BEGIN;
+  ...
+  COMMIT;
+  ```
+
+  so any later `RAISE EXCEPTION` guard rolls back the migration's preceding DDL/DML
+  instead of leaving a partially converted lifecycle model;
+
+- the pointer-safe OPEN-period normalization now closes a non-current OPEN row only
+  when an `EXISTS` guard proves that `Subscription.billingPeriodId` identifies:
+  - the selected BillingPeriod;
+  - owned by that same Subscription; and
+  - still `OPEN`;
+
+- therefore:
+  - multiple OPEN rows with an owned OPEN current pointer keep the selected survivor
+    OPEN and close only sibling OPEN rows as `MIGRATION_RECONCILED`;
+  - multiple OPEN rows without an unambiguous owned OPEN pointer still fail in the
+    pre-normalization guard;
+  - a lone OPEN row is no longer closed merely because the pointer is null or
+    references an owned CLOSED historical period;
+  - zero OPEN rows are not fabricated;
+
+- comparison with Attempt 1 confirms the task-specific migration delta is limited to
+  the explicit transaction envelope and the owned-OPEN-survivor guard requested by
+  Architect Review;
+
+- `validate-billing-lifecycle-schema.mjs` now asserts both transaction boundaries
+  and the pointer/ownership/OPEN survivor predicate;
+
+- validator additions concerning `Shop.reinstallPendingAt` are synchronized
+  DATABASE-003 changes incorporated from `origin/main`, not a DATABASE-004
+  redesign;
+
+- the accepted Attempt 1 schema, period history, snapshot, paid usage and
+  BillingPeriodEntitlementCounter behavior remains unchanged;
+
+- the Completion Report records the full declared validation sequence as passing:
+  - `npm run format`;
+  - `npm run validate`;
+  - `npm run prisma:generate`;
+  - `npm run test:recovery-credit-packs`;
+  - `npm run test:billing-lifecycle`;
+  - `npm run erd:puml`;
+  - `git diff --check`;
+
+- no migration was applied to a shared or production database;
+
+- the report records the canonical parent and implementation worktrees and confirms
+  the shared workspace/shared implementation checkout and another task worktree
+  were not reused;
+
+- all four start-of-attempt synchronization outcomes are recorded individually;
+
+- implementation commit `835e777` is the reviewed Attempt 2 implementation head;
+
+- the submitted external handoff identifies final parent report commit `4143566`.
+
+The parent report hash stored inside the task file predates the final report commit.
+That is not an acceptance blocker because the final commit cannot self-embed its own
+hash; the external handoff supplies the final evidence.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 2` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-BACKGROUND-001` is promoted to `ready`. Its other dependencies are
+  already Complete in this submitted graph:
+  `ARCH-010-DATABASE-006`, `ARCH-010-DATABASE-001`,
+  `ARCH-010-SHARED-002`, and `ARCH-007-BACKGROUND-008`;
+
+- `ARCH-010-SHOPIFY-002` is promoted to `ready`. Its other dependencies are
+  already Complete:
+  `ARCH-010-DATABASE-006`, `ARCH-010-SHOPIFY-001`,
+  `ARCH-010-DATABASE-001`, `ARCH-010-SHARED-002`,
+  `ARCH-007-SHOPIFY-001`, and `ARCH-007-SHOPIFY-002`;
+
+- the other DATABASE-004 dependants remain pending because each still has one or
+  more additional unfinished prerequisites.
 
