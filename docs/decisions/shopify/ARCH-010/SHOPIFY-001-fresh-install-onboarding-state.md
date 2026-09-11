@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-09-11T22:47:52Z
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11T22:47:52Z
+updated: 2026-09-11T22:50:46Z
 ---
 
 # ARCH-010-SHOPIFY-001: Establish fresh-install no-plan state and onboarding-only merchant access
@@ -252,6 +252,14 @@ Do NOT implement in this task:
 - Admin UI;
 - system tests.
 
+## Work Items
+
+- [x] Preserve the reviewed fresh-install Subscription projection and existing-subscription safety.
+- [x] Preserve onboarding-first `/app` loading without dashboard/recovery/usage queries.
+- [x] Preserve fail-closed `/app/usage` and `/app/pending-recoveries` behavior.
+- [x] Re-synchronize both canonical task worktrees and record isolation evidence.
+- [x] Re-run focused acceptance tests and required repository validation.
+
 ## Required tests
 
 Add/adjust focused tests that prove at least:
@@ -289,16 +297,16 @@ A documented pre-existing baseline failure may be referenced only if it still ex
 
 The task is acceptable only if all are true:
 
-- new shops obtain a durable, replay-safe `NO_CONTRACT` projection;
-- existing subscription projections are never downgraded/reset by shop resolution;
-- `/app` actually renders the existing onboarding UI for incomplete onboarding;
-- no-plan onboarding does not execute unnecessary dashboard/recovery/usage queries;
-- plan selection continues through Shopify-hosted pricing;
-- product/usage data surfaces fail closed before plan activation;
-- merchant support remains available;
-- no credit grant, BillingPeriod or App Event is created merely because the app was installed;
-- no merchant access to `moda-interact-admin` is introduced;
-- validation shows no task-introduced regression.
+- [x] New shops obtain a durable, replay-safe `NO_CONTRACT` projection.
+- [x] Existing subscription projections are never downgraded/reset by shop resolution.
+- [x] `/app` actually renders the existing onboarding UI for incomplete onboarding.
+- [x] No-plan onboarding does not execute unnecessary dashboard/recovery/usage queries.
+- [x] Plan selection continues through Shopify-hosted pricing.
+- [x] Product/usage data surfaces fail closed before plan activation.
+- [x] Merchant support remains available.
+- [x] No credit grant, BillingPeriod or App Event is created merely because the app was installed.
+- [x] No merchant access to `moda-interact-admin` is introduced.
+- [x] Validation shows no task-introduced regression; remaining failures are documented repository baselines.
 
 ## Stop conditions
 
@@ -315,7 +323,7 @@ STOP and return to `moda_architect` if any of the following is discovered:
 
 ### Status
 
-Ready for Review.
+Ready for Review (Attempt 3).
 
 ### Files Changed
 
@@ -352,10 +360,16 @@ Ready for Review.
   evidence only and contains no additional source or test correction; the
   existing implementation remains unchanged and all prior behavior is
   preserved.
+- Attempt 3 performed the requested report-only correction. The reviewed
+  implementation remains unchanged; the required synchronization and isolation
+  evidence is now recorded below.
 
 ### Validation Results
 
-- Focused tests: passed, 4 files / 20 tests.
+- Focused Vitest: `node ./node_modules/vitest/vitest.mjs run tests/unit/services/shop.service.test.ts tests/unit/home-route.test.ts tests/unit/usage-route.test.ts tests/unit/pending-recoveries-route.test.ts` — 4 files / 20 tests passed.
+- Reported merchant-i18n test: failed because every catalogue is missing
+  `billingCommerce.actions.manageCapacity`; this is outside the task's changed
+  files and matches the documented full-suite baseline.
 - `npm run build`: passed.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
@@ -373,9 +387,21 @@ Implementation worktree:
 
 - Branch: `task/ARCH-010-SHOPIFY-001`
 - Commit: `ea15631` (`fix: gate fresh installs until subscription activation`)
-- Published to `origin/task/ARCH-010-SHOPIFY-001`.
+- Synchronization merge: `75ea98f` (`Merge remote-tracking branch 'origin/main' into task/ARCH-010-SHOPIFY-001`).
+- Both `ea15631` and `75ea98f` are published to `origin/task/ARCH-010-SHOPIFY-001`.
 - Parent task worktree:
   `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-001`
+- Parent worktree is not the primary/shared workspace: yes.
+- Implementation worktree is not the shared repository checkout: yes.
+- Start-of-attempt synchronization:
+  - parent remote task branch fast-forwarded: not-needed (already current);
+  - parent `origin/main` incorporated: already-current (merge commit `58963db`);
+  - implementation remote task branch fast-forwarded: not-needed (already current);
+  - implementation `origin/main` incorporated: yes (merge commit `75ea98f`).
+- Parent claim commit: `5656f39` (`chore: claim ARCH-010-SHOPIFY-001 attempt 3`).
+- Parent report commit: this task-report publication commit.
+- Branches pushed: parent and implementation `task/ARCH-010-SHOPIFY-001`.
+- Worktrees clean: yes, both canonical worktrees.
 - Parent submodule gitlink was not staged or changed.
 
 ### Architect Review
