@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-11T12:47:04Z
+attempt: 2
 depends_on:
   - ARCH-007-DATABASE-002
   - ARCH-007-DATABASE-003
@@ -26,7 +26,7 @@ enables:
   - ARCH-010-SHOPIFY-003
   - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11T12:36:04Z
+updated: 2026-09-11T12:47:04Z
 ---
 
 # ARCH-010-DATABASE-006: Move the one-time lifetime Free recovery grant to platform policy and snapshot it per shop
@@ -193,7 +193,7 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Implementation complete; returned to `moda_architect` for review.
+In Progress — Attempt 2 Changes Requested corrections
 
 ### Files Changed
 - `moda-interact-database/prisma/schema.prisma`
