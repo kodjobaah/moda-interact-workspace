@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-11T16:13:07Z
+attempt: 2
 depends_on:
   - ARCH-007-SHARED-006
 enables:
@@ -105,7 +105,13 @@ Do not publish in this task. Do not edit consumers/producers, Prisma, Render, bi
 ## Completion Report
 
 ### Status
-Ready for Review
+In Progress
+
+### Attempt 2 Correction Checklist
+- [ ] Add a focused runtime smoke assertion through the built public `./billing` package entrypoint for all required reconciliation exports.
+- [ ] Prove the generated public billing declaration exposes `BillingSubscriptionReconcileJob`.
+- [ ] Run the required test, typecheck, build, public-entrypoint validation, and `git diff --check` commands.
+- [ ] Return the same mirrored task branches to `review` with evidence for each correction.
 
 ### Files Changed
 - `src/billing.ts`
