@@ -9,16 +9,16 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-09-11T11:57:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-009
 created: 2026-09-11
-updated: 2026-09-11T12:01:52Z
+updated: 2026-09-11T12:09:50Z
 ---
 
 # ARCH-010-DATABASE-005: Persist recovery-capacity blocks on detected recoveries
@@ -74,7 +74,8 @@ Create a migration-level CHECK constraint so the two fields are either both null
 
 ```text
 (admissionBlockedAt IS NULL AND admissionBlockReason IS NULL)
-OR (admissionBlockedAt IS NOT NULL AND admissionBlockReason IS NOT NULL)
+OR
+(admissionBlockedAt IS NOT NULL AND admissionBlockReason IS NOT NULL)
 ```
 
 Use the repository's existing SQL quoting/schema conventions. Do not add triggers.
@@ -166,4 +167,85 @@ Ready for Review.
 - No deviations from the task scope. The schema does not add a new `CheckoutRecoveryStatus` value and does not enforce the application-owned DETECTED-only invariant through a cross-column CHECK.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested (workflow/task-document evidence only)
+
+The database implementation itself is architecturally conformant. No Prisma schema, migration, validator, package-script, or generated-ERD correction is required by this review.
+
+Architect inspection verified:
+
+- `commerce.RecoveryAdmissionBlockReason` contains `RECOVERY_CAPACITY_EXHAUSTED`;
+- `CheckoutRecovery.admissionBlockedAt DateTime?` and `admissionBlockReason RecoveryAdmissionBlockReason?` are nullable, preserving existing rows with `NULL/NULL`;
+- `@@index([shopId, admissionBlockReason, status, detectedAt])` exactly matches the bounded repair/resume access path required by the task;
+- the migration is additive, creates the enum/columns/index, and adds the pairwise `CheckoutRecovery_admission_block_pair` CHECK without triggers or destructive rewriting;
+- `CheckoutRecoveryStatus` remains exactly `DETECTED`, `MESSAGE_SENT`, `ENGAGED`, `COMPLETED`, `EXPIRED`, `CANCELLED`;
+- the focused validator checks schema/migration shape, generated Prisma DMMF exposure, mismatch rejection, valid blocked DETECTED state, and clearing both block fields together;
+- comparison with the pre-task ARCH-010 repository snapshot found no unrelated implementation changes beyond the files listed in the Completion Report;
+- the generated ERD reflects the new enum and fields;
+- leaving the migration pending in the configured database is consistent with this task's validation contract; applying it to that database is not required for architect review.
+
+The task cannot be accepted yet because the parent task handoff is not workflow-conformant in two respects. Attempt 2 is therefore limited to parent/worktree evidence remediation and validation rerun; do **not** change the implementation merely to manufacture a new code commit.
+
+##### Required correction 1 — record the complete physical worktree isolation evidence
+
+`docs/agent-worktree-isolation-policy.md` requires every repository-task Completion Report to contain the full launcher-resolved isolation block. The Attempt 1 report records both worktree paths and the implementation branch, but it omits the canonical workspace root, parent branch, the three negative shared/reused-worktree assertions, and all four start-of-attempt synchronization outcomes.
+
+On Attempt 2, record exactly the required evidence shape with truthful values:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <absolute launcher-resolved path>
+  parent worktree: <absolute launcher-resolved path>
+  parent branch: task/ARCH-010-DATABASE-005
+  implementation worktree: <absolute launcher-resolved path>
+  implementation branch: task/ARCH-010-DATABASE-005
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Also retain the required implementation-repository and parent-workspace commit/push evidence, including `submodule gitlink staged: no` and confirmation that neither task branch was merged to `main`.
+
+If either canonical worktree cannot be established with the expected repository/branch mapping, STOP and report `MODA_WORKTREE_ISOLATION_ERROR`; do not substitute a shared/default checkout.
+
+##### Required correction 2 — restore the architect-owned task contract text
+
+The Attempt 1 parent-task diff changed this architect-authored normative task text outside YAML execution metadata and the Completion Report:
+
+```text
+(admissionBlockedAt IS NULL AND admissionBlockReason IS NULL)
+OR
+(admissionBlockedAt IS NOT NULL AND admissionBlockReason IS NOT NULL)
+```
+
+into a two-line formatting variant. The semantics are unchanged, so this is not a database defect, but repository agents do not own arbitrary edits to the task definition. This overlay restores the canonical three-line text. Do not alter other architect-owned task-definition sections during Attempt 2.
+
+##### Required correction 3 — synchronize both task worktrees and rerun required validation
+
+After reclaiming the same task for Attempt 2, reuse the same canonical parent and implementation worktrees, perform the mandatory start-of-attempt synchronization in both repositories, and rerun the task-required validation from the canonical `moda-interact-database` implementation worktree:
+
+```text
+npm run prisma:generate
+npm run format
+npm run validate
+npm run test:checkout-recovery-capacity
+npm run test:recovery-credit-packs
+npm run erd:puml
+npm run status
+git diff --check
+```
+
+`npm run status` remains inspection-only. Do not apply the pending migration to the configured database solely for this review.
+
+If synchronization leaves implementation commit `fb0e76e` unchanged, no replacement implementation commit is required. Push only synchronization/correction commits that are actually necessary, update the same Completion Report with the complete evidence, return the task to `status: review`, and stop for architect review.
+
