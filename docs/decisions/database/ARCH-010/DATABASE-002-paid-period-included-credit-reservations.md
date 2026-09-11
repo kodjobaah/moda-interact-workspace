@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 41
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-11T18:05:00Z
+attempt: 1
 depends_on:
   - ARCH-010-DATABASE-001
   - ARCH-007-DATABASE-005
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-003
   - ARCH-010-SHOPIFY-004
 created: 2026-09-11
-updated: 2026-09-11T17:44:41Z
+updated: 2026-09-11T18:05:00Z
 ---
 
 # ARCH-010-DATABASE-002: Add period-scoped paid included-credit reservation state
@@ -231,7 +231,7 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+In Progress.
 
 ### Files Changed
 Populate during implementation.
