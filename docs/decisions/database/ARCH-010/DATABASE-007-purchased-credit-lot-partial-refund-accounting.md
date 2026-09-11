@@ -9,18 +9,18 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 67
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-11T12:25:17Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-010-ADMIN-002
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T12:25:17Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
