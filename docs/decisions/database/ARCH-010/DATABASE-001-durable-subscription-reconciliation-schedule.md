@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-09-11T12:05:48Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-DATABASE-006
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-DATABASE-003
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11T12:06:27Z
+updated: 2026-09-11T12:14:06Z
 ---
 
 # ARCH-010-DATABASE-001: Add durable subscription reconciliation scheduling state
@@ -158,7 +158,7 @@ Ready for Review.
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested (workflow evidence only)
 
@@ -229,3 +229,26 @@ If the already-pushed implementation commit remains unchanged after synchronizat
 #### Independent review validation note
 
 The architect directly inspected the submitted schema, migration, validator, package scripts, and pre-task vs submitted repository diff. A fresh package/Prisma execution in the review container did not complete within the review timeout, so the successful executable validation remains supported by the agent's recorded results; this timeout is **not** a code finding and is not part of the Changes Requested scope.
+
+#### Attempt 2 — Accepted
+
+The Attempt 2 workflow remediation satisfies the architect correction contract.
+
+Architect re-review verified:
+
+- the Completion Report now records the launcher-resolved canonical workspace root, dedicated parent worktree, dedicated implementation worktree, and matching `task/ARCH-010-DATABASE-001` branches;
+- the report explicitly confirms that neither shared/default checkout was switched or mutated for task work and that no other task worktree was reused;
+- all four required start-of-attempt synchronization outcomes are recorded, with both parent and implementation task branches and `origin/main` already current;
+- every task-required validation command was rerun successfully from the canonical implementation worktree;
+- migration status remains inspection-only and the new migration remains unapplied in the configured database, as required;
+- comparison of the Attempt 1 and Attempt 2 review archives found no implementation-file changes at all: the only changed file is this parent task document;
+- implementation commit `d3d631b` therefore remains the reviewed implementation, with no code churn introduced solely for workflow remediation.
+
+The implementation findings from Attempt 1 remain valid: the nullable `Subscription.nextReconcileAt` field, single-column index, additive migration, generated-client validation and unchanged projection-status vocabulary conform to the ARCH-010 task contract.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and `claimed_at` are cleared while `attempt: 2` is preserved.
+
+Dependency/frontier reconciliation must be performed against the current canonical parent workspace. This task-scoped review archive intentionally does not contain the other ARCH-010 task files, domain `_index.md`, or architecture execution-plan files, so this acceptance overlay does not overwrite those shared coordination documents from an older snapshot.
+
