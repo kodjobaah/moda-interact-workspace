@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 23
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-010-ADMIN-003
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T16:50:27Z
 ---
 
 # ARCH-010-SHARED-006: Publish top-up refund Shared message contracts

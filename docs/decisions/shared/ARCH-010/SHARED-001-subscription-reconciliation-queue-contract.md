@@ -20,7 +20,7 @@ enables:
   - ARCH-010-SHARED-002
   - ARCH-010-SHARED-003
 created: 2026-09-11
-updated: 2026-09-11T16:24:34Z
+updated: 2026-09-11T16:50:27Z
 ---
 
 # ARCH-010-SHARED-001: Define subscription reconciliation BullMQ contract

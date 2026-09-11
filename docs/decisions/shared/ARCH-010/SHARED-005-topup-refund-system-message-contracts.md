@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 22
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on: []
 enables:
   - ARCH-010-SHARED-006
 created: 2026-09-11
-updated: 2026-09-11T16:12:00Z
+updated: 2026-09-11T16:50:27Z
 ---
 
 # ARCH-010-SHARED-005: Add merchant top-up refund billing message contracts
@@ -127,4 +127,46 @@ Ready for Review.
 - Merged to workspace main: no.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Accepted
+
+Architect review verified:
+
+- the integrated Shared billing contract already contains the exact required refund codes:
+  - `BILLING_REFUND_REQUEST_RECEIVED`;
+  - `BILLING_REFUND_COMPLETED`;
+  - `BILLING_REFUND_REJECTED`;
+- the values are present in the existing `BILLING_SYSTEM_MESSAGE_CODES` registry and
+  `BillingSystemMessageCodeSchema`; no second registry or duplicate constants were introduced;
+- the task correctly followed the compatibility rule by reusing the existing codes and adding
+  ARCH-010 acceptance tests only;
+- `createMerchantBillingSystemSourceKey` is used with the durable refund identity as
+  `eventIdentity`, producing the required versioned keys;
+- the tests prove exact readable refund source keys, deterministic replay identity, and bounded
+  deterministic fallback for long shop/refund identifiers;
+- no amount, merchant PII, support-message text, refund status enum, queue contract or consumer
+  implementation was added to the source-key/message contract;
+- the implementation repository change is focused on `src/billing.test.ts`; the billing source
+  contract itself did not require modification for this task;
+- repository tests, typecheck, build and `git diff --check` passed;
+- the single Redis integration skip is unrelated to this contract and is expected when
+  `TEST_REDIS_URL` is unset;
+- the Completion Report contains the canonical parent and implementation worktrees, negative
+  shared/reused-worktree assertions, and all four start-of-attempt synchronization outcomes;
+- implementation commit `cdb29ca` is the reviewed implementation head.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and `claimed_at`
+remain cleared while `attempt: 1` is preserved.
+
+The submitted handoff identifies parent review-report commit `343bca5`. The task file also
+contains earlier parent claim/review commit evidence; this is not an acceptance blocker because
+the final parent commit cannot durably embed its own final hash.
+
+`ARCH-010-SHARED-006` depends only on this task and is therefore promoted to `ready`.
+
