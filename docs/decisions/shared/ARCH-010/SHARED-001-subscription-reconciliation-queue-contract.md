@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-SHARED-002
   - ARCH-010-SHARED-003
 created: 2026-09-11
-updated: 2026-09-11T16:15:21Z
+updated: 2026-09-11T16:24:34Z
 ---
 
 # ARCH-010-SHARED-001: Define subscription reconciliation BullMQ contract
@@ -166,7 +166,7 @@ Ready for Review
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested (public-entrypoint proof only)
 
@@ -273,6 +273,60 @@ Do not publish the package in this task. Publication remains owned by
 `ARCH-010-SHARED-002`.
 
 Return the same task to `review`.
+
+
+#### Attempt 2 — Accepted
+
+Attempt 2 satisfies the remaining public-package-entrypoint acceptance requirement.
+
+Architect re-review verified:
+
+- `scripts/validate-billing-entrypoint.mjs` reads the actual `package.json`
+  `exports["./billing"]` mapping rather than assuming a source-module path;
+- it proves both configured billing export targets exist after build;
+- it imports the package self-reference
+  `@modainteract/moda-interact-shared/billing` and proves the built public runtime
+  entrypoint exports:
+  - `BILLING_SUBSCRIPTION_RECONCILE_SCHEMA_VERSION`;
+  - `BILLING_SUBSCRIPTION_RECONCILE_QUEUE_NAME`;
+  - `BILLING_SUBSCRIPTION_RECONCILE_JOB_NAME`;
+  - `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`;
+  - `BillingSubscriptionReconcileJobSchema`;
+  - `parseBillingSubscriptionReconcileJob`;
+  - `safeParseBillingSubscriptionReconcileJob`;
+  - `createBillingSubscriptionReconcileJobId`;
+- it reads the generated billing declaration and proves
+  `BillingSubscriptionReconcileJob` is both declared and publicly exported;
+- it performs `npm pack --dry-run --json --ignore-scripts` and proves the built
+  runtime and declaration targets for `./billing` are present in the publishable
+  artifact;
+- `package.json` adds only the focused `validate:billing-entrypoint` command for
+  this correction;
+- `src/billing.ts` and `src/billing.test.ts` are unchanged from Attempt 1, so the
+  already accepted queue schema, job-ID semantics, drain-window policy and unit
+  coverage were not churned;
+- repository tests passed (`109` passed, `1` unrelated Redis integration skip),
+  and the public-entrypoint validator, typecheck, build and `git diff --check`
+  all passed;
+- the Completion Report records the canonical parent and implementation worktrees,
+  all negative shared/reused-worktree assertions, and all four start-of-attempt
+  synchronization outcomes;
+- implementation commit `3520437` is the reviewed Attempt 2 implementation head.
+
+The skipped Redis integration test remains unrelated to this queue-contract/public
+entrypoint task and is acceptable with `TEST_REDIS_URL` unset.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` remain cleared while `attempt: 2` is preserved.
+
+The submitted handoff identifies parent review-report commit `f5f74c8`. It is not
+embedded into this same task file because a commit cannot durably contain its own
+final hash.
+
+`ARCH-010-SHARED-002` and `ARCH-010-SHARED-003` each depend only on this task and
+are therefore promoted to `ready`.
 
 
 ## Stop conditions
