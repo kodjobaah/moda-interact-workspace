@@ -132,7 +132,7 @@ Ready for Review.
   - implementation remote task branch fast-forwarded: not-needed; branch created from current `origin/main`
   - implementation `origin/main` incorporated: already-current at worktree creation
 - Implementation repository: `moda-interact-shared`, commit `a81215e`, remote `origin/task/ARCH-010-SHARED-003`, pushed: yes.
-- Parent workspace task file: this file, claim/review commit pending, remote `origin/task/ARCH-010-SHARED-003`, pushed: no.
+- Parent workspace task file: this file, review report commit `d92e70b`, remote `origin/task/ARCH-010-SHARED-003`, pushed: yes.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no.
 - Merged to workspace main: no.
