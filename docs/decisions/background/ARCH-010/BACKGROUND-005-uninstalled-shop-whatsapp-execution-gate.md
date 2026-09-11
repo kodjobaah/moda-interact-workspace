@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 46
 executor: copilot
 claimed_at: 2026-09-11T21:35:00Z
@@ -21,7 +21,7 @@ enables:
   - ARCH-010-BACKGROUND-017
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T22:37:00Z
 ---
 
 # ARCH-010-BACKGROUND-005: Stop WhatsApp business execution for inactive shops
@@ -197,35 +197,47 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Implementation complete; returned to `review` for architect acceptance.
+Ready for Review
 
 ### Files Changed
 - `src/services/shop-execution-eligibility.service.ts`
 - `src/workers/whatsapp.worker.ts`
+- `src/services/conversation-turn-processor.service.ts`
 - `tests/unit/services/whatsapp-provider-status.service.test.ts`
 - `tests/unit/workers/whatsapp.worker.test.ts`
+- `tests/unit/services/conversation-turn-processor.service.test.ts`
+- `tests/unit/services/recovery-routing.service.test.ts`
 
 ### Work Completed
 - Preserved the B004 `ShopExecutionRecord`, `resolveShopByDomain`, and `isShopExecutionActive` helper API.
-- Exported the inbound and delayed-turn worker boundaries for focused verification.
-- Added worker tests proving active context-linked inbound persists/enqueues, while uninstalled and suspended routes do neither.
-- Added durable delayed-turn loader tests proving inactive shops stop before context construction.
-- Preserved provider-status finalization and delivered usage semantics for existing outbound messages.
+- Preserved the accepted inbound and delayed-turn worker boundaries and their durable Shop.status checks.
+- Added worker tests proving active context-linked inbound persists/enqueues, while UNINSTALLED and SUSPENDED routes do neither.
+- Added durable delayed-turn loader tests proving inactive shops stop before context construction, plus processor coverage proving an inactive version race releases without enqueueing a replacement turn.
+- Preserved provider-status finalization and delivered usage semantics for existing outbound messages; added explicit inactive-Shop independence coverage for DELIVERED/READ finalization.
+- Added mixed ownership coverage proving one inactive owner is filtered while two remaining ACTIVE owners stay `ambiguous-tenant`.
+- Attempt 2/3 review corrections: all implemented; no scope guard or stop condition was triggered.
 
 ### Validation Results
-- `npm test -- --run tests/unit/workers/whatsapp.worker.test.ts`: 5 passed.
-- `npm test -- --run tests/unit/services/recovery-routing.service.test.ts`: 21 passed, 1 pre-existing fixture failure because the mocked Prisma namespace does not expose `PrismaClientKnownRequestError` as a constructor.
-- `npm run prisma:validate`: blocked because `database/prisma/schema.prisma` is absent.
-- `npm run prisma:generate`: blocked by the same missing schema.
-- `npm run build`: blocked by Prisma generation and the missing schema.
-- `npm run test:unit`: blocked during collection by the ungenerated Prisma client; the routing suite also retains the pre-existing Prisma constructor fixture failure.
+- `npm test -- --run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts`: 3 files passed, 45 tests passed.
+- `npm test -- --run tests/unit/services/recovery-routing.service.test.ts`: 22 passed, 1 pre-existing fixture failure because the mocked Prisma namespace does not expose `PrismaClientKnownRequestError` as a constructor.
+- `npm test -- --run tests/unit/services/recovery-routing.service.test.ts -t 'mixed inactive and active ownership'`: 1 passed, 22 skipped.
+- `npm test -- --run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/recovery-routing.service.test.ts`: 67 passed; the same single pre-existing routing fixture failed.
+- `npm test -- --run tests/unit/services/effective-billing-policy.service.test.ts`: blocked during import because `@prisma/client` was not generated.
+- `npm run prisma:validate`: blocked; `database/prisma/schema.prisma` is absent.
+- `npm run prisma:generate`: blocked by the same absent schema.
+- `npm run build`: blocked during Prisma generation by the same absent schema.
+- `npm run test:unit`: blocked during collection by the ungenerated Prisma client; routing retains the same pre-existing constructor fixture failure.
 - `git diff --check`: passed.
 
 ### Git / VCS
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004-task-ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004.worktrees/ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
-- Implementation commit pushed: `c54a6e4`.
-- Parent claim commit pushed earlier: `36f4d40`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
+- Negative isolation assertions: parent is not the primary/shared workspace: yes; implementation is not the shared repository checkout: yes.
+- Start-of-attempt synchronization: parent remote task branch fast-forwarded: yes; parent `origin/main` incorporated: yes; implementation remote task branch fast-forwarded: yes; implementation `origin/main` incorporated: yes.
+- Implementation commit: `2c3d8b1`, pushed to `origin/task/ARCH-010-BACKGROUND-005`.
+- Parent report commit: final parent report publication commit, with its hash recorded in the task-return summary because a commit cannot embed its own final hash.
+- Branches pushed: implementation yes; parent yes after report commit.
+- Worktrees clean: yes after publication.
 
 ### Architect Review
 Pending.
