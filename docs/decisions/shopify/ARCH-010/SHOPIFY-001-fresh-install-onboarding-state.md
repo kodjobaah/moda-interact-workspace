@@ -9,18 +9,18 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: 2026-09-11T22:47:52Z
+attempt: 3
 depends_on:
   - ARCH-007-SHOPIFY-001
   - ARCH-007-SHOPIFY-002
 enables:
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11T22:38:09Z
+updated: 2026-09-11T22:47:52Z
 ---
 
 # ARCH-010-SHOPIFY-001: Establish fresh-install no-plan state and onboarding-only merchant access
