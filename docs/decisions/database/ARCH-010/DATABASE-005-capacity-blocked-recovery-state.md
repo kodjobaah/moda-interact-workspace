@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-09-11T11:57:54Z
@@ -18,7 +18,7 @@ depends_on: []
 enables:
   - ARCH-010-BACKGROUND-009
 created: 2026-09-11
-updated: 2026-09-11T11:57:54Z
+updated: 2026-09-11T12:01:52Z
 ---
 
 # ARCH-010-DATABASE-005: Persist recovery-capacity blocks on detected recoveries
@@ -125,19 +125,45 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260911020000_add_recovery_admission_block_state/migration.sql`
+- `scripts/validate-checkout-recovery-capacity-schema.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Added the commerce `RecoveryAdmissionBlockReason` enum with `RECOVERY_CAPACITY_EXHAUSTED`.
+- Added nullable `admissionBlockedAt` and `admissionBlockReason` fields to `CheckoutRecovery`.
+- Added the bounded repair/resume index on `[shopId, admissionBlockReason, status, detectedAt]`.
+- Added an additive migration with the pairwise CHECK constraint requiring both admission fields to be null or both non-null; existing rows remain valid with both fields null.
+- Added generated-client and live PostgreSQL validation for valid DETECTED blocked rows, both mismatch rejection cases, and clearing both fields together.
+- Regenerated the version-controlled PlantUML ERD.
 
 ### Validation Results
-Populate during implementation.
+- `npm run prisma:generate` passed.
+- `npm run format` passed.
+- `npm run validate` passed.
+- `npm run test:checkout-recovery-capacity` passed, including live rollback-scoped PostgreSQL CHECK assertions.
+- `npm run test:recovery-credit-packs` passed.
+- `npm run erd:puml` passed.
+- `npm run status` passed and reported only `20260911020000_add_recovery_admission_block_state` as pending in the configured database; no migration was applied to that database.
+- `git diff --check` passed.
+- `npm ci` installed repository dependencies; npm reported three existing high-severity audit findings.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-005`
+- Implementation branch: `task/ARCH-010-DATABASE-005`
+- Implementation commit: `fb0e76e feat(database): persist recovery capacity blocks`
+- Implementation branch pushed to `origin`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-005`
+- Parent task branch claim commit: `d92e5a9 chore: claim ARCH-010-DATABASE-005`
+- Parent task definition commit: `683d4ee chore: materialize ARCH-010-DATABASE-005`
+
+### Deviations / Assumptions
+- No deviations from the task scope. The schema does not add a new `CheckoutRecoveryStatus` value and does not enforce the application-owned DETECTED-only invariant through a cross-column CHECK.
 
 ### Architect Review
 Pending.
