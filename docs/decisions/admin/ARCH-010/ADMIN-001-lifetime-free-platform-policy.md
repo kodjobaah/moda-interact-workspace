@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 42
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-010-DATABASE-006
 enables: []
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T17:44:41Z
 ---
 
 # ARCH-010-ADMIN-001: Move lifetime Free grant configuration from plan catalogue to platform billing controls

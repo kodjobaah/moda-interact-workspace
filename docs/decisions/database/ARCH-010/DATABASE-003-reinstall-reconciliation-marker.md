@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 48
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-006
   - ARCH-010-SHOPIFY-006
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T17:44:41Z
 ---
 
 # ARCH-010-DATABASE-003: Persist authenticated reinstall reconciliation state
