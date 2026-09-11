@@ -9,17 +9,17 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 19
-executor: copilot
-claimed_at: 2026-09-11T13:24:26Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-016
   - ARCH-010-SHOPIFY-018
 created: 2026-09-11
-updated: 2026-09-11T13:26:38Z
+updated: 2026-09-11T13:29:53Z
 ---
 
 # ARCH-010-DATABASE-008: Persist Shopify subscription freeze projection and lifecycle evidence
@@ -241,7 +241,7 @@ Merged to workspace main: no
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Review-history note
 
@@ -367,4 +367,29 @@ Do not modify:
 Synchronization-generated ERD changes are acceptable only if they reflect already-integrated mainline schema.
 
 Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining generated-client validation and durable handoff-evidence contract.
+
+Architect re-review verified:
+
+- `validate-billing-lifecycle-schema.mjs` now imports `SubscriptionProjectionStatus` and `ProviderSubscriptionLifecycleState` directly from `@prisma/client`;
+- the validator asserts `SubscriptionProjectionStatus.FROZEN === "FROZEN"`;
+- the validator asserts the generated provider lifecycle enum exposes exactly `CREATED`, `UPDATED`, `CANCELLATION_SCHEDULED`, `CANCELED`, `FROZEN`, and `UNFROZEN`;
+- the existing schema-level exact-enum and generated DMMF field assertions remain in place;
+- the DATABASE-008 provider lifecycle migration is byte-for-byte unchanged from Attempt 2 and remains strictly additive;
+- the synchronized Prisma schema/ERD additionally contain the already-accepted ARCH-010-DATABASE-006 platform-policy lifetime allowance; that is legitimate mainline synchronization and does not alter DATABASE-008 lifecycle semantics;
+- durable Git/VCS evidence records implementation head `409f3e6` and the current Attempt 3 parent synchronization/claim commits;
+- the complete task validation contract passed, and migration status remained inspection-only with no shared-database migration applied.
+
+The architectural findings from the earlier reviews therefore remain valid: `FROZEN` is distinct from cancellation/`NO_CONTRACT`; provider lifecycle evidence is nullable audit/reconciliation input; existing subscription rows are not reclassified; and no BillingPeriod, entitlement/counter, pending-plan, cancellation, or `nextReconcileAt` state is mutated by the DATABASE-008 migration.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and `claimed_at` are cleared while `attempt: 3` is preserved.
+
+The submitted handoff identifies parent review-report commit `9a815b4`. That commit hash is not embedded into this same task file because doing so would make the parent report commit self-referential.
+
+Dependency/frontier reconciliation for `ARCH-010-BACKGROUND-016` and `ARCH-010-SHOPIFY-018` must be performed against the current canonical parent workspace; this task-specific acceptance overlay does not overwrite shared indexes or other task files from a stale snapshot.
 
