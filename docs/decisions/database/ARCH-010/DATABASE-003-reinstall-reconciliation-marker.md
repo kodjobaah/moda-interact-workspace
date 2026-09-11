@@ -9,18 +9,18 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 48
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-010-DATABASE-001
 enables:
   - ARCH-010-BACKGROUND-006
   - ARCH-010-SHOPIFY-006
 created: 2026-09-11
-updated: 2026-09-11T17:44:41Z
+updated: 2026-09-11T23:28:04Z
 ---
 
 # ARCH-010-DATABASE-003: Persist authenticated reinstall reconciliation state
@@ -143,20 +143,167 @@ STOP and return to `moda_architect` if:
 
 ## Completion Report
 
+### Work Items
+- [x] Added the nullable `commerce.Shop.reinstallPendingAt` field and composite reconstruction index.
+- [x] Added the additive PostgreSQL migration without backfill or lifecycle/status changes.
+- [x] Extended schema validation for Shop marker nullability, index, lifecycle enum preservation, scheduler preservation, and migration safety.
+- [x] Regenerated the repository-owned PlantUML ERD.
+
+### Acceptance Criteria
+- [x] `Shop.reinstallPendingAt` is nullable and existing Shops remain valid with `NULL`.
+- [x] `(status, reinstallPendingAt)` is indexed using `Shop_status_reinstallPendingAt_idx`.
+- [x] Existing `status`, `installedAt`, and `uninstalledAt` fields are preserved.
+- [x] `ShopStatus` remains exactly `ACTIVE`, `UNINSTALLED`, and `SUSPENDED`.
+- [x] `Subscription.nextReconcileAt` remains present and unchanged.
+- [x] The migration contains no backfill or entitlement, purchase, refund, BillingPeriod, or reservation mutation.
+
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260911160000_add_shop_reinstall_reconciliation_marker/migration.sql`
+- `scripts/validate-billing-lifecycle-schema.mjs`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Added `Shop.reinstallPendingAt DateTime?` and `@@index([status, reinstallPendingAt])`.
+- Added a nullable, no-backfill migration using the repository's PostgreSQL naming convention.
+- Added generated-client and migration assertions covering the reinstall marker and preserving the existing lifecycle and reconciliation contracts.
+- Regenerated the ERD so the Shop marker is represented.
 
 ### Validation Results
-Populate during implementation.
+- `npm install --no-package-lock`: passed; installed declared dependencies without manifest or lockfile changes.
+- `npm run format`: passed.
+- `npm run validate`: passed.
+- `npm run prisma:generate`: passed; generated Prisma Client 6.19.3.
+- `npm run test:billing-lifecycle`: passed; billing lifecycle schema assertions passed.
+- `npm run erd:puml`: passed; regenerated `docs/generated/prisma-erd.puml`.
+- `git diff --check`: passed.
+- `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run status`: reached the intended local database configuration but failed with Prisma `P1001` because PostgreSQL was not running at `localhost:5432`; no migration was applied.
+
+### Deviations
+- Migration status could not be inspected because the local PostgreSQL server was unavailable. No destructive or migration-apply command was run.
+
+### Assumptions
+- `NULL` remains the absence-of-pending-reinstall marker, and reconciliation scheduling remains owned by `Subscription.nextReconcileAt`.
+
+### Unresolved Issues
+- Local PostgreSQL availability is required to complete `npm run status`; this does not affect the additive migration or static/schema validation.
+
+### Architectural Concerns
+- None.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Task branch: `task/ARCH-010-DATABASE-003`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-003`
+  parent branch: `task/ARCH-010-DATABASE-003`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-003`
+  implementation branch: `task/ARCH-010-DATABASE-003`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed; remote task branch did not exist
+  parent origin/main incorporated: yes; task worktree was created from current `origin/main`
+  implementation remote task branch fast-forwarded: not-needed; remote task branch did not exist
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-database`
+  commit: `a6c2af8`
+  remote branch: `origin/task/ARCH-010-DATABASE-003`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/database/ARCH-010/DATABASE-003-reinstall-reconciliation-marker.md`
+  claim commit: `3948e1e`
+  final commit: `2ec0674`
+  remote branch: `origin/task/ARCH-010-DATABASE-003`
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Accepted
+
+Architect review verified:
+
+- `commerce.Shop` adds exactly one new lifecycle marker:
+  `reinstallPendingAt DateTime?`;
+- the existing `status`, `installedAt` and `uninstalledAt` fields and semantics are
+  preserved;
+- the schema adds the required reconstruction index:
+  `@@index([status, reinstallPendingAt])`;
+- `ShopStatus` remains exactly `ACTIVE`, `UNINSTALLED`, `SUSPENDED`;
+- `billing.Subscription.nextReconcileAt DateTime?` and its existing index remain
+  present and unchanged, so reconciliation scheduling is not duplicated onto Shop;
+- the migration is additive:
+  - one nullable `reinstallPendingAt TIMESTAMP(3)` column;
+  - one `Shop_status_reinstallPendingAt_idx` composite index;
+  - no default;
+  - no `NOT NULL`;
+  - no backfill;
+  - no UPDATE/DELETE/DROP;
+- the migration does not mutate Subscription, BillingPeriod, entitlement,
+  reservation, purchase or refund data;
+- existing Shop rows therefore remain valid with `reinstallPendingAt = NULL`;
+- the billing-lifecycle validator checks:
+  - Shop marker presence/nullability;
+  - generated Prisma scalar/type/nullability;
+  - composite index;
+  - exact ShopStatus lifecycle values;
+  - preserved `Subscription.nextReconcileAt`;
+  - additive/no-backfill migration safety;
+  - absence of billing/entitlement/purchase/refund mutation in this migration;
+- the generated PlantUML ERD contains the nullable Shop reinstall marker;
+- the declared static/schema validation completed successfully:
+  - `npm run format`;
+  - `npm run validate`;
+  - `npm run prisma:generate`;
+  - `npm run test:billing-lifecycle`;
+  - `npm run erd:puml`;
+  - `git diff --check`;
+- the additional live `npm run status` check reached the intended local
+  PostgreSQL connection configuration and failed only with Prisma `P1001` because
+  no server was listening at `localhost:5432`; no migration was applied;
+- that `P1001` is an environment-availability limitation, not evidence of a schema
+  or migration defect, and migration application is not required for acceptance of
+  this additive task;
+- the Completion Report records canonical parent and implementation worktrees,
+  confirms the shared workspace/shared implementation checkout and another task
+  worktree were not reused, and records all four start-of-attempt synchronization
+  outcomes;
+- implementation commit `a6c2af8` is the reviewed implementation head;
+- the submitted handoff identifies parent report commits `2ec0674` and `25eeb5e`.
+
+The final parent report commit is external handoff evidence and need not be
+self-embedded into the commit containing this same task file.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 1` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-BACKGROUND-006` remains pending because, in addition to this task, it
+  still depends on `ARCH-010-BACKGROUND-001`, `ARCH-010-BACKGROUND-003` and
+  `ARCH-010-BACKGROUND-007` (with its already-completed Shared/BACKGROUND-004/-005
+  prerequisites not sufficient on their own);
+- `ARCH-010-SHOPIFY-006` remains pending because
+  `ARCH-010-BACKGROUND-006` is not yet complete.
+
+No dependent task is promoted by this acceptance overlay.
+
