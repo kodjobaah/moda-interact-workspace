@@ -9,17 +9,17 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 31
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-002-GATEWAY-001
 enables:
   - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T22:59:54Z
 ---
 
 # ARCH-010-GATEWAY-001: Wire Redis into deployed billing workers
@@ -76,22 +76,65 @@ Run the repository's declared Render Blueprint/config validation tests/scripts t
 
 No Background code, Shared package, database, application UI, new Render service, Redis provisioning or credential changes.
 
-## Completion Report
+## Work Items
+
+- [x] Add `moda-interact-production-redis-config` to the production billing worker.
+- [x] Add `moda-interact-test-redis-config` to the test billing worker.
+- [x] Preserve Shopify Partner app configuration and `DATABASE_URL` wiring.
+- [x] Update the canonical topology validator to require the billing-worker Redis group.
+- [x] Validate both Render Blueprints and the billing-worker topology.
+
+## Acceptance Criteria
+
+- [x] `moda-billing-worker-production` imports `moda-interact-production-redis-config`.
+- [x] `moda-billing-worker-test` imports `moda-interact-test-redis-config`.
+- [x] The canonical validator rejects either billing worker when its environment-specific Redis group is absent.
+- [x] No services, plans, commands, routes, exposure, Redis resources/secrets, PostgreSQL resources, or other workers changed.
+- [x] Changes are committed and pushed on both mirrored task branches without staging the parent submodule gitlink.
+
+### Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-gateway/render.production.yaml`
+- `moda-interact-gateway/render.test.yaml`
+- `moda-interact-gateway/tests/validate-render-blueprints.sh`
+- `docs/decisions/gateway/ARCH-010/GATEWAY-001-wire-redis-to-billing-workers.md`
 
 ### Work Completed
-Populate during implementation.
+- Added the existing production Redis config group to `moda-billing-worker-production`.
+- Added the existing test Redis config group to `moda-billing-worker-test`.
+- Updated the canonical environment-generic topology assertion to require `common + redis + shopify_app` for both billing workers, addressing Architect Review Correction 1.
+- Preserved each worker's Shopify Partner app config and `DATABASE_URL` entries.
+- Made no changes to services, plans, commands, routes, exposure, Redis resources/secrets, PostgreSQL resources, or other workers.
 
 ### Validation Results
-Populate during implementation.
+- `bash tests/validate-render-blueprints.sh` from the implementation worktree: passed; both `render.test.yaml` and `render.production.yaml` were validated, including the billing-worker Redis-group regression.
+- `bash tests/validate-render-blueprints-negative.sh` from the implementation worktree: passed; all negative topology/configuration cases were rejected.
+- `git diff --check` in the implementation worktree: passed.
+- An initial validator invocation from the workspace shell directory could not resolve the relative test path; it was rerun from the canonical implementation worktree and passed. No source change was involved in that invocation failure.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-GATEWAY-001`, branch `task/ARCH-010-GATEWAY-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-GATEWAY-001`, branch `task/ARCH-010-GATEWAY-001`.
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: already-current
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: already-current
+  implementation origin/main incorporated: already-current
+
+Implementation commit: `29cefeb` (`test: require redis group for billing workers`), pushed to `origin/task/ARCH-010-GATEWAY-001`.
+Parent report commit: `a346cfe9618a30d363df5c776babd05f59319e53`, pushed to `origin/task/ARCH-010-GATEWAY-001`.
+Branches pushed: implementation `task/ARCH-010-GATEWAY-001` at `29cefeb`; parent `task/ARCH-010-GATEWAY-001` at `0b871c1`.
+Worktrees clean: verified after implementation and parent report publication.
+The parent submodule gitlink was not staged.
 
 ### Architect Review
 Pending.
@@ -99,3 +142,198 @@ Pending.
 ## Stop conditions
 
 STOP and return to `moda_architect` if the deployed billing worker topology/service names differ materially from the task baseline, if the required Redis environment group does not exist, or if satisfying the task would require provisioning/replacing Redis rather than wiring the existing shared service.
+
+#### Attempt 1 — Changes Requested
+
+The Render Blueprint wiring itself is correct, but the submitted task cannot be
+accepted because the repository-declared Blueprint validator is now inconsistent
+with the changed topology, and the Completion Report's statement that it passed is
+not reproducible from the submitted archive.
+
+Architect re-review verified:
+
+- `moda-billing-worker-production` now imports
+  `moda-interact-production-redis-config`;
+- `moda-billing-worker-test` now imports
+  `moda-interact-test-redis-config`;
+- each billing worker still retains its environment config group, Shopify Partner
+  app config group, environment-specific `DATABASE_URL`, worker type, repository,
+  conservative single-instance count and `npm run start:billing-worker` command;
+- the existing Redis environment groups already exist and still own only
+  environment-specific `REDIS_URL`;
+- no new Redis resource/group, PostgreSQL resource, service, route, public domain,
+  plan or worker command was introduced.
+
+One substantive validation defect remains.
+
+##### Correction 1 — update the canonical topology validator
+
+The existing repository validator is exactly the suitable topology validator
+identified by this task:
+
+```text
+tests/validate-render-blueprints.sh
+```
+
+Its `expected_services` table still contains:
+
+```ruby
+"moda-billing-worker-#{environment}" => %w[common shopify_app],
+```
+
+while the task has intentionally changed the billing-worker topology to:
+
+```text
+common + redis + shopify_app
+```
+
+Running the declared validator against the submitted archive currently fails with:
+
+```text
+unexpected group attachments for moda-billing-worker-test
+```
+
+Update the canonical validator to require:
+
+```ruby
+"moda-billing-worker-#{environment}" => %w[common redis shopify_app],
+```
+
+for both test and production through its existing environment-generic assertion.
+
+Do not replace this with only an ad-hoc Ruby command in the Completion Report.
+The regression must live in the repository validator so a future removal of the
+Redis group fails the normal Blueprint validation.
+
+Retain the existing assertions for:
+
+- environment-specific `DATABASE_URL`;
+- billing worker type/runtime/repository/command;
+- private exposure;
+- single-instance conservative start;
+- exact environment-specific Redis config-group identity.
+
+If the existing negative Blueprint validator needs a mechanical expectation update
+because of this topology change, update it only as required to preserve its existing
+negative-test intent.
+
+##### Correction 2 — correct and rerun the validation evidence
+
+After updating the validator, run and record the actual results for:
+
+```text
+bash tests/validate-render-blueprints.sh
+bash tests/validate-render-blueprints-negative.sh   # if part of normal repository validation
+git diff --check
+```
+
+The positive validator must pass from the submitted task tree without relying on an
+uncommitted/ad-hoc assertion.
+
+The Completion Report must not state a command passed unless that exact submitted
+tree reproduces the result.
+
+##### Correction 3 — record mandatory worktree/synchronisation evidence
+
+The Completion Report currently records dedicated worktree paths and pushed commits,
+but it does not state the required negative-isolation assertions or all four
+start-of-attempt synchronization outcomes individually.
+
+On Attempt 2 record:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Use the resolver-selected canonical GATEWAY-001 worktrees.
+
+##### Scope guard
+
+This is a focused topology-validator/evidence correction.
+
+Do not change:
+
+- Redis secret values;
+- service counts/plans;
+- Docker commands;
+- routes/domains/public exposure;
+- PostgreSQL resources;
+- other workers;
+- Background/Shared/application code.
+
+The two Blueprint Redis-group additions are already architecturally correct and
+should remain unchanged unless synchronization exposes a real conflict.
+
+Return the same task to `review`.
+
+#### Attempt 2 — Accepted
+
+Attempt 2 satisfies the topology-validator and workflow-evidence corrections from
+Attempt 1.
+
+Architect re-review verified:
+
+- `render.production.yaml` still adds exactly
+  `moda-interact-production-redis-config` to
+  `moda-billing-worker-production`;
+- `render.test.yaml` still adds exactly
+  `moda-interact-test-redis-config` to `moda-billing-worker-test`;
+- both Blueprint files are byte-for-byte unchanged from Attempt 1;
+- the only implementation-file correction from Attempt 1 is the canonical topology
+  validator expectation changing billing workers from:
+
+  `common + shopify_app`
+
+  to:
+
+  `common + redis + shopify_app`;
+
+- the canonical validator continues to prove environment-specific `DATABASE_URL`,
+  worker type/runtime/repository/command, private exposure and conservative
+  `numInstances: 1`;
+- the existing environment-specific Redis config groups remain authoritative for
+  `REDIS_URL`, with no new Redis resource/group or secret introduced;
+- `bash tests/validate-render-blueprints.sh` passes against the submitted archive;
+- `bash tests/validate-render-blueprints-negative.sh` passes against the submitted
+  archive;
+- the existing negative validator did not require a task-specific source change:
+  because the canonical positive validator now enforces the exact group set, a
+  billing worker missing Redis is rejected by that validator automatically;
+- `git diff --check` is recorded as passing in the canonical Git worktree;
+- the Completion Report records canonical parent and implementation worktrees;
+- both negative-isolation assertions are recorded;
+- all four start-of-attempt synchronization outcomes are recorded individually;
+- both mirrored task branches are recorded as pushed and both worktrees clean;
+- implementation commit `29cefeb` is the reviewed Attempt 2 implementation head;
+- the submitted external handoff identifies final parent report commit `55034b4`.
+
+The parent report hash recorded inside the task predates the final parent commit.
+That is not an acceptance blocker: the final commit containing the updated report
+cannot durably self-embed its own final hash, and the external handoff supplies that
+final evidence.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 2` is preserved.
+
+`ARCH-010-SYSTEM-TEST-001` is **not automatically promoted by this overlay**.
+ARCH-010 system-test tasks are terminal/manual-gated validation and remain under
+developer/architect-controlled invocation after implementation work is ready.
+
