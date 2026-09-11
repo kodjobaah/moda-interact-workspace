@@ -2,7 +2,7 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| ARCH-010-SHOPIFY-001 | Ready | Establish fresh-install `NO_CONTRACT` state, render merchant onboarding at `/app`, and fail closed on product/usage surfaces until plan activation. |
+| ARCH-010-SHOPIFY-001 | Complete | Establish fresh-install `NO_CONTRACT` state, render merchant onboarding at `/app`, and fail closed on product/usage surfaces until plan activation. |
 | ARCH-010-SHOPIFY-002 | Pending | Persist Free-plan selection intent, verify current Shopify subscription, preserve/create exact provider Free BillingPeriod when available, and publish durable-reconstructable reconciliation work when activation/cycle verification is unresolved. |
 | ARCH-010-SHOPIFY-003 | Pending | Activate a first verified paid plan only with exact Shopify cycle/meter state and atomically create the first paid BillingPeriod plus included-credit counter. |
 | ARCH-010-SHOPIFY-004 | Pending | Present current paid-period included entitlement and lifetime top-ups on merchant billing/usage surfaces without exposing Admin. |

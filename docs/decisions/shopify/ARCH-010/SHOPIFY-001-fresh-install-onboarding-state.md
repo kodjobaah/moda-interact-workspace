@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-09-11T22:47:52Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-007-SHOPIFY-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11T22:50:46Z
+updated: 2026-09-11T22:53:34Z
 ---
 
 # ARCH-010-SHOPIFY-001: Establish fresh-install no-plan state and onboarding-only merchant access
@@ -587,4 +587,53 @@ The three unrelated i18n catalogue failures and documented baseline typecheck
 diagnostics may remain unchanged.
 
 Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining durable workflow-evidence requirement.
+
+Architect re-review verified:
+
+- the accepted implementation behaviour remains unchanged from the earlier
+  architectural review;
+- the focused validation command is now recorded exactly:
+
+  `node ./node_modules/vitest/vitest.mjs run tests/unit/services/shop.service.test.ts tests/unit/home-route.test.ts tests/unit/usage-route.test.ts tests/unit/pending-recoveries-route.test.ts`;
+
+- that focused command reports 4 files / 20 passing tests;
+- `npm run build` passed;
+- `npm run prisma:validate` passed;
+- `git diff --check` passed;
+- the full suite still contains only the documented unrelated i18n catalogue
+  failures and no SHOPIFY-001 focused failure;
+- the parent worktree is recorded as:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-001`;
+- the implementation worktree is recorded as:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-001`;
+- the report explicitly confirms the parent is not the primary/shared workspace;
+- the report explicitly confirms the implementation worktree is not the shared
+  repository checkout;
+- all four start-of-attempt synchronization outcomes are recorded individually;
+- the implementation branch includes synchronization merge `75ea98f`, which
+  incorporates current `origin/main` without redesigning the accepted
+  SHOPIFY-001 behaviour;
+- original implementation commit `ea15631` remains the reviewed task change;
+- parent claim commit `5656f39` is recorded;
+- both mirrored task branches are pushed and both canonical worktrees are clean;
+- the submitted handoff identifies final parent report commit `1405370`.
+
+The final parent report hash is external handoff evidence and is not required to
+be self-embedded into the commit that contains this same task file.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 3` is preserved.
+
+Dependency reconciliation:
+
+`ARCH-010-SHOPIFY-002` is **not** promoted by this acceptance because it still
+depends on `ARCH-010-DATABASE-004`, which is not Complete in the submitted
+canonical task graph. Its other already-completed dependencies do not remove that
+remaining gate.
 
