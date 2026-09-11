@@ -9,9 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
-executor: copilot
-claimed_at: 2026-09-11T19:12:00Z
+status: ready
+executor: null
+claimed_at: null
 priority: 45
 attempt: 2
 depends_on: []
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-BACKGROUND-018
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11T19:18:00Z
+updated: 2026-09-11T18:32:05Z
 ---
 
 # ARCH-010-BACKGROUND-004: Stop queued recovery work for inactive shops
@@ -487,3 +487,86 @@ Do not:
 - modify another repository.
 
 Return the same task to `review` after the corrections.
+
+#### Attempt 2 — Changes Requested (workflow evidence only)
+
+Attempt 2 closes the substantive implementation and focused-test defects from
+Attempt 1.
+
+Architect re-review verified:
+
+- `handleOrderCompleted()` now selects both `id` and durable `status` from `Shop`
+  before any candidate/recovery work;
+- `MaturedCandidateMaterializationResult` now includes the typed terminal
+  `discarded-shop-unavailable` variant;
+- inactive checkout-update returns before candidate refresh, Shopify lookup and
+  recovery mutation;
+- inactive cart activity returns before candidate mutation;
+- inactive order completion returns before candidate resolution/cancellation,
+  tombstone creation and recovery transaction work;
+- inactive matured-candidate materialization returns before `resolveShopDomain()`,
+  Shopify abandoned-checkout lookup, CheckoutRecovery creation/update,
+  conversation creation, billing admission or outbound send;
+- the pending-candidate worker's existing `finally` cleanup is now covered for the
+  inactive terminal result;
+- ACTIVE path coverage remains present;
+- the previously blocking local test mocks were corrected sufficiently for the
+  changed guarded-path suites to execute;
+- the focused ARCH-010-BACKGROUND-004 regression set reports 83 passing tests
+  across five suites;
+- `git diff --check` passed;
+- `src/entrypoints/billing.ts`, `package.json`, the existing
+  EffectiveBillingPolicy tests, billing-reconciliation tests and
+  usage-event-publisher tests are unchanged from Attempt 1, so the documented
+  repository-wide Prisma/build/typecheck blockers are baseline issues rather than
+  regressions introduced by this task;
+- implementation commit `c03027b` is the reviewed Attempt 2 implementation head;
+- the submitted handoff identifies parent review commit `254e51b`.
+
+No further production or test-code change is requested.
+
+One mandatory workflow-policy item remains incomplete.
+
+##### Required correction — record the full isolation/synchronization evidence
+
+The Completion Report now records the canonical worktree paths and task branches,
+but it still does not durably state the required negative-isolation assertions and
+all four start-of-attempt synchronization outcomes individually.
+
+On Attempt 3, using the resolver-selected canonical worktrees, record exactly:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Also record the exact focused Vitest command(s) that produced the reported
+`83 passed` result so the validation evidence is reproducible.
+
+This is an evidence/report-only correction.
+
+Do **not** alter the accepted Background implementation or focused tests merely to
+produce another code commit. If synchronization itself introduces a genuine
+conflict, stop and report that conflict rather than inventing code churn.
+
+After synchronization, rerun the same focused B004 regression command(s) and
+`git diff --check`. The already-documented repository-wide baseline blockers may
+remain documented unchanged.
+
+Return the same task to `review`.
+
