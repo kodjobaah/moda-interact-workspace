@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 48
 executor: copilot
 claimed_at: 2026-09-11T23:14:10Z
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-006
   - ARCH-010-SHOPIFY-006
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T23:36:00Z
 ---
 
 # ARCH-010-DATABASE-003: Persist authenticated reinstall reconciliation state
@@ -143,20 +143,92 @@ STOP and return to `moda_architect` if:
 
 ## Completion Report
 
+### Work Items
+- [x] Added the nullable `commerce.Shop.reinstallPendingAt` field and composite reconstruction index.
+- [x] Added the additive PostgreSQL migration without backfill or lifecycle/status changes.
+- [x] Extended schema validation for Shop marker nullability, index, lifecycle enum preservation, scheduler preservation, and migration safety.
+- [x] Regenerated the repository-owned PlantUML ERD.
+
+### Acceptance Criteria
+- [x] `Shop.reinstallPendingAt` is nullable and existing Shops remain valid with `NULL`.
+- [x] `(status, reinstallPendingAt)` is indexed using `Shop_status_reinstallPendingAt_idx`.
+- [x] Existing `status`, `installedAt`, and `uninstalledAt` fields are preserved.
+- [x] `ShopStatus` remains exactly `ACTIVE`, `UNINSTALLED`, and `SUSPENDED`.
+- [x] `Subscription.nextReconcileAt` remains present and unchanged.
+- [x] The migration contains no backfill or entitlement, purchase, refund, BillingPeriod, or reservation mutation.
+
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260911160000_add_shop_reinstall_reconciliation_marker/migration.sql`
+- `scripts/validate-billing-lifecycle-schema.mjs`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Added `Shop.reinstallPendingAt DateTime?` and `@@index([status, reinstallPendingAt])`.
+- Added a nullable, no-backfill migration using the repository's PostgreSQL naming convention.
+- Added generated-client and migration assertions covering the reinstall marker and preserving the existing lifecycle and reconciliation contracts.
+- Regenerated the ERD so the Shop marker is represented.
 
 ### Validation Results
-Populate during implementation.
+- `npm install --no-package-lock`: passed; installed declared dependencies without manifest or lockfile changes.
+- `npm run format`: passed.
+- `npm run validate`: passed.
+- `npm run prisma:generate`: passed; generated Prisma Client 6.19.3.
+- `npm run test:billing-lifecycle`: passed; billing lifecycle schema assertions passed.
+- `npm run erd:puml`: passed; regenerated `docs/generated/prisma-erd.puml`.
+- `git diff --check`: passed.
+- `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run status`: reached the intended local database configuration but failed with Prisma `P1001` because PostgreSQL was not running at `localhost:5432`; no migration was applied.
+
+### Deviations
+- Migration status could not be inspected because the local PostgreSQL server was unavailable. No destructive or migration-apply command was run.
+
+### Assumptions
+- `NULL` remains the absence-of-pending-reinstall marker, and reconciliation scheduling remains owned by `Subscription.nextReconcileAt`.
+
+### Unresolved Issues
+- Local PostgreSQL availability is required to complete `npm run status`; this does not affect the additive migration or static/schema validation.
+
+### Architectural Concerns
+- None.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Task branch: `task/ARCH-010-DATABASE-003`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-003`
+  parent branch: `task/ARCH-010-DATABASE-003`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-003`
+  implementation branch: `task/ARCH-010-DATABASE-003`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed; remote task branch did not exist
+  parent origin/main incorporated: yes; task worktree was created from current `origin/main`
+  implementation remote task branch fast-forwarded: not-needed; remote task branch did not exist
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-database`
+  commit: `a6c2af8`
+  remote branch: `origin/task/ARCH-010-DATABASE-003`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/database/ARCH-010/DATABASE-003-reinstall-reconciliation-marker.md`
+  claim commit: `3948e1e`
+  final commit: pending
+  remote branch: `origin/task/ARCH-010-DATABASE-003`
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ### Architect Review
 Pending.
