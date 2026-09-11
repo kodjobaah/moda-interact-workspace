@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-09-11T12:10:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-007-DATABASE-002
@@ -26,7 +26,7 @@ enables:
   - ARCH-010-SHOPIFY-003
   - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11T12:20:00Z
+updated: 2026-09-11T12:36:04Z
 ---
 
 # ARCH-010-DATABASE-006: Move the one-time lifetime Free recovery grant to platform policy and snapshot it per shop
@@ -230,4 +230,85 @@ Implementation complete; returned to `moda_architect` for review.
 - Parent branch: `task/ARCH-010-DATABASE-006`
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+The ARCH-010-DATABASE-006 schema and migration implementation is architecturally sound, but acceptance is blocked by workflow-evidence and focused-validation gaps.
+
+Implementation findings verified by architect review:
+
+- `billing.PlatformBillingPolicy.lifetimeFreeRecoveryAllowance Int @default(5)` is present.
+- The migration adds the non-negative database CHECK constraint.
+- `BillingPlan.freeLifetimeConversationAllowance` remains present and is documented as legacy/non-authoritative for ARCH-010 runtime entitlement.
+- The migration backfill is gated by `ShopSettings.onboardingCompleted = true`, does not inspect plan kind, inserts a missing `FREE_RECOVERY_LIFETIME` counter with grant 5 and zero usage, upgrades only existing zero-grant counters to 5, increments `version` once, preserves positive grants, and leaves committed/reserved/refunding quantities untouched.
+- The insert uses deterministic shop-derived text identity and `ON CONFLICT (shopId, counter) DO NOTHING`.
+- The platform-policy seed/default is 5 and is not sourced from the Free BillingPlan row.
+- The generated ERD exposes the new platform-policy field.
+- No schema/migration change is requested by this review.
+
+The following corrections are required before acceptance.
+
+##### 1. Restore mandatory task-worktree evidence
+
+The Completion Report must contain the full evidence block required by `docs/agent-worktree-isolation-policy.md`, including:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <launcher-resolved path>
+  parent worktree: <launcher-resolved path>
+  parent branch: task/ARCH-010-DATABASE-006
+  implementation worktree: <launcher-resolved path>
+  implementation branch: task/ARCH-010-DATABASE-006
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Attempt 2 must begin by synchronizing both canonical task worktrees according to that policy and recording the actual outcomes.
+
+##### 2. Strengthen deterministic validation to cover the task contract
+
+`validate-billing-policy-schema.mjs` currently verifies important migration fragments, but it does not deterministically prove all required backfill semantics.
+
+Add focused assertions proving at least:
+
+1. the backfill is genuinely plan-kind independent, so an onboarded Free merchant and an onboarded Paid merchant are both in scope. The validator should fail if the migration later adds a BillingPlan/plan-kind restriction;
+2. the existing-zero-grant UPDATE explicitly sets `grantedQuantity = 5`;
+3. the existing-zero-grant UPDATE does not write/reset `committedQuantity`, `reservedQuantity`, or `refundingQuantity`;
+4. the positive-grant preservation condition remains enforced by limiting the UPDATE to `grantedQuantity = 0`.
+
+The existing static CHECK assertion for the non-negative platform value may remain; this review does not require a new live-database harness solely for that invariant.
+
+##### 3. Rerun the task-required validation
+
+After synchronizing the canonical implementation worktree and updating the focused validator, rerun the repository/task validation contract:
+
+```text
+npm run format
+npm run prisma:generate
+npm run validate
+npm run test:billing-policy
+npm run test:recovery-credit-packs
+npm run test:billing-lifecycle
+npm run erd
+git diff --check
+```
+
+Record the results in the Attempt 2 Completion Report.
+
+##### Scope guard
+
+Do not change the ARCH-010-DATABASE-006 schema or migration merely to create churn. The reviewed migration semantics are already acceptable. Implementation changes for Attempt 2 should be limited to the focused validation correction plus any synchronization-generated artifact refresh that is genuinely required after incorporating current `origin/main`.
+
+Return the same task to `review` after publishing the implementation and parent report branches.
+
