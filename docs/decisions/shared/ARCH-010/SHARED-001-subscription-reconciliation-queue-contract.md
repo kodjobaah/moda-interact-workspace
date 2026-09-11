@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-11T15:50:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-007-SHARED-006
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-SHARED-002
   - ARCH-010-SHARED-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T15:57:28Z
 ---
 
 # ARCH-010-SHARED-001: Define subscription reconciliation BullMQ contract
@@ -105,19 +105,47 @@ Do not publish in this task. Do not edit consumers/producers, Prisma, Render, bi
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 
 ### Files Changed
-Populate during implementation.
+- `src/billing.ts`
+- `src/billing.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added the strict v1 subscription reconciliation payload schema, parser, safe parser, and inferred type.
+- Added canonical queue/job names, schema version, and the five-minute App Pricing billing-period drain-window constant.
+- Added a deterministic, colon-free, bounded BullMQ job ID derived from subscription ID and expected reconciliation timestamp.
+- Exported all contract symbols through the existing public billing entrypoint.
+- Added rejection and determinism coverage, including proof that the drain constant is not serialized into the payload.
 
 ### Validation Results
-Populate during implementation.
+- `npm run test -- src/billing.test.ts` passed: 109 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is not configured; the declared test glob runs the repository test suite.
+- `npm run typecheck` passed.
+- `npm run build` passed, including public billing declarations.
+- `git diff --check` passed.
+- `npm ci` installed the repository lockfile dependencies in the new worktree; npm reported one low-severity audit finding and pending install-script approvals, with no task-source impact.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Task branch: `task/ARCH-010-SHARED-001`.
+- Physical worktree isolation:
+  - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+  - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-001`;
+  - parent branch: `task/ARCH-010-SHARED-001`;
+  - implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-001`;
+  - implementation branch: `task/ARCH-010-SHARED-001`;
+  - shared workspace checkout switched/mutated for task work: no;
+  - shared implementation checkout switched/mutated for task work: no;
+  - another task worktree reused: no.
+- Start-of-attempt synchronization:
+  - parent remote task branch fast-forwarded: not-needed; branch created from current `origin/main`;
+  - parent `origin/main` incorporated: already-current;
+  - implementation remote task branch fast-forwarded: not-needed; branch created from current `origin/main`;
+  - implementation `origin/main` incorporated: already-current.
+- Implementation repository: `moda-interact-shared`, commit `6ba830d`, remote `origin/task/ARCH-010-SHARED-001`, pushed: yes.
+- Parent workspace task file: this file, claim commit `5ef8118`, review commit pending, pushed: yes.
+- Submodule gitlink staged: no.
+- Merged to implementation main: no.
+- Merged to workspace main: no.
 
 ### Architect Review
 Pending.
