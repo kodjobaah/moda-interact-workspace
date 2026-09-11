@@ -9,16 +9,16 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 22
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
   - ARCH-010-SHARED-006
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T16:12:00Z
 ---
 
 # ARCH-010-SHARED-005: Add merchant top-up refund billing message contracts
@@ -86,19 +86,45 @@ STOP if equivalent refund message codes already exist with different values/sema
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `src/billing.test.ts`
+- `docs/decisions/shared/ARCH-010/SHARED-005-topup-refund-system-message-contracts.md`
 
 ### Work Completed
-Populate during implementation.
+- Reused the existing `BILLING_SYSTEM_MESSAGE_CODES` entries and `BillingSystemMessageCodeSchema` values for all three required refund codes; no duplicate registry or source constants were introduced.
+- Added focused acceptance coverage for the exact refund values, schema parsing, deterministic `RecoveryCreditRefund.id`-style source keys, and bounded long shop/refund identifiers.
+- Existing cancellation, WhatsApp, and other billing contract coverage remains unchanged.
 
 ### Validation Results
-Populate during implementation.
+- `npm test -- --test-name-pattern='top-up refund'` passed: 107 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is not configured; the refund acceptance test passed.
+- `npm run typecheck` passed.
+- `npm run build` passed, including the public billing entrypoint declarations.
+- `git diff --check` passed.
+- `npm ci` installed the repository lockfile dependencies in the new worktree; npm reported one low-severity audit finding and pending install-script approvals, with no task-source impact.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Task branch: `task/ARCH-010-SHARED-005`.
+- Physical worktree isolation:
+  - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+  - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-005`;
+  - parent branch: `task/ARCH-010-SHARED-005`;
+  - implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-005`;
+  - implementation branch: `task/ARCH-010-SHARED-005`;
+  - shared workspace checkout switched/mutated for task work: no;
+  - shared implementation checkout switched/mutated for task work: no;
+  - another task worktree reused: no.
+- Start-of-attempt synchronization:
+  - parent remote task branch fast-forwarded: not-needed; branch created from current `origin/main`;
+  - parent `origin/main` incorporated: already-current;
+  - implementation remote task branch fast-forwarded: not-needed; branch created from current `origin/main`;
+  - implementation `origin/main` incorporated: already-current.
+- Implementation repository: `moda-interact-shared`, commit `cdb29ca`, remote `origin/task/ARCH-010-SHARED-005`, pushed: yes.
+- Parent workspace task file: this file, claim commit `5337f57`, review commit `d648ecb`, pushed: yes.
+- Submodule gitlink staged: no.
+- Merged to implementation main: no.
+- Merged to workspace main: no.
 
 ### Architect Review
 Pending.
