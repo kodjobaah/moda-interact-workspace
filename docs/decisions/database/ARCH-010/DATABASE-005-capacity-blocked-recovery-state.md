@@ -9,16 +9,16 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-09-11T12:20:14Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-009
 created: 2026-09-11
-updated: 2026-09-11T12:21:26Z
+updated: 2026-09-11T12:31:51Z
 ---
 
 # ARCH-010-DATABASE-005: Persist recovery-capacity blocks on detected recoveries
@@ -191,7 +191,7 @@ Parent task branch pushed to origin.
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested (workflow/task-document evidence only)
 
@@ -269,4 +269,26 @@ git diff --check
 `npm run status` remains inspection-only. Do not apply the pending migration to the configured database solely for this review.
 
 If synchronization leaves implementation commit `fb0e76e` unchanged, no replacement implementation commit is required. Push only synchronization/correction commits that are actually necessary, update the same Completion Report with the complete evidence, return the task to `status: review`, and stop for architect review.
+
+#### Attempt 2 — Accepted
+
+Attempt 2 satisfies the workflow/task-document remediation contract.
+
+Architect re-review verified:
+
+- the Completion Report now records the launcher-resolved canonical workspace root, dedicated parent worktree, dedicated implementation worktree, matching `task/ARCH-010-DATABASE-005` branches, and all required negative shared/reused-worktree assertions;
+- all four required start-of-attempt synchronization outcomes are explicitly recorded;
+- the architect-owned pairwise CHECK contract text has been restored to its canonical three-line form;
+- the complete required validation set was rerun successfully from the canonical implementation worktree;
+- `npm run status` remained inspection-only and reports the DATABASE-001 and DATABASE-005 migrations pending; no migration was applied solely for this review;
+- the recovery-capacity implementation files (`20260911020000_add_recovery_admission_block_state/migration.sql`, `validate-checkout-recovery-capacity-schema.mjs`, and the relevant package script) are byte-for-byte unchanged from Attempt 1;
+- synchronization incorporated the already-accepted ARCH-010-DATABASE-001 `Subscription.nextReconcileAt` schema/migration/validator changes;
+- synchronization/artifact commit `0e72d1e` only refreshes the generated ERD so it represents the synchronized schema; it does not alter recovery-capacity behaviour;
+- the original implementation findings therefore remain valid: `RecoveryAdmissionBlockReason.RECOVERY_CAPACITY_EXHAUSTED`, nullable block fields, the repair/resume composite index, the pairwise database CHECK, unchanged `CheckoutRecoveryStatus`, generated-client/live PostgreSQL validation, and generated ERD all conform to the ARCH-010-DATABASE-005 contract.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and `claimed_at` are cleared while `attempt: 2` is preserved.
+
+`ARCH-010-BACKGROUND-009` is not promoted solely by this acceptance because its task contract has additional dependencies besides DATABASE-005. Reconcile its readiness against the current canonical parent workspace after the remaining prerequisites complete.
 
