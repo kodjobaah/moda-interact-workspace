@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 46
-executor: copilot
-claimed_at: 2026-09-11T17:44:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -195,19 +195,38 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress
+Review requested. Implementation is complete and awaits `moda_architect` acceptance.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-background/src/services/shop-execution-eligibility.service.ts`
+- `moda-interact-background/src/services/recovery-routing.service.ts`
+- `moda-interact-background/src/services/conversation-turn-processor.service.ts`
+- `moda-interact-background/src/workers/whatsapp.worker.ts`
+- `moda-interact-background/tests/unit/services/recovery-routing.service.test.ts`
+- `moda-interact-background/tests/unit/services/conversation-turn-processor.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added a shared ACTIVE-shop eligibility lookup.
+- Context-linked inbound routing now checks durable recovery/conversation ownership before message persistence.
+- Context-free recovery and product-only routing ignore inactive shops and return a terminal `shop-unavailable` route when no actionable owner remains.
+- The WhatsApp worker exits before inbound persistence or turn enqueue for unavailable shops.
+- Delayed conversation turns re-check current shop status before abuse admission, agent work, outbound reservation, or provider send, and complete as a no-op when inactive.
+- Provider-status handling and existing effective billing-policy enforcement were left unchanged.
 
 ### Validation Results
-Populate during implementation.
+- `npm test -- tests/unit/services/recovery-routing.service.test.ts -t 'inactive|returns product-only when|returns the only active recovery'`: passed, 5/5 selected tests.
+- Full routing suite: 20/21 passed; the remaining pre-existing uniqueness-race fixture fails because `Prisma.PrismaClientKnownRequestError` is not constructible in this ungenerated client environment.
+- Delayed-turn focused suite: blocked before test collection because `@prisma/client` was not generated.
+- `npm run test:unit`: 243 tests passed; 24 suites were blocked by the ungenerated Prisma client, with the same pre-existing race-fixture failure.
+- `npm run prisma:validate`: blocked because `database/prisma/schema.prisma` is absent in this checkout.
+- `npx tsc --noEmit`: blocked by pre-existing `src/entrypoints/billing.ts:37` syntax error (`TS1135`); changed files have no editor diagnostics.
+- `git diff --check`: passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004-task-ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004.worktrees/ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
+- Implementation commit pushed: `c54a6e4`.
+- Parent claim commit pushed earlier: `36f4d40`.
 
 ### Architect Review
 Pending.
