@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11T23:27:00Z
+updated: 2026-09-11T22:38:09Z
 ---
 
 # ARCH-010-SHOPIFY-001: Establish fresh-install no-plan state and onboarding-only merchant access
@@ -475,6 +475,90 @@ git diff --check
 
 The already-documented unrelated full-suite i18n and baseline TypeScript failures
 may remain documented unchanged.
+
+Return the same task to `review`.
+
+#### Attempt 2 — Changes Requested (durable evidence still missing)
+
+Attempt 2 correctly preserves the already-reviewed implementation.
+
+Architect re-review verified:
+
+- the entire `moda-interact` implementation tree in the submitted Attempt 2
+  archive is byte-for-byte unchanged from Attempt 1;
+- implementation head therefore remains the accepted code at `ea15631`;
+- the external handoff identifies parent claim commit `6bba7a8` and final parent
+  Completion Report commit `c03ca72`;
+- the external handoff states the focused tests, build, Prisma validation and
+  `git diff --check` passed, with the same three unrelated i18n catalogue failures;
+- no production or focused-test code change is required.
+
+However, the required workflow evidence was not durably written into the task
+Completion Report.
+
+The uploaded task file still contains the old Git/VCS section and then repeats the
+Attempt 1 Architect Review request. It does **not** record the actual values for:
+
+```text
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+It also does not record the exact focused Vitest command(s) used to produce the
+20 passing tests.
+
+The external summary cannot substitute for the durable task report because it does
+not state those four synchronization outcomes individually.
+
+##### Attempt 3 correction
+
+This remains report/evidence-only.
+
+Using the resolver-selected canonical SHOPIFY-001 worktrees, perform the normal
+start-of-attempt synchronization and write the actual observed evidence into the
+Completion Report:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit: ea15631
+Parent claim/report commits:
+Branches pushed:
+Worktrees clean:
+```
+
+Record the exact focused Vitest command(s) and result (`20 passed`), then rerun:
+
+```text
+the same focused SHOPIFY-001 test command(s)
+npm run build
+npm run prisma:validate
+git diff --check
+```
+
+Do not change production or test code merely to create a new implementation commit.
+The implementation is already accepted.
+
+The three unrelated i18n catalogue failures and documented baseline typecheck
+diagnostics may remain unchanged.
 
 Return the same task to `review`.
 
