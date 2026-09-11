@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T12:41:45Z
+updated: 2026-09-11T12:58:09Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -516,4 +516,121 @@ Keep Attempt 2 within `ARCH-010-DATABASE-007`.
 Do not implement runtime FIFO reservation, Admin refund workflows, merchant UI, provider refund calls, negative App Events, Free lifetime entitlement changes, or plan/cancellation changes.
 
 Return the same task to `review` after publishing the corrected implementation and parent Completion Report.
+
+#### Pre-Attempt 2 synchronization conflict resolution
+
+The repository agent correctly stopped before claiming Attempt 2 when mandatory
+`origin/main -> task/ARCH-010-DATABASE-007` synchronization reported
+`MODA_MAIN_SYNC_CONFLICT`.
+
+Architect inspection confirms that the reported conflicts are additive integration
+conflicts between already-accepted mainline DATABASE-005 work and the existing
+DATABASE-007 task branch. They do not require redesign and do not consume a new
+task attempt because no claim was made.
+
+Resolve the implementation-worktree merge deterministically as follows.
+
+##### `package.json`
+
+Do not choose the whole file from either side.
+
+The post-merge `scripts` object must retain both the accepted mainline capacity
+validator and the DATABASE-007 lot validator, including:
+
+```json
+"test:recovery-credit-packs": "node scripts/validate-recovery-credit-pack-schema.mjs",
+"test:checkout-recovery-capacity": "node scripts/validate-checkout-recovery-capacity-schema.mjs",
+"test:purchased-credit-lots": "node scripts/validate-purchased-credit-lot-schema.mjs",
+"test:billing-lifecycle": "node scripts/validate-billing-lifecycle-schema.mjs"
+```
+
+Preserve all other current mainline scripts.
+
+##### `prisma/schema.prisma`
+
+Resolve by preserving the union of accepted mainline schema and DATABASE-007
+schema. In particular, the merged schema must retain the accepted DATABASE-005
+surface:
+
+```text
+RecoveryAdmissionBlockReason.RECOVERY_CAPACITY_EXHAUSTED
+CheckoutRecovery.admissionBlockedAt
+CheckoutRecovery.admissionBlockReason
+@@index([shopId, admissionBlockReason, status, detectedAt])
+```
+
+and must also retain the DATABASE-007 purchased-credit lot/refund surface already
+accepted as directionally correct in Architect Review Attempt 1:
+
+```text
+RecoveryCreditProviderActionKind { REFUND, CREDIT }
+
+RecoveryCreditPurchase:
+  committedQuantity
+  reservedQuantity
+  refundingQuantity
+  refundedQuantity
+  version
+  refunds[]
+  purchasedReservations[]
+  FIFO index
+
+UsageReservation:
+  purchasedCreditPurchaseId
+  purchasedCreditPurchase
+  purchased-lot lookup index
+
+RecoveryCreditRefund:
+  non-unique purchaseId
+  purchaseCreditsGrantedSnapshot
+  creditsRequested
+  creditsApproved
+  creditsRefunded
+  providerActionKind
+  providerAmount
+  providerCurrency
+  purchase/status/createdAt index
+```
+
+Also preserve accepted mainline `Subscription.nextReconcileAt` and its index.
+
+Do not use `git checkout --ours` or `git checkout --theirs` for either whole
+conflicted file. Do not drop an accepted mainline field/script merely to make the
+merge compile, and do not introduce DATABASE-006 or another task's unaccepted
+changes unless they are actually present in the current `origin/main`.
+
+##### Synchronization sequence
+
+Perform this resolution only in the dedicated
+`ARCH-010-DATABASE-007` implementation worktree:
+
+1. fetch current `origin`;
+2. start `git merge --no-edit origin/main`;
+3. resolve only the reported conflicts using the union contract above;
+4. ensure there are no remaining conflict markers;
+5. stage the resolved files and commit the mainline synchronization merge;
+6. verify `origin/main` is now an ancestor of `HEAD`;
+7. rerun the normal start-of-attempt synchronization check;
+8. only after synchronization succeeds, claim the task. The claim becomes
+   **Attempt 2**; the aborted pre-claim merge does not increment `attempt`.
+
+Before implementing the previously requested DATABASE-007 migration corrections,
+run a focused integration sanity check on the merged baseline:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:checkout-recovery-capacity
+npm run test:recovery-credit-packs
+git diff --check
+```
+
+Then continue with the existing Attempt 1 Changes Requested contract for
+DATABASE-007, including the purchased-credit migration corrections and its full
+required validation.
+
+If the actual current `origin/main` contains a conflicting semantic change beyond
+the additive DATABASE-005 surface identified above, STOP again and return the
+exact conflict to `moda_architect` rather than guessing.
 
