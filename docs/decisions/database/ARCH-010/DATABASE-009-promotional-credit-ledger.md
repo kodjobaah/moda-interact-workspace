@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 81
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-SHOPIFY-009
   - ARCH-010-SHOPIFY-020
 created: 2026-09-11
-updated: 2026-09-11T16:00:04Z
+updated: 2026-09-11T16:04:39Z
 ---
 
 # ARCH-010-DATABASE-009: Add durable promotional recovery-credit grants and aggregate entitlement counter
@@ -267,7 +267,7 @@ Ready for Review
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested
 
@@ -447,4 +447,53 @@ git diff --check
 Do not apply DATABASE-009 to the shared database solely for review.
 
 Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining validator and Completion Report corrections.
+
+Architect re-review verified:
+
+- `scripts/validate-billing-policy-schema.mjs` now asserts the Prisma
+  `PromotionalCreditGrant.shop` relation uses `onDelete: Restrict`;
+- the validator now asserts the Prisma
+  `PromotionalCreditGrant.platformAdmin` relation uses `onDelete: Restrict`;
+- the validator now asserts the PostgreSQL `shopId` foreign key contains
+  `ON DELETE RESTRICT`;
+- the validator now asserts the PostgreSQL `platformAdminId` foreign key contains
+  `ON DELETE RESTRICT`;
+- the Completion Report status is now `Ready for Review`;
+- `prisma/schema.prisma` is byte-for-byte unchanged from Attempt 2;
+- `20260911150000_add_promotional_credit_grants/migration.sql` is byte-for-byte
+  unchanged from Attempt 2;
+- the only implementation-file change from Attempt 2 is the four focused
+  restrictive-relation validator assertions requested by Architect Review;
+- the required Attempt 3 validation contract passed;
+- implementation commit `9ee081f` is the reviewed Attempt 3 implementation head;
+- no database migration was applied solely for architect review.
+
+The findings accepted through the earlier review rounds therefore stand:
+`PROMOTIONAL_RECOVERY_CREDITS` is present in both Prisma and PostgreSQL enum
+history, promotional grants retain durable admin/shop provenance, quantity is
+positive, request keys are globally unique, promotional grants are row-free for
+existing shops, and no historical lifetime-Free, purchased-credit, BillingPeriod,
+subscription, or allowance-adjustment state is reinterpreted.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and
+`claimed_at` remain cleared while `attempt: 3` is preserved.
+
+The submitted handoff identifies parent review-report commit `ec3f8b8`. It is not
+embedded into this same task file because a commit cannot durably contain its own
+final hash.
+
+This acceptance satisfies DATABASE-009 for its direct dependants:
+- `ARCH-010-ADMIN-004`
+- `ARCH-010-BACKGROUND-019`
+- `ARCH-010-SHOPIFY-009`
+- `ARCH-010-SHOPIFY-020`
+
+Their actual Ready status must still be recalculated against any other dependencies
+in the current canonical parent workspace.
 
