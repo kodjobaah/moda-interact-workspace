@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: copilot
-claimed_at: 2026-09-11T11:42:11Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-007-DATABASE-006
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-DATABASE-003
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11T11:45:17Z
+updated: 2026-09-11T12:00:53Z
 ---
 
 # ARCH-010-DATABASE-001: Add durable subscription reconciliation scheduling state
@@ -139,4 +139,77 @@ Ready for Review.
 - No deviations from the task scope. The configured database was not mutated; migration status was inspected only.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested (workflow evidence only)
+
+The implementation itself is architecturally conformant. No source, schema, migration, or validator correction is required by this review.
+
+Architect inspection verified:
+
+- `billing.Subscription.nextReconcileAt` is added exactly as nullable `DateTime?`;
+- `@@index([nextReconcileAt])` is present;
+- the migration is additive and nullable, with no backfill, status rewrite, or billing-data mutation;
+- `SubscriptionProjectionStatus` remains exactly `ACTIVE`, `TRIALING`, `NO_CONTRACT`, `UNMAPPED`, `SYNC_ERROR`;
+- the billing lifecycle validator checks schema nullability, generated Prisma-client/DMMF exposure, index presence, migration DDL, and unchanged projection-status vocabulary;
+- comparison with the pre-task repository snapshot found no unrelated implementation changes beyond the schema, migration, and validator listed in the Completion Report.
+
+The task cannot be accepted yet because the Completion Report does not contain the mandatory physical-worktree and start-of-attempt synchronization evidence required by `docs/agent-worktree-isolation-policy.md`.
+
+Attempt 2 is therefore evidence/workflow remediation only. Do **not** make code churn merely to create another implementation commit.
+
+##### Required correction 1 — record complete physical worktree isolation evidence
+
+Update the Completion Report to record the launcher-resolved values for all of the following:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <absolute launcher-resolved path>
+  parent worktree: <absolute launcher-resolved path>
+  parent branch: task/ARCH-010-DATABASE-001
+  implementation worktree: <absolute launcher-resolved path>
+  implementation branch: task/ARCH-010-DATABASE-001
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+```
+
+The Attempt 1 report currently identifies only the implementation worktree/branch. Branch cleanliness and a pushed implementation branch do not substitute for the missing parent-worktree/isolation evidence.
+
+##### Required correction 2 — perform and record Attempt 2 synchronization
+
+On reclaim, use the same canonical parent and implementation task worktrees and perform the mandatory start-of-attempt synchronization for **both** repositories before any report update or validation:
+
+```text
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+If either canonical worktree cannot be established with the expected repository/branch mapping, STOP and report `MODA_WORKTREE_ISOLATION_ERROR` rather than using a shared/default checkout.
+
+##### Required correction 3 — rerun the task validation from the canonical implementation worktree
+
+After Attempt 2 synchronization, rerun the task-required validation from the canonical `moda-interact-database` implementation worktree and record the results:
+
+```text
+npm run format
+npm run prisma:generate
+npm run validate
+npm run test:billing-lifecycle
+npm run status
+git diff --check
+```
+
+`npm run status` remains inspection-only; do not apply the migration to the configured database merely for this review.
+
+If the already-pushed implementation commit remains unchanged after synchronization, no replacement implementation commit is required. Push only any branch synchronization commit that is actually necessary. The parent task branch must receive the corrected Completion Report and return to `status: review` for architect review.
+
+#### Independent review validation note
+
+The architect directly inspected the submitted schema, migration, validator, package scripts, and pre-task vs submitted repository diff. A fresh package/Prisma execution in the review container did not complete within the review timeout, so the successful executable validation remains supported by the agent's recorded results; this timeout is **not** a code finding and is not part of the Changes Requested scope.
