@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 67
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T14:10:31Z
+updated: 2026-09-11T14:19:36Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -351,7 +351,7 @@ Implemented; awaiting Architect Review
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested
 
@@ -956,4 +956,36 @@ Passed from the canonical implementation worktree: `npm run format`, `npm run pr
 - Both mirrored task branches were committed and pushed.
 - Both canonical worktrees were clean after their respective commits and pushes.
 - No main branch was pushed, no Architect Review text was edited, and no submodule gitlink was staged.
+
+#### Attempt 4 — Accepted
+
+Attempt 4 satisfies the final validator-fidelity requirement.
+
+Architect re-review verified:
+
+- `reconcileAggregate()` now filters reconstructed lot totals to grant-bearing `ACTIVE` and legacy `REFUNDED` purchases, matching the migration's aggregate reconciliation predicate;
+- the aggregate fixture includes a `NEEDS_ATTENTION` purchase with non-zero historical `creditsGranted` and non-zero usage-like quantities, and the expected reconstructed aggregate proves that none of those values contribute;
+- the mismatch assertion remains and proves reconciliation fails rather than silently adjusting aggregate counters;
+- the strict FIFO allocator, refund/hold capacity handling, RELEASED semantics, rejected/withdrawn refund handling, and no-aggregate-reset guard from Attempt 3 remain intact;
+- `20260911130000_add_purchased_credit_lot_accounting/migration.sql` is byte-for-byte unchanged from Attempt 3;
+- the canonical parent and implementation worktrees are recorded;
+- all four start-of-attempt synchronization outcomes are recorded explicitly;
+- the complete validation contract passed;
+- `npm run status` remained inspection-only and no shared database migration was applied;
+- implementation commit `c479ec3` is the reviewed Attempt 4 implementation head.
+
+The schema and migration findings accepted through the earlier review rounds therefore stand: purchased-credit lots have durable committed/reserved/refunding/refunded accounting; exact purchased-lot reservation ownership is available; multi-partial-refund records retain explicit quantities and provider evidence; legacy grant-bearing history is reconstructed deterministically; and unreconstructable history fails loudly rather than being fabricated.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and `claimed_at` remain cleared while `attempt: 4` is preserved.
+
+The submitted handoff identifies parent review-report commit `02068e7`. It is not embedded into this same task file because the commit containing this file cannot durably contain its own final hash.
+
+This acceptance satisfies DATABASE-007 for its direct dependants:
+- `ARCH-010-ADMIN-002`
+- `ARCH-010-BACKGROUND-014`
+- `ARCH-010-SHOPIFY-017`
+
+Their Ready status must still be recalculated against any other dependencies in the current canonical parent workspace.
 
