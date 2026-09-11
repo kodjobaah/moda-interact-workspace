@@ -30,11 +30,7 @@ enables:
   - ARCH-010-SHOPIFY-007
   - ARCH-010-SHOPIFY-015
 created: 2026-09-11
-<<<<<<< HEAD
-updated: 2026-09-11T16:24:34Z
-=======
 updated: 2026-09-11T16:50:27Z
->>>>>>> 891e216 (chore(workspace): added overlay for ARCH-010-SHARED)
 ---
 
 # ARCH-010-SHARED-002: Publish subscription reconciliation Shared contract
