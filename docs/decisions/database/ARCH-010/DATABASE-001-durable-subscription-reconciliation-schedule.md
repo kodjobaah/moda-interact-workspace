@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 10
-executor:
-claimed_at:
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-11T12:05:48Z
+attempt: 2
 depends_on:
   - ARCH-007-DATABASE-006
   - ARCH-009-DATABASE-001
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-DATABASE-003
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11T12:00:53Z
+updated: 2026-09-11T12:05:48Z
 ---
 
 # ARCH-010-DATABASE-001: Add durable subscription reconciliation scheduling state
