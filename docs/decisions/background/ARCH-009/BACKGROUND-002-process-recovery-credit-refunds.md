@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-09-10T22:27:52Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-009-DATABASE-001
@@ -277,7 +277,8 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-002-process-recovery-credit-refunds.md`
   review/report content commit: `cb8fa8cbe98969411c66cbe965c33537794b3ad2`
-  final parent handoff / branch tip: `d13f1aa5ef9b7d14f12d9ee5196e3d19f70650a3`
+  pre-final metadata handoff commit: `d13f1aa5ef9b7d14f12d9ee5196e3d19f70650a3`
+  reviewed published parent branch tip: `c3f5f92be0775b4fe441e03e9755874f0f19f06d`
   remote branch: `origin/task/ARCH-009-BACKGROUND-002`
   pushed: yes
   submodule gitlink staged: no
@@ -288,415 +289,127 @@ Merged to workspace main: no
 ## Architect Review
 
 ### Review Status
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 successfully closes the major Attempt 1 defects:
+Attempt 3 closes the complete Changes Requested contract from Attempt 2.
 
-- the BACKGROUND-002 implementation branch is isolated directly from `moda-interact-background/main` and no longer carries unaccepted BACKGROUND-001 code;
-- finalization throws on post-write CAS failure so counter/purchase/refund accounting rolls back atomically;
-- terminal hold release throws on a losing refund CAS and is retried only through the bounded conflict path;
-- REJECTED/WITHDRAWN hold release is now state-driven from durable terminal state rather than invented by Background;
-- ARCH-008 purchase reconciliation now counts exact-scope completed Partner-Dashboard refunds as explained historical `+1` units without restoring entitlement;
-- correction report-state mapping is explicit and `NOT_APPLICABLE` fails closed;
-- linked correction identity is validated against the refund snapshots and canonical Shopify idempotency key;
-- purchased-credit admission now subtracts `refundingQuantity`.
-
-Those corrections should be preserved.
-
-Attempt 2 is not yet acceptable because one concurrency/authorization defect remains in the runtime state machine and the prior Architect Review explicitly required a larger deterministic regression matrix than the implementation currently provides.
-
-#### 1. `advance()` must never overwrite an Admin-owned terminal or provider-confirmed state
-
-`processDue()` selects PROCESSING / PROVIDER_PENDING rows and later calls `advance(refund.id, now)`.
-
-Inside `advance()`, the refund is re-read, but the implementation currently checks only:
-
-```ts
-if (!refund || !refund.holdAppliedAt) return "attention";
-```
-
-It does **not** require that the freshly re-read durable row is still in a Background-actionable state.
-
-This creates a real race:
+The refund progression state machine now re-reads durable state inside `advance()` and permits Background progression only from:
 
 ```text
-Worker selects PROCESSING
-        |
-        v
-SUPER_ADMIN changes row -> REJECTED / WITHDRAWN / PROVIDER_CONFIRMED
-        |
-        v
-Worker advance() re-reads the new state
-        |
-        v
-current code can still create/inspect a correction
-and transition the row to PROVIDER_PENDING /
-PROVIDER_ACTION_REQUIRED / NEEDS_ATTENTION
+PROCESSING
+PROVIDER_PENDING
 ```
 
-For `PARTNER_DASHBOARD_REFUND`, a freshly re-read REJECTED row can be overwritten to `PROVIDER_ACTION_REQUIRED`.
-
-For correction mode, a freshly re-read terminal/provider-confirmed row can have a correction created or can be overwritten by the correction-state mapping.
-
-That violates the human approval boundary.
-
-Attempt 3 must:
-
-- treat only the intended Background progression states as actionable inside `advance()`:
-  - `PROCESSING`;
-  - `PROVIDER_PENDING`;
-- after the in-transaction re-read, if the durable status is any of:
-  - `REJECTED`;
-  - `WITHDRAWN`;
-  - `PROVIDER_CONFIRMED`;
-  - `PROVIDER_ACTION_REQUIRED`;
-  - `COMPLETED`;
-  - `NEEDS_ATTENTION`;
-  - `REQUESTED`;
-  - `APPROVED`;
-  then `advance()` must perform **no correction creation and no status overwrite**;
-- a stale outer selection must never be sufficient authority to progress the row;
-- REJECTED/WITHDRAWN should be left for the terminal-hold-release path;
-- PROVIDER_CONFIRMED should be left for finalization;
-- do not automatically reinterpret an Admin-owned terminal state.
-
-A clean implementation may let `advance()` return a no-op/null outcome and have `processDue()` simply continue without incrementing a misleading lifecycle result.
-
-Add deterministic races proving:
-
-```text
-selected PROCESSING
-then durable REJECTED before advance
-=> terminal status preserved
-=> no correction
-=> no provider-action transition
-```
-
-```text
-selected PROVIDER_PENDING
-then durable WITHDRAWN before advance
-=> terminal status preserved
-=> no correction/state overwrite
-```
-
-```text
-selected PROCESSING/PROVIDER_PENDING
-then durable PROVIDER_CONFIRMED before advance
-=> confirmation preserved
-=> advance performs no correction/state overwrite
-=> a later pass may finalize normally
-```
-
-#### 2. Correction linking and lifecycle transitions must use checked optimistic CAS
-
-The helper:
-
-```ts
-transition(transaction, refund, status, now)
-```
-
-currently updates by:
-
-```text
-id + version
-```
-
-but ignores `updated.count`.
-
-`createCorrection()` also links `correctionUsageEventId` using only:
-
-```text
-id + correctionUsageEventId:null
-```
-
-and ignores the result.
-
-Attempt 3 must make these transitions concurrency-safe:
-
-- status transition predicate must include:
-  - exact `id`;
-  - exact `version`;
-  - exact expected current `status`;
-- if the transition CAS loses, throw `RefundConcurrencyConflict` so the Serializable transaction rolls back/retries rather than reporting an outcome that was not persisted;
-- correction linkage must be tied to the same freshly re-read actionable refund identity/state;
-- if another writer changed the refund before the link is persisted, fail/retry rather than linking a correction to a terminal or provider-confirmed refund;
-- do not create a second correction; preserve the deterministic upsert/idempotency contract.
-
-One acceptable correction-link predicate is equivalent to:
-
-```text
-id == refund.id
-version == refund.version
-status == refund.status
-correctionUsageEventId == null
-```
-
-with a checked `count == 1`.
-
-Do not weaken the existing linked-correction identity validation.
-
-#### 3. Complete the still-missing mandatory regression proofs
-
-The prior Architect Review explicitly required deterministic tests for all 17 task cases plus the additional correction/message cases. Attempt 2 adds useful coverage, but a number of those required proofs remain absent or only partial.
-
-Attempt 3 must add the following missing tests.
-
-##### Hold / admission
-
-1. **Exact hold state**
-   - prove the hold transaction is Serializable;
-   - after the hold write, prove:
-     - purchase remains ACTIVE;
-     - `refundingQuantity += creditsSnapshot`;
-     - refund had the PROCESSING/hold/version transition before provider progression.
-
-2. **Hold lowers purchased-credit availability**
-   - use `PurchasedRecoveryReservationService` with a non-zero `refundingQuantity`;
-   - prove the held credits cannot be reserved.
-
-3. **Concurrent refund hold vs recovery reservation**
-   - use a stateful shared counter/CAS fixture or focused DB test;
-   - insufficient capacity for both;
-   - prove at most one wins and the counter never overspends.
-
-##### Correction creation / validation
-
-4. **Exact one `-1` correction**
-   Assert all required fields, including the ones not currently asserted:
-
-```text
-shopId
-metric = RECOVERY_CREDIT_PACK_PURCHASE
-quantity = -1
-billingPeriodId
-correctionOfUsageEventId
-sourceType = RECOVERY_CREDIT_REFUND
-sourceId = refund.id
-idempotencyKey = recovery-credit-refund:<refund.id>
-shopifyEventHandle
-shopifyIdempotencyKey = canonical Shared helper
-```
-
-Track the upsert/create count and prove replay does not create a second logical correction.
-
-5. **Wrong source/current scope fails closed**
-   Add separate cases for:
-   - original UsageEvent not REPORTED;
-   - wrong original billing cycle;
-   - current Subscription billing cycle mismatch;
-   - current provider plan mismatch;
-   - current pack meter mismatch;
-   - original UsageEvent meter/snapshot mismatch.
-
-Each must:
-
-```text
-create no correction
--> NEEDS_ATTENTION
-keep hold
-```
-
-6. **REPORTED correction is not completion**
-   In addition to the current status assertion, prove:
-   - purchase remains ACTIVE;
-   - granted/refunding quantities are unchanged;
-   - no `BILLING_REFUND_COMPLETED` message exists.
-
-7. **Partner Dashboard mode creates no correction**
-   Explicitly assert no UsageEvent correction/upsert is called before moving to `PROVIDER_ACTION_REQUIRED`.
-
-##### Finalization / release
-
-8. **Only granted/refunding are decremented**
-   Start with non-zero `committedQuantity` and `reservedQuantity`;
-   after finalization prove both are unchanged.
-
-9. **Forced final refund CAS rollback**
-   Attempt 2 proves purchase-CAS rollback, but the previous review required both purchase and refund CAS failures.
-   Force the final:
-
-```text
-refund PROVIDER_CONFIRMED -> COMPLETED
-```
-
-CAS to lose after counter and purchase writes and prove the whole transaction rolls back:
-
-```text
-granted unchanged
-refunding unchanged
-purchase ACTIVE
-refund PROVIDER_CONFIRMED
-no completion message
-```
-
-10. **WITHDRAWN release and release exactly once**
-    Repeat the safe terminal release regression for `WITHDRAWN`, and prove a second pass does not decrement `refundingQuantity` again.
-
-11. **Provider-confirmed/ambiguous provider action never auto-releases**
-    Explicitly prove:
-    - terminal row with provider-confirmation evidence is not auto-released;
-    - any linked correction in PENDING/IN_FLIGHT/RETRYABLE/REPORTED/NEEDS_ATTENTION prevents automatic hold release.
-
-##### Billing invariants / messaging
-
-12. **Free counter untouched**
-    The refund hold/finalization path and purchased-credit admission must never read/update `FREE_RECOVERY_LIFETIME`.
-    Add a direct tracked regression.
-
-13. **Fresh paid-cycle precedence**
-    Preserve/prove the paid billing invariant in the ARCH-009 task surface:
-    fresh paid included allowance is consumed before purchased-credit reservation after cycle renewal.
-
-14. **Completion message logical idempotency**
-    Prove first finalization uses exactly:
-
-```text
-BILLING_REFUND_COMPLETED
-```
-
-with the canonical `createMerchantBillingSystemSourceKey(...)`, and replay/concurrent finalization cannot produce a second logical message.
-
-#### 4. Preserve the corrected reconciliation behavior
-
-The new reconciliation changes are correct and should not regress:
-
-```text
-ACTIVE exact-scope purchases
-+
-COMPLETED PARTNER_DASHBOARD_REFUND exact-scope REFUNDED purchases
-=
-alreadyMatchedUnits
-```
-
-The current tests correctly prove:
-
-```text
-providerUnits=1
-dashboard-refunded historical +1 + pending purchase
-=> pending purchase not activated
-```
-
-and:
-
-```text
-providerUnits=2
-dashboard-refunded historical +1 + pending purchase
-=> exactly one pending purchase activates
-```
-
-and the correction-mode REFUNDED purchase itself is not reactivated.
-
-Do not redesign this part in Attempt 3.
-
-#### 5. Completion Report metadata
-
-The published parent branch tip is:
-
-```text
-43bc35bb0b8eb3a01e7253699ea8b60a7db282fb
-```
-
-The Attempt 2 Completion Report currently records the earlier report commit:
-
-```text
-3b875395c7e3a075e9195d434a965d5c5af61df9
-```
-
-Attempt 3 must distinguish:
-
-```text
-review/report content commit
-final parent branch/handoff tip
-```
-
-and record the final pushed parent tip explicitly.
-
-Preserve the existing physical worktree and synchronization evidence.
-
-### Positive Findings To Preserve
-
-- implementation branch is now a single BACKGROUND-002 commit directly on synchronized `moda-interact-background/main`;
-- no unaccepted BACKGROUND-001 implementation is carried;
-- exact accepted ARCH-009 DB gitlink and Shared 0.9.0 are adopted directly by this task;
-- refund hold uses Shared `availablePurchasedRecoveryCredits`;
-- purchase stays ACTIVE while held;
-- original purchase/UsageEvent snapshot checks include original meter identity;
-- negative App Event uses deterministic local and canonical Shopify idempotency;
-- correction state mapping is explicit and `NOT_APPLICABLE` fails closed;
-- linked correction identity is validated before reuse;
-- Partner Dashboard refund creates no synthetic negative event in production;
-- completed dashboard refunds are accounted for as explained historical provider units;
-- correction-mode REFUNDED purchase is not an activation candidate;
-- finalization requires durable provider confirmation evidence;
-- finalization and terminal hold release use Serializable transactions and bounded conflict retry;
-- counter/purchase/refund accounting now rolls back when later CAS operations fail;
-- REJECTED/WITHDRAWN terminal release is Background-observed, not Background-invented;
-- purchased-credit reservation availability subtracts `refundingQuantity`;
-- billing-worker integration remains after the existing reconciliation pass.
+A stale outer selection cannot overwrite Admin-owned or human-confirmed state. Durable `REJECTED`, `WITHDRAWN`, `PROVIDER_CONFIRMED`, `PROVIDER_ACTION_REQUIRED`, `COMPLETED`, `NEEDS_ATTENTION`, `REQUESTED`, and `APPROVED` rows are no-ops in the progression path.
+
+The optimistic-concurrency corrections are also complete:
+
+- lifecycle transitions CAS exact `id + version + expected status`;
+- every transition checks `updated.count == 1`;
+- correction linking CASes exact `id + version + status + correctionUsageEventId=null`;
+- a losing correction/status CAS raises `RefundConcurrencyConflict`;
+- the Serializable transaction is retried through the bounded conflict policy;
+- a failed correction link rolls back correction creation rather than leaving an orphaned task-owned correction.
+
+The prior Attempt-2 accounting and reconciliation corrections remain intact:
+
+- full-pack holds use Shared 0.9.0 refund-aware availability;
+- purchase remains ACTIVE while a refund is pending;
+- finalization atomically decrements only `grantedQuantity` and `refundingQuantity`;
+- `committedQuantity` and `reservedQuantity` are preserved;
+- purchase becomes REFUNDED only after complete provider-confirmation evidence;
+- refund becomes COMPLETED exactly once;
+- post-write CAS failures roll back the complete finalization transaction;
+- REJECTED/WITHDRAWN pre-provider holds are automatically and idempotently released only when safe;
+- correction/provider ambiguity retains the hold;
+- CURRENT_CYCLE_APP_EVENT_CORRECTION creates one deterministic `-1` App Event and fails closed for source/cycle/plan/meter/state mismatches;
+- `REPORTED` correction means PROVIDER_ACTION_REQUIRED, not completion;
+- PARTNER_DASHBOARD_REFUND creates no synthetic negative App Event;
+- completed Partner-Dashboard refunds remain explained historical provider `+1` units for ARCH-008 reconciliation without restoring entitlement;
+- correction-mode REFUNDED purchases are never reactivated;
+- purchased-credit admission subtracts `refundingQuantity`;
+- paid included allowance continues to precede purchased credits;
+- the refund path does not consume the Free lifetime counter.
+
+### Regression Review
+
+The Attempt-3 focused surface now covers the authoritative 17-item task matrix and the additional architect-requested concurrency cases, including:
+
+1. Serializable exact full-pack hold while purchase remains ACTIVE;
+2. held credits lower purchased-credit availability;
+3. insufficient purchased balance produces no hold;
+4. shared-counter refund/reservation competition cannot overspend;
+5. deterministic one logical `-1` correction with durable source identity;
+6. wrong source report state/cycle/provider cycle/plan/meter/original meter fails closed;
+7. REPORTED correction does not finalize or decrement entitlement;
+8. Partner Dashboard mode creates no correction;
+9. complete human provider confirmation finalizes exactly once;
+10. only granted/refunding quantities are decremented;
+11. purchase-CAS and final-refund-CAS failures roll back preceding accounting writes;
+12. REJECTED and WITHDRAWN hold release is safe and idempotent;
+13. provider-confirmed/correction-linked ambiguity does not auto-release;
+14. correction-mode REFUNDED purchase is not reactivated;
+15. completed dashboard-refunded historical `+1` prevents erroneous regrant;
+16. fresh paid included allowance precedes purchased credits;
+17. Free lifetime counter remains untouched.
+
+Additional races prove that a row changed to REJECTED, WITHDRAWN, or PROVIDER_CONFIRMED after selection is not overwritten by stale Background progression, and a correction-link CAS loss rolls back the correction transaction.
 
 ### Validation Reviewed
 
-Agent-reported Attempt 2:
+Agent-reported Attempt 3:
 
 ```text
-focused refund/purchase tests: 32 passed
-npm run test:unit:              451 passed
-npm run build:                  passed
-npm run prisma:validate:        passed
-git diff --check:               passed
+focused B002 suites:       65 passed
+npm run test:unit:         470 passed
+npm run build:             passed
+npm run prisma:validate:   passed
+git diff --check:          passed
 ```
 
-The supplied archive does not contain `node_modules`, so npm validation was not independently rerun by the architect.
-
-The architect inspected the task contract, architecture, modified source, focused test files, and published Git state directly.
+The supplied review archive does not contain `node_modules`, so npm commands were not independently rerun by the architect. The architect inspected the changed implementation, focused tests, task contract, dependency state and published Git history directly.
 
 ### Published Git Verification
 
-Implementation branch:
+Implementation repository:
 
 ```text
 repository: moda-interact-background
 branch: task/ARCH-009-BACKGROUND-002
-tip: 3dec78ea19ca6ac738ea0fcb4d252dc2436f16e2
-parent: eff586b2a23c1315018bbd27cefb96500d7681da
+Attempt 2: 3dec78ea19ca6ac738ea0fcb4d252dc2436f16e2
+Attempt 3: d2b7977c28b878d2cfadd251ecf72ad71fd24863
+Attempt 3 parent: 3dec78ea19ca6ac738ea0fcb4d252dc2436f16e2
 ```
 
-The tip is directly based on `main`, so the Attempt 1 sibling-task contamination is removed.
+Attempt 3 is exactly one correction commit after Attempt 2. The cumulative task branch remains isolated from the BACKGROUND-001 sibling task and is based on the accepted direct prerequisites.
 
-Parent workspace branch tip:
+Published parent workspace branch reviewed at:
 
 ```text
-43bc35bb0b8eb3a01e7253699ea8b60a7db282fb
+c3f5f92be0775b4fe441e03e9755874f0f19f06d
 ```
 
-Both published task branches match the supplied handoff.
+The final parent commit is metadata-only and follows the recorded Attempt-3 report/handoff commits.
 
 ### Architecture Conformance
-
-Changes required.
+Accepted.
 
 ### Follow-up
 
-Attempt 3 remains on the SAME `ARCH-009-BACKGROUND-002` task and canonical mirrored task branches/worktrees.
+`ARCH-009-BACKGROUND-002` is Complete.
 
-Attempt 3 scope is narrow:
+Do not start `ARCH-009-ADMIN-002` yet. Its authoritative dependencies are:
 
-1. protect Admin-owned terminal/provider-confirmed states from stale Background `advance()` work;
-2. make correction-link/status transition writes exact checked CAS operations;
-3. complete only the missing tests enumerated above;
-4. preserve the corrected atomic finalization, automatic release, reconciliation, correction-state mapping, Shared availability and branch isolation;
-5. do not import BACKGROUND-001 or any other sibling task branch;
-6. rerun:
-   - focused refund/reconciliation/admission tests;
-   - `npm run test:unit`;
-   - `npm run build`;
-   - `npm run prisma:validate`;
-   - `git diff --check`;
-7. update the Completion Report with Attempt 3 files, test counts, worktree/sync evidence, implementation commit, report commit and final parent branch tip;
-8. preserve this Architect Review until the next architect decision;
-9. return the same task to `review`;
-10. STOP.
+```text
+ARCH-009-ADMIN-001
+ARCH-009-BACKGROUND-001
+ARCH-009-BACKGROUND-002
+```
 
-`ARCH-009-ADMIN-002` remains Pending until BACKGROUND-001, BACKGROUND-002 and ADMIN-001 are all architect-accepted Complete.
+Only BACKGROUND-002 is completed by this acceptance. BACKGROUND-001 remains in its separate security-only correction cycle, and ADMIN-001 is not Complete in this reviewed workspace.
+
+Once all three individual dependencies are Complete, moda_architect may promote ADMIN-002 to Ready.
+
+`ARCH-009-SYSTEM-TEST-001` remains terminal/manual-gated and must not execute automatically.
