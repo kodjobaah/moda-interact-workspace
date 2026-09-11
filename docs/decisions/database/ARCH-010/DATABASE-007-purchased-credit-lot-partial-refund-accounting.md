@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 67
-executor: copilot
-claimed_at: 2026-09-11T14:08:04Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on: []
 enables:
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T14:08:04Z
+updated: 2026-09-11T14:10:31Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -909,4 +909,51 @@ git diff --check
 ```
 
 `npm run status` remains inspection-only. Return the same task to `review`.
+
+## Attempt 4 Completion Addendum
+
+### Implementation evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-007`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-007`.
+- Branch: `task/ARCH-010-DATABASE-007`; logical agent: `moda_database`; executor: `copilot`; attempt: `4`.
+- Parent synchronization commit: `9ec7843`.
+- Implementation correction commit: `c479ec3` (`test(database): filter aggregate fixture by grant status`).
+- Parent claim commit: `70a869b`.
+
+### Correction implemented
+
+- Updated `reconcileAggregate()` to filter purchases to grant-bearing `ACTIVE` and `REFUNDED` statuses before reconstructing granted, committed, reserved, and refunding quantities.
+- Added a non-zero `NEEDS_ATTENTION` purchase fixture and retained equality/mismatch assertions, proving that non-granting historical credits contribute zero to reconstructed aggregates.
+- The accepted DATABASE-007 Prisma schema and migration remain unchanged.
+
+### Validation results
+
+Passed from the canonical implementation worktree: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:purchased-credit-lots`, `npm run test:checkout-recovery-capacity`, `npm run test:recovery-credit-packs`, `npm run test:billing-lifecycle`, `npm run erd:puml`, and `git diff --check`.
+
+`npm run status` was inspection-only and exited 1 because the configured shared PostgreSQL test database has five unapplied migrations, including `20260911130000_add_purchased_credit_lot_accounting`. No migration was applied.
+
+### Physical worktree isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-007`.
+- Parent branch: `task/ARCH-010-DATABASE-007`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-007`.
+- Implementation branch: `task/ARCH-010-DATABASE-007`.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+
+### Start-of-attempt synchronization
+
+- Parent remote task branch fast-forwarded: already current.
+- Parent `origin/main` incorporated: yes, merged during Attempt 4 synchronization.
+- Implementation remote task branch fast-forwarded: already current.
+- Implementation `origin/main` incorporated: yes, merged during Attempt 4 synchronization.
+
+### Git / VCS
+
+- Both mirrored task branches were committed and pushed.
+- Both canonical worktrees were clean after their respective commits and pushes.
+- No main branch was pushed, no Architect Review text was edited, and no submodule gitlink was staged.
 
