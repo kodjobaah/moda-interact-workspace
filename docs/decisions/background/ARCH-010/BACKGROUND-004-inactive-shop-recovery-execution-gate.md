@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 45
 attempt: 1
 depends_on: []
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-018
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T17:48:10Z
 ---
 
 # ARCH-010-BACKGROUND-004: Stop queued recovery work for inactive shops
@@ -261,4 +261,213 @@ Populate during implementation.
 Populate canonical isolated worktree/branch/commit/push evidence.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+The implementation direction is correct, but the submitted handoff contains two
+concrete code defects plus incomplete acceptance coverage and workflow evidence.
+
+##### Accepted design direction
+
+Architect review accepts the following approach and does not request redesign:
+
+- a Background-owned `ShopExecutionEligibilityService` is the right local reusable
+  policy boundary;
+- checkout-created scheduling resolves durable `Shop.status` before BullMQ/Redis
+  candidate mutation;
+- `ACTIVE` proceeds, while `UNINSTALLED` and `SUSPENDED` return a terminal
+  `discarded-shop-unavailable` outcome;
+- checkout-update checks current shop status before candidate refresh, Shopify
+  abandoned-checkout lookup or recovery mutation;
+- cart activity checks current shop execution eligibility before candidate mutation;
+- matured-candidate materialization checks durable shop activity before Shopify
+  provider lookup or recovery creation;
+- order completion is intended to gate inactive shops before new recovery-domain
+  work;
+- missing-shop behaviour remains distinct from inactive-shop behaviour;
+- the existing usage-publisher uninstall cutoff and ACTIVE-only billing-reconciliation
+  selection were not blanket-rewritten.
+
+Do not redesign those accepted boundaries in Attempt 2.
+
+##### Correction 1 — fix the invalid order-shop projection
+
+Current `handleOrderCompleted()` does:
+
+```ts
+const shop = await prisma.shop.findUnique({
+  where: { domain: event.shop },
+  select: { id: true },
+});
+
+...
+
+if (shop.status !== "ACTIVE") {
+```
+
+`status` is not selected, so the returned Prisma object does not contain
+`shop.status`.
+
+Select the durable status in the same lookup:
+
+```ts
+select: { id: true, status: true }
+```
+
+and preserve the existing missing-shop / inactive-shop outcomes.
+
+Add focused coverage that would fail if the status field is omitted.
+
+##### Correction 2 — make the matured-candidate result type match runtime behaviour
+
+`materializeMaturedCandidate()` now returns:
+
+```ts
+{
+  outcome: "discarded-shop-unavailable",
+  checkoutToken: candidate.checkoutToken,
+}
+```
+
+but `MaturedCandidateMaterializationResult` does not declare that variant.
+
+Add the terminal result variant to the union. Do not weaken the return type to a
+generic string.
+
+##### Correction 3 — add the required inactive-path regression coverage
+
+The archive contains focused `UNINSTALLED` / `SUSPENDED` assertions for
+`PendingRecoveryCandidateService.scheduleFromCheckoutCreated()`, which covers the
+checkout-created scheduling requirement.
+
+However, the submitted tests do not contain focused assertions for the other
+required inactive paths. In particular, Architect review could not find
+`shop-unavailable` / `discarded-shop-unavailable` coverage for:
+
+- checkout-update;
+- cart activity;
+- order completion;
+- matured-candidate materialization.
+
+Attempt 2 must add focused tests proving at least:
+
+1. inactive checkout-update does not call
+   `pendingRecoveryCandidateService.refreshCandidateActivity`;
+2. inactive checkout-update does not call Shopify abandoned-checkout lookup and
+   does not mutate `CheckoutRecovery`;
+3. inactive cart activity does not mutate/refresh a pending candidate;
+4. inactive order completion performs no candidate resolution/cancellation,
+   order tombstone creation, recovery transaction/update or new customer/recovery
+   work;
+5. inactive matured candidate does not call `resolveShopDomain()` or Shopify
+   abandoned-checkout lookup;
+6. inactive matured candidate creates/updates no CheckoutRecovery, customer,
+   conversation or outbound action;
+7. the inactive matured-candidate result is terminal
+   `discarded-shop-unavailable`;
+8. the worker's existing `finally` cleanup still executes for that terminal result;
+9. ACTIVE checkout-update/cart/order/matured paths continue through their existing
+   behaviour;
+10. the existing `EffectiveBillingPolicyResolver` non-ACTIVE rejection,
+    ACTIVE-only billing reconciliation, and pre-uninstall committed-usage
+    publication tests remain passing or are explicitly rerun.
+
+Where provider/recovery dependencies are mocked, assert they were not called.
+
+The task contract requires these behaviours; passing only the 36
+pending-candidate tests is not sufficient acceptance evidence.
+
+##### Correction 4 — repair the test fixture/module-load blocker if it is local to the tests
+
+The Completion Report states that checkout/order focused suites cannot load because
+an existing test mock leaves `SubscriptionProjectionStatus.ACTIVE` undefined.
+
+If that blocker is in a test mock owned by the Background repository and can be
+corrected without changing production semantics, update the mock so the focused
+ARCH-010-BACKGROUND-004 tests can actually execute.
+
+Do not use the pre-existing mock defect as a reason to omit the task's required
+focused assertions.
+
+If correcting that mock would cross a task/repository boundary or materially alter
+another accepted contract, stop and report the exact blocker to Architect instead.
+
+##### Correction 5 — record mandatory worktree/synchronisation evidence
+
+The submitted Completion Report still says:
+
+```text
+### Git / VCS
+Populate canonical isolated worktree/branch/commit/push evidence.
+```
+
+That does not satisfy the mandatory task-worktree isolation policy.
+
+On Attempt 2 record:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Use the resolver-selected canonical worktrees.
+
+##### Repository-wide validation blockers
+
+The reported failures in:
+
+- `src/entrypoints/billing.ts:37`;
+- the existing Prisma build path;
+- undeclared `npm run typecheck`;
+- unrelated baseline unit/mock failures;
+
+may remain documented if they are truly pre-existing and unchanged by this task.
+
+They do **not**, however, waive the requirement that the changed inactive-shop
+paths themselves are type-correct and have executable focused coverage.
+
+After fixing the two direct code defects and test fixtures, run the maximum focused
+validation available for every changed guarded path and record exact commands and
+results.
+
+Also rerun:
+
+```text
+git diff --check
+```
+
+If a repository-wide command remains blocked by a baseline defect, document the
+exact unchanged blocker separately from the focused task validation.
+
+##### Scope guard
+
+Do not:
+
+- change Shopify uninstall ingress;
+- purge BullMQ globally;
+- reactivate shops;
+- redesign Subscription status;
+- change credits/refunds/billing-period rollover;
+- blanket-disable legitimate pre-uninstall usage publication;
+- modify another repository.
+
+Return the same task to `review` after the corrections.
