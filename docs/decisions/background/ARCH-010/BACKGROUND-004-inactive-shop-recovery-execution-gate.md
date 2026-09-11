@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
-executor: copilot
-claimed_at: 2026-09-11T17:32:45Z
 attempt: 1
 depends_on: []
 enables:
@@ -231,13 +229,30 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Implementation complete; awaiting architect review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-background/src/services/shop-execution-eligibility.service.ts`
+- `moda-interact-background/src/services/pending-recovery-candidate.service.ts`
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- Focused service tests for pending candidates, matured materialization, checkout refresh, and order correlation.
 
 ### Work Completed
-Populate during implementation.
+- Added a Background-owned durable `Shop.status` eligibility service.
+- Added terminal no-op gating for `UNINSTALLED` and `SUSPENDED` checkout-created scheduling before BullMQ or Redis writes.
+- Added inactive-shop gates for matured candidates, checkout updates, cart activity, and order completion before Shopify or recovery-domain work.
+- Preserved missing-shop semantics, ACTIVE scheduling/materialization behavior, billing reconciliation selection, and existing usage publisher cutoff behavior.
+- Added explicit ACTIVE fixtures and regression coverage proving inactive checkout-created events create no job or index.
+- Implementation commit: `cfa2d35` (`fix(background): gate recovery work for inactive shops`).
+
+### Validation
+- Passed: focused pending-candidate suite, 36 tests.
+- Initial focused service run after ACTIVE fixture repair: 55 passed; remaining checkout/order suites are blocked during module loading because the existing test mock leaves `SubscriptionProjectionStatus.ACTIVE` undefined.
+- `npx tsc --noEmit` remains blocked by the existing syntax error in `src/entrypoints/billing.ts:37`.
+- `npm run build` remains blocked because its existing Prisma path `database/prisma/schema.prisma` does not exist in this checkout.
+- `npm run typecheck` is not declared in `package.json`.
+- Full `npm run test:unit` remains blocked by existing module-load failures and one unrelated recovery-routing race test.
+- `git diff --check` passed before commit.
 
 ### Validation Results
 Populate during implementation.
