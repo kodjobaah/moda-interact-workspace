@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 67
 executor: copilot
 claimed_at: 2026-09-11T13:08:18Z
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T13:08:18Z
+updated: 2026-09-11T13:18:00Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -633,4 +633,36 @@ required validation.
 If the actual current `origin/main` contains a conflicting semantic change beyond
 the additive DATABASE-005 surface identified above, STOP again and return the
 exact conflict to `moda_architect` rather than guessing.
+
+## Attempt 2 Completion Addendum
+
+### Implementation evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-007`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-007`.
+- Branch: `task/ARCH-010-DATABASE-007`; logical agent: `moda_database`; executor: `copilot`; attempt: `2`.
+- Mainline synchronization commit: `a0fd60e`.
+- Implementation correction commit: `d38084c`.
+- Parent claim commit: `88aa272`.
+
+### Corrections implemented
+
+- Lot capacity and aggregate grant reconciliation now include only `ACTIVE` and `REFUNDED` purchases; non-granting `NEEDS_ATTENTION` purchases are excluded.
+- Legacy completed refunds and active holds are seeded before FIFO allocation; available lot capacity subtracts `refundedQuantity` and `refundingQuantity`.
+- `RELEASED` reservations retain deterministic historical lot identity but do not consume temporary capacity or current committed/reserved quantities.
+- The purchased-credit validator now mirrors the SQL algorithm and covers status filtering, refund/hold subtraction, released rows, strict no-split failure, legacy refund/hold mapping, and aggregate equality.
+
+### Validation and database evidence
+
+Passed in the implementation worktree: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:purchased-credit-lots`, `npm run test:checkout-recovery-capacity`, `npm run test:recovery-credit-packs`, `npm run test:billing-lifecycle`, `npm run erd:puml`, and `git diff --check`.
+
+`npm run status` inspected the configured shared PostgreSQL test database and reported the three pending migrations, including `20260911130000_add_purchased_credit_lot_accounting`; it exited 1 without applying anything. No migration was applied to the shared remote database, so no live legacy rows were encountered.
+
+### Physical isolation and synchronization evidence
+
+- Implementation reads, edits, validation, commit, and push used only the dedicated implementation worktree.
+- Task metadata and report edits used only the dedicated parent worktree.
+- Both worktrees were clean at synchronization/claim boundaries and after their respective pushes.
+- `origin/main` was fetched and verified as an ancestor of implementation `HEAD` after the additive union merge; the parent was fast-forward synchronized to `origin/task/ARCH-010-DATABASE-007`.
+- No main branch was merged or pushed, Architect Review text was not edited, and no submodule gitlink was staged.
 
