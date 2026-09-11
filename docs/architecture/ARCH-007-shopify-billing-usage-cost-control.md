@@ -7,6 +7,8 @@ created: 2026-09-07
 updated: 2026-09-08
 ---
 
+> **ARCH-010 supersession notice (2026-09-11):** This file is retained as ARCH-007 architecture/implementation history. Do **not** use ARCH-007 merchant subscription, recovery-capacity, Free-allowance, automatic-overage, top-up, refund or lifecycle semantics as the current product contract. For current rules use [`ARCH-010`](ARCH-010-merchant-lifecycle-state-transitions.md), the [`current pricing/billing model`](../product/pricing-and-billing-model.md), and the [`supersession map`](ARCH-010-supersession-map.md). Non-superseded ARCH-007 message/provider safety primitives and historical completion evidence remain valid.
+
 # ARCH-007: Shopify App Pricing billing, usage metering and WhatsApp cost control
 
 ## Current durable task state

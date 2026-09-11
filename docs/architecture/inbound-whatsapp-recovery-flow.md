@@ -489,7 +489,7 @@ provided more context.
 Abuse admission and turn coalescing are operational safety mechanisms, not new
 merchant billing units.
 
-The ARCH-007 commercial unit remains the recovery conversation:
+The merchant commercial unit remains the recovery conversation:
 
 ```text
 RECOVERY_CONVERSATION
@@ -514,10 +514,12 @@ they mean.
 Message-level outbound/provider controls remain separate cost/safety accounting
 from the merchant-facing recovery unit.
 
-For the exact commercial ordering, Free allowance, paid included usage,
-purchased credit packs and overage semantics, see
-[`ARCH-007-shopify-billing-usage-cost-control.md`](ARCH-007-shopify-billing-usage-cost-control.md)
+For the current commercial ordering, shop-lifetime Free grant, paid included
+usage, promotional credits, purchased top-ups and capacity-exhaustion semantics,
+see [`ARCH-010-merchant-lifecycle-state-transitions.md`](ARCH-010-merchant-lifecycle-state-transitions.md)
 and [`../product/pricing-and-billing-model.md`](../product/pricing-and-billing-model.md).
+ARCH-007 remains relevant to the message/provider safety primitives in this flow,
+but its superseded merchant overage/capacity rules are historical.
 
 ## Failure and privacy rules
 

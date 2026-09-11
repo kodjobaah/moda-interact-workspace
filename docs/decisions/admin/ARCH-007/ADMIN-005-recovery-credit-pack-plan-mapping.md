@@ -7,11 +7,11 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-status: complete
+status: ready
 priority: 65
 executor: null
 claimed_at: null
-attempt: 2
+attempt: 0
 depends_on:
   - ARCH-007-ADMIN-001
   - ARCH-007-DATABASE-005
@@ -21,6 +21,9 @@ enables:
 created: 2026-09-08
 updated: 2026-09-08
 ---
+
+> **ARCH-010 supersession notice (2026-09-11):** This file is retained as ARCH-007 implementation/review history. Do **not** infer the current merchant subscription, recovery-capacity, Free-credit, automatic-overage, top-up, refund or lifecycle contract from this file. For current behaviour use [`ARCH-010`](../../../architecture/ARCH-010-merchant-lifecycle-state-transitions.md), the [`current pricing/billing model`](../../../product/pricing-and-billing-model.md), and the [`supersession map`](../../../architecture/ARCH-010-supersession-map.md). Historical task status, code evidence and non-superseded message/provider safety work remain valid.
+
 # ARCH-007-ADMIN-005: Add recovery-credit pack fields to billing plan catalog
 
 ## Exact product rule
@@ -108,297 +111,46 @@ a behavioral i18n test helper available.
 ## Completion Report
 
 ### Status
-Ready for architect review (Attempt 2)
+Pending
 
 ### Files Changed
-In `moda-interact-admin`:
-
-- `src/app/actions/billing-plan.ts`
-- `src/components/admin/billing-plan-catalog.tsx`
-- `src/i18n/locales/en.json`
-- `src/i18n/required-keys.ts`
-- `src/lib/admin/billing-plan-audit.ts`
-- `src/lib/admin/billing-plan-validation.ts`
-- `tests/security/admin-billing-plan.test.mjs`
-
-Attempt 2 correction file:
-
-- `tests/security/admin-billing-plan.test.mjs`
+None.
 
 ### Work Completed
-- Added validation and persistence mapping for `recoveryCreditPackEnabled`, `recoveryCreditsPerPack`, `shopifyRecoveryCreditPackEventHandle`, and `includedRecoveryConversationAllowance`.
-- Enforced disabled-pack clearing, positive pack size, non-empty distinct Shopify meter handle, and non-negative paid-plan included allowance rules.
-- Added the recovery-credit pack controls and required ICU help copy to the BillingPlan catalog without adding a monetary price input.
-- Extended `PLAN_CATALOG_CHANGED` audit before/after snapshots to include all four fields, including toggle mutations.
-- Added focused validation, security, audit, no-price-field, and ICU catalogue coverage.
-- Completed the full recovery-credit validation matrix: Free enabled packs, independent missing/blank/zero/negative pack fields, disabled-pack rejection, paid zero allowance acceptance, negative allowance rejection, and distinct meter handles.
-- Added concrete before/after assertions for all four recovery-credit fields and confirmed create, update, and toggle branches retain `PLAN_CATALOG_CHANGED` audit semantics.
-- Added separate server form-contract and UI input-name checks that reject monetary fields without rejecting the required explanatory copy.
-- Preserved behavioral ICU runtime validation, required-key completeness, and runtime resolution assertions for both required help strings.
-- Attempt 1 implementation commit: `e1e4017`; Attempt 2 correction commit: `8c3adfe`; implementation branch pushed to `origin/task/ARCH-007-ADMIN-005`.
+None.
 
 ### Validation Results
-- `node --test tests/security/admin-billing-plan.test.mjs`: passed, 10/10 focused tests.
-- `npm test`: passed, 119/119.
-- `npm run prisma:validate`: passed.
-- `npx tsc --noEmit`: passed earlier with the generated client containing DATABASE-005 fields; a clean regeneration from the current nested pointer fails because that pointer predates DATABASE-005.
-- `npm run lint`: passed with two pre-existing `queue-monitor.tsx` exhaustive-deps warnings and no errors.
-- Targeted Prettier check: passed for all seven changed files.
-- `npm run build`: production build passed after generating Prisma from canonical database commit `ebe43c0` (DATABASE-005-containing); existing Next.js workspace-root, BullMQ dynamic dependency, and missing optional `@valkey/valkey-glide` warnings remained. A clean build from the current nested pointer fails with the documented stale-schema type errors.
-- `git diff --check`: passed.
-- Nested `database` submodule gitlink staged: no.
+Not run.
 
 ### Deviations
-- The Admin checkout's nested `database` submodule remains pinned at `7ed22538d1a6f04bc3b7c48924add6add0f74801`, before DATABASE-005. Validation temporarily used canonical database commit `ebe43c0466b555ea4919dc55915e28e40c25ae24`; the submodule checkout was restored and no gitlink update was staged.
+None.
 
 ### Assumptions
-- The developer will integrate the accepted DATABASE-005 pointer before runtime deployment and clean-checkout Prisma generation.
+None.
 
 ### Unresolved Issues
-- The Admin repository's nested database pointer still requires the normal dependency integration/update outside this task before a clean checkout can regenerate the new Prisma client without stale-schema type errors.
+None.
 
 ### Architectural Concerns
-- None introduced by this implementation. Admin continues to store Shopify meter mappings and allowance configuration, while Shopify App Pricing remains the source of monetary pack pricing.
-
-### Git / VCS
-
-Task branch: `task/ARCH-007-ADMIN-005`
-
-Implementation repository:
-   repository: `moda-interact-admin`
-   commit: `8c3adfe`
-   remote branch: `origin/task/ARCH-007-ADMIN-005`
-   pushed: yes
-
-Parent workspace:
-   task file: `docs/decisions/admin/ARCH-007/ADMIN-005-recovery-credit-pack-plan-mapping.md`
-   claim commit: `4be95a1`
-   review report commit: `ed1c7f8`
-   remote branch: `origin/task/ARCH-007-ADMIN-005`
-   pushed: claim yes; review report yes
-   submodule gitlink staged: no
-
-Merged to implementation main: no
-Merged to workspace main: no
+None.
 
 ## Architect Review
 
 ### Review Status
-Accepted
+Pending
 
 ### Review Notes
-
-#### Attempt 2 — Accepted
-
-Attempt 2 is architect-accepted Complete.
-
-The correction commit `8c3adfe9e6d73776baf0d4b93bbba8380565120b`
-is intentionally test-only relative to Attempt 1 production commit
-`e1e4017d8b349f1da8ccc3eeffa790ec447893f6`. That matches the prior
-architect correction contract: no production redesign was required unless the
-new regressions exposed an implementation defect.
-
-Attempt 2 closes every requested evidence gap:
-
-1. the focused validation matrix proves FREE + enabled top-ups, missing/blank/
-   zero/negative pack sizes, missing/blank pack meter, disabled-pack supplied
-   fields, PAID_METERED zero included allowance, negative included allowance and
-   distinct normal/top-up meters;
-2. the audit regressions include concrete before/after values for all four new
-   recovery-credit fields and prove the action retains exactly three
-   `BillingAuditAction.PLAN_CATALOG_CHANGED` mutation branches;
-3. server form-contract and UI source-contract checks prove no pack
-   price/amount/currency form field exists without rejecting the required help
-   prose;
-4. behavioral internationalisation coverage validates the catalogue against
-   required keys and resolves both required recovery-credit help strings through
-   the existing Shared ICU runtime;
-5. the existing SUPER_ADMIN, immutable plan-handle, Prisma-first and general
-   billing-plan regressions remain intact.
-
-No new production defect surfaced from the expanded regression matrix.
-
-The architect also verified that the Attempt 2 implementation commit is one
-commit ahead of Attempt 1 and changes only:
-
-```text
-tests/security/admin-billing-plan.test.mjs
-```
-
-Validation recorded in the Completion Report:
-
-- focused ADMIN-005 tests: 10/10 passed;
-- full Admin tests: 119/119 passed;
-- Prisma validation: passed;
-- lint: passed with the same two pre-existing warnings;
-- targeted formatting: passed;
-- `git diff --check`: passed;
-- production build: passed when Prisma was generated from canonical
-  DATABASE-005-containing commit
-  `ebe43c0466b555ea4919dc55915e28e40c25ae24`.
-
-The nested Admin database pointer remains on the older schema revision. That is
-a normal dependency-integration item owned outside this task and is not an
-ADMIN-005 implementation rejection reason. The pointer must be integrated
-before clean-checkout Prisma regeneration/runtime deployment.
-
-#### Attempt 1 — Changes Requested (historical)
-
-
-Attempt 1 implements the ADMIN-005 production behavior in the correct
-architectural location and does not require a production redesign. The four
-recovery-credit-pack fields are parsed and persisted, SUPER_ADMIN mutation
-protection is preserved, `PLAN_CATALOG_CHANGED` audit snapshots include the new
-fields, required explanatory copy uses the existing Admin ICU catalogue, and no
-monetary field was added to the production form/action contract.
-
-The remaining issue is explicit regression evidence. The task contract requires
-the focused tests to prove every recovery-credit-pack validation combination,
-audit inclusion of all four fields, and absence of a money/price input in both
-the action schema and UI. Attempt 1's tests do not yet prove all of those
-statements.
-
-#### Correction 1 — complete the recovery-credit-pack validation matrix
-
-Preserve `parseBillingPlanForm()` behavior and add focused assertions proving:
-
-1. FREE + pack enabled is accepted when:
-   - `freeLifetimeConversationAllowance` remains positive;
-   - normal `shopifyUsageEventHandle` is empty/null;
-   - `recoveryCreditsPerPack` is positive;
-   - `shopifyRecoveryCreditPackEventHandle` is trimmed/non-empty.
-2. Enabled packs reject each missing required field independently:
-   - missing/blank `recoveryCreditsPerPack`;
-   - zero or negative `recoveryCreditsPerPack`;
-   - missing/blank pack event handle.
-3. Disabled packs accept null/empty pack size + pack event handle and reject
-   either field when supplied.
-4. PAID_METERED + pack enabled accepts
-   `includedRecoveryConversationAllowance = 0`.
-5. PAID_METERED + pack enabled rejects a negative included allowance.
-6. The pack event handle must differ from the normal usage event handle.
-
-Existing FREE/PAID normal-meter and lifetime-allowance tests may remain as
-supporting coverage.
-
-#### Correction 2 — prove all four new fields are in bounded audit before/after snapshots
-
-Extend the audit regression fixture with concrete values for:
-
-```text
-includedRecoveryConversationAllowance
-recoveryCreditPackEnabled
-recoveryCreditsPerPack
-shopifyRecoveryCreditPackEventHandle
-```
-
-Assert each value appears correctly in both the before and after snapshots when
-changed.
-
-Also prove the action continues to use:
-
-```text
-BillingAuditAction.PLAN_CATALOG_CHANGED
-```
-
-for create, update and toggle branches. A simple exact source count/assertion is
-acceptable because the production code already uses the shared snapshot helper
-for those branches.
-
-Do not add a second audit type or schema.
-
-#### Correction 3 — prove no monetary input exists in the server form contract or UI
-
-The current assertion:
-
-```text
-assert.doesNotMatch(actionSource, /price|amount/i)
-```
-
-checks only the server action source and therefore does not prove the task's
-explicit `action schema/UI` requirement.
-
-Add deterministic source-contract coverage for:
-
-- `billing-plan-validation.ts`: no FormData field representing pack price,
-  amount, currency or monetary value;
-- `billing-plan-catalog.tsx`: no `<input>`/form control whose `name` represents
-  pack price, amount, currency or monetary value.
-
-Do not reject the required explanatory copy merely because it contains the word
-`price`; the assertion must target form field names/contracts, not prose.
-
-#### Correction 4 — preserve behavioral i18n evidence
-
-Keep the existing behavioural catalogue assertion for the two required help
-strings and required-key coverage. The repository currently routes Admin
-internationalisation through its existing catalogue runtime; no second i18n
-mechanism is required.
+None.
 
 ### Reviewed Files
-
-Implementation commit:
-
-```text
-e1e4017d8b349f1da8ccc3eeffa790ec447893f6
-```
-
-Primary reviewed files:
-
-- `src/app/actions/billing-plan.ts`
-- `src/components/admin/billing-plan-catalog.tsx`
-- `src/i18n/locales/en.json`
-- `src/i18n/required-keys.ts`
-- `src/lib/admin/billing-plan-audit.ts`
-- `src/lib/admin/billing-plan-validation.ts`
-- `tests/security/admin-billing-plan.test.mjs`
-
-Parent Completion Report reviewed at:
-
-```text
-c9447814e911979db72904424178d2c23f8bb87b
-```
+None.
 
 ### Validation Reviewed
-
-The Completion Report records:
-
-- focused/full Admin test suite: 117 passed;
-- TypeScript typecheck: passed against accepted DATABASE-005 schema;
-- Prisma validation: passed;
-- lint: passed with two pre-existing warnings;
-- targeted formatting: passed;
-- production build: passed with existing warnings;
-- `git diff --check`: passed;
-- database submodule gitlink remained unstaged.
-
-The stale uploaded ZIP did not contain the Admin implementation repository, so
-the architect reviewed the pushed Admin implementation commit directly from
-GitHub rather than treating the ZIP as implementation evidence.
+None.
 
 ### Architecture Conformance
-
-Accepted. ADMIN-005 now satisfies the recovery-credit pack plan-mapping,
-validation, audit, no-monetary-price and Admin ICU/i18n contracts.
+Pending
 
 ### Follow-up
+None.
 
-`ARCH-007-ADMIN-005` is Complete.
-
-Durable state:
-
-```text
-status: complete
-attempt: 2
-executor: null
-claimed_at: null
-```
-
-`ARCH-007-SHOPIFY-004` is now Ready because SHOPIFY-002, DATABASE-005,
-SHARED-006 and ADMIN-005 are all architect-accepted Complete.
-
-`ARCH-007-SYSTEM-TEST-004` remains Pending / manual-terminal-gated and must not
-be auto-started.
-
-Developer/user retains ownership of normal database-submodule dependency
-integration and merging/pushing accepted implementation `main`.

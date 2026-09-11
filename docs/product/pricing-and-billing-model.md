@@ -1,664 +1,494 @@
-# Moda Interact Pricing and Billing Model
+# Moda Interact Pricing, Billing and Recovery-Capacity Model
 
-> **Status:** Product model agreed; ARCH-007 implementation is in progress.
+> **Status:** Current product model for ARCH-010. Architecture is agreed and implementation-ready; implementation remains task-driven.
 >
-> **Architecture source of truth:**
-> [`ARCH-007 — Shopify Billing, Usage and Cost Control`](../architecture/ARCH-007-shopify-billing-usage-cost-control.md)
+> **Canonical architecture:**
+> [`ARCH-010 — Merchant lifecycle state transitions and behavioural access`](../architecture/ARCH-010-merchant-lifecycle-state-transitions.md)
+>
+> **Implementation frontier:**
+> [`ARCH-010 implementation handoff`](../architecture/ARCH-010-implementation-handoff.md)
+>
+> **Supersession guide:**
+> [`ARCH-010 billing/lifecycle supersession map`](../architecture/ARCH-010-supersession-map.md)
 
-This page explains the commercial pricing model and how Moda Interact maps that
-model onto Shopify billing, durable platform state and internal cost controls.
+This document is the **single readable product-level description** of Moda Interact's current merchant billing, entitlement and recovery-capacity behaviour.
 
-For current execution state and pickup order, see the
-[`ARCH-007 implementation handoff`](../architecture/ARCH-007-implementation-handoff.md).
+It deliberately does not preserve the superseded ARCH-007 commercial rules. ARCH-007 remains useful as implementation/review history and for cost/safety primitives that ARCH-010 did not replace, but it is **not** the current source for merchant subscription, capacity, top-up, refund or lifecycle semantics.
 
-It is intentionally more readable than the canonical ARCH-007 architecture
-document. If this page and ARCH-007 ever disagree, ARCH-007 and the current task
-files are authoritative for implementation.
+If this readable page ever conflicts with ARCH-010 architecture or an active ARCH-010 task, the following order applies:
+
+```text
+active ARCH-010 task contract
+        ↑ exact bounded implementation scope/status
+ARCH-010 canonical architecture
+        ↑ complete cross-service behaviour
+this product model
+        ↑ readable product explanation
+historical ARCH-007/008/009 records
+        ↑ evidence/history only where superseded
+```
 
 ---
 
-## 1. What the merchant pays for
+## 1. Merchant commercial unit
 
-Moda Interact's primary merchant-facing commercial unit is a:
+Moda Interact's primary merchant-facing capacity unit is one admitted:
 
 ```text
 RECOVERY_CONVERSATION
 ```
 
-A recovery conversation represents an admitted abandoned-checkout recovery
-workflow. It is deliberately different from counting every individual WhatsApp
-message.
+A recovery conversation is not the same thing as one WhatsApp message or one CommerceAgent turn. Multiple shopper messages can belong to one admitted recovery conversation.
 
-For example, a shopper might send several messages during one recovery:
-
-```text
-Customer: Is the blue version still available?
-Moda:     Yes.
-
-Customer: Can it arrive tomorrow?
-Moda:     ...
-```
-
-That may still be one merchant recovery conversation even though it contains
-multiple customer and Moda messages.
-
-Moda's own costs can still vary with individual WhatsApp responses and
-CommerceAgent/LLM work. Those costs are controlled separately through the
-message-level safety model described below.
+Message counts, CommerceAgent limits and provider/AI safety controls remain operational cost/safety mechanisms. They do not create a second merchant recovery-credit unit.
 
 ---
 
-## 2. Current target plans
+## 2. Current plan catalogue and authority
 
-| Plan | Price | Included recovery conversations | Standard overage |
+The initial/current target catalogue is:
+
+| Plan | Shopify recurring price* | Paid-plan monthly included recoveries | Shop-lifetime Free grant |
 | --- | ---: | ---: | ---: |
-| **Free** | $0 | 5 lifetime | No automatic overage |
-| **Starter** | $35/month | 200/month | $0.05 per additional recovery |
-| **Growth** | $75/month | 500/month | $0.04 per additional recovery |
-| **Scale** | $149/month | 1,200/month | $0.03 per additional recovery |
+| **Free** | $0 | none | 5 once per shop |
+| **Starter** | $35/month | 200/current verified billing period | 5 once per shop |
+| **Growth** | $75/month | 500/current verified billing period | 5 once per shop |
+| **Scale** | $149/month | 1,200/current verified billing period | 5 once per shop |
 
-Paid tiers combine predictable included capacity with continued service through
-overage rather than hard-stopping a merchant when the monthly allowance is
-exhausted.
+\* Shopify App Pricing is authoritative for the live commercial plan, price, currency, billing cycle and pending plan change. Moda does not treat duplicated local price data as commercial truth.
 
-### Free is different
+There is **no automatic paid overage** in the ARCH-010 product model.
 
-Free has a **lifetime**, not monthly, recovery allowance:
-
-```text
-Free allowance = 5 lifetime recovery conversations
-```
-
-Once those five are consumed, the merchant must either buy prepaid recovery
-credits or upgrade to a paid plan. Buying a pack never resets the original Free
-lifetime allowance.
+When all spendable recovery-credit sources are exhausted, Moda blocks **new recovery admission** until capacity is restored. It does not silently create billable overage.
 
 ---
 
-## 3. Free allowance adjustments for testing and support
+## 3. The four recovery-capacity buckets
 
-The canonical Free plan remains **5 lifetime recovery conversations** for ordinary merchants.
+### 3.1 Paid monthly included credits
 
-A specific shop may have a different effective Free allowance for controlled testing, support credit or an operational exception. This uses the already-accepted signed allowance-adjustment ledger; it does **not** modify the plan or add test-only runtime branches.
+Paid-plan included credits:
+
+- exist only while a verified paid plan is effective;
+- belong to one exact Shopify billing period;
+- do not roll over;
+- are forfeited when that paid period closes;
+- are replenished only when Shopify verifies the next paid billing period.
+
+### 3.2 Promotional credits
+
+Promotional credits are Moda-funded, shop-specific grants for use cases such as:
+
+- targeted campaigns;
+- beta/test merchants;
+- goodwill;
+- support remediation;
+- internal controlled testing.
+
+They are:
+
+- tracked in the separate `PROMOTIONAL_RECOVERY_CREDITS` bucket;
+- lifetime-until-used in ARCH-010;
+- non-refundable;
+- independent of Shopify billing periods;
+- preserved across plan changes, uninstall/reinstall, cancellation and freeze;
+- not spendable while the merchant is otherwise non-executable (`FROZEN`, `NO_CONTRACT`, inactive/uninstalled, reinstall pending).
+
+Promotional credits do **not** modify the shop's lifetime Free grant.
+
+### 3.3 Purchased lifetime top-up credits
+
+Purchased top-up credits:
+
+- are merchant-funded;
+- survive monthly renewal and plan changes;
+- survive uninstall/reinstall, cancellation and freeze as owned balance;
+- use FIFO purchase-lot accounting;
+- are refundable only to the extent that a specific purchased lot remains unused and is not reserved/held for another refund;
+- become spendable only after provider billing confirmation/reconciliation.
+
+### 3.4 Shop-lifetime Free credits
+
+Every shop receives the Free lifetime grant **exactly once** at first verified subscription activation, whether its first verified plan is Free or Paid.
+
+Current default:
 
 ```text
-base Free allowance = 5
-signed shop adjustments = SUM(BillingAllowanceAdjustment.quantity)
-
-effective Free allowance = base + signed adjustments
+5 lifetime recovery conversations
 ```
 
-Example test shop:
+The grant:
+
+- belongs to the shop, not to the Free subscription;
+- never resets on upgrade or downgrade;
+- never resets on cancellation, uninstall or reinstall;
+- never replenishes at a Shopify billing boundary;
+- remains available on a Paid plan after higher-priority credit sources are exhausted;
+- is non-refundable.
+
+Example:
 
 ```text
-base = 5
-Admin adjustment = +95
+first activation: Free
+lifetime Free granted = 5
+merchant consumes 2
+remaining = 3
 
-effective allowance = 100
+merchant upgrades to Growth
+remaining lifetime Free = 3
+
+merchant exhausts Growth monthly allowance
+then promotional/purchased capacity is considered
+then the same remaining 3 lifetime Free credits can be used
 ```
 
-To test exhaustion quickly:
-
-```text
-base = 5
-Admin adjustment = -4
-
-effective allowance = 1
-```
-
-Historical committed/reserved usage is never rewritten when the effective allowance is lowered. Remaining capacity bottoms at zero.
-
-Every adjustment is append-only, requires a reason/administrator audit trail and is exposed through the ARCH-007 Admin controls. Do not use an environment variable such as `FREE_RECOVERY_LIMIT`, a hard-coded shop domain or an `isTestShop` branch.
+Returning to Free later does **not** grant another five.
 
 ---
 
-## 4. Repeatable recovery-credit packs
+## 4. Canonical capacity-consumption order
 
-Every plan may buy **prepaid recovery-credit packs**. This is not limited to
-Free.
-
-```text
-buy a pack
--> consume the pack
--> buy another pack
--> consume that pack
--> repeat
-```
-
-There is no architectural rule limiting the number of packs a merchant may buy.
-
-### Why packs exist
-
-Packs support merchants who want predictable prepaid capacity without changing
-their subscription immediately. They also let paid merchants buy additional
-recovery capacity at a plan-specific prepaid rate before ordinary overage is
-used.
-
-### Tier-sensitive pack pricing
-
-The intended commercial rule is:
-
-> Higher subscription tiers may receive cheaper recovery-credit pack rates.
-
-For example, Shopify can be configured so that the same pack quantity costs
-more on Free than on Starter, and less again on Growth or Scale.
-
-The exact monetary pack prices are **not fixed in this document**. They are
-configured in **Shopify App Pricing**, which remains authoritative for the
-actual amount Shopify charges.
-
-Moda stores only operational mapping such as:
+### Paid merchant
 
 ```text
-whether the plan supports packs
-credits per pack
-Shopify recovery-credit-pack meter/event handle
+current-period monthly included
+→ promotional
+→ purchased lifetime top-ups
+→ shop-lifetime Free
+→ BLOCK NEW RECOVERY ADMISSION
 ```
 
-Moda does **not** duplicate the top-up monetary price in PostgreSQL.
+### Free merchant
+
+```text
+promotional
+→ purchased lifetime top-ups
+→ shop-lifetime Free
+→ BLOCK NEW RECOVERY ADMISSION
+```
+
+Promotional credits are deliberately consumed before purchased credits so Moda-funded capacity is used before merchant-funded refundable capacity.
+
+Purchased credits are deliberately consumed before lifetime Free credits, preserving the original lifetime grant as the final fallback.
+
+### What “BLOCK NEW RECOVERY ADMISSION” means
+
+Capacity exhaustion is **not** a global application shutdown.
+
+When every executable capacity bucket is empty:
+
+- a newly eligible abandoned checkout is not admitted into a new recovery conversation;
+- no new recovery WhatsApp send is started for that checkout;
+- the recovery is durably marked as capacity-blocked/exhausted so it can be retried when capacity returns;
+- the merchant can still open the dashboard, history, usage, billing/options and support;
+- an already-admitted recovery conversation continues solely because capacity later reached zero.
+
+Capacity exhaustion is intentionally different from `FROZEN`, `NO_CONTRACT` and inactive/uninstalled states, which stop broader business execution.
 
 ---
 
-## 5. Capacity consumption order
+## 5. Free plan and Shopify billing periods
 
-The order is deterministic.
+The Shopify Free plan is a `$0` App Pricing plan that can still carry the recovery-credit top-up usage meter.
 
-### Free
+Therefore a Free Shopify subscription may have a current provider billing cycle/BillingPeriod used to scope App Events.
 
-```text
-1. Remaining lifetime Free recovery allowance
-2. Purchased recovery credits
-3. Block new recovery
-```
-
-After purchased credits reach zero, another recovery is blocked until the
-merchant buys another pack or upgrades.
-
-### Paid plans
+That provider BillingPeriod **does not** replenish the five lifetime Free recovery credits.
 
 ```text
-1. Current billing-period included recovery allowance
-2. Purchased recovery credits
-3. Normal plan overage
+Free Shopify billing cycle rolls
+        ↓
+close/open provider billing-period scope
+        ↓
+NO lifetime Free regrant
+NO promotional reset
+NO purchased-credit reset
 ```
-
-Example for Starter:
-
-```text
-Starter included = 200
-Current period used = 200
-Purchased credits = 25
-
-next 25 recoveries
--> consume purchased credits
-
-purchased balance = 0
--> later recoveries resume Starter overage
-```
-
-If the merchant buys another pack, subsequent recoveries can again consume the
-new purchased balance before returning to ordinary overage.
 
 ---
 
-## 6. Purchased credits do not expire monthly
+## 6. Top-up purchase semantics
 
-Purchased recovery credits are separate from a subscription's included monthly
-allowance.
+### Merchant product meaning
+
+A recovery-credit top-up is presented to the merchant as a one-off purchase of additional lifetime recovery capacity.
+
+### Shopify App Pricing mechanism
+
+Under the current Shopify App Pricing architecture, Moda implements that product through a dedicated usage meter + App Event.
 
 ```text
-monthly included capacity
-  -> resets with the relevant Shopify billing period
-
-purchased recovery credits
-  -> do not reset monthly
-  -> do not disappear on plan upgrade
-  -> do not disappear on plan downgrade
-  -> remain attached to the same durable Shop
+merchant chooses top-up
+        ↓
+Moda creates durable purchase intent
+        ↓
+App Event submitted on current plan's top-up meter
+        ↓
+provider confirmation/reconciliation
+        ↓
+exact purchase lot becomes ACTIVE
+        ↓
+credits become spendable
 ```
 
-This makes a pack genuinely prepaid rather than another monthly allowance.
+A successful HTTP submission alone is not treated as final purchase confirmation.
+
+For ARCH-010 App Pricing flows, do **not** substitute:
+
+- `appPurchaseOneTimeCreate`;
+- a local payment system;
+- a local hard-coded top-up price.
+
+Shopify remains commercial billing authority; Moda owns durable purchase intent, reconciliation, entitlement activation and idempotency.
+
+Every plan from which top-ups may be purchased must expose the configured top-up usage meter.
 
 ---
 
-## 7. Shopify billing mechanism
+## 7. Recovery admission and reservation
 
-Moda Interact uses **Shopify App Pricing**.
-
-The target implementation models a recovery-credit-pack purchase through a
-dedicated Shopify usage meter/App Event rather than maintaining a separate Moda
-payment system.
+Capacity is reserved before the recovery crosses the provider/business side-effect boundary.
 
 ```text
-Merchant clicks "Buy recovery pack"
-        |
-        v
-Moda creates durable purchase request
-        |
-        v
-UsageEvent:
-  metric = RECOVERY_CREDIT_PACK_PURCHASE
-  quantity = 1
-  state = PENDING
-        |
-        v
-Background App Events publisher
-        |
-        v
-Shopify App Pricing meter
-        |
-        v
-Shopify reports/accepts billing event
-        |
-        v
-Moda activates purchased credits exactly once
+resolve executable subscription/shop state
+        ↓
+resolve capacity source in canonical priority
+        ↓
+reserve exactly one credit
+        ↓
+perform recovery/provider work
+        ↓
+commit or safely release/reconcile reservation
 ```
 
-The Shopify meter associated with the current plan determines the monetary
-price. This is also how higher plans can receive preferential pack rates without
-embedding money values into application code.
+Concurrency must not let two workers spend the same final credit.
+
+Purchased capacity additionally identifies the exact FIFO purchase lot that funded the reservation so unused/refundable quantity remains provable.
 
 ---
 
-## 8. Durable top-up state
+## 8. Capacity restoration
 
-The target ARCH-007 model uses explicit durable state rather than treating a UI
-click as capacity.
+A capacity-blocked recovery can become eligible again when, for example:
 
-### Recovery-credit purchase
+- a paid plan opens a new verified monthly allowance;
+- a purchased top-up becomes active;
+- Admin grants promotional credits;
+- an appropriate verified plan change provides executable capacity.
 
-One durable purchase row represents one merchant top-up request and records:
+Blocked recoveries remain durable in PostgreSQL. Redis/BullMQ wake-up jobs are coordination only and can be reconstructed.
 
-```text
-purchase identity
-shop
-plan snapshot
-Shopify pack meter snapshot
-credits granted by the pack
-linked UsageEvent
-status
-activation timestamp
-```
-
-A purchase becomes usable capacity only after its linked billing UsageEvent is
-successfully reported.
-
-### Purchased entitlement counter
-
-Purchased capacity is tracked separately from the Free lifetime counter:
-
-```text
-grantedQuantity
-- committedQuantity
-- reservedQuantity
-=
-available purchased recovery credits
-```
-
-That permits safe reservation before provider work and prevents duplicate or
-concurrent workers from spending the same final credit.
+Recovery retry always revalidates current checkout and lifecycle state before sending anything.
 
 ---
 
-## 9. Purchase lifecycle and idempotency
+## 9. Plan changes
 
-The target lifecycle is:
+Plan selection/change uses Shopify's hosted App Pricing flow and Partner subscription state.
 
-```text
-PENDING_BILLING
-        |
-        | Shopify App Event reported successfully
-        v
-ACTIVE
-```
-
-Definitive billing/configuration failure can instead require:
+Moda distinguishes:
 
 ```text
-NEEDS_ATTENTION
+current effective plan
+pending Shopify plan update
+pending effective boundary
 ```
 
-Credits are granted only when the billing event is successfully reported.
+Entitlements change only when Shopify verifies the effective provider state.
 
-The same merchant purchase request must never create two Shopify billing events
-or two credit grants. Reprocessing an already-active purchase must not increment
-purchased capacity again.
+Upgrade/downgrade does not:
+
+- reset lifetime Free credits;
+- discard promotional credits;
+- discard purchased credits;
+- invent local proration;
+- create automatic paid overage.
+
+Paid monthly allowance remains period-scoped to the verified plan/cycle that granted it.
 
 ---
 
-## 10. Recovery admission and reservation
+## 10. Cancellation and `NO_CONTRACT`
 
-Recovery admission happens before provider send.
+A Shopify cancellation scheduled for the end of cycle does not end current entitlement early.
 
-```text
-check capacity
--> reserve capacity
--> perform provider/business action
--> commit or release/retain reservation according to outcome
-```
+When Shopify ultimately verifies that the contract has ended:
 
-Important outcomes:
+- the final provider BillingPeriod closes;
+- unused paid monthly allowance is forfeited;
+- promotional, purchased and lifetime Free balances are preserved;
+- local subscription projection becomes `NO_CONTRACT`;
+- dashboard/history/billing/support remain available;
+- new shop business execution stops until another Shopify contract is verified.
 
-```text
-definitive provider failure
-  -> release reserved capacity
-
-provider accepted / recovery initiated
-  -> commit capacity
-
-ambiguous provider outcome
-  -> do not blindly release and resend
-  -> preserve ambiguous/non-terminal state for reconciliation
-```
-
-This protects the final available recovery credit against concurrency and
-prevents blind duplicate sends across an uncertain provider boundary.
+A returning merchant with historical activity is not treated as a brand-new onboarding merchant merely because the current contract ended.
 
 ---
 
-## 11. Paid overage is not the same as purchased credits
+## 11. Freeze/unfreeze
 
-Purchased credits and overage are intentionally distinct:
+`FROZEN` is a temporary Shopify/provider billing hold, not cancellation.
 
-```text
-Purchased recovery credits
-  prepaid
-  durable balance
-  consumed before paid overage
+While frozen:
 
-Paid overage
-  metered recovery usage after included + purchased capacity
-```
+- balances and current billing-period state are preserved;
+- dashboard/history/usage/billing/support remain visible;
+- top-up and plan mutations are disabled;
+- new recovery/WhatsApp/CommerceAgent/business execution stops;
+- queued checkout/cart events terminate early after durable shop/subscription resolution;
+- `order.completed` may perform only minimal terminal safety bookkeeping on already-existing recovery state.
 
-A recovery covered by purchased credits must not also be reported as a normal
-overage recovery. That would double-charge the merchant.
+Moda continues provider reconciliation. Access is restored only after usable live Shopify subscription state is verified again.
 
----
-
-## 12. Why merchant billing is not per WhatsApp message
-
-Moda does not want every fragmented WhatsApp message to become a separate
-merchant charge or CommerceAgent invocation.
-
-A shopper may type:
-
-```text
-"Hi I was looking at"
-"the black jacket"
-"sorry I mean the blue one"
-```
-
-Those are three raw inbound messages but conversationally one customer turn.
-
-The target Background design keeps all three messages durably while coalescing
-nearby fragments before invoking CommerceAgent.
-
-Initial settling rules:
-
-```text
-quiet window          = 3 seconds
-maximum settle window = 10 seconds
-```
-
-```text
-3 inbound messages
-        |
-        +--> persisted individually
-        |
-        v
-3-second quiet period
-        |
-        v
-1 logical customer turn
-        |
-        v
-1 outbound-capacity reservation
-        |
-        v
-1 CommerceAgent invocation
-        |
-        v
-1 WhatsApp response
-```
-
-The maximum settle window prevents continuous typing from postponing processing
-forever.
+If the provider cycle advanced during the freeze, Moda reconciles directly to the provider-current cycle. It does not synthesize missed monthly allowances.
 
 ---
 
-## 13. Message-level cost controls
+## 12. Uninstall and safe reinstall
 
-Merchant billing and internal cost control are separate dimensions.
+Uninstall is an execution gate, not a billing-history reset.
 
-```text
-Merchant commercial unit:
-  RECOVERY_CONVERSATION
+On uninstall Moda preserves:
 
-Internal provider/AI safety:
-  OUTBOUND_AUTOMATED_MESSAGE
-  per durable conversation
-```
+- subscription projection/history;
+- BillingPeriods;
+- lifetime Free usage/balance;
+- promotional balance;
+- purchased balance and purchase/refund history.
 
-Customer inbound messages do **not** directly consume the outbound counter.
-Instead, outbound capacity is reserved **before** CommerceAgent runs:
+Reinstall does not immediately mark the shop executable. Shopify subscription truth is reconciled first.
 
-```text
-customer inbound messages
-        |
-        v
-persist + coalesce
-        |
-        v
-reserve outbound slot
-        |
-        +--> available
-        |      -> run CommerceAgent
-        |      -> send response
-        |
-        +--> normal cap exhausted
-               -> do NOT run LLM/tools
-               -> use at most one reserved terminal response
-```
-
-This places a hard bound on the expensive inbound-to-agent-to-reply loop without
-dropping authenticated inbound customer messages.
-
-The limit is **per conversation**, not a shop-wide lifetime counter.
+Reinstall never regrants lifetime Free credits.
 
 ---
 
-## 14. Conversation ordering
+## 13. Partial purchased-credit refunds
 
-One durable conversation must not run multiple CommerceAgent turns concurrently.
+Only **unused purchased top-up credits** are refundable through the ARCH-010 refund workflow.
 
-If a correction arrives while the agent is processing:
+Promotional and lifetime Free credits are not refundable.
+
+Refundability is purchase-lot based:
 
 ```text
-agent processing old turn
-        |
-new inbound message arrives
-        |
-        +--> persist it
-        +--> do not start a second concurrent agent
-        |
-old agent completes
-        |
-        v
-detect conversation changed
-        |
-        v
-do not send stale answer
-        |
-        v
-process the newer settled turn
+refundable from purchase lot
+= granted
+- committed
+- currently reserved
+- already refunded
+- currently held for refund
 ```
 
-Different conversations remain independently concurrent.
+ARCH-010 uses human-verified Shopify provider settlement for partial refund/credit actions. It does not automatically use negative App Events as the refund mechanism.
+
+The local refund flow holds approved unused credits before provider settlement so concurrent recovery cannot spend the same quantity.
 
 ---
 
-## 15. Repository ownership
+## 14. Promotional-credit operations
 
-| Repository | Pricing/billing responsibility |
+SUPER_ADMIN may grant an exact positive promotional quantity to one shop with durable audit provenance such as:
+
+- grant type;
+- reason;
+- optional campaign reference;
+- idempotent request key;
+- platform administrator identity.
+
+Targeted campaigns reuse the same per-shop grant primitive. Retrying a partially successful campaign must not double-grant shops that already succeeded.
+
+Promotional credits do not generate Shopify App Events and do not affect purchased-credit refundability.
+
+---
+
+## 15. Lifecycle states are not interchangeable
+
+The following states have deliberately different behaviour:
+
+| State | New recovery admission | Existing admitted conversation | Merchant dashboard/history | Owned lifetime balances |
+| --- | --- | --- | --- | --- |
+| **Capacity exhausted** | blocked | continues | available | preserved |
+| **FROZEN** | blocked | business execution paused | available/read-only where required | preserved |
+| **NO_CONTRACT** | blocked | business execution stopped | available | preserved |
+| **UNINSTALLED/inactive** | blocked | business execution stopped | not normal merchant execution | preserved |
+| **Billing-period DRAINING** | period-bound/billable mutations restricted; non-period lifetime sources may still be usable per ARCH-010 | existing admitted work handled under boundary rules | available | preserved |
+
+Never use a generic `blocked` flag as a substitute for these distinct lifecycle states.
+
+---
+
+## 16. Shopify event handling while non-executable
+
+Webhook ingress remains thin:
+
+```text
+Shopify webhook
+→ authenticate / validate / normalise
+→ enqueue
+→ acknowledge
+```
+
+The subscription/shop execution gate belongs in Background after tenant identity is known.
+
+For a frozen shop specifically:
+
+- checkout/cart business events no-op early before recovery/candidate work;
+- `order.completed` may only close/cancel already-existing recovery state as terminal safety bookkeeping;
+- no new recovery, conversation, billing reservation, CommerceAgent turn or outbound WhatsApp work may be created.
+
+---
+
+## 17. Repository ownership
+
+| Repository | Current ARCH-010 responsibility |
 | --- | --- |
-| `moda-interact-database` | Billing plan fields, usage/audit state, entitlement counters, purchase persistence, constraints |
-| `moda-interact-shared` | Canonical usage metrics and deterministic cross-service billing identifiers |
-| `moda-interact` | Merchant billing UI, plan presentation, top-up request creation, Shopify plan verification |
-| `moda-interact-admin` | Internal plan catalogue and Shopify meter mapping; no duplicate monetary price source |
-| `moda-interact-background` | Recovery admission, reservations, usage commitment, App Events publication, purchased-credit activation, message-cost safety |
-| `moda-interact-messaging` | Provider-status ingress/normalisation; does not decide merchant billing policy |
-| `moda-interact-system-test` | Terminal/manual-gated integrated billing and message-safety validation |
-| `moda_architect` | Cross-repository rules, dependency order, invariants and implementation review |
+| `moda-interact-database` | subscription/lifecycle state, BillingPeriods, entitlement counters, purchase lots, refunds, promotional grants, constraints/indexes |
+| `moda-interact-shared` | versioned cross-service reconciliation/refund contracts and shared primitives |
+| `moda-interact` | merchant onboarding, dashboard, billing/options UI, Shopify hosted plan-selection integration, current/pending provider read model |
+| `moda-interact-admin` | internal policy/configuration, promotional grants/campaigns, partial-refund triage/settlement evidence |
+| `moda-interact-background` | subscription reconciliation, BillingPeriod transitions, capacity reservation, recovery gates, App Event publication/reconciliation, resume logic |
+| `moda-interact-gateway` | runtime Redis/environment wiring required by billing workers |
+| `moda-interact-messaging` | provider ingress/normalisation only; does not decide merchant entitlement |
+| `moda-interact-system-test` | terminal/manual-gated cross-service lifecycle validation |
+| `moda_architect` | cross-repository invariants, task sequencing and architectural acceptance |
 
 ---
 
-## 16. ARCH-007 implementation map
+## 18. Retired/superseded billing concepts
 
-Implementation is decomposed under:
-
-```text
-docs/decisions/*/ARCH-007/
-```
-
-Capability groups include:
+The following concepts can still appear in historical ARCH-007 records, but they are **not current ARCH-010 product rules**:
 
 ```text
-billing policy / usage persistence
-        |
-Free reservation lifecycle
-        |
-recovery billing admission
-        |
-common outbound WhatsApp admission
-        |
-Shopify App Events publisher
-        |
-repeatable recovery-credit packs
-        |
-fragmented inbound-message coalescing
-        |
-terminal/manual-gated system validation
+automatic paid recovery overage
+Free lifetime allowance owned/reset by the Free plan
+Free allowance adjustments as campaign/test credits
+Free capacity order: lifetime Free -> purchased
+Paid capacity order: included -> purchased -> overage
+activeSubscription=null automatically means canceled
+uninstall clears owned entitlement/history
+full-pack-only purchased-credit refund
+negative App Event as the normal partial-refund mechanism
+Moda-initiated App Pricing cancellation
 ```
 
-For exact current task states, use task YAML and domain `_index.md` files rather
-than this readable page.
+For an exact old→new mapping, see:
+
+[`ARCH-010 billing/lifecycle supersession map`](../architecture/ARCH-010-supersession-map.md).
 
 ---
 
-## 17. Worked examples
+## 19. Implementation status
 
-### Free merchant exhausts Free allowance
+ARCH-010 architecture is **Agreed / implementation-ready**, not yet fully implemented.
 
-```text
-Free lifetime allowance = 5
-5 consumed
-purchased credits = 0
-
-new recovery
--> blocked
-```
-
-Merchant buys a pack:
+Exact task state lives in:
 
 ```text
-Shopify pack event reported
--> purchased credits activated
-
-new recovery
--> purchased reserve
--> provider accepted
--> purchased commit
+docs/decisions/*/ARCH-010/_index.md
+docs/decisions/*/ARCH-010/*.md
+docs/architecture/ARCH-010-implementation-handoff.md
 ```
 
-After the pack is exhausted, the merchant may buy another pack.
+System-test tasks are terminal/manual-gated and do not block implementation work from starting.
 
-### Starter merchant with purchased credits
-
-```text
-Starter included = 200
-current normal usage = 200
-purchased remaining = 10
-
-next recovery
--> purchased credit
-```
-
-After the 10 purchased credits are consumed:
-
-```text
-next recovery
--> normal Starter overage
-```
-
-### Fragmented WhatsApp typing
-
-```text
-"Can I get"
-"the blue one"
-"sorry, size medium"
-```
-
-All three messages remain stored. If they settle within the configured window,
-they result in:
-
-```text
-1 logical customer turn
-1 outbound safety reservation
-1 CommerceAgent invocation
-1 reply
-```
-
----
-
-## 18. Pricing values vs implementation values
-
-### Commercial values
-
-```text
-subscription monthly price
-overage rate
-recovery-credit-pack monetary price
-```
-
-Shopify App Pricing is authoritative.
-
-### Moda operational values
-
-```text
-included recovery allowance
-Free lifetime allowance
-credits per pack
-Shopify meter handles
-purchased credit balance
-usage identities
-reservation state
-message safety limits
-```
-
-Moda persists these because they are required for deterministic operational
-decisions.
-
----
-
-## 19. Current implementation status
-
-ARCH-007 is **in progress**.
-
-Core billing-policy, Free reservation, recovery admission and Shopify App Events
-capabilities are being implemented and architect-reviewed incrementally.
-
-Repeatable recovery-credit packs and fragmented inbound-message coalescing are
-part of the agreed target model and have been decomposed into bounded ARCH-007
-implementation tasks.
-
-This page therefore describes both the target product model and how the current
-ARCH-007 implementation is converging on it. It should not be read as a claim
-that every top-up or coalescing path is already deployed in production.
-
-Authoritative current execution state lives in:
-
-```text
-docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md
-docs/decisions/*/ARCH-007/_index.md
-docs/decisions/*/ARCH-007/*.md
-```
+Historical ARCH-007 task files remain valid evidence of what was implemented/reviewed at that stage, but their superseded merchant billing semantics must not override ARCH-010.
