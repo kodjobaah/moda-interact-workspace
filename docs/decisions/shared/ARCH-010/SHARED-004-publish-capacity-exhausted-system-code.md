@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 52
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-009
   - ARCH-010-SHOPIFY-008
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T17:05:05Z
 ---
 
 # ARCH-010-SHARED-004: Publish recovery-capacity-exhausted Shared contract
