@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 46
-executor: copilot
-claimed_at: 2026-09-11T21:35:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -21,7 +21,7 @@ enables:
   - ARCH-010-BACKGROUND-017
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11T22:37:00Z
+updated: 2026-09-11T21:45:20Z
 ---
 
 # ARCH-010-BACKGROUND-005: Stop WhatsApp business execution for inactive shops
@@ -240,7 +240,10 @@ Ready for Review
 - Worktrees clean: yes after publication.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
 
 #### Attempt 1 — Changes Requested
 
@@ -683,4 +686,79 @@ Do not:
 - modify another repository.
 
 Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining runtime, regression and workflow-evidence
+requirements.
+
+Architect re-review verified:
+
+- the accepted BACKGROUND-004 helper API remains preserved:
+  - `ShopExecutionRecord`;
+  - `resolveShopByDomain(...)`;
+  - `isShopExecutionActive(...)`;
+- the inactive delayed-turn branch no longer uses generic abuse suppression;
+  it calls the dedicated `finishInactiveTurn(...)` terminal path;
+- if `completeTurn(...)` loses a version race for an inactive shop, the terminal
+  path releases the turn but does **not** query newer turn state and does **not**
+  enqueue a replacement `process-conversation-turn` job;
+- focused regression coverage explicitly proves the inactive race case does not
+  call queue enqueue, CommerceAgent or outbound admission;
+- durable delayed-turn loading still derives `shopUnavailable` from current
+  `Shop.status` before clarification/agent-context construction;
+- worker coverage proves ACTIVE context-linked inbound persists/enqueues while
+  terminal inactive routing persists/enqueues nothing;
+- context-free routing now explicitly covers the mixed case:
+  one inactive owner plus two ACTIVE owners remains `ambiguous-tenant`;
+- existing all-inactive and all-active ambiguity semantics remain intact;
+- provider-status regression evidence now constructs a database Shop lookup that
+  would throw if execution eligibility were consulted, and proves an existing
+  outbound message can still advance to READ while no Shop-status lookup occurs;
+- DELIVERED/READ monotonic finalisation and delivered-usage semantics remain
+  unchanged;
+- the three worker/processor/provider focused suites report 45 passing tests;
+- the mixed inactive/active routing test passes independently;
+- the combined focused routing/worker run reports 67 passing tests with one
+  documented pre-existing routing fixture failure caused by the mocked Prisma
+  namespace not exposing `PrismaClientKnownRequestError` as a constructor;
+- Prisma generation/validation, build, EffectiveBillingPolicy import and broad
+  unit collection remain blocked by the documented missing
+  `database/prisma/schema.prisma` / ungenerated Prisma client baseline issue;
+- `git diff --check` passed;
+- the canonical BACKGROUND-005 parent and implementation worktrees are recorded;
+- both negative-isolation assertions are recorded;
+- all four start-of-attempt synchronization outcomes are recorded explicitly;
+- both task branches are pushed and both worktrees are clean;
+- implementation commit `2c3d8b1` is the reviewed Attempt 3 implementation head.
+
+The submitted handoff identifies final parent report commit `024db0c`. That hash is
+external handoff evidence and is not required to be self-embedded into the commit
+that contains this same task file.
+
+The documented baseline Prisma/test-fixture blockers do not invalidate the
+task-local acceptance because the changed inactive execution paths have executable,
+focused regression coverage, including isolated execution of the newly added mixed
+ownership case.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 3` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-BACKGROUND-006` remains pending because
+  `ARCH-010-BACKGROUND-001`, `ARCH-010-BACKGROUND-003`, and
+  `ARCH-010-BACKGROUND-007` are still additional prerequisites in this task
+  snapshot;
+- `ARCH-010-BACKGROUND-013` remains pending because
+  `ARCH-010-BACKGROUND-012` is still an additional prerequisite;
+- `ARCH-010-BACKGROUND-017` remains pending because
+  `ARCH-010-BACKGROUND-013` and `ARCH-010-BACKGROUND-016` remain additional
+  prerequisites;
+- `ARCH-010-SHOPIFY-005` is already superseded by
+  `ARCH-010-SHOPIFY-006`.
+
+No dependent task is promoted by this acceptance overlay.
 
