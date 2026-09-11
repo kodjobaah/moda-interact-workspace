@@ -9,17 +9,17 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 19
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-11T12:58:56Z
+attempt: 2
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-016
   - ARCH-010-SHOPIFY-018
 created: 2026-09-11
-updated: 2026-09-11T12:48:51Z
+updated: 2026-09-11T12:58:56Z
 ---
 
 # ARCH-010-DATABASE-008: Persist Shopify subscription freeze projection and lifecycle evidence
@@ -131,7 +131,7 @@ STOP if another accepted/integrated migration has already introduced an equivale
 ## Completion Report
 
 ### Status
-Ready for Review
+In Progress — Attempt 2 conflict-resolution retry
 
 ### Files Changed
 - `moda-interact-database/prisma/schema.prisma`
