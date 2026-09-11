@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 21
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ enables:
   - ARCH-010-SHOPIFY-007
   - ARCH-010-SHOPIFY-015
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T16:24:34Z
 ---
 
 # ARCH-010-SHARED-002: Publish subscription reconciliation Shared contract
