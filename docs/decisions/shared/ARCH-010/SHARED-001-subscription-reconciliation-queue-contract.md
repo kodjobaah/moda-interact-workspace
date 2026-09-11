@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-SHARED-002
   - ARCH-010-SHARED-003
 created: 2026-09-11
-updated: 2026-09-11T15:57:28Z
+updated: 2026-09-11T16:01:47Z
 ---
 
 # ARCH-010-SHARED-001: Define subscription reconciliation BullMQ contract
@@ -148,7 +148,117 @@ Ready for Review
 - Merged to workspace main: no.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested (public-entrypoint proof only)
+
+The ARCH-010-SHARED-001 runtime contract is architecturally correct. No queue
+schema, job-ID, queue-name, job-name, drain-window, or parser redesign is
+requested.
+
+Architect review verified:
+
+- `BILLING_SUBSCRIPTION_RECONCILE_SCHEMA_VERSION` is exactly `1`;
+- queue name is exactly `billing-subscription-reconcile`;
+- job name is exactly `reconcile-subscription`;
+- `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS` is exactly `300000`;
+- the v1 payload is a strict Zod object containing only `schemaVersion`, `shopId`,
+  `subscriptionId`, and offset-aware `expectedNextReconcileAt`;
+- shop/subscription identifiers are trimmed, non-empty and bounded consistently
+  with existing Shared billing identifiers;
+- unknown fields and invalid/missing required values are rejected;
+- `createBillingSubscriptionReconcileJobId(...)` is derived only from the trimmed
+  subscription ID and expected timestamp, is deterministic, changes when the
+  timestamp changes, contains no colon, and is comfortably within the practical
+  BullMQ custom-ID bound;
+- the drain-window constant is module policy and is not payload data;
+- the existing `package.json` `./billing` export and `tsup` billing entry remain
+  correctly configured;
+- the Completion Report contains the required dedicated parent/implementation
+  worktree evidence and all four start-of-attempt synchronization outcomes;
+- the skipped Redis integration test is unrelated to this contract and is
+  legitimately skipped because `TEST_REDIS_URL` is unset.
+
+One explicit Required Tests item is not directly proven by the submitted test.
+
+##### Required correction — prove the public package `./billing` entrypoint
+
+Required Test 10 says:
+
+```text
+public package billing entrypoint exports all required symbols
+```
+
+The new `billing.test.ts` imports from:
+
+```ts
+"./billing.js"
+```
+
+That proves the source module exports the values, but it does not prove that a
+consumer of the package subpath:
+
+```text
+@modainteract/moda-interact-shared/billing
+```
+
+can obtain the complete contract through the package export/build surface.
+
+Add a focused public-entrypoint smoke assertion after build, or an equivalent
+deterministic package-export validation, that proves the built/package `./billing`
+entrypoint exposes all runtime symbols required by this task:
+
+```text
+BILLING_SUBSCRIPTION_RECONCILE_SCHEMA_VERSION
+BILLING_SUBSCRIPTION_RECONCILE_QUEUE_NAME
+BILLING_SUBSCRIPTION_RECONCILE_JOB_NAME
+APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+BillingSubscriptionReconcileJobSchema
+parseBillingSubscriptionReconcileJob
+safeParseBillingSubscriptionReconcileJob
+createBillingSubscriptionReconcileJobId
+```
+
+Also prove the generated declaration for the public billing entrypoint exposes the
+`BillingSubscriptionReconcileJob` type. A small build-time validation script is
+acceptable if that matches existing Shared entrypoint-validation patterns.
+
+Do not duplicate the contract in another module merely for testing.
+
+##### Validation
+
+After normal Attempt 2 synchronization/claim, rerun the repository-declared
+relevant validation, including:
+
+```text
+npm run test -- src/billing.test.ts
+npm run typecheck
+npm run build
+git diff --check
+```
+
+and run the new public-billing-entrypoint smoke validation if implemented as a
+separate declared command.
+
+The existing Redis integration skip remains acceptable unless this task itself
+changes that integration path.
+
+##### Scope guard
+
+This is a validation/export-proof correction only.
+
+Do not change the accepted payload shape, queue/job identity, job-ID algorithm,
+drain-window value, billing semantics, consumers/producers, Prisma, Render or
+credit logic.
+
+Do not publish the package in this task. Publication remains owned by
+`ARCH-010-SHARED-002`.
+
+Return the same task to `review`.
+
 
 ## Stop conditions
 
