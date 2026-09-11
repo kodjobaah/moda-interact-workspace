@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 46
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: 2026-09-11T21:35:00Z
+attempt: 3
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-006
@@ -21,7 +21,7 @@ enables:
   - ARCH-010-BACKGROUND-017
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11T21:27:28Z
+updated: 2026-09-11
 ---
 
 # ARCH-010-BACKGROUND-005: Stop WhatsApp business execution for inactive shops
