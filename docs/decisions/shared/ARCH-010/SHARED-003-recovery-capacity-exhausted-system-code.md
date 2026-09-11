@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 51
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-010-SHARED-004
 created: 2026-09-11
-updated: 2026-09-11T16:57:52Z
+updated: 2026-09-11T17:05:05Z
 ---
 
 # ARCH-010-SHARED-003: Add generic recovery-capacity-exhausted billing system code
@@ -138,4 +138,53 @@ Ready for Review.
 - Merged to workspace main: no.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Accepted
+
+Architect review verified:
+
+- `BILLING_SYSTEM_MESSAGE_CODES` now contains exactly:
+  `RECOVERY_CAPACITY_EXHAUSTED: "BILLING_RECOVERY_CAPACITY_EXHAUSTED"`;
+- the new value is included in the canonical `BillingSystemMessageCodeSchema`;
+- the historical `BILLING_FREE_ALLOWANCE_EXHAUSTED` value remains present and
+  parseable unchanged for persisted-message compatibility;
+- existing billing system-message values remain registered and parseable;
+- unknown billing system-message codes remain rejected;
+- the focused billing tests explicitly prove the new code, historical-code
+  compatibility and unknown-code rejection;
+- the subscription reconciliation v1 contract remains schema version `1`, and
+  the queue/job identity and five-minute drain-window policy remain unchanged;
+- `scripts/validate-billing-entrypoint.mjs` verifies the built public
+  `@modainteract/moda-interact-shared/billing` entrypoint exposes the canonical
+  registry and the exact `BILLING_RECOVERY_CAPACITY_EXHAUSTED` value;
+- no second system-message registry, consumer implementation, message copy,
+  database change, promotional-credit behaviour, refund behaviour or queue
+  contract was introduced;
+- focused billing tests, typecheck, build, public billing-entrypoint validation
+  and `git diff --check` passed;
+- the Redis integration skip is unrelated and expected when `TEST_REDIS_URL`
+  is unset;
+- the Completion Report records the canonical isolated parent/implementation
+  worktrees, negative shared/reused-worktree assertions and all four
+  start-of-attempt synchronization outcomes;
+- implementation commit `a81215e` is the reviewed implementation head.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` remain cleared while `attempt: 1` is preserved.
+
+The submitted handoff identifies parent review-report commit `cc038f2`. The
+task file contains the earlier report commit recorded before the final parent
+push; the final parent hash is external handoff evidence and is not required
+to be self-embedded into the commit that contains this file.
+
+`ARCH-010-SHARED-004` depends only on this task and is therefore promoted to
+`ready`. Its publication task must still perform its own registry/version
+preflight and derive the next package version from the actual package state
+after SHARED-002; it must not guess or race another Shared publication.
+
