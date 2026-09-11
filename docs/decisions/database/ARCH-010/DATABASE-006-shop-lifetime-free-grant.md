@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-09-11T12:47:04Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-DATABASE-002
@@ -26,7 +26,7 @@ enables:
   - ARCH-010-SHOPIFY-003
   - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11T12:47:04Z
+updated: 2026-09-11T12:51:55Z
 ---
 
 # ARCH-010-DATABASE-006: Move the one-time lifetime Free recovery grant to platform policy and snapshot it per shop
@@ -350,4 +350,68 @@ Record the results in the Attempt 2 Completion Report.
 Do not change the ARCH-010-DATABASE-006 schema or migration merely to create churn. The reviewed migration semantics are already acceptable. Implementation changes for Attempt 2 should be limited to the focused validation correction plus any synchronization-generated artifact refresh that is genuinely required after incorporating current `origin/main`.
 
 Return the same task to `review` after publishing the implementation and parent report branches.
+
+#### Attempt 2 — Changes Requested (one remaining validator guard)
+
+Attempt 2 successfully remediated the workflow evidence and three of the four requested focused-validation gaps.
+
+Architect re-review verified:
+
+- complete canonical parent/implementation worktree isolation evidence is now present;
+- all four start-of-attempt synchronization outcomes are recorded;
+- all task-required validation commands were rerun successfully;
+- the reviewed schema and migration semantics remain unchanged;
+- the focused validator now directly requires the zero-grant UPDATE to set `grantedQuantity = 5`;
+- the focused validator requires the UPDATE predicate `counter."grantedQuantity" = 0`;
+- the focused validator rejects writes to `committedQuantity`, `reservedQuantity`, and `refundingQuantity`.
+
+One validation guard remains incomplete.
+
+##### Required correction — make plan-independence protection cover `ShopSettings.plan`
+
+The task requires the backfill to cover every onboarding-completed merchant regardless of current plan, including both Free and Paid merchants.
+
+The current validator uses:
+
+```js
+assert.doesNotMatch(
+  migration,
+  /BillingPlan|billingPlan|planId|planKind|PAID_METERED/
+);
+```
+
+That does not protect the actual plan-bearing field already present in the schema:
+
+```prisma
+ShopSettings.plan String?
+```
+
+For example, a later regression such as:
+
+```sql
+AND settings."plan" = 'starter'
+```
+
+would still pass the current validator while silently restricting the backfill to one plan cohort.
+
+Strengthen the deterministic assertion so the migration cannot introduce any plan-based eligibility predicate through `ShopSettings.plan` (or an equivalent plan handle/kind restriction). A simple acceptable approach is to assert that the backfill SQL contains no reference to `settings."plan"` and no BillingPlan/plan-kind/plan-handle eligibility term.
+
+Do not modify the reviewed schema or migration; this is a validator-only correction unless synchronization legitimately refreshes generated artifacts.
+
+Also update the Attempt 3 Completion Report / Git-VCS evidence so it records the current implementation commit produced for the validator correction rather than leaving only the Attempt 1 implementation commits.
+
+After synchronization, rerun:
+
+```text
+npm run format
+npm run prisma:generate
+npm run validate
+npm run test:billing-policy
+npm run test:recovery-credit-packs
+npm run test:billing-lifecycle
+npm run erd
+git diff --check
+```
+
+Return the same task to `review`.
 
