@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: copilot
-claimed_at: 2026-09-11T21:49:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-007-SHOPIFY-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T22:11:44Z
 ---
 
 # ARCH-010-SHOPIFY-001: Establish fresh-install no-plan state and onboarding-only merchant access
@@ -375,3 +375,100 @@ Implementation worktree:
 ### Architect Review
 
 Pending.
+
+#### Attempt 1 — Changes Requested (workflow evidence only)
+
+The implementation and focused acceptance behaviour pass architectural review.
+No production or test-code correction is requested.
+
+Architect review verified:
+
+- `ShopService.resolveShopifyShop()` creates the fresh-install Subscription with
+  `status = NO_CONTRACT`, null current/pending plan/provider/billing-period fields
+  required by the task, and `cancelAtPeriodEnd = false`;
+- the Subscription write is an upsert by the unique `shopId` with `update: {}`,
+  so repeated merchant-route resolution is replay-safe and existing `ACTIVE`,
+  `TRIALING` or other lifecycle projections are not reset by initialization;
+- fresh shop resolution does not create a BillingPeriod, entitlement reservation,
+  purchased-credit grant/purchase or Shopify App Event;
+- the `/app` loader now builds merchant locale/time-zone context and returns the
+  onboarding result before subscription/dashboard/recovery/billing-period/usage
+  presentation queries when onboarding is incomplete;
+- a completed-settings shop without an `ACTIVE`/`TRIALING` local projection also
+  receives the existing Onboarding component rather than product/dashboard data;
+- the existing Onboarding CTA still targets `/app/billing`, and the existing
+  `/app/billing/select` route redirects to Shopify-hosted App Pricing;
+- no `appSubscriptionCreate`, `billing.request` or
+  `appPurchaseOneTimeCreate` flow was introduced;
+- `/app/usage` redirects to `/app` for incomplete onboarding or a missing /
+  non-`ACTIVE`/non-`TRIALING` subscription before product usage datasets are read;
+- `/app/pending-recoveries` returns the existing fail-closed unavailable resource
+  shape for incomplete onboarding / no-contract state without reading pending
+  recoveries;
+- `/app/merchant-support` remains governed by Shop execution status and does not
+  require a commercial Subscription, so an `ACTIVE` no-plan merchant remains able
+  to reach support;
+- no merchant route or CTA changed by this task targets `moda-interact-admin`;
+- focused task tests report 20 passing tests;
+- `npm run build`, `npm run prisma:validate` and `git diff --check` passed;
+- the three full-suite failures are internationalisation-catalogue assertions
+  outside this task's changed files, while the task-focused tests pass;
+- the reported TypeScript failures are documented baseline diagnostics and no
+  task-focused compile/build failure is present;
+- implementation commit `ea15631` is the reviewed Attempt 1 implementation head;
+- the submitted handoff identifies parent review-report commit `712c374`.
+
+One mandatory workflow-policy item remains incomplete.
+
+##### Required correction — record full isolation/synchronization evidence
+
+The Completion Report records the canonical implementation and parent worktree
+paths, but it does not durably state the required negative-isolation assertions
+and all four start-of-attempt synchronization outcomes.
+
+On Attempt 2, using the resolver-selected canonical worktrees, record exactly:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Also record the exact focused Vitest command(s) that produced the 20 passing task
+tests.
+
+This is an evidence/report-only correction.
+
+Do **not** change the accepted SHOPIFY-001 implementation or focused tests merely to
+manufacture another implementation commit. If start-of-attempt synchronization
+introduces a genuine semantic conflict, stop and return that conflict to
+`moda_architect`.
+
+After synchronization, rerun:
+
+```text
+the same focused SHOPIFY-001 test command(s)
+npm run build
+npm run prisma:validate
+git diff --check
+```
+
+The already-documented unrelated full-suite i18n and baseline TypeScript failures
+may remain documented unchanged.
+
+Return the same task to `review`.
+
