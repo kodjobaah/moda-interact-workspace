@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 67
-executor: copilot
-claimed_at: 2026-09-11T13:30:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-BACKGROUND-014
   - ARCH-010-SHOPIFY-017
 created: 2026-09-11
-updated: 2026-09-11T13:30:00Z
+updated: 2026-09-11T14:05:00Z
 ---
 
 # ARCH-010-DATABASE-007: Add purchased-credit lot accounting and multi-partial-refund durability
@@ -783,4 +783,51 @@ This is now a focused validator/evidence correction.
 Do not redesign the accepted schema or the corrected migration unless synchronization exposes a new semantic conflict. Do not implement runtime FIFO reservation, Admin/merchant refund UI, provider refund calls, negative App Events, Free entitlement changes, or plan/cancellation changes.
 
 Return the same task to `review`.
+
+## Attempt 3 Completion Addendum
+
+### Implementation evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-007`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-007`.
+- Branch: `task/ARCH-010-DATABASE-007`; logical agent: `moda_database`; executor: `copilot`; attempt: `3`.
+- Mainline synchronization commit: `8611b59`.
+- Implementation validator commit: `1de2ae1` (`test(database): align purchased lot validator with migration`).
+- Parent claim commit: `385d1d0`.
+
+### Corrections implemented
+
+- The validator now selects the first FIFO lot with positive remaining capacity, then fails rather than skipping an undersized lot.
+- Added regressions for strict no-split boundaries, `NEEDS_ATTENTION` exclusion, zero-capacity refunded lots, partially reduced lots, rejected/withdrawn legacy refunds, aggregate mismatch failure, and aggregate-reset protection.
+- The accepted migration/schema implementation from Attempt 2 was left unchanged.
+
+### Validation results
+
+Passed from the canonical implementation worktree: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:purchased-credit-lots`, `npm run test:checkout-recovery-capacity`, `npm run test:recovery-credit-packs`, `npm run test:billing-lifecycle`, `npm run erd:puml`, and `git diff --check`.
+
+`npm run status` was inspection-only and exited 1 because the configured shared PostgreSQL test database still has four unapplied migrations, including `20260911130000_add_purchased_credit_lot_accounting`. No migration was applied.
+
+### Physical worktree isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-007`.
+- Parent branch: `task/ARCH-010-DATABASE-007`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-007`.
+- Implementation branch: `task/ARCH-010-DATABASE-007`.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+
+### Start-of-attempt synchronization
+
+- Parent remote task branch fast-forwarded: not-needed; already current.
+- Parent `origin/main` incorporated: merged during pre-claim synchronization.
+- Implementation remote task branch fast-forwarded: not-needed; already current.
+- Implementation `origin/main` incorporated: yes, via additive synchronization merge.
+
+### Git / VCS
+
+- Parent task branch and implementation branch were pushed to their respective `origin` remotes.
+- Both worktrees were clean after their respective commits and pushes.
+- No main branch was pushed, no Architect Review text was edited, and no submodule gitlink was staged.
 
