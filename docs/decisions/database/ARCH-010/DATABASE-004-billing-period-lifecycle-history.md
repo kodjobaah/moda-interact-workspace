@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-09-11T23:41:32Z
@@ -27,7 +27,7 @@ enables:
   - ARCH-010-SHOPIFY-007
   - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11T23:41:32Z
+updated: 2026-09-11T23:43:19Z
 ---
 
 # ARCH-010-DATABASE-004: Strengthen BillingPeriod ownership and close/open lifecycle integrity
@@ -398,6 +398,8 @@ Ready for Review.
 - `docs/generated/prisma-erd.puml`
 
 ### Work Completed
+- Attempt 2 correction checklist: Correction 1 implemented in `prisma/migrations/20260911200000_add_billing_period_lifecycle_history/migration.sql` with an explicit `BEGIN`/`COMMIT` envelope; `scripts/validate-billing-lifecycle-schema.mjs` asserts both transaction boundaries.
+- Attempt 2 correction checklist: Correction 2 implemented in the same migration by requiring the pointer-selected BillingPeriod to be owned and `OPEN` before closing any other OPEN row; the validator asserts the pointer, ownership, and OPEN survivor predicates.
 - Added `BillingPeriodCloseReason` and nullable `UsageReservationReleaseReason` vocabulary.
 - Added explicit `Subscription.billingPeriods` ownership, preserved `Subscription.billingPeriodId` as the current pointer, and added the inverse current/history relations.
 - Added nullable BillingPeriod plan identity/handle/name/kind and included-credit snapshots, `closedAt`, `closeReason`, ownership/indexes, and BillingPlan inverse relation.
@@ -415,6 +417,7 @@ Ready for Review.
 - `npm run test:billing-lifecycle` — passed.
 - `npm run erd:puml` — passed; generated ERD contains BillingPeriod ownership, snapshots, close metadata, and release reason.
 - `git diff --check` — passed after removing four deterministic trailing spaces emitted by the ERD generator.
+- Focused rework validation — direct lifecycle validator passed after the correction assertions were added; the full declared sequence also passed in the isolated implementation worktree.
 - No migration was applied to a database; no destructive or production migration test was run.
 
 ### Git / VCS
@@ -432,21 +435,21 @@ Physical worktree isolation:
   another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed (new branch from origin/main)
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed (new branch from origin/main)
-  implementation origin/main incorporated: already-current
+  parent remote task branch fast-forwarded: already-current
+  parent origin/main incorporated: merge commit `aa331a9`
+  implementation remote task branch fast-forwarded: already-current
+  implementation origin/main incorporated: merge commit `3c90780`
 
 Implementation repository:
   repository: `moda-interact-database`
-  commit: `7d20c4a`
+  commit: `835e777`
   remote branch: `origin/task/ARCH-010-DATABASE-004`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/database/ARCH-010/DATABASE-004-billing-period-lifecycle-history.md`
-  claim commit: `e5c67dd`
-  review-report commit: `046d203`
+  claim commit: `763b1c9`
+  review-report commit: pending publication
   remote branch: `origin/task/ARCH-010-DATABASE-004`
   pushed: yes
   submodule gitlink staged: no
