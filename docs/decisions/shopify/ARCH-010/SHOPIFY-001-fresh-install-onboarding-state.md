@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-11T22:22:53Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-SHOPIFY-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-002
 created: 2026-09-11
-updated: 2026-09-11T22:11:44Z
+updated: 2026-09-11T23:27:00Z
 ---
 
 # ARCH-010-SHOPIFY-001: Establish fresh-install no-plan state and onboarding-only merchant access
@@ -347,6 +347,11 @@ Ready for Review.
 - Added focused coverage for projection replay, existing `ACTIVE` and
   `TRIALING` preservation, onboarding query avoidance, usage redirects, and
   pending-recoveries fail-closed behavior.
+- Attempt 2 revalidated the prior implementation against the complete declared
+  validation set. The latest Architect Review entry is explicitly workflow
+  evidence only and contains no additional source or test correction; the
+  existing implementation remains unchanged and all prior behavior is
+  preserved.
 
 ### Validation Results
 
@@ -357,8 +362,9 @@ Ready for Review.
 - `npm test`: 29 files passed, 1 skipped, 2 files failed with 3 existing
   internationalization catalogue failures for missing
   `billingCommerce.actions.manageCapacity`; no focused task test failed.
-- `npm run typecheck`: non-zero with documented baseline `TYPECHECK-001` (48
-  pre-existing TypeScript errors); no new task-specific error was introduced.
+- `npm run typecheck`: non-zero with documented baseline `TYPECHECK-001`; the
+  reported error set remains the known pre-existing baseline and no new
+  task-specific error was introduced.
 
 ### Git / VCS
 
