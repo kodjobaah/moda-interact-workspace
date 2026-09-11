@@ -1,5 +1,7 @@
 # ARCH-007 amendment — inbound WhatsApp abuse admission
 
+> **ARCH-010 supersession notice (2026-09-11):** This file is retained as ARCH-007 architecture/implementation history. Do **not** use ARCH-007 merchant subscription, recovery-capacity, Free-allowance, automatic-overage, top-up, refund or lifecycle semantics as the current product contract. For current rules use [`ARCH-010`](ARCH-010-merchant-lifecycle-state-transitions.md), the [`current pricing/billing model`](../product/pricing-and-billing-model.md), and the [`supersession map`](ARCH-010-supersession-map.md). Non-superseded ARCH-007 message/provider safety primitives and historical completion evidence remain valid.
+
 Created 2026-09-08 by `moda_architect`.
 
 The single public Moda WhatsApp number introduces an application-layer abuse surface that is separate from tenant ambiguity and outbound-message caps.
