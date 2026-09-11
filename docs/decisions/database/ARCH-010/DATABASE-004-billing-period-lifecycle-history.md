@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-09-11T23:27:12Z
@@ -27,7 +27,7 @@ enables:
   - ARCH-010-SHOPIFY-007
   - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11T23:27:12Z
+updated: 2026-09-11T23:31:10Z
 ---
 
 # ARCH-010-DATABASE-004: Strengthen BillingPeriod ownership and close/open lifecycle integrity
@@ -370,22 +370,107 @@ STOP and return to `moda_architect` if:
 - adding the partial unique index would require guessing historical current state;
 - DATABASE-002 reservation/counter constraints would need destructive rewrite.
 
+## Work Items
+
+- [x] Extend the integrated Prisma schema with Subscription-owned BillingPeriod history, nullable plan/allowance snapshots, close metadata, and nullable reservation release reasons.
+- [x] Add the guarded lifecycle migration with deterministic Subscription backfill, pointer-based legacy OPEN normalization, exact current-plan snapshots, paid usage/counter backfill, period integrity checks, and the partial unique OPEN-period index.
+- [x] Preserve the DATABASE-002 period-counter/XOR/quantity constraints and update the repository billing lifecycle validator and generated ERD.
+- [x] Run the complete declared validation sequence and publish both mirrored task branches.
+
+## Acceptance Criteria
+
+- [x] BillingPeriod is a non-null child of exactly one Subscription while Subscription retains its current-period pointer and historical relation.
+- [x] Historical plan snapshots remain nullable; exact current Free/Paid plans are snapshotted without creating a Free monthly recovery allowance.
+- [x] Legacy extra OPEN periods are closed only when the Subscription current pointer unambiguously selects the surviving OPEN row; ambiguous state raises a migration error.
+- [x] Current paid periods backfill scoped normal usage with `committedQuantity = min(existing usage, configured allowance)` and preserve existing valid counter quantities; invalid or ambiguous usage raises a migration error.
+- [x] PostgreSQL enforces one OPEN period per Subscription, valid period boundaries, non-negative included allowance, and OPEN close-metadata nullability.
+- [x] UsageReservation release reason is nullable and the DATABASE-002 XOR/counter constraints remain unchanged.
+
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260911200000_add_billing_period_lifecycle_history/migration.sql`
+- `scripts/validate-billing-lifecycle-schema.mjs`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Added `BillingPeriodCloseReason` and nullable `UsageReservationReleaseReason` vocabulary.
+- Added explicit `Subscription.billingPeriods` ownership, preserved `Subscription.billingPeriodId` as the current pointer, and added the inverse current/history relations.
+- Added nullable BillingPeriod plan identity/handle/name/kind and included-credit snapshots, `closedAt`, `closeReason`, ownership/indexes, and BillingPlan inverse relation.
+- Added a transactional migration that backfills every period through the unique shop Subscription, fails on unmappable pointers or ambiguous multiple OPEN rows, closes only non-current legacy OPEN rows with `MIGRATION_RECONCILED`, and does not fabricate periods or historical plan identity.
+- Added exact current-plan snapshots and paid-period counter backfill using scoped `RECOVERY_CONVERSATION` usage and the configured meter handle; existing valid counters are preserved and invalid/mismatched state fails rather than resetting.
+- Added the one-OPEN-period partial unique index, period boundary/included allowance checks, and OPEN close-metadata check. Existing DATABASE-002 reservation/counter constraints remain additive and unchanged.
+- Regenerated the PlantUML ERD and extended the billing lifecycle validator with the ownership, migration-safety, snapshot, close/release, partial-index, and paid-counter assertions.
 
 ### Validation Results
-Populate during implementation.
+- `npm ci` — passed in the isolated implementation worktree; npm reported three existing high-severity audit findings.
+- `npm run format` — passed.
+- `npm run validate` — passed.
+- `npm run prisma:generate` — passed with Prisma Client 6.19.3.
+- `npm run test:recovery-credit-packs` — passed.
+- `npm run test:billing-lifecycle` — passed.
+- `npm run erd:puml` — passed; generated ERD contains BillingPeriod ownership, snapshots, close metadata, and release reason.
+- `git diff --check` — passed after removing four deterministic trailing spaces emitted by the ERD generator.
+- No migration was applied to a database; no destructive or production migration test was run.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+
+Task branch: `task/ARCH-010-DATABASE-004`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-004`
+  parent branch: `task/ARCH-010-DATABASE-004`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-004`
+  implementation branch: `task/ARCH-010-DATABASE-004`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed (new branch from origin/main)
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed (new branch from origin/main)
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-database`
+  commit: `7d20c4a`
+  remote branch: `origin/task/ARCH-010-DATABASE-004`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/database/ARCH-010/DATABASE-004-billing-period-lifecycle-history.md`
+  claim commit: `e5c67dd`
+  review-report commit: pending
+  remote branch: `origin/task/ARCH-010-DATABASE-004`
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+
+### Deviations
+
+None.
+
+### Assumptions
+
+- The integrated DATABASE-002 period counter model and its migration constraints are authoritative; this task adds only lifecycle ownership/backfill behavior around them.
+- A unique `Subscription.shopId` makes each existing BillingPeriod-to-Subscription backfill deterministic.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None.
 
 ### Architect Review
+
 Pending.
