@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 79
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-010-ADMIN-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T17:44:41Z
 ---
 
 # ARCH-010-ADMIN-002: Triage merchant support into exact partial top-up refund requests

@@ -18,7 +18,7 @@ depends_on: []
 enables:
   - ARCH-010-SHARED-006
 created: 2026-09-11
-updated: 2026-09-11T16:50:27Z
+updated: 2026-09-11T17:44:41Z
 ---
 
 # ARCH-010-SHARED-005: Add merchant top-up refund billing message contracts
