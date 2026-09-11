@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
 executor: copilot
 claimed_at: 2026-09-11T23:05:00Z
@@ -81,12 +81,14 @@ No Background code, Shared package, database, application UI, new Render service
 - [x] Add `moda-interact-production-redis-config` to the production billing worker.
 - [x] Add `moda-interact-test-redis-config` to the test billing worker.
 - [x] Preserve Shopify Partner app configuration and `DATABASE_URL` wiring.
+- [x] Update the canonical topology validator to require the billing-worker Redis group.
 - [x] Validate both Render Blueprints and the billing-worker topology.
 
 ## Acceptance Criteria
 
 - [x] `moda-billing-worker-production` imports `moda-interact-production-redis-config`.
 - [x] `moda-billing-worker-test` imports `moda-interact-test-redis-config`.
+- [x] The canonical validator rejects either billing worker when its environment-specific Redis group is absent.
 - [x] No services, plans, commands, routes, exposure, Redis resources/secrets, PostgreSQL resources, or other workers changed.
 - [x] Changes are committed and pushed on both mirrored task branches without staging the parent submodule gitlink.
 
@@ -98,23 +100,41 @@ Ready for Review.
 ### Files Changed
 - `moda-interact-gateway/render.production.yaml`
 - `moda-interact-gateway/render.test.yaml`
+- `moda-interact-gateway/tests/validate-render-blueprints.sh`
 - `docs/decisions/gateway/ARCH-010/GATEWAY-001-wire-redis-to-billing-workers.md`
 
 ### Work Completed
 - Added the existing production Redis config group to `moda-billing-worker-production`.
 - Added the existing test Redis config group to `moda-billing-worker-test`.
+- Updated the canonical environment-generic topology assertion to require `common + redis + shopify_app` for both billing workers, addressing Architect Review Correction 1.
 - Preserved each worker's Shopify Partner app config and `DATABASE_URL` entries.
 - Made no changes to services, plans, commands, routes, exposure, Redis resources/secrets, PostgreSQL resources, or other workers.
 
 ### Validation Results
-- `bash tests/validate-render-blueprints.sh` from the implementation worktree: passed; both `render.test.yaml` and `render.production.yaml` were validated.
-- Focused Ruby topology assertion over both Blueprints: passed; both billing workers have the environment config group, matching Redis group, Shopify app group, and `DATABASE_URL`.
+- `bash tests/validate-render-blueprints.sh` from the implementation worktree: passed; both `render.test.yaml` and `render.production.yaml` were validated, including the billing-worker Redis-group regression.
+- `bash tests/validate-render-blueprints-negative.sh` from the implementation worktree: passed; all negative topology/configuration cases were rejected.
 - `git diff --check` in the implementation worktree: passed.
+- An initial validator invocation from the workspace shell directory could not resolve the relative test path; it was rerun from the canonical implementation worktree and passed. No source change was involved in that invocation failure.
 
 ### Git / VCS
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-GATEWAY-001`, branch `task/ARCH-010-GATEWAY-001`, claim commit `492fdb4`, pushed to `origin/task/ARCH-010-GATEWAY-001`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-GATEWAY-001`, branch `task/ARCH-010-GATEWAY-001`, implementation commit `b96f24318c2cf5f47147fe6f7c4b8cdcfdd9f5c4`, pushed to `origin/task/ARCH-010-GATEWAY-001`.
-- Both task worktrees are dedicated physical checkouts and clean after publication. The parent submodule gitlink was not staged.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-GATEWAY-001`, branch `task/ARCH-010-GATEWAY-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-GATEWAY-001`, branch `task/ARCH-010-GATEWAY-001`.
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: already-current
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: already-current
+  implementation origin/main incorporated: already-current
+
+Implementation commit: `29cefeb` (`test: require redis group for billing workers`), pushed to `origin/task/ARCH-010-GATEWAY-001`.
+Parent report commit: pending publication of this Completion Report update.
+Branches pushed: implementation branch pushed; parent branch claim already pushed and report branch publication follows this update.
+Worktrees clean: verified after implementation publication; parent report update is the only pending parent change at this point.
+The parent submodule gitlink was not staged.
 
 ### Architect Review
 Pending.
