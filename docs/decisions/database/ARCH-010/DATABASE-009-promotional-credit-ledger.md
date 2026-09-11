@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 81
-executor: copilot
-claimed_at: 2026-09-11T16:05:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-007-DATABASE-002
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-SHOPIFY-009
   - ARCH-010-SHOPIFY-020
 created: 2026-09-11
-updated: 2026-09-11T15:47:10Z
+updated: 2026-09-11T16:00:04Z
 ---
 
 # ARCH-010-DATABASE-009: Add durable promotional recovery-credit grants and aggregate entitlement counter
@@ -212,7 +212,7 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 
 ### Files Changed
 - `prisma/schema.prisma`
@@ -239,14 +239,18 @@ In Progress
 - Strengthened the billing-policy validator to assert all existing and promotional entitlement values and both required enum migrations.
 - Attempt-2 validation passed: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:billing-policy`, and `git diff --check`.
 
+### Attempt 3 Review Correction
+- Strengthened `scripts/validate-billing-policy-schema.mjs` to prove restrictive Shop and PlatformAdmin provenance relations in both Prisma schema and PostgreSQL migration evidence.
+- Attempt-3 validation passed: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:billing-policy`, and `git diff --check`.
+
 ### Git / VCS
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-009`.
 - Parent branch: `task/ARCH-010-DATABASE-009`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-009`.
 - Implementation branch: `task/ARCH-010-DATABASE-009`.
-- Implementation commit: `ba0f8b7` (`fix(database): align promotional credit migration enum`), based on `597b991`.
-- Parent claim commit: `15578d9` (`chore: claim DATABASE-009 attempt 2`).
+- Implementation commit: `9ee081f` (`test(database): assert promotional grant restrictions`), based on `ba0f8b7`.
+- Parent claim commit: `318b6fd` (`chore: claim DATABASE-009 attempt 3`).
 - Both mirrored task branches were pushed to their respective origins.
 - Shared workspace checkout switched/mutated for task work: no.
 - Shared implementation checkout switched/mutated for task work: no.
