@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-09-11T12:20:14Z
@@ -18,7 +18,7 @@ depends_on: []
 enables:
   - ARCH-010-BACKGROUND-009
 created: 2026-09-11
-updated: 2026-09-11T12:20:14Z
+updated: 2026-09-11T12:21:26Z
 ---
 
 # ARCH-010-DATABASE-005: Persist recovery-capacity blocks on detected recoveries
@@ -126,7 +126,7 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Ready for Review.
+Attempt 2 complete; returned to `moda_architect` for review.
 
 ### Files Changed
 - `prisma/schema.prisma`
@@ -150,18 +150,39 @@ Ready for Review.
 - `npm run test:checkout-recovery-capacity` passed, including live rollback-scoped PostgreSQL CHECK assertions.
 - `npm run test:recovery-credit-packs` passed.
 - `npm run erd:puml` passed.
-- `npm run status` passed and reported only `20260911020000_add_recovery_admission_block_state` as pending in the configured database; no migration was applied to that database.
+- `npm run status` passed and reported only `20260911000000_add_subscription_reconciliation_schedule` and `20260911020000_add_recovery_admission_block_state` as pending after mainline synchronization; no migration was applied to that database.
 - `git diff --check` passed.
 - `npm ci` installed repository dependencies; npm reported three existing high-severity audit findings.
 
+Attempt 2 re-ran the complete Architect Review validation set without changing the recovery-capacity implementation logic.
+
 ### Git / VCS
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-005`
-- Implementation branch: `task/ARCH-010-DATABASE-005`
-- Implementation commit: `fb0e76e feat(database): persist recovery capacity blocks`
-- Implementation branch pushed to `origin`.
-- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-005`
-- Parent task branch claim commit: `d92e5a9 chore: claim ARCH-010-DATABASE-005`
-- Parent task definition commit: `683d4ee chore: materialize ARCH-010-DATABASE-005`
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-005
+  parent branch: task/ARCH-010-DATABASE-005
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-005
+  implementation branch: task/ARCH-010-DATABASE-005
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes, merge commit c013bed
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: yes, merge commit f4b5506
+
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-005
+Implementation branch: task/ARCH-010-DATABASE-005
+Implementation commit: fb0e76e feat(database): persist recovery capacity blocks (unchanged implementation logic)
+Synchronization/artifact commit: 0e72d1e chore: refresh generated database erd after sync
+Implementation branch pushed to origin; neither task branch was merged to main.
+Submodule gitlink staged: no.
+Parent task worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-005
+Parent synchronization commit: c013bed Merge remote-tracking branch 'origin/main' into task/ARCH-010-DATABASE-005
+Parent Attempt 2 claim commit: 0a7f653 chore: reclaim ARCH-010-DATABASE-005 review attempt
+Parent task branch pushed to origin.
 
 ### Deviations / Assumptions
 - No deviations from the task scope. The schema does not add a new `CheckoutRecoveryStatus` value and does not enforce the application-owned DETECTED-only invariant through a cross-column CHECK.
