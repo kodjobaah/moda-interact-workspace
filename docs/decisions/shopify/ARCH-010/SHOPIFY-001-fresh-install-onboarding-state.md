@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-09-11T21:49:28Z
@@ -315,23 +315,62 @@ STOP and return to `moda_architect` if any of the following is discovered:
 
 ### Status
 
-Not started.
+Ready for Review.
 
 ### Files Changed
 
-Populate during implementation.
+- `moda-interact/app/services/shop/shop.service.ts`
+- `moda-interact/app/routes/app/home/route.jsx`
+- `moda-interact/app/routes/app/usage/route.jsx`
+- `moda-interact/app/routes/app/pending-recoveries/route.jsx`
+- `moda-interact/tests/unit/services/shop.service.test.ts`
+- `moda-interact/tests/unit/home-route.test.ts`
+- `moda-interact/tests/unit/usage-route.test.ts`
+- `moda-interact/tests/unit/pending-recoveries-route.test.ts`
 
 ### Work Completed
 
-Populate during implementation.
+- Added an idempotent `Subscription` upsert keyed by `shopId` that creates only
+  the accepted `NO_CONTRACT` projection and leaves existing subscription rows
+  unchanged.
+- Preserved the existing active shop and onboarding projection without adding
+  billing periods, credit grants, purchases, or Shopify app events.
+- Changed `/app` to return the minimal onboarding loader result for incomplete
+  onboarding and for missing or non-active subscriptions, without dashboard,
+  recovery, billing-period, or usage dataset queries.
+- Kept the existing onboarding billing CTA and Shopify-hosted pricing route
+  unchanged.
+- Redirected `/app/usage` to `/app` unless onboarding is complete and the
+  subscription is `ACTIVE` or `TRIALING`.
+- Made `/app/pending-recoveries` return an empty unavailable response for
+  incomplete onboarding or a non-active subscription.
+- Added focused coverage for projection replay, existing `ACTIVE` and
+  `TRIALING` preservation, onboarding query avoidance, usage redirects, and
+  pending-recoveries fail-closed behavior.
 
 ### Validation Results
 
-Populate during implementation.
+- Focused tests: passed, 4 files / 20 tests.
+- `npm run build`: passed.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm test`: 29 files passed, 1 skipped, 2 files failed with 3 existing
+  internationalization catalogue failures for missing
+  `billingCommerce.actions.manageCapacity`; no focused task test failed.
+- `npm run typecheck`: non-zero with documented baseline `TYPECHECK-001` (48
+  pre-existing TypeScript errors); no new task-specific error was introduced.
 
 ### Git / VCS
 
-Populate exact canonical parent/implementation worktree, branch, commits and push evidence according to the workspace VCS/worktree policies.
+Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-001`
+
+- Branch: `task/ARCH-010-SHOPIFY-001`
+- Commit: `ea15631` (`fix: gate fresh installs until subscription activation`)
+- Published to `origin/task/ARCH-010-SHOPIFY-001`.
+- Parent task worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-001`
+- Parent submodule gitlink was not staged or changed.
 
 ### Architect Review
 
