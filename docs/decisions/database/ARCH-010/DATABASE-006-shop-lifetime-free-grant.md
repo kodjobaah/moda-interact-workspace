@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-11T12:10:06Z
@@ -26,7 +26,7 @@ enables:
   - ARCH-010-SHOPIFY-003
   - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11T12:10:06Z
+updated: 2026-09-11T12:20:00Z
 ---
 
 # ARCH-010-DATABASE-006: Move the one-time lifetime Free recovery grant to platform policy and snapshot it per shop
@@ -193,19 +193,41 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Implementation complete; returned to `moda_architect` for review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/seed.mjs`
+- `moda-interact-database/prisma/migrations/20260911121000_move_lifetime_free_grant_to_platform_policy/migration.sql`
+- `moda-interact-database/scripts/validate-billing-policy-schema.mjs`
+- `moda-interact-database/package.json`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
+- `moda-interact-database/docs/generated/erd.png`
 
 ### Work Completed
-Populate during implementation.
+- Added `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance Int @default(5)` and retained the legacy `BillingPlan.freeLifetimeConversationAllowance` field as non-authoritative.
+- Added a database non-negative CHECK constraint for the platform allowance.
+- Added an idempotent migration-cohort backfill for onboarding-completed shops, independent of plan kind, preserving positive grants and all usage quantities while excluding incomplete onboarding and period counters.
+- Added the platform policy seed/default and deterministic billing-policy schema assertions.
+- Regenerated the tracked ERD artifacts.
 
 ### Validation Results
-Populate during implementation.
+- `npm ci` completed successfully.
+- `npm run format` passed.
+- `npm run prisma:generate` passed.
+- `npm run validate` passed.
+- `npm run test:billing-policy` passed.
+- `npm run test:recovery-credit-packs` passed.
+- `npm run test:billing-lifecycle` passed.
+- `npm run erd` passed.
+- `git diff --check` passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-006`
+- Implementation branch: `task/ARCH-010-DATABASE-006`
+- Published commits: `a8ca715`, `6a0a711`
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-006`
+- Parent branch: `task/ARCH-010-DATABASE-006`
 
 ### Architect Review
 Pending.
