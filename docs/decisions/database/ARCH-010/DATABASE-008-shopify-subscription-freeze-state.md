@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 19
 executor: copilot
 claimed_at: 2026-09-11T12:33:21Z
@@ -19,7 +19,7 @@ enables:
   - ARCH-010-BACKGROUND-016
   - ARCH-010-SHOPIFY-018
 created: 2026-09-11
-updated: 2026-09-11T12:33:21Z
+updated: 2026-09-11T12:36:41Z
 ---
 
 # ARCH-010-DATABASE-008: Persist Shopify subscription freeze projection and lifecycle evidence
@@ -131,4 +131,67 @@ STOP if another accepted/integrated migration has already introduced an equivale
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
+
+### Files Changed
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260911140000_add_subscription_provider_lifecycle_evidence/migration.sql`
+- `moda-interact-database/scripts/validate-billing-lifecycle-schema.mjs`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
+
+### Work Completed
+- Added `SubscriptionProjectionStatus.FROZEN` without removing or renaming existing projection states.
+- Added the exact `ProviderSubscriptionLifecycleState` enum values: `CREATED`, `UPDATED`, `CANCELLATION_SCHEDULED`, `CANCELED`, `FROZEN`, and `UNFROZEN`.
+- Added nullable provider lifecycle state, event ID, and event timestamp fields to `Subscription`; existing `nextReconcileAt` scheduling state remains unchanged.
+- Added an additive migration that creates the provider enum, appends `FROZEN`, and adds nullable evidence columns. It performs no data backfill, status inference, BillingPeriod/counter/entitlement changes, or event-ID uniqueness changes.
+- Extended the billing lifecycle validator for exact enum values, nullable schema/DMMF fields, migration evidence, and destructive-change guards.
+- Regenerated the repository PlantUML ERD.
+
+### Validation Results
+- `npm ci` completed; npm reported three high-severity audit findings in the existing dependency tree and install-script approval warnings.
+- `npm run format` passed.
+- `npm run validate` passed.
+- `npm run prisma:generate` passed with Prisma 6.19.3.
+- `npm run test:recovery-credit-packs` passed.
+- `npm run test:billing-lifecycle` passed, including FROZEN/provider enum, nullable DMMF, migration, and no-unrelated-mutation assertions.
+- `npm run erd:puml` passed.
+- `git diff --check` passed.
+- `npm run status` was inspection-only; DATABASE-001 and DATABASE-008 migrations remain pending and were not applied.
+
+### Git / VCS
+Task branch: `task/ARCH-010-DATABASE-008`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-008`
+  parent branch: `task/ARCH-010-DATABASE-008`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-008`
+  implementation branch: `task/ARCH-010-DATABASE-008`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-database`
+  commit: `14e0281`
+  remote branch: `origin/task/ARCH-010-DATABASE-008`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/database/ARCH-010/DATABASE-008-shopify-subscription-freeze-state.md`
+  claim commit: `3cb2d53`
+  claim remote branch: `origin/task/ARCH-010-DATABASE-008`
+  claim pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+
+### Architect Review
+Pending
