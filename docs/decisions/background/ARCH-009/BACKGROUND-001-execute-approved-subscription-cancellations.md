@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-09-10T22:57:27Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-009-DATABASE-001
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-002
 created: 2026-09-09
-updated: 2026-09-10T22:59:23Z
+updated: 2026-09-11
 ---
 
 # ARCH-009-BACKGROUND-001
@@ -300,8 +300,8 @@ Parent workspace:
   task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
   claim commit: `f544549`
   review handoff commit: `c64061aad065f554c555ab0afd8de1e1e5c3a315`
-  metadata/report commit(s): `c64061aad065f554c555ab0afd8de1e1e5c3a315` and this metadata update
-  final parent branch tip: published branch tip after this metadata update
+  metadata/report commit(s): `c64061aad065f554c555ab0afd8de1e1e5c3a315`
+  final parent handoff / branch tip: `f465028d36f9dbe3ff3e92142f407c5d7e82a4ae`
   remote branch: `origin/task/ARCH-009-BACKGROUND-001`
   pushed: yes
   submodule gitlink staged: no
@@ -312,214 +312,138 @@ Merged to workspace main: no
 ## Architect Review
 
 ### Review Status
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 3 successfully closes the complete lifecycle/regression contract from the prior review.
+Attempt 4 closes the final security-only Changes Requested contract.
 
-Verified:
+The cancellation lifecycle itself had already satisfied the functional contract at Attempt 3.
+Attempt 4 changes only the persisted-error sanitizer and its direct persistence regressions.
 
-- stale PROCESSING with `providerAcceptedAt != null` is exercised end-to-end through recovery -> PROVIDER_ACCEPTED verification -> completion without another cancellation mutation;
-- stale PROCESSING without provider acceptance returns through the RETRYABLE path without inventing provider acceptance;
-- END_OF_CYCLE confirmation is explicitly covered for achieved, not-yet-achieved and no-active-subscription states;
-- all three immediate modes are explicitly covered for both `activeSubscription = null` completion and still-active verification/retry;
-- due RETRYABLE, future RETRYABLE and PROVIDER_ACCEPTED eligibility are exercised behaviorally;
-- approved request snapshots remain authoritative and there is no local Subscription projection substitution;
-- the completion SYSTEM message uses the deterministic canonical billing source key and is logically idempotent;
-- retryable and permanent provider failures are persisted with bounded summaries;
-- exact-status claim CAS and stale provider-error cleanup from Attempt 2 remain intact.
-
-The cancellation lifecycle implementation is otherwise accepted.
-
-One security defect remains in the new Attempt-3 error-summary redaction helper.
-
-#### 1. Fix `Authorization: Bearer <token>` redaction
-
-Attempt 3 added:
-
-```ts
-.replace(
-  /((?:access[_ -]?token|authorization|bearer)\s*[:=]?\s*)(\S+)/gi,
-  "$1[REDACTED]",
-)
-```
-
-This does not safely redact the common authorization-header shape:
+Verified sanitizer behavior removes credential values for the required forms:
 
 ```text
-Authorization: Bearer secret-token
+Authorization: Bearer <token>
+Authorization=Bearer <token>
+X-Shopify-Access-Token: <token>
+X-Shopify-Access-Token=<token>
+access_token=<token>
+access-token: <token>
+Bearer <token>
 ```
 
-The `authorization` alternative consumes `Bearer` as the value being redacted, leaving the actual credential after it. The persisted result is effectively:
+The implementation now redacts complete Authorization/Bearer forms before applying the
+generic access-token and bearer fallbacks, preserving the existing 2,000-character summary
+bound.
 
-```text
-Authorization: [REDACTED] secret-token
-```
+The focused persistence tests exercise these credential forms through
+`SubscriptionCancellationService.processDue()` and prove:
 
-That violates the task's explicit `no secrets` requirement and the prior Architect Review's requirement that persisted `providerErrorCode` / `providerResponseSummary` cannot contain Partner access-token or credential material.
+- the request reaches the correct RETRYABLE state for the retryable provider error;
+- `providerErrorCode` remains the expected bounded provider code;
+- `providerResponseSummary` does not contain the supplied secret;
+- the persisted summary remains at or below the 2,000-character bound.
 
-Attempt 4 must harden the sanitizer.
+The pre-existing permanent-failure regression continues to prove bounded secret-free
+persistence for the permanent / NEEDS_ATTENTION path.
 
-Minimum required behavior:
+No Partner mutation, retry, lease, confirmation, identity, completion-message, worker,
+schema, or Shared mapping behavior changed in Attempt 4.
 
-```text
-Authorization: Bearer secret-token
-Authorization=Bearer secret-token
-Bearer secret-token
-access_token=secret-token
-access-token: secret-token
-access token = secret-token
-X-Shopify-Access-Token: secret-token
-```
+### Functional Contract Preserved
 
-must all remove the credential value from the returned/persisted summary.
+The accepted cumulative BACKGROUND-001 implementation provides:
 
-One acceptable implementation approach is to redact the full authorization-bearer form FIRST, then apply the existing access-token/bearer-value patterns. Preserve the existing 2,000-character bound.
-
-#### 2. Add exact persistence regressions
-
-Add focused service-level tests for at least:
-
-```text
-Authorization: Bearer partner-secret
-X-Shopify-Access-Token: partner-secret
-access_token=partner-secret
-Bearer partner-secret
-```
-
-For both retry/permanent persistence paths where practical, prove:
-
-```text
-providerResponseSummary does not contain partner-secret
-providerResponseSummary length <= 2000
-providerErrorCode remains the expected bounded code
-```
-
-At minimum, `Authorization: Bearer ...` MUST be tested through the actual service persistence path because that is the shape the current sanitizer mishandles.
-
-Also add a small table-driven sanitizer/persistence regression for the listed header/token variants so a future regex simplification cannot reopen the leak.
-
-#### 3. Do not change the cancellation lifecycle
-
-Attempt 4 is security-only.
-
-Do NOT change:
-
-- Partner API contract or cancellation mutation;
-- Shared cancellation-mode mapping;
-- claim CAS;
-- retry/backoff policy;
-- provider identity checks;
-- stale lease state machine;
-- confirmation rules;
-- completion transaction/message behavior;
-- worker integration;
-- database schema/submodule pointer.
-
-Only modify production cancellation code if required to fix the sanitizer and its direct tests.
-
-#### 4. Completion Report metadata
-
-Attempt 3 implementation branch is correctly published at:
-
-```text
-3828b8fccf4260b6736318ff347c8390da97cea0
-```
-
-and the actual final parent branch tip is:
-
-```text
-0e1d4074bf4e87385fd8ad57c97596f9ef4a50d4
-```
-
-The Attempt 3 Completion Report currently names `ae22676` as the metadata finalization commit but does not separately record `0e1d407...` as the final pushed branch tip.
-
-Attempt 4 must record distinctly:
-
-```text
-review handoff commit
-metadata/report commit(s)
-final parent branch tip
-```
-
-so the report matches the published branch state exactly.
-
-### Positive Findings To Preserve
-
-Attempt 3 has now established the full cancellation behavior requested across the previous reviews:
-
-- exact four Shared cancellation mode mappings;
-- provider identity mismatch => no mutation;
-- already-deferred END_OF_CYCLE => idempotent completion;
-- immediate cancellation with no contract => idempotent completion;
-- Partner acceptance != local completion;
-- exact confirmation rules for END_OF_CYCLE and all three immediate modes;
+- Partner `appSubscriptionCancel` only from Background;
+- Shopify Partner API `2026-07`;
+- exact Shared `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS` mode mapping;
+- batch 25 with deterministic `createdAt ASC, id ASC`;
+- exact selected `id + version + status` claim CAS;
+- 10-minute stale PROCESSING recovery;
+- provider-accepted stale work returns to verification and never blindly repeats mutation;
+- exact provider subscription and plan-handle snapshot verification before mutation;
+- identity mismatch -> `NEEDS_ATTENTION / SUBSCRIPTION_IDENTITY_CHANGED`;
+- END_OF_CYCLE already-deferred idempotent completion without mutation;
+- immediate-mode no-contract idempotent completion without mutation;
+- retryable classification for network / 408 / 409 / 425 / 429 / representative 5xx;
+- permanent attention classification for missing config / 400 / 401 / 403 / 404 /
+  GraphQL userErrors / identity mismatch / invalid mode;
+- successful provider acceptance -> `PROVIDER_ACCEPTED`, clears stale provider error,
+  and does not prematurely emit completion;
+- END_OF_CYCLE completion only when the same subscription reports
+  `cancelAtPeriodEnd = true`;
+- all three immediate modes complete only when `activeSubscription = null`;
+- exact-once logical `BILLING_CANCELLATION_COMPLETED` SYSTEM message;
 - retry identity preservation;
-- stateful stale-worker verification with no blind repeat;
-- exact selected-status CAS / one claimant;
-- deterministic exactly-once logical completion message;
-- due/future retry selection;
-- bounded provider error persistence;
-- worktree isolation and synchronization evidence.
-
-No further functional lifecycle changes are requested.
+- stateful stale-worker/no-double-cancel and concurrency regressions;
+- bounded secret-safe persisted provider summaries.
 
 ### Validation Reviewed
 
-Agent-reported Attempt 3:
+Agent-reported Attempt 4:
 
 ```text
-focused provider/cancellation: 50 passed
-npm run test:unit:              480 passed
-npm run build:                  passed
-npm run prisma:validate:        passed
-git diff --check:               passed
+focused cancellation-service tests: 38 passed
+npm run test:unit:                487 passed
+npm run build:                    passed
+npm run prisma:validate:          passed
+git diff --check:                 passed
 ```
 
-The supplied archive does not contain `node_modules`, so npm validation was not independently rerun by the architect.
+The supplied review archive does not contain `node_modules`, so npm commands were not
+independently rerun by the architect. The architect inspected the actual sanitizer,
+persistence tests, cumulative task source and published Git state directly.
 
 ### Published Git Verification
 
-Implementation:
+Implementation repository:
 
 ```text
 repository: moda-interact-background
 branch: task/ARCH-009-BACKGROUND-001
-tip: 3828b8fccf4260b6736318ff347c8390da97cea0
-parent: e7ad61ebafcf5ea572ad78394deadea5f75632a4
+Attempt 3: 3828b8fccf4260b6736318ff347c8390da97cea0
+Attempt 4: c92da43d21d042653338e2000d62327718523d21
 ```
 
-Parent workspace:
+Attempt 4 is exactly one commit after Attempt 3 and changes only:
 
 ```text
-branch: task/ARCH-009-BACKGROUND-001
-tip: 0e1d4074bf4e87385fd8ad57c97596f9ef4a50d4
-parent: ae22676aa08aa2b0416b7ae06359fd63573b92aa
+src/services/subscription-cancellation.service.ts
+tests/unit/services/subscription-cancellation.service.test.ts
 ```
 
-### Architecture Conformance
+The cumulative task branch is four commits ahead of `main`, zero behind.
 
-Changes required — security sanitizer only.
+Published parent workspace branch tip:
+
+```text
+f465028d36f9dbe3ff3e92142f407c5d7e82a4ae
+```
+
+The parent tip follows the Attempt-4 review handoff and records the final task evidence.
+
+### Architecture Conformance
+Accepted.
 
 ### Follow-up
 
-Attempt 4 remains on the SAME `ARCH-009-BACKGROUND-001` task and canonical mirrored task branches/worktrees.
+`ARCH-009-BACKGROUND-001` is Complete.
 
-Attempt 4 scope:
+Do not automatically promote `ARCH-009-ADMIN-002` from this branch alone. Its authoritative
+dependencies are:
 
-1. fix bearer/access-token redaction so no credential value survives;
-2. add the exact persistence/table-driven secret-safety regressions above;
-3. do not modify unrelated cancellation lifecycle behavior;
-4. rerun:
-   - focused provider/cancellation tests;
-   - `npm run test:unit`;
-   - `npm run build`;
-   - `npm run prisma:validate`;
-   - `git diff --check`;
-5. update the Completion Report with Attempt 4 files, validation, worktree/sync evidence, implementation commit, report/handoff commits and final parent branch tip;
-6. preserve this Architect Review until the next architect decision;
-7. return the same task to `review`;
-8. STOP.
+```text
+ARCH-009-ADMIN-001
+ARCH-009-BACKGROUND-001
+ARCH-009-BACKGROUND-002
+```
 
-`ARCH-009-ADMIN-002` remains Pending until BACKGROUND-001, BACKGROUND-002 and ADMIN-001 are all architect-accepted Complete.
+This acceptance satisfies BACKGROUND-001. BACKGROUND-002 has been separately architect-
+accepted on its own task branch, but this B001 parent worktree does not materialize that
+separate acceptance, and ADMIN-001 remains Ready rather than Complete here.
+
+Promote ADMIN-002 only after the common parent workspace state records all three individual
+dependencies as Complete.
+
+`ARCH-009-SYSTEM-TEST-001` remains terminal/manual-gated and must not execute automatically.
