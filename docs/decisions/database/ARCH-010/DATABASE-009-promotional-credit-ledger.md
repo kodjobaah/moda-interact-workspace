@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 81
-executor: copilot
-claimed_at: 2026-09-11T14:36:28Z
-attempt: 0
+executor: null
+claimed_at: null
+attempt: 1
 depends_on:
   - ARCH-007-DATABASE-002
 enables:
@@ -212,19 +212,47 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Implemented; awaiting Architect Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260911150000_add_promotional_credit_grants/migration.sql`
+- `scripts/validate-billing-policy-schema.mjs`
 
 ### Work Completed
-Populate during implementation.
+- Added the non-refundable `PROMOTIONAL_RECOVERY_CREDITS` entitlement counter without creating counters for existing shops.
+- Added `PromotionalCreditGrant` provenance with bounded reason, optional campaign reference, globally unique request key, restrictive Shop and PlatformAdmin relations, positive quantity CHECK, and required indexes.
+- Added the `PROMOTIONAL_CREDITS_GRANTED` billing audit action.
+- Kept the migration additive and row-free: it does not rewrite allowance adjustments, lifetime-Free or purchased balances, BillingPeriods, subscriptions, or seed promotional grants/counters.
+- Added deterministic validator coverage for the enum/model/index/constraint contract and migration no-rewrite/no-grant safeguards.
 
 ### Validation Results
-Populate during implementation.
+- `npm run format` passed.
+- `npm run prisma:generate` passed with Prisma 6.19.3.
+- `npm run prisma:validate` passed.
+- `npm run test:billing-policy` passed.
+- `git diff --check` passed.
+- No migration was applied to the configured database.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-009`.
+- Parent branch: `task/ARCH-010-DATABASE-009`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-009`.
+- Implementation branch: `task/ARCH-010-DATABASE-009`.
+- Implementation commit: `597b991` (`feat(database): add promotional recovery credit grants`).
+- Parent claim commit: `c321557`.
+- Both mirrored task branches were pushed to their respective origins.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+- No main branch was pushed and no submodule gitlink was staged.
+
+### Start-of-attempt Synchronization
+- Parent remote task branch fast-forwarded: not-needed; branch was newly created from current `origin/main`.
+- Parent `origin/main` incorporated: already-current at claim.
+- Implementation remote task branch fast-forwarded: not-needed; branch was newly created from current `origin/main`.
+- Implementation `origin/main` incorporated: already-current.
 
 ### Architect Review
 Pending.
