@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 19
 executor: copilot
 claimed_at: 2026-09-11T13:24:26Z
@@ -19,7 +19,7 @@ enables:
   - ARCH-010-BACKGROUND-016
   - ARCH-010-SHOPIFY-018
 created: 2026-09-11
-updated: 2026-09-11T13:24:26Z
+updated: 2026-09-11T13:26:38Z
 ---
 
 # ARCH-010-DATABASE-008: Persist Shopify subscription freeze projection and lifecycle evidence
@@ -214,19 +214,28 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-database`
-  commit: `14e0281`
+  commit: `409f3e6`
   remote branch: `origin/task/ARCH-010-DATABASE-008`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/database/ARCH-010/DATABASE-008-shopify-subscription-freeze-state.md`
-  claim commit: `3cb2d53`
+  synchronization commit: `e79d28a`
+  claim commit: `5080206`
   claim remote branch: `origin/task/ARCH-010-DATABASE-008`
   claim pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
+
+### Attempt 3 Completion Report
+
+- Correction 1: `scripts/validate-billing-lifecycle-schema.mjs` now directly imports and asserts the generated Prisma exports `SubscriptionProjectionStatus.FROZEN` and the exact `ProviderSubscriptionLifecycleState` values. Existing schema-level and DMMF assertions remain in place.
+- Correction 2: durable Git/VCS evidence now records implementation head `409f3e6`, parent synchronization commit `e79d28a`, and Attempt 3 claim commit `5080206`; the implementation branch was pushed to `origin/task/ARCH-010-DATABASE-008`.
+- No Prisma schema, migration, ERD semantics, lifecycle behavior, BillingPeriod, counter, entitlement, pending-plan, cancellation, or `nextReconcileAt` changes were made.
+- Validation passed: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:recovery-credit-packs`, `npm run test:billing-lifecycle`, `npm run erd:puml`, and `git diff --check`.
+- `npm run status` was inspection-only and reported pending migrations, including `20260911140000_add_subscription_provider_lifecycle_evidence`; no migration was applied to the configured shared database.
 
 ### Architect Review
 
