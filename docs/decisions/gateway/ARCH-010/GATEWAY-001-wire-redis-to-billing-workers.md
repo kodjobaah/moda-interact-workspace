@@ -132,7 +132,7 @@ Start-of-attempt synchronization:
 
 Implementation commit: `29cefeb` (`test: require redis group for billing workers`), pushed to `origin/task/ARCH-010-GATEWAY-001`.
 Parent report commit: `a346cfe9618a30d363df5c776babd05f59319e53`, pushed to `origin/task/ARCH-010-GATEWAY-001`.
-Branches pushed: implementation `task/ARCH-010-GATEWAY-001` at `29cefeb`; parent `task/ARCH-010-GATEWAY-001` at `a346cfe`.
+Branches pushed: implementation `task/ARCH-010-GATEWAY-001` at `29cefeb`; parent `task/ARCH-010-GATEWAY-001` at `0b871c1`.
 Worktrees clean: verified after implementation and parent report publication.
 The parent submodule gitlink was not staged.
 
