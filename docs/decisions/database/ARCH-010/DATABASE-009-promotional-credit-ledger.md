@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 81
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-007-DATABASE-002
 enables:
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-SHOPIFY-009
   - ARCH-010-SHOPIFY-020
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T16:04:39Z
 ---
 
 # ARCH-010-DATABASE-009: Add durable promotional recovery-credit grants and aggregate entitlement counter
@@ -212,19 +212,288 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260911150000_add_promotional_credit_grants/migration.sql`
+- `scripts/validate-billing-policy-schema.mjs`
 
 ### Work Completed
-Populate during implementation.
+- Added the non-refundable `PROMOTIONAL_RECOVERY_CREDITS` entitlement counter without creating counters for existing shops.
+- Added `PromotionalCreditGrant` provenance with bounded reason, optional campaign reference, globally unique request key, restrictive Shop and PlatformAdmin relations, positive quantity CHECK, and required indexes.
+- Added the `PROMOTIONAL_CREDITS_GRANTED` billing audit action.
+- Kept the migration additive and row-free: it does not rewrite allowance adjustments, lifetime-Free or purchased balances, BillingPeriods, subscriptions, or seed promotional grants/counters.
+- Added deterministic validator coverage for the enum/model/index/constraint contract and migration no-rewrite/no-grant safeguards.
 
 ### Validation Results
-Populate during implementation.
+- `npm run format` passed.
+- `npm run prisma:generate` passed with Prisma 6.19.3.
+- `npm run prisma:validate` passed.
+- `npm run test:billing-policy` passed.
+- `git diff --check` passed.
+- No migration was applied to the configured database.
+
+### Attempt 2 Review Correction
+- Added the additive `EntitlementCounter` PostgreSQL enum extension to the promotional-credit migration.
+- Strengthened the billing-policy validator to assert all existing and promotional entitlement values and both required enum migrations.
+- Attempt-2 validation passed: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:billing-policy`, and `git diff --check`.
+
+### Attempt 3 Review Correction
+- Strengthened `scripts/validate-billing-policy-schema.mjs` to prove restrictive Shop and PlatformAdmin provenance relations in both Prisma schema and PostgreSQL migration evidence.
+- Attempt-3 validation passed: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:billing-policy`, and `git diff --check`.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-009`.
+- Parent branch: `task/ARCH-010-DATABASE-009`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-009`.
+- Implementation branch: `task/ARCH-010-DATABASE-009`.
+- Implementation commit: `9ee081f` (`test(database): assert promotional grant restrictions`), based on `ba0f8b7`.
+- Parent claim commit: `318b6fd` (`chore: claim DATABASE-009 attempt 3`).
+- Both mirrored task branches were pushed to their respective origins.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+- No main branch was pushed and no submodule gitlink was staged.
+
+### Start-of-attempt Synchronization
+- Parent remote task branch fast-forwarded: not-needed; existing task branch was current.
+- Parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed; existing task branch was current.
+- Implementation `origin/main` incorporated: already-current.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Changes Requested
+
+The ARCH-010-DATABASE-009 target schema is directionally correct, but the migration does not actually migrate the PostgreSQL `billing.EntitlementCounter` enum to the new schema value. This creates schema/migration drift and is a blocking database correctness issue.
+
+##### Accepted implementation findings
+
+Architect review verified the following and does not request redesign of them:
+
+- `EntitlementCounter` in `schema.prisma` contains `PROMOTIONAL_RECOVERY_CREDITS` alongside the existing lifetime-Free and purchased-credit counters;
+- `PromotionalCreditGrantType` contains the required grant provenance vocabulary;
+- `PromotionalCreditGrant` has positive quantity, mandatory bounded reason, optional campaign reference, globally unique request key, PlatformAdmin provenance and created timestamp;
+- Shop and PlatformAdmin reverse relations are present;
+- the Shop and PlatformAdmin relations use `onDelete: Restrict`;
+- the migration creates the grant type/table, unique request-key index, shop/campaign/admin provenance indexes, restrictive foreign keys, and the positive-quantity CHECK;
+- `BillingAuditAction.PROMOTIONAL_CREDITS_GRANTED` is present in the Prisma schema and the migration adds it to the PostgreSQL enum;
+- the migration is row-free: it creates no promotional counter/grant for existing shops and does not reinterpret `BillingAllowanceAdjustment`, lifetime-Free balances, purchased-credit balances/lots, BillingPeriods, or subscription state;
+- no promotional expiry field or Shopify billing identifier/event is introduced;
+- the Completion Report contains the canonical parent/implementation worktrees and all four start-of-attempt synchronization outcomes.
+
+##### Correction 1 — migrate the PostgreSQL entitlement enum
+
+The Prisma schema adds:
+
+```prisma
+enum EntitlementCounter {
+  FREE_RECOVERY_LIFETIME
+  PURCHASED_RECOVERY_CREDITS
+  PROMOTIONAL_RECOVERY_CREDITS
+}
+```
+
+Ready for Review
+
+No migration anywhere in the submitted database history contains `PROMOTIONAL_RECOVERY_CREDITS`.
+
+Add the migration operation, using the repository's existing PostgreSQL enum convention, equivalent to:
+
+```sql
+ALTER TYPE "billing"."EntitlementCounter"
+  ADD VALUE 'PROMOTIONAL_RECOVERY_CREDITS';
+```
+
+Do not create a replacement enum or rewrite existing counter rows. This must remain an additive enum extension.
+
+##### Correction 2 — make the validator prove schema/migration alignment
+
+The current billing-policy validator proves that the Prisma schema contains the promotional counter, but it does not prove that the migration adds that value to the database enum. That allowed this defect to pass validation.
+
+Strengthen `scripts/validate-billing-policy-schema.mjs` so it deterministically proves at least:
+
+1. the Prisma `EntitlementCounter` still contains the pre-existing:
+   - `FREE_RECOVERY_LIFETIME`;
+   - `PURCHASED_RECOVERY_CREDITS`;
+   - and the new `PROMOTIONAL_RECOVERY_CREDITS`;
+2. the DATABASE-009 migration contains the `ALTER TYPE "billing"."EntitlementCounter" ... ADD VALUE 'PROMOTIONAL_RECOVERY_CREDITS'` operation;
+3. the DATABASE-009 migration contains the `PROMOTIONAL_CREDITS_GRANTED` BillingAuditAction enum extension;
+4. the Shop and PlatformAdmin relations are present with `onDelete: Restrict` in the Prisma model and/or equivalent restrictive foreign-key evidence in the migration;
+5. the existing no-row/no-reinterpretation guards remain intact.
+
+Keep the existing positive quantity, uniqueness, optional campaign reference, index, and migration no-rewrite assertions.
+
+##### Scope guard
+
+Do not redesign the accepted promotional-credit schema.
+
+Attempt 2 should be limited to:
+
+- the missing additive PostgreSQL enum migration operation;
+- focused validator strengthening;
+- any normal formatting/generated artifact refresh genuinely required by those changes;
+- Completion Report/VCS evidence.
+
+Do not implement Admin actions/UI, credit consumption, campaign expiry, Shopify App Events, refunds, bulk campaigns, or runtime entitlement behaviour.
+
+##### Attempt 2 validation
+
+After the normal canonical-worktree synchronization and successful Attempt 2 claim, rerun the task's repository-declared validation contract:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:billing-policy
+git diff --check
+```
+
+If the repository/task already uses migration-status inspection in this worktree, it may remain inspection-only. Do not apply DATABASE-009 to the shared database merely for architect review.
+
+Return the same task to `review` with the updated Completion Report and published implementation/parent branches.
+
+#### Attempt 2 — Ready for Review
+
+Implemented the requested additive entitlement enum migration and validator alignment. No other scope was changed. The corrected implementation is published at `ba0f8b7`, and the parent claim/report branch is published with the Attempt-2 lifecycle evidence.
+
+#### Attempt 2 — Changes Requested (one remaining validator/evidence correction)
+
+Attempt 2 fixes the blocking migration defect from Attempt 1.
+
+Architect re-review verified:
+
+- `20260911150000_add_promotional_credit_grants/migration.sql` now contains:
+  `ALTER TYPE "billing"."EntitlementCounter" ADD VALUE 'PROMOTIONAL_RECOVERY_CREDITS'`;
+- the migration continues to add `PROMOTIONAL_CREDITS_GRANTED` to `BillingAuditAction`;
+- the migration remains additive and row-free;
+- the accepted promotional grant schema/provenance model is unchanged;
+- the validator now proves the Prisma entitlement enum retains:
+  `FREE_RECOVERY_LIFETIME`,
+  `PURCHASED_RECOVERY_CREDITS`,
+  and `PROMOTIONAL_RECOVERY_CREDITS`;
+- the validator proves both required PostgreSQL enum extensions;
+- the required Attempt 2 validation commands passed;
+- canonical parent/implementation worktrees and all four start-of-attempt synchronization outcomes are recorded.
+
+One explicit validator requirement from Attempt 1 is still not proven.
+
+##### Required correction 1 — prove restrictive Shop/Admin provenance relations
+
+The schema and migration are correct:
+
+```prisma
+shop Shop @relation(fields: [shopId], references: [id], onDelete: Restrict)
+
+platformAdmin PlatformAdmin
+  @relation(fields: [platformAdminId], references: [id], onDelete: Restrict)
+```
+
+and the migration contains `ON DELETE RESTRICT` on both foreign keys.
+
+However, `validate-billing-policy-schema.mjs` does not assert either of those
+relation-delete semantics.
+
+Add deterministic assertions proving both provenance relations remain restrictive.
+Either of these approaches is acceptable:
+
+1. schema assertions that match both `@relation(... onDelete: Restrict)` clauses; or
+2. migration assertions that match both foreign keys and `ON DELETE RESTRICT`.
+
+Prefer proving both schema and migration alignment if the assertions remain simple.
+
+##### Required correction 2 — correct the Completion Report status
+
+The top-level task metadata is `review`, but the Completion Report still says:
+
+```text
+### Status
+In Progress
+```
+
+On the next handoff, make the Completion Report status accurately reflect that the
+implementation is complete and awaiting architect review, e.g.:
+
+```text
+### Status
+Ready for Review
+```
+
+or the repository's canonical equivalent.
+
+##### Scope guard
+
+This is a validator/report-only correction.
+
+Do not modify the accepted Prisma schema or promotional-credit migration merely to
+create another implementation change.
+
+After the normal Attempt 3 synchronization/claim, rerun:
+
+```text
+npm run format
+npm run prisma:generate
+npm run prisma:validate
+npm run test:billing-policy
+git diff --check
+```
+
+Do not apply DATABASE-009 to the shared database solely for review.
+
+Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining validator and Completion Report corrections.
+
+Architect re-review verified:
+
+- `scripts/validate-billing-policy-schema.mjs` now asserts the Prisma
+  `PromotionalCreditGrant.shop` relation uses `onDelete: Restrict`;
+- the validator now asserts the Prisma
+  `PromotionalCreditGrant.platformAdmin` relation uses `onDelete: Restrict`;
+- the validator now asserts the PostgreSQL `shopId` foreign key contains
+  `ON DELETE RESTRICT`;
+- the validator now asserts the PostgreSQL `platformAdminId` foreign key contains
+  `ON DELETE RESTRICT`;
+- the Completion Report status is now `Ready for Review`;
+- `prisma/schema.prisma` is byte-for-byte unchanged from Attempt 2;
+- `20260911150000_add_promotional_credit_grants/migration.sql` is byte-for-byte
+  unchanged from Attempt 2;
+- the only implementation-file change from Attempt 2 is the four focused
+  restrictive-relation validator assertions requested by Architect Review;
+- the required Attempt 3 validation contract passed;
+- implementation commit `9ee081f` is the reviewed Attempt 3 implementation head;
+- no database migration was applied solely for architect review.
+
+The findings accepted through the earlier review rounds therefore stand:
+`PROMOTIONAL_RECOVERY_CREDITS` is present in both Prisma and PostgreSQL enum
+history, promotional grants retain durable admin/shop provenance, quantity is
+positive, request keys are globally unique, promotional grants are row-free for
+existing shops, and no historical lifetime-Free, purchased-credit, BillingPeriod,
+subscription, or allowance-adjustment state is reinterpreted.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and
+`claimed_at` remain cleared while `attempt: 3` is preserved.
+
+The submitted handoff identifies parent review-report commit `ec3f8b8`. It is not
+embedded into this same task file because a commit cannot durably contain its own
+final hash.
+
+This acceptance satisfies DATABASE-009 for its direct dependants:
+- `ARCH-010-ADMIN-004`
+- `ARCH-010-BACKGROUND-019`
+- `ARCH-010-SHOPIFY-009`
+- `ARCH-010-SHOPIFY-020`
+
+Their actual Ready status must still be recalculated against any other dependencies
+in the current canonical parent workspace.
+
