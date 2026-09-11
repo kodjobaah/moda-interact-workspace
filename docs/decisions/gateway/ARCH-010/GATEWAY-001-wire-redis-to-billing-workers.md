@@ -9,17 +9,17 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 31
-executor: copilot
-claimed_at: 2026-09-11T23:05:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-002-GATEWAY-001
 enables:
   - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T22:59:54Z
 ---
 
 # ARCH-010-GATEWAY-001: Wire Redis into deployed billing workers
@@ -281,4 +281,59 @@ The two Blueprint Redis-group additions are already architecturally correct and
 should remain unchanged unless synchronization exposes a real conflict.
 
 Return the same task to `review`.
+
+#### Attempt 2 — Accepted
+
+Attempt 2 satisfies the topology-validator and workflow-evidence corrections from
+Attempt 1.
+
+Architect re-review verified:
+
+- `render.production.yaml` still adds exactly
+  `moda-interact-production-redis-config` to
+  `moda-billing-worker-production`;
+- `render.test.yaml` still adds exactly
+  `moda-interact-test-redis-config` to `moda-billing-worker-test`;
+- both Blueprint files are byte-for-byte unchanged from Attempt 1;
+- the only implementation-file correction from Attempt 1 is the canonical topology
+  validator expectation changing billing workers from:
+
+  `common + shopify_app`
+
+  to:
+
+  `common + redis + shopify_app`;
+
+- the canonical validator continues to prove environment-specific `DATABASE_URL`,
+  worker type/runtime/repository/command, private exposure and conservative
+  `numInstances: 1`;
+- the existing environment-specific Redis config groups remain authoritative for
+  `REDIS_URL`, with no new Redis resource/group or secret introduced;
+- `bash tests/validate-render-blueprints.sh` passes against the submitted archive;
+- `bash tests/validate-render-blueprints-negative.sh` passes against the submitted
+  archive;
+- the existing negative validator did not require a task-specific source change:
+  because the canonical positive validator now enforces the exact group set, a
+  billing worker missing Redis is rejected by that validator automatically;
+- `git diff --check` is recorded as passing in the canonical Git worktree;
+- the Completion Report records canonical parent and implementation worktrees;
+- both negative-isolation assertions are recorded;
+- all four start-of-attempt synchronization outcomes are recorded individually;
+- both mirrored task branches are recorded as pushed and both worktrees clean;
+- implementation commit `29cefeb` is the reviewed Attempt 2 implementation head;
+- the submitted external handoff identifies final parent report commit `55034b4`.
+
+The parent report hash recorded inside the task predates the final parent commit.
+That is not an acceptance blocker: the final commit containing the updated report
+cannot durably self-embed its own final hash, and the external handoff supplies that
+final evidence.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 2` is preserved.
+
+`ARCH-010-SYSTEM-TEST-001` is **not automatically promoted by this overlay**.
+ARCH-010 system-test tasks are terminal/manual-gated validation and remain under
+developer/architect-controlled invocation after implementation work is ready.
 
