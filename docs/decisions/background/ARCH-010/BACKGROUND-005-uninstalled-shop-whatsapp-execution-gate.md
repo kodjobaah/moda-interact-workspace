@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 46
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-010-BACKGROUND-017
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T18:46:25Z
 ---
 
 # ARCH-010-BACKGROUND-005: Stop WhatsApp business execution for inactive shops
@@ -230,3 +230,228 @@ Review requested. Implementation is complete and awaits `moda_architect` accepta
 
 ### Architect Review
 Pending.
+
+#### Attempt 1 — Changes Requested
+
+The overall WhatsApp inactive-shop execution-gate design is directionally correct,
+but this submission is not yet safe to accept.
+
+Architect review found one cross-task regression, incomplete required behavioural
+coverage, and incomplete mandatory workflow evidence.
+
+##### Accepted implementation direction
+
+The following approach is accepted and should not be redesigned:
+
+- durable `Shop.status` is checked only after WhatsApp ownership is deterministically
+  resolved;
+- context-linked `UNINSTALLED` / `SUSPENDED` ownership returns the terminal
+  `shop-unavailable` route;
+- context-free recovery ownership filters inactive shops before choosing actionable
+  merchant ownership;
+- product-only ownership checks shop activity before standalone-conversation
+  creation;
+- `processInboundMessage()` returns before inbound persistence when routing reports
+  `shop-unavailable`;
+- delayed conversation turns expose a `shopUnavailable` load result and suppress
+  settled-turn abuse admission, CommerceAgent and outbound reservation/send;
+- provider-status handling remains separate and continues finalising already-created
+  outbound provider state;
+- the existing `EffectiveBillingPolicyResolver` non-ACTIVE guard remains defense in
+  depth.
+
+Do not redesign those boundaries in Attempt 2.
+
+##### Correction 1 — preserve the accepted BACKGROUND-004 helper API
+
+The submitted BACKGROUND-005 branch changes:
+
+```text
+src/services/shop-execution-eligibility.service.ts
+```
+
+but its version contains only:
+
+```ts
+isShopExecutionActive(shopId)
+```
+
+The already-reviewed BACKGROUND-004 implementation of the same helper also contains
+the `ShopExecutionRecord` contract and:
+
+```ts
+resolveShopByDomain(domain)
+```
+
+which BACKGROUND-004 uses for recovery scheduling/execution.
+
+BACKGROUND-005 must not regress or replace that accepted helper API.
+
+Synchronize/reconcile against the current canonical BACKGROUND-004 implementation
+and preserve the **union** of the helper capabilities:
+
+```text
+resolveShopByDomain(...)
+isShopExecutionActive(...)
+```
+
+Do not use a wholesale ours/theirs conflict resolution that deletes either task's
+accepted behaviour.
+
+If BACKGROUND-004 has not yet been integrated into the canonical mainline when
+Attempt 2 starts, stop and coordinate with `moda_architect` rather than publishing
+a helper version known to conflict with that accepted task.
+
+##### Correction 2 — complete the required context-linked/worker coverage
+
+The new routing tests prove that `UNINSTALLED` and `SUSPENDED` context-linked
+ownership returns `shop-unavailable`.
+
+They do **not** yet prove the task's worker-level acceptance requirements that the
+terminal route prevents actual inbound persistence and delayed-turn enqueue.
+
+Add focused executable coverage proving:
+
+1. ACTIVE context-linked inbound still follows the existing route;
+2. UNINSTALLED context-linked inbound causes no
+   `conversationService.receiveMessage(...)`;
+3. UNINSTALLED context-linked inbound enqueues no
+   `process-conversation-turn`;
+4. SUSPENDED context-linked inbound has the same terminal worker behaviour.
+
+Prefer a focused worker/handler test with mocked dependencies. A deterministic
+existing repository source-structure test is acceptable only if it genuinely
+proves the terminal branch occurs before both persistence and enqueue; do not rely
+only on the routing-service result.
+
+##### Correction 3 — prove the real delayed-job ownership/status boundary
+
+The processor test currently sets:
+
+```ts
+test.loaded.shopUnavailable = true
+```
+
+and correctly proves that the processor does not call settled abuse admission,
+outbound admission or CommerceAgent.
+
+That is useful but does not prove the actual Background loader turns durable
+`Shop.status = UNINSTALLED | SUSPENDED` into that terminal result.
+
+Add focused coverage around the real `loadConversationTurn`/worker boundary proving:
+
+- a queued turn whose durable owning Shop is now `UNINSTALLED` completes/no-ops;
+- `SUSPENDED` behaves the same way;
+- no agent context is loaded after the inactive status determination;
+- CommerceAgent is not invoked;
+- outbound reservation/send is not invoked;
+- no retry/new turn is scheduled solely because the shop is inactive;
+- ACTIVE ownership continues through the existing path.
+
+A small testability export/refactor of the existing loader is acceptable if needed;
+do not redesign the worker architecture.
+
+##### Correction 4 — explicitly protect provider-status finalisation
+
+Required Tests 11 and 12 are not explicitly covered by the submitted changes.
+
+Add focused regression evidence that an already-existing outbound message can still
+receive `DELIVERED` / `READ` provider finalisation even when its merchant is now
+inactive, and that provider-status handling does not:
+
+- enqueue a conversation turn;
+- invoke CommerceAgent;
+- create/send a new outbound message;
+- restart a recovery.
+
+Preserve the current delivered-usage semantics. Do not introduce a new commercial
+metering decision in this task.
+
+##### Correction 5 — keep actionable-routing ambiguity semantics explicit
+
+Retain the existing rule:
+
+```text
+inactive ownership is ignored for actionable merchant selection
+multiple ACTIVE ownership pairs remain ambiguous
+all otherwise-matching ownership inactive -> shop-unavailable
+```
+
+Keep/extend focused tests so the mixed inactive/active filtering does not
+accidentally turn multiple active owners into a guessed tenant.
+
+The existing all-active multi-owner ambiguity coverage may be reused if it remains
+passing.
+
+##### Correction 6 — mandatory worktree/synchronisation evidence
+
+The Completion Report records paths/branches and an implementation commit, but it
+does not contain the mandatory negative-isolation assertions or all four
+start-of-attempt synchronization outcomes.
+
+The recorded parent path is also nested under the BACKGROUND-004 task-worktree
+naming lineage, so Attempt 2 must use the resolver-selected canonical
+`ARCH-010-BACKGROUND-005` worktrees and state the evidence explicitly.
+
+Record:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Do not treat a clean task branch or successful push as a substitute for this
+physical isolation/synchronisation evidence.
+
+##### Validation
+
+The current submission reports useful focused routing results but the delayed-turn
+suite was blocked by an ungenerated Prisma client and repository-wide checks have
+baseline blockers.
+
+Attempt 2 must run executable focused tests for every changed acceptance path above.
+At minimum record the exact commands/results for:
+
+```text
+recovery-routing focused tests
+WhatsApp inbound worker/handler inactive-gate tests
+conversation-turn inactive delayed-job tests
+provider-status finalisation tests
+EffectiveBillingPolicyResolver non-ACTIVE regression
+git diff --check
+```
+
+Run the repository-declared broader validation scripts that are actually available.
+If Prisma/build/typecheck remain blocked by pre-existing unchanged repository
+defects, document those blockers separately and precisely; they do not waive
+task-local focused validation.
+
+##### Scope guard
+
+Do not:
+
+- add `shopId` to the normalized WhatsApp ingress contract;
+- move tenant discovery into `moda-interact-messaging`;
+- redesign Meta ingress;
+- alter subscription/credit/refund semantics;
+- suppress historical provider-status finalisation;
+- remove legitimate pre-uninstall usage accounting;
+- modify another repository.
+
+Return the same task to `review` after the corrections.
+
