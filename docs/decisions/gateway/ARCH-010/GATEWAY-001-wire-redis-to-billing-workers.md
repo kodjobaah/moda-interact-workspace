@@ -9,17 +9,17 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 31
-executor: copilot
-claimed_at: 2026-09-11T22:41:25Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-002-GATEWAY-001
 enables:
   - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T22:48:06Z
 ---
 
 # ARCH-010-GATEWAY-001: Wire Redis into deployed billing workers
@@ -122,3 +122,143 @@ Pending.
 ## Stop conditions
 
 STOP and return to `moda_architect` if the deployed billing worker topology/service names differ materially from the task baseline, if the required Redis environment group does not exist, or if satisfying the task would require provisioning/replacing Redis rather than wiring the existing shared service.
+
+#### Attempt 1 — Changes Requested
+
+The Render Blueprint wiring itself is correct, but the submitted task cannot be
+accepted because the repository-declared Blueprint validator is now inconsistent
+with the changed topology, and the Completion Report's statement that it passed is
+not reproducible from the submitted archive.
+
+Architect re-review verified:
+
+- `moda-billing-worker-production` now imports
+  `moda-interact-production-redis-config`;
+- `moda-billing-worker-test` now imports
+  `moda-interact-test-redis-config`;
+- each billing worker still retains its environment config group, Shopify Partner
+  app config group, environment-specific `DATABASE_URL`, worker type, repository,
+  conservative single-instance count and `npm run start:billing-worker` command;
+- the existing Redis environment groups already exist and still own only
+  environment-specific `REDIS_URL`;
+- no new Redis resource/group, PostgreSQL resource, service, route, public domain,
+  plan or worker command was introduced.
+
+One substantive validation defect remains.
+
+##### Correction 1 — update the canonical topology validator
+
+The existing repository validator is exactly the suitable topology validator
+identified by this task:
+
+```text
+tests/validate-render-blueprints.sh
+```
+
+Its `expected_services` table still contains:
+
+```ruby
+"moda-billing-worker-#{environment}" => %w[common shopify_app],
+```
+
+while the task has intentionally changed the billing-worker topology to:
+
+```text
+common + redis + shopify_app
+```
+
+Running the declared validator against the submitted archive currently fails with:
+
+```text
+unexpected group attachments for moda-billing-worker-test
+```
+
+Update the canonical validator to require:
+
+```ruby
+"moda-billing-worker-#{environment}" => %w[common redis shopify_app],
+```
+
+for both test and production through its existing environment-generic assertion.
+
+Do not replace this with only an ad-hoc Ruby command in the Completion Report.
+The regression must live in the repository validator so a future removal of the
+Redis group fails the normal Blueprint validation.
+
+Retain the existing assertions for:
+
+- environment-specific `DATABASE_URL`;
+- billing worker type/runtime/repository/command;
+- private exposure;
+- single-instance conservative start;
+- exact environment-specific Redis config-group identity.
+
+If the existing negative Blueprint validator needs a mechanical expectation update
+because of this topology change, update it only as required to preserve its existing
+negative-test intent.
+
+##### Correction 2 — correct and rerun the validation evidence
+
+After updating the validator, run and record the actual results for:
+
+```text
+bash tests/validate-render-blueprints.sh
+bash tests/validate-render-blueprints-negative.sh   # if part of normal repository validation
+git diff --check
+```
+
+The positive validator must pass from the submitted task tree without relying on an
+uncommitted/ad-hoc assertion.
+
+The Completion Report must not state a command passed unless that exact submitted
+tree reproduces the result.
+
+##### Correction 3 — record mandatory worktree/synchronisation evidence
+
+The Completion Report currently records dedicated worktree paths and pushed commits,
+but it does not state the required negative-isolation assertions or all four
+start-of-attempt synchronization outcomes individually.
+
+On Attempt 2 record:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Use the resolver-selected canonical GATEWAY-001 worktrees.
+
+##### Scope guard
+
+This is a focused topology-validator/evidence correction.
+
+Do not change:
+
+- Redis secret values;
+- service counts/plans;
+- Docker commands;
+- routes/domains/public exposure;
+- PostgreSQL resources;
+- other workers;
+- Background/Shared/application code.
+
+The two Blueprint Redis-group additions are already architecturally correct and
+should remain unchanged unless synchronization exposes a real conflict.
+
+Return the same task to `review`.
+
