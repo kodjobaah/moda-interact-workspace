@@ -2,8 +2,7 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| ARCH-009-BACKGROUND-001 | Ready | Execute approved subscription cancellation. |
-| ARCH-009-BACKGROUND-002 | Ready | Process full-pack refunds and refund-aware reconciliation. |
+| ARCH-009-BACKGROUND-001 | Ready | Separate Changes Requested cycle; not a dependency of BACKGROUND-002. |
+| ARCH-009-BACKGROUND-002 | Complete | Full-pack refund hold, correction, provider-confirmation finalization, refund-aware admission and reconciliation. |
 
-Current frontier: `ARCH-009-BACKGROUND-001` and `ARCH-009-BACKGROUND-002` are Ready after SHARED-001 acceptance; exact Shared 0.9.0 must be available at execution preflight.
-s
+Current frontier: `ARCH-009-BACKGROUND-002` is Complete; `ARCH-009-BACKGROUND-001` remains in its independent security-only correction cycle. `ARCH-009-ADMIN-002` remains Pending.
