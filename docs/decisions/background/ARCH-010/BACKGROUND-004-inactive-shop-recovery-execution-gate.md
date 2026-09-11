@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
-priority: 45
+status: complete
 executor: null
 claimed_at: null
-attempt: 0
+priority: 45
+attempt: 3
 depends_on: []
 enables:
   - ARCH-010-BACKGROUND-006
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-BACKGROUND-018
   - ARCH-010-SHOPIFY-005
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-11T19:14:30Z
 ---
 
 # ARCH-010-BACKGROUND-004: Stop queued recovery work for inactive shops
@@ -231,19 +231,411 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Architect Review
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-background/src/services/shop-execution-eligibility.service.ts`
+- `moda-interact-background/src/services/pending-recovery-candidate.service.ts`
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/tests/unit/services/checkout-refresh.test.ts`
+- `moda-interact-background/tests/unit/services/order-recovery-correlation.test.ts`
+- `moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts`
+- `moda-interact-background/tests/unit/workers/pending-recovery-candidate.worker.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added a Background-owned durable `Shop.status` eligibility service.
+- Added terminal no-op gating for `UNINSTALLED` and `SUSPENDED` checkout-created scheduling before BullMQ or Redis writes.
+- Added inactive-shop gates for matured candidates, checkout updates, cart activity, and order completion before Shopify or recovery-domain work.
+- Preserved missing-shop semantics, ACTIVE scheduling/materialization behavior, billing reconciliation selection, and existing usage publisher cutoff behavior.
+- Added explicit ACTIVE fixtures and regression coverage proving inactive checkout-created events create no job or index.
+- Added inactive checkout-update, cart-activity, order-completion, and matured-candidate assertions, including the required order-shop status projection.
+- Added worker-level coverage proving matured inactive candidates still run pending-candidate cleanup in `finally`.
+- Implementation commit: `c03027b` (`fix(background): gate inactive recovery execution`).
+
+### Validation
+- Passed: `npm test -- --run tests/unit/services/pending-recovery-candidate.service.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/matured-candidate.materialization.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts` — 5 files, 83 tests passed.
+- Passed: `git diff --check`.
+- Repository-wide `npm run test:unit` remains blocked by the pre-existing ungenerated Prisma client, with the existing routing uniqueness-race fixture also failing.
+- `npx tsc --noEmit` remains blocked by the existing syntax error in `src/entrypoints/billing.ts:37`.
+- `npm run build` and `npm run prisma:validate` remain blocked because `database/prisma/schema.prisma` does not exist in this checkout.
+- `npm run typecheck` is not declared in `package.json`.
 
 ### Validation Results
-Populate during implementation.
+- Focused B004 suites: 5 files, 83 tests passed on Attempt 3.
+- Implementation worktree branch published: `task/ARCH-010-BACKGROUND-004` at `c03027b`.
+- No architect acceptance decision has been made by this agent.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004`
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-004`
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed (already current)
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed (already current)
+  implementation origin/main incorporated: already-current
+
+Implementation commit: `c03027b`, pushed to `origin/task/ARCH-010-BACKGROUND-004`
+Parent report commit: `6689aaf` claim/report branch base; this Attempt 3 report follows on the same branch
+Branches pushed: yes, both task branches
+Worktrees clean: yes
+
+Parent branch: `task/ARCH-010-BACKGROUND-004`
+Implementation branch: `task/ARCH-010-BACKGROUND-004`
+Submodule gitlink staged: no
+Merged to implementation main: no
+Merged to workspace main: no
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Changes Requested
+
+The implementation direction is correct, but the submitted handoff contains two
+concrete code defects plus incomplete acceptance coverage and workflow evidence.
+
+##### Accepted design direction
+
+Architect review accepts the following approach and does not request redesign:
+
+- a Background-owned `ShopExecutionEligibilityService` is the right local reusable
+  policy boundary;
+- checkout-created scheduling resolves durable `Shop.status` before BullMQ/Redis
+  candidate mutation;
+- `ACTIVE` proceeds, while `UNINSTALLED` and `SUSPENDED` return a terminal
+  `discarded-shop-unavailable` outcome;
+- checkout-update checks current shop status before candidate refresh, Shopify
+  abandoned-checkout lookup or recovery mutation;
+- cart activity checks current shop execution eligibility before candidate mutation;
+- matured-candidate materialization checks durable shop activity before Shopify
+  provider lookup or recovery creation;
+- order completion is intended to gate inactive shops before new recovery-domain
+  work;
+- missing-shop behaviour remains distinct from inactive-shop behaviour;
+- the existing usage-publisher uninstall cutoff and ACTIVE-only billing-reconciliation
+  selection were not blanket-rewritten.
+
+Do not redesign those accepted boundaries in Attempt 2.
+
+##### Correction 1 — fix the invalid order-shop projection
+
+Current `handleOrderCompleted()` does:
+
+```ts
+const shop = await prisma.shop.findUnique({
+  where: { domain: event.shop },
+  select: { id: true },
+});
+
+...
+
+if (shop.status !== "ACTIVE") {
+```
+
+`status` is not selected, so the returned Prisma object does not contain
+`shop.status`.
+
+Select the durable status in the same lookup:
+
+```ts
+select: { id: true, status: true }
+```
+
+and preserve the existing missing-shop / inactive-shop outcomes.
+
+Add focused coverage that would fail if the status field is omitted.
+
+##### Correction 2 — make the matured-candidate result type match runtime behaviour
+
+`materializeMaturedCandidate()` now returns:
+
+```ts
+{
+  outcome: "discarded-shop-unavailable",
+  checkoutToken: candidate.checkoutToken,
+}
+```
+
+but `MaturedCandidateMaterializationResult` does not declare that variant.
+
+Add the terminal result variant to the union. Do not weaken the return type to a
+generic string.
+
+##### Correction 3 — add the required inactive-path regression coverage
+
+The archive contains focused `UNINSTALLED` / `SUSPENDED` assertions for
+`PendingRecoveryCandidateService.scheduleFromCheckoutCreated()`, which covers the
+checkout-created scheduling requirement.
+
+However, the submitted tests do not contain focused assertions for the other
+required inactive paths. In particular, Architect review could not find
+`shop-unavailable` / `discarded-shop-unavailable` coverage for:
+
+- checkout-update;
+- cart activity;
+- order completion;
+- matured-candidate materialization.
+
+Attempt 2 must add focused tests proving at least:
+
+1. inactive checkout-update does not call
+   `pendingRecoveryCandidateService.refreshCandidateActivity`;
+2. inactive checkout-update does not call Shopify abandoned-checkout lookup and
+   does not mutate `CheckoutRecovery`;
+3. inactive cart activity does not mutate/refresh a pending candidate;
+4. inactive order completion performs no candidate resolution/cancellation,
+   order tombstone creation, recovery transaction/update or new customer/recovery
+   work;
+5. inactive matured candidate does not call `resolveShopDomain()` or Shopify
+   abandoned-checkout lookup;
+6. inactive matured candidate creates/updates no CheckoutRecovery, customer,
+   conversation or outbound action;
+7. the inactive matured-candidate result is terminal
+   `discarded-shop-unavailable`;
+8. the worker's existing `finally` cleanup still executes for that terminal result;
+9. ACTIVE checkout-update/cart/order/matured paths continue through their existing
+   behaviour;
+10. the existing `EffectiveBillingPolicyResolver` non-ACTIVE rejection,
+    ACTIVE-only billing reconciliation, and pre-uninstall committed-usage
+    publication tests remain passing or are explicitly rerun.
+
+Where provider/recovery dependencies are mocked, assert they were not called.
+
+The task contract requires these behaviours; passing only the 36
+pending-candidate tests is not sufficient acceptance evidence.
+
+##### Correction 4 — repair the test fixture/module-load blocker if it is local to the tests
+
+The Completion Report states that checkout/order focused suites cannot load because
+an existing test mock leaves `SubscriptionProjectionStatus.ACTIVE` undefined.
+
+If that blocker is in a test mock owned by the Background repository and can be
+corrected without changing production semantics, update the mock so the focused
+ARCH-010-BACKGROUND-004 tests can actually execute.
+
+Do not use the pre-existing mock defect as a reason to omit the task's required
+focused assertions.
+
+If correcting that mock would cross a task/repository boundary or materially alter
+another accepted contract, stop and report the exact blocker to Architect instead.
+
+##### Correction 5 — record mandatory worktree/synchronisation evidence
+
+The submitted Completion Report still says:
+
+```text
+### Git / VCS
+Populate canonical isolated worktree/branch/commit/push evidence.
+```
+
+That does not satisfy the mandatory task-worktree isolation policy.
+
+On Attempt 2 record:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Use the resolver-selected canonical worktrees.
+
+##### Repository-wide validation blockers
+
+The reported failures in:
+
+- `src/entrypoints/billing.ts:37`;
+- the existing Prisma build path;
+- undeclared `npm run typecheck`;
+- unrelated baseline unit/mock failures;
+
+may remain documented if they are truly pre-existing and unchanged by this task.
+
+They do **not**, however, waive the requirement that the changed inactive-shop
+paths themselves are type-correct and have executable focused coverage.
+
+After fixing the two direct code defects and test fixtures, run the maximum focused
+validation available for every changed guarded path and record exact commands and
+results.
+
+Also rerun:
+
+```text
+git diff --check
+```
+
+If a repository-wide command remains blocked by a baseline defect, document the
+exact unchanged blocker separately from the focused task validation.
+
+##### Scope guard
+
+Do not:
+
+- change Shopify uninstall ingress;
+- purge BullMQ globally;
+- reactivate shops;
+- redesign Subscription status;
+- change credits/refunds/billing-period rollover;
+- blanket-disable legitimate pre-uninstall usage publication;
+- modify another repository.
+
+Return the same task to `review` after the corrections.
+
+#### Attempt 2 — Changes Requested (workflow evidence only)
+
+Attempt 2 closes the substantive implementation and focused-test defects from
+Attempt 1.
+
+Architect re-review verified:
+
+- `handleOrderCompleted()` now selects both `id` and durable `status` from `Shop`
+  before any candidate/recovery work;
+- `MaturedCandidateMaterializationResult` now includes the typed terminal
+  `discarded-shop-unavailable` variant;
+- inactive checkout-update returns before candidate refresh, Shopify lookup and
+  recovery mutation;
+- inactive cart activity returns before candidate mutation;
+- inactive order completion returns before candidate resolution/cancellation,
+  tombstone creation and recovery transaction work;
+- inactive matured-candidate materialization returns before `resolveShopDomain()`,
+  Shopify abandoned-checkout lookup, CheckoutRecovery creation/update,
+  conversation creation, billing admission or outbound send;
+- the pending-candidate worker's existing `finally` cleanup is now covered for the
+  inactive terminal result;
+- ACTIVE path coverage remains present;
+- the previously blocking local test mocks were corrected sufficiently for the
+  changed guarded-path suites to execute;
+- the focused ARCH-010-BACKGROUND-004 regression set reports 83 passing tests
+  across five suites;
+- `git diff --check` passed;
+- `src/entrypoints/billing.ts`, `package.json`, the existing
+  EffectiveBillingPolicy tests, billing-reconciliation tests and
+  usage-event-publisher tests are unchanged from Attempt 1, so the documented
+  repository-wide Prisma/build/typecheck blockers are baseline issues rather than
+  regressions introduced by this task;
+- implementation commit `c03027b` is the reviewed Attempt 2 implementation head;
+- the submitted handoff identifies parent review commit `254e51b`.
+
+No further production or test-code change is requested.
+
+One mandatory workflow-policy item remains incomplete.
+
+##### Required correction — record the full isolation/synchronization evidence
+
+The Completion Report now records the canonical worktree paths and task branches,
+but it still does not durably state the required negative-isolation assertions and
+all four start-of-attempt synchronization outcomes individually.
+
+On Attempt 3, using the resolver-selected canonical worktrees, record exactly:
+
+```text
+Parent worktree:
+Implementation worktree:
+
+Negative isolation assertions:
+  parent is not the primary/shared workspace: yes
+  implementation is not the shared repository checkout: yes
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation commit:
+Parent report commit:
+Branches pushed:
+Worktrees clean:
+```
+
+Also record the exact focused Vitest command(s) that produced the reported
+`83 passed` result so the validation evidence is reproducible.
+
+This is an evidence/report-only correction.
+
+Do **not** alter the accepted Background implementation or focused tests merely to
+produce another code commit. If synchronization itself introduces a genuine
+conflict, stop and report that conflict rather than inventing code churn.
+
+After synchronization, rerun the same focused B004 regression command(s) and
+`git diff --check`. The already-documented repository-wide baseline blockers may
+remain documented unchanged.
+
+Return the same task to `review`.
+
+#### Attempt 3 — Accepted
+
+Attempt 3 satisfies the remaining workflow-evidence correction.
+
+Architect re-review verified:
+
+- the implementation remains at reviewed implementation commit `c03027b`;
+- compared with Attempt 2, no implementation or focused-test file changed; only
+  this task report changed;
+- the canonical parent worktree is recorded as:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004`;
+- the canonical implementation worktree is recorded as:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-004`;
+- the report explicitly confirms the parent is not the primary/shared workspace;
+- the report explicitly confirms the implementation worktree is not the shared
+  repository checkout;
+- all four start-of-attempt synchronization outcomes are recorded individually:
+  - parent remote task branch fast-forwarded: not-needed/already current;
+  - parent origin/main incorporated: already-current;
+  - implementation remote task branch fast-forwarded: not-needed/already current;
+  - implementation origin/main incorporated: already-current;
+- both mirrored `task/ARCH-010-BACKGROUND-004` branches are recorded as pushed and
+  both canonical worktrees are clean;
+- the exact focused validation command is recorded and reports five files / 83
+  passing tests;
+- `git diff --check` passed;
+- the previously reviewed inactive-shop guards, order status projection,
+  `discarded-shop-unavailable` result typing, inactive checkout/cart/order/matured
+  coverage and worker `finally` cleanup remain unchanged and accepted;
+- repository-wide Prisma, build, TypeScript and unrelated baseline-test blockers
+  remain separately documented and are not regressions introduced by this task.
+
+The submitted handoff identifies final parent review-report commit `26c5c29`.
+That final parent hash is external handoff evidence and is not required to be
+self-embedded into the commit that contains this same task file.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, the task is complete. `executor` and
+`claimed_at` remain cleared while `attempt: 3` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-BACKGROUND-006` remains pending because additional prerequisites are
+  unfinished;
+- `ARCH-010-BACKGROUND-013` remains pending because additional prerequisites are
+  unfinished;
+- `ARCH-010-BACKGROUND-017` remains pending because additional prerequisites are
+  unfinished;
+- `ARCH-010-BACKGROUND-018` remains pending because `ARCH-010-BACKGROUND-016`
+  is not yet complete in this task snapshot;
+- `ARCH-010-SHOPIFY-005` is already `superseded` by `ARCH-010-SHOPIFY-006`.
+
+No dependent task is promoted by this acceptance overlay.
+
