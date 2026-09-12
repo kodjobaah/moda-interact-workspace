@@ -295,7 +295,7 @@ Implementation repository:
 Parent workspace:
   task file: docs/decisions/background/ARCH-010/BACKGROUND-011-shop-lifetime-free-fallback.md
   claim commit: e21293b (chore: claim BACKGROUND-011 attempt 3)
-  report commit: pending (this report update)
+  report commit: 600f7b9 (docs: return BACKGROUND-011 attempt 3 for review)
   remote branch: origin/task/ARCH-010-BACKGROUND-011
   submodule gitlink staged: no
 
