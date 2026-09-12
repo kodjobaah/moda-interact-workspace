@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-12T10:02:05Z
@@ -234,19 +234,20 @@ STOP if accepted Shared contract is unavailable, Prisma client lacks `nextReconc
 ## Completion Report
 
 ### Status
-Attempt 4 complete; returned to review.
+Attempt 5 complete; returned to review.
 
 ### Implementation
 Changed files:
+- `src/entrypoints/billing.ts`
 - `src/services/billing-subscription-reconciliation.service.ts`
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 - `tests/unit/runtime/entrypoint-isolation.test.ts`
 
-Implemented Corrections 1-6 and the Attempt-4 acceptance matrix: exact initial-source and post-Partner CAS guards; established-plan rejection before Partner; executable five-minute Free cycle discovery with exact-cycle snapshots and pre-close scheduling; transport-failure state preservation; race-safe lifetime-counter upsert with replay policy independence; provider pending-truth projection; `removeOnFail: true`; periodic PostgreSQL-driven reconstruction; and production proof that the Worker and repair cadence use one queue-aware service with queue telemetry and readiness wiring.
+Implemented Attempt-5 Corrections 1-6: verified Free/no-cycle now schedules exactly `now + FREE_CYCLE_DISCOVERY_RETRY_MS` and queues the matching payload; cycle null/error outcomes compare the exact original current plan, subscription, null pending fields, and schedule; reconstruction uses the top-level OR selector with onboarding and `pendingEffectiveAt` guards while retaining initial/frozen repair; successful initial and cycle writes use PostgreSQL row locks with ShopSettings -> Subscription ordering and no network request under lock; normal initial transport failure preserves `NO_CONTRACT` intent with `PARTNER_API_ERROR`, tiered retry, and deterministic enqueue; and queue telemetry uses `billingSubscriptionQueue.name`.
 
 ### Validation Results
-- Focused reconciliation/runtime tests: passed, 4 files and 48 tests.
-- Full `npm test`: 575 passed, 7 skipped, 6 unchanged baseline failures: five integration failures are blocked because database `moda_interact_test` does not exist, and one unit failure is the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0` while the accepted dependency is `0.10.0`.
+- Focused command `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 2 files and 40 tests.
+- Full `npm test`: 579 passed, 7 skipped, 6 unchanged baseline failures: five integration failures are blocked because database `moda_interact_test` does not exist, and one unit failure is the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0` while the accepted dependency is `0.10.0`.
 - `npm run prisma:validate`: passed.
 - `npm run build`: blocked only by 8 unchanged nullable `counterId` errors in `src/services/free-recovery-reservation.service.ts` and `src/services/purchased-recovery-reservation.service.ts`; no errors in task-touched files.
 - `git diff --check`: passed.
@@ -257,11 +258,11 @@ Implemented Corrections 1-6 and the Attempt-4 acceptance matrix: exact initial-s
 - Shared workspace checkout switched/mutated for task work: no.
 - Shared implementation checkout switched/mutated for task work: no.
 - Another task worktree reused: no.
-- Parent remote task branch fast-forwarded: not-needed; parent `origin/main` incorporated: already-current.
-- Implementation remote task branch fast-forwarded: not-needed; implementation `origin/main` incorporated: already-current.
-- Implementation commit: `f877f81473ccd5bb9d073446b9307b995ee8fecf`.
-- Parent report commit: `649150cf8ce292275771258c0e7c95566b212437`.
-- Parent claim commit: `cc4de24`; prior review/report commit: `bc7c9bd`.
+- Parent remote task branch fast-forwarded: already-current; parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: already-current; implementation `origin/main` incorporated: already-current.
+- Implementation commit: `5e219b5`.
+- Parent claim commit: `0cd4c0d`.
+- Parent report/metadata commit: to be recorded after publication.
 - Database submodule revision: `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no; merged to workspace main: no.
