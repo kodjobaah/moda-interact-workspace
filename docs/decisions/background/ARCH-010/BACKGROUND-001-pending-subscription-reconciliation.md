@@ -308,7 +308,7 @@ Implementation repository:
 Parent workspace:
   task file: docs/decisions/background/ARCH-010/BACKGROUND-001-pending-subscription-reconciliation.md
   claim commit: cc4de24
-  review-state commit: pending
+  review-state commit: bc7c9bd
   remote branch: origin/task/ARCH-010-BACKGROUND-001
   pushed: pending
   submodule gitlink staged: no
