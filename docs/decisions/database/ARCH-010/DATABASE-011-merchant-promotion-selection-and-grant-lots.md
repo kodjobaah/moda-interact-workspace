@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 83
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-021
   - ARCH-010-SHOPIFY-022
 created: 2026-09-12
-updated: 2026-09-12T06:51:07Z
+updated: 2026-09-12T07:00:00Z
 ---
 
 # ARCH-010-DATABASE-011: Persist merchant promotion selection and exact promotional grant-lot accounting
@@ -219,4 +219,117 @@ Ready for Review.
 - No merge to `main` and no push to `main` performed.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+The DATABASE-011 data model is substantively aligned with the ARCH-010 promotion architecture, but Attempt 1 cannot be accepted yet because one schema/migration alignment defect and one mandatory workflow-evidence defect remain.
+
+##### Accepted implementation findings
+
+Architect review verified and does not request redesign of the following:
+
+- `PromotionalCreditGrant` preserves the DATABASE-009 provenance fields and adds nullable campaign ownership, reserved/committed lot quantities, first/last selection and use evidence, exhaustion state, selection count and optimistic versioning;
+- `(campaignId, shopId)` is unique, while PostgreSQL NULL semantics preserve historical campaign-less DATABASE-009 rows;
+- the inherited positive `quantity` CHECK remains in the DATABASE-009 migration and DATABASE-011 adds non-negative/within-grant lot checks;
+- `MerchantPromotionSelection` enforces one row per Shop and one current grant pointer, with a composite `(promotionalCreditGrantId, shopId)` foreign key that prevents a Shop from persisting a selection for another Shop's grant;
+- `UsageReservation.promotionalCreditGrantId` provides exact promotional grant ownership and existing reservations remain `NULL` during migration;
+- the migration is additive and contains no `INSERT`/`UPDATE` that would auto-select a promotion, grant capacity, backfill campaign IDs, rewrite historical grants or mutate aggregate counters;
+- the implementation repository differs from the accepted DATABASE-010 baseline only in the expected schema, one DATABASE-011 migration, focused validator, package script and generated ERD;
+- focused static promotion-selection, promotion-campaign and billing-policy validators passed during architect review;
+- the reported local PostgreSQL `P1001` is not itself a product defect and does not require applying the migration to a shared database solely for architect review.
+
+##### Correction 1 — remove Prisma schema/migration index drift
+
+The DATABASE-011 migration creates:
+
+```sql
+CREATE INDEX "PromotionalCreditGrant_campaignId_createdAt_idx"
+ON "billing"."PromotionalCreditGrant"("campaignId", "createdAt");
+```
+
+but `prisma/schema.prisma` does not declare the equivalent index.
+
+Keep the index and declare the canonical Prisma equivalent on `PromotionalCreditGrant`:
+
+```prisma
+@@index([campaignId, createdAt])
+```
+
+This keeps the schema aligned with the migration and preserves the useful campaign-history/reporting access path already introduced by the migration.
+
+Strengthen `scripts/validate-promotion-selection-schema.mjs` so it deterministically proves the index exists in both:
+
+1. `prisma/schema.prisma`; and
+2. the DATABASE-011 migration.
+
+Do not redesign the grant model or add unrelated indexes.
+
+##### Correction 2 — record mandatory worktree isolation and synchronization evidence
+
+The Completion Report currently records the canonical parent/implementation paths and branches, but it does not record the complete evidence required by `docs/agent-worktree-isolation-policy.md`.
+
+Attempt 2 must record, explicitly:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <launcher-resolved workspace root>
+  parent worktree: <canonical parent task worktree>
+  parent branch: task/ARCH-010-DATABASE-011
+  implementation worktree: <canonical implementation task worktree>
+  implementation branch: task/ARCH-010-DATABASE-011
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Because Attempt 1 did not durably record that mandatory evidence, begin Attempt 2 through the canonical `/moda-task` execution path, synchronize both task worktrees, make the focused correction above in the canonical implementation worktree, and rerun the required validation there. Do not create a new task or new branch pair.
+
+The already-published Attempt-1 implementation commits do not need to be rewritten. Append the correction commit(s) to the same mirrored `task/ARCH-010-DATABASE-011` branches.
+
+##### Scope guard
+
+Attempt 2 is limited to:
+
+- declaring the already-created `(campaignId, createdAt)` Prisma index;
+- focused validator coverage for schema/migration index alignment;
+- generated ERD refresh if the repository generator changes it;
+- complete physical-worktree/start-of-attempt evidence;
+- normal Completion Report/VCS reconciliation.
+
+Do not implement merchant eligibility/selection mutation, Background reserve/commit/release logic, Admin UI/reporting, merchant UI/history, expiry scheduling, aggregate-counter runtime behaviour or another repository's work.
+
+##### Attempt 2 validation
+
+From the canonical implementation task worktree, rerun the repository/task validation contract:
+
+```text
+npm run format
+npm run validate
+npm run prisma:validate
+npm run prisma:generate
+npm run test:promotion-selection
+npm run test:promotion-campaign
+npm run test:billing-policy
+npm run test:recovery-credit-packs
+npm run test:checkout-recovery-capacity
+npm run test:purchased-credit-lots
+npm run test:billing-lifecycle
+npm run erd:puml
+git diff --check
+```
+
+If PostgreSQL remains unavailable at the configured local endpoint, record the resulting `P1001` for migration-status/application validation and continue; do not apply DATABASE-011 to a shared database solely for architect review.
+
+Return the same task to `review` with Attempt 2 evidence and both mirrored task branches published.
+
+**Architect decision: Changes Requested — Attempt 1.**
