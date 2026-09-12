@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: review
 priority: 6
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: '2026-09-12T15:33:17Z'
+attempt: 2
 depends_on:
 - ARCH-010-SHARED-006
 - ARCH-010-BACKGROUND-020
@@ -164,47 +164,55 @@ removal within this task's scope. Reverted the implementation probe; the
 implementation worktree is unchanged.
 
 ### Validation Results
-`npm test` passed after dependency restore (`109` passed, `1` skipped because
+Ready for Review.
 `TEST_REDIS_URL` was not configured). `npm run typecheck` and `npm run build`
 passed. `git diff --check` passed during the implementation probe. The built
-runtime absence check passed during the probe, but generated output was not
+Implementation:
+- `moda-interact-shared/src/billing.ts`
+- `moda-interact-shared/src/billing.test.ts`
+
+Parent task report:
+- `docs/decisions/shared/ARCH-010/SHARED-007-remove-preproduction-billing-compatibility-contracts.md`
 retained because the source change is blocked.
 
-### Deviations
-The requested Shared removal was not committed because active consumers in
-consumer repositories would break and consumer edits are explicitly out of
-scope.
+Removed the superseded cancellation mode schema, type, provider argument type
+and provider mapping exports. Removed cancellation, Free-only exhaustion and
+local plan-change action-required message codes from the billing registry and
+schema. Updated focused tests to assert their absence while retaining the
+reconciliation, generic capacity-exhausted, refund and recovery-credit
+contracts unchanged. No compatibility aliases or deprecated re-exports were
+added, and package version remains `0.10.0`.
 
 ### Assumptions
-No production consumer requires ARCH-009 local cancellation contracts.
-
-### Unresolved Issues
-Consumer cleanup/sequencing is required before this breaking Shared contract
-removal can proceed.
+`npm exec tsx -- --test src/billing.test.ts`: 11 passed.
+`npm test`: 109 passed, 1 skipped because `TEST_REDIS_URL` was not configured.
+`npm run typecheck`: passed.
+`npm run build`: passed.
+`npm run validate:billing-entrypoint`: passed.
+Built runtime/declaration scan for all removed symbols: clear.
+`git diff --check`: passed.
 
 ### Architectural Concerns
-Active consumers found:
-- `moda-interact-background/src/services/subscription-cancellation.service.ts` imports `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS` and `SubscriptionCancellationMode`, and passes the mode into the provider.
-- `moda-interact-background/src/providers/shopify-partner-billing.provider.ts` imports both cancellation exports and indexes the provider mapping when executing cancellation.
+None. The removal was performed only after the architect-confirmed consumer
+cleanup dependencies completed.
 - `moda-interact/app/services/merchant-support/system-message-actions.ts` handles `BILLING_FREE_ALLOWANCE_EXHAUSTED`.
 - `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts` asserts `BILLING_FREE_ALLOWANCE_EXHAUSTED` source keys.
-
+The accepted `BACKGROUND-020` and `SHOPIFY-024` results remain authoritative
+for the absence of first-party consumers before this breaking cleanup.
 Per task instruction, stop and return to `moda_architect` for sequencing rather
 than editing consumer repositories.
-
-### Git / VCS
+None within SHARED-007 scope.
 Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`. No implementation commit created because the task is blocked by out-of-scope consumers.
 
-## Architect Review
-
-### Review Status
-Blocked — architect-confirmed consumer sequencing dependency.
-
-### Review Notes
-
+The cleanup depends on the architect-accepted completion of `BACKGROUND-020`
+and `SHOPIFY-024`; both are recorded as Complete in the resolver output.
 The repository agent obeyed the task's stop condition correctly. No Shared
 implementation change is accepted or retained from Attempt 1.
-
+Restored parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`.
+Parent synchronization merge: `4612ee8`.
+Implementation commit: `f26ebad`.
+Both task branches were pushed to their respective `origin/task/ARCH-010-SHARED-007` refs. No main branch or submodule gitlink was changed.
 The block is architectural sequencing, not a reason to preserve compatibility.
 
 Confirmed active first-party consumers reported by the blocked run:
