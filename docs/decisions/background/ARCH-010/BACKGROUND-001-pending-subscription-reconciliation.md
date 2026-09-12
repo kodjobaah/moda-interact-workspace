@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 30
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: 2026-09-12T00:00:00Z
+attempt: 3
 depends_on:
   - ARCH-010-DATABASE-006
   - ARCH-010-DATABASE-001
@@ -25,7 +25,7 @@ enables:
   - ARCH-010-BACKGROUND-006
   - ARCH-010-BACKGROUND-007
 created: 2026-09-11
-updated: 2026-09-12T08:31:00Z
+updated: 2026-09-12
 ---
 
 # ARCH-010-BACKGROUND-001: Reconcile pending subscription activation with durable BullMQ recovery
@@ -231,37 +231,42 @@ Do not implement Paid first activation, billing-period rollover, upgrade/downgra
 
 STOP if accepted Shared contract is unavailable, Prisma client lacks `nextReconcileAt`, implementing BullMQ requires a new deployable service rather than extending the billing worker, or existing provider semantics cannot distinguish transport failure from successful null without cross-repository redesign.
 
-## Completion Report
+Implementation commit `2a3e8eff0833bc50ffe30a3cf387fca88cc8cec2` changes the following paths:
 
-### Status
-Ready for Review.
 
-### Files Changed
-Implementation commit `1c740c6` changes the following paths:
+- `src/runtime/readiness.ts`
 
 - `database` gitlink, preserved at database revision `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`
 - `src/entrypoints/billing-resources.ts`
+- `tests/unit/runtime/billing-scheduler.test.ts`
+- `tests/unit/runtime/entrypoint-isolation.test.ts`
+- `tests/unit/runtime/readiness.test.ts`
 - `src/entrypoints/billing.ts`
 - `src/observability/queue-performance.ts`
+
+The database gitlink was not changed and remains at revision `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
 - `src/observability/worker-metrics.ts`
 - `src/services/billing-reconciliation.service.ts`
-- `src/services/billing-subscription-reconciliation.service.ts`
-- `src/workers/billing-subscription-reconciliation.worker.ts`
-- `tests/unit/services/billing-reconciliation.service.test.ts`
+Attempt 3 completed the requested corrections:
+
+1. Corrections 1, 2 and 7: `billing.ts` now constructs one queue-aware reconciliation service, injects that instance into the BullMQ worker, runs reconstruction during startup and every billing cadence, starts shared queue-performance telemetry, and closes it with billing resources. Billing readiness requires Redis and PostgreSQL.
+2. Correction 3: rotating reconciliation preserves unresolved initial Free activation when the provider reports the pending target before the delayed consumer runs.
+3. Correction 4: the consumer requires the durable initial-activation source state and uses compare-and-set updates after the Partner call, preventing newer pending selections or schedules from being overwritten.
+4. Correction 5: another provider current plan is projected through the existing status/plan/cycle rules without falsely completing the requested Free activation.
+5. Correction 6: verified Free activation uses the durable policy for the one-time lifetime grant, fails closed when the first-grant policy is missing, preserves existing counters and period state, stores the complete Free period snapshot, creates no included-credit period counter, and schedules bounded cycle discovery when needed.
+6. Correction 8 and the frozen-state addendum: focused coverage exercises the required stale guards, retry/expiry/error paths, Free entitlement and period semantics, provider-plan projection, race protection, startup/periodic reconstruction, deterministic repair, queue failure isolation, and the `FROZEN` durable repair selector.
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 
-### Work Completed
+Focused reconciliation/runtime tests: passed, 5 files and 49 tests.
 Added the durable subscription reconciliation service and BullMQ worker to the
-existing billing worker. The implementation validates the Shared queue payload,
-applies stale-job and inactive-shop guards, verifies pending Free activation
-through the Partner API, preserves pending intent during bounded null/transport
+Full declared suite (`npm test`): 564 passed, 7 skipped, 6 failed. Four integration failures are blocked because database `moda_interact_test` does not exist. The remaining unit failure is the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0`, while the accepted repository dependency is `0.10.0`.
 retries, clears expired activation intent, reconstructs delayed jobs from
 PostgreSQL, and preserves existing subscription projection status on Partner
 transport failures. Billing resources, scheduler integration, queue metrics, and
-focused unit coverage were added or updated. The database submodule revision
-actually used by the implementation is
-`6d5fb9adf2e5c1fb28333b330dd183c9cda41550`, which contains
-`Subscription.nextReconcileAt`.
+`npm run build`: blocked by 8 pre-existing nullable `counterId` type errors in
+`src/services/free-recovery-reservation.service.ts` and
+`src/services/purchased-recovery-reservation.service.ts`; no errors remain in
+the task's touched files.
 
 ### Validation Results
 Focused reconciliation and existing billing tests: passed, 2 files and 19 tests.
@@ -300,7 +305,7 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: moda-interact-background
-  commit: 1c740c6
+  commit: 2a3e8eff0833bc50ffe30a3cf387fca88cc8cec2
   remote branch: origin/task/ARCH-010-BACKGROUND-001
   pushed: yes
   database submodule revision: 6d5fb9adf2e5c1fb28333b330dd183c9cda41550
@@ -323,7 +328,7 @@ preserves the database gitlink at the committed revision containing
 `Subscription.nextReconcileAt`.
 
 ### Unresolved Issues
-None for the bounded task scope.
+Repository validation retains the documented unrelated test/build baselines above; no bounded-task implementation issues remain.
 
 
 ### Architect Review
