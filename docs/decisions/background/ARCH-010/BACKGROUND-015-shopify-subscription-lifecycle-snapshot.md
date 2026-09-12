@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 57
 executor: copilot
 claimed_at: '2026-09-12T22:20:52Z'
@@ -170,7 +170,7 @@ STOP if the configured Partner API version does not expose root `events`, `Event
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 
@@ -178,6 +178,10 @@ In Progress.
 - `tests/unit/providers/shopify-partner-billing.provider.test.ts`
 
 ### Work Completed
+
+Attempt 3 revalidated the existing Attempt 2 correction set without changing the
+authorized provider or focused test files. All six latest Architect Review
+findings remain covered by the implementation and tests described below.
 
 - Corrected the historical-events query to the Partner API `events.edges[].node` shape, with `SubscriptionStatus` at the event-node level and `AppReference`/shop identity fields.
 - Preserved the single request containing both `activeSubscription` and bounded `events` roots; `getActiveSubscription()` remains separate and source-compatible.
@@ -198,18 +202,16 @@ Architect Review correction mapping:
 ### Validation Results
 
 - `./node_modules/.bin/vitest run tests/unit/providers/shopify-partner-billing.provider.test.ts`: passed, 21 tests passed, 0 failed.
-- Focused provider TypeScript check with TypeScript 7 `--ignoreConfig`: passed.
-- `git diff --check`: passed.
-- `./node_modules/.bin/tsc --noEmit`: blocked by broad pre-existing Prisma generated-client/type failures in unrelated services; no changed provider/test error was reported.
+- `./node_modules/.bin/tsc --noEmit`: blocked by broad pre-existing generated-Prisma/client and unrelated service type failures; no changed provider/test error was reported.
 - `npm run build`: blocked before TypeScript compilation because `database/prisma/schema.prisma` is absent from this checkout.
-- `npm run test:unit`: blocked by the same ungenerated Prisma client in multiple unrelated suites; one unrelated recovery-routing race test and one observability release assertion also failed.
+- `npm run test:unit`: blocked by the ungenerated Prisma client across unrelated suites; one unrelated recovery-routing race test and one observability release assertion also failed.
+- `git diff --check`: passed.
 - Focused ESLint: unavailable because `node_modules/.bin/eslint` is not installed in this repository worktree.
-- `npm ci`: completed successfully before focused validation; it reported the repository's existing three high-severity audit findings and install-script warnings.
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: yes
-  implementation remote task branch fast-forwarded: not-needed
+  parent remote task branch fast-forwarded: yes
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: yes
   implementation origin/main incorporated: already-current
 
 ### Deviations
@@ -250,8 +252,8 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-015-shopify-subscription-lifecycle-snapshot.md`
-  claim commit: `4f56d6e`
-  review report commit: final pushed commit on `origin/task/ARCH-010-BACKGROUND-015` (see branch HEAD)
+  claim commit: `654418c`
+  review report commit: pending
   remote branch: `origin/task/ARCH-010-BACKGROUND-015`
   pushed: yes
   submodule gitlink staged: no
