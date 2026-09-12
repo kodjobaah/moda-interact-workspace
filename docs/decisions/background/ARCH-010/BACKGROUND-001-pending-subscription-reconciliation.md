@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -325,9 +325,311 @@ preserves the database gitlink at the committed revision containing
 ### Unresolved Issues
 None for the bounded task scope.
 
-### Architect Review
-Pending.
 
+### Architect Review
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 2 — Changes Requested
+
+The dependency correction is accepted: the implementation now uses database revision
+`6d5fb9adf2e5c1fb28333b330dd183c9cda41550`, which contains
+`Subscription.nextReconcileAt`. The Shared dependency is also on the accepted
+`@modainteract/moda-interact-shared@0.10.0` contract, and the reported nullable
+`counterId` build diagnostics / observability-version unit failure are outside the
+changed reconciliation implementation and are not the reason for this decision.
+
+Attempt 2 cannot be accepted because the runtime wiring and several required
+reconciliation invariants are still incomplete.
+
+##### Correction 1 — use one queue-aware reconciliation service in the production worker
+
+`billing.ts` constructs a queue-aware:
+
+```ts
+new BillingSubscriptionReconciliationService(..., billingSubscriptionQueue)
+```
+
+but that instance is used only for `reconstruct()`.
+
+`billing-subscription-reconciliation.worker.ts` instead imports the module-level:
+
+```ts
+billingSubscriptionReconciliationService
+```
+
+whose default constructor has no Queue.
+
+Therefore, in the actual production consumer:
+
+```text
+provider null
+provider transport failure
+verified Free pack-period follow-up
+```
+
+may update PostgreSQL `nextReconcileAt`, but `publishNext()` calls `enqueue()` on a
+service with no Queue and silently returns. The BullMQ retry/pre-close job is not
+published.
+
+Wire the Worker and reconstruction path to the same queue-aware service (or inject the
+Queue through one unambiguous runtime-owned factory). Do not keep a queue-less
+production consumer singleton.
+
+Add a runtime/wiring regression proving a processed job can publish its deterministic
+next job through the production service instance.
+
+##### Correction 2 — run queue reconstruction periodically, not only at startup
+
+The task and parent architecture require PostgreSQL-driven queue repair:
+
+```text
+once at startup
+and periodically while the billing worker is alive
+```
+
+Current `billing.ts` does:
+
+```text
+await runBillingCycle()
+await subscriptionReconciliation.reconstruct()
+startBillingReconciliationScheduler(runBillingCycle, ...)
+```
+
+but `runBillingCycle()` does not call `reconstruct()`.
+
+A Redis flush/replacement after startup therefore remains unrepaired until process
+restart. This directly fails Required Test 21.
+
+Include bounded reconstruction in the existing billing scheduler cadence (or an
+equally bounded existing scheduler path). Queue-add failure must remain isolated from
+the rest of billing reconciliation.
+
+Add tests for:
+
+- startup reconstruction;
+- periodic repair after a missing delayed job;
+- future delay calculation;
+- overdue zero-delay reconstruction;
+- deterministic duplicate repair.
+
+##### Correction 3 — prevent the generic rotating reconciliation path from stealing an initial activation
+
+The generic `BillingReconciliationService.applySubscription(...)` now preserves local
+pending fields when Shopify returns `null`, which is correct.
+
+However, if Shopify begins reporting the selected Free plan as current before the
+dedicated delayed job executes, the generic 60-second reconciliation path writes
+provider `pendingPlanHandle` (normally `null`) into the local projection. That can
+clear:
+
+```text
+pendingShopifyPlanHandle
+pendingPlanId
+pendingEffectiveAt
+```
+
+while leaving `nextReconcileAt` behind and without setting onboarding complete or
+creating the lifetime entitlement.
+
+The dedicated consumer then sees no pending target and no-ops. This can strand an
+otherwise verified merchant with `onboardingCompleted=false`.
+
+The startup order makes this especially important because the generic billing cycle
+runs before reconstruction.
+
+Preserve an unresolved **initial activation** intent until the dedicated activation
+transition completes, or refactor the current-plan verification so the generic path
+cannot partially consume that transition.
+
+Do not implement later upgrade/downgrade execution here.
+
+Add a regression proving:
+
+```text
+NO_CONTRACT + onboarding false + pending Free target
+provider now reports that Free target as current
+generic reconciliation runs before the delayed worker
+=> pending activation remains recoverable and the dedicated path can complete onboarding
+```
+
+##### Correction 4 — enforce initial-activation source/state and revalidate staleness after the Partner call
+
+This task owns unresolved first activation, not future plan changes.
+
+The consumer currently loads `ShopSettings.onboardingCompleted` but does not use it to
+guard the transition. A later `ACTIVE/TRIALING + pendingPlanId` future plan-change row
+could therefore enter the initial-Free completion path.
+
+For initial activation, require the durable source to remain consistent with the
+Iteration-2 contract, including onboarding not already completed and no established
+different current plan.
+
+Also revalidate the pending target / `nextReconcileAt` immediately before each durable
+outcome after the Partner network call. The current pre-call stale check is not enough:
+
+```text
+job A passes stale guard
+merchant/callback writes newer pending selection B
+Partner response for A returns
+job A updates/clears the now-newer state
+```
+
+The completion, null-provider and transport-failure paths must not overwrite a newer
+selection or schedule. Use a transactional re-read or compare-and-set equivalent.
+
+Add race regressions for a changed `nextReconcileAt` / pending target while the Partner
+request is in flight.
+
+##### Correction 5 — apply authoritative provider truth when Shopify reports another current plan
+
+The task explicitly requires:
+
+```text
+Provider returns another current plan
+-> apply provider current truth using the existing reconciliation projection rules
+-> do not falsely activate the requested Free target
+```
+
+The current dedicated service only updates:
+
+```text
+observedShopifyPlanHandle
+sync metadata
+pending fields
+nextReconcileAt
+```
+
+and leaves the existing `planId`, projection `status`, provider/cycle fields and
+current-period pointer untouched.
+
+That can leave a `NO_CONTRACT` projection while simultaneously recording an observed
+current provider plan.
+
+Reuse/refactor the existing projection logic so another verified current plan is
+projected consistently, while keeping Paid first activation and future plan-change
+execution outside this task.
+
+Add a focused test for this branch.
+
+##### Correction 6 — make verified Free entitlement/period creation match the canonical ARCH-010 database rules
+
+Two issues remain in `completeVerifiedFree(...)`.
+
+First, the lifetime counter currently uses:
+
+```ts
+policy?.lifetimeFreeRecoveryAllowance ?? 5
+```
+
+The one-time grant must snapshot the durable
+`PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`. A missing policy row must not
+silently fabricate `5`. Fail closed for first creation; if the lifetime counter
+already exists, preserve every quantity without requiring the current policy merely to
+replay it.
+
+Second, a newly created Free `BillingPeriod` does not populate the complete
+DATABASE-004 plan snapshot. A new Free period must record, when exact provider/current
+plan identity is known:
+
+```text
+planId
+shopifyPlanHandleSnapshot
+planNameSnapshot
+planKindSnapshot = FREE
+includedRecoveryCreditsGranted = null
+```
+
+and must create no `INCLUDED_RECOVERY_CREDITS` period counter.
+
+Reuse an existing exact period without resetting historical entitlement/usage state.
+
+Add direct regressions for:
+
+- first lifetime grant from platform policy;
+- missing-policy fail-closed behaviour;
+- existing lifetime counter quantity preservation;
+- exact Free period full plan snapshot;
+- no included-credit period counter;
+- replay of the exact period without resetting state;
+- pack-enabled verified Free with no exact cycle retaining bounded cycle discovery.
+
+##### Correction 7 — make Redis an actual billing-worker readiness dependency and finish queue observability wiring
+
+`moda-billing-worker` now creates BullMQ Queue/Worker resources and cannot run this
+architecture without Redis, but:
+
+```ts
+WORKER_DEPENDENCIES["moda-billing-worker"]
+```
+
+still declares only PostgreSQL.
+
+Update the existing readiness contract so billing-worker readiness requires Redis as
+well as PostgreSQL. `ARCH-010-GATEWAY-001` owns Render environment wiring; this task
+owns the worker runtime dependency declaration.
+
+The implementation also extends queue/worker metric vocabularies for
+`billing-subscription-reconcile` but does not start the repository's existing
+`startQueuePerformanceTelemetry(...)` convention for the billing worker. Wire the new
+queue into the existing queue-performance lifecycle and close it with the process.
+Do not create a competing telemetry mechanism.
+
+##### Correction 8 — satisfy the canonical Required Tests, not only aggregate counts
+
+The task explicitly says "At minimum prove" 22 behaviours. The current dedicated
+reconciliation test file contains only eight tests, and several required behaviours
+are not exercised.
+
+Attempt 3 must add focused coverage for every item in the task's `Required tests`
+section, including at minimum:
+
+- stale job after pending target is cleared;
+- inactive/uninstalled shop no-op;
+- NO_CONTRACT transport failure preserving pending intent;
+- Free exact-period reuse and lifetime-counter one-time semantics;
+- missing-cycle bounded retry for pack-enabled Free;
+- future and overdue reconstruction delays;
+- rows excluded from reconstruction when pending/next schedule is absent;
+- deterministic duplicate work;
+- periodic repair after startup;
+- provider returns another current plan;
+- post-Partner-call stale/race protection;
+- production queue-aware worker wiring.
+
+The existing usage publication/reconciliation suite must continue to pass.
+
+##### Workflow / scope
+
+This remains the same task and same mirrored branches.
+
+Do not create a new task for these corrections and do not implement:
+
+- Paid first activation;
+- billing-period rollover;
+- upgrade/downgrade execution;
+- cancellation;
+- promotional-credit rules;
+- Admin UI;
+- Render environment wiring.
+
+Keep the accepted database submodule revision required for this task and do not modify
+historical database migrations.
+
+Reclaim through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 3
+```
+
+Run the task-declared focused/full test, build/typecheck/Prisma validation that the
+repository actually provides, plus `git diff --check`. Unchanged repository baseline
+failures may be documented by their existing baseline status, but changed
+reconciliation/runtime files must be clean.
+
+**Architect decision: Changes Requested — Attempt 2.**
 
 ## Final frozen-state repair rows
 
