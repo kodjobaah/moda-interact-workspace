@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 83
 executor: null
 claimed_at: null
@@ -469,3 +469,69 @@ The two previously requested corrections remain outstanding:
 No additional architectural redesign is requested. Return this task to the canonical `/moda-task` path while it is `ready`; the next valid claim must increment it to **Attempt 2**, synchronize both canonical task worktrees, implement only the previously requested index/validator correction, rerun the stated validation contract, record the mandatory evidence, append correction/report commits to the same mirrored branch pair, and return the task to `review`.
 
 **Architect decision: Changes Requested — Attempt 1 re-submission; next valid claim is Attempt 2.**
+
+#### Attempt 2 — Changes Requested
+
+Attempt 2 satisfies both corrections requested in the Attempt-1 architect review:
+
+- `PromotionalCreditGrant` now declares `@@index([campaignId, createdAt])`, matching the DATABASE-011 migration;
+- `scripts/validate-promotion-selection-schema.mjs` proves the index exists in both the Prisma schema and the DATABASE-011 migration;
+- the Completion Report now records the three required physical-isolation declarations and all four start-of-attempt synchronization outcomes;
+- the focused promotion-selection validator passes;
+- the DATABASE-011 schema/migration design accepted in Attempt 1 remains intact.
+
+Attempt 2 nevertheless cannot be accepted because the implementation branch also modifies an already accepted historical migration owned by `ARCH-010-DATABASE-007`:
+
+```text
+prisma/migrations/20260911130000_add_purchased_credit_lot_accounting/migration.sql
+```
+
+The change renames the PL/pgSQL loop variable from `reservation` to `reservation_record` throughout the purchased-credit reservation backfill.
+
+That migration is outside DATABASE-011's task scope. DATABASE-007 is already Complete/Accepted, and its final architect acceptance explicitly preserved that migration as an accepted immutable implementation surface. DATABASE-011 Attempt 2 was authorized only to:
+
+- add the existing `(campaignId, createdAt)` Prisma index declaration;
+- add focused validator coverage for that index;
+- refresh generated ERD output if required;
+- record the missing worktree/synchronization evidence.
+
+A later task must not silently rewrite an accepted migration. Apart from violating repository/task ownership, modifying an already-published Prisma migration can create migration-history/checksum drift for databases on which the original migration has been recorded.
+
+##### Required correction
+
+Restore:
+
+```text
+prisma/migrations/20260911130000_add_purchased_credit_lot_accounting/migration.sql
+```
+
+byte-for-byte to the accepted DATABASE-007 version.
+
+Do not attempt to improve, reformat, rename variables in, or otherwise repair that historical migration under DATABASE-011.
+
+If there is a genuine newly discovered defect in DATABASE-007 that requires changing database history, stop and return that fact to `moda_architect`; it must be handled explicitly rather than folded into DATABASE-011.
+
+After restoring the historical migration:
+
+1. keep the valid DATABASE-011 index/schema/validator correction;
+2. regenerate the ERD only if the normal generator requires it;
+3. rerun the DATABASE-011 validation contract;
+4. verify `git diff --check`;
+5. confirm the implementation diff no longer contains changes to the DATABASE-007 migration;
+6. publish corrective implementation/report commits on the same mirrored task branches.
+
+The local PostgreSQL availability state remains non-blocking for this task. Do not apply migrations to a shared database solely for architect review.
+
+##### Scope guard
+
+Attempt 3 is limited to removing the out-of-scope historical migration change and revalidating the already-correct DATABASE-011 implementation.
+
+Do not redesign the promotion-selection model and do not create a new task merely to satisfy this review.
+
+Reclaim the same task through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 3
+```
+
+**Architect decision: Changes Requested — Attempt 2.**
