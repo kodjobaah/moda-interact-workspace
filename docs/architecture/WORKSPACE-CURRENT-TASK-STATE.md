@@ -270,7 +270,7 @@ Current counts: `complete` 21, `pending` 13, `ready` 5
 
 > Synchronized by `moda_architect` on 2026-09-12 after first-production baseline consolidation. ARCH-010 is a PRE-PRODUCTION / BREAKING ROLLOUT. Complete task files and SHOPIFY-002 review evidence remain immutable; system-test tasks remain terminal/manual-gated.
 
-Current counts: `complete` 23, `review` 1, `ready` 4, `pending` 49, `superseded` 2
+Current counts: `complete` 24, `review` 1, `ready` 3, `pending` 49, `superseded` 2
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
@@ -315,7 +315,7 @@ Current counts: `complete` 23, `review` 1, `ready` 4, `pending` 49, `superseded`
 | ARCH-010-DATABASE-010 | database | Complete | 1 | ARCH-010-DATABASE-009 |
 | ARCH-010-DATABASE-011 | database | Complete | 3 | ARCH-010-DATABASE-009, ARCH-010-DATABASE-010 |
 | ARCH-010-DATABASE-012 | database | Superseded | 0 | ARCH-010-DATABASE-006 |
-| ARCH-010-DATABASE-013 | database | **Ready** | 0 | ARCH-010-DATABASE-001, ARCH-010-DATABASE-002, ARCH-010-DATABASE-003, ARCH-010-DATABASE-004, ARCH-010-DATABASE-005, ARCH-010-DATABASE-006, ARCH-010-DATABASE-007, ARCH-010-DATABASE-008, ARCH-010-DATABASE-009, ARCH-010-DATABASE-010, ARCH-010-DATABASE-011 |
+| ARCH-010-DATABASE-013 | database | Complete | 2 | ARCH-010-DATABASE-001, ARCH-010-DATABASE-002, ARCH-010-DATABASE-003, ARCH-010-DATABASE-004, ARCH-010-DATABASE-005, ARCH-010-DATABASE-006, ARCH-010-DATABASE-007, ARCH-010-DATABASE-008, ARCH-010-DATABASE-009, ARCH-010-DATABASE-010, ARCH-010-DATABASE-011 |
 | ARCH-010-GATEWAY-001 | gateway | Complete | 2 | ARCH-002-GATEWAY-001 |
 | ARCH-010-SHARED-001 | shared | Complete | 2 | ARCH-007-SHARED-006 |
 | ARCH-010-SHARED-002 | shared | Complete | 1 | ARCH-010-SHARED-001 |
@@ -354,7 +354,7 @@ Current counts: `complete` 23, `review` 1, `ready` 4, `pending` 49, `superseded`
 | ARCH-010-SYSTEM-TEST-004 | system-test | Pending / manual-gated | 0 | ARCH-010-SYSTEM-TEST-001, ARCH-010-SYSTEM-TEST-002, ARCH-010-SYSTEM-TEST-003, ARCH-010-SYSTEM-TEST-005 |
 | ARCH-010-SYSTEM-TEST-005 | system-test | Pending / manual-gated | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-009 |
 
-Current Ready frontier: `ARCH-010-DATABASE-013`, `ARCH-010-SHARED-007`, `ARCH-010-ADMIN-007`, `ARCH-010-BACKGROUND-015`.
+Current Ready frontier: `ARCH-010-SHARED-007`, `ARCH-010-ADMIN-007`, `ARCH-010-BACKGROUND-015`.
 
 Current Review: `ARCH-010-SHOPIFY-002` Attempt 8.
 
