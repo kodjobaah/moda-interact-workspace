@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 82
 executor: copilot
 claimed_at: '2026-09-12T23:02:57Z'
@@ -193,27 +193,37 @@ Stop if DATABASE-013 exact grant ownership is unavailable, or if implementing pr
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-- No implementation files changed.
-- `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md` records the blocking schema mismatch.
+- `src/services/promotional-recovery-reservation.service.ts`
+- `src/services/recovery-billing.service.ts`
+- `tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
-- Completed the required eligibility, dependency, worktree-isolation, and claim gates.
-- Inspected the exact database gitlink recorded by the implementation branch: `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
-- Hydrated that recorded submodule revision for inspection only; the gitlink remains unchanged.
+- Added an exact campaign-grant promotional reservation primitive using Serializable transactions, versioned CAS updates, deterministic source keys, replay protection, and bounded conflict retries.
+- Resolved the current merchant selection and grant transactionally, enforcing active time window, shop/plan/global scope, grant ownership, remaining quantity, and the effective shop/subscription execution gate.
+- Routed selected promotional capacity before paid included, purchased FIFO, and lifetime Free capacity; promotional usage creates only internal usage evidence and no paid Shopify meter event.
+- Routed promotional commit, release, and ambiguous-provider transitions through the exact grant service.
+- Added focused coverage for promo-first paid admission, fallback to purchased capacity, and promotional lifecycle commit routing.
 
 ### Validation Results
-- Resolver succeeded with `status: ready`, `assigned_agent: moda_background`, `execution_mode: agent`, and explicit dependencies `DATABASE-013`, `BACKGROUND-002`, `BACKGROUND-011`, and `BACKGROUND-014` all recorded `complete`.
-- Parent and implementation task worktrees were created/synchronized cleanly.
-- Stop condition reached before implementation: the recorded schema does not expose the exact DATABASE-013 promotional ownership required by this task.
+- Resolver returned `status: ready`, `assigned_agent: moda_background`, `execution_mode: agent`, and all four explicit dependencies complete.
+- `./node_modules/.bin/vitest run tests/unit/services/recovery-billing.service.test.ts`: passed, 36 tests.
+- `./node_modules/.bin/tsc --noEmit`: passed.
+- `get_errors` for all three touched files: no errors.
+- `git diff --check`: passed.
+- Full `./node_modules/.bin/vitest run tests/unit`: 561 tests passed and 1 unrelated existing test failed because `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while `package.json` declares `0.11.0`.
 
-### Architectural Concerns
-- The implementation branch records database revision `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`, while the completed DATABASE-013 dependency report describes accepted revision `014408e0402221f08a3961880b34e828a8bdc736`.
-- At the recorded implementation revision, `database/prisma/schema.prisma` has no `MerchantPromotionSelection` model, no `PromotionalCreditGrant.campaignId`, `reservedQuantity`, `committedQuantity`, `firstSelectedAt`, `lastSelectedAt`, `selectionCount`, `firstUsedAt`, `lastUsedAt`, `exhaustedAt`, or `version` fields, and no `UsageReservation.promotionalCreditGrantId` relation.
-- The same schema still contains the superseded direct-grant fields (`grantType`, `reason`, `campaignReference`, `platformAdminId`) and `PROMOTIONAL_RECOVERY_CREDITS`, so implementing this task would require duplicating or inventing the missing DATABASE-013 contract. Per the task stop condition, no workaround was implemented.
-- `moda_architect` must reconcile the DATABASE-013 dependency/gitlink before this task can resume.
+### Deviations
+- Full unit validation retains one pre-existing shared-runtime version assertion failure; no unrelated test or package metadata was changed.
+- Database-backed promotion integration/concurrency validation was not run because this repository provides no reservation integration test file or disposable database command in the current worktree.
+
+### Assumptions
+- The initialized `database` submodule at accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736` is the intended dependency state; its parent gitlink was intentionally not staged by this task.
+
+### Unresolved Issues
+- The architect should decide whether to reconcile the existing shared-runtime `0.9.0` test expectation separately; it is outside BACKGROUND-019.
 
 ### Git / VCS
 Task branch: `task/ARCH-010-BACKGROUND-019`
@@ -236,32 +246,20 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-background`
-  implementation commit: no implementation commit; source unchanged
+  implementation commit: `19f347d`
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
-  pushed: no implementation changes to push
+  pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md`
-  claim commit: `1b0245c`
-  blocking report commit: pending
+  claim commit: `261c9c9`
+  review report commit: pending
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: pending
   submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
-
-### Files Changed
-Populate during implementation.
-
-### Work Completed
-Populate during implementation.
-
-### Validation Results
-Populate during implementation.
-
-### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
 
 ### Architect Review
 Pending.
