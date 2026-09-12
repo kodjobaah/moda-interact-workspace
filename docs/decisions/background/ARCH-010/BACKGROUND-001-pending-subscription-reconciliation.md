@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-12T10:28:10Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-010-DATABASE-006
@@ -280,7 +280,7 @@ No bounded-task implementation issues remain.
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 2 — Changes Requested
 
@@ -2092,6 +2092,172 @@ attempt: 6
 ```
 
 **Architect decision: Changes Requested — Attempt 5.**
+
+#### Attempt 6 — Accepted
+
+Architect review verified that the sole outstanding Attempt-5 defect is corrected.
+
+##### Stale verified-Free publication guard
+
+`completeVerifiedFree(...)` now captures the transaction result:
+
+```ts
+const committed = await this.database.$transaction(...);
+```
+
+The locked stale-state branch returns `false`; the successful verified-Free branch
+returns `true`.
+
+Future deterministic work is published only when both conditions hold:
+
+```ts
+committed === true
+nextReconcileAt != null
+```
+
+Therefore a stale/losing verified-Free job now performs:
+
+```text
+no BillingPeriod upsert
+no lifetime-counter upsert
+no Subscription update
+no ShopSettings update
+no queue publish
+```
+
+while successful committed activation preserves the already-reviewed schedule rules:
+
+```text
+pack disabled:
+  no next job
+
+pack enabled + exact cycle:
+  pre-close drain-window schedule
+
+pack enabled + no exact cycle:
+  FREE_CYCLE_DISCOVERY_RETRY_MS
+```
+
+`publishNext(...)` remains outside the database transaction.
+
+##### Required regression
+
+Attempt 6 adds a direct focused regression through the real reconciliation path:
+
+```text
+provider verifies requested Free plan
+locked transaction re-read sees newer pending plan
+=> ShopSettings lock acquired
+=> Subscription lock acquired
+=> no BillingPeriod/lifetime/Subscription/ShopSettings write
+=> queue.add not called
+```
+
+This is the exact regression requested by Attempt 5.
+
+##### Scope and validation
+
+Architect-side diff comparison between the submitted Attempt-5 and Attempt-6 archives
+confirms the retry is bounded to:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+The production delta is only the transaction boolean result plus
+`committed === true` publication guard; the test delta is only the stale verified-Free
+no-enqueue regression.
+
+The Completion Report records:
+
+```text
+41 focused tests passed
+580 full-suite tests passed
+6 documented baseline failures
+7 skipped
+Prisma validation passed
+git diff --check passed
+```
+
+The eight nullable-`counterId` build diagnostics remain in unrelated reservation
+services and are not introduced by this task.
+
+Accepted database revision remains:
+
+```text
+6d5fb9adf2e5c1fb28333b330dd183c9cda41550
+```
+
+and the database gitlink was not staged.
+
+##### VCS evidence
+
+The submitted task report records:
+
+```text
+implementation commit:
+  3b00b0777b1820a99644f85226bfebb927f7630b
+
+parent claim commit:
+  4e1441b635e5f8c2efe8cf92875195013355dbcc
+
+parent report commit:
+  f12446e53d677b6b895c5cb27470b8baeed6dbda
+
+parent status publication recorded in the task report:
+  42362eeae787e673e5b24b05f3f998ae08583cc6
+```
+
+The review handoff additionally identifies the later final parent publication as:
+
+```text
+c56c222
+```
+
+That later publication evidence is recorded here as architect review evidence; it does
+not require another implementation attempt.
+
+The Completion Report retains the required dedicated parent/implementation worktree
+evidence, three physical-isolation declarations, synchronization outcomes, and
+`submodule gitlink staged: no`.
+
+##### Architectural decision
+
+All previously reviewed BACKGROUND-001 behaviour remains accepted, including:
+
+- one queue-aware production reconciliation service;
+- startup and periodic PostgreSQL-driven queue reconstruction;
+- initial-activation source guards;
+- exact post-Partner stale CAS;
+- executable post-onboarding Free cycle discovery;
+- exact-plan cycle-discovery CAS;
+- exact reconstruction selector;
+- ShopSettings -> Subscription lock ordering;
+- race-safe lifetime Free counter creation;
+- canonical Free BillingPeriod snapshots;
+- provider-current/pending projection;
+- `removeOnFail: true`;
+- Redis + PostgreSQL readiness;
+- canonical queue telemetry and shutdown wiring;
+- frozen repair selector preservation.
+
+**Architect decision: Accepted — Attempt 6.**
+
+Because `completion_mode: automatic`, `ARCH-010-BACKGROUND-001` is now `complete`.
+`attempt: 6` is preserved and the active executor/claim is cleared.
+
+##### Dependency reconciliation
+
+No dependant becomes Ready solely from this acceptance:
+
+- `ARCH-010-BACKGROUND-003` remains `pending` because
+  `ARCH-010-BACKGROUND-007` is not complete;
+- `ARCH-010-BACKGROUND-007` remains `pending` because
+  `ARCH-010-BACKGROUND-002`, `ARCH-010-BACKGROUND-008`, and
+  `ARCH-010-BACKGROUND-009` are not complete;
+- `ARCH-010-BACKGROUND-006` remains `pending` because its other prerequisites,
+  including BACKGROUND-003 and BACKGROUND-007, are not complete.
 
 ## Final frozen-state repair rows
 
