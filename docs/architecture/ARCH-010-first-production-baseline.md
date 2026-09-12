@@ -233,7 +233,7 @@ Instead:
 - amend still-Pending/Ready ARCH-010 tasks so they implement only the baseline contract;
 - treat `ARCH-010-SHOPIFY-002` as completed per the 2026-09-12 developer status correction; preserve its implementation/review provenance and use the dependent baseline-conformance task after it;
 - use new correction tasks, or narrowly amend a still-Pending/Ready task with the same ownership boundary, where already-Complete runtime work still references removed baseline concepts;
-- `ARCH-010-BACKGROUND-001` remains Complete at accepted Attempt 6; the narrow `FREE_RECOVERY_LIFETIME -> LIFETIME_FREE_RECOVERY_CREDITS` correction in its activation producer is owned by still-Ready `ARCH-010-BACKGROUND-011`, without reopening BACKGROUND-001 queue/retry/CAS/onboarding semantics;
+- `ARCH-010-BACKGROUND-001` remains Complete at accepted Attempt 6; the narrow `FREE_RECOVERY_LIFETIME -> LIFETIME_FREE_RECOVERY_CREDITS` correction in its activation producer is now architect-accepted Complete under `ARCH-010-BACKGROUND-011` Attempt 4, without reopening BACKGROUND-001 queue/retry/CAS/onboarding semantics;
 - publish one clean Shared follow-up release containing the retained first-release contracts and removing obsolete pre-production cancellation exports.
 
 ## Database reset and data policy

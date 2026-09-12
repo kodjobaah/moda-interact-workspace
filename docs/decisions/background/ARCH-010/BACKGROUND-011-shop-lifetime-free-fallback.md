@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 41
-executor: copilot
-claimed_at: '2026-09-12T18:06:01Z'
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-010-DATABASE-013
@@ -229,7 +229,7 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Ready for Review
+Complete — architect accepted Attempt 4
 
 ### Files Changed
 - `package.json`
@@ -335,8 +335,8 @@ Implementation repository:
 
 Parent workspace:
   task file: docs/decisions/background/ARCH-010/BACKGROUND-011-shop-lifetime-free-fallback.md
-  claim commit: e21293b (chore: claim BACKGROUND-011 attempt 3)
-  report commit: pending publication
+  claim commit: 7e42c4f (chore: claim BACKGROUND-011 attempt 4)
+  report commit: 150a557 (docs: return BACKGROUND-011 attempt 4 for review)
   remote branch: origin/task/ARCH-010-BACKGROUND-011
   submodule gitlink staged: no
 
@@ -1228,3 +1228,194 @@ claimed_at: null
 ```
 
 The next valid claim is **Attempt 4**.
+
+#### Attempt 4 — Accepted
+
+##### Review Status
+
+Accepted — Attempt 4.
+
+##### Architect Review Summary
+
+Architect independently reviewed the submitted Attempt-4 implementation and the
+Attempt-3 -> Attempt-4 delta.
+
+Accepted implementation evidence:
+
+```text
+implementation commit:
+  e5d6f0bb114cc0de20c7e789aff71efafc1c8010
+
+parent claim commit:
+  7e42c4f038582c9a14f585be02d461bbfb454183
+
+parent report commit:
+  150a5577f0d00584f47a9a0d1615099fbe2e78fc
+
+database revision:
+  014408e0402221f08a3961880b34e828a8bdc736
+
+Shared dependency:
+  @modainteract/moda-interact-shared@0.11.0
+```
+
+Attempt 4 satisfies the outstanding correction contract.
+
+Verified behaviour:
+
+```text
+canonical recovery identity:
+  purchased and lifetime-Free admission use one
+  createRecoveryIdempotencyKey(shopId, recoveryId) source identity
+
+RESERVED replay:
+  preserves the original funding bucket
+  does not create a second reservation
+
+COMMITTED replay:
+  preserves the original funding bucket
+  does not consume another capacity bucket
+
+AMBIGUOUS replay:
+  blocks as reservation-in-flight
+  does not fall through to another bucket
+  does not mutate counter ownership
+
+RELEASED replay:
+  reactivation occurs only on the original owning counter
+  reuses the same UsageReservation row
+  preserves sourceKey
+  preserves counterId
+  CAS-increments reservedQuantity only after capacity is available
+  blocks instead of switching bucket when original capacity is unavailable
+
+cross-bucket replay:
+  a released reservation discovered through the non-owning service is handed once
+  to the original owning reservation service for reactivation
+  no recursive/fallback bucket switching is introduced
+```
+
+Lifetime-Free accounting is correctly bounded to the task's domain:
+
+```text
+remaining =
+  grantedQuantity
+  - committedQuantity
+  - reservedQuantity
+```
+
+and the implementation validates only the lifetime quantities that participate in
+that calculation:
+
+```text
+grantedQuantity >= 0
+committedQuantity >= 0
+reservedQuantity >= 0
+committedQuantity + reservedQuantity <= grantedQuantity
+```
+
+Invalid lifetime state fails closed rather than being hidden by `max(..., 0)`.
+No unrelated generic counter field is introduced into the lifetime-Free capacity formula.
+
+Purchased-credit accounting remains owned by `PurchasedRecoveryReservationService`;
+BG11 does not duplicate its accounting model.
+
+The Paid routing boundary is preserved:
+
+```text
+BACKGROUND-011:
+  plan-independent lifetime-Free reservation primitive
+  Free purchased -> lifetime-Free fallback
+
+BACKGROUND-002:
+  Paid current-period included
+  -> purchased
+  -> lifetime-Free
+  composition
+```
+
+Attempt 4 does not reintroduce the earlier partial Paid included-credit implementation.
+
+Shared baseline conformance is complete:
+
+```text
+package.json:
+  @modainteract/moda-interact-shared = 0.11.0
+
+package-lock.json:
+  resolved 0.11.0 package artifact
+
+retired SHARED-007 symbols in Background src/tests:
+  none
+```
+
+##### Validation Reviewed
+
+Submitted validation:
+
+```text
+focused unit tests:
+  5 files
+  97 passed
+
+guarded PostgreSQL lifetime reservation concurrency:
+  1 passed
+
+Shared package:
+  0.11.0
+
+removed-symbol scan:
+  passed
+
+git diff --check:
+  passed
+```
+
+Repository-wide validation remains non-zero only because of the documented unchanged
+DATABASE-013 schema-consumer baseline. No Attempt-4 changed file is in the reported
+build diagnostic set or failing test set.
+
+##### VCS / Isolation Review
+
+Verified:
+
+```text
+implementation main modified: no
+workspace main modified: no
+database gitlink staged: no
+database revision: 014408e0402221f08a3961880b34e828a8bdc736
+implementation task commit: e5d6f0b
+parent Attempt-4 claim: 7e42c4f
+parent review publication: 150a557
+```
+
+The submitted archive's Completion Report contained a stale textual reference to the
+Attempt-3 claim commit. GitHub history confirms the actual Attempt-4 claim is `7e42c4f`;
+this acceptance record corrects the documentation evidence without reopening implementation.
+
+##### Architecture Conformance
+
+Conformant.
+
+BG11 now supplies exactly the clean first-production lifetime-Free primitive required by
+DATABASE-013 and Shared 0.11.0 while preserving ownership boundaries for Paid included
+credits, FIFO purchased lots and promotional capacity.
+
+##### Downstream Readiness
+
+With `ARCH-010-BACKGROUND-011` Complete:
+
+```text
+ARCH-010-BACKGROUND-002 -> Ready
+ARCH-010-BACKGROUND-014 -> Ready
+```
+
+Their other dependencies are already Complete.
+
+`ARCH-010-BACKGROUND-019` remains Pending because it still depends on both
+BACKGROUND-002 and BACKGROUND-014.
+
+##### Architect Decision
+
+**Accepted — Attempt 4. ARCH-010-BACKGROUND-011 is Complete.**
+

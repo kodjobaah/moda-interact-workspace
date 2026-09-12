@@ -113,7 +113,8 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ```text
 ARCH-010-ADMIN-007
 ARCH-010-ADMIN-010
-ARCH-010-BACKGROUND-011
+ARCH-010-BACKGROUND-002
+ARCH-010-BACKGROUND-014
 ARCH-010-BACKGROUND-015
 ARCH-010-SHOPIFY-023
 ```
@@ -176,3 +177,41 @@ status: Ready — Changes Requested Attempt 3
 attempt: 3
 next valid claim: Attempt 4
 ```
+
+## Post-cleanup review update — BACKGROUND-011 Attempt 4 accepted
+
+`ARCH-010-BACKGROUND-011` Attempt 4 is architect-accepted Complete.
+
+Accepted implementation:
+
+```text
+implementation: e5d6f0b
+parent claim:   7e42c4f
+parent report:  150a557
+database:       014408e
+Shared:         0.11.0
+```
+
+Accepted result:
+
+```text
+one canonical purchased/lifetime recovery reservation identity
+replay never changes the originally selected capacity bucket
+AMBIGUOUS replay blocks
+RELEASED replay re-reserves only the same original bucket
+lifetime-Free capacity uses granted - committed - reserved only
+invalid lifetime counters fail closed
+Shared 0.11.0 clean contract consumed
+Paid included-credit composition remains owned by BACKGROUND-002
+```
+
+New Background Ready frontier:
+
+```text
+ARCH-010-BACKGROUND-002
+ARCH-010-BACKGROUND-014
+ARCH-010-BACKGROUND-015
+```
+
+`BACKGROUND-019` remains Pending until both BACKGROUND-002 and BACKGROUND-014 complete.
+

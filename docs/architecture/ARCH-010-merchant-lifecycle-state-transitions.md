@@ -3063,10 +3063,10 @@ Current task-graph counts after 2026-09-12 consolidation and accepted-history re
 ARCH-010 tasks total:            81
 implementation/publication:      76 (7 superseded, 69 active)
 terminal system-test tasks:       5 manual-gated
-complete implementation tasks:   30
+complete implementation tasks:   31
 review implementation tasks:      0
-ready implementation tasks:       5
-pending implementation tasks:    34
+ready implementation tasks:       6
+pending implementation tasks:    32
 superseded tasks:                  7
 pending manual system tests:       5
 ```
