@@ -22,6 +22,7 @@ depends_on:
   - ARCH-010-SHARED-002
   - ARCH-007-SHOPIFY-001
   - ARCH-007-SHOPIFY-002
+---
 ## Completion Report
 
 Ready for Review.
