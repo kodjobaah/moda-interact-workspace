@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-SHOPIFY-014
 architecture_id: ARCH-010
-title: Expose real recovery top-up purchase lifecycle for billing options
+title: Implement merchant recovery top-up lifecycle adapter and production panel
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -15,77 +15,86 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-SHOPIFY-013
-- ARCH-010-SHOPIFY-007
-- ARCH-007-SHOPIFY-004
-- ARCH-010-SHOPIFY-018
+  - ARCH-010-SHOPIFY-013
+  - ARCH-010-SHOPIFY-007
+  - ARCH-007-SHOPIFY-004
+  - ARCH-010-SHOPIFY-018
 enables:
-- ARCH-010-SHOPIFY-010
-- ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-012
 created: 2026-09-11
-updated: '2026-09-12'
+updated: 2026-09-12
 ---
 
-# ARCH-010-SHOPIFY-014: Expose real recovery top-up purchase lifecycle for billing options
+# ARCH-010-SHOPIFY-014: Implement merchant recovery top-up lifecycle adapter and production panel
+
+## Consolidation
+
+This task absorbs `ARCH-010-SHOPIFY-010`. `SHOPIFY-010` is superseded and MUST NOT be implemented separately.
+
+The server adapter and `TopUpPurchasePanel` are one bounded merchant top-up capability: the adapter defines the exact production state contract and the panel is a pure renderer/callback consumer of that contract. `SHOPIFY-012` still owns route/hub composition.
 
 ## Objective
 
-Create a narrow server-side read/action adapter for the real recovery-credit-pack lifecycle used by `/app/billing/options`.
+Implement the server-side merchant-safe read/action adapter for recovery-credit-pack purchases **and** refactor `TopUpPurchasePanel.jsx` to render that exact adapter state without mock/local-pricing assumptions.
 
-The merchant experiences a top-up as a one-off purchase of lifetime recovery capacity, but Moda is on **Shopify App Pricing**. Therefore this task MUST reuse the existing App Events usage-meter flow and MUST NOT introduce Shopify Billing API one-time charges.
+Moda uses Shopify App Pricing/App Events. Do not introduce a Shopify Billing API one-time purchase.
 
-## Hard Shopify billing mechanism
-
-The implementation MUST preserve the accepted ARCH-007 mechanism:
+## Inspect before editing
 
 ```text
-merchant clicks Buy pack
-  -> Moda creates RecoveryCreditPurchase(status=PENDING_BILLING)
-  -> Moda creates UsageEvent(metric=RECOVERY_CREDIT_PACK_PURCHASE, quantity=1, PENDING)
-  -> Background publishes App Event to current Shopify pack meter
-  -> Shopify Partner activeSubscription usage quantity is later reconciled
-  -> only provider-confirmed purchase becomes ACTIVE
-  -> PURCHASED_RECOVERY_CREDITS.grantedQuantity increases exactly once
+app/services/billing/billing.service.ts
+app/services/billing/billing.types.ts
+app/services/billing/providers/shopify-billing.provider.ts
+app/routes/app/billing/route.tsx
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/TopUpPurchasePanel.jsx
+app/components/dashboard/BillingPurchaseHub.jsx
+app/components/dashboard/billing-purchase.mock.js
+tests/unit/services/billing.service.test.ts
+tests/unit/services/shopify-billing.provider.test.ts
+tests/unit/billing-ui.test.ts
+package.json
 ```
 
-Do NOT call or add:
+Read the implemented/current contracts before editing:
+
+```text
+ARCH-007-SHOPIFY-004
+ARCH-010-SHOPIFY-007
+ARCH-010-SHOPIFY-013
+ARCH-010-SHOPIFY-018
+ARCH-010-DATABASE-013
+```
+
+## Hard billing mechanism
+
+Preserve this lifecycle exactly:
+
+```text
+merchant requests one pack
+  -> Moda creates/reuses RecoveryCreditPurchase(PENDING_BILLING)
+  -> Moda creates/reuses UsageEvent(RECOVERY_CREDIT_PACK_PURCHASE, quantity=1, PENDING)
+  -> HTTP request returns without publishing App Event directly
+  -> Background publishes existing App Event to current Shopify pack meter
+  -> Background/provider reconciliation proves provider quantity
+  -> purchase becomes ACTIVE exactly once
+  -> PURCHASED_RECOVERY_CREDITS granted quantity increases exactly once
+```
+
+Forbidden in this task/diff:
 
 ```text
 appPurchaseOneTimeCreate
 appSubscriptionCreate
 billing.request
 appUsageRecordCreate
+client-supplied monetary price authority
+direct App Events network publication from merchant HTTP action
 ```
 
-Do not grant credits in the merchant request transaction.
+## Server read model
 
-## Inspect before editing
-
-Read these exact current files and accepted task reports before changing code:
-
-```text
-app/services/billing/billing.service.ts
-app/services/billing/billing.types.ts
-app/routes/app/billing/route.tsx
-app/routes/app/billing/options/route.tsx
-app/components/dashboard/TopUpPurchasePanel.jsx
-app/components/dashboard/BillingPurchaseHub.jsx
-tests/unit/services/billing.service.test.ts
-tests/unit/billing-ui.test.ts
-```
-
-Also read the accepted ARCH-007 pack tasks:
-
-```text
-docs/decisions/shopify/ARCH-007/SHOPIFY-004-request-repeatable-recovery-credit-pack.md
-docs/decisions/background/ARCH-007/BACKGROUND-009-activate-consume-recovery-credit-packs.md
-```
-
-Read implemented SHOPIFY-013 before finalising provider field names.
-
-## Required server read model
-
-Add a service method or small adapter owned by the billing service that returns a merchant-safe top-up state equivalent to:
+Expose one merchant-safe state equivalent to the following, using integrated enum/type names rather than introducing a second vocabulary:
 
 ```ts
 {
@@ -101,27 +110,20 @@ Add a service method or small adapter owned by the billing service that returns 
     | "RECONCILING"
     | "SHOPIFY_VERIFICATION_UNAVAILABLE"
     | null;
-
   creditsPerPack: number | null;
   purchasedCreditsAvailable: number;
-
   shopifyPackMeter: {
     handle: string;
     description: string | null;
     currency: string | null;
-    price: /* accepted SHOPIFY-013 provider price shape */;
+    price: /* exact SHOPIFY-013 provider price shape */;
     currentQuantity: number | null;
     currentCostAmount: string | null;
     currentCostCurrency: string | null;
   } | null;
-
   latestPurchase: {
     id: string;
-    status:
-      | "PENDING_BILLING"
-      | "ACTIVE"
-      | "NEEDS_ATTENTION"
-      | "CANCELLED";
+    status: "PENDING_BILLING" | "ACTIVE" | "NEEDS_ATTENTION" | "CANCELLED";
     creditsGranted: number;
     createdAt: string;
     activatedAt: string | null;
@@ -130,188 +132,188 @@ Add a service method or small adapter owned by the billing service that returns 
 }
 ```
 
-Use actual integrated enum/type names. Do not introduce a parallel billing-status vocabulary if Prisma already provides the status.
+### Authority
 
-## Authority rules
+Shopify provider state is authority for:
 
-### Shopify authority
+- current subscription existence/current handle;
+- exact current provider billing cycle;
+- exact configured pack meter item;
+- provider meter pricing/quantity/cost representation.
 
-For the top-up meter, Shopify `activeSubscription` is authoritative for:
+PostgreSQL/Moda is authority for:
 
-- whether the current Shopify contract exists;
-- whether the configured pack meter handle is an active current subscription item;
-- current billing cycle;
-- provider usage quantity/cost;
-- provider pricing representation for the meter.
+- `recoveryCreditsPerPack`;
+- durable purchased-credit balances;
+- RecoveryCreditPurchase status;
+- UsageEvent report state;
+- ACTIVE/DRAINING/RECONCILING local cycle phase.
 
-### Moda authority
+Never use local BillingPlan monetary values as Shopify commercial truth.
 
-PostgreSQL is authoritative for:
+## Purchase eligibility
 
-- `recoveryCreditsPerPack` (what one provider meter unit grants inside Moda);
-- purchased-credit granted/committed/reserved/refunding balances;
-- durable RecoveryCreditPurchase status;
-- durable UsageEvent report state;
-- whether the current local billing phase is ACTIVE/DRAINING/RECONCILING.
-
-Do not treat local `BillingPlan` monetary values as Shopify price authority.
-
-## Free-plan top-up eligibility — binding ARCH-010 rule
-
-A mapped active Free merchant is eligible to buy the same Moda recovery top-up when **all** of these are true at mutation time:
+At mutation time, both mapped Free and Paid merchants require all of:
 
 ```text
 Shop.status = ACTIVE
-Subscription.status = ACTIVE/TRIALING as otherwise supported
-provider current plan handle == mapped Free BillingPlan.shopifyPlanHandle
+Subscription executable under current policy
+provider current plan == mapped current BillingPlan handle
 BillingPlan.recoveryCreditPackEnabled = true
 BillingPlan.recoveryCreditsPerPack > 0
+exact current local BillingPeriod exists
+provider current cycle == local exact cycle
 configured shopifyRecoveryCreditPackEventHandle is present in provider active usage items
-provider currentBillingCycle has exact start/end
-Subscription.billingPeriodId points to the exact OPEN Free BillingPeriod for that same provider cycle
-local phase = ACTIVE (not DRAINING / RECONCILING)
+cycle phase = ACTIVE (not DRAINING/RECONCILING)
+no unresolved purchase state that blocks a second request under existing idempotency rules
 ```
 
-For Free, do **not** require `shopifyUsageEventHandle`; that is the normal Paid recovery meter and is irrelevant to Free lifetime recovery admission.
+Free-specific rules:
 
-The Free BillingPeriod is commercial/App-Event cycle state only. Buying/rolling a Free top-up MUST NOT:
+- do not require the Paid normal recovery meter;
+- the BillingPeriod is provider/App-Event cycle scope only;
+- never create/reset a Free included-credit counter;
+- lifetime-Free quantities are not changed by pack purchase.
 
-- reset or grant the five `LIFETIME_FREE_RECOVERY_CREDITS` conversations;
-- create `BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS)`;
-- convert Free entitlement into a monthly allowance.
+Scheduled cancellation/FROZEN/NO_CONTRACT restrictions defined by later merchant restriction task must remain enforceable server-side when integrated; do not weaken an existing guard.
 
-If the exact Free provider/local billing cycle or pack meter cannot be verified, return top-up unavailable and create no purchase/UsageEvent. Do not fall back to `Subscription.planId` alone.
+## Purchase action
 
-## Pack price presentation rule
-
-This task exposes Shopify's provider price representation to UI; it MUST NOT invent or persist a local monetary top-up price.
-
-Do not implement a browser-side pricing algorithm.
-
-If the provider price representation cannot be reduced safely to one exact merchant-facing amount with the existing accepted Shopify contract, return the raw/provider-safe presentation fields and leave `displayPrice` null. The UI must then say Shopify bills the pack according to the current App Pricing meter rather than fabricate a number.
-
-## Purchase action adapter
-
-Expose/reuse one action method that calls the existing:
+The action accepts only the minimal client identity/idempotency input already required by the existing purchase API. Ignore/reject client-supplied:
 
 ```text
-billingService.requestRecoveryCreditPack(shopId, "BUY_RECOVERY_CREDIT_PACK", purchaseId)
+price
+currency
+plan
+meter handle
+creditsPerPack
+provider quantity
 ```
 
-The adapter MUST:
+Delegate exactly once to the accepted `requestRecoveryCreditPack(...)`/equivalent lifecycle. Replaying the same purchase identity must reuse the existing purchase/event rather than create another.
 
-1. authenticate/resolve the current shop through the existing route policy;
-2. accept only the server-defined intent and opaque `purchaseId`;
-3. ignore client-supplied plan, meter, pack size, price, currency and credit quantity;
-4. rely on `requestRecoveryCreditPack` to re-query Shopify and verify the exact current contract/meter/cycle at mutation time;
-5. return a typed merchant-safe result containing purchase ID/status only;
-6. never report credits as available when the returned purchase is still `PENDING_BILLING`.
+Return PENDING as pending. Never claim capacity is ACTIVE before durable provider-confirmed state says ACTIVE.
 
-## UI lifecycle semantics to support
+## TopUpPurchasePanel production contract
 
-The read model must support these exact states:
+Refactor `TopUpPurchasePanel.jsx` to consume explicit props equivalent to:
 
-```text
-READY
-  -> Buy CTA may be shown
-
-PENDING_BILLING
-  -> Shopify confirmation is still pending
-  -> credits not yet available
-  -> do not show success
-
-ACTIVE
-  -> credits are in purchased balance
-  -> normal capacity projection shows them
-
-NEEDS_ATTENTION
-  -> no credits granted
-  -> merchant sees support/retry guidance
-
-CANCELLED
-  -> cancelled purchase request/provider unit history only
-  -> do not count as available capacity
-
-PARTIALLY REFUNDED PURCHASE
-  -> purchase remains ACTIVE
-  -> refunded quantity is represented by RecoveryCreditRefund/purchase refunded accounting
-  -> available purchased balance already excludes refunded quantity
+```ts
+{
+  merchantUi,
+  currentPlanName,
+  purchasedCreditsAvailable,
+  creditsPerPack,
+  purchaseAvailable,
+  latestPurchase,
+  providerPackPricing,
+  unavailableReason,
+  onPurchaseTopUp,
+}
 ```
 
-A Shopify App Events HTTP `202` is NOT `ACTIVE`. It means only that Shopify received the event; billing validation is asynchronous.
+Use actual repository typing style.
 
-## Revalidation behaviour
+The component MUST:
 
-Do not add a new browser websocket/SSE mechanism.
+- render real `creditsPerPack` and purchased available balance;
+- explain purchased credits are lifetime-until-used;
+- explain purchased credits are consumed before remaining lifetime-Free capacity;
+- render provider-derived pricing only when the server adapter supplies an exact safe display value;
+- otherwise state that Shopify bills according to the current App Pricing meter without fabricating price/unit cost/currency;
+- expose one purchase CTA only when `purchaseAvailable=true` and no unresolved purchase blocks it;
+- render PENDING_BILLING as awaiting Shopify confirmation with zero newly activated credits;
+- render ACTIVE only from durable ACTIVE state;
+- render NEEDS_ATTENTION without a granted-credit claim;
+- render DRAINING/RECONCILING/configuration-unavailable reason explicitly;
+- invoke only the supplied callback; no `fetch`, Prisma, provider or billing service calls from the component;
+- remove `billing-purchase.mock.js` import/default usage for this component;
+- use merchant i18n for every new visible string.
 
-After a purchase request:
+The component MUST NOT sort fabricated pack cards, compute unit price from local data, label a fake featured pack, or show local BillingPlan monetary price as provider truth.
 
-- route action returns the durable pending purchase;
-- React Router revalidation may refresh loader state;
-- while latest purchase is `PENDING_BILLING`, the UI may expose a normal refresh/reload affordance;
-- do not use a tight client polling loop in this task.
+## Integration boundary
 
-Background/provider reconciliation remains responsible for activation.
+Do not complete `/app/billing/options` route/hub composition here. `SHOPIFY-012` consumes this adapter + component.
 
-## Existing purchase concurrency/idempotency
-
-Preserve existing permanent request idempotency by `purchaseId`.
-
-Do not add a one-pack-lifetime restriction.
-
-Do not redesign database concurrency in this task. If the current integrated implementation allows multiple different purchase IDs concurrently, UI may disable a second CTA while its latest request is unresolved, but this task must not invent a cross-purchase uniqueness constraint.
+This task may edit the route only where a focused action/helper already lives there and is necessary for the adapter contract; it MUST NOT absorb the full billing-options composition task.
 
 ## Required tests
 
-At minimum prove:
+### Server/provider lifecycle
 
-1. provider current pack meter is found only by exact configured handle;
-2. local BillingPlan monetary data is never used as Shopify top-up price truth;
-3. local `creditsPerPack` is returned separately from provider price/cost;
-4. purchased available balance comes from durable counters;
-5. `PENDING_BILLING` returns zero newly activated credits;
-6. `ACTIVE` purchase is reflected through the durable purchased balance;
-7. `NEEDS_ATTENTION` grants zero and produces a merchant-safe attention state;
-8. `activeSubscription=null` is not treated as purchase-eligible;
-9. unmapped current Shopify plan is not purchase-eligible;
-10. pack meter missing from current provider items is not purchase-eligible;
+1. exact configured pack meter handle is required;
+2. local BillingPlan monetary fields are never provider price truth;
+3. `creditsPerPack` is distinct from provider price/cost;
+4. purchased available balance comes from durable counters/lots;
+5. PENDING_BILLING exposes zero newly activated credits;
+6. ACTIVE is reflected only after durable activation;
+7. NEEDS_ATTENTION grants/claims zero;
+8. null provider subscription is ineligible;
+9. unmapped provider plan is ineligible;
+10. missing pack meter is ineligible;
 11. provider verification failure does not fall back to local commercial truth;
-12. DRAINING/RECONCILING blocks the purchase action;
-13. action ignores client-supplied price/plan/meter/credits;
-14. action delegates to existing requestRecoveryCreditPack exactly once;
-15. replaying the same purchaseId returns the same purchase rather than creating a second UsageEvent;
-16. action result `PENDING_BILLING` never renders as activated credits;
-17. no direct App Events network request occurs in the merchant HTTP transaction;
-18. no Billing API one-time-charge mutation exists in task diff;
-19. mapped active Free with exact provider/local cycle and exact pack meter is purchase-eligible;
-20. Free does not require the normal Paid recovery meter to buy a pack;
-21. Free missing exact cycle is not purchase-eligible;
-22. Free missing exact pack meter is not purchase-eligible;
-23. Free top-up request references the exact current Free BillingPeriod and never creates/resets a Free included allowance;
-24. i18n parity is preserved for any new merchant-visible state labels.
+12. DRAINING and RECONCILING reject new purchase creation;
+13. action ignores client price/plan/meter/credits inputs;
+14. action delegates to existing purchase request exactly once;
+15. same purchase id replays without second UsageEvent;
+16. no direct App Events network request occurs in HTTP transaction;
+17. no Billing API one-time-charge mutation exists;
+18. mapped Free with exact cycle+pack meter is eligible;
+19. Free does not require Paid recovery meter;
+20. Free missing exact cycle or pack meter is ineligible;
+21. Free request references exact current Free BillingPeriod and creates/resets no Free included allowance.
+
+### Component
+
+22. real pack quantity and purchased balance render;
+23. no monetary/unit price is fabricated;
+24. provider price renders only from explicit adapter data;
+25. available CTA invokes `onPurchaseTopUp` once;
+26. disabled/unavailable CTA cannot invoke callback;
+27. PENDING_BILLING blocks a second action and never renders success;
+28. ACTIVE renders confirmed state only from durable ACTIVE input;
+29. NEEDS_ATTENTION renders no granted-credit claim;
+30. no mock import/default remains;
+31. component performs no network/provider/database call;
+32. no legacy one-time-charge terminology/API is introduced;
+33. all new i18n keys have catalogue parity.
 
 ## Non-goals
 
-Do not implement Background App Event publication, provider-confirmation reconciliation, refunds, plan changes, cancellation, promotional credits or Admin UI.
+Do not implement Background publication/provider confirmation, refund workflow, plan change, cancellation/freeze presentation, promotions, Admin UI, or full billing-options route composition.
 
 ## Validation
 
-Run focused service/route tests, declared repository tests, typecheck, build and `git diff --check` using scripts that actually exist in `package.json`.
+Inspect `package.json`. Run focused billing service/provider/component tests, then repository-declared test/typecheck/build/Prisma validation applicable to changed files and `git diff --check`. Do not invent scripts.
 
 ## Stop conditions
 
-STOP if the integrated code no longer uses Shopify App Pricing/App Events for pack billing.
+STOP if:
 
-STOP if satisfying this task would require introducing `appPurchaseOneTimeCreate` or another legacy Manual Pricing charge.
+1. current implementation no longer uses Shopify App Pricing/App Events for pack billing;
+2. implementation would require a legacy one-time-charge API;
+3. SHOPIFY-013 cannot expose the exact current pack meter safely;
+4. integrated product model contains multiple production pack variants/local price authority not described by ARCH-010.
 
-STOP if SHOPIFY-013 does not expose the current configured pack meter item safely; return the provider-contract gap to `moda_architect`.
+Return the mismatch to `moda_architect`; do not infer a new billing model.
 
 ## Completion Report
 
 ### Status
 Not started.
 
+### Files Changed
+Populate during implementation.
 
-## Final frozen purchase guard
+### Work Completed
+Populate during implementation.
 
-Before creating a top-up purchase/UsageEvent, require SHOPIFY-018 lifecycle state to be executable and durable local Subscription not FROZEN. Provider FROZEN or local FROZEN/restoration-pending MUST return a typed non-purchasable result and create no RecoveryCreditPurchase/UsageEvent. Pending purchases created before freeze remain governed by Background reconciliation and must not be re-created.
+### Validation Results
+Populate during implementation.
+
+### Git / VCS
+Populate canonical isolated worktree/branch/commit/push evidence.
+
+### Architect Review
+Pending.

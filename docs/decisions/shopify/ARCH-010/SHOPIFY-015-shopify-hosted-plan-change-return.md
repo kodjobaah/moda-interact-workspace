@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-SHOPIFY-015
 architecture_id: ARCH-010
-title: Handle Shopify-hosted upgrade and downgrade return without premature entitlement change
+title: Implement Shopify-hosted plan management flow and production panel
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -15,201 +15,263 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-SHOPIFY-013
-- ARCH-010-SHARED-008
-- ARCH-010-BACKGROUND-010
-- ARCH-010-SHOPIFY-018
+  - ARCH-010-SHOPIFY-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-BACKGROUND-010
+  - ARCH-010-SHOPIFY-018
 enables:
-- ARCH-010-SHOPIFY-011
-- ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-012
 created: 2026-09-11
-updated: '2026-09-12'
+updated: 2026-09-12
 ---
 
-# ARCH-010-SHOPIFY-015: Handle Shopify-hosted upgrade and downgrade return without premature entitlement change
+# ARCH-010-SHOPIFY-015: Implement Shopify-hosted plan management flow and production panel
+
+## Consolidation
+
+This task absorbs `ARCH-010-SHOPIFY-011`. `SHOPIFY-011` is superseded and MUST NOT be implemented separately.
+
+The callback/selection flow and `SubscriptionChangePanel` are one merchant plan-management capability. The app owns merchant interaction and synchronous provider verification; `BACKGROUND-010` remains the only owner of effective entitlement transition.
 
 ## Objective
 
-Make the existing plan-management flow on `/app/billing/options` a real Shopify App Pricing flow:
+Productionise the complete app-owned half of upgrade/downgrade management:
 
 ```text
-Manage/change plan CTA
+merchant sees current/pending Shopify subscription
+  -> Manage / Change plan
   -> /app/billing/select
-  -> Shopify-hosted App Pricing page
-  -> Shopify redirects to configured callback/welcome route with plan_handle
-  -> Moda queries Partner activeSubscription
-  -> classify requested handle as CURRENT, PENDING, MISMATCH or UNVERIFIED
-  -> persist/schedule only the safe state
-  -> redirect merchant back to /app/billing/options
+  -> Shopify-hosted App Pricing
+  -> Shopify returns with plan_handle
+  -> Moda re-queries Partner activeSubscription
+  -> classify CURRENT / PENDING / MISMATCH / NO_ACTIVE / UNVERIFIED
+  -> persist/schedule only safe projection state
+  -> redirect to /app/billing/options
 ```
 
-This task does not calculate proration and does not create subscriptions locally. Shopify owns commercial plan selection and charging.
+The panel renders Shopify-authoritative current/pending commercial facts. It performs no provider/network mutation itself.
 
 ## Inspect before editing
 
 ```text
 app/routes/app/billing/select/route.jsx
 app/routes/app/billing/callback/route.tsx
+app/routes/app/billing/options/route.tsx
 app/services/billing/billing.service.ts
 app/services/billing/billing.types.ts
 app/services/billing/providers/shopify-billing.provider.ts
-app/routes/app/billing/options/route.tsx
+app/components/dashboard/SubscriptionChangePanel.jsx
+app/components/dashboard/BillingPurchaseHub.jsx
+app/components/dashboard/billing-purchase.mock.js
 tests/unit/routes/billing-callback.test.ts
 tests/unit/services/billing.service.test.ts
+tests/unit/services/shopify-billing.provider.test.ts
+tests/unit/billing-ui.test.ts
+package.json
 ```
 
-Read implemented SHOPIFY-013 and BACKGROUND-010 before finalising types/result codes.
+Read `SHOPIFY-013`, `SHOPIFY-018`, `BACKGROUND-010` and the published Shared billing contract before coding.
 
-## Plan selection source of truth
+## Hard authority rules
 
-Do not render or submit a local target-plan mutation.
-
-The only merchant plan-selection entrypoint remains:
-
-```text
-/app/billing/select
-```
-
-which redirects to Shopify-hosted App Pricing.
-
-A `plan_handle` URL parameter is context, not proof. Always query Partner `activeSubscription` after the redirect.
+1. Shopify App Pricing/Partner API is commercial subscription authority.
+2. The callback URL `plan_handle` is **selection context only**; it never proves current entitlement.
+3. Moda does not enumerate/invent a local commercial catalogue for this panel.
+4. Moda does not infer upgrade/downgrade from local price/rank/name.
+5. Moda does not call `appSubscriptionCreate`, `billing.request` or local subscription mutation APIs to perform the change.
+6. The HTTP callback never opens/closes BillingPeriod and never grants/forfeits recovery capacity.
+7. Effective plan transition belongs to `BACKGROUND-010` after provider evidence proves the new plan is current.
+8. Purchased, lifetime-Free and promotion history are never reset by the callback.
 
 ## Callback classification
 
-Implement one explicit classifier equivalent to:
+After authentication/shop resolution:
 
-```text
-CURRENT_MATCH
-  provider.currentPlanHandle == requested plan_handle
+### 1. Require requested context
 
-PENDING_MATCH
-  provider.pendingUpdate.planHandle == requested plan_handle
+Require `plan_handle`. Unknown local mapping is allowed as provider context but MUST NOT be treated as activated entitlement.
 
-NO_ACTIVE_SUBSCRIPTION
-  provider activeSubscription == null
+### 2. Query Partner activeSubscription once through the canonical provider/read-model boundary
 
-MISMATCH
-  provider exists but neither current nor pending handle equals requested handle
+Do not trust existing local projection as proof when the current callback's provider verification failed.
 
-VERIFICATION_FAILED
-  Partner API request failed/throttled/timed out/malformed
-```
+### 3. Classify in this exact order
 
-Do not collapse `NO_ACTIVE_SUBSCRIPTION` and `VERIFICATION_FAILED`.
+#### UNVERIFIED
 
-## PENDING_MATCH behaviour
+Partner request throws/times out/throttles/malformed.
 
-When Shopify reports the requested plan under `pendingUpdate`:
+- preserve current/pending durable state;
+- record/return merchant-safe verification-unavailable state;
+- schedule/reuse canonical reconciliation where existing contract permits;
+- do not claim plan changed.
 
-- preserve current `Subscription.planId` and current BillingPeriod entitlement;
-- persist observed pending handle;
-- map `pendingPlanId` only when the handle has an active Moda `BillingPlan` mapping;
-- persist `pendingEffectiveAt` from the current Shopify cycle boundary;
-- persist `nextReconcileAt` for the same boundary/pre-close scheduling contract already owned by ARCH-010;
-- publish/reuse the deterministic `billing-subscription-reconcile` delayed job;
-- redirect to `/app/billing/options?plan_change=pending`;
-- do not grant new plan credits or features early.
+#### NO_ACTIVE
 
-Purchased lifetime credits and Free lifetime history are unchanged.
+Partner returns no live activeSubscription.
 
-## CURRENT_MATCH behaviour
-
-A requested plan can be returned as current Shopify state rather than pending.
-
-The callback MUST NOT directly mutate paid entitlement counters/BillingPeriod allowance from the HTTP request.
-
-Instead:
-
-1. persist enough provider-observed current commercial state for reconciliation using the accepted billing service pattern;
-2. schedule/reuse immediate `billing-subscription-reconcile` work;
-3. let BACKGROUND-010 decide whether the provider current change is a safe boundary transition or an unexpected immediate-change condition;
-4. redirect to `/app/billing/options?plan_change=confirming`.
-
-Do not create/close BillingPeriod rows in this callback.
-
-## NO_ACTIVE_SUBSCRIPTION behaviour
-
-For an existing merchant who entered this route from plan management, a successful Partner response of `null` must not be invented into Free.
-
+- distinguish from transport failure;
+- do not manufacture current/pending plan from URL;
 - preserve durable history;
-- schedule immediate reconciliation through the existing queue contract;
-- return merchant to billing options/onboarding according to the accepted current local access state;
-- do not claim the requested plan was activated.
+- schedule immediate reconciliation if the established lifecycle requires it;
+- return merchant to billing options/onboarding according to accepted local access state.
 
-## MISMATCH behaviour
+#### CURRENT
 
-Do not update pending/current plan based on the URL parameter.
+Provider current plan handle equals requested `plan_handle`.
 
-Return a localized `unable to verify selected plan` state and keep existing entitlements unchanged.
+- persist exact provider current projection through the canonical read/sync path;
+- do not mutate BillingPeriod entitlement in HTTP request;
+- schedule immediate deterministic reconciliation so BACKGROUND-010/rollover code owns any required transition;
+- redirect `/app/billing/options?plan_change=current` (or existing equivalent explicitly tested).
 
-## VERIFICATION_FAILED behaviour
+#### PENDING
 
-Preserve local subscription/entitlement state, surface verification unavailable and provide normal retry/navigation.
+Provider pending update handle equals requested `plan_handle` while another current plan remains active.
 
-Do not write `NO_CONTRACT` simply because Partner API could not be reached.
+- preserve current `Subscription.planId` and current BillingPeriod/counters;
+- persist `pendingShopifyPlanHandle`;
+- map `pendingPlanId` only if an active local BillingPlan mapping exists;
+- persist exact provider effective/boundary time using current contract fields;
+- set `nextReconcileAt` according to canonical pre-close/boundary schedule;
+- enqueue/reuse deterministic `billing-subscription-reconcile` delayed job;
+- do not grant new plan features/credits early;
+- redirect `/app/billing/options?plan_change=pending` (or existing equivalent).
 
-## UI return/result codes
+If the provider pending handle is unmapped locally, preserve the provider handle and fail closed for entitlement mapping. Do not substitute the requested local plan.
 
-Use bounded application-owned query/result codes, not raw provider error text. At minimum support:
+#### MISMATCH
 
-```text
-plan_change=pending
-plan_change=confirming
-plan_change=unverified
+Requested handle is neither provider current nor provider pending.
+
+- do not mutate current/pending state from URL;
+- do not claim success;
+- redirect/render merchant-safe mismatch/verification state.
+
+## SubscriptionChangePanel contract
+
+Refactor the component to accept explicit provider-derived props equivalent to:
+
+```ts
+{
+  merchantUi,
+  current: {
+    shopifyPlanHandle,
+    mappedModaPlanName,
+    price,
+    currency,
+    interval,
+    cancelAtEndOfCycle,
+  } | null,
+  pending: {
+    shopifyPlanHandle,
+    mappedModaPlanName,
+    price,
+    currency,
+    effectiveAt,
+  } | null,
+  providerVerificationState,
+  managePlansHref,
+  managePlansAvailable,
+}
 ```
 
-`/app/billing/options` consumes these only as presentation hints; its loader still queries current provider truth through SHOPIFY-013.
+Use actual integrated SHOPIFY-013/018 types.
 
-## Upgrade/downgrade classification
+The component MUST:
 
-Do NOT infer upgrade/downgrade from local plan rank or price.
+- render Shopify current handle/commercial price/currency/interval from explicit provider props;
+- use mapped Moda plan name only as decoration, never as replacement commercial truth;
+- render pending provider plan/effective date distinctly;
+- render `cancelAtEndOfCycle` when true without interpreting it as an effective cancellation if a pending plan update exists;
+- render unmapped current Shopify plan as existing-but-unmapped;
+- render no-active and verification-unavailable distinctly;
+- use only supplied `managePlansHref` for the hosted change CTA;
+- make no network/database/provider call;
+- remove mock/local `plans[]`, price/rank upgrade/downgrade classification, console selection and mock fallback;
+- expose no Admin route/link;
+- use i18n for all new visible strings.
 
-For ARCH-010, UI may call the action generically `Change plan` / `Manage plan`.
+Do not label a transition "upgrade" or "downgrade" based on local rank. Generic `Change plan` is correct unless Shopify/provider evidence explicitly supplies semantics already accepted by architecture.
 
-The durable transition is determined by current provider plan kind and newly effective provider plan kind inside BACKGROUND-010.
+## Integration boundary
+
+`SHOPIFY-012` composes this panel into `/app/billing/options`. Do not absorb the full billing-options route/purchase hub composition.
+
+`SHOPIFY-016` later applies FROZEN/cancellation/NO_CONTRACT merchant restriction rules and direct-action guards. Do not duplicate those lifecycle-state screens here.
 
 ## Required tests
 
-At minimum prove:
+### Hosted flow/callback
 
-1. `/app/billing/select` still redirects to Shopify-hosted pricing;
+1. `/app/billing/select` redirects to Shopify-hosted pricing;
 2. callback requires `plan_handle`;
-3. callback re-queries activeSubscription and never trusts plan_handle alone;
-4. pending requested handle stores pending state but leaves current plan/period entitlement unchanged;
-5. pending mapped plan schedules deterministic reconciliation;
-6. pending unmapped provider plan preserves handle and fails closed for entitlement mapping;
-7. current requested handle schedules immediate reconciliation and does not open/close BillingPeriod in HTTP request;
-8. current requested handle does not grant included credits in callback;
-9. provider null is distinct from provider failure;
-10. provider failure preserves local state;
-11. mismatch does not mutate current/pending state from URL alone;
-12. purchased lifetime balance is untouched;
-13. Free lifetime committed usage is untouched;
-14. no local upgrade/downgrade rank inference exists;
-15. no `appSubscriptionCreate`/Billing API mutation is introduced;
-16. merchant redirect targets `/app/billing/options` or accepted onboarding state, never Admin;
-17. new merchant-visible result copy has i18n parity.
+3. callback re-queries provider and never trusts URL alone;
+4. provider failure is UNVERIFIED and preserves local state;
+5. provider null is distinct from provider failure;
+6. PENDING preserves current plan/period entitlement;
+7. mapped pending plan stores pending id/handle/effective boundary and deterministic reconciliation;
+8. unmapped pending plan preserves provider handle but maps no entitlement plan;
+9. CURRENT schedules reconciliation but opens/closes no BillingPeriod in HTTP request;
+10. CURRENT grants/forfeits no credits/features in HTTP request;
+11. MISMATCH mutates neither current nor pending state from URL alone;
+12. purchased balance/history is unchanged;
+13. lifetime-Free quantities/history are unchanged;
+14. no local rank/price-based upgrade/downgrade inference exists;
+15. no `appSubscriptionCreate`/Billing API plan mutation is introduced;
+16. redirect returns only to merchant routes, never Admin.
+
+### Component
+
+17. current provider handle/price/currency/interval render from explicit props;
+18. mapped Moda name only decorates provider truth;
+19. pending provider handle/effective date render distinctly;
+20. `cancelAtEndOfCycle` renders when true;
+21. unmapped current plan renders as existing-but-unmapped;
+22. no-active state renders distinctly;
+23. verification unavailable renders distinctly;
+24. no local plans catalogue/price/rank is required;
+25. no upgrade/downgrade classification is invented;
+26. CTA uses supplied Shopify-hosted href;
+27. component makes no local mutation/network call;
+28. prototype duplicate/mock blocks/imports are removed;
+29. no Admin link exists;
+30. i18n catalogue parity is preserved.
 
 ## Non-goals
 
-Do not implement effective plan transition logic, proration calculation, top-up purchase, cancellation/refund handling, Shopify plan catalogue enumeration or Admin plan creation.
+Do not implement effective plan-transition transaction, proration, top-up purchase, cancellation/freeze state presentation, Shopify plan catalogue enumeration, Admin plan creation or pricing management.
 
 ## Validation
 
-Run focused callback/service/route tests, declared full tests, typecheck, build and `git diff --check`.
+Inspect `package.json`. Run focused callback/service/provider/component tests, then repository-declared full tests/typecheck/build/Prisma validation applicable to changed files and `git diff --check`. Do not invent scripts.
 
 ## Stop conditions
 
-STOP if BACKGROUND-010's accepted transition contract is unavailable or materially different.
+STOP if:
 
-STOP if implementation would need to infer Shopify commercial timing from local plan price/rank rather than provider current/pending state.
+1. BACKGROUND-010 transition contract is unavailable/materially different;
+2. SHOPIFY-013/018 cannot expose the provider facts needed without inventing local commercial truth;
+3. implementing the flow would require local price/rank inference or a Shopify subscription-creation mutation.
+
+Return the mismatch to `moda_architect` rather than expanding scope.
 
 ## Completion Report
 
 ### Status
 Not started.
 
+### Files Changed
+Populate during implementation.
 
-## Final frozen plan-change guard
+### Work Completed
+Populate during implementation.
 
-Do not initiate hosted plan change or process a plan-change return as executable while SHOPIFY-018 reports FROZEN or durable local Subscription remains FROZEN. Tell the merchant to resolve Shopify billing first. Historical UNFROZEN without a restored live activeSubscription is not sufficient.
+### Validation Results
+Populate during implementation.
+
+### Git / VCS
+Populate canonical isolated worktree/branch/commit/push evidence.
+
+### Architect Review
+Pending.

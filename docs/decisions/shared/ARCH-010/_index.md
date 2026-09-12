@@ -16,9 +16,9 @@ Coordinator:
 
 `moda_architect`
 
-> Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Complete/Review task files are immutable accepted/in-flight evidence; their historical `enables:` fields are not rewritten when later correction tasks are added.
+> Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 8, `pending` 0, `ready` 0
+Current counts: `complete` 8
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -28,8 +28,8 @@ Current counts: `complete` 8, `pending` 0, `ready` 0
 | `SHARED-004` | Publish recovery-capacity-exhausted Shared contract | Complete | ARCH-010-SHARED-003 |
 | `SHARED-005` | Add merchant top-up refund billing message contracts | Complete | — |
 | `SHARED-006` | Publish top-up refund Shared message contracts | Complete | ARCH-010-SHARED-005 |
-| `SHARED-007` | Remove superseded pre-production billing compatibility contracts | **Complete** | ARCH-010-SHARED-006, ARCH-010-BACKGROUND-020, ARCH-010-SHOPIFY-024 |
-| `SHARED-008` | Publish the clean first-production Shared billing contract | **Complete** | ARCH-010-SHARED-007 |
+| `SHARED-007` | Remove superseded pre-production billing compatibility contracts | Complete | ARCH-010-SHARED-006, ARCH-010-BACKGROUND-020, ARCH-010-SHOPIFY-024 |
+| `SHARED-008` | Publish the clean first-production Shared billing contract | Complete | ARCH-010-SHARED-007 |
 
 ## Execution note
 

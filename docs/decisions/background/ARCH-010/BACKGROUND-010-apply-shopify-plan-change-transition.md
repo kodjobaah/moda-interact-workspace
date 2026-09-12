@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-BACKGROUND-010
 architecture_id: ARCH-010
-title: Apply Shopify-authoritative plan changes without resetting lifetime credit history
+title: Apply Shopify-authoritative plan changes without resetting lifetime credit
+  history
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -21,7 +22,6 @@ depends_on:
 - ARCH-010-SHARED-008
 enables:
 - ARCH-010-BACKGROUND-012
-- ARCH-010-BACKGROUND-016
 - ARCH-010-SHOPIFY-015
 - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11

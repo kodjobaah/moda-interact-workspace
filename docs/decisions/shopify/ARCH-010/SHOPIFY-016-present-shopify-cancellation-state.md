@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-SHOPIFY-016
 architecture_id: ARCH-010
-title: Present Shopify cancellation state without local cancellation authority
+title: Present cancellation, NO_CONTRACT and FROZEN merchant restriction states
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -15,187 +15,188 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-SHOPIFY-009
-- ARCH-010-SHOPIFY-012
-- ARCH-010-SHOPIFY-013
-- ARCH-010-BACKGROUND-012
-- ARCH-010-BACKGROUND-013
+  - ARCH-010-SHOPIFY-009
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-013
+  - ARCH-010-SHOPIFY-018
+  - ARCH-010-BACKGROUND-012
+  - ARCH-010-BACKGROUND-013
 enables:
-- ARCH-010-SYSTEM-TEST-002
+  - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: '2026-09-12'
+updated: 2026-09-12
 ---
 
-# ARCH-010-SHOPIFY-016: Present Shopify cancellation state without local cancellation authority
+# ARCH-010-SHOPIFY-016: Present cancellation, NO_CONTRACT and FROZEN merchant restriction states
+
+## Consolidation
+
+This task absorbs `ARCH-010-SHOPIFY-019`. `SHOPIFY-019` is superseded and MUST NOT be implemented separately.
+
+The merge is deliberate: cancellation-scheduled, effective NO_CONTRACT and FROZEN are mutually exclusive merchant restriction states rendered on the same merchant surfaces and guarding the same billing actions. One explicit state matrix prevents conflicting banners/actions.
 
 ## Objective
 
-Make merchant-facing Moda surfaces accurately present scheduled/effective Shopify subscription cancellation while keeping Shopify as the only cancellation authority.
+Make `/app` and `/app/billing/options` present the current Shopify lifecycle restriction truth accurately while keeping merchants in the merchant application for read/history/support where allowed.
 
-Moda must not expose a local `Cancel subscription` action that calls Billing API.
+Shopify remains cancellation/freeze authority. Moda exposes no local subscription cancellation mutation and no Admin access.
 
 ## Inspect before editing
 
 ```text
-app/routes/app/route.tsx
+app/routes/app/home/route.jsx
+app/routes/app/billing/route.tsx
 app/routes/app/billing/options/route.tsx
-app/components/billing/SubscriptionChangePanel.*
-app/components/billing/BillingPurchaseHub.*
+app/routes/app/billing/select/route.jsx
+app/routes/app/merchant-support/route.jsx
 app/services/billing/billing.service.ts
-app/services/billing/billing.types.ts
-app/services/billing/providers/shopify-billing.provider.ts
-SHOPIFY-009 capacity projection implementation
-SHOPIFY-012 billing-options integration
-SHOPIFY-013 authoritative commercial read model
-relevant i18n catalogs/tests
+app/services/shop/shop-access-policy.ts
+app/components/dashboard/BillingPurchaseHub.jsx
+app/components/dashboard/TopUpPurchasePanel.jsx
+app/components/dashboard/SubscriptionChangePanel.jsx
+app/i18n/locales/*.json
+tests/unit/home-route.test.ts
+tests/unit/billing-ui.test.ts
+tests/unit/services/billing.service.test.ts
+tests/unit/billing-i18n.test.ts
 ```
 
-## Authority
+Consume `SHOPIFY-018` provider lifecycle read state and the durable local Subscription projection. Ordinary dashboard rendering MUST NOT add recurring Partner API polling.
 
-Use SHOPIFY-013 commercial state for:
+## Binding state precedence
 
-```text
-current provider plan
-current provider billing cycle
-cancelAtEndOfCycle
-pendingUpdate
-```
+Render/guard in this exact precedence order:
 
-Use Moda local durable projection/counters for:
+1. `FROZEN` durable/restoration-pending lifecycle;
+2. provider pending plan update;
+3. scheduled full cancellation (`cancelAtEndOfCycle=true`, no pending update);
+4. effective post-onboarding `NO_CONTRACT`;
+5. fresh onboarding `NO_CONTRACT` (`onboardingCompleted=false`);
+6. ordinary active/trialing state;
+7. provider verification unavailable is presentation uncertainty and MUST NOT be converted into cancellation/freeze/current-plan truth from local price mappings.
 
-```text
-current executable contract projection
-lifetime Free balance
-purchased balance
-paid included balance/history
-```
+Pending plan update always renders as plan change, not full cancellation.
 
-Never infer cancellation from a local `BillingPlan` row.
+## Merchant state matrix
 
-## Cancellation classification for UI
+### A. FROZEN
 
-Classify in this order.
+Required behaviour:
 
-### 1. Pending plan change exists
+- `/app` remains normal landing/dashboard, not first-time onboarding;
+- usage/events/recovery/history and historical conversation/recovery detail remain readable under existing access policy;
+- show localized `Subscription paused by Shopify`/equivalent message;
+- explain Shopify billing must be resolved before Moda resumes;
+- show current/mapped provider identity when available;
+- show balances/history as preserved but non-spendable;
+- support remains available;
+- top-up CTA/action is unavailable;
+- plan-change CTA/action is unavailable while local execution remains FROZEN/restoration-pending;
+- provider ACTIVE while local FROZEN renders a restoring/verifying state and keeps mutations disabled;
+- do not redirect to onboarding;
+- do not call FROZEN cancellation or credit exhaustion.
 
-If Shopify has `pendingUpdate`, present the plan-change state owned by `ARCH-010-SHOPIFY-015` / `ARCH-010-BACKGROUND-010`.
+Direct server invocation of top-up or plan-change/select actions while FROZEN MUST fail closed even if a UI control is bypassed.
 
-Do not label it full cancellation merely because the outgoing provider subscription also has `cancelAtEndOfCycle=true`.
+### B. Pending provider plan update
 
-### 2. Full cancellation scheduled
+Render the plan-change state owned by SHOPIFY-015/BACKGROUND-010.
 
-```text
-activeSubscription != null
-cancelAtEndOfCycle = true
-pendingUpdate = null
-```
+Do not show full-cancellation messaging solely because outgoing provider data also carries cancellation-at-cycle-end semantics.
 
-Present:
+### C. Scheduled full cancellation
 
-- current plan remains active until the exact current cycle end;
-- recoveries/current conversations remain available under normal entitlement until then;
-- new top-up purchase is disabled;
-- purchased and lifetime Free balances are not deleted;
-- a localized warning/banner on `/app` and `/app/billing/options`;
-- a Shopify-managed subscription link/CTA using the existing hosted plan-management route, without promising that Moda itself can undo cancellation.
+While the current provider contract remains active through exact period end:
 
-Do not redirect the merchant away from the dashboard.
+- dashboard/history/current conversations/recoveries remain available under normal entitlement;
+- show localized scheduled-end warning with exact provider cycle end;
+- show existing balances normally;
+- disable new top-up purchase/action;
+- keep Shopify-hosted Manage/Change plan CTA available so the merchant can use Shopify's own management surface;
+- do not offer local `Cancel subscription`/undo mutation;
+- do not claim entitlement ended early.
 
-### 3. Effective no contract for an existing onboarded merchant
+### D. Effective NO_CONTRACT after onboarding
 
-When local Subscription is NO_CONTRACT after the merchant previously completed onboarding:
+When `onboardingCompleted=true` and Subscription is NO_CONTRACT:
 
-- keep `/app` as the normal merchant landing surface;
+- keep `/app` as merchant landing surface rather than first-time onboarding;
 - keep usage/events/recovery history/support/billing navigation readable;
-- show a localized `subscription ended / choose a plan to resume` banner;
-- show purchased and lifetime Free balances as **preserved but currently non-spendable**;
-- top-up purchase unavailable because there is no active Shopify plan/meter/cycle;
-- plan-selection/manage CTA remains available through Shopify-hosted pricing;
-- do not set `onboardingCompleted=false` in this task;
-- do not send the merchant to `moda-interact-admin`.
+- show localized `subscription ended / choose a plan to resume` message;
+- show preserved purchased/lifetime-Free/promotion balances as non-spendable;
+- new top-up is unavailable because there is no active provider contract/meter/cycle;
+- new recovery/business actions are unavailable through Background gate;
+- Shopify-hosted plan-selection/manage CTA remains available;
+- present a CONTRACT_REQUIRED/canonical lifecycle restriction, never RECOVERY_CAPACITY_EXHAUSTED;
+- do not set onboarding false in this task.
 
-### 4. Fresh never-activated NO_CONTRACT merchant
+### E. Fresh NO_CONTRACT onboarding
 
-Preserve the fresh-install/onboarding behavior from `ARCH-010-SHOPIFY-001`:
+When `onboardingCompleted=false`, preserve the existing first-install onboarding behaviour. Do not route a fresh merchant into post-cancellation dashboard semantics.
 
-```text
-onboardingCompleted=false
--> onboarding / plan-selection flow
-```
+### F. Provider verification unavailable
 
-Do not use the post-cancellation dashboard state for a never-activated merchant.
+Do not use local BillingPlan price/name/rank as proof of cancellation, freeze or active provider commercial state. Render a bounded verification-unavailable state when an explicit provider verification surface needs it while preserving durable access rules.
 
-## Capacity read model amendment
+## Action guards
 
-Consume SHOPIFY-009's explicit `CONTRACT_REQUIRED`/equivalent state for an onboarded NO_CONTRACT merchant.
+Server-side action guards are mandatory; UI disabled state is not security/correctness authority.
 
-Do not display this as `EXHAUSTED` even when local lifetime balances are zero.
+| State | New top-up | Shopify-hosted plan select/change |
+|---|---|---|
+| ACTIVE/TRIALING normal | normal SHOPIFY-014/015 rules | allowed |
+| scheduled full cancellation | DENY top-up | allowed |
+| FROZEN/restoring | DENY | DENY until restored |
+| effective NO_CONTRACT after onboarding | DENY | allowed to establish new provider contract |
+| fresh NO_CONTRACT onboarding | DENY | allowed through onboarding selection flow |
 
-Required distinction:
+Do not add a Moda cancellation/refund mutation as a workaround.
 
-```text
-EXHAUSTED
-  active executable Shopify contract exists
-  but all usable recovery-credit sources are exhausted
+## No Admin boundary
 
-CONTRACT_REQUIRED
-  no executable Shopify contract exists
-  balances may still be preserved
-```
-
-## Top-up behavior
-
-Disable the Buy top-up CTA when either:
-
-```text
-full cancellation scheduled
-OR
-NO_CONTRACT
-```
-
-Do not call `requestRecoveryCreditPack()` in either state.
-
-The UI must explain that preserved purchased/lifetime credits remain on the merchant account but require an active Shopify plan before recovery execution resumes.
-
-## Existing conversations/history
-
-After effective cancellation, merchant UI may still show historical conversations/messages/recoveries. Do not imply those conversations are actively serviced.
-
-Background execution behavior is owned by BACKGROUND-013.
+No route, banner, button, support CTA or redirect may expose `moda-interact-admin` to merchants.
 
 ## Required tests
 
-At minimum prove:
-
-1. pending plan change is shown as plan change, not full cancellation;
-2. scheduled full cancellation displays exact provider cycle end;
+1. pending plan update renders as plan change, not cancellation;
+2. scheduled full cancellation renders exact provider cycle end;
 3. scheduled cancellation leaves dashboard/history accessible;
-4. scheduled cancellation disables top-up CTA/action;
-5. scheduled cancellation does not hide current balances;
-6. effective NO_CONTRACT + onboardingCompleted=true lands on dashboard/read-only merchant app rather than onboarding;
-7. fresh NO_CONTRACT + onboardingCompleted=false still uses onboarding;
-8. effective cancellation shows CONTRACT_REQUIRED rather than EXHAUSTED;
-9. preserved purchased credits display but are not spendable while NO_CONTRACT;
-10. preserved lifetime Free credits display but are not spendable while NO_CONTRACT;
-11. plan-selection/manage CTA routes through Shopify-hosted pricing;
-12. no local `appSubscriptionCancel` action exists;
-13. no Admin route/link is exposed;
-14. Shopify verification failure is presented as verification unavailable, not cancellation;
-15. local BillingPlan data is never used to claim cancellation/commercial truth;
-16. i18n covers scheduled/end/no-contract messaging.
+4. scheduled cancellation disables top-up UI and direct server action;
+5. scheduled cancellation keeps Shopify-hosted plan management available;
+6. scheduled cancellation preserves visible balances/current entitlement until boundary;
+7. effective NO_CONTRACT + onboarding complete lands in merchant dashboard/read-only app, not onboarding;
+8. fresh NO_CONTRACT + onboarding incomplete still uses onboarding;
+9. effective NO_CONTRACT renders CONTRACT_REQUIRED, not EXHAUSTED;
+10. purchased/lifetime-Free/promotion balances remain visible but non-spendable under NO_CONTRACT;
+11. FROZEN merchant lands on `/app`, not onboarding;
+12. FROZEN dashboard/history/usage remain readable;
+13. frozen banner can render from durable local state without Partner call on ordinary dashboard render;
+14. billing options renders FROZEN distinctly from cancellation/exhaustion;
+15. FROZEN disables top-up UI and direct server action;
+16. FROZEN disables plan-change UI and direct `/app/billing/select` invocation;
+17. support remains available while FROZEN;
+18. provider ACTIVE + local FROZEN renders restoring state and remains mutation-disabled;
+19. successful local restoration removes frozen warning on next normal read;
+20. provider verification failure does not fabricate cancellation/freeze/active truth from local mapping;
+21. no local `appSubscriptionCancel` action exists;
+22. no Admin route/link/redirect is exposed;
+23. all new visible strings satisfy locale/i18n parity.
 
 ## Non-goals
 
-Do not implement cancellation mutation, Admin approval, top-up refund, resubscription entitlement activation, freeze handling or deterministic shop identity redesign.
+Do not implement Background lifecycle reconciliation/gates, provider subscription mutations, refund settlement, new provider polling loops, credit mutations or shop identity redesign.
+
+## Validation
+
+Inspect `package.json`. Run focused home/billing/action/component/i18n tests, then repository-declared test/typecheck/build commands and `git diff --check`. Do not invent scripts.
 
 ## Stop conditions
 
-Stop and return to `moda_architect` if the existing merchant route architecture cannot distinguish `onboardingCompleted=false` fresh NO_CONTRACT from `onboardingCompleted=true` post-cancellation NO_CONTRACT without rewriting unrelated onboarding flows.
+STOP and return to `moda_architect` if:
 
-
-## Final frozen-versus-canceled distinction
-
-Cancellation presentation MUST consume SHOPIFY-018 lifecycle state. Provider `activeSubscription=null` with latest FROZEN must show the frozen/paused state, not subscription-ended/NO_CONTRACT messaging. Effective cancellation presentation requires provider CANCELED evidence plus the reconciled local NO_CONTRACT transition.
+1. current merchant routing cannot distinguish fresh NO_CONTRACT from post-onboarding NO_CONTRACT without rewriting unrelated onboarding architecture;
+2. direct billing actions cannot consume current lifecycle restriction state without duplicating a second Partner API implementation;
+3. the implementation would need Admin exposure or local Shopify cancellation mutation.
 
 ## Completion Report
 

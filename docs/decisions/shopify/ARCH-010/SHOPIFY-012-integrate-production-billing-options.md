@@ -16,8 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-010-SHOPIFY-009
-- ARCH-010-SHOPIFY-010
-- ARCH-010-SHOPIFY-011
 - ARCH-010-SHOPIFY-013
 - ARCH-010-SHOPIFY-018
 - ARCH-010-SHOPIFY-014
@@ -28,7 +26,6 @@ enables:
 - ARCH-010-SHOPIFY-008
 - ARCH-010-SHOPIFY-016
 - ARCH-010-SHOPIFY-017
-- ARCH-010-SHOPIFY-019
 - ARCH-010-SHOPIFY-020
 - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
@@ -79,7 +76,7 @@ app/routes.ts
 tests/unit/billing-ui.test.ts
 ```
 
-Read implemented SHOPIFY-009/010/011/013/007 first.
+Read implemented SHOPIFY-009/014/015/013/007 first.
 
 ## Current defects to remove
 
@@ -202,8 +199,8 @@ Require explicit production props representing:
 Compose:
 
 - real capacity summary;
-- SHOPIFY-010 `TopUpPurchasePanel`;
-- SHOPIFY-011 `SubscriptionChangePanel`.
+- SHOPIFY-014 `TopUpPurchasePanel`;
+- SHOPIFY-015 `SubscriptionChangePanel`.
 
 Preserve the top-up/plan tab/switch behaviour if useful, but its data/actions must be real.
 

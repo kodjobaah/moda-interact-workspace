@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-BACKGROUND-007
 architecture_id: ARCH-010
-title: Implement canonical same-plan App Pricing BillingPeriod rollover for Paid and Free
+title: Implement canonical same-plan App Pricing BillingPeriod rollover for Paid and
+  Free
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -27,7 +28,6 @@ enables:
 - ARCH-010-BACKGROUND-006
 - ARCH-010-BACKGROUND-010
 - ARCH-010-BACKGROUND-012
-- ARCH-010-BACKGROUND-016
 - ARCH-010-SHOPIFY-007
 - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
@@ -562,6 +562,6 @@ Pending.
 
 ## Final frozen-cycle interaction
 
-Canonical rollover MUST NOT close/grant a period merely because wall-clock `periodEnd` passes while the Subscription is FROZEN. BACKGROUND-016 owns the frozen retry.
+Canonical rollover MUST NOT close/grant a period merely because wall-clock `periodEnd` passes while the Subscription is FROZEN. BACKGROUND-012 owns the frozen retry.
 
 When unfreeze later proves the same mapped plan in a later Shopify currentBillingCycle, this rollover implementation MUST support direct catch-up from the preserved old period to the exact provider current cycle without fabricating intermediate monthly periods. Paid grants the provider current cycle allowance once; Free rotates provider billing scope only.

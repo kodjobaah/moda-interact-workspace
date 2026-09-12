@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-BACKGROUND-011
 architecture_id: ARCH-010
-title: Make the lifetime Free recovery entitlement plan-independent and consume it after purchased credits
+title: Make the lifetime Free recovery entitlement plan-independent and consume it
+  after purchased credits
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 41
 executor: null
 claimed_at: null

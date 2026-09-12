@@ -5,7 +5,7 @@ Coordinator: `moda_architect`
 
 ## Current architecture state
 
-ARCH-010 is **Agreed / In Progress** and is now explicitly the **first-production baseline** for Moda Interact billing, merchant lifecycle and recovery capacity.
+ARCH-010 is **Agreed / In Progress** and is the clean **first-production baseline** for Moda Interact billing, merchant lifecycle and recovery capacity.
 
 Read in this order before implementing any ARCH-010 task:
 
@@ -15,88 +15,123 @@ Read in this order before implementing any ARCH-010 task:
 4. [`ARCH-010-supersession-map.md`](ARCH-010-supersession-map.md)
 5. the exact assigned `docs/decisions/<domain>/ARCH-010/<TASK>.md`
 
-The exact task file remains the implementation handoff. Do not implement from this summary alone.
+The exact task file is the implementation contract. Do not implement from this handoff alone.
 
-## First-production baseline rule
-
-Rollout classification:
+## Rollout classification
 
 ```text
 PRE-PRODUCTION / BREAKING ROLLOUT
 ```
 
-There is no production billing state requiring compatibility with the intermediate development schema/contracts.
+There is no production billing state requiring compatibility with intermediate development schemas/contracts. DATABASE-013 is the canonical first-production database baseline; future architectures migrate forward from it normally.
 
-Therefore:
+## Current audited task state
 
-```text
-ARCH-010-DATABASE-013
-  = one canonical empty-database first-production schema/migration baseline
-
-future ARCH-011+
-  = ordinary forward migrations from that accepted baseline
-```
-
-Do not preserve development-only aliases, backfills, dual reads or transitional state machines merely because a completed development task once introduced them.
-
-## Immutable accepted history
-
-For this consolidation, completed ARCH-010 task files are immutable accepted evidence.
+The 2026-09-12 current-workspace audit plus the developer correction that `ARCH-010-SHOPIFY-002` is already complete produces:
 
 ```text
-Complete task
-  -> do not reopen
-  -> do not rewrite Completion Report / Architect Review
-  -> if accepted implementation no longer matches final baseline,
-     use later correction/conformance work
+all ARCH-010 task files: 81
+complete:                 29
+ready:                     6
+pending:                  39
+superseded:                7
 ```
 
-The supplied workspace contains **23 Complete tasks**, and their task files remain unchanged by this baseline overlay.
+There is no active `in_progress` or `review` task after synchronizing SHOPIFY-002's stale parent task metadata.
 
-`ARCH-010-SHOPIFY-002` remains `review` exactly as supplied. Do not amend its Attempt-8 task evidence to retrofit the new baseline. After it is architect-accepted Complete, `ARCH-010-SHOPIFY-023` performs the clean-baseline conformance work.
-
-For immutable Complete/Review task files, their historical `enables:` list is an accepted snapshot and is not rewritten when later correction tasks are added. **Current task `depends_on:` metadata is the eligibility authority**, with domain indexes and this handoff providing the current reverse planning view.
-
-## Database baseline
-
-### Historical development tasks
-
-`ARCH-010-DATABASE-001` through `ARCH-010-DATABASE-011` remain Complete implementation/review history.
-
-They are **not** the production migration chain.
-
-### Superseded task
-
-`ARCH-010-DATABASE-012` is `superseded` and must not be implemented independently. Its valid upgrade-economics schema target is folded into DATABASE-013.
-
-### Canonical database task
-
-`ARCH-010-DATABASE-013` is Complete and owns:
-
-- final Prisma schema;
-- one empty-database first-production baseline migration;
-- final seed/validators/ERD;
-- removal of development migration directories;
-- clean lifetime-Free entitlement model;
-- clean human refund model;
-- removal of local cancellation schema;
-- campaign-only exact promotional grant lots;
-- upgrade-economics policy/edges/snapshots.
-
-Key removed first-production concepts include:
+### Ready frontier
 
 ```text
-BillingPlan.freeLifetimeConversationAllowance
-BillingAllowanceAdjustment
-FREE_RECOVERY_LIFETIME
-ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)
-MIGRATION_RECONCILED
-SubscriptionCancellationRequest / mode / status
-RecoveryCreditPurchaseStatus.REFUNDED
-negative-App-Event refund correction state
-campaign-less/direct promotional grant compatibility
-BILLING_FREE_ALLOWANCE_EXHAUSTED historical-row compatibility
+ARCH-010-ADMIN-007
+ARCH-010-ADMIN-010
+ARCH-010-BACKGROUND-001
+ARCH-010-BACKGROUND-011
+ARCH-010-BACKGROUND-015
+ARCH-010-SHOPIFY-023
 ```
+
+These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010.
+
+## SHOPIFY-002 status synchronization
+
+The supplied parent task document still said `in_progress`, but the developer explicitly confirmed on 2026-09-12 that `ARCH-010-SHOPIFY-002` is complete.
+
+For dependency planning this handoff therefore treats SHOPIFY-002 as Complete. The task file is synchronized to `complete` without fabricating missing task-branch implementation evidence. The supplied parent ZIP does not contain the separate Attempt-4 task-branch checkout/report commit, so this consolidation does not reconstruct or invent that evidence.
+
+## Luna-oriented task consolidation
+
+The current repository/task audit found five safe merges. Only still-unimplemented tasks are merged.
+
+```text
+BACKGROUND-016 -> BACKGROUND-012
+  freeze/unfreeze reconciliation is absorbed into the same canonical
+  subscription reconciliation state machine as cancellation.
+
+BACKGROUND-017 -> BACKGROUND-013
+  FROZEN execution gating is absorbed into the same reusable execution-policy
+  boundary as NO_CONTRACT while preserving distinct denial reasons.
+
+SHOPIFY-010 -> SHOPIFY-014
+  top-up server adapter + TopUpPurchasePanel become one merchant top-up capability.
+
+SHOPIFY-011 -> SHOPIFY-015
+  hosted plan-change select/return + SubscriptionChangePanel become one app-owned
+  merchant plan-management capability.
+
+SHOPIFY-019 -> SHOPIFY-016
+  scheduled cancellation, effective NO_CONTRACT and FROZEN merchant restriction
+  presentation/action guards become one explicit state matrix.
+```
+
+The absorbed task files remain in the repository with `status: superseded` and a `superseded_by` pointer. They MUST NOT be claimed.
+
+### Tasks deliberately NOT merged
+
+Do not merge these boundaries:
+
+- `BACKGROUND-015` provider snapshot vs `BACKGROUND-012` lifecycle state machine;
+- `BACKGROUND-018` high-volume FROZEN Shopify-event early gate vs `BACKGROUND-013` general business-execution gate;
+- `BACKGROUND-002/011/014/019` capacity sources, because their locking/accounting invariants differ;
+- `SHOPIFY-004` paid-period presentation vs `SHOPIFY-007` cycle-phase/App-Event mutation guard;
+- `SHOPIFY-020` promotion capacity presentation vs `SHOPIFY-021` campaign catalogue/selection;
+- system tests vs any implementation task.
+
+This keeps each surviving task bounded enough for GPT-5.6 Luna while avoiding artificial component/server or lifecycle-state fragmentation.
+
+## High-volume Shopify boundary
+
+The platform target remains approximately **22,000 Shopify webhook events/minute**. ARCH-010 must not move business/lifecycle filtering into the Shopify HTTP webhook path.
+
+```text
+Shopify HTTP ingress
+  authenticate
+  validate/minimally normalise
+  deterministic identity
+  durable enqueue
+  ACK
+
+Background
+  dequeue
+  minimal early state checks
+  discard/no-op common irrelevant path
+  perform expensive action path only when required
+```
+
+`BACKGROUND-018` remains intentionally separate because it modifies this high-volume queued-event hot path. It must not add Partner API calls or unnecessary database/Redis work per event.
+
+## Database and Shared baseline
+
+Already Complete:
+
+```text
+DATABASE-013   one clean first-production Prisma schema + empty-db baseline migration
+BACKGROUND-020 remove live Background consumers of deleted Shared compatibility names
+SHOPIFY-024    remove live Shopify consumers of deleted Shared compatibility names
+SHARED-007     remove obsolete pre-production Shared contracts
+SHARED-008     publish clean first-production Shared contract
+```
+
+Do not recreate removed compatibility concepts locally.
 
 Canonical lifetime entitlement:
 
@@ -104,42 +139,23 @@ Canonical lifetime entitlement:
 LIFETIME_FREE_RECOVERY_CREDITS
 ```
 
-## Shared baseline
-
-`ARCH-010-SHARED-007` is Ready and removes superseded pre-production billing compatibility contracts, including the local-cancellation exports and the Free-only `BILLING_FREE_ALLOWANCE_EXHAUSTED` message code.
-
-`ARCH-010-SHARED-008` is Pending behind SHARED-007 and publishes the clean package as:
+Removed from first production include:
 
 ```text
-@modainteract/moda-interact-shared@0.11.0
+BillingPlan.freeLifetimeConversationAllowance
+BillingAllowanceAdjustment
+FREE_RECOVERY_LIFETIME
+ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)
+MIGRATION_RECONCILED
+SubscriptionCancellationRequest / local cancellation executor
+RecoveryCreditPurchaseStatus.REFUNDED
+negative-App-Event refund correction
+campaign-less promotional grants
+BILLING_FREE_ALLOWANCE_EXHAUSTED
+BILLING_PLAN_CHANGE_ACTION_REQUIRED
 ```
 
-Do not republish SHARED-001/003/005 individually. Their retained contracts are already part of the accepted 0.10.0 development release; SHARED-008 is the one new publication required because SHARED-007 changes package contents.
-
-## Runtime baseline-conformance bridge
-
-Two new correction tasks protect completed/in-flight implementation history while moving consumers to the clean baseline:
-
-```text
-ARCH-010-ADMIN-010
-  DATABASE-013 + SHARED-008 + accepted ADMIN-001
-  -> remove Admin compatibility reads/types/actions
-
-ARCH-010-SHOPIFY-023
-  DATABASE-013 + SHARED-008 + accepted SHOPIFY-002
-  -> remove Shopify billing compatibility reads/raw SQL/types
-```
-
-These tasks do not implement downstream product features. They only make the current repositories clean consumers of the first-production baseline.
-
-Still-open Background tasks were amended directly rather than duplicated. In particular:
-
-- BACKGROUND-011 has **no** signed Free-adjustment compatibility;
-- BACKGROUND-012 removes any remaining local cancellation executor/mutation path while implementing provider reconciliation;
-- BACKGROUND-014 removes any remaining automatic negative-App-Event refund/correction path;
-- BACKGROUND-019 uses only exact selected campaign grant lots and no aggregate promotional counter.
-
-## Canonical recovery-capacity order
+## Canonical capacity order
 
 ```text
 FREE
@@ -156,152 +172,58 @@ PAID
   -> BLOCK NEW RECOVERY ADMISSION
 ```
 
-There is no automatic Paid overage.
+No automatic Paid overage exists.
 
-## Current task frontier
+## Subscription plan-change boundary
 
-The Ready ARCH-010 implementation tasks after baseline consolidation are:
-
-| Task | Owner | Why Ready |
-|---|---|---|
-| `ARCH-010-SHARED-007` | `moda_shared` | SHARED-006 is Complete |
-| `ARCH-010-ADMIN-007` | `moda_admin` | independent pure upgrade-economics evaluator |
-| `ARCH-010-BACKGROUND-015` | `moda_background` | dependency-free provider snapshot; no architecture hold |
-
-Current in-review work:
-
-| Task | State | Rule |
-|---|---|---|
-| `ARCH-010-SHOPIFY-002` | Review, Attempt 8 | architect review it as submitted; do not retrofit baseline cleanup into that attempt |
-
-Everything else remains Pending behind the appropriate baseline/conformance or existing feature dependency.
-
-## Expected near-term unlock order
+Merchant upgrade/downgrade is Shopify-hosted and Shopify-authoritative:
 
 ```text
-DATABASE-013 Complete
-        │
-        ├── enables database-dependent open work
-        ├── contributes to ADMIN-010
-        └── contributes to SHOPIFY-023
+SHOPIFY-015
+  merchant interaction + hosted selection + synchronous provider verification
+  -> persist/schedule safe current/pending projection only
 
-SHARED-007 Complete
-        ↓
-SHARED-008 publish 0.11.0
-        │
-        ├── contributes to ADMIN-010
-        ├── contributes to SHOPIFY-023
-        └── unblocks Shared-consuming Background/Shopify work
-
-SHOPIFY-002 Accepted Complete
-        + DATABASE-013 Complete
-        + SHARED-008 Complete
-        ↓
-SHOPIFY-023
-
-ADMIN-001 already Complete
-        + DATABASE-013 Complete
-        + SHARED-008 Complete
-        ↓
-ADMIN-010
+BACKGROUND-010
+  effective provider-confirmed plan transition
+  -> close/open BillingPeriod and grant/forfeit period entitlement exactly once
 ```
 
-DATABASE-013 and SHARED-007 can execute in parallel. ADMIN-007 and BACKGROUND-015 can also execute independently.
+The app callback never grants plan capacity or performs local subscription creation.
 
-## Current task counts
-
-From individual task YAML after this consolidation:
+## Lifecycle boundary after consolidation
 
 ```text
-all ARCH-010 tasks: 79
-complete:           24
-review:              1
-ready:               3
-pending:            49
-superseded:          2
-```
-
-Domain totals:
-
-```text
-Shopify       23
-Background    19
-Database      13
-Admin         10
-Shared         8
-System Test    5
-Gateway        1
+BACKGROUND-015
+  live subscription + latest lifecycle snapshot
+        ↓
+BACKGROUND-012
+  one deterministic lifecycle reconciliation state machine:
+  pending plan / scheduled cancellation / CANCELED / FROZEN / UNFROZEN / ambiguity
+        ↓
+BACKGROUND-013
+  reusable business-execution gate:
+  NO_CONTRACT vs FROZEN distinct reasons
+        ↓
+BACKGROUND-018
+  separate 22k/min-sensitive early checkout/cart/order FROZEN gate
 ```
 
 ## System-test rule
 
-All ARCH-010 system-test tasks remain terminal/manual-gated.
+All ARCH-010 system-test tasks remain terminal/manual-gated. No implementation/publication/infrastructure task depends on them.
 
-No implementation, publication, infrastructure or observability task depends on a system-test task.
+Do not auto-start system tests when dependencies become Complete. The developer may manually inspect the integrated product first and explicitly invoke system tests afterwards.
 
-After implementation is complete, the developer may manually verify the integrated product before explicitly invoking the expensive system-test tasks. Do not auto-start them merely because dependencies become Complete.
+## Agent execution rule
 
-## Task materialisation
+For every Ready task, the repository agent must:
 
-This overlay was authored outside the developer's canonical Git/worktree environment. New tasks are therefore **defined but not materialised** under the architect task-materialisation policy.
+1. re-read the exact task file;
+2. claim the same task through the normal workflow;
+3. edit only the stated repository/scope;
+4. implement every numbered invariant/test rather than approximating the objective;
+5. use actual `package.json` scripts rather than inventing validation commands;
+6. stop on any task STOP condition and return the exact mismatch to `moda_architect`;
+7. return to review and STOP after the task's validation/completion report.
 
-After applying the overlay to the real workspace, use the normal task materialisation/launcher path for an eligible Ready task. Do not claim that this external architecture session created/pushed task branches or worktrees.
-
-## Stop rule for implementation agents
-
-If DATABASE-013/SHARED-008 removes a symbol that an open task still requires in a way not covered by its amended definition:
-
-1. stop that task;
-2. record the exact schema/contract gap;
-3. return to `moda_architect`;
-4. do **not** recreate the removed compatibility concept locally.
-
-The goal is one first-production model, not a clean database wrapped by service-local legacy adapters.
-
-## Sequencing correction — SHARED-007 live-consumer block (2026-09-12)
-
-This section supersedes the earlier handoff statements that describe SHARED-007 as
-immediately Ready and place consumer cleanup after SHARED-008.
-
-SHARED-007 Attempt 1 correctly stopped because live first-party consumers still import
-contracts that the task must delete. The corrected pre-production breaking-release
-sequence is:
-
-```text
-Shared 0.10.0 already published
-        |
-        +--> BACKGROUND-020  remove Background cancellation/free-exhaustion consumers
-        |
-        +--> SHOPIFY-024     remove Shopify Free-only exhaustion consumer
-                  |
-                  v
-          architect acceptance of both
-                  |
-                  v
-          SHARED-007 blocked -> ready
-                  |
-                  v
-          SHARED-007 Attempt 2
-                  |
-                  v
-          SHARED-008 publish 0.11.0
-                  |
-                  v
-          ADMIN-010 / SHOPIFY-023 and remaining Shared-consuming work
-```
-
-The cleanup tasks are intentionally narrow:
-
-- `BACKGROUND-020` does not implement BACKGROUND-009 or BACKGROUND-012;
-- `SHOPIFY-024` does not implement SHOPIFY-008 or SHOPIFY-023;
-- `SHARED-007` still owns deletion of the public names;
-- `SHARED-008` still owns the only 0.11.0 publication.
-
-`BILLING_PLAN_CHANGE_ACTION_REQUIRED` had no active first-party consumer in the
-SHARED-007 blocked-run inspection and remains scheduled for deletion by SHARED-007.
-
-Individual task YAML remains authoritative for execution state. Domain indexes should
-be regenerated/reconciled from current task YAML after these portable task definitions
-are applied to the latest workspace, rather than copying stale status rows from the
-SHARED-007 Attempt-1 worktree snapshot.
-
+If a clean-baseline symbol is missing, do not recreate a legacy alias locally. Return the contract gap to the architect.

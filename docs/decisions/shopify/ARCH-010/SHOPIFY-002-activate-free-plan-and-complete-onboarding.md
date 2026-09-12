@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-09-12T00:00:00Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-010-DATABASE-006
@@ -25,7 +25,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: 2026-09-12T08:56:00Z
+updated: 2026-09-12
 ---
 
 # ARCH-010-SHOPIFY-002: Activate Free plan with durable asynchronous Shopify verification
@@ -245,7 +245,7 @@ Attempt 3 correction checklist:
 - Isolate queue acquisition and `Queue.add` failures from the callback response.
 
 ### Status
-Ready for Review
+Complete
 
 ### Files Changed
 - `moda-interact/app/routes/app/billing/callback/route.tsx`
@@ -630,3 +630,9 @@ Run the task-declared focused/full validation and return the same mirrored branc
 Repository-wide pre-existing typecheck/lint diagnostics outside the changed task files remain non-blocking if they are unchanged and correctly documented.
 
 **Architect decision: Changes Requested — Attempt 3.**
+
+#### Attempt 4 — Completion-state reconciliation
+
+The developer confirmed on 2026-09-12 that Attempt 4 of this task had already completed and that this parent task document was stale. This coordination edit synchronizes the durable task state to `complete` so dependency/frontier calculation does not schedule already-finished work.
+
+The supplied parent ZIP does not contain the separate task-branch implementation checkout/Attempt-4 report commit, so this consolidation does **not** invent replacement implementation evidence or rewrite the earlier Architect Review history. The existing recorded implementation/review evidence above remains provenance; task-branch evidence should be preserved when the completed task report is merged into the parent workspace.

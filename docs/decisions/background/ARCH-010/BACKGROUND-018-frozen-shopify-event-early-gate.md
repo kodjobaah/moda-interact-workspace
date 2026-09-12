@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-010-BACKGROUND-004
-- ARCH-010-BACKGROUND-016
+- ARCH-010-BACKGROUND-012
 enables:
 - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
@@ -29,9 +29,9 @@ updated: '2026-09-12'
 
 Make `Subscription.status=FROZEN` an **early Shopify-event processing gate** in `moda-shopify-event-worker` so checkout/cart events accepted before or during a Shopify billing freeze do not create/refresh pending candidates, call Shopify abandoned-checkout APIs, mutate recovery business state, or create downstream customer work.
 
-This task is deliberately separate from `ARCH-010-BACKGROUND-017`:
+This task is deliberately separate from `ARCH-010-BACKGROUND-013`:
 
-- `BACKGROUND-017` gates recovery/WhatsApp/CommerceAgent/billable business execution generally;
+- `BACKGROUND-013` gates NO_CONTRACT/FROZEN recovery/WhatsApp/CommerceAgent/billable business execution generally;
 - `BACKGROUND-018` gates the high-volume `checkout-events` / `order-events` processing boundary itself.
 
 The Shopify HTTP ingress in `moda-interact` MUST remain unchanged. It continues to authenticate, validate, enqueue and acknowledge Shopify quickly. Do **not** add a synchronous billing/subscription database lookup to webhook ingress.
@@ -76,7 +76,7 @@ tests covering:
   checkout-recovery.service
   pending-recovery-candidate.service
   BACKGROUND-004 inactive-shop gates
-  BACKGROUND-017 frozen execution gates
+  BACKGROUND-013 frozen execution gates
 
 package.json
 ```
@@ -214,13 +214,13 @@ terminal frozen no-op
 
 Do not purge every queue and do not require a distributed lock between subscription reconciliation and Shopify event workers.
 
-A job that has already passed the durable gate before the FROZEN transaction commits may finish only according to the existing idempotent/business gates in BACKGROUND-017. Do not invent cross-process global serialization in this task.
+A job that has already passed the durable gate before the FROZEN transaction commits may finish only according to the existing idempotent/business gates in BACKGROUND-013. Do not invent cross-process global serialization in this task.
 
 ## Unfreeze behaviour
 
 Do not replay discarded raw checkout/cart events merely because Shopify later unfreezes.
 
-After BACKGROUND-016 restores an executable subscription:
+After BACKGROUND-012 restores an executable subscription:
 
 - new Shopify events process normally;
 - already-existing pending/recovery records resume only through their normal ARCH-010 reconciliation/resume paths;
@@ -230,7 +230,9 @@ Before any later customer-facing recovery action, the existing architecture must
 
 ## Performance requirement
 
-This worker is part of the high-volume Shopify background path.
+This worker is part of the high-volume Shopify background path. The architecture design target is **22,000 Shopify webhook events/minute sustained** (approximately **367 events/second**) before burst/retry amplification. This task does not claim that target is capacity-tested merely by passing unit tests; it MUST preserve a hot-path shape that can be validated at that target later.
+
+For the common event path, explicitly record in the Completion Report whether each changed handler performs 0, 1, or more additional PostgreSQL queries and Redis operations relative to the supplied implementation. Any additional per-event operation must be justified.
 
 The task MUST:
 
@@ -276,9 +278,13 @@ At minimum prove:
 12. order.completed for FROZEN creates no new recovery/customer/conversation/outbound message/credit reservation/UsageEvent;
 13. unrelated order.completed with no candidate/recovery remains discarded and creates no new business record;
 14. BACKGROUND-004 UNINSTALLED/SUSPENDED semantics remain unchanged;
-15. BACKGROUND-017 recovery/WhatsApp/CommerceAgent frozen gates remain unchanged;
+15. BACKGROUND-013 recovery/WhatsApp/CommerceAgent frozen gates remain unchanged;
 16. after Subscription returns to ACTIVE/TRIALING, new checkout/cart events use the normal path again;
-17. no Partner API request is made by the early event gate.
+17. no Partner API request is made by the early event gate;
+18. an existing Shop lookup is extended rather than followed by a second subscription lookup where such a lookup already exists;
+19. `cart.activity` (or any path with no existing Shop read) performs at most one minimal durable lookup for the lifecycle gate;
+20. FROZEN common-path processing returns before candidate Redis churn/provider lookup;
+21. changed handlers expose no global/per-shop serialization that would cap unrelated checkout throughput.
 
 Where dependencies are mocked, explicitly assert forbidden dependencies were not called.
 
@@ -291,8 +297,8 @@ Do not:
 - purge all existing BullMQ jobs on freeze;
 - redesign shop identification;
 - add a new cross-repository event field;
-- implement freeze detection/reconciliation (BACKGROUND-015/016);
-- implement WhatsApp/CommerceAgent gates (BACKGROUND-017);
+- implement lifecycle snapshot/reconciliation (BACKGROUND-015/BACKGROUND-012);
+- implement WhatsApp/CommerceAgent gates (BACKGROUND-013);
 - change credit ordering/allowances;
 - change cancellation semantics;
 - replay raw checkout/cart events on unfreeze;
@@ -307,6 +313,8 @@ git diff --check
 ```
 
 Do not invent a validation command that the repository does not provide.
+
+Do **not** run an expensive 22,000/minute system load test inside this repository implementation task unless the task's existing declared tooling already provides a bounded architect-approved command. Record the hot-path query/Redis-operation evidence here; integrated capacity/load validation remains terminal/manual-gated.
 
 ## Stop conditions
 

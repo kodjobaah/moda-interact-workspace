@@ -5,218 +5,119 @@ Coordinator: `moda_architect`
 
 ## Overall decision
 
-**ARCH-010 remains Agreed / In Progress and is now explicitly the Moda Interact first-production billing/lifecycle baseline. It is not yet Implemented.**
-
-The 2026-09-12 review changes the rollout/migration boundary, not the core product intent:
+**ARCH-010 remains Agreed / In Progress.** It is the first-production billing/lifecycle baseline and is not yet Implemented.
 
 ```text
-no production billing data exists
-        ↓
-PRE-PRODUCTION / BREAKING ROLLOUT
-        ↓
-ship one clean ARCH-010 first-production model
-        ↓
-future architectures migrate forward from that baseline
+no production billing data
+  -> PRE-PRODUCTION / BREAKING ROLLOUT
+  -> one clean database + Shared/runtime model
+  -> future architectures migrate forward from that baseline
 ```
 
-The binding baseline amendment is [`ARCH-010-first-production-baseline.md`](ARCH-010-first-production-baseline.md).
+The binding schema/runtime baseline is [`ARCH-010-first-production-baseline.md`](ARCH-010-first-production-baseline.md).
 
-## Accepted task history decision
+## Current workspace audit
 
-Completed task files remain immutable accepted implementation/review evidence.
+The attached 2026-09-12 workspace contains 81 ARCH-010 task files. After synchronizing the developer-confirmed completion of SHOPIFY-002 and applying the safe pending-task consolidation described below:
 
-This review verified that all **23 Complete ARCH-010 task files** from the supplied workspace remain byte-for-byte unchanged by the consolidation work. `ARCH-010-SHOPIFY-002` also remains unchanged in `review` at Attempt 8.
+```text
+complete:    29
+ready:        6
+pending:     39
+superseded:   7
+```
 
-Where accepted/in-flight implementation targeted an intermediate development schema, the architecture now uses new dependent correction tasks or amended still-open tasks. It does not rewrite history.
+Graph validation must remain based on individual task `depends_on` metadata. Superseded tasks are history only and are not execution prerequisites.
 
-## Database consolidation decision
+## Completed-history rule
 
-The earlier idea of multiple cleanup migrations is rejected.
+Already-completed task implementation/review history is not reopened merely to merge task definitions. The five consolidation merges below affect only tasks that were still unimplemented in the supplied workspace.
 
-Instead:
+SHOPIFY-002 is a special status synchronization: the developer confirmed it is already complete but its parent task document was stale. The task state is corrected for planning; this consolidation does not invent missing task-branch evidence not present in the ZIP.
 
-- DATABASE-001..011 remain Complete historical development tasks;
-- DATABASE-012 is Superseded before implementation;
-- DATABASE-013 creates one final Prisma schema and one empty-database first-production migration;
-- valid upgrade-economics requirements from DATABASE-012 are folded into DATABASE-013;
-- future ARCH-011+ changes use normal forward migrations from accepted DATABASE-013.
+## Luna-oriented merge decision
 
-This keeps development design history in task/review documents without making every intermediate development schema part of the production migration chain.
+Safe merges:
+
+| Superseded task | Active owner | Reason |
+|---|---|---|
+| `BACKGROUND-016` | `BACKGROUND-012` | same reconciliation service, same provider snapshot, same dependencies, mutually exclusive lifecycle classification |
+| `BACKGROUND-017` | `BACKGROUND-013` | same execution-policy boundary/paths; retain distinct NO_CONTRACT vs FROZEN reasons |
+| `SHOPIFY-010` | `SHOPIFY-014` | component is pure presentation of the top-up adapter contract; same feature boundary |
+| `SHOPIFY-011` | `SHOPIFY-015` | component is pure presentation of the Shopify-hosted plan-management flow |
+| `SHOPIFY-019` | `SHOPIFY-016` | same merchant surfaces/action guards; one explicit lifecycle-restriction state matrix is safer |
+
+The surviving tasks were rewritten rather than told to "do both old tasks". Each contains exact inspect paths, ordered state transitions, forbidden behaviour, numbered tests, validation requirements and STOP conditions suitable for GPT-5.6 Luna.
+
+## Deliberate non-merges
+
+The following remain separate because combining them would cross a real failure/performance/concurrency boundary:
+
+- provider lifecycle snapshot (`BACKGROUND-015`) vs reconciliation (`BACKGROUND-012`);
+- general lifecycle execution gate (`BACKGROUND-013`) vs the 22k/min queued Shopify hot-path gate (`BACKGROUND-018`);
+- individual capacity-source reservation/accounting tasks;
+- paid-period read presentation (`SHOPIFY-004`) vs App-Event cycle guard (`SHOPIFY-007`);
+- promotion selection mutation (`SHOPIFY-021`) vs capacity presentation (`SHOPIFY-020`);
+- all terminal system-test tasks.
 
 ## First-production removals
 
-The final baseline intentionally contains no runtime compatibility for:
+No runtime compatibility is retained for:
 
 ```text
 BillingPlan.freeLifetimeConversationAllowance
 BillingAllowanceAdjustment / FREE_ALLOWANCE_ADJUSTED
-FREE_RECOVERY_LIFETIME alias
+FREE_RECOVERY_LIFETIME
 ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)
 MIGRATION_RECONCILED
-SubscriptionCancellationRequest / local cancellation state machine
-appSubscriptionCancel execution path
+SubscriptionCancellationRequest / local appSubscriptionCancel state machine
 RecoveryCreditPurchaseStatus.REFUNDED
-negative/fractional App Event refund settlement/correction state
-campaign-less/direct PromotionalCreditGrant compatibility
-BILLING_FREE_ALLOWANCE_EXHAUSTED historical-row compatibility
+negative/fractional App Event refund correction
+campaign-less PromotionalCreditGrant
+BILLING_FREE_ALLOWANCE_EXHAUSTED
+BILLING_PLAN_CHANGE_ACTION_REQUIRED
 ```
 
-Canonical lifetime entitlement:
+Canonical lifetime entitlement is `LIFETIME_FREE_RECOVERY_CREDITS`.
+
+## Capacity order
 
 ```text
-LIFETIME_FREE_RECOVERY_CREDITS
+Paid: selected usable promotion -> current-period included -> purchased FIFO -> lifetime Free -> block new admission
+Free: selected usable promotion -> purchased FIFO -> lifetime Free -> block new admission
 ```
 
-## Final capacity order
+The exact selected campaign grant lot is promotion authority; there is no aggregate promotional entitlement counter.
+
+## Cancellation/freeze model
+
+`BACKGROUND-012` is now the sole lifecycle reconciliation owner for scheduled/effective cancellation and freeze/unfreeze classification. Shopify is lifecycle authority; Moda does not call `appSubscriptionCancel`.
+
+`BACKGROUND-013` is the sole general business-execution gate for both `NO_CONTRACT` and `FROZEN`, with distinct denial reasons and restoration semantics.
+
+`BACKGROUND-018` remains separate for the high-volume queued Shopify checkout/cart/order early gate.
+
+## Merchant plan-management model
+
+`SHOPIFY-015` owns the app/HTTP half of plan management: hosted selection, callback provider verification, current/pending classification and production panel presentation.
+
+`BACKGROUND-010` owns effective provider-confirmed plan transition. The callback never mutates BillingPeriod entitlement or performs proration.
+
+## Current Ready frontier
 
 ```text
-Paid
-  selected usable campaign promotion
-  -> current-period included
-  -> purchased FIFO lot
-  -> lifetime Free
-  -> BLOCK NEW RECOVERY ADMISSION
-
-Free
-  selected usable campaign promotion
-  -> purchased FIFO lot
-  -> lifetime Free
-  -> BLOCK NEW RECOVERY ADMISSION
-```
-
-The exact selected `PromotionalCreditGrant` lot is promotional capacity authority. There is no aggregate promotional entitlement counter.
-
-## Refund model
-
-Purchased-credit partial refunds remain first-release functionality, but the development automatic correction mechanism is removed.
-
-Canonical rule:
-
-```text
-purchase remains ACTIVE
-refund request/approval holds exact unused quantity
-SUPER_ADMIN performs Shopify Partner Dashboard REFUND or CREDIT
-provider evidence is recorded
-local lot/aggregate refunded quantity is finalised exactly once
-```
-
-There is no purchase `REFUNDED` terminal state for a partial refund and no negative App Event correction processor.
-
-## Cancellation model
-
-Shopify App Pricing remains cancellation authority.
-
-Moda observes and reconciles provider state. The first-production model contains no local cancellation request/approval/execution state machine and no `appSubscriptionCancel` path.
-
-BACKGROUND-012 now owns both provider reconciliation and removal of any remaining development local cancellation executor code in the Background repository.
-
-## Promotional model
-
-First production supports campaign-linked merchant opt-in promotions only:
-
-```text
-PromotionCampaign
-  -> MerchantPromotionSelection
-  -> exact PromotionalCreditGrant(campaignId, shopId)
-  -> UsageReservation.promotionalCreditGrantId
-```
-
-`PromotionalCreditGrant.campaignId` is required. Campaign-less direct grants are not migrated into production.
-
-## Shared package consolidation
-
-The already-published ARCH-010 development package `@modainteract/moda-interact-shared@0.10.0` contains contracts accumulated through accepted Shared tasks.
-
-Because first production removes obsolete pre-production billing compatibility exports, two new tasks are required:
-
-- SHARED-007 removes the local-cancellation contracts and the Free-only `BILLING_FREE_ALLOWANCE_EXHAUSTED` source/declaration contract without deprecation aliases;
-- SHARED-008 publishes the resulting clean contract as `0.11.0`.
-
-No duplicate publication of SHARED-001/003/005 is required.
-
-## Consumer conformance tasks
-
-Two new bounded consumer tasks prevent accepted implementation history from being rewritten:
-
-- ADMIN-010 — remove Admin compatibility reads/types and compile only against DATABASE-013/SHARED-008;
-- SHOPIFY-023 — remove Shopify billing compatibility reads/raw SQL/types and make lifetime-Free projection plan-independent.
-
-Still-open Background/Shopify/Admin tasks were amended directly where their implementation has not yet been accepted.
-
-## Task graph audit
-
-Current counts from individual task YAML:
-
-```text
-all ARCH-010 task files: 79
-complete:                 23
-review:                    1
-ready:                     4
-pending:                  49
-superseded:                2
-```
-
-Domain totals:
-
-```text
-Shopify       23
-Background    19
-Database      13
-Admin         10
-Shared         8
-System Test    5
-Gateway        1
-```
-
-Current Ready frontier:
-
-```text
-ARCH-010-DATABASE-013
-ARCH-010-SHARED-007
 ARCH-010-ADMIN-007
+ARCH-010-ADMIN-010
+ARCH-010-BACKGROUND-001
+ARCH-010-BACKGROUND-011
 ARCH-010-BACKGROUND-015
+ARCH-010-SHOPIFY-023
 ```
-
-Current Review:
-
-```text
-ARCH-010-SHOPIFY-002  Attempt 8
-```
-
-Graph validation:
-
-```text
-missing internal ARCH-010 dependency references: 0
-internal dependency cycles:                        0
-non-system-test task -> system-test dependency:    0
-```
-
-Historical `enables:` fields in immutable Complete/Review task files are not rewritten when new correction work is added. They are therefore historical reverse snapshots rather than a globally regenerated graph. Current `depends_on:` remains the execution eligibility authority; the open-task indexes/handoff provide the current reverse planning view.
 
 ## System-test boundary
 
-Five system-test tasks remain terminal/manual-gated. They are not prerequisites for normal implementation work and must not auto-start when dependencies complete.
-
-The developer may perform manual integrated verification after implementation before explicitly invoking the system-test suite.
-
-## Infrastructure / observability assessment
-
-This first-production baseline consolidation does not introduce a new infrastructure topology or new observability mechanism. Existing ARCH-010 Gateway work remains valid. No new Gateway task is required solely for schema rebaselining.
-
-Runtime correction tasks must preserve existing logging/telemetry conventions; they must not create duplicate observability merely as part of compatibility cleanup.
+System tests remain terminal/manual-gated and are never prerequisites for unfinished implementation. They run only after implementation/integration is ready and the developer explicitly invokes them.
 
 ## Architect conclusion
 
-ARCH-010 now has a clean migration/runtime boundary:
-
-```text
-accepted development history is retained
-        +
-production compatibility is not fabricated before production
-        +
-one canonical database/Shared baseline is established
-        +
-open consumers converge on that baseline
-```
-
-This is the architecture to implement before first production.
+The active task graph is now smaller without blurring real architecture boundaries. The consolidation removes artificial task handoffs while preserving the boundaries that matter for correctness, concurrency, provider authority and the 22,000-webhook/minute performance target.
