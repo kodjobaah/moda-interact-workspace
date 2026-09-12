@@ -1,4 +1,5 @@
---- id: ARCH-010-SHOPIFY-002 architecture_id: ARCH-010
+--- id: ARCH-010-SHOPIFY-002 
+architecture_id: ARCH-010
 title: Activate Free plan with durable asynchronous Shopify verification
 task_kind: implementation
 domain: shopify
