@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: copilot
 claimed_at: 2026-09-12T13:00:19Z
@@ -447,15 +447,15 @@ Regenerate the Prisma ERD from the final schema.
 
 ## Work Items
 
-- [ ] Verify DATABASE-001 through DATABASE-011 accepted schema is integrated before rebaseline.
-- [ ] Apply the exact final schema removals/renames above.
-- [ ] Fold DATABASE-012 economics requirements into the schema.
-- [ ] Remove old development migration directories.
-- [ ] Create the single empty-database first-production baseline migration.
-- [ ] Update seed and deterministic schema validators.
-- [ ] Regenerate ERD.
-- [ ] Prove schema/migration drift is zero.
-- [ ] Prove removed compatibility names are absent from final schema/migration/seed/validators/ERD.
+- [x] Verify DATABASE-001 through DATABASE-011 accepted schema is integrated before rebaseline.
+- [x] Apply the exact final schema removals/renames above.
+- [x] Fold DATABASE-012 economics requirements into the schema.
+- [x] Remove old development migration directories.
+- [x] Create the single empty-database first-production baseline migration.
+- [x] Update seed and deterministic schema validators.
+- [x] Regenerate ERD.
+- [x] Prove schema/migration drift is zero.
+- [x] Prove removed compatibility names are absent from final schema/migration/seed/validators/ERD.
 
 ## Interfaces / Contracts
 
@@ -568,16 +568,35 @@ The implementation agent does not reopen or edit DATABASE-001 through DATABASE-0
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql`
+- `prisma/migrations/**` old development migration SQL removed; `migration_lock.toml` retained
+- `prisma/seed.mjs`
+- `scripts/validate-first-production-baseline.mjs`; obsolete compatibility validators removed
+- `docs/generated/prisma-erd.puml`
+- `package.json`
 
 ### Work Completed
-Populate during implementation.
+- Materialised the final ARCH-010 first-production Prisma schema, including DATABASE-001 through DATABASE-011 accepted state and the valid DATABASE-012 economics requirements.
+- Removed development-only cancellation, allowance-adjustment, legacy entitlement, refund automation, and campaign-less promotional compatibility constructs.
+- Replaced the accumulated migration chain with exactly one empty-database baseline migration and retained the PostgreSQL migration lock.
+- Updated first-production seed behavior and replaced obsolete focused validators with a final baseline invariant validator.
+- Regenerated the ERD and normalized generator-produced trailing whitespace for clean repository validation.
 
 ### Validation Results
-Populate during implementation.
+- Prerequisites: parent task records for DATABASE-001 through DATABASE-011 are all `status: complete`; implementation history reaches accepted DATABASE-011 commit `813626d`.
+- `npm run format`: passed.
+- `npm run validate`: passed.
+- `npm run prisma:generate`: passed with Prisma Client `6.19.3`.
+- `npm run test:first-production-baseline`: passed (`First-production baseline invariants passed.`).
+- `npm run erd:puml`: passed; generated ERD then normalized; `git diff --check`: passed.
+- `node --check prisma/seed.mjs`: passed; `node --check scripts/validate-first-production-baseline.mjs`: passed.
+- Disposable local PostgreSQL database `moda_interact_arch010_database013_validation` at `localhost:5432`: `npm run migrate:deploy` applied `20260912000000_arch010_first_production_baseline`; `npm run status` reported `Database schema is up to date!`; corrected `prisma migrate diff --from-url ... --to-schema-datamodel ... --exit-code` reported `No difference detected.`
+- Migration shape: exactly one migration directory and one `migration.sql`, plus `migration_lock.toml`; baseline contains no compatibility/backfill `UPDATE`, `INSERT`, or `DELETE` statements.
+- Explicit removed-name scan across final schema, migration, seed, validators, and ERD returned no matches for the required removed compatibility names.
 
 ### Deviations
 None.
@@ -592,7 +611,7 @@ None at task definition time.
 Return any mismatch between accepted DATABASE-011 final schema and repository mainline to `moda_architect`; do not guess.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; commit `46a14c577dac0f0b2b59866b11c539f545b5aaab`; pushed to `origin/task/ARCH-010-DATABASE-013`. Parent report is being published on the mirrored parent branch `task/ARCH-010-DATABASE-013`.
 
 ## Architect Review
 
