@@ -10,7 +10,7 @@
 | ARCH-010-SHOPIFY-006 | Pending | Preserve billing state on uninstall, keep reinstall execution-disabled, publish reconciliation work, and expose only the merchant restoration/support surface until Background verifies Shopify truth. |
 | ARCH-010-SHOPIFY-007 | Pending | Present Free/Paid App Pricing drain/reconciliation state and block new top-up purchase in the closing/expired provider cycle; Free lifetime recovery entitlement does not reset or pause solely for cycle rollover. |
 | ARCH-010-SHOPIFY-008 | Pending | Present recovery-capacity exhaustion on the normal dashboard/history and route merchants to the real capacity screen without restricting read access. |
-| ARCH-010-SHOPIFY-009 | Pending | Add the PostgreSQL-only recovery-capacity projection using the final priority Paid included -> promotional -> purchased -> lifetime Free / Free promotional -> purchased -> lifetime Free. |
+| ARCH-010-SHOPIFY-009 | Pending | Add the PostgreSQL-only recovery-capacity projection using selected-campaign spendability first: Paid promo -> included -> purchased -> lifetime Free / Free promo -> purchased -> lifetime Free. |
 | ARCH-010-SHOPIFY-010 | Pending | Present the real SHOPIFY-014 recovery top-up lifecycle in `TopUpPurchasePanel` without mock/local price authority or legacy one-time-charge APIs. |
 | ARCH-010-SHOPIFY-011 | Pending | Present Shopify-authoritative current/pending subscription state and route plan management through the SHOPIFY-015 hosted plan-change flow. |
 | ARCH-010-SHOPIFY-012 | Pending | Integrate `/app/billing/options` by composing Shopify commercial truth, Moda capacity, real top-up lifecycle and real Shopify-hosted plan-change actions; remove mock authority. |
@@ -21,7 +21,9 @@
 | ARCH-010-SHOPIFY-017 | Pending | Present unused purchased-credit refund policy and route merchants to support without self-service provider money movement. |
 | ARCH-010-SHOPIFY-018 | Ready | Expose Shopify-authoritative subscription lifecycle state by combining activeSubscription with latest bounded Partner subscription-status event. |
 | ARCH-010-SHOPIFY-019 | Pending | Keep frozen merchants on dashboard/history, show Shopify billing-pause guidance and disable top-up/plan/product mutations until restoration. |
-| ARCH-010-SHOPIFY-020 | Pending | Present promotional credits as a separate non-refundable balance/capacity source without exposing internal campaign provenance. |
+| ARCH-010-SHOPIFY-020 | Pending | Present the currently selected promotion, expiry/remaining allocation and promo-first capacity ordering without exposing internal Admin provenance. |
+| ARCH-010-SHOPIFY-021 | Pending | List every currently-running GLOBAL/PLAN/SHOP promotion available to the merchant and transactionally select one campaign exactly once. |
+| ARCH-010-SHOPIFY-022 | Pending | Show tenant-safe merchant promotion selection/use history, including exhausted/expired/closed/reopened states. |
 
 Authority split:
 
@@ -50,4 +52,4 @@ Refund ownership: SHOPIFY-017 is informational/support-only. Merchant UI never p
 
 Freeze authority: `SHOPIFY-018` augments commercial `SHOPIFY-013` truth with Partner Historical Events. FROZEN is not cancellation, exhaustion or onboarding. `SHOPIFY-019` owns merchant presentation; server actions in SHOPIFY-014/015 remain fail-closed while frozen.
 
-Final merchant capacity order is Paid included -> promotional -> purchased -> lifetime Free, or Free promotional -> purchased -> lifetime Free. Promotional balance is local Moda entitlement state, never Shopify commercial authority.
+Final merchant capacity order is Paid **selected promotion -> included -> purchased -> lifetime Free**, or Free **selected promotion -> purchased -> lifetime Free**. Campaign/selection state is local Moda entitlement state, never Shopify commercial authority.

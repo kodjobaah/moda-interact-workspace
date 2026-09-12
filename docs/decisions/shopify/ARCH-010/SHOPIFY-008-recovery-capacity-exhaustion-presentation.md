@@ -61,7 +61,7 @@ When the local read model reports `capacitySource = EXHAUSTED`:
 
 Free wording must distinguish lifetime Free exhaustion from cancellation. Paid wording must distinguish monthly included-credit exhaustion from cancellation/contract expiry.
 
-Do **not** show the full exhaustion warning while any capacity source remains. For Paid this includes current-period included, promotional, purchased, then lifetime Free. For Free this includes promotional, purchased, then lifetime Free.
+Do **not** show the full exhaustion warning while any capacity source remains. For Paid this includes selected usable promotional capacity first, then current-period included, purchased, then lifetime Free. For Free this includes selected usable promotion, purchased, then lifetime Free.
 
 ## Blocked recovery presentation
 
@@ -93,9 +93,9 @@ Dashboard exhaustion rendering must use SHOPIFY-009's PostgreSQL-only read model
 At minimum prove:
 
 1. Free purchased exhausted + lifetime Free exhausted shows the warning;
-2. Paid included + promotional + purchased + lifetime Free all exhausted shows the warning;
+2. Paid selected promotional + included + purchased + lifetime Free all exhausted shows the warning;
 3. purchased available suppresses the full warning even when lifetime Free remains;
-3a. Paid included/promotional/purchased exhausted + lifetime Free available suppresses the full warning;
+3a. Paid selected promotional unavailable + included/purchased exhausted + lifetime Free available suppresses the full warning;
 4. dashboard/history/usage remain accessible while exhausted;
 5. warning CTA is `/app/billing/options`;
 6. blocked DETECTED recovery shows waiting-for-capacity semantics;
@@ -149,7 +149,7 @@ The exhaustion UI must treat promotional credits as a distinct source ahead of p
 
 ```text
 Free: promotional -> purchased -> lifetime Free
-Paid: included -> promotional -> purchased -> lifetime Free
+Paid: selected promotional -> included -> purchased -> lifetime Free
 ```
 
 When promotional credits remain, do not show full exhaustion. When promotional credits are the active fallback, presentation may say Moda-provided promotional credits are funding new recoveries. Do not expose internal campaign reference/reason/admin identity.

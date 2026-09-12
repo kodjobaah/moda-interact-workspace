@@ -75,26 +75,32 @@ Paid-plan included credits:
 - are forfeited when that paid period closes;
 - are replenished only when Shopify verifies the next paid billing period.
 
-### 3.2 Promotional credits
+### 3.2 Promotional campaigns and credits
 
-Promotional credits are Moda-funded, shop-specific grants for use cases such as:
+Promotional credits are optional Moda-funded merchant offers. Admin creates a `PromotionCampaign`; the merchant sees currently-running offers for which the Shop is eligible and chooses one. Multiple campaigns may run globally, but a Shop may have only one currently selected promotion for new recovery admission.
 
-- targeted campaigns;
-- beta/test merchants;
-- goodwill;
-- support remediation;
-- internal controlled testing.
+Campaign target scope is exactly one of:
 
-They are:
+```text
+GLOBAL
+PLAN  -> exact BillingPlan.id
+SHOP  -> exact Shop.id
+```
 
-- tracked in the separate `PROMOTIONAL_RECOVERY_CREDITS` bucket;
-- lifetime-until-used in ARCH-010;
+A campaign has a fixed credit quantity and expiry. It can be closed and later reopened under the **same campaign ID** by changing only the expiry/status with audit history; reopening never replenishes a merchant who already claimed it.
+
+The merchant receives/reuses one `PromotionalCreditGrant` per `(campaignId, shopId)` when selecting the offer. Promotional campaign credits are:
+
 - non-refundable;
-- independent of Shopify billing periods;
-- preserved across plan changes, uninstall/reinstall, cancellation and freeze;
-- not spendable while the merchant is otherwise non-executable (`FROZEN`, `NO_CONTRACT`, inactive/uninstalled, reinstall pending).
+- independent of Shopify billing/App Events;
+- exact campaign grant-lot capacity, not an alias for the five lifetime Free credits;
+- spendable only while the selected campaign is running and the merchant remains target-eligible/executable;
+- preserved as history after expiry/close/plan change;
+- never automatically granted merely because a campaign exists.
 
-Promotional credits do **not** modify the shop's lifetime Free grant.
+For PLAN campaigns, eligibility is rechecked against the merchant's current effective mapped plan for each new recovery reservation. A reservation admitted before expiry/eligibility loss may still commit afterward.
+
+See [ARCH-010 promotional campaigns](../architecture/ARCH-010-promotional-campaigns.md).
 
 ### 3.3 Purchased lifetime top-up credits
 
@@ -151,8 +157,8 @@ Returning to Free later does **not** grant another five.
 ### Paid merchant
 
 ```text
-current-period monthly included
-→ promotional
+selected promotional campaign
+→ current-period monthly included
 → purchased lifetime top-ups
 → shop-lifetime Free
 → BLOCK NEW RECOVERY ADMISSION
@@ -167,9 +173,7 @@ promotional
 → BLOCK NEW RECOVERY ADMISSION
 ```
 
-Promotional credits are deliberately consumed before purchased credits so Moda-funded capacity is used before merchant-funded refundable capacity.
-
-Purchased credits are deliberately consumed before lifetime Free credits, preserving the original lifetime grant as the final fallback.
+Selected promotional campaign credits supersede **every** other recovery-capacity source. Purchased credits remain ahead of lifetime Free after Paid included capacity (where applicable).
 
 ### What “BLOCK NEW RECOVERY ADMISSION” means
 
@@ -385,21 +389,15 @@ The local refund flow holds approved unused credits before provider settlement s
 
 ---
 
-## 14. Promotional-credit operations
+## 14. Promotional campaign operations
 
-SUPER_ADMIN may grant an exact positive promotional quantity to one shop with durable audit provenance such as:
+Admin creates optional GLOBAL/PLAN/SHOP campaigns; campaign activation itself grants no merchant credits. Merchants view currently-running eligible offers and select one. Selection creates/reuses exactly one campaign+shop allocation; the same campaign can never grant the same Shop twice.
 
-- grant type;
-- reason;
-- optional campaign reference;
-- idempotent request key;
-- platform administrator identity.
+Only one still-usable promotion can be selected per Shop. After it is exhausted, expires, closes or becomes target-ineligible, the merchant may select another eligible campaign.
 
-Targeted campaigns reuse the same per-shop grant primitive. Retrying a partially successful campaign must not double-grant shops that already succeeded.
+Admin retains a catalogue of all campaigns and may close/reopen the same campaign. Reopen changes only expiry/status and preserves campaign ID, targeting, quantity and merchant usage history.
 
-Promotional credits do not generate Shopify App Events and do not affect purchased-credit refundability.
-
----
+Merchant and Admin history are derived from campaign-linked `PromotionalCreditGrant` records, not the aggregate promotional entitlement counter. Promotional usage generates no Shopify App Event and is excluded from purchased-credit refundability.
 
 ## 15. Lifecycle states are not interchangeable
 

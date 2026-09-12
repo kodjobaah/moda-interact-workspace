@@ -22,12 +22,12 @@ For current merchant billing/lifecycle behaviour use, in order:
 | --- | --- |
 | Paid included credits flow into normal automatic overage | **No automatic paid overage.** After all executable credit buckets are exhausted, block **new recovery admission**. |
 | Free capacity order = lifetime Free → purchased → block | Free capacity order = **promotional → purchased → lifetime Free → BLOCK NEW RECOVERY ADMISSION**. |
-| Paid capacity order = included → purchased → overage | Paid capacity order = **monthly included → promotional → purchased → lifetime Free → BLOCK NEW RECOVERY ADMISSION**. |
+| Paid capacity order = included → purchased → overage | Paid capacity order = **selected promotion → monthly included → purchased → lifetime Free → BLOCK NEW RECOVERY ADMISSION**. |
 | “Block” means stop the whole app | Capacity exhaustion blocks **new recovery admission only**. Existing admitted conversations continue; dashboard/history/billing/support remain accessible. |
 | Five Free credits are a Free-plan allowance | They are a **shop-lifetime grant**, issued once at first verified activation whether first plan is Free or Paid. |
 | Returning/downgrading to Free grants another five | Never. Plan changes do not reset/regrant the shop-lifetime Free counter. |
 | Testing/support should adjust `FREE_RECOVERY_LIFETIME` | Use the separate **promotional-credit ledger/bucket**. The lifetime Free grant remains immutable apart from normal consumption. |
-| Promotional/test credits are effectively extra Free allowance | Promotional credits are independent, Moda-funded, audited, non-refundable and lifetime-until-used in ARCH-010. |
+| Promotional/test credits are effectively extra Free allowance | Promotional credits are independent and non-refundable; **new first-release promos are expiring merchant-selected GLOBAL/PLAN/SHOP campaigns** governed by `ARCH-010-promotional-campaigns.md`. |
 | Purchased credits are consumed before promotional credits | Promotional credits are consumed first, preserving merchant-funded refundable purchased capacity. |
 | Free plan has no BillingPeriod | A `$0` App Pricing plan may still have a provider BillingPeriod because it carries the top-up usage meter. That period never resets lifetime Free credits. |
 | Top-up should use `appPurchaseOneTimeCreate` | Under the current App Pricing design, use the dedicated **usage meter + App Event** and reconcile provider confirmation before activating credits. |
@@ -61,3 +61,13 @@ The supersession boundary is specifically the **merchant subscription, entitleme
 Historical ARCH-007 architecture, handoff, task and review files are retained. They carry an ARCH-010 supersession notice so a reader knows their old billing semantics are context/history only.
 
 Do not rewrite their accepted Completion Reports as though ARCH-010 had existed at the time. Use the current ARCH-010 architecture/task files to implement new behaviour.
+
+
+## Promotional campaign amendment (2026-09-12)
+
+| Earlier ARCH-010 promotional rule | Current first-release rule |
+|---|---|
+| Direct Admin promotional grant becomes lifetime shop capacity | Admin creates optional GLOBAL/PLAN/SHOP `PromotionCampaign`; merchant must select it before a campaign-linked allocation becomes spendable. |
+| Paid included → promotional → purchased → lifetime Free | **Selected promotional campaign → Paid included → purchased → lifetime Free**. |
+| Promotional credits do not expire | Campaign offer/allocation is spendable only while campaign is running and merchant remains target-eligible; existing admitted reservations may commit afterward. |
+| Repeating campaign means another grant | Reopen keeps the **same campaign ID** and only changes expiry/status; an existing merchant claim is never replenished. |

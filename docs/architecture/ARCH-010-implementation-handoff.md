@@ -1,4 +1,6 @@
-# ARCH-010 Implementation Handoff / Frontier
+# ARCH-010 Implementation Handoff
+
+> **Promotional campaign extension (2026-09-12):** Before implementing any promotional task, read `ARCH-010-promotional-campaigns.md`. DATABASE-009 is the completed foundation only. New work uses DATABASE-010/011, ADMIN-004/005/006, SHOPIFY-021/020/022 and amended BACKGROUND-019. The selected campaign is highest-priority capacity. / Frontier
 
 Date: 2026-09-11  
 Architecture status: **Agreed / implementation-ready**
@@ -36,7 +38,9 @@ ARCH-010-DATABASE-005  durable capacity-blocked recovery state
 ARCH-010-DATABASE-006  shop-lifetime Free grant/platform policy
 ARCH-010-DATABASE-007  purchased-credit lot/refund accounting
 ARCH-010-DATABASE-008  FROZEN/provider lifecycle evidence
-ARCH-010-DATABASE-009  promotional-credit ledger
+ARCH-010-DATABASE-009  completed promotional ledger foundation
+ARCH-010-DATABASE-010  promotion campaign catalogue/lifecycle
+ARCH-010-DATABASE-011  merchant selection + campaign grant-lot accounting
 ```
 
 Recommended Database critical-path order when repository work is serialized:
@@ -255,7 +259,7 @@ Before invoking expensive system tests, manually verify the integrated milestone
 5. uninstall/reinstall;
 6. cancellation and freeze/unfreeze execution gates;
 7. partial refund hold/finalization on a safe non-production provider charge;
-8. single-shop and targeted promotional grants.
+8. optional GLOBAL/PLAN/SHOP promotion campaigns, merchant selection, expiry/reopen and history.
 
 These are developer checkpoints, not synthetic task dependencies.
 

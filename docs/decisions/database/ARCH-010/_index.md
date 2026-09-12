@@ -10,7 +10,9 @@
 | ARCH-010-DATABASE-006 | Complete | Move the one-time lifetime Free grant default to platform policy and snapshot/backfill the shop-level `FREE_RECOVERY_LIFETIME` grant independently of current plan. |
 | ARCH-010-DATABASE-007 | Complete | Add deterministic purchased-credit lot accounting, reservation ownership and multi-partial-refund durability/backfill. |
 | ARCH-010-DATABASE-008 | Complete | Add FROZEN subscription projection plus latest Shopify subscription-lifecycle event state/id/time without changing existing entitlements. |
-| ARCH-010-DATABASE-009 | Complete | Add a dedicated promotional-credit counter, positive audited grant-provenance ledger and idempotency key without granting/migrating any existing shop. |
+| ARCH-010-DATABASE-009 | Complete | Foundation: dedicated promotional-credit counter and audited grant-provenance ledger; direct/lifetime semantics are superseded for new first-release promotions by DATABASE-010/011. |
+| ARCH-010-DATABASE-010 | Ready | Persist GLOBAL/PLAN/SHOP promotion campaigns, running windows, immutable targeting after activation and append-only close/reopen/expiry audit. |
+| ARCH-010-DATABASE-011 | Pending | Extend promotional grants into campaign+shop one-time allocations, exact grant-lot reservation ownership and one current merchant promotion selection. |
 
 `DATABASE-002` depends on DATABASE-001 and the accepted ARCH-007 repeatable-credit schema. `DATABASE-003` also follows DATABASE-001 because reinstall scheduling reuses `Subscription.nextReconcileAt`. `DATABASE-004` depends on DATABASE-002 and normalizes legacy multiple-OPEN periods before adding the one-OPEN-period invariant. `DATABASE-006` is independent of period accounting and must land before runtime tasks begin treating the five lifetime credits as plan-independent.
 `DATABASE-007` is the durability prerequisite for partial purchased-top-up refunds. It does not depend on frozen ARCH-009 refund tasks and must fail rather than guess if existing aggregate purchased balances cannot be reconstructed into deterministic lots.
@@ -18,4 +20,4 @@
 
 `DATABASE-008` is the durability prerequisite for Shopify freeze/unfreeze. It adds state vocabulary/evidence only; it never infers frozen status during migration.
 
-`DATABASE-009` introduces the distinct non-refundable promotional bucket. It never reclassifies historical Free allowance adjustments and creates no balances during migration.
+`DATABASE-009` introduces the distinct non-refundable promotional bucket. DATABASE-010/011 extend that completed foundation into optional merchant-selected campaigns; new campaigns do not use the old direct lifetime-grant path.

@@ -43,7 +43,7 @@ Validate the canonical ARCH-010 merchant subscription and recovery-capacity life
 The final capacity order must be treated as one invariant:
 
 ```text
-Paid: monthly included -> promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
+Paid: selected promotional -> monthly included -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
 Free: promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
 ```
 

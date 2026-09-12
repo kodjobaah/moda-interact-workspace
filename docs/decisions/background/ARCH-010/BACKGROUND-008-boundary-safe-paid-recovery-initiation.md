@@ -95,7 +95,7 @@ Do not map an expired period to NO_CONTRACT or SYNC_ERROR.
 Keep the final ARCH-010 ordering after BACKGROUND-019:
 
 ```text
-period included -> promotional -> purchased lifetime -> shop-lifetime Free -> recovery blocked
+selected promotional -> period included -> purchased lifetime -> shop-lifetime Free -> recovery blocked
 ```
 
 ### DRAINING
@@ -105,14 +105,16 @@ Do not start a new recovery that would create the normal paid recovery-meter App
 Required routing:
 
 ```text
-try purchased lifetime credit
-  -> available: allow purchased-credit recovery
-  -> unavailable: try shop-lifetime Free credit
-       -> available: allow lifetime-Free-funded recovery
-       -> unavailable: block with billing-period-closing reason
+try selected usable promotional campaign
+  -> available: allow promotional-funded recovery
+  -> unavailable: try purchased lifetime credit
+       -> available: allow purchased-credit recovery
+       -> unavailable: try shop-lifetime Free credit
+            -> available: allow lifetime-Free-funded recovery
+            -> unavailable: block with billing-period-closing reason
 ```
 
-Do not consume included capacity and do not create any overage path during DRAINING. Promotional-, purchased- and lifetime-Free-funded recoveries create no normal paid recovery App Event and may continue in canonical fallback order.
+Do not consume included capacity and do not create any overage path during DRAINING. A usable selected promotion is checked first; promotional-, purchased- and lifetime-Free-funded recoveries create no normal paid recovery App Event and may continue in canonical fallback order.
 
 ### EXPIRED_RECONCILING
 
@@ -294,4 +296,4 @@ After BACKGROUND-019, DRAINING/pre-provider fallback order is:
 promotional -> purchased FIFO -> lifetime Free
 ```
 
-Paid included is unavailable for new reservation while DRAINING. Promotional recovery is lifetime/non-App-Event capacity and may continue under an otherwise executable subscription, exactly like purchased/lifetime Free capacity. Revalidation must never skip promotional and jump directly to purchased.
+Paid included is unavailable for new reservation while DRAINING. A usable selected promotion is non-App-Event capacity and may continue under an otherwise executable subscription, exactly like purchased/lifetime Free capacity. Revalidation must never skip promotional and jump directly to purchased.
