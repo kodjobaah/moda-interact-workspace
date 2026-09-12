@@ -9,13 +9,15 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: blocked
 priority: 6
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-010-SHARED-006
+- ARCH-010-BACKGROUND-020
+- ARCH-010-SHOPIFY-024
 enables:
 - ARCH-010-SHARED-008
 created: 2026-09-12
@@ -97,7 +99,7 @@ Do not:
 
 ## Work Items
 
-- [ ] Inspect current billing public exports and exact consumers represented by repository tests.
+- [x] Inspect current billing public exports and exact consumers represented by repository tests.
 - [ ] Remove superseded cancellation mode/provider mapping exports.
 - [ ] Remove obsolete cancellation system-message values.
 - [ ] Remove `BILLING_FREE_ALLOWANCE_EXHAUSTED` and preserve the generic capacity-exhaustion code.
@@ -150,48 +152,197 @@ This is deliberately breaking cleanup before first production. Do not add deprec
 ## Completion Report
 
 ### Status
-Not started.
+Blocked pending consumer sequencing.
 
 ### Files Changed
-Populate during implementation.
+No implementation files changed. Task metadata/report updated only.
 
 ### Work Completed
-Populate during implementation.
+Confirmed the obsolete cancellation exports and billing message values are
+currently published by Shared. Confirmed live consumers prevent safe breaking
+removal within this task's scope. Reverted the implementation probe; the
+implementation worktree is unchanged.
 
 ### Validation Results
-Populate during implementation.
+`npm test` passed after dependency restore (`109` passed, `1` skipped because
+`TEST_REDIS_URL` was not configured). `npm run typecheck` and `npm run build`
+passed. `git diff --check` passed during the implementation probe. The built
+runtime absence check passed during the probe, but generated output was not
+retained because the source change is blocked.
 
 ### Deviations
-None.
+The requested Shared removal was not committed because active consumers in
+consumer repositories would break and consumer edits are explicitly out of
+scope.
 
 ### Assumptions
 No production consumer requires ARCH-009 local cancellation contracts.
 
 ### Unresolved Issues
-None at task definition time.
+Consumer cleanup/sequencing is required before this breaking Shared contract
+removal can proceed.
 
 ### Architectural Concerns
-Stop if an active ARCH-010 consumer of `BILLING_PLAN_CHANGE_ACTION_REQUIRED` or the cancellation exports is found.
+Active consumers found:
+- `moda-interact-background/src/services/subscription-cancellation.service.ts` imports `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS` and `SubscriptionCancellationMode`, and passes the mode into the provider.
+- `moda-interact-background/src/providers/shopify-partner-billing.provider.ts` imports both cancellation exports and indexes the provider mapping when executing cancellation.
+- `moda-interact/app/services/merchant-support/system-message-actions.ts` handles `BILLING_FREE_ALLOWANCE_EXHAUSTED`.
+- `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts` asserts `BILLING_FREE_ALLOWANCE_EXHAUSTED` source keys.
+
+Per task instruction, stop and return to `moda_architect` for sequencing rather
+than editing consumer repositories.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`. No implementation commit created because the task is blocked by out-of-scope consumers.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Blocked — architect-confirmed consumer sequencing dependency.
 
 ### Review Notes
-Pending implementation.
+
+The repository agent obeyed the task's stop condition correctly. No Shared
+implementation change is accepted or retained from Attempt 1.
+
+The block is architectural sequencing, not a reason to preserve compatibility.
+
+Confirmed active first-party consumers reported by the blocked run:
+
+```text
+moda-interact-background/src/services/subscription-cancellation.service.ts
+  -> SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS
+  -> SubscriptionCancellationMode
+
+moda-interact-background/src/providers/shopify-partner-billing.provider.ts
+  -> cancellation mapping/types
+  -> local Shopify cancellation mutation path
+
+moda-interact/app/services/merchant-support/system-message-actions.ts
+  -> BILLING_FREE_ALLOWANCE_EXHAUSTED
+
+moda-interact-background/tests/unit/services/recovery-billing.service.test.ts
+  -> BILLING_FREE_ALLOWANCE_EXHAUSTED expectation/source key
+```
+
+`BILLING_PLAN_CHANGE_ACTION_REQUIRED` has no active first-party consumer in the
+blocked-run inspection. It remains in SHARED-007's removal set; do not create a
+compatibility alias for it.
+
+The original rollout graph was circular:
+
+```text
+SHARED-007 removes contracts
+  -> SHARED-008 publishes 0.11.0
+  -> BACKGROUND-012 / SHOPIFY-023 clean consumers
+```
+
+but SHARED-007 cannot safely remove contracts while those consumers still compile
+against them.
+
+Architect resolution introduces two bounded pre-publication consumer cleanup tasks:
+
+```text
+ARCH-010-BACKGROUND-020
+ARCH-010-SHOPIFY-024
+```
+
+Both execute against the already-published Shared `0.10.0`. They remove first-party
+runtime/test consumers without changing Shared itself.
+
+Corrected rollout:
+
+```text
+SHARED-006 / published 0.10.0
+        |
+        +--> BACKGROUND-020
+        |
+        +--> SHOPIFY-024
+                 |
+                 v
+        both Accepted Complete
+                 |
+                 v
+        SHARED-007 blocked -> ready
+                 |
+                 v
+        SHARED-007 Attempt 2 removes retired exports/codes
+                 |
+                 v
+        SHARED-008 publishes 0.11.0
+```
+
+SHARED-007 now depends on both cleanup tasks. It remains `blocked`, `attempt: 1`,
+with no active executor/claim. Once both prerequisites are architect-accepted
+Complete, `moda_architect` may transition this same task `blocked -> ready`.
+The next execution claim will then be Attempt 2.
 
 ### Reviewed Files
-None yet.
+
+```text
+docs/decisions/shared/ARCH-010/SHARED-007-remove-preproduction-billing-compatibility-contracts.md
+docs/architecture/ARCH-010-first-production-baseline.md
+docs/architecture/ARCH-010-implementation-handoff.md
+docs/decisions/background/ARCH-010/BACKGROUND-012-reconcile-shopify-subscription-cancellation.md
+docs/decisions/background/ARCH-010/BACKGROUND-009-capacity-exhaustion-and-resume.md
+docs/decisions/shopify/ARCH-010/SHOPIFY-023-conform-billing-runtime-to-first-production-baseline.md
+moda-interact-shared/src/billing.ts
+moda-interact-shared/src/billing.test.ts
+```
+
+Consumer repository source is not populated in this portable review archive; the
+exact live-consumer paths above come from the task's canonical blocked-run Completion
+Report and handoff. Existing ARCH-010 task definitions independently confirm that
+BACKGROUND-012 owns removal of the local cancellation executor and that
+SHOPIFY-023/BACKGROUND-009 own removal of the Free-only exhaustion compatibility.
 
 ### Validation Reviewed
-None yet.
+
+Blocked-run validation is accepted as evidence that no retained Shared change was
+needed:
+
+```text
+109 tests passed
+typecheck passed
+build passed
+git diff --check passed
+```
+
+The handoff identifies:
+
+```text
+parent task branch commit: 15ef6a4
+implementation task branch commit: 243209a
+```
+
+Those commits are blocking/report evidence only. They are not an accepted Shared
+implementation.
 
 ### Architecture Conformance
-Pending.
+
+Conformant.
+
+ARCH-010 is explicitly pre-production, so the correct response is to remove the
+first-party consumers before the breaking Shared release. The architect rejects:
+
+```text
+deprecated aliases
+temporary re-exports
+retaining local cancellation mutation contracts
+retaining BILLING_FREE_ALLOWANCE_EXHAUSTED for historical rendering
+```
+
+The cleaned first-production Shared artifact remains the target.
 
 ### Follow-up
-None yet.
+
+1. Execute `ARCH-010-BACKGROUND-020`.
+2. Execute `ARCH-010-SHOPIFY-024`.
+3. Architect-review both.
+4. When both are Complete, return SHARED-007 from `blocked` to `ready`.
+5. Reclaim SHARED-007 as Attempt 2 and perform only the originally defined Shared
+   removal.
+6. After SHARED-007 acceptance, execute publication task SHARED-008.
+
+**Architect decision: Block confirmed; sequencing corrected. SHARED-007 remains
+Blocked pending BACKGROUND-020 and SHOPIFY-024.**

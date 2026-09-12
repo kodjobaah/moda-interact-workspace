@@ -249,15 +249,23 @@ The first-production consolidation order is:
 
 ```text
 1. DATABASE-013   canonical database baseline
-2. SHARED-007     remove obsolete Shared compatibility contracts
-3. SHARED-008     publish clean Shared baseline contract
-4. repository baseline-conformance work
-5. remaining ARCH-010 feature tasks
-6. developer manual integrated verification
-7. terminal/manual-gated ARCH-010 system tests
+2. BACKGROUND-020 + SHOPIFY-024
+                  remove live first-party consumers of contracts scheduled for deletion
+                  while published Shared 0.10.0 still contains those names
+3. SHARED-007     remove obsolete Shared compatibility contracts after both consumer
+                  cleanup tasks are architect-accepted Complete
+4. SHARED-008     publish clean Shared baseline contract as 0.11.0
+5. repository baseline-conformance work
+6. remaining ARCH-010 feature tasks
+7. developer manual integrated verification
+8. terminal/manual-gated ARCH-010 system tests
 ```
 
-DATABASE-013 and SHARED-007 may execute in parallel because neither depends on the other.
+This order is a sequencing correction discovered by SHARED-007 Attempt 1. The earlier
+direct `SHARED-007 -> SHARED-008 -> consumer cleanup` order was circular because live
+Background/Shopify consumers still imported contracts SHARED-007 must delete.
+
+DATABASE-013 is already independent of this Shared consumer-cleanup chain.
 
 ## Non-goals
 
