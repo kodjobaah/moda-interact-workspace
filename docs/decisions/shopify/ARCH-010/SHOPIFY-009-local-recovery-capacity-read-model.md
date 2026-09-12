@@ -19,6 +19,7 @@ depends_on:
   - ARCH-010-SHOPIFY-004
   - ARCH-010-DATABASE-004
   - ARCH-010-DATABASE-009
+  - ARCH-010-DATABASE-011
 enables:
   - ARCH-010-SHOPIFY-008
   - ARCH-010-SHOPIFY-012
@@ -26,7 +27,7 @@ enables:
   - ARCH-010-SHOPIFY-019
   - ARCH-010-SHOPIFY-020
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-12
 ---
 
 # ARCH-010-SHOPIFY-009: Add local merchant recovery-capacity projection
@@ -36,6 +37,8 @@ updated: 2026-09-11
 Create one canonical **PostgreSQL-only operational projection** answering one narrow question:
 
 > Can Moda admit another abandoned-checkout recovery for this merchant right now, and which Moda recovery-capacity bucket would fund it?
+
+Before evaluating Paid included capacity, resolve whether the Shop has a currently selected, running, target-eligible campaign grant with remaining quantity. That exact grant is the highest-priority capacity source. The aggregate promotional counter alone is not spendability authority after DATABASE-011.
 
 This projection is for dashboard/runtime capacity presentation. It is **not** the authority for:
 
@@ -248,14 +251,14 @@ Provider/commercial verification belongs to SHOPIFY-013 and mutation/reconciliat
 
 At minimum prove:
 
-1. Free + purchased available + lifetime Free available -> `PURCHASED`;
-2. Free + purchased exhausted + lifetime Free available -> `FREE_LIFETIME`;
+1. no usable selected promotion + Free purchased available + lifetime Free available -> `PURCHASED`;
+2. no usable selected promotion + Free purchased exhausted + lifetime Free available -> `FREE_LIFETIME`;
 3. Free fully exhausted -> `EXHAUSTED`;
 4. Free reserved quantity reduces spendable lifetime remaining;
 5. an existing legacy pre-ARCH-010 signed adjustment is honoured read-only without rewriting the base grant, and no new adjustment is created;
-6. Paid included available -> `PAID_INCLUDED`;
+6. no usable selected promotion + Paid included available -> `PAID_INCLUDED`;
 7. Paid included exhausted + purchased available -> `PURCHASED`;
-8. Paid included/promotional/purchased exhausted + lifetime Free available -> `FREE_LIFETIME`;
+8. selected promotional unavailable + Paid included/purchased exhausted + lifetime Free available -> `FREE_LIFETIME`;
 9. Paid fully exhausted -> `EXHAUSTED`;
 10. Paid reserved and forfeited quantities reduce included remaining correctly;
 11. purchased `refundingQuantity` reduces purchased available;
@@ -304,9 +307,9 @@ Add focused coverage proving:
 
 - Free promotional + purchased + lifetime Free -> `PROMOTIONAL`;
 - Free promo zero + purchased -> `PURCHASED`;
-- Paid included > 0 remains `PAID_INCLUDED` even when promotional exists;
-- Paid included zero + promotional > 0 -> `PROMOTIONAL`;
-- promotional reserved quantity reduces remaining;
-- missing promotional counter means zero, not configuration error;
+- usable selected promotional > 0 returns `PROMOTIONAL` even when Paid included remains;
+- no usable selected promotional + Paid included > 0 -> `PAID_INCLUDED`;
+- selected grant reserved quantity reduces its remaining allocation;
+- no selected campaign means zero promotional spendability even if aggregate historical promo balance exists;
 - FROZEN/NO_CONTRACT returns the lifecycle availability state even when promotional remaining > 0;
 - provider `getActiveSubscription()` remains uncalled.

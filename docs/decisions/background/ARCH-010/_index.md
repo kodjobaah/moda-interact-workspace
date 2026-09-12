@@ -20,12 +20,12 @@
 | ARCH-010-BACKGROUND-016 | Pending | Reconcile FROZEN/UNFROZEN, preserve entitlement state, retry hourly and catch up safely to Shopify current cycle on restoration. |
 | ARCH-010-BACKGROUND-017 | Pending | Gate recovery, WhatsApp, CommerceAgent and new billable business work while Subscription is FROZEN. |
 | ARCH-010-BACKGROUND-018 | Pending | Stop checkout/cart Shopify event processing at the high-volume Background boundary while FROZEN, while retaining only bounded order-completion terminal safety bookkeeping. |
-| ARCH-010-BACKGROUND-019 | Pending | Add promotional-credit reservation/commit/release and make the final order Paid included -> promotional -> purchased -> lifetime Free / Free promotional -> purchased -> lifetime Free. |
+| ARCH-010-BACKGROUND-019 | Pending | Reserve/consume only the merchant-selected eligible campaign grant and make promotion the highest-priority source: Paid promo -> included -> purchased -> lifetime Free / Free promo -> purchased -> lifetime Free. |
 
 Dependency notes:
 
 - `BACKGROUND-011` depends on DATABASE-006 and the accepted ARCH-007 lifetime/purchased reservation foundations.
-- `BACKGROUND-002` establishes the included-first Paid reservation boundary; `BACKGROUND-019` composes the final shop-level promotional insertion, producing `included -> promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION`.
+- `BACKGROUND-002` establishes the concurrency-safe Paid included reservation primitive. `BACKGROUND-019` owns final top-level routing and checks the selected eligible promotion first, producing `promotional -> included -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION`.
 - `BACKGROUND-009` depends on both and therefore treats exhaustion as absence of every source in that order.
 - `BACKGROUND-008` builds on BACKGROUND-002 plus the Shared drain constant.
 - `BACKGROUND-007` depends on DATABASE-004 and BACKGROUND-008 and owns canonical same-plan Free/Paid provider-period rollover.
@@ -34,10 +34,10 @@ Dependency notes:
 
 - `BACKGROUND-012` owns Shopify-observed full cancellation; it never calls a cancellation mutation and reuses the existing subscription-reconciliation queue.
 - `BACKGROUND-013` depends on BACKGROUND-012 plus the existing uninstall gates and makes NO_CONTRACT stronger than ordinary capacity exhaustion.
-`BACKGROUND-014` depends on DATABASE-007 and BACKGROUND-011 and owns FIFO selection inside the purchased bucket. `BACKGROUND-019` composes the final cross-bucket order: Paid included -> promotional -> purchased -> lifetime Free / Free promotional -> purchased -> lifetime Free.
+`BACKGROUND-014` owns FIFO selection inside the purchased bucket. `BACKGROUND-019` composes the final cross-bucket order: Paid selected promotion -> included -> purchased -> lifetime Free / Free selected promotion -> purchased -> lifetime Free.
 
 
 Final provider-state rule: `activeSubscription=null` is not sufficient cancellation proof for an established merchant. `BACKGROUND-015` supplies lifecycle evidence; `BACKGROUND-016` owns FROZEN/UNFROZEN; `BACKGROUND-012` may finalize cancellation only with effective CANCELED evidence. `BACKGROUND-017` keeps frozen execution blocking distinct from NO_CONTRACT.
 `BACKGROUND-018` depends on BACKGROUND-004 and BACKGROUND-016. It owns the early `checkout-events` / `order-events` FROZEN gate; BACKGROUND-017 remains the downstream business-execution gate. Raw Shopify webhook ingress remains unchanged.
 
-Final capacity rule: `BACKGROUND-019` inserts promotional credits ahead of purchased credits and lifetime Free. `BACKGROUND-008`/`BACKGROUND-009` are amended to consume that final ordering. Promotional-funded recovery creates no Shopify normal-recovery meter event and never bypasses lifecycle execution gates.
+Final capacity rule: `BACKGROUND-019` consumes a usable merchant-selected campaign grant before **every** other recovery-capacity source. `BACKGROUND-008`/`BACKGROUND-009` are amended to consume that final ordering. Promotional-funded recovery creates no Shopify normal-recovery meter event and never bypasses lifecycle execution gates.

@@ -26,23 +26,24 @@ enables:
   - ARCH-010-BACKGROUND-019
   - ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-12
 ---
 
 # ARCH-010-BACKGROUND-002: Enforce concurrency-safe paid included-credit admission
 
 ## Objective
 
-Replace the current aggregate-count decision at the paid included-credit boundary with a concurrency-safe period-scoped reservation. Preserve the accepted paid consumption order:
+Replace the current aggregate-count decision at the paid included-credit boundary with a concurrency-safe period-scoped reservation primitive. **This task does not own final cross-bucket priority.** BACKGROUND-019 composes the final Paid admission order after campaign selection exists:
 
 ```text
-current BillingPeriod included credits
+selected promotional
+-> current BillingPeriod included credits
 -> purchased lifetime credits
 -> shop-lifetime Free credits
 -> recovery blocked
 ```
 
-Included-credit-funded recoveries continue to emit the normal paid Shopify recovery meter. Purchased-credit-funded and shop-lifetime-Free-funded recoveries do not. There is no automatic paid overage branch in ARCH-010.
+Included-credit-funded recoveries continue to emit the normal paid Shopify recovery meter. Promotional-, purchased- and shop-lifetime-Free-funded recoveries do not. There is no automatic paid overage branch in ARCH-010.
 
 ## Inspect before editing
 
@@ -162,31 +163,17 @@ Expose enough typed policy data for reservation code without performing a second
 
 Remove `normalRecoveryUsageQuantity` as the correctness input for paid included->purchased routing. It may remain only if another read-only/reporting concern genuinely needs it; do not use it for admission.
 
-## RecoveryBillingService routing
+## RecoveryBillingService integration boundary
 
-Change paid admission to:
+Expose/use the paid-period reservation primitive so BACKGROUND-019 can compose it after promotional priority. Do **not** make this task permanently route Paid admission before promotional capacity.
 
-```text
-PAID_METERED
-  -> try period included reservation
-       -> reserved: admission.kind = paid-included (or equivalent explicit name)
-       -> exhausted: try purchased reservation
-            -> reserved: purchased
-            -> exhausted: try shop-lifetime Free reservation
-                 -> reserved: lifetime-free
-                 -> exhausted: blocked-capacity-exhausted
-```
+When BACKGROUND-002 lands before BACKGROUND-019, preserve compatibility without introducing automatic overage; BACKGROUND-019 is the final top-level router and will call this primitive only after no selected usable promotion funded the recovery.
 
-Do not attempt purchased credits before the period allowance is exhausted.
+Commit semantics remain:
 
-When the current-period included source is exhausted, delegate to the shop-level fallback chain rather than hard-coding a direct block. The final ARCH-010 chain is `promotional -> purchased FIFO -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION`, owned across BACKGROUND-019/BACKGROUND-014/BACKGROUND-011. Do not call Meta/WhatsApp, do not create a normal paid recovery UsageEvent, and do not create any hidden provider-billing/overage path for non-included fallback sources.
-
-### Commit semantics
-
-- paid-included: commit period reservation + normal paid meter UsageEvent.
-- purchased: keep existing purchased commit behaviour; no normal paid meter UsageEvent.
-- lifetime-free: commit through the ARCH-010-BACKGROUND-011 lifetime reservation path; no normal paid meter UsageEvent.
-- blocked-capacity-exhausted: no commit, no provider send, no UsageEvent.
+- paid-included: commit period reservation + normal paid meter UsageEvent;
+- purchased/lifetime-free: owned by their respective downstream primitives and create no normal paid meter event;
+- blocked capacity: no provider send and no UsageEvent.
 
 Never create a new paid recovery UsageEvent with `billingPeriodId = null`.
 
@@ -195,9 +182,9 @@ Never create a new paid recovery UsageEvent with `billingPeriodId = null`.
 Required tests must prove at least:
 
 1. first N concurrent paid recoveries cannot commit more than `grantedQuantity` to included capacity;
-2. the first recovery after included exhaustion attempts purchased credits;
-3. when purchased credits are unavailable, remaining lifetime Free credits are attempted;
-4. included exhaustion delegates to the canonical shop-level fallback chain; final blocking occurs only when included, promotional, purchased and lifetime Free capacity are all unavailable;
+2. the period-included primitive returns exhausted without inventing overage;
+3. BACKGROUND-019 can call this primitive after promotional capacity is unavailable;
+4. final blocking is owned by the integrated BACKGROUND-019 routing and occurs only when promotional, included, purchased and lifetime Free capacity are all unavailable;
 5. blocked exhaustion performs no provider send and creates no recovery UsageEvent;
 6. included commit creates exactly one normal paid Shopify-meter UsageEvent;
 7. purchased commit creates no normal paid recovery meter event;
@@ -267,7 +254,7 @@ Pending.
 BACKGROUND-002 still owns the first Paid current-period included reservation. After `ARCH-010-BACKGROUND-019` lands, the canonical downstream fallback is:
 
 ```text
-included -> promotional -> purchased FIFO -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
+promotional -> included -> purchased FIFO -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
 ```
 
-BACKGROUND-019 owns the promotional insertion and must preserve the included-first rule. The final integrated order is `included -> promotional -> purchased FIFO -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION`.
+BACKGROUND-019 owns top-level routing and must preserve the **promotion-first** rule. The final integrated order is `promotional -> included -> purchased FIFO -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION`.

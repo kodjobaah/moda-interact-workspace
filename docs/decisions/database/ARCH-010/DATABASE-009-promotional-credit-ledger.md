@@ -17,15 +17,16 @@ attempt: 3
 depends_on:
   - ARCH-007-DATABASE-002
 enables:
-  - ARCH-010-ADMIN-004
-  - ARCH-010-BACKGROUND-019
+  - ARCH-010-DATABASE-010
+  - ARCH-010-DATABASE-011
   - ARCH-010-SHOPIFY-009
-  - ARCH-010-SHOPIFY-020
 created: 2026-09-11
 updated: 2026-09-11T16:04:39Z
 ---
 
 # ARCH-010-DATABASE-009: Add durable promotional recovery-credit grants and aggregate entitlement counter
+
+> **Post-completion ARCH-010 campaign amendment (2026-09-12):** This accepted task remains the persistence foundation for the promotional entitlement bucket and provenance ledger. Its original direct/lifetime grant semantics are **not** the first-release creation path for new promotions. New promotions are optional `PromotionCampaign` offers governed by DATABASE-010/011; merchants claim them through SHOPIFY-021, and BACKGROUND-019 consumes only the selected eligible campaign grant. Existing campaign-less rows remain compatibility history.
 
 ## Objective
 
@@ -35,7 +36,7 @@ Introduce a durable **promotional recovery-credit** bucket that is independent f
 - purchased lifetime top-ups;
 - the one-time shop-lifetime Free grant.
 
-Promotional credits are Moda-funded, shop-specific, non-refundable, lifetime-until-used for ARCH-010, and create no Shopify billing/App Event.
+At the time this foundation task was accepted, promotional grants were modelled as direct shop-specific lifetime-until-used capacity. **That creation/lifecycle rule is superseded for new first-release promotions by DATABASE-010/011 and `ARCH-010-promotional-campaigns.md`.** The durable bucket/provenance implemented here remains valid.
 
 They support use cases including targeted merchant campaigns, beta/test merchants, goodwill and support grants.
 
@@ -160,7 +161,7 @@ Existing signed Free allowance adjustments are historically ambiguous and remain
 
 Do not add `expiresAt` to the grant or counter in this task.
 
-ARCH-010 promotional credits are lifetime-until-used. Expiring campaigns require a separate future lifecycle because expiry would need reservation-safe revocation/scheduling semantics.
+**Historical scope note:** this task intentionally did not implement expiry. Expiring opt-in campaigns are now the follow-on DATABASE-010/011 architecture; do not implement new campaign creation from this historical paragraph.
 
 ## 6. Shop and PlatformAdmin relations
 

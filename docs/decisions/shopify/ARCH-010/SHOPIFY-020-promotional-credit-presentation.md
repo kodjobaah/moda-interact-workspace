@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-SHOPIFY-020
 architecture_id: ARCH-010
-title: Present promotional recovery credits separately in merchant capacity surfaces
+title: Present selected promotion and promo-first recovery capacity
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -15,174 +15,90 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-009
   - ARCH-010-SHOPIFY-009
   - ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-021
 enables:
   - ARCH-010-SYSTEM-TEST-001
   - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-12
 ---
 
-# ARCH-010-SHOPIFY-020: Present promotional recovery credits separately in merchant capacity surfaces
+# ARCH-010-SHOPIFY-020: Present selected promotion and promo-first recovery capacity
 
 ## Objective
 
-Expose the merchant's promotional recovery-credit balance as a separate, non-refundable capacity source and explain the final capacity priority without exposing internal Admin campaign metadata.
+Present the merchant's currently selected promotional campaign/allocation as a separate non-refundable capacity source and explain the final promo-first ordering without exposing internal Admin provenance.
 
-Canonical merchant order:
+Canonical order:
 
 ```text
-FREE
-  promotional -> purchased -> lifetime Free
-
 PAID
-  monthly included -> promotional -> purchased -> lifetime Free
+  selected promotional -> monthly included -> purchased -> lifetime Free
+
+FREE
+  selected promotional -> purchased -> lifetime Free
 ```
 
-## Inspect before editing
+## Required presentation
+
+Consume SHOPIFY-009's local capacity projection and SHOPIFY-021's selected-promotion read model. Show, where relevant:
 
 ```text
-app/services/billing/billing.service.ts
-app/services/billing/billing.types.ts
-app/routes/app/billing/route.tsx
-app/routes/app/billing/options/route.tsx
-app/routes/app/home/route.jsx
-app/routes/app/usage/route.jsx
-app/components/dashboard/BillingPurchaseHub.jsx
-app/components/dashboard/TopUpPurchasePanel.jsx
-app/i18n/locales/*.json
-tests/unit/services/billing.service.test.ts
-tests/unit/billing-ui.test.ts
-tests/unit/billing-i18n.test.ts
-package.json
+selected campaign name
+promotional credits remaining
+campaign expiry
+whether promo is currently usable
+next fallback capacity source
 ```
 
-Use actual integrated filenames if prerequisite ARCH-010 capacity/billing-options tasks refactor these surfaces.
+If no promotion is selected, do not present unrelated running offers as owned capacity; SHOPIFY-021 owns the offer catalogue.
 
-## 1. Capacity projection consumption
+If the selected promo is expired/closed/plan-ineligible/exhausted, clearly show that it is not funding new recoveries and route the merchant back to the available-promotion catalogue where appropriate.
 
-Consume SHOPIFY-009's amended local projection containing:
+## Capacity copy
+
+Merchant-facing copy must reflect:
 
 ```text
-promotional:
-  granted
-  committed
-  reserved
-  remaining
+Selected promotion is used first.
+Then Paid monthly allowance (when on Paid).
+Then purchased lifetime credits.
+Then lifetime Free credits.
 ```
 
-and `capacitySource = PROMOTIONAL` when it is the next usable source.
+Promotional credits are non-refundable and create no Shopify charge.
 
-Do not query `PromotionalCreditGrant` history to decide runtime capacity; the aggregate entitlement counter is the operational source.
+## Lifecycle
 
-## 2. Billing/dashboard presentation
+FROZEN/NO_CONTRACT/inactive/reinstall-pending merchants may see preserved selected/history information but must not be told the promo is currently spendable. SHOPIFY-009 lifecycle availability remains authoritative.
 
-On relevant merchant surfaces show promotional credits separately from:
+## Privacy / refunds
 
-- monthly included credits;
-- purchased credits;
-- lifetime Free credits.
+Do not expose `platformAdminId`, internal reason, audit events, target IDs or request keys. Never include promo quantity in purchased-credit refund totals/limits/provider refund guidance.
 
-Use customer-facing wording equivalent to:
+## Translation
 
-```text
-Promotional recovery credits
-Provided by Moda. These credits are used before purchased credits and do not expire under the current product terms.
-```
-
-Do not describe them as purchased, refundable, monthly or Shopify-billed.
-
-When promotional credits are currently funding new recoveries, the dashboard/capacity state should make that source understandable without alarming the merchant.
-
-## 3. Privacy boundary
-
-Merchant UI MUST NOT expose internal Admin provenance fields such as:
-
-```text
-platformAdminId
-internal reason
-campaignReference
-requestKey
-internal grant type when it contains operational/support classification
-```
-
-Only aggregate balance/use semantics are merchant-facing in ARCH-010.
-
-## 4. Refund presentation
-
-Promotional credits are non-refundable.
-
-The purchased-credit refund flow remains based only on refundable unused `RecoveryCreditPurchase` lots.
-
-Do not include promotional quantity in:
-
-- refundable purchased-credit totals;
-- refund request quantity limits;
-- Shopify refund/credit guidance.
-
-SHOPIFY-017 may link/explain that promotional and lifetime Free credits are not refundable, but the existing purchased refund CTA remains available for eligible purchased lots.
-
-## 5. Lifecycle presentation
-
-When subscription execution is disabled by:
-
-```text
-FROZEN
-NO_CONTRACT
-inactive/uninstalled/reinstall-pending
-```
-
-promotional balances may still be displayed as owned/preserved, but they MUST NOT be represented as currently spendable capacity.
-
-SHOPIFY-009's availability state remains authoritative for whether another recovery can start.
-
-## 6. Translation
-
-Add all new merchant-facing keys using the repository's existing locale discipline.
-
-Do not hard-code English in React/routes.
-
-If the repository's normal workflow requires every supported locale file to contain the key, update every locale using the accepted translation/fallback convention rather than leaving missing-key runtime behaviour.
+Localize all static labels. Do not attempt to machine-translate Admin-authored campaign name/description in this task.
 
 ## Required tests
 
 At minimum prove:
 
-1. promotional balance renders separately from purchased/lifetime Free;
-2. `capacitySource=PROMOTIONAL` has correct merchant presentation;
-3. Free ordering copy is promotional -> purchased -> lifetime Free;
-4. Paid ordering copy is included -> promotional -> purchased -> lifetime Free;
-5. promotional credits are described as non-refundable/non-purchased;
-6. refund totals/CTA eligibility ignore promotional balance;
-7. internal campaign reference/reason/admin identity never appears in merchant serialization/rendering;
-8. FROZEN/NO_CONTRACT may display preserved balance but not as spendable;
-9. zero/missing promotional counter renders cleanly without configuration error;
-10. all required i18n keys pass repository locale tests;
-11. no Shopify provider call is added merely to read promotional balance.
-
-Run focused billing/UI/i18n tests, repository-declared typecheck/build/full tests and `git diff --check`.
+1. selected promo renders separately;
+2. promo-first Paid ordering copy;
+3. promo-first Free ordering copy;
+4. no-selected-promo state is clean;
+5. expired/closed/ineligible selected promo is not represented as spendable;
+6. refund calculations ignore promo;
+7. internal metadata does not leak;
+8. lifecycle blocks preserve but disable spendability;
+9. i18n/static copy checks pass.
 
 ## Non-goals
 
-Do not:
-
-- let merchants request promotional grants;
-- expose campaign history/details;
-- make promotional credits refundable;
-- add expiry;
-- add Shopify/App Event mutations;
-- change Admin behaviour;
-- change subscription lifecycle state.
-
-## Stop conditions
-
-Stop and return to `moda_architect` if:
-
-- SHOPIFY-009 has not exposed the promotional aggregate;
-- merchant UI would require reading internal Admin grant provenance to compute capacity;
-- integrated billing/options surfaces no longer match the expected component ownership.
+Do not implement offer selection, history, Admin campaign management or Background reservation logic.
 
 ## Completion Report
 

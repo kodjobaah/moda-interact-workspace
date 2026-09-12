@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-SYSTEM-TEST-003
 architecture_id: ARCH-010
-title: Validate purchased-credit partial refunds and promotional-credit operations
+title: Validate partial top-up refunds and opt-in promotional campaigns
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -16,156 +16,82 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-010-BACKGROUND-014
+  - ARCH-010-BACKGROUND-019
   - ARCH-010-ADMIN-003
   - ARCH-010-ADMIN-005
+  - ARCH-010-ADMIN-006
   - ARCH-010-SHOPIFY-017
   - ARCH-010-SHOPIFY-020
+  - ARCH-010-SHOPIFY-021
+  - ARCH-010-SHOPIFY-022
 enables:
   - ARCH-010-SYSTEM-TEST-004
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-12
 ---
 
-# ARCH-010-SYSTEM-TEST-003: Validate purchased-credit partial refunds and promotional-credit operations
+# ARCH-010-SYSTEM-TEST-003: Validate partial top-up refunds and opt-in promotional campaigns
 
 ## Terminal/manual gate
 
-Do **not** auto-start. The developer explicitly invokes this terminal/manual validation after the relevant implementation is integrated and manually smoke-checked.
-
-No implementation task depends on this task.
+Do **not** auto-start. The developer explicitly invokes this terminal/manual validation after relevant implementation is integrated and manually smoke-checked. No implementation task depends on this task.
 
 ## Objective
 
-Validate the two shop-lifetime non-plan capacity workflows that require strong accounting provenance:
+Validate:
 
-1. purchased top-up credit lots with partial human-settled refunds;
-2. Moda-funded promotional credit grants/campaigns.
+1. purchased top-up FIFO lot accounting and partial human-settled refunds;
+2. optional GLOBAL/PLAN/SHOP promotional campaigns;
+3. one selected promotion per merchant;
+4. promo-first recovery consumption;
+5. campaign expiry/close/reopen and permanent merchant/campaign history.
 
-## Required scenarios
+## Promotion scenarios
 
-### A. Purchased-credit FIFO lot consumption
+At minimum validate end-to-end:
 
-Create at least three provider-confirmed top-up lots with distinguishable activation times and quantities.
+1. Admin creates GLOBAL campaign; eligible merchant sees it but receives no credits before selection;
+2. PLAN campaign is visible/selectable only on its exact current mapped plan;
+3. SHOP campaign is visible only to exact target Shop;
+4. multiple campaigns can run concurrently and one merchant can see multiple eligible offers;
+5. merchant selects one campaign and gets exactly one allocation;
+6. a different still-usable selected promo prevents switching;
+7. promo is consumed **before Paid monthly included** and before every other bucket;
+8. Free consumes promo before purchased/lifetime Free;
+9. selected promo expiry stops new promo reservations without killing a recovery already reserved before expiry;
+10. selected PLAN promo becomes ineligible after plan change and another eligible promo can be selected;
+11. campaign close stops new selection/reservation immediately while preserving history;
+12. Admin reopens the same campaign by extending expiry; same campaign ID/history remains;
+13. partially-used merchant can reselect reopened campaign and only original remainder returns;
+14. exhausted merchant gets no new quantity when campaign is reopened;
+15. same merchant cannot claim same campaign twice under concurrency/retry;
+16. two-tab selection of two promotions yields exactly one current selection;
+17. merchant history distinguishes selected-but-unused, used, exhausted and expired/closed/reopened cases;
+18. Admin catalogue retains all campaigns and lifecycle events;
+19. Admin usage report distinguishes merchants selected vs actually used;
+20. promotional usage creates no Shopify normal-recovery/top-up App Event and is non-refundable;
+21. FROZEN/NO_CONTRACT/inactive shop cannot spend selected promo;
+22. no automatic paid overage exists.
 
-Prove:
+## Refund scenarios
 
-- purchased recovery reserves the oldest refundable/spendable lot first;
-- exhausted/refunding/refunded lot capacity is skipped;
-- reservation/commit/release updates lot and aggregate accounting exactly once;
-- concurrent recovery cannot overspend the final available purchased credit;
-- provider reconciliation does not re-activate or re-grant manually refunded quantities.
+Retain the accepted DATABASE-007/BACKGROUND-014/ADMIN-002/003/SHOPIFY-017 partial-refund matrix, including exact purchased lot selection, refund hold, human provider settlement evidence, multiple partial refunds, concurrency safety and strict exclusion of promotional/lifetime-Free credits from refundable quantity.
 
-### B. Partial refund triage
+## Evidence
 
-From an explicit merchant support message:
-
-- Admin sees only same-shop provider-confirmed purchase lots;
-- lifetime Free and promotional balances are never refund candidates;
-- refundable quantity is derived exactly from grant/committed/reserved/refunding/refunded state;
-- positive whole-credit quantity within the current refundable amount creates one idempotent request;
-- request creation does not hold capacity;
-- canonical merchant acknowledgement is emitted once.
-
-### C. SUPER_ADMIN hold and settlement
-
-Prove approval revalidates the exact requested quantity against current refundable state.
-
-If the merchant spent some credits after request creation and the full requested quantity is no longer refundable, approval must fail rather than silently reduce the quantity.
-
-On valid approval:
-
-- exact quantity moves into refund hold atomically;
-- new recovery cannot spend the held quantity;
-- provider settlement mode is explicitly recorded as `REFUND` or `CREDIT` from human Shopify Partner Dashboard evidence;
-- local finalization occurs only after provider evidence is recorded;
-- replay does not decrement local granted capacity twice;
-- multiple later partial refunds against the same purchase are possible while refundable balance remains;
-- new ARCH-010 refunds do not convert the purchase provider-confirmation state to `REFUNDED`.
-
-Where live Shopify money movement would be inappropriate for the test environment, use a developer-approved non-production charge/invoice or stop at the manual provider-evidence gate; never fabricate a successful provider refund.
-
-### D. Single-shop promotional grant
-
-Validate SUPER_ADMIN grant with:
-
-```text
-quantity > 0
-grantType
-reason
-optional campaignReference
-unique requestKey
-```
-
-Prove:
-
-- exact shop aggregate promotional counter increases;
-- provenance and billing audit records are written;
-- duplicate requestKey with same payload is idempotent;
-- duplicate requestKey with changed payload fails closed;
-- no Shopify/App Event is emitted;
-- grant does not alter lifetime Free or purchased counters;
-- grant may exist for a currently non-executable shop but cannot bypass `NO_CONTRACT`, `FROZEN` or inactive-shop execution gates.
-
-### E. Bounded targeted campaign
-
-Run a multi-shop campaign that includes successful and intentionally invalid/failing targets.
-
-Prove:
-
-- per-shop idempotency keys are deterministic;
-- successful shops retain their grant when another target fails;
-- retry does not double-grant successful shops and can retry failed shops;
-- campaign attribution is visible to internal Admin/audit only;
-- merchant surfaces show aggregate promotional balance but not internal campaign provenance.
-
-### F. Final priority/refund interaction
-
-Create a merchant with all capacity sources and verify:
-
-```text
-Paid included -> promotional -> purchased -> lifetime Free
-```
-
-Then prove promotional consumption preserves purchased refundable balance until promotional capacity is exhausted.
-
-Promotional credits are never included in purchased refund quantity or provider refund instructions.
-
-## Required evidence
-
-Return separate accounting tables for each purchased lot and promotional grant, plus the final aggregate counters and audit entries.
-
-For any provider refund/credit action record only safe provider evidence; never include credentials.
-
-## Validation
-
-Any harness changes must pass repository-declared tests/type/lint and `git diff --check`.
+Capture deterministic fixtures, relevant DB rows/counters/reservations, merchant/Admin UI evidence and provider-call absence/presence needed to prove the above. Do not expose secrets.
 
 ## Non-goals
 
-Do not test subscription-fee refunds; Shopify owns those. Do not implement automatic negative App Event refund settlement. Do not add promotional expiry/revocation.
-
-## Stop conditions
-
-STOP if historical purchased balances cannot be mapped to deterministic lots, Shopify provider settlement cannot be performed safely in the chosen non-production environment, or Admin authorization cannot be exercised without production credentials/data.
-
-Implementation defects return to the owning task rather than being patched from system-test.
+Do not implement missing behaviour from the system-test task. Report defects to `moda_architect` for routing to the owning repository task.
 
 ## Completion Report
 
 ### Status
-Not started.
-
-### Scenarios Executed
-Populate during execution.
-
-### Evidence
-Populate during execution.
+Not started/manual-gated.
 
 ### Validation Results
-Populate during execution.
-
-### Git / VCS
-Populate if harness code changes.
+Populate when explicitly invoked.
 
 ### Architect Review
-Manual terminal gate; pending developer/architect acceptance.
+Pending.

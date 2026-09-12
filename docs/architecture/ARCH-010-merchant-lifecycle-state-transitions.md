@@ -15,6 +15,8 @@ updated: 2026-09-11
 
 > **Final-state reading rule:** This file retains numbered iteration headings as design provenance, but those headings are **not independent current contracts**. Implementers must use the consolidated invariants near the top of this document plus the exact current `ARCH-010-*` task. Earlier iteration-scoped phrases such as “later iteration”, “not in this iteration” or pre-promotion/pre-freeze capacity examples describe the design sequence only and must not override the final ARCH-010 state. For a non-iterative readable model, use [`../product/pricing-and-billing-model.md`](../product/pricing-and-billing-model.md). For explicit old→new rules, use [`ARCH-010-supersession-map.md`](ARCH-010-supersession-map.md).
 
+
+> **Promotional-campaign amendment (2026-09-12):** The final first-release promo model is optional merchant opt-in campaigns, not direct non-expiring Admin grants. See [`ARCH-010-promotional-campaigns.md`](ARCH-010-promotional-campaigns.md). A selected usable promotion is the **highest-priority** recovery source. Older Iteration-12 text describing lifetime/unselected direct grants is design provenance only.
 ## Problem
 
 Moda Interact has durable billing, subscription, entitlement and uninstall primitives from ARCH-007/008/009, but merchant-facing behaviour is not yet defined consistently as a state machine. ARCH-010 defines transitions between merchant lifecycle states and, for each resulting state, the screens, actions and runtime services that are available.
@@ -31,9 +33,9 @@ ARCH-009 is frozen while ARCH-010 resolves the lifecycle model. ARCH-010 may lat
 - Paid plans have period-scoped included recovery credits.
 - Paid-plan included credits do not roll over.
 - A paid-plan upgrade/downgrade becomes effective at the next Shopify billing-cycle boundary; no Moda proration is performed.
-- Promotional lifetime credits are a distinct Moda-granted shop bucket for campaigns/testing/goodwill; they survive plan changes/uninstall/reinstall, are lifetime-until-used in ARCH-010, and are not refundable.
+- Promotional credits are optional campaign-linked merchant allocations. Campaigns target GLOBAL, PLAN or SHOP, expire, are merchant-selected, are non-refundable, and preserve durable history after expiry/close.
 - Purchased lifetime top-up credits survive plan changes/uninstall/reinstall; their unused portion may be refunded through the Moda top-up refund workflow.
-- Recovery-capacity consumption priority is deliberate: Paid monthly included credits first where applicable, then promotional credits, then purchased lifetime top-ups, then the shop-lifetime Free grant, then **BLOCK NEW RECOVERY ADMISSION**. On Free, promotional credits are consumed before purchased credits, and purchased credits before the shop-lifetime Free grant.
+- Recovery-capacity priority is deliberate: a usable merchant-selected promotion comes **first**. Paid then falls back to current-period included credits, purchased lifetime top-ups and shop-lifetime Free; Free falls back to purchased then lifetime Free; then **BLOCK NEW RECOVERY ADMISSION**.
 - In ARCH-010, `BLOCK NEW RECOVERY ADMISSION` is a capacity outcome, not a global execution state: existing admitted conversations continue and merchant dashboard/history/billing/support access remains available. Broader execution stops are represented separately by `FROZEN`, `NO_CONTRACT` and inactive/uninstalled states.
 - Shopify owns subscription cancellation and subscription-fee refund behaviour. Moda's refund workflow is only for purchased top-up credits.
 - PostgreSQL is durable lifecycle truth. Redis/BullMQ is scheduling/delivery infrastructure, never the sole source of billing state.
@@ -781,7 +783,7 @@ The supplied workspace currently:
 
 - `ARCH-010-DATABASE-002` — add the period-scoped included-credit counter and reservation linkage required for concurrency-safe paid allowance consumption.
 - `ARCH-010-BACKGROUND-011` — make the lifetime Free grant plan-independent and provide the final lifetime-Free fallback after purchased capacity.
-- `ARCH-010-BACKGROUND-002` — implement paid included-credit reservation/commit/release and establish the included-first boundary; final cross-bucket routing is composed with promotional, purchased and lifetime-Free capacity by the downstream reservation tasks.
+- `ARCH-010-BACKGROUND-002` — implement the concurrency-safe Paid included-credit reservation primitive; `BACKGROUND-019` later composes promo-first cross-bucket routing.
 - `ARCH-010-BACKGROUND-003` — extend the existing ARCH-010 subscription reconciliation consumer/service to complete first paid activation and create the first paid period/counter asynchronously.
 - `ARCH-010-SHOPIFY-003` — implement first paid callback fast-path activation, transactional first-period/counter creation and onboarding completion.
 - `ARCH-010-SHOPIFY-004` — present the period-scoped paid allowance and keep merchant route/service exposure aligned with the activated paid state.
@@ -1698,7 +1700,7 @@ The merchant remains an active Moda tenant. Only **new checkout-recovery initiat
 The inspected baseline already has these useful behaviours:
 
 - Final Free recovery admission is promotional credits -> purchased credits -> shop-lifetime Free credits -> BLOCK NEW RECOVERY ADMISSION.
-- Final Paid recovery admission is current-period included credits -> promotional -> purchased -> shop-lifetime Free -> BLOCK NEW RECOVERY ADMISSION.
+- Final Paid recovery admission is selected promotional -> current-period included credits -> purchased -> shop-lifetime Free -> BLOCK NEW RECOVERY ADMISSION.
 - an exhausted Free admission currently creates an idempotent `BILLING_FREE_ALLOWANCE_EXHAUSTED` merchant-support SYSTEM message;
 - paid capacity exhaustion has no equivalent generic merchant notification yet;
 - `CheckoutRecoveryService.handleCheckoutCreated()` creates/retains the durable `CheckoutRecovery` before billing admission and simply returns when billing is blocked;
@@ -1789,10 +1791,10 @@ This is a projection, not new authoritative persisted state.
 | Free + promotional exhausted + purchased available | allowed from purchased | continues | continues | available | only when server eligibility permits | available |
 | Free + promotional/purchased exhausted + lifetime Free available | allowed from lifetime Free | continues | continues | available | only when server eligibility permits | available |
 | Free + all three lifetime sources exhausted | **blocked** | continues | continues | available; show capacity-exhausted state | only when server eligibility permits | available |
-| Paid included available | allowed from current-period included counter | continues | continues | available | only when server eligibility permits and not draining/reconciling | available |
-| Paid included exhausted + promotional available | allowed from promotional | continues | continues | available; show promotional/purchased/lifetime balances separately | same existing eligibility | available |
-| Paid included/promotional exhausted + purchased available | allowed from purchased | continues | continues | available | same existing eligibility | available |
-| Paid included/promotional/purchased exhausted + lifetime Free available | allowed from lifetime Free | continues | continues | available; show lifetime Free fallback | same existing eligibility | available |
+| Paid + selected usable promo | allowed from selected promotion first | continues | continues | available; show selected promo/expiry/fallback | only when server eligibility permits and not draining/reconciling | available |
+| Paid + no usable selected promo + included available | allowed from current-period included counter | continues | continues | available | only when server eligibility permits and not draining/reconciling | available |
+| Paid + no usable promo + included exhausted + purchased available | allowed from purchased | continues | continues | available | same existing eligibility | available |
+| Paid + no usable promo + included/purchased exhausted + lifetime Free available | allowed from lifetime Free | continues | continues | available; show lifetime Free fallback | same existing eligibility | available |
 | Paid all sources exhausted | **blocked** until capacity is restored | continues | continues | available; show capacity-exhausted state | same existing eligibility | available |
 
 Recovery-capacity exhaustion does not disable `AI_CONVERSATIONS`, `PRODUCT_SEARCH` or `ORDER_SUPPORT` merely because checkout-recovery capacity is empty. Their existing plan feature mappings and safety policy remain authoritative.
@@ -2322,7 +2324,7 @@ Capacity order remains unchanged:
 
 ```text
 Paid:
-  monthly included -> promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
+  selected promotional -> monthly included -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
 
 Free:
   promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
@@ -2997,184 +2999,45 @@ BACKGROUND-012 must therefore no longer interpret `activeSubscription = null` by
 Existing cancellation, rollover, capacity and billing-action tasks are amended to consume this provider-state distinction rather than treating provider null as cancellation.
 
 
-# Iteration 12 — Targeted promotional recovery credits
+# Iteration 12 — Optional promotional recovery campaigns
 
-## Scope
+Iteration 12 is amended for first release: promotions are **offers**, not automatic Admin grants. Multiple GLOBAL/PLAN/SHOP campaigns may run at once. Merchants see currently-running campaigns for which they are eligible and opt into one. A Shop may have at most one still-usable selected promotion for new recovery admission.
 
-Iteration 12 defines Moda-funded recovery credits that can be granted to an individual shop or a targeted set of shops for campaigns, beta/testing, goodwill or support.
-
-Promotional credits are deliberately independent from every other capacity source:
+The selected eligible campaign grant has highest recovery-capacity priority:
 
 ```text
-PAID MONTHLY INCLUDED
-  provider-period scoped
-  replenishes only at verified paid cycle rollover
-  non-refundable
+PAID
+  selected promotion
+  -> current-period included
+  -> purchased lifetime
+  -> lifetime Free
+  -> BLOCK NEW RECOVERY ADMISSION
 
-PROMOTIONAL_RECOVERY_CREDITS
-  Moda granted per shop
-  lifetime-until-used in ARCH-010
-  non-refundable
-  no Shopify billing/App Event
-
-PURCHASED_RECOVERY_CREDITS
-  merchant funded top-up lots
-  lifetime-until-used
-  unused portion may be refundable
-
-FREE_RECOVERY_LIFETIME
-  one-time introductory shop grant
-  granted once at first verified subscription activation
-  lifetime-until-used
-  non-refundable
+FREE
+  selected promotion
+  -> purchased lifetime
+  -> lifetime Free
+  -> BLOCK NEW RECOVERY ADMISSION
 ```
 
-## Final capacity order
+Campaigns have fixed target/quantity, start/expiry and durable audit history. Admin may close/reopen the same campaign by changing expiry/status only. Reopen never grants a second allocation to a merchant who already claimed it.
 
-The final ARCH-010 admission order is:
+Exact campaign targeting, merchant selection, expiry/reservation semantics and history are canonical in [`ARCH-010-promotional-campaigns.md`](ARCH-010-promotional-campaigns.md).
 
-```text
-FREE subscription
-  PROMOTIONAL_RECOVERY_CREDITS
-  -> PURCHASED_RECOVERY_CREDITS
-  -> FREE_RECOVERY_LIFETIME
-  -> RECOVERY_CAPACITY_EXHAUSTED
+## Iteration 12 task amendment
 
-PAID subscription
-  current BillingPeriod INCLUDED_RECOVERY_CREDITS
-  -> PROMOTIONAL_RECOVERY_CREDITS
-  -> PURCHASED_RECOVERY_CREDITS
-  -> FREE_RECOVERY_LIFETIME
-  -> RECOVERY_CAPACITY_EXHAUSTED
-```
+- `DATABASE-009` remains the completed promotional bucket/provenance foundation.
+- `DATABASE-010` owns campaign catalogue/target/lifecycle audit.
+- `DATABASE-011` owns campaign+shop allocation, one current selection and exact reservation ownership.
+- `ADMIN-004` creates/activates GLOBAL/PLAN/SHOP campaigns; it no longer grants credits directly.
+- `ADMIN-005` owns catalogue/close/reopen-by-expiry.
+- `ADMIN-006` owns internal campaign merchant usage reporting.
+- `SHOPIFY-021` owns eligible offer discovery and merchant opt-in.
+- `SHOPIFY-020` owns selected-promo capacity presentation.
+- `SHOPIFY-022` owns merchant promo history.
+- `BACKGROUND-019` owns selected-promo-first reservation/commit/release.
+- `SYSTEM-TEST-003` validates targeting, opt-in, exclusivity, expiry/reopen/history and promo-first consumption.
 
-The order is intentional:
-
-1. consume paid monthly included capacity first because it expires at the billing boundary;
-2. consume Moda-funded promotional capacity before merchant-funded purchased credits;
-3. consume purchased credits before the one-time lifetime Free grant;
-4. block only when every executable source is unavailable.
-
-Within purchased credits, BACKGROUND-014 FIFO purchase-lot ordering still applies.
-
-## Durable promotional model
-
-Add:
-
-```text
-EntitlementCounter.PROMOTIONAL_RECOVERY_CREDITS
-PromotionalCreditGrant
-PromotionalCreditGrantType
-BillingAuditAction.PROMOTIONAL_CREDITS_GRANTED
-```
-
-The operational balance is the shop aggregate counter:
-
-```text
-grantedQuantity - committedQuantity - reservedQuantity
-```
-
-Grant provenance is append-only audit information and includes at least shop, quantity, type, reason, optional campaign reference, idempotency key, granting PlatformAdmin and creation timestamp.
-
-A missing promotional counter means zero; no migration automatically grants promotional credits to existing merchants.
-
-Historical `BillingAllowanceAdjustment(FREE_RECOVERY_LIFETIME)` rows remain lifetime-Free adjustments and are never silently reclassified as promotions.
-
-## Grant semantics
-
-A promotional grant:
-
-- must be a positive whole-credit quantity;
-- may target a shop even before that shop is currently executable;
-- does not alter Subscription/Shop lifecycle state;
-- does not create or modify BillingPeriod;
-- does not create RecoveryCreditPurchase;
-- does not create a Shopify App Event;
-- is non-refundable;
-- has no expiry in ARCH-010;
-- survives upgrade/downgrade, uninstall/reinstall, cancellation and freeze as owned local balance.
-
-Owned promotional balance is **not** permission to execute. While the shop is UNINSTALLED/inactive, reinstall-pending, `NO_CONTRACT` or `FROZEN`, the balance is preserved and visible where appropriate but cannot be reserved/consumed.
-
-## Recovery/accounting semantics
-
-Promotional recovery uses the normal internal recovery lifecycle and a concurrency-safe `UsageReservation` attached to the promotional `ShopEntitlementCounter`.
-
-A promotional-funded recovery is excluded from the paid Shopify normal recovery meter, exactly like purchased/lifetime-Free-funded recoveries. It is not paid overage and is unrelated to the recovery-credit-pack top-up App Event.
-
-During provider BillingPeriod DRAINING, promotional/purchased/lifetime-Free recoveries may continue under an otherwise executable contract because those capacity sources create no cycle-scoped billing App Event. Paid included capacity is unavailable for a new recovery during drain.
-
-## Capacity restoration
-
-Granting promotional credits can restore recovery capacity for checkouts durably blocked with `RECOVERY_CAPACITY_EXHAUSTED`.
-
-Correctness does not depend on an Admin-to-Background queue. BACKGROUND-009's bounded PostgreSQL repair/re-admission pass will see the new promotional balance and retry eligible blocked recoveries. A future direct wake-up optimisation may be added without changing this state model.
-
-## Admin — individual grants
-
-`moda-interact-admin` provides a SUPER_ADMIN-only one-shop grant action with:
-
-```text
-shopId
-quantity
-grantType
-reason
-campaignReference?
-requestKey
-```
-
-The request key is durable idempotency authority. Duplicate identical submission grants exactly once; duplicate request key with changed semantics fails closed.
-
-The transaction creates the provenance row, increments/creates the aggregate promotional counter and writes the existing billing audit ledger using `PROMOTIONAL_CREDITS_GRANTED`.
-
-Admin shows promotional balance/history separately from purchased, paid monthly and lifetime Free state.
-
-## Admin — targeted campaigns
-
-A second bounded Admin workflow selects exact shops from the internal tenant directory and applies the same one-shop grant primitive using a common:
-
-```text
-quantity per shop
-grant type
-reason
-campaignReference
-batchRequestKey
-```
-
-One submitted batch is bounded to 100 shops if no smaller existing repository limit exists. Per-shop idempotency is derived from batch+shop identity.
-
-Campaign execution uses per-shop exactly-once mutations with explicit partial-success results rather than one large cross-tenant database transaction. Retrying the same batch does not double-grant successful shops.
-
-ARCH-010 does not add campaign scheduling, segmentation rules, email/WhatsApp marketing delivery, expiration or automatic revocation.
-
-## Merchant presentation
-
-Merchant capacity surfaces show a separate aggregate promotional balance and the final ordering. They do not expose internal Admin provenance such as reason, campaign reference, request key or PlatformAdmin identity.
-
-Promotional credits are explicitly non-refundable. Purchased-credit refundability remains purchase-lot only and is never increased by promotional balance.
-
-## Promotional-credit implementation tasks
-
-- `ARCH-010-DATABASE-009` — add the promotional entitlement enum, durable positive grant provenance/idempotency schema and audit action without migration grants.
-- `ARCH-010-BACKGROUND-019` — add concurrency-safe promotional reservation/commit/release and integrate the final capacity order/provider-meter exclusion.
-- `ARCH-010-ADMIN-004` — grant one exact shop promotional credits with SUPER_ADMIN authorization, idempotency, counter update and audit history.
-- `ARCH-010-ADMIN-005` — apply the same primitive to a bounded targeted multi-shop campaign with per-shop idempotency and explicit partial-failure results.
-- `ARCH-010-SHOPIFY-020` — present promotional balance/capacity semantics separately without exposing internal campaign provenance.
-
-BACKGROUND-002/008/009/010/012/013/016 and SHOPIFY-008/009/012/017 consume/preserve the promotional bucket consistently in the final task contracts.
-
-## Explicit non-goals
-
-ARCH-010 does not define:
-
-- promotional-credit expiration;
-- automatic campaign scheduling;
-- automatic promotional revocation;
-- self-service merchant promotional-credit requests;
-- Shopify billing/meter events for promotions;
-- refunds of promotional credits;
-- marketing message delivery;
-- a new subscription plan or plan-owned promotional allowance.
 
 # Final consolidation and implementation acceptance boundary
 
@@ -3239,3 +3102,21 @@ The following are intentionally deferred and must not be improvised by implement
 
 If any deferred condition becomes required by real provider behaviour, return to `moda_architect` rather than extending an existing task silently.
 
+
+
+## Admin commercial guardrail — upgrade economics
+
+ARCH-010 protects the structural relationship between each lower plan, its recovery-credit-pack economics and the explicitly configured next paid tier. This is an **internal Admin guardrail**, not merchant runtime billing logic.
+
+Default policy:
+
+```text
+lower recurring price + cheapest top-up cost needed to reach next-plan MONTHLY capacity
+>= next recurring price * 1.20
+```
+
+The threshold is durable platform policy in basis points. Upgrade order is represented by explicit BillingPlan-ID edges; no plan name/price/rank inference is allowed. Shopify App Pricing remains monetary authority. Admin stores append-only verified economics snapshots only as audit evidence for the guardrail.
+
+The guardrail excludes lifetime-Free credits, promotional credits, purchased-credit balances and current merchant usage. For this calculation Free monthly included capacity is `0`.
+
+`PASS` is required for economics-affecting activation/mutation. `FAIL` and `UNVERIFIED` both block server-side. The pure evaluator and exhaustive scenario matrix are frozen in `docs/contracts/ARCH-010-upgrade-economics-guardrail.reference.ts` and `docs/contracts/ARCH-010-upgrade-economics-guardrail-test-matrix.md`.

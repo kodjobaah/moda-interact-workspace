@@ -40,7 +40,7 @@ When all currently supported checkout-recovery capacity is exhausted:
 
 ```text
 Free: promotional credits -> purchased credits -> shop-lifetime Free credits -> exhausted
-Paid: current-period included credits -> promotional credits -> purchased credits -> shop-lifetime Free credits -> exhausted
+Paid: selected promotional credits -> current-period included credits -> purchased credits -> shop-lifetime Free credits -> exhausted
 ```
 
 Background must block only **new recovery initiation**, preserve the subscription and existing conversations, persist why a DETECTED recovery did not start, notify the merchant once per capacity epoch, and automatically retry still-recoverable blocked checkouts when capacity later returns.
@@ -384,7 +384,7 @@ Final exhaustion order is:
 
 ```text
 Free: promotional -> purchased -> lifetime Free -> exhausted
-Paid: included -> promotional -> purchased -> lifetime Free -> exhausted
+Paid: selected promotional -> included -> purchased -> lifetime Free -> exhausted
 ```
 
 The exhaustion epoch key must include promotional `grantedQuantity`, `committedQuantity` and `reservedQuantity` so a later promotional grant creates a genuinely new capacity epoch.

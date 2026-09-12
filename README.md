@@ -215,7 +215,7 @@ implementation task.
 | **ARCH-005** | In progress | Make Moda Interact internationally correct by design across WhatsApp markets: keep country, language, currency, time zone and telephone country independent; use standards-based locale contracts; capture Shopify international commerce context; select approved WhatsApp template variants; support multilingual active conversations; and localise merchant-facing formatting. | [Global Internationalisation and WhatsApp Markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md) · [Readable overview](docs/architecture/ARCH-005-internationalisation-overview.md) | Task plans live under `docs/decisions/*/ARCH-005/` |
 | **ARCH-006** | In progress | Add a shop-scoped internal support inbox between Moda administrators and merchants: immutable originals, multilingual translations, read state, distinct administrative/system/merchant messages, versioned automated notifications, tenant-safe access and an observable `merchant-communications` queue. | [Merchant Communications, Support Inbox and System Notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md) · [Readable overview](docs/architecture/ARCH-006-merchant-communications-overview.md) | Task plans live under `docs/decisions/*/ARCH-006/` |
 | **ARCH-007** | Partially superseded | Historical billing/cost-control foundation and completed implementation evidence. Merchant subscription, entitlement, recovery-capacity, top-up, refund and lifecycle semantics are superseded by ARCH-010; retained ARCH-007 message/provider safety primitives remain valid unless explicitly replaced. | [Historical ARCH-007 architecture](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md) · [ARCH-010 supersession map](docs/architecture/ARCH-010-supersession-map.md) | Historical task records live under `docs/decisions/*/ARCH-007/` |
-| **ARCH-010** | Agreed / implementation-ready | Define the current merchant subscription and lifecycle state machine: one-time shop-lifetime Free grant, period-scoped paid allowance, promotional/purchased/lifetime capacity ordering, App Pricing top-ups, plan changes, cancellation, freeze, uninstall/reinstall, partial top-up refunds and exact execution gates. | [Merchant lifecycle state transitions](docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md) · [Current pricing/billing model](docs/product/pricing-and-billing-model.md) · [Supersession map](docs/architecture/ARCH-010-supersession-map.md) | [Implementation handoff](docs/architecture/ARCH-010-implementation-handoff.md) |
+| **ARCH-010** | Agreed / implementation-ready | Define the current merchant subscription and lifecycle state machine: one-time shop-lifetime Free grant, period-scoped paid allowance, optional promotional campaigns plus purchased/lifetime capacity ordering, App Pricing top-ups, plan changes, cancellation, freeze, uninstall/reinstall, partial top-up refunds and exact execution gates. | [Merchant lifecycle state transitions](docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md) · [Current pricing/billing model](docs/product/pricing-and-billing-model.md) · [Supersession map](docs/architecture/ARCH-010-supersession-map.md) | [Implementation handoff](docs/architecture/ARCH-010-implementation-handoff.md) |
 
 The architecture document is authoritative for **what is being built and how the
 complete system fits together**.
@@ -246,8 +246,8 @@ The canonical recovery-capacity order is:
 
 ```text
 Paid:
-  current-period monthly included
-  -> promotional
+  selected promotional campaign
+  -> current-period monthly included
   -> purchased lifetime top-ups
   -> shop-lifetime Free
   -> BLOCK NEW RECOVERY ADMISSION
@@ -261,7 +261,7 @@ Free:
 
 `BLOCK NEW RECOVERY ADMISSION` means capacity exhaustion stops a **new** recovery from being admitted. It does not disable the merchant dashboard and does not terminate an already-admitted conversation solely because capacity later reaches zero.
 
-Promotional credits are a separate Moda-funded, non-refundable shop-specific bucket for targeted campaigns, beta/test merchants, goodwill and support. Purchased top-ups are merchant-funded lifetime credits with FIFO purchase-lot accounting and partial-unused-credit refund support.
+Promotions are optional Moda-funded offers targeted globally, to one BillingPlan tier, or to one Shop. Merchants see currently-running eligible offers and choose one; the selected promotion is consumed before every other recovery-capacity source. Campaigns are expiring, auditable and reopenable under the same ID without regranting previously claimed quantity. Purchased top-ups remain merchant-funded lifetime credits with FIFO lot accounting and partial-unused-credit refund support.
 
 Top-ups use the current Shopify App Pricing **usage meter + App Event** mechanism. A Free `$0` App Pricing plan may therefore still have a Shopify provider billing cycle for App Event scope; that billing cycle never replenishes the five lifetime Free credits.
 

@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-ADMIN-001
 architecture_id: ARCH-010
-title: Move lifetime Free grant configuration from plan catalogue to platform billing controls
+title: Move lifetime Free grant configuration from plan catalogue to platform billing
+  controls
 task_kind: implementation
 domain: admin
 repository: moda-interact-admin
@@ -15,8 +16,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-  - ARCH-010-DATABASE-006
-enables: []
+- ARCH-010-DATABASE-006
+enables:
+- ARCH-010-ADMIN-008
 created: 2026-09-11
 updated: 2026-09-12T01:15:00Z
 ---

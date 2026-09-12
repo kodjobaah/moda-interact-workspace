@@ -55,7 +55,7 @@ This task changes only how the `purchased` step chooses a historical purchase lo
 `ARCH-010-BACKGROUND-019` owns the final cross-bucket order:
 
 ```text
-Paid: included -> promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
+Paid: selected promotional -> included -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
 Free: promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
 ```
 

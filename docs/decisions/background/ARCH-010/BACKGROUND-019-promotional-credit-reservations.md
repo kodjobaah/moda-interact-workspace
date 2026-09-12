@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-BACKGROUND-019
 architecture_id: ARCH-010
-title: Reserve and consume promotional recovery credits ahead of purchased and lifetime Free capacity
+title: Reserve selected promotional campaign credits before every other capacity source
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-009
+  - ARCH-010-DATABASE-011
   - ARCH-010-BACKGROUND-002
   - ARCH-010-BACKGROUND-011
   - ARCH-010-BACKGROUND-014
@@ -23,220 +23,172 @@ enables:
   - ARCH-010-BACKGROUND-008
   - ARCH-010-BACKGROUND-009
   - ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-12
 ---
 
-# ARCH-010-BACKGROUND-019: Reserve and consume promotional recovery credits ahead of purchased and lifetime Free capacity
+# ARCH-010-BACKGROUND-019: Reserve selected promotional campaign credits before every other capacity source
 
 ## Objective
 
-Add concurrency-safe promotional-credit reservation/commit/release and integrate the final ARCH-010 capacity order:
+Implement exact-grant promotional reservation/commit/release for the merchant's one currently selected promotion and make that promotion the **highest-priority recovery-capacity source**.
+
+Canonical order:
 
 ```text
-FREE
-  promotional
-  -> purchased lifetime
+PAID
+  selected promotional
+  -> current BillingPeriod included
+  -> purchased FIFO lot
   -> shop-lifetime Free
   -> BLOCK NEW RECOVERY ADMISSION
 
-PAID
-  current-period included
-  -> promotional
-  -> purchased lifetime
+FREE
+  selected promotional
+  -> purchased FIFO lot
   -> shop-lifetime Free
   -> BLOCK NEW RECOVERY ADMISSION
 ```
-
-Promotional recovery capacity is lifetime-until-used, non-refundable, plan-independent and excluded from Shopify recovery-meter billing.
 
 ## Inspect before editing
 
 ```text
 src/services/recovery-billing.service.ts
 src/services/effective-billing-policy.service.ts
-src/services/free-recovery-reservation.service.ts
-src/services/purchased-recovery-reservation.service.ts
-src/services/paid-included-recovery-reservation.service.ts   # integrated name may differ
+src/services/*reservation*.ts
 src/services/checkout-recovery.service.ts
-src/services/recovery-credit-purchase.service.ts
-src/domain/**
-tests/unit/services/**billing**
-tests/unit/services/**reservation**
-tests/integration/*reservation*.test.ts
 database/prisma/schema.prisma
-package.json
+tests/unit/services/**billing**
+tests/integration/*reservation*.test.ts
 ```
 
-Read the implemented forms of BACKGROUND-002, BACKGROUND-011 and BACKGROUND-014 before editing. Reuse their transaction/CAS/idempotency conventions; do not invent a fourth reservation architecture.
+Read the implemented forms of BACKGROUND-002, BACKGROUND-011, BACKGROUND-014 and DATABASE-011. Reuse the same Serializable/CAS/idempotency architecture.
 
-## 1. Promotional reservation primitive
+## 1. Resolve the selected campaign transactionally
 
-Add one focused service, for example:
+Before reserving any other recovery-capacity bucket, resolve `MerchantPromotionSelection` and its exact `PromotionalCreditGrant`/`PromotionCampaign`.
+
+A selected promotion is usable for a new reservation only if all are true in the reservation transaction:
 
 ```text
-src/services/promotional-recovery-reservation.service.ts
+campaign.status = ACTIVE
+campaign.startsAt <= now < campaign.expiresAt
+grant.shopId = current shop
+grant.campaignId = campaign.id
+remaining grant quantity > 0
+scope eligibility still holds
+normal ARCH-010 shop/subscription execution gate is open
 ```
 
-Use the existing `UsageReservation` model pointing to:
+Scope eligibility:
 
 ```text
-ShopEntitlementCounter(counter = PROMOTIONAL_RECOVERY_CREDITS)
+GLOBAL -> eligible
+SHOP   -> campaign.targetShopId == shopId
+PLAN   -> campaign.targetPlanId == current effective mapped BillingPlan.id
 ```
 
-Canonical availability:
+If the selection is expired/closed/ineligible/exhausted, treat promotional capacity as unavailable and continue to the next canonical source. Do not delete history in Background.
+
+## 2. Exact promotional grant reservation
+
+Use `UsageReservation.promotionalCreditGrantId` from DATABASE-011. Do not reserve from the aggregate promotional counter alone.
+
+Availability:
 
 ```text
-remaining = max(grantedQuantity - committedQuantity - reservedQuantity, 0)
+remaining = quantity - committedQuantity - reservedQuantity
 ```
 
-Do not use:
+Reserve with bounded Serializable/CAS retry, deterministic recovery source identity, replay-before-allocation and exact grant versioning.
 
-- `refundingQuantity` as promotional state;
-- `BillingAllowanceAdjustment`;
-- current BillingPlan allowance fields;
-- Shopify usage totals;
-- BillingPeriod allowance counters.
+Maintain aggregate `ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)` only as compatible aggregate accounting if the accepted schema/runtime requires it; grant-lot counters and campaign eligibility are spendability authority.
 
-A missing promotional counter is a normal zero-capacity condition, not a data-integrity error.
+## 3. Commit/release around expiry
 
-## 2. Reservation lifecycle
-
-Promotional reservation must have the same correctness properties as accepted lifetime/purchased reservations:
-
-- deterministic source identity for the same recovery;
-- replay returns/reuses the same effective reservation rather than double-reserving;
-- atomic increment of `reservedQuantity` only when remaining capacity exists;
-- commit moves exactly the reserved quantity from reserved to committed;
+- reservation created while campaign is usable remains protected;
+- that existing reservation may commit after campaign expiry/close/plan change because recovery was already admitted;
 - definitive pre-provider failure releases exactly once;
-- ambiguous provider outcome preserves protected capacity using the existing ambiguity convention;
-- no negative counters;
-- concurrent requests cannot spend the same final promotional credit twice.
+- release after campaign is unusable does not make that quantity spendable unless the same campaign later becomes running/eligible again;
+- committed reservation updates `firstUsedAt/lastUsedAt` and `exhaustedAt` when appropriate;
+- duplicate commit never increments usage twice.
 
-Promotional source identity is shop-lifetime/period-independent. Do not include BillingPeriod identity.
+## 4. Promo-first routing
 
-## 3. Final admission order
-
-Refactor only as much as needed so one canonical recovery admission path implements:
+Refactor the one canonical recovery admission path to call promotional reservation **before** paid included capacity.
 
 ```text
-FREE:
-  promotional reserve
-  -> purchased FIFO lot reserve (BACKGROUND-014)
-  -> lifetime Free reserve (BACKGROUND-011)
-  -> capacity exhausted
-
-PAID:
-  current BillingPeriod included reserve (BACKGROUND-002)
-  -> promotional reserve
-  -> purchased FIFO lot reserve (BACKGROUND-014)
-  -> lifetime Free reserve (BACKGROUND-011)
-  -> capacity exhausted
+if selected promotional reserve succeeds:
+    fund from promotion
+else if PAID:
+    try current-period included
+    -> purchased FIFO
+    -> lifetime Free
+else FREE:
+    purchased FIFO
+    -> lifetime Free
 ```
 
-Do not leave a second caller with the old `included -> purchased -> free` or `purchased -> free` routing.
+`BACKGROUND-002` remains owner of the period-included reservation primitive; it no longer owns top-level priority.
 
-## 4. Provider billing rule
+Do not leave another caller with the obsolete `paid included -> promotional` order.
 
-A recovery funded by promotional credits:
+## 5. Provider/App Event rule
 
-- records the normal internal recovery/accounting evidence required by the existing workflow;
-- MUST NOT create/publish the normal paid Shopify recovery-meter App Event;
-- MUST NOT create a recovery-credit-pack purchase App Event;
-- MUST NOT be treated as paid overage.
+Promotional-funded recovery:
 
-The same exclusion already applies to purchased and lifetime-Free-funded recoveries. Preserve that model.
+- creates no normal paid Shopify recovery-meter App Event;
+- creates no top-up purchase App Event;
+- is never paid overage;
+- keeps normal internal recovery/accounting evidence.
 
-## 5. Billing-cycle drain behaviour
+During the five-minute provider BillingPeriod DRAINING phase, a usable selected promo may still fund a new recovery because it creates no cycle-scoped App Event. If no promo is usable, Paid included remains unavailable during drain and routing proceeds to purchased/lifetime Free per BACKGROUND-008.
 
-Promotional capacity is not period-scoped and creates no Shopify billing App Event.
+## 6. Lifecycle gates remain stronger
 
-During the App Pricing five-minute DRAINING phase:
-
-```text
-paid included             -> unavailable for new recovery
-promotional               -> may still fund recovery
-purchased                 -> may still fund recovery
-lifetime Free             -> may still fund recovery
-```
-
-provided the subscription/shop execution gate is otherwise valid.
-
-For Free, provider-cycle drain likewise does not pause promotional-funded recovery; it only pauses actions that create cycle-scoped App Events such as buying a new top-up.
-
-BACKGROUND-008 is amended to revalidate this exact fallback order immediately before provider action.
-
-## 6. Execution-state gates remain stronger than credit balances
-
-Promotional credits do not bypass:
+Positive/selected promotional capacity never bypasses:
 
 ```text
 Shop.status != ACTIVE
-Subscription.status = NO_CONTRACT
-Subscription.status = FROZEN
+Subscription = NO_CONTRACT
+Subscription = FROZEN
 reinstallPendingAt != null
-provider/configuration safety gates
+other existing provider/configuration execution blocks
 ```
 
-The counter may remain positive while execution is disabled. Preserve the balance and return the existing execution-state block rather than consuming it.
-
-## 7. Capacity restoration
-
-A new promotional grant can restore capacity for recoveries previously blocked with `RECOVERY_CAPACITY_EXHAUSTED`.
-
-Do not introduce an Admin->Background package dependency or a second cross-repository queue solely for the grant.
-
-`BACKGROUND-009`'s PostgreSQL repair scan is the durable restoration mechanism. After this task, its admission recheck must see promotional capacity and resume still-valid blocked recoveries normally.
-
-A future direct hint may optimise latency but is not required for correctness.
+Preserve grant/history while blocked.
 
 ## Required tests
 
 At minimum prove:
 
-1. Free + promotional available reserves promotional before purchased;
-2. Free promotional exhausted -> purchased;
-3. Free promotional+purchased exhausted -> lifetime Free;
-4. Paid included available -> included before promotional;
-5. Paid included exhausted + promotional available -> promotional;
-6. Paid included+promo exhausted + purchased available -> purchased;
-7. Paid included+promo+purchased exhausted + lifetime Free available -> lifetime Free;
-8. all buckets exhausted -> typed capacity-exhausted result;
-9. concurrent attempts cannot overspend the final promotional credit;
-10. duplicate source identity is idempotent;
-11. commit/release counters remain balanced;
-12. promotional-funded recovery creates no Shopify normal recovery-meter App Event;
-13. promotional-funded recovery creates no top-up purchase App Event;
-14. DRAINING may admit promotional after included is unavailable;
-15. FROZEN/NO_CONTRACT/inactive shop never consumes promotional balance;
-16. missing promotional counter behaves as zero capacity;
-17. purchased FIFO lot behaviour remains unchanged after promotional insertion;
-18. lifetime Free remains last fallback;
-19. no automatic paid overage branch exists.
-
-Run focused unit/concurrency tests, repository-declared full tests/build/typecheck as applicable, and `git diff --check`.
+1. Paid selected promo + paid included available consumes promo first;
+2. promo exhausted -> Paid included;
+3. Free selected promo consumes promo first;
+4. no usable promo -> Free purchased -> lifetime Free;
+5. no usable promo -> Paid included -> purchased -> lifetime Free;
+6. PLAN promo becomes unavailable after plan change without deleting grant;
+7. GLOBAL/SHOP targeting is checked correctly;
+8. expired/closed campaign cannot fund new reservation;
+9. reservation made before expiry may commit after expiry;
+10. released-after-expiry quantity is not currently spendable;
+11. reopened same campaign can later make the original unused grant spendable again when reselected;
+12. concurrent workers cannot overspend final promo credit;
+13. duplicate reserve/commit is idempotent;
+14. promo-funded recovery creates no Shopify usage App Event;
+15. DRAINING may use promo before all other buckets;
+16. FROZEN/NO_CONTRACT/inactive shop never consumes promo;
+17. all buckets exhausted yields typed capacity-exhausted result;
+18. no automatic paid overage exists.
 
 ## Non-goals
 
-Do not:
-
-- grant promotional credits;
-- add Admin UI;
-- add expiry/revocation;
-- refund promotional credits;
-- modify Shopify plan configuration;
-- add a new App Event/meter;
-- change purchased lot ordering within the purchased bucket;
-- change the one-time lifetime Free grant amount.
+Do not implement Admin campaign management, merchant selection UI/action, promotion marketing delivery, automatic campaign selection or an expiry scheduler.
 
 ## Stop conditions
 
-Stop and return to `moda_architect` if:
-
-- BACKGROUND-014 has not produced a callable FIFO purchased reservation path;
-- recovery admission has materially diverged from the inspected service boundaries;
-- promotional-funded recovery cannot be excluded from Shopify meter publication without changing another repository;
-- implementation would require weakening FROZEN/NO_CONTRACT/inactive execution gates.
+Stop if DATABASE-011 exact grant ownership is unavailable, or if implementing promo-first routing would require duplicating the accepted reservation architecture rather than composing existing primitives.
 
 ## Completion Report
 

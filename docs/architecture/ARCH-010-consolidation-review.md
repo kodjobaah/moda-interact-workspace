@@ -66,7 +66,7 @@ Here `BLOCK NEW RECOVERY ADMISSION` means capacity exhaustion prevents a new rec
 ### Credit ownership
 
 - Paid included credits are BillingPeriod-scoped and do not roll over.
-- Promotional credits are shop-specific, Moda-funded, non-refundable and lifetime-until-used in ARCH-010.
+- **Superseded by the 2026-09-12 promo amendment:** new promotional capacity comes from expiring merchant-selected GLOBAL/PLAN/SHOP campaigns; campaign/grant history remains durable and non-refundable.
 - Purchased top-up credits are shop-lifetime, survive plan/lifecycle changes and are refundable only while unused/unheld according to purchase-lot accounting.
 - Promotional capacity is consumed before purchased capacity so merchant-funded refundable credits are preserved longer.
 
@@ -215,8 +215,8 @@ If implementation reveals a task actually requires a second independent mechanis
 
 The following are not unresolved ARCH-010 defects:
 
-- promotional-credit expiry;
-- automated promotional revocation/scheduled marketing campaigns;
+- automatic campaign marketing delivery or coupon-code mechanics;
+- continuous automatic enrolment of future merchants into an active campaign;
 - self-service merchant provider refund settlement;
 - automatic negative-App-Event top-up refunds;
 - subscription-fee refund ownership by Moda;
