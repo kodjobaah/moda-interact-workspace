@@ -273,7 +273,8 @@ Start-of-attempt synchronization:
 Implementation repository:
   repository: `moda-interact`
   implementation source changes: none
-  remote branch: not published because execution is blocked before implementation
+  remote branch: `origin/task/ARCH-010-SHOPIFY-002`
+  branch pushed: yes; no implementation commit was created because execution is blocked before implementation
 
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
