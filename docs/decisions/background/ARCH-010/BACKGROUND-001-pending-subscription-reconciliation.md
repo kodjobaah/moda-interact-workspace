@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-12T10:28:10Z
@@ -262,8 +262,8 @@ Implemented the narrow Attempt-5 correction: `completeVerifiedFree` now returns 
 - Implementation remote task branch fast-forwarded: already-current; implementation `origin/main` incorporated: already-current.
 - Attempt-6 implementation commit: `3b00b0777b1820a99644f85226bfebb927f7630b`.
 - Attempt-6 parent claim commit: `4e1441b635e5f8c2efe8cf92875195013355dbcc`.
-- Attempt-6 parent report/status/metadata commit: to be recorded after publication.
-- Attempt-6 final task-file blob hash: to be recorded after publication.
+- Attempt-6 parent report commit: `f12446e53d677b6b895c5cb27470b8baeed6dbda`.
+- Attempt-6 parent status publication: this final parent commit; frontmatter metadata SHA-256 is recorded after publication in the resolver return.
 - Database submodule revision: `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no; merged to workspace main: no.
