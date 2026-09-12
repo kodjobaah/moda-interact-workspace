@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-DATABASE-006
 architecture_id: ARCH-010
-title: Move the one-time lifetime Free recovery grant to platform policy and snapshot it per shop
+title: Move the one-time lifetime Free recovery grant to platform policy and snapshot
+  it per shop
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -15,18 +16,19 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-  - ARCH-007-DATABASE-002
-  - ARCH-007-DATABASE-003
+- ARCH-007-DATABASE-002
+- ARCH-007-DATABASE-003
 enables:
-  - ARCH-010-ADMIN-001
-  - ARCH-010-BACKGROUND-001
-  - ARCH-010-BACKGROUND-003
-  - ARCH-010-BACKGROUND-011
-  - ARCH-010-SHOPIFY-002
-  - ARCH-010-SHOPIFY-003
-  - ARCH-010-SHOPIFY-009
+- ARCH-010-ADMIN-001
+- ARCH-010-BACKGROUND-001
+- ARCH-010-BACKGROUND-003
+- ARCH-010-BACKGROUND-011
+- ARCH-010-SHOPIFY-002
+- ARCH-010-SHOPIFY-003
+- ARCH-010-SHOPIFY-009
+- ARCH-010-DATABASE-012
 created: 2026-09-11
-updated: 2026-09-11T13:08:31Z
+updated: 2026-09-11 13:08:31+00:00
 ---
 
 # ARCH-010-DATABASE-006: Move the one-time lifetime Free recovery grant to platform policy and snapshot it per shop

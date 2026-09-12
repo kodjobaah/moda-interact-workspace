@@ -15,9 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SYSTEM-TEST-001
-  - ARCH-010-SYSTEM-TEST-002
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-SYSTEM-TEST-001
+- ARCH-010-SYSTEM-TEST-002
+- ARCH-010-SYSTEM-TEST-003
+- ARCH-010-SYSTEM-TEST-005
 enables: []
 created: 2026-09-11
 updated: 2026-09-11
