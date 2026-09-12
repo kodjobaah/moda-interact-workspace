@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-09-12T09:37:28Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-010-DATABASE-006
@@ -1212,6 +1212,617 @@ attempt: 4
 ```
 
 **Architect decision: Changes Requested — Attempt 3.**
+
+#### Attempt 4 — Changes Requested
+
+Attempt 4 satisfies most of the Attempt-3 correction contract. Architect review
+accepts the following corrections as implemented:
+
+- initial-activation source classification now occurs before the Partner request and
+  rejects an established `ACTIVE`/`TRIALING` current plan;
+- null/error initial-activation writes use an exact atomic `updateMany` predicate over
+  `subscriptionId`, `NO_CONTRACT`, `planId=null`, exact pending plan id/handle,
+  exact `pendingEffectiveAt`, and exact `nextReconcileAt`;
+- a failed exact CAS performs no replacement enqueue;
+- an explicit post-onboarding Free cycle-discovery branch exists;
+- later missing-cycle and cycle-discovery transport failures use
+  `FREE_CYCLE_DISCOVERY_RETRY_MS = 5 * 60 * 1000`;
+- later exact-cycle discovery creates/reuses the canonical Free BillingPeriod and
+  schedules the period drain;
+- first lifetime Free grant creation now uses `upsert(..., update: {})` and existing
+  counters do not require the current platform policy;
+- another provider current plan now projects provider pending handle/id/effective time
+  instead of unconditionally clearing pending truth;
+- deterministic BullMQ jobs use `removeOnFail: true`;
+- production `billing.ts` uses the same queue-aware reconciliation service for the
+  Worker and periodic reconstruction;
+- billing-worker readiness requires Redis + PostgreSQL;
+- queue-performance telemetry is started and stopped with the billing process;
+- the frozen repair selector remains present;
+- the implementation diff from Attempt 3 is bounded to:
+  `src/services/billing-subscription-reconciliation.service.ts`,
+  `tests/unit/services/billing-subscription-reconciliation.service.test.ts`, and
+  `tests/unit/runtime/entrypoint-isolation.test.ts`;
+- database revision
+  `6d5fb9adf2e5c1fb28333b330dd183c9cda41550` is preserved and no database gitlink is
+  staged.
+
+The reported eight nullable-`counterId` build diagnostics and the six documented
+full-suite baseline failures remain outside the task-touched implementation and are not
+the reason for this decision.
+
+Attempt 4 still cannot be accepted because the remaining cycle-discovery scheduling and
+concurrency rules do not match the binding Attempt-3 contract.
+
+##### Correction 1 — first verified Free/no-cycle schedule MUST be exactly five minutes
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+The current `completeVerifiedFree(...)` computes a pack-enabled/no-cycle schedule with:
+
+```ts
+pendingEffectiveAt
+  ? nextSubscriptionReconcileAt(pendingEffectiveAt, now)
+  : null
+```
+
+That is the **initial activation retry algorithm**, not the post-onboarding
+cycle-discovery algorithm.
+
+It is observably wrong in the current focused test:
+
+```text
+now                = 2026-09-12T12:00:00.000Z
+pendingEffectiveAt = 2026-09-12T11:00:00.000Z
+currentPeriodEnd   = null
+```
+
+The implementation/test currently produce:
+
+```text
+nextReconcileAt = 2026-09-12T12:30:00.000Z
+```
+
+The required result is:
+
+```text
+nextReconcileAt = 2026-09-12T12:05:00.000Z
+```
+
+Use this exact scheduling rule after Shopify has verified the Free plan:
+
+```ts
+let nextReconcileAt: Date | null = null;
+
+if (recoveryCreditPackEnabled) {
+  if (provider.currentPeriodEnd) {
+    nextReconcileAt = new Date(
+      Math.max(
+        now.getTime(),
+        provider.currentPeriodEnd.getTime()
+          - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS,
+      ),
+    );
+  } else {
+    nextReconcileAt = new Date(
+      now.getTime() + FREE_CYCLE_DISCOVERY_RETRY_MS,
+    );
+  }
+}
+```
+
+Do **not** call `nextSubscriptionReconcileAt(...)` after the Free plan has been
+verified and onboarding is completing.
+
+The initial-activation retry tiers remain unchanged for:
+
+```text
+provider null before activation
+Partner transport failure before activation
+```
+
+Update the existing test:
+
+```text
+"uses bounded cycle discovery retry when a pack-enabled Free provider omits the exact cycle"
+```
+
+to assert exactly:
+
+```text
+2026-09-12T12:05:00.000Z
+```
+
+Also assert the deterministic queued payload uses that same
+`expectedNextReconcileAt`.
+
+##### Correction 2 — bind every cycle-discovery retry to the exact current Free plan
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+The current cycle-discovery null/error CAS uses:
+
+```ts
+planId: { not: null }
+```
+
+That is not an exact stale guard. An older cycle-discovery Partner request can return
+after the Subscription has moved to another non-null plan while retaining the same
+schedule timestamp.
+
+Define a separate exact expected state for cycle discovery. The type/shape must contain:
+
+```text
+subscriptionId
+currentPlanId
+nextReconcileAt
+```
+
+The cycle-discovery state being verified is:
+
+```text
+status IN (ACTIVE, TRIALING)
+planId = currentPlanId
+billingPeriodId = null
+pendingPlanId = null
+pendingShopifyPlanHandle = null
+pendingEffectiveAt = null
+nextReconcileAt = expectedNextReconcileAt
+```
+
+`recordMissingCycle(...)` and `recordCycleDiscoveryFailure(...)` MUST use:
+
+```ts
+planId: expected.currentPlanId
+```
+
+and MUST NOT use:
+
+```ts
+planId: { not: null }
+```
+
+If the exact CAS returns `count === 0`:
+
+```text
+do not mutate
+do not enqueue
+return success/no-op
+```
+
+Required focused tests:
+
+1. cycle-discovery Partner returns null, but `planId` changed while the request was in
+   flight -> `updateMany.count = 0` -> no enqueue;
+2. cycle-discovery Partner throws, but `planId` changed while the request was in flight
+   -> no enqueue;
+3. both CAS predicates contain the exact original `currentPlanId`.
+
+##### Correction 3 — make the reconstruction selector match the exact cycle-discovery state
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+The current reconstruction branch includes:
+
+```text
+ACTIVE/TRIALING
+planId != null
+billingPeriodId = null
+pendingPlanId = null
+pendingShopifyPlanHandle = null
+nextReconcileAt != null
+active Free pack-enabled plan
+```
+
+but it does not require:
+
+```text
+ShopSettings.onboardingCompleted = true
+Subscription.pendingEffectiveAt = null
+```
+
+The Attempt-3 contract required reconstruction of the **exact** post-onboarding
+cycle-discovery state, not every superficially similar ACTIVE Free row.
+
+Restructure the `shop.findMany` `where` clause into a top-level `OR` so the
+cycle-discovery branch can include the ShopSettings predicate without incorrectly
+applying it to frozen/initial rows.
+
+Required logical shape:
+
+```text
+Shop.status = ACTIVE
+AND
+(
+  initial-repair branch:
+    Subscription.pendingPlanId != null
+    AND Subscription.nextReconcileAt != null
+
+  OR frozen-repair branch:
+    Subscription.status = FROZEN
+    AND Subscription.nextReconcileAt != null
+
+  OR Free-cycle-discovery branch:
+    ShopSettings.onboardingCompleted = true
+    AND Subscription.status IN (ACTIVE, TRIALING)
+    AND Subscription.planId != null
+    AND Subscription.billingPeriodId = null
+    AND Subscription.pendingPlanId = null
+    AND Subscription.pendingShopifyPlanHandle = null
+    AND Subscription.pendingEffectiveAt = null
+    AND Subscription.nextReconcileAt != null
+    AND current BillingPlan.active = true
+    AND current BillingPlan.kind = FREE
+    AND current BillingPlan.recoveryCreditPackEnabled = true
+)
+```
+
+Do not remove the frozen branch.
+
+Update the reconstruction source/query regression to prove both:
+
+```text
+onboardingCompleted = true
+pendingEffectiveAt = null
+```
+
+are required for the cycle-discovery branch.
+
+##### Correction 4 — remove the read/check/write race from successful transactional outcomes
+
+Files:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Three successful write paths currently do:
+
+```text
+transaction.subscription.findUnique(...)
+compare expected state
+perform other writes
+transaction.subscription.update({ where: { id } ... })
+```
+
+The comparison and final update are separate PostgreSQL statements. Under the default
+transaction isolation, another transaction can change the Subscription after the
+`findUnique` check and before the final `update`, allowing the stale job to overwrite
+newer durable state.
+
+The affected paths are:
+
+```text
+completeVerifiedFree(...)
+applyOtherCurrentPlan(...)
+reconcileFreeCycle(...)
+```
+
+Use PostgreSQL row locks. Do not add a schema field and do not hold a database lock
+across the Partner network request.
+
+Add these helpers in this service (names may differ; lock behaviour/order may not):
+
+```ts
+private async lockShopSettings(
+  transaction: Prisma.TransactionClient,
+  shopId: string,
+): Promise<void> {
+  await transaction.$queryRaw(Prisma.sql`
+    SELECT "shopId"
+    FROM "shopify"."ShopSettings"
+    WHERE "shopId" = ${shopId}
+    FOR UPDATE
+  `);
+}
+
+private async lockSubscription(
+  transaction: Prisma.TransactionClient,
+  subscriptionId: string,
+): Promise<void> {
+  await transaction.$queryRaw(Prisma.sql`
+    SELECT "id"
+    FROM "billing"."Subscription"
+    WHERE "id" = ${subscriptionId}
+    FOR UPDATE
+  `);
+}
+```
+
+Because `Prisma.sql` is needed at runtime, change the Prisma import from type-only as
+required.
+
+For **initial/onboarding transactions** (`completeVerifiedFree` and
+`applyOtherCurrentPlan`) the lock order is mandatory:
+
+```text
+1. ShopSettings
+2. Subscription
+3. re-read ShopSettings + Subscription
+4. compare exact expected state
+5. perform writes
+```
+
+This lock order is the cross-service ARCH-010 lock order and must not be reversed.
+
+After the locks, require:
+
+```text
+ShopSettings.onboardingCompleted = false
+Subscription.status = NO_CONTRACT
+Subscription.planId = null
+pendingPlanId = exact expected pendingPlanId
+pendingShopifyPlanHandle = exact expected pendingShopifyPlanHandle
+pendingEffectiveAt = exact expected pendingEffectiveAt
+nextReconcileAt = exact expected nextReconcileAt
+```
+
+If any comparison fails:
+
+```text
+return/no-op
+do not create/reuse lifetime counter
+do not create/reuse BillingPeriod
+do not update Subscription
+do not update ShopSettings
+do not enqueue
+```
+
+For **cycle discovery** (`reconcileFreeCycle`) lock the Subscription before its final
+state read and require the exact cycle-discovery state including:
+
+```text
+planId = expected.currentPlanId
+nextReconcileAt = exact expected schedule
+```
+
+No lock is held while `partner.getActiveSubscription(...)` runs.
+
+Required focused tests:
+
+1. `completeVerifiedFree` acquires ShopSettings lock before Subscription lock;
+2. after locking, a changed pending target causes a full no-op before entitlement,
+   period, onboarding or subscription writes;
+3. `applyOtherCurrentPlan` uses the same ShopSettings -> Subscription lock order;
+4. `reconcileFreeCycle` locks the Subscription before re-reading and writing its exact
+   period state.
+
+The unit harness transaction mock must expose `$queryRaw`.
+
+##### Correction 5 — add the missing initial transport-failure acceptance test
+
+The canonical task requires both:
+
+```text
+provider transport failure preserves NO_CONTRACT pending intent
+transport failure records error metadata and schedules retry
+```
+
+The current focused file has an initial transport-error test only for the stale-CAS
+`count=0` case. It does not prove the normal successful retry write.
+
+Add one exact test with:
+
+```text
+initial state:
+  onboardingCompleted = false
+  status = NO_CONTRACT
+  planId = null
+  pendingPlanId = plan-free
+  pendingShopifyPlanHandle = free-2026
+  pendingEffectiveAt = 2026-09-12T11:00:00.000Z
+  nextReconcileAt = 2026-09-12T12:00:00.000Z
+
+Partner:
+  throws timeout/error
+
+updateMany.count:
+  1
+```
+
+Assert the `updateMany.where` contains the exact original target/effective time/schedule
+and the `data` contains:
+
+```text
+lastSyncErrorCode = PARTNER_API_ERROR
+lastSyncErrorAt = now
+nextReconcileAt = 2026-09-12T12:30:00.000Z
+```
+
+Assert the mutation data does **not** clear:
+
+```text
+pendingPlanId
+pendingShopifyPlanHandle
+pendingEffectiveAt
+```
+
+and assert one deterministic delayed job is enqueued for:
+
+```text
+expectedNextReconcileAt = 2026-09-12T12:30:00.000Z
+```
+
+This 30-minute expectation is correct here because this is still the **initial**
+activation retry tier. It must not be confused with Correction 1's five-minute
+post-onboarding cycle-discovery cadence.
+
+##### Correction 6 — keep queue telemetry on the canonical Shared queue name
+
+File:
+
+```text
+src/entrypoints/billing.ts
+```
+
+The current telemetry wiring contains the literal:
+
+```ts
+queueNames: ["billing-subscription-reconcile"]
+```
+
+Do not duplicate the Shared queue contract in runtime wiring.
+
+Use either:
+
+```ts
+queueNames: [billingSubscriptionQueue.name]
+```
+
+or the imported:
+
+```ts
+BILLING_SUBSCRIPTION_RECONCILE_QUEUE_NAME
+```
+
+Prefer `billingSubscriptionQueue.name` because the Queue has already been created from
+the canonical Shared constant in `billing-resources.ts`.
+
+Update the source/wiring regression accordingly.
+
+##### Correction 7 — Attempt-5 Completion Report and validation evidence
+
+The current Attempt-4 Completion Report is coherent and its implementation scope is
+bounded. Preserve that historical evidence.
+
+For Attempt 5, replace only the mutable current Completion Report with one exact report
+containing:
+
+```text
+### Status
+Attempt 5 complete; returned to review.
+
+### Implementation
+- exact changed files
+- Corrections 1-6 implemented
+
+### Validation Results
+- exact focused command(s) and pass count
+- full npm test totals and each unchanged baseline failure
+- npm run prisma:validate
+- npm run build result
+- git diff --check
+
+### Git / VCS
+- canonical parent worktree/branch
+- canonical implementation worktree/branch
+- shared workspace checkout switched/mutated: no
+- shared implementation checkout switched/mutated: no
+- another task worktree reused: no
+- all four start-of-attempt synchronization outcomes
+- implementation commit
+- parent claim commit
+- parent report/review commit
+- final metadata commit, if one is created
+- database revision
+- submodule gitlink staged: no
+```
+
+The review submission supplied for Attempt 4 reports:
+
+```text
+implementation commit: f877f81
+parent report commit: 649150c
+final metadata commit: 02f5607
+```
+
+Do not copy those hashes into Attempt 5; record the new immutable Attempt-5 hashes.
+
+##### Attempt-5 focused stop gate
+
+Do not return Attempt 5 to `review` until all of these are true:
+
+```text
+A. VERIFIED FREE / CYCLE DISCOVERY
+1. first verified pack-enabled Free with exact cycle -> pre-close schedule
+2. first verified pack-enabled Free with NO cycle -> exactly now + 5 minutes
+3. the queued +5 minute cycle-discovery job is executable after onboarding
+4. still-missing cycle -> exactly another +5 minutes
+5. later exact cycle -> canonical period + pre-close schedule
+6. cycle transport failure -> exactly +5 minutes and current entitlement preserved
+
+B. STALE/RACE PROTECTION
+7. initial null response exact CAS rejects changed target
+8. initial error response exact CAS rejects changed schedule
+9. cycle null response exact CAS rejects changed current plan
+10. cycle error response exact CAS rejects changed current plan
+11. successful Free completion uses ShopSettings -> Subscription row-lock order
+12. successful other-current projection uses the same lock order
+13. exact-cycle projection locks Subscription before final state read/write
+
+C. RECONSTRUCTION
+14. future job delay is correct
+15. overdue job delay is zero
+16. deterministic duplicate job ID is stable
+17. exact post-onboarding Free cycle-discovery selector requires onboarding=true
+18. exact cycle-discovery selector requires pendingEffectiveAt=null
+19. frozen repair selector remains present
+
+D. ENTITLEMENT / PROVIDER TRUTH
+20. first lifetime counter snapshots platform policy once
+21. existing lifetime counter is unchanged and does not require current policy
+22. Free period contains the full Free snapshot and no included-credit counter
+23. provider-other-current + provider pending target maps that pending truth
+24. provider-other-current + provider pending null clears stale initial target
+25. neither other-current branch completes onboarding or grants Paid included credits
+
+E. QUEUE / RUNTIME
+26. `removeOnFail: true`
+27. durable DB state survives queue-add failure
+28. Worker and repair cadence use the same queue-aware service
+29. periodic reconstruction is wired in the actual billing entrypoint
+30. Redis + PostgreSQL readiness remains required
+31. queue telemetry uses the canonical queue name and is closed at shutdown
+
+F. ORIGINAL TRANSPORT REQUIREMENT
+32. normal initial Partner transport failure preserves NO_CONTRACT pending intent,
+    records PARTNER_API_ERROR and schedules the correct tiered retry
+```
+
+The existing ARCH-007 billing/usage reconciliation tests must continue to pass.
+
+##### Scope guard
+
+Attempt 5 remains `ARCH-010-BACKGROUND-001` only.
+
+Do not implement:
+
+- Paid first activation;
+- same-plan billing-period rollover/pre-close execution owned by BACKGROUND-007;
+- upgrade/downgrade execution;
+- cancellation;
+- freeze/unfreeze transition logic owned by BACKGROUND-016;
+- promotional-credit consumption;
+- Admin UI;
+- Render environment wiring.
+
+Do not modify historical database migrations and do not stage/change the database
+gitlink.
+
+Stop and return to `moda_architect` instead of inventing another design if the
+ShopSettings/Subscription row locks cannot be implemented with the existing Prisma
+transaction client.
+
+Reclaim this same task through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 5
+```
+
+**Architect decision: Changes Requested — Attempt 4.**
 
 ## Final frozen-state repair rows
 
