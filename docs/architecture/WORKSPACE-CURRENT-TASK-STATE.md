@@ -270,7 +270,7 @@ Current counts: `complete` 21, `pending` 13, `ready` 5
 
 > Synchronized by `moda_architect` on 2026-09-12 after first-production baseline consolidation. ARCH-010 is a PRE-PRODUCTION / BREAKING ROLLOUT. Complete task files and SHOPIFY-002 review evidence remain immutable; system-test tasks remain terminal/manual-gated.
 
-Current counts: `complete` 24, `review` 1, `ready` 3, `pending` 49, `superseded` 2
+Current counts: `complete` 26, `review` 1, `ready` 2, `pending` 48, `superseded` 2
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
@@ -323,8 +323,8 @@ Current counts: `complete` 24, `review` 1, `ready` 3, `pending` 49, `superseded`
 | ARCH-010-SHARED-004 | shared | Complete | 0 | ARCH-010-SHARED-003 |
 | ARCH-010-SHARED-005 | shared | Complete | 1 | — |
 | ARCH-010-SHARED-006 | shared | Complete | 0 | ARCH-010-SHARED-005 |
-| ARCH-010-SHARED-007 | shared | **Ready** | 0 | ARCH-010-SHARED-006 |
-| ARCH-010-SHARED-008 | shared | Pending | 0 | ARCH-010-SHARED-007 |
+| ARCH-010-SHARED-007 | shared | Complete | 2 | ARCH-010-SHARED-006, ARCH-010-BACKGROUND-020, ARCH-010-SHOPIFY-024 |
+| ARCH-010-SHARED-008 | shared | Complete | 2 | ARCH-010-SHARED-007 |
 | ARCH-010-SHOPIFY-001 | shopify | Complete | 3 | ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
 | ARCH-010-SHOPIFY-002 | shopify | **Review** | 8 | ARCH-010-DATABASE-006, ARCH-010-SHOPIFY-001, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
 | ARCH-010-SHOPIFY-003 | shopify | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-002, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-003, ARCH-008-SHOPIFY-001, ARCH-010-SHOPIFY-023 |
@@ -354,7 +354,7 @@ Current counts: `complete` 24, `review` 1, `ready` 3, `pending` 49, `superseded`
 | ARCH-010-SYSTEM-TEST-004 | system-test | Pending / manual-gated | 0 | ARCH-010-SYSTEM-TEST-001, ARCH-010-SYSTEM-TEST-002, ARCH-010-SYSTEM-TEST-003, ARCH-010-SYSTEM-TEST-005 |
 | ARCH-010-SYSTEM-TEST-005 | system-test | Pending / manual-gated | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-009 |
 
-Current Ready frontier: `ARCH-010-SHARED-007`, `ARCH-010-ADMIN-007`, `ARCH-010-BACKGROUND-015`.
+Current Ready frontier: `ARCH-010-ADMIN-007`, `ARCH-010-BACKGROUND-015`.
 
 Current Review: `ARCH-010-SHOPIFY-002` Attempt 8.
 
