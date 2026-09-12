@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: copilot
 claimed_at: 2026-09-12T14:49:17Z
@@ -282,4 +282,101 @@ Do not begin SHARED-007 yourself.
 
 ### Status
 
-In Progress
+Ready for Review
+
+### Files Changed
+
+- `src/entrypoints/billing.ts`: removed the obsolete cancellation executor import and billing-cycle invocation.
+- `src/providers/shopify-partner-billing.provider.ts`: retained subscription reads and removed the local cancellation mutation, mapping and provider contract.
+- `src/services/recovery-billing.service.ts`: replaced `BILLING_FREE_ALLOWANCE_EXHAUSTED` with `BILLING_RECOVERY_CAPACITY_EXHAUSTED` and updated its deterministic exhaustion source key/body.
+- `tests/unit/providers/shopify-partner-billing.provider.test.ts`: removed mutation-specific tests while retaining provider read coverage.
+- `tests/unit/services/recovery-billing.service.test.ts`: updated exhaustion assertions to the canonical capacity code/source key.
+- `src/services/subscription-cancellation.service.ts`: deleted the obsolete local cancellation executor.
+- `tests/unit/services/subscription-cancellation.service.test.ts`: deleted tests whose only purpose was the removed executor workflow.
+
+### Work Completed
+
+Removed all pre-publication Background consumers of the retired Shared billing contracts while consuming the published `@modainteract/moda-interact-shared@0.10.0` package. The billing worker no longer schedules local cancellation execution, the Shopify Partner provider has no cancellation mutation method, and provider subscription reconciliation reads remain intact. Free exhaustion now uses the canonical generic recovery-capacity message contract. No Shared, database schema, migration, queue contract, BACKGROUND-009, BACKGROUND-012, or UI files were changed.
+
+### Pre-edit Symbol Matches
+
+The required pre-edit search matched:
+
+- `src/services/subscription-cancellation.service.ts`: `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS`, `SubscriptionCancellationMode`, and `cancelSubscription`.
+- `src/providers/shopify-partner-billing.provider.ts`: `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS`, `SubscriptionCancellationMode`, `appSubscriptionCancel`, and the cancellation mutation wrapper.
+- `tests/unit/providers/shopify-partner-billing.provider.test.ts`: `appSubscriptionCancel` and `cancelSubscription` mutation/error tests.
+- `tests/unit/services/recovery-billing.service.test.ts`: `BILLING_FREE_ALLOWANCE_EXHAUSTED` source-key assertions.
+
+The pre-edit search found no active Background matches for `SUBSCRIPTION_CANCELLATION_MODES`, `SubscriptionCancellationModeSchema`, `ShopifySubscriptionCancellationArgs`, the three cancellation message codes, or `BILLING_PLAN_CHANGE_ACTION_REQUIRED`.
+
+### Post-edit Zero-consumer Evidence
+
+Repository-wide `rg` over `src` and `tests` returned zero matches for all eleven retired symbols/codes required by the task, including `appSubscriptionCancel` and `BILLING_FREE_ALLOWANCE_EXHAUSTED`.
+
+### Validation Results
+
+- Focused provider/recovery tests: **2 files, 16 passed**.
+- Full `npm test`: **46 files passed, 5 skipped, 525 tests passed, 7 skipped**; 6 unchanged baseline failures remain. Four integration tests require the unavailable `moda_interact_test` database, and `tests/unit/runtime/observability-startup.test.ts` still expects Shared `0.9.0` while this task is required to use published Shared `0.10.0`.
+- `npm run prisma:validate`: passed after initializing the recorded database submodule for local validation only.
+- `npm run build`: Prisma generation passed; TypeScript compilation remains blocked by 8 unchanged nullable `counterId` errors in `src/services/free-recovery-reservation.service.ts` and `src/services/purchased-recovery-reservation.service.ts`. No changed task file is reported.
+- `npm run typecheck`: unavailable because the repository declares no `typecheck` script; the build's `tsc` step was run instead.
+- `git diff --check`: passed.
+- Database gitlink: not changed or staged.
+
+### Deviations
+
+None. The full-suite and build failures are documented pre-existing repository baseline conditions outside this task's scope.
+
+### Assumptions
+
+The published Shared dependency remains `@modainteract/moda-interact-shared@0.10.0`, as required by the task and confirmed in `package.json` and `package-lock.json`.
+
+### Unresolved Issues
+
+The repository's unrelated full-suite database setup, stale Shared `0.9.0` observability assertion, and eight unrelated nullable `counterId` TypeScript diagnostics remain for their owning tasks/baseline. They do not affect the focused BACKGROUND-020 tests or zero-consumer gate.
+
+### Architectural Concerns
+
+None.
+
+### Git / VCS
+
+Task branch: `task/ARCH-010-BACKGROUND-020`
+
+Physical worktree isolation:
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-020`
+- parent branch: `task/ARCH-010-BACKGROUND-020`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-020`
+- implementation branch: `task/ARCH-010-BACKGROUND-020`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+
+- parent remote task branch fast-forwarded: not-needed; branch did not exist
+- parent `origin/main` incorporated: already-current at worktree creation
+- implementation remote task branch fast-forwarded: not-needed; branch did not exist
+- implementation `origin/main` incorporated: already-current at worktree creation
+
+Implementation repository:
+
+- repository: `moda-interact-background`
+- commit: `3a1c78d376501377b7fab919c9e1ec8851f74d51`
+- remote branch: `origin/task/ARCH-010-BACKGROUND-020`
+- pushed: yes
+
+Parent workspace:
+
+- task file: `docs/decisions/background/ARCH-010/BACKGROUND-020-remove-prepublication-shared-billing-consumers.md`
+- claim commit: `efcf03e`
+- report commit: pending
+- remote branch: `origin/task/ARCH-010-BACKGROUND-020`
+- pushed: claim yes; report pending
+- submodule gitlink staged: no
+
+Merged to implementation main: no
+
+Merged to workspace main: no
