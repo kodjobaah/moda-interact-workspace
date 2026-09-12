@@ -9,21 +9,24 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 86
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-010-DATABASE-006
-enables:
-- ARCH-010-ADMIN-008
-- ARCH-010-SYSTEM-TEST-005
+enables: []
 created: 2026-09-12
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-DATABASE-012: Persist upgrade economics policy, plan edges and audited Shopify pricing snapshots
+
+## Supersession
+
+**Superseded by `ARCH-010-DATABASE-013`.** ARCH-010 is now the clean first-production database baseline. The valid upgrade-economics target requirements in this task are absorbed into DATABASE-013; this task must not be implemented independently.
+
 
 ## Objective
 

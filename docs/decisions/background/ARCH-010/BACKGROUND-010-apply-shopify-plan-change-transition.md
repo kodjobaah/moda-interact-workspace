@@ -15,17 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-004
-  - ARCH-010-BACKGROUND-003
-  - ARCH-010-BACKGROUND-007
-  - ARCH-010-SHARED-002
+- ARCH-010-DATABASE-013
+- ARCH-010-BACKGROUND-003
+- ARCH-010-BACKGROUND-007
+- ARCH-010-SHARED-008
 enables:
-  - ARCH-010-BACKGROUND-012
-  - ARCH-010-BACKGROUND-016
-  - ARCH-010-SHOPIFY-015
-  - ARCH-010-SYSTEM-TEST-001
+- ARCH-010-BACKGROUND-012
+- ARCH-010-BACKGROUND-016
+- ARCH-010-SHOPIFY-015
+- ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-010: Apply Shopify-authoritative plan changes without resetting lifetime credit history
@@ -198,7 +198,7 @@ Actions:
 5. update Subscription to current paid plan/cycle;
 6. clear pending fields only after provider confirms current;
 7. schedule normal paid pre-close reconciliation;
-8. do not reset remaining promotional or lifetime Free credits while merchant is Paid; after paid monthly included and promotional/purchased credits are exhausted, the remaining lifetime Free grant is the final fallback per BACKGROUND-019/BACKGROUND-014/BACKGROUND-011.
+8. do not reset remaining promotional or lifetime Free credits while merchant is Paid; admission remains `selected promotion -> paid monthly included -> purchased -> lifetime Free`, with lifetime Free as the final fallback per BACKGROUND-019/BACKGROUND-014/BACKGROUND-011.
 
 ### Free -> Free / same-plan observation
 
@@ -281,4 +281,4 @@ Not started.
 
 ## Final promotional preservation contract
 
-Every Shopify plan transition preserves `PROMOTIONAL_RECOVERY_CREDITS` granted/committed/reserved state exactly. Plan change neither grants nor resets promotional capacity. After the effective plan transition, normal recovery admission uses promotional credits in the canonical position ahead of purchased credits.
+Every Shopify plan transition preserves each campaign-linked `PromotionalCreditGrant` quantity/committed/reserved state and merchant selection/history exactly. Plan change neither grants nor resets promotional capacity. After the effective plan transition, normal recovery admission re-evaluates whether the selected campaign is still target-eligible and uses it in the canonical promo-first position.

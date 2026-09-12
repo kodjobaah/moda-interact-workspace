@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-BACKGROUND-017
-  - ARCH-010-SHOPIFY-009
-  - ARCH-010-SHOPIFY-012
-  - ARCH-010-SHOPIFY-018
+- ARCH-010-BACKGROUND-017
+- ARCH-010-SHOPIFY-009
+- ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-018
 enables:
-  - ARCH-010-SYSTEM-TEST-002
+- ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-019: Present frozen Shopify subscription state and disable business billing actions

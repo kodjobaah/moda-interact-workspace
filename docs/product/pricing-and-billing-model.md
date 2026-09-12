@@ -5,6 +5,9 @@
 > **Canonical architecture:**
 > [`ARCH-010 — Merchant lifecycle state transitions and behavioural access`](../architecture/ARCH-010-merchant-lifecycle-state-transitions.md)
 >
+> **First-production baseline:**
+> [`ARCH-010 — First-production baseline and migration boundary`](../architecture/ARCH-010-first-production-baseline.md)
+>
 > **Implementation frontier:**
 > [`ARCH-010 implementation handoff`](../architecture/ARCH-010-implementation-handoff.md)
 >
@@ -20,7 +23,9 @@ If this readable page ever conflicts with ARCH-010 architecture or an active ARC
 ```text
 active ARCH-010 task contract
         ↑ exact bounded implementation scope/status
-ARCH-010 canonical architecture
+ARCH-010 first-production baseline
+        ↑ clean production schema/runtime boundary
+ARCH-010 canonical lifecycle architecture
         ↑ complete cross-service behaviour
 this product model
         ↑ readable product explanation
@@ -277,7 +282,7 @@ A capacity-blocked recovery can become eligible again when, for example:
 
 - a paid plan opens a new verified monthly allowance;
 - a purchased top-up becomes active;
-- Admin grants promotional credits;
+- the merchant selects an eligible running promotional campaign and its campaign-linked grant becomes usable;
 - an appropriate verified plan change provides executable capacity.
 
 Blocked recoveries remain durable in PostgreSQL. Redis/BullMQ wake-up jobs are coordination only and can be reconstructed.
@@ -443,7 +448,7 @@ For a frozen shop specifically:
 | `moda-interact-database` | subscription/lifecycle state, BillingPeriods, entitlement counters, purchase lots, refunds, promotional grants, constraints/indexes |
 | `moda-interact-shared` | versioned cross-service reconciliation/refund contracts and shared primitives |
 | `moda-interact` | merchant onboarding, dashboard, billing/options UI, Shopify hosted plan-selection integration, current/pending provider read model |
-| `moda-interact-admin` | internal policy/configuration, promotional grants/campaigns, partial-refund triage/settlement evidence |
+| `moda-interact-admin` | internal policy/configuration, promotion-campaign management/reporting, partial-refund triage/settlement evidence |
 | `moda-interact-background` | subscription reconciliation, BillingPeriod transitions, capacity reservation, recovery gates, App Event publication/reconciliation, resume logic |
 | `moda-interact-gateway` | runtime Redis/environment wiring required by billing workers |
 | `moda-interact-messaging` | provider ingress/normalisation only; does not decide merchant entitlement |

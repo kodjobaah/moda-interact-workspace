@@ -15,19 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-006
-  - ARCH-010-BACKGROUND-001
-  - ARCH-010-DATABASE-002
-  - ARCH-010-DATABASE-004
-  - ARCH-010-BACKGROUND-007
-  - ARCH-010-SHARED-002
-  - ARCH-007-BACKGROUND-008
+- ARCH-010-DATABASE-013
+- ARCH-010-BACKGROUND-001
+- ARCH-010-BACKGROUND-007
+- ARCH-010-SHARED-008
+- ARCH-007-BACKGROUND-008
 enables:
-  - ARCH-010-BACKGROUND-006
-  - ARCH-010-BACKGROUND-010
-  - ARCH-010-SHOPIFY-003
+- ARCH-010-BACKGROUND-006
+- ARCH-010-BACKGROUND-010
+- ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-003: Reconcile first paid activation and create the first paid period
@@ -110,7 +108,7 @@ Once provider verification is valid, perform one transaction that:
 6. on create, set `grantedQuantity = BillingPlan.includedRecoveryConversationAllowance`, other quantities zero;
 7. on replay, never reset committed/reserved/forfeited quantities;
 8. if an existing period snapshot or counter grant disagrees with the expected current plan/grant, fail closed rather than rewriting it;
-9. ensure `ShopEntitlementCounter(FREE_RECOVERY_LIFETIME)` exists; create it only when absent with `grantedQuantity = PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`, otherwise preserve its grant/usage exactly;
+9. ensure `ShopEntitlementCounter(LIFETIME_FREE_RECOVERY_CREDITS)` exists; create it only when absent with `grantedQuantity = PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`, otherwise preserve its grant/usage exactly;
 9. update Subscription current plan, observed handle, ACTIVE status, exact cycle, provider fields, and current billing period pointer;
 10. clear pending initial-selection fields;
 11. set `nextReconcileAt = max(now, currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS)` for canonical rollover scheduling;

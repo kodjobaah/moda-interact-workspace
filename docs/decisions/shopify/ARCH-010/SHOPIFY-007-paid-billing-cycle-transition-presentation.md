@@ -15,16 +15,16 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-BACKGROUND-007
-  - ARCH-010-DATABASE-004
-  - ARCH-010-SHARED-002
-  - ARCH-010-SHOPIFY-003
-  - ARCH-010-SHOPIFY-004
+- ARCH-010-BACKGROUND-007
+- ARCH-010-DATABASE-013
+- ARCH-010-SHARED-008
+- ARCH-010-SHOPIFY-003
+- ARCH-010-SHOPIFY-004
 enables:
-  - ARCH-010-SHOPIFY-012
-  - ARCH-010-SHOPIFY-014
+- ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-014
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-007: Present App Pricing billing-cycle transition and guard late-cycle top-up purchase

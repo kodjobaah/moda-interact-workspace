@@ -21,7 +21,7 @@ depends_on:
 - ARCH-010-SYSTEM-TEST-005
 enables: []
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SYSTEM-TEST-004: Final ARCH-010 merchant lifecycle acceptance matrix

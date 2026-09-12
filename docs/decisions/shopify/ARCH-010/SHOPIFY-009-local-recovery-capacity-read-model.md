@@ -15,19 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-006
-  - ARCH-010-SHOPIFY-004
-  - ARCH-010-DATABASE-004
-  - ARCH-010-DATABASE-009
-  - ARCH-010-DATABASE-011
+- ARCH-010-DATABASE-013
+- ARCH-010-SHOPIFY-004
+- ARCH-010-SHOPIFY-023
 enables:
-  - ARCH-010-SHOPIFY-008
-  - ARCH-010-SHOPIFY-012
-  - ARCH-010-SHOPIFY-016
-  - ARCH-010-SHOPIFY-019
-  - ARCH-010-SHOPIFY-020
+- ARCH-010-SHOPIFY-008
+- ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-016
+- ARCH-010-SHOPIFY-019
+- ARCH-010-SHOPIFY-020
 created: 2026-09-11
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-009: Add local merchant recovery-capacity projection
@@ -38,7 +36,7 @@ Create one canonical **PostgreSQL-only operational projection** answering one na
 
 > Can Moda admit another abandoned-checkout recovery for this merchant right now, and which Moda recovery-capacity bucket would fund it?
 
-Before evaluating Paid included capacity, resolve whether the Shop has a currently selected, running, target-eligible campaign grant with remaining quantity. That exact grant is the highest-priority capacity source. The aggregate promotional counter alone is not spendability authority after DATABASE-011.
+Before evaluating Paid included capacity, resolve whether the Shop has a currently selected, running, target-eligible campaign grant with remaining quantity. That exact grant is the highest-priority capacity source. There is no aggregate promotional entitlement counter in the first-production baseline; the exact usable selected campaign grant is promotional spendability authority.
 
 This projection is for dashboard/runtime capacity presentation. It is **not** the authority for:
 
@@ -61,7 +59,7 @@ tests/unit/services/billing.service.test.ts
 tests/unit/billing-ui.test.ts
 ```
 
-Also inspect the implemented SHOPIFY-004/DATABASE-002/DATABASE-004 period-counter shape before naming fields.
+Also inspect implemented SHOPIFY-004 and the final DATABASE-013 period/counter schema before naming fields.
 
 ## Authority boundary — hard invariant
 
@@ -169,11 +167,10 @@ Do **not** include Shopify price, currency, trial, pending-update commercial det
 
 ### Free
 
-Use the shop-lifetime counter snapshot (`grantedQuantity`) and durable committed/reserved state. If legacy pre-ARCH-010 signed Free-allowance adjustments already exist, include their historical net effect for compatibility only; ARCH-010 must not create new adjustments through this path. Do not read `BillingPlan.freeLifetimeConversationAllowance` as runtime authority. This lifetime source is available under both Free and Paid subscriptions.
+Use only the shop-lifetime `ShopEntitlementCounter(LIFETIME_FREE_RECOVERY_CREDITS)` snapshot and durable committed/reserved state. DATABASE-013 removes plan-owned allowance and signed-adjustment compatibility. This lifetime source is available under both Free and Paid subscriptions.
 
 ```text
-effectiveGrant = max(granted + legacySignedAdjustmentTotal, 0)
-remaining = max(effectiveGrant - committed - reserved, 0)
+remaining = max(granted - committed - reserved, 0)
 ```
 
 A reserved Free credit is not available for another recovery.
@@ -188,13 +185,13 @@ remaining = max(granted - committed - reserved - forfeited, 0)
 
 ### Promotional
 
-Use `ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)` only. Missing row means zero.
+Resolve the current `MerchantPromotionSelection` and exact campaign-linked `PromotionalCreditGrant`. Promotional capacity is available only when the selection/campaign/grant is currently usable under DATABASE-013 targeting/status/time-window rules.
 
 ```text
-remaining = max(granted - committed - reserved, 0)
+remaining = max(grant.quantity - grant.committedQuantity - grant.reservedQuantity, 0)
 ```
 
-Promotional credits have no signed allowance adjustment and are non-refundable. Do not subtract/use `refundingQuantity`.
+No selected usable campaign grant means zero promotional spendability. There is no aggregate `ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)` fallback. Promotional credits are non-refundable and have no `refundingQuantity`.
 
 ### Purchased
 
@@ -214,8 +211,8 @@ FREE mapped operational projection:
   else -> EXHAUSTED
 
 PAID mapped operational projection:
-  current-period included remaining > 0 -> PAID_INCLUDED
-  else if promotional remaining > 0 -> PROMOTIONAL
+  if promotional remaining > 0 -> PROMOTIONAL
+  else if current-period included remaining > 0 -> PAID_INCLUDED
   else if purchased available > 0 -> PURCHASED
   else if lifetime Free remaining > 0 -> FREE_LIFETIME
   else -> EXHAUSTED
@@ -255,7 +252,7 @@ At minimum prove:
 2. no usable selected promotion + Free purchased exhausted + lifetime Free available -> `FREE_LIFETIME`;
 3. Free fully exhausted -> `EXHAUSTED`;
 4. Free reserved quantity reduces spendable lifetime remaining;
-5. an existing legacy pre-ARCH-010 signed adjustment is honoured read-only without rewriting the base grant, and no new adjustment is created;
+5. no signed lifetime-Free adjustment or plan-owned allowance is queried;
 6. no usable selected promotion + Paid included available -> `PAID_INCLUDED`;
 7. Paid included exhausted + purchased available -> `PURCHASED`;
 8. selected promotional unavailable + Paid included/purchased exhausted + lifetime Free available -> `FREE_LIFETIME`;
@@ -267,7 +264,7 @@ At minimum prove:
 14. returned plan information is explicitly the local reconciled mapping;
 15. no pending Shopify/commercial plan catalogue is fabricated from `BillingPlan` rows;
 16. provider `getActiveSubscription()` is never called;
-17. the current BillingPlan legacy free-allowance field is not used to derive lifetime capacity.
+17. no BillingPlan lifetime-free allowance field exists or is used to derive lifetime capacity.
 
 Additional required cases:
 
@@ -286,7 +283,7 @@ Run focused billing-service tests, then repository-declared typecheck/build/full
 
 ## Stop conditions
 
-STOP if the integrated period-counter schema differs materially from DATABASE-002/004; report the exact mismatch rather than inferring another capacity source.
+STOP if the integrated period/counter schema differs materially from DATABASE-013; report the exact mismatch rather than inferring another capacity source.
 
 STOP if implementing this task would require treating `BillingPlan` as Shopify plan-existence authority. Return to `moda_architect` instead.
 
@@ -310,6 +307,6 @@ Add focused coverage proving:
 - usable selected promotional > 0 returns `PROMOTIONAL` even when Paid included remains;
 - no usable selected promotional + Paid included > 0 -> `PAID_INCLUDED`;
 - selected grant reserved quantity reduces its remaining allocation;
-- no selected campaign means zero promotional spendability even if aggregate historical promo balance exists;
+- no selected usable campaign means zero promotional spendability and no aggregate promotional counter is queried;
 - FROZEN/NO_CONTRACT returns the lifecycle availability state even when promotional remaining > 0;
 - provider `getActiveSubscription()` remains uncalled.

@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-ADMIN-005
-  - ARCH-010-DATABASE-011
+- ARCH-010-ADMIN-005
+- ARCH-010-DATABASE-013
 enables:
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-ADMIN-006: Report campaign merchant selection and promotional-credit usage
@@ -58,7 +58,7 @@ merchants exhausted
 total campaign credits committed
 ```
 
-Use `PromotionalCreditGrant(campaignId, shopId)` as campaign merchant history authority. The aggregate `PROMOTIONAL_RECOVERY_CREDITS` counter is not sufficient for this report.
+Use `PromotionalCreditGrant(campaignId, shopId)` as campaign merchant history and accounting authority. DATABASE-013 has no aggregate promotional entitlement counter; reporting must be derived from exact campaign grant lots.
 
 ## Privacy/security
 

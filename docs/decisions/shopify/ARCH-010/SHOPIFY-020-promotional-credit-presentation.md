@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-009
-  - ARCH-010-SHOPIFY-012
-  - ARCH-010-SHOPIFY-021
+- ARCH-010-SHOPIFY-009
+- ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-021
 enables:
-  - ARCH-010-SYSTEM-TEST-001
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-SYSTEM-TEST-001
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-020: Present selected promotion and promo-first recovery capacity

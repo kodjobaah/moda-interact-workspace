@@ -9,18 +9,19 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 84
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-010
+- ARCH-010-DATABASE-013
+- ARCH-010-ADMIN-010
 enables:
-  - ARCH-010-ADMIN-005
-  - ARCH-010-SHOPIFY-021
+- ARCH-010-ADMIN-005
+- ARCH-010-SHOPIFY-021
 created: 2026-09-11
-updated: 2026-09-12T06:17:29Z
+updated: '2026-09-12'
 ---
 
 # ARCH-010-ADMIN-004: Create and activate GLOBAL, PLAN and SHOP promotion campaigns

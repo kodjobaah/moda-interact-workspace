@@ -15,17 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-004
-  - ARCH-010-BACKGROUND-007
-  - ARCH-010-BACKGROUND-010
-  - ARCH-010-SHARED-002
-  - ARCH-010-BACKGROUND-015
+- ARCH-010-DATABASE-013
+- ARCH-010-BACKGROUND-007
+- ARCH-010-BACKGROUND-010
+- ARCH-010-SHARED-008
+- ARCH-010-BACKGROUND-015
 enables:
-  - ARCH-010-BACKGROUND-013
-  - ARCH-010-SHOPIFY-016
-  - ARCH-010-SYSTEM-TEST-002
+- ARCH-010-BACKGROUND-013
+- ARCH-010-SHOPIFY-016
+- ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-012: Reconcile Shopify subscription cancellation and close the final provider billing period
@@ -59,6 +59,26 @@ pending mapped/unmapped plan update = null
 12. Effective cancellation makes Subscription `NO_CONTRACT`; all business execution is then fail-closed by BACKGROUND-013.
 13. Provider/API transport failure is never interpreted as cancellation.
 14. No merchant access to `moda-interact-admin` is introduced.
+
+## Pre-production cancellation cleanup
+
+DATABASE-013 and SHARED-008 remove the ARCH-009 local cancellation request/approval/execution contract. Before adding reconciliation behaviour, search Background source/tests for the superseded local executor, including symbols/behaviour equivalent to:
+
+```text
+SubscriptionCancellationRequest
+SubscriptionCancellationMode
+SubscriptionCancellationStatus
+ShopifySubscriptionCancellationArgs
+SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS
+appSubscriptionCancel
+BILLING_CANCELLATION_REQUEST_RECEIVED
+BILLING_CANCELLATION_COMPLETED
+BILLING_CANCELLATION_REJECTED
+```
+
+Delete any remaining Background worker/service/queue branch whose purpose is to approve or execute a Shopify cancellation mutation. Do not retain it behind a feature flag or compatibility adapter. If no such code remains, record the negative search evidence and make no speculative replacement.
+
+The only first-production cancellation runtime is provider observation/reconciliation through this task and the canonical subscription reconciliation queue.
 
 ## Inspect before editing
 
@@ -218,7 +238,7 @@ Use the actual final ARCH-010 schema field names; do not invent duplicate curren
 Do not change:
 
 ```text
-FREE_RECOVERY_LIFETIME granted/committed/reserved history
+LIFETIME_FREE_RECOVERY_CREDITS granted/committed/reserved history
 PURCHASED_RECOVERY_CREDITS granted/committed/reserved/refunding history
 RecoveryCreditPurchase rows
 RecoveryCreditRefund rows
@@ -274,8 +294,9 @@ At minimum prove:
 14. replay of provider null is idempotent;
 15. deterministic queue reconstruction includes scheduled cancellation rows before contract end;
 16. effective cancellation leaves no delayed cancellation-specific job requirement;
-17. no `appSubscriptionCancel` call exists in this implementation;
-18. no Admin approval/cancellation request is created.
+17. no `appSubscriptionCancel` call or cancellation executor/worker branch exists in the Background implementation;
+18. no local cancellation request/approval model or removed Shared cancellation contract is referenced;
+19. no Admin approval/cancellation request is created.
 
 ## Non-goals
 
@@ -295,7 +316,7 @@ Stop and return to `moda_architect` if:
 
 - the implemented Partner provider cannot expose `cancelAtEndOfCycle` or exact current cycle;
 - Shopify provider state shows ordinary production cancellation behavior that cannot be represented by current/pending/null classification;
-- DATABASE-004 does not provide `CONTRACT_ENDED` or equivalent close reason;
+- DATABASE-013 does not provide `CONTRACT_ENDED` or equivalent close reason;
 - implementing this requires a new cancellation mutation or local approval workflow.
 
 

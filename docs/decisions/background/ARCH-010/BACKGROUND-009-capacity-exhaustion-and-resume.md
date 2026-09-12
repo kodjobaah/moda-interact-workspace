@@ -15,19 +15,19 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-005
-  - ARCH-010-SHARED-004
-  - ARCH-010-BACKGROUND-002
-  - ARCH-010-BACKGROUND-011
-  - ARCH-007-BACKGROUND-003
-  - ARCH-007-BACKGROUND-009
-  - ARCH-010-BACKGROUND-019
+- ARCH-010-DATABASE-013
+- ARCH-010-SHARED-008
+- ARCH-010-BACKGROUND-002
+- ARCH-010-BACKGROUND-011
+- ARCH-007-BACKGROUND-003
+- ARCH-007-BACKGROUND-009
+- ARCH-010-BACKGROUND-019
 enables:
-  - ARCH-010-BACKGROUND-007
-  - ARCH-010-SHOPIFY-008
-  - ARCH-010-SYSTEM-TEST-001
+- ARCH-010-BACKGROUND-007
+- ARCH-010-SHOPIFY-008
+- ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-009: Persist recovery exhaustion and resume blocked recoveries when capacity returns
@@ -95,8 +95,8 @@ FREE
   -> capacity-exhausted
 
 PAID
+  -> selected promotional reservation
   -> current-period included reservation
-  -> promotional reservation
   -> purchased reservation
   -> shop-lifetime Free reservation
   -> capacity-exhausted
@@ -127,7 +127,7 @@ When the same recovery later successfully initiates and transitions to `MESSAGE_
 
 ## 3. Generic merchant SYSTEM message
 
-Stop writing new `BILLING_FREE_ALLOWANCE_EXHAUSTED` rows for full capacity exhaustion. Keep that old code readable for historical rows.
+Use only `BILLING_RECOVERY_CAPACITY_EXHAUSTED` for full capacity exhaustion. Remove any Background producer/branch that writes `BILLING_FREE_ALLOWANCE_EXHAUSTED`; first production has no historical-row compatibility requirement for that development-only code.
 
 Write new exhaustion notifications with:
 
@@ -163,24 +163,22 @@ For Free include at least:
 
 ```text
 subscriptionId
-promotional grantedQuantity/committedQuantity/reservedQuantity
+selected PromotionalCreditGrant id/version/quantity/committedQuantity/reservedQuantity when usable
 purchased grantedQuantity/committedQuantity/reservedQuantity/refundingQuantity
 lifetime Free grantedQuantity/committedQuantity/reservedQuantity
-legacy pre-ARCH-010 lifetime-Free signed adjustment total, if present
 ```
 
 For Paid include at least:
 
 ```text
 current BillingPeriod id
+selected PromotionalCreditGrant id/version/quantity/committedQuantity/reservedQuantity when usable
 included BillingPeriod id/grantedQuantity/committedQuantity/reservedQuantity/forfeitedQuantity
-promotional grantedQuantity/committedQuantity/reservedQuantity
 purchased grantedQuantity/committedQuantity/reservedQuantity/refundingQuantity
 lifetime Free grantedQuantity/committedQuantity/reservedQuantity
-legacy pre-ARCH-010 lifetime-Free signed adjustment total, if present
 ```
 
-A later promotional grant, purchased top-up, verified Paid period or other canonical capacity restoration creates a new durable capacity epoch. Legacy signed Free-allowance adjustments are compatibility-only historical data and are not a new ARCH-010 restoration mechanism.
+A later campaign selection/grant restoration, purchased top-up, verified Paid period or other canonical capacity restoration creates a new durable capacity epoch. No legacy signed lifetime-Free adjustment state exists in the first-production model.
 
 Do not include customer identifiers, checkout token, phone number or message content in the lifecycle key.
 

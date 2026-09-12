@@ -15,19 +15,19 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-BACKGROUND-006
-  - ARCH-010-BACKGROUND-012
-  - ARCH-010-BACKGROUND-013
-  - ARCH-010-BACKGROUND-016
-  - ARCH-010-BACKGROUND-017
-  - ARCH-010-BACKGROUND-018
-  - ARCH-010-SHOPIFY-006
-  - ARCH-010-SHOPIFY-016
-  - ARCH-010-SHOPIFY-019
+- ARCH-010-BACKGROUND-006
+- ARCH-010-BACKGROUND-012
+- ARCH-010-BACKGROUND-013
+- ARCH-010-BACKGROUND-016
+- ARCH-010-BACKGROUND-017
+- ARCH-010-BACKGROUND-018
+- ARCH-010-SHOPIFY-006
+- ARCH-010-SHOPIFY-016
+- ARCH-010-SHOPIFY-019
 enables:
-  - ARCH-010-SYSTEM-TEST-004
+- ARCH-010-SYSTEM-TEST-004
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SYSTEM-TEST-002: Validate uninstall, reinstall, cancellation and freeze execution gates
@@ -114,12 +114,12 @@ Return a scenario matrix with durable state before/after, queued-job disposition
 Explicitly prove no lifecycle transition resets:
 
 ```text
-PROMOTIONAL_RECOVERY_CREDITS
+campaign-linked PromotionalCreditGrant quantity/committed/reserved history
 PURCHASED_RECOVERY_CREDITS
-FREE_RECOVERY_LIFETIME
+LIFETIME_FREE_RECOVERY_CREDITS
 ```
 
-except ordinary consumption/refund rules unrelated to the lifecycle event.
+except ordinary consumption/refund rules unrelated to the lifecycle event. There is no aggregate promotional entitlement counter in the first-production baseline.
 
 ## Validation
 

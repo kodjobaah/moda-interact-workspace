@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-014
+- ARCH-010-SHOPIFY-014
 enables:
-  - ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-012
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-010: Productionise recovery top-up purchase panel component

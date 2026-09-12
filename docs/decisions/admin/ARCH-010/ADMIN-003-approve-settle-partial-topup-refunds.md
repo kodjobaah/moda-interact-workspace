@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-ADMIN-002
-  - ARCH-010-BACKGROUND-014
-  - ARCH-010-SHARED-006
+- ARCH-010-ADMIN-002
+- ARCH-010-BACKGROUND-014
+- ARCH-010-SHARED-008
 enables:
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-ADMIN-003: Approve, hold and settle partial top-up refunds through Shopify Partner Dashboard

@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-013
-  - ARCH-010-SHOPIFY-015
+- ARCH-010-SHOPIFY-013
+- ARCH-010-SHOPIFY-015
 enables:
-  - ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-012
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-011: Productionise Shopify-hosted plan management panel component

@@ -15,12 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-DATABASE-012
+- ARCH-010-DATABASE-013
 - ARCH-010-ADMIN-001
+- ARCH-010-ADMIN-010
 enables:
 - ARCH-010-ADMIN-009
 created: 2026-09-12
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-ADMIN-008: Manage verified Shopify economics evidence, upgrade edges and guardrail policy
@@ -99,7 +100,7 @@ usagePricingSnapshot
 verificationReason
 ```
 
-`usagePricingSnapshot` UI may use explicit fields rather than raw JSON, but server output must normalize to the DATABASE-012 shape.
+`usagePricingSnapshot` UI may use explicit fields rather than raw JSON, but server output must normalize to the DATABASE-013 shape.
 
 Supported pricing:
 
@@ -159,7 +160,7 @@ Do not implement the guardrail calculation (ADMIN-007), hard enforcement (ADMIN-
 
 ## Stop conditions
 
-Stop if DATABASE-012 is unavailable or if implementation would require putting monthly/top-up money columns back on `BillingPlan`.
+Stop if DATABASE-013 is unavailable or if implementation would require putting monthly/top-up money columns back on `BillingPlan`.
 
 ## Completion Report
 

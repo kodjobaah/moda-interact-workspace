@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-021
-  - ARCH-010-DATABASE-011
+- ARCH-010-SHOPIFY-021
+- ARCH-010-DATABASE-013
 enables:
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-022: Show merchant promotion selection and usage history
@@ -60,11 +60,11 @@ Do not infer merchant campaign history from the aggregate promotional counter.
 
 Never expose Admin identity, internal audit event payloads, internal target IDs, request keys or support/internal grant classifications.
 
-Legacy campaign-less DATABASE-009 direct grants may be shown only as a generic historical Moda promotional credit entry if product UX needs to preserve existing data; do not fabricate a campaign identity for them.
+DATABASE-013 contains only campaign-linked merchant promotional grants. Do not implement a campaign-less/direct-grant fallback, fabricate a campaign identity, or query removed compatibility provenance.
 
 ## Required tests
 
-Prove tenant isolation, selected-vs-used distinction, exhausted/expired/reopened display, remaining calculation, legacy-row safe fallback, pagination and absence of internal provenance leakage.
+Prove tenant isolation, selected-vs-used distinction, exhausted/expired/reopened display, remaining calculation, pagination, campaign-link integrity and absence of internal provenance leakage.
 
 ## Non-goals
 

@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-009
-  - ARCH-010-SHOPIFY-012
-  - ARCH-010-SHOPIFY-013
-  - ARCH-010-BACKGROUND-012
-  - ARCH-010-BACKGROUND-013
+- ARCH-010-SHOPIFY-009
+- ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-013
+- ARCH-010-BACKGROUND-012
+- ARCH-010-BACKGROUND-013
 enables:
-  - ARCH-010-SYSTEM-TEST-002
+- ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-016: Present Shopify cancellation state without local cancellation authority

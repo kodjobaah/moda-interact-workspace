@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-007
-  - ARCH-010-BACKGROUND-011
+- ARCH-010-DATABASE-013
+- ARCH-010-BACKGROUND-011
 enables:
-  - ARCH-010-ADMIN-003
-  - ARCH-010-BACKGROUND-019
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-ADMIN-003
+- ARCH-010-BACKGROUND-019
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-014: Make purchased recovery reservations FIFO lot-aware
@@ -145,17 +145,26 @@ When provider reconciliation activates a new `RecoveryCreditPurchase`:
 - lot committed/reserved/refunding/refunded quantities remain zero by schema default;
 - no lifetime Free mutation.
 
-## Provider reconciliation compatibility
+## Provider reconciliation and pre-production refund cleanup
 
 Do not infer provider-confirmed purchase units from local spendable balance.
 
 A Partner Dashboard refund/credit does not reduce the original App Pricing top-up meter quantity.
 
-New ARCH-010 partial refunds keep the purchase provider status ACTIVE and lower local lot/aggregate granted balance through refunded quantities.
+ARCH-010 partial refunds keep the purchase provider status `ACTIVE` and lower local lot/aggregate spendable balance through refunded quantities.
 
-Legacy data may contain `RecoveryCreditPurchase.status=REFUNDED` and/or legacy negative refund correction events. Those rows are explained historical provider units and must never become new activation candidates.
+DATABASE-013 removes `RecoveryCreditPurchaseStatus.REFUNDED`, refund settlement-mode/correction-UsageEvent fields and the negative-App-Event refund model. Inspect `recovery-credit-purchase.service.ts`, provider reconciliation and any refund worker/helper code. Remove any remaining branch whose purpose is to:
 
-If the integrated provider reconciliation still counts only ACTIVE purchase rows and would misinterpret legacy REFUNDED provider units as unmatched provider quantity, correct that logic narrowly with regression coverage. Do not change new ARCH-010 refunds to negative App Events.
+```text
+mark a purchase REFUNDED
+submit a negative/fractional App Event as refund settlement
+create/read a refund correction UsageEvent
+retry automatic provider refund settlement
+```
+
+Do not replace that behaviour with another automatic provider refund processor. Human provider settlement is owned by ADMIN-002/003 and DATABASE-013's `REFUND | CREDIT` evidence model.
+
+Provider reconciliation must treat the original provider-confirmed top-up unit as explained by the durable purchase even after local partial refunds; it must not re-grant refunded local capacity.
 
 ## Required tests
 
@@ -174,7 +183,7 @@ At minimum prove:
 11. purchased exhaustion still falls through to lifetime Free through BACKGROUND-011/BACKGROUND-002;
 12. new purchase activation initializes spendable lot without double grant;
 13. manual completed partial refund does not cause provider reconciliation to re-grant the refunded credit;
-14. legacy REFUNDED/correction history never becomes an activation candidate.
+14. no REFUNDED/negative-App-Event correction branch remains, and provider reconciliation never re-grants locally refunded capacity.
 
 Run actual repository scripts from `package.json` plus task-required focused tests, build, Prisma validation if declared and `git diff --check`.
 

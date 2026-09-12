@@ -1,6 +1,6 @@
 # Architecture index
 
-> **State synchronized 2026-09-08.** Current task state is generated in
+> **State synchronization:** ARCH-001..007 rows retain the 2026-09-08 rollup; ARCH-008..010 rows below are synchronized 2026-09-12. Current task state is generated in
 > [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md).
 > Individual task YAML remains authoritative. Historical review/amendment documents
 > preserve the state that existed when they were written and should not be used as
@@ -15,13 +15,15 @@
 | ARCH-005 | complete 17, pending 2, ready 1, superseded 2 | [Global internationalisation and WhatsApp markets](ARCH-005-global-internationalisation-whatsapp-markets.md) |
 | ARCH-006 | complete 21, pending 3, review 3, superseded 2 | [Merchant communications and support inbox](ARCH-006-merchant-communications-support-inbox.md) |
 | ARCH-007 | complete 21, pending 13, ready 5 | [Shopify billing, usage and WhatsApp cost control](ARCH-007-shopify-billing-usage-cost-control.md) |
+| ARCH-008 | complete 7, ready 1, superseded 1 | [Shopify App Pricing conformance](ARCH-008-shopify-app-pricing-conformance.md) |
+| ARCH-009 | complete 5, pending 2, ready 2 | [Merchant billing lifecycle, cancellations and refunds](ARCH-009-merchant-billing-lifecycle-cancellations-refunds.md) |
+| ARCH-010 | complete 23, pending 49, ready 4, review 1, superseded 2 | [Merchant lifecycle state transitions and behavioural access](ARCH-010-merchant-lifecycle-state-transitions.md) · [First-production baseline](ARCH-010-first-production-baseline.md) |
 
 ## Current execution highlights
 
-- `ARCH-001`: the two task files that had drifted back to Review (`SHOPIFY-001`, `BACKGROUND-001`) are restored to their documented Round-2 Accepted/Complete state; `GATEWAY-001` is Ready.
-- `ARCH-005`: `SHOPIFY-004` is Ready now that its ARCH-007 overlap dependency is Complete.
-- `ARCH-007`: Shared `0.8.0` is current/published; `SHOPIFY-003` is Ready for Attempt 2 after a narrow dependency-baseline correction request; `ADMIN-001`, `BACKGROUND-005`, `BACKGROUND-009`, and `BACKGROUND-010` are Ready; `BACKGROUND-011` remains Pending behind BACKGROUND-010.
-- System-test tasks remain terminal/manual-gated across architectures.
+- `ARCH-010`: first-production baseline consolidation is current. Ready frontier: `DATABASE-013`, `SHARED-007`, `ADMIN-007`, `BACKGROUND-015`; `SHOPIFY-002` is in Review Attempt 8. `DATABASE-012` is Superseded and its valid economics schema target is folded into DATABASE-013.
+- `ARCH-010` system-test tasks remain terminal/manual-gated and never block implementation startup.
+- For architectures other than ARCH-010, use [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md) plus individual task YAML rather than relying on an old highlight bullet.
 
 ## Historical architecture material
 

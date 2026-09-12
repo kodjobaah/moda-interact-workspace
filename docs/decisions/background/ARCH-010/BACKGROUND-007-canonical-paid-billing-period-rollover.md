@@ -15,23 +15,23 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-BACKGROUND-001
-  - ARCH-010-BACKGROUND-002
-  - ARCH-010-BACKGROUND-008
-  - ARCH-010-BACKGROUND-009
-  - ARCH-010-DATABASE-004
-  - ARCH-010-SHARED-002
-  - ARCH-008-BACKGROUND-001
+- ARCH-010-BACKGROUND-001
+- ARCH-010-BACKGROUND-002
+- ARCH-010-BACKGROUND-008
+- ARCH-010-BACKGROUND-009
+- ARCH-010-DATABASE-013
+- ARCH-010-SHARED-008
+- ARCH-008-BACKGROUND-001
 enables:
-  - ARCH-010-BACKGROUND-003
-  - ARCH-010-BACKGROUND-006
-  - ARCH-010-BACKGROUND-010
-  - ARCH-010-BACKGROUND-012
-  - ARCH-010-BACKGROUND-016
-  - ARCH-010-SHOPIFY-007
-  - ARCH-010-SYSTEM-TEST-001
+- ARCH-010-BACKGROUND-003
+- ARCH-010-BACKGROUND-006
+- ARCH-010-BACKGROUND-010
+- ARCH-010-BACKGROUND-012
+- ARCH-010-BACKGROUND-016
+- ARCH-010-SHOPIFY-007
+- ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-007: Canonical same-plan App Pricing BillingPeriod rollover for Paid and Free
@@ -53,7 +53,7 @@ FREE
   -> rotate Shopify BillingPeriod for commercial/App-Event scope
   -> open new BillingPeriod
   -> DO NOT create/refill a period included-credit counter
-  -> DO NOT reset FREE_RECOVERY_LIFETIME
+  -> DO NOT reset LIFETIME_FREE_RECOVERY_CREDITS
 ```
 
 The service must be reusable by:
@@ -167,7 +167,7 @@ Do **not** block ordinary recovery admission merely because the Shopify Free bil
 
 Allowed:
 
-- recovery from remaining `FREE_RECOVERY_LIFETIME` capacity;
+- recovery from remaining `LIFETIME_FREE_RECOVERY_CREDITS` capacity;
 - recovery from already-active purchased lifetime credits;
 - existing conversations;
 - dashboard/history/support.
@@ -364,7 +364,7 @@ Do not load/finalize a period included-credit counter. None should exist.
 Preserve exactly:
 
 ```text
-FREE_RECOVERY_LIFETIME counter/usage
+LIFETIME_FREE_RECOVERY_CREDITS counter/usage
 purchased lifetime credits
 refund/purchase history
 ```
