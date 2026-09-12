@@ -255,7 +255,7 @@ Implementation repository:
   commit: `2104959` (`test: complete purchased reservation concurrency proof`)
 
 Parent workspace:
-  commit: recorded after this report update
+  commit: `a335f9b` (Attempt-2 Completion Report)
 
 The implementation `database` gitlink remains intentionally unstaged and was not changed or published by this task. No main branch was modified or merged.
 
