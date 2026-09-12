@@ -234,25 +234,25 @@ STOP if accepted Shared contract is unavailable, Prisma client lacks `nextReconc
 ## Completion Report
 
 ### Status
-Attempt 5 complete; returned to review.
+Attempt 6 complete; returned to review.
 
 ### Implementation
 Changed files:
-- `src/entrypoints/billing.ts`
 - `src/services/billing-subscription-reconciliation.service.ts`
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
-- `tests/unit/runtime/entrypoint-isolation.test.ts`
 
-Implemented Attempt-5 Corrections 1-6: verified Free/no-cycle now schedules exactly `now + FREE_CYCLE_DISCOVERY_RETRY_MS` and queues the matching payload; cycle null/error outcomes compare the exact original current plan, subscription, null pending fields, and schedule; reconstruction uses the top-level OR selector with onboarding and `pendingEffectiveAt` guards while retaining initial/frozen repair; successful initial and cycle writes use PostgreSQL row locks with ShopSettings -> Subscription ordering and no network request under lock; normal initial transport failure preserves `NO_CONTRACT` intent with `PARTNER_API_ERROR`, tiered retry, and deterministic enqueue; and queue telemetry uses `billingSubscriptionQueue.name`.
+Implemented the narrow Attempt-5 correction: `completeVerifiedFree` now returns the boolean committed result from its locked transaction, retains exact expected-state checks after ShopSettings and Subscription locks, and calls `publishNext` only when `committed === true` and `nextReconcileAt` exists. Added a direct regression for a verified Free response whose locked re-read has a newer pending plan; it proves both locks occur while BillingPeriod, lifetime-counter, Subscription, ShopSettings, and queue writes are skipped.
 
 ### Validation Results
-- Focused command `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 2 files and 40 tests.
-- Full `npm test`: 579 passed, 7 skipped, 6 unchanged baseline failures: five integration failures are blocked because database `moda_interact_test` does not exist, and one unit failure is the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0` while the accepted dependency is `0.10.0`.
+- Focused command `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 2 files and 41 tests.
+- Full `npm test`: 47 files passed, 3 files failed, 5 skipped; 580 tests passed, 6 failed, 7 skipped. The six unchanged baseline failures are five integration failures because database `moda_interact_test` does not exist, plus the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0` while the accepted dependency is `0.10.0`.
 - `npm run prisma:validate`: passed.
 - `npm run build`: blocked only by 8 unchanged nullable `counterId` errors in `src/services/free-recovery-reservation.service.ts` and `src/services/purchased-recovery-reservation.service.ts`; no errors in task-touched files.
 - `git diff --check`: passed.
+- Editor diagnostics: no errors in the four task-touched files.
 
 ### Git / VCS
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Canonical parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-001`, `task/ARCH-010-BACKGROUND-001`.
 - Canonical implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-001`, `task/ARCH-010-BACKGROUND-001`.
 - Shared workspace checkout switched/mutated for task work: no.
@@ -260,9 +260,10 @@ Implemented Attempt-5 Corrections 1-6: verified Free/no-cycle now schedules exac
 - Another task worktree reused: no.
 - Parent remote task branch fast-forwarded: already-current; parent `origin/main` incorporated: already-current.
 - Implementation remote task branch fast-forwarded: already-current; implementation `origin/main` incorporated: already-current.
-- Implementation commit: `5e219b5`.
-- Parent claim commit: `0cd4c0d`.
-- Parent report/metadata commit: to be recorded after publication.
+- Attempt-6 implementation commit: `3b00b0777b1820a99644f85226bfebb927f7630b`.
+- Attempt-6 parent claim commit: `4e1441b635e5f8c2efe8cf92875195013355dbcc`.
+- Attempt-6 parent report/status/metadata commit: to be recorded after publication.
+- Attempt-6 final task-file blob hash: to be recorded after publication.
 - Database submodule revision: `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no; merged to workspace main: no.
