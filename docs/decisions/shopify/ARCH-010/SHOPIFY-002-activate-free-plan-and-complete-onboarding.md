@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-09-12T10:39:28Z
+executor: null
+claimed_at: null
 attempt: 8
 depends_on:
   - ARCH-010-DATABASE-006
@@ -22,6 +22,10 @@ depends_on:
   - ARCH-010-SHARED-002
   - ARCH-007-SHOPIFY-001
   - ARCH-007-SHOPIFY-002
+enables:
+  - ARCH-010-SHOPIFY-003
+created: 2026-09-11
+updated: 2026-09-12
 ---
 ## Completion Report
 
@@ -347,7 +351,7 @@ parent submodule pointer remains a developer-owned integration step.
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested
 Can you make sure you are using the `moda-interact` dependencey '0.10.0'
@@ -2302,3 +2306,253 @@ attempt: 8
 ```
 
 **Architect decision: Changes Requested — Attempt 7.**
+
+#### Attempt 8 — Accepted
+
+Architect review confirms that Attempt 8 completes the verification-only correction
+contract from Attempt 7.
+
+##### Direct stale-token verification
+
+The focused BillingService suite now directly calls:
+
+```ts
+syncSubscription(shopId, token)
+```
+
+with the exact initial-selection token and proves all three required stale cases:
+
+1. provider-active response after a newer Free-B target replaces token A:
+   - Partner is called once;
+   - no Subscription projection write occurs;
+   - no BillingPeriod upsert occurs;
+   - the newer pending target remains intact;
+
+2. provider-null response after a newer/completed onboarding state:
+   - Partner is called;
+   - no `NO_CONTRACT` projection is written;
+   - the completed/newer state remains intact;
+
+3. same target with changed token timestamp/schedule:
+   - the token comparison fails;
+   - no provider-derived Subscription/BillingPeriod mutation occurs.
+
+These tests exercise the real token-aware service path rather than the generic
+no-token reconciliation path.
+
+##### Guarded unresolved/error scheduler verification
+
+The focused service suite now directly proves:
+
+```text
+stale token
+=> scheduleInitialFreeReconciliationIfCurrent(...) returns null
+=> no Subscription update
+```
+
+and:
+
+```text
+current exact token + Partner error
+=> one atomic Subscription update
+=> nextReconcileAt committed
+=> PARTNER_API_ERROR + lastSyncErrorAt committed
+=> pending target fields are not cleared
+=> committed subscription id/timestamp returned
+```
+
+The callback suite also proves:
+
+```text
+Partner error
++ guarded scheduler returns null
+=> completeFreeActivation not called
+=> reconciliation enqueue not called
+=> redirect /app
+```
+
+so a stale/losing callback cannot republish retry work.
+
+##### Required Test 19 — coherent no-cycle purchase gate
+
+The same focused initial-activation test now executes the full service flow:
+
+```text
+prepareFreeActivation
+-> syncSubscription(shopId, exact initial token)
+-> completeFreeActivation
+-> requestRecoveryCreditPack
+```
+
+for a pack-enabled Free plan whose verified Shopify response has no exact billing
+cycle.
+
+It proves:
+
+```text
+onboardingCompleted = true
+current Free plan/status projected
+billingPeriodId = null
+pending initial-selection fields cleared
+bounded nextReconcileAt committed
+real recovery-credit-pack purchase rejects with:
+  "The current local billing cycle could not be verified."
+Partner getActiveSubscription is not called a second time for the failed purchase
+```
+
+This satisfies the required fail-closed pack-purchase boundary without introducing a
+new eligibility mechanism.
+
+##### Required Tests 17 and 20 remain satisfied
+
+The accepted focused coverage still proves:
+
+```text
+exact Free-cycle replay:
+  existing FREE_RECOVERY_LIFETIME quantities/version remain unchanged
+  no BillingPeriodEntitlementCounter create/upsert occurs
+```
+
+and:
+
+```text
+merchant billing/callback/select surfaces do not contain "moda-interact-admin"
+Shopify-hosted admin.shopify.com pricing route remains allowed
+```
+
+##### Attempt-8 implementation scope
+
+Architect comparison against the submitted Attempt-7 archive confirms Attempt 8 is
+bounded to:
+
+```text
+app/services/billing/billing-reconciliation.service.ts
+tests/unit/services/billing.service.test.ts
+tests/unit/routes/billing-callback.test.ts
+```
+
+The only production-code change is:
+
+```ts
+let queue: BillingReconciliationQueue | null = null;
+```
+
+instead of caching the concrete BullMQ `Queue` type. This aligns the cache with the
+existing injectable queue abstraction used by the task tests and removes the
+task-owned TypeScript diagnostic without changing queue runtime behaviour.
+
+No SHOPIFY-002 lifecycle semantics were changed in Attempt 8.
+
+##### Validation
+
+The submitted canonical-worktree evidence records:
+
+```text
+81 focused tests passed
+255 full-suite tests passed
+1 skipped
+Prisma validate passed
+Prisma generate passed
+build passed
+changed-file ESLint passed
+git diff --check passed
+```
+
+Repository-wide typecheck still reports 163 unrelated baseline diagnostics, with no
+diagnostic in the changed SHOPIFY-002 billing paths after the queue-cache type
+correction.
+
+The review archive does not contain installed `node_modules`, so architect-side test
+execution is not possible from the portable archive; the exact test implementations
+and Attempt-7 -> Attempt-8 source delta were independently inspected and are consistent
+with the reported canonical-worktree results.
+
+##### Database / VCS evidence
+
+Accepted database dependency revision remains:
+
+```text
+6d5fb9adf2e5c1fb28333b330dd183c9cda41550
+```
+
+and the database gitlink is unstaged.
+
+Attempt-8 task evidence records:
+
+```text
+parent claim commit:
+  c0fef26
+
+implementation commits:
+  6ce6884
+  679a829
+
+final implementation head:
+  679a829
+```
+
+The review handoff identifies the final published parent task/frontmatter repair as:
+
+```text
+1849cbb
+```
+
+The task-file placeholder `report and review-status/final metadata commit: this
+task-file commit` is therefore reconciled here to the externally supplied durable
+final parent publication `1849cbb`; another implementation attempt is not required for
+self-referential report metadata.
+
+The dedicated parent/implementation worktree evidence, all three physical-isolation
+declarations, all four start-of-attempt synchronization outcomes and
+`submodule gitlink staged: no` remain recorded.
+
+##### Frontmatter reconciliation
+
+The published Attempt-8 task frontmatter was valid YAML but accidentally dropped fields
+that were present in Attempt 7. Architect-owned acceptance reconciliation restores:
+
+```yaml
+enables:
+  - ARCH-010-SHOPIFY-003
+created: 2026-09-11
+updated: 2026-09-12
+```
+
+This is documentation/task-graph reconciliation only and does not alter implementation
+behaviour.
+
+##### Architectural decision
+
+All previously reviewed SHOPIFY-002 behaviour remains accepted, including:
+
+- onboarding-aware initial source classification;
+- exact immutable initial-selection token;
+- ShopSettings -> Subscription lock ordering;
+- stale Partner response suppression;
+- exact-token guarded retry/error scheduling;
+- older-callback/newer-selection protection;
+- race-safe lifetime Free grant creation;
+- canonical Free BillingPeriod projection;
+- no included-credit counter for Free;
+- pack-enabled exact-cycle and no-cycle post-verification scheduling;
+- fail-closed top-up purchase without an exact BillingPeriod;
+- best-effort deterministic Background reconciliation publication;
+- merchant-only billing routes with no Moda Admin dependency.
+
+**Architect decision: Accepted — Attempt 8.**
+
+Because `completion_mode: automatic`, `ARCH-010-SHOPIFY-002` is now `complete`.
+`attempt: 8` is preserved and the active executor/claim is cleared.
+
+##### Dependency reconciliation
+
+`ARCH-010-SHOPIFY-003` remains `pending`. SHOPIFY-002 is now satisfied, but
+SHOPIFY-003 still depends on incomplete prerequisites including:
+
+```text
+ARCH-010-DATABASE-002
+ARCH-010-BACKGROUND-002
+ARCH-010-BACKGROUND-003
+```
+
+No dependant becomes Ready solely from this acceptance.
