@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -497,3 +497,136 @@ attempt: 3
 and updated implementation/report commit evidence.
 
 **Architect decision: Changes Requested — Attempt 2.**
+
+#### Attempt 3 — Changes Requested
+
+Attempt 3 correctly addresses several Attempt-2 defects:
+
+- completion is now gated on successful Partner verification from the current callback execution;
+- Partner transport failure records `PARTNER_API_ERROR` and cannot complete onboarding from a stale local ACTIVE/TRIALING projection;
+- missing/invalid `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance` no longer fabricates a zero lifetime grant;
+- BullMQ queue acquisition/construction and `Queue.add` failures are contained inside the best-effort producer boundary;
+- Shared billing contract usage remains on `@modainteract/moda-interact-shared@0.10.0`;
+- worktree-isolation and start-of-attempt synchronization evidence is present.
+
+The task is still not acceptable because the explicit Required Tests / idempotency correction from Attempt 2 was not completed, and static review of the untested service methods exposes three correctness gaps.
+
+##### Correction 1 — enforce the Iteration-2 source state even when the Subscription row is absent
+
+`prepareFreeActivation(...)` currently treats:
+
+```ts
+!currentSubscription
+```
+
+as sufficient for initial activation, without also requiring:
+
+```text
+ShopSettings.onboardingCompleted = false
+```
+
+The binding Iteration-2 source state requires onboarding to be incomplete. A shop with `onboardingCompleted=true` and an unexpectedly absent Subscription must not silently re-enter the first-activation transition.
+
+Narrow the source classification so initial activation requires onboarding incomplete whether the Subscription is absent or is an explicit `NO_CONTRACT + no current plan` row.
+
+Keep same-plan verified replay allowed.
+
+Add direct service tests proving:
+
+1. fresh/no-subscription + onboarding incomplete is accepted;
+2. fresh `NO_CONTRACT + no current plan` + onboarding incomplete is accepted;
+3. no-subscription + onboarding already complete is rejected without mutation;
+4. ACTIVE/TRIALING different-plan state is rejected without mutation;
+5. verified same-Free replay remains allowed.
+
+##### Correction 2 — make first lifetime-grant creation concurrency-idempotent
+
+`completeFreeActivation(...)` now performs:
+
+```text
+findUnique(FREE_RECOVERY_LIFETIME)
+  -> if missing, read policy
+  -> create counter
+```
+
+Sequential replay is safe, but concurrent verified callbacks can both observe the counter as missing and race on the database unique constraint `(shopId, counter)`. One request can therefore fail instead of behaving idempotently.
+
+The architecture requires the first verified activation to `create/reuse` the shop-lifetime counter transactionally and idempotently.
+
+Use a race-safe create/reuse mechanism that:
+
+- preserves an existing counter and all of its quantities unchanged;
+- snapshots the platform policy only when a counter genuinely needs to be created;
+- does not require the policy merely to replay a shop that already has a counter;
+- tolerates concurrent first-activation attempts without producing a user-visible uniqueness failure;
+- sets onboarding complete only after the counter exists/reuses successfully.
+
+Add direct service coverage for first creation, existing-counter replay with non-zero committed/reserved/refunding/version state, missing-policy fail-closed behaviour, and a concurrent/create-race equivalent.
+
+##### Correction 3 — an older in-flight callback must not erase a newer unresolved local selection
+
+Attempt 2 explicitly required:
+
+```text
+a newer unresolved valid selection is not destroyed by an older/replayed callback
+```
+
+The current generic `syncSubscription(...)` can still overwrite the locally durable pending target from provider data without considering whether the local pending selection was written by a newer callback.
+
+Example:
+
+```text
+callback A records pending Free-A
+callback B records newer pending Free-B
+callback A continues and provider still reports Free-A/current with no pending update
+syncSubscription writes provider pending=null
+=> newer durable Free-B selection can be cleared
+```
+
+The durable local selection exists specifically to survive provider propagation lag, so an older callback must not destroy a newer local intent merely because the Partner response does not yet expose it.
+
+Preserve the newest unresolved local initial-selection target unless the provider response actually verifies that target as current or provides authoritative pending state that supersedes it. Use the narrowest mechanism appropriate to the existing service; do not design later upgrade/downgrade execution in this task.
+
+Add a focused race/replay test proving that a newer Free selection survives completion of an older callback/sync attempt.
+
+##### Correction 4 — finish the task's explicit Required Tests against real service behaviour
+
+The task says **"Prove at least"** 20 named behaviours. Attempt 3 added regressions for stale Partner projection and queue acquisition, but there is still no direct test invocation of either:
+
+```text
+BillingService.prepareFreeActivation(...)
+BillingService.completeFreeActivation(...)
+```
+
+Consequently the current focused suite still does not prove several mandatory semantics, including:
+
+- durable pending intent before entitlement activation;
+- inactive/unknown/Paid target non-mutation at the service/database boundary;
+- exact source-state classification;
+- same-plan replay;
+- replacement/preservation of unresolved selection intent;
+- one-time lifetime counter snapshot and quantity preservation;
+- missing-policy fail-closed behaviour;
+- exact Free BillingPeriod snapshots (`planKindSnapshot=FREE`, `includedRecoveryCreditsGranted=null`);
+- absence of a Free `BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS)`;
+- preservation of lifetime usage across Free cycle projection;
+- exact-cycle pre-close scheduling using the Shared drain-window constant;
+- verified pack-enabled Free without a cycle completing onboarding while remaining top-up-ineligible and retaining bounded reconciliation.
+
+Add focused behavioural tests for every item in the canonical `Required tests` section. Route tests may mock orchestration boundaries, but the service/database invariants must be asserted against the actual BillingService methods rather than inferred from aggregate suite counts.
+
+##### Validation / workflow
+
+This remains the same task. Do not create a new correction task and do not stage the database submodule gitlink.
+
+Reclaim with `/moda-task`; the next valid claim is:
+
+```text
+attempt: 4
+```
+
+Run the task-declared focused/full validation and return the same mirrored branches to `review` with updated implementation/report evidence.
+
+Repository-wide pre-existing typecheck/lint diagnostics outside the changed task files remain non-blocking if they are unchanged and correctly documented.
+
+**Architect decision: Changes Requested — Attempt 3.**
