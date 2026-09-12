@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 83
-executor: copilot
-claimed_at: 2026-09-12T10:00:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-010-DATABASE-009
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-021
   - ARCH-010-SHOPIFY-022
 created: 2026-09-12
-updated: 2026-09-12T10:00:00Z
+updated: 2026-09-12T09:02:43Z
 ---
 
 # ARCH-010-DATABASE-011: Persist merchant promotion selection and exact promotional grant-lot accounting
@@ -220,7 +220,7 @@ Ready for Review.
   physical-worktree and start-of-attempt synchronization evidence.
 ## Completion Report
 
-In Progress.
+Ready for Review.
 
 ### Attempt 2 Corrections and Validation
 
@@ -340,6 +340,61 @@ Merged to workspace main: no
 - Implementation commit: `91b1b1f3cdcf0ce46a2e8fc481123817ba2b42c1`, pushed to `origin/task/ARCH-010-DATABASE-011`.
 - Parent report commit: to be recorded after this report update; parent task branch is `task/ARCH-010-DATABASE-011`, and the implementation submodule gitlink remains unstaged.
 - No merge to either `main` branch and no architect acceptance claimed.
+
+### Attempt 3 Correction and Validation
+
+- Restored `prisma/migrations/20260911130000_add_purchased_credit_lot_accounting/migration.sql` byte-for-byte to the accepted DATABASE-007 version. The DATABASE-011 implementation diff no longer modifies that historical migration.
+- Retained the valid DATABASE-011 campaign-history index declaration and focused validator correction from Attempt 2.
+- Passed: `npm run format`.
+- Passed: `npm run validate`.
+- Passed: `npm run prisma:validate`.
+- Passed: `npm run prisma:generate` with Prisma 6.19.3.
+- Passed: `npm run test:promotion-selection`.
+- Passed: `npm run test:promotion-campaign`.
+- Passed: `npm run test:billing-policy`.
+- Passed: `npm run test:recovery-credit-packs`.
+- Passed: `npm run test:checkout-recovery-capacity`.
+- Passed: `npm run test:purchased-credit-lots`.
+- Passed: `npm run test:billing-lifecycle`.
+- Passed: `npm run erd:puml`; normalized the generator-introduced trailing whitespace in the generated ERD.
+- Passed: `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run status`; database schema is up to date with 38 migrations.
+- Passed: `git diff --check`.
+
+### Attempt 3 Git / VCS Evidence
+
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011
+  parent branch: task/ARCH-010-DATABASE-011
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011
+  implementation branch: task/ARCH-010-DATABASE-011
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes
+  parent origin/main incorporated: yes, merged current origin/main into the task branch
+  implementation remote task branch fast-forwarded: yes
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: moda-interact-database
+  commits: `91b1b1f`, `6a463a3`, `33c567f`
+  implementation head: `33c567f`
+  remote branch: origin/task/ARCH-010-DATABASE-011
+  pushed: yes
+
+Parent workspace:
+  task file: docs/decisions/database/ARCH-010/DATABASE-011-merchant-promotion-selection-and-grant-lots.md
+  claim commit: `cdfebdb`
+  final report commit: to be reported after this Completion Report commit
+  remote branch: origin/task/ARCH-010-DATABASE-011
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ### Architect Review
 
