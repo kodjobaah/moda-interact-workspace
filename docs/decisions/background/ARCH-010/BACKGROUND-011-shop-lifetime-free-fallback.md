@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 41
 executor: copilot
 claimed_at: '2026-09-12T17:25:09Z'
@@ -190,17 +190,17 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 
 ### Files Changed
 - `src/services/billing-subscription-reconciliation.service.ts`
-- `src/services/checkout-recovery.service.ts`
-- `src/services/effective-billing-policy.service.ts`
 - `src/services/free-recovery-reservation.service.ts`
+- `src/services/purchased-recovery-reservation.service.ts`
 - `src/services/recovery-billing.service.ts`
 - `tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
-- `tests/unit/services/effective-billing-policy.service.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 - `tests/unit/services/free-recovery-reservation.service.test.ts`
+- `tests/unit/services/purchased-recovery-reservation.service.test.ts`
 - `tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
@@ -222,13 +222,18 @@ subscriptions without changing an existing grant.
 Required regressions cover purchased-first ordering, lifetime fallback and
 exhaustion, Paid fallback, concurrency, replay, same-bucket release/commit,
 missing-counter fail-closed behavior, plan-independent grants, and inactive or
-uninstalled shop blocking.
+uninstalled shop blocking. Attempt 3 additionally uses one canonical recovery
+source key across purchased and lifetime-Free admission, preserves the owning
+counter on replay and provider failure, spends existing purchased capacity even
+when pack purchase is disabled, removes the partial Paid included-capacity
+composition from this bounded task, and adds activation/reconciliation grant
+preservation regressions.
 
 ### Validation Results
 Focused tests:
-`npm test -- --run tests/unit/services/effective-billing-policy.service.test.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/recovery-billing.service.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
-passed: 3 files, 42 tests; the integration file was skipped because its
-database guard requires explicit disposable-test flags.
+`npm test -- --run tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/billing-subscription-reconciliation.service.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
+passed: 4 files, 71 tests; 1 integration test was skipped because its database
+guard requires explicit disposable-test flags.
 
 Guarded PostgreSQL concurrency test:
 `TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:5432/moda_interact' MODA_DISPOSABLE_INTEGRATION=1 npm test -- --run tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
@@ -240,10 +245,10 @@ documented `TYPECHECK-001` baseline: no current-task files produce errors, but
 the pre-existing purchased-reservation nullability errors and recovery-credit
 purchase/refund schema-consumer errors remain.
 
-Repository unit validation via `npm run test:unit` remains non-zero: 44 files
-passed and 3 files failed, with 488 tests passed and 41 failed. The failures
+Repository unit validation via `npm run test:unit` remains non-zero with 44
+files passed and 3 files failed, 488 tests passed and 41 failed. The failures
 are in the unrelated recovery-credit purchase/refund consumers and observability
-startup baseline, not in the focused ARCH-010-BACKGROUND-011 tests.
+startup baseline; no Attempt-3 changed file produced a test failure.
 
 `git diff --check` passed. The database submodule remains an unstaged gitlink at
 `014408e0402221f08a3961880b34e828a8bdc736` and was not modified or committed.
@@ -277,17 +282,20 @@ Physical worktree isolation:
   shared workspace checkout switched/mutated for task work: no
   shared implementation checkout switched/mutated for task work: no
   another task worktree reused: no
+  start-of-attempt synchronization: implementation and parent task branches were
+    already aligned with their origin/task/ARCH-010-BACKGROUND-011 refs; origin/main
+    was an ancestor of the implementation branch and no merge was required
 
 Implementation repository:
   repository: moda-interact-background
-  implementation commit: a6b7dd3 (feat: add plan-independent lifetime free fallback)
+  implementation commit: db8cec1 (fix: complete BACKGROUND-011 attempt 3 corrections)
   remote branch: origin/task/ARCH-010-BACKGROUND-011
   pushed: yes
 
 Parent workspace:
   task file: docs/decisions/background/ARCH-010/BACKGROUND-011-shop-lifetime-free-fallback.md
-  claim commit: 0ae28f0
-  report commit: cbe50fc (docs: return BACKGROUND-011 for review)
+  claim commit: e21293b (chore: claim BACKGROUND-011 attempt 3)
+  report commit: pending (this report update)
   remote branch: origin/task/ARCH-010-BACKGROUND-011
   submodule gitlink staged: no
 
