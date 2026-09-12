@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-09-12T00:00:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-010-DATABASE-006
@@ -635,6 +635,641 @@ failures may be documented by their existing baseline status, but changed
 reconciliation/runtime files must be clean.
 
 **Architect decision: Changes Requested — Attempt 2.**
+
+#### Attempt 3 — Changes Requested
+
+Attempt 3 correctly implements a substantial part of the Attempt-2 review contract:
+
+- `billing.ts` creates one queue-aware `BillingSubscriptionReconciliationService` and
+  passes that same instance to `createBillingSubscriptionReconciliationWorker(...)`;
+- reconstruction is invoked during startup and from the recurring billing cadence;
+- `moda-billing-worker` readiness now requires both Redis and PostgreSQL;
+- queue-performance telemetry is started and included in shutdown resources;
+- the rotating ARCH-007 reconciliation path no longer consumes a matching unresolved
+  initial Free activation when Shopify first reports that selected Free plan as current;
+- the dedicated consumer now re-reads durable state before the verified-Free and
+  other-current-plan write transactions;
+- provider current-plan projection is materially more complete;
+- first Free activation fails closed when the platform policy is absent;
+- exact Free BillingPeriod creation now records the canonical Free snapshot and does
+  not create an included-credit period counter;
+- the frozen-state reconstruction selector required by the task addendum is present;
+- the accepted database gitlink remains at
+  `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
+
+The reported repository-wide nullable-`counterId` build failures and unavailable
+integration test database remain outside the changed task files and are not the reason
+for this decision.
+
+Attempt 3 cannot be accepted because several correctness requirements are still not
+implemented, and some of the new tests assert mocks rather than the required runtime
+state transitions.
+
+##### Correction 1 — make the post-Partner initial-activation CAS exact
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+`recordMissingSubscription(...)` and `recordProviderFailure(...)` currently call
+`casPendingUpdate(...)`, but that update predicate only requires:
+
+```text
+id
+pendingEffectiveAt
+status = NO_CONTRACT
+planId = null
+pendingPlanId != null
+pendingShopifyPlanHandle != null
+```
+
+It does **not** compare the exact target or the exact schedule that was verified before
+the Partner network call.
+
+Therefore this race is still possible:
+
+```text
+job A loads:
+  pendingPlanId = plan-A
+  pendingShopifyPlanHandle = free-A
+  pendingEffectiveAt = T
+  nextReconcileAt = R1
+
+job A calls Partner
+
+newer callback/job B writes:
+  pendingPlanId = plan-B
+  pendingShopifyPlanHandle = free-B
+  pendingEffectiveAt = T        # equality is possible and must not be relied on
+  nextReconcileAt = R2
+
+job A receives null/error
+job A updateMany matches "pending fields are non-null"
+=> A overwrites B's nextReconcileAt/error/expiry state
+```
+
+For the initial-activation branch, capture one immutable expected state before the
+Partner call:
+
+```text
+subscriptionId
+expectedPendingPlanId
+expectedPendingShopifyPlanHandle
+expectedPendingEffectiveAt
+expectedNextReconcileAt
+```
+
+Every post-Partner `updateMany` for null/error/expiry MUST compare all of these exact
+values plus:
+
+```text
+status = NO_CONTRACT
+planId = null
+```
+
+Required predicate shape:
+
+```text
+id = subscriptionId
+status = NO_CONTRACT
+planId = null
+pendingPlanId = expectedPendingPlanId
+pendingShopifyPlanHandle = expectedPendingShopifyPlanHandle
+pendingEffectiveAt = expectedPendingEffectiveAt
+nextReconcileAt = Date(expectedNextReconcileAt)
+```
+
+Do not use `{ not: null }` for the target fields in this CAS.
+
+If `updateMany.count === 0`:
+
+```text
+do not mutate
+do not enqueue a replacement job
+return success/no-op
+```
+
+Also classify the initial-activation source **before** calling Partner. It is valid only
+when:
+
+```text
+Shop.status = ACTIVE
+ShopSettings.onboardingCompleted = false
+Subscription.status = NO_CONTRACT
+Subscription.planId = null
+pendingPlanId != null
+pendingShopifyPlanHandle != null
+nextReconcileAt exactly equals payload.expectedNextReconcileAt
+```
+
+An `ACTIVE`/`TRIALING` subscription with an established current plan is not an
+initial-activation job. Do not make a Partner request for it through this branch.
+
+Keep the existing generic `BillingReconciliationService` transport-failure behaviour
+that preserves an established ACTIVE/TRIALING projection.
+
+Required focused tests:
+
+1. changed `nextReconcileAt` after Partner call -> null/error result performs no DB
+   mutation and no enqueue;
+2. changed `pendingPlanId`/`pendingShopifyPlanHandle` after Partner call while
+   `pendingEffectiveAt` is unchanged -> no mutation and no enqueue;
+3. ACTIVE/TRIALING + current `planId` + onboarding incomplete -> this initial branch
+   does not call Partner.
+
+##### Correction 2 — make the verified-Free missing-cycle retry executable
+
+Files:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Attempt 3 schedules a retry when a pack-enabled Free plan is verified without an exact
+provider cycle, but the scheduled job can never execute the cycle-discovery work.
+
+Current first activation correctly writes:
+
+```text
+onboardingCompleted = true
+status = ACTIVE/TRIALING
+planId = verified Free plan
+pendingPlanId = null
+pendingShopifyPlanHandle = null
+billingPeriodId = null
+nextReconcileAt != null
+```
+
+but `reconcileJob(...)` currently requires:
+
+```text
+onboardingCompleted = false
+pendingPlanId != null
+pendingShopifyPlanHandle != null
+```
+
+before it calls Partner.
+
+Therefore the cycle-discovery job is dead-on-arrival and the merchant can remain
+permanently top-up-ineligible.
+
+Add an explicit second job-state branch for **Free cycle discovery**.
+
+A payload is a cycle-discovery job only when the reloaded durable state is exactly:
+
+```text
+Shop.status = ACTIVE
+subscription.id = payload.subscriptionId
+ShopSettings.onboardingCompleted = true
+Subscription.status IN (ACTIVE, TRIALING)
+Subscription.planId != null
+Subscription.pendingPlanId = null
+Subscription.pendingShopifyPlanHandle = null
+Subscription.billingPeriodId = null
+Subscription.nextReconcileAt exactly equals payload.expectedNextReconcileAt
+current BillingPlan.active = true
+current BillingPlan.kind = FREE
+current BillingPlan.recoveryCreditPackEnabled = true
+```
+
+Use a single explicit retry cadence for this state:
+
+```ts
+const FREE_CYCLE_DISCOVERY_RETRY_MS = 5 * 60 * 1000;
+```
+
+When Partner returns the **same current Free plan**:
+
+A. Exact cycle now exists:
+
+```text
+currentPeriodStart != null
+currentPeriodEnd != null
+```
+
+Inside one transaction, re-read and compare the exact state/schedule above, then
+create/reuse the canonical Free BillingPeriod:
+
+```text
+shopId
+subscriptionId
+planId
+shopifyPlanHandleSnapshot
+planNameSnapshot
+planKindSnapshot = FREE
+includedRecoveryCreditsGranted = null
+periodStart = provider currentPeriodStart
+periodEnd = provider currentPeriodEnd
+```
+
+Do not create `BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS)`.
+
+Update:
+
+```text
+Subscription.billingPeriodId = exact period
+currentPeriodStart/currentPeriodEnd = provider truth
+providerSubscriptionId/trialEndsAt/cancelAtPeriodEnd = provider truth
+lastSyncedAt = now
+lastSyncErrorCode/At = null
+nextReconcileAt =
+  max(now, currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS)
+```
+
+Commit first; then best-effort enqueue the deterministic next job.
+
+Do **not** reset or modify `FREE_RECOVERY_LIFETIME` in this branch.
+
+B. Same current Free plan still has no exact cycle:
+
+```text
+preserve onboarding = true
+preserve ACTIVE/TRIALING plan
+preserve lifetime/purchased/promotional balances
+billingPeriodId remains null
+lastSyncedAt = now
+lastSyncErrorCode/At = null
+nextReconcileAt = now + FREE_CYCLE_DISCOVERY_RETRY_MS
+```
+
+Commit, then enqueue that deterministic retry.
+
+C. Partner transport failure during cycle discovery:
+
+```text
+preserve current plan/status/onboarding/entitlements
+lastSyncErrorCode = PARTNER_API_ERROR
+lastSyncErrorAt = now
+nextReconcileAt = now + FREE_CYCLE_DISCOVERY_RETRY_MS
+```
+
+Commit/CAS only if the expected schedule still matches; enqueue after commit.
+
+Do not implement same-plan period rollover/pre-close processing here.
+`ARCH-010-BACKGROUND-007` owns that transition. This task only needs to make the
+missing-cycle discovery state executable and leave the exact-period pre-close schedule
+for BACKGROUND-007.
+
+Extend `reconstruct()` so Redis repair also selects this exact cycle-discovery state.
+Do not broaden reconstruction to every ACTIVE subscription.
+
+Required focused tests:
+
+1. first verified pack-enabled Free with no cycle completes onboarding and schedules
+   cycle discovery;
+2. processing that **next** cycle-discovery job actually calls Partner;
+3. still-missing cycle advances the schedule by exactly 5 minutes and does not mutate
+   entitlements;
+4. a later exact cycle creates/reuses the Free BillingPeriod and schedules pre-close;
+5. cycle-discovery transport failure preserves ACTIVE/TRIALING state and schedules
+   exactly 5 minutes;
+6. reconstruction includes the Free/no-period cycle-discovery row after Redis loss.
+
+##### Correction 3 — make first lifetime-counter creation race-safe
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+The current sequence is:
+
+```text
+findUnique(FREE_RECOVERY_LIFETIME)
+if missing:
+  create(...)
+```
+
+Two first-activation executions can both observe no counter and race on the unique:
+
+```text
+@@unique([shopId, counter])
+```
+
+This can occur when the synchronous Shopify callback and the Background retry overlap.
+
+Use this deterministic create/reuse pattern:
+
+```text
+1. findUnique(shopId, FREE_RECOVERY_LIFETIME)
+2. if it exists:
+     preserve it exactly;
+     do not require current PlatformBillingPolicy
+3. if it does not exist:
+     read PlatformBillingPolicy.default
+     if policy missing -> fail closed
+     upsert on shopId_counter:
+       update: {}
+       create:
+         shopId
+         counter = FREE_RECOVERY_LIFETIME
+         grantedQuantity = policy.lifetimeFreeRecoveryAllowance
+```
+
+Do not use `create(...)` after the initial absence check.
+
+The `upsert(... update: {})` is required so a concurrent creator wins safely without
+rewriting any existing:
+
+```text
+grantedQuantity
+committedQuantity
+reservedQuantity
+refundingQuantity
+version
+```
+
+Required focused tests:
+
+1. existing lifetime counter + missing current policy -> activation succeeds and the
+   existing counter is untouched;
+2. initial lookup reports no counter, policy exists, race-safe `upsert` is used with
+   `update: {}`;
+3. replay never changes any existing lifetime-counter quantity.
+
+##### Correction 4 — project provider pending truth when another current plan is returned
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+`applyOtherCurrentPlan(...)` currently clears:
+
+```text
+pendingShopifyPlanHandle
+pendingPlanId
+pendingEffectiveAt
+```
+
+unconditionally.
+
+The task contract is narrower:
+
+```text
+"If Shopify no longer reports that pending target, clear the stale local pending
+initial-activation target."
+```
+
+When provider current truth is another plan, project provider pending truth using the
+same rules as the existing rotating reconciliation path.
+
+Required behaviour after the exact transaction stale guard succeeds:
+
+1. map `provider.pendingPlanHandle` through active `BillingPlan` when non-null;
+2. set current `planId/status/provider/cycle` from provider truth;
+3. set pending fields to provider truth:
+
+```text
+pendingShopifyPlanHandle = provider.pendingPlanHandle
+pendingPlanId =
+  mapped provider pending plan when active
+  otherwise null
+pendingEffectiveAt = provider.pendingEffectiveAt
+```
+
+4. clear this task's initial-activation retry schedule:
+
+```text
+nextReconcileAt = null
+```
+
+5. do not set onboarding complete;
+6. do not grant Paid included credits or execute the future plan change.
+
+Therefore:
+
+```text
+provider current = Paid-A
+provider pending = requested Free-B
+```
+
+must result in:
+
+```text
+current plan = Paid-A
+pending target = Free-B
+onboarding remains incomplete
+nextReconcileAt = null
+```
+
+while:
+
+```text
+provider current = Paid-A
+provider pending = null
+```
+
+must clear the stale initial Free target.
+
+Add focused tests for both cases.
+
+##### Correction 5 — failed deterministic jobs must remain reconstructable
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+The queue producer currently uses:
+
+```ts
+removeOnFail: 100
+```
+
+with a deterministic `jobId`.
+
+That is incompatible with PostgreSQL-driven repair after a processor failure. BullMQ
+does not add a new job when the same custom job ID still exists in the queue, including
+a retained failed job. Keeping the failed job therefore prevents the periodic
+reconstruction pass from recreating the same durable `expectedNextReconcileAt` work.
+
+For this PostgreSQL-authoritative repair queue use:
+
+```ts
+removeOnFail: true
+```
+
+Keep:
+
+```text
+deterministic jobId
+delay
+removeOnComplete: 100
+```
+
+Do not introduce a second retry queue.
+
+Unexpected processor failure then removes the failed BullMQ record; PostgreSQL still
+contains the durable schedule, and the next periodic repair can recreate the same
+deterministic job.
+
+Add a focused test that asserts the exact enqueue options include:
+
+```text
+removeOnFail: true
+```
+
+and preserve the deterministic job ID.
+
+##### Correction 6 — prove the production wiring and periodic repair, not only a generic scheduler callback
+
+Files:
+
+```text
+tests/unit/runtime/entrypoint-isolation.test.ts
+tests/unit/runtime/billing-scheduler.test.ts
+```
+
+The current scheduler test proves only that an arbitrary callback *can* call a mocked
+`reconstruct()`. It does not prove the production billing entrypoint actually wires the
+same queue-aware service to both the Worker and repair cadence.
+
+Add a deterministic source/wiring regression for `src/entrypoints/billing.ts` proving
+all of the following are present together:
+
+```text
+const subscriptionReconciliation =
+  new BillingSubscriptionReconciliationService(... billingSubscriptionQueue)
+
+createBillingSubscriptionReconciliationWorker(subscriptionReconciliation)
+
+runBillingCycle contains:
+  await subscriptionReconciliation.reconstruct()
+
+startQueuePerformanceTelemetry is started for the billing subscription queue
+
+stopQueuePerformanceTelemetry is included in closeResources
+```
+
+The test may follow the repository's existing source-inspection pattern in
+`entrypoint-isolation.test.ts`; no new runtime framework is required.
+
+Keep the existing Redis+PostgreSQL readiness regression.
+
+##### Correction 7 — normalize the Attempt-4 Completion Report
+
+The current task document does not contain one clean `## Completion Report` for
+Attempt 3. Attempt-3 text is interleaved with the previous Attempt-2 report, and the
+Git/VCS section still records older parent report evidence (`bc7c9bd`) rather than the
+published Attempt-3 parent report supplied for review (`5ffc65f`).
+
+On Attempt 4, rewrite only the mutable Completion Report area so it contains one
+coherent current report with:
+
+```text
+## Completion Report
+
+### Status
+Attempt 4 complete; returned to review.
+
+### Implementation
+- exact changed files
+- exact behaviour implemented for Corrections 1-6
+
+### Validation Results
+- focused command(s) and exact pass counts
+- full npm test result with each unchanged baseline ID/reason
+- npm run prisma:validate
+- npm run build result, explicitly identifying only unchanged baseline errors
+- git diff --check
+
+### Git / VCS
+- canonical parent worktree/branch
+- canonical implementation worktree/branch
+- all 3 isolation declarations
+- all 4 synchronization outcomes
+- implementation commit
+- parent claim commit
+- parent review/report commit
+- database submodule revision
+- submodule gitlink staged: no
+```
+
+Preserve all historical `### Architect Review` sections unchanged.
+
+##### Attempt-4 focused acceptance matrix
+
+Before returning Attempt 4 to `review`, the focused tests must explicitly prove all of
+these cases:
+
+```text
+INITIAL ACTIVATION
+1. due valid Free activation completes onboarding
+2. provider null preserves exact pending target and schedules correct tier
+3. 24h expiry clears exact target and leaves onboarding false
+4. transport failure preserves NO_CONTRACT target and records error/retry
+5. changed target after Partner call -> old job cannot mutate
+6. changed schedule after Partner call -> old job cannot mutate
+7. uninstalled/inactive -> no-op
+8. established ACTIVE/TRIALING current plan -> initial branch does not call Partner
+
+FREE ENTITLEMENT / PERIOD
+9. first lifetime counter snapshots platform policy once
+10. existing lifetime counter is preserved without requiring policy
+11. concurrent/racing creation uses upsert update:{}
+12. exact Free cycle creates/reuses full canonical period
+13. no INCLUDED_RECOVERY_CREDITS period counter is created
+14. lifetime quantities are unchanged on period replay
+
+MISSING-CYCLE DISCOVERY
+15. first verification with no cycle completes onboarding but remains period-less
+16. its subsequent queued job is executable after onboarding
+17. still-missing cycle schedules exactly +5 minutes
+18. later exact cycle creates/reuses period and schedules pre-close
+19. cycle-discovery transport failure preserves current entitlement
+20. Redis reconstruction includes cycle-discovery rows
+
+OTHER CURRENT PROVIDER PLAN
+21. current other plan + provider pending requested target preserves mapped pending truth
+22. current other plan + provider pending null clears stale initial target
+23. neither branch completes onboarding or grants Paid included allowance
+
+QUEUE / RUNTIME
+24. startup reconstruction uses correct future/overdue delays
+25. deterministic duplicates use the same job ID
+26. queue-add failure does not roll back PostgreSQL state
+27. enqueue options use removeOnFail:true
+28. periodic repair is wired in the actual billing entrypoint
+29. Worker and repair use the same queue-aware service instance
+30. billing-worker readiness requires Redis + PostgreSQL
+31. queue-performance telemetry is started and closed
+32. frozen repair selector remains present
+```
+
+The existing ARCH-007 usage publication/reconciliation tests must continue to pass.
+
+##### Scope guard
+
+Attempt 4 remains `ARCH-010-BACKGROUND-001` only.
+
+Do not implement:
+
+- Paid first activation;
+- same-plan period rollover/pre-close execution owned by BACKGROUND-007;
+- upgrade/downgrade execution;
+- cancellation;
+- freeze/unfreeze transition logic owned by BACKGROUND-016;
+- promotional-credit consumption;
+- Admin UI;
+- Render environment wiring.
+
+Do not modify historical database migrations and do not change/stage the database
+gitlink.
+
+Reclaim this same task through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 4
+```
+
+**Architect decision: Changes Requested — Attempt 3.**
 
 ## Final frozen-state repair rows
 
