@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-12T00:30:00Z
@@ -231,37 +231,42 @@ STOP if published Shared contract or `nextReconcileAt` Prisma field is unavailab
 ## Completion Report
 
 ### Status
-Blocked — the current database dependency does not expose the required `nextReconcileAt` Prisma field.
+Ready for Review
 
 ### Files Changed
-- `moda-interact/package.json`
-- `moda-interact/package-lock.json`
-- This task file records the blocker and execution evidence.
+- `moda-interact/app/routes/app/billing/callback/route.tsx`
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/billing-reconciliation.service.ts`
+- `moda-interact/tests/unit/routes/billing-callback.test.ts`
+- `moda-interact/tests/unit/services/billing.service.test.ts`
+- `moda-interact/tests/unit/services/billing-reconciliation.service.test.ts`
+- `moda-interact/app/i18n/locales/zh-Hant.json`
+- This task file records the execution evidence.
 
 ### Work Completed
-- Established and synchronized the resolver-authoritative parent and implementation worktrees.
-- Verified `status: ready`, `assigned_agent: moda_app`, `execution_mode: agent`, and all seven explicit dependencies as `complete` before claiming attempt 2.
-- Claimed attempt 2 with normalized executor `copilot` and published the parent claim commit.
-- Applied the Architect Review correction by changing the app dependency from Shared `^0.7.4` to `^0.10.0`.
-- Confirmed the published Shared `0.10.0` billing entrypoint exposes the queue name, job name, schema version, payload parser, and deterministic job-ID helper required by this task.
-- Initialized the implementation worktree's existing database submodule and confirmed its current `Subscription` schema and generated Prisma client do not expose `nextReconcileAt`.
-- Did not implement a local queue contract or schema workaround because the task explicitly requires stopping when `nextReconcileAt` is unavailable.
+- Recorded valid Free selection intent before Partner verification without changing current entitlement.
+- Added immediate Partner sync, current Free verification, onboarding completion, lifetime Free counter idempotency, and pending schedule handling.
+- Preserved fresh NO_CONTRACT intent when Shopify returns null or the Partner call fails.
+- Added best-effort lazy BullMQ reconciliation enqueueing using the published Shared `0.10.0` contract and deterministic job IDs.
+- Preserved exact Free billing-cycle projection and pre-close reconciliation scheduling from the existing sync path.
+- Added the missing Traditional Chinese billing catalogue key required by Shared `0.10.0`.
 
 ### Acceptance Criteria
-Blocked before implementation. The required durable pending schedule cannot be persisted through the current Prisma contract.
+Implemented for the bounded merchant callback/producer scope. Background reconciliation remains out of scope.
 
 ### Work Items
-Blocked pending publication/availability of the DATABASE-001 `nextReconcileAt` field and generated client in the implementation dependency.
+Completed callback, billing service, queue producer, focused tests, i18n completeness, and validation.
 
 ### Validation Results
-- Resolver: passed; task was materialized, ready, agent-executed, and routed to `moda_app`.
-- Dependency gate: passed for `ARCH-010-DATABASE-006`, `ARCH-010-SHOPIFY-001`, `ARCH-010-DATABASE-001`, `ARCH-010-DATABASE-004`, `ARCH-010-SHARED-002`, `ARCH-007-SHOPIFY-001`, and `ARCH-007-SHOPIFY-002`; all were `complete`.
-- Worktree synchronization: passed for both canonical task worktrees; both were clean and current with `origin/main` before claim.
-- `npm install --package-lock-only --ignore-scripts`: passed; lockfile resolves `@modainteract/moda-interact-shared` `0.10.0`.
-- Runtime Shared contract probe: passed; version `0.10.0`, queue `billing-subscription-reconcile`, job `reconcile-subscription`, schema version `1`, parser and deterministic ID helper present.
-- Database contract probe: blocked; `database/prisma/schema.prisma` has no `Subscription.nextReconcileAt`, and the generated Prisma client has no matching field.
-- Focused application tests were not run because the task stop condition forbids implementing durable scheduling without the required Prisma field.
-- `git diff --check`: passed for the dependency correction and parent report changes.
+- Focused Vitest: 65 passed across callback, billing service, reconciliation producer, billing UI, and merchant i18n tests.
+- Full Vitest: 227 passed, 1 skipped across 33 test files.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed with Prisma Client `6.19.3`; generated client exposes `Subscription.nextReconcileAt`.
+- `npm run build`: passed.
+- Changed-file ESLint: passed; only the repository's TypeScript parser compatibility warning was emitted.
+- `npm run typecheck`: repository baseline remains failing in unrelated JSX and existing service/test files; no diagnostics remain in the changed billing callback/service or reconciliation producer files.
+- `git diff --check`: passed.
+- i18n regional-formatting test: passed after adding `billingCommerce.actions.manageCapacity` to `zh-Hant`.
 
 ### Git / VCS
 Task branch: `task/ARCH-010-SHOPIFY-002`
@@ -284,31 +289,31 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact`
-  commit: `4478152` (`chore: use shared billing contract 0.10.0`)
+  commit: `dd6006c` (`feat: activate verified free billing plans`)
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
-  claim commit: `ffdd16b`
+  report commit: pending
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
-  claim pushed: yes
+  report pushed: pending
   submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
 
 ### Deviations
-The task could not proceed to callback implementation because the current database dependency lacks `nextReconcileAt`. The required Shared dependency correction was applied and published.
+The implementation worktree retains the database gitlink change from `ebe43c0` to published database commit `6d5fb9a`, which contains the required schema and generated-client contract. Per policy it was not staged in the implementation repository.
 
 ### Assumptions
-None.
+The developer will update the parent database submodule pointer when the published database dependency is promoted into the implementation repository's mainline.
 
 ### Unresolved Issues
-`ARCH-010-DATABASE-001` is marked complete, but the implementation worktree's database dependency at the recorded mainline gitlink does not include `Subscription.nextReconcileAt`. The database dependency must be published/merged or otherwise made available to this repository before this task can persist the required retry schedule.
+The repository-wide typecheck still reports pre-existing diagnostics outside the changed billing files.
 
 ### Architectural Concerns
-The dependency graph reports DATABASE-001 complete while its required Prisma field is unavailable to `moda-interact`. This is a cross-repository publication/integration dependency for `moda_architect` to reconcile. No local schema, queue contract, or stale Shared `0.7.4` assumption was introduced.
+The database field is available at the current published dependency revision, but the parent submodule pointer remains a developer-owned integration step.
 
 ### Architect Review
 Pending.
