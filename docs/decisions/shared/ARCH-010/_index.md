@@ -18,7 +18,7 @@ Coordinator:
 
 > Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Complete/Review task files are immutable accepted/in-flight evidence; their historical `enables:` fields are not rewritten when later correction tasks are added.
 
-Current counts: `complete` 6, `pending` 1, `blocked` 1
+Current counts: `complete` 6, `pending` 1, `ready` 1
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -28,7 +28,7 @@ Current counts: `complete` 6, `pending` 1, `blocked` 1
 | `SHARED-004` | Publish recovery-capacity-exhausted Shared contract | Complete | ARCH-010-SHARED-003 |
 | `SHARED-005` | Add merchant top-up refund billing message contracts | Complete | — |
 | `SHARED-006` | Publish top-up refund Shared message contracts | Complete | ARCH-010-SHARED-005 |
-| `SHARED-007` | Remove superseded pre-production billing compatibility contracts | **Blocked** | ARCH-010-SHARED-006, ARCH-010-BACKGROUND-020, ARCH-010-SHOPIFY-024 |
+| `SHARED-007` | Remove superseded pre-production billing compatibility contracts | **Ready** | ARCH-010-SHARED-006, ARCH-010-BACKGROUND-020, ARCH-010-SHOPIFY-024 |
 | `SHARED-008` | Publish the clean first-production Shared billing contract | Pending | ARCH-010-SHARED-007 |
 
 ## Execution note
