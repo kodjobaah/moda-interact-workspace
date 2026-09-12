@@ -15,17 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-011
-  - ARCH-010-BACKGROUND-002
-  - ARCH-010-BACKGROUND-011
-  - ARCH-010-BACKGROUND-014
+- ARCH-010-DATABASE-013
+- ARCH-010-BACKGROUND-002
+- ARCH-010-BACKGROUND-011
+- ARCH-010-BACKGROUND-014
 enables:
-  - ARCH-010-BACKGROUND-008
-  - ARCH-010-BACKGROUND-009
-  - ARCH-010-SYSTEM-TEST-001
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-BACKGROUND-008
+- ARCH-010-BACKGROUND-009
+- ARCH-010-SYSTEM-TEST-001
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-019: Reserve selected promotional campaign credits before every other capacity source
@@ -63,7 +63,7 @@ tests/unit/services/**billing**
 tests/integration/*reservation*.test.ts
 ```
 
-Read the implemented forms of BACKGROUND-002, BACKGROUND-011, BACKGROUND-014 and DATABASE-011. Reuse the same Serializable/CAS/idempotency architecture.
+Read the implemented forms of BACKGROUND-002, BACKGROUND-011 and BACKGROUND-014, then use the exact campaign/grant schema from DATABASE-013. Reuse the same Serializable/CAS/idempotency architecture.
 
 ## 1. Resolve the selected campaign transactionally
 
@@ -93,7 +93,7 @@ If the selection is expired/closed/ineligible/exhausted, treat promotional capac
 
 ## 2. Exact promotional grant reservation
 
-Use `UsageReservation.promotionalCreditGrantId` from DATABASE-011. Do not reserve from the aggregate promotional counter alone.
+Use `UsageReservation.promotionalCreditGrantId` from DATABASE-013. Promotional capacity exists only on the exact selected campaign grant; there is no aggregate promotional `ShopEntitlementCounter` in the first-production schema.
 
 Availability:
 
@@ -103,7 +103,7 @@ remaining = quantity - committedQuantity - reservedQuantity
 
 Reserve with bounded Serializable/CAS retry, deterministic recovery source identity, replay-before-allocation and exact grant versioning.
 
-Maintain aggregate `ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)` only as compatible aggregate accounting if the accepted schema/runtime requires it; grant-lot counters and campaign eligibility are spendability authority.
+Every reserve/commit/release must update only the exact `PromotionalCreditGrant` identified by the reservation. Do not create, read or maintain `ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)` as compatibility accounting.
 
 ## 3. Commit/release around expiry
 
@@ -188,7 +188,7 @@ Do not implement Admin campaign management, merchant selection UI/action, promot
 
 ## Stop conditions
 
-Stop if DATABASE-011 exact grant ownership is unavailable, or if implementing promo-first routing would require duplicating the accepted reservation architecture rather than composing existing primitives.
+Stop if DATABASE-013 exact grant ownership is unavailable, or if implementing promo-first routing would require duplicating the accepted reservation architecture rather than composing existing primitives.
 
 ## Completion Report
 

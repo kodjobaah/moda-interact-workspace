@@ -1,24 +1,41 @@
-# ARCH-010 — Database
+# ARCH-010 Database Tasks
 
-| Task | Status | Purpose |
-|---|---|---|
-| ARCH-010-DATABASE-001 | Complete | Add nullable `Subscription.nextReconcileAt` plus index so pending subscription verification can be rebuilt after Redis loss. |
-| ARCH-010-DATABASE-002 | Complete | Add period-scoped included-credit counter and dual UsageReservation linkage for concurrency-safe paid allowance consumption. |
-| ARCH-010-DATABASE-003 | Complete | Add nullable `Shop.reinstallPendingAt` plus index so an authenticated reinstall can remain execution-disabled until subscription reconciliation completes. |
-| ARCH-010-DATABASE-004 | Complete | Add Subscription-owned Free/Paid Shopify BillingPeriod history, plan snapshots, Paid-only allowance snapshots, close metadata, reservation release reason, legacy OPEN-period normalization and one-OPEN-period integrity. |
-| ARCH-010-DATABASE-005 | Complete | Persist the durable reason/timestamp when a DETECTED recovery is blocked because all recovery-capacity sources are exhausted. |
-| ARCH-010-DATABASE-006 | Complete | Move the one-time lifetime Free grant default to platform policy and snapshot/backfill the shop-level `FREE_RECOVERY_LIFETIME` grant independently of current plan. |
-| ARCH-010-DATABASE-007 | Complete | Add deterministic purchased-credit lot accounting, reservation ownership and multi-partial-refund durability/backfill. |
-| ARCH-010-DATABASE-008 | Complete | Add FROZEN subscription projection plus latest Shopify subscription-lifecycle event state/id/time without changing existing entitlements. |
-| ARCH-010-DATABASE-009 | Complete | Foundation: dedicated promotional-credit counter and audited grant-provenance ledger; direct/lifetime semantics are superseded for new first-release promotions by DATABASE-010/011. |
-| ARCH-010-DATABASE-010 | Complete | Persist GLOBAL/PLAN/SHOP promotion campaigns, running windows, immutable targeting after activation and append-only close/reopen/expiry audit. |
-| ARCH-010-DATABASE-011 | Complete | Extend promotional grants into campaign+shop one-time allocations, exact grant-lot reservation ownership and one current merchant promotion selection. |
-| ARCH-010-DATABASE-012 | Ready | Persist the 20% upgrade-economics policy, explicit BillingPlan upgrade edges and append-only verified Shopify pricing snapshots without making BillingPlan monetary authority. |
+Architecture:
 
-`DATABASE-002` depends on DATABASE-001 and the accepted ARCH-007 repeatable-credit schema. `DATABASE-003` also follows DATABASE-001 because reinstall scheduling reuses `Subscription.nextReconcileAt`. `DATABASE-004` depends on DATABASE-002 and normalizes legacy multiple-OPEN periods before adding the one-OPEN-period invariant. `DATABASE-006` is independent of period accounting and must land before runtime tasks begin treating the five lifetime credits as plan-independent.
-`DATABASE-007` is the durability prerequisite for partial purchased-top-up refunds. It does not depend on frozen ARCH-009 refund tasks and must fail rather than guess if existing aggregate purchased balances cannot be reconstructed into deterministic lots.
+`docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md`
 
+First-production baseline:
 
-`DATABASE-008` is the durability prerequisite for Shopify freeze/unfreeze. It adds state vocabulary/evidence only; it never infers frozen status during migration.
+`docs/architecture/ARCH-010-first-production-baseline.md`
 
-`DATABASE-009` introduces the distinct non-refundable promotional bucket. DATABASE-010/011 extend that completed foundation into optional merchant-selected campaigns; new campaigns do not use the old direct lifetime-grant path.
+Assigned Agent:
+
+`moda_database`
+
+Coordinator:
+
+`moda_architect`
+
+> Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Complete/Review task files are immutable accepted/in-flight evidence; their historical `enables:` fields are not rewritten when later correction tasks are added.
+
+Current counts: `complete` 12, `ready` 0, `superseded` 1
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| `DATABASE-001` | Add durable subscription reconciliation scheduling state | Complete | ARCH-007-DATABASE-006, ARCH-009-DATABASE-001 |
+| `DATABASE-002` | Add period-scoped paid included-credit reservation state | Complete | ARCH-010-DATABASE-001, ARCH-007-DATABASE-005 |
+| `DATABASE-003` | Persist authenticated reinstall reconciliation state | Complete | ARCH-010-DATABASE-001 |
+| `DATABASE-004` | Strengthen recurring App Pricing BillingPeriod ownership and close/open lifecycle integrity | Complete | ARCH-010-DATABASE-002 |
+| `DATABASE-005` | Persist recovery-capacity blocks on detected recoveries | Complete | — |
+| `DATABASE-006` | Move the one-time lifetime Free recovery grant to platform policy and snapshot it per shop | Complete | ARCH-007-DATABASE-002, ARCH-007-DATABASE-003 |
+| `DATABASE-007` | Add purchased-credit lot accounting and multi-partial-refund durability | Complete | — |
+| `DATABASE-008` | Persist Shopify subscription freeze projection and lifecycle evidence | Complete | — |
+| `DATABASE-009` | Add durable promotional recovery-credit grants and aggregate entitlement counter | Complete | ARCH-007-DATABASE-002 |
+| `DATABASE-010` | Persist opt-in promotional campaigns, targeting and lifecycle audit | Complete | ARCH-010-DATABASE-009 |
+| `DATABASE-011` | Persist merchant promotion selection and exact promotional grant-lot accounting | Complete | ARCH-010-DATABASE-009, ARCH-010-DATABASE-010 |
+| `DATABASE-012` | Persist upgrade economics policy, plan edges and audited Shopify pricing snapshots | Superseded | ARCH-010-DATABASE-006 |
+| `DATABASE-013` | Materialise the clean ARCH-010 first-production database baseline | Complete | ARCH-010-DATABASE-001, ARCH-010-DATABASE-002, ARCH-010-DATABASE-003, ARCH-010-DATABASE-004, ARCH-010-DATABASE-005, ARCH-010-DATABASE-006, ARCH-010-DATABASE-007, ARCH-010-DATABASE-008, ARCH-010-DATABASE-009, ARCH-010-DATABASE-010, ARCH-010-DATABASE-011 |
+
+## Execution note
+
+`depends_on` in the individual task file is the execution eligibility authority. System-test tasks are terminal/manual-gated and are not auto-started.

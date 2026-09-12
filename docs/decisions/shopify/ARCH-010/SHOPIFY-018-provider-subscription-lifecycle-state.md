@@ -9,22 +9,23 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 59
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-008
-  - ARCH-010-SHOPIFY-013
+- ARCH-010-DATABASE-013
+- ARCH-010-SHOPIFY-013
+- ARCH-010-SHOPIFY-023
 enables:
-  - ARCH-010-SHOPIFY-012
-  - ARCH-010-SHOPIFY-014
-  - ARCH-010-SHOPIFY-015
-  - ARCH-010-SHOPIFY-019
-  - ARCH-010-SHOPIFY-021
+- ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-014
+- ARCH-010-SHOPIFY-015
+- ARCH-010-SHOPIFY-019
+- ARCH-010-SHOPIFY-021
 created: 2026-09-11
-updated: 2026-09-11T22:27:45Z
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-018: Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze

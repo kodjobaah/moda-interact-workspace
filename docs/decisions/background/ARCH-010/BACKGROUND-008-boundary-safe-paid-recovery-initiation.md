@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-BACKGROUND-002
-  - ARCH-010-SHARED-002
-  - ARCH-010-BACKGROUND-019
+- ARCH-010-BACKGROUND-002
+- ARCH-010-SHARED-008
+- ARCH-010-BACKGROUND-019
 enables:
-  - ARCH-010-BACKGROUND-007
+- ARCH-010-BACKGROUND-007
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-008: Make paid recovery initiation safe across the billing-cycle boundary

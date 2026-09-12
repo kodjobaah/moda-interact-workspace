@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-BACKGROUND-004
-  - ARCH-010-BACKGROUND-016
+- ARCH-010-BACKGROUND-004
+- ARCH-010-BACKGROUND-016
 enables:
-  - ARCH-010-SYSTEM-TEST-002
+- ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-018: Stop Shopify checkout/cart event processing early for frozen subscriptions

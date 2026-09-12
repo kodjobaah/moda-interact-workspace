@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-ADMIN-004
+- ARCH-010-ADMIN-004
 enables:
-  - ARCH-010-ADMIN-006
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-ADMIN-006
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-ADMIN-005: Manage promotion catalogue, close campaigns and reopen by expiry only

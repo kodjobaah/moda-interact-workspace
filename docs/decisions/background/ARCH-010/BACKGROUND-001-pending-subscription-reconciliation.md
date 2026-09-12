@@ -9,23 +9,21 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-006
-  - ARCH-010-DATABASE-001
-  - ARCH-010-DATABASE-004
-  - ARCH-010-SHARED-002
-  - ARCH-007-BACKGROUND-008
+- ARCH-010-DATABASE-013
+- ARCH-010-SHARED-008
+- ARCH-007-BACKGROUND-008
 enables:
-  - ARCH-010-BACKGROUND-003
-  - ARCH-010-BACKGROUND-006
-  - ARCH-010-BACKGROUND-007
+- ARCH-010-BACKGROUND-003
+- ARCH-010-BACKGROUND-006
+- ARCH-010-BACKGROUND-007
 created: 2026-09-11
-updated: 2026-09-11T23:49:38Z
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-001: Reconcile pending subscription activation with durable BullMQ recovery
@@ -109,7 +107,7 @@ Subscription.lastSyncErrorCode/At    = null
 ShopSettings.onboardingCompleted     = true
 ```
 
-Ensure the one-time shop-lifetime `FREE_RECOVERY_LIFETIME` counter exists as part of first verified activation. If absent, create it with `grantedQuantity = PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`; if present, preserve every quantity exactly. Preserve purchased credits and promotional balances. Do not tie the grant to Free plan entry or regrant it on replay.
+Ensure the one-time shop-lifetime `LIFETIME_FREE_RECOVERY_CREDITS` counter exists as part of first verified activation. If absent, create it with `grantedQuantity = PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`; if present, preserve every quantity exactly. Preserve purchased credits and promotional balances. Do not tie the grant to Free plan entry or regrant it on replay.
 
 If provider truth contains an exact `currentBillingCycle`, create/reuse the exact Free BillingPeriod in the same transaction using DATABASE-004 rules:
 

@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-013
-  - ARCH-010-SHARED-002
-  - ARCH-010-BACKGROUND-010
-  - ARCH-010-SHOPIFY-018
+- ARCH-010-SHOPIFY-013
+- ARCH-010-SHARED-008
+- ARCH-010-BACKGROUND-010
+- ARCH-010-SHOPIFY-018
 enables:
-  - ARCH-010-SHOPIFY-011
-  - ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-011
+- ARCH-010-SHOPIFY-012
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-015: Handle Shopify-hosted upgrade and downgrade return without premature entitlement change

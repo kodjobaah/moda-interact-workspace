@@ -1,8 +1,7 @@
 ---
 id: ARCH-010-ADMIN-007
 architecture_id: ARCH-010
-title: Implement the supplied upgrade economics guardrail as a deterministic pure
-  evaluator
+title: Implement the supplied upgrade economics guardrail as a deterministic pure evaluator
 task_kind: implementation
 domain: admin
 repository: moda-interact-admin
@@ -19,7 +18,7 @@ depends_on: []
 enables:
 - ARCH-010-ADMIN-009
 created: 2026-09-12
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-ADMIN-007: Implement the supplied upgrade economics guardrail as a deterministic pure evaluator

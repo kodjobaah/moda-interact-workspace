@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-DATABASE-012
+- ARCH-010-DATABASE-013
 - ARCH-010-ADMIN-009
 enables:
 - ARCH-010-SYSTEM-TEST-004
 created: 2026-09-12
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SYSTEM-TEST-005: Validate Admin upgrade economics guardrail end to end

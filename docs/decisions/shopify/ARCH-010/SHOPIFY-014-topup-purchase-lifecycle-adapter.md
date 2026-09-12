@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-013
-  - ARCH-010-SHOPIFY-007
-  - ARCH-007-SHOPIFY-004
-  - ARCH-010-SHOPIFY-018
+- ARCH-010-SHOPIFY-013
+- ARCH-010-SHOPIFY-007
+- ARCH-007-SHOPIFY-004
+- ARCH-010-SHOPIFY-018
 enables:
-  - ARCH-010-SHOPIFY-010
-  - ARCH-010-SHOPIFY-012
+- ARCH-010-SHOPIFY-010
+- ARCH-010-SHOPIFY-012
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-014: Expose real recovery top-up purchase lifecycle for billing options
@@ -121,8 +121,7 @@ Add a service method or small adapter owned by the billing service that returns 
       | "PENDING_BILLING"
       | "ACTIVE"
       | "NEEDS_ATTENTION"
-      | "CANCELLED"
-      | "REFUNDED";
+      | "CANCELLED";
     creditsGranted: number;
     createdAt: string;
     activatedAt: string | null;
@@ -177,7 +176,7 @@ For Free, do **not** require `shopifyUsageEventHandle`; that is the normal Paid 
 
 The Free BillingPeriod is commercial/App-Event cycle state only. Buying/rolling a Free top-up MUST NOT:
 
-- reset or grant the five `FREE_RECOVERY_LIFETIME` conversations;
+- reset or grant the five `LIFETIME_FREE_RECOVERY_CREDITS` conversations;
 - create `BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS)`;
 - convert Free entitlement into a monthly allowance.
 
@@ -229,9 +228,14 @@ NEEDS_ATTENTION
   -> no credits granted
   -> merchant sees support/retry guidance
 
-CANCELLED / REFUNDED
-  -> historical state only
+CANCELLED
+  -> cancelled purchase request/provider unit history only
   -> do not count as available capacity
+
+PARTIALLY REFUNDED PURCHASE
+  -> purchase remains ACTIVE
+  -> refunded quantity is represented by RecoveryCreditRefund/purchase refunded accounting
+  -> available purchased balance already excludes refunded quantity
 ```
 
 A Shopify App Events HTTP `202` is NOT `ACTIVE`. It means only that Shopify received the event; billing validation is asynchronous.

@@ -15,18 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-006
-  - ARCH-010-SHOPIFY-002
-  - ARCH-010-DATABASE-002
-  - ARCH-010-DATABASE-004
-  - ARCH-010-BACKGROUND-002
-  - ARCH-010-BACKGROUND-003
-  - ARCH-008-SHOPIFY-001
+- ARCH-010-DATABASE-013
+- ARCH-010-SHOPIFY-002
+- ARCH-010-BACKGROUND-002
+- ARCH-010-BACKGROUND-003
+- ARCH-008-SHOPIFY-001
+- ARCH-010-SHOPIFY-023
 enables:
-  - ARCH-010-SHOPIFY-004
-  - ARCH-010-SHOPIFY-007
+- ARCH-010-SHOPIFY-004
+- ARCH-010-SHOPIFY-007
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-003: Activate first verified paid plan with exact billing period
@@ -149,7 +148,7 @@ Do not implement trial entitlement in this task.
 
 First paid activation MUST NOT:
 
-- reset or delete an existing `FREE_RECOVERY_LIFETIME` grant/usage;
+- reset or delete an existing `LIFETIME_FREE_RECOVERY_CREDITS` grant/usage;
 - reset purchased top-up credits;
 - consume purchased credits;
 - grant promotional credits;
@@ -158,7 +157,7 @@ First paid activation MUST NOT:
 
 The new paid period receives only its configured paid `includedRecoveryConversationAllowance` in the period counter.
 
-In the same first-activation transaction, ensure `ShopEntitlementCounter(FREE_RECOVERY_LIFETIME)` exists. If absent, create it with `grantedQuantity = PlatformBillingPolicy.lifetimeFreeRecoveryAllowance` and zero committed/reserved/refunding quantities. If it exists, never rewrite its grant or usage. This lifetime grant is independent of the paid period counter.
+In the same first-activation transaction, ensure `ShopEntitlementCounter(LIFETIME_FREE_RECOVERY_CREDITS)` exists. If absent, create it with `grantedQuantity = PlatformBillingPolicy.lifetimeFreeRecoveryAllowance` and zero committed/reserved/refunding quantities. If it exists, never rewrite its grant or usage. This lifetime grant is independent of the paid period counter.
 
 ## No incomplete paid subscription state
 

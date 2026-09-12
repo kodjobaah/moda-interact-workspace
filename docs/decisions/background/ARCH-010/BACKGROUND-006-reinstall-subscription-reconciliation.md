@@ -15,18 +15,18 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-003
-  - ARCH-010-SHARED-002
-  - ARCH-010-BACKGROUND-001
-  - ARCH-010-BACKGROUND-003
-  - ARCH-010-BACKGROUND-007
-  - ARCH-010-BACKGROUND-004
-  - ARCH-010-BACKGROUND-005
+- ARCH-010-DATABASE-013
+- ARCH-010-SHARED-008
+- ARCH-010-BACKGROUND-001
+- ARCH-010-BACKGROUND-003
+- ARCH-010-BACKGROUND-007
+- ARCH-010-BACKGROUND-004
+- ARCH-010-BACKGROUND-005
 enables:
-  - ARCH-010-SHOPIFY-006
-  - ARCH-010-SYSTEM-TEST-002
+- ARCH-010-SHOPIFY-006
+- ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-006: Reconcile reinstalled shops before business execution resumes
@@ -143,7 +143,7 @@ Do **not** delete or reset:
 
 ```text
 historical BillingPeriod rows/counters
-FREE_RECOVERY_LIFETIME usage
+LIFETIME_FREE_RECOVERY_CREDITS usage
 purchased lifetime top-up balance/lots
 promotional lifetime balances
 RecoveryCreditPurchase / RecoveryCreditRefund history

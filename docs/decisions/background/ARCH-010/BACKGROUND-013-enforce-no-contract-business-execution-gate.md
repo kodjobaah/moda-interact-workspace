@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-BACKGROUND-004
-  - ARCH-010-BACKGROUND-005
-  - ARCH-010-BACKGROUND-012
+- ARCH-010-BACKGROUND-004
+- ARCH-010-BACKGROUND-005
+- ARCH-010-BACKGROUND-012
 enables:
-  - ARCH-010-BACKGROUND-017
-  - ARCH-010-SHOPIFY-016
-  - ARCH-010-SYSTEM-TEST-002
+- ARCH-010-BACKGROUND-017
+- ARCH-010-SHOPIFY-016
+- ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-013: Stop shop business execution after the Shopify contract ends
@@ -177,7 +177,7 @@ This task remains owner of NO_CONTRACT execution blocking. FROZEN is a separate 
 
 ## Final promotional balance rule under NO_CONTRACT
 
-A positive `PROMOTIONAL_RECOVERY_CREDITS` balance does not authorise business work while Subscription is `NO_CONTRACT`. Preserve it without consuming it until a verified executable contract exists again.
+Preserved campaign-linked `PromotionalCreditGrant` capacity does not authorise business work while Subscription is `NO_CONTRACT`. Preserve campaign/grant/selection history without consuming it until a verified executable contract exists again.
 
 ## Completion Report
 

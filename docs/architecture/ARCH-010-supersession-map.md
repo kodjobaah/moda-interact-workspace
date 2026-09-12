@@ -1,6 +1,6 @@
 # ARCH-010 Billing and Merchant-Lifecycle Supersession Map
 
-Date: 2026-09-11  
+Date: 2026-09-12
 Owner: `moda_architect`
 
 ## Purpose
@@ -11,10 +11,11 @@ The repository intentionally retains older architecture/task files as implementa
 
 For current merchant billing/lifecycle behaviour use, in order:
 
-1. the exact active `ARCH-010-*` task being implemented;
-2. [`ARCH-010 — Merchant lifecycle state transitions and behavioural access`](ARCH-010-merchant-lifecycle-state-transitions.md);
-3. [`Pricing, billing and recovery-capacity model`](../product/pricing-and-billing-model.md);
-4. [`ARCH-010 implementation handoff`](ARCH-010-implementation-handoff.md).
+1. [`ARCH-010 first-production baseline`](ARCH-010-first-production-baseline.md);
+2. the exact active `ARCH-010-*` task being implemented;
+3. [`ARCH-010 — Merchant lifecycle state transitions and behavioural access`](ARCH-010-merchant-lifecycle-state-transitions.md);
+4. [`Pricing, billing and recovery-capacity model`](../product/pricing-and-billing-model.md);
+5. [`ARCH-010 implementation handoff`](ARCH-010-implementation-handoff.md).
 
 ## Superseded concepts
 
@@ -26,7 +27,7 @@ For current merchant billing/lifecycle behaviour use, in order:
 | “Block” means stop the whole app | Capacity exhaustion blocks **new recovery admission only**. Existing admitted conversations continue; dashboard/history/billing/support remain accessible. |
 | Five Free credits are a Free-plan allowance | They are a **shop-lifetime grant**, issued once at first verified activation whether first plan is Free or Paid. |
 | Returning/downgrading to Free grants another five | Never. Plan changes do not reset/regrant the shop-lifetime Free counter. |
-| Testing/support should adjust `FREE_RECOVERY_LIFETIME` | Use the separate **promotional-credit ledger/bucket**. The lifetime Free grant remains immutable apart from normal consumption. |
+| Testing/support should adjust the shop-lifetime Free entitlement | Never mutate the lifetime grant for discretionary credit. Use a merchant-selected campaign-linked `PromotionalCreditGrant`; `LIFETIME_FREE_RECOVERY_CREDITS` remains immutable apart from normal reservation/commit/release consumption. |
 | Promotional/test credits are effectively extra Free allowance | Promotional credits are independent and non-refundable; **new first-release promos are expiring merchant-selected GLOBAL/PLAN/SHOP campaigns** governed by `ARCH-010-promotional-campaigns.md`. |
 | Purchased credits are consumed before promotional credits | Promotional credits are consumed first, preserving merchant-funded refundable purchased capacity. |
 | Free plan has no BillingPeriod | A `$0` App Pricing plan may still have a provider BillingPeriod because it carries the top-up usage meter. That period never resets lifetime Free credits. |
@@ -71,3 +72,22 @@ Do not rewrite their accepted Completion Reports as though ARCH-010 had existed 
 | Paid included → promotional → purchased → lifetime Free | **Selected promotional campaign → Paid included → purchased → lifetime Free**. |
 | Promotional credits do not expire | Campaign offer/allocation is spendable only while campaign is running and merchant remains target-eligible; existing admitted reservations may commit afterward. |
 | Repeating campaign means another grant | Reopen keeps the **same campaign ID** and only changes expiry/status; an existing merchant claim is never replenished. |
+
+## First-production baseline amendment (2026-09-12)
+
+The following intermediate development concepts are now removed rather than preserved for compatibility:
+
+| Intermediate development concept | First-production ARCH-010 rule |
+|---|---|
+| `BILLING_FREE_ALLOWANCE_EXHAUSTED` historical renderer/parser | Removed before first production. Use `BILLING_RECOVERY_CAPACITY_EXHAUSTED` for both Free and Paid full-capacity exhaustion. |
+| `BillingPlan.freeLifetimeConversationAllowance` | Removed. `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance` is snapshotted once into `ShopEntitlementCounter(LIFETIME_FREE_RECOVERY_CREDITS)`. |
+| `BillingAllowanceAdjustment` / signed Free adjustments | Removed. No compatibility arithmetic or discretionary grant path exists. |
+| `FREE_RECOVERY_LIFETIME` enum/name | Removed; canonical enum is `LIFETIME_FREE_RECOVERY_CREDITS`. |
+| aggregate `ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)` | Removed. Exact selected campaign `PromotionalCreditGrant` lot is promotional accounting/spendability authority. |
+| campaign-less/direct `PromotionalCreditGrant` | Removed from first-production schema; `campaignId` is required. |
+| `MIGRATION_RECONCILED` | Removed. DATABASE-013 is generated from an empty database; development BillingPeriod normalization is not production migration history. |
+| local `SubscriptionCancellationRequest` state machine | Removed. Shopify lifecycle evidence + reconciliation is cancellation authority. |
+| `RecoveryCreditPurchaseStatus.REFUNDED` | Removed. Partial refund keeps purchase `ACTIVE` and records refunded quantity/history. |
+| negative/fractional App Event refund correction | Removed. Human Shopify Partner Dashboard `REFUND | CREDIT` settlement plus local exactly-once finalisation is canonical. |
+
+Completed DATABASE-001..011 and other completed task files remain accepted development history; these removals are implemented by DATABASE-013 and dependent runtime conformance work rather than reopening those completed task records.

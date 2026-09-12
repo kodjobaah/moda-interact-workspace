@@ -16,10 +16,10 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables:
-  - ARCH-010-BACKGROUND-012
-  - ARCH-010-BACKGROUND-016
+- ARCH-010-BACKGROUND-012
+- ARCH-010-BACKGROUND-016
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-015: Read Shopify live subscription plus latest lifecycle event for reconciliation

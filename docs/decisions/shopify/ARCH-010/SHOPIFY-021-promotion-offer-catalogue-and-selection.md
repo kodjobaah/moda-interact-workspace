@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-011
-  - ARCH-010-SHOPIFY-018
-  - ARCH-010-ADMIN-004
+- ARCH-010-DATABASE-013
+- ARCH-010-SHOPIFY-018
+- ARCH-010-ADMIN-004
 enables:
-  - ARCH-010-SHOPIFY-020
-  - ARCH-010-SHOPIFY-022
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-SHOPIFY-020
+- ARCH-010-SHOPIFY-022
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-021: Show eligible running promotion offers and let a merchant select one

@@ -9,29 +9,29 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 41
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-006
-  - ARCH-007-BACKGROUND-003
-  - ARCH-007-BACKGROUND-009
+- ARCH-010-DATABASE-013
+- ARCH-007-BACKGROUND-003
+- ARCH-007-BACKGROUND-009
 enables:
-  - ARCH-010-BACKGROUND-002
-  - ARCH-010-BACKGROUND-009
-  - ARCH-010-BACKGROUND-014
-  - ARCH-010-BACKGROUND-019
+- ARCH-010-BACKGROUND-002
+- ARCH-010-BACKGROUND-009
+- ARCH-010-BACKGROUND-014
+- ARCH-010-BACKGROUND-019
 created: 2026-09-11
-updated: 2026-09-11T17:44:41Z
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-011: Make the lifetime Free recovery entitlement plan-independent and consume it after purchased credits
 
 ## Objective
 
-Change recovery admission so `FREE_RECOVERY_LIFETIME` is a shop-lifetime fallback available under both Free and Paid subscriptions, while purchased lifetime top-ups are intentionally consumed before that lifetime Free grant.
+Change recovery admission so `LIFETIME_FREE_RECOVERY_CREDITS` is a shop-lifetime fallback available under both Free and Paid subscriptions, while purchased lifetime top-ups are intentionally consumed before that lifetime Free grant.
 
 This task implements the **purchased → shop-lifetime Free** fallback primitive. `ARCH-010-BACKGROUND-019` later inserts promotional credits ahead of purchased capacity, so the final ARCH-010 order is:
 
@@ -43,8 +43,8 @@ FREE
   -> BLOCK NEW RECOVERY ADMISSION
 
 PAID
-  paid period included credits
-  -> promotional credits
+  promotional credits
+  -> paid period included credits
   -> purchased lifetime credits
   -> shop-lifetime Free credits
   -> BLOCK NEW RECOVERY ADMISSION
@@ -72,29 +72,24 @@ Read the implemented ARCH-007 purchased-credit reservation path before editing. 
 
 ## 1. Lifetime Free policy must be plan-independent
 
-`EffectiveBillingPolicyResolver` currently computes `freeAllowance` only when `plan.kind === FREE` and reads `plan.freeLifetimeConversationAllowance`.
+The current development implementation may still derive Free allowance from plan-owned or adjustment compatibility state. DATABASE-013 removes that schema. Delete those reads rather than adapting them.
 
-Replace that ARCH-007 assumption for ARCH-010 runtime decisions.
-
-For every active mapped subscription plan (Free or Paid), load the durable shop lifetime counter. If legacy pre-ARCH-010 `BillingAllowanceAdjustment(FREE_RECOVERY_LIFETIME)` rows already exist, include their net historical effect as compatibility-only state; do not create new rows.
+For every active mapped subscription plan (Free or Paid), load exactly:
 
 ```text
-ShopEntitlementCounter(counter = FREE_RECOVERY_LIFETIME)
-legacy BillingAllowanceAdjustment(counter = FREE_RECOVERY_LIFETIME), read-only if present
+ShopEntitlementCounter(counter = LIFETIME_FREE_RECOVERY_CREDITS)
 ```
 
-The effective shop-lifetime state is derived from the shop counter snapshot, not the current BillingPlan:
+The effective shop-lifetime state is derived only from that durable shop counter:
 
 ```text
-baseGrant = counter.grantedQuantity
-legacyAdjustmentTotal = sum(existing pre-ARCH-010 signed adjustments)
-effectiveGrant = max(baseGrant + legacyAdjustmentTotal, 0)
-remaining = max(effectiveGrant - committedQuantity - reservedQuantity, 0)
+grant = counter.grantedQuantity
+remaining = max(grant - committedQuantity - reservedQuantity, 0)
 ```
 
-`BillingPlan.freeLifetimeConversationAllowance` MUST NOT be read as runtime authority.
+There is no `BillingPlan.freeLifetimeConversationAllowance`, no `BillingAllowanceAdjustment` query and no signed compatibility arithmetic in first production.
 
-For an active/onboarded shop, a missing lifetime counter after DATABASE-006 is a configuration/data-integrity error. Fail closed; do not silently create a fresh grant during ordinary recovery admission.
+For an active/onboarded shop, a missing lifetime counter after DATABASE-013 is a configuration/data-integrity error. Fail closed; do not silently create a fresh grant during ordinary recovery admission.
 
 ## 2. Keep the existing service/file names unless a rename is mechanically required
 
@@ -118,7 +113,7 @@ Change Free recovery admission from the legacy order to exactly:
 try purchased reservation
   -> reserved: fund from PURCHASED_RECOVERY_CREDITS
   -> exhausted: try lifetime Free reservation
-       -> reserved: fund from FREE_RECOVERY_LIFETIME
+       -> reserved: fund from LIFETIME_FREE_RECOVERY_CREDITS
        -> exhausted: capacity-exhausted
 ```
 
@@ -161,9 +156,9 @@ At minimum prove:
 7. purchased commit remains unchanged;
 8. replay does not reserve a second bucket;
 9. failure/release returns quantity to the same reserved bucket;
-10. current BillingPlan's legacy free allowance field is not read;
+10. no plan-owned lifetime allowance field is read;
 11. platform-policy changes after grant do not alter an existing shop's counter grant;
-12. existing legacy pre-ARCH-010 signed adjustments remain honoured read-only without rewriting the base grant or creating new adjustments;
+12. no signed lifetime-Free adjustment query or compatibility arithmetic exists;
 13. missing lifetime counter on active onboarded shop fails closed;
 14. inactive/uninstalled shop remains blocked by existing shop-availability rules.
 
@@ -185,7 +180,7 @@ Do not:
 
 Stop and return to `moda_architect` if:
 
-- DATABASE-006 schema/client is unavailable;
+- DATABASE-013 schema/client is unavailable;
 - purchased reservation semantics differ materially from the inspected ARCH-007 design;
 - the required routing would need cross-repository contract changes;
 - preserving the existing reservation idempotency/source-key rules is not possible.

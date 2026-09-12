@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-010-SYSTEM-TEST-005
 created: 2026-09-12
-updated: 2026-09-12
+updated: '2026-09-12'
 ---
 
 # ARCH-010-ADMIN-009: Hard-enforce upgrade economics on plan and recovery-pack configuration
@@ -207,7 +207,7 @@ Do not:
 
 ## Stop conditions
 
-Stop if ADMIN-007 reference semantics would need to be changed, if DATABASE-012 evidence cannot be read atomically enough for a safe mutation, or if the existing BillingPlan action has changed materially such that a separate mutation path would bypass the guardrail.
+Stop if ADMIN-007 reference semantics would need to be changed, if DATABASE-013 economics evidence cannot be read atomically enough for a safe mutation, or if the existing BillingPlan action has changed materially such that a separate mutation path would bypass the guardrail.
 
 ## Completion Report
 

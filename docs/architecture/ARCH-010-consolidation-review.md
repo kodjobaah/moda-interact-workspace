@@ -1,232 +1,222 @@
 # ARCH-010 Final Consolidation / Architect Review
 
-Date: 2026-09-11  
+Date: 2026-09-12
 Coordinator: `moda_architect`
 
 ## Overall decision
 
-**ARCH-010 architecture is Agreed and implementation-ready. It is not yet Implemented.**
+**ARCH-010 remains Agreed / In Progress and is now explicitly the Moda Interact first-production billing/lifecycle baseline. It is not yet Implemented.**
 
-The twelve behavioural iterations plus the Iteration 11B Shopify-event gate have been consolidated into one final merchant lifecycle model. The final pass found no missing merchant lifecycle state requiring another feature iteration.
+The 2026-09-12 review changes the rollout/migration boundary, not the core product intent:
 
-Implementation completion still requires:
+```text
+no production billing data exists
+        ↓
+PRE-PRODUCTION / BREAKING ROLLOUT
+        ↓
+ship one clean ARCH-010 first-production model
+        ↓
+future architectures migrate forward from that baseline
+```
 
-1. every required repository task to be implemented and architect-accepted;
-2. developer manual verification of the integrated behaviour;
-3. explicit execution and acceptance of the four terminal/manual-gated ARCH-010 system-test tasks.
+The binding baseline amendment is [`ARCH-010-first-production-baseline.md`](ARCH-010-first-production-baseline.md).
 
-## What was reviewed
+## Accepted task history decision
 
-The consolidation pass reviewed:
+Completed task files remain immutable accepted implementation/review evidence.
 
-- the canonical ARCH-010 architecture document;
-- all ARCH-010 task files in Admin, Background, Database, Gateway, Shared and Shopify;
-- the current source tree used when those tasks were authored;
-- task frontmatter status/dependencies/enables;
-- current agent/task workflow requirements from `.codex/agents/moda_architect.toml`;
-- current Shopify App Pricing documentation for subscription state, historical events, usage/App Events, usage-only plans and provider refund/credit behaviour.
+This review verified that all **23 Complete ARCH-010 task files** from the supplied workspace remain byte-for-byte unchanged by the consolidation work. `ARCH-010-SHOPIFY-002` also remains unchanged in `review` at Attempt 8.
 
-## Final architectural invariants
+Where accepted/in-flight implementation targeted an intermediate development schema, the architecture now uses new dependent correction tasks or amended still-open tasks. It does not rewrite history.
 
-### Subscription authority
+## Database consolidation decision
 
-- Shopify App Pricing is commercial subscription authority.
-- Local `BillingPlan` rows are Moda mapping/entitlement configuration, not the live Shopify plan catalogue.
-- `Subscription` is the durable local current/pending projection.
-- Partner `activeSubscription` plus Historical Events provide current/pending/provider-lifecycle evidence.
-- `activeSubscription = null` alone does not prove cancellation for an established merchant.
+The earlier idea of multiple cleanup migrations is rejected.
 
-### Lifetime Free entitlement
+Instead:
 
-- Every shop receives the shop-lifetime Free grant exactly once at first verified subscription activation, whether the first plan is Free or Paid.
-- The current default is 5 recoveries, snapshotted from platform policy.
-- Plan change, renewal, uninstall, reinstall, cancellation or freeze never resets/regrants it.
+- DATABASE-001..011 remain Complete historical development tasks;
+- DATABASE-012 is Superseded before implementation;
+- DATABASE-013 creates one final Prisma schema and one empty-database first-production migration;
+- valid upgrade-economics requirements from DATABASE-012 are folded into DATABASE-013;
+- future ARCH-011+ changes use normal forward migrations from accepted DATABASE-013.
 
-### Final capacity order
+This keeps development design history in task/review documents without making every intermediate development schema part of the production migration chain.
+
+## First-production removals
+
+The final baseline intentionally contains no runtime compatibility for:
+
+```text
+BillingPlan.freeLifetimeConversationAllowance
+BillingAllowanceAdjustment / FREE_ALLOWANCE_ADJUSTED
+FREE_RECOVERY_LIFETIME alias
+ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)
+MIGRATION_RECONCILED
+SubscriptionCancellationRequest / local cancellation state machine
+appSubscriptionCancel execution path
+RecoveryCreditPurchaseStatus.REFUNDED
+negative/fractional App Event refund settlement/correction state
+campaign-less/direct PromotionalCreditGrant compatibility
+BILLING_FREE_ALLOWANCE_EXHAUSTED historical-row compatibility
+```
+
+Canonical lifetime entitlement:
+
+```text
+LIFETIME_FREE_RECOVERY_CREDITS
+```
+
+## Final capacity order
 
 ```text
 Paid
-  monthly included
-  -> promotional
-  -> purchased
+  selected usable campaign promotion
+  -> current-period included
+  -> purchased FIFO lot
   -> lifetime Free
   -> BLOCK NEW RECOVERY ADMISSION
 
 Free
-  promotional
-  -> purchased
+  selected usable campaign promotion
+  -> purchased FIFO lot
   -> lifetime Free
   -> BLOCK NEW RECOVERY ADMISSION
 ```
 
-No automatic paid overage exists.
+The exact selected `PromotionalCreditGrant` lot is promotional capacity authority. There is no aggregate promotional entitlement counter.
 
-Here `BLOCK NEW RECOVERY ADMISSION` means capacity exhaustion prevents a new recovery from being admitted; it does not terminate already-admitted conversations or remove dashboard/history/billing/support access.
+## Refund model
 
-### Credit ownership
+Purchased-credit partial refunds remain first-release functionality, but the development automatic correction mechanism is removed.
 
-- Paid included credits are BillingPeriod-scoped and do not roll over.
-- **Superseded by the 2026-09-12 promo amendment:** new promotional capacity comes from expiring merchant-selected GLOBAL/PLAN/SHOP campaigns; campaign/grant history remains durable and non-refundable.
-- Purchased top-up credits are shop-lifetime, survive plan/lifecycle changes and are refundable only while unused/unheld according to purchase-lot accounting.
-- Promotional capacity is consumed before purchased capacity so merchant-funded refundable credits are preserved longer.
-
-### Free App Pricing billing cycle
-
-A Free Shopify App Pricing contract may still have a provider BillingPeriod because it carries the recovery-credit-pack usage meter.
-
-That provider BillingPeriod is App Event/commercial scope only. It never replenishes the lifetime Free recovery grant.
-
-### Lifecycle execution gates
-
-The architecture distinguishes:
+Canonical rule:
 
 ```text
-capacity exhaustion
-NO_CONTRACT
-UNINSTALLED/inactive Shop
-FROZEN subscription
-provider-period DRAINING/reconciling
+purchase remains ACTIVE
+refund request/approval holds exact unused quantity
+SUPER_ADMIN performs Shopify Partner Dashboard REFUND or CREDIT
+provider evidence is recorded
+local lot/aggregate refunded quantity is finalised exactly once
 ```
 
-These states are not aliases.
+There is no purchase `REFUNDED` terminal state for a partial refund and no negative App Event correction processor.
 
-- Capacity exhaustion blocks new recovery initiation only; existing admitted conversations continue.
-- `NO_CONTRACT`, inactive/uninstalled and `FROZEN` block new shop business execution while preserving owned historical balances.
-- Frozen checkout/cart queued events terminate early; `order.completed` may perform only terminal safety bookkeeping on already-existing recovery state.
+## Cancellation model
 
-### Billing actions
+Shopify App Pricing remains cancellation authority.
 
-- Plan changes use Shopify-hosted App Pricing plus Partner current/pending state.
-- Moda does not use `appSubscriptionCreate` for ARCH-010 plan changes.
-- Moda does not call `appSubscriptionCancel`; Shopify cancellation state is observed/reconciled.
-- Recovery-credit top-ups use Shopify App Pricing usage meter + App Event, not `appPurchaseOneTimeCreate`.
-- Partial purchased-credit refunds are human-settled against Shopify provider billing evidence; ARCH-010 does not automate negative App Events as the refund mechanism.
+Moda observes and reconciles provider state. The first-production model contains no local cancellation request/approval/execution state machine and no `appSubscriptionCancel` path.
 
-## Provider documentation verification
+BACKGROUND-012 now owns both provider reconciliation and removal of any remaining development local cancellation executor code in the Background repository.
 
-The final pass re-verified the provider assumptions against Shopify developer documentation current on 2026-09-11:
+## Promotional model
 
-- Shopify App Pricing / Active Subscription / Historical Events:  
-  `https://shopify.dev/docs/apps/launch/billing/shopify-app-pricing`
-- App Pricing migration, including repeated one-time charges represented by App Events:  
-  `https://shopify.dev/docs/apps/launch/billing/shopify-app-pricing/migrating-to-shopify-app-pricing`
-- Usage-based and usage-only plan behaviour:  
-  `https://shopify.dev/docs/apps/launch/billing/shopify-app-pricing/subscription-billing/setup-usage-charges`
-- App charge refunds/credits:  
-  `https://shopify.dev/docs/apps/launch/billing/billing-adjustments/refund-app-charges`
+First production supports campaign-linked merchant opt-in promotions only:
 
-No provider fact discovered during this verification requires a new ARCH-010 implementation iteration.
+```text
+PromotionCampaign
+  -> MerchantPromotionSelection
+  -> exact PromotionalCreditGrant(campaignId, shopId)
+  -> UsageReservation.promotionalCreditGrantId
+```
 
-## Consolidation findings corrected
+`PromotionalCreditGrant.campaignId` is required. Campaign-less direct grants are not migrated into production.
 
-### 1. Historical iteration layering
+## Shared package consolidation
 
-Earlier task files sometimes contained an original rule followed by an Iteration 11/12 amendment. Examples included pre-promotional fallback wording.
+The already-published ARCH-010 development package `@modainteract/moda-interact-shared@0.10.0` contains contracts accumulated through accepted Shared tasks.
 
-The final task contracts now state the final integrated rule directly. Implementation agents should not need to infer which historical paragraph wins.
+Because first production removes obsolete pre-production billing compatibility exports, two new tasks are required:
 
-### 2. Task reverse-dependency drift
+- SHARED-007 removes the local-cancellation contracts and the Free-only `BILLING_FREE_ALLOWANCE_EXHAUSTED` source/declaration contract without deprecation aliases;
+- SHARED-008 publishes the resulting clean contract as `0.11.0`.
 
-After twelve iterations, several `enables:` lists no longer matched actual `depends_on` references.
+No duplicate publication of SHARED-001/003/005 is required.
 
-The final pass regenerated `enables` from the dependency graph. `depends_on` remains the eligibility authority; `enables` is now a consistent reverse index.
+## Consumer conformance tasks
 
-### 3. Shared index omission
+Two new bounded consumer tasks prevent accepted implementation history from being rewritten:
 
-`ARCH-010-SHARED-003/004` existed but were missing from the Shared `_index.md` table. The final index includes all six Shared tasks.
+- ADMIN-010 — remove Admin compatibility reads/types and compile only against DATABASE-013/SHARED-008;
+- SHOPIFY-023 — remove Shopify billing compatibility reads/raw SQL/types and make lifetime-Free projection plan-independent.
 
-### 4. Workflow completion sections
-
-Some later overlay-created tasks lacked a formal `Completion Report` section even though the execution template requires agents to update it when claiming/submitting a task.
-
-Every active implementation/publication ARCH-010 task now contains a Completion Report. Missing explicit Stop/Non-goal/Validation sections on bounded tasks were also normalized.
-
-### 5. Architecture status
-
-The canonical architecture still said `proposed` and described only early iterations as defined. It is now `agreed` and records the complete behavioural scope.
-
-### 6. Subscription-history wording
-
-An early invariant promised a later append-only local subscription-history model, but ARCH-010 ultimately did not need one. The final architecture now states the real model explicitly:
-
-- local current/pending `Subscription` projection;
-- local exact BillingPeriod history;
-- latest provider lifecycle evidence for reconciliation;
-- Shopify Historical Events as provider-authoritative full lifecycle history.
-
-No duplicate local provider-history table is required by ARCH-010.
-
-### 7. Terminal system validation was missing
-
-Four manual-gated system-test tasks now define final integrated validation without blocking implementation:
-
-- `ARCH-010-SYSTEM-TEST-001` — core subscription/capacity/App Pricing lifecycle;
-- `ARCH-010-SYSTEM-TEST-002` — uninstall/reinstall/cancellation/freeze execution gates;
-- `ARCH-010-SYSTEM-TEST-003` — partial purchased refunds + promotional operations;
-- `ARCH-010-SYSTEM-TEST-004` — final cross-scenario acceptance matrix.
+Still-open Background/Shopify/Admin tasks were amended directly where their implementation has not yet been accepted.
 
 ## Task graph audit
 
-Final counts:
+Current counts from individual task YAML:
 
 ```text
-all ARCH-010 task files:         64
-active tasks:                    63
-superseded tasks:                 1
-ready implementation tasks:     14
-pending implementation tasks:   45
-pending manual system tests:      4
+all ARCH-010 task files: 79
+complete:                 23
+review:                    1
+ready:                     4
+pending:                  49
+superseded:                2
 ```
 
 Domain totals:
 
 ```text
-Shopify       20   (1 superseded)
+Shopify       23
 Background    19
-Database       9
-Shared         6
-Admin          5
+Database      13
+Admin         10
+Shared         8
+System Test    5
 Gateway        1
-System Test    4
 ```
 
-Graph checks:
+Current Ready frontier:
 
 ```text
-missing ARCH-010 dependency references: 0
-internal dependency cycles:              0
-non-system task -> system-test deps:     0
-enables/reverse-dependency mismatches:   0
+ARCH-010-DATABASE-013
+ARCH-010-SHARED-007
+ARCH-010-ADMIN-007
+ARCH-010-BACKGROUND-015
 ```
 
-## Task-size review
+Current Review:
 
-Some tasks are intentionally detailed because they protect concurrency/provider-boundary state, especially:
+```text
+ARCH-010-SHOPIFY-002  Attempt 8
+```
 
-- DATABASE-004 / DATABASE-007;
-- BACKGROUND-006 / 007 / 009 / 010 / 012 / 016;
-- SHOPIFY-012.
+Graph validation:
 
-They remain acceptable as bounded tasks because each has one repository, one primary capability, explicit dependencies, deterministic state transitions, focused acceptance criteria and stop conditions. The previously over-broad billing-options UI work is already split across SHOPIFY-009 through SHOPIFY-015 rather than being recombined.
+```text
+missing internal ARCH-010 dependency references: 0
+internal dependency cycles:                        0
+non-system-test task -> system-test dependency:    0
+```
 
-If implementation reveals a task actually requires a second independent mechanism, the agent must stop and return that scope to `moda_architect` rather than widening the task.
+Historical `enables:` fields in immutable Complete/Review task files are not rewritten when new correction work is added. They are therefore historical reverse snapshots rather than a globally regenerated graph. Current `depends_on:` remains the execution eligibility authority; the open-task indexes/handoff provide the current reverse planning view.
 
-## Deliberate future scope
+## System-test boundary
 
-The following are not unresolved ARCH-010 defects:
+Five system-test tasks remain terminal/manual-gated. They are not prerequisites for normal implementation work and must not auto-start when dependencies complete.
 
-- automatic campaign marketing delivery or coupon-code mechanics;
-- continuous automatic enrolment of future merchants into an active campaign;
-- self-service merchant provider refund settlement;
-- automatic negative-App-Event top-up refunds;
-- subscription-fee refund ownership by Moda;
-- automatic paid overage;
-- local duplicate append-only Shopify subscription history;
-- deterministic shop identity redesign;
-- mid-cycle plan-entitlement segmentation/proration if unexpected immediate Shopify plan changes become normal provider behaviour.
+The developer may perform manual integrated verification after implementation before explicitly invoking the system-test suite.
+
+## Infrastructure / observability assessment
+
+This first-production baseline consolidation does not introduce a new infrastructure topology or new observability mechanism. Existing ARCH-010 Gateway work remains valid. No new Gateway task is required solely for schema rebaselining.
+
+Runtime correction tasks must preserve existing logging/telemetry conventions; they must not create duplicate observability merely as part of compatibility cleanup.
 
 ## Architect conclusion
 
-**ARCH-010 is approved for implementation.**
+ARCH-010 now has a clean migration/runtime boundary:
 
-Use the individual task files and `ARCH-010-implementation-handoff.md` as the execution frontier. Do not start terminal system tests until their dependencies are complete, architect-accepted and the developer explicitly invokes them.
+```text
+accepted development history is retained
+        +
+production compatibility is not fabricated before production
+        +
+one canonical database/Shared baseline is established
+        +
+open consumers converge on that baseline
+```
+
+This is the architecture to implement before first production.

@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-009
-  - ARCH-010-SHOPIFY-012
-  - ARCH-010-BACKGROUND-009
-  - ARCH-010-SHARED-004
+- ARCH-010-SHOPIFY-009
+- ARCH-010-SHOPIFY-012
+- ARCH-010-BACKGROUND-009
+- ARCH-010-SHARED-008
 enables: []
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-008: Present recovery-capacity exhaustion on merchant dashboard and history
@@ -80,7 +80,7 @@ Do not present it as sent, failed, cancelled or completed.
 
 Map `BILLING_RECOVERY_CAPACITY_EXHAUSTED` to `/app/billing/options` with localized action text equivalent to `Manage recovery capacity`.
 
-Keep historical `BILLING_FREE_ALLOWANCE_EXHAUSTED` renderable and point it to the same merchant capacity route where safe.
+Do not retain `BILLING_FREE_ALLOWANCE_EXHAUSTED` rendering compatibility. SHARED-007 removes that development-only code; first production renders the generic `BILLING_RECOVERY_CAPACITY_EXHAUSTED` contract only.
 
 No merchant action may link to `moda-interact-admin`.
 

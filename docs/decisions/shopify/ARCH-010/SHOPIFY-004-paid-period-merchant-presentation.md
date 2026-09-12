@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-SHOPIFY-003
-  - ARCH-010-DATABASE-002
+- ARCH-010-SHOPIFY-003
+- ARCH-010-DATABASE-013
 enables:
-  - ARCH-010-SHOPIFY-007
-  - ARCH-010-SHOPIFY-009
+- ARCH-010-SHOPIFY-007
+- ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-004: Present current paid-period entitlement to merchants

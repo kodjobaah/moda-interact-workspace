@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-007
-  - ARCH-010-SHARED-006
-  - ARCH-010-SHOPIFY-012
+- ARCH-010-DATABASE-013
+- ARCH-010-SHARED-008
+- ARCH-010-SHOPIFY-012
 enables:
-  - ARCH-010-SYSTEM-TEST-003
+- ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-017: Present unused purchased-credit refundability and support CTA

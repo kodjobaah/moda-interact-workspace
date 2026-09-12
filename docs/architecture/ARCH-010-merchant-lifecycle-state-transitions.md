@@ -4,7 +4,7 @@ title: Merchant lifecycle state transitions and behavioural access
 status: agreed
 coordinator: moda_architect
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-12
 ---
 
 # ARCH-010: Merchant lifecycle state transitions and behavioural access
@@ -17,6 +17,8 @@ updated: 2026-09-11
 
 
 > **Promotional-campaign amendment (2026-09-12):** The final first-release promo model is optional merchant opt-in campaigns, not direct non-expiring Admin grants. See [`ARCH-010-promotional-campaigns.md`](ARCH-010-promotional-campaigns.md). A selected usable promotion is the **highest-priority** recovery source. Older Iteration-12 text describing lifetime/unselected direct grants is design provenance only.
+
+> **First-production baseline amendment (2026-09-12):** ARCH-010 is now the clean first-production database/runtime baseline. [`ARCH-010-first-production-baseline.md`](ARCH-010-first-production-baseline.md) is binding over any older compatibility/backfill wording retained below as design provenance. First production has no `BillingPlan.freeLifetimeConversationAllowance`, `BillingAllowanceAdjustment`, old `FREE_RECOVERY_LIFETIME`, aggregate `PROMOTIONAL_RECOVERY_CREDITS`, local cancellation state machine, `MIGRATION_RECONCILED`, purchase `REFUNDED` state, negative-App-Event refund correction model, or campaign-less promotional grant fallback. Implementers MUST NOT preserve those removed concepts merely because an earlier iteration mentions them.
 ## Problem
 
 Moda Interact has durable billing, subscription, entitlement and uninstall primitives from ARCH-007/008/009, but merchant-facing behaviour is not yet defined consistently as a state machine. ARCH-010 defines transitions between merchant lifecycle states and, for each resulting state, the screens, actions and runtime services that are available.
@@ -42,40 +44,40 @@ ARCH-009 is frozen while ARCH-010 resolves the lifecycle model. ARCH-010 may lat
 
 ## Canonical shop-lifetime Free grant and capacity priority
 
-`FREE_RECOVERY_LIFETIME` is a legacy enum/name for a **shop-lifetime introductory entitlement**, not a Free-plan-owned allowance.
+`LIFETIME_FREE_RECOVERY_CREDITS` is the canonical **shop-lifetime introductory entitlement**, not a Free-plan-owned allowance.
 
 Binding rules:
 
 ```text
 first verified Shopify subscription activation (Free OR Paid)
   -> snapshot PlatformBillingPolicy.lifetimeFreeRecoveryAllowance
-  -> create/reuse ShopEntitlementCounter(FREE_RECOVERY_LIFETIME)
+  -> create/reuse ShopEntitlementCounter(LIFETIME_FREE_RECOVERY_CREDITS)
   -> grantedQuantity is written once
   -> later plan changes/reinstall/renewal NEVER reset or regrant it
 ```
 
-The current product grant is 5 recoveries. Future changes to the platform default affect only merchants whose lifetime grant has not yet been created; they do not mutate existing shops. Legacy pre-ARCH-010 signed Free-allowance adjustments may remain in durable data and are honoured only as compatibility state where already present; **no new campaign, testing, goodwill or support grant may use that mechanism**. New discretionary grants use `PROMOTIONAL_RECOVERY_CREDITS`.
+The current product grant is 5 recoveries. Future changes to the platform default affect only merchants whose lifetime grant has not yet been created; they do not mutate existing shops. There is no signed allowance-adjustment compatibility in the first-production model. Campaign/testing/goodwill/support promotional capacity is created only through campaign-linked `PromotionalCreditGrant` lots.
 
 Canonical recovery-capacity order:
 
 ```text
 FREE subscription
-  PROMOTIONAL_RECOVERY_CREDITS
+  selected usable campaign PromotionalCreditGrant
   -> PURCHASED_RECOVERY_CREDITS
-  -> FREE_RECOVERY_LIFETIME
+  -> LIFETIME_FREE_RECOVERY_CREDITS
   -> EXHAUSTED
 
 PAID subscription
-  current-period INCLUDED_RECOVERY_CREDITS
-  -> PROMOTIONAL_RECOVERY_CREDITS
+  selected usable campaign PromotionalCreditGrant
+  -> current-period INCLUDED_RECOVERY_CREDITS
   -> PURCHASED_RECOVERY_CREDITS
-  -> FREE_RECOVERY_LIFETIME
+  -> LIFETIME_FREE_RECOVERY_CREDITS
   -> EXHAUSTED
 ```
 
-Promotional credits are intentionally consumed before purchased credits so Moda-funded campaign/test capacity is spent before merchant-funded refundable capacity. Purchased credits remain intentionally consumed before lifetime Free credits. Therefore refundable purchased quantity decreases only after promotional capacity is exhausted, while the one-time non-refundable lifetime grant remains the final fallback.
+Promotional credits are intentionally consumed before merchant-funded refundable purchased credits. For Paid, promotion is also intentionally consumed before period included capacity. Purchased credits remain consumed before lifetime Free credits. The exact selected campaign grant lot is promotion authority; there is no aggregate promotional entitlement counter.
 
-`BillingPlan.freeLifetimeConversationAllowance` is no longer runtime authority for this grant. ARCH-010 keeps the column temporarily for compatibility/migration only; the canonical default moves to `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`, while each shop's actual grant is the snapshotted `ShopEntitlementCounter.grantedQuantity`.
+`BillingPlan` does not contain or own a lifetime-Free allowance in the first-production baseline. The canonical default is `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`, while each shop's actual grant is the snapshotted `ShopEntitlementCounter.grantedQuantity` for `LIFETIME_FREE_RECOVERY_CREDITS`.
 
 # Iteration 1 — Fresh install -> Installed / No plan / Onboarding
 
@@ -207,9 +209,9 @@ Free committed/reserved usage       = existing durable ShopEntitlementCounter us
 purchased top-up balance            = unchanged
 ```
 
-The canonical product is **one shop-lifetime Free grant** (currently 5 recovery conversations). The grant is created once at the merchant's first verified subscription activation whether that first plan is Free or Paid. It does not reset on billing cycle, reinstall, upgrade or downgrade. Any pre-ARCH-010 signed Free-allowance adjustment already stored is legacy compatibility data only; it is not the current mechanism for promotional/testing/support capacity.
+The canonical product is **one shop-lifetime Free grant** (currently 5 recovery conversations). The grant is created once at the merchant's first verified subscription activation whether that first plan is Free or Paid. It does not reset on billing cycle, reinstall, upgrade or downgrade. No signed Free-allowance adjustment compatibility is part of first production. Promotional/testing/support capacity is campaign-linked promotional grant state only.
 
-Do not model the five Free recoveries as promotional credits. Iteration 12 separately defines `PROMOTIONAL_RECOVERY_CREDITS`; the five-credit shop-lifetime grant remains independent and is never automatically converted into campaign/test credits.
+Do not model the five Free recoveries as promotional credits. Campaign-linked `PromotionalCreditGrant` lots are separate from the five-credit shop-lifetime grant and the two are never converted into each other.
 
 ## Billing-period behaviour for Free
 
@@ -223,7 +225,7 @@ Binding distinction:
 Free Shopify BillingPeriod
   = monthly App Pricing / App Event billing scope
 
-FREE_RECOVERY_LIFETIME
+LIFETIME_FREE_RECOVERY_CREDITS
   = lifetime Moda recovery entitlement
 ```
 
@@ -306,7 +308,7 @@ Free activation/re-activation MUST NOT:
 - create duplicate allowance records;
 - erase purchased top-up balances.
 
-The shop-lifetime Free allowance is derived from the shop counter snapshot and durable usage. If legacy pre-ARCH-010 signed Free-allowance adjustments already exist, runtime compatibility may include their historical net effect, but ARCH-010 creates no new such adjustments. The current Shopify plan does not own or reset the lifetime grant; all new discretionary capacity uses the promotional-credit bucket.
+The shop-lifetime Free allowance is derived only from the canonical shop counter snapshot and durable usage. First production has no signed Free-allowance adjustment compatibility. The current Shopify plan does not own or reset the lifetime grant; all discretionary capacity uses campaign-linked promotional grants.
 
 Example:
 
@@ -557,7 +559,7 @@ purchased top-up balance         = preserved durable value, normally 0
 promotional credit balance       = preserved durable value, normally 0
 ```
 
-`FREE_RECOVERY_LIFETIME` is the existing legacy-named shop-lifetime allowance/usage counter and remains distinct from `PROMOTIONAL_RECOVERY_CREDITS`. Both are available under Free or Paid when the subscription is executable, but promotional credits are consumed first and are granted only through explicit Moda campaign/test/goodwill actions.
+`LIFETIME_FREE_RECOVERY_CREDITS` is the canonical shop-lifetime counter and remains distinct from campaign-linked `PromotionalCreditGrant` lots. Both may be available under Free or Paid when the subscription is executable, but a usable selected promotion is consumed first and promotional capacity is created only through the campaign model.
 
 ## Trigger
 
@@ -819,7 +821,7 @@ Subscription current BillingPeriod pointer
 Subscription pending plan-change state
 BillingPeriod history
 period included-credit counters
-FREE_RECOVERY_LIFETIME usage/counter state
+LIFETIME_FREE_RECOVERY_CREDITS usage/counter state
 purchased top-up lots/balance
 promotional recovery-credit balance
 refund state
@@ -1141,7 +1143,7 @@ Do not delete historical BillingPeriod rows or counters in this iteration. A det
 Preserve:
 
 ```text
-FREE_RECOVERY_LIFETIME committed/reserved history
+LIFETIME_FREE_RECOVERY_CREDITS committed/reserved history
 purchased lifetime top-up balance/lots
 promotional recovery-credit balance
 purchase/refund history
@@ -1410,7 +1412,7 @@ For Free, cycle transition does **not** pause ordinary lifetime-Free or already-
 - creation of a new recovery-credit-pack purchase;
 - any other action that creates an App Event tied to the closing/expired cycle.
 
-When the same mapped Free plan advances to a later exact provider cycle, close the old Free BillingPeriod and create/reuse the successor with `includedRecoveryCreditsGranted = null`; create no included-credit counter and do not reset `FREE_RECOVERY_LIFETIME`.
+When the same mapped Free plan advances to a later exact provider cycle, close the old Free BillingPeriod and create/reuse the successor with `includedRecoveryCreditsGranted = null`; create no included-credit counter and do not reset `LIFETIME_FREE_RECOVERY_CREDITS`.
 
 ## Pre-close BullMQ job
 
@@ -1609,16 +1611,11 @@ Iteration 6 strengthens the period model:
 
 Legacy closed periods are not assigned fabricated historical plans. Nullable snapshot fields are allowed for legacy rows whose historical plan cannot be proven.
 
-## Legacy migration normalization
+## Development migration normalization — superseded for first production
 
-The current reconciliation implementation can leave multiple historical periods with `status = OPEN` because it upserts the newly observed period but never closes the predecessor.
+Earlier ARCH-010 development migrations considered normalising multiple historical OPEN BillingPeriods with a migration-only close reason. That approach is **not** part of the first-production baseline.
 
-Before adding the partial one-OPEN-period uniqueness invariant:
-
-1. use `Subscription.billingPeriodId` as the current-pointer authority;
-2. for each subscription, preserve that pointed period as OPEN;
-3. close other legacy OPEN periods owned by the same shop/subscription as `MIGRATION_RECONCILED` with effective `closedAt = periodEnd`;
-4. if a shop has multiple OPEN periods and no unambiguous current pointer, stop the migration rather than guessing.
+DATABASE-013 regenerates the schema from an empty database. `MIGRATION_RECONCILED` does not exist in first production and no development BillingPeriod rows are backfilled into the baseline migration.
 
 ## Screens/services while boundary reconciliation is overdue
 
@@ -1714,20 +1711,20 @@ The final ARCH-010 recovery-capacity order is:
 
 ```text
 FREE
-  PROMOTIONAL_RECOVERY_CREDITS
+  selected usable campaign PromotionalCreditGrant
   -> PURCHASED_RECOVERY_CREDITS
-  -> FREE_RECOVERY_LIFETIME
+  -> LIFETIME_FREE_RECOVERY_CREDITS
   -> EXHAUSTED
 
 PAID
-  current BillingPeriod INCLUDED_RECOVERY_CREDITS
-  -> PROMOTIONAL_RECOVERY_CREDITS
+  selected usable campaign PromotionalCreditGrant
+  -> current BillingPeriod INCLUDED_RECOVERY_CREDITS
   -> PURCHASED_RECOVERY_CREDITS
-  -> FREE_RECOVERY_LIFETIME
+  -> LIFETIME_FREE_RECOVERY_CREDITS
   -> EXHAUSTED
 ```
 
-There is no automatic Paid overage. `PROMOTIONAL_RECOVERY_CREDITS` is a separate Moda-granted lifetime bucket and must never be aliased to the five lifetime Free credits.
+There is no automatic Paid overage. Promotional capacity is an exact campaign-linked grant lot and must never be aliased to the five lifetime Free credits.
 
 ### Authority split for Iteration 7
 
@@ -1820,25 +1817,23 @@ Add a generic Shared billing system code:
 BILLING_RECOVERY_CAPACITY_EXHAUSTED
 ```
 
-Use it for new Free and Paid full-capacity exhaustion. Keep the historical `BILLING_FREE_ALLOWANCE_EXHAUSTED` code parseable for existing rows/backward compatibility, but new exhaustion writes use the generic code.
+Use it for Free and Paid full-capacity exhaustion. `BILLING_FREE_ALLOWANCE_EXHAUSTED` is development-era compatibility and is removed from the first-production Shared contract by SHARED-007; no first-production producer or renderer preserves it.
 
 The exhaustion message must be idempotent per capacity epoch rather than per blocked checkout. Its source identity should change only when new capacity has genuinely become available, for example:
 
 ```text
 Free epoch:
   subscriptionId
-  + promotional granted/committed/reserved quantities
+  + selected promotional grant identity + granted/committed/reserved quantities
   + purchased granted/committed/reserved/refunding quantities
   + lifetime Free granted/committed/reserved quantities
-  + legacy pre-ARCH-010 lifetime-Free adjustment total, if present
 
 Paid epoch:
   current BillingPeriod id
+  + selected promotional grant identity + granted/committed/reserved quantities
   + period included granted/committed/reserved/forfeited quantities
-  + promotional granted/committed/reserved quantities
   + purchased granted/committed/reserved/refunding quantities
   + lifetime Free granted/committed/reserved quantities
-  + legacy pre-ARCH-010 lifetime-Free adjustment total, if present
 ```
 
 This prevents one support message per abandoned checkout while allowing a later top-up or later Paid period to create a new message if that newly restored capacity is subsequently exhausted again.
@@ -2660,7 +2655,7 @@ refund.status = COMPLETED
 
 Do not change purchase `committedQuantity` or `reservedQuantity` during refund finalization.
 
-New ARCH-010 refunds keep the `RecoveryCreditPurchase` provider-confirmation status `ACTIVE`; refund state is represented by lot quantities and `RecoveryCreditRefund[]`. Do not set `RecoveryCreditPurchase.status=REFUNDED` for a new partial refund. The legacy enum value remains compatibility-only for previously written data.
+New ARCH-010 refunds keep the `RecoveryCreditPurchase` provider-confirmation status `ACTIVE`; refund state is represented by lot quantities and `RecoveryCreditRefund[]`. Do not set `RecoveryCreditPurchase.status=REFUNDED` for a new partial refund. The removed `REFUNDED` enum value is development provenance only and is not present in the first-production schema.
 
 This is deliberate: a Partner Dashboard refund/credit does not remove the original +1 App Pricing usage event from the provider meter, and provider purchase reconciliation must not mistake a refunded historical provider unit for an unactivated new purchase.
 
@@ -2721,7 +2716,7 @@ local spendable purchased-credit balance
 
 Manual Partner Dashboard refunds/credits do not reduce the App Pricing usage-meter quantity. Therefore a completed partial refund must never cause the original provider-confirmed purchase to be treated as a new unmatched unit or re-grant credits.
 
-Legacy ARCH-009 `REFUNDED` purchases and any legacy negative correction events must remain explained provider history and must never become activation candidates.
+Development-era `REFUNDED` purchase state and negative correction events are not part of the first-production baseline and are not migrated. Provider reconciliation must instead treat the canonical ACTIVE purchase lot plus local refunded quantities as the durable explanation of the original provider top-up unit.
 
 ### Merchant messaging
 
@@ -2754,7 +2749,7 @@ Accepted ARCH-009 branch work may be inspected/reused where compatible, but ARCH
 ### Tasks created by Iteration 10
 
 - `ARCH-010-DATABASE-007` — add deterministic purchased-credit lot accounting and multi-partial-refund schema/migration/backfill.
-- `ARCH-010-BACKGROUND-014` — make purchased recovery reservations FIFO lot-aware and keep provider activation reconciliation compatible with refunds/legacy history.
+- `ARCH-010-BACKGROUND-014` — make purchased recovery reservations FIFO lot-aware, remove the development automatic negative-App-Event refund path, and keep provider activation reconciliation consistent with local partial refunds.
 - `ARCH-010-SHARED-005` — define refund merchant-message codes/contracts.
 - `ARCH-010-SHARED-006` — publish the accepted Shared refund contract.
 - `ARCH-010-SHOPIFY-017` — expose refundability information/support CTA on merchant billing surfaces without self-service provider money movement.
@@ -3062,13 +3057,15 @@ Before implementation starts, task frontmatter is authoritative for eligibility.
 Current pre-implementation counts after consolidation:
 
 ```text
-ARCH-010 tasks total:            64
-implementation/publication:      60 (1 superseded, 59 active)
-terminal system-test tasks:       4 manual-gated
-ready implementation tasks:      14
-pending implementation tasks:    45
-superseded tasks:                  1
-pending manual system tests:       4
+ARCH-010 tasks total:            79
+implementation/publication:      74 (2 superseded, 72 active)
+terminal system-test tasks:       5 manual-gated
+complete implementation tasks:   23
+review implementation tasks:      1
+ready implementation tasks:       4
+pending implementation tasks:    44
+superseded tasks:                  2
+pending manual system tests:       5
 ```
 
 No implementation/publication/infrastructure task depends on an ARCH-010 system-test task.

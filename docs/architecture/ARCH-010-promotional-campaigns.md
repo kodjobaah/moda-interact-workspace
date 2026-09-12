@@ -2,7 +2,7 @@
 
 > **Status:** Current ARCH-010 promotional-credit contract.
 >
-> This document supersedes the earlier ARCH-010 assumption that Moda promotional credits are pushed directly onto shops as non-expiring discretionary grants. `ARCH-010-DATABASE-009` remains the completed persistence foundation for the promotional entitlement bucket/provenance ledger; all **new** first-release promotions use the campaign + merchant opt-in model defined here and in `ARCH-010-DATABASE-010/011`.
+> This document supersedes the earlier ARCH-010 assumption that Moda promotional credits are pushed directly onto shops as non-expiring discretionary grants. Completed DATABASE-009/010/011 tasks remain immutable development history, but the **first-production schema** is the clean DATABASE-013 baseline: promotional grants are campaign-linked, merchant-selected exact grant lots only, with no aggregate promotional entitlement counter or campaign-less direct-grant compatibility.
 
 ## 1. Product rule
 
@@ -166,11 +166,11 @@ All campaigns ever created remain queryable with:
 
 This lets Moda answer which promotions a merchant selected/used without using aggregate entitlement counters as historical truth.
 
-## 9. Existing DATABASE-009 compatibility
+## 9. First-production persistence rule
 
-Existing `PromotionalCreditGrant` rows created under the DATABASE-009 foundation may have no campaign link. They remain historical compatibility data and must not be silently converted into a campaign or automatically selected.
+DATABASE-013 is an empty-database first-production baseline. `PromotionalCreditGrant.campaignId` is required and every first-production merchant promotional grant belongs to one `PromotionCampaign`.
 
-After DATABASE-010/011, **new** promotional capacity is created only through a `PromotionCampaign` selected by the merchant. Admin must not use `BillingAllowanceAdjustment(FREE_RECOVERY_LIFETIME)` or a new direct lifetime promotional grant as a substitute.
+There is no campaign-less/direct-grant compatibility row, no aggregate `ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)`, and no `BillingAllowanceAdjustment` promotional substitute. Completed DATABASE-009/010/011 tasks are retained only as accepted development history; their intermediate compatibility shapes are not first-production runtime contracts.
 
 ## 10. Merchant lifecycle gates
 

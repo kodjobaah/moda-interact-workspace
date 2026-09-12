@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-010-DATABASE-003
-  - ARCH-010-SHARED-002
-  - ARCH-010-BACKGROUND-006
+- ARCH-010-DATABASE-013
+- ARCH-010-SHARED-008
+- ARCH-010-BACKGROUND-006
 enables:
-  - ARCH-010-SYSTEM-TEST-002
+- ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-11
+updated: '2026-09-12'
 ---
 
 # ARCH-010-SHOPIFY-006: Gate reinstall until Background restores Shopify subscription truth
