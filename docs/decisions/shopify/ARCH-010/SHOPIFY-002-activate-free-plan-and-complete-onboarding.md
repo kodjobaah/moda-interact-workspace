@@ -232,56 +232,59 @@ STOP if published Shared contract or `nextReconcileAt` Prisma field is unavailab
 
 Ready for Review.
 
-Attempt 5 correction checklist:
+Attempt 6 correction checklist:
 
-- Implemented onboarding-incomplete gating for `prepareFreeActivation`, including
-  the absent-Subscription source; preserved fresh incomplete activation,
-  NO_CONTRACT/no-current-plan activation, verified same-Free replay, and rejection
-  of ACTIVE/TRIALING different-plan state.
-- Implemented atomic first `FREE_RECOVERY_LIFETIME` create-or-reuse with a durable
-  platform-policy snapshot only on insertion; replay preserves all counter fields,
-  concurrent first activation is idempotent, and onboarding completes only after
-  the counter exists.
-- Protected a newer unresolved initial-selection target from an older provider
-  sync when provider data neither verifies nor supersedes it.
-- Added direct service regressions for replacement, absent-Subscription rejection,
-  concurrent first activation, and the exact older Free-A/newer Free-B race.
-- Revalidated the canonical callback, BillingService, queue-producer, billing-UI,
-  exact Free-cycle, pack-enabled scheduling, no-cycle top-up-ineligible, and
-  no-`moda-interact-admin` redirect/link coverage.
+- Added ordered `ShopSettings` then `Subscription` row locks to prepare, sync,
+  and completion transactions without holding locks across Partner I/O.
+- Preserved the exact unresolved onboarding selection through provider-null and
+  provider-active syncs; only a successful completion may consume it.
+- Required completion to match the current requested Free plan and exact pending
+  target while onboarding is incomplete, preventing an older callback from
+  completing over newer Free-B intent.
+- Added direct service and callback regressions for the older-callback loser,
+  stale provider pending data, lock transaction doubles, and no periodic Free
+  entitlement counter creation.
 
 ### Status
 Ready for Review
 
 ### Files Changed
 - `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/routes/app/billing/callback/route.tsx`
 - `moda-interact/tests/unit/services/billing.service.test.ts`
-- This task file records the Attempt 5 execution evidence.
+- `moda-interact/tests/unit/routes/billing-callback.test.ts`
+- This task file records the Attempt 6 execution evidence.
 
 ### Work Completed
-- Hardened initial Free activation source classification so absent subscriptions also require incomplete onboarding.
-- Replaced sequential lifetime-counter creation with atomic SQL create-or-reuse and post-insert existence verification.
-- Preserved existing lifetime quantities and avoided policy lookup on replay; missing policy remains fail-closed.
-- Preserved newer unresolved initial intent during an older provider-active sync unless provider data verifies or supersedes it.
-- Added Attempt 5 direct service coverage for valid replacement, onboarding-complete rejection, concurrent activation, and Free-A/Free-B callback ordering.
-- Retained the previously implemented Partner-verification gate, durable retry scheduling, best-effort queue isolation, exact Free-period snapshots, pack scheduling, and merchant `/app` redirect behavior.
+- Retained all prior Attempt 1 through Attempt 5 corrections, including Shared
+  billing contract `@modainteract/moda-interact-shared@0.10.0`, Partner-success
+  gating, canonical transport errors, durable retries, best-effort queue
+  acquisition/add, source-state classification, atomic lifetime-counter
+  creation, exact Free-period snapshots, and merchant `/app` redirects.
+- Serialized initial Free state classification with the required database lock
+  order and made pending-token consumption authoritative inside completion.
+- Kept lifetime and purchased quantities unchanged and avoided any periodic Free
+  entitlement counter.
 
 ### Acceptance Criteria
-Implemented for the bounded merchant callback/producer scope. Background reconciliation remains out of scope.
+Implemented for the bounded merchant callback/producer scope. Background
+reconciliation, Paid plans, plan changes, Admin, and infrastructure remain out of scope.
 
 ### Work Items
 Completed callback, billing service, queue producer, focused tests, i18n completeness, and validation.
 
 ### Validation Results
-- Focused Vitest: 50 passed in BillingService and 18 passed across callback, reconciliation producer, and billing-UI suites.
-- Full Vitest: 242 passed, 1 skipped across 33 test files.
+- Focused Vitest: 71 passed across BillingService, billing callback,
+  reconciliation producer, and billing UI suites.
+- Full Vitest: 245 passed, 1 skipped across 33 test files.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed with Prisma Client `6.19.3`; generated client exposes `Subscription.nextReconcileAt`.
 - `npm run build`: passed.
-- Changed-file ESLint: passed directly for BillingService and its focused test; only the repository's TypeScript parser compatibility warning was emitted.
-- `npm run typecheck`: repository baseline remains failing with 163 diagnostics in 27 unrelated existing files; no diagnostics were reported in the changed BillingService/test files.
+- Changed-file ESLint: passed; only the repository TypeScript parser compatibility warning was emitted.
+- `npm run typecheck`: repository baseline remains failing in unrelated existing
+  files; no diagnostics were reported in the changed billing production/test files.
 - `git diff --check`: passed.
-- The full focused callback/queue/UI suite passed, including the existing explicit no-`moda-interact-admin` merchant-link/redirect assertion.
+- Focused coverage includes the explicit no-`moda-interact-admin` redirect/link assertion.
 
 ### Git / VCS
 Task branch: `task/ARCH-010-SHOPIFY-002`
@@ -304,31 +307,38 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact`
-  commits: `4478152`, `dd6006c`, `695439`, `99f7925`, `d3bad71` (`fix: harden free activation races`)
+  correction commit: `e8eb64e` (`fix: serialize free activation completion`)
+  prior task commits retained: `dd6006c`, `695439d`, `99f7925`, `d3bad71`
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
+  claim commit: `ab220d4`
   report commit: this parent task-branch publication commit
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
-  report pushed: yes
+  report pushed: pending publication
   submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
 
 ### Deviations
-The implementation worktree retains the pre-existing database gitlink change from `ebe43c0` to published database commit `6d5fb9a`, which contains the required schema and generated-client contract. Per policy it was not staged in the implementation repository.
+The implementation worktree retains the pre-existing database gitlink change from
+`ebe43c0` to published database commit `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`,
+which provides the required schema and generated-client contract. Per policy it
+was not staged in the implementation repository.
 
 ### Assumptions
 The developer will update the parent database submodule pointer when the published database dependency is promoted into the implementation repository's mainline.
 
 ### Unresolved Issues
-The repository-wide typecheck still reports 163 pre-existing diagnostics in 27 files outside the changed BillingService/test files.
+The repository-wide typecheck remains a documented pre-existing baseline failure
+in unrelated files; changed billing files have no reported diagnostics.
 
 ### Architectural Concerns
-The database field is available at the current published dependency revision, but the parent submodule pointer remains a developer-owned integration step.
+The database field is available at the published dependency revision, while the
+parent submodule pointer remains a developer-owned integration step.
 
 ### Architect Review
 
