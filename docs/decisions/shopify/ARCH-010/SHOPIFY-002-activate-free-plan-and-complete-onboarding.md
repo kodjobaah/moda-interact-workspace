@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-12T10:39:28Z
@@ -22,125 +22,119 @@ depends_on:
   - ARCH-010-SHARED-002
   - ARCH-007-SHOPIFY-001
   - ARCH-007-SHOPIFY-002
-enables:
-  - ARCH-010-SHOPIFY-003
-created: 2026-09-11
-updated: 2026-09-12
----
+## Completion Report
 
-# ARCH-010-SHOPIFY-002: Activate Free plan with durable asynchronous Shopify verification
+Ready for Review.
 
-## Architecture
+Attempt 8 correction checklist:
 
-Canonical: `docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md`.
+- Added direct token-staleness coverage for provider-active, provider-null, and
+  changed-schedule responses through the real `BillingService`.
+- Added guarded retry scheduler no-op and successful Partner-error coverage, plus
+  the callback race regression proving stale work is not enqueued.
+- Completed the coherent no-cycle pack activation and purchase fail-closed test.
+- Corrected the cached reconciliation queue type so task-owned typecheck output
+  contains no billing-path diagnostic.
 
-This task implements only the merchant-app producer/fast-path side of initial Free activation. Background retry/reconstruction is owned by `ARCH-010-BACKGROUND-001`.
+### Status
+Ready for Review
 
-## Objective
+### Files Changed
+- `moda-interact/app/services/billing/billing-reconciliation.service.ts`
+- `moda-interact/tests/unit/services/billing.service.test.ts`
+- `moda-interact/tests/unit/routes/billing-callback.test.ts`
+- `moda-interact/tests/unit/billing-ui.test.ts`
+- This task file records the Attempt 8 execution evidence.
 
-When a fresh/onboarding merchant returns from Shopify App Pricing with a known Free `plan_handle`, treat the callback as a **selection intent**, not entitlement proof. Attempt one immediate Partner verification for fast UX; if unresolved or the Partner API cannot be reached, persist an explicit pending activation schedule and send a best-effort BullMQ reconciliation hint. Until Shopify verifies the current Free plan, keep the merchant in onboarding and grant no product access.
+### Work Completed
+- Retained all prior accepted corrections: Shared billing contract `0.10.0`,
+  exact initial-selection tokens, row-lock ordering, stale-response guards,
+  atomic lifetime-counter creation, exact Free-period snapshots, durable retry
+  scheduling, best-effort queue acquisition/add, and merchant `/app` redirects.
+- Added the Attempt 7 requested direct service and route regressions without
+  changing lifecycle scope.
+- Preserved lifetime and purchased quantities and avoided any periodic Free
+  entitlement counter.
 
-## Inspect before editing
+### Acceptance Criteria
+Implemented for the bounded merchant callback/producer scope. Background
+reconciliation, Paid plans, plan changes, Admin, and infrastructure remain out of scope.
 
-```text
-app/routes/app/billing/callback/route.tsx
-app/services/billing/billing.service.ts
-app/services/billing/billing.types.ts
-app/services/billing/providers/shopify-billing.provider.ts
-app/services/merchant-support/merchant-support.service.ts   # existing best-effort Queue pattern only
-app/routes/app/home/route.jsx
-app/routes/app/billing/route.tsx
-app/services/shop/shop.service.ts
-app/services/shop/shop-access-policy.ts
-package.json
-```
+### Work Items
+Completed callback, billing service, queue producer, focused tests, i18n completeness, and required validation.
 
-Focused tests at minimum:
+### Validation Results
+- Focused callback, BillingService, reconciliation producer, and billing UI suites:
+  81 passed across 4 files.
+- Full Vitest: 255 passed, 1 skipped across 33 test files.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed with Prisma Client `6.19.3`; generated client exposes `Subscription.nextReconcileAt`.
+- `npm run build`: passed.
+- Changed-file ESLint: passed; only the repository TypeScript parser compatibility warning was emitted.
+- `npm run typecheck`: repository baseline remains failing with 163 diagnostics
+  outside the task-owned billing paths; no diagnostics were reported in the
+  changed billing files after the queue type correction.
+- `git diff --check`: passed.
+- Coverage includes all Attempt 7 stale-token/scheduler corrections, Required
+  Tests 17/19/20, lock ordering, no lock across Partner I/O, and the allowed
+  Shopify-hosted `admin.shopify.com` pricing route.
 
-```text
-tests/unit/routes/billing-callback.test.ts
-tests/unit/services/billing.service.test.ts
-tests/unit/billing-ui.test.ts
-```
+### Git / VCS
+Task branch: `task/ARCH-010-SHOPIFY-002`
 
-## Cross-repository contract
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-002`
+  parent branch: `task/ARCH-010-SHOPIFY-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-002`
+  implementation branch: `task/ARCH-010-SHOPIFY-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
 
-Import the published ARCH-010 contract only from:
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
 
-```text
-@modainteract/moda-interact-shared/billing
-```
+Implementation repository:
+  repository: `moda-interact`
+  Attempt 8 implementation commits: `6ce6884`, `679a829`
+  prior task head retained: `8fab46d`
+  remote branch: `origin/task/ARCH-010-SHOPIFY-002`
+  pushed: yes
 
-Use its queue name, job name, payload schema/type and deterministic job-ID helper. Do not duplicate contract constants or Zod schemas locally.
+Parent workspace:
+  task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
+  claim commit: `c0fef26`
+  report and review-status/final metadata commit: this task-file commit
+  remote branch: `origin/task/ARCH-010-SHOPIFY-002`
+  report pushed: yes
+  submodule gitlink staged: no
 
-## Callback algorithm
+Database dependency revision:
+  `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`
 
-### 1. Validate local requested target
+Merged to implementation main: no
+Merged to workspace main: no
 
-After authentication/shop resolution, read `plan_handle` and map it to an active local `BillingPlan`.
+### Deviations
+The implementation worktree retains the expected database gitlink change from
+`ebe43c0` to published database commit `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`,
+which provides the required schema and generated-client contract. Per policy it
+was not staged in the implementation repository.
 
-For this task the requested target must be `BillingPlan.kind = FREE`. Unknown/inactive/paid handles must not enter the Free activation path.
+### Assumptions
+The developer will update the parent database submodule pointer when the published database dependency is promoted into the implementation repository's mainline.
 
-### 2. Durably record selection intent before Redis is required
+### Unresolved Issues
+The repository-wide typecheck remains a documented baseline failure in unrelated
+files; no changed task-owned billing file has a diagnostic.
 
-For a valid Free target, upsert/update the shop's existing Subscription so the pending target is durable without changing current entitlement:
-
-```text
-pendingShopifyPlanHandle = requested plan_handle
-pendingPlanId            = mapped Free BillingPlan.id
-pendingEffectiveAt       = now       # initial activation is expected immediately
-nextReconcileAt          = now       # due for immediate verification
-```
-
-Do NOT set current `planId`, `observedShopifyPlanHandle`, ACTIVE/TRIALING status or onboarding complete from the callback parameter.
-
-A new valid selection replaces an older unresolved initial-selection target.
-
-### 3. Fast-path Partner verification
-
-Call the existing `billingService.syncSubscription(shop.id)` once.
-
-Change its successful-`null` semantics narrowly so an unexpired `NO_CONTRACT` initial activation target is not erased merely because Shopify currently returns no active subscription. Current subscription fields become/stay NO_CONTRACT, but the pending target/schedule remain.
-
-On Partner API throw, do not convert the pending intent/current known subscription into provider truth. Preserve state and continue to unresolved scheduling below.
-
-### 4. Immediate success
-
-If the returned/reloaded projection proves the requested Free plan is the current mapped ACTIVE/TRIALING Shopify plan:
-
-transactionally/idempotently:
-
-```text
-ShopSettings.onboardingCompleted = true
-pendingShopifyPlanHandle          = null
-pendingPlanId                     = null
-pendingEffectiveAt                = null
-nextReconcileAt                   = null
-```
-
-Preserve Free lifetime usage and all top-up balances.
-
-If Shopify returns an exact `currentBillingCycle`, create/reuse the exact Free `BillingPeriod` using DATABASE-004 ownership/snapshot rules before clearing the initial activation schedule:
-
-```text
-planKindSnapshot = FREE
-includedRecoveryCreditsGranted = null
-no BillingPeriodEntitlementCounter
-```
-
-If the Free plan has `recoveryCreditPackEnabled=true`, this provider BillingPeriod is the cycle used later by recovery-credit-pack App Events. Persist `currentPeriodStart/currentPeriodEnd` and set `nextReconcileAt = max(now, currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS)` so same-plan Free cycle rollover can be reconciled by BACKGROUND-007. Best-effort enqueue the deterministic reconciliation job after commit.
-
-If Shopify verifies the current Free plan but provides no exact cycle, Free onboarding/lifetime entitlement may still complete, but top-up purchase remains ineligible until an exact provider cycle is reconciled. When the mapped Free plan enables recovery-credit packs, retain a short bounded `nextReconcileAt` retry rather than falsely presenting top-up eligibility.
-
-Redirect `/app`.
-
-### 5. Unresolved/null/pending/API failure
-
-If the requested Free plan is not verified as current, including:
-
-```text
-provider returns null
-requested handle is only pending
+### Architectural Concerns
+The database field is available at the published dependency revision, while the
+parent submodule pointer remains a developer-owned integration step.
 Partner API throws/times out/throttles
 ```
 
