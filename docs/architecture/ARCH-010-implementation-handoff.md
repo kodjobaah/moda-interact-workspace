@@ -31,9 +31,9 @@ The 2026-09-12 current-workspace audit, with durable architect-accepted history 
 
 ```text
 all ARCH-010 task files: 81
-complete:                 34
+complete:                 35
 ready:                     4
-pending:                  36
+pending:                  35
 superseded:                7
 ```
 
@@ -43,9 +43,8 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 
 ```text
 ARCH-010-ADMIN-010
-ARCH-010-BACKGROUND-015
 ARCH-010-BACKGROUND-019
-ARCH-010-SHOPIFY-023
+ARCH-010-SHOPIFY-018
 ```
 
 These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010.
@@ -72,7 +71,9 @@ For Background, `BACKGROUND-011` is now Complete at accepted Attempt 4 and owns 
 
 `BACKGROUND-002` is architect-accepted Complete at Attempt 3 (`97bf5f0`) and owns the concurrency-safe current-period Paid included-credit reservation primitive and the interim `included -> purchased -> lifetime Free -> block` composition. `BACKGROUND-014` is now architect-accepted Complete at Attempt 2 (`2104959`) and makes the purchased step FIFO lot-aware. `BACKGROUND-019` is now Ready and owns the final promotion-first routing plus exact promotional-grant reservation.
 
-For Shopify, `SHOPIFY-023` remains the baseline-conformance bridge after accepted SHOPIFY-002.
+For Shopify, `SHOPIFY-023` is architect-accepted Complete at Attempt 1 (`01f0605`) after developer-run validation against the materialized DATABASE-013 submodule. `SHOPIFY-018` is now Ready; SHOPIFY-003 and SHOPIFY-009 remain gated by other incomplete dependencies.
+
+`BACKGROUND-015` is architect-accepted Complete at Attempt 4 (`29c791c`). The Partner reconciliation snapshot now uses one request for live subscription plus the latest validated lifecycle event. `BACKGROUND-012` remains Pending because BACKGROUND-007, BACKGROUND-009 and BACKGROUND-010 are still incomplete.
 
 ## Luna-oriented task consolidation
 
