@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 82
 executor: copilot
 claimed_at: 2026-09-12T06:03:25Z
@@ -163,6 +163,24 @@ Run repository-standard Prisma format/validate/generate, billing schema validati
 
 Do not add merchant selection, grant usage counters, UsageReservation linkage, Admin UI, merchant UI, Background consumption, campaign messaging or a scheduler.
 
+## Work Items
+
+- [x] Inspect the accepted DATABASE-009 schema/migration and preserve its promotional grant rows and enum values.
+- [x] Add campaign and lifecycle-event Prisma enums/models, relations, constraints, and query-path indexes.
+- [x] Add the additive PostgreSQL migration without campaign rows, grant rows, balance changes, or counter backfills.
+- [x] Add deterministic campaign schema/migration validation and regenerate the ERD.
+- [x] Run the repository-declared Prisma, billing-policy, ERD, migration-status, and diff checks; record the unavailable database limitation.
+
+## Acceptance Criteria
+
+- [x] GLOBAL, PLAN, and SHOP campaigns have mutually exclusive target shapes enforced by a database CHECK constraint.
+- [x] PLAN targets reference `BillingPlan.id`, SHOP targets reference `Shop.id`, and creator/event provenance references `PlatformAdmin.id` with deliberate restrictive delete behavior.
+- [x] Positive quantity and `expiresAt > startsAt` are database-enforced; lifecycle status remains `DRAFT`/`ACTIVE`/`CLOSED` with time-derived expiry.
+- [x] Running, target lookup, catalogue ordering, and append-only event query paths have indexes.
+- [x] Campaign lifecycle evidence includes close/reopen/expiry-change event kinds and old/new expiry fields; `version` supports optimistic application updates.
+- [x] Existing DATABASE-009 promotional grants and enum values remain unchanged, and the migration creates no promotional capacity.
+- [x] ERD and deterministic validation cover the new schema contract.
+
 ## Stop conditions
 
 Stop and return to `moda_architect` if the current `BillingPlan`, `Shop`, `PlatformAdmin` or DATABASE-009 models differ materially from the inspected contract in a way that changes target identity or audit ownership.
@@ -170,19 +188,53 @@ Stop and return to `moda_architect` if the current `BillingPlan`, `Shop`, `Platf
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260912090000_add_promotion_campaign_catalogue/migration.sql`
+- `scripts/validate-promotion-campaign-schema.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Added `PromotionTargetScope`, `PromotionCampaignStatus`, and `PromotionCampaignEventType` with the exact `GLOBAL`/`PLAN`/`SHOP`, `DRAFT`/`ACTIVE`/`CLOSED`, and lifecycle vocabularies.
+- Added `billing.PromotionCampaign` with fixed quantity, running window, optional merchant description, durable BillingPlan/Shop target relations, PlatformAdmin creator provenance, versioning, and catalogue/running/target indexes.
+- Added `billing.PromotionCampaignEvent` with append-only lifecycle kind, expiry transition fields, campaign provenance, restrictive campaign/admin foreign keys, and audit lookup indexes.
+- Added PostgreSQL checks for positive quantity, expiry after start, and exactly one valid scope-target shape. Expiry remains derived from `expiresAt`; no `EXPIRED` enum value or scheduler state was added.
+- Preserved DATABASE-009 `PromotionalCreditGrant` rows and enums; the migration is additive and creates no grants, counters, selections, balances, or other promotional capacity.
+- Added deterministic validator coverage for schema/migration enum alignment, exact target identity relations, checks, indexes, restrictive foreign keys, no-row migration behavior, and absence of persisted `EXPIRED` status.
+- Regenerated the PlantUML ERD with both campaign models and their relations.
 
 ### Validation Results
-Populate during implementation.
+- `npm ci`: passed in the isolated implementation worktree; repository dependencies restored from `package-lock.json`.
+- `npm run format`: passed.
+- `npm run validate`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed with Prisma 6.19.3.
+- `npm run test:billing-policy`: passed; DATABASE-009 compatibility assertions remain green.
+- `npm run test:promotion-campaign`: passed.
+- `npm run erd:puml`: passed; `docs/generated/prisma-erd.puml` contains both campaign entities and all relations.
+- `git diff --check`: passed.
+- `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run status`: attempted against the documented localhost database; blocked by `P1001: Can't reach database server at localhost:5432`. No migration was applied.
+- Database-backed valid/invalid row checks could not run for the same unavailable local PostgreSQL service; static migration assertions cover all required constraints and no-row guards.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Task branch: `task/ARCH-010-DATABASE-010`.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-010`.
+- Parent branch: `task/ARCH-010-DATABASE-010`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-010`.
+- Implementation branch: `task/ARCH-010-DATABASE-010`.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+- Start-of-attempt synchronization: parent remote task branch `not-needed` (created from current `origin/main`); parent `origin/main` `already-current`; implementation remote task branch `not-needed` (created from current `origin/main`); implementation `origin/main` `already-current`.
+- Parent claim commit: `ab36376`, pushed to `origin/task/ARCH-010-DATABASE-010`.
+- Implementation commit: `82e91b3`, pushed to `origin/task/ARCH-010-DATABASE-010`.
+- Parent report commit: recorded below after publication.
+- Submodule gitlink staged: no.
+- Merged to implementation main: no. Merged to workspace main: no.
 
 ### Architect Review
 Pending.
