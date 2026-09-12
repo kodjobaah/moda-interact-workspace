@@ -319,10 +319,10 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
   claim commit: `7b9a41f`
-  report commit: `<this Attempt 7 parent report commit>`
+  report commit: `abd36ddd273b4bfac2690f3b13e39c96fac99b01`
   parent review-status/final metadata commit: `4e3f9c4`
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
-  report pushed: pending this publication
+  report pushed: yes
   submodule gitlink staged: no
 
 Database dependency revision:
