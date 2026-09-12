@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-12T00:00:00Z
@@ -315,9 +315,9 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
   claim commit: `ab220d4`
-  report commit: this parent task-branch publication commit
+  report commit: `d5e893ce5a24022646ef5ecd54e2984a53b0f758`
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
-  report pushed: pending publication
+  report pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
