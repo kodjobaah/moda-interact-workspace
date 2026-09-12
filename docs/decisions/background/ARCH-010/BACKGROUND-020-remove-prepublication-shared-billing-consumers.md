@@ -372,7 +372,7 @@ Parent workspace:
 
 - task file: `docs/decisions/background/ARCH-010/BACKGROUND-020-remove-prepublication-shared-billing-consumers.md`
 - claim commit: `efcf03e`
-- report commit: pending
+- report commit: `3ca88e6cf0eccd23029c11e7d12b85137d9a9abe` before metadata-only amend; final amended report commit is recorded by the pushed branch.
 - remote branch: `origin/task/ARCH-010-BACKGROUND-020`
 - pushed: claim yes; report pending
 - submodule gitlink staged: no
