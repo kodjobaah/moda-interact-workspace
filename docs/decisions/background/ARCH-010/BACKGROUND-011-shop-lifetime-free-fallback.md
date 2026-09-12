@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 41
 executor: copilot
 claimed_at: '2026-09-12T18:06:01Z'
@@ -229,76 +229,78 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 
 ### Files Changed
+- `package.json`
+- `package-lock.json`
 - `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/checkout-recovery.service.ts`
+- `src/services/effective-billing-policy.service.ts`
 - `src/services/free-recovery-reservation.service.ts`
 - `src/services/purchased-recovery-reservation.service.ts`
 - `src/services/recovery-billing.service.ts`
 - `tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+- `tests/unit/services/effective-billing-policy.service.test.ts`
 - `tests/unit/services/free-recovery-reservation.service.test.ts`
 - `tests/unit/services/purchased-recovery-reservation.service.test.ts`
 - `tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
 Implemented the DATABASE-013-backed, plan-independent lifetime Free fallback.
-The effective policy now reads only the durable
-`LIFETIME_FREE_RECOVERY_CREDITS` counter and fails closed when that counter is
-missing. Legacy plan-owned lifetime allowance reads, signed adjustment queries,
-and `FREE_RECOVERY_LIFETIME` compatibility identifiers were removed from the
-touched path.
+The effective policy reads only the durable `LIFETIME_FREE_RECOVERY_CREDITS`
+counter, validates its lifetime invariants, and fails closed for missing or
+invalid state. Free admission uses one canonical recovery source key and tries
+purchased capacity before lifetime Free capacity, while preserving the selected
+bucket through RESERVED, COMMITTED, AMBIGUOUS, and RELEASED replays. Released
+rows reactivate on the same `UsageReservation` row and counter through CAS; an
+ambiguous row blocks and never falls through to another bucket. Lifetime Free
+commit remains `NOT_APPLICABLE` and creates no Shopify-reportable App Event.
 
-Free admission now attempts purchased credits before lifetime Free credits, and
-Paid admission uses lifetime Free after included and purchased capacity are
-exhausted. Admission source identity is preserved so commit, release, and
-ambiguous provider outcomes operate on the exact reserved bucket. Lifetime Free
-commit remains `NOT_APPLICABLE` and does not create a Shopify-reportable App
-Event. Reconciliation now provisions the renamed lifetime counter for new Free
-subscriptions without changing an existing grant.
-
-Required regressions cover purchased-first ordering, lifetime fallback and
-exhaustion, Paid fallback, concurrency, replay, same-bucket release/commit,
-missing-counter fail-closed behavior, plan-independent grants, and inactive or
-uninstalled shop blocking. Attempt 3 additionally uses one canonical recovery
-source key across purchased and lifetime-Free admission, preserves the owning
-counter on replay and provider failure, spends existing purchased capacity even
-when pack purchase is disabled, removes the partial Paid included-capacity
-composition from this bounded task, and adds activation/reconciliation grant
-preservation regressions.
+Reconciliation provisions `LIFETIME_FREE_RECOVERY_CREDITS` from the platform
+policy only when absent and preserves existing grant, committed, reserved, and
+version state. BACKGROUND-011 supplies the plan-independent lifetime reservation
+primitive. BACKGROUND-002 owns the Paid `included -> purchased -> lifetime-Free`
+composition. Shared `0.11.0` is consumed and the removed Shared-007 symbols are
+absent from Background source/tests.
 
 ### Validation Results
 Focused tests:
-`npm test -- --run tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/billing-subscription-reconciliation.service.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
-passed: 4 files, 71 tests; 1 integration test was skipped because its database
-guard requires explicit disposable-test flags.
+`npm test -- --run tests/unit/services/effective-billing-policy.service.test.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+passed: 5 files, 97 tests.
 
 Guarded PostgreSQL concurrency test:
 `TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:5432/moda_interact' MODA_DISPOSABLE_INTEGRATION=1 npm test -- --run tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
 passed: 1 file, 1 test.
 
-Prisma generation succeeded through `npm run build` with the hydrated
-DATABASE-013 schema/client. The repository build remains non-zero under the
-documented `TYPECHECK-001` baseline: no current-task files produce errors, but
-the pre-existing purchased-reservation nullability errors and recovery-credit
-purchase/refund schema-consumer errors remain.
+`npm run build` regenerated Prisma successfully but remains non-zero under the
+documented DATABASE-013 schema-consumer baseline: 29 TypeScript errors remain
+in unchanged `src/services/recovery-credit-purchase.service.ts` and
+`src/services/recovery-credit-refund.service.ts`; no changed task file is in the
+error list.
 
 Repository unit validation via `npm run test:unit` remains non-zero with 44
-files passed and 3 files failed, 488 tests passed and 41 failed. The failures
-are in the unrelated recovery-credit purchase/refund consumers and observability
-startup baseline; no Attempt-3 changed file produced a test failure.
+files passed and 3 files failed, 501 tests passed and 41 failed. The failures
+are confined to unchanged recovery-credit purchase/refund consumers and their
+existing schema/test baseline; no changed task file failed.
 
-`git diff --check` passed. The database submodule remains an unstaged gitlink at
-`014408e0402221f08a3961880b34e828a8bdc736` and was not modified or committed.
+Guarded PostgreSQL validation:
+`TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:5432/moda_interact' MODA_DISPOSABLE_INTEGRATION=1 npm test -- --run tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
+passed: 1 file, 1 test. Shared version check reported `0.11.0`; the removed
+symbol scan was clean; `git diff --check` passed. The database submodule remains
+an unstaged gitlink at `014408e0402221f08a3961880b34e828a8bdc736`.
 
 ### Deviations
-Repository-wide build and unit validation retain documented/unrelated baseline
-failures described above. The focused task validation is green.
+Repository-wide build and unit validation retain only the documented,
+unchanged DATABASE-013 schema-consumer baseline described above. Focused task
+validation, guarded concurrency validation, package verification, and diff
+checks are green.
 
 ### Assumptions
-The hydrated DATABASE-013 database submodule and generated Prisma client are
-the accepted prerequisite baseline supplied for this attempt.
+The hydrated DATABASE-013 database submodule at
+`014408e0402221f08a3961880b34e828a8bdc736` and generated Prisma client are the
+accepted prerequisite baseline supplied for this attempt.
 
 ### Unresolved Issues
 Repository-wide recovery-credit purchase/refund consumers still require the
@@ -327,17 +329,18 @@ Physical worktree isolation:
 
 Implementation repository:
   repository: moda-interact-background
-  implementation commit: db8cec1 (fix: complete BACKGROUND-011 attempt 3 corrections)
+  implementation commit: e5d6f0b (fix: complete BACKGROUND-011 attempt 4 corrections)
   remote branch: origin/task/ARCH-010-BACKGROUND-011
   pushed: yes
 
 Parent workspace:
   task file: docs/decisions/background/ARCH-010/BACKGROUND-011-shop-lifetime-free-fallback.md
   claim commit: e21293b (chore: claim BACKGROUND-011 attempt 3)
-  report commit: 600f7b9 (docs: return BACKGROUND-011 attempt 3 for review)
+  report commit: pending publication
   remote branch: origin/task/ARCH-010-BACKGROUND-011
   submodule gitlink staged: no
 
+Database gitlink staged: no
 Merged to implementation main: no
 Merged to workspace main: no
 
