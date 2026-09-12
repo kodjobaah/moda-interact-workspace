@@ -134,4 +134,39 @@ STOP if root Historical Events subscription status is unavailable in the configu
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
+
+### Implementation
+
+- Added a Shopify Partner one-request lifecycle snapshot using `activeSubscription` plus root `SubscriptionStatus` events.
+- Applied the canonical six lifecycle event filters, app/shop scoping, and a maximum 365-day history window.
+- Added strict lifecycle event parsing and typed ACTIVE, FROZEN, CANCELED, UNRESOLVED, and NO_ACTIVE_SUBSCRIPTION service states.
+- Preserved the existing SHOPIFY-013 active commercial fields and kept local `BillingPlan` mapping separate from provider lifecycle truth.
+- Preserved frozen historical plan handle and billing period without fabricating price data.
+- Kept the read path free of `Subscription` mutations.
+
+### Files Changed
+
+- `app/services/billing/providers/shopify-billing.provider.ts`
+- `app/services/billing/billing.types.ts`
+- `app/services/billing/billing.service.ts`
+- `tests/unit/services/shopify-billing.provider.test.ts`
+- `tests/unit/services/billing.service.test.ts`
+
+### Validation
+
+- Passed: focused provider and lifecycle service tests, 7 tests.
+- Passed: changed-file editor diagnostics.
+- Full provider/service test run: provider tests passed; one unrelated existing service test failed with `Date { NaN }` while scheduling a pack-enabled Free cycle.
+- Full TypeScript check: reached an unrelated pre-existing shared-package export error for `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`; no SHOPIFY-018-specific type errors remain.
+- `git diff --check` passed.
+
+### Handoff Evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-018`
+- Implementation branch: `task/ARCH-010-SHOPIFY-018`
+- Implementation commit: `1605a3c`
+- Parent claim commit: `51d0ef0`
+- Parent report branch: `task/ARCH-010-SHOPIFY-018`
+
+Returned to `moda_architect` for review. This report does not claim architect acceptance.
