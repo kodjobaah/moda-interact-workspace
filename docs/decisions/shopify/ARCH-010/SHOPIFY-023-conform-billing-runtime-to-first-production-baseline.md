@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 9
-executor: copilot
-claimed_at: '2026-09-12T22:27:01Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -357,3 +357,287 @@ The runtime now targets the canonical shop-lifetime counter and shared 0.11.0 co
 ### Follow-up
 
 Architect review of `01f0605`; regenerate Prisma from DATABASE-013 before merge.
+
+### Attempt 1 — Accepted after developer validation reconciliation
+
+#### Review Status
+
+Accepted.
+
+No second implementation attempt was required.
+
+The production implementation remains:
+
+```text
+01f0605
+```
+
+The developer subsequently materialized the repository's existing `database` submodule and supplied the missing validation evidence directly to `moda_architect`. That evidence resolves the validation blocker recorded in the original Completion Report without requiring any Shopify source change.
+
+#### Production implementation review
+
+Architect code review confirms that SHOPIFY-023 implements the intended first-production baseline bridge:
+
+```text
+- @modainteract/moda-interact-shared updated to 0.11.0;
+- Shopify no longer creates the lifetime-Free grant;
+- FREE_RECOVERY_LIFETIME is removed;
+- BillingPlan.freeLifetimeConversationAllowance is removed from the runtime path;
+- BillingAllowanceAdjustment is removed from merchant lifetime-capacity arithmetic;
+- lifetime capacity is read only from
+  ShopEntitlementCounter(LIFETIME_FREE_RECOVERY_CREDITS);
+- available lifetime capacity is:
+  max(grantedQuantity - committedQuantity - reservedQuantity, 0);
+- lifetime capacity is visible for both mapped Free and Paid subscription states;
+- no local cancellation/refund/promotion compatibility mechanism was introduced.
+```
+
+No production-source defect was identified during review.
+
+#### Developer-supplied post-implementation validation
+
+The developer ran validation from:
+
+```text
+.../moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-023
+```
+
+after the existing `database` Git submodule was materialized.
+
+##### Prisma
+
+```text
+npm run prisma:validate
+```
+
+executed successfully:
+
+```text
+Prisma schema loaded from database/prisma/schema.prisma
+The schema at database/prisma/schema.prisma is valid
+```
+
+```text
+npm run prisma:generate
+```
+
+executed successfully and generated:
+
+```text
+Prisma Client v6.19.3
+```
+
+This proves the implementation was validated against the materialized DATABASE-013 schema rather than the stale/missing generated-client state described in the original Completion Report.
+
+##### Tests
+
+The complete repository Vitest run executed successfully:
+
+```text
+Test Files: 32 passed, 1 skipped
+Tests:      255 passed, 1 skipped
+Failures:   0
+```
+
+The SHOPIFY-023-focused suites passed inside that run:
+
+```text
+tests/unit/services/billing.service.test.ts
+  59/59 passed
+
+tests/unit/billing-ui.test.ts
+  10/10 passed
+```
+
+##### Production build
+
+```text
+npm run build
+```
+
+executed Prisma generation and then completed both the client and SSR production builds successfully.
+
+The former missing-submodule build blocker is therefore resolved.
+
+##### TypeScript
+
+```text
+npm run typecheck
+```
+
+executed and reported:
+
+```text
+162 errors in 26 files
+```
+
+Architect review of the supplied diagnostics found no errors in the SHOPIFY-023 changed files:
+
+```text
+app/services/billing/billing.service.ts
+app/routes/app/billing/route.tsx
+tests/unit/services/billing.service.test.ts
+tests/unit/billing-ui.test.ts
+```
+
+The diagnostics are existing repository-wide TypeScript debt concentrated in unrelated dashboard, onboarding, other route, Redis, shop-service and test surfaces. They are not treated as a SHOPIFY-023 regression.
+
+##### Lint
+
+```text
+npm run lint
+```
+
+executed and reported 10 existing errors in unrelated files including:
+
+```text
+app/components/onboarding/PlanSelector.jsx
+app/routes/app/billing/options/route.tsx
+app/routes/app/billing/select/route.jsx
+app/routes/app/merchant-support/route.jsx
+app/routes/public/privacy/route.tsx
+tests/unit/otel/shopify-webhook-telemetry.test.js
+tests/unit/webhooks/shopify-webhook-queue.server.test.js
+```
+
+None are SHOPIFY-023 changed files.
+
+##### Removed-symbol scan
+
+The required scan across:
+
+```text
+app
+tests
+```
+
+returned no matches for:
+
+```text
+FREE_RECOVERY_LIFETIME
+freeLifetimeConversationAllowance
+BillingAllowanceAdjustment
+appSubscriptionCancel
+SubscriptionCancellationRequest
+RecoveryCreditPurchaseStatus.REFUNDED
+CURRENT_CYCLE_APP_EVENT_CORRECTION
+PROMOTIONAL_RECOVERY_CREDITS
+BILLING_FREE_ALLOWANCE_EXHAUSTED
+```
+
+##### Diff validation
+
+`git diff --check` produced no error output.
+
+#### Database submodule interpretation
+
+The earlier validation failure is conclusively treated as a submodule-materialization problem, not a Shopify compatibility defect.
+
+The architect does not authorize any change to the DATABASE-013 schema or any compatibility alias as part of SHOPIFY-023.
+
+The developer validation used the repository's existing database submodule solely to make the recorded Prisma schema available to generation/validation.
+
+#### VCS / task-isolation reconciliation
+
+The original Completion Report records dedicated canonical worktrees for both parent and implementation and records both task branches as synchronized with `origin/main` before claim publication.
+
+Because this was the first implementation claim for SHOPIFY-023, the architect normalizes that legacy wording to the current synchronization evidence shape as:
+
+```text
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: yes
+```
+
+Rationale:
+
+```text
+- Attempt 1 was the initial task materialization/claim;
+- both dedicated task worktrees are recorded;
+- both task branches are recorded as synchronized with origin/main before implementation;
+- the user handoff reports both mirrored task branches pushed and clean;
+- no shared/default checkout or main branch modification is reported.
+```
+
+The implementation commit remains:
+
+```text
+01f0605
+```
+
+The developer's final pre-review parent task report HEAD was:
+
+```text
+2f65ad9
+```
+
+The architect acceptance overlay is coordination-document reconciliation and does not manufacture a new implementation commit.
+
+#### Acceptance Criteria assessment
+
+```text
+1. no FREE_RECOVERY_LIFETIME runtime/test reference: PASS
+2. no plan-owned lifetime allowance / BillingAllowanceAdjustment runtime path: PASS
+3. lifetime availability solely from LIFETIME_FREE_RECOVERY_CREDITS and plan-independent: PASS
+4. accepted onboarding/activation behaviour preserved without Shopify grant creation: PASS
+5. no local cancellation state machine introduced: PASS
+6. no duplicate removed Shared billing/cancellation contract: PASS
+7. no BILLING_FREE_ALLOWANCE_EXHAUSTED compatibility handling: PASS
+8. directly encountered obsolete compatibility removed without downstream scope expansion: PASS
+9. focused Free/Paid lifetime arithmetic coverage: PASS
+10. removed-symbol source/test search: PASS
+11. repository validation executed; remaining TypeScript/lint failures are unchanged unrelated baseline debt: PASS
+```
+
+#### Architect Decision
+
+**Accepted — Attempt 1, after post-implementation developer validation reconciliation.**
+
+Because:
+
+```text
+completion_mode: automatic
+```
+
+the task is now:
+
+```text
+status: complete
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+No implementation retry is required.
+
+#### Dependency reconciliation
+
+SHOPIFY-023 enables:
+
+```text
+ARCH-010-SHOPIFY-003
+ARCH-010-SHOPIFY-009
+ARCH-010-SHOPIFY-018
+```
+
+Only `ARCH-010-SHOPIFY-018` has all other dependencies Complete:
+
+```text
+ARCH-010-DATABASE-013 — Complete
+ARCH-010-SHOPIFY-013 — Complete
+ARCH-010-SHOPIFY-023 — now Complete
+```
+
+Therefore:
+
+```text
+ARCH-010-SHOPIFY-018
+Pending -> Ready
+```
+
+`SHOPIFY-003` remains Pending because `ARCH-010-BACKGROUND-003` is not Complete.
+
+`SHOPIFY-009` remains Pending because `ARCH-010-SHOPIFY-004` is not Complete.
+
