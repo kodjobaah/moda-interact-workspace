@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-09-12T10:02:05Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-010-DATABASE-006
@@ -1824,6 +1824,272 @@ attempt: 5
 ```
 
 **Architect decision: Changes Requested — Attempt 4.**
+
+#### Attempt 5 — Changes Requested
+
+Attempt 5 satisfies the substantive Attempt-4 corrections except for one stale-job
+publication defect.
+
+Architect review accepts the following Attempt-5 implementation as correct:
+
+- first verified pack-enabled Free with no exact provider cycle now schedules exactly
+  `now + FREE_CYCLE_DISCOVERY_RETRY_MS` (5 minutes), and the deterministic queued
+  payload uses that same committed timestamp;
+- cycle-discovery null/error CAS predicates use the exact original `currentPlanId`
+  rather than `planId: { not: null }`;
+- the cycle-discovery reconstruction branch now requires
+  `ShopSettings.onboardingCompleted = true` and
+  `Subscription.pendingEffectiveAt = null`, while the initial and frozen repair
+  branches remain present;
+- successful initial Free completion and other-current-plan projection acquire
+  `ShopSettings` before `Subscription`, re-read after locking, and compare the exact
+  expected initial state before writing;
+- exact Free-cycle projection locks the Subscription before the final state read/write;
+- normal initial Partner transport failure preserves the exact `NO_CONTRACT` pending
+  target, records `PARTNER_API_ERROR`, computes the correct initial retry tier and
+  enqueues the deterministic next job;
+- queue telemetry derives its queue name from the canonical billing queue resource;
+- `removeOnFail: true`, periodic reconstruction, Redis+PostgreSQL readiness,
+  queue-performance telemetry, provider-pending projection, race-safe lifetime-counter
+  `upsert(..., update: {})`, and the frozen repair selector remain intact;
+- the implementation change from Attempt 4 is bounded to:
+  `src/entrypoints/billing.ts`,
+  `src/services/billing-subscription-reconciliation.service.ts`,
+  `tests/unit/services/billing-subscription-reconciliation.service.test.ts`, and
+  `tests/unit/runtime/entrypoint-isolation.test.ts`;
+- accepted database revision
+  `6d5fb9adf2e5c1fb28333b330dd183c9cda41550` is preserved and the gitlink is not
+  staged;
+- the 8 nullable-`counterId` build diagnostics and 6 documented full-suite failures
+  remain unrelated baseline conditions and are not the reason for this decision.
+
+Attempt 5 cannot be accepted because `completeVerifiedFree(...)` still publishes a
+future job after its locked stale-state check rejects the transaction.
+
+##### Correction 1 — stale verified-Free completion must not enqueue
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+Current behaviour:
+
+```ts
+await this.database.$transaction(async (transaction) => {
+  ...
+  if (stale) return;
+  ...
+});
+
+if (nextReconcileAt) {
+  await this.publishNext(shopId, subscriptionId, nextReconcileAt);
+}
+```
+
+The transaction returns `undefined` both when:
+
+```text
+A. the exact expected state is stale and NO writes occur
+B. the verified Free activation commits successfully
+```
+
+so the code cannot distinguish those outcomes. A stale/losing job therefore still
+publishes delayed work.
+
+Implement this exact result contract:
+
+```ts
+const committed = await this.database.$transaction(
+  async (transaction: Prisma.TransactionClient): Promise<boolean> => {
+    await this.lockShopSettings(transaction, shopId);
+    await this.lockSubscription(transaction, subscriptionId);
+
+    const settings = ...;
+    const current = ...;
+
+    if (
+      !current
+      || settings?.onboardingCompleted !== false
+      || current.status !== SubscriptionProjectionStatus.NO_CONTRACT
+      || current.planId !== null
+      || current.pendingPlanId !== expected.pendingPlanId
+      || current.pendingShopifyPlanHandle !== expected.pendingShopifyPlanHandle
+      || current.pendingEffectiveAt?.toISOString()
+           !== expected.pendingEffectiveAt.toISOString()
+      || current.nextReconcileAt?.toISOString()
+           !== expected.nextReconcileAt.toISOString()
+    ) {
+      return false;
+    }
+
+    // existing lifetime-counter, BillingPeriod, Subscription and
+    // ShopSettings writes remain unchanged.
+
+    return true;
+  },
+);
+
+if (committed && nextReconcileAt) {
+  await this.publishNext(shopId, subscriptionId, nextReconcileAt);
+}
+```
+
+Do not enqueue anything when `committed === false`.
+
+Do not move `publishNext(...)` inside the database transaction.
+
+Do not change the successful schedule calculation:
+
+```text
+pack disabled:
+  null
+
+pack enabled + exact cycle:
+  max(now, periodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS)
+
+pack enabled + no exact cycle:
+  now + FREE_CYCLE_DISCOVERY_RETRY_MS
+```
+
+##### Required regression — stale verified provider response performs zero enqueue
+
+Add one focused test in:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Arrange the outer pre-Partner row as a valid initial activation:
+
+```text
+onboardingCompleted = false
+status = NO_CONTRACT
+planId = null
+pendingPlanId = plan-free
+pendingShopifyPlanHandle = free-2026
+nextReconcileAt = payload.expectedNextReconcileAt
+```
+
+Return a provider response that verifies the requested Free plan and has either:
+
+```text
+A. an exact cycle with recoveryCreditPackEnabled = true
+```
+
+or:
+
+```text
+B. no exact cycle with recoveryCreditPackEnabled = true
+```
+
+Then make the **locked transaction re-read** represent a newer/stale state, for
+example:
+
+```text
+pendingPlanId = plan-free-newer
+```
+
+with `ShopSettings.onboardingCompleted = false`.
+
+Assert all of the following:
+
+```text
+Partner was called
+ShopSettings lock was acquired
+Subscription lock was acquired
+no BillingPeriod upsert
+no lifetime-counter upsert
+no Subscription update
+no ShopSettings update
+queue.add was NOT called
+```
+
+This regression must execute the `completeVerifiedFree(...)` path; do not satisfy it
+by mocking the method or by using the earlier null/error `updateMany.count = 0` tests.
+
+##### Correction 2 — record exact Attempt-6 publication evidence
+
+The Attempt-5 task report inside the submitted archive still says:
+
+```text
+Parent report/metadata commit: to be recorded after publication.
+```
+
+The review submission supplied these immutable Attempt-5 hashes:
+
+```text
+implementation commit: 5e219b5
+parent claim commit: 0cd4c0d
+parent report/status commit: ce74c4b
+metadata commit: d515670
+```
+
+Attempt 6 must not reuse those hashes as its new result. After the single code/test
+correction is published, update the current Completion Report with the exact new:
+
+```text
+implementation commit: <Attempt-6 implementation hash>
+parent claim commit: <Attempt-6/existing exact claim hash>
+parent report/status commit: <Attempt-6 exact hash>
+metadata/review-status commit: <Attempt-6 exact hash, if separate>
+database revision:
+  6d5fb9adf2e5c1fb28333b330dd183c9cda41550
+submodule gitlink staged: no
+```
+
+Keep all three physical-isolation declarations and all four synchronization outcomes.
+
+##### Attempt-6 validation
+
+This is a narrow correction. Before returning to `review`, run:
+
+```text
+npm test -- --run \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/runtime/entrypoint-isolation.test.ts
+
+npm test
+npm run prisma:validate
+npm run build
+git diff --check
+```
+
+Record exact totals.
+
+The existing eight unrelated nullable-`counterId` build errors and documented baseline
+test failures may remain if unchanged. Any diagnostic in the two task-touched source
+files is a blocker.
+
+##### Scope guard
+
+Attempt 6 remains `ARCH-010-BACKGROUND-001` only.
+
+Do not change:
+
+- queue/reconstruction architecture;
+- retry tier constants;
+- the 5-minute cycle-discovery cadence;
+- provider projection rules;
+- lifetime-counter semantics;
+- readiness/telemetry design;
+- database schema or historical migrations;
+- database submodule revision/gitlink.
+
+Do not implement Paid activation, rollover, upgrade/downgrade, cancellation,
+freeze/unfreeze transitions, promotional credits, Admin UI or Render wiring.
+
+Stop after the stale-completion enqueue defect is corrected, the required regression
+passes, validation is recorded and the same task is returned to `review`.
+
+Reclaim through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 6
+```
+
+**Architect decision: Changes Requested — Attempt 5.**
 
 ## Final frozen-state repair rows
 
