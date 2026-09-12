@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 7
+executor: copilot
+claimed_at: 2026-09-12T10:39:28Z
+attempt: 8
 depends_on:
   - ARCH-010-DATABASE-006
   - ARCH-010-SHOPIFY-001
@@ -247,7 +247,7 @@ Attempt 7 correction checklist:
   `ShopSettings`-before-`Subscription` lock-order assertion.
 
 ### Status
-Ready for Review
+In Progress
 
 ### Files Changed
 - `moda-interact/app/services/billing/billing.service.ts`
