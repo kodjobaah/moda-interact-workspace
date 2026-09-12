@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 82
-executor: copilot
-claimed_at: 2026-09-12T06:03:25Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-DATABASE-009
@@ -20,7 +20,7 @@ enables:
   - ARCH-010-DATABASE-011
   - ARCH-010-ADMIN-004
 created: 2026-09-12
-updated: 2026-09-12
+updated: 2026-09-12T06:17:29Z
 ---
 
 # ARCH-010-DATABASE-010: Persist opt-in promotional campaigns, targeting and lifecycle audit
@@ -232,9 +232,43 @@ Ready for Review.
 - Start-of-attempt synchronization: parent remote task branch `not-needed` (created from current `origin/main`); parent `origin/main` `already-current`; implementation remote task branch `not-needed` (created from current `origin/main`); implementation `origin/main` `already-current`.
 - Parent claim commit: `ab36376`, pushed to `origin/task/ARCH-010-DATABASE-010`.
 - Implementation commits: `82e91b3` and `bd79e7f`, pushed to `origin/task/ARCH-010-DATABASE-010`; `bd79e7f` is the clean implementation head.
-- Parent report commit: recorded below after publication.
+- Parent report commit: this final evidence commit is pushed to `origin/task/ARCH-010-DATABASE-010`; its SHA is reported in the handoff because a commit cannot embed its own hash.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no. Merged to workspace main: no.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Accepted
+
+#### Attempt 1 — Accepted
+
+Architect review verified:
+
+- the implementation diff against the supplied pre-task workspace baseline is bounded to the declared database task surface: `prisma/schema.prisma`, the new promotion-campaign migration, `scripts/validate-promotion-campaign-schema.mjs`, the package script, and regenerated ERD;
+- `PromotionTargetScope`, `PromotionCampaignStatus` and `PromotionCampaignEventType` exactly preserve the agreed `GLOBAL/PLAN/SHOP`, `DRAFT/ACTIVE/CLOSED`, and lifecycle-event vocabularies;
+- `billing.PromotionCampaign` stores exact durable `BillingPlan.id` / `Shop.id` targeting, positive fixed quantity, bounded start/expiry times, PlatformAdmin creator provenance, optimistic `version`, and the required running/target/catalogue indexes;
+- PostgreSQL CHECK constraints enforce positive quantity, `expiresAt > startsAt`, and exactly one valid scope-target shape;
+- campaign target, creator, event campaign, and event administrator foreign keys all use deliberate `ON DELETE RESTRICT` behaviour;
+- `billing.PromotionCampaignEvent` provides append-only lifecycle evidence shape for activation, close, reopen and expiry change, with old/new expiry values and acting administrator provenance;
+- the schema supports the post-activation application invariant that scope/target/quantity remain immutable, while ADMIN-004/005 own mutation authorization and lifecycle transitions;
+- the migration is additive and contains no `INSERT`, no conversion from `campaignReference`, no merchant selection, no grant creation, and no purchased/lifetime-Free counter mutation;
+- existing DATABASE-009 `PromotionalCreditGrant` structure and enum values remain unchanged;
+- `scripts/validate-promotion-campaign-schema.mjs` deterministically asserts enum/schema/migration alignment, constraints, indexes, restrictive provenance relations, no-row migration behaviour, and absence of persisted `EXPIRED`;
+- the promotion-campaign validator and existing billing-policy validator both pass in the architect review copy;
+- the Completion Report records successful Prisma format/validate/generate, billing-policy validation, promotion-campaign validation, ERD regeneration and `git diff --check`;
+- the reported local `npm run status` failure is Prisma `P1001` because no PostgreSQL server was listening on `localhost:5432`. This is an environment-availability limitation rather than evidence of a schema defect; as with previously accepted additive ARCH-010 database work, applying the migration to a shared database is not required solely for architect acceptance;
+- the submitted handoff identifies implementation commits `82e91b3` and `bd79e7f`, with `bd79e7f` as the clean implementation head, and parent report commits `6231b3d` and `08b950e`;
+- the Completion Report records the canonical dedicated parent/implementation worktrees and start-of-attempt synchronization evidence. The submitted review archive does not carry usable Git metadata, so commit ancestry/push state is accepted from that durable handoff evidence rather than re-derived in the review container;
+- the reported external modification to the parent task document was preserved. The architect acceptance overlay is based on the supplied final task document and does not require implementation-code churn.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is now `complete`. `executor` and `claimed_at` are cleared while `attempt: 1` is preserved.
+
+Dependency reconciliation:
+
+- `ARCH-010-DATABASE-011` is promoted from Pending to Ready because its two prerequisites, DATABASE-009 and DATABASE-010, are now Complete;
+- `ARCH-010-ADMIN-004` is promoted from Pending to Ready because DATABASE-010, its sole prerequisite, is now Complete;
+- no other dependant becomes Ready solely from this acceptance.
