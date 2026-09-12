@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: blocked
 priority: 6
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: '2026-09-12T14:33:41Z'
+attempt: 1
 depends_on:
 - ARCH-010-SHARED-006
 enables:
@@ -97,7 +97,7 @@ Do not:
 
 ## Work Items
 
-- [ ] Inspect current billing public exports and exact consumers represented by repository tests.
+- [x] Inspect current billing public exports and exact consumers represented by repository tests.
 - [ ] Remove superseded cancellation mode/provider mapping exports.
 - [ ] Remove obsolete cancellation system-message values.
 - [ ] Remove `BILLING_FREE_ALLOWANCE_EXHAUSTED` and preserve the generic capacity-exhaustion code.
@@ -150,31 +150,48 @@ This is deliberately breaking cleanup before first production. Do not add deprec
 ## Completion Report
 
 ### Status
-Not started.
+Blocked pending consumer sequencing.
 
 ### Files Changed
-Populate during implementation.
+No implementation files changed. Task metadata/report updated only.
 
 ### Work Completed
-Populate during implementation.
+Confirmed the obsolete cancellation exports and billing message values are
+currently published by Shared. Confirmed live consumers prevent safe breaking
+removal within this task's scope. Reverted the implementation probe; the
+implementation worktree is unchanged.
 
 ### Validation Results
-Populate during implementation.
+`npm test` passed after dependency restore (`109` passed, `1` skipped because
+`TEST_REDIS_URL` was not configured). `npm run typecheck` and `npm run build`
+passed. `git diff --check` passed during the implementation probe. The built
+runtime absence check passed during the probe, but generated output was not
+retained because the source change is blocked.
 
 ### Deviations
-None.
+The requested Shared removal was not committed because active consumers in
+consumer repositories would break and consumer edits are explicitly out of
+scope.
 
 ### Assumptions
 No production consumer requires ARCH-009 local cancellation contracts.
 
 ### Unresolved Issues
-None at task definition time.
+Consumer cleanup/sequencing is required before this breaking Shared contract
+removal can proceed.
 
 ### Architectural Concerns
-Stop if an active ARCH-010 consumer of `BILLING_PLAN_CHANGE_ACTION_REQUIRED` or the cancellation exports is found.
+Active consumers found:
+- `moda-interact-background/src/services/subscription-cancellation.service.ts` imports `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS` and `SubscriptionCancellationMode`, and passes the mode into the provider.
+- `moda-interact-background/src/providers/shopify-partner-billing.provider.ts` imports both cancellation exports and indexes the provider mapping when executing cancellation.
+- `moda-interact/app/services/merchant-support/system-message-actions.ts` handles `BILLING_FREE_ALLOWANCE_EXHAUSTED`.
+- `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts` asserts `BILLING_FREE_ALLOWANCE_EXHAUSTED` source keys.
+
+Per task instruction, stop and return to `moda_architect` for sequencing rather
+than editing consumer repositories.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`. No implementation commit created because the task is blocked by out-of-scope consumers.
 
 ## Architect Review
 
