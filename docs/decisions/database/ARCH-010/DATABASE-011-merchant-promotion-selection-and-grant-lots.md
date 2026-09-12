@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 83
-executor: copilot
-claimed_at: 2026-09-12T08:12:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-DATABASE-009
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-021
   - ARCH-010-SHOPIFY-022
 created: 2026-09-12
-updated: 2026-09-12T08:20:00Z
+updated: 2026-09-12T07:20:00Z
 ---
 
 # ARCH-010-DATABASE-011: Persist merchant promotion selection and exact promotional grant-lot accounting
@@ -389,3 +389,16 @@ If PostgreSQL remains unavailable at the configured local endpoint, record the r
 Return the same task to `review` with Attempt 2 evidence and both mirrored task branches published.
 
 **Architect decision: Changes Requested — Attempt 1.**
+
+#### Re-submission Review — Changes Requested
+
+This publication does not satisfy the previous Changes Requested decision and is not accepted as Attempt 2. The canonical task metadata still records `attempt: 1`, and the source remains on the unchanged Attempt-1 implementation commit.
+
+The two previously requested corrections remain outstanding:
+
+1. **Prisma/migration index alignment remains unfixed.** The DATABASE-011 migration creates `PromotionalCreditGrant_campaignId_createdAt_idx` on `(campaignId, createdAt)`, but `model PromotionalCreditGrant` still does not declare `@@index([campaignId, createdAt])`. `scripts/validate-promotion-selection-schema.mjs` still does not assert this index in either the Prisma schema or the migration.
+2. **Mandatory worktree/start-of-attempt evidence remains incomplete.** The Completion Report still does not explicitly record the three physical-isolation declarations (`shared workspace checkout ... no`, `shared implementation checkout ... no`, `another task worktree reused: no`) or the four required synchronization outcomes for parent/implementation remote task branches and `origin/main`.
+
+No additional architectural redesign is requested. Return this task to the canonical `/moda-task` path while it is `ready`; the next valid claim must increment it to **Attempt 2**, synchronize both canonical task worktrees, implement only the previously requested index/validator correction, rerun the stated validation contract, record the mandatory evidence, append correction/report commits to the same mirrored branch pair, and return the task to `review`.
+
+**Architect decision: Changes Requested — Attempt 1 re-submission; next valid claim is Attempt 2.**
