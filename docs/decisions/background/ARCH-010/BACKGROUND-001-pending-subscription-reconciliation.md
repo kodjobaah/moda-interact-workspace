@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 30
-executor: null
-claimed_at: null
-attempt: 3
+executor: copilot
+claimed_at: 2026-09-12T09:37:28Z
+attempt: 4
 depends_on:
   - ARCH-010-DATABASE-006
   - ARCH-010-DATABASE-001
@@ -231,104 +231,46 @@ Do not implement Paid first activation, billing-period rollover, upgrade/downgra
 
 STOP if accepted Shared contract is unavailable, Prisma client lacks `nextReconcileAt`, implementing BullMQ requires a new deployable service rather than extending the billing worker, or existing provider semantics cannot distinguish transport failure from successful null without cross-repository redesign.
 
-Implementation commit `2a3e8eff0833bc50ffe30a3cf387fca88cc8cec2` changes the following paths:
+## Completion Report
 
+### Status
+Attempt 4 complete; returned to review.
 
-- `src/runtime/readiness.ts`
-
-- `database` gitlink, preserved at database revision `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`
-- `src/entrypoints/billing-resources.ts`
-- `tests/unit/runtime/billing-scheduler.test.ts`
-- `tests/unit/runtime/entrypoint-isolation.test.ts`
-- `tests/unit/runtime/readiness.test.ts`
-- `src/entrypoints/billing.ts`
-- `src/observability/queue-performance.ts`
-
-The database gitlink was not changed and remains at revision `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
-- `src/observability/worker-metrics.ts`
-- `src/services/billing-reconciliation.service.ts`
-Attempt 3 completed the requested corrections:
-
-1. Corrections 1, 2 and 7: `billing.ts` now constructs one queue-aware reconciliation service, injects that instance into the BullMQ worker, runs reconstruction during startup and every billing cadence, starts shared queue-performance telemetry, and closes it with billing resources. Billing readiness requires Redis and PostgreSQL.
-2. Correction 3: rotating reconciliation preserves unresolved initial Free activation when the provider reports the pending target before the delayed consumer runs.
-3. Correction 4: the consumer requires the durable initial-activation source state and uses compare-and-set updates after the Partner call, preventing newer pending selections or schedules from being overwritten.
-4. Correction 5: another provider current plan is projected through the existing status/plan/cycle rules without falsely completing the requested Free activation.
-5. Correction 6: verified Free activation uses the durable policy for the one-time lifetime grant, fails closed when the first-grant policy is missing, preserves existing counters and period state, stores the complete Free period snapshot, creates no included-credit period counter, and schedules bounded cycle discovery when needed.
-6. Correction 8 and the frozen-state addendum: focused coverage exercises the required stale guards, retry/expiry/error paths, Free entitlement and period semantics, provider-plan projection, race protection, startup/periodic reconstruction, deterministic repair, queue failure isolation, and the `FROZEN` durable repair selector.
+### Implementation
+Changed files:
+- `src/services/billing-subscription-reconciliation.service.ts`
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+- `tests/unit/runtime/entrypoint-isolation.test.ts`
 
-Focused reconciliation/runtime tests: passed, 5 files and 49 tests.
-Added the durable subscription reconciliation service and BullMQ worker to the
-Full declared suite (`npm test`): 564 passed, 7 skipped, 6 failed. Five integration failures are blocked because database `moda_interact_test` does not exist. The remaining unit failure is the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0`, while the accepted repository dependency is `0.10.0`.
-retries, clears expired activation intent, reconstructs delayed jobs from
-PostgreSQL, and preserves existing subscription projection status on Partner
-transport failures. Billing resources, scheduler integration, queue metrics, and
-`npm run build`: blocked by 8 pre-existing nullable `counterId` type errors in
-`src/services/free-recovery-reservation.service.ts` and
-`src/services/purchased-recovery-reservation.service.ts`; no errors remain in
-the task's touched files.
+Implemented Corrections 1-6 and the Attempt-4 acceptance matrix: exact initial-source and post-Partner CAS guards; established-plan rejection before Partner; executable five-minute Free cycle discovery with exact-cycle snapshots and pre-close scheduling; transport-failure state preservation; race-safe lifetime-counter upsert with replay policy independence; provider pending-truth projection; `removeOnFail: true`; periodic PostgreSQL-driven reconstruction; and production proof that the Worker and repair cadence use one queue-aware service with queue telemetry and readiness wiring.
 
 ### Validation Results
-Focused reconciliation and existing billing tests: passed, 2 files and 19 tests.
-
-Full unit suite: 552 passed and 1 failed. The failure is the pre-existing
-`tests/unit/runtime/observability-startup.test.ts` expectation of shared package
-version `0.9.0`, while the repository declares `0.10.0`.
-
-`npm run prisma:validate`: passed.
-
-`npm run build`: remains blocked by 8 pre-existing nullable `counterId` type
-errors in `src/services/free-recovery-reservation.service.ts` and
-`src/services/purchased-recovery-reservation.service.ts`; no errors remain in
-the task's touched reconciliation service after the local create-status repair.
-
-`git diff --check`: passed.
+- Focused reconciliation/runtime tests: passed, 4 files and 48 tests.
+- Full `npm test`: 575 passed, 7 skipped, 6 unchanged baseline failures: five integration failures are blocked because database `moda_interact_test` does not exist, and one unit failure is the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0` while the accepted dependency is `0.10.0`.
+- `npm run prisma:validate`: passed.
+- `npm run build`: blocked only by 8 unchanged nullable `counterId` errors in `src/services/free-recovery-reservation.service.ts` and `src/services/purchased-recovery-reservation.service.ts`; no errors in task-touched files.
+- `git diff --check`: passed.
 
 ### Git / VCS
-Task branch: `task/ARCH-010-BACKGROUND-001`
-
-Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-001
-  parent branch: task/ARCH-010-BACKGROUND-001
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-001
-  implementation branch: task/ARCH-010-BACKGROUND-001
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
-
-Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
-
-Implementation repository:
-  repository: moda-interact-background
-  commit: 2a3e8eff0833bc50ffe30a3cf387fca88cc8cec2
-  remote branch: origin/task/ARCH-010-BACKGROUND-001
-  pushed: yes
-  database submodule revision: 6d5fb9adf2e5c1fb28333b330dd183c9cda41550
-
-Parent workspace:
-  task file: docs/decisions/background/ARCH-010/BACKGROUND-001-pending-subscription-reconciliation.md
-  claim commit: cc4de24
-  review-state commit: bc7c9bd
-  remote branch: origin/task/ARCH-010-BACKGROUND-001
-  pushed: yes
-  submodule gitlink staged: no
-
-Merged to implementation main: no
-Merged to workspace main: no
+- Canonical parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-001`, `task/ARCH-010-BACKGROUND-001`.
+- Canonical implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-001`, `task/ARCH-010-BACKGROUND-001`.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+- Parent remote task branch fast-forwarded: not-needed; parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed; implementation `origin/main` incorporated: already-current.
+- Implementation commit: `f877f813c9d8f3f37b9d37f5c7f8dc7f50a6d4a8`.
+- Parent report commit: to be recorded after Attempt-4 report commit.
+- Parent claim commit: `cc4de24`; prior review/report commit: `bc7c9bd`.
+- Database submodule revision: `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
+- Submodule gitlink staged: no.
+- Merged to implementation main: no; merged to workspace main: no.
 
 ### Architectural Concerns
-The full repository build and unit suite retain unrelated baseline failures
-listed under Validation Results. The implementation branch intentionally
-preserves the database gitlink at the committed revision containing
-`Subscription.nextReconcileAt`.
+The full repository build and test suite retain only the documented unrelated database, observability-version, and nullable-`counterId` baseline failures. The database gitlink remains at the accepted revision.
 
 ### Unresolved Issues
-Repository validation retains the documented unrelated test/build baselines above; no bounded-task implementation issues remain.
+No bounded-task implementation issues remain.
 
 
 ### Architect Review
