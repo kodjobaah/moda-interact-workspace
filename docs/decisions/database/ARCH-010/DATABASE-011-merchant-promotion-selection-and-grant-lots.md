@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 83
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: 2026-09-12T10:00:00Z
+attempt: 3
 depends_on:
   - ARCH-010-DATABASE-009
   - ARCH-010-DATABASE-010
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-021
   - ARCH-010-SHOPIFY-022
 created: 2026-09-12
-updated: 2026-09-12T07:46:00Z
+updated: 2026-09-12T10:00:00Z
 ---
 
 # ARCH-010-DATABASE-011: Persist merchant promotion selection and exact promotional grant-lot accounting
@@ -220,7 +220,7 @@ Ready for Review.
   physical-worktree and start-of-attempt synchronization evidence.
 ## Completion Report
 
-Ready for Review.
+In Progress.
 
 ### Attempt 2 Corrections and Validation
 
