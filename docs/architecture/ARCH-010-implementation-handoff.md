@@ -106,15 +106,15 @@ LIFETIME_FREE_RECOVERY_CREDITS
 
 ## Shared baseline
 
-`ARCH-010-SHARED-007` is Ready and removes superseded pre-production billing compatibility contracts, including the local-cancellation exports and the Free-only `BILLING_FREE_ALLOWANCE_EXHAUSTED` message code.
+`ARCH-010-SHARED-007` is Complete and removed superseded pre-production billing compatibility contracts, including the local-cancellation exports and the Free-only `BILLING_FREE_ALLOWANCE_EXHAUSTED` message code.
 
-`ARCH-010-SHARED-008` is Pending behind SHARED-007 and publishes the clean package as:
+`ARCH-010-SHARED-008` is Complete and publishes the clean package as:
 
 ```text
 @modainteract/moda-interact-shared@0.11.0
 ```
 
-Do not republish SHARED-001/003/005 individually. Their retained contracts are already part of the accepted 0.10.0 development release; SHARED-008 is the one new publication required because SHARED-007 changes package contents.
+Do not republish SHARED-001/003/005 individually. Their retained contracts are already part of the accepted 0.10.0 development release; SHARED-008 was the one new publication required because SHARED-007 changed package contents.
 
 ## Runtime baseline-conformance bridge
 
@@ -164,7 +164,6 @@ The Ready ARCH-010 implementation tasks after baseline consolidation are:
 
 | Task | Owner | Why Ready |
 |---|---|---|
-| `ARCH-010-SHARED-007` | `moda_shared` | SHARED-006 is Complete |
 | `ARCH-010-ADMIN-007` | `moda_admin` | independent pure upgrade-economics evaluator |
 | `ARCH-010-BACKGROUND-015` | `moda_background` | dependency-free provider snapshot; no architecture hold |
 
@@ -180,15 +179,10 @@ Everything else remains Pending behind the appropriate baseline/conformance or e
 
 ```text
 DATABASE-013 Complete
+        +
+SHARED-008 Complete
         │
         ├── enables database-dependent open work
-        ├── contributes to ADMIN-010
-        └── contributes to SHOPIFY-023
-
-SHARED-007 Complete
-        ↓
-SHARED-008 publish 0.11.0
-        │
         ├── contributes to ADMIN-010
         ├── contributes to SHOPIFY-023
         └── unblocks Shared-consuming Background/Shopify work
@@ -206,7 +200,7 @@ ADMIN-001 already Complete
 ADMIN-010
 ```
 
-DATABASE-013 and SHARED-007 can execute in parallel. ADMIN-007 and BACKGROUND-015 can also execute independently.
+Current Ready tasks are ADMIN-007 and BACKGROUND-015, and they can execute independently.
 
 ## Current task counts
 
@@ -214,10 +208,10 @@ From individual task YAML after this consolidation:
 
 ```text
 all ARCH-010 tasks: 79
-complete:           24
+complete:           26
 review:              1
-ready:               3
-pending:            49
+ready:               2
+pending:            48
 superseded:          2
 ```
 
@@ -304,4 +298,3 @@ Individual task YAML remains authoritative for execution state. Domain indexes s
 be regenerated/reconciled from current task YAML after these portable task definitions
 are applied to the latest workspace, rather than copying stale status rows from the
 SHARED-007 Attempt-1 worktree snapshot.
-

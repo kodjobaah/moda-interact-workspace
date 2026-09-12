@@ -17,11 +17,11 @@
 | ARCH-007 | complete 21, pending 13, ready 5 | [Shopify billing, usage and WhatsApp cost control](ARCH-007-shopify-billing-usage-cost-control.md) |
 | ARCH-008 | complete 7, ready 1, superseded 1 | [Shopify App Pricing conformance](ARCH-008-shopify-app-pricing-conformance.md) |
 | ARCH-009 | complete 5, pending 2, ready 2 | [Merchant billing lifecycle, cancellations and refunds](ARCH-009-merchant-billing-lifecycle-cancellations-refunds.md) |
-| ARCH-010 | complete 23, pending 49, ready 4, review 1, superseded 2 | [Merchant lifecycle state transitions and behavioural access](ARCH-010-merchant-lifecycle-state-transitions.md) · [First-production baseline](ARCH-010-first-production-baseline.md) |
+| ARCH-010 | complete 26, pending 48, ready 2, review 1, superseded 2 | [Merchant lifecycle state transitions and behavioural access](ARCH-010-merchant-lifecycle-state-transitions.md) · [First-production baseline](ARCH-010-first-production-baseline.md) |
 
 ## Current execution highlights
 
-- `ARCH-010`: first-production baseline consolidation is current. Ready frontier: `DATABASE-013`, `SHARED-007`, `ADMIN-007`, `BACKGROUND-015`; `SHOPIFY-002` is in Review Attempt 8. `DATABASE-012` is Superseded and its valid economics schema target is folded into DATABASE-013.
+- `ARCH-010`: first-production baseline consolidation is current. `DATABASE-013`, `SHARED-007`, and `SHARED-008` are Complete. Ready frontier: `ADMIN-007`, `BACKGROUND-015`; `SHOPIFY-002` is in Review Attempt 8. `DATABASE-012` is Superseded and its valid economics schema target is folded into DATABASE-013.
 - `ARCH-010` system-test tasks remain terminal/manual-gated and never block implementation startup.
 - For architectures other than ARCH-010, use [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md) plus individual task YAML rather than relying on an old highlight bullet.
 
