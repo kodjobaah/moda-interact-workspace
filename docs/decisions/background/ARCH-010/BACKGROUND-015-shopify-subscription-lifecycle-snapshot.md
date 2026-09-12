@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 57
-claimed_at: '2026-09-12T22:35:50Z'
+claimed_at: null
 attempt: 4
-executor: copilot
+executor: null
 depends_on: []
 enables:
 - ARCH-010-BACKGROUND-012
@@ -1366,4 +1366,207 @@ claimed_at: null
 The next authorized `/moda-task ARCH-010-BACKGROUND-015` claim becomes Attempt 4.
 
 `ARCH-010-BACKGROUND-012` remains gated until BACKGROUND-015 is architect-accepted Complete.
+
+### Attempt 4 — Accepted
+
+#### Review Status
+
+Accepted.
+
+Attempt 4 satisfies the Attempt 3 rework contract.
+
+The architect independently compared the Attempt 3 and Attempt 4 task snapshots.
+
+##### Focused test corrections
+
+The focused provider test file now directly proves all five previously missing requirements:
+
+```text
+1. successful non-null plan normalization:
+   plan.handle -> planHandle
+   plan.billingPeriod -> billingPeriod
+
+2. valid-state / wrong-event-type rejection:
+   FROZEN + SUBSCRIPTION_CANCELED -> malformed-lifecycle-event
+
+3. malformed plan.billingPeriod rejection:
+   numeric billingPeriod -> malformed-lifecycle-event
+
+4. blank lifecycle event ID rejection:
+   whitespace-only id -> malformed-lifecycle-event
+
+5. single reconciliation Partner request:
+   fetchImpl called exactly once
+   request query contains both activeSubscription( and events(
+```
+
+The focused suite now reports:
+
+```text
+24 passed
+0 failed
+```
+
+##### Production-source assessment
+
+The Partner API production implementation remains architecturally conformant.
+
+Compared with Attempt 3, the only production-source change is the type-safe guard:
+
+```ts
+if (!expected || rawEventType !== expected) return null;
+```
+
+inside the existing lifecycle state/event-type mapping.
+
+This does not change the intended semantics. It preserves the required exact mapping and makes the fail-closed behavior explicit for an unmapped state.
+
+The accepted provider behavior remains:
+
+```text
+one Partner GraphQL HTTP request for reconciliation snapshot
+activeSubscription + events roots in the same request
+events.edges[0].node
+SubscriptionStatus lifecycle node
+AppReference subject identity
+requested shop identity validation
+non-empty provider event identity
+strict occurredAt parsing
+exact state/eventType pairing
+nullable cancelEffectiveOn
+nullable Plan
+Plan.handle / Plan.billingPeriod normalization
+zero edges -> latestLifecycleEvent=null
+GraphQL/malformed root -> whole snapshot failure
+getActiveSubscription() external contract preserved
+no Prisma writes
+```
+
+##### Database submodule / Prisma validation
+
+Attempt 4 materialized the existing `moda-interact-background/database` submodule at its recorded gitlink and did not change or stage that gitlink.
+
+Recorded database revision:
+
+```text
+6d5fb9adf2e5c1fb28333b330dd183c9cda41550
+```
+
+`npm run prisma:generate` executed successfully.
+
+The materialized recorded database revision is older than the integrated DATABASE-013 first-production baseline and therefore still lacks the newer `EntitlementCounter.LIFETIME_FREE_RECOVERY_CREDITS` member consumed by unrelated billing/reservation services.
+
+This produces seven repository-wide TypeScript/build diagnostics in:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+src/services/effective-billing-policy.service.ts
+src/services/free-recovery-reservation.service.ts
+src/services/purchased-recovery-reservation.service.ts
+```
+
+Those files are outside BACKGROUND-015 ownership and were not changed by this task. The provider/test slice has no corresponding diagnostic.
+
+This recorded-gitlink baseline does not invalidate the provider-only task. BACKGROUND-015 does not own database schema integration or the affected billing/reservation consumers.
+
+##### Repository validation
+
+Attempt 4 caused all required repository commands to actually execute.
+
+Recorded outcomes:
+
+```text
+focused provider Vitest:
+  PASS — 24/24
+
+Prisma generation:
+  PASS
+
+repository TypeScript:
+  NON-ZERO — 7 unrelated stale recorded-gitlink EntitlementCounter diagnostics
+
+repository build:
+  NON-ZERO — same 7 unrelated diagnostics
+
+repository unit suite:
+  558 passed / 559
+  one unchanged observability runtime-version assertion failure:
+  expected shared runtime 0.9.0 while package metadata is 0.11.0
+
+git diff --check:
+  PASS
+```
+
+The one unit failure is:
+
+```text
+tests/unit/runtime/observability-startup.test.ts
+```
+
+and is outside the BACKGROUND-015 provider/test change surface.
+
+The repository-wide non-zero results are therefore accepted as unrelated baseline/integration debt rather than BACKGROUND-015 regressions.
+
+##### Task isolation and synchronization
+
+Attempt 4 records the canonical dedicated worktrees and:
+
+```text
+shared/default checkout mutated: no
+shared implementation checkout mutated: no
+another task worktree reused: no
+
+parent remote task branch fast-forwarded: not-needed/already-current
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed/already-current
+implementation origin/main incorporated: already-current
+```
+
+The database gitlink remains unstaged.
+
+##### Accepted commits
+
+```text
+implementation: 29c791c
+parent report: c3131d0
+```
+
+Both task branches were reported pushed and clean. No main branch was modified.
+
+#### Architect Decision
+
+**Accepted — Attempt 4.**
+
+Because `completion_mode: automatic`, the task is now:
+
+```text
+status: complete
+attempt: 4
+executor: null
+claimed_at: null
+```
+
+No further BACKGROUND-015 implementation attempt is required.
+
+#### Dependency reconciliation
+
+`ARCH-010-BACKGROUND-012` remains Pending.
+
+BACKGROUND-015 is now Complete, but BACKGROUND-012 still depends on incomplete:
+
+```text
+ARCH-010-BACKGROUND-007
+ARCH-010-BACKGROUND-009
+ARCH-010-BACKGROUND-010
+```
+
+Therefore this acceptance does not promote BACKGROUND-012 to Ready.
+
+The ARCH-010 Ready frontier becomes:
+
+```text
+ARCH-010-ADMIN-010
+ARCH-010-BACKGROUND-019
+ARCH-010-SHOPIFY-018
+```
 
