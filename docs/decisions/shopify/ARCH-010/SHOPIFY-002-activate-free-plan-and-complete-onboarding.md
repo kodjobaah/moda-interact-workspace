@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-12T00:00:00Z
+attempt: 1
 depends_on:
   - ARCH-010-DATABASE-006
   - ARCH-010-SHOPIFY-001
@@ -25,7 +25,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: 2026-09-11T23:49:38Z
+updated: 2026-09-12
 ---
 
 # ARCH-010-SHOPIFY-002: Activate Free plan with durable asynchronous Shopify verification
@@ -231,7 +231,7 @@ STOP if published Shared contract or `nextReconcileAt` Prisma field is unavailab
 ## Completion Report
 
 ### Status
-Not started.
+In Progress.
 
 ### Files Changed
 Populate during implementation.
