@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 57
 claimed_at: '2026-09-12T22:35:50Z'
 attempt: 4
@@ -168,6 +168,50 @@ Run focused provider tests, repository-declared typecheck/build/unit suite and `
 STOP if the configured Partner API version does not expose root `events`, `EventFilterInput`, `SubscriptionStatus.state` and the required lifecycle event types. Return the exact schema mismatch to `moda_architect`; do not fall back to legacy Admin Billing API/webhooks.
 
 ## Completion Report
+
+### Status
+Attempt 4 complete; returned to review.
+
+### Implementation
+- Production: `src/providers/shopify-partner-billing.provider.ts`.
+- Authorized tests: `tests/unit/providers/shopify-partner-billing.provider.test.ts`.
+- Added focused assertions for normalized lifecycle plan fields, valid-state/wrong-event-type rejection, malformed `plan.billingPeriod`, blank lifecycle event ID, and one combined request containing both `activeSubscription` and bounded `events` roots.
+- Added a minimal type-safe guard for the existing lifecycle state/event-type mapping; provider semantics are unchanged.
+- No reconciliation persistence, database source, shared contract, Shopify app, or unrelated service changes were made.
+
+### Validation Results
+- Focused provider Vitest: 24 tests passed.
+- `npm run prisma:generate`: passed using recorded database revision `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
+- Repository `tsc --noEmit`: 7 unrelated errors remain in `src/services/billing-subscription-reconciliation.service.ts`, `src/services/effective-billing-policy.service.ts`, `src/services/free-recovery-reservation.service.ts`, and `src/services/purchased-recovery-reservation.service.ts`; all are stale generated-Prisma `EntitlementCounter` enum errors for `LIFETIME_FREE_RECOVERY_CREDITS`. The authorized provider/test slice is clean.
+- `npm run build`: same 7 unrelated stale-Prisma-enum errors after Prisma generation.
+- `npm run test:unit`: 46 files passed, 558 tests passed; one unchanged baseline assertion failed in `tests/unit/runtime/observability-startup.test.ts` because it expects shared runtime `0.9.0` while package metadata is `0.11.0`.
+- `git diff --check`: passed.
+
+### Git / VCS
+Task branch: `task/ARCH-010-BACKGROUND-015`
+
+Physical task isolation:
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-015`
+  parent branch: `task/ARCH-010-BACKGROUND-015`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-015`
+  implementation branch: `task/ARCH-010-BACKGROUND-015`
+  shared/default checkout mutated: no
+  shared implementation checkout mutated: no
+  another task worktree reused: no
+
+Synchronization:
+  parent remote task branch fast-forwarded: not-needed/already-current
+  parent origin/main incorporated: yes
+  implementation remote task branch fast-forwarded: not-needed/already-current
+  implementation origin/main incorporated: already-current
+
+Implementation commit: `29c791c`, pushed to `origin/task/ARCH-010-BACKGROUND-015`.
+Parent claim commit: `831695b`.
+Final parent report commit: this publication commit.
+Database gitlink staged: no.
+No task branch was merged to `main`; no architect acceptance decision was made by this agent.
+
+## Historical Completion Report (Attempt 3)
 
 ### Status
 In Progress.
