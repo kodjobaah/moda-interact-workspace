@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 82
-executor: copilot
-claimed_at: '2026-09-12T23:25:08Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
@@ -25,7 +25,7 @@ enables:
 - ARCH-010-SYSTEM-TEST-001
 - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-BACKGROUND-019: Reserve selected promotional campaign credits before every other capacity source
@@ -794,3 +794,581 @@ The next authorized:
 claim becomes Attempt 3.
 
 `ARCH-010-BACKGROUND-008`, `ARCH-010-BACKGROUND-009`, and the dependent ARCH-010 system-test tasks remain gated until BACKGROUND-019 is architect-accepted Complete.
+
+#### Attempt 3 — Changes Requested
+
+##### Review Status
+
+Changes Requested.
+
+The Attempt 2 production defects are corrected.
+
+Architect review confirms that:
+
+```text
+- reserve/reactivation no longer mutates firstSelectedAt, lastSelectedAt or selectionCount;
+- commit calculates post-transition committed/reserved/remaining quantities explicitly;
+- exhaustedAt is newly set only when post-transition remaining quantity is exactly zero;
+- an existing exhaustedAt timestamp is preserved;
+- negative accounting fails closed;
+- promo-first routing remains promotional -> included -> purchased FIFO -> lifetime Free;
+- the real PostgreSQL final-credit race exists and passes;
+- prior attempts validated against the accepted DATABASE-013 revision while leaving the Background `database` gitlink stale; Attempt 4 will release that accepted upstream revision into the consumer repository.
+```
+
+No further production implementation change is currently requested.
+
+Attempt 3 is returned because the latest authoritative Attempt 2 review required several direct idempotency/replay/lifecycle proofs that are still absent from the committed tests.
+
+This must be a **tests / accepted-upstream dependency release / validation / Completion Report** Attempt 4. Do not change Background production behavior unless one of the added tests exposes a genuine implementation defect.
+
+##### Finding 0 — Release accepted upstream dependencies into the consumer before final validation
+
+BACKGROUND-019 depends on:
+
+```text
+ARCH-010-DATABASE-013
+ARCH-010-BACKGROUND-002
+ARCH-010-BACKGROUND-011
+ARCH-010-BACKGROUND-014
+```
+
+The accepted same-repository Background prerequisites are already present in the task implementation line and require no separate publication step:
+
+```text
+BACKGROUND-002 -> accepted implementation 97bf5f0
+BACKGROUND-011 -> accepted Complete
+BACKGROUND-014 -> accepted implementation 2104959
+```
+
+The Background package already consumes the accepted Shared release:
+
+```text
+@modainteract/moda-interact-shared = 0.11.0
+```
+
+Do not republish or change Shared in this task.
+
+The one outstanding consumer dependency release is the `database` Git submodule.
+
+The accepted DATABASE-013 first-production baseline revision used by the accepted Background tasks and by the developer validation is:
+
+```text
+014408e0402221f08a3961880b34e828a8bdc736
+```
+
+The Background repository currently records an older database gitlink, which is why a correct local checkout appears as:
+
+```text
+M database
+```
+
+Attempt 4 is explicitly authorized and required to advance the Background consumer gitlink to the accepted DATABASE-013 revision.
+
+From the launcher-resolved BACKGROUND-019 implementation worktree:
+
+```bash
+cd moda-interact-background
+
+git submodule update --init database
+
+git -C database cat-file -e \
+  014408e0402221f08a3961880b34e828a8bdc736^{commit} \
+  || git -C database fetch origin
+
+git -C database checkout --detach \
+  014408e0402221f08a3961880b34e828a8bdc736
+
+test "$(git -C database rev-parse HEAD)" = \
+  "014408e0402221f08a3961880b34e828a8bdc736"
+
+git add database
+```
+
+After `git add database`, verify:
+
+```bash
+git diff --cached --submodule=short -- database
+```
+
+Expected dependency release:
+
+```text
+old recorded database gitlink
+  ->
+014408e0402221f08a3961880b34e828a8bdc736
+```
+
+This gitlink update **is part of the authorized BACKGROUND-019 Attempt 4 implementation commit**.
+
+Do not modify any file inside:
+
+```text
+database/
+```
+
+Do not:
+
+```text
+edit DATABASE-013 schema or migration
+merge/pull database main into the detached submodule
+advance beyond 014408e...
+create a compatibility schema
+change an upstream database task
+republish Shared
+```
+
+Before final review, prove:
+
+```bash
+git -C database status --short
+git -C database rev-parse HEAD
+git diff --cached --submodule=short -- database
+```
+
+Required:
+
+```text
+database working tree clean
+database HEAD = 014408e0402221f08a3961880b34e828a8bdc736
+parent Background gitlink staged/committed at that exact revision
+```
+
+After the implementation commit is created, normal:
+
+```bash
+git status --short
+```
+
+must no longer show `M database`.
+
+If the exact accepted DATABASE-013 commit cannot be materialized, stop and return `blocked` with the exact Git error. Do not substitute a newer database revision.
+
+##### Finding 1 — Prove bounded CAS, P2034 and P2002 retry behavior directly
+
+The Attempt 2 review explicitly required:
+
+```text
+retryable CAS/P2034/P2002 conflicts are bounded and replay-safe
+```
+
+The new promotional primitive test file contains no P2034/P2002/CAS retry tests.
+
+Extend:
+
+```text
+tests/unit/services/promotional-recovery-reservation.service.test.ts
+```
+
+using the same style already established in:
+
+```text
+tests/unit/services/paid-included-recovery-reservation.service.test.ts
+tests/unit/services/free-recovery-reservation.service.test.ts
+```
+
+Directly prove, as separate cases:
+
+```text
+1. internal CAS/updateMany count=0 conflict is retried and can succeed;
+2. Prisma P2034 serialization conflict is retried and can succeed;
+3. Prisma P2002 unique-source/idempotency conflict is retried and resolves via replay;
+4. retries stop at maxRetries and the final retryable error/conflict is surfaced;
+5. a successful retry increments promotional reserved quantity exactly once;
+6. retry does not create a second UsageReservation for the same sourceKey.
+```
+
+Do not change `maxRetries` semantics.
+
+Do not add sleeps/backoff unless the existing accepted reservation architecture already requires it.
+
+##### Finding 2 — Prove released promotional replay ownership and current eligibility
+
+The Attempt 2 contract required:
+
+```text
+same-source released reservation can reactivate only when the same selected grant is usable again
+released reservation cannot reactivate while campaign is expired/CLOSED/plan-ineligible
+```
+
+Current unit coverage releases a reservation and then only calls `release()` again. It never calls `reserve()` again for the same source key.
+
+Add direct tests proving:
+
+```text
+A. reserve sourceKey S against grant G
+   -> release S
+   -> campaign still ACTIVE/eligible and selection still points to G
+   -> reserve S
+   -> same UsageReservation row is reactivated
+   -> same promotionalCreditGrantId G is retained
+   -> reservedQuantity increments only once
+
+B. reserve S -> release S -> campaign expired
+   -> reserve S returns already-released
+   -> reservedQuantity remains unchanged
+
+C. reserve S -> release S -> campaign CLOSED
+   -> reserve S returns already-released
+   -> reservedQuantity remains unchanged
+
+D. reserve S -> release S -> PLAN campaign no longer matches current effective plan
+   -> reserve S returns already-released
+   -> reservedQuantity remains unchanged
+
+E. if current MerchantPromotionSelection points to another grant,
+   the old released reservation must not switch to the newly selected grant.
+```
+
+Do not create a new reservation row for the same sourceKey.
+
+##### Finding 3 — Prove commit remains valid after campaign becomes unusable
+
+The architecture deliberately separates admission-time eligibility from completion of an already admitted recovery.
+
+Add direct tests:
+
+```text
+reserve while campaign ACTIVE and eligible
+-> mutate campaign to expired
+-> commit succeeds against the original exact grant
+
+reserve while campaign ACTIVE
+-> mutate campaign to CLOSED
+-> commit succeeds against the original exact grant
+```
+
+Commit must not re-run current campaign eligibility.
+
+Also prove duplicate commit leaves:
+
+```text
+committedQuantity unchanged after first commit
+reservedQuantity unchanged after first commit
+UsageEvent count unchanged after first commit
+first exhaustedAt timestamp unchanged
+```
+
+##### Finding 4 — Complete exact-grant ownership/accounting assertions
+
+Strengthen the direct primitive tests to explicitly assert the remaining Attempt 2 obligations:
+
+```text
+- newly created UsageReservation.promotionalCreditGrantId === selected grant id;
+- no entitlement-counter field/source owns the promotional reservation;
+- duplicate reserve leaves grant.reservedQuantity unchanged;
+- release decrements the exact grant only once;
+- reserve, commit and release all preserve:
+    firstSelectedAt
+    lastSelectedAt
+    selectionCount;
+- firstUsedAt and lastUsedAt are changed only by commit;
+- an existing non-promotional reservation for the same sourceKey is not converted to promotional ownership.
+```
+
+The production service already appears to satisfy these rules; this is missing direct proof.
+
+##### Finding 5 — Complete promo-specific router ordering/replay tests
+
+Strengthen:
+
+```text
+tests/unit/services/recovery-billing.service.test.ts
+```
+
+The Attempt 2 review required direct promo-aware coverage for the final routing composition.
+
+Add explicit cases proving:
+
+```text
+1. Paid promo unavailable -> included succeeds; purchased/lifetime are not called.
+2. Paid promo unavailable + included exhausted -> purchased succeeds; lifetime is not called.
+3. Paid promo unavailable + included + purchased exhausted -> lifetime Free succeeds.
+4. Free promo available -> promotional wins; purchased/lifetime are not called.
+5. Free promo unavailable -> purchased wins before lifetime Free.
+6. all applicable sources unavailable -> typed allowance-exhausted result.
+7. promotional already-ambiguous -> same recovery is blocked and no other source is tried.
+8. promotional already-released -> same recovery is blocked and no other source is tried.
+9. promotional commit never calls paid-included/purchased/lifetime commit.
+10. releaseBeforeProvider routes only through the promotional service.
+11. definitive provider failure releases promotional reservation exactly once for that invocation and does not call another capacity owner.
+12. ambiguous provider result marks promotional reservation ambiguous and does not call another capacity owner.
+13. promo-funded admission does not invoke the normal paid included meter/commit path.
+```
+
+Do not implement BACKGROUND-008 DRAINING logic here.
+
+Do not implement BACKGROUND-006 reinstall reconciliation here.
+
+##### Finding 6 — Make the PostgreSQL concurrency test time-stable
+
+The new integration test currently creates:
+
+```text
+campaign.startsAt = 2026-01-01
+campaign.expiresAt = 2027-01-01
+```
+
+but constructs `PromotionalRecoveryReservationService` with the real process clock.
+
+That test will begin failing purely because calendar time passes.
+
+Use the existing constructor clock seam and a fixed instant that lies inside the fixture campaign window, for example:
+
+```text
+2026-09-15T00:00:00.000Z
+```
+
+for both competing service instances.
+
+Do not extend the campaign expiry simply to postpone the failure.
+
+##### Finding 7 — Strengthen the PostgreSQL concurrency proof
+
+Keep the existing two-different-source final-credit race.
+
+Additionally prove:
+
+```text
+grant.reservedQuantity == 1
+grant.committedQuantity == 0
+grant.reservedQuantity + grant.committedQuantity <= grant.quantity
+selectionCount unchanged
+```
+
+and query `UsageReservation` so the single winner's row explicitly has:
+
+```text
+promotionalCreditGrantId == grant.id
+```
+
+Also assert there is no promotional aggregate entitlement counter. Since DATABASE-013 intentionally removed `PROMOTIONAL_RECOVERY_CREDITS` from the enum, do not invent one; prove the persisted promotional capacity owner is the exact grant/reservation relationship.
+
+Add a same-source concurrent reserve race if the repository's disposable PostgreSQL harness can express it without unrelated scaffolding:
+
+```text
+two workers, same sourceKey
+-> one durable UsageReservation
+-> grant.reservedQuantity increments exactly once
+-> both calls resolve to an idempotent reserved/already-reserved ownership outcome
+```
+
+If this same-source race exposes only expected P2002/P2034 retries, fix/validate them under Finding 1 rather than adding a second accounting mechanism.
+
+##### Finding 8 — Preserve production source
+
+Unless the new tests expose a genuine defect:
+
+```text
+DO NOT MODIFY:
+src/services/promotional-recovery-reservation.service.ts
+src/services/recovery-billing.service.ts
+```
+
+The current Attempt 3 implementation candidate is:
+
+```text
+ed28c98
+```
+
+Do not redesign:
+
+```text
+campaign selection ownership
+promo-first order
+exact grant ownership
+UsageEvent semantics
+Serializable/CAS transaction model
+BACKGROUND-008 DRAINING behavior
+BACKGROUND-006 reinstall behavior
+SHOPIFY-021 selection writes
+```
+
+##### Finding 9 — Validation
+
+Before validation, verify the released dependency:
+
+```bash
+test "$(git -C database rev-parse HEAD)" = \
+  "014408e0402221f08a3961880b34e828a8bdc736"
+
+git -C database status --short
+git diff --cached --submodule=short -- database
+```
+
+The database submodule itself must be clean. The parent gitlink change may be staged until the Attempt 4 implementation commit is created.
+
+Run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+./node_modules/.bin/vitest run \
+  tests/unit/services/promotional-recovery-reservation.service.test.ts \
+  tests/unit/services/recovery-billing.service.test.ts
+
+npm run test:integration -- \
+  tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts
+
+./node_modules/.bin/tsc --noEmit
+npm run build
+npm run test:unit
+git diff --check
+```
+
+Expected:
+
+```text
+focused primitive/router tests: PASS
+promotional PostgreSQL integration: PASS
+Prisma validate/generate: PASS
+TypeScript: PASS
+build: PASS
+git diff --check: PASS
+```
+
+The unchanged unrelated failure:
+
+```text
+tests/unit/runtime/observability-startup.test.ts
+expected shared runtime 0.9.0
+package metadata 0.11.0
+```
+
+may remain documented if it is still the only full-unit failure.
+
+Do not modify that test or Shared package metadata in BACKGROUND-019.
+
+##### Finding 10 — Completion Report / VCS and dependency-release evidence
+
+Attempt 3 records acceptable physical worktree and start-of-attempt synchronization evidence.
+
+Attempt 4 must record its own four synchronization outcomes.
+
+The user handoff identifies Attempt 3 parent report HEAD as:
+
+```text
+63d9a6c
+```
+
+while the embedded Completion Report still records:
+
+```text
+review report commit: c48c3ac
+```
+
+Attempt 4 must record the actual final parent task-branch HEAD after all report metadata is committed. Do not leave a stale report commit.
+
+The Completion Report must also record the upstream dependency release:
+
+```text
+database dependency release:
+  previous parent gitlink: <actual old revision>
+  released accepted DATABASE-013 revision:
+    014408e0402221f08a3961880b34e828a8bdc736
+  database submodule working tree clean: yes
+  database source files changed: no
+  database gitlink committed in BACKGROUND-019 implementation: yes
+```
+
+Also record:
+
+```text
+@modainteract/moda-interact-shared: 0.11.0
+Shared republished/changed by this task: no
+BACKGROUND-002 / BACKGROUND-011 / BACKGROUND-014:
+  same-repository accepted prerequisites already present; no release action required
+```
+
+Do not describe the final `database` state as "unstaged". Attempt 4 intentionally releases the accepted DATABASE-013 gitlink into the Background consumer repository.
+
+##### Allowed Attempt 4 scope
+
+Expected implementation-repository changes:
+
+```text
+tests/unit/services/promotional-recovery-reservation.service.test.ts
+tests/unit/services/recovery-billing.service.test.ts
+tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts
+database                                  # gitlink only
+```
+
+The `database` entry is an authorized dependency-release gitlink change to exactly:
+
+```text
+014408e0402221f08a3961880b34e828a8bdc736
+```
+
+No file inside the database submodule may be modified.
+
+Production Background source should remain unchanged unless a new test proves a real BACKGROUND-019 defect:
+
+```text
+src/services/promotional-recovery-reservation.service.ts
+src/services/recovery-billing.service.ts
+```
+
+Expected coordination change:
+
+```text
+docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md
+```
+
+Do not modify:
+
+```text
+database schema/migrations/source files
+SHOPIFY-021 merchant-selection implementation
+BACKGROUND-008 DRAINING implementation
+BACKGROUND-006 reinstall reconciliation
+Admin promotion implementation
+Shared contracts/package metadata
+```
+
+##### Required Attempt 4 outcome
+
+Return to `review` only when:
+
+```text
+1. accepted DATABASE-013 revision 014408e... is committed as the Background database gitlink;
+2. no database source/schema/migration file changed;
+3. retry/CAS/P2034/P2002 behavior is directly proved;
+4. released promotional replay eligibility/ownership is directly proved;
+5. commit-after-expiry/close is directly proved;
+6. exact-grant accounting/history assertions are complete;
+7. promo-specific router fallback/replay/lifecycle cases are complete;
+8. PostgreSQL race test is clock-stable;
+9. PostgreSQL exact-grant persistence assertions pass;
+10. required focused/integration/repository validation executes;
+11. database submodule working tree is clean at exactly 014408e...;
+12. parent Background working tree is clean after committing the gitlink + tests;
+13. both task branches are pushed and clean;
+14. Attempt 4 synchronization outcomes are recorded;
+15. Completion Report names the actual final parent report HEAD;
+16. Completion Report records the DATABASE-013 consumer release and confirms Shared 0.11.0 required no release action.
+```
+
+##### Architect Decision
+
+**Changes Requested — Attempt 3.**
+
+Return the same task to:
+
+```text
+status: ready
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+The next authorized:
+
+```text
+/moda-task ARCH-010-BACKGROUND-019
+```
+
+claim becomes Attempt 4.
+
+`ARCH-010-BACKGROUND-008`, `ARCH-010-BACKGROUND-009`, and dependent system-test tasks remain gated until BACKGROUND-019 is architect-accepted Complete.
+

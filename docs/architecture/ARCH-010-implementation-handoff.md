@@ -31,8 +31,8 @@ The 2026-09-12 current-workspace audit, with durable architect-accepted history 
 
 ```text
 all ARCH-010 task files: 81
-complete:                 35
-ready:                     4
+complete:                 36
+ready:                     3
 pending:                  35
 superseded:                7
 ```
@@ -74,6 +74,8 @@ For Background, `BACKGROUND-011` is now Complete at accepted Attempt 4 and owns 
 For Shopify, `SHOPIFY-023` is architect-accepted Complete at Attempt 1 (`01f0605`) after developer-run validation against the materialized DATABASE-013 submodule. `SHOPIFY-018` is now Ready; SHOPIFY-003 and SHOPIFY-009 remain gated by other incomplete dependencies.
 
 `BACKGROUND-015` is architect-accepted Complete at Attempt 4 (`29c791c`). The Partner reconciliation snapshot now uses one request for live subscription plus the latest validated lifecycle event. `BACKGROUND-012` remains Pending because BACKGROUND-007, BACKGROUND-009 and BACKGROUND-010 are still incomplete.
+
+`BACKGROUND-019` Attempt 4 is Ready with an explicit upstream dependency-release step: the `moda-interact-background/database` gitlink must advance to the architect-accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736`. This is a consumer gitlink release only; database source must remain unchanged. Shared `0.11.0` is already consumed and BACKGROUND-002/011/014 are same-repository accepted prerequisites, so they require no additional release action.
 
 ## Luna-oriented task consolidation
 
