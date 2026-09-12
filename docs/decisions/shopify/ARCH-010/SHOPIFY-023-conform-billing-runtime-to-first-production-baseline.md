@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 9
 executor: copilot
 claimed_at: '2026-09-12T22:27:01Z'
@@ -274,35 +274,53 @@ This task is a baseline-conformance bridge. Keep it small and deterministic so d
 
 ### Status
 
-In Progress.
+Ready for architect review.
 
 ### Files Changed
 
-Populate during implementation.
+- `package.json`
+- `package-lock.json`
+- `app/services/billing/billing.service.ts`
+- `app/routes/app/billing/route.tsx`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-ui.test.ts`
 
 ### Work Completed
 
-Populate during implementation.
+- Removed Shopify-owned lifetime grant initialization and the legacy platform-policy allowance path from Free activation.
+- Switched merchant billing state to `EntitlementCounter.LIFETIME_FREE_RECOVERY_CREDITS` and durable shop-counter arithmetic: `max(grantedQuantity - committedQuantity - reservedQuantity, 0)`.
+- Made lifetime capacity plan-independent in the billing service and merchant billing route, including mapped Paid subscriptions.
+- Removed legacy adjustment aggregation and updated the shared package dependency to `@modainteract/moda-interact-shared@0.11.0`.
+- Added focused Free/Paid billing-service arithmetic coverage and Paid-plan billing UI coverage.
+- Repository-wide source/test search contains none of the required removed baseline symbols.
 
 ### Validation Results
 
-Populate during implementation.
+- Billing UI suite: 10/10 passed.
+- Billing-service suite with the pre-existing generated client: 58/59 passed; one unchanged scheduling test produced `Date(NaN)` because the old installed shared contract lacks the current billing-period drain constant.
+- After clean dependency installation, the billing-service suite could not load because `database/prisma/schema.prisma` is absent and Prisma client generation is unavailable.
+- `npm run prisma:validate`: blocked because `database/prisma/schema.prisma` is missing.
+- `npm run build`: blocked at `prisma:generate` for the same missing schema.
+- `npm run typecheck`: blocked by the stale/missing generated Prisma contract, including the absent `LIFETIME_FREE_RECOVERY_CREDITS` enum member and existing missing `nextReconcileAt` fields.
+- `npm run lint`: unchanged repository baseline reports 10 errors in unrelated files, including billing options/select routes and existing dashboard/support/test files.
+- `git diff --check`: passed.
+- Removed-symbol search across `app` and `tests`: passed with no matches.
 
 ### Deviations
 
-None.
+Full repository validation could not complete because the task worktree does not contain the DATABASE-013 Prisma schema/generated client. No schema or unrelated lint/typecheck failures were changed.
 
 ### Assumptions
 
-None.
+The architect-provided DATABASE-013 and SHARED-008 contracts are authoritative; the local checkout's generated Prisma artifacts are expected to be refreshed when the database dependency is materialized.
 
 ### Unresolved Issues
 
-None.
+Architect review should verify the implementation against the materialized DATABASE-013 schema and regenerate Prisma before merge.
 
 ### Architectural Concerns
 
-None.
+The current checkout reports stale generated Prisma types, including the old entitlement enum; this is not resolved by a compatibility alias because the task explicitly requires the canonical first-production contract.
 
 ## Architect Review
 
@@ -312,20 +330,20 @@ Pending
 
 ### Review Notes
 
-Pending implementation.
+Implementation published at `01f0605`; parent report is complete and awaiting architect decision.
 
 ### Reviewed Files
 
-None yet.
+`app/services/billing/billing.service.ts`, `app/routes/app/billing/route.tsx`, `tests/unit/services/billing.service.test.ts`, `tests/unit/billing-ui.test.ts`, `package.json`, `package-lock.json`
 
 ### Validation Reviewed
 
-None yet.
+Focused billing UI: 10/10 passed. Billing service: 58/59 with one unchanged stale-contract failure; clean-install service run blocked by missing Prisma schema. Prisma validate/build/typecheck blocked by missing generated database contract. Lint has 10 unrelated baseline errors. Removed-symbol search and diff check passed.
 
 ### Architecture Conformance
 
-Pending.
+The runtime now targets the canonical shop-lifetime counter and shared 0.11.0 contract without compatibility aliases, dual reads, plan-owned allowance, or local cancellation state.
 
 ### Follow-up
 
-None yet.
+Architect review of `01f0605`; regenerate Prisma from DATABASE-013 before merge.
