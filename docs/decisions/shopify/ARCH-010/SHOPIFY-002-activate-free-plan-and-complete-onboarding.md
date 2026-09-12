@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-09-12T00:00:00Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-010-DATABASE-006
@@ -1219,3 +1219,605 @@ attempt: 6
 ```
 
 **Architect decision: Changes Requested — Attempt 5.**
+
+#### Attempt 6 — Changes Requested
+
+Attempt 6 correctly satisfies the central Attempt-5 concurrency correction:
+
+- `prepareFreeActivation(...)` acquires `ShopSettings` then `Subscription` row locks
+  before classifying/writing initial Free state;
+- both provider-null and provider-active `syncSubscription(...)` write transactions use
+  the same lock order;
+- `completeFreeActivation(...)` locks before final classification and refuses an
+  onboarding-incomplete completion when the exact current pending plan handle/id does
+  not match the requested Free plan;
+- an older Free-A completion therefore cannot clear a newer Free-B pending target;
+- stale provider pending data no longer overwrites an unresolved onboarding selection;
+- first lifetime Free counter creation remains race-safe and existing quantities remain
+  preserved;
+- the task remains on Shared `0.10.0` and database revision
+  `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`;
+- focused/full tests, Prisma validation/generation, build, changed-file ESLint and
+  `git diff --check` are reported passing;
+- the database submodule gitlink remains unstaged.
+
+The repository-wide typecheck baseline is unrelated and is not the reason for this
+decision.
+
+Attempt 6 still cannot be accepted because the exact latest-selection ordering is not
+yet enforced across the **entire callback**, and preserving the initial token has
+introduced an incorrect post-verification scheduling result for pack-enabled Free
+activation.
+
+##### Correction 1 — carry an exact Initial Free selection token across the whole callback
+
+Files:
+
+```text
+app/services/billing/billing.service.ts
+app/routes/app/billing/callback/route.tsx
+tests/unit/services/billing.service.test.ts
+tests/unit/routes/billing-callback.test.ts
+```
+
+Add one exported/internal immutable token type:
+
+```ts
+export type InitialFreeActivationToken = {
+  subscriptionId: string;
+  pendingPlanId: string;
+  pendingShopifyPlanHandle: string;
+  pendingEffectiveAt: Date;
+  nextReconcileAt: Date;
+};
+```
+
+For the true first/onboarding transition, `prepareFreeActivation(...)` MUST return:
+
+```text
+mode = INITIAL
+token = exact values written by this prepare transaction
+```
+
+For an already-onboarded same-Free replay, return:
+
+```text
+mode = VERIFIED_REPLAY
+token = null
+```
+
+Do not infer the mode later from a reloaded Subscription.
+
+The callback must retain this exact result until it exits.
+
+##### Correction 2 — make syncSubscription ignore stale Partner responses from an older initial callback
+
+Extend the existing method without changing generic callers:
+
+```ts
+syncSubscription(
+  shopId: string,
+  expectedInitialSelection?: InitialFreeActivationToken,
+)
+```
+
+Existing callers that omit the second argument keep current generic reconciliation
+behaviour.
+
+The billing callback passes the token only when:
+
+```text
+activation.mode = INITIAL
+```
+
+The Partner request remains outside the DB transaction.
+
+After the Partner request returns, and before **any** provider-null/provider-active
+write, billing-period upsert, subscription-ended notification decision or other billing
+mutation:
+
+1. acquire the existing lock order:
+   ```text
+   ShopSettings
+   Subscription
+   ```
+2. re-read both rows;
+3. when `expectedInitialSelection` is present, require all of:
+
+```text
+ShopSettings.onboardingCompleted = false
+Subscription.id = token.subscriptionId
+Subscription.pendingPlanId = token.pendingPlanId
+Subscription.pendingShopifyPlanHandle = token.pendingShopifyPlanHandle
+Subscription.pendingEffectiveAt = token.pendingEffectiveAt
+Subscription.nextReconcileAt = token.nextReconcileAt
+```
+
+If any comparison fails:
+
+```text
+the Partner response is stale
+perform NO provider projection
+perform NO BillingPeriod upsert
+perform NO subscription-ended notification
+perform NO pending-field change
+return/no-op
+```
+
+This exact guard is required for **both**:
+
+```text
+provider returns null
+provider returns an active subscription
+```
+
+It closes this still-valid Attempt-6 race:
+
+```text
+A prepares Free-A
+A Partner request starts
+B prepares + verifies + completes Free-B
+A's older Partner response returns
+=> A must not project null/Free-A over completed Free-B
+```
+
+Required service tests:
+
+1. token A + state changed to pending Free-B before provider-active write -> no DB write;
+2. token A + onboarding becomes true before provider-null write -> no DB write;
+3. token A + same plan/handle but changed `pendingEffectiveAt` or
+   `nextReconcileAt` -> no DB write;
+4. generic `syncSubscription(shopId)` without token continues to project normal
+   already-onboarded provider truth.
+
+##### Correction 3 — replace the two unguarded route fallback writes with one atomic guarded scheduler
+
+Current route fallback still does:
+
+```ts
+recordPartnerSyncError(shop.id, ...)
+scheduleInitialFreeReconciliation(shop.id, nextReconcileAt)
+```
+
+Both are unconditional Subscription updates.
+
+An old callback can therefore execute:
+
+```text
+A Partner call in flight
+B completes newer Free-B and clears pending state
+A Partner call throws
+A recordPartnerSyncError() marks B as PARTNER_API_ERROR
+A scheduleInitialFreeReconciliation() overwrites B.nextReconcileAt
+A enqueues stale initial work
+```
+
+Remove these two independent writes from the callback path.
+
+Implement one service method (name may differ, behaviour may not):
+
+```ts
+async scheduleInitialFreeReconciliationIfCurrent(args: {
+  shopId: string;
+  expected: InitialFreeActivationToken;
+  nextReconcileAt: Date;
+  partnerErrorAt?: Date | null;
+}): Promise<{ subscriptionId: string; nextReconcileAt: Date } | null>
+```
+
+Inside one transaction:
+
+```text
+1. lock ShopSettings
+2. lock Subscription
+3. re-read both
+4. require:
+     onboardingCompleted = false
+     Subscription.id = expected.subscriptionId
+     pendingPlanId = expected.pendingPlanId
+     pendingShopifyPlanHandle = expected.pendingShopifyPlanHandle
+     pendingEffectiveAt = expected.pendingEffectiveAt
+     nextReconcileAt = expected.nextReconcileAt
+5. if any value differs -> return null with NO mutation
+6. otherwise update only:
+     nextReconcileAt = requested retry time
+     if partnerErrorAt is supplied:
+       lastSyncErrorCode = PARTNER_API_ERROR
+       lastSyncErrorAt = partnerErrorAt
+7. return subscription id + committed nextReconcileAt
+```
+
+Do not clear any pending target field.
+
+The callback rules become:
+
+```text
+Partner throws:
+  do not call recordPartnerSyncError directly
+  remember partnerErrorAt locally
+
+verification unresolved:
+  if mode != INITIAL:
+      redirect /app
+      do not create an initial retry
+  if mode = INITIAL:
+      call scheduleInitialFreeReconciliationIfCurrent(...)
+      enqueue only when that method returns non-null
+
+completion returns false because a newer callback won:
+  guarded scheduler returns null
+  no stale enqueue occurs
+```
+
+Required route/service tests:
+
+1. old callback Partner error after newer onboarding completion -> guarded scheduler
+   returns null; no error metadata, no schedule mutation, no enqueue;
+2. old callback unresolved after newer Free-B prepare -> token mismatch, no retime and
+   no enqueue;
+3. normal initial Partner error with unchanged token records
+   `PARTNER_API_ERROR`, preserves pending target and enqueues exactly one delayed job;
+4. normal provider-null/pending-only unresolved result schedules/enqueues without
+   writing `PARTNER_API_ERROR`.
+
+##### Correction 4 — compute the post-verification pack schedule inside completeFreeActivation
+
+Attempt 6 preserves the exact initial selection token through `syncSubscription(...)`.
+That is correct for ordering, but it means `subscription.nextReconcileAt` is still the
+**initial immediate selection schedule** when completion begins.
+
+Current completion does:
+
+```ts
+nextReconcileAt: subscription.plan.recoveryCreditPackEnabled
+  ? subscription.nextReconcileAt
+  : null
+```
+
+For a pack-enabled verified Free plan this is wrong.
+
+Example:
+
+```text
+prepare:
+  nextReconcileAt = now
+
+Shopify verifies exact Free cycle:
+  currentPeriodEnd = 2026-10-12T12:00:00Z
+
+complete:
+  currently keeps old "now"
+```
+
+Required final schedule is:
+
+```text
+exact cycle:
+  max(
+    completionNow,
+    currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+  )
+
+verified Free + no exact cycle:
+  completionNow + INITIAL_BILLING_RETRY_DELAY_MS
+
+pack disabled:
+  null
+```
+
+Implement inside the locked `completeFreeActivation(...)` transaction after the exact
+pending-token check:
+
+```ts
+const completionNow = new Date();
+
+const completedNextReconcileAt =
+  !subscription.plan.recoveryCreditPackEnabled
+    ? null
+    : subscription.currentPeriodEnd
+      ? new Date(Math.max(
+          completionNow.getTime(),
+          subscription.currentPeriodEnd.getTime()
+            - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS,
+        ))
+      : new Date(
+          completionNow.getTime() + INITIAL_BILLING_RETRY_DELAY_MS,
+        );
+```
+
+Write:
+
+```text
+pendingShopifyPlanHandle = null
+pendingPlanId = null
+pendingEffectiveAt = null
+nextReconcileAt = completedNextReconcileAt
+```
+
+Do not preserve the pre-verification initial schedule after successful onboarding.
+
+After `completeFreeActivation(...)` returns true, the route MUST NOT enqueue using the
+pre-completion `subscription.nextReconcileAt` that it loaded earlier.
+
+Either:
+
+```text
+reload Subscription after completion and enqueue the committed schedule
+```
+
+or return the committed `{ subscriptionId, nextReconcileAt }` from completion.
+
+The queued `expectedNextReconcileAt` must exactly equal the value committed by
+completion.
+
+Required tests:
+
+1. initial pack-enabled Free + exact cycle -> completion writes the exact pre-close
+   schedule and callback enqueues that exact committed timestamp;
+2. initial pack-enabled Free + no exact cycle -> completion writes exactly
+   `completionNow + INITIAL_BILLING_RETRY_DELAY_MS`;
+3. pack-disabled Free -> completion clears `nextReconcileAt`;
+4. an older callback that loses the completion race cannot enqueue its stale
+   pre-completion schedule.
+
+##### Correction 5 — finish Required Test 17 exactly
+
+The Attempt-6 test:
+
+```text
+"does not create a periodic Free entitlement counter during activation"
+```
+
+proves the period counter is not written, but it does not prove the complete Required
+Test 17 contract requested in Attempt 5.
+
+Add one explicit assertion using an existing lifetime counter:
+
+```text
+before:
+  grantedQuantity = 5
+  committedQuantity = 3
+  reservedQuantity = 1
+  refundingQuantity = 1
+  version = 7
+```
+
+Run the exact-cycle Free projection/replay path.
+
+Assert after:
+
+```text
+grantedQuantity = 5
+committedQuantity = 3
+reservedQuantity = 1
+refundingQuantity = 1
+version = 7
+```
+
+and:
+
+```text
+no BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS)
+create/upsert/update occurs.
+```
+
+Do not add production entitlement writes merely to satisfy the test.
+
+##### Correction 6 — finish Required Test 19 as one coherent initial-activation flow
+
+The repository has separate tests for:
+
+```text
+Free provider with no cycle
+billingPeriodId=null blocks top-up purchase
+billing UI can render purchase ineligible
+```
+
+but it still does not prove the required initial-activation result as one coherent
+state transition.
+
+Add one direct flow test:
+
+```text
+fresh onboarding merchant
+Free plan:
+  recoveryCreditPackEnabled = true
+
+Partner verifies requested current Free plan
+Partner returns:
+  currentPeriodStart = null
+  currentPeriodEnd = null
+```
+
+Run the same service steps used by the callback:
+
+```text
+prepareFreeActivation
+syncSubscription with exact initial token
+completeFreeActivation
+```
+
+Assert:
+
+```text
+ShopSettings.onboardingCompleted = true
+FREE_RECOVERY_LIFETIME exists exactly once
+Subscription.status = ACTIVE or TRIALING
+Subscription.planId = requested Free plan
+Subscription.billingPeriodId = null
+Subscription.nextReconcileAt = completionNow + INITIAL_BILLING_RETRY_DELAY_MS
+pending fields are null
+```
+
+Then prove pack purchase remains fail-closed because there is no exact BillingPeriod.
+Use the existing purchase eligibility/service boundary; do not invent a new eligibility
+mechanism.
+
+##### Correction 7 — actually add Required Test 20
+
+The Attempt-6 Completion Report says:
+
+```text
+"Focused coverage includes the explicit no-moda-interact-admin redirect/link assertion."
+```
+
+Architect inspection of the submitted tests finds **no**
+`moda-interact-admin` assertion in:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+tests/unit/billing-ui.test.ts
+tests/unit/services/billing.service.test.ts
+```
+
+Add the test requested in Attempt 5.
+
+At minimum inspect the merchant surfaces owned/changed by this task:
+
+```text
+app/routes/app/billing/callback/route.tsx
+app/routes/app/billing/select/route.jsx
+app/routes/app/billing/route.tsx
+```
+
+Assert none contains:
+
+```text
+moda-interact-admin
+```
+
+`https://admin.shopify.com/.../pricing_plans` is explicitly allowed and must not be
+rejected by the test.
+
+Update the Completion Report only after this assertion genuinely exists and passes.
+
+##### Correction 8 — explicitly prove the lock order instead of only mocking `$queryRaw`
+
+Attempt 6 adds `$queryRaw` transaction doubles but does not contain an assertion that
+the required lock order is actually executed.
+
+Add a focused test that records the first two SQL lock calls and proves:
+
+```text
+call 1 contains:
+  FROM "shopify"."ShopSettings"
+  FOR UPDATE
+
+call 2 contains:
+  FROM "billing"."Subscription"
+  FOR UPDATE
+```
+
+Run that assertion through at least one true initial-activation transaction
+(`prepareFreeActivation` or `completeFreeActivation`).
+
+Because all relevant paths call the same helper, one direct helper-path ordering test
+plus the existing path tests is sufficient.
+
+##### Correction 9 — normalize Attempt-7 VCS/report evidence
+
+Attempt 6 records:
+
+```text
+implementation commit: e8eb64e
+parent report commit: d5e893c...
+```
+
+The submitted review state also has a later parent review-status commit:
+
+```text
+4e3f9c4
+```
+
+For Attempt 7 record all current immutable evidence explicitly:
+
+```text
+implementation commit: <Attempt-7 hash>
+parent claim commit: <exact hash>
+parent report commit: <exact hash>
+parent review-status/final metadata commit: <exact hash>
+database dependency revision:
+  6d5fb9adf2e5c1fb28333b330dd183c9cda41550
+submodule gitlink staged: no
+```
+
+Keep all three physical-isolation declarations and all four synchronization outcomes.
+
+##### Attempt-7 deterministic stop gate
+
+Do not return Attempt 7 to `review` until all of the following pass:
+
+```text
+A. STALE CALLBACK ORDERING
+1. stale provider-active response cannot mutate newer pending selection
+2. stale provider-null response cannot mutate completed/newer selection
+3. stale same-plan response with changed effectiveAt/schedule cannot mutate
+4. stale Partner error cannot annotate/retime newer completed state
+5. stale unresolved callback cannot enqueue work for newer state
+
+B. SUCCESSFUL INITIAL ACTIVATION
+6. valid initial Free selection records exact token
+7. exact current Free verification consumes only that token
+8. pack-disabled completion clears schedule
+9. pack-enabled exact-cycle completion writes pre-close schedule
+10. pack-enabled no-cycle completion writes +INITIAL_BILLING_RETRY_DELAY_MS
+11. callback enqueues only the post-completion committed schedule
+
+C. UNRESOLVED INITIAL ACTIVATION
+12. normal provider null preserves exact target and schedules tiered retry
+13. pending-only provider result does not complete onboarding
+14. normal Partner error records PARTNER_API_ERROR and schedules retry atomically
+15. Queue failure cannot roll back committed retry state
+
+D. ENTITLEMENT / PERIOD
+16. lifetime counter snapshots platform policy once
+17. concurrent first creation remains race-safe
+18. exact Free period has full canonical snapshot
+19. no included-credit counter is created
+20. exact-cycle replay leaves lifetime quantities/version unchanged
+21. no-cycle activation completes onboarding but remains top-up-ineligible
+
+E. ROUTE / SECURITY / LOCKING
+22. no merchant task surface contains "moda-interact-admin"
+23. Shopify hosted `admin.shopify.com` pricing route remains allowed
+24. ShopSettings lock occurs before Subscription lock
+25. no database lock is held across the Partner network request
+
+F. VALIDATION
+26. focused BillingService tests pass
+27. billing callback tests pass
+28. billing reconciliation producer tests pass
+29. billing UI tests pass
+30. full Vitest passes except documented baseline skips/failures
+31. Prisma validate/generate pass
+32. build passes
+33. changed-file ESLint passes
+34. changed task files introduce no typecheck diagnostic
+35. git diff --check passes
+```
+
+##### Scope guard
+
+Attempt 7 remains `ARCH-010-SHOPIFY-002` only.
+
+Do not:
+
+- add a schema column/version token;
+- stage/change the database gitlink;
+- implement Background reconciliation;
+- implement Paid initial activation;
+- implement upgrade/downgrade/cancellation/reinstall;
+- implement billing-period rollover;
+- add Admin or Render work.
+
+If exact stale-response suppression cannot be implemented with the token + existing
+row locks described above, STOP and return the task to `moda_architect` rather than
+inventing a new lifecycle mechanism.
+
+Reclaim through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 7
+```
+
+**Architect decision: Changes Requested — Attempt 6.**
