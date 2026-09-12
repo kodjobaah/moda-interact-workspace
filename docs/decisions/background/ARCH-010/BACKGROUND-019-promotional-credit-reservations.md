@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 82
 executor: copilot
 claimed_at: '2026-09-12T23:25:08Z'
@@ -25,7 +25,7 @@ enables:
 - ARCH-010-SYSTEM-TEST-001
 - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: '2026-09-13'
+updated: '2026-09-12'
 ---
 
 # ARCH-010-BACKGROUND-019: Reserve selected promotional campaign credits before every other capacity source
@@ -193,12 +193,14 @@ Stop if DATABASE-013 exact grant ownership is unavailable, or if implementing pr
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `src/services/promotional-recovery-reservation.service.ts`
 - `src/services/recovery-billing.service.ts`
 - `tests/unit/services/recovery-billing.service.test.ts`
+- `tests/unit/services/promotional-recovery-reservation.service.test.ts`
+- `tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`
 
 ### Work Completed
 - Added an exact campaign-grant promotional reservation primitive using Serializable transactions, versioned CAS updates, deterministic source keys, replay protection, and bounded conflict retries.
@@ -206,18 +208,25 @@ In Progress.
 - Routed selected promotional capacity before paid included, purchased FIFO, and lifetime Free capacity; promotional usage creates only internal usage evidence and no paid Shopify meter event.
 - Routed promotional commit, release, and ambiguous-provider transitions through the exact grant service.
 - Added focused coverage for promo-first paid admission, fallback to purchased capacity, and promotional lifecycle commit routing.
+- Attempt 3 removed reservation-time mutation of selection-owned history fields and corrected post-transition `exhaustedAt` accounting with fail-closed negative-state checks.
+- Added direct primitive coverage for scope/time/status eligibility, exact ownership, replay/lifecycle transitions, internal event semantics, timestamps, and exhaustion behavior.
+- Added disposable PostgreSQL concurrency coverage proving one final-credit reservation wins without aggregate promotional entitlement accounting.
+- Expanded router coverage for ordered fallback and promotional release, definitive failure, and ambiguous-provider ownership.
 
 ### Validation Results
-- Resolver returned `status: ready`, `assigned_agent: moda_background`, `execution_mode: agent`, and all four explicit dependencies complete.
-- `./node_modules/.bin/vitest run tests/unit/services/recovery-billing.service.test.ts`: passed, 36 tests.
+- Attempt 3 claimed durably with `executor: copilot`, `attempt: 3`, and claim timestamp `2026-09-12T23:25:08Z`.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- Focused `vitest` primitive/router suite: passed, 55 tests.
+- `npm run test:integration -- tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`: passed, 1 test.
 - `./node_modules/.bin/tsc --noEmit`: passed.
-- `get_errors` for all three touched files: no errors.
+- `npm run build`: passed.
 - `git diff --check`: passed.
-- Full `./node_modules/.bin/vitest run tests/unit`: 561 tests passed and 1 unrelated existing test failed because `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while `package.json` declares `0.11.0`.
+- Full `npm run test:unit`: 580 tests passed and 1 unrelated existing test failed because `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while `package.json` declares `0.11.0`.
 
 ### Deviations
 - Full unit validation retains one pre-existing shared-runtime version assertion failure; no unrelated test or package metadata was changed.
-- Database-backed promotion integration/concurrency validation was not run because this repository provides no reservation integration test file or disposable database command in the current worktree.
+- The unrelated shared-runtime version assertion remains unresolved; no unrelated test or package metadata was changed.
 
 ### Assumptions
 - The initialized `database` submodule at accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736` is the intended dependency state; its parent gitlink was intentionally not staged by this task.
@@ -246,14 +255,14 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-background`
-  implementation commit: `19f347d`
+  implementation commit: `ed28c98`
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md`
-  claim commit: `261c9c9`
-  review report commit: `a01c489`
+  claim commit: `d711795`
+  review report commit: `c48c3ac`
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: yes
   submodule gitlink staged: no
