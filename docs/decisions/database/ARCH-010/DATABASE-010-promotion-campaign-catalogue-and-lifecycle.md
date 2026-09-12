@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 82
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-12T06:03:25Z
+attempt: 1
 depends_on:
   - ARCH-010-DATABASE-009
 enables:
@@ -170,7 +170,7 @@ Stop and return to `moda_architect` if the current `BillingPlan`, `Shop`, `Platf
 ## Completion Report
 
 ### Status
-Not started.
+In Progress.
 
 ### Files Changed
 Populate during implementation.
