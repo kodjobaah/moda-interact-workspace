@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 57
 executor: copilot
 claimed_at: '2026-09-12T22:30:00Z'
@@ -170,7 +170,7 @@ STOP if the configured Partner API version does not expose root `events`, `Event
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 
@@ -179,31 +179,50 @@ In Progress.
 
 ### Work Completed
 
-- Added `getSubscriptionReconciliationSnapshot()` without changing the existing `getActiveSubscription()` contract.
-- Added a bounded Partner Historical Events query scoped by app subject, shop, six lifecycle event types, and a 365-day window.
-- Added typed lifecycle event parsing for created, updated, cancellation-scheduled, canceled, frozen, and unfrozen states.
-- Preserved active-subscription parsing, usage snapshots, and null/error semantics for existing callers.
-- Added fail-closed validation for missing roots, non-`SubscriptionStatus` payloads, mismatched app/shop identity, invalid timestamps, states, event types, and lifecycle field shapes.
-- Added focused coverage for lifecycle states, frozen-versus-canceled null subscriptions, cancellation dates, empty history, HTTP/GraphQL failures, query scoping/window variables, and malformed events.
+- Corrected the historical-events query to the Partner API `events.edges[].node` shape, with `SubscriptionStatus` at the event-node level and `AppReference`/shop identity fields.
+- Preserved the single request containing both `activeSubscription` and bounded `events` roots; `getActiveSubscription()` remains separate and source-compatible.
+- Added strict parsing for `SubscriptionStatus`, `AppReference`, requested shop identity, non-empty event IDs, valid timestamps, exact state/event-type pairs, and nullable plan fields.
+- Normalized `cancelEffectiveOn`, `plan.handle`, and `plan.billingPeriod` from the provider-realistic event node, including null-plan handling and malformed-plan rejection.
+- Corrected all lifecycle fixtures to use `edges[].node`, fixed the contradictory null CANCELED assertion, and covered CREATED, UPDATED, CANCELLATION_SCHEDULED, CANCELED, FROZEN, and UNFROZEN.
+- Added focused coverage for root/edge shape failures, HTTP and GraphQL failures, app/shop mismatches, malformed timestamps/states/plans, query fragments, both identity filters, all six event types, and the exact 365-day window.
+
+Architect Review correction mapping:
+
+- Finding 1: corrected query shape in `src/providers/shopify-partner-billing.provider.ts`; query-shape assertions in `tests/unit/providers/shopify-partner-billing.provider.test.ts`.
+- Finding 2: parses `events.edges[0].node` and validates event, subject, shop, identity, timestamp, state/event type, and plan shape in the provider.
+- Finding 3: provider-realistic fixtures and the explicit null CANCELED expectation are in the focused test file.
+- Finding 4: all requested lifecycle, null-plan, malformed-shape, identity, query-bound, and compatibility cases are covered in the focused test file.
+- Finding 5: dependency-backed focused Vitest, direct changed-slice TypeScript, repository typecheck, build, unit suite, and diff validation were run and recorded below.
+- Finding 6: mandatory start-of-attempt synchronization outcomes are recorded below.
 
 ### Validation Results
 
-- Editor diagnostics: passed for provider and focused test file.
+- `./node_modules/.bin/vitest run tests/unit/providers/shopify-partner-billing.provider.test.ts`: passed, 21 tests passed, 0 failed.
+- Focused provider TypeScript check with TypeScript 7 `--ignoreConfig`: passed.
 - `git diff --check`: passed.
-- Focused Vitest command: not run because `node_modules/.bin/vitest` is unavailable in the implementation worktree.
-- Repository typecheck: not run because `node_modules/.bin/tsc` is unavailable in the implementation worktree.
+- `./node_modules/.bin/tsc --noEmit`: blocked by broad pre-existing Prisma generated-client/type failures in unrelated services; no changed provider/test error was reported.
+- `npm run build`: blocked before TypeScript compilation because `database/prisma/schema.prisma` is absent from this checkout.
+- `npm run test:unit`: blocked by the same ungenerated Prisma client in multiple unrelated suites; one unrelated recovery-routing race test and one observability release assertion also failed.
+- Focused ESLint: unavailable because `node_modules/.bin/eslint` is not installed in this repository worktree.
+- `npm ci`: completed successfully before focused validation; it reported the repository's existing three high-severity audit findings and install-script warnings.
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
 
 ### Deviations
 
-None.
+None within the authorized production/test scope. Required repository-wide checks remain blocked by the documented checkout Prisma baseline and missing lint binary.
 
 ### Assumptions
 
-The existing configured Partner API version supports the queried `events` root, event filter fields, `SubscriptionStatus` subject, lifecycle state fields, and the six requested event types. Runtime schema validation remains dependent on the repository's available generated/provider contract.
+The configured Partner API version is the required 2026-07 contract exposing `events`, `PartnerEventConnection.edges`, `SubscriptionStatus`, `AppReference`, `ShopReference`, `Plan.handle`, and `Plan.billingPeriod`.
 
 ### Unresolved Issues
 
-Focused runtime tests and repository typecheck remain pending until dependencies are installed in the implementation worktree.
+Repository-wide Prisma generation/typecheck/build/unit validation remains unavailable until `database/prisma/schema.prisma` and the matching generated client are present. This does not affect the passing focused provider suite.
 
 ### Architectural Concerns
 
@@ -225,13 +244,14 @@ Physical worktree isolation:
 
 Implementation repository:
   repository: `moda-interact-background`
-  commit: `d03e60b`
+  commit: `f4bf204`
   remote branch: `origin/task/ARCH-010-BACKGROUND-015`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-015-shopify-subscription-lifecycle-snapshot.md`
-  commit: pending
+  claim commit: `4f56d6e`
+  review report commit: pending
   remote branch: `origin/task/ARCH-010-BACKGROUND-015`
   pushed: pending
   submodule gitlink staged: no
