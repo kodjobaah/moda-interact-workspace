@@ -259,8 +259,8 @@ Implemented Corrections 1-6 and the Attempt-4 acceptance matrix: exact initial-s
 - Another task worktree reused: no.
 - Parent remote task branch fast-forwarded: not-needed; parent `origin/main` incorporated: already-current.
 - Implementation remote task branch fast-forwarded: not-needed; implementation `origin/main` incorporated: already-current.
-- Implementation commit: `f877f813c9d8f3f37b9d37f5c7f8dc7f50a6d4a8`.
-- Parent report commit: to be recorded after Attempt-4 report commit.
+- Implementation commit: `f877f81473ccd5bb9d073446b9307b995ee8fecf`.
+- Parent report commit: `649150cf8ce292275771258c0e7c95566b212437`.
 - Parent claim commit: `cc4de24`; prior review/report commit: `bc7c9bd`.
 - Database submodule revision: `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
 - Submodule gitlink staged: no.
