@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 83
 executor: null
 claimed_at: null
@@ -400,7 +400,7 @@ Merged to workspace main: no
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested
 
@@ -590,3 +590,111 @@ attempt: 3
 ```
 
 **Architect decision: Changes Requested — Attempt 2.**
+
+#### Attempt 3 — Accepted
+
+Architect review verified that the sole outstanding Attempt-2 correction is now
+satisfied and that the previously accepted DATABASE-011 implementation remains
+intact.
+
+##### Historical migration restoration
+
+`prisma/migrations/20260911130000_add_purchased_credit_lot_accounting/migration.sql`
+has been restored byte-for-byte to the accepted DATABASE-007 version.
+
+Architect-side comparison against the pre-Attempt-2 accepted review baseline confirms:
+
+```text
+accepted DATABASE-007 migration SHA-256:
+feacf83100d99190018042c570e5004c7e61faa347144ac75a375c83a80b07a0
+
+Attempt-3 migration SHA-256:
+feacf83100d99190018042c570e5004c7e61faa347144ac75a375c83a80b07a0
+```
+
+The out-of-scope Attempt-2 `reservation` -> `reservation_record` rewrite is therefore
+fully removed. DATABASE-011 no longer modifies the accepted DATABASE-007 migration.
+
+##### DATABASE-011 correction preservation
+
+The valid Attempt-2 corrections remain present:
+
+- `PromotionalCreditGrant` declares `@@index([campaignId, createdAt])`;
+- the DATABASE-011 migration creates
+  `PromotionalCreditGrant_campaignId_createdAt_idx`;
+- `scripts/validate-promotion-selection-schema.mjs` asserts the index in both the
+  Prisma schema and DATABASE-011 migration;
+- the DATABASE-011 schema, additive migration, package script and focused validator
+  are unchanged from the already-reviewed Attempt-2 implementation;
+- the generated ERD differs from Attempt 2 only by normalization of generator
+  trailing whitespace and does not change the data model.
+
+##### Validation and workflow evidence
+
+The Attempt-3 Completion Report records successful:
+
+```text
+npm run format
+npm run validate
+npm run prisma:validate
+npm run prisma:generate
+npm run test:promotion-selection
+npm run test:promotion-campaign
+npm run test:billing-policy
+npm run test:recovery-credit-packs
+npm run test:checkout-recovery-capacity
+npm run test:purchased-credit-lots
+npm run test:billing-lifecycle
+npm run erd:puml
+npm run status
+git diff --check
+```
+
+with PostgreSQL reporting the database schema up to date with 38 migrations.
+
+Architect-side execution from the review archive independently confirmed:
+
+- `validate-promotion-selection-schema.mjs` passes;
+- `validate-promotion-campaign-schema.mjs` passes.
+
+The remaining validators require installed generated Prisma/npm dependencies that are
+not packaged in the review archive, so their successful canonical-worktree execution
+is accepted from the Completion Report rather than treated as a review failure.
+
+The Completion Report also records the required dedicated parent and implementation
+worktrees, all three physical-isolation declarations, all four start-of-attempt
+synchronization outcomes, implementation head `33c567f`, claim commit `cdfebdb`,
+and no staged submodule gitlink or main-branch modification. The published parent
+report commit supplied for this review is `a0fc003`.
+
+##### Architectural acceptance
+
+All DATABASE-011 invariants previously reviewed remain accepted:
+
+- one campaign+Shop grant maximum through `UNIQUE(campaignId, shopId)`;
+- one current selection per Shop;
+- composite Shop/grant identity prevents cross-tenant selection pointers;
+- promotional lot counters cannot become negative or exceed grant quantity;
+- `UsageReservation.promotionalCreditGrantId` provides exact promotional grant
+  ownership while historical reservations remain compatible with `NULL`;
+- campaign-less DATABASE-009 grant history remains valid compatibility data;
+- the migration creates no selection, grant, capacity, campaign backfill or aggregate
+  counter rewrite;
+- reopened campaigns cannot create a second grant for the same Shop.
+
+**Architect decision: Accepted — Attempt 3.**
+
+Because `completion_mode: automatic`, `ARCH-010-DATABASE-011` is now `complete`.
+`attempt: 3` is preserved and there is no active executor/claim.
+
+##### Dependency reconciliation
+
+No dependent task becomes Ready solely from this acceptance:
+
+- `ARCH-010-ADMIN-006` remains `pending` because `ARCH-010-ADMIN-005` is not complete;
+- `ARCH-010-BACKGROUND-019` remains `pending` because BACKGROUND-002 and
+  BACKGROUND-014 are not complete (BACKGROUND-011 is only Ready);
+- `ARCH-010-SHOPIFY-009` remains `pending` because SHOPIFY-004 is not complete;
+- `ARCH-010-SHOPIFY-021` remains `pending` because SHOPIFY-018 and ADMIN-004 are
+  not complete;
+- `ARCH-010-SHOPIFY-022` remains `pending` because SHOPIFY-021 is not complete.
