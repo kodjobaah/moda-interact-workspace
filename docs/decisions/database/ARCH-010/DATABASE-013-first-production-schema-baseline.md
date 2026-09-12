@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: copilot
 claimed_at: '2026-09-12T13:57:00Z'
@@ -568,7 +568,7 @@ The implementation agent does not reopen or edit DATABASE-001 through DATABASE-0
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `prisma/schema.prisma`
@@ -585,6 +585,7 @@ In Progress.
 - Replaced the accumulated migration chain with exactly one empty-database baseline migration and retained the PostgreSQL migration lock.
 - Updated first-production seed behavior and replaced obsolete focused validators with a final baseline invariant validator.
 - Regenerated the ERD and normalized generator-produced trailing whitespace for clean repository validation.
+- Reworked Attempt 2 from the Architect Review by restoring the accepted PostgreSQL-only integrity checks, adding the final reservation source-shape constraint, and completing the verified-economics index/currency contract.
 
 ### Validation Results
 - Prerequisites: parent task records for DATABASE-001 through DATABASE-011 are all `status: complete`; implementation history reaches accepted DATABASE-011 commit `813626d`.
@@ -594,9 +595,10 @@ In Progress.
 - `npm run test:first-production-baseline`: passed (`First-production baseline invariants passed.`).
 - `npm run erd:puml`: passed; generated ERD then normalized; `git diff --check`: passed.
 - `node --check prisma/seed.mjs`: passed; `node --check scripts/validate-first-production-baseline.mjs`: passed.
-- Disposable local PostgreSQL database `moda_interact_arch010_database013_validation` at `localhost:5432`: `npm run migrate:deploy` applied `20260912000000_arch010_first_production_baseline`; `npm run status` reported `Database schema is up to date!`; corrected `prisma migrate diff --from-url ... --to-schema-datamodel ... --exit-code` reported `No difference detected.`
+- Disposable local PostgreSQL database `moda_interact_arch010_database013_validation` at verified `localhost:5432`: `npm run migrate:deploy` applied `20260912000000_arch010_first_production_baseline`; `npm run status` reported `Database schema is up to date!`; `prisma migrate diff --from-url ... --to-schema-datamodel prisma/schema.prisma --exit-code` reported `No difference detected.`
+- PostgreSQL `pg_constraint` catalogue query returned all 23 reviewed custom constraints, including `UsageReservation_capacity_source_shape`, `PromotionalCreditGrant_nonnegativeVersion_check`, and `BillingEconomicsSnapshot_currency_normalized`.
 - Migration shape: exactly one migration directory and one `migration.sql`, plus `migration_lock.toml`; baseline contains no compatibility/backfill `UPDATE`, `INSERT`, or `DELETE` statements.
-- Explicit removed-name scan across final schema, migration, seed, validators, and ERD returned no matches for the required removed compatibility names.
+- Explicit removed-name scan across final schema, migration, seed, and ERD returned no matches for the required removed compatibility names; validator literals are test-only assertions for that scan.
 
 ### Deviations
 None.
@@ -605,13 +607,15 @@ None.
 ARCH-010 billing/lifecycle state has not entered production.
 
 ### Unresolved Issues
-None at task definition time.
+None.
 
 ### Architectural Concerns
-Return any mismatch between accepted DATABASE-011 final schema and repository mainline to `moda_architect`; do not guess.
+None.
 
 ### Git / VCS
-Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; commit `46a14c577dac0f0b2b59866b11c539f545b5aaab`; pushed to `origin/task/ARCH-010-DATABASE-013`. Parent report is being published on the mirrored parent branch `task/ARCH-010-DATABASE-013`.
+Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; commit `f4d25d4`; pushed to `origin/task/ARCH-010-DATABASE-013`.
+Parent worktree: `moda-interact-workspace-task-ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; parent report commit is being published on `origin/task/ARCH-010-DATABASE-013`.
+Shared workspace checkout switched/mutated: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no. Submodule gitlink staged: no. Merged to implementation main: no. Merged to workspace main: no.
 
 ## Architect Review
 
