@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 5
-executor: copilot
-claimed_at: 2026-09-12T13:00:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-001
@@ -616,19 +616,261 @@ Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-DATABASE-01
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
-Pending implementation.
+
+The clean-baseline direction is correct and the requested ARCH-010 compatibility removals are present. The task is not accepted because the baseline migration drops database-only integrity constraints that were part of the accepted schema before the rebaseline, and the absorbed DATABASE-012 economics snapshot contract is not fully materialised.
+
+Prisma schema/migration drift being zero is not sufficient evidence for these constraints: several accepted PostgreSQL `CHECK` constraints are not represented in `schema.prisma`, so a schema-derived baseline can be drift-free while still weakening the durable database contract.
+
+Do not create a new task. Reclaim this same task for Attempt 2 and make only the corrections below.
+
+#### Correction 1 — restore retained database-only integrity in the single baseline migration
+
+File:
+
+```text
+moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql
+```
+
+Keep exactly one migration directory. Do not restore the old migration chain and do not add a second migration.
+
+Restore the following accepted PostgreSQL invariants because their underlying first-release product state still exists in the final baseline:
+
+```text
+Conversation_standalone_scope_invariant
+BillingPlan_recovery_credit_pack_config
+RecoveryCreditPurchase_creditsGranted_positive
+CheckoutRecovery_admission_block_pair
+PlatformBillingPolicy_lifetimeFreeRecoveryAllowance_non_negative
+RecoveryCreditPurchase_lot_quantities_non_negative
+RecoveryCreditPurchase_lot_quantities_within_grant
+RecoveryCreditRefund_quantities_positive
+BillingPeriodEntitlementCounter_grantedQuantity_non_negative
+BillingPeriodEntitlementCounter_committedQuantity_non_negative
+BillingPeriodEntitlementCounter_reservedQuantity_non_negative
+BillingPeriodEntitlementCounter_forfeitedQuantity_non_negative
+BillingPeriodEntitlementCounter_capacity
+BillingPeriod_period_boundary
+BillingPeriod_included_recovery_credits_non_negative
+BillingPeriod_open_close_metadata_empty
+PromotionCampaign_quantity_positive
+PromotionCampaign_expiry_after_start
+PromotionCampaign_scope_target_shape
+MerchantPromotionSelection_version_non_negative
+```
+
+Use the accepted expressions from the pre-baseline migrations as the source, not reconstructed semantics from chat. They are still applicable to the final fields.
+
+The new baseline already contains promotional-grant quantity checks, but it no longer enforces the accepted non-negative `PromotionalCreditGrant.version` invariant. Add:
+
+```sql
+ALTER TABLE "billing"."PromotionalCreditGrant"
+ADD CONSTRAINT "PromotionalCreditGrant_nonnegativeVersion_check"
+CHECK ("version" >= 0);
+```
+
+Do **not** restore the old `UsageReservation_counter_family_xor` unchanged. That two-family expression predates the first-production removal of aggregate promotional counters and would reject a valid promotion reservation.
+
+Replace it with one final first-production source-shape constraint named:
+
+```text
+UsageReservation_capacity_source_shape
+```
+
+It must permit exactly these structural families:
+
+```text
+lifetime Free / purchased aggregate:
+  counterId != NULL
+  billingPeriodEntitlementCounterId == NULL
+  promotionalCreditGrantId == NULL
+  purchasedCreditPurchaseId may be NULL or non-NULL
+
+paid included:
+  counterId == NULL
+  billingPeriodEntitlementCounterId != NULL
+  purchasedCreditPurchaseId == NULL
+  promotionalCreditGrantId == NULL
+
+selected promotion:
+  counterId == NULL
+  billingPeriodEntitlementCounterId == NULL
+  purchasedCreditPurchaseId == NULL
+  promotionalCreditGrantId != NULL
+```
+
+Use this exact SQL shape:
+
+```sql
+ALTER TABLE "billing"."UsageReservation"
+ADD CONSTRAINT "UsageReservation_capacity_source_shape"
+CHECK (
+  (
+    "counterId" IS NOT NULL
+    AND "billingPeriodEntitlementCounterId" IS NULL
+    AND "promotionalCreditGrantId" IS NULL
+  )
+  OR (
+    "counterId" IS NULL
+    AND "billingPeriodEntitlementCounterId" IS NOT NULL
+    AND "purchasedCreditPurchaseId" IS NULL
+    AND "promotionalCreditGrantId" IS NULL
+  )
+  OR (
+    "counterId" IS NULL
+    AND "billingPeriodEntitlementCounterId" IS NULL
+    AND "purchasedCreditPurchaseId" IS NULL
+    AND "promotionalCreditGrantId" IS NOT NULL
+  )
+);
+```
+
+This deliberately allows a purchased reservation to carry both the aggregate purchased counter and `purchasedCreditPurchaseId`, while a promotion reservation is owned only by the exact campaign grant lot.
+
+Do not add compatibility data/backfills. These are empty-database baseline constraints only.
+
+#### Correction 2 — complete the absorbed DATABASE-012 economics snapshot contract
+
+Files:
+
+```text
+moda-interact-database/prisma/schema.prisma
+moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql
+```
+
+`BillingEconomicsSnapshot` currently indexes `createdAt`. DATABASE-012 required the latest verified evidence lookup by `verifiedAt`.
+
+Replace:
+
+```prisma
+@@index([billingPlanId, createdAt])
+@@index([verifiedByPlatformAdminId, createdAt])
+```
+
+with:
+
+```prisma
+@@index([billingPlanId, verifiedAt])
+@@index([verifiedByPlatformAdminId, verifiedAt])
+```
+
+Regenerate/update the baseline SQL so the corresponding indexes use `verifiedAt`.
+
+The task also requires a normalized three-letter currency, while `@db.Char(3)` enforces only length. Add a PostgreSQL constraint named:
+
+```text
+BillingEconomicsSnapshot_currency_normalized
+```
+
+with:
+
+```sql
+CHECK ("currency" ~ '^[A-Z]{3}$')
+```
+
+Do not add local `BillingPlan` price/rank authority. Do not seed economics edges or snapshots.
+
+#### Correction 3 — make the final baseline validator prove the durable baseline, not only Prisma-visible shape
+
+File:
+
+```text
+moda-interact-database/scripts/validate-first-production-baseline.mjs
+```
+
+Keep one consolidated first-production validator; do not restore obsolete compatibility validators.
+
+Extend it to assert at minimum:
+
+1. every retained CHECK constraint listed in Correction 1 is present in the baseline migration;
+2. `UsageReservation_capacity_source_shape` is present and its SQL contains all four source columns;
+3. `PromotionalCreditGrant_nonnegativeVersion_check` is present;
+4. `BillingEconomicsSnapshot_currency_normalized` is present;
+5. `BillingEconomicsSnapshot` uses `(billingPlanId, verifiedAt)` and `(verifiedByPlatformAdminId, verifiedAt)` indexes in both Prisma schema and migration;
+6. `BillingEconomicsSnapshot` has no `updatedAt` field, preserving the append-only evidence shape;
+7. the final refund model does not contain the removed automatic-settlement fields/status vocabulary;
+8. the final promotional grant model has required `campaignId` and no direct-grant provenance fields;
+9. the final cancellation request model/enums are absent;
+10. the final lifetime-Free model uses only `LIFETIME_FREE_RECOVERY_CREDITS` and the platform policy default.
+
+The validator may contain removed symbol names as test data. For Attempt 2, the explicit removed-name source scan must therefore treat that validator file as test-only evidence rather than interpreting its assertion strings as reintroduced runtime/schema compatibility.
+
+#### Correction 4 — rerun baseline validation with explicit custom-constraint evidence
+
+After the changes above, rerun the task's existing required validation:
+
+```text
+npm run format
+npm run validate
+npm run prisma:generate
+npm run test:first-production-baseline
+npm run erd:puml
+git diff --check
+node --check prisma/seed.mjs
+node --check scripts/validate-first-production-baseline.mjs
+```
+
+Then use a newly created disposable/local PostgreSQL database only:
+
+```text
+empty database
+  -> npm run migrate:deploy
+  -> npm run status
+  -> prisma migrate diff --from-url ... --to-schema-datamodel prisma/schema.prisma --exit-code
+```
+
+In addition to the Prisma drift result, query PostgreSQL `pg_constraint` (or an equivalent deterministic catalogue query) and record evidence that the restored custom CHECK constraint names exist. This extra catalogue check is required because Prisma drift does not prove the presence of PostgreSQL-only CHECK constraints.
+
+Also record that:
+
+```text
+exactly one migration directory exists;
+no baseline INSERT/UPDATE/DELETE compatibility DML exists;
+removed compatibility models/enums/fields remain absent from schema/migration/seed/ERD;
+no unrelated schema/model was removed.
+```
 
 ### Reviewed Files
-None yet.
+
+```text
+docs/decisions/database/ARCH-010/DATABASE-013-first-production-schema-baseline.md
+docs/architecture/ARCH-010-first-production-baseline.md
+docs/decisions/database/ARCH-010/DATABASE-002-paid-period-included-credit-reservations.md
+docs/decisions/database/ARCH-010/DATABASE-006-shop-lifetime-free-grant.md
+docs/decisions/database/ARCH-010/DATABASE-007-purchased-credit-lot-partial-refund-accounting.md
+docs/decisions/database/ARCH-010/DATABASE-010-promotion-campaign-catalogue-and-lifecycle.md
+docs/decisions/database/ARCH-010/DATABASE-011-merchant-promotion-selection-and-grant-lots.md
+docs/decisions/database/ARCH-010/DATABASE-012-upgrade-economics-policy-and-snapshots.md
+moda-interact-database/prisma/schema.prisma
+moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql
+moda-interact-database/prisma/seed.mjs
+moda-interact-database/scripts/validate-first-production-baseline.mjs
+moda-interact-database/docs/generated/prisma-erd.puml
+moda-interact-database/package.json
+```
 
 ### Validation Reviewed
-None yet.
+
+Architect independently confirmed from the supplied Attempt 1 snapshot:
+
+```text
+exactly one baseline migration directory exists;
+no INSERT/UPDATE/DELETE compatibility DML exists in that migration;
+required removed compatibility names are absent from schema/migration/seed/ERD;
+node --check passes for seed and baseline validator;
+current baseline validator passes;
+```
+
+Those checks do not cure the missing database-only constraints described above.
 
 ### Architecture Conformance
-Pending.
+
+Partially conformant.
+
+The final Prisma model and compatibility cleanup are directionally aligned with `ARCH-010-first-production-baseline.md`, but Acceptance Criteria 16, 17, 19 and 20 are not yet fully satisfied because accepted durable PostgreSQL integrity was weakened during migration squashing and the verified-economics snapshot contract is incomplete.
 
 ### Follow-up
-None yet.
+
+Return this same task through the normal `moda_database` execution path for Attempt 2. Preserve `attempt: 1` until the next authorized claim increments it. Do not unblock DATABASE-013 dependants until the corrected task is architect-accepted Complete.
