@@ -11,8 +11,8 @@
 | ARCH-010-DATABASE-007 | Complete | Add deterministic purchased-credit lot accounting, reservation ownership and multi-partial-refund durability/backfill. |
 | ARCH-010-DATABASE-008 | Complete | Add FROZEN subscription projection plus latest Shopify subscription-lifecycle event state/id/time without changing existing entitlements. |
 | ARCH-010-DATABASE-009 | Complete | Foundation: dedicated promotional-credit counter and audited grant-provenance ledger; direct/lifetime semantics are superseded for new first-release promotions by DATABASE-010/011. |
-| ARCH-010-DATABASE-010 | Ready | Persist GLOBAL/PLAN/SHOP promotion campaigns, running windows, immutable targeting after activation and append-only close/reopen/expiry audit. |
-| ARCH-010-DATABASE-011 | Pending | Extend promotional grants into campaign+shop one-time allocations, exact grant-lot reservation ownership and one current merchant promotion selection. |
+| ARCH-010-DATABASE-010 | Complete | Persist GLOBAL/PLAN/SHOP promotion campaigns, running windows, immutable targeting after activation and append-only close/reopen/expiry audit. |
+| ARCH-010-DATABASE-011 | Complete | Extend promotional grants into campaign+shop one-time allocations, exact grant-lot reservation ownership and one current merchant promotion selection. |
 | ARCH-010-DATABASE-012 | Ready | Persist the 20% upgrade-economics policy, explicit BillingPlan upgrade edges and append-only verified Shopify pricing snapshots without making BillingPlan monetary authority. |
 
 `DATABASE-002` depends on DATABASE-001 and the accepted ARCH-007 repeatable-credit schema. `DATABASE-003` also follows DATABASE-001 because reinstall scheduling reuses `Subscription.nextReconcileAt`. `DATABASE-004` depends on DATABASE-002 and normalizes legacy multiple-OPEN periods before adding the one-OPEN-period invariant. `DATABASE-006` is independent of period accounting and must land before runtime tasks begin treating the five lifetime credits as plan-independent.
