@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 41
 executor: copilot
 claimed_at: '2026-09-12T16:55:26Z'
@@ -188,47 +188,80 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review
 
 ### Files Changed
-None in `moda-interact-background`; implementation stopped before source edits.
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/checkout-recovery.service.ts`
+- `src/services/effective-billing-policy.service.ts`
+- `src/services/free-recovery-reservation.service.ts`
+- `src/services/recovery-billing.service.ts`
+- `tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
+- `tests/unit/services/effective-billing-policy.service.test.ts`
+- `tests/unit/services/free-recovery-reservation.service.test.ts`
+- `tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
-Claimed the task and inspected the required local policy, architecture,
-dependency, service, reservation, schema, and package surfaces. No
-implementation change was made because the required DATABASE-013 schema/client
-baseline is unavailable in the implementation worktree.
+Implemented the DATABASE-013-backed, plan-independent lifetime Free fallback.
+The effective policy now reads only the durable
+`LIFETIME_FREE_RECOVERY_CREDITS` counter and fails closed when that counter is
+missing. Legacy plan-owned lifetime allowance reads, signed adjustment queries,
+and `FREE_RECOVERY_LIFETIME` compatibility identifiers were removed from the
+touched path.
+
+Free admission now attempts purchased credits before lifetime Free credits, and
+Paid admission uses lifetime Free after included and purchased capacity are
+exhausted. Admission source identity is preserved so commit, release, and
+ambiguous provider outcomes operate on the exact reserved bucket. Lifetime Free
+commit remains `NOT_APPLICABLE` and does not create a Shopify-reportable App
+Event. Reconciliation now provisions the renamed lifetime counter for new Free
+subscriptions without changing an existing grant.
+
+Required regressions cover purchased-first ordering, lifetime fallback and
+exhaustion, Paid fallback, concurrency, replay, same-bucket release/commit,
+missing-counter fail-closed behavior, plan-independent grants, and inactive or
+uninstalled shop blocking.
 
 ### Validation Results
-Not run. The task stop condition was reached before implementation validation.
+Focused tests:
+`npm test -- --run tests/unit/services/effective-billing-policy.service.test.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/recovery-billing.service.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
+passed: 3 files, 42 tests; the integration file was skipped because its
+database guard requires explicit disposable-test flags.
 
-Evidence:
+Guarded PostgreSQL concurrency test:
+`TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:5432/moda_interact' MODA_DISPOSABLE_INTEGRATION=1 npm test -- --run tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
+passed: 1 file, 1 test.
 
-- `prisma/schema.prisma` in the implementation worktree is the old 193-line
-  schema and contains no `ShopEntitlementCounter`, `EntitlementCounter`,
-  `LIFETIME_FREE_RECOVERY_CREDITS`, or `BillingAllowanceAdjustment` symbols.
-- The implementation worktree has no `node_modules` directory or generated
-  Prisma client available for DATABASE-013 validation.
-- Existing source still references the removed `FREE_RECOVERY_LIFETIME` and
-  `freeLifetimeConversationAllowance` compatibility model, so implementing the
-  requested fallback would require reconstructing or changing the unavailable
-  database baseline, which is outside this task.
+Prisma generation succeeded through `npm run build` with the hydrated
+DATABASE-013 schema/client. The repository build remains non-zero under the
+documented `TYPECHECK-001` baseline: no current-task files produce errors, but
+the pre-existing purchased-reservation nullability errors and recovery-credit
+purchase/refund schema-consumer errors remain.
+
+Repository unit validation via `npm run test:unit` remains non-zero: 44 files
+passed and 3 files failed, with 488 tests passed and 41 failed. The failures
+are in the unrelated recovery-credit purchase/refund consumers and observability
+startup baseline, not in the focused ARCH-010-BACKGROUND-011 tests.
+
+`git diff --check` passed. The database submodule remains an unstaged gitlink at
+`014408e0402221f08a3961880b34e828a8bdc736` and was not modified or committed.
 
 ### Deviations
-The implementation and focused regressions were not added because the explicit
-DATABASE-013-unavailable stop condition applies.
+Repository-wide build and unit validation retain documented/unrelated baseline
+failures described above. The focused task validation is green.
 
 ### Assumptions
-None.
+The hydrated DATABASE-013 database submodule and generated Prisma client are
+the accepted prerequisite baseline supplied for this attempt.
 
 ### Unresolved Issues
-DATABASE-013's accepted schema/client baseline must be made available to
-`moda-interact-background` before this task can implement the plan-independent
-lifetime Free fallback.
+Repository-wide recovery-credit purchase/refund consumers still require the
+DATABASE-013 follow-up work owned outside this task. Those errors do not affect
+the changed lifetime Free path.
 
 ### Architectural Concerns
-None beyond the missing prerequisite baseline. No cross-repository contract,
-schema, transaction, or idempotency changes were attempted.
+None. No cross-repository contract, schema, transaction, or idempotency
+boundary was changed.
 
 ### Git / VCS
 Task branch: `task/ARCH-010-BACKGROUND-011`
@@ -245,14 +278,14 @@ Physical worktree isolation:
 
 Implementation repository:
   repository: moda-interact-background
-  implementation changes: none
+  implementation commit: a6b7dd3 (feat: add plan-independent lifetime free fallback)
   remote branch: origin/task/ARCH-010-BACKGROUND-011
-  pushed: yes; branch contains no implementation commit and remains at origin/main
+  pushed: yes
 
 Parent workspace:
   task file: docs/decisions/background/ARCH-010/BACKGROUND-011-shop-lifetime-free-fallback.md
   claim commit: 0ae28f0
-  report commit: final parent task-branch commit reported below
+  report commit: pending final parent task-branch commit
   remote branch: origin/task/ARCH-010-BACKGROUND-011
   submodule gitlink staged: no
 
@@ -260,4 +293,4 @@ Merged to implementation main: no
 Merged to workspace main: no
 
 ### Architect Review
-Pending. Blocked pending availability of the DATABASE-013 schema/client baseline.
+Pending.
