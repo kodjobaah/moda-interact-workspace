@@ -31,8 +31,8 @@ The 2026-09-12 current-workspace audit, with durable architect-accepted history 
 
 ```text
 all ARCH-010 task files: 81
-complete:                 33
-ready:                     5
+complete:                 34
+ready:                     4
 pending:                  36
 superseded:                7
 ```
@@ -42,7 +42,6 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 ### Ready frontier
 
 ```text
-ARCH-010-ADMIN-007
 ARCH-010-ADMIN-010
 ARCH-010-BACKGROUND-015
 ARCH-010-BACKGROUND-019

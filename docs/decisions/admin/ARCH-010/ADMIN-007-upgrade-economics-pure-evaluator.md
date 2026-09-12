@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 87
-executor: copilot
-claimed_at: '2026-09-12T22:14:29Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -494,4 +494,169 @@ claimed_at: null
 The next authorized `/moda-task ARCH-010-ADMIN-007` claim becomes Attempt 2.
 
 `ARCH-010-ADMIN-009` remains gated until ADMIN-007 is architect-accepted Complete.
+
+### Attempt 2 — Accepted
+
+#### Review Status
+
+Accepted.
+
+The Attempt 1 production evaluator remains unchanged and continues to match the binding reference implementation. Architect review compared the evaluator bytes between the Attempt 1 and Attempt 2 task snapshots and confirmed they are identical.
+
+#### Rework-contract verification
+
+Attempt 2 satisfies every Changes Requested item.
+
+1. **Zero and negative invalid fixed-pack values**
+
+Tests 6 and 7 now each prove both invalid classes:
+
+```text
+creditsGranted: 0
+creditsGranted: -1
+
+chargeAmountMinor: 0
+chargeAmountMinor: -1
+```
+
+while a valid positive offer remains selectable.
+
+2. **Complete invalid single-pack-size matrix**
+
+Test 24 now covers:
+
+```text
+null
+0
+-1
+Number.MAX_SAFE_INTEGER + 1
+```
+
+and every case returns:
+
+```text
+UNVERIFIED / TOPUP_PRICING_UNAVAILABLE
+```
+
+3. **Corrected Free-plan economics**
+
+Test 28 uses:
+
+```text
+Free.monthlyIncludedConversations = 0
+```
+
+and directly proves:
+
+```text
+status: PASS
+additionalCreditsNeeded: 20
+topUpCostMinor: 6000
+stayAndTopUpCostMinor: 6000
+upgradeCostMinor: 3500
+```
+
+The one-time lifetime-Free grant is therefore not represented as monthly included recovery capacity.
+
+4. **Excluded domain state remains outside evaluator input**
+
+The test file now derives:
+
+```ts
+type UpgradeInput = Parameters<typeof validateUpgradeEconomics>[0];
+type SinglePackInput = Parameters<typeof validateSinglePackShopifyEconomics>[0];
+```
+
+and contains compile-time assertions that excluded ARCH-010 domain state is not accepted as evaluator input, covering lifetime-Free policy, promotional state, purchased/refund state and merchant usage/current balance.
+
+Tests 29–32 also use visibly different external context fixtures and prove identical evaluator results because only the allowed economics inputs are forwarded.
+
+5. **Evaluator implementation preserved**
+
+No Attempt 2 production-source change exists in:
+
+```text
+src/lib/admin/upgrade-economics-guardrail.ts
+```
+
+The architect independently compared the Attempt 1 and Attempt 2 file bytes and confirmed identical SHA-256 content.
+
+6. **Focused validation**
+
+Completion Report evidence:
+
+```text
+npm run test:unit: PASS — 42/42
+focused TypeScript: PASS
+Prettier: PASS
+npm run lint: PASS — 0 errors, 2 pre-existing warnings
+git diff --check: PASS
+```
+
+The architect independently reran the native focused unit suite from the review archive and confirmed:
+
+```text
+42 tests
+42 passed
+0 failed
+```
+
+The two lint warnings are pre-existing React Hook dependency warnings in an unrelated Admin queue-monitor component and are outside ADMIN-007.
+
+The previously documented full Admin build/security limitation caused by the absent database submodule remains outside this pure evaluator task and is not an acceptance blocker.
+
+7. **Mandatory task-isolation / synchronization evidence**
+
+Attempt 2 records:
+
+```text
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+```
+
+Canonical parent and implementation worktrees are also recorded, with no shared-checkout mutation and no other task worktree reuse.
+
+#### Accepted implementation
+
+```text
+implementation commit: eafb8f0
+parent report commits: 2496753, d2defa2
+```
+
+Both task branches are reported pushed and clean. No main branch was modified and no database gitlink was staged.
+
+#### Architect Decision
+
+**Accepted — Attempt 2.**
+
+Because `completion_mode: automatic`, the task is now:
+
+```text
+status: complete
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+#### Dependency reconciliation
+
+`ARCH-010-ADMIN-009` remains Pending because it requires both:
+
+```text
+ARCH-010-ADMIN-007 — now Complete
+ARCH-010-ADMIN-008 — still Pending
+```
+
+Therefore ADMIN-007 acceptance does not newly promote a dependant.
+
+The ARCH-010 Ready frontier becomes:
+
+```text
+ARCH-010-ADMIN-010
+ARCH-010-BACKGROUND-015
+ARCH-010-BACKGROUND-019
+ARCH-010-SHOPIFY-023
+```
 
