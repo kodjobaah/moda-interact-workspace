@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-12T00:00:00Z
+attempt: 1
 depends_on:
   - ARCH-010-DATABASE-006
   - ARCH-010-DATABASE-001
@@ -25,7 +25,7 @@ enables:
   - ARCH-010-BACKGROUND-006
   - ARCH-010-BACKGROUND-007
 created: 2026-09-11
-updated: 2026-09-11T23:49:38Z
+updated: 2026-09-12T00:00:00Z
 ---
 
 # ARCH-010-BACKGROUND-001: Reconcile pending subscription activation with durable BullMQ recovery
@@ -234,7 +234,7 @@ STOP if accepted Shared contract is unavailable, Prisma client lacks `nextReconc
 ## Completion Report
 
 ### Status
-Not started.
+In Progress.
 
 ### Files Changed
 Populate during implementation.
