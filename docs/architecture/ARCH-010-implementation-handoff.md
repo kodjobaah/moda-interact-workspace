@@ -257,3 +257,51 @@ If DATABASE-013/SHARED-008 removes a symbol that an open task still requires in 
 4. do **not** recreate the removed compatibility concept locally.
 
 The goal is one first-production model, not a clean database wrapped by service-local legacy adapters.
+
+## Sequencing correction — SHARED-007 live-consumer block (2026-09-12)
+
+This section supersedes the earlier handoff statements that describe SHARED-007 as
+immediately Ready and place consumer cleanup after SHARED-008.
+
+SHARED-007 Attempt 1 correctly stopped because live first-party consumers still import
+contracts that the task must delete. The corrected pre-production breaking-release
+sequence is:
+
+```text
+Shared 0.10.0 already published
+        |
+        +--> BACKGROUND-020  remove Background cancellation/free-exhaustion consumers
+        |
+        +--> SHOPIFY-024     remove Shopify Free-only exhaustion consumer
+                  |
+                  v
+          architect acceptance of both
+                  |
+                  v
+          SHARED-007 blocked -> ready
+                  |
+                  v
+          SHARED-007 Attempt 2
+                  |
+                  v
+          SHARED-008 publish 0.11.0
+                  |
+                  v
+          ADMIN-010 / SHOPIFY-023 and remaining Shared-consuming work
+```
+
+The cleanup tasks are intentionally narrow:
+
+- `BACKGROUND-020` does not implement BACKGROUND-009 or BACKGROUND-012;
+- `SHOPIFY-024` does not implement SHOPIFY-008 or SHOPIFY-023;
+- `SHARED-007` still owns deletion of the public names;
+- `SHARED-008` still owns the only 0.11.0 publication.
+
+`BILLING_PLAN_CHANGE_ACTION_REQUIRED` had no active first-party consumer in the
+SHARED-007 blocked-run inspection and remains scheduled for deletion by SHARED-007.
+
+Individual task YAML remains authoritative for execution state. Domain indexes should
+be regenerated/reconciled from current task YAML after these portable task definitions
+are applied to the latest workspace, rather than copying stale status rows from the
+SHARED-007 Attempt-1 worktree snapshot.
+
