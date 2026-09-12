@@ -259,7 +259,7 @@ Attempt 3 completed the requested corrections:
 
 Focused reconciliation/runtime tests: passed, 5 files and 49 tests.
 Added the durable subscription reconciliation service and BullMQ worker to the
-Full declared suite (`npm test`): 564 passed, 7 skipped, 6 failed. Four integration failures are blocked because database `moda_interact_test` does not exist. The remaining unit failure is the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0`, while the accepted repository dependency is `0.10.0`.
+Full declared suite (`npm test`): 564 passed, 7 skipped, 6 failed. Five integration failures are blocked because database `moda_interact_test` does not exist. The remaining unit failure is the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0`, while the accepted repository dependency is `0.10.0`.
 retries, clears expired activation intent, reconstructs delayed jobs from
 PostgreSQL, and preserves existing subscription projection status on Partner
 transport failures. Billing resources, scheduler integration, queue metrics, and
