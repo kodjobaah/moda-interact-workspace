@@ -331,6 +331,16 @@ Merged to workspace main: no
 - Parent task file is the only parent file staged; the implementation submodule gitlink was not staged.
 - No merge to `main` and no push to `main` performed.
 
+### Attempt 2 Final Reconciliation
+
+- No new claim was required: Attempt 2 was already claimed and remains the current review cycle.
+- Focused correction verified: `@@index([campaignId, createdAt])` is declared in `prisma/schema.prisma`, and `npm run test:promotion-selection` proves the matching index in both the Prisma schema and DATABASE-011 migration.
+- Passed: `npm run format`, `npm run validate`, `npm run prisma:validate`, `npm run prisma:generate`, all seven declared schema validators, `npm run erd:puml`, `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run status` (`Database schema is up to date`), and `git diff --check`.
+- Physical worktree isolation and start-of-attempt synchronization evidence remain as recorded above: canonical parent/implementation worktrees were used, shared checkouts were not switched or mutated, no other task worktree was reused, both remote task branches were synchronized, and `origin/main` was already current.
+- Implementation commit: `91b1b1f3cdcf0ce46a2e8fc481123817ba2b42c1`, pushed to `origin/task/ARCH-010-DATABASE-011`.
+- Parent report commit: to be recorded after this report update; parent task branch is `task/ARCH-010-DATABASE-011`, and the implementation submodule gitlink remains unstaged.
+- No merge to either `main` branch and no architect acceptance claimed.
+
 ### Architect Review
 
 #### Review Status
