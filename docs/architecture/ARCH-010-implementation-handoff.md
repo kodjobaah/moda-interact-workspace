@@ -31,8 +31,8 @@ The 2026-09-12 current-workspace audit, with durable architect-accepted history 
 
 ```text
 all ARCH-010 task files: 81
-complete:                 36
-ready:                     3
+complete:                 35
+ready:                     4
 pending:                  35
 superseded:                7
 ```
