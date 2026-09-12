@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 83
-executor: copilot
-claimed_at: 2026-09-12T07:33:20Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-010-DATABASE-009
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-021
   - ARCH-010-SHOPIFY-022
 created: 2026-09-12
-updated: 2026-09-12T07:20:00Z
+updated: 2026-09-12T07:46:00Z
 ---
 
 # ARCH-010-DATABASE-011: Persist merchant promotion selection and exact promotional grant-lot accounting
@@ -220,7 +220,60 @@ Ready for Review.
   physical-worktree and start-of-attempt synchronization evidence.
 ## Completion Report
 
-In Progress.
+Ready for Review.
+
+### Attempt 2 Corrections and Validation
+
+- PASS: `PromotionalCreditGrant` now declares `@@index([campaignId, createdAt])`, matching the existing migration index.
+- PASS: `npm run test:promotion-selection` asserts the campaign-history index in both `prisma/schema.prisma` and the DATABASE-011 migration.
+- PASS: `npm run format`.
+- PASS: `npm run validate`.
+- PASS: `npm run prisma:validate`.
+- PASS: `npm run prisma:generate` with Prisma 6.19.3.
+- PASS: `npm run test:promotion-selection`.
+- PASS: `npm run test:promotion-campaign`.
+- PASS: `npm run test:billing-policy`.
+- PASS: `npm run test:recovery-credit-packs`.
+- PASS: `npm run test:checkout-recovery-capacity`.
+- PASS: `npm run test:purchased-credit-lots`.
+- PASS: `npm run test:billing-lifecycle`.
+- PASS: `npm run erd:puml`; the generated ERD was normalized for known generator-introduced trailing whitespace.
+- PASS: `git diff --check`.
+- BLOCKED infrastructure validation: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run status` returned Prisma `P1001` because PostgreSQL was unreachable at `localhost:5432`; no migration was applied.
+
+### Attempt 2 Git / VCS Evidence
+
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011
+  parent branch: task/ARCH-010-DATABASE-011
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011
+  implementation branch: task/ARCH-010-DATABASE-011
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: yes
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: moda-interact-database
+  commit: cae6787
+  remote branch: origin/task/ARCH-010-DATABASE-011
+  pushed: yes
+
+Parent workspace:
+  task file: docs/decisions/database/ARCH-010/DATABASE-011-merchant-promotion-selection-and-grant-lots.md
+  commit: to be reported after this Completion Report commit
+  remote branch: origin/task/ARCH-010-DATABASE-011
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 - PASS: `npm run prisma:validate`.
 - PASS: `npm run test:promotion-selection`.
