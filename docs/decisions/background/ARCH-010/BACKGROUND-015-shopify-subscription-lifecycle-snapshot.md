@@ -51,9 +51,26 @@ getSubscriptionReconciliationSnapshot(shopifyShopId: string): Promise<{
 }>;
 ```
 
-Do not remove `getActiveSubscription()`. Existing consumers must remain backwards-compatible. It may delegate internally to shared parsing code.
+Do not delete or change the externally observable contract of
+getActiveSubscription().
 
-The snapshot SHOULD use one Partner GraphQL HTTP request containing both root fields so live and historical observations come from one request attempt:
+Before changing this service, search the repository for every existing call site
+of getActiveSubscription().
+
+Existing code that currently calls getActiveSubscription() MUST continue to:
+
+- compile;
+- receive the same return shape;
+- preserve the same null/error semantics;
+- preserve the same Shopify-provider interpretation.
+
+BG15 may refactor getActiveSubscription() internally so that it delegates to the
+new shared Partner GraphQL parsing/snapshot implementation, but existing call
+sites MUST NOT be forced to migrate as part of this task unless this task
+explicitly names those call sites.
+
+Do not add merchant/customer backwards-compatibility behaviour. This requirement
+is only about repository API compatibility for existing source-code callers.
 
 ```text
 activeSubscription(appId, shopId)
