@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 57
-executor: copilot
-claimed_at: '2026-09-12T22:30:00Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -636,4 +636,328 @@ claimed_at: null
 The next authorized `/moda-task ARCH-010-BACKGROUND-015` claim becomes Attempt 2.
 
 `ARCH-010-BACKGROUND-012` remains gated until this task is architect-accepted Complete.
+
+### Attempt 2 — Changes Requested
+
+#### Review Status
+
+Changes Requested.
+
+The Attempt 1 production-schema defect is corrected. The provider now queries the Partner historical-events connection through:
+
+```text
+events.edges[].node
+```
+
+with `SubscriptionStatus` at the event-node level, `AppReference` under `subject`, shop identity under `shop`, and plan metadata under `plan`.
+
+The snapshot still uses one Partner GraphQL HTTP request containing both:
+
+```text
+activeSubscription
+events
+```
+
+and the existing `getActiveSubscription()` method remains externally source-compatible.
+
+No additional production-provider redesign is requested at this stage.
+
+Attempt 2 is returned for two bounded reasons:
+
+1. several direct test obligations from the Attempt 1 rework contract are still not proved; and
+2. the task knowingly returned to `review` while the repository-declared typecheck/build/unit validation remained unavailable, despite the Attempt 1 stop rule requiring that condition to be resolved or returned blocked.
+
+The next attempt should be **test / validation / report only** unless a strengthened test exposes a genuine provider defect.
+
+#### Finding 1 — Directly prove successful plan normalization
+
+**Affected test file**
+
+```text
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+```
+
+The provider implementation maps:
+
+```text
+event.plan.handle        -> latestLifecycleEvent.planHandle
+event.plan.billingPeriod -> latestLifecycleEvent.billingPeriod
+```
+
+but Attempt 2 does not directly assert the successful non-null mapping.
+
+Add an explicit assertion, either in the lifecycle parameterized test or a dedicated test, proving:
+
+```text
+provider plan.handle        = "growth-plan"
+provider plan.billingPeriod = "EVERY_30_DAYS"
+
+->
+
+latestLifecycleEvent.planHandle    === "growth-plan"
+latestLifecycleEvent.billingPeriod === "EVERY_30_DAYS"
+```
+
+Keep the existing null-plan test.
+
+Do not modify production parsing merely to satisfy this assertion.
+
+#### Finding 2 — Prove a valid-state / wrong-event-type pair fails closed
+
+The Attempt 1 rework contract required the exact state/event-type pair to be enforced.
+
+Attempt 2 proves an unknown state fails, but it does not prove that two individually valid values are rejected when they do not correspond.
+
+Add a focused case such as:
+
+```text
+state: FROZEN
+eventType: SUBSCRIPTION_CANCELED
+```
+
+and assert:
+
+```text
+code === "malformed-lifecycle-event"
+```
+
+This must exercise the existing `lifecycleEventType(...)` pair validation.
+
+#### Finding 3 — Prove both malformed plan fields fail closed
+
+Attempt 2 directly proves malformed:
+
+```text
+plan.handle
+```
+
+but does not directly prove malformed:
+
+```text
+plan.billingPeriod
+```
+
+Add a provider-realistic event with, for example:
+
+```ts
+plan: {
+  handle: "growth-plan",
+  billingPeriod: 123,
+}
+```
+
+and assert `malformed-lifecycle-event`.
+
+Do not weaken the production parser to coerce non-string values.
+
+#### Finding 4 — Prove the non-empty event-ID invariant
+
+The provider now correctly rejects:
+
+```text
+id === ""
+```
+
+because the task requires a real provider event identity.
+
+Add a focused malformed-event test with a blank/whitespace event ID and assert `malformed-lifecycle-event`.
+
+This is a direct proof of the Attempt 1 parser requirement; no production change is expected.
+
+#### Finding 5 — Make the single-request snapshot contract explicit in tests
+
+The implementation currently satisfies the architectural requirement, but the focused suite should make it regression-resistant.
+
+In the snapshot query test, assert:
+
+```text
+fetchImpl called exactly once
+query contains activeSubscription(
+query contains events(
+```
+
+The purpose is to prevent a later refactor from turning live and historical reconciliation into two Partner request attempts.
+
+Do not change `getActiveSubscription()`.
+
+#### Finding 6 — Complete repository validation from the recorded repository state
+
+Attempt 2 successfully ran:
+
+```text
+focused Vitest: 21 passed
+focused changed-slice TypeScript: passed
+git diff --check: passed
+npm ci: passed
+```
+
+but the required repository checks remained unavailable because the nested repository dependency:
+
+```text
+moda-interact-background/database
+```
+
+was not initialized and therefore:
+
+```text
+database/prisma/schema.prisma
+```
+
+was absent.
+
+`moda-interact-background/.gitmodules` declares `database` as the repository's database submodule. For Attempt 3, initialize that **existing recorded gitlink only** for validation.
+
+From the canonical implementation worktree:
+
+```bash
+cd "$MODA_WORKSPACE_ROOT/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-015"
+cd moda-interact-background
+
+git submodule status database
+```
+
+If the submodule is uninitialized, run:
+
+```bash
+git submodule update --init database
+```
+
+Do not:
+
+```text
+change the database gitlink
+checkout a different database revision
+stage the database path
+edit database source
+```
+
+Then verify:
+
+```bash
+test -f database/prisma/schema.prisma
+git status --short
+git diff --submodule=short -- database
+```
+
+The database gitlink must remain unchanged.
+
+Run:
+
+```bash
+npm run prisma:generate
+./node_modules/.bin/tsc --noEmit
+npm run build
+npm run test:unit
+./node_modules/.bin/vitest run tests/unit/providers/shopify-partner-billing.provider.test.ts
+git diff --check
+```
+
+Inspect `package.json` before running these commands.
+
+There is **no ESLint requirement for this task**. The repository does not declare an ESLint dependency or `lint` script, so do not install or invent one.
+
+If the full TypeScript/build/unit commands execute and expose unrelated existing failures:
+
+1. record the exact failing files/tests;
+2. show they are outside the two authorized BACKGROUND-015 files;
+3. show the focused provider suite and focused provider TypeScript remain clean;
+4. do not fix unrelated repository code.
+
+If the nested database submodule cannot be initialized at its recorded gitlink because of a concrete Git/remote/environment failure, stop and return the task **blocked** with the exact command/error. Do not return to `review` with repository validation knowingly unavailable.
+
+#### Finding 7 — Preserve the corrected production implementation
+
+Unless one of Findings 1–5 exposes an actual implementation defect:
+
+```text
+DO NOT modify:
+src/providers/shopify-partner-billing.provider.ts
+```
+
+The accepted Attempt 2 production semantics are:
+
+```text
+one snapshot Partner request
+activeSubscription + events roots
+events.edges[0].node
+SubscriptionStatus node
+AppReference subject identity
+shop identity
+strict state/eventType pair
+strict occurredAt
+nullable cancelEffectiveOn
+nullable Plan
+Plan.handle / Plan.billingPeriod normalization
+zero edges -> null lifecycle event
+GraphQL/malformed root -> fail whole snapshot
+getActiveSubscription() compatibility preserved
+no Prisma writes
+```
+
+Do not implement BACKGROUND-012 cancellation/freeze persistence in this task.
+
+#### Finding 8 — VCS/worktree evidence
+
+The four mandatory Attempt 2 synchronization outcomes are present and acceptable:
+
+```text
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+```
+
+Attempt 3 must record the same four outcome fields for its own claim.
+
+#### Allowed Attempt 3 scope
+
+Expected changed implementation-repository file:
+
+```text
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+```
+
+Expected coordination file:
+
+```text
+docs/decisions/background/ARCH-010/BACKGROUND-015-shopify-subscription-lifecycle-snapshot.md
+```
+
+Production provider source should remain unchanged unless a new focused assertion proves a real defect.
+
+Nested `database` submodule initialization is validation setup only. Its gitlink/source must not change.
+
+#### Required Attempt 3 result
+
+Return to `review` only when:
+
+```text
+the focused provider suite proves Findings 1–5;
+the focused provider suite passes;
+focused provider TypeScript passes;
+the repository database submodule is initialized at its recorded gitlink;
+repository tsc/build/unit commands actually execute;
+any unrelated failures are identified precisely rather than reported as "blocked";
+git diff --check passes;
+database gitlink remains unchanged/unstaged;
+both task branches are pushed and clean;
+the four start-of-attempt synchronization outcomes are recorded.
+```
+
+#### Architect Decision
+
+**Changes Requested — Attempt 2.**
+
+Return the same task to:
+
+```text
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+The next authorized `/moda-task ARCH-010-BACKGROUND-015` claim becomes Attempt 3.
+
+`ARCH-010-BACKGROUND-012` remains gated until BACKGROUND-015 is architect-accepted Complete.
 
