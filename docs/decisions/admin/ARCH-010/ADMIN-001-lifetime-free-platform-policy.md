@@ -10,17 +10,17 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: complete
 priority: 42
-executor: copilot
-claimed_at: 2026-09-12T08:34:40Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-006
 enables:
 - ARCH-010-ADMIN-008
 created: 2026-09-11
-updated: 2026-09-12T08:34:40Z
+updated: 2026-09-12T08:38:03Z
 ---
 
 # ARCH-010-ADMIN-001: Move lifetime Free grant configuration from plan catalogue to platform billing controls
@@ -154,7 +154,7 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `src/app/actions/billing-controls.ts`
@@ -179,17 +179,18 @@ In Progress.
 - Tenant Admin billing views use `ShopEntitlementCounter.grantedQuantity` for the shop snapshot; no existing grant is changed by policy mutation.
 - Legacy allowance fields remain readable in existing plan audit snapshots.
 - No merchant-facing route or authentication boundary was added.
+- Corrected the platform-policy upsert create path to send only valid Prisma policy columns; the mutation reason remains audit-only.
+- Added regression coverage for first-create lifetime persistence, audit reason retention, and update version/lifetime persistence.
+- Validated against accepted DATABASE-006 revision `7523f495bf31f3e0a0e69d0344468faeac64fea8`.
 
 ### Validation Results
-- `npm ci` passed in the isolated implementation worktree.
-- `node --test tests/security/admin-billing-controls.test.mjs tests/security/admin-billing-plan.test.mjs` passed: 18 tests.
+- Accepted DATABASE-006 revision `7523f495bf31f3e0a0e69d0344468faeac64fea8` was initialized and checked out detached in the implementation worktree; its `PlatformBillingPolicy` contains `lifetimeFreeRecoveryAllowance Int @default(5)`. The detached submodule state was not staged or committed.
+- `npm run prisma:generate` passed against that revision.
+- `npm run prisma:validate` passed against that revision.
+- `node --test tests/security/admin-billing-controls.test.mjs tests/security/admin-billing-plan.test.mjs` passed: 19 tests.
 - `npm run lint` passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx` for missing `refresh` hook dependencies; no errors.
-- Editor diagnostics for all changed TypeScript files: no errors.
+- `npm run build` passed; it reported existing BullMQ optional-dependency and critical-dependency warnings only.
 - `git diff --check` passed.
-- `npm run prisma:generate` blocked: `database/prisma/schema.prisma` is absent because the tracked Admin database submodule is uninitialized in the task worktree.
-- `npm run prisma:validate` blocked by the same missing schema path.
-- `npm run build` blocked in its Prisma generation step by the same missing schema path.
-- Repository-wide `npm run format:check` reports 78 pre-existing files outside this task; changed files were formatted explicitly with Prettier.
 
 ### Git / VCS
 - Physical worktree isolation:
@@ -206,13 +207,22 @@ In Progress.
   - parent `origin/main` incorporated: already-current
   - implementation remote task branch fast-forwarded: not-needed
   - implementation `origin/main` incorporated: already-current
-- Parent claim commit: `57fc3f4`, pushed to `origin/task/ARCH-010-ADMIN-001`.
-- Implementation commit: `cd8a84b`, pushed to `origin/task/ARCH-010-ADMIN-001`.
-- No parent submodule gitlink was staged or committed.### Architect Review
+- Parent synchronization merge: `6d0d601`.
+- Parent attempt 2 claim commit: `a0ea441`, pushed to `origin/task/ARCH-010-ADMIN-001`.
+- Implementation correction commit: `4dc8d87`, pushed to `origin/task/ARCH-010-ADMIN-001`.
+- No parent submodule gitlink was staged or committed.
+
+### Attempt 2 Correction Checklist
+
+- Correction 1 implemented: policy create data explicitly enumerates valid Prisma columns; `reason` is retained only in `PLATFORM_POLICY_CHANGED` audit data; focused regression covers create, audit, lifetime persistence, and versioned update.
+- Correction 2 implemented: accepted DATABASE-006 revision `7523f495bf31f3e0a0e69d0344468faeac64fea8` was initialized, verified, and used successfully for Prisma generation, schema validation, focused tests, lint, and build.
+- Scope guard satisfied: no promotional-credit controls, merchant routes, commercial-plan changes, legacy-column removal, or existing-grant mutation were introduced.
+
+### Architect Review
 
 #### Review Status
 
-Changes Requested
+Accepted
 
 #### Attempt 1 — Changes Requested
 
@@ -337,3 +347,59 @@ attempt: 2
 ```
 
 **Architect decision: Changes Requested — Attempt 1.**
+
+#### Attempt 2 — Accepted
+
+Architect review verified that the two Attempt-1 corrections are satisfied:
+
+- `mutatePlatformBillingPolicyAction(...)` no longer spreads the parsed form object into Prisma `PlatformBillingPolicy` create data;
+- the create branch explicitly enumerates only valid policy columns:
+  `globalPauseNewRecoveries`, `globalPauseAutomatedWhatsapp`,
+  `absoluteOutboundHardLimit`, `defaultWarningPercent` and
+  `lifetimeFreeRecoveryAllowance`;
+- `reason` remains audit-only and is written through the existing
+  `PLATFORM_POLICY_CHANGED` `BillingAuditEvent`;
+- the update branch continues to persist `lifetimeFreeRecoveryAllowance` and
+  increments `version`;
+- focused regression coverage protects the Prisma-safe create shape, first-create
+  lifetime value, audit reason separation and versioned update shape;
+- the accepted DATABASE-006 dependency revision
+  `7523f495bf31f3e0a0e69d0344468faeac64fea8` is present in the task worktree and
+  its `PlatformBillingPolicy` model contains
+  `lifetimeFreeRecoveryAllowance Int @default(5)`;
+- the Completion Report records successful `prisma:generate`,
+  `prisma:validate`, 19 focused security tests, lint, build and
+  `git diff --check` against that accepted dependency revision;
+- architect-side execution of the packaged
+  `admin-billing-controls.test.mjs` passes all nine contained tests. The second
+  focused test file cannot be independently executed from the review archive
+  because the archive intentionally does not include installed npm dependencies;
+  its successful execution is therefore accepted from the canonical worktree
+  validation evidence rather than treated as a failure;
+- relative to Attempt 1, the actual Admin correction is bounded to
+  `src/app/actions/billing-controls.ts` and
+  `tests/security/admin-billing-controls.test.mjs`; the apparent database-subtree
+  additions in the review archive are the previously uninitialized DATABASE-006
+  submodule materialized for required validation, not a new database
+  implementation owned by this task;
+- the generated ignored `next-env.d.ts` in the review archive is not part of the
+  declared implementation change;
+- the canonical worktree/isolation evidence, start-of-attempt synchronization
+  evidence, implementation commit `4dc8d87`, parent report commit `a0ea441`, and
+  non-staged database gitlink state are recorded in the Completion Report;
+- all previously reviewed ADMIN-001 architecture remains conformant: platform
+  controls own the lifetime Free default, Free/Paid plan-catalogue actions no
+  longer make the legacy plan allowance authoritative, existing shop grants are
+  read from the durable lifetime counter, legacy audit serialization remains
+  readable, and no merchant/Admin authentication boundary was introduced.
+
+**Architect decision: Accepted — Attempt 2.**
+
+Because `completion_mode: automatic`, `ARCH-010-ADMIN-001` is now `complete`.
+`attempt: 2` is preserved and there is no active executor/claim.
+
+Dependency reconciliation:
+
+- `ARCH-010-ADMIN-008` remains `pending`; ADMIN-001 is now satisfied, but its other
+  prerequisite `ARCH-010-DATABASE-012` is still `ready`, not `complete`;
+- no other task becomes Ready solely from this acceptance.
