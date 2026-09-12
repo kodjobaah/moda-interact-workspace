@@ -253,7 +253,7 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-015-shopify-subscription-lifecycle-snapshot.md`
   claim commit: `654418c`
-  review report commit: pending
+  review report commit: `2cd0816`
   remote branch: `origin/task/ARCH-010-BACKGROUND-015`
   pushed: yes
   submodule gitlink staged: no
