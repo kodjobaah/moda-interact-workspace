@@ -345,4 +345,36 @@ The cleaned first-production Shared artifact remains the target.
 6. After SHARED-007 acceptance, execute publication task SHARED-008.
 
 **Architect decision: Block confirmed; sequencing corrected. SHARED-007 remains
-Blocked pending BACKGROUND-020 and SHOPIFY-024.**
+Blocked pending SHOPIFY-024. BACKGROUND-020 is architect-accepted Complete.**
+
+### Dependency Progress — 2026-09-12
+
+`ARCH-010-BACKGROUND-020` has been architect-reviewed and Accepted Complete.
+
+Its acceptance proves the Background consumer side is clean:
+
+```text
+zero Background source/test consumers of the retired Shared cancellation contracts
+zero Background source/test consumers of BILLING_FREE_ALLOWANCE_EXHAUSTED
+zero Background source/test consumers of BILLING_PLAN_CHANGE_ACTION_REQUIRED
+provider billing boundary retains reads but no local cancellation mutation
+full-capacity exhaustion uses BILLING_RECOVERY_CAPACITY_EXHAUSTED
+```
+
+Remaining blocker:
+
+```text
+ARCH-010-SHOPIFY-024
+```
+
+SHARED-007 stays:
+
+```text
+status: blocked
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+Do not move it to Ready until SHOPIFY-024 is also architect-accepted Complete.
+

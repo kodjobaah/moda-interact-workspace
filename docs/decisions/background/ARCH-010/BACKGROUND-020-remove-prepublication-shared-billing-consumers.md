@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
-executor: copilot
-claimed_at: 2026-09-12T14:49:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-SHARED-006
@@ -381,3 +381,200 @@ Parent workspace:
 Merged to implementation main: no
 
 Merged to workspace main: no
+
+## Architect Review
+
+### Review Status
+
+Accepted — Attempt 1.
+
+### Review Summary
+
+`ARCH-010-BACKGROUND-020` satisfies the pre-publication consumer-cleanup contract.
+
+Architect inspection confirms the Background repository now has zero active source/test
+matches for every retired Shared symbol/code in the task stop gate:
+
+```text
+SUBSCRIPTION_CANCELLATION_MODES
+SubscriptionCancellationModeSchema
+SubscriptionCancellationMode
+ShopifySubscriptionCancellationArgs
+SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS
+BILLING_CANCELLATION_REQUEST_RECEIVED
+BILLING_CANCELLATION_COMPLETED
+BILLING_CANCELLATION_REJECTED
+BILLING_FREE_ALLOWANCE_EXHAUSTED
+BILLING_PLAN_CHANGE_ACTION_REQUIRED
+appSubscriptionCancel
+```
+
+The obsolete local cancellation executor and its dedicated tests are deleted.
+
+`ShopifyPartnerBillingProvider` is now read-only for this boundary and retains:
+
+```text
+getActiveSubscription(...)
+```
+
+with focused provider-read coverage. No replacement local cancellation mutation was
+introduced.
+
+`RecoveryBillingService` now uses the already-published canonical Shared registry value:
+
+```text
+BILLING_SYSTEM_MESSAGE_CODES.RECOVERY_CAPACITY_EXHAUSTED
+```
+
+for exhausted Free admission while preserving the existing deterministic exhaustion
+lifecycle/source-key mechanism. This task does not add BACKGROUND-009 blocked-recovery
+persistence/resume behaviour.
+
+The implementation continues to consume:
+
+```text
+@modainteract/moda-interact-shared@0.10.0
+```
+
+as required for the pre-publication cleanup phase.
+
+### Reviewed implementation boundary
+
+Accepted changed/deleted files:
+
+```text
+src/entrypoints/billing.ts
+src/providers/shopify-partner-billing.provider.ts
+src/services/recovery-billing.service.ts
+src/services/subscription-cancellation.service.ts                 [deleted]
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+tests/unit/services/recovery-billing.service.test.ts
+tests/unit/services/subscription-cancellation.service.test.ts      [deleted]
+```
+
+No Shared implementation, database schema/migration, queue contract, BACKGROUND-009,
+BACKGROUND-012, Admin, Shopify UI or Render/infrastructure implementation is introduced
+by this task.
+
+### Required behaviour reviewed
+
+Accepted:
+
+1. local Background `appSubscriptionCancel` execution is removed;
+2. provider subscription read/reconciliation support remains present;
+3. obsolete cancellation message contracts have zero Background consumers;
+4. `BILLING_FREE_ALLOWANCE_EXHAUSTED` has zero Background consumers;
+5. retained full-capacity exhaustion uses
+   `BILLING_RECOVERY_CAPACITY_EXHAUSTED`;
+6. `BILLING_PLAN_CHANGE_ACTION_REQUIRED` still has no Background consumer;
+7. no compatibility alias/wrapper was added.
+
+The repository-wide full suite provides regression coverage for unrelated billing
+reconciliation/refund behaviour; architect inspection found no task-scope change to
+those contracts.
+
+### Validation reviewed
+
+Canonical worktree evidence records:
+
+```text
+focused provider/recovery tests:
+  2 files
+  16 passed
+
+full npm test:
+  46 files passed
+  5 skipped
+  525 tests passed
+  7 skipped
+  6 documented baseline failures
+
+npm run prisma:validate:
+  passed
+
+npm run build:
+  Prisma generation passed
+  TypeScript remains blocked only by 8 unchanged nullable-counterId diagnostics in:
+    src/services/free-recovery-reservation.service.ts
+    src/services/purchased-recovery-reservation.service.ts
+
+npm run typecheck:
+  no repository script exists; build's tsc step is the available compiler validation
+
+git diff --check:
+  passed
+```
+
+The six full-suite failures are the documented unavailable integration database /
+stale observability-baseline conditions reported by the task and are not introduced by
+the changed cleanup files.
+
+The portable review archive intentionally has no installed `node_modules`, so
+architect-side Vitest rerun is unavailable. Source/test inspection is consistent with
+the canonical-worktree results above.
+
+### Git / VCS reviewed
+
+Implementation commit supplied and recorded:
+
+```text
+3a1c78d376501377b7fab919c9e1ec8851f74d51
+```
+
+The task archive records the canonical dedicated parent/implementation worktrees, all
+three physical-isolation declarations and all four start-of-attempt synchronization
+outcomes.
+
+The review handoff identifies the latest pushed parent report publication as:
+
+```text
+40477d6
+```
+
+This supersedes earlier intermediate parent report/metadata hashes present in the
+portable task snapshot and is recorded here as the current review evidence.
+
+Database gitlink:
+
+```text
+changed: no
+staged: no
+```
+
+Main branches:
+
+```text
+implementation main modified: no
+workspace main modified: no
+```
+
+### Architecture conformance
+
+Conformant.
+
+This task removes first-party consumers while Shared `0.10.0` still exports the retired
+symbols. It does not retain compatibility and does not prematurely implement the later
+ARCH-010 cancellation or capacity-resume features.
+
+### Dependency reconciliation
+
+`ARCH-010-BACKGROUND-020` is now Complete and therefore satisfies one of the two
+consumer-cleanup prerequisites for `ARCH-010-SHARED-007`.
+
+`ARCH-010-SHARED-007` remains Blocked because:
+
+```text
+ARCH-010-SHOPIFY-024
+```
+
+is not yet Complete.
+
+Do not transition SHARED-007 to Ready until SHOPIFY-024 has been architect-reviewed
+and accepted.
+
+### Architect Decision
+
+**Accepted — Attempt 1.**
+
+Because `completion_mode: automatic`, `ARCH-010-BACKGROUND-020` is now `complete`.
+`attempt: 1` is preserved and the active executor/claim is cleared.
