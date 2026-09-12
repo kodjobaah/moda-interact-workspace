@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 42
 executor: copilot
 claimed_at: '2026-09-12T19:06:51Z'
@@ -271,19 +271,36 @@ STOP if:
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-background/src/services/paid-included-recovery-reservation.service.ts`
+- `moda-interact-background/src/services/recovery-billing.service.ts`
+- `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added the period-scoped paid included-credit reservation service using the accepted `BillingPeriodEntitlementCounter` and serializable/CAS lifecycle.
+- Added current-period fail-closed checks for subscription/billing-period identity, `shopId`, `subscriptionId`, period boundaries, counter identity, quantities, and paid normal usage meter requirements.
+- Preserved replay, commit, release, and ambiguous reservation semantics, including deterministic period-scoped source keys and normal paid recovery usage events for included-funded commits.
+- Integrated the primitive into `RecoveryBillingService` without introducing paid overage or changing final promotional priority ownership.
+- The existing integration suite contains no paid-period-specific concurrency test in this branch. The supported disposable PostgreSQL harness was exercised with the existing reservation concurrency test; no replacement fixture was invented against the accepted database baseline.
 
 ### Validation Results
-Populate during implementation.
+- `npx vitest run tests/unit/services/recovery-billing.service.test.ts --reporter=dot`: PASS, 1 file, 27 tests.
+- `npm run prisma:validate`: PASS, schema valid.
+- `npm run prisma:generate`: PASS, Prisma Client `6.19.3` generated.
+- `npm run test:unit`: BASELINE FAILURE, 44/47 test files passed and 503/544 tests passed; 3 unrelated purchase/refund files failed. Failures include existing `Prisma.TransactionIsolationLevel` mock incompatibility and refund/purchase expectations requiring fields/statuses absent from the accepted database client.
+- `npm run build`: BASELINE FAILURE after Prisma generation. Existing `recovery-credit-purchase.service.ts` and `recovery-credit-refund.service.ts` reference refund/purchase enum values and fields absent from accepted database client commit `014408e`.
+- `git diff --check`: PASS.
+- `npm run test:integration -- tests/integration/free-recovery-reservation.concurrency.integration.test.ts`: PASS, 1 file, 1 test, disposable PostgreSQL harness.
+
+The paid-focused unit test was rerun after Prisma generation and remained green (27/27). No new failure was introduced in the touched paid billing slice.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation repository: isolated worktree `moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-002`, branch `task/ARCH-010-BACKGROUND-002`.
+- Implementation commit/push: `725337af8cd7e1afc234d8f1f32494458dd2cf92`, pushed to `origin/task/ARCH-010-BACKGROUND-002`.
+- Database submodule remains at accepted `DATABASE-013` main `014408e0402221f08a3961880b34e828a8bdc736`, detached and unstaged; the parent gitlink was intentionally not staged.
+- Parent workspace branch: `task/ARCH-010-BACKGROUND-002` in the dedicated parent worktree.
 
 ### Architect Review
 Pending.
