@@ -18,12 +18,12 @@ Coordinator:
 
 > Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 5, `ready` 3, `pending` 10, `superseded` 2
+Current counts: `complete` 6, `ready` 2, `pending` 10, `superseded` 2
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | `BACKGROUND-001` | Reconcile pending subscription activation with durable BullMQ recovery | Complete | ARCH-010-DATABASE-006, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-BACKGROUND-008 |
-| `BACKGROUND-002` | Enforce concurrency-safe paid included-credit admission | **Ready** | ARCH-010-BACKGROUND-011, ARCH-010-DATABASE-013, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009 |
+| `BACKGROUND-002` | Enforce concurrency-safe paid included-credit admission | **Complete** | ARCH-010-BACKGROUND-011, ARCH-010-DATABASE-013, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009 |
 | `BACKGROUND-003` | Reconcile first paid activation and create the first paid period | Pending | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-001, ARCH-010-BACKGROUND-007, ARCH-010-SHARED-008, ARCH-007-BACKGROUND-008 |
 | `BACKGROUND-004` | Stop queued recovery work for inactive shops | Complete | — |
 | `BACKGROUND-005` | Stop WhatsApp business execution for inactive shops | Complete | — |
