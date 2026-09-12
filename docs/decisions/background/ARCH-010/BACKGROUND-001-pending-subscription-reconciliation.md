@@ -263,7 +263,8 @@ Implemented the narrow Attempt-5 correction: `completeVerifiedFree` now returns 
 - Attempt-6 implementation commit: `3b00b0777b1820a99644f85226bfebb927f7630b`.
 - Attempt-6 parent claim commit: `4e1441b635e5f8c2efe8cf92875195013355dbcc`.
 - Attempt-6 parent report commit: `f12446e53d677b6b895c5cb27470b8baeed6dbda`.
-- Attempt-6 parent status publication: this final parent commit; frontmatter metadata SHA-256 is recorded after publication in the resolver return.
+- Attempt-6 parent status publication commit: `42362eeae787e673e5b24b05f3f998ae08583cc6`.
+- Attempt-6 frontmatter metadata SHA-256: `1b7e720ad248ec9d4825d7e9bfc791959525f9d3a8df373e36e55162fceebb68`.
 - Database submodule revision: `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no; merged to workspace main: no.
