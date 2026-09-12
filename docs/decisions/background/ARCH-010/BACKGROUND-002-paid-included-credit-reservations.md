@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 42
-executor: copilot
-claimed_at: '2026-09-12T20:20:07Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-BACKGROUND-011
@@ -901,6 +901,142 @@ claimed_at: null
 ```
 
 The next authorized claim increments the task exactly once to **Attempt 3**. No dependant of `ARCH-010-BACKGROUND-002` becomes Ready/Complete from this review.
+
+
+#### Attempt 3 — Accepted
+
+##### Review Status
+
+Accepted.
+
+##### Reviewed evidence
+
+Architect independently compared the Attempt 3 task-specific archive with Attempt 2 and the authoritative Attempt 2 rework contract.
+
+Submitted evidence:
+
+```text
+implementation commit: 97bf5f0
+parent report commit: 498be34
+database revision: 014408e0402221f08a3961880b34e828a8bdc736
+focused unit slice: PASS — 3 files / 71 tests
+paid PostgreSQL concurrency test: PASS — 1 file / 1 test
+Prisma validate/generate: PASS
+git diff --check: PASS
+```
+
+The Attempt 3 archive confirms there is no production-source diff from Attempt 2. Attempt 3 changes are confined to the requested test/report correction surface.
+
+The Completion Report records all four required start-of-attempt synchronization outcomes as `already-unnecessary`, with the canonical parent and implementation task worktrees, accepted database revision, unstaged database gitlink and unchanged main branches.
+
+##### Rework-contract verification
+
+The Attempt 2 correction contract is satisfied:
+
+1. `recovery-billing.service.test.ts` now directly proves the interim Paid routing matrix:
+
+```text
+included available
+  -> paid included wins
+  -> purchased/lifetime-Free not attempted
+
+included exhausted + purchased available
+  -> purchased wins
+
+included exhausted + purchased exhausted + lifetime Free available
+  -> lifetime Free wins
+
+all three current sources exhausted
+  -> typed allowance-exhausted block
+
+included replay already-ambiguous/already-released
+  -> no funding-bucket switch
+
+purchased/lifetime-Free funded commit
+  -> owning reservation service commits
+  -> PaidIncludedRecoveryReservationService.commit not called
+  -> no normal Paid meter UsageEvent created by RecoveryBillingService
+```
+
+2. `paid-included-recovery-reservation.service.test.ts` separately proves bounded retry handling for:
+
+```text
+P2034 serialization conflict
+P2002 unique conflict
+internal CAS conflict (updateMany count = 0)
+maxRetries exhaustion
+```
+
+The retry tests prove a successful retry holds exactly one included-capacity unit and does not duplicate the reservation.
+
+3. `paid-included-recovery-reservation.concurrency.integration.test.ts` is now time-stable. It injects a fixed `2026-09-12T12:00:00.000Z` clock into both concurrent reserve service instances and the commit service while retaining the real PostgreSQL final-credit race assertions.
+
+4. The paid missing-usage-handle policy test now supplies a valid current OPEN BillingPeriod and matching period pointers, then proves the resolver reaches the intended `paid plan usage event handle is missing` failure branch.
+
+##### Production implementation assessment
+
+Conformant.
+
+The production implementation accepted from Attempt 2 remains unchanged and continues to provide the required BACKGROUND-002 boundary:
+
+```text
+Paid interim capacity routing:
+  current BillingPeriod included
+  -> existing purchased-credit reservation path
+  -> shop-lifetime Free
+  -> block
+```
+
+This task does not implement promotional priority or purchased-lot FIFO selection:
+
+```text
+ARCH-010-BACKGROUND-014 owns purchased FIFO lot selection.
+ARCH-010-BACKGROUND-019 owns final promotion-first composition.
+```
+
+The final integrated target therefore remains:
+
+```text
+selected promotional
+-> included
+-> purchased FIFO
+-> lifetime Free
+-> block new recovery admission
+```
+
+The paid included primitive remains period-scoped, Serializable + CAS protected, exact-period/counter identity checked, and creates the normal Paid `RECOVERY_CONVERSATION` Shopify-meter UsageEvent only when included capacity owns and commits the recovery.
+
+##### Repository-wide baseline validation
+
+The repository-wide unit/build commands remain non-zero only outside the Attempt 3 changed surface. The Completion Report identifies unchanged observability-startup and DATABASE-013 purchase/refund consumer failures; the Attempt 2→Attempt 3 source comparison confirms no production source changed and no Attempt 3 test file appears in those failures.
+
+These repository-wide baseline failures therefore do not block this bounded task. They must not be used to excuse a future regression in the accepted BACKGROUND-002 files.
+
+##### Architect Decision
+
+**Accepted — Attempt 3.**
+
+Because `completion_mode: automatic`, `ARCH-010-BACKGROUND-002` is now `complete`. `attempt: 3` is preserved and `executor` / `claimed_at` are cleared.
+
+##### Dependency reconciliation
+
+No dependant becomes newly Ready solely from BACKGROUND-002 completion:
+
+- `ARCH-010-BACKGROUND-019` still requires `ARCH-010-BACKGROUND-014` Complete;
+- `ARCH-010-BACKGROUND-008` still requires `ARCH-010-BACKGROUND-019` Complete;
+- `ARCH-010-BACKGROUND-009` still requires `ARCH-010-BACKGROUND-019` Complete;
+- `ARCH-010-BACKGROUND-007` still requires BACKGROUND-008 and BACKGROUND-009 Complete;
+- `ARCH-010-SHOPIFY-003` still requires `ARCH-010-BACKGROUND-003` and `ARCH-010-SHOPIFY-023` Complete in addition to its other prerequisites.
+
+The ARCH-010 Ready frontier is therefore:
+
+```text
+ARCH-010-ADMIN-007
+ARCH-010-ADMIN-010
+ARCH-010-BACKGROUND-014
+ARCH-010-BACKGROUND-015
+ARCH-010-SHOPIFY-023
+```
 
 
 ## Final promotional-capacity integration contract

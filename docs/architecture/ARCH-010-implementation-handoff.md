@@ -31,8 +31,8 @@ The 2026-09-12 current-workspace audit, with durable architect-accepted history 
 
 ```text
 all ARCH-010 task files: 81
-complete:                 31
-ready:                     6
+complete:                 32
+ready:                     5
 pending:                  37
 superseded:                7
 ```
@@ -44,7 +44,6 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 ```text
 ARCH-010-ADMIN-007
 ARCH-010-ADMIN-010
-ARCH-010-BACKGROUND-002
 ARCH-010-BACKGROUND-014
 ARCH-010-BACKGROUND-015
 ARCH-010-SHOPIFY-023
@@ -71,6 +70,8 @@ ARCH-010-SHOPIFY-002
 Do not reset either task to an earlier attempt or reopen it for first-production cleanup. The baseline rule is to preserve completed history and put compatibility correction into later Pending/Ready tasks.
 
 For Background, `BACKGROUND-011` is now Complete at accepted Attempt 4 and owns the narrow DATABASE-013 lifetime-counter conformance required by the accepted BACKGROUND-001 activation producer; its BullMQ/retry/CAS/onboarding semantics remain immutable.
+
+`BACKGROUND-002` is now architect-accepted Complete at Attempt 3 (`97bf5f0`). It owns the concurrency-safe current-period Paid included-credit reservation primitive and the interim `included -> purchased -> lifetime Free -> block` composition. `BACKGROUND-014` remains the owner of FIFO purchased-lot selection and `BACKGROUND-019` remains the owner of final promotion-first routing.
 
 For Shopify, `SHOPIFY-023` remains the baseline-conformance bridge after accepted SHOPIFY-002.
 
