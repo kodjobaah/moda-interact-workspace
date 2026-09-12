@@ -614,7 +614,7 @@ None.
 
 ### Git / VCS
 Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; commit `f4d25d4`; pushed to `origin/task/ARCH-010-DATABASE-013`.
-Parent worktree: `moda-interact-workspace-task-ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; parent report commit is being published on `origin/task/ARCH-010-DATABASE-013`.
+Parent worktree: `moda-interact-workspace-task-ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; commit `18213c3`; pushed to `origin/task/ARCH-010-DATABASE-013`.
 Shared workspace checkout switched/mutated: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no. Submodule gitlink staged: no. Merged to implementation main: no. Merged to workspace main: no.
 
 ## Architect Review
