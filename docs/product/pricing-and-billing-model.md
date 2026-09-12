@@ -490,3 +490,10 @@ docs/architecture/ARCH-010-implementation-handoff.md
 System-test tasks are terminal/manual-gated and do not block implementation work from starting.
 
 Historical ARCH-007 task files remain valid evidence of what was implemented/reviewed at that stage, but their superseded merchant billing semantics must not override ARCH-010.
+
+
+### Upgrade economics Admin guardrail
+
+Moda Admin applies a structural commercial guardrail before activating economics-affecting plan/top-up configuration. By default, staying on a lower tier and buying the cheapest required recovery-pack capacity to reach the explicitly configured next tier's **monthly included recovery allowance** must cost at least 20% more than upgrading. Shopify remains pricing/charging authority; Moda stores audited verified economics snapshots only for Admin validation.
+
+This calculation never includes one-time lifetime-Free credits, promotional campaigns, purchased-credit balances, refunds or merchant-specific current usage. `FAIL` and `UNVERIFIED` both block the Admin mutation server-side.

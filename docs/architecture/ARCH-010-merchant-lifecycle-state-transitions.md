@@ -3102,3 +3102,21 @@ The following are intentionally deferred and must not be improvised by implement
 
 If any deferred condition becomes required by real provider behaviour, return to `moda_architect` rather than extending an existing task silently.
 
+
+
+## Admin commercial guardrail — upgrade economics
+
+ARCH-010 protects the structural relationship between each lower plan, its recovery-credit-pack economics and the explicitly configured next paid tier. This is an **internal Admin guardrail**, not merchant runtime billing logic.
+
+Default policy:
+
+```text
+lower recurring price + cheapest top-up cost needed to reach next-plan MONTHLY capacity
+>= next recurring price * 1.20
+```
+
+The threshold is durable platform policy in basis points. Upgrade order is represented by explicit BillingPlan-ID edges; no plan name/price/rank inference is allowed. Shopify App Pricing remains monetary authority. Admin stores append-only verified economics snapshots only as audit evidence for the guardrail.
+
+The guardrail excludes lifetime-Free credits, promotional credits, purchased-credit balances and current merchant usage. For this calculation Free monthly included capacity is `0`.
+
+`PASS` is required for economics-affecting activation/mutation. `FAIL` and `UNVERIFIED` both block server-side. The pure evaluator and exhaustive scenario matrix are frozen in `docs/contracts/ARCH-010-upgrade-economics-guardrail.reference.ts` and `docs/contracts/ARCH-010-upgrade-economics-guardrail-test-matrix.md`.
