@@ -9,9 +9,9 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
+executor: null
 claimed_at: 2026-09-12T00:00:00Z
 attempt: 4
 depends_on:
@@ -25,7 +25,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: 2026-09-12T08:56:00Z
+updated: 2026-09-12T10:02:00Z
 ---
 
 # ARCH-010-SHOPIFY-002: Activate Free plan with durable asynchronous Shopify verification
@@ -230,7 +230,7 @@ STOP if published Shared contract or `nextReconcileAt` Prisma field is unavailab
 
 ## Completion Report
 
-In Progress.
+Ready for Review.
 
 Attempt 3 correction checklist:
 
@@ -275,7 +275,7 @@ Implemented for the bounded merchant callback/producer scope. Background reconci
 Completed callback, billing service, queue producer, focused tests, i18n completeness, and validation.
 
 ### Validation Results
-- Focused Vitest: 47 passed across callback, billing service, and reconciliation producer tests; correction regressions include stale-projection and queue-acquisition failures.
+- Focused Vitest: 55 passed across callback, billing service, and reconciliation producer tests; correction regressions include stale-projection and queue-acquisition failures.
 - Full Vitest: 229 passed, 1 skipped across 33 test files.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed with Prisma Client `6.19.3`; generated client exposes `Subscription.nextReconcileAt`.
@@ -306,15 +306,15 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact`
-  commit: `695439d` (`fix: harden free billing activation retry`), based on `dd6006c`
+  commits: `4478152`, `dd6006c`, `695439d`, `99f7925` (`test: cover free billing activation corrections`)
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
-  report commit: pending
+  report commit: this parent task-branch publication commit
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
-  report pushed: pending
+  report pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
