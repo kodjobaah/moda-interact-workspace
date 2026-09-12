@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 40
 executor: copilot
 claimed_at: 2026-09-12T00:30:00Z
@@ -231,25 +231,37 @@ STOP if published Shared contract or `nextReconcileAt` Prisma field is unavailab
 ## Completion Report
 
 ### Status
-In Progress.
+Blocked — the current database dependency does not expose the required `nextReconcileAt` Prisma field.
 
 ### Files Changed
-- No implementation files changed.
+- `moda-interact/package.json`
+- `moda-interact/package-lock.json`
 - This task file records the blocker and execution evidence.
 
 ### Work Completed
 - Established and synchronized the resolver-authoritative parent and implementation worktrees.
-- Verified `status: ready`, `assigned_agent: moda_app`, `execution_mode: agent`, and all seven explicit dependencies as `complete` before claiming.
-- Claimed the task with normalized executor `copilot` and published the parent claim commit.
-- Inspected the existing callback and billing service only far enough to confirm the requested Free intent would require the missing Shared contract.
+- Verified `status: ready`, `assigned_agent: moda_app`, `execution_mode: agent`, and all seven explicit dependencies as `complete` before claiming attempt 2.
+- Claimed attempt 2 with normalized executor `copilot` and published the parent claim commit.
+- Applied the Architect Review correction by changing the app dependency from Shared `^0.7.4` to `^0.10.0`.
+- Confirmed the published Shared `0.10.0` billing entrypoint exposes the queue name, job name, schema version, payload parser, and deterministic job-ID helper required by this task.
+- Initialized the implementation worktree's existing database submodule and confirmed its current `Subscription` schema and generated Prisma client do not expose `nextReconcileAt`.
+- Did not implement a local queue contract or schema workaround because the task explicitly requires stopping when `nextReconcileAt` is unavailable.
+
+### Acceptance Criteria
+Blocked before implementation. The required durable pending schedule cannot be persisted through the current Prisma contract.
+
+### Work Items
+Blocked pending publication/availability of the DATABASE-001 `nextReconcileAt` field and generated client in the implementation dependency.
 
 ### Validation Results
 - Resolver: passed; task was materialized, ready, agent-executed, and routed to `moda_app`.
 - Dependency gate: passed for `ARCH-010-DATABASE-006`, `ARCH-010-SHOPIFY-001`, `ARCH-010-DATABASE-001`, `ARCH-010-DATABASE-004`, `ARCH-010-SHARED-002`, `ARCH-007-SHOPIFY-001`, and `ARCH-007-SHOPIFY-002`; all were `complete`.
-- Worktree synchronization: passed for both canonical task worktrees; both were clean and current with `origin/main`.
-- Shared contract inspection: blocked. Installed `@modainteract/moda-interact-shared@0.7.4` exposes only the ARCH-007 billing symbols from `dist/billing.d.ts`; it does not export the ARCH-010 reconciliation queue name, job name, payload schema/type, or deterministic job-ID helper required by this task.
-- No focused application tests were run because the task stop condition forbids implementing a competing local contract.
-- Claim-only `git diff --check`: passed.
+- Worktree synchronization: passed for both canonical task worktrees; both were clean and current with `origin/main` before claim.
+- `npm install --package-lock-only --ignore-scripts`: passed; lockfile resolves `@modainteract/moda-interact-shared` `0.10.0`.
+- Runtime Shared contract probe: passed; version `0.10.0`, queue `billing-subscription-reconcile`, job `reconcile-subscription`, schema version `1`, parser and deterministic ID helper present.
+- Database contract probe: blocked; `database/prisma/schema.prisma` has no `Subscription.nextReconcileAt`, and the generated Prisma client has no matching field.
+- Focused application tests were not run because the task stop condition forbids implementing durable scheduling without the required Prisma field.
+- `git diff --check`: passed for the dependency correction and parent report changes.
 
 ### Git / VCS
 Task branch: `task/ARCH-010-SHOPIFY-002`
@@ -272,13 +284,13 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact`
-  implementation source changes: none
+  commit: `4478152` (`chore: use shared billing contract 0.10.0`)
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
-  branch pushed: yes; no implementation commit was created because execution is blocked before implementation
+  pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
-  claim commit: `a57f99e`
+  claim commit: `ffdd16b`
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
   claim pushed: yes
   submodule gitlink staged: no
@@ -286,8 +298,17 @@ Parent workspace:
 Merged to implementation main: no
 Merged to workspace main: no
 
+### Deviations
+The task could not proceed to callback implementation because the current database dependency lacks `nextReconcileAt`. The required Shared dependency correction was applied and published.
+
+### Assumptions
+None.
+
+### Unresolved Issues
+`ARCH-010-DATABASE-001` is marked complete, but the implementation worktree's database dependency at the recorded mainline gitlink does not include `Subscription.nextReconcileAt`. The database dependency must be published/merged or otherwise made available to this repository before this task can persist the required retry schedule.
+
 ### Architectural Concerns
-`ARCH-010-SHARED-002` is marked complete, but the current `moda-interact` dependency resolves to Shared `0.7.4`, whose published `billing` entrypoint lacks the ARCH-010 subscription-reconciliation contract. The missing contract must be published and consumed from `@modainteract/moda-interact-shared/billing` before this task can safely implement queue publication. This agent did not create a local replacement.
+The dependency graph reports DATABASE-001 complete while its required Prisma field is unavailable to `moda-interact`. This is a cross-repository publication/integration dependency for `moda_architect` to reconcile. No local schema, queue contract, or stale Shared `0.7.4` assumption was introduced.
 
 ### Architect Review
 Pending.
