@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 83
 executor: copilot
 claimed_at: 2026-09-12T08:12:00Z
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-021
   - ARCH-010-SHOPIFY-022
 created: 2026-09-12
-updated: 2026-09-12T08:12:00Z
+updated: 2026-09-12T08:20:00Z
 ---
 
 # ARCH-010-DATABASE-011: Persist merchant promotion selection and exact promotional grant-lot accounting
@@ -163,24 +163,80 @@ Stop if exact promo-grant reservation ownership cannot be added without conflict
 
 - [x] Extend `PromotionalCreditGrant` with campaign ownership, exact lot counters, selection/use history, exhaustion state, optimistic versioning, and the `(campaignId, shopId)` uniqueness boundary.
 - [x] Add one-row-per-Shop `MerchantPromotionSelection` with unique grant ownership and a composite Shop/grant foreign key.
+
+## Work Items
+
+- [x] Extend `PromotionalCreditGrant` with nullable campaign provenance, exact
+  reservation/commitment counters, selection/use/exhaustion timestamps, version,
+  composite campaign/shop uniqueness, and quantity integrity checks.
+- [x] Add one-row-per-Shop `billing.MerchantPromotionSelection` with unique Shop
+  and grant ownership plus the composite Shop/grant foreign key.
+- [x] Add nullable exact promotional grant ownership to `UsageReservation`, its
+  index, and a compatibility-preserving foreign key.
+- [x] Preserve aggregate promotional counter compatibility and campaign-less
+  historical grants; do not add migration data writes or automatic selection.
+- [x] Update the generated Prisma ERD and add focused schema assertions.
+
+## Acceptance Criteria
+
+- [x] Campaign/shop claims are exactly-once through
+  `UNIQUE(campaignId, shopId)`, including reopened campaigns without replenishmen
 - [x] Add nullable exact promotional grant ownership to `UsageReservation` with an indexed relation, preserving existing rows as `NULL`.
+- [x] A Shop has at most one current promotion and a selection cannot reference
+  another Shop's grant through the composite foreign key.
+- [x] Grant counters reject negative or over-allocated values, and exact promo
+  grant reservation ownership is indexed and nullable for historical rows.
+- [x] Migration SQL contains no data backfill, auto-selection, or capacity grant;
+  existing campaign-less grants/reservations remain compatible.
+- [x] Prisma schema, migration, focused validators, adjacent schema validators,
+  ERD generation, and whitespace checks were run; local database deployment was
+  attempted and blocked only by unavailable PostgreSQL.
 - [x] Add the additive migration, ERD update, package script, and deterministic schema/migration validator without creating selections, grants, capacity, or rewriting historical rows.
 - [x] Run the repository-declared Prisma, schema, compatibility, ERD, migration-status, and diff checks.
 
 ## Acceptance Criteria
-
+Ready for Review.
 - [x] `(campaignId, shopId)` is unique, while nullable campaign IDs preserve historical campaign-less grants and reopened campaigns cannot create a second grant.
 - [x] `MerchantPromotionSelection.shopId` and `promotionalCreditGrantId` are individually unique, and the composite foreign key prevents cross-Shop grant pointers.
-- [x] Promotional grant counters are database-constrained non-negative and within original quantity; the inherited DATABASE-009 positive quantity constraint remains validated.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260912100000_add_promotion_selection_and_grant_lots/migration.sql`
+- `scripts/validate-promotion-selection-schema.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 - [x] `UsageReservation.promotionalCreditGrantId` identifies the exact promotional grant and existing reservations migrate safely with `NULL` ownership.
 - [x] Migration validation proves no automatic selection, capacity grant, counter rewrite, campaign backfill, or historical grant rewrite occurs.
-
+- Existing implementation commit `f2d79da9d82bc48d523f18eb3b87b26320d5ba55`
+  was present on the isolated implementation branch before source inspection;
+  it was preserved and validated without inventing adjacent behavior.
+- The schema now persists campaign-linked grant lots, exact promotional
+  reservation ownership, merchant selection state, composite tenant integrity,
+  unique campaign/shop claims, and all required quantity/version checks.
+- The migration adds only nullable/defaulted columns, constraints, indexes,
+  foreign keys, and the selection table; it performs no `INSERT`, `UPDATE`,
+  auto-selection, or capacity grant.
+- No Architect Review corrections were present; correction checklist: none.
 ## Completion Report
 
-### Status
+- PASS: `npm run prisma:validate`.
+- PASS: `npm run test:promotion-selection`.
+- PASS: `npm run test:promotion-campaign`.
+- PASS: `npm run test:purchased-credit-lots`.
+- PASS: `npm run test:billing-policy`.
+- PASS: `npm run test:recovery-credit-packs`.
+- PASS: `npm run test:checkout-recovery-capacity`.
+- PASS: `npm run test:billing-lifecycle`.
+- PASS: `npm run erd:puml`; generated ERD contains the promotion grant,
+  selection, and exact reservation relationships.
+- PASS: `git diff --check` after normalizing generator-introduced trailing
+  whitespace in the generated ERD.
+- BLOCKED infrastructure validation: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npx prisma migrate deploy --schema prisma/schema.prisma` returned Prisma `P1001` because PostgreSQL was unreachable at `localhost:5432`.
+- NOT AVAILABLE: repository has no `format:check` npm script; `npx prisma format --schema prisma/schema.prisma` completed successfully instead.
 Ready for Review.
 
-### Files Changed
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011` on `task/ARCH-010-DATABASE-011`, claim commit `3595eee6b44fbd2f9987d491b31c1fc864983059`, pushed to `origin`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011` on `task/ARCH-010-DATABASE-011`, implementation commit `f2d79da9d82bc48d523f18eb3b87b26320d5ba55`, pushed to `origin`.
+- Both worktrees were clean after validation; no parent submodule gitlink was
+  staged or changed, and neither branch was merged to `main`.
 - `prisma/schema.prisma`
 - `prisma/migrations/20260912100000_add_promotion_selection_and_grant_lots/migration.sql`
 - `scripts/validate-promotion-selection-schema.mjs`
