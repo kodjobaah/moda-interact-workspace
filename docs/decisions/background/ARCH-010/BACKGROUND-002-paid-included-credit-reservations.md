@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 42
 executor: copilot
 claimed_at: '2026-09-12T20:20:07Z'
@@ -271,7 +271,7 @@ STOP if:
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `moda-interact-background/src/services/effective-billing-policy.service.ts`
@@ -287,23 +287,24 @@ In Progress.
 - Correction 2 implemented in `effective-billing-policy.service.ts` and its focused tests: paid policy resolution removes the usage aggregate and fails closed for missing/inconsistent exact period, counter, identity, quantity, or paid meter state.
 - Correction 3 implemented in `paid-included-recovery-reservation.service.ts`: reserve and commit enforce exact shop/subscription/period/counter identity and preserve period-scoped source keys.
 - Corrections 4 and 5 implemented with real service unit coverage and a disposable PostgreSQL final-credit concurrency proof.
-- Interim routing and fail-closed behavior were verified by the focused 62-test slice and the real PostgreSQL test; no changed paid-billing file appears in the full-suite/build baseline failures.
+- Attempt 3 added only the requested test/report corrections: eight explicit Paid fallback/commit cases, P2034/P2002/internal CAS-zero/max-retry coverage, fixedNow injection for every PostgreSQL race assertion, and the intended missing paid usage-handle fixture.
+- No production source changed in Attempt 3 because no new regression was demonstrated.
 
 ### Validation Results
-- `npx vitest run tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/effective-billing-policy.service.test.ts tests/unit/services/recovery-billing.service.test.ts --reporter=dot`: PASS, 3 files, 62 tests.
+- `npx vitest run tests/unit/services/recovery-billing.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/effective-billing-policy.service.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts`: PASS, 3 files and 71 tests passed; the focused PostgreSQL file was skipped without `TEST_DATABASE_URL`.
 - `npm run test:integration -- tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts`: PASS, 1 file, 1 test; exactly one final-credit reservation admitted and committed, with one pending paid recovery UsageEvent.
 - `npm run prisma:validate`: PASS, schema valid.
 - `npm run prisma:generate`: PASS, Prisma Client `6.19.3` generated.
-- `npm run test:unit`: BASELINE FAILURE, 44/47 files and 503/544 tests passed; the 3 failing purchase/refund files are unchanged DATABASE-013 consumers. Failures include the existing transaction-isolation mock incompatibility and refund/purchase fields/statuses absent from the accepted client.
-- `npm run build`: BASELINE FAILURE, 29 existing errors in unchanged `recovery-credit-purchase.service.ts` and `recovery-credit-refund.service.ts`; accepted database client `014408e` lacks the referenced refund/purchase enum values and fields.
+- `npm run test:unit`: BASELINE FAILURE, 45/48 files and 529/570 tests passed; the 3 failing files are unchanged `observability-startup`, `recovery-credit-purchase`, and `recovery-credit-refund` tests. No Attempt 3 file failed.
+- `npm run build`: BASELINE FAILURE, existing errors in unchanged `recovery-credit-purchase.service.ts` and `recovery-credit-refund.service.ts`; accepted database client `014408e` lacks the referenced refund/purchase enum values and fields. No Attempt 3 file produced a new error.
 - `git diff --check`: PASS.
 
 ### Git / VCS
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-002`, branch `task/ARCH-010-BACKGROUND-002`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-002`, branch `task/ARCH-010-BACKGROUND-002`.
-- Attempt 2 synchronization: parent remote task fast-forward already-unnecessary; parent `origin/main` already-unnecessary; implementation remote task fast-forward already-unnecessary; implementation `origin/main` already-unnecessary. Both remotes were fetched before validation.
-- Clean-start evidence: implementation worktree contained the expected active Attempt 2 correction files at re-entry; no unrelated files were discarded or overwritten. After publication only the intentional detached `database` gitlink remains modified.
-- Implementation commit/push: `35dccf1`, pushed to `origin/task/ARCH-010-BACKGROUND-002`.
+- Attempt 3 synchronization: parent remote task fast-forward already-unnecessary; parent `origin/main` incorporated already-unnecessary; implementation remote task fast-forward already-unnecessary; implementation `origin/main` incorporated already-unnecessary. Both remotes were fetched before validation.
+- Clean-start evidence: implementation worktree contained the expected Attempt 3 test changes; no unrelated files were discarded or overwritten. After publication only the intentional detached `database` gitlink remains modified.
+- Implementation commit/push: `97bf5f054983229c060749d5bf7ef3a89df95dc2`, pushed to `origin/task/ARCH-010-BACKGROUND-002`.
 - Database revision: `014408e0402221f08a3961880b34e828a8bdc736`, detached; database gitlink staged = no.
 - Parent `main` and implementation `main` modified = no; neither main branch was merged or pushed.
 
