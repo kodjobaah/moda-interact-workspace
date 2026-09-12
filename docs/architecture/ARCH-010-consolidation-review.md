@@ -152,3 +152,27 @@ next valid claim: Attempt 3
 
 The Ready frontier is unchanged, but this task is a correction attempt rather than a
 fresh Attempt 1.
+
+## Post-cleanup review update — BACKGROUND-011 Attempt 3
+
+Attempt 3 correctly established one canonical reservation source key, purchased-credit
+spendability independent of pack-purchase enablement, and restored the Paid routing
+boundary to BACKGROUND-002.
+
+Architect review identified one remaining replay-state defect:
+
+```text
+already-released reservations are admitted without re-reserving capacity
+already-ambiguous reservations are admitted instead of blocking replay
+```
+
+The Background repository is also still pinned to Shared `0.10.0` even though
+SHARED-008 published and completed `0.11.0`.
+
+`BACKGROUND-011` therefore remains on the Ready frontier as:
+
+```text
+status: Ready — Changes Requested Attempt 3
+attempt: 3
+next valid claim: Attempt 4
+```
