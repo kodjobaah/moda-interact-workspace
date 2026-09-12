@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 83
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-12T07:33:20Z
+attempt: 2
 depends_on:
   - ARCH-010-DATABASE-009
   - ARCH-010-DATABASE-010
@@ -214,8 +214,13 @@ Ready for Review.
 - The migration adds only nullable/defaulted columns, constraints, indexes,
   foreign keys, and the selection table; it performs no `INSERT`, `UPDATE`,
   auto-selection, or capacity grant.
-- No Architect Review corrections were present; correction checklist: none.
+- Attempt 2 correction checklist: declare `@@index([campaignId, createdAt])` in
+  `PromotionalCreditGrant`; strengthen the focused validator to prove that
+  index in both Prisma schema and DATABASE-011 migration; record complete
+  physical-worktree and start-of-attempt synchronization evidence.
 ## Completion Report
+
+In Progress.
 
 - PASS: `npm run prisma:validate`.
 - PASS: `npm run test:promotion-selection`.
@@ -231,7 +236,6 @@ Ready for Review.
   whitespace in the generated ERD.
 - BLOCKED infrastructure validation: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npx prisma migrate deploy --schema prisma/schema.prisma` returned Prisma `P1001` because PostgreSQL was unreachable at `localhost:5432`.
 - NOT AVAILABLE: repository has no `format:check` npm script; `npx prisma format --schema prisma/schema.prisma` completed successfully instead.
-Ready for Review.
 
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011` on `task/ARCH-010-DATABASE-011`, claim commit `3595eee6b44fbd2f9987d491b31c1fc864983059`, pushed to `origin`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011` on `task/ARCH-010-DATABASE-011`, implementation commit `f2d79da9d82bc48d523f18eb3b87b26320d5ba55`, pushed to `origin`.
