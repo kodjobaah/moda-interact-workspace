@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-09-12T10:13:18Z
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
   - ARCH-010-DATABASE-006
@@ -1829,3 +1829,481 @@ attempt: 7
 ```
 
 **Architect decision: Changes Requested — Attempt 6.**
+
+#### Attempt 7 — Changes Requested
+
+Attempt 7 satisfies the production-code corrections requested by Attempt 6.
+
+Architect review accepts the following implementation behaviour:
+
+- `InitialFreeActivationToken` is persisted by `prepareFreeActivation(...)` and is
+  carried through the callback;
+- token-aware `syncSubscription(shopId, expectedInitialSelection)` performs the
+  Partner request outside the database transaction, then acquires the existing
+  ShopSettings -> Subscription lock order before provider-null/provider-active
+  projection;
+- a token mismatch returns before Subscription projection or BillingPeriod mutation;
+- `scheduleInitialFreeReconciliationIfCurrent(...)` replaces the two earlier
+  unconditional callback writes with one exact-token guarded transaction;
+- `completeFreeActivation(...)` consumes only the still-current initial Free target
+  when onboarding is incomplete;
+- successful pack-enabled completion computes the committed post-verification
+  schedule inside the transaction:
+  - exact cycle -> pre-close drain-window schedule;
+  - no exact cycle -> `completionNow + INITIAL_BILLING_RETRY_DELAY_MS`;
+  - pack disabled -> `null`;
+- the callback enqueues only the schedule returned by completion or by the guarded
+  unresolved/error scheduler;
+- first lifetime counter creation remains race-safe and fail-closed;
+- the explicit `moda-interact-admin` merchant-surface assertion now exists and the
+  Shopify-hosted `admin.shopify.com/.../pricing_plans` route remains allowed;
+- the ShopSettings-before-Subscription lock-order assertion now exists;
+- database dependency revision
+  `6d5fb9adf2e5c1fb28333b330dd183c9cda41550` remains unstaged.
+
+The reported repository-wide typecheck baseline is unrelated and is not the reason for
+this decision.
+
+Attempt 7 cannot yet be accepted because the Completion Report claims stale-callback
+and Required-Test coverage that is not actually present in the submitted focused
+tests. This is now a **test/evidence correction only** unless one of the required tests
+exposes a production defect.
+
+##### Correction 1 — add direct token-staleness tests for syncSubscription
+
+File:
+
+```text
+tests/unit/services/billing.service.test.ts
+```
+
+Do not change production code merely to satisfy these tests.
+
+Add three direct tests against the real `BillingService.syncSubscription(...)`.
+
+Use a real `InitialFreeActivationToken`:
+
+```text
+subscriptionId = subscription-1
+pendingPlanId = free-a-id
+pendingShopifyPlanHandle = free-a
+pendingEffectiveAt = 2026-09-12T10:00:00.000Z
+nextReconcileAt = 2026-09-12T10:00:00.000Z
+```
+
+**Test 1A — provider-active response becomes stale before projection**
+
+Initial state matches token A.
+
+The Partner mock MUST mutate the durable test state to newer Free-B before resolving
+an ACTIVE Free-A provider response:
+
+```text
+pendingPlanId = free-b-id
+pendingShopifyPlanHandle = free-b
+pendingEffectiveAt = 2026-09-12T10:01:00.000Z
+nextReconcileAt = 2026-09-12T10:01:00.000Z
+```
+
+Call:
+
+```ts
+await service.syncSubscription("shop-1", tokenA);
+```
+
+Assert:
+
+```text
+Partner was called exactly once
+BillingPeriod.upsert was NOT called
+Subscription.upsert/update was NOT called by the stale provider projection
+newer Free-B pending fields remain unchanged
+```
+
+The test must prove the stale token guard, not the generic no-token preservation path.
+
+**Test 1B — provider-null response becomes stale after onboarding completion**
+
+Initial state matches token A.
+
+The Partner mock MUST change the test state before returning `null`:
+
+```text
+ShopSettings.onboardingCompleted = true
+Subscription.status = ACTIVE
+Subscription.planId = free-b-id
+pending fields = null
+```
+
+Call:
+
+```ts
+await service.syncSubscription("shop-1", tokenA);
+```
+
+Assert:
+
+```text
+Partner was called
+no NO_CONTRACT Subscription upsert/update occurs
+no subscription-ended notification persistence occurs
+the completed/newer state remains unchanged
+```
+
+**Test 1C — same target but changed timestamp/schedule is stale**
+
+Keep:
+
+```text
+pendingPlanId = free-a-id
+pendingShopifyPlanHandle = free-a
+```
+
+but change either:
+
+```text
+pendingEffectiveAt
+```
+
+or:
+
+```text
+nextReconcileAt
+```
+
+before the provider-active projection transaction checks the token.
+
+Assert zero provider-derived DB mutation.
+
+These tests are required because the current Attempt-7 service suite contains no direct
+call to `syncSubscription(shopId, token)` that exercises a mismatching token.
+
+##### Correction 2 — directly test the guarded unresolved/error scheduler
+
+File:
+
+```text
+tests/unit/services/billing.service.test.ts
+```
+
+Add two direct tests for:
+
+```ts
+scheduleInitialFreeReconciliationIfCurrent(...)
+```
+
+**Test 2A — stale token is a full no-op**
+
+Arrange current durable state as newer/completed state that does not match token A.
+
+Call with:
+
+```text
+expected = token A
+nextReconcileAt = 2026-09-12T10:02:00.000Z
+partnerErrorAt = 2026-09-12T10:01:30.000Z
+```
+
+Assert:
+
+```text
+result = null
+Subscription.update was NOT called
+no pending field changed
+no error metadata changed
+```
+
+**Test 2B — current token commits one atomic Partner-error retry**
+
+Arrange exact token A state with onboarding incomplete.
+
+Call with:
+
+```text
+nextReconcileAt = 2026-09-12T10:01:00.000Z
+partnerErrorAt = 2026-09-12T10:00:30.000Z
+```
+
+Assert the single Subscription update contains:
+
+```text
+nextReconcileAt = requested retry timestamp
+lastSyncErrorCode = PARTNER_API_ERROR
+lastSyncErrorAt = partnerErrorAt
+```
+
+and does NOT contain:
+
+```text
+pendingPlanId: null
+pendingShopifyPlanHandle: null
+pendingEffectiveAt: null
+```
+
+Assert the returned object contains the committed:
+
+```text
+subscriptionId
+nextReconcileAt
+```
+
+##### Correction 3 — route must prove a stale guarded scheduler result produces no enqueue
+
+File:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+```
+
+Add this exact route regression:
+
+```text
+prepareFreeActivation -> INITIAL + token A
+syncSubscription -> throws Partner error
+scheduleInitialFreeReconciliationIfCurrent -> null
+```
+
+Run the real route loader.
+
+Assert:
+
+```text
+completeFreeActivation was NOT called
+enqueueBillingSubscriptionReconcileBestEffort was NOT called
+redirect("/app") occurred
+```
+
+Keep the existing normal Partner-error test where guarded scheduling returns a committed
+row and exactly one enqueue occurs.
+
+Add the equivalent unresolved-success variant only if the existing route test helper can
+do so without duplicating setup:
+
+```text
+Partner sync succeeds but requested plan is not verified current
+guarded scheduler returns null
+=> no enqueue
+```
+
+##### Correction 4 — finish Required Test 19 at the actual pack-purchase boundary
+
+File:
+
+```text
+tests/unit/services/billing.service.test.ts
+```
+
+The current test:
+
+```text
+"completes an initial pack-enabled Free activation without a cycle and keeps top-up eligibility closed"
+```
+
+proves:
+
+```text
+onboardingCompleted = true
+billingPeriodId = null
+bounded nextReconcileAt exists
+```
+
+but it never invokes the actual eligibility/purchase service boundary. Therefore its
+name overstates what it proves.
+
+Extend that **same test** after:
+
+```text
+prepareFreeActivation
+syncSubscription(shopId, activation.token)
+completeFreeActivation
+```
+
+to call the existing real purchase boundary:
+
+```ts
+await service.requestRecoveryCreditPack(
+  "shop-1",
+  "BUY_RECOVERY_CREDIT_PACK",
+  "11111111-1111-4111-8111-111111111111",
+);
+```
+
+Add only the minimal mocks required by the existing `createFreeActivationDatabase`
+helper:
+
+```text
+recoveryCreditPurchase.findUnique -> null
+```
+
+The helper already has:
+
+```text
+shop.findUnique
+subscription.findUnique
+```
+
+and the completed state has:
+
+```text
+billingPeriodId = null
+```
+
+Assert the request rejects with the existing fail-closed billing-cycle error:
+
+```text
+"The current local billing cycle could not be verified."
+```
+
+Also assert the Partner provider mock was **not called a second time** for the purchase:
+
+```text
+getActiveSubscription call count remains 1
+```
+
+because `requestRecoveryCreditPack(...)` must fail on the missing durable BillingPeriod
+before contacting Shopify.
+
+This creates the one coherent Required-Test-19 proof demanded by Attempt 6:
+
+```text
+initial no-cycle activation
+-> onboarding complete
+-> lifetime grant created once
+-> billingPeriodId remains null
+-> bounded retry scheduled
+-> real pack purchase remains fail-closed
+```
+
+Do not invent a new eligibility mechanism.
+
+##### Correction 5 — keep Required Tests 17 and 20 as already implemented
+
+Do not change these already-correct tests unless required for fixture reuse:
+
+```text
+"preserves every lifetime quantity and version across an exact Free cycle replay"
+"keeps merchant billing surfaces out of the Admin application"
+```
+
+Required Test 17 must continue to prove:
+
+```text
+lifetime quantities/version unchanged
+no BillingPeriodEntitlementCounter create/upsert
+```
+
+Required Test 20 must continue to prove:
+
+```text
+no merchant task surface contains "moda-interact-admin"
+Shopify hosted admin.shopify.com pricing route remains allowed
+```
+
+##### Correction 6 — correct Attempt-8 report/VCS metadata
+
+The Attempt-7 Completion Report inside the submitted archive still records:
+
+```text
+parent review-status/final metadata commit: 4e3f9c4
+```
+
+which is historical Attempt-6 evidence.
+
+The review submission for Attempt 7 supplied:
+
+```text
+implementation: 8fab46d
+parent report metadata: b0c2afb
+report evidence: abd36dd
+```
+
+and the task file records claim commit:
+
+```text
+7b9a41f
+```
+
+For Attempt 8, write one coherent current Completion Report with exact immutable hashes
+for that attempt:
+
+```text
+implementation commit: <Attempt-8 implementation hash, or 8fab46d if tests require no production-code commit and the test commit is the implementation head>
+parent claim commit: <exact Attempt-8 claim hash>
+parent report commit: <exact current report hash>
+parent review-status/final metadata commit: <exact current metadata hash>
+database dependency revision:
+  6d5fb9adf2e5c1fb28333b330dd183c9cda41550
+submodule gitlink staged: no
+```
+
+Do not copy `4e3f9c4` forward as current Attempt-8 evidence.
+
+Preserve all three physical-isolation declarations and all four synchronization outcomes.
+
+##### Attempt-8 validation and stop condition
+
+This is a verification-only correction unless one of the new tests fails.
+
+Before returning to `review`, run and record:
+
+```text
+npm test -- --run \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/routes/billing-callback.test.ts \
+  tests/unit/billing-ui.test.ts
+
+npm test -- --run tests/unit/services/billing-reconciliation.service.test.ts
+
+npm test
+npm run prisma:validate
+npm run prisma:generate
+npm run build
+npx eslint \
+  app/services/billing/billing.service.ts \
+  app/routes/app/billing/callback/route.tsx \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/routes/billing-callback.test.ts \
+  tests/unit/billing-ui.test.ts
+npm run typecheck
+git diff --check
+```
+
+Expected stop condition:
+
+```text
+all new stale-token / guarded-scheduler tests pass
+coherent no-cycle purchase rejection passes
+existing Required Tests 17 and 20 still pass
+full suite/build/Prisma/changed-file lint remain clean
+no changed SHOPIFY-002 file introduces a typecheck diagnostic
+database gitlink remains unstaged
+```
+
+If any new test exposes a production defect, make only the smallest correction required
+by that failing invariant, rerun the full validation above, and document it.
+
+Do not otherwise change production code.
+
+##### Scope guard
+
+Attempt 8 remains `ARCH-010-SHOPIFY-002` only.
+
+Do not:
+
+- change retry cadence/constants;
+- change the token schema;
+- add a database column/version token;
+- stage/change the database gitlink;
+- implement Background reconciliation;
+- implement Paid activation;
+- implement upgrade/downgrade/cancellation/reinstall;
+- implement billing-period rollover;
+- add Admin or Render work.
+
+Reclaim through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 8
+```
+
+**Architect decision: Changes Requested — Attempt 7.**
