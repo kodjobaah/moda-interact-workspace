@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 42
-executor: copilot
-claimed_at: '2026-09-12T19:06:51Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-BACKGROUND-011
@@ -303,7 +303,298 @@ The paid-focused unit test was rerun after Prisma generation and remained green 
 - Parent workspace branch: `task/ARCH-010-BACKGROUND-002` in the dedicated parent worktree.
 
 ### Architect Review
-Pending.
+
+#### Attempt 1 — Changes Requested
+
+##### Review Status
+
+Changes Requested — Attempt 1.
+
+##### Reviewed evidence
+
+Architect independently inspected the submitted task-specific workspace, the actual Background implementation and tests, and the ARCH-010 dependency contracts. Submitted evidence:
+
+```text
+implementation commit: 725337af8cd7e1afc234d8f1f32494458dd2cf92
+parent report commit: fb752f0
+database revision: 014408e0402221f08a3961880b34e828a8bdc736
+focused RecoveryBillingService tests: 27/27 passed
+existing Free PostgreSQL reservation concurrency test: passed
+Prisma validate/generate: passed
+git diff --check: passed
+```
+
+The documented repository-wide unit/build failures remain in unchanged purchase/refund consumers of the DATABASE-013 baseline and are not, by themselves, a rejection reason for this task. Do not modify those unrelated files in Attempt 2.
+
+##### Required correction 1 — preserve the interim Paid fallback composition
+
+File:
+
+```text
+src/services/recovery-billing.service.ts
+```
+
+The current `PAID_METERED` branch stops immediately when `PaidIncludedRecoveryReservationService.reserve()` returns `allowance-exhausted`. That is not the accepted pre-BACKGROUND-019 composition. BACKGROUND-011 already established that BACKGROUND-002 owns the interim Paid composition:
+
+```text
+current BillingPeriod included
+-> existing canonical purchased-credit reservation path
+-> shop-lifetime Free
+-> block new recovery admission
+```
+
+BACKGROUND-019 will later prepend selected promotional capacity and become the final top-level router. `ARCH-010-BACKGROUND-014` separately owns changing the purchased step to deterministic FIFO purchase-lot selection. Attempt 2 MUST therefore implement the current Paid branch as follows:
+
+```text
+resolve effective policy
+if paused -> blocked paused
+if PAID_METERED:
+    try paid included reservation
+    if RESERVED / already-RESERVED / already-COMMITTED:
+        admit kind=paid
+    if already-AMBIGUOUS or already-RELEASED:
+        block reservation-in-flight
+    if included allowance exhausted:
+        try PurchasedRecoveryReservationService using the canonical
+        period-independent recovery source key
+        if purchased owns/replays the recovery:
+            admit kind=purchased
+        if purchased exhausted:
+            try FreeRecoveryReservationService lifetime-Free capacity using
+            the same canonical period-independent recovery source key
+        if lifetime Free owns/replays the recovery:
+            admit kind=lifetime-free
+        if all three capacity sources are exhausted:
+            return blocked allowance-exhausted
+```
+
+Do NOT implement purchased-lot FIFO selection in BACKGROUND-002. Call the existing canonical `PurchasedRecoveryReservationService` behaviour as it exists for this task. `ARCH-010-BACKGROUND-014` exclusively owns making that purchased step FIFO lot-aware.
+
+Do NOT create automatic paid overage. Do NOT create a normal paid Shopify recovery UsageEvent for purchased- or lifetime-Free-funded recovery. Do NOT call the Free-plan `createCapacityExhaustedMessage()` merely to implement the Paid terminal block; BACKGROUND-009 owns the durable capacity-exhaustion workflow and the existing Free message text is not a Paid-plan message.
+
+Update/remove the stale tests that currently assert Purchased capacity is never attempted on the Paid path. Add explicit RecoveryBillingService tests proving:
+
+```text
+included available -> paid included wins
+included exhausted + purchased available -> purchased wins
+included exhausted + purchased exhausted + lifetime Free available -> lifetime Free wins
+all three unavailable -> typed allowance-exhausted block
+ambiguous/released included replay does not switch funding bucket
+purchased/lifetime-Free commit creates no normal paid meter UsageEvent
+```
+
+##### Required correction 2 — make EffectiveBillingPolicy fail closed for exact Paid period state
+
+Files:
+
+```text
+src/services/effective-billing-policy.service.ts
+tests/unit/services/effective-billing-policy.service.test.ts
+```
+
+The task explicitly requires `PAID_METERED` policy resolution to fail closed when the exact current period projection is missing or inconsistent. The submitted resolver still returns a Paid policy for CLOSED/mismatched/missing-counter period state and still performs the obsolete `UsageEvent.aggregate()` calculation for `normalRecoveryUsageQuantity`.
+
+For `PAID_METERED`, inside the resolver call used by the Serializable reservation transaction, require all of the following before returning a usable policy:
+
+```text
+subscription.billingPeriodId is non-null
+subscription.billingPeriod exists
+subscription.currentPeriodStart is non-null
+subscription.currentPeriodEnd is non-null
+period.id == subscription.billingPeriodId
+period.shopId == shopId
+period.subscriptionId == subscription.id
+period.status == OPEN
+period.periodEnd > now
+period.periodStart == subscription.currentPeriodStart
+period.periodEnd == subscription.currentPeriodEnd
+plan.shopifyUsageEventHandle is non-empty
+exact BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS) exists
+counter.shopId == shopId
+counter.billingPeriodId == period.id
+granted/committed/reserved/forfeited are non-negative safe integers
+committed + reserved + forfeited <= granted
+```
+
+Expose the exact validated period/counter identity and quantities in typed `EffectiveBillingPolicy` data so the paid reservation primitive does not derive included availability from an aggregate usage query.
+
+`normalRecoveryUsageQuantity` currently has no production consumer outside `effective-billing-policy.service.ts`. Remove its `UsageEvent.aggregate()` computation and remove that field from the Background policy type/output rather than replacing it with another aggregate. Update focused tests/mocks accordingly. `includedRecoveryConversationAllowance` may remain as plan configuration where another task still needs the plan setting, but it MUST NOT decide included admission.
+
+Fail these invalid Paid states with the existing `INVALID_CONFIGURATION` policy failure mechanism; do not silently map missing/inconsistent period state to zero capacity and do not fall through to Purchased capacity when the billing projection itself is invalid.
+
+##### Required correction 3 — enforce exact shop/subscription/period identity in the reservation primitive
+
+File:
+
+```text
+src/services/paid-included-recovery-reservation.service.ts
+```
+
+The submitted `requireCurrentOpenPeriod()` checks pointer/status/time boundaries but does not verify `BillingPeriod.shopId` or `BillingPeriod.subscriptionId` against the current shop/subscription. `commitInTransaction()` likewise does not explicitly verify the counter/period tenant and subscription identity.
+
+Attempt 2 MUST fail closed unless:
+
+```text
+policy.shopId == input.shopId
+policy.subscriptionId == current Subscription.id
+BillingPeriod.shopId == input.shopId
+BillingPeriod.subscriptionId == current Subscription.id
+BillingPeriod.id == Subscription.billingPeriodId
+BillingPeriodEntitlementCounter.shopId == input.shopId
+BillingPeriodEntitlementCounter.billingPeriodId == BillingPeriod.id
+```
+
+Apply the equivalent identity checks to commit before moving reserved -> committed and before creating the UsageEvent. A malformed cross-shop/cross-subscription projection must throw `PaidIncludedRecoveryReservationError`; it must never reserve, commit, create a UsageEvent, or fall through to another capacity source.
+
+Preserve the accepted source identity:
+
+```text
+paid-included:<BillingPeriod.id>:<CheckoutRecovery.id>
+```
+
+and preserve released-row reactivation only on the same owning period counter while that exact period remains valid/open. Same recovery in a different BillingPeriod must derive a different source key.
+
+##### Required correction 4 — add direct paid reservation unit coverage
+
+Create:
+
+```text
+tests/unit/services/paid-included-recovery-reservation.service.test.ts
+```
+
+Do not satisfy this item with mocks of `PaidIncludedRecoveryReservationService` inside `recovery-billing.service.test.ts`. The test must execute the real service methods. At minimum prove:
+
+```text
+1. reserve derives paid-included:<periodId>:<recoveryId> only after current OPEN period validation
+2. duplicate reserve does not double-increment reservedQuantity
+3. same recovery in a different BillingPeriod derives a different sourceKey
+4. allowance exhausted creates no reservation and no overage
+5. missing INCLUDED_RECOVERY_CREDITS counter fails closed
+6. CLOSED period fails closed
+7. time-expired OPEN period fails closed
+8. Subscription/BillingPeriod boundary mismatch fails closed
+9. shop/subscription/counter identity mismatch fails closed
+10. commit moves reserved -> committed exactly once
+11. commit creates exactly one RECOVERY_CONVERSATION UsageEvent with:
+       billingPeriodId = exact reservation period
+       shopifyReportState = PENDING
+       current paid plan shopifyUsageEventHandle
+       deterministic Shared Shopify idempotency key
+12. duplicate commit creates no second UsageEvent and does not double-increment committedQuantity
+13. definitive release decrements reserved exactly once
+14. ambiguous transition keeps reserved capacity protected
+15. committed reservation cannot be released
+16. reservation from CLOSED/expired period cannot commit
+17. CAS/P2034/P2002 retry is bounded and replays correctly
+```
+
+##### Required correction 5 — add the required Paid PostgreSQL concurrency proof
+
+Create:
+
+```text
+tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts
+```
+
+Use the existing disposable PostgreSQL `npm run test:integration -- <test-file>` harness. Do not use the existing Free concurrency test as a substitute.
+
+The fixture must create the minimum real DATABASE-013 state required by `EffectiveBillingPolicyResolver` and the paid reservation service: active Shop, active mapped `PAID_METERED` plan with normal Shopify usage event handle, Subscription, exact current OPEN BillingPeriod, lifetime-Free counter required by policy, platform policy, and one `BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS)`.
+
+Concurrency proof:
+
+```text
+grant includedQuantity = 1
+launch at least two distinct recovery reserve calls concurrently
+assert exactly one capacity unit becomes RESERVED
+assert the other call is exhausted/replayed only as architecturally valid
+commit the admitted reservation
+assert period counter committedQuantity = 1
+assert period counter reservedQuantity = 0
+assert committedQuantity never exceeds grantedQuantity
+assert exactly one paid RECOVERY_CONVERSATION UsageEvent exists
+assert that UsageEvent has the exact BillingPeriod id and PENDING Shopify report state
+```
+
+Also include same-source concurrent reserve replay if convenient, but it does not replace the distinct-recovery final-credit race.
+
+##### Required correction 6 — record mandatory worktree synchronization evidence
+
+No source change is required solely for this item. On Attempt 2, before editing, synchronize both canonical task worktrees per `docs/agent-worktree-isolation-policy.md` and record in the Completion Report whether each action was performed or already unnecessary:
+
+```text
+parent remote task branch fast-forwarded: performed | already-unnecessary
+parent origin/main incorporated: performed | already-unnecessary
+implementation remote task branch fast-forwarded: performed | already-unnecessary
+implementation origin/main incorporated: performed | already-unnecessary
+```
+
+Also record the canonical parent and implementation worktree paths, clean-start evidence, `database revision = 014408e0402221f08a3961880b34e828a8bdc736`, `database gitlink staged = no`, and `main branches modified = no`.
+
+##### Validation required for Attempt 2
+
+Run exactly the repository-supported commands below after the corrections:
+
+```bash
+npx vitest run \
+  tests/unit/services/paid-included-recovery-reservation.service.test.ts \
+  tests/unit/services/effective-billing-policy.service.test.ts \
+  tests/unit/services/recovery-billing.service.test.ts \
+  --reporter=dot
+
+npm run test:integration -- \
+  tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts
+
+npm run prisma:validate
+npm run prisma:generate
+npm run test:unit
+npm run build
+git diff --check
+```
+
+Expected result:
+
+```text
+focused paid/effective-policy/routing tests: PASS
+paid PostgreSQL concurrency test: PASS
+Prisma validate/generate: PASS
+git diff --check: PASS
+```
+
+`npm run test:unit` and `npm run build` may remain non-zero only for the already documented unchanged DATABASE-013 purchase/refund consumer baseline. If a changed file appears in any diagnostic/failing test, or the baseline becomes worse, treat it as an Attempt-2 regression and fix it before returning to review.
+
+##### Scope boundaries / stop conditions
+
+Do NOT modify:
+
+```text
+moda-interact-database source/schema/migration
+RecoveryCreditPurchase/Refund implementation solely to clear the known baseline
+Shared source or package version
+Shopify/Admin/Messaging/Gateway repositories
+BACKGROUND-019 promotional reservation logic
+BACKGROUND-007 period rollover
+BACKGROUND-008 draining/pre-provider revalidation
+BACKGROUND-009 durable exhaustion workflow
+```
+
+Keep the database submodule at accepted revision `014408e0402221f08a3961880b34e828a8bdc736` and do not stage the database gitlink.
+
+STOP and return `blocked` rather than inventing a workaround if the DATABASE-013 Prisma client does not expose the required exact period counter relation or if the paid PostgreSQL concurrency test cannot run through the existing disposable harness for a reason other than the already documented unrelated purchase/refund compile baseline.
+
+##### Architect Decision
+
+**Changes Requested — Attempt 1.**
+
+Return the same task to:
+
+```text
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next authorized claim increments the task exactly once to **Attempt 2**. No dependant of `ARCH-010-BACKGROUND-002` becomes Ready/Complete from this review.
 
 
 ## Final promotional-capacity integration contract
