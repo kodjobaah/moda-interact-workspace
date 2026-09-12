@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-12T08:17:23Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-010-DATABASE-006
@@ -25,7 +25,7 @@ enables:
   - ARCH-010-BACKGROUND-006
   - ARCH-010-BACKGROUND-007
 created: 2026-09-11
-updated: 2026-09-12
+updated: 2026-09-12T08:31:00Z
 ---
 
 # ARCH-010-BACKGROUND-001: Reconcile pending subscription activation with durable BullMQ recovery
@@ -234,23 +234,50 @@ STOP if accepted Shared contract is unavailable, Prisma client lacks `nextReconc
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-None. Implementation source was not changed.
+Implementation commit `1c740c6` changes the following paths:
+
+- `database` gitlink, preserved at database revision `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`
+- `src/entrypoints/billing-resources.ts`
+- `src/entrypoints/billing.ts`
+- `src/observability/queue-performance.ts`
+- `src/observability/worker-metrics.ts`
+- `src/services/billing-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/workers/billing-subscription-reconciliation.worker.ts`
+- `tests/unit/services/billing-reconciliation.service.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 
 ### Work Completed
-Eligibility and dependency verification completed. The canonical implementation
-worktree was created and synchronized, but implementation stopped at the task's
-explicit Prisma capability stop condition.
+Added the durable subscription reconciliation service and BullMQ worker to the
+existing billing worker. The implementation validates the Shared queue payload,
+applies stale-job and inactive-shop guards, verifies pending Free activation
+through the Partner API, preserves pending intent during bounded null/transport
+retries, clears expired activation intent, reconstructs delayed jobs from
+PostgreSQL, and preserves existing subscription projection status on Partner
+transport failures. Billing resources, scheduler integration, queue metrics, and
+focused unit coverage were added or updated. The database submodule revision
+actually used by the implementation is
+`6d5fb9adf2e5c1fb28333b330dd183c9cda41550`, which contains
+`Subscription.nextReconcileAt`.
 
 ### Validation Results
-All five explicit dependencies were verified complete. The implementation
-worktree is pinned to database submodule commit
-`6e916806649ab0cbf705656746f0aba02f67dc72`, whose schema does not define
-`Subscription.nextReconcileAt`. The current database repository `main` contains
-that field, but consuming it here requires a submodule gitlink update owned by
-the developer/architect workflow.
+Focused reconciliation and existing billing tests: passed, 2 files and 19 tests.
+
+Full unit suite: 552 passed and 1 failed. The failure is the pre-existing
+`tests/unit/runtime/observability-startup.test.ts` expectation of shared package
+version `0.9.0`, while the repository declares `0.10.0`.
+
+`npm run prisma:validate`: passed.
+
+`npm run build`: remains blocked by 8 pre-existing nullable `counterId` type
+errors in `src/services/free-recovery-reservation.service.ts` and
+`src/services/purchased-recovery-reservation.service.ts`; no errors remain in
+the task's touched reconciliation service after the local create-status repair.
+
+`git diff --check`: passed.
 
 ### Git / VCS
 Task branch: `task/ARCH-010-BACKGROUND-001`
@@ -273,14 +300,15 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: moda-interact-background
-  commit: e0ca1c7492a37de3b30d50010446156bf8ee135c
-  remote branch: origin/task/ARCH-010-BACKGROUND-001 (not created; no source commit)
-  pushed: no implementation changes
+  commit: 1c740c6
+  remote branch: origin/task/ARCH-010-BACKGROUND-001
+  pushed: yes
+  database submodule revision: 6d5fb9adf2e5c1fb28333b330dd183c9cda41550
 
 Parent workspace:
   task file: docs/decisions/background/ARCH-010/BACKGROUND-001-pending-subscription-reconciliation.md
   claim commit: cc4de24
-  blocked-state commit: pending
+  review-state commit: pending
   remote branch: origin/task/ARCH-010-BACKGROUND-001
   pushed: pending
   submodule gitlink staged: no
@@ -289,17 +317,13 @@ Merged to implementation main: no
 Merged to workspace main: no
 
 ### Architectural Concerns
-The accepted ARCH-010 database schema capability is not yet reachable from
-this background branch because its pinned database gitlink remains on the older
-ARCH-009 commit. The developer/architect must update the background repository's
-database submodule pointer to a database revision containing
-`Subscription.nextReconcileAt` before this task can safely implement durable
-reconciliation.
+The full repository build and unit suite retain unrelated baseline failures
+listed under Validation Results. The implementation branch intentionally
+preserves the database gitlink at the committed revision containing
+`Subscription.nextReconcileAt`.
 
 ### Unresolved Issues
-After the database gitlink is advanced, rerun the task on the same mirrored
-branches and attempt history; no implementation source or tests have been
-changed in this attempt.
+None for the bounded task scope.
 
 ### Architect Review
 Pending.
