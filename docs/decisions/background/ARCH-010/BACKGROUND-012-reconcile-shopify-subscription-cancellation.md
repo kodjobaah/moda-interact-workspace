@@ -86,7 +86,10 @@ Read the accepted/current task contracts before coding:
 
 ```text
 ARCH-010-BACKGROUND-007
+<<<<<<< HEAD
 ARCH-010-BACKGROUND-009
+=======
+>>>>>>> main
 ARCH-010-BACKGROUND-010
 ARCH-010-BACKGROUND-015
 ARCH-010-DATABASE-013
@@ -325,6 +328,7 @@ For UsageEvent/top-up work durably committed before freeze:
 - if the provider cycle advanced and the event is no longer billable, use the existing `PERIOD_CLOSED`/needs-attention path;
 - pending top-up credits remain non-spendable until provider confirmation.
 
+<<<<<<< HEAD
 ## Capacity-resume integration after verified unfreeze
 
 Preserve the accepted requirement previously owned by BACKGROUND-016. After a successful unfreeze/restoration, and **only after** the local `Subscription` projection is executable again, publish/use the existing best-effort `BACKGROUND-009` capacity-resume hint for recoveries that were already blocked solely by exhausted recovery capacity before the freeze.
@@ -337,6 +341,8 @@ Required boundaries:
 - do not emit a capacity-resume hint merely because FROZEN state was observed again;
 - do not invent a second resume queue/contract.
 
+=======
+>>>>>>> main
 ## Performance boundary
 
 This task is lifecycle reconciliation, not the 22,000-webhook/minute checkout-event hot path.
@@ -369,10 +375,15 @@ Prove all of the following with focused service/worker tests against real task-o
 20. pre-freeze pending top-up remains non-spendable while frozen;
 21. old-cycle UsageEvent is never retimestamped;
 22. no `appSubscriptionCancel`/local cancellation executor remains;
+<<<<<<< HEAD
 23. successful verified unfreeze publishes at most the existing best-effort BACKGROUND-009 capacity-resume hint after commit, and only when appropriate;
 24. unfreeze does not recreate jobs that were intentionally dropped because of FROZEN lifecycle denial;
 25. no new queue schema is introduced;
 26. no Shopify HTTP ingress lifecycle lookup is introduced.
+=======
+23. no new queue schema is introduced;
+24. no Shopify HTTP ingress lifecycle lookup is introduced.
+>>>>>>> main
 
 ## Non-goals
 

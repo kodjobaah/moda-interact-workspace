@@ -91,3 +91,18 @@ The following intermediate development concepts are now removed rather than pres
 | negative/fractional App Event refund correction | Removed. Human Shopify Partner Dashboard `REFUND | CREDIT` settlement plus local exactly-once finalisation is canonical. |
 
 Completed DATABASE-001..011 and other completed task files remain accepted development history; these removals are implemented by DATABASE-013 and dependent runtime conformance work rather than reopening those completed task records.
+
+
+## 2026-09-12 task-consolidation supersessions
+
+These supersessions reduce artificial handoffs for GPT-5.6 Luna without changing repository/runtime ownership:
+
+```text
+ARCH-010-BACKGROUND-016 -> ARCH-010-BACKGROUND-012
+ARCH-010-BACKGROUND-017 -> ARCH-010-BACKGROUND-013
+ARCH-010-SHOPIFY-010   -> ARCH-010-SHOPIFY-014
+ARCH-010-SHOPIFY-011   -> ARCH-010-SHOPIFY-015
+ARCH-010-SHOPIFY-019   -> ARCH-010-SHOPIFY-016
+```
+
+The superseded task files remain as unimplemented design provenance and must not be claimed. The surviving task definition is authoritative. `BACKGROUND-018` is intentionally not merged because it owns the high-volume queued Shopify-event hot path and has separate performance acceptance criteria.

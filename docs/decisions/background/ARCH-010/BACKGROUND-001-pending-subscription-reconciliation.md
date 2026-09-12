@@ -2261,7 +2261,7 @@ No dependant becomes Ready solely from this acceptance:
 
 ## Final frozen-state repair rows
 
-The startup/periodic delayed-job repair selector MUST also treat this durable row as actionable once DATABASE-008/BACKGROUND-016 are available:
+The startup/periodic delayed-job repair selector MUST also treat this durable row as actionable once DATABASE-008/BACKGROUND-012 are available:
 
 ```text
 Subscription.status = FROZEN

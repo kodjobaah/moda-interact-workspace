@@ -16,14 +16,14 @@ Coordinator:
 
 `moda_architect`
 
-> Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Complete/Review task files are immutable accepted/in-flight evidence; their historical `enables:` fields are not rewritten when later correction tasks are added.
+> Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 2, `pending` 19, `review` 1, `superseded` 1
+Current counts: `complete` 4, `ready` 1, `pending` 15, `superseded` 4
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | `SHOPIFY-001` | Establish fresh-install no-plan state and onboarding-only merchant access | Complete | ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
-| `SHOPIFY-002` | Activate Free plan with durable asynchronous Shopify verification | **Review** | ARCH-010-DATABASE-006, ARCH-010-SHOPIFY-001, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
+| `SHOPIFY-002` | Activate Free plan with durable asynchronous Shopify verification | Complete | ARCH-010-DATABASE-006, ARCH-010-SHOPIFY-001, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
 | `SHOPIFY-003` | Activate first verified paid plan with exact billing period | Pending | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-002, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-003, ARCH-008-SHOPIFY-001, ARCH-010-SHOPIFY-023 |
 | `SHOPIFY-004` | Present current paid-period entitlement to merchants | Pending | ARCH-010-SHOPIFY-003, ARCH-010-DATABASE-013 |
 | `SHOPIFY-005` | Make uninstall an execution gate without resetting billing state | Superseded | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005 |
@@ -31,20 +31,21 @@ Current counts: `complete` 2, `pending` 19, `review` 1, `superseded` 1
 | `SHOPIFY-007` | Present App Pricing billing-cycle transition and guard late-cycle top-up purchase | Pending | ARCH-010-BACKGROUND-007, ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-003, ARCH-010-SHOPIFY-004 |
 | `SHOPIFY-008` | Present recovery-capacity exhaustion on merchant dashboard and history | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-BACKGROUND-009, ARCH-010-SHARED-008 |
 | `SHOPIFY-009` | Add local merchant recovery-capacity projection | Pending | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-004, ARCH-010-SHOPIFY-023 |
-| `SHOPIFY-010` | Productionise recovery top-up purchase panel component | Pending | ARCH-010-SHOPIFY-014 |
-| `SHOPIFY-011` | Productionise Shopify-hosted plan management panel component | Pending | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-015 |
-| `SHOPIFY-012` | Integrate real billing options route and purchase hub | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-010, ARCH-010-SHOPIFY-011, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-SHOPIFY-014, ARCH-010-SHOPIFY-015, ARCH-010-SHOPIFY-007, ARCH-008-SHOPIFY-001 |
+| `SHOPIFY-010` | Productionise recovery top-up purchase panel component | Superseded | ARCH-010-SHOPIFY-014 |
+| `SHOPIFY-011` | Productionise Shopify-hosted plan management panel component | Superseded | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-015 |
+| `SHOPIFY-012` | Integrate real billing options route and purchase hub | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-SHOPIFY-014, ARCH-010-SHOPIFY-015, ARCH-010-SHOPIFY-007, ARCH-008-SHOPIFY-001 |
 | `SHOPIFY-013` | Expose authoritative Shopify commercial subscription read model | Complete | ARCH-008-SHOPIFY-001 |
-| `SHOPIFY-014` | Expose real recovery top-up purchase lifecycle for billing options | Pending | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-007, ARCH-007-SHOPIFY-004, ARCH-010-SHOPIFY-018 |
-| `SHOPIFY-015` | Handle Shopify-hosted upgrade and downgrade return without premature entitlement change | Pending | ARCH-010-SHOPIFY-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-010, ARCH-010-SHOPIFY-018 |
-| `SHOPIFY-016` | Present Shopify cancellation state without local cancellation authority | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-013, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013 |
+| `SHOPIFY-014` | Implement merchant recovery top-up lifecycle adapter and production panel | Pending | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-007, ARCH-007-SHOPIFY-004, ARCH-010-SHOPIFY-018 |
+| `SHOPIFY-015` | Implement Shopify-hosted plan management flow and production panel | Pending | ARCH-010-SHOPIFY-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-010, ARCH-010-SHOPIFY-018 |
+| `SHOPIFY-016` | Present cancellation, NO_CONTRACT and FROZEN merchant restriction states | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013 |
 | `SHOPIFY-017` | Present unused purchased-credit refundability and support CTA | Pending | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-012 |
 | `SHOPIFY-018` | Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze | Pending | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023 |
-| `SHOPIFY-019` | Present frozen Shopify subscription state and disable business billing actions | Pending | ARCH-010-BACKGROUND-017, ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-018 |
+| `SHOPIFY-019` | Present frozen Shopify subscription state and disable business billing actions | Superseded | ARCH-010-BACKGROUND-017, ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-018 |
 | `SHOPIFY-020` | Present selected promotion and promo-first recovery capacity | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-021 |
 | `SHOPIFY-021` | Show eligible running promotion offers and let a merchant select one | Pending | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-018, ARCH-010-ADMIN-004 |
 | `SHOPIFY-022` | Show merchant promotion selection and usage history | Pending | ARCH-010-SHOPIFY-021, ARCH-010-DATABASE-013 |
-| `SHOPIFY-023` | Conform Shopify billing runtime to the clean first-production baseline | Pending | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-002 |
+| `SHOPIFY-023` | Conform Shopify billing runtime to the clean first-production baseline | **Ready** | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-002 |
+| `SHOPIFY-024` | Remove pre-publication Shopify consumers of retired Shared billing contracts | Complete | ARCH-010-SHARED-006, ARCH-010-SHOPIFY-002 |
 
 ## Execution note
 

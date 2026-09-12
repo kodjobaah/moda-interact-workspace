@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 61
 executor: null
 claimed_at: null
@@ -19,13 +19,18 @@ depends_on:
 - ARCH-010-SHOPIFY-009
 - ARCH-010-SHOPIFY-012
 - ARCH-010-SHOPIFY-018
-enables:
-- ARCH-010-SYSTEM-TEST-002
+enables: []
 created: 2026-09-11
 updated: '2026-09-12'
+superseded_by: ARCH-010-SHOPIFY-016
 ---
 
 # ARCH-010-SHOPIFY-019: Present frozen Shopify subscription state and disable business billing actions
+
+> **Superseded by `ARCH-010-SHOPIFY-016`. Do not implement this task.**
+> Its complete unimplemented scope has been absorbed into `ARCH-010-SHOPIFY-016` as part of the 2026-09-12 Luna-oriented task consolidation. The original definition is retained below as design provenance only.
+
+## Original superseded definition
 
 ## Objective
 

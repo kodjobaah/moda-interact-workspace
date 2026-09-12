@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-BACKGROUND-013
 architecture_id: ARCH-010
-title: Stop shop business execution after the Shopify contract ends
+title: Enforce NO_CONTRACT and FROZEN business-execution gates
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -15,169 +15,225 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-BACKGROUND-004
-- ARCH-010-BACKGROUND-005
-- ARCH-010-BACKGROUND-012
+  - ARCH-010-BACKGROUND-004
+  - ARCH-010-BACKGROUND-005
+  - ARCH-010-BACKGROUND-012
 enables:
-- ARCH-010-BACKGROUND-017
-- ARCH-010-SHOPIFY-016
-- ARCH-010-SYSTEM-TEST-002
+  - ARCH-010-SHOPIFY-016
+  - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: '2026-09-12'
+updated: 2026-09-12
 ---
 
-# ARCH-010-BACKGROUND-013: Stop shop business execution after the Shopify contract ends
+# ARCH-010-BACKGROUND-013: Enforce NO_CONTRACT and FROZEN business-execution gates
+
+## Consolidation
+
+This task is the active owner of the work previously split between `ARCH-010-BACKGROUND-013` and `ARCH-010-BACKGROUND-017`.
+
+`ARCH-010-BACKGROUND-017` is superseded and MUST NOT be implemented separately.
+
+The merge is intentional because both states must be enforced by the same shop/subscription execution-policy boundary across the same recovery, WhatsApp, CommerceAgent and billing paths. They remain **distinct reasons** with different restoration semantics; they are combined only so one implementation cannot accidentally gate one path for NO_CONTRACT but forget the same path for FROZEN.
 
 ## Objective
 
-Extend the existing ARCH-010 shop-execution gates so an installed shop with `Subscription.status=NO_CONTRACT` cannot perform new Moda business execution after effective Shopify cancellation.
-
-This is stronger than recovery-capacity exhaustion. Capacity exhaustion blocks only new recovery initiation; contract absence blocks all new business execution for the shop.
-
-## Product invariants
-
-1. `Shop.status=ACTIVE` means the app is installed; it does not prove a valid Shopify billing contract.
-2. Business execution requires both:
+Extend the accepted shop-execution gate from BACKGROUND-004/005 so all new Moda business execution requires:
 
 ```text
 Shop.status = ACTIVE
-AND
-Subscription.status is an accepted executable current-contract state
+AND Subscription.status is executable
 ```
 
-3. A `NO_CONTRACT` merchant retains read/history/support/billing UI access in moda-interact but Background does not perform new merchant business actions.
-4. Existing purchased/lifetime balances remain durable but non-spendable until a new Shopify contract is verified.
-5. Historical/provider bookkeeping that completes already-committed pre-cancellation work may continue when it has no new customer-facing side effect.
-6. No inbound/customer message after effective cancellation may create a new CommerceAgent response.
-7. No queued Shopify event after effective cancellation may create a new recovery candidate/recovery/conversation/send.
-8. Do not purge whole Redis queues.
+For ARCH-010 first production:
+
+```text
+ACTIVE   -> executable subject to plan/capacity policy
+TRIALING -> executable only where existing policy already permits
+NO_CONTRACT -> deny with CONTRACT_REQUIRED / canonical equivalent
+FROZEN      -> deny with SUBSCRIPTION_FROZEN
+UNMAPPED/SYNC_ERROR -> preserve existing fail-closed behaviour
+UNINSTALLED/inactive Shop -> preserve BACKGROUND-004/005 behaviour
+```
+
+`NO_CONTRACT`, `FROZEN`, capacity exhaustion and uninstall MUST remain distinguishable.
 
 ## Inspect before editing
 
-At minimum inspect:
+Inspect and reuse the existing accepted gate rather than creating a second generic mechanism:
 
 ```text
-src/workers/whatsapp.worker.ts
-src/services/conversation-turn-processor.service.ts
-src/services/recovery-routing.service.ts
-src/services/checkout-recovery.service.ts
-src/services/pending-recovery-candidate.service.ts
 src/services/effective-billing-policy.service.ts
+src/services/checkout-recovery.service.ts
+src/services/recovery-routing.service.ts
+src/services/pending-recovery-candidate.service.ts
 src/services/recovery-billing.service.ts
-ARCH-010 shop-status gate implementation from BACKGROUND-004/BACKGROUND-005
-relevant Shopify-event worker entrypoints
-provider-status / usage-publisher bookkeeping paths
+src/services/conversation-turn-processor.service.ts
+src/services/conversation.service.ts
+src/services/conversation.message.service.ts
+src/services/inbound-whatsapp-abuse-admission.service.ts
+src/services/outbound-whatsapp-admission.service.ts
+src/services/shopify-usage-event-publisher.service.ts
+src/workers/whatsapp.worker.ts
+src/workers/pending-recovery-candidate.worker.ts
+src/workers/checkout.worker.ts
+src/workers/orders.worker.ts
 ```
 
-Reuse/extend the accepted ARCH-010 execution-gate abstraction if BACKGROUND-004/BACKGROUND-005 introduced one. Do not create a second competing generic gate.
-
-## Executable contract states
-
-Use final project enum values. At minimum:
+Inspect focused tests for those paths, especially existing BACKGROUND-004/005 gate tests and:
 
 ```text
-ACTIVE   -> eligible subject to plan/capacity policy
-TRIALING -> only if ARCH-010 already permits that exact plan state
-NO_CONTRACT -> business execution denied
-UNMAPPED    -> business execution denied
-SYNC_ERROR  -> business execution denied where existing policy fails closed
+tests/unit/services/effective-billing-policy.service.test.ts
+tests/unit/services/checkout-recovery.service.test.ts
+tests/unit/services/recovery-routing.service.test.ts
+tests/unit/services/pending-recovery-candidate.service.test.ts
+tests/unit/services/conversation-turn-processor.service.test.ts
+tests/unit/services/outbound-whatsapp-admission.service.test.ts
+tests/unit/services/shopify-usage-event-publisher.service.test.ts
+tests/unit/workers/pending-recovery-candidate.worker.test.ts
+tests/unit/workers/whatsapp.worker.test.ts
 ```
 
-Do not weaken existing fail-closed policy.
+## Single execution-policy rule
 
-## WhatsApp inbound gate
+After a worker/service has resolved durable `shopId`, but before it performs an irreversible new business action, evaluate current Shop + Subscription execution state through the canonical reusable gate.
 
-After existing routing has resolved a durable `shopId`, but BEFORE mutating conversation business state:
+Do not query Shopify Partner API from this gate.
+
+Do not move this gate into Shopify or Meta HTTP ingress merely to reject traffic early.
+
+## Behaviour matrix
+
+| Durable state | New recovery/candidate | Inbound business mutation | CommerceAgent | New outbound WhatsApp | New credit reservation | New UsageEvent/top-up | Historical bookkeeping |
+|---|---|---|---|---|---|---|---|
+| ACTIVE/TRIALING executable | normal policy | allowed | allowed | allowed | normal policy | normal policy | allowed |
+| NO_CONTRACT | DENY terminal no-op | DENY | DENY | DENY | DENY | DENY | bounded pre-contract-end finalisation only |
+| FROZEN | DENY terminal no-op | DENY | DENY | DENY | DENY | DENY | bounded pre-freeze finalisation only |
+| UNMAPPED/SYNC_ERROR | preserve existing fail-closed policy | preserve | preserve | preserve | preserve | preserve | safe bookkeeping only |
+| Shop UNINSTALLED/inactive | preserve BACKGROUND-004/005 | preserve | preserve | preserve | preserve | preserve | existing rules |
+
+A denied queued job caused only by NO_CONTRACT/FROZEN must complete as a successful terminal no-op where the queue contract permits. Do not create retry storms and do not purge entire Redis queues.
+
+## WhatsApp/conversation boundary
+
+After ownership resolves to shopId and before mutating business conversation state:
 
 ```text
-resolve ownership
-  -> load current Shop + Subscription execution eligibility
-  -> not executable: terminal no-op
-  -> executable: continue existing receive/enqueue behavior
+resolve shop
+  -> evaluate execution state
+  -> denied: terminal no-op, no message append/turn enqueue
+  -> allowed: continue existing flow
 ```
 
-For NO_CONTRACT specifically, do not:
+Re-check the gate immediately before processing an already queued `process-conversation-turn`, because lifecycle state can change after inbound acceptance.
 
-- append inbound customer message to the business conversation;
+When denied, do not:
+
+- append a new inbound business message that advances the conversation;
 - create standalone/product conversation state;
-- enqueue `process-conversation-turn`;
-- invoke CommerceAgent;
+- invoke CommerceAgent/tools;
+- enqueue a new business turn;
 - reserve recovery capacity;
-- send outbound WhatsApp.
+- send new automated WhatsApp.
 
-Also re-check eligibility immediately before processing an already-queued `process-conversation-turn`, because the contract can end after the inbound message was accepted but before the turn executes.
+## Recovery/event boundary
 
-## Shopify/recovery queued-work gate
+Before queued Shopify/recovery work creates or advances new business state, deny NO_CONTRACT/FROZEN shops.
 
-For queued Shopify/background business work whose durable shop can be identified, stop before creating new business state when the current subscription is NO_CONTRACT.
+At minimum prevent:
 
-At minimum prevent post-cancellation creation/initiation of:
+- new pending recovery candidates;
+- candidate refresh that schedules future business execution;
+- new CheckoutRecovery materialisation/business mutation;
+- recovery-conversation initiation;
+- new outbound recovery sends;
+- new recovery billing reservation/commit;
+- new top-up purchase UsageEvent;
+- new recovery UsageEvent created after denial state is known.
 
-- pending recovery candidates;
-- newly materialized CheckoutRecovery rows;
-- recovery conversations;
-- outbound recovery messages;
-- CommerceAgent work;
-- new billing reservations/usage.
+`BACKGROUND-018` remains separate and owns the **earlier high-volume checkout/cart/order event gate** for FROZEN shops. Do not duplicate its hot-path filtering here.
 
-A job that becomes ineligible solely because the contract ended should complete as a terminal no-op, not retry forever.
+## Distinct denial semantics
 
-## Historical bookkeeping exception
+### NO_CONTRACT
 
-Allow only bounded bookkeeping for work whose irreversible business action occurred before effective cancellation, for example:
+Use a canonical reason equivalent to `CONTRACT_REQUIRED`. Do not emit capacity-exhausted system state.
+
+Purchased, lifetime-Free and campaign-linked promotion capacity remain durable but non-spendable until a verified contract exists again.
+
+### FROZEN
+
+Use a canonical reason equivalent to `SUBSCRIPTION_FROZEN`.
+
+Do not classify FROZEN as `NO_CONTRACT`, `RECOVERY_CAPACITY_EXHAUSTED`, `UNMAPPED_PLAN` or shop unavailability.
+
+A successful BACKGROUND-012 unfreeze that restores Subscription ACTIVE/TRIALING automatically restores normal execution; no separate Shop status mutation is required.
+
+## Historical/accounting exceptions
+
+Allow only bounded finalisation of business actions irreversibly committed before the denial state became effective, for example:
 
 - Meta delivery/read/failure status for an already-sent message;
-- publication/reconciliation of an App Event that was durably committed while the provider contract/cycle was valid, subject to existing billing-cycle rules;
-- terminal order/completion bookkeeping for an already-existing recovery when it creates no new outbound side effect.
+- provider confirmation/reconciliation for a previously committed billing event when provider evidence is unambiguous;
+- reservation completion/release required to keep accounting balanced;
+- terminal order/completion bookkeeping for an already-existing recovery with no new customer-facing side effect.
 
-Do not use this exception to create a new recovery, new conversation turn or new send.
+For FROZEN, do not publish a **new** provider billing event for a business occurrence after the locally known freeze event time. Preserve the original event timestamp; never retimestamp a pre-freeze event into a later cycle to make it billable.
 
-## Capacity-blocked recovery interaction
+The exceptions MUST NOT create a new recovery, conversation turn, customer message or credit spend.
 
-A recovery with `admissionBlockReason=RECOVERY_CAPACITY_EXHAUSTED` must not be resumed merely because capacity later exists if the shop is now NO_CONTRACT.
+## Capacity-resume interaction
 
-BACKGROUND-009 resume processing must re-check contract execution eligibility before normal re-admission.
+BACKGROUND-009 resume processing must re-check this execution gate before re-admitting a capacity-blocked recovery.
 
-Do not relabel contract absence as capacity exhaustion.
+```text
+capacity becomes available
+  -> Subscription NO_CONTRACT/FROZEN? stop
+  -> otherwise run normal re-admission
+```
+
+Do not relabel lifecycle denial as capacity exhaustion.
 
 ## Required tests
 
-At minimum prove:
+Prove all of the following:
 
-1. Shop ACTIVE + Subscription ACTIVE continues normal execution;
-2. Shop ACTIVE + Subscription NO_CONTRACT blocks new pending recovery scheduling;
-3. NO_CONTRACT blocks matured candidate materialization before new recovery creation;
-4. NO_CONTRACT blocks inbound WhatsApp before conversation message append;
-5. NO_CONTRACT blocks standalone/product conversation creation;
-6. NO_CONTRACT blocks already-queued conversation-turn processing on re-check;
-7. NO_CONTRACT never invokes CommerceAgent;
-8. NO_CONTRACT never sends new WhatsApp;
-9. NO_CONTRACT never reserves/commits a recovery credit;
-10. NO_CONTRACT does not create a capacity-exhaustion SYSTEM message;
-11. provider-status bookkeeping for pre-cancellation outbound messages still works;
-12. safe terminal bookkeeping for existing recoveries remains possible without outbound side effects;
-13. capacity-resume worker skips NO_CONTRACT shops;
-14. stale queued jobs become successful terminal no-ops, not retry storms;
-15. UNINSTALLED shop behavior from BACKGROUND-004/005 remains unchanged;
-16. active-contract credit exhaustion behavior from BACKGROUND-009 remains unchanged.
+1. ACTIVE executable subscription preserves normal business execution;
+2. NO_CONTRACT blocks new pending recovery scheduling;
+3. NO_CONTRACT blocks candidate materialisation before new recovery creation;
+4. NO_CONTRACT blocks inbound conversation mutation before append;
+5. NO_CONTRACT blocks already-queued conversation-turn processing on re-check;
+6. NO_CONTRACT never invokes CommerceAgent, sends WhatsApp or reserves/commits credit;
+7. NO_CONTRACT does not create a capacity-exhaustion SYSTEM message;
+8. FROZEN returns a distinct SUBSCRIPTION_FROZEN policy result;
+9. FROZEN blocks recovery even when credits remain;
+10. FROZEN blocks promotional, included, purchased and lifetime-Free reservation paths;
+11. FROZEN blocks inbound mutation, CommerceAgent and new outbound WhatsApp;
+12. FROZEN blocks new top-up/recovery UsageEvent creation;
+13. queued pre-freeze business work reaches a terminal no-op after freeze unless it qualifies for bounded accounting finalisation;
+14. pre-existing Meta delivery-status bookkeeping remains allowed in both lifecycle-denial states;
+15. reservation finalisation already past the irreversible point remains accounting-safe;
+16. capacity-resume skips both NO_CONTRACT and FROZEN;
+17. denied stale jobs do not retry forever;
+18. UNINSTALLED/inactive behaviour from BACKGROUND-004/005 is unchanged;
+19. active-contract RECOVERY_CAPACITY_EXHAUSTED behaviour remains narrower and unchanged;
+20. successful unfreeze to ACTIVE/TRIALING restores normal paths without another shop-status mutation;
+21. no Partner API call was added to the execution gate;
+22. no Shopify/Meta HTTP-ingress lifecycle lookup was added;
+23. BACKGROUND-018 remains the only task-owned FROZEN raw checkout/cart/order early gate.
 
 ## Non-goals
 
-Do not implement merchant UI, Shopify cancellation detection, resubscription, refunds, shop identification redesign or queue-wide purge.
+Do not implement provider lifecycle reconciliation, merchant UI, raw-event hot-path filtering, queue-wide purge, refunds, new shop-identification architecture or new queue contracts.
+
+## Validation
+
+Run focused policy/recovery/WhatsApp/conversation/usage tests for every changed path, then repository-declared test/typecheck/build commands and `git diff --check`. Do not invent scripts.
 
 ## Stop conditions
 
-Stop and return to `moda_architect` if safe contract eligibility cannot be checked after shop ownership is known without moving tenant identification into WhatsApp ingress or Shopify HTTP ingress.
+STOP and return to `moda_architect` if any shop-owned business path cannot establish durable shop identity before irreversible action without changing HTTP-ingress architecture.
 
-
-## FROZEN-state coexistence
-
-This task remains owner of NO_CONTRACT execution blocking. FROZEN is a separate provider lifecycle reason owned by BACKGROUND-017. Shared gate helpers may be refactored for reuse, but do not collapse FROZEN into NO_CONTRACT because restoration/cancellation semantics differ.
-
-
-## Final promotional balance rule under NO_CONTRACT
-
-Preserved campaign-linked `PromotionalCreditGrant` capacity does not authorise business work while Subscription is `NO_CONTRACT`. Preserve campaign/grant/selection history without consuming it until a verified executable contract exists again.
+STOP if implementing one lifecycle reason would require bypassing the existing accepted BACKGROUND-004/005 generic execution gate rather than extending/reusing it.
 
 ## Completion Report
 

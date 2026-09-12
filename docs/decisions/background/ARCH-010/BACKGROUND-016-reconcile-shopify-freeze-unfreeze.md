@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-BACKGROUND-016
 architecture_id: ARCH-010
-title: Reconcile Shopify subscription freeze and unfreeze without losing entitlement history
+title: Reconcile Shopify subscription freeze and unfreeze without losing entitlement
+  history
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 59
 executor: null
 claimed_at: null
@@ -20,15 +21,18 @@ depends_on:
 - ARCH-010-BACKGROUND-010
 - ARCH-010-BACKGROUND-015
 - ARCH-010-SHARED-008
-enables:
-- ARCH-010-BACKGROUND-017
-- ARCH-010-BACKGROUND-018
-- ARCH-010-SYSTEM-TEST-002
+enables: []
 created: 2026-09-11
 updated: '2026-09-12'
+superseded_by: ARCH-010-BACKGROUND-012
 ---
 
 # ARCH-010-BACKGROUND-016: Reconcile Shopify subscription freeze and unfreeze without losing entitlement history
+
+> **Superseded by `ARCH-010-BACKGROUND-012`. Do not implement this task.**
+> Its complete unimplemented scope has been absorbed into `ARCH-010-BACKGROUND-012` as part of the 2026-09-12 Luna-oriented task consolidation. The original definition is retained below as design provenance only.
+
+## Original superseded definition
 
 ## Objective
 
