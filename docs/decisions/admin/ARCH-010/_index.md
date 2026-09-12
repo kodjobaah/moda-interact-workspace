@@ -16,9 +16,9 @@ Coordinator:
 
 `moda_architect`
 
-> Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Complete/Review task files are immutable accepted/in-flight evidence; their historical `enables:` fields are not rewritten when later correction tasks are added.
+> Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 1, `pending` 8, `ready` 1
+Current counts: `complete` 1, `ready` 2, `pending` 7
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -31,7 +31,7 @@ Current counts: `complete` 1, `pending` 8, `ready` 1
 | `ADMIN-007` | Implement the supplied upgrade economics guardrail as a deterministic pure evaluator | **Ready** | — |
 | `ADMIN-008` | Manage verified Shopify economics evidence, upgrade edges and guardrail policy | Pending | ARCH-010-DATABASE-013, ARCH-010-ADMIN-001, ARCH-010-ADMIN-010 |
 | `ADMIN-009` | Hard-enforce upgrade economics on plan and recovery-pack configuration | Pending | ARCH-010-ADMIN-007, ARCH-010-ADMIN-008 |
-| `ADMIN-010` | Conform Admin billing controls to the clean first-production baseline | Pending | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-ADMIN-001 |
+| `ADMIN-010` | Conform Admin billing controls to the clean first-production baseline | **Ready** | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-ADMIN-001 |
 
 ## Execution note
 

@@ -19,6 +19,7 @@ depends_on:
 enables: []
 created: 2026-09-12
 updated: '2026-09-12'
+superseded_by: ARCH-010-DATABASE-013
 ---
 
 # ARCH-010-DATABASE-012: Persist upgrade economics policy, plan edges and audited Shopify pricing snapshots

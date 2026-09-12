@@ -43,7 +43,7 @@ billing/capacity read services from SHOPIFY-009/012/014
 merchant billing i18n catalogues/tests
 ```
 
-Do not assume prototype component names survived SHOPIFY-010/011/012.
+Do not assume prototype component names survived SHOPIFY-014/011/012.
 
 ## Merchant billing-options behaviour
 

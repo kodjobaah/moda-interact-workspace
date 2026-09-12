@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-BACKGROUND-012
 architecture_id: ARCH-010
-title: Reconcile Shopify subscription cancellation and close the final provider billing period
+title: Reconcile Shopify cancellation, freeze and unfreeze lifecycle state
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -15,54 +15,92 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-BACKGROUND-007
-- ARCH-010-BACKGROUND-010
-- ARCH-010-SHARED-008
-- ARCH-010-BACKGROUND-015
+  - ARCH-010-DATABASE-013
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-BACKGROUND-010
+  - ARCH-010-BACKGROUND-009
+  - ARCH-010-SHARED-008
+  - ARCH-010-BACKGROUND-015
 enables:
-- ARCH-010-BACKGROUND-013
-- ARCH-010-SHOPIFY-016
-- ARCH-010-SYSTEM-TEST-002
+  - ARCH-010-BACKGROUND-013
+  - ARCH-010-BACKGROUND-018
+  - ARCH-010-SHOPIFY-016
+  - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: '2026-09-12'
+updated: 2026-09-12
 ---
 
-# ARCH-010-BACKGROUND-012: Reconcile Shopify subscription cancellation and close the final provider billing period
+# ARCH-010-BACKGROUND-012: Reconcile Shopify cancellation, freeze and unfreeze lifecycle state
+
+## Consolidation
+
+This task is the active owner of the work previously split between `ARCH-010-BACKGROUND-012` and `ARCH-010-BACKGROUND-016`.
+
+`ARCH-010-BACKGROUND-016` is superseded and MUST NOT be implemented separately.
+
+The reason for the merge is structural: both behaviours run inside the same `billing-subscription-reconcile` state machine, consume the same `BACKGROUND-015` provider snapshot, use the same durable scheduling fields, and must classify cancellation/freeze/unfreeze in one deterministic order to avoid contradictory writes.
 
 ## Objective
 
-Extend the canonical Shopify App Pricing reconciliation runtime so a merchant-initiated Shopify cancellation is reflected in Moda exactly once without calling any Shopify cancellation mutation.
+Extend the canonical `billing-subscription-reconcile` runtime so one reconciliation attempt deterministically converges an established merchant subscription across:
 
-Shopify is cancellation authority. Moda only observes and reconciles provider state.
+- scheduled Shopify cancellation;
+- effective Shopify cancellation;
+- Shopify FROZEN;
+- Shopify UNFROZEN/restoration;
+- ordinary active/trialing current state;
+- pending/effective plan changes delegated to `BACKGROUND-010`;
+- same-plan billing-cycle rollover delegated to `BACKGROUND-007`;
+- provider ambiguity/transport failure without inventing provider truth.
 
-## Product invariants
+Shopify is subscription lifecycle authority. Moda observes and reconciles. Moda MUST NOT create or execute a local subscription-cancellation workflow.
 
-1. Moda MUST NOT call `appSubscriptionCancel` for ARCH-010 cancellation.
-2. Moda MUST NOT create a local human-approval cancellation workflow.
-3. `activeSubscription.cancelAtEndOfCycle=true` does not end current entitlement early.
-4. A mapped `pendingUpdate` takes precedence over full-cancellation interpretation. Paid -> Free and other plan changes remain BACKGROUND-010 plan-change transitions.
-5. Full cancellation scheduled means:
+## Inspect before editing
+
+Inspect these exact current files first:
 
 ```text
-provider activeSubscription exists
-cancelAtEndOfCycle = true
-pending mapped/unmapped plan update = null
+src/services/billing-reconciliation.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+src/providers/shopify-partner-billing.provider.ts
+src/runtime/billing-scheduler.ts
+src/workers/billing-subscription-reconciliation.worker.ts
+src/entrypoints/billing.ts
+src/entrypoints/billing-resources.ts
+src/services/recovery-credit-purchase.service.ts
+src/services/shopify-usage-event-publisher.service.ts
 ```
 
-6. While that current provider contract remains active, current recovery entitlement remains usable through the current provider cycle.
-7. New top-up purchases are disabled once full cancellation is scheduled; existing purchased credits and lifetime Free credits remain spendable until the contract actually ends.
-8. Effective full cancellation does not delete or refund purchased credits and does not reset lifetime Free usage.
-9. Paid monthly included credits do not survive effective full cancellation.
-10. `Shop.status` remains ACTIVE while the app remains installed.
-11. A merchant who has previously completed onboarding keeps `ShopSettings.onboardingCompleted=true` after effective cancellation.
-12. Effective cancellation makes Subscription `NO_CONTRACT`; all business execution is then fail-closed by BACKGROUND-013.
-13. Provider/API transport failure is never interpreted as cancellation.
-14. No merchant access to `moda-interact-admin` is introduced.
+Inspect these tests before adding coverage:
 
-## Pre-production cancellation cleanup
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+tests/unit/runtime/billing-scheduler.test.ts
+tests/unit/services/recovery-credit-purchase.service.test.ts
+tests/unit/services/shopify-usage-event-publisher.service.test.ts
+```
 
-DATABASE-013 and SHARED-008 remove the ARCH-009 local cancellation request/approval/execution contract. Before adding reconciliation behaviour, search Background source/tests for the superseded local executor, including symbols/behaviour equivalent to:
+Read the accepted/current task contracts before coding:
+
+```text
+ARCH-010-BACKGROUND-007
+<<<<<<< HEAD
+ARCH-010-BACKGROUND-009
+=======
+>>>>>>> main
+ARCH-010-BACKGROUND-010
+ARCH-010-BACKGROUND-015
+ARCH-010-DATABASE-013
+ARCH-010-SHARED-008
+```
+
+Do not infer schema or queue names from chat history. Use the published Shared contract and generated Prisma client present in the repository.
+
+## Hard first-production removals
+
+Before implementing lifecycle reconciliation, search Background source/tests for any pre-production local cancellation executor or compatibility branch equivalent to:
 
 ```text
 SubscriptionCancellationRequest
@@ -76,258 +114,298 @@ BILLING_CANCELLATION_COMPLETED
 BILLING_CANCELLATION_REJECTED
 ```
 
-Delete any remaining Background worker/service/queue branch whose purpose is to approve or execute a Shopify cancellation mutation. Do not retain it behind a feature flag or compatibility adapter. If no such code remains, record the negative search evidence and make no speculative replacement.
+If found, remove it in this task. Do not retain it behind a flag or adapter. If absent, record the negative search in the Completion Report.
 
-The only first-production cancellation runtime is provider observation/reconciliation through this task and the canonical subscription reconciliation queue.
+## Canonical input
 
-## Inspect before editing
+Use the single snapshot produced by `BACKGROUND-015` for a reconciliation attempt. It contains live Partner `activeSubscription` evidence plus the latest usable provider lifecycle event/evidence.
 
-```text
-src/services/billing-reconciliation.service.ts
-src/providers/shopify-partner-billing.provider.ts
-src/workers/billing-worker.ts
-existing ARCH-010 billing-subscription-reconcile consumer/runtime
-existing canonical BillingPeriod rollover helper/service created by BACKGROUND-007
-existing effective plan-change transition created by BACKGROUND-010
-relevant unit/integration tests
-```
+Do not make a second historical-events request from this state machine.
 
-Also read:
+Before using a lifecycle event, compare it with persisted lifecycle event time/identity. Older provider evidence MUST NOT overwrite newer persisted evidence.
 
-```text
-docs/decisions/background/ARCH-010/BACKGROUND-007-canonical-paid-billing-period-rollover.md
-docs/decisions/background/ARCH-010/BACKGROUND-010-apply-shopify-plan-change-transition.md
-docs/decisions/database/ARCH-010/DATABASE-004-billing-period-lifecycle-history.md
-```
+## Mandatory classification order
 
-## Provider classification
+Evaluate in the following order. Do not reorder these branches.
 
-Every reconciliation attempt MUST query Partner `activeSubscription` unless it is handling only a deterministic stale-job no-op.
+### 0. Provider snapshot/transport failure
 
-Classify provider state in this exact order.
+A transport, GraphQL, throttle, malformed-response or lifecycle-history failure proves no lifecycle transition.
 
-### A. Active contract + pendingUpdate exists
-
-This is not full cancellation ownership for this task.
-
-- persist current provider `cancelAtEndOfCycle` truth as required by the existing projection;
-- delegate effective plan-transition semantics to BACKGROUND-010;
-- do not clear or convert `pendingPlanId`;
-- do not close the period as CONTRACT_ENDED;
-- do not create NO_CONTRACT.
-
-This covers Paid -> Free as a plan change even if Shopify also reports cancellation-scheduled semantics for the outgoing paid subscription.
-
-### B. Active contract + `cancelAtEndOfCycle=true` + no pendingUpdate
-
-Full cancellation is scheduled.
-
-Required local projection:
+Required behaviour:
 
 ```text
-Subscription.planId/current plan     = unchanged
-Subscription.status                  = current valid ACTIVE/TRIALING projection
-Subscription.cancelAtPeriodEnd       = true
-Subscription.pendingPlanId           = null
-Subscription.pendingShopifyPlanHandle= null
-Subscription.pendingEffectiveAt      = null
-Subscription.currentPeriodEnd        = provider exact current cycle end
-Subscription.nextReconcileAt         = accepted pre-close/boundary schedule
+preserve current plan identity
+preserve current BillingPeriod and counters
+preserve pending plan intent
+preserve cancellation/freeze state already known
+record bounded sync error metadata
+set/reuse deterministic next reconciliation time
+retry through billing-subscription-reconcile
 ```
 
-Do not revoke current entitlement early.
+Never write `NO_CONTRACT`, restore FROZEN to ACTIVE, close a BillingPeriod, grant capacity or apply a pending plan because of an error.
 
-### C. Active same plan + `cancelAtEndOfCycle=false`
+### 1. Effective latest lifecycle = FROZEN
 
-If local cancellation had previously been scheduled, Shopify has reversed/removed that schedule.
+FROZEN wins even if a live `activeSubscription` object is temporarily present.
 
-- clear `cancelAtPeriodEnd`;
-- preserve current plan, period and counters;
-- restore normal rollover scheduling;
-- do not grant anything;
-- do not write cancellation history that Shopify no longer asserts.
+Within one replay-safe transaction:
 
-### D. Provider `null` + latest lifecycle `CANCELED`
+```text
+Subscription.status = FROZEN
+preserve planId
+preserve observedShopifyPlanHandle
+preserve providerSubscriptionId
+preserve current BillingPeriod pointer/state
+preserve currentPeriodStart/currentPeriodEnd
+preserve pendingShopifyPlanHandle/pendingPlanId/pendingEffectiveAt
+preserve cancelAtPeriodEnd unless newer live provider truth proves a value
+persist latest provider lifecycle id/time/state
+lastSyncedAt = now
+clear only lifecycle-specific sync error proven resolved by the complete snapshot
+nextReconcileAt = now + FROZEN_RECONCILE_INTERVAL
+```
 
-This is the effective-cancellation proof for an established merchant. Transition to effective no-contract state atomically using the rules below.
+Use `FROZEN_RECONCILE_INTERVAL = 1 hour` unless the integrated accepted code already exposes the canonical equivalent.
 
-`activeSubscription = null` by itself is NOT cancellation proof because Shopify App Pricing also has a temporary FROZEN lifecycle state.
+Do not mutate any included, purchased, lifetime-Free or campaign-linked promotional quantity.
 
-### E. Provider `null` + latest lifecycle `FROZEN`
+### 2. Local FROZEN + latest lifecycle UNFROZEN + live activeSubscription = null
 
-Do not cancel. Delegate to BACKGROUND-016 frozen reconciliation. Preserve the current plan/period/counters and keep execution fail-closed as FROZEN.
+Remain `FROZEN`.
 
-### F. Provider `null` + latest lifecycle `UNFROZEN`, `CREATED`, `UPDATED`, `CANCELLATION_SCHEDULED`, or no usable lifecycle event for an established contract
+Persist the newer UNFROZEN evidence, record a precise bounded error equivalent to `UNFROZEN_LIVE_CONTRACT_PENDING`, set `nextReconcileAt = now + 1 hour`, and retry.
 
-Do not cancel and do not close the BillingPeriod. Treat provider state as unresolved/fail-closed and retry through canonical reconciliation.
+Historical UNFROZEN evidence alone never restores execution.
 
-### G. Partner transport/history failure
+### 3. Usable live activeSubscription exists
 
-- preserve durable entitlement evidence;
-- do not write NO_CONTRACT;
-- do not close the BillingPeriod;
-- retry using canonical reconciliation.
+First classify provider pending plan state.
 
-### H. Legacy transport/throttle/5xx/malformed response handling
+#### 3A. `pendingUpdate` exists
 
-- preserve last-known subscription/entitlement state;
-- persist bounded sync-error metadata through existing fields;
-- retry using the existing deterministic reconciliation queue/backoff;
-- do NOT write NO_CONTRACT;
-- do NOT close the BillingPeriod.
+This is plan-change ownership, not effective full cancellation.
 
-## Scheduled cancellation behaviour before the boundary
+- persist exact current provider state;
+- persist pending provider handle/effective boundary;
+- map `pendingPlanId` only when an active local BillingPlan mapping exists;
+- preserve current period entitlement until the transition is effective;
+- delegate effective transition semantics to `BACKGROUND-010`;
+- do not close a period as `CONTRACT_ENDED`;
+- do not write `NO_CONTRACT`;
+- do not treat `cancelAtEndOfCycle=true` on the outgoing subscription as full cancellation when a pending update exists.
 
-When provider contract is still current and full cancellation is scheduled:
+#### 3B. No pendingUpdate + `cancelAtEndOfCycle=true`
 
-- recovery admission continues according to the normal current plan capacity order;
-- existing conversations continue;
-- current paid included credits remain valid until effective contract end;
-- purchased credits remain usable;
-- lifetime Free credits remain usable after higher-priority sources;
-- new recovery-credit-pack purchases MUST be considered ineligible by the merchant-server purchase adapter/UI task;
-- canonical App Pricing drain semantics from BACKGROUND-007 still apply before the current provider period closes.
+This is scheduled full cancellation.
 
-Do not create a separate cancellation queue. Reuse `billing-subscription-reconcile` and durable `nextReconcileAt`.
+Required projection:
 
-## Effective full-cancellation transaction
+```text
+current plan/status/period = preserved from verified live contract
+cancelAtPeriodEnd = true
+pendingShopifyPlanHandle = null
+pendingPlanId = null
+pendingEffectiveAt = null
+currentPeriodEnd = exact provider cycle end
+nextReconcileAt = canonical pre-close/boundary schedule
+```
 
-When Partner returns `activeSubscription=null` AND BACKGROUND-015 reports latest effective lifecycle `CANCELED` for a shop with an existing local current contract, execute one serializable/replay-safe transaction.
+Current entitlement remains usable through the current provider cycle.
 
-### 1. Finalize the current BillingPeriod
+New top-up purchase is not permitted while full cancellation is scheduled; existing purchased credits, lifetime-Free credits and usable selected promotion remain spendable until effective contract end according to normal recovery-capacity order.
+
+#### 3C. No pendingUpdate + `cancelAtEndOfCycle=false`
+
+Clear a previously scheduled cancellation if present.
+
+If local status was FROZEN and lifecycle is no longer effectively FROZEN, restore using live provider truth:
+
+- same mapped plan + same exact provider cycle -> set ACTIVE/TRIALING, preserve period/counters exactly and restore normal scheduling;
+- same mapped plan + later provider cycle -> delegate to `BACKGROUND-007`; create/reuse only the current provider cycle and do not fabricate missed intermediate periods;
+- mapped plan differs -> delegate to `BACKGROUND-010`;
+- unmapped/invalid plan -> use existing fail-closed UNMAPPED/configuration path; do not restore executable business state.
+
+For Paid catch-up after freeze, grant only the currently verified provider cycle's included allowance exactly once. For Free, rotate provider/App-Event cycle scope only and never reset `LIFETIME_FREE_RECOVERY_CREDITS`.
+
+### 4. live activeSubscription = null + latest effective lifecycle = CANCELED
+
+For a shop with an established current local contract, this is effective cancellation proof.
+
+Execute one serializable/replay-safe transition.
+
+#### 4A. Finalize current BillingPeriod
 
 If an OPEN current BillingPeriod exists:
 
-- release any outstanding period-scoped included reservations using canonical period-close semantics;
-- for a paid period, set `forfeitedQuantity = granted - committed` after reservation release, subject to DATABASE-004 constraints;
-- for a Free provider BillingPeriod, do not touch the shop-lifetime Free counter;
-- set period `status=CLOSED`;
+- release outstanding period-scoped included reservations using canonical period-close rules;
+- Paid: set `forfeitedQuantity = granted - committed` after reservation release, subject to DATABASE-013 constraints;
+- Free: do not touch the shop-lifetime Free counter;
+- set `status=CLOSED`;
 - set `closedAt=now`;
 - set `closeReason=CONTRACT_ENDED`.
 
 Do not create a successor BillingPeriod.
 
-### 2. Update Subscription
+#### 4B. Transition Subscription to NO_CONTRACT
 
-Set:
-
-```text
-planId                     = null
-observedShopifyPlanHandle  = null
-status                     = NO_CONTRACT
-currentBillingPeriodId     = null
-billingPeriod/current pointer fields = null according to final DATABASE-004 schema
-currentPeriodStart         = null
-currentPeriodEnd           = null
-trialEndsAt                = null
-cancelAtPeriodEnd          = false
-providerSubscriptionId     = null
-pendingShopifyPlanHandle   = null
-pendingPlanId              = null
-pendingEffectiveAt         = null
-nextReconcileAt            = null
-lastSyncedAt               = now
-lastSyncErrorCode          = null
-lastSyncErrorAt            = null
-```
-
-Use the actual final ARCH-010 schema field names; do not invent duplicate current-period fields.
-
-### 3. Preserve lifetime state
-
-Do not change:
+Using actual DATABASE-013 field names:
 
 ```text
-LIFETIME_FREE_RECOVERY_CREDITS granted/committed/reserved history
-PURCHASED_RECOVERY_CREDITS granted/committed/reserved/refunding history
-RecoveryCreditPurchase rows
-RecoveryCreditRefund rows
-historical BillingPeriods
-CheckoutRecovery / Conversation history
-ShopSettings.onboardingCompleted
+planId = null
+observedShopifyPlanHandle = null
+status = NO_CONTRACT
+billingPeriod/current period pointer = null
+currentPeriodStart = null
+currentPeriodEnd = null
+trialEndsAt = null
+cancelAtPeriodEnd = false
+providerSubscriptionId = null
+pendingShopifyPlanHandle = null
+pendingPlanId = null
+pendingEffectiveAt = null
+nextReconcileAt = null
+lastSyncedAt = now
+lastSyncErrorCode = null
+lastSyncErrorAt = null
 ```
 
-## Idempotency
+Persist the CANCELED lifecycle evidence.
 
-Replaying provider `null` + lifecycle `CANCELED` after effective cancellation must:
+Do not set `Shop.status=UNINSTALLED`. Do not reset `ShopSettings.onboardingCompleted` for an already-onboarded merchant.
 
-- not close another period;
-- not change lifetime credit balances;
-- not create any new BillingPeriod;
-- not create duplicate cancellation rows/events;
-- leave Subscription NO_CONTRACT;
-- succeed as a no-op apart from safe sync timestamps.
+#### 4C. Preserve lifetime state
 
-## Redis/BullMQ loss
-
-Cancellation correctness MUST be reconstructable from PostgreSQL.
-
-Before effective cancellation:
+Do not delete, refund, reset or convert:
 
 ```text
-cancelAtPeriodEnd=true
-currentPeriodEnd=<provider boundary>
-nextReconcileAt=<scheduled reconciliation>
+LIFETIME_FREE_RECOVERY_CREDITS
+purchased-credit lots/counters/refund history
+campaign-linked PromotionalCreditGrant history
+merchant promotion selection/history
+existing merchant/recovery/conversation history
 ```
 
-must be sufficient for existing worker startup/repair logic to recreate the delayed `billing-subscription-reconcile` job.
+They become non-spendable because `BACKGROUND-013` denies execution while `NO_CONTRACT`.
 
-After effective cancellation `nextReconcileAt=null`; there is nothing to reconstruct until the merchant initiates a new Shopify plan activation.
+### 5. live activeSubscription = null + latest lifecycle = FROZEN
+
+Write/preserve `FROZEN` according to branch 1. Never interpret this as cancellation.
+
+### 6. live activeSubscription = null + latest lifecycle = UNFROZEN/CREATED/UPDATED/CANCELLATION_SCHEDULED/unknown/null for an established contract
+
+Provider truth is unresolved.
+
+- if already FROZEN, remain FROZEN;
+- otherwise preserve last-known plan/period/entitlement evidence and use the existing fail-closed sync state/error representation;
+- do not write `NO_CONTRACT`;
+- do not close a BillingPeriod;
+- schedule a bounded retry.
+
+For a genuinely fresh `NO_CONTRACT` merchant with no established contract, leave initial activation ownership to `BACKGROUND-001`/SHOPIFY activation flow; do not manufacture cancellation history.
+
+## Frozen retry and startup repair
+
+The existing durable scheduler/repair path must treat:
+
+```text
+Subscription.status = FROZEN
+AND nextReconcileAt IS NOT NULL
+```
+
+as actionable. Recreate a missing deterministic delayed reconciliation job at `max(now, nextReconcileAt)`. Repeated repair must be idempotent.
+
+Do not create a second queue/job schema.
+
+## Pending pre-freeze billing work
+
+For UsageEvent/top-up work durably committed before freeze:
+
+- preserve original occurrence timestamp/idempotency identity;
+- never retimestamp into a later provider cycle;
+- if unfreeze returns to the same provider cycle, existing publication/reconciliation may continue;
+- if the provider cycle advanced and the event is no longer billable, use the existing `PERIOD_CLOSED`/needs-attention path;
+- pending top-up credits remain non-spendable until provider confirmation.
+
+<<<<<<< HEAD
+## Capacity-resume integration after verified unfreeze
+
+Preserve the accepted requirement previously owned by BACKGROUND-016. After a successful unfreeze/restoration, and **only after** the local `Subscription` projection is executable again, publish/use the existing best-effort `BACKGROUND-009` capacity-resume hint for recoveries that were already blocked solely by exhausted recovery capacity before the freeze.
+
+Required boundaries:
+
+- enqueue/publish the resume hint only after the restoring transaction commits;
+- the resume consumer must still re-check the BACKGROUND-013 execution gate before re-admission;
+- do not recreate business jobs that were intentionally dropped/no-op'd because the subscription itself was FROZEN;
+- do not emit a capacity-resume hint merely because FROZEN state was observed again;
+- do not invent a second resume queue/contract.
+
+=======
+>>>>>>> main
+## Performance boundary
+
+This task is lifecycle reconciliation, not the 22,000-webhook/minute checkout-event hot path.
+
+Do not add subscription/lifecycle API calls or database reads to Shopify HTTP webhook ingress. `BACKGROUND-018` owns the separate early gate for queued checkout/cart/order events.
 
 ## Required tests
 
-At minimum prove:
+Prove all of the following with focused service/worker tests against real task-owned methods:
 
-1. `cancelAtEndOfCycle=true` + no pending update stores scheduled cancellation but keeps current plan entitlement active;
-2. scheduled cancellation does not close BillingPeriod early;
-3. scheduled cancellation does not consume/reset lifetime counters;
-4. pending provider plan change takes precedence and is delegated to BACKGROUND-010;
-5. provider cancellation schedule reversal clears local `cancelAtPeriodEnd` without granting/resetting credits;
-6. transport failure preserves last-known entitlement and does not become NO_CONTRACT;
-7. provider null + latest CANCELED closes one paid period with CONTRACT_ENDED and forfeits only unused paid included capacity;
-8. provider null + latest CANCELED closes one Free provider period without changing lifetime Free usage;
-9. provider null + latest CANCELED creates no successor BillingPeriod;
-10. provider null + latest CANCELED sets Subscription NO_CONTRACT and clears current/pending provider pointers;
-11. effective cancellation preserves purchased credits exactly;
-12. effective cancellation preserves lifetime Free credits exactly;
-13. effective cancellation preserves onboardingCompleted;
-14. replay of provider null is idempotent;
-15. deterministic queue reconstruction includes scheduled cancellation rows before contract end;
-16. effective cancellation leaves no delayed cancellation-specific job requirement;
-17. no `appSubscriptionCancel` call or cancellation executor/worker branch exists in the Background implementation;
-18. no local cancellation request/approval model or removed Shared cancellation contract is referenced;
-19. no Admin approval/cancellation request is created.
+1. provider transport/history failure preserves state and schedules retry;
+2. FROZEN evidence writes FROZEN while preserving plan/period/all capacity quantities;
+3. repeated FROZEN is idempotent and advances one deterministic hourly retry;
+4. older lifecycle evidence cannot overwrite newer evidence;
+5. UNFROZEN + null live contract remains FROZEN/fail-closed;
+6. FROZEN -> same plan/same cycle restores ACTIVE/TRIALING without grant/reset;
+7. FROZEN -> later same-plan cycle delegates to BACKGROUND-007 and creates no intermediate periods;
+8. Paid later-cycle restoration grants only current verified period once;
+9. Free later-cycle restoration never resets lifetime Free;
+10. effective changed plan delegates to BACKGROUND-010;
+11. pendingUpdate takes precedence over cancellation interpretation;
+12. scheduled full cancellation preserves current entitlement until exact boundary;
+13. reversal of scheduled cancellation clears `cancelAtPeriodEnd` without granting anything;
+14. provider null + CANCELED closes exactly one current period with CONTRACT_ENDED and writes NO_CONTRACT;
+15. effective cancellation replay is idempotent;
+16. provider null + FROZEN never writes NO_CONTRACT;
+17. provider null + ambiguous lifecycle never writes NO_CONTRACT or closes period;
+18. established cancellation preserves purchased/lifetime/promotion histories;
+19. startup repair recreates a missing frozen reconciliation job exactly once effectively;
+20. pre-freeze pending top-up remains non-spendable while frozen;
+21. old-cycle UsageEvent is never retimestamped;
+22. no `appSubscriptionCancel`/local cancellation executor remains;
+<<<<<<< HEAD
+23. successful verified unfreeze publishes at most the existing best-effort BACKGROUND-009 capacity-resume hint after commit, and only when appropriate;
+24. unfreeze does not recreate jobs that were intentionally dropped because of FROZEN lifecycle denial;
+25. no new queue schema is introduced;
+26. no Shopify HTTP ingress lifecycle lookup is introduced.
+=======
+23. no new queue schema is introduced;
+24. no Shopify HTTP ingress lifecycle lookup is introduced.
+>>>>>>> main
 
 ## Non-goals
 
-Do not implement:
+Do not implement merchant UI, new queue contracts, Admin cancellation/refund workflows, plan pricing, recovery-capacity reservation algorithms, raw checkout-event filtering, or deterministic shop re-identification.
 
-- a merchant cancellation button that calls Shopify Billing API;
-- ARCH-009 human-approved cancellation execution;
-- top-up refunds;
-- resubscription after full cancellation;
-- Shopify freeze/interruption classification beyond the safe provider-state rules above;
-- deterministic shop re-identification;
-- merchant Admin access.
+## Validation
+
+Inspect `package.json` and run the repository-declared focused tests covering the changed services/workers, then the declared unit/full test command, typecheck/build where present, and `git diff --check`. Do not invent scripts.
+
+Record any unchanged repository baseline failure by its existing baseline ID.
 
 ## Stop conditions
 
-Stop and return to `moda_architect` if:
+STOP and return to `moda_architect` if any of these are true:
 
-- the implemented Partner provider cannot expose `cancelAtEndOfCycle` or exact current cycle;
-- Shopify provider state shows ordinary production cancellation behavior that cannot be represented by current/pending/null classification;
-- DATABASE-013 does not provide `CONTRACT_ENDED` or equivalent close reason;
-- implementing this requires a new cancellation mutation or local approval workflow.
+1. `BACKGROUND-015` cannot provide both live and lifecycle evidence under the installed Partner API contract;
+2. `BACKGROUND-007` or `BACKGROUND-010` cannot be reused without changing their accepted invariants;
+3. DATABASE-013 fields differ materially from the task contract;
+4. the implementation would require a Shopify cancellation mutation;
+5. the implementation would require adding lifecycle lookup to HTTP webhook ingress.
 
-
-## Final provider-null cancellation classification
-
-This task MUST consume BACKGROUND-015 lifecycle evidence. `activeSubscription=null` may represent a frozen subscription and must never be finalized as cancellation unless latest effective provider lifecycle evidence is `CANCELED`. Latest `FROZEN` belongs to BACKGROUND-016. Ambiguous/null lifecycle evidence for an established contract remains fail-closed and retryable.
-
-
-## Final promotional preservation on cancellation
-
-Effective full cancellation preserves promotional-credit ownership/history exactly, alongside purchased and lifetime Free balances. While local state is `NO_CONTRACT`, preserved promotional credits are non-spendable and MUST NOT prevent the `CONTRACT_REQUIRED` execution gate.
+Do not solve those conditions by inventing compatibility state.
 
 ## Completion Report
 

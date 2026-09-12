@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 53
 executor: null
 claimed_at: null
@@ -17,13 +17,18 @@ attempt: 0
 depends_on:
 - ARCH-010-SHOPIFY-013
 - ARCH-010-SHOPIFY-015
-enables:
-- ARCH-010-SHOPIFY-012
+enables: []
 created: 2026-09-11
 updated: '2026-09-12'
+superseded_by: ARCH-010-SHOPIFY-015
 ---
 
 # ARCH-010-SHOPIFY-011: Productionise Shopify-hosted plan management panel component
+
+> **Superseded by `ARCH-010-SHOPIFY-015`. Do not implement this task.**
+> Its complete unimplemented scope has been absorbed into `ARCH-010-SHOPIFY-015` as part of the 2026-09-12 Luna-oriented task consolidation. The original definition is retained below as design provenance only.
+
+## Original superseded definition
 
 ## Objective
 

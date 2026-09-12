@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 42
 executor: null
 claimed_at: null
@@ -82,24 +82,64 @@ Do not retain this aggregate check as the correctness mechanism.
 
 ## Required paid-period reservation service
 
-Create a focused service following the existing Free reservation concurrency pattern, e.g.:
+Create exactly one focused service:
 
-```text
 src/services/paid-included-recovery-reservation.service.ts
-```
 
-Use the canonical Prisma model from `ARCH-010-DATABASE-002`.
+Use the canonical first-production Prisma schema accepted by
+ARCH-010-DATABASE-013.
 
-The service must expose bounded operations equivalent to:
+Paid included capacity MUST use:
 
-```text
+BillingPeriodEntitlementCounter
+  counter = INCLUDED_RECOVERY_CREDITS
+
+UsageReservation
+  billingPeriodEntitlementCounterId = exact funding counter id
+  counterId = null
+  promotionalCreditGrantId = null
+  purchasedCreditPurchaseId = null
+
+Do NOT use ShopEntitlementCounter for Paid included capacity.
+
+The service MUST expose exactly these bounded lifecycle operations:
+
 reserve
 commit
 release
 markAmbiguous
-```
 
-for one recovery quantity (default 1), keyed by a durable recovery identity that is **scoped to the exact BillingPeriod**. Use a deterministic form equivalent to `paid-included:<billingPeriodId>:<canonical recovery identity>` so the same recovery can be safely re-admitted in a later period after an old-period reservation is released. Keep the key bounded and free of customer-identifying data.
+Default reservation quantity is 1 recovery.
+
+Reservation identity
+
+The durable recovery identity is CheckoutRecovery.id.
+
+For a Paid included reservation, sourceKey MUST be scoped to the exact
+BillingPeriod:
+
+    paid-included:<billingPeriodId>:<CheckoutRecovery.id>
+
+or an equivalent canonical bounded encoding of exactly those values.
+
+Required identity behaviour:
+
+same BillingPeriod + same recovery
+    => same sourceKey
+    => replay the existing UsageReservation
+
+different BillingPeriod + same recovery
+    => different sourceKey
+    => may create a new reservation if the old-period reservation no longer
+       owns capacity and the new current period has available capacity
+
+Do NOT derive reservation identity from customer data, timestamps,
+BullMQ job ids, webhook ids, or other transient execution identities.
+
+Construct the sourceKey only after the current exact OPEN BillingPeriod
+has been verified inside the Serializable transaction.
+
+The caller MUST NOT be able to select an arbitrary historical BillingPeriod.
 
 ### Reserve
 

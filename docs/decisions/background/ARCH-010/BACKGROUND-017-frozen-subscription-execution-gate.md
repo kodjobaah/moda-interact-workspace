@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 60
 executor: null
 claimed_at: null
@@ -19,14 +19,18 @@ depends_on:
 - ARCH-010-BACKGROUND-005
 - ARCH-010-BACKGROUND-013
 - ARCH-010-BACKGROUND-016
-enables:
-- ARCH-010-SHOPIFY-019
-- ARCH-010-SYSTEM-TEST-002
+enables: []
 created: 2026-09-11
 updated: '2026-09-12'
+superseded_by: ARCH-010-BACKGROUND-013
 ---
 
 # ARCH-010-BACKGROUND-017: Gate all shop business execution while the Shopify subscription is frozen
+
+> **Superseded by `ARCH-010-BACKGROUND-013`. Do not implement this task.**
+> Its complete unimplemented scope has been absorbed into `ARCH-010-BACKGROUND-013` as part of the 2026-09-12 Luna-oriented task consolidation. The original definition is retained below as design provenance only.
+
+## Original superseded definition
 
 ## Objective
 

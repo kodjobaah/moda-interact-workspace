@@ -231,8 +231,9 @@ Do not reopen completed runtime tasks merely because they implemented against an
 Instead:
 
 - amend still-Pending/Ready ARCH-010 tasks so they implement only the baseline contract;
-- leave `ARCH-010-SHOPIFY-002` review evidence intact and use the dependent baseline-conformance task after it;
-- use new correction tasks where already-Complete runtime work still references removed baseline concepts;
+- treat `ARCH-010-SHOPIFY-002` as completed per the 2026-09-12 developer status correction; preserve its implementation/review provenance and use the dependent baseline-conformance task after it;
+- use new correction tasks, or narrowly amend a still-Pending/Ready task with the same ownership boundary, where already-Complete runtime work still references removed baseline concepts;
+- `ARCH-010-BACKGROUND-001` remains Complete at accepted Attempt 6; the narrow `FREE_RECOVERY_LIFETIME -> LIFETIME_FREE_RECOVERY_CREDITS` correction in its activation producer is now architect-accepted Complete under `ARCH-010-BACKGROUND-011` Attempt 4, without reopening BACKGROUND-001 queue/retry/CAS/onboarding semantics;
 - publish one clean Shared follow-up release containing the retained first-release contracts and removing obsolete pre-production cancellation exports.
 
 ## Database reset and data policy
@@ -248,14 +249,12 @@ After integration, local/development/test databases that were created from the o
 The first-production consolidation order is:
 
 ```text
-1. DATABASE-013   canonical database baseline
+1. DATABASE-013   canonical database baseline                         COMPLETE
 2. BACKGROUND-020 + SHOPIFY-024
-                  remove live first-party consumers of contracts scheduled for deletion
-                  while published Shared 0.10.0 still contains those names
-3. SHARED-007     remove obsolete Shared compatibility contracts after both consumer
-                  cleanup tasks are architect-accepted Complete
-4. SHARED-008     publish clean Shared baseline contract as 0.11.0
-5. repository baseline-conformance work
+                  remove live first-party consumers                   COMPLETE
+3. SHARED-007     remove obsolete Shared compatibility contracts     COMPLETE
+4. SHARED-008     publish clean Shared first-production contract      COMPLETE
+5. repository baseline-conformance work                              CURRENT FRONTIER
 6. remaining ARCH-010 feature tasks
 7. developer manual integrated verification
 8. terminal/manual-gated ARCH-010 system tests
