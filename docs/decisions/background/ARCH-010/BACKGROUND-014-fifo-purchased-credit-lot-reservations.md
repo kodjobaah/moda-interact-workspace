@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 68
-executor: copilot
-claimed_at: '2026-09-12T21:34:04Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -421,3 +421,202 @@ Free: promotional -> purchased FIFO -> lifetime Free -> block
 Expected Attempt-2 code changes are test/report changes only. Do not refactor production reservation/purchase code opportunistically. If the real PostgreSQL concurrency test demonstrates that the current production transaction can overspend or produce aggregate/lot divergence, stop and report that concrete failure to `moda_architect` rather than inventing a different concurrency model.
 
 Return this SAME task to `review` after the required evidence passes, then STOP.
+
+#### Attempt 2 — Accepted
+
+##### Review Status
+
+Accepted.
+
+##### Reviewed evidence
+
+Architect independently reviewed the Attempt 2 task-specific archive against the Attempt 1 rework contract and compared the Attempt 1 and Attempt 2 repository snapshots.
+
+Submitted/final handoff evidence:
+
+```text
+implementation commit: 2104959
+parent report handoff: e652153
+database revision: 014408e
+focused unit slice: PASS — 2 files / 24 tests
+PostgreSQL reserve-vs-refund-hold concurrency: PASS — 1 file / 1 test
+Prisma validation: PASS
+build: PASS
+git diff --check: PASS
+main branches modified: no
+database gitlink staged: no
+```
+
+The Attempt 1 -> Attempt 2 source comparison confirms there is **no production-source change**. Attempt 2 changes are confined to:
+
+```text
+tests/unit/services/purchased-recovery-reservation.service.test.ts
+tests/unit/services/recovery-credit-purchase.service.test.ts
+tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts
+```
+
+The production FIFO reservation implementation reviewed as conformant in Attempt 1 is therefore unchanged.
+
+##### Rework-contract verification
+
+The Attempt 1 correction contract is satisfied.
+
+1. **Real PostgreSQL refund-hold versus reservation race**
+
+`tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts` now uses:
+
+```text
+two independent PrismaClient connections for the competing operations
+Prisma.TransactionIsolationLevel.Serializable
+real PurchasedRecoveryReservationService.reserve(...)
+a test-local refund-hold transaction
+bounded P2034 / CAS retry handling
+real ShopEntitlementCounter and RecoveryCreditPurchase rows
+```
+
+The race proves exactly one capacity owner wins:
+
+```text
+reservation reserved XOR refund hold held
+```
+
+and verifies after both operations settle:
+
+```text
+aggregate.reservedQuantity + aggregate.refundingQuantity == 1
+lot.reservedQuantity + lot.refundingQuantity == 1
+aggregate.committedQuantity == 0
+lot.committedQuantity == 0
+lot.refundedQuantity == 0
+aggregate spendable >= 0
+lot spendable >= 0
+```
+
+If reservation wins, exactly one `UsageReservation` points to the exact purchase lot. If refund hold wins, no reservation consumes the held credit.
+
+No ADMIN-003 production refund implementation was added.
+
+2. **Released replay retains exact purchase-lot identity**
+
+The released-reservation unit test now seeds two ACTIVE spendable lots, reserves once, captures the original reservation and `purchasedCreditPurchaseId`, releases, and reserves the same `sourceKey` again.
+
+It proves:
+
+```text
+same UsageReservation row id
+same purchasedCreditPurchaseId
+older/original lot is re-reserved
+second lot remains untouched
+no second UsageReservation row is created
+```
+
+This satisfies the task requirement that replay never silently switches a recovery identity to a different purchase lot.
+
+3. **Mandatory task isolation / synchronization evidence**
+
+The Completion Report now records the canonical task worktrees and all four start-of-attempt synchronization outcomes:
+
+```text
+parent remote task branch fast-forwarded: yes
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: yes
+implementation origin/main incorporated: already-current
+```
+
+It also records no shared checkout mutation, no other task worktree reuse, an intentionally unstaged database gitlink, and unchanged main branches.
+
+##### Production implementation assessment
+
+Conformant.
+
+`ARCH-010-BACKGROUND-014` owns only the purchased-capacity FIFO accounting boundary. The accepted implementation preserves:
+
+```text
+FIFO order:
+  activatedAt ASC NULLS LAST
+  -> createdAt ASC
+  -> id ASC
+
+reserve:
+  aggregate reserved +1
+  exact selected purchase lot reserved +1
+  UsageReservation records purchasedCreditPurchaseId
+
+commit:
+  aggregate reserved -1 / committed +1
+  exact lot reserved -1 / committed +1
+
+release:
+  aggregate reserved -1
+  exact lot reserved -1
+
+ambiguous:
+  aggregate and lot reservation remain held
+```
+
+The selected lot and aggregate are mutated inside Serializable transactions with version/CAS protection. Provider reconciliation continues to treat locally partially refunded ACTIVE purchase lots as already matched provider-confirmed top-up units, so local refund accounting cannot cause capacity to be re-granted.
+
+The obsolete automatic refund-settlement / negative-App-Event path remains removed.
+
+##### Repository-wide baseline validation
+
+The disposable PostgreSQL run removes the five integration failures that were caused by a missing `moda_interact_test` database in Attempt 1.
+
+The Completion Report records one remaining unrelated repository-wide observability assertion expecting Shared runtime `0.9.0` while package metadata is `0.11.0`. That unchanged assertion is outside the BACKGROUND-014 changed slice and does not invalidate the focused FIFO/concurrency evidence.
+
+A future regression in the accepted purchased-reservation files is not excused by this unrelated baseline condition.
+
+##### Architect Decision
+
+**Accepted — Attempt 2.**
+
+Because `completion_mode: automatic`, `ARCH-010-BACKGROUND-014` is now `complete`. `attempt: 2` is preserved and `executor` / `claimed_at` are cleared.
+
+##### Dependency reconciliation
+
+`ARCH-010-BACKGROUND-019` now has all dependencies Complete:
+
+```text
+ARCH-010-DATABASE-013
+ARCH-010-BACKGROUND-002
+ARCH-010-BACKGROUND-011
+ARCH-010-BACKGROUND-014
+```
+
+Therefore `ARCH-010-BACKGROUND-019` is promoted from `pending` to `ready`.
+
+`ARCH-010-ADMIN-003` remains Pending because `ARCH-010-ADMIN-002` is not Complete.
+
+`ARCH-010-SYSTEM-TEST-003` remains Pending/manual-gated because multiple implementation dependencies remain incomplete.
+
+The ARCH-010 Ready frontier is now:
+
+```text
+ARCH-010-ADMIN-007
+ARCH-010-ADMIN-010
+ARCH-010-BACKGROUND-015
+ARCH-010-BACKGROUND-019
+ARCH-010-SHOPIFY-023
+```
+
+##### Capacity-order handoff
+
+The accepted capacity composition is now ready for `BACKGROUND-019` to finish:
+
+```text
+PAID:
+  selected promotional
+  -> current-period included
+  -> purchased FIFO
+  -> shop-lifetime Free
+  -> block new recovery admission
+
+FREE:
+  selected promotional
+  -> purchased FIFO
+  -> shop-lifetime Free
+  -> block new recovery admission
+```
+
+`BACKGROUND-019` owns only promotion-first routing and exact promotional grant reservation. It must reuse the accepted BACKGROUND-002 / BACKGROUND-011 / BACKGROUND-014 primitives rather than reimplementing their accounting.
+

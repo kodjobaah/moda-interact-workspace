@@ -270,7 +270,7 @@ Current counts: `complete` 21, `pending` 13, `ready` 5
 
 > Synchronized by `moda_architect` on 2026-09-12 after current-workspace audit and Luna-oriented task consolidation. ARCH-010 is a PRE-PRODUCTION / BREAKING ROLLOUT. Superseded tasks are history only; system-test tasks remain terminal/manual-gated.
 
-Current counts: `complete` 32, `ready` 5, `pending` 37, `superseded` 7
+Current counts: `complete` 33, `ready` 5, `pending` 36, `superseded` 7
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
@@ -297,12 +297,12 @@ Current counts: `complete` 32, `ready` 5, `pending` 37, `superseded` 7
 | ARCH-010-BACKGROUND-011 | background | Complete | 4 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-001, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009 |
 | ARCH-010-BACKGROUND-012 | background | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-009, ARCH-010-BACKGROUND-010, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-015 |
 | ARCH-010-BACKGROUND-013 | background | Pending | 0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005, ARCH-010-BACKGROUND-012 |
-| ARCH-010-BACKGROUND-014 | background | **Ready** | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-011 |
+| ARCH-010-BACKGROUND-014 | background | Complete | 2 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-011 |
 | ARCH-010-BACKGROUND-015 | background | **Ready** | 0 | — |
 | ARCH-010-BACKGROUND-016 | background | Superseded | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-010, ARCH-010-BACKGROUND-015, ARCH-010-SHARED-008 |
 | ARCH-010-BACKGROUND-017 | background | Superseded | 0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005, ARCH-010-BACKGROUND-013, ARCH-010-BACKGROUND-016 |
 | ARCH-010-BACKGROUND-018 | background | Pending | 0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-012 |
-| ARCH-010-BACKGROUND-019 | background | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-011, ARCH-010-BACKGROUND-014 |
+| ARCH-010-BACKGROUND-019 | background | **Ready** | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-011, ARCH-010-BACKGROUND-014 |
 | ARCH-010-BACKGROUND-020 | background | Complete | 1 | ARCH-010-SHARED-006 |
 | ARCH-010-DATABASE-001 | database | Complete | 2 | ARCH-007-DATABASE-006, ARCH-009-DATABASE-001 |
 | ARCH-010-DATABASE-002 | database | Complete | 1 | ARCH-010-DATABASE-001, ARCH-007-DATABASE-005 |
@@ -356,7 +356,7 @@ Current counts: `complete` 32, `ready` 5, `pending` 37, `superseded` 7
 | ARCH-010-SYSTEM-TEST-004 | system-test | Pending / manual-gated | 0 | ARCH-010-SYSTEM-TEST-001, ARCH-010-SYSTEM-TEST-002, ARCH-010-SYSTEM-TEST-003, ARCH-010-SYSTEM-TEST-005 |
 | ARCH-010-SYSTEM-TEST-005 | system-test | Pending / manual-gated | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-009 |
 
-Current Ready frontier: `ARCH-010-ADMIN-007`, `ARCH-010-ADMIN-010`, `ARCH-010-BACKGROUND-014`, `ARCH-010-BACKGROUND-015`, `ARCH-010-SHOPIFY-023`.
+Current Ready frontier: `ARCH-010-ADMIN-007`, `ARCH-010-ADMIN-010`, `ARCH-010-BACKGROUND-015`, `ARCH-010-BACKGROUND-019`, `ARCH-010-SHOPIFY-023`.
 
 `ARCH-010-SHOPIFY-002` is architect-accepted Complete at Attempt 8. `ARCH-010-BACKGROUND-001` is architect-accepted Complete at Attempt 6. Their accepted task histories are immutable; clean first-production conformance is owned by later Pending/Ready tasks.
 
