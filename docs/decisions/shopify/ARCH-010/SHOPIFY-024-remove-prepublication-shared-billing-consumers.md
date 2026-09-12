@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: copilot
 claimed_at: 2026-09-12T00:00:00Z
@@ -215,3 +215,88 @@ STOP
 ```
 
 Do not begin SHARED-007 or SHARED-008.
+
+## Completion Report
+
+### Status
+
+Ready for Review
+
+### Files Changed
+
+- `moda-interact/app/services/merchant-support/system-message-actions.ts`
+- `moda-interact/tests/unit/billing-ui.test.ts`
+
+### Work Completed
+
+Removed the retired `BILLING_FREE_ALLOWANCE_EXHAUSTED` merchant action/renderer branch and its focused test expectation. Existing billing actions, Shopify-hosted pricing navigation, and the no-Admin-route assertion remain unchanged. No generic recovery-capacity handler was present, so SHOPIFY-008 behavior was not added.
+
+Pre-edit symbol matches: two runtime/test matches, both for `BILLING_FREE_ALLOWANCE_EXHAUSTED`; zero active cancellation-contract or `BILLING_PLAN_CHANGE_ACTION_REQUIRED` matches.
+
+Post-edit zero-match evidence: zero `BILLING_FREE_ALLOWANCE_EXHAUSTED` matches in `app/` and `tests/`; zero active cancellation/plan-change matches.
+
+Shared package version used: `@modainteract/moda-interact-shared` `^0.10.0`.
+
+### Validation Results
+
+- `npm test -- tests/unit/billing-ui.test.ts`: passed, 1 file and 9 tests.
+- `npm test`: passed, 32 files and 255 tests; 1 skipped.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed.
+- `npx eslint app/services/merchant-support/system-message-actions.ts tests/unit/billing-ui.test.ts`: passed; existing TypeScript-version warning only.
+- `npm run typecheck`: non-zero with `TYPECHECK-001` known repository baseline; no new diagnostics in the changed files.
+- `git diff --check`: passed.
+
+### Git / VCS
+
+Task branch: `task/ARCH-010-SHOPIFY-024`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-024`
+  parent branch: `task/ARCH-010-SHOPIFY-024`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-024`
+  implementation branch: `task/ARCH-010-SHOPIFY-024`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact`
+  commit: `5768912`
+  remote branch: `origin/task/ARCH-010-SHOPIFY-024`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-024-remove-prepublication-shared-billing-consumers.md`
+  claim commit: `4470853`
+  report commit: pending final report commit
+  remote branch: `origin/task/ARCH-010-SHOPIFY-024`
+  pushed: pending final report commit
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+
+### Deviations
+
+None.
+
+### Assumptions
+
+The existing `TYPECHECK-001` baseline applies because neither changed file is listed in the repository-wide diagnostics.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None.
