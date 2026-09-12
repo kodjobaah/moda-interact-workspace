@@ -8,5 +8,6 @@ All ARCH-010 system-test tasks are **terminal/manual-gated**. They never auto-st
 | ARCH-010-SYSTEM-TEST-002 | Pending / manual-gated | Validate uninstall/reinstall, scheduled/effective cancellation, FROZEN/UNFROZEN and the early/downstream execution gates. |
 | ARCH-010-SYSTEM-TEST-003 | Pending / manual-gated | Validate FIFO purchased refunds plus opt-in GLOBAL/PLAN/SHOP campaigns, one selected promo, promo-first consumption, expiry/reopen and permanent campaign/merchant history. |
 | ARCH-010-SYSTEM-TEST-004 | Pending / manual-gated | Final cross-scenario merchant lifecycle acceptance matrix after the three focused terminal tests are accepted. |
+| ARCH-010-SYSTEM-TEST-005 | Pending / manual-gated | Validate the Admin upgrade-economics guardrail, FAIL/UNVERIFIED atomic blocking, audit evidence and exclusion of merchant balances/promotions. |
 
 Recommended order: `001`, `002`, `003` may be invoked independently after their own dependencies and developer smoke checks; `004` runs last.

@@ -286,3 +286,8 @@ SYSTEM-TEST-003  refunds/promotions
 ```
 
 ARCH-010 status remains **Agreed**, not **Implemented**, until this terminal validation chain is complete and architect-accepted.
+
+
+## Upgrade economics guardrail extension
+
+New release-safety tasks: `DATABASE-012` (policy/edges/snapshots), `ADMIN-007` (binding pure evaluator), `ADMIN-008` (Admin evidence/ladder controls), `ADMIN-009` (server-side hard gate) and manual terminal `SYSTEM-TEST-005`. Read the binding reference code and test matrix under `docs/contracts/ARCH-010-upgrade-economics-*` before implementing any of these tasks.
