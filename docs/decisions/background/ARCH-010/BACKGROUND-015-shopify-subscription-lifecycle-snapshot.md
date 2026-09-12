@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 57
-executor: copilot
-claimed_at: '2026-09-12T22:20:52Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -960,6 +960,366 @@ claimed_at: null
 ```
 
 The next authorized `/moda-task ARCH-010-BACKGROUND-015` claim becomes Attempt 3.
+
+`ARCH-010-BACKGROUND-012` remains gated until BACKGROUND-015 is architect-accepted Complete.
+
+### Attempt 3 — Changes Requested
+
+#### Review Status
+
+Changes Requested.
+
+The production provider remains conformant and must not be rewritten.
+
+Architect compared the Attempt 2 and Attempt 3 task snapshots and confirmed:
+
+```text
+src/providers/shopify-partner-billing.provider.ts
+  Attempt 2 SHA-256:
+  a1791c404cb85663fb3cb2b2381f69af80ee33f21cc36d87766c1784df177a1d
+
+  Attempt 3 SHA-256:
+  a1791c404cb85663fb3cb2b2381f69af80ee33f21cc36d87766c1784df177a1d
+
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+  Attempt 2 SHA-256:
+  c3ab146800e4d89c439560663cdc538189d15d7c6a8bccf311b0e3f63a5791e4
+
+  Attempt 3 SHA-256:
+  c3ab146800e4d89c439560663cdc538189d15d7c6a8bccf311b0e3f63a5791e4
+```
+
+Therefore Attempt 3 made **no provider or focused-test change at all**.
+
+The Completion Report statement that all latest Architect Review findings are covered is not supported by the checked-in test file. The five focused corrections requested in Attempt 2 remain absent.
+
+The nested `database` submodule is also still uninitialized in the review snapshot: the archive contains only the empty `moda-interact-background/database/` directory, while `.gitmodules` declares:
+
+```text
+[submodule "database"]
+    path = database
+    url = https://github.com/kodjobaah/moda-interact-database.git
+```
+
+Attempt 3 therefore repeated the same missing-Prisma validation condition rather than performing the required submodule initialization.
+
+This task returns for a narrowly bounded **test / validation / Completion Report** Attempt 4.
+
+#### Finding 1 — Add direct successful plan-normalization assertions
+
+**Modify only**
+
+```text
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+```
+
+The current lifecycle parameterized test asserts only:
+
+```text
+eventType
+state
+occurredAt
+```
+
+It does **not** prove the non-null Plan mapping required by the previous review.
+
+In the successful lifecycle fixture where:
+
+```ts
+plan: {
+  handle: "growth-plan",
+  billingPeriod: "EVERY_30_DAYS",
+}
+```
+
+assert:
+
+```text
+latestLifecycleEvent.planHandle === "growth-plan"
+latestLifecycleEvent.billingPeriod === "EVERY_30_DAYS"
+```
+
+Keep the existing null-plan test proving both normalized fields become `null`.
+
+#### Finding 2 — Add a valid-state / wrong-event-type rejection
+
+Add one focused malformed lifecycle case where both values are individually valid but the pair is invalid:
+
+```ts
+state: "FROZEN"
+eventType: "SUBSCRIPTION_CANCELED"
+```
+
+Assert:
+
+```text
+code === "malformed-lifecycle-event"
+```
+
+Do not use an unknown state for this proof. The purpose is to exercise the exact state/event-type correspondence.
+
+#### Finding 3 — Add malformed `plan.billingPeriod` coverage
+
+The current malformed Partner-event table proves:
+
+```ts
+plan.handle = 123
+```
+
+but it does not prove `billingPeriod` validation.
+
+Add a distinct case:
+
+```ts
+plan: {
+  handle: "growth-plan",
+  billingPeriod: 123,
+}
+```
+
+and assert:
+
+```text
+code === "malformed-lifecycle-event"
+```
+
+Do not coerce the value in production code.
+
+#### Finding 4 — Add blank event-ID coverage
+
+The provider rejects an empty/whitespace event ID, but the test suite does not prove it.
+
+Add a malformed event case with:
+
+```ts
+id: "   "
+```
+
+and assert:
+
+```text
+code === "malformed-lifecycle-event"
+```
+
+This must remain a parser validation; do not synthesize a fallback ID.
+
+#### Finding 5 — Make the single Partner request contract explicit
+
+In:
+
+```text
+it("bounds and scopes the lifecycle query", ...)
+```
+
+or a dedicated snapshot-query test, add:
+
+```ts
+expect(fetchImpl).toHaveBeenCalledTimes(1);
+expect(body.query).toContain("activeSubscription(");
+expect(body.query).toContain("events(");
+```
+
+The existing query-shape assertions remain.
+
+This must prove one reconciliation snapshot request contains both roots.
+
+Do not alter `getActiveSubscription()`.
+
+#### Finding 6 — Actually initialize the recorded database submodule for validation
+
+Attempt 3 did not perform the required validation setup.
+
+**Correction to the previous architect handoff:** do not construct an implementation-worktree path by appending `moda-interact-workspace.worktrees/...` to `MODA_WORKSPACE_ROOT`. The launcher-resolved implementation worktree is a sibling of the canonical workspace root.
+
+On Attempt 4, remain in the launcher-resolved canonical implementation worktree supplied by `/moda-task`, verify it is the task worktree, then:
+
+```bash
+pwd
+git branch --show-current
+git status --short
+
+cd moda-interact-background
+
+git submodule status database
+```
+
+If the `database` line begins with `-`, initialize the **recorded gitlink only**:
+
+```bash
+git submodule update --init database
+```
+
+Then prove:
+
+```bash
+test -f database/prisma/schema.prisma
+git submodule status database
+git diff --submodule=short -- database
+git status --short
+```
+
+Required invariant:
+
+```text
+database source revision = existing recorded gitlink
+database gitlink changed = no
+database gitlink staged = no
+database source edited = no
+```
+
+Do not checkout another database revision.
+
+Do not pull database `main`.
+
+Do not edit Prisma schema or migrations.
+
+If `git submodule update --init database` fails because of Git credentials, remote access, or another concrete environment failure, stop and return:
+
+```text
+status: blocked
+```
+
+with the exact command and error. Do not return to `review` with the submodule still uninitialized.
+
+#### Finding 7 — Run the required repository validation after submodule initialization
+
+After the recorded database gitlink is materialized, run:
+
+```bash
+npm run prisma:generate
+
+./node_modules/.bin/vitest run \
+  tests/unit/providers/shopify-partner-billing.provider.test.ts
+
+./node_modules/.bin/tsc --noEmit
+
+npm run build
+
+npm run test:unit
+
+git diff --check
+```
+
+Inspect `package.json` first and use its declared scripts.
+
+Interpretation:
+
+```text
+focused provider tests:
+  must pass
+
+focused provider/type surface:
+  must have no BACKGROUND-015 error
+
+repository tsc/build/unit:
+  must actually execute
+```
+
+The repository-wide commands may return non-zero because of documented unrelated baseline failures. If so, record each failing file/test and prove it is outside:
+
+```text
+src/providers/shopify-partner-billing.provider.ts
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+```
+
+"Missing Prisma schema/generated client" is **not** an acceptable Attempt 4 validation result if the database submodule can be initialized at its recorded gitlink.
+
+There is no ESLint requirement for this task. Do not install ESLint.
+
+#### Finding 8 — Correct the Completion Report to match the actual Attempt 4 evidence
+
+Do not claim a correction is covered unless the corresponding assertion is present in the committed test file.
+
+Attempt 4 Completion Report must explicitly record:
+
+```text
+Focused additions:
+  successful planHandle/billingPeriod mapping: present
+  valid state + wrong eventType rejection: present
+  malformed billingPeriod rejection: present
+  blank event ID rejection: present
+  one fetch containing activeSubscription + events: present
+```
+
+Record actual validation outcomes rather than describing blocked checks as completed.
+
+The Completion Report must also use the final parent task-branch HEAD/report commit for Attempt 4. The user handoff for Attempt 3 identified final parent metadata commit `b8a7c6f`, while the embedded Completion Report still names `2cd0816`; do not repeat that stale-report-commit mismatch.
+
+#### Finding 9 — Record Attempt 4 synchronization evidence
+
+Attempt 3 records all four required synchronization outcomes and they are acceptable for Attempt 3.
+
+Attempt 4 must independently record:
+
+```text
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Also record:
+
+```text
+shared/default checkout mutated: no
+another task worktree reused: no
+```
+
+#### Production-source boundary
+
+Unless one of Findings 1–5 exposes an actual provider defect:
+
+```text
+DO NOT MODIFY:
+src/providers/shopify-partner-billing.provider.ts
+```
+
+The production source at `f4bf204` remains the architect-approved implementation candidate.
+
+Do not modify:
+
+```text
+billing-reconciliation.service.ts
+billing-subscription-reconciliation.service.ts
+database source/gitlink
+Shared contracts
+Shopify app repository
+ADMIN/BACKGROUND-012 lifecycle persistence
+```
+
+#### Required Attempt 4 outcome
+
+Return to `review` only when all of the following are true:
+
+```text
+1. the five missing focused assertions are committed;
+2. focused provider tests pass;
+3. database submodule is initialized at the recorded gitlink;
+4. Prisma generation runs;
+5. repository TypeScript/build/unit commands actually execute;
+6. unrelated baseline failures, if any, are listed precisely;
+7. database gitlink/source remain unchanged;
+8. git diff --check passes;
+9. both task branches are clean and pushed;
+10. final Completion Report identifies the actual final parent report HEAD;
+11. all four start-of-attempt synchronization outcomes are recorded.
+```
+
+#### Architect Decision
+
+**Changes Requested — Attempt 3.**
+
+Return the same task to:
+
+```text
+status: ready
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+The next authorized `/moda-task ARCH-010-BACKGROUND-015` claim becomes Attempt 4.
 
 `ARCH-010-BACKGROUND-012` remains gated until BACKGROUND-015 is architect-accepted Complete.
 
