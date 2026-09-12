@@ -214,7 +214,7 @@ Start-of-attempt synchronization:
 
 ### Deviations
 
-None within the authorized production/test scope. Required repository-wide checks remain blocked by the documented checkout Prisma baseline and missing lint binary.
+None within the authorized production/test scope. Required repository-wide checks remain blocked by the observed checkout Prisma baseline and missing lint binary.
 
 ### Assumptions
 
@@ -251,9 +251,9 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-015-shopify-subscription-lifecycle-snapshot.md`
   claim commit: `4f56d6e`
-  review report commit: pending
+  review report commit: `287972d`
   remote branch: `origin/task/ARCH-010-BACKGROUND-015`
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
