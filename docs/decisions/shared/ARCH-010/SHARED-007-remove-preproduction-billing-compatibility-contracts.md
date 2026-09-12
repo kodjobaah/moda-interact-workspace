@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 6
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 2
 depends_on:
 - ARCH-010-SHARED-006
 - ARCH-010-BACKGROUND-020
@@ -100,12 +100,12 @@ Do not:
 ## Work Items
 
 - [x] Inspect current billing public exports and exact consumers represented by repository tests.
-- [ ] Remove superseded cancellation mode/provider mapping exports.
-- [ ] Remove obsolete cancellation system-message values.
-- [ ] Remove `BILLING_FREE_ALLOWANCE_EXHAUSTED` and preserve the generic capacity-exhaustion code.
-- [ ] Remove superseded plan-change action-required code if no ARCH-010 consumer exists.
-- [ ] Update focused tests to assert retained ARCH-010 contracts and absence of removed exports.
-- [ ] Build declarations/public entrypoint and verify removed names are absent.
+- [x] Remove superseded cancellation mode/provider mapping exports.
+- [x] Remove obsolete cancellation system-message values.
+- [x] Remove `BILLING_FREE_ALLOWANCE_EXHAUSTED` and preserve the generic capacity-exhaustion code.
+- [x] Remove superseded plan-change action-required code if no ARCH-010 consumer exists.
+- [x] Update focused tests to assert retained ARCH-010 contracts and absence of removed exports.
+- [x] Build declarations/public entrypoint and verify removed names are absent.
 
 ## Interfaces / Contracts
 
@@ -152,290 +152,259 @@ This is deliberately breaking cleanup before first production. Do not add deprec
 ## Completion Report
 
 ### Status
-Blocked pending consumer sequencing.
 
-### Files Changed
-No implementation files changed. Task metadata/report updated only.
+Attempt 2 complete; returned to architect review.
 
-### Work Completed
-Confirmed the obsolete cancellation exports and billing message values are
-currently published by Shared. Confirmed live consumers prevent safe breaking
-removal within this task's scope. Reverted the implementation probe; the
-implementation worktree is unchanged.
+### Implementation
 
-### Validation Results
-`npm test` passed after dependency restore (`109` passed, `1` skipped because
-`TEST_REDIS_URL` was not configured). `npm run typecheck` and `npm run build`
-passed. `git diff --check` passed during the implementation probe. The built
-runtime absence check passed during the probe, but generated output was not
-retained because the source change is blocked.
-
-### Deviations
-The requested Shared removal was not committed because active consumers in
-consumer repositories would break and consumer edits are explicitly out of
-scope.
-
-### Assumptions
-No production consumer requires ARCH-009 local cancellation contracts.
-
-### Unresolved Issues
-Consumer cleanup/sequencing is required before this breaking Shared contract
-removal can proceed.
-
-### Architectural Concerns
-Active consumers found:
-- `moda-interact-background/src/services/subscription-cancellation.service.ts` imports `SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS` and `SubscriptionCancellationMode`, and passes the mode into the provider.
-- `moda-interact-background/src/providers/shopify-partner-billing.provider.ts` imports both cancellation exports and indexes the provider mapping when executing cancellation.
-- `moda-interact/app/services/merchant-support/system-message-actions.ts` handles `BILLING_FREE_ALLOWANCE_EXHAUSTED`.
-- `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts` asserts `BILLING_FREE_ALLOWANCE_EXHAUSTED` source keys.
-
-Per task instruction, stop and return to `moda_architect` for sequencing rather
-than editing consumer repositories.
-
-### Git / VCS
-Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-007` on `task/ARCH-010-SHARED-007`. No implementation commit created because the task is blocked by out-of-scope consumers.
-
-## Architect Review
-
-### Review Status
-Blocked — architect-confirmed consumer sequencing dependency.
-
-### Review Notes
-
-The repository agent obeyed the task's stop condition correctly. No Shared
-implementation change is accepted or retained from Attempt 1.
-
-The block is architectural sequencing, not a reason to preserve compatibility.
-
-Confirmed active first-party consumers reported by the blocked run:
+Changed implementation files:
 
 ```text
-moda-interact-background/src/services/subscription-cancellation.service.ts
-  -> SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS
-  -> SubscriptionCancellationMode
-
-moda-interact-background/src/providers/shopify-partner-billing.provider.ts
-  -> cancellation mapping/types
-  -> local Shopify cancellation mutation path
-
-moda-interact/app/services/merchant-support/system-message-actions.ts
-  -> BILLING_FREE_ALLOWANCE_EXHAUSTED
-
-moda-interact-background/tests/unit/services/recovery-billing.service.test.ts
-  -> BILLING_FREE_ALLOWANCE_EXHAUSTED expectation/source key
-```
-
-`BILLING_PLAN_CHANGE_ACTION_REQUIRED` has no active first-party consumer in the
-blocked-run inspection. It remains in SHARED-007's removal set; do not create a
-compatibility alias for it.
-
-The original rollout graph was circular:
-
-```text
-SHARED-007 removes contracts
-  -> SHARED-008 publishes 0.11.0
-  -> BACKGROUND-012 / SHOPIFY-023 clean consumers
-```
-
-but SHARED-007 cannot safely remove contracts while those consumers still compile
-against them.
-
-Architect resolution introduces two bounded pre-publication consumer cleanup tasks:
-
-```text
-ARCH-010-BACKGROUND-020
-ARCH-010-SHOPIFY-024
-```
-
-Both execute against the already-published Shared `0.10.0`. They remove first-party
-runtime/test consumers without changing Shared itself.
-
-Corrected rollout:
-
-```text
-SHARED-006 / published 0.10.0
-        |
-        +--> BACKGROUND-020
-        |
-        +--> SHOPIFY-024
-                 |
-                 v
-        both Accepted Complete
-                 |
-                 v
-        SHARED-007 blocked -> ready
-                 |
-                 v
-        SHARED-007 Attempt 2 removes retired exports/codes
-                 |
-                 v
-        SHARED-008 publishes 0.11.0
-```
-
-SHARED-007 now depends on both cleanup tasks. It remains `blocked`, `attempt: 1`,
-with no active executor/claim. Once both prerequisites are architect-accepted
-Complete, `moda_architect` may transition this same task `blocked -> ready`.
-The next execution claim will then be Attempt 2.
-
-### Reviewed Files
-
-```text
-docs/decisions/shared/ARCH-010/SHARED-007-remove-preproduction-billing-compatibility-contracts.md
-docs/architecture/ARCH-010-first-production-baseline.md
-docs/architecture/ARCH-010-implementation-handoff.md
-docs/decisions/background/ARCH-010/BACKGROUND-012-reconcile-shopify-subscription-cancellation.md
-docs/decisions/background/ARCH-010/BACKGROUND-009-capacity-exhaustion-and-resume.md
-docs/decisions/shopify/ARCH-010/SHOPIFY-023-conform-billing-runtime-to-first-production-baseline.md
 moda-interact-shared/src/billing.ts
 moda-interact-shared/src/billing.test.ts
 ```
 
-Consumer repository source is not populated in this portable review archive; the
-exact live-consumer paths above come from the task's canonical blocked-run Completion
-Report and handoff. Existing ARCH-010 task definitions independently confirm that
-BACKGROUND-012 owns removal of the local cancellation executor and that
-SHOPIFY-023/BACKGROUND-009 own removal of the Free-only exhaustion compatibility.
+Implemented the original breaking pre-production cleanup after the architect-confirmed
+consumer prerequisites became Complete.
 
-### Validation Reviewed
-
-Blocked-run validation is accepted as evidence that no retained Shared change was
-needed:
+Removed from the public Shared billing contract:
 
 ```text
-109 tests passed
-typecheck passed
-build passed
-git diff --check passed
+SUBSCRIPTION_CANCELLATION_MODES
+SubscriptionCancellationModeSchema
+SubscriptionCancellationMode
+ShopifySubscriptionCancellationArgs
+SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS
+
+BILLING_CANCELLATION_REQUEST_RECEIVED
+BILLING_CANCELLATION_COMPLETED
+BILLING_CANCELLATION_REJECTED
+BILLING_FREE_ALLOWANCE_EXHAUSTED
+BILLING_PLAN_CHANGE_ACTION_REQUIRED
 ```
 
-The handoff identifies:
+No deprecated alias, compatibility export or alternate spelling was added.
+
+Retained unchanged:
 
 ```text
-parent task branch commit: 15ef6a4
-implementation task branch commit: 243209a
+BILLING_SUBSCRIPTION_RECONCILE_SCHEMA_VERSION
+BILLING_SUBSCRIPTION_RECONCILE_QUEUE_NAME
+BILLING_SUBSCRIPTION_RECONCILE_JOB_NAME
+APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+BILLING_RECOVERY_CAPACITY_EXHAUSTED
+BILLING_REFUND_REQUEST_RECEIVED
+BILLING_REFUND_COMPLETED
+BILLING_REFUND_REJECTED
+createMerchantBillingSystemSourceKey
+PurchasedRecoveryCreditCounterSnapshot
+availablePurchasedRecoveryCredits
+unrelated messaging/observability contracts
 ```
 
-Those commits are blocking/report evidence only. They are not an accepted Shared
-implementation.
-
-### Architecture Conformance
-
-Conformant.
-
-ARCH-010 is explicitly pre-production, so the correct response is to remove the
-first-party consumers before the breaking Shared release. The architect rejects:
+Package version remains:
 
 ```text
-deprecated aliases
-temporary re-exports
-retaining local cancellation mutation contracts
-retaining BILLING_FREE_ALLOWANCE_EXHAUSTED for historical rendering
+0.10.0
 ```
 
-The cleaned first-production Shared artifact remains the target.
+Versioning/publication is owned by `ARCH-010-SHARED-008`.
 
-### Follow-up
+### Consumer prerequisites
 
-1. Execute `ARCH-010-BACKGROUND-020`.
-2. Execute `ARCH-010-SHOPIFY-024`.
-3. Architect-review both.
-4. When both are Complete, return SHARED-007 from `blocked` to `ready`.
-5. Reclaim SHARED-007 as Attempt 2 and perform only the originally defined Shared
-   removal.
-6. After SHARED-007 acceptance, execute publication task SHARED-008.
-
-**Architect decision: Block confirmed; sequencing corrected. SHARED-007 remains
-Blocked pending SHOPIFY-024. BACKGROUND-020 is architect-accepted Complete.**
-
-### Dependency Progress — 2026-09-12
-
-`ARCH-010-BACKGROUND-020` has been architect-reviewed and Accepted Complete.
-
-Its acceptance proves the Background consumer side is clean:
-
-```text
-zero Background source/test consumers of the retired Shared cancellation contracts
-zero Background source/test consumers of BILLING_FREE_ALLOWANCE_EXHAUSTED
-zero Background source/test consumers of BILLING_PLAN_CHANGE_ACTION_REQUIRED
-provider billing boundary retains reads but no local cancellation mutation
-full-capacity exhaustion uses BILLING_RECOVERY_CAPACITY_EXHAUSTED
-```
-
-Remaining blocker:
-
-```text
-ARCH-010-SHOPIFY-024
-```
-
-SHARED-007 stays:
-
-```text
-status: blocked
-Blocked pending BACKGROUND-020 and SHOPIFY-024.**
-
-## Dependency Resolution — 2026-09-12
-
-The architect-confirmed consumer-sequencing block is resolved.
-
-Both prerequisite consumer-cleanup tasks are Accepted Complete:
+The breaking cleanup was executed only after architect acceptance of:
 
 ```text
 ARCH-010-BACKGROUND-020   Complete
 ARCH-010-SHOPIFY-024      Complete
 ```
 
-Their accepted results prove:
+Those accepted tasks established that first-party consumers of the retired contracts
+were removed before Shared deleted the public names.
+
+### Validation Results
+
+Canonical implementation-worktree evidence:
 
 ```text
-Background:
-  no local appSubscriptionCancel executor
-  no retired cancellation-contract consumer
-  no BILLING_FREE_ALLOWANCE_EXHAUSTED consumer
-  no BILLING_PLAN_CHANGE_ACTION_REQUIRED consumer
-  canonical BILLING_RECOVERY_CAPACITY_EXHAUSTED retained
+focused billing test:
+  11 passed
 
-Shopify:
-  no BILLING_FREE_ALLOWANCE_EXHAUSTED consumer
-  no active cancellation-contract consumer
-  no BILLING_PLAN_CHANGE_ACTION_REQUIRED consumer
-  Shopify-hosted pricing navigation preserved
+full npm test:
+  109 passed
+  1 Redis-dependent test skipped because TEST_REDIS_URL was unset
+
+npm run typecheck:
+  passed
+
+npm run build:
+  passed
+
+npm run validate:billing-entrypoint:
+  passed
+
+built runtime/declaration removed-symbol scan:
+  clear
+
+git diff --check:
+  passed
 ```
 
-There is now no first-party consumer preventing the breaking Shared cleanup.
+The billing public-entrypoint validator checks the built billing runtime/declaration
+targets and packed export targets. The removed-symbol scan reported none of the retired
+names in the built public artifact.
 
-Canonical SHARED-007 state is therefore:
+Architect inspection of the portable review archive independently confirms:
 
 ```text
-status: ready
-attempt: 1
-executor: null
-claimed_at: null
+all retired exports are absent from src/billing.ts
+all retired registry values are absent from BILLING_SYSTEM_MESSAGE_CODES
+all retired schema values are rejected by billing.test.ts
+retained reconciliation/capacity/refund/purchased-credit contracts remain present
+package version is still 0.10.0
 ```
 
-Do not move it to Ready until SHOPIFY-024 is also architect-accepted Complete.
-Do not alter the previously recorded Attempt-1 blocked-run history.
+The portable archive does not include installed dependencies or `dist/`, so the
+canonical-worktree build/entrypoint/symbol-scan evidence is used for those generated
+artifact checks.
 
-The next valid execution claim is:
+### Git / VCS
+
+Canonical worktrees recorded by the submitted task:
 
 ```text
-attempt: 2
+parent:
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHARED-007
+  branch: task/ARCH-010-SHARED-007
+
+implementation:
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHARED-007
+  branch: task/ARCH-010-SHARED-007
 ```
 
-Attempt 2 must implement only the original SHARED-007 removal contract:
+The missing parent worktree from the blocked attempt was restored before final review.
+The implementation worktree was preserved.
+
+Recorded synchronization/publication evidence:
 
 ```text
-remove retired cancellation mode/schema/args exports
-remove retired cancellation billing message codes
-remove BILLING_FREE_ALLOWANCE_EXHAUSTED
-remove BILLING_PLAN_CHANGE_ACTION_REQUIRED
-retain reconciliation, generic capacity-exhausted and refund contracts
-prove built runtime/declarations contain none of the removed names
+parent synchronization merge:
+  4612ee8
+
+implementation commit:
+  f26ebad
+
+latest submitted parent task/report commit:
+  914c385
 ```
 
-Do not reintroduce aliases or compatibility exports.
+Both task branches are reported pushed and clean.
 
-After SHARED-007 is architect-accepted Complete, `ARCH-010-SHARED-008` becomes eligible
-to publish the clean Shared first-production baseline as `0.11.0`.
+Main branches:
 
-**Architect dependency decision: block cleared; SHARED-007 Ready for Attempt 2.**
+```text
+modified: no
+```
 
+Database/submodule gitlink:
+
+```text
+changed: no
+staged: no
+```
+
+### Deviations
+
+One Redis-dependent test was skipped because `TEST_REDIS_URL` was unset. This does not
+exercise the billing contract removed by this task and is not a blocker.
+
+### Unresolved Issues
+
+None within SHARED-007.
+
+## Architect Review
+
+### Attempt 1 — Blocked
+
+Attempt 1 correctly stopped because first-party Background and Shopify consumers still
+depended on contracts SHARED-007 was required to remove.
+
+The architect resolved the rollout cycle by introducing:
+
+```text
+ARCH-010-BACKGROUND-020
+ARCH-010-SHOPIFY-024
+```
+
+and requiring both to complete against published Shared `0.10.0` before SHARED-007
+could retry.
+
+No Shared implementation from the blocked probe was accepted.
+
+### Attempt 2 — Accepted
+
+Architect review confirms the consumer sequencing prerequisites are Complete and the
+Attempt-2 implementation now satisfies the original SHARED-007 contract.
+
+Architect comparison against the blocked Attempt-1 package snapshot shows that the only
+Shared source changes are:
+
+```text
+src/billing.ts
+  remove the five cancellation mode/provider exports
+  remove Free-only exhaustion, local plan-change action-required and three local
+  cancellation message values from the canonical registry/schema
+
+src/billing.test.ts
+  remove obsolete positive cancellation-contract assertions
+  assert the retired registry/schema values are absent/rejected
+```
+
+No unrelated Shared source file changed in the portable snapshot comparison.
+
+Acceptance invariants:
+
+```text
+1. cancellation mode/provider exports absent
+2. cancellation message values absent
+3. BILLING_FREE_ALLOWANCE_EXHAUSTED absent
+4. BILLING_PLAN_CHANGE_ACTION_REQUIRED absent
+5. no deprecated alias/re-export
+6. reconciliation queue contract retained
+7. APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS retained
+8. BILLING_RECOVERY_CAPACITY_EXHAUSTED retained
+9. all three refund message contracts retained and parseable
+10. purchased-credit helpers retained
+11. package version remains 0.10.0
+12. built public runtime/declarations reported clean
+```
+
+The restored dedicated parent worktree resolves the workflow issue encountered during
+the retry. The submitted final task heads are:
+
+```text
+parent:
+  914c385
+
+implementation:
+  f26ebad
+```
+
+**Architect decision: Accepted — Attempt 2.**
+
+Because `completion_mode: automatic`, `ARCH-010-SHARED-007` is now `complete`.
+`attempt: 2` is preserved and the active executor/claim is cleared.
+
+### Dependency Reconciliation
+
+`ARCH-010-SHARED-008` depends only on SHARED-007.
+
+SHARED-007 is now architect-accepted Complete, so SHARED-008 transitions:
+
+```text
+pending -> ready
+```
+
+SHARED-008 remains a **publication-only** task. It must publish the already-accepted
+clean contract as `0.11.0`; it must not redesign or revalidate SHARED-007 implementation
+semantics.
