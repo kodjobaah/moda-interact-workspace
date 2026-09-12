@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 7
 executor: null
 claimed_at: null
@@ -69,37 +69,45 @@ SHARED-007 removes pre-production exports, so a new package artifact is required
 
 ## Scope
 
-- verify SHARED-007 is architect-accepted Complete;
-- set package version to 0.11.0 using repository conventions;
-- run the full publication validation contract;
-- inspect packed artifact contents/declarations;
-- publish exactly once;
-- verify registry version and shasum;
-- record the immutable publication evidence in Completion Report.
+Publication mechanics only:
 
+- verify SHARED-007 is architect-accepted Complete;
+- verify the implementation baseline is the accepted SHARED-007 commit;
+- set package/release metadata to exactly `0.11.0` using repository conventions;
+- create/inspect the package artifact using the normal npm pack/publication path;
+- verify the artifact contains the accepted retained billing contract and omits the
+  SHARED-007 removed names;
+- publish exactly once;
+- verify registry version, `latest` tag and `dist.shasum`;
+- record immutable publication evidence in the Completion Report.
+
+Do not rerun implementation validation merely to re-prove accepted code. If `npm pack`
+or `npm publish` invokes the package's existing `prepack` build as part of normal
+publication mechanics, that is allowed; do not run a separate build for revalidation.
 ## Out of Scope
 
 Do not edit consumer repositories, change retained contract semantics, or republish 0.10.0.
 
 ## Requirements
 
-1. publish only after SHARED-007 is Complete;
-2. npm package version is exactly 0.11.0;
-3. packed artifact contains retained ARCH-010 contracts;
-4. packed artifact does not contain the removed cancellation compatibility symbols or `BILLING_FREE_ALLOWANCE_EXHAUSTED`;
-5. registry `latest` becomes 0.11.0 if normal repository publication conventions use `latest`;
-6. record registry shasum after publication;
-7. never publish twice to repair documentation-only metadata.
-
+1. SHARED-007 is Complete and its accepted implementation commit is the publication
+   baseline;
+2. package version is exactly `0.11.0`;
+3. package artifact contains the retained ARCH-010 billing contracts;
+4. package artifact contains none of the SHARED-007 removed symbols/values;
+5. publish exactly once using the repository-approved npm release path;
+6. registry reports `0.11.0`, expected `latest` tag and a recorded `dist.shasum`;
+7. no consumer repository is changed;
+8. do not publish twice to repair documentation-only metadata.
 ## Work Items
 
-- [ ] Verify SHARED-007 accepted commit is the implementation baseline.
-- [ ] Set version 0.11.0.
-- [ ] Run tests/typecheck/build/pack validation.
-- [ ] Inspect public billing declarations/exports.
-- [ ] Publish once.
-- [ ] Verify npm version, dist.shasum and `latest`.
-
+- [ ] Verify accepted SHARED-007 implementation commit is the release baseline.
+- [ ] Set package/release metadata to `0.11.0`.
+- [ ] Run `npm pack --dry-run --json` (or the repository-equivalent packaging command).
+- [ ] Inspect packed runtime/declarations for retained and removed billing contracts.
+- [ ] Publish exactly once.
+- [ ] Verify registry version, `latest` and `dist.shasum`.
+- [ ] Record package artifact/publication evidence and STOP.
 ## Interfaces / Contracts
 
 Consumers should subsequently use `@modainteract/moda-interact-shared@0.11.0` (or the repository's exact compatible 0.11.x pin convention) when their ARCH-010 baseline-conformance task updates dependencies.
@@ -114,30 +122,82 @@ The clean release unblocks consumer cleanup tasks including ADMIN-010, BACKGROUN
 
 ## Acceptance Criteria
 
-1. 0.11.0 is published exactly once;
-2. npm registry reports version 0.11.0 and a recorded shasum;
-3. packed/published artifact retains reconciliation, capacity-exhausted and refund contracts;
-4. packed/published artifact omits all SHARED-007 removed symbols, including `BILLING_FREE_ALLOWANCE_EXHAUSTED`;
-5. full repository validation passes;
-6. no consumer repository is changed in this publication task.
-
+1. `0.11.0` is published exactly once;
+2. npm registry reports version `0.11.0` and the recorded `dist.shasum`;
+3. normal release tag is `latest` if that is the repository publication convention;
+4. packed/published artifact retains reconciliation, generic capacity-exhausted,
+   refund and purchased-credit billing contracts;
+5. packed/published artifact omits every SHARED-007 removed symbol/value;
+6. no source semantics are changed after SHARED-007 acceptance;
+7. no consumer repository is changed.
 ## Validation
 
-Run actual package scripts, including at minimum:
+This is a `task_kind: publication` task. Do **not** run the implementation test suite,
+typecheck, lint, Prisma validation or a standalone build to revalidate SHARED-007.
+
+Before publication:
 
 ```text
-npm test
-npm run typecheck
-npm run build
-npm pack --dry-run
-git diff --check
+1. verify git/branch/worktree baseline is the architect-accepted SHARED-007 commit
+2. verify package.json/package-lock release metadata is 0.11.0
+3. run npm pack --dry-run --json using repository conventions
+4. inspect the packed file list and billing runtime/declaration contents
 ```
 
-Then verify published registry metadata using the repository-approved npm commands and record exact output/version/shasum.
+The packed artifact must contain the retained contract names:
 
+```text
+BILLING_SUBSCRIPTION_RECONCILE_QUEUE_NAME
+APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+BILLING_RECOVERY_CAPACITY_EXHAUSTED
+BILLING_REFUND_REQUEST_RECEIVED
+BILLING_REFUND_COMPLETED
+BILLING_REFUND_REJECTED
+createMerchantBillingSystemSourceKey
+availablePurchasedRecoveryCredits
+```
+
+and must contain **none** of:
+
+```text
+SUBSCRIPTION_CANCELLATION_MODES
+SubscriptionCancellationModeSchema
+SubscriptionCancellationMode
+ShopifySubscriptionCancellationArgs
+SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS
+BILLING_CANCELLATION_REQUEST_RECEIVED
+BILLING_CANCELLATION_COMPLETED
+BILLING_CANCELLATION_REJECTED
+BILLING_FREE_ALLOWANCE_EXHAUSTED
+BILLING_PLAN_CHANGE_ACTION_REQUIRED
+```
+
+Then publish once using the repository-approved npm command.
+
+After publication verify and record the repository-equivalent outputs for:
+
+```text
+npm view @modainteract/moda-interact-shared@0.11.0 version dist.shasum
+npm view @modainteract/moda-interact-shared dist-tags.latest
+```
+
+Expected:
+
+```text
+version = 0.11.0
+latest = 0.11.0
+dist.shasum = <record exact registry value>
+```
+
+If the release command's normal `prepack` lifecycle invokes a build, allow that lifecycle
+to run. Do not invoke an additional test/typecheck/build cycle merely for revalidation.
+
+If `0.11.0` already exists unexpectedly, the artifact differs from accepted SHARED-007,
+or publication credentials are unavailable, STOP and return to `moda_architect`.
+Do not increment the version or publish another version without architect direction.
 ## Implementation Notes
 
-This is a publication-only task. Do not opportunistically alter source after SHARED-007 acceptance.
+This is a publication-only task. Do not opportunistically alter source after SHARED-007 acceptance and do not rerun implementation validation merely to re-prove accepted code.
 
 ## Completion Report
 

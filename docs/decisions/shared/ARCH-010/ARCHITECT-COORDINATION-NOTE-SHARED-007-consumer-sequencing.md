@@ -124,3 +124,32 @@ consumers have been removed.
 
 After SHARED-007 is architect-accepted Complete, SHARED-008 may publish `0.11.0`.
 
+## Progress — SHARED-007 accepted; SHARED-008 ready
+
+`ARCH-010-SHARED-007` Attempt 2 is architect-accepted Complete.
+
+Accepted result:
+
+```text
+retired cancellation mode/provider exports removed
+retired local cancellation message codes removed
+BILLING_FREE_ALLOWANCE_EXHAUSTED removed
+BILLING_PLAN_CHANGE_ACTION_REQUIRED removed
+no compatibility aliases/re-exports
+retained reconciliation/capacity/refund/purchased-credit contracts unchanged
+package version still 0.10.0
+```
+
+Current release gate:
+
+```text
+BACKGROUND-020  Complete
+SHOPIFY-024     Complete
+SHARED-007      Complete
+SHARED-008      Ready
+```
+
+`SHARED-008` is publication-only and owns the single `0.11.0` release. It must publish
+the accepted SHARED-007 artifact and verify registry metadata; it must not reopen Shared
+source semantics or rerun implementation validation merely to re-prove accepted code.
+
