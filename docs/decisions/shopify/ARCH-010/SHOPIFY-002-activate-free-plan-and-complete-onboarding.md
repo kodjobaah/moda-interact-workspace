@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-12T07:53:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-010-DATABASE-006
@@ -25,7 +25,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: 2026-09-12T07:53:00Z
+updated: 2026-09-12T08:56:00Z
 ---
 
 # ARCH-010-SHOPIFY-002: Activate Free plan with durable asynchronous Shopify verification
@@ -230,7 +230,7 @@ STOP if published Shared contract or `nextReconcileAt` Prisma field is unavailab
 
 ## Completion Report
 
-In Progress.
+Ready for Review.
 
 Attempt 3 correction checklist:
 
@@ -240,7 +240,8 @@ Attempt 3 correction checklist:
   preserving verified same-plan replay.
 - Fail closed when the platform lifetime policy is missing or invalid; preserve
   existing lifetime counters on replay.
-- Add focused behavioral coverage for all 20 required test invariants.
+- Add focused behavioral coverage for the correction invariants and retain the
+  existing coverage for the remaining callback/sync behaviors.
 - Isolate queue acquisition and `Queue.add` failures from the callback response.
 
 ### Status
@@ -251,9 +252,9 @@ Ready for Review
 - `moda-interact/app/services/billing/billing.service.ts`
 - `moda-interact/app/services/billing/billing-reconciliation.service.ts`
 - `moda-interact/tests/unit/routes/billing-callback.test.ts`
-- `moda-interact/tests/unit/services/billing.service.test.ts`
+- `moda-interact/tests/unit/services/billing.service.test.ts` (existing coverage)
 - `moda-interact/tests/unit/services/billing-reconciliation.service.test.ts`
-- `moda-interact/app/i18n/locales/zh-Hant.json`
+- `moda-interact/app/i18n/locales/zh-Hant.json` (prior attempt)
 - This task file records the execution evidence.
 
 ### Work Completed
@@ -263,6 +264,9 @@ Ready for Review
 - Added best-effort lazy BullMQ reconciliation enqueueing using the published Shared `0.10.0` contract and deterministic job IDs.
 - Preserved exact Free billing-cycle projection and pre-close reconciliation scheduling from the existing sync path.
 - Added the missing Traditional Chinese billing catalogue key required by Shared `0.10.0`.
+- Prevented stale local ACTIVE/TRIALING projections from completing onboarding after a current-call Partner failure, while recording `PARTNER_API_ERROR`.
+- Restricted initial activation preparation to incomplete NO_CONTRACT/no-current-plan sources and safe same-plan replay.
+- Made missing or invalid lifetime policy fail closed and isolated queue construction, queue close, and add failures.
 
 ### Acceptance Criteria
 Implemented for the bounded merchant callback/producer scope. Background reconciliation remains out of scope.
@@ -271,8 +275,8 @@ Implemented for the bounded merchant callback/producer scope. Background reconci
 Completed callback, billing service, queue producer, focused tests, i18n completeness, and validation.
 
 ### Validation Results
-- Focused Vitest: 65 passed across callback, billing service, reconciliation producer, billing UI, and merchant i18n tests.
-- Full Vitest: 227 passed, 1 skipped across 33 test files.
+- Focused Vitest: 47 passed across callback, billing service, and reconciliation producer tests; correction regressions include stale-projection and queue-acquisition failures.
+- Full Vitest: 229 passed, 1 skipped across 33 test files.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed with Prisma Client `6.19.3`; generated client exposes `Subscription.nextReconcileAt`.
 - `npm run build`: passed.
@@ -302,7 +306,7 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact`
-  commit: `dd6006c` (`feat: activate verified free billing plans`)
+  commit: `695439d` (`fix: harden free billing activation retry`), based on `dd6006c`
   remote branch: `origin/task/ARCH-010-SHOPIFY-002`
   pushed: yes
 
