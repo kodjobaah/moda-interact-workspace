@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 42
-executor: copilot
-claimed_at: 2026-09-12T00:00:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-DATABASE-006
@@ -206,7 +206,132 @@ Ready for Review.
   - implementation `origin/main` incorporated: already-current
 - Parent claim commit: `57fc3f4`, pushed to `origin/task/ARCH-010-ADMIN-001`.
 - Implementation commit: `cd8a84b`, pushed to `origin/task/ARCH-010-ADMIN-001`.
-- No parent submodule gitlink was staged or committed.
+- No parent submodule gitlink was staged or committed.### Architect Review
 
-### Architect Review
-Pending.
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+The core ARCH-010-ADMIN-001 implementation is architecturally aligned:
+
+- `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance` is rendered in protected platform billing controls;
+- strict whole-number validation accepts zero and rejects blank, negative, decimal and `NaN` input;
+- the existing SUPER_ADMIN and `PLATFORM_POLICY_CHANGED` audit path is retained;
+- explanatory copy correctly states that the value is snapshotted only for future first verified activations;
+- Free plan create/edit/toggle surfaces no longer own or write `BillingPlan.freeLifetimeConversationAllowance`;
+- Paid plan validation remains intact;
+- legacy plan audit snapshots continue to serialize the old field when it exists;
+- tenant/Admin allowance presentation now reads the durable `FREE_RECOVERY_LIFETIME` counter's `grantedQuantity`;
+- no merchant route or authentication boundary was introduced;
+- the recorded worktree-isolation and start-of-attempt synchronization evidence is complete.
+
+Attempt 1 cannot be accepted because the platform-policy mutation has an untested create-path defect.
+
+##### Correction 1 — keep audit reason out of Prisma `PlatformBillingPolicy` data
+
+`parsePlatformBillingPolicyForm(...)` returns:
+
+```text
+globalPauseNewRecoveries
+globalPauseAutomatedWhatsapp
+absoluteOutboundHardLimit
+defaultWarningPercent
+lifetimeFreeRecoveryAllowance
+reason
+```
+
+but `mutatePlatformBillingPolicyAction(...)` currently uses:
+
+```ts
+platformBillingPolicy.upsert({
+  where: { id: "default" },
+  create: { id: "default", ...values },
+  ...
+})
+```
+
+`reason` is audit metadata; it is not a column of `billing.PlatformBillingPolicy`.
+
+The accepted DATABASE-006 schema contains:
+
+```text
+globalPauseNewRecoveries
+globalPauseAutomatedWhatsapp
+lifetimeFreeRecoveryAllowance
+absoluteOutboundHardLimit
+defaultWarningPercent
+version
+createdAt
+updatedAt
+```
+
+and no `reason` field.
+
+The database migration adds the policy field but does not guarantee that the `id="default"` row already exists; the seed creates it only in seeded environments. Therefore the `upsert` create branch is a legitimate runtime path and must work.
+
+Correct the mutation so Prisma create/update data is constructed explicitly from platform-policy fields. `values.reason` must be used only for the `BillingAuditEvent.reason`.
+
+Do not add a `reason` column to `PlatformBillingPolicy`.
+
+Add focused regression coverage proving that:
+
+1. the policy create path contains only valid policy columns;
+2. `lifetimeFreeRecoveryAllowance` is persisted on first creation;
+3. `reason` is retained in `PLATFORM_POLICY_CHANGED` audit data but is not sent as policy model data;
+4. the existing update path still increments `version` and persists the new lifetime default.
+
+##### Correction 2 — validate against the actual DATABASE-006 Prisma dependency
+
+The Completion Report records that:
+
+```text
+npm run prisma:generate
+npm run prisma:validate
+npm run build
+```
+
+were not executed successfully because the tracked Admin `database` submodule was uninitialized in the task worktree.
+
+This task directly depends on `ARCH-010-DATABASE-006` and directly references the field introduced by that dependency. Before acceptance, the implementation must be validated against the published/accepted DATABASE-006 schema rather than only against a stale generated client or source assumptions.
+
+For Attempt 2:
+
+1. reclaim the same task through `/moda-task`;
+2. initialize/synchronize the tracked `database` submodule in the canonical implementation worktree using the normal repository/submodule workflow;
+3. verify the checked-out database revision contains `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`;
+4. run the repository-declared:
+   - `npm run prisma:generate`
+   - `npm run prisma:validate`
+   - focused security tests
+   - `npm run lint`
+   - `npm run build`
+   - `git diff --check`
+5. do not stage or commit an incidental database gitlink change unless the task explicitly requires a dependency pointer update;
+6. record the exact dependency revision and validation outcomes in the Completion Report.
+
+Repository-wide pre-existing formatting/lint warnings outside changed files remain non-blocking if unchanged and correctly documented.
+
+##### Scope guard
+
+Attempt 2 remains ADMIN-001 only.
+
+Do not:
+
+- add promotional-credit controls;
+- mutate existing shop grants;
+- change merchant routes;
+- drop `BillingPlan.freeLifetimeConversationAllowance`;
+- change Shopify commercial plans;
+- redesign platform billing policy.
+
+The existing implementation should otherwise be preserved.
+
+Reclaiming the task after this architect decision should produce:
+
+```text
+attempt: 2
+```
+
+**Architect decision: Changes Requested — Attempt 1.**
