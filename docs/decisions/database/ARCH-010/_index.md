@@ -38,4 +38,4 @@ Current counts: `complete` 12, `superseded` 1
 
 ## Execution note
 
-`depends_on` in the individual task file is the execution eligibility authority. System-test tasks are terminal/manual-gated and are not auto-started.
+`depends_on` in the individual task file is the execution eligibility authority.

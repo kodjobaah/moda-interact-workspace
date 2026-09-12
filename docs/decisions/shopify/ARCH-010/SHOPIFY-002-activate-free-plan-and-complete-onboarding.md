@@ -246,11 +246,8 @@ Attempt 7 correction checklist:
   `ShopSettings`-before-`Subscription` lock-order assertion.
 
 ### Status
-<<<<<<< HEAD
-In Progress
-=======
 Complete
->>>>>>> main
+
 
 ### Files Changed
 - `moda-interact/app/services/billing/billing.service.ts`
@@ -650,7 +647,6 @@ Repository-wide pre-existing typecheck/lint diagnostics outside the changed task
 
 **Architect decision: Changes Requested — Attempt 3.**
 
-<<<<<<< HEAD
 #### Attempt 4 — Changes Requested
 
 Attempt 4 adds useful direct `BillingService` coverage and keeps the previously
@@ -2561,10 +2557,9 @@ ARCH-010-BACKGROUND-003
 ```
 
 No dependant becomes Ready solely from this acceptance.
-=======
 #### Attempt 4 — Completion-state reconciliation
 
 The developer confirmed on 2026-09-12 that Attempt 4 of this task had already completed and that this parent task document was stale. This coordination edit synchronizes the durable task state to `complete` so dependency/frontier calculation does not schedule already-finished work.
 
 The supplied parent ZIP does not contain the separate task-branch implementation checkout/Attempt-4 report commit, so this consolidation does **not** invent replacement implementation evidence or rewrite the earlier Architect Review history. The existing recorded implementation/review evidence above remains provenance; task-branch evidence should be preserved when the completed task report is merged into the parent workspace.
->>>>>>> main
+
