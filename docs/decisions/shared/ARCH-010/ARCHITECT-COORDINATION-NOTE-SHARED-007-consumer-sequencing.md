@@ -5,31 +5,11 @@ Coordinator: `moda_architect`
 
 ## Decision
 
-`ARCH-010-SHARED-007` is correctly Blocked after Attempt 1.
+SHARED-007 was correctly blocked on Attempt 1 because first-party Background and Shopify
+consumers still depended on contracts it needed to remove.
 
-The block is caused by first-party runtime consumers of contracts that SHARED-007 is
-supposed to delete. Because ARCH-010 is pre-production, the resolution is **not** to
-retain aliases. The consumers must be removed first.
-
-## Confirmed blocking consumers
-
-```text
-Background:
-  src/services/subscription-cancellation.service.ts
-  src/providers/shopify-partner-billing.provider.ts
-  tests/unit/services/recovery-billing.service.test.ts
-
-Shopify:
-  app/services/merchant-support/system-message-actions.ts
-```
-
-The blocked run found no active consumer of:
-
-```text
-BILLING_PLAN_CHANGE_ACTION_REQUIRED
-```
-
-so it remains in the SHARED-007 removal set.
+Because ARCH-010 is pre-production, the resolution was to remove consumers first rather
+than retain compatibility aliases.
 
 ## Corrected dependency order
 
@@ -53,80 +33,31 @@ published Shared 0.10.0
          broader repository baseline-conformance + feature tasks
 ```
 
-`BACKGROUND-020` and `SHOPIFY-024` deliberately run against Shared 0.10.0. Their
-purpose is to make the breaking 0.11.0 release safe.
-
-## Ownership boundaries
-
-`BACKGROUND-020` removes only the existing pre-production consumers. It does not
-implement provider-authoritative cancellation reconciliation (`BACKGROUND-012`) or
-full capacity exhaustion/resume (`BACKGROUND-009`).
-
-`SHOPIFY-024` removes only the obsolete Free-only message consumer and verifies there
-are no other active retired-contract consumers. It does not implement the generic
-capacity presentation (`SHOPIFY-008`) or broader clean-baseline conformance
-(`SHOPIFY-023`).
-
-`SHARED-007` remains the sole owner of actually deleting the public Shared symbols.
-`SHARED-008` remains the sole owner of publishing version 0.11.0.
-
-## Progress — BACKGROUND-020 accepted
-
-`ARCH-010-BACKGROUND-020` is now architect-accepted Complete.
-
-Verified result:
-
-```text
-Background cancellation executor removed
-Background Shopify Partner provider no longer exposes local cancellation mutation
-Background retired cancellation-contract consumers = 0
-Background BILLING_FREE_ALLOWANCE_EXHAUSTED consumers = 0
-Background BILLING_PLAN_CHANGE_ACTION_REQUIRED consumers = 0
-canonical BILLING_RECOVERY_CAPACITY_EXHAUSTED used for retained exhaustion notification
-```
-
-Current gate:
-
-```text
-BACKGROUND-020  Complete
-SHOPIFY-024     Ready / not yet architect-accepted
-SHARED-007      Blocked
-SHARED-008      Pending behind SHARED-007
-```
-
-When SHOPIFY-024 is also Accepted Complete, moda_architect may transition SHARED-007
-from `blocked` to `ready`; its next claim will be Attempt 2.
-## Progress — consumer cleanup complete
-
-Both pre-publication consumer cleanup tasks are now architect-accepted Complete:
+## Completed consumer cleanup
 
 ```text
 ARCH-010-BACKGROUND-020   Complete
 ARCH-010-SHOPIFY-024      Complete
 ```
 
-The breaking Shared cleanup gate is open.
-
-Current sequence:
+Accepted cleanup established:
 
 ```text
-BACKGROUND-020  Complete
-SHOPIFY-024     Complete
-SHARED-007      Ready, attempt 1
-SHARED-008      Pending
+Background local cancellation executor removed
+Background retired cancellation-contract consumers = 0
+Background BILLING_FREE_ALLOWANCE_EXHAUSTED consumers = 0
+Background BILLING_PLAN_CHANGE_ACTION_REQUIRED consumers = 0
+Shopify BILLING_FREE_ALLOWANCE_EXHAUSTED consumers = 0
+Shopify BILLING_PLAN_CHANGE_ACTION_REQUIRED consumers = 0
 ```
 
-The next valid `/moda-task` claim for SHARED-007 is Attempt 2.
+## SHARED-007 accepted
 
-Attempt 2 must now remove the retired Shared exports/message values exactly as originally
-defined. It must not retain aliases merely for compatibility because first-party
-consumers have been removed.
-
-After SHARED-007 is architect-accepted Complete, SHARED-008 may publish `0.11.0`.
-
-## Progress — SHARED-007 accepted; SHARED-008 ready
-
-`ARCH-010-SHARED-007` Attempt 2 is architect-accepted Complete.
+```text
+ARCH-010-SHARED-007
+status: Complete
+attempt: 2
+```
 
 Accepted result:
 
@@ -137,19 +68,44 @@ BILLING_FREE_ALLOWANCE_EXHAUSTED removed
 BILLING_PLAN_CHANGE_ACTION_REQUIRED removed
 no compatibility aliases/re-exports
 retained reconciliation/capacity/refund/purchased-credit contracts unchanged
-package version still 0.10.0
 ```
 
-Current release gate:
+## SHARED-008 published
+
+Manual developer publication of the already-accepted clean contract is complete:
+
+```text
+package:
+  @modainteract/moda-interact-shared@0.11.0
+
+npm latest:
+  0.11.0
+
+dist.shasum:
+  fd096379901d4c454bf1cde575b48621c1c21b79
+
+Shared main publication metadata commit:
+  0526de05dbddef4fde2e20b12bd6b9e7cc2664c4
+```
+
+The published registry shasum exactly matches the pre-publication dry-run package
+artifact.
+
+Current Shared release gate:
 
 ```text
 BACKGROUND-020  Complete
 SHOPIFY-024     Complete
 SHARED-007      Complete
-SHARED-008      Ready
+SHARED-008      Complete
 ```
 
-`SHARED-008` is publication-only and owns the single `0.11.0` release. It must publish
-the accepted SHARED-007 artifact and verify registry metadata; it must not reopen Shared
-source semantics or rerun implementation validation merely to re-prove accepted code.
+The clean Shared first-production contract is therefore publicly consumable.
 
+## Downstream reconciliation rule
+
+Do not promote downstream tasks from stale domain indexes or stale task snapshots.
+Inspect each latest individual ARCH-010 task YAML and transition `pending -> ready`
+only when **every** task in its `depends_on` list is Complete.
+
+This coordination note does not itself change consumer task states.
