@@ -173,9 +173,9 @@ Implementation repository:
 Parent workspace:
 	task file: `docs/decisions/admin/ARCH-010/ADMIN-007-upgrade-economics-pure-evaluator.md`
 	claim commit: `d937cc5`
-	review report commit: pending
+	review report commit: `4e1af34`
 	remote branch: `origin/task/ARCH-010-ADMIN-007`
-	pushed: pending
+	pushed: yes
 	submodule gitlink staged: no
 
 Merged to implementation main: no
