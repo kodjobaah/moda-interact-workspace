@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
-claimed_at: 2026-09-12T00:00:00Z
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-010-DATABASE-006
@@ -630,3 +630,175 @@ Run the task-declared focused/full validation and return the same mirrored branc
 Repository-wide pre-existing typecheck/lint diagnostics outside the changed task files remain non-blocking if they are unchanged and correctly documented.
 
 **Architect decision: Changes Requested — Attempt 3.**
+
+#### Attempt 4 — Changes Requested
+
+Attempt 4 adds useful direct `BillingService` coverage and keeps the previously
+accepted Partner-failure, platform-policy and best-effort Queue corrections. It also
+adds assertions for Free BillingPeriod snapshot fields and pack-enabled scheduling.
+
+Attempt 4 cannot be accepted because the three correctness defects identified in the
+Attempt-3 architect decision remain in the production implementation.
+
+##### Correction 1 — absent Subscription must still require onboarding incomplete
+
+`prepareFreeActivation(...)` still classifies:
+
+```ts
+const isInitialActivation = !currentSubscription ||
+  (
+    currentSubscription.status === SubscriptionProjectionStatus.NO_CONTRACT &&
+    currentSubscription.planId === null &&
+    !currentSubscription.observedShopifyPlanHandle &&
+    settings?.onboardingCompleted !== true
+  );
+```
+
+The `!currentSubscription` branch bypasses `ShopSettings.onboardingCompleted`.
+
+Therefore:
+
+```text
+Subscription row absent
++ onboardingCompleted = true
+```
+
+can still re-enter first Free activation and create a new pending initial-selection
+schedule.
+
+The Iteration-2 source boundary requires onboarding incomplete for the fresh/no-current
+source regardless of whether the Subscription row is absent or an explicit
+`NO_CONTRACT` row.
+
+Correct the predicate and add the exact regression required by Attempt 3:
+
+```text
+no Subscription
++ onboardingCompleted = true
+=> prepareFreeActivation returns null
+=> no Subscription upsert/mutation
+```
+
+Keep:
+
+- fresh/no-subscription + onboarding incomplete allowed;
+- NO_CONTRACT/no-current-plan + onboarding incomplete allowed;
+- verified same-Free replay allowed;
+- ACTIVE/TRIALING different-plan rejected.
+
+##### Correction 2 — first lifetime grant is still not concurrency-idempotent
+
+`completeFreeActivation(...)` still performs:
+
+```text
+findUnique(FREE_RECOVERY_LIFETIME)
+-> policy lookup
+-> create
+```
+
+with no race-safe create/reuse handling.
+
+Two concurrent verified callbacks can both observe no counter and both attempt
+`create`; one can fail on the unique `(shopId, counter)` invariant rather than replay
+idempotently.
+
+Replace this with an atomic/race-safe create-or-reuse design that:
+
+- snapshots `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance` only when a counter
+  genuinely needs first creation;
+- preserves every existing counter quantity/state on replay;
+- does not require current policy merely to reuse an existing counter;
+- tolerates concurrent first activation without surfacing a uniqueness failure;
+- completes onboarding only after a valid counter exists/reuses successfully.
+
+Add a focused race/concurrent-create regression. Sequential
+`findUnique -> create` test coverage is not sufficient.
+
+##### Correction 3 — generic sync still destroys newer unresolved local selection intent
+
+The current provider-active branch of `syncSubscription(...)` still writes:
+
+```ts
+pendingShopifyPlanHandle: providerSubscription.pendingPlanHandle,
+pendingPlanId: pendingPlan?.active ? pendingPlan.id : null,
+pendingEffectiveAt: providerSubscription.pendingPlanHandle
+  ? providerSubscription.currentPeriodEnd
+  : null,
+```
+
+without protecting a newer durable initial-selection target.
+
+The Attempt-3 race therefore still exists:
+
+```text
+callback A records Free-A
+callback B records newer Free-B
+callback A's Partner read returns current Free-A / provider pending null
+syncSubscription from A writes pending null
+=> newer Free-B intent is erased
+```
+
+Preserve the newest unresolved local initial-selection intent unless current provider
+truth actually verifies that target or authoritative provider pending state supersedes
+it. Keep this correction bounded to the first-activation intent owned by SHOPIFY-002;
+do not implement general upgrade/downgrade execution.
+
+Add the exact older-callback/newer-selection race regression.
+
+##### Correction 4 — complete the canonical Required Tests, not only the direct-method subset
+
+Attempt 4 improves coverage but the canonical task still requires all 20 named
+behaviours to be proved.
+
+At minimum the next attempt must explicitly cover the still-unproved/partially-proved
+items:
+
+- no-Subscription + onboarding-complete source rejection;
+- concurrent first lifetime-counter creation/reuse;
+- newer unresolved Free selection surviving an older callback/sync;
+- a new valid Free callback replacing an older unresolved initial target;
+- exact Free BillingPeriod creation/reuse without creating
+  `BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS)`;
+- lifetime usage remaining unchanged while the Free BillingPeriod is created/reused;
+- verified pack-enabled Free with no exact cycle:
+  onboarding completes, lifetime entitlement is preserved/created once,
+  top-up eligibility remains false because no exact period exists,
+  and bounded reconciliation remains scheduled;
+- explicit proof that no merchant redirect/link introduced by this task targets
+  `moda-interact-admin`.
+
+Tests must assert the actual service/database behaviour where the invariant belongs.
+Do not satisfy these with route mocks alone.
+
+##### Completion Report / validation evidence
+
+The task frontmatter correctly records `attempt: 4`, but the Completion Report still
+labels its checklist as "Attempt 3" and describes earlier validation/report state.
+
+For Attempt 5, refresh the Completion Report so it clearly identifies the actual
+Attempt-5 corrections, current implementation commit(s), current parent report commit,
+and current focused/full validation outcomes. Preserve historical Architect Review
+sections unchanged.
+
+The reported repository-wide pre-existing typecheck issues remain non-blocking if
+unchanged and outside the corrected task files.
+
+##### Workflow / scope
+
+This remains the same SHOPIFY-002 task and the same mirrored task branches.
+
+Do not:
+
+- stage the database gitlink;
+- implement Background consumer/reconstruction;
+- implement Paid first activation;
+- implement upgrade/downgrade/cancellation/reinstall execution;
+- add Admin or infrastructure work.
+
+Reclaim through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 5
+```
+
+**Architect decision: Changes Requested — Attempt 4.**
