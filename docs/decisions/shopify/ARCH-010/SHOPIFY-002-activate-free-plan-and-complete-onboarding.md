@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: 2026-09-12T07:53:00Z
+attempt: 3
 depends_on:
   - ARCH-010-DATABASE-006
   - ARCH-010-SHOPIFY-001
@@ -25,7 +25,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: 2026-09-12
+updated: 2026-09-12T07:53:00Z
 ---
 
 # ARCH-010-SHOPIFY-002: Activate Free plan with durable asynchronous Shopify verification
@@ -229,6 +229,19 @@ Inspect `package.json`; run focused tests then declared repository test/typechec
 STOP if published Shared contract or `nextReconcileAt` Prisma field is unavailable, callback cannot persist pending intent without destructive current-state changes, or the implementation would require defining Paid/upgrade/downgrade semantics.
 
 ## Completion Report
+
+In Progress.
+
+Attempt 3 correction checklist:
+
+- Gate completion on successful Partner verification from the current callback;
+  preserve pending state and record `PARTNER_API_ERROR` on transport failure.
+- Restrict SHOPIFY-002 to the initial NO_CONTRACT/no-current-plan source while
+  preserving verified same-plan replay.
+- Fail closed when the platform lifetime policy is missing or invalid; preserve
+  existing lifetime counters on replay.
+- Add focused behavioral coverage for all 20 required test invariants.
+- Isolate queue acquisition and `Queue.add` failures from the callback response.
 
 ### Status
 Ready for Review
