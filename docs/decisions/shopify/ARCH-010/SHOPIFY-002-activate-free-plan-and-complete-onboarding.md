@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-09-12T09:29:18Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-010-DATABASE-006
@@ -800,3 +800,412 @@ attempt: 5
 ```
 
 **Architect decision: Changes Requested — Attempt 4.**
+
+#### Attempt 5 — Changes Requested
+
+Attempt 5 correctly satisfies three substantial parts of the Attempt-4 correction:
+
+- `prepareFreeActivation(...)` now requires `ShopSettings.onboardingCompleted != true`
+  for the absent-Subscription initial source as well as the explicit
+  `NO_CONTRACT + no current plan` source;
+- first `FREE_RECOVERY_LIFETIME` creation is now race-safe at the database boundary
+  through `INSERT ... SELECT PlatformBillingPolicy.lifetimeFreeRecoveryAllowance ...
+  ON CONFLICT ("shopId","counter") DO NOTHING`, followed by an exact counter re-read;
+  an existing counter is not rewritten and missing policy remains fail-closed;
+- `syncSubscription(...)` now preserves a newer local Free-B intent in the tested
+  case where an older Free-A Partner response reports current Free-A and no provider
+  pending handle;
+- the new direct service tests cover absent-Subscription/onboarding-complete rejection,
+  replacement of an older local initial target, concurrent lifetime-counter creation,
+  and the Free-A/current + Free-B/local-pending case;
+- build, Prisma generate/validate, changed-file ESLint and `git diff --check` are
+  reported passing; the repository-wide 163 typecheck diagnostics remain outside the
+  changed files and are not the reason for this decision;
+- the database gitlink remains unstaged.
+
+Attempt 5 still cannot be accepted because the newer-selection ordering invariant is
+not protected **end-to-end** across `prepareFreeActivation -> syncSubscription ->
+completeFreeActivation`. The new test stops after `syncSubscription`, before the code
+that currently destroys the preserved newer intent.
+
+##### Correction 1 — keep one durable initial-selection token until successful completion
+
+Files:
+
+```text
+app/services/billing/billing.service.ts
+app/routes/app/billing/callback/route.tsx
+tests/unit/services/billing.service.test.ts
+tests/unit/routes/billing-callback.test.ts
+```
+
+For an onboarding-incomplete merchant, the pending fields are the durable identity of
+the latest initial selection:
+
+```text
+pendingShopifyPlanHandle
+pendingPlanId
+pendingEffectiveAt
+nextReconcileAt
+```
+
+Do not clear or replace that local token merely because an older Partner request
+returns current/pending provider data.
+
+Implement the following exact rule inside `syncSubscription(...)`:
+
+```text
+hasUnresolvedInitialSelection =
+  ShopSettings.onboardingCompleted = false
+  AND pendingShopifyPlanHandle != null
+  AND pendingPlanId != null
+```
+
+When `hasUnresolvedInitialSelection` is true:
+
+```text
+provider current handle == local pending handle
+    -> project provider current plan/status/cycle truth
+    -> KEEP the exact local pendingShopifyPlanHandle
+    -> KEEP the exact local pendingPlanId
+    -> KEEP the exact local pendingEffectiveAt
+    -> KEEP the exact local nextReconcileAt
+       until completeFreeActivation consumes the token
+
+provider current handle != local pending handle
+    -> project provider current truth as appropriate
+    -> KEEP the exact local pending target/schedule
+
+provider pending handle is null
+    -> KEEP local pending target/schedule
+
+provider pending handle is some other handle
+    -> KEEP local pending target/schedule
+       (Partner pending data has no ordering/version metadata proving that an older
+        response supersedes the newer callback selection)
+```
+
+Only when there is **no** unresolved onboarding selection may the generic provider
+pending projection replace the local pending fields.
+
+Apply the same preservation rule to the provider-null branch. A transient/provider-null
+read must not erase an onboarding-incomplete pending target merely because a previous
+sync partially projected `ACTIVE`/`TRIALING`.
+
+This is intentionally limited to the initial/onboarding state. Do not implement
+general upgrade/downgrade ordering here.
+
+##### Correction 2 — serialize prepare/sync/complete state classification
+
+The remaining race cannot be fixed by an extra JavaScript `if` alone.
+
+Example still possible in Attempt 5:
+
+```text
+A prepare Free-A
+A Partner request starts
+B prepare Free-B and becomes the newer local selection
+A Partner returns current Free-A
+A sync preserves Free-B
+A route reloads ACTIVE Free-A + pending Free-B
+A isVerifiedBillingCallback returns true
+A completeFreeActivation("Free-A") clears all pending fields
+=> Free-B is lost and onboarding completes under the older selection
+```
+
+There is also a smaller read/write window where `prepareFreeActivation` can classify
+`NO_CONTRACT`, another transaction completes onboarding, and the stale prepare then
+writes a pending target onto the now-completed Subscription.
+
+Use PostgreSQL row locking in the existing Prisma transactions. Do not add a schema
+field or a new database task.
+
+Add one small helper in `billing.service.ts` (name may differ, behaviour may not):
+
+```ts
+async function lockInitialFreeActivationState(
+  transaction: Prisma.TransactionClient,
+  shopId: string,
+) {
+  await transaction.$queryRaw(Prisma.sql`
+    SELECT "shopId"
+    FROM "shopify"."ShopSettings"
+    WHERE "shopId" = ${shopId}
+    FOR UPDATE
+  `);
+
+  await transaction.$queryRaw(Prisma.sql`
+    SELECT "id"
+    FROM "billing"."Subscription"
+    WHERE "shopId" = ${shopId}
+    FOR UPDATE
+  `);
+}
+```
+
+Required lock order is always:
+
+```text
+1. ShopSettings
+2. Subscription
+```
+
+Use that order in `prepareFreeActivation(...)` and `completeFreeActivation(...)`
+before classifying source/onboarding/pending state.
+
+In the provider-null and provider-active `syncSubscription(...)` write transactions,
+lock the existing Subscription row with `FOR UPDATE` **before** reading the existing
+Subscription used to decide pending preservation.
+
+Do not hold these locks across the Partner network call. The Partner request remains
+outside the DB transaction.
+
+##### Correction 3 — completion must consume only the exact current initial selection
+
+After `syncSubscription(...)`, immediate completion is permitted only when:
+
+```text
+provider verification from this callback succeeded
+current Subscription status IN (ACTIVE, TRIALING)
+current plan is the requested active Free plan
+observedShopifyPlanHandle == requestedPlanHandle
+```
+
+and, for `ShopSettings.onboardingCompleted = false`:
+
+```text
+pendingShopifyPlanHandle == requestedPlanHandle
+pendingPlanId == current planId
+pendingEffectiveAt != null
+```
+
+If onboarding is already complete and the same Free plan is current, the existing
+same-plan replay remains allowed even when the pending fields are null.
+
+Inside `completeFreeActivation(...)`, after acquiring the locks from Correction 2:
+
+1. load `ShopSettings` and Subscription+plan;
+2. if onboarding is incomplete and the exact pending target is not the requested
+   current Free plan, return `false` **without**:
+   - creating/reusing the lifetime counter,
+   - changing ShopSettings,
+   - clearing pending fields;
+3. if the exact target is valid, perform the existing race-safe lifetime counter
+   ensure;
+4. set `onboardingCompleted = true`;
+5. clear the consumed pending target;
+6. preserve the already-computed `nextReconcileAt` for a pack-enabled Free plan,
+   otherwise clear it.
+
+Also strengthen `isVerifiedBillingCallback(...)` so an onboarding-incomplete callback
+is not considered immediately completable when the reloaded projection visibly
+contains a different pending target. The service-level locked check remains the
+authoritative protection; the route check is only an early guard.
+
+##### Correction 4 — add the two missing newer-selection race regressions
+
+The current Attempt-5 regression proves only:
+
+```text
+local Free-B
+provider current Free-A
+provider pending null
+syncSubscription
+=> Free-B survives
+```
+
+Add these exact tests.
+
+**Test A — old callback cannot complete over newer target**
+
+Arrange:
+
+```text
+ShopSettings.onboardingCompleted = false
+Subscription after older Partner sync:
+  status = ACTIVE
+  planId = Free-A
+  observedShopifyPlanHandle = Free-A
+  pendingShopifyPlanHandle = Free-B
+  pendingPlanId = Free-B
+```
+
+Call:
+
+```text
+completeFreeActivation(shopId, Free-A)
+```
+
+Assert:
+
+```text
+result = false
+onboardingCompleted remains false
+Free-B pending fields remain unchanged
+FREE_RECOVERY_LIFETIME is not created by the losing callback
+```
+
+**Test B — stale provider pending does not overwrite newer local target**
+
+Arrange:
+
+```text
+local pending = Free-B
+ShopSettings.onboardingCompleted = false
+older Partner response:
+  current = Free-A
+  pending = Free-A (or another non-B handle)
+```
+
+Call `syncSubscription(...)`.
+
+Assert:
+
+```text
+pendingShopifyPlanHandle remains Free-B
+pendingPlanId remains Free-B id
+pendingEffectiveAt unchanged
+nextReconcileAt unchanged
+```
+
+Do not weaken the existing provider-pending projection tests for normal already
+onboarded subscriptions.
+
+##### Correction 5 — explicitly prove Required Tests 17, 19 and 20
+
+The task says `Prove at least` the 20 named behaviours. The source behaviour is mostly
+present, but Attempt 5 still does not directly assert these three acceptance points.
+
+Add deterministic focused tests:
+
+**Required Test 17 — no periodic Free counter and no lifetime reset**
+
+For an exact provider Free cycle:
+
+```text
+existing FREE_RECOVERY_LIFETIME:
+  grantedQuantity = 5
+  committedQuantity = 3
+  reservedQuantity = 1
+  refundingQuantity = 1
+  version = N
+```
+
+After `syncSubscription(...)` and replay of the exact period, assert:
+
+```text
+BillingPeriod create snapshot:
+  planKindSnapshot = FREE
+  includedRecoveryCreditsGranted = null
+
+no BillingPeriodEntitlementCounter(INCLUDED_RECOVERY_CREDITS) create/upsert occurs
+
+FREE_RECOVERY_LIFETIME values remain exactly:
+  5 / 3 / 1 / 1 / N
+```
+
+If the unit-test database mock does not currently expose
+`billingPeriodEntitlementCounter`, add a spy-only mock member and assert it is not
+called. Do not add production writes merely to make the test observable.
+
+**Required Test 19 — verified pack-enabled Free with no exact cycle**
+
+Prove one coherent flow, not separate unrelated assertions:
+
+```text
+provider verifies current Free
+currentPeriodStart = null
+currentPeriodEnd = null
+recoveryCreditPackEnabled = true
+```
+
+After sync + completion assert:
+
+```text
+ShopSettings.onboardingCompleted = true
+lifetime counter exists exactly once
+Subscription.billingPeriodId = null
+Subscription.nextReconcileAt is bounded/non-null
+recovery-credit-pack purchase remains ineligible because no exact BillingPeriod exists
+```
+
+**Required Test 20 — no merchant route/link targets Moda Admin**
+
+Add a focused static/source or route-output assertion covering the merchant billing
+callback/selection surfaces changed by this task:
+
+```text
+must not contain or redirect to "moda-interact-admin"
+```
+
+`admin.shopify.com/.../pricing_plans` is Shopify hosted pricing and remains valid.
+
+##### Correction 6 — normalize the Attempt-6 Completion Report
+
+The current Attempt-5 Completion Report is much improved, but its parent report field
+still says:
+
+```text
+report commit: this parent task-branch publication commit
+```
+
+For Attempt 6, record exact immutable evidence:
+
+```text
+implementation commit: <new commit>
+parent claim commit: <existing/new exact hash>
+parent report/review commit: <exact hash>
+database dependency revision: 6d5fb9a...
+submodule gitlink staged: no
+```
+
+Keep the three physical-isolation declarations and all four synchronization outcomes.
+
+Preserve every historical `#### Attempt N — ...` Architect Review section unchanged.
+
+##### Attempt-6 validation
+
+Before returning to `review`, run the repository/task-declared validation and record
+the exact results:
+
+```text
+focused BillingService tests
+billing callback tests
+billing reconciliation producer tests
+billing UI tests
+full Vitest suite
+npm run prisma:validate
+npm run prisma:generate
+npm run build
+changed-file ESLint
+npm run typecheck
+git diff --check
+```
+
+The known repository-wide typecheck baseline may remain documented if the changed
+SHOPIFY-002 files introduce no diagnostic.
+
+##### Scope guard
+
+Attempt 6 remains `ARCH-010-SHOPIFY-002` only.
+
+Do not:
+
+- add a database column/version field;
+- stage or commit the database gitlink;
+- implement the Background consumer/reconstruction;
+- implement Paid first activation;
+- implement upgrade/downgrade/cancellation/reinstall;
+- implement period rollover;
+- add Admin or Render/infrastructure work.
+
+Stop and return to `moda_architect` if preserving the exact latest initial selection
+would require a schema change.
+
+Reclaim through `/moda-task`. The next valid claim is:
+
+```text
+attempt: 6
+```
+
+**Architect decision: Changes Requested — Attempt 5.**
