@@ -200,19 +200,37 @@ Return `review` and STOP after validation/completion report.
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-background/src/entrypoints/billing.ts`
+- `moda-interact-background/src/services/purchased-recovery-reservation.service.ts`
+- `moda-interact-background/src/services/recovery-credit-purchase.service.ts`
+- `moda-interact-background/tests/unit/services/purchased-recovery-reservation.service.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-credit-purchase.service.test.ts`
+- Deleted obsolete `recovery-credit-refund.service.ts` and its unit test.
 
 ### Work Completed
-Populate during implementation.
+- Implemented deterministic FIFO purchased-lot selection by `activatedAt ASC NULLS LAST`, `createdAt ASC`, and `id ASC`.
+- Added aggregate and exact-lot CAS reservation, commit, release, ambiguous retention, replay, and released-row reactivation behavior.
+- Preserved purchased exhaustion fallback behavior and NOT_APPLICABLE recovery usage events.
+- Added activation idempotency and provider reconciliation coverage so local refunds do not re-grant capacity.
+- Removed obsolete automatic provider refund settlement registration and deleted the retired refund service/tests; no Admin settlement was added.
+- Added focused coverage for FIFO skipping, aggregate/lot parity, refund-hold concurrency, replay identity, activation, and cleanup requirements.
 
 ### Validation Results
-Populate during implementation.
+- `npx vitest run tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-credit-purchase.service.test.ts`: passed, 24 tests.
+- `npm run prisma:validate`: passed against available DATABASE-013 schema commit `014408e`.
+- `npm run build`: passed against available DATABASE-013 schema commit `014408e`.
+- `npm test`: 536 passed, 6 skipped; 6 unrelated baseline failures remain: five integration tests require missing `moda_interact_test`, and one observability test expects shared runtime `0.9.0` while package metadata is `0.11.0`.
+- `git diff --check`: passed.
+- Source search found no remaining `REFUNDED`, refund-settlement, correction-event, negative-App-Event, or obsolete refund-service branch.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-014`, branch `task/ARCH-010-BACKGROUND-014`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-014`, branch `task/ARCH-010-BACKGROUND-014`.
+- The implementation database gitlink remains intentionally unstaged; recorded gitlink `6d5fb9a` was validated by initializing it, then the submodule was checked out to available DATABASE-013 commit `014408e` for validation. Requested hash `148a4df` is unavailable in the local database history and is not staged or published.
+- Implementation and parent commits/pushes are recorded after this report update.
 
 ### Architect Review
 Pending.
