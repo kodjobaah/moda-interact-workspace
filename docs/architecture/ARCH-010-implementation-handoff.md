@@ -71,7 +71,7 @@ They are **not** the production migration chain.
 
 ### Canonical database task
 
-`ARCH-010-DATABASE-013` is Ready and owns:
+`ARCH-010-DATABASE-013` is Complete and owns:
 
 - final Prisma schema;
 - one empty-database first-production baseline migration;
@@ -164,7 +164,6 @@ The Ready ARCH-010 implementation tasks after baseline consolidation are:
 
 | Task | Owner | Why Ready |
 |---|---|---|
-| `ARCH-010-DATABASE-013` | `moda_database` | all accepted DATABASE-001..011 prerequisites are Complete |
 | `ARCH-010-SHARED-007` | `moda_shared` | SHARED-006 is Complete |
 | `ARCH-010-ADMIN-007` | `moda_admin` | independent pure upgrade-economics evaluator |
 | `ARCH-010-BACKGROUND-015` | `moda_background` | dependency-free provider snapshot; no architecture hold |
@@ -215,9 +214,9 @@ From individual task YAML after this consolidation:
 
 ```text
 all ARCH-010 tasks: 79
-complete:           23
+complete:           24
 review:              1
-ready:               4
+ready:               3
 pending:            49
 superseded:          2
 ```

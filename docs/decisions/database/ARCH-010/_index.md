@@ -18,7 +18,7 @@ Coordinator:
 
 > Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Complete/Review task files are immutable accepted/in-flight evidence; their historical `enables:` fields are not rewritten when later correction tasks are added.
 
-Current counts: `complete` 11, `ready` 1, `superseded` 1
+Current counts: `complete` 12, `ready` 0, `superseded` 1
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -34,7 +34,7 @@ Current counts: `complete` 11, `ready` 1, `superseded` 1
 | `DATABASE-010` | Persist opt-in promotional campaigns, targeting and lifecycle audit | Complete | ARCH-010-DATABASE-009 |
 | `DATABASE-011` | Persist merchant promotion selection and exact promotional grant-lot accounting | Complete | ARCH-010-DATABASE-009, ARCH-010-DATABASE-010 |
 | `DATABASE-012` | Persist upgrade economics policy, plan edges and audited Shopify pricing snapshots | Superseded | ARCH-010-DATABASE-006 |
-| `DATABASE-013` | Materialise the clean ARCH-010 first-production database baseline | **Ready** | ARCH-010-DATABASE-001, ARCH-010-DATABASE-002, ARCH-010-DATABASE-003, ARCH-010-DATABASE-004, ARCH-010-DATABASE-005, ARCH-010-DATABASE-006, ARCH-010-DATABASE-007, ARCH-010-DATABASE-008, ARCH-010-DATABASE-009, ARCH-010-DATABASE-010, ARCH-010-DATABASE-011 |
+| `DATABASE-013` | Materialise the clean ARCH-010 first-production database baseline | Complete | ARCH-010-DATABASE-001, ARCH-010-DATABASE-002, ARCH-010-DATABASE-003, ARCH-010-DATABASE-004, ARCH-010-DATABASE-005, ARCH-010-DATABASE-006, ARCH-010-DATABASE-007, ARCH-010-DATABASE-008, ARCH-010-DATABASE-009, ARCH-010-DATABASE-010, ARCH-010-DATABASE-011 |
 
 ## Execution note
 

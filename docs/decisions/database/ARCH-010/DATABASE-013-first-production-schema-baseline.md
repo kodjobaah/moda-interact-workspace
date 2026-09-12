@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
-executor: copilot
-claimed_at: '2026-09-12T13:57:00Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-001
@@ -878,3 +878,85 @@ The final Prisma model and compatibility cleanup are directionally aligned with 
 ### Follow-up
 
 Return this same task through the normal `moda_database` execution path for Attempt 2. Preserve `attempt: 1` until the next authorized claim increments it. Do not unblock DATABASE-013 dependants until the corrected task is architect-accepted Complete.
+
+### Attempt 2 — Accepted
+
+#### Review Status
+
+Accepted
+
+#### Review findings
+
+The Attempt 1 correction contract has been satisfied.
+
+Architect review of the supplied Attempt 2 implementation confirmed:
+
+- the single baseline migration remains the only migration directory;
+- the retained PostgreSQL-only integrity constraints requested in Attempt 1 are restored;
+- `UsageReservation_capacity_source_shape` implements the final three-family reservation-source invariant without restoring the obsolete aggregate promotional-counter shape;
+- `PromotionalCreditGrant_nonnegativeVersion_check` is present;
+- `BillingEconomicsSnapshot_currency_normalized` is present;
+- Billing economics indexes use `verifiedAt` rather than `createdAt`;
+- the consolidated first-production validator covers the durable custom-constraint and economics invariants that escaped Attempt 1;
+- the baseline contains no compatibility/backfill DML and removed pre-production compatibility vocabulary remains absent from the runtime/schema surface;
+- Prisma schema, ERD, seed and baseline migration remain aligned with the final ARCH-010 first-production model.
+
+The Completion Report records implementation commit `f4d25d4`. The developer subsequently supplied live canonical-worktree evidence resolving the workflow-only evidence gap:
+
+```text
+parent worktree:
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-013
+  branch: task/ARCH-010-DATABASE-013
+  remote task branch: Already up to date
+  origin/main: already-current
+  working tree: clean
+
+implementation worktree:
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-013
+  branch: task/ARCH-010-DATABASE-013
+  remote task branch: Already up to date
+  origin/main: already-current
+  working tree: clean
+```
+
+No source change or new implementation commit was required to resolve that workflow evidence issue.
+
+The developer also independently recreated the verified local/development `moda_interact` database against the new baseline after the old development migration history caused the expected duplicate-enum failure. The clean reset then reported:
+
+```text
+20260912000000_arch010_first_production_baseline applied
+Database schema is up to date!
+First-production baseline invariants passed.
+```
+
+This confirms that the earlier `P3018 / 42710 CheckoutRecoveryStatus already exists` was stale pre-baseline local database state, not a defect in the baseline migration. No destructive production operation was authorized or performed by this review.
+
+#### Architecture conformance
+
+Conformant.
+
+The implementation satisfies the DATABASE-013 objective: one canonical empty-database first-production migration representing the final ARCH-010 schema, with retained durable PostgreSQL integrity, the absorbed upgrade-economics contract, no development compatibility state, and validation capable of detecting loss of the custom database-only invariants.
+
+**Architect decision: Accepted — Attempt 2.**
+
+Because `completion_mode: automatic`, `ARCH-010-DATABASE-013` is now `complete`. `attempt: 2` is preserved and there is no active executor/claim.
+
+#### Dependency reconciliation
+
+DATABASE-013 completion removes the database-baseline gate, but no dependant becomes newly Ready solely from this acceptance:
+
+- `ARCH-010-BACKGROUND-011` remains `pending` because `ARCH-007-BACKGROUND-009` is Ready, not Complete;
+- `ARCH-010-BACKGROUND-001`, `ARCH-010-ADMIN-010` and `ARCH-010-SHOPIFY-023` remain `pending` because `ARCH-010-SHARED-008` is not Complete (and SHOPIFY-023 also requires SHOPIFY-002 Complete);
+- the remaining direct DATABASE-013 dependants retain other incomplete prerequisites;
+- `ARCH-010-SYSTEM-TEST-005` remains terminal/manual-gated and also depends on `ARCH-010-ADMIN-009`.
+
+The ARCH-010 Ready frontier is therefore now:
+
+```text
+ARCH-010-SHARED-007
+ARCH-010-ADMIN-007
+ARCH-010-BACKGROUND-015
+```
+
+No system-test task is auto-started.
+
