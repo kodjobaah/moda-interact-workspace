@@ -70,6 +70,32 @@ capacity presentation (`SHOPIFY-008`) or broader clean-baseline conformance
 `SHARED-007` remains the sole owner of actually deleting the public Shared symbols.
 `SHARED-008` remains the sole owner of publishing version 0.11.0.
 
+## Progress — BACKGROUND-020 accepted
+
+`ARCH-010-BACKGROUND-020` is now architect-accepted Complete.
+
+Verified result:
+
+```text
+Background cancellation executor removed
+Background Shopify Partner provider no longer exposes local cancellation mutation
+Background retired cancellation-contract consumers = 0
+Background BILLING_FREE_ALLOWANCE_EXHAUSTED consumers = 0
+Background BILLING_PLAN_CHANGE_ACTION_REQUIRED consumers = 0
+canonical BILLING_RECOVERY_CAPACITY_EXHAUSTED used for retained exhaustion notification
+```
+
+Current gate:
+
+```text
+BACKGROUND-020  Complete
+SHOPIFY-024     Ready / not yet architect-accepted
+SHARED-007      Blocked
+SHARED-008      Pending behind SHARED-007
+```
+
+When SHOPIFY-024 is also Accepted Complete, moda_architect may transition SHARED-007
+from `blocked` to `ready`; its next claim will be Attempt 2.
 ## Progress — consumer cleanup complete
 
 Both pre-publication consumer cleanup tasks are now architect-accepted Complete:
