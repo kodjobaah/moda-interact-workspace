@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 57
 executor: copilot
 claimed_at: '2026-09-12T21:48:56Z'
@@ -170,4 +170,71 @@ STOP if the configured Partner API version does not expose root `events`, `Event
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
+
+### Files Changed
+
+- `src/providers/shopify-partner-billing.provider.ts`
+- `tests/unit/providers/shopify-partner-billing.provider.test.ts`
+
+### Work Completed
+
+- Added `getSubscriptionReconciliationSnapshot()` without changing the existing `getActiveSubscription()` contract.
+- Added a bounded Partner Historical Events query scoped by app subject, shop, six lifecycle event types, and a 365-day window.
+- Added typed lifecycle event parsing for created, updated, cancellation-scheduled, canceled, frozen, and unfrozen states.
+- Preserved active-subscription parsing, usage snapshots, and null/error semantics for existing callers.
+- Added fail-closed validation for missing roots, non-`SubscriptionStatus` payloads, mismatched app/shop identity, invalid timestamps, states, event types, and lifecycle field shapes.
+- Added focused coverage for lifecycle states, frozen-versus-canceled null subscriptions, cancellation dates, empty history, HTTP/GraphQL failures, query scoping/window variables, and malformed events.
+
+### Validation Results
+
+- Editor diagnostics: passed for provider and focused test file.
+- `git diff --check`: passed.
+- Focused Vitest command: not run because `node_modules/.bin/vitest` is unavailable in the implementation worktree.
+- Repository typecheck: not run because `node_modules/.bin/tsc` is unavailable in the implementation worktree.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+The existing configured Partner API version supports the queried `events` root, event filter fields, `SubscriptionStatus` subject, lifecycle state fields, and the six requested event types. Runtime schema validation remains dependent on the repository's available generated/provider contract.
+
+### Unresolved Issues
+
+Focused runtime tests and repository typecheck remain pending until dependencies are installed in the implementation worktree.
+
+### Architectural Concerns
+
+None.
+
+### Git / VCS
+
+Task branch: `task/ARCH-010-BACKGROUND-015`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-015`
+  parent branch: `task/ARCH-010-BACKGROUND-015`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-015`
+  implementation branch: `task/ARCH-010-BACKGROUND-015`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Implementation repository:
+  repository: `moda-interact-background`
+  commit: `d03e60b`
+  remote branch: `origin/task/ARCH-010-BACKGROUND-015`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/background/ARCH-010/BACKGROUND-015-shopify-subscription-lifecycle-snapshot.md`
+  commit: pending
+  remote branch: `origin/task/ARCH-010-BACKGROUND-015`
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
