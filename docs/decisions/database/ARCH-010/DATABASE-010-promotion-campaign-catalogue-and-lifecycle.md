@@ -231,7 +231,7 @@ Ready for Review.
 - Another task worktree reused: no.
 - Start-of-attempt synchronization: parent remote task branch `not-needed` (created from current `origin/main`); parent `origin/main` `already-current`; implementation remote task branch `not-needed` (created from current `origin/main`); implementation `origin/main` `already-current`.
 - Parent claim commit: `ab36376`, pushed to `origin/task/ARCH-010-DATABASE-010`.
-- Implementation commit: `82e91b3`, pushed to `origin/task/ARCH-010-DATABASE-010`.
+- Implementation commits: `82e91b3` and `bd79e7f`, pushed to `origin/task/ARCH-010-DATABASE-010`; `bd79e7f` is the clean implementation head.
 - Parent report commit: recorded below after publication.
 - Submodule gitlink staged: no.
 - Merged to implementation main: no. Merged to workspace main: no.
