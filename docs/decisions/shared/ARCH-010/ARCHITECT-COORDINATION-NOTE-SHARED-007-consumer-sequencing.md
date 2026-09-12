@@ -69,3 +69,32 @@ capacity presentation (`SHOPIFY-008`) or broader clean-baseline conformance
 
 `SHARED-007` remains the sole owner of actually deleting the public Shared symbols.
 `SHARED-008` remains the sole owner of publishing version 0.11.0.
+
+## Progress — consumer cleanup complete
+
+Both pre-publication consumer cleanup tasks are now architect-accepted Complete:
+
+```text
+ARCH-010-BACKGROUND-020   Complete
+ARCH-010-SHOPIFY-024      Complete
+```
+
+The breaking Shared cleanup gate is open.
+
+Current sequence:
+
+```text
+BACKGROUND-020  Complete
+SHOPIFY-024     Complete
+SHARED-007      Ready, attempt 1
+SHARED-008      Pending
+```
+
+The next valid `/moda-task` claim for SHARED-007 is Attempt 2.
+
+Attempt 2 must now remove the retired Shared exports/message values exactly as originally
+defined. It must not retain aliases merely for compatibility because first-party
+consumers have been removed.
+
+After SHARED-007 is architect-accepted Complete, SHARED-008 may publish `0.11.0`.
+

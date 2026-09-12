@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 6
 executor: null
 claimed_at: null
@@ -346,3 +346,69 @@ The cleaned first-production Shared artifact remains the target.
 
 **Architect decision: Block confirmed; sequencing corrected. SHARED-007 remains
 Blocked pending BACKGROUND-020 and SHOPIFY-024.**
+
+## Dependency Resolution — 2026-09-12
+
+The architect-confirmed consumer-sequencing block is resolved.
+
+Both prerequisite consumer-cleanup tasks are Accepted Complete:
+
+```text
+ARCH-010-BACKGROUND-020   Complete
+ARCH-010-SHOPIFY-024      Complete
+```
+
+Their accepted results prove:
+
+```text
+Background:
+  no local appSubscriptionCancel executor
+  no retired cancellation-contract consumer
+  no BILLING_FREE_ALLOWANCE_EXHAUSTED consumer
+  no BILLING_PLAN_CHANGE_ACTION_REQUIRED consumer
+  canonical BILLING_RECOVERY_CAPACITY_EXHAUSTED retained
+
+Shopify:
+  no BILLING_FREE_ALLOWANCE_EXHAUSTED consumer
+  no active cancellation-contract consumer
+  no BILLING_PLAN_CHANGE_ACTION_REQUIRED consumer
+  Shopify-hosted pricing navigation preserved
+```
+
+There is now no first-party consumer preventing the breaking Shared cleanup.
+
+Canonical SHARED-007 state is therefore:
+
+```text
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+Do not alter the previously recorded Attempt-1 blocked-run history.
+
+The next valid execution claim is:
+
+```text
+attempt: 2
+```
+
+Attempt 2 must implement only the original SHARED-007 removal contract:
+
+```text
+remove retired cancellation mode/schema/args exports
+remove retired cancellation billing message codes
+remove BILLING_FREE_ALLOWANCE_EXHAUSTED
+remove BILLING_PLAN_CHANGE_ACTION_REQUIRED
+retain reconciliation, generic capacity-exhausted and refund contracts
+prove built runtime/declarations contain none of the removed names
+```
+
+Do not reintroduce aliases or compatibility exports.
+
+After SHARED-007 is architect-accepted Complete, `ARCH-010-SHARED-008` becomes eligible
+to publish the clean Shared first-production baseline as `0.11.0`.
+
+**Architect dependency decision: block cleared; SHARED-007 Ready for Attempt 2.**
+
