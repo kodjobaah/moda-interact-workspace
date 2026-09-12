@@ -388,7 +388,7 @@ Implementation repository:
 Parent workspace:
   task file: docs/decisions/database/ARCH-010/DATABASE-011-merchant-promotion-selection-and-grant-lots.md
   claim commit: `cdfebdb`
-  final report commit: to be reported after this Completion Report commit
+  final report commit: to be recorded after this report metadata correction
   remote branch: origin/task/ARCH-010-DATABASE-011
   pushed: pending
   submodule gitlink staged: no
