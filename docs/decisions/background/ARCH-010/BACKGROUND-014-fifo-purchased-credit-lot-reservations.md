@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 68
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: '2026-09-12T21:34:04Z'
+attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-BACKGROUND-011
@@ -200,15 +200,17 @@ Return `review` and STOP after validation/completion report.
 ## Completion Report
 
 ### Status
-Ready for Review.
+Ready for Review — Attempt 2 corrections implemented.
 
 ### Files Changed
 - `moda-interact-background/src/entrypoints/billing.ts`
 - `moda-interact-background/src/services/purchased-recovery-reservation.service.ts`
 - `moda-interact-background/src/services/recovery-credit-purchase.service.ts`
+- `moda-interact-background/src/services/recovery-credit-refund.service.ts` deleted
 - `moda-interact-background/tests/unit/services/purchased-recovery-reservation.service.test.ts`
 - `moda-interact-background/tests/unit/services/recovery-credit-purchase.service.test.ts`
-- Deleted obsolete `recovery-credit-refund.service.ts` and its unit test.
+- `moda-interact-background/tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-credit-refund.service.test.ts` deleted
 
 ### Work Completed
 - Implemented deterministic FIFO purchased-lot selection by `activatedAt ASC NULLS LAST`, `createdAt ASC`, and `id ASC`.
@@ -216,21 +218,46 @@ Ready for Review.
 - Preserved purchased exhaustion fallback behavior and NOT_APPLICABLE recovery usage events.
 - Added activation idempotency and provider reconciliation coverage so local refunds do not re-grant capacity.
 - Removed obsolete automatic provider refund settlement registration and deleted the retired refund service/tests; no Admin settlement was added.
-- Added focused coverage for FIFO skipping, aggregate/lot parity, refund-hold concurrency, replay identity, activation, and cleanup requirements.
+- Added focused coverage for FIFO skipping, aggregate/lot parity, replay identity, activation, and cleanup requirements.
+- Added the required real PostgreSQL reserve-vs-refund-hold race using two independent Prisma clients, Serializable isolation, bounded P2034/CAS retries, and aggregate/lot conservation assertions. No ADMIN-003 production refund logic was added.
+- Strengthened released-reservation replay coverage to prove the original reservation row and purchase-lot identity are retained while a second lot remains untouched.
+- Attempt 2 correction checklist: Correction 1 implemented in the new PostgreSQL integration test; Correction 2 implemented in the purchased reservation unit test; Correction 3 implemented in the explicit VCS/worktree evidence below.
 
 ### Validation Results
-- `npx vitest run tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-credit-purchase.service.test.ts`: passed, 24 tests.
-- `npm run prisma:validate`: passed against available DATABASE-013 schema commit `014408e`.
-- `npm run build`: passed against available DATABASE-013 schema commit `014408e`.
-- `npm test`: 536 passed, 6 skipped; 6 unrelated baseline failures remain: five integration tests require missing `moda_interact_test`, and one observability test expects shared runtime `0.9.0` while package metadata is `0.11.0`.
+- `npx vitest run tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-credit-purchase.service.test.ts`: passed, 2 files, 24 tests.
+- `MODA_DISPOSABLE_INTEGRATION=1 npx vitest run tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts`: passed, 1 file, 1 test, against local disposable `moda_interact_test` initialized with `20260912000000_arch010_first_production_baseline`.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- `npm test`: 48 files passed, 541 tests passed, 9 skipped; one unrelated existing observability assertion fails because it expects shared runtime `0.9.0` while package metadata is `0.11.0`.
 - `git diff --check`: passed.
-- Source search found no remaining `REFUNDED`, refund-settlement, correction-event, negative-App-Event, or obsolete refund-service branch.
+- Source search found no remaining `REFUNDED`, refund-settlement, correction-event, negative-App-Event, `settlementMode`, or obsolete refund-service branch.
 
 ### Git / VCS
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-014`, branch `task/ARCH-010-BACKGROUND-014`.
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-014`, branch `task/ARCH-010-BACKGROUND-014`.
-- The implementation database gitlink remains intentionally unstaged; recorded gitlink `6d5fb9a` was validated by initializing it, then the submodule was checked out to available DATABASE-013 commit `014408e` for validation. Requested hash `148a4df` is unavailable in the local database history and is not staged or published.
-- Implementation and parent commits/pushes are recorded after this report update.
+Task branch: `task/ARCH-010-BACKGROUND-014`
+
+Physical task isolation:
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-014`
+  parent branch: `task/ARCH-010-BACKGROUND-014`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-014`
+  implementation branch: `task/ARCH-010-BACKGROUND-014`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: yes
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-background`
+  commit: `2104959` (`test: complete purchased reservation concurrency proof`)
+
+Parent workspace:
+  commit: recorded after this report update
+
+The implementation `database` gitlink remains intentionally unstaged and was not changed or published by this task. No main branch was modified or merged.
 
 ### Architect Review
 
