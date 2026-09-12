@@ -315,7 +315,7 @@ Parent workspace:
   claim commit: cc4de24
   review-state commit: bc7c9bd
   remote branch: origin/task/ARCH-010-BACKGROUND-001
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
