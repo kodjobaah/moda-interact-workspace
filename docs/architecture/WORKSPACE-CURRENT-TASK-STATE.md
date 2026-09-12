@@ -280,7 +280,7 @@ Current counts: `complete` 33, `ready` 5, `pending` 36, `superseded` 7
 | ARCH-010-ADMIN-004 | admin | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-010 |
 | ARCH-010-ADMIN-005 | admin | Pending | 0 | ARCH-010-ADMIN-004 |
 | ARCH-010-ADMIN-006 | admin | Pending | 0 | ARCH-010-ADMIN-005, ARCH-010-DATABASE-013 |
-| ARCH-010-ADMIN-007 | admin | **Ready** | 0 | — |
+| ARCH-010-ADMIN-007 | admin | **Ready** | 1 | — |
 | ARCH-010-ADMIN-008 | admin | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-001, ARCH-010-ADMIN-010 |
 | ARCH-010-ADMIN-009 | admin | Pending | 0 | ARCH-010-ADMIN-007, ARCH-010-ADMIN-008 |
 | ARCH-010-ADMIN-010 | admin | **Ready** | 0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-ADMIN-001 |
