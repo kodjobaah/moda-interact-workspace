@@ -277,9 +277,9 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-024-remove-prepublication-shared-billing-consumers.md`
   claim commit: `4470853`
-  report commit: pending final report commit
+  report commit: `64f84b6`
   remote branch: `origin/task/ARCH-010-SHOPIFY-024`
-  pushed: pending final report commit
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
