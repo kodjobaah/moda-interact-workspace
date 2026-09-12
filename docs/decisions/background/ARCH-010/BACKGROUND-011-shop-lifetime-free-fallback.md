@@ -9,13 +9,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 41
-executor: copilot
-claimed_at: '2026-09-12T16:55:26Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
+- ARCH-010-SHARED-008
+- ARCH-010-BACKGROUND-001
 - ARCH-007-BACKGROUND-003
 - ARCH-007-BACKGROUND-009
 enables:
@@ -293,4 +295,411 @@ Merged to implementation main: no
 Merged to workspace main: no
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested — Attempt 2.
+
+#### Review Summary
+
+Attempt 2 has several accepted pieces:
+
+```text
+DATABASE-013 revision:
+  014408e0402221f08a3961880b34e828a8bdc736
+
+implementation commit:
+  a6b7dd3
+
+latest submitted parent report publication:
+  1ce6e8f
+
+focused unit tests:
+  42 passed
+
+guarded PostgreSQL concurrency regression:
+  1 passed
+
+database gitlink:
+  intentionally unstaged
+```
+
+Architect inspection confirms the following implementation work is correct and should
+be retained:
+
+```text
+FREE_RECOVERY_LIFETIME
+  -> LIFETIME_FREE_RECOVERY_CREDITS
+
+remove BillingPlan.freeLifetimeConversationAllowance reads
+
+remove BillingAllowanceAdjustment reads/signed compatibility arithmetic
+
+derive lifetime state from:
+  ShopEntitlementCounter.grantedQuantity
+  ShopEntitlementCounter.committedQuantity
+  ShopEntitlementCounter.reservedQuantity
+
+missing active-shop lifetime counter fails closed during ordinary admission
+
+lifetime reservation remains SERIALIZABLE + version/CAS protected
+
+Paid plans are no longer rejected by the lifetime reservation service merely because
+the plan kind is PAID_METERED
+
+lifetime commit remains ShopifyReportState.NOT_APPLICABLE
+
+accepted BACKGROUND-001 initial activation producer now targets
+LIFETIME_FREE_RECOVERY_CREDITS
+```
+
+The PostgreSQL concurrency regression is accepted evidence that the renamed lifetime
+counter path retains the reservation concurrency property.
+
+The task cannot yet be accepted because the current Free fallback composition can
+reserve **two different funding buckets for the same recovery on replay**, and purchased
+lifetime-credit spendability is incorrectly gated by whether the current plan allows
+buying another recovery-credit pack.
+
+There is also an out-of-scope partial Paid routing implementation that couples included
+capacity exhaustion to `recoveryCreditPack.enabled`. BACKGROUND-002 owns the
+concurrency-safe Paid included-credit routing boundary and must compose that final Paid
+order after BACKGROUND-011 supplies the plan-independent lifetime primitive.
+
+#### Changes Requested — Attempt 3
+
+Implement exactly the corrections below. Preserve all accepted Attempt-2 work not
+explicitly changed here.
+
+##### 1. One recovery may own exactly one capacity reservation
+
+Current code uses two reservation identities:
+
+```text
+purchased:
+  purchased:${createRecoveryIdempotencyKey(shopId, recoveryId)}
+
+lifetime Free:
+  createRecoveryIdempotencyKey(shopId, recoveryId)
+```
+
+This violates Required Regression 8.
+
+Concrete failure:
+
+```text
+call 1:
+  purchased exhausted
+  -> lifetime Free reserves recovery:shop:recovery
+
+capacity later changes / replay occurs
+
+call 2:
+  purchased now available
+  -> purchased service sees no purchased:... reservation
+  -> reserves PURCHASED_RECOVERY_CREDITS as a second bucket
+```
+
+The same recovery must never own both reservations.
+
+Use **one canonical UsageReservation source identity per recovery** across the
+purchased/lifetime-Free fallback:
+
+```text
+canonicalSourceKey = createRecoveryIdempotencyKey(shopId, recoveryId)
+```
+
+Do not solve this with a preflight-only read of two different keys; that is race-prone.
+
+Use the database uniqueness of:
+
+```text
+UsageReservation.sourceKey @unique
+```
+
+as the cross-bucket serialization boundary.
+
+Because both reservation services may encounter an already-existing reservation owned
+by the other shop entitlement counter, make replay ownership explicit.
+
+Required behaviour:
+
+```text
+existing reservation linked to PURCHASED_RECOVERY_CREDITS
+  -> recovery remains purchased-funded
+  -> do not reserve lifetime Free
+
+existing reservation linked to LIFETIME_FREE_RECOVERY_CREDITS
+  -> recovery remains lifetime-Free-funded
+  -> do not reserve purchased
+
+existing reservation status RESERVED / COMMITTED / AMBIGUOUS / RELEASED
+  -> replay must preserve the already-selected bucket
+  -> never switch funding source because capacity later changed
+```
+
+A bounded implementation may extend the existing reservation outcomes so the caller can
+distinguish the counter that owns an existing reservation. Do not create a new database
+model or cross-repository contract.
+
+Files expected to be involved:
+
+```text
+src/services/recovery-billing.service.ts
+src/services/purchased-recovery-reservation.service.ts
+src/services/free-recovery-reservation.service.ts
+tests/unit/services/recovery-billing.service.test.ts
+focused reservation-service tests where ownership classification is implemented
+```
+
+Stop if satisfying this requires a database schema change.
+
+##### 2. Purchased lifetime credits are spendable independently of pack purchase eligibility
+
+Current code contains:
+
+```ts
+const pack = policy.recoveryCreditPack;
+if (!pack?.enabled) return null;
+```
+
+inside purchased-capacity admission.
+
+That is incorrect.
+
+`recoveryCreditPackEnabled` / `recoveryCreditPack` controls whether the merchant can
+**buy a new pack**. It does not erase or disable already-purchased lifetime credits.
+
+For Free recovery admission, always attempt the existing
+`PURCHASED_RECOVERY_CREDITS` reservation before lifetime Free, regardless of whether the
+current plan's recovery-credit-pack purchase configuration is enabled.
+
+Required:
+
+```text
+Free plan
++ recoveryCreditPack disabled/null
++ existing purchased capacity
+=> reserve PURCHASED_RECOVERY_CREDITS
+
+Free plan
++ no purchased capacity
+=> attempt LIFETIME_FREE_RECOVERY_CREDITS
+```
+
+Do not require a Shopify pack event handle merely to spend an already-active purchased
+credit.
+
+##### 3. Keep Paid included-credit composition out of BACKGROUND-011
+
+Attempt 2 added a partial Paid routing rule:
+
+```text
+paidIncludedCapacityExhausted(policy)
+```
+
+whose result depends on:
+
+```text
+policy.recoveryCreditPack?.enabled
+```
+
+and usage aggregation embedded in the pack policy.
+
+This produces different Paid admission semantics depending on whether top-up purchase is
+enabled and partially implements work explicitly owned by `ARCH-010-BACKGROUND-002`.
+
+For Attempt 3, keep BACKGROUND-011 bounded:
+
+```text
+BACKGROUND-011 owns:
+  plan-independent lifetime counter policy
+  plan-independent lifetime reservation primitive
+  Free purchased -> lifetime-Free fallback
+  canonical single-reservation replay ownership
+
+BACKGROUND-002 owns:
+  current BillingPeriod INCLUDED_RECOVERY_CREDITS reservation
+  detection of included exhaustion
+  final Paid included -> purchased -> lifetime-Free composition
+```
+
+Therefore:
+
+- remove/revert the new `paidIncludedCapacityExhausted(...)` composition from
+  `RecoveryBillingService.admit`;
+- do not use `recoveryCreditPack.enabled` or pack usage aggregation to decide whether
+  Paid included capacity is exhausted;
+- preserve the pre-BACKGROUND-002 Paid route until BACKGROUND-002 replaces it with the
+  durable period-counter reservation path;
+- prove only that the lifetime reservation primitive itself accepts an active mapped
+  `PAID_METERED` policy.
+
+The final architecture remains:
+
+```text
+Paid:
+  selected promotion
+  -> current-period INCLUDED_RECOVERY_CREDITS
+  -> PURCHASED_RECOVERY_CREDITS
+  -> LIFETIME_FREE_RECOVERY_CREDITS
+  -> BLOCK
+```
+
+but BACKGROUND-002 is the task that composes the Paid included-capacity boundary.
+
+##### 4. Add the missing accepted-BACKGROUND-001 conformance regressions
+
+Attempt 2 changed:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+from the removed enum name to `LIFETIME_FREE_RECOVERY_CREDITS`, but the focused test
+set contains no corresponding reconciliation-service regression.
+
+Add focused tests in the existing reconciliation test surface proving:
+
+```text
+A. first verified activation with no lifetime counter
+   -> creates/upserts exactly LIFETIME_FREE_RECOVERY_CREDITS
+   -> grantedQuantity comes from PlatformBillingPolicy.lifetimeFreeRecoveryAllowance
+
+B. existing lifetime counter replay
+   -> preserves grantedQuantity
+   -> preserves committedQuantity
+   -> preserves reservedQuantity
+   -> preserves refundingQuantity
+   -> preserves version/history
+   -> does not regrant/reset
+
+C. accepted BACKGROUND-001 queue/retry/CAS/onboarding behaviour is unchanged
+   -> no queue-name/payload/job-id/retry/schedule alteration in this task
+```
+
+Do not reopen any other BACKGROUND-001 semantics.
+
+##### 5. Required Attempt-3 regression matrix
+
+At minimum, focused tests must now prove all of the following:
+
+```text
+1. Free + purchased available + lifetime available -> purchased
+2. Free + purchased exhausted + lifetime available -> lifetime Free
+3. Free + both exhausted -> blocked
+4. Free + pack purchase disabled/null + purchased available -> purchased
+5. active mapped Paid policy can reserve lifetime Free through the lifetime service
+6. lifetime reservation remains concurrency-safe
+7. lifetime commit -> NOT_APPLICABLE; no Shopify-reportable App Event
+8. purchased commit behaviour unchanged
+9. lifetime-selected recovery replay after purchased capacity appears
+   -> remains lifetime-funded
+   -> no purchased reservation is created
+10. purchased-selected recovery replay
+    -> remains purchased-funded
+    -> no lifetime reservation is created
+11. concurrent/retry conflict cannot create two UsageReservation rows/buckets for the
+    same canonical recovery source key
+12. definitive failure/release returns quantity to the originally selected bucket
+13. ambiguous failure remains attached to the originally selected bucket
+14. no plan-owned lifetime allowance read
+15. no signed lifetime adjustment query/arithmetic
+16. missing lifetime counter on active mapped shop fails closed
+17. inactive/uninstalled shop remains blocked
+18. initial activation creates only LIFETIME_FREE_RECOVERY_CREDITS when absent
+19. initial activation preserves an existing lifetime counter exactly
+20. platform-policy changes after grant do not change an existing shop grant
+```
+
+The existing real PostgreSQL concurrency test should remain and continue to pass.
+
+##### 6. Validation
+
+Use database revision:
+
+```text
+014408e0402221f08a3961880b34e828a8bdc736
+```
+
+or a later architect-accepted DATABASE-013 `main` revision containing the same final
+schema.
+
+Run at minimum:
+
+```text
+focused effective-policy tests
+focused lifetime reservation tests
+focused purchased reservation tests if changed
+focused RecoveryBillingService tests
+focused billing-subscription-reconciliation tests added above
+guarded PostgreSQL lifetime reservation concurrency regression
+npm run build
+npm run test:unit
+git diff --check
+```
+
+Repository-wide build/unit baseline failures may remain only when they are unchanged,
+documented and outside every file changed by Attempt 3.
+
+Any diagnostic/failure in an Attempt-3 changed file is a blocker.
+
+##### 7. Scope guard
+
+Do not:
+
+```text
+implement BACKGROUND-002 included-period reservations
+implement BACKGROUND-014 FIFO purchased lots
+implement BACKGROUND-019 promotional reservations
+change DATABASE-013 schema
+stage the database gitlink
+modify Shared/Shopify/Admin repositories
+change accepted BACKGROUND-001 queue/retry/scheduling semantics
+introduce compatibility aliases for removed DATABASE-013 names
+```
+
+##### 8. VCS / report evidence
+
+Preserve the submitted Attempt-2 evidence:
+
+```text
+implementation:
+  a6b7dd3
+
+latest submitted parent report publication:
+  1ce6e8f
+
+database revision:
+  014408e0402221f08a3961880b34e828a8bdc736
+```
+
+For Attempt 3 record:
+
+```text
+new implementation commit
+new parent claim commit
+new parent report/status commit
+canonical parent worktree
+canonical implementation worktree
+all physical-isolation declarations
+all start-of-attempt synchronization outcomes
+database revision
+database gitlink staged: no
+main branches modified: no
+```
+
+#### Architect Decision
+
+**Changes Requested — Attempt 2.**
+
+The task returns to:
+
+```text
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+The next valid claim is **Attempt 3**.

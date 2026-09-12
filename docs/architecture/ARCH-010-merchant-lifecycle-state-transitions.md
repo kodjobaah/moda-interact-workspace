@@ -19,6 +19,9 @@ updated: 2026-09-12
 > **Promotional-campaign amendment (2026-09-12):** The final first-release promo model is optional merchant opt-in campaigns, not direct non-expiring Admin grants. See [`ARCH-010-promotional-campaigns.md`](ARCH-010-promotional-campaigns.md). A selected usable promotion is the **highest-priority** recovery source. Older Iteration-12 text describing lifetime/unselected direct grants is design provenance only.
 
 > **First-production baseline amendment (2026-09-12):** ARCH-010 is now the clean first-production database/runtime baseline. [`ARCH-010-first-production-baseline.md`](ARCH-010-first-production-baseline.md) is binding over any older compatibility/backfill wording retained below as design provenance. First production has no `BillingPlan.freeLifetimeConversationAllowance`, `BillingAllowanceAdjustment`, old `FREE_RECOVERY_LIFETIME`, aggregate `PROMOTIONAL_RECOVERY_CREDITS`, local cancellation state machine, `MIGRATION_RECONCILED`, purchase `REFUNDED` state, negative-App-Event refund correction model, or campaign-less promotional grant fallback. Implementers MUST NOT preserve those removed concepts merely because an earlier iteration mentions them.
+
+> **Task-consolidation amendment (2026-09-12):** For active implementation ownership, `BACKGROUND-016` is superseded by `BACKGROUND-012`; `BACKGROUND-017` by `BACKGROUND-013`; `SHOPIFY-010` by `SHOPIFY-014`; `SHOPIFY-011` by `SHOPIFY-015`; and `SHOPIFY-019` by `SHOPIFY-016`. Any older iteration text below assigning work to those superseded IDs is design provenance only. Repository agents MUST implement the surviving task file and MUST NOT claim the superseded task. `BACKGROUND-018` remains deliberately separate because it owns the high-volume queued Shopify-event hot path.
+
 ## Problem
 
 Moda Interact has durable billing, subscription, entitlement and uninstall primitives from ARCH-007/008/009, but merchant-facing behaviour is not yet defined consistently as a state machine. ARCH-010 defines transitions between merchant lifecycle states and, for each resulting state, the screens, actions and runtime services that are available.
@@ -2957,7 +2960,7 @@ order.completed
 
 The order exception is required so Moda does not later resume an abandoned-cart recovery for a checkout that converted to an order during the freeze. It is safety bookkeeping, not continued business execution.
 
-Do not purge queues as correctness and do not replay discarded raw checkout/cart events on unfreeze. New events process normally only after BACKGROUND-016 restores an executable subscription.
+Do not purge queues as correctness and do not replay discarded raw checkout/cart events on unfreeze. New events process normally only after BACKGROUND-012 restores an executable subscription.
 
 ### Frozen vs cancellation
 
@@ -2985,11 +2988,11 @@ BACKGROUND-012 must therefore no longer interpret `activeSubscription = null` by
 
 - `ARCH-010-DATABASE-008` — persist `FROZEN` and latest Shopify subscription-lifecycle evidence.
 - `ARCH-010-BACKGROUND-015` — add canonical Partner active+historical subscription reconciliation snapshot.
-- `ARCH-010-BACKGROUND-016` — reconcile FROZEN/UNFROZEN, hourly delayed retry/rebuild and safe cycle catch-up.
-- `ARCH-010-BACKGROUND-017` — enforce frozen business-execution/App-Event gates.
+- `ARCH-010-BACKGROUND-012` — reconcile cancellation plus FROZEN/UNFROZEN in the single canonical subscription lifecycle state machine, including delayed retry/rebuild and safe cycle catch-up.
+- `ARCH-010-BACKGROUND-013` — enforce distinct NO_CONTRACT and FROZEN business-execution/App-Event gates through one reusable policy boundary.
 - `ARCH-010-BACKGROUND-018` — early-stop Shopify checkout/cart event processing for FROZEN shops while retaining order-completion terminal safety bookkeeping.
 - `ARCH-010-SHOPIFY-018` — expose provider-authoritative merchant subscription lifecycle state including freeze/unfreeze.
-- `ARCH-010-SHOPIFY-019` — present frozen state, keep read surfaces available and disable billing/product mutations until Background restores execution.
+- `ARCH-010-SHOPIFY-016` — present scheduled cancellation, effective NO_CONTRACT and FROZEN restriction states with explicit merchant action guards.
 
 Existing cancellation, rollover, capacity and billing-action tasks are amended to consume this provider-state distinction rather than treating provider null as cancellation.
 
@@ -3054,17 +3057,17 @@ ARCH-010 therefore does not introduce `appSubscriptionCreate`, `appSubscriptionC
 
 Before implementation starts, task frontmatter is authoritative for eligibility. `depends_on` is the execution gate; `enables` is maintained as its reverse-index convenience only.
 
-Current pre-implementation counts after consolidation:
+Current task-graph counts after 2026-09-12 consolidation and accepted-history reconciliation:
 
 ```text
-ARCH-010 tasks total:            79
-implementation/publication:      74 (2 superseded, 72 active)
+ARCH-010 tasks total:            81
+implementation/publication:      76 (7 superseded, 69 active)
 terminal system-test tasks:       5 manual-gated
-complete implementation tasks:   23
-review implementation tasks:      1
-ready implementation tasks:       4
-pending implementation tasks:    44
-superseded tasks:                  2
+complete implementation tasks:   30
+review implementation tasks:      0
+ready implementation tasks:       5
+pending implementation tasks:    34
+superseded tasks:                  7
 pending manual system tests:       5
 ```
 

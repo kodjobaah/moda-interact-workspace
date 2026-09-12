@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-SHOPIFY-018
 architecture_id: ARCH-010
-title: Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze
+title: Expose Shopify-authoritative subscription lifecycle state including freeze
+  and unfreeze
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -22,7 +23,7 @@ enables:
 - ARCH-010-SHOPIFY-012
 - ARCH-010-SHOPIFY-014
 - ARCH-010-SHOPIFY-015
-- ARCH-010-SHOPIFY-019
+- ARCH-010-SHOPIFY-016
 - ARCH-010-SHOPIFY-021
 created: 2026-09-11
 updated: '2026-09-12'
