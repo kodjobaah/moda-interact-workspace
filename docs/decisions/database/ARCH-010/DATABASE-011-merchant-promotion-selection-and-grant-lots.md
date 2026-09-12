@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 83
-executor: copilot
-claimed_at: 2026-09-12T06:42:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-DATABASE-009
@@ -24,7 +24,7 @@ enables:
   - ARCH-010-SHOPIFY-021
   - ARCH-010-SHOPIFY-022
 created: 2026-09-12
-updated: 2026-09-12
+updated: 2026-09-12T06:51:07Z
 ---
 
 # ARCH-010-DATABASE-011: Persist merchant promotion selection and exact promotional grant-lot accounting
@@ -159,22 +159,64 @@ Do not implement campaign eligibility, selection mutation, Background reserve/co
 
 Stop if exact promo-grant reservation ownership cannot be added without conflicting with the already-accepted purchased/included UsageReservation ownership model; return the conflict to `moda_architect` rather than creating a parallel reservation table.
 
+## Work Items
+
+- [x] Extend `PromotionalCreditGrant` with campaign ownership, exact lot counters, selection/use history, exhaustion state, optimistic versioning, and the `(campaignId, shopId)` uniqueness boundary.
+- [x] Add one-row-per-Shop `MerchantPromotionSelection` with unique grant ownership and a composite Shop/grant foreign key.
+- [x] Add nullable exact promotional grant ownership to `UsageReservation` with an indexed relation, preserving existing rows as `NULL`.
+- [x] Add the additive migration, ERD update, package script, and deterministic schema/migration validator without creating selections, grants, capacity, or rewriting historical rows.
+- [x] Run the repository-declared Prisma, schema, compatibility, ERD, migration-status, and diff checks.
+
+## Acceptance Criteria
+
+- [x] `(campaignId, shopId)` is unique, while nullable campaign IDs preserve historical campaign-less grants and reopened campaigns cannot create a second grant.
+- [x] `MerchantPromotionSelection.shopId` and `promotionalCreditGrantId` are individually unique, and the composite foreign key prevents cross-Shop grant pointers.
+- [x] Promotional grant counters are database-constrained non-negative and within original quantity; the inherited DATABASE-009 positive quantity constraint remains validated.
+- [x] `UsageReservation.promotionalCreditGrantId` identifies the exact promotional grant and existing reservations migrate safely with `NULL` ownership.
+- [x] Migration validation proves no automatic selection, capacity grant, counter rewrite, campaign backfill, or historical grant rewrite occurs.
+
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260912100000_add_promotion_selection_and_grant_lots/migration.sql`
+- `scripts/validate-promotion-selection-schema.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Added campaign-aware promotional grant lot fields and durable lifecycle accounting while preserving DATABASE-009 provenance and campaign-less compatibility rows.
+- Added unique campaign/shop claim enforcement, current merchant selection persistence, composite Shop/grant identity enforcement, and exact promotional reservation ownership.
+- Added deterministic validation for uniqueness, quantity integrity, exact reservation ownership, compatibility migration behavior, and no automatic selection or capacity grant.
+- Regenerated the PlantUML ERD and added the `test:promotion-selection` package command.
 
 ### Validation Results
-Populate during implementation.
+- Passed: `npm run format`.
+- Passed: `npm run validate`.
+- Passed: `npm run prisma:validate`.
+- Passed: `npm run prisma:generate` with Prisma 6.19.3.
+- Passed: `npm run test:promotion-selection`.
+- Passed: `npm run test:promotion-campaign`.
+- Passed: `npm run test:billing-policy`.
+- Passed: `npm run test:recovery-credit-packs`.
+- Passed: `npm run test:checkout-recovery-capacity`.
+- Passed: `npm run test:purchased-credit-lots`.
+- Passed: `npm run test:billing-lifecycle`.
+- Passed: `npm run erd:puml`.
+- Passed: `git diff --check`.
+- Blocked by environment: `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run status` returned Prisma `P1001` because PostgreSQL was unavailable at `localhost:5432`; no migration was applied.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011`.
+- Parent branch: `task/ARCH-010-DATABASE-011`; prior claim commit: `b9d8e1b`.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011`.
+- Implementation branch: `task/ARCH-010-DATABASE-011`; implementation commit: `f2d79da` (`feat(database): persist promotion selection and grant lots`).
+- Implementation branch pushed to and tracking `origin/task/ARCH-010-DATABASE-011`.
+- Parent task file is the only parent file staged; the implementation submodule gitlink was not staged.
+- No merge to `main` and no push to `main` performed.
 
 ### Architect Review
 Pending.
