@@ -418,6 +418,7 @@ Ready for Architect Review.
 - Implementation commit: `baa33fb` (`fix(background): harden reinstall reconciliation`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
 - Attempt 3 implementation commit: `42d99a4` (`test(background): complete reinstall reconciliation evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
 - Attempt 4 implementation commit: `da921da5c5385ff9b32155316f97e01a42f1f749` (`test(background): complete reinstall preservation evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
+- Attempt 4 parent report publication commit: `e445cd3849072a5c396eb332b80b1ca698971625`, pushed to `origin/task/ARCH-010-BACKGROUND-006`.
 - Attempt 4 launcher claim commit: `15655b9de090c65ebbdf38a9ea5995a12db18495`, pushed before implementation.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
