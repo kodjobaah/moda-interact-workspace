@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 executor: null
 claimed_at: null
 priority: 43
@@ -2015,3 +2015,268 @@ publish Completion Report;
 STOP for moda_architect.
 ```
 
+
+
+## Architect Review — Attempt 4
+
+### Changes Requested
+
+Attempt 4 is **not accepted**. Return this same task to `ready` for Attempt 5.
+
+Do not start any task listed under `enables`.
+
+Published Attempt-4 history to preserve:
+
+```text
+Attempt-4 claim:
+  c1d7ead3941dab01a27c636d9969822f0d849655
+
+Attempt-4 implementation:
+  fbd24668b0a32ee085f8d02c219fd7d505a68a1e
+
+Attempt-4 parent report:
+  9787eb3318d7f0ce4d39e2f563d0d63f6b342b53
+```
+
+Attempt 5 is the next claim. Preserve `attempt: 4` in this review patch; the normal
+launcher claim must increment it **exactly once** to `attempt: 5`.
+
+### Attempt-4 production correction accepted in substance — preserve it
+
+The production changes in `fbd24668b0a32ee085f8d02c219fd7d505a68a1e` implement the
+requested same-local-plan handle-drift guard in both reconciliation paths:
+
+```text
+queued reconciliation:
+  same active PAID_METERED BillingPlan id
+  + provider/local Shopify handle differs from durable pending handle
+  -> record PENDING_PLAN_HANDLE_MISMATCH
+  -> bounded retry
+  -> return before applyOtherCurrentPlan
+
+rotating reconciliation:
+  same active PAID_METERED BillingPlan id
+  + provider/local Shopify handle differs from durable pending handle
+  -> return fail-closed
+  -> do not use legacy BillingPeriod projection
+```
+
+Preserve these production changes. **Do not modify production source merely to
+manufacture an Attempt-5 implementation commit.**
+
+The following Attempt-4 evidence is also accepted and must remain green:
+
+```text
+- rotating same-local-plan handle drift;
+- rotating canonical first-Paid activation;
+- unsupported-trial null-schedule recovery;
+- CLOSED exact period rejection;
+- incompatible existing-period snapshot rejection;
+- conflicting INCLUDED_RECOVERY_CREDITS grant rejection;
+- Paid post-commit enqueue failure followed by reconstruct() repair;
+- compatible replay preserving committed/reserved/forfeited and lifetime state.
+```
+
+### Finding — queued same-local-plan drift test still does not model the real lookup state
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Attempt 3 required the queued regression to model this exact real state:
+
+```text
+pendingPlanId = plan-paid
+pendingShopifyPlanHandle = paid-old
+provider.planHandle = paid-new
+BillingPlan.id = plan-paid
+BillingPlan.shopifyPlanHandle = paid-new
+BillingPlan.kind = PAID_METERED
+```
+
+Attempt 4 still arranges:
+
+```ts
+providerResult: paidProvider, // provider.planHandle == "paid-2026"
+plan: { ...paidPlan, shopifyPlanHandle: "paid-new" }
+```
+
+Production resolves the local plan with:
+
+```ts
+billingPlan.findUnique({
+  where: { shopifyPlanHandle: provider.planHandle },
+})
+```
+
+Therefore the current mock says, in effect:
+
+```text
+lookup key:       paid-2026
+returned row key: paid-new
+```
+
+That cannot represent a real result from the unique `shopifyPlanHandle` lookup and
+does not prove the previously unsafe branch. The production guard appears correct,
+but acceptance requires permanent evidence against the actual state that caused the
+Attempt-3 Changes Requested decision.
+
+### Required correction — test/evidence only
+
+Modify only:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+unless the corrected realistic test exposes a genuine production defect.
+
+Strengthen the existing test:
+
+```text
+"does not activate when the provider handle differs from the durable pending handle"
+```
+
+Use this deterministic arrangement:
+
+```ts
+row.subscription.pendingPlanId = "plan-paid";
+row.subscription.pendingShopifyPlanHandle = "paid-old";
+
+provider.planHandle = "paid-new";
+
+plan.id = "plan-paid";
+plan.active = true;
+plan.kind = PAID_METERED;
+plan.shopifyPlanHandle = "paid-new";
+plan.shopifyUsageEventHandle = "recovery-meter";
+plan.includedRecoveryConversationAllowance = 100;
+```
+
+The transaction-state fixture, if retained, must describe the same durable pending
+intent:
+
+```text
+status = NO_CONTRACT
+planId = null
+pendingPlanId = plan-paid
+pendingShopifyPlanHandle = paid-old
+pendingEffectiveAt = expected
+nextReconcileAt = expected queued schedule
+```
+
+Add/assert all of the following:
+
+```text
+1. Partner is called exactly once.
+
+2. billingPlan.findUnique is called with:
+     where.shopifyPlanHandle = paid-new
+   and the returned BillingPlan also has:
+     shopifyPlanHandle = paid-new
+
+3. subscription.updateMany records:
+     lastSyncErrorCode = PENDING_PLAN_HANDLE_MISMATCH
+     nextReconcileAt = the existing bounded retry result
+
+4. database.$transaction is NOT called.
+   This proves the guard returned before applyOtherCurrentPlan and before the
+   first-Paid transaction helper.
+
+5. No BillingPeriod or BillingPeriodEntitlementCounter mutation occurs.
+
+6. No Subscription activation/update occurs.
+
+7. ShopSettings.onboardingCompleted is not changed.
+
+8. The durable pending target is not cleared by this path.
+
+9. queue.add is called at most once for the bounded retry and uses the exact
+   durable retry timestamp produced by nextSubscriptionReconcileAt(...).
+```
+
+Do not weaken the rotating drift test. Its Attempt-4 arrangement already uses the
+real state `provider.planHandle = paid-new` and `plan.shopifyPlanHandle = paid-new`.
+
+### Production-source rule for Attempt 5
+
+Expected result: **no production source change**.
+
+Do not edit:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+if the realistic queued regression passes against `fbd24668...`.
+
+If and only if the corrected realistic test fails because the guard can still reach
+`applyOtherCurrentPlan(...)`, make the smallest correction inside the existing
+same-local-plan drift guard and report the exact reason. Do not redesign activation,
+retry, queue, period, entitlement, trial, rollover, upgrade/downgrade or provider
+semantics.
+
+Do not modify:
+
+```text
+database/**
+Shared contracts/package versions
+other repositories
+BACKGROUND-002 recovery admission
+BACKGROUND-007 rollover implementation
+queue/worker topology
+upgrade/downgrade/cancellation/refund/promotion behavior
+```
+
+### Attempt-5 validation
+
+Because Attempt 4 already completed Prisma, integration, full-unit and build/baseline
+validation and this correction is expected to be test-only, run exactly:
+
+```bash
+npx vitest run \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts
+
+git diff --check
+```
+
+Expected focused result is the same two suites with the corrected queued-drift case
+green. Record the exact observed test count; do not hard-code `91/91` if the count
+changes because the test was split or strengthened.
+
+If production source is changed because the realistic test exposed a defect, also
+rerun the full task validation from the task's `## Validation` section before
+returning to review.
+
+### Attempt-5 Completion Report evidence
+
+Record explicitly:
+
+```text
+queued same-local-plan drift arrangement:
+  pending handle = paid-old
+  provider handle = paid-new
+  returned BillingPlan handle = paid-new
+  returned BillingPlan id = plan-paid
+
+lookup evidence:
+  billingPlan.findUnique where.shopifyPlanHandle = paid-new
+
+fallback evidence:
+  database.$transaction call count = 0
+
+failure evidence:
+  lastSyncErrorCode = PENDING_PLAN_HANDLE_MISMATCH
+  bounded retry timestamp = <actual ISO timestamp>
+
+production source changed in Attempt 5: yes|no
+```
+
+If `production source changed in Attempt 5: no`, an implementation-source commit is
+**not required**. Commit/push the corrected permanent test on the existing
+implementation task branch, update the parent Completion Report, set this same task
+to `review`, clear the claim and STOP for `moda_architect`.
