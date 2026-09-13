@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 86
-executor: copilot
-claimed_at: 2026-09-13T21:27:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-ADMIN-005
@@ -85,6 +85,7 @@ Stop if DATABASE-011 does not expose deterministic per-campaign/shop grant histo
 Ready for Review.
 
 ### Files Changed
+- `moda-interact-admin/src/lib/admin/promotion-report-model.ts`
 - `moda-interact-admin/src/lib/admin/promotion-report.ts`
 - `moda-interact-admin/src/app/(protected)/promotions/page.tsx`
 - `moda-interact-admin/src/app/(protected)/promotions/[campaignId]/page.tsx`
@@ -97,17 +98,21 @@ Ready for Review.
 - Added campaign-wide selected, used, exhausted and committed-credit summaries.
 - Added merchant rows with selection/use timestamps, selection count, granted/reserved/committed/remaining quantities, exhaustion and current-selection derivation from `MerchantPromotionSelection`.
 - Added a read-only detail route and linked it from the existing campaign catalogue. No grant, selection, campaign, entitlement or audit mutation is exposed.
-- Added focused unit/security coverage for selected-vs-used distinction, remaining calculation, exhaustion/current selection fields, pagination/filter bounds, SUPER_ADMIN gating and mutation absence.
+- Added a pure report-model seam so executable unit tests cover selected-vs-used distinction, independent first/last use timestamps, remaining calculation, reopened/reselected grant preservation, exhaustion/current selection fields, page/search normalization, pagination/filter bounds, SUPER_ADMIN gating and mutation absence.
+- Completed the Attempt-2 presentation correction: the merchant table visibly renders first/last selection and use timestamps, selection count, all allocation quantities, exhausted status and current-selection state; Previous/Next links preserve normalized status and non-empty search filters.
 
 ### Validation Results
-- `node --experimental-strip-types --test tests/unit/promotion-report.test.ts tests/security/admin-promotions.test.mjs`: passed, 15/15.
-- `npm test`: passed (declared observability/security suite).
-- `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx` (missing `refresh` hook dependencies); no errors.
+- `node --experimental-strip-types --test tests/unit/promotion-report.test.ts tests/security/admin-promotions.test.mjs`: passed, 20/20.
+- `npm test`: passed, 171/171 (declared observability/security suite).
+- `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx` (missing `refresh` hook dependencies); no errors attributable to ADMIN-006.
 - `npm run build`: passed; Prisma client generated and TypeScript/Next production build completed, including `/promotions/[campaignId]`.
 - `git diff --check`: passed.
 - Build emitted existing BullMQ warnings for dynamic dependency resolution and optional `@valkey/valkey-glide`; no build failure.
 
 ### Git / VCS
+- Attempt-2 launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-006`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-006`; both synchronized on `task/ARCH-010-ADMIN-006`; recursive database submodule status `ready` at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Attempt-2 implementation commit and push: `b0332e5` pushed to `origin/task/ARCH-010-ADMIN-006`.
+- Attempt-2 claim evidence: executor `copilot`, dependency gate passed, claim committed and pushed before implementation; parent report publication is the commit containing this update.
 - Launcher packet evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-006` on `task/ARCH-010-ADMIN-006`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-006` on the same branch name.
 - Prepared execution reported physical isolation/synchronization ready, dependency gate passed, parent head `a72e144342dd0335cf5ccaac822c2fe9e2dab51f`, implementation head `7f484c3883400fa36ac472222e48389c9390fbd8`, and initialized database submodule at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 - Implementation commit and push: `4fca6c8` pushed to `origin/task/ARCH-010-ADMIN-006`.
