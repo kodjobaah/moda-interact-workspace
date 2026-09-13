@@ -27,7 +27,7 @@ There is no production billing state requiring compatibility with intermediate d
 
 ## Current audited task state
 
-The current coordinated ARCH-010 state after BACKGROUND-010 Attempt 2 Changes Requested, with dependency readiness recomputed from the authoritative task files in this review snapshot, is:
+The current coordinated ARCH-010 state after BACKGROUND-010 Attempt 3 Changes Requested, with dependency readiness recomputed from the authoritative task files in this review snapshot, is:
 
 ```text
 all ARCH-010 task files: 86
