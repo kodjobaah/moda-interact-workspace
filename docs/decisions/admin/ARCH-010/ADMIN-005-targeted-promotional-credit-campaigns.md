@@ -9,9 +9,9 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: '2026-09-13T19:12:41Z'
+status: review
+executor: null
+claimed_at: null
 priority: 85
 attempt: 3
 depends_on:
@@ -112,7 +112,7 @@ Stop if ADMIN-004/DATABASE-010 state names differ materially; reconcile with `mo
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `src/app/(protected)/promotions/page.tsx`
@@ -134,11 +134,12 @@ In Progress.
 - Added fixed-clock five-state catalogue tests and behavioral lifecycle tests for CAS ordering, stale writes, expiry eligibility, deterministic audit ordering, and preservation boundaries.
 - Preserved existing grants, selections, usage, and committed history by keeping lifecycle mutations isolated from those models; no delete action was introduced.
 - Added focused validation and static security coverage for role gating, catalogue retention/derived state, lifecycle audit/CAS behavior, commercial-term immutability, preservation boundaries, and absence of deletion.
+- Attempt 3 strengthened behavioral evidence without changing production behavior: visible campaign name/plan-name/shop-domain filtering and 255-character bounds are asserted directly, and lifecycle tests now assert exact CAS predicates/update payloads and stale-write audit behavior.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts tests/unit/promotion-catalogue.test.ts tests/unit/promotion-campaign-lifecycle.test.ts`: passed, 13 tests.
+- `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts tests/unit/promotion-catalogue.test.ts tests/unit/promotion-campaign-lifecycle.test.ts`: passed, 14 tests.
 - `node --test tests/security/admin-promotions.test.mjs`: passed, 12 tests.
 - `npm test`: passed, 170 tests.
 - `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx`.
@@ -163,12 +164,12 @@ database submodule HEAD: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
 database gitlink staged/changed: no
 
 Parent claim commit: `50cf6ca`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-workspace`.
-Implementation commit: `62ae6ae64c5c752b4b6e6c84a15c90d1da13ed72`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-admin`.
+Implementation commit: `6f3b065414d9a1ae41ee48db86f5e9fa9c26707c`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-admin`.
 Parent report commit: pending publication.
 The implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
-Pending Attempt 2 review.
+Pending Attempt 3 review.
 
 ## Architect Review — Attempt 1
 
