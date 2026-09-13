@@ -10,10 +10,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 59
-executor: copilot
-claimed_at: '2026-09-13T09:26:58Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -618,4 +618,279 @@ ARCH-010-ADMIN-010
 ARCH-010-BACKGROUND-019
 ARCH-010-SHOPIFY-018
 ```
+
+### Attempt 2 — Changes Requested
+
+#### Review Status
+
+Changes Requested — narrow test/workflow correction only.
+
+Attempt 2 materially satisfies the architecture and most of the Attempt 1 proof contract.
+
+Architect review confirms:
+
+```text
+- production source is byte-for-byte unchanged from Attempt 1;
+- ACTIVE preserves the complete SHOPIFY-013 commercial projection;
+- live subscription + latest FROZEN resolves to FROZEN;
+- null-live CREATED / UPDATED / CANCELLATION_SCHEDULED / UNFROZEN resolve fail-closed to UNRESOLVED;
+- null-live CANCELED resolves to CANCELED;
+- null-live FROZEN resolves to FROZEN;
+- no provider history resolves to NO_ACTIVE_SUBSCRIPTION;
+- mapped and unmapped FROZEN presentation remain separate from provider truth;
+- lifecycle provider failures do not fall back to local commercial state;
+- HTTP and GraphQL lifecycle-snapshot failures reject;
+- wrong app, wrong shop, invalid timestamp, wrong state/event pairing and malformed event fail closed;
+- query variables contain the exact six lifecycle event types;
+- the bounded history interval is exactly 365 days;
+- no local Subscription mutation is performed by the read path;
+- Prisma validate/generate, focused lifecycle tests, build and diff check pass;
+- the full-suite failures reported remain outside the SHOPIFY-018 lifecycle changes.
+```
+
+The production implementation remains accepted as the current candidate:
+
+```text
+1605a3c
+```
+
+and Attempt 2 test implementation:
+
+```text
+dbfb9fc
+```
+
+No production-source change is requested.
+
+Attempt 2 is not yet accepted because a few **explicit** Attempt 1 review obligations remain absent from the committed proof, and the VCS/task metadata is still stale.
+
+#### Finding 1 — Add the two missing GraphQL query-shape assertions
+
+The provider request test already proves one HTTP request, scoping, event types, ordering, `first: 1`, and the exact 365-day interval.
+
+Add the two explicit assertions required by Attempt 1:
+
+```ts
+expect(body.query).toContain("activeSubscription(");
+expect(body.query).toContain("events(");
+```
+
+in:
+
+```text
+tests/unit/services/shopify-billing.provider.test.ts
+```
+
+Do not change the production query.
+
+#### Finding 2 — Directly prove valid UNFROZEN and CANCELED parser success
+
+The service tests prove downstream classification of UNFROZEN/CANCELED snapshots, but Attempt 1 explicitly required the **provider parser** itself to prove these valid event types parse successfully.
+
+Add focused provider cases to:
+
+```text
+tests/unit/services/shopify-billing.provider.test.ts
+```
+
+for:
+
+```text
+SUBSCRIPTION_UNFROZEN / state UNFROZEN
+  -> latestLifecycleEvent.state === "UNFROZEN"
+  -> eventType === "SUBSCRIPTION_UNFROZEN"
+
+SUBSCRIPTION_CANCELED / state CANCELED
+  -> latestLifecycleEvent.state === "CANCELED"
+  -> eventType === "SUBSCRIPTION_CANCELED"
+```
+
+The existing CANCELLATION_SCHEDULED parser success case remains valid.
+
+Do not change parser production code unless these tests expose a genuine defect.
+
+#### Finding 3 — Complete the explicit no-write proof
+
+Attempt 1 required, at minimum:
+
+```text
+database.subscription.upsert -> not called
+database.billingPeriod.upsert -> not called
+database.$transaction -> not called
+```
+
+The lifecycle test currently asserts:
+
+```text
+subscription.upsert -> not called
+subscription.update -> not called
+$transaction -> not called
+```
+
+but omits the explicit `billingPeriod.upsert` assertion.
+
+Add:
+
+```ts
+expect(database.billingPeriod.upsert).not.toHaveBeenCalled();
+```
+
+to the lifecycle read-only proof.
+
+No production service change is requested.
+
+#### Finding 4 — Correct task state on handoff
+
+The submitted Attempt 2 archive still contains:
+
+```text
+status: in_progress
+executor: copilot
+claimed_at: '2026-09-13T09:26:58Z'
+attempt: 2
+```
+
+despite the handoff stating that the task was returned to architect review.
+
+For this Changes Requested handoff, return to:
+
+```text
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+The next authorized:
+
+```text
+/moda-task ARCH-010-SHOPIFY-018
+```
+
+claim becomes Attempt 3.
+
+Attempt 3 must return with:
+
+```text
+status: review
+attempt: 3
+```
+
+#### Finding 5 — Record the four synchronization outcomes exactly
+
+The Completion Report currently says:
+
+```text
+Both branches were synchronized with their remotes before validation;
+no origin/main merge was required.
+```
+
+That does not satisfy the mandatory workflow evidence contract.
+
+Attempt 3 must explicitly record all four fields:
+
+```text
+parent remote task branch fast-forwarded: yes | not-needed
+parent origin/main incorporated: yes | already-current
+implementation remote task branch fast-forwarded: yes | not-needed
+implementation origin/main incorporated: yes | already-current
+```
+
+Do not replace those four fields with prose.
+
+Also retain:
+
+```text
+parent physical worktree
+implementation physical worktree
+parent task branch
+implementation task branch
+implementation commit
+both branches pushed
+both branches clean
+database gitlink staged: no
+main branches modified: no
+```
+
+#### Finding 6 — Record the actual final parent report HEAD
+
+The submitted archive records:
+
+```text
+Attempt 2 report commit: 8a527ae
+```
+
+but the developer handoff identifies the final published parent report HEAD as:
+
+```text
+9592a9e
+```
+
+Attempt 3 must record the actual final parent task-branch HEAD after all Completion Report metadata is committed.
+
+Do not leave an earlier intermediate report commit in the final handoff evidence.
+
+#### Attempt 3 scope
+
+Expected implementation changes only:
+
+```text
+tests/unit/services/shopify-billing.provider.test.ts
+tests/unit/services/billing.service.test.ts
+docs/decisions/shopify/ARCH-010/SHOPIFY-018-provider-subscription-lifecycle-state.md
+```
+
+Unless one of the added tests fails because production behavior is genuinely incorrect:
+
+```text
+DO NOT MODIFY:
+app/services/billing/providers/shopify-billing.provider.ts
+app/services/billing/billing.types.ts
+app/services/billing/billing.service.ts
+```
+
+Do not implement downstream UI/adapter tasks.
+
+#### Validation
+
+Run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+./node_modules/.bin/vitest run \
+  tests/unit/services/shopify-billing.provider.test.ts
+
+./node_modules/.bin/vitest run \
+  tests/unit/services/billing.service.test.ts \
+  -t "lifecycle|provider history|SHOPIFY-018"
+
+npm run build
+git diff --check
+```
+
+Also rerun the broader validation required by the repository/task and document any unchanged baselines exactly.
+
+Expected focused outcome:
+
+```text
+provider lifecycle suite: PASS
+lifecycle service suite: PASS
+Prisma validate/generate: PASS
+build: PASS
+git diff --check: PASS
+```
+
+#### Architect Decision
+
+**Changes Requested — Attempt 2.**
+
+This is a narrow proof/workflow correction. The production implementation remains the current accepted candidate.
+
+No downstream task is released yet.
+
+`ARCH-010-SHOPIFY-012`, `ARCH-010-SHOPIFY-014`, `ARCH-010-SHOPIFY-015`, `ARCH-010-SHOPIFY-016`, and `ARCH-010-SHOPIFY-021` remain Pending.
+
+On successful SHOPIFY-018 acceptance, each enabled task must be re-evaluated against all of its other dependencies before any Pending -> Ready promotion.
 

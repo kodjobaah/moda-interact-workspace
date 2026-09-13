@@ -75,6 +75,8 @@ For Shopify, `SHOPIFY-023` is architect-accepted Complete at Attempt 1 (`01f0605
 
 `BACKGROUND-015` is architect-accepted Complete at Attempt 4 (`29c791c`). The Partner reconciliation snapshot now uses one request for live subscription plus the latest validated lifecycle event. `BACKGROUND-012` remains Pending because BACKGROUND-007, BACKGROUND-009 and BACKGROUND-010 are still incomplete.
 
+`BACKGROUND-019` Attempt 4 is Ready with an explicit upstream dependency-release step: the `moda-interact-background/database` gitlink must advance to the architect-accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736`. This is a consumer gitlink release only; database source must remain unchanged. Shared `0.11.0` is already consumed and BACKGROUND-002/011/014 are same-repository accepted prerequisites, so they require no additional release action.
+
 ## Luna-oriented task consolidation
 
 The current repository/task audit found five safe merges. Only still-unimplemented tasks are merged.
@@ -245,4 +247,8 @@ For every Ready task, the repository agent must:
 
 If a clean-baseline symbol is missing, do not recreate a legacy alias locally. Return the contract gap to the architect.
 
-`ARCH-010-SHOPIFY-018` Attempt 1 is Changes Requested and returned to Ready. Production implementation `1605a3c` remains the candidate; Attempt 2 is test/validation/report-only unless new coverage exposes a genuine defect. No downstream Shopify task is released until SHOPIFY-018 is architect-accepted Complete.
+`BACKGROUND-019` remains Ready for Attempt 5 after a test-only review. The earlier instruction to commit the DATABASE-013 submodule gitlink as part of BG19 is rescinded; the accepted database checkout may be materialized locally for validation but the parent gitlink remains unchanged. When BG19 is architect-accepted Complete, re-evaluate its downstream graph: `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` are expected to become Ready if their other dependencies remain Complete.
+
+`ARCH-010-BACKGROUND-019` Attempt 5 is Changes Requested. The submitted Attempt 5 implementation test files are byte-for-byte identical to Attempt 4; the next claim is Attempt 6 and must contain a real test implementation delta for the outstanding retry/replay/concurrency/router proofs. `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` remain Pending until BG19 is architect-accepted Complete.
+
+`ARCH-010-SHOPIFY-018` Attempt 2 is Changes Requested (narrow proof/workflow correction). Production `1605a3c` and test commit `dbfb9fc` remain the current candidates. Attempt 3 must add only the missing query-shape/parser/no-write assertions and exact VCS synchronization/report metadata unless a new test exposes a production defect. No downstream Shopify task is released until SHOPIFY-018 is architect-accepted Complete.
