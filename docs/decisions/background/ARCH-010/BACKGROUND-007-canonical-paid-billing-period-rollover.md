@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 47
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
 - ARCH-010-BACKGROUND-001
@@ -4243,4 +4243,746 @@ and implementation worktrees were clean before report finalization, and the
 implementation branch was pushed at `dd185ef`.
 
 Task status: review. Awaiting moda_architect review; no architect acceptance decision has been made by this agent.
+
+## Architect Review — Attempt 7
+
+### Changes Requested — Evidence Completion Only
+
+Attempt 7 is **not accepted yet**. Return this same task to `ready` for Attempt 8.
+
+No production source change is authorized by this review.
+
+Attempt 7 materially improved the permanent evidence and preserved the evidence-only
+boundary correctly. The remaining blocker is that the published 1–35 matrix is
+**lexically valid but still not semantically truthful** for several scenarios.
+
+Published Attempt-7 history to preserve:
+
+```text
+claim:
+  56fc5b1fca5c2d4e9b6615da18d529ecaf6fc9f7
+
+evidence:
+  dd185efad1974b8e2bc6c6ea73343119279b018b
+
+report:
+  dd6deec6a2a3c74562d7821fa6265d8d10f4fe33
+```
+
+The evidence commit is exactly one commit after Attempt-6 evidence and changes only:
+
+```text
+tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+```
+
+Preserve all Attempt-7 tests that currently pass.
+
+Attempt 8 is the next claim; increment `attempt` exactly once.
+
+### Attempt-7 evidence accepted in substance
+
+The following evidence is now architect-approved in substance:
+
+```text
+- scenario 9 overlap rejection test exists;
+- scenario 10 uses real PostgreSQL concurrency with two independent Prisma clients;
+- scenario 11 CLOSED-successor replay is fail-closed;
+- scenarios 12/13 old-event rollover finalization has direct same-plan coverage;
+- scenario 20 reservation/counter mismatch abort is permanent;
+- scenarios 18/19 Paid reservation release/final counter invariant are permanent;
+- scenarios 21/22 Paid successor snapshot/replay-counter evidence is materially improved;
+- scenarios 23/34 now distinguish generic post-commit hook invocation from the
+  Paid-only recovery-capacity-resume hint correctly;
+- the existing pack-enabled Free rollover test proves old-period close, one successor,
+  FREE snapshot/null included grant, no period included counter, and no mutation of
+  lifetime/purchased state;
+- rotating reconciliation now has explicit canonical-owner / no-legacy-upsert tests;
+- pack-disabled Free provider-cycle lag has explicit no-queue evidence;
+- pre-close failure-before-boundary, final-minute failure, and stale projection tests
+  exist and pass;
+- Attempt 7 made no production/schema/shared-contract changes.
+```
+
+Do not rewrite these tests merely to change titles.
+
+### Why the Attempt-7 matrix is still not acceptable
+
+Mechanical `rg` verification proves only:
+
+```text
+"the quoted title exists in the quoted file"
+```
+
+It does not prove:
+
+```text
+"the quoted test satisfies the required scenario"
+```
+
+The following Attempt-7 rows are semantically incorrect or incomplete.
+
+#### Scenario 2
+
+Required:
+
+```text
+early job reschedules successfully to drain start
+```
+
+Published mapping:
+
+```text
+uses the exact source projection CAS when rescheduling an early rollover job
+```
+
+That test deliberately forces:
+
+```text
+updateMany.count = 0
+```
+
+and proves stale-CAS safety. It does **not** prove a successful early reschedule.
+
+#### Scenario 3
+
+Required:
+
+```text
+drain job flushes old-period billable events and schedules exact boundary
+```
+
+Published mapping points to:
+
+```text
+does not mutate or enqueue when the schedule changes during Partner verification
+```
+
+The correct existing evidence is:
+
+```text
+flushes only the scheduled BillingPeriod and schedules the exact boundary
+```
+
+This is a matrix correction only.
+
+#### Scenario 6
+
+Required:
+
+```text
+provider transport failure preserves known cycle state and retries
+```
+
+Published mapping points to the rotating generic Partner-failure test.
+
+The more relevant existing scheduled-cycle test is:
+
+```text
+preserves cycle entitlements and schedules five minutes after cycle discovery failure
+```
+
+Strengthen that test to assert the retry update does not overwrite:
+
+```text
+planId
+billingPeriodId
+currentPeriodStart
+currentPeriodEnd
+```
+
+and that the retry job is enqueued.
+
+#### Scenario 9
+
+Required:
+
+```text
+overlapping non-identical provider cycle fails closed
+```
+
+Published mapping points to incompatible-successor identity.
+
+Correct existing mapping:
+
+```text
+fails closed for an overlapping non-identical provider cycle
+```
+
+#### Scenario 11
+
+Required:
+
+```text
+replay never reopens CLOSED target or duplicates grants
+```
+
+One test is not enough. Map both:
+
+```text
+does not reopen a CLOSED successor during replay
+reuses an already-open successor without duplicating its grant
+```
+
+and, for included-counter preservation, the existing compatible-successor-counter
+test may also be listed.
+
+#### Scenario 14
+
+Required:
+
+```text
+old IN_FLIGHT event is not overwritten by rollover
+```
+
+Published mapping points to publisher stale-claim scoping.
+
+Correct rollover evidence:
+
+```text
+does not overwrite old REPORTED or IN_FLIGHT events during rollover
+```
+
+Publisher scoping may be listed as supplementary evidence, not the primary mapping.
+
+#### Scenario 16
+
+Required:
+
+```text
+committed rollover survives queue publication failure
+AND repair reconstructs the missing delayed job
+```
+
+Published mapping:
+
+```text
+does not roll back durable state when queue publication fails
+```
+
+is a pending-activation/null-provider test and does not exercise a committed same-plan
+rollover.
+
+New evidence is required.
+
+#### Scenarios 24, 30, 31
+
+The published rows do not prove the required BG8 semantics.
+
+Required:
+
+```text
+24 Paid DRAINING and EXPIRED_RECONCILING:
+   new Paid included-meter recovery blocked;
+   new pack purchase blocked.
+
+30 Free DRAINING:
+   new pack purchase blocked;
+   remaining lifetime-Free recovery admission allowed.
+
+31 Free EXPIRED_RECONCILING:
+   new pack purchase blocked;
+   lifetime-Free entitlement remains usable/not expired.
+```
+
+Attempt-7 mappings prove only portions of recovery admission and do not prove pack
+purchase blocking. Scenario 31 is incorrectly mapped to a **Paid** reconciliation
+test.
+
+#### Scenario 33
+
+Required:
+
+```text
+later same-plan pack-enabled Free successor schedules the next pre-close job
+```
+
+A service-level returned `nextReconcileAt` is necessary but not sufficient.
+Permanent caller-level evidence must prove the delayed queue job is actually
+published after the successful Free rollover.
+
+#### Scenario 35
+
+Required:
+
+```text
+startup/repair reconstructs a missing pack-enabled Free cycle job
+```
+
+Published mapping is a generic future-job reconstruction test with a mocked row that
+does not prove pack-enabled Free eligibility.
+
+New explicit Free repair evidence is required.
+
+### Correction 1 — successful early job -> drain start
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Keep the current stale-CAS test.
+
+Add one success-path test with:
+
+```text
+plan = PAID_METERED
+currentPeriodEnd = 2026-10-01T00:00:00Z
+preCloseAt = currentPeriodEnd - drainWindow
+expectedNextReconcileAt earlier than preCloseAt
+now < preCloseAt
+updateMany.count = 1
+```
+
+Required assertions:
+
+```text
+- Partner is not needed for the early reschedule;
+- no UsageEvent publisher flush occurs;
+- exact source-projection CAS includes:
+    id
+    ACTIVE/TRIALING
+    planId
+    billingPeriodId
+    currentPeriodStart
+    currentPeriodEnd
+    old nextReconcileAt;
+- update writes nextReconcileAt = exact preCloseAt;
+- one deterministic delayed job is enqueued for exact preCloseAt.
+```
+
+Use this exact test as scenario 2.
+
+### Correction 2 — scenario 6 scheduled transport failure
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Strengthen:
+
+```text
+preserves cycle entitlements and schedules five minutes after cycle discovery failure
+```
+
+or add a more explicit companion.
+
+Prove:
+
+```text
+provider throws;
+retry update writes:
+  lastSyncErrorCode = PARTNER_API_ERROR
+  future nextReconcileAt;
+
+retry update does NOT contain:
+  planId
+  billingPeriodId
+  currentPeriodStart
+  currentPeriodEnd;
+
+one deterministic retry job is enqueued with that new expectedNextReconcileAt.
+```
+
+Map scenario 6 to this scheduled-cycle test, not the rotating scan test.
+
+### Correction 3 — committed rollover enqueue failure + repair
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Create one explicit scenario-16 test.
+
+Use a genuine same-plan rollover result:
+
+```text
+kind = transitioned
+billingPeriodId = successor
+nextReconcileAt = future pre-close
+planKind = PAID_METERED
+```
+
+Then:
+
+```text
+1. queue.add rejects after the durable transition;
+2. reconcileJob resolves/returns without rolling back the committed transition;
+3. durable Subscription fixture now represents:
+     billingPeriodId = successor
+     currentPeriodStart/end = provider successor
+     nextReconcileAt = future pre-close;
+4. invoke reconstruct();
+5. reconstruct publishes the missing deterministic delayed job.
+```
+
+Do not use the existing pending-activation queue-failure test as scenario 16.
+
+If the current unit seam cannot represent the durable post-transition row without
+changing production, STOP and return to `moda_architect`.
+
+### Correction 4 — successful retry after PRE_CLOSE_USAGE_FLUSH_FAILED
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Attempt 7 has:
+
+```text
+failure >60s before boundary
+failure inside final minute
+stale projection
+ordinary successful flush
+```
+
+Add the missing recovery path:
+
+```text
+subscription starts with:
+  lastSyncErrorCode = PRE_CLOSE_USAGE_FLUSH_FAILED
+  lastSyncErrorAt = previous failure
+  nextReconcileAt = retry timestamp
+
+publisher succeeds
+```
+
+Expected:
+
+```text
+- publishDue({ billingPeriodId: oldPeriodId });
+- error metadata cleared;
+- nextReconcileAt = exact periodEnd;
+- exact-boundary job enqueued.
+```
+
+This confirms a failed drain can actually recover.
+
+### Correction 5 — explicit pack-enabled Free successor job publication
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Add a real later same-plan Free rollover test at the scheduled caller boundary.
+
+Provider/local input:
+
+```text
+existing Free subscription with OPEN old BillingPeriod
+recoveryCreditPackEnabled = true
+provider reports later exact same-plan cycle
+```
+
+Required:
+
+```text
+- canonical transition returns/uses one Free successor;
+- successor schedule is providerEnd - drainWindow;
+- queue.add receives a deterministic job whose
+  expectedNextReconcileAt equals that exact pre-close timestamp.
+```
+
+This is scenario 33.
+
+Do not use initial Free subscription activation as scenario 33.
+
+### Correction 6 — explicit Free startup/repair reconstruction
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Add a reconstruction test with a returned row explicitly representing:
+
+```text
+shop ACTIVE
+onboardingCompleted = true
+Subscription ACTIVE
+plan.kind = FREE
+plan.recoveryCreditPackEnabled = true
+pendingEffectiveAt = null
+nextReconcileAt = future pre-close
+```
+
+Invoke:
+
+```text
+reconstruct()
+```
+
+and prove:
+
+```text
+- exactly one deterministic delayed reconcile-subscription job is added;
+- expectedNextReconcileAt is the Free pre-close timestamp;
+- repeating reconstruct produces the same deterministic job id.
+```
+
+Keep the existing pack-disabled-Free exclusion test.
+
+Map scenario 35 to this new test.
+
+For scenario 1, the final matrix may cite both:
+
+```text
+reconstructs future jobs with their remaining delay and deterministic duplicate ids
+excludes pack-disabled Free subscriptions from cycle reconstruction
+```
+
+or the new explicit Free/Paid cycle reconstruction evidence if it proves the common
+mechanism directly.
+
+### Correction 7 — truthful BG8 scenarios 24 / 30 / 31
+
+Do not infer these from unrelated recovery tests.
+
+First identify the **actual accepted BG8 production surface** that authorizes:
+
+```text
+new recovery-credit-pack purchase creation
+```
+
+and the exact tests for that surface.
+
+Use repository search, for example:
+
+```bash
+rg -n "RECOVERY_CREDIT_PACK_PURCHASE|recovery.*pack|purchase.*pack" src tests
+```
+
+Then add/identify permanent tests proving all of the following.
+
+#### Scenario 24 — Paid
+
+```text
+Paid DRAINING:
+  included-meter recovery blocked
+  pack purchase creation blocked
+
+Paid EXPIRED_RECONCILING:
+  included-meter recovery blocked
+  pack purchase creation blocked
+```
+
+#### Scenario 30 — Free DRAINING
+
+```text
+pack purchase creation blocked
+lifetime-Free recovery admission succeeds when durable lifetime capacity remains
+```
+
+#### Scenario 31 — Free EXPIRED_RECONCILING
+
+```text
+pack purchase creation blocked
+lifetime-Free durable entitlement remains valid/usable
+```
+
+Do not modify BG8 production code during this evidence attempt.
+
+If the accepted production surface does **not** implement one of these boundaries, or
+one of these tests fails, STOP immediately and report the exact genuine production
+gap to `moda_architect`.
+
+Do not fake pack-purchase coverage by asserting only recovery fallback order.
+
+### Correction 8 — matrix corrections that require no new production/test behavior
+
+The final Attempt-8 matrix must use semantically correct evidence.
+
+At minimum correct these rows:
+
+```text
+3 ->
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts
+  "flushes only the scheduled BillingPeriod and schedules the exact boundary"
+
+9 ->
+  tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+  "fails closed for an overlapping non-identical provider cycle"
+
+11 ->
+  list both CLOSED replay and OPEN successor/no-duplicate-grant evidence
+
+14 ->
+  tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+  "does not overwrite old REPORTED or IN_FLIGHT events during rollover"
+
+25, 26, 27, 28, 29 ->
+  use the existing later same-plan pack-enabled Free rollover test where its
+  assertions actually prove each requirement, rather than initial activation tests.
+
+32 ->
+  list BOTH:
+    "moves only old PENDING and RETRYABLE events to bounded attention"
+    "leaves an old pack purchase REQUESTED when its event is closed before reporting"
+
+34 ->
+  "emits one Paid capacity hint while allowing the generic hook for Free rollover"
+```
+
+For scenario 22, list enough evidence to prove both:
+
+```text
+one successor counter
+no reset during replay
+```
+
+The concurrency integration and compatible-successor replay test may be combined.
+
+### Correction 9 — final semantic matrix verification
+
+Attempt 8 Completion Report must again contain all 35 rows, but add an architect-facing
+semantic checklist after the table:
+
+```text
+Semantic matrix verification:
+  1  pre-close reconstruction: yes
+  2  successful early -> drain: yes
+  3  scoped flush -> boundary: yes
+  ...
+  35 Free pack repair reconstruction: yes
+```
+
+For each row, verify the test assertions, not only title existence.
+
+The title-existence script may remain, but it is not sufficient on its own.
+
+### Attempt 8 allowed scope
+
+Expected test-only changes:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/recovery-billing.service.test.ts
+```
+
+Potentially, only if this is the actual accepted BG8 pack-purchase test surface:
+
+```text
+tests/unit/services/recovery-credit-purchase.service.test.ts
+tests/unit/services/effective-billing-policy.service.test.ts
+```
+
+Report-only matrix corrections require only the parent task document.
+
+Do not change:
+
+```text
+src/**
+database/**
+Shared contracts
+other repositories
+```
+
+If any new test reveals a genuine production defect:
+
+```text
+STOP;
+do not patch production;
+publish the failing evidence;
+return this same task to moda_architect.
+```
+
+### Required Attempt 8 validation
+
+Run:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run \
+  tests/unit/services/same-plan-billing-period-rollover.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/services/shopify-usage-event-publisher.service.test.ts
+
+npx vitest run \
+  tests/unit/services/effective-billing-policy.service.test.ts \
+  tests/unit/services/paid-included-recovery-reservation.service.test.ts \
+  tests/unit/services/recovery-billing.service.test.ts \
+  tests/unit/services/whatsapp.service.test.ts
+
+npm run test:integration -- \
+  tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts
+
+npm run test:integration
+npm run test:unit
+npx tsc --noEmit
+npm run build
+git diff --check
+```
+
+If an additional BG8 pack-purchase test file is used, run it explicitly and record
+the exact command/result.
+
+Acceptance requires:
+
+```text
+- no production source change;
+- scenario 2 successful early reschedule proven;
+- scenario 6 state-preserving scheduled transport retry proven;
+- scenario 16 committed rollover + enqueue failure + repair proven;
+- failed pre-close retry can recover successfully;
+- scenario 33 Free successor queue publication proven;
+- scenario 35 explicit pack-enabled Free repair reconstruction proven;
+- scenarios 24/30/31 have exact factual recovery AND pack-purchase evidence;
+- final 1–35 matrix is semantically truthful;
+- concurrency integration remains green;
+- focused/BG8/BG9 preservation suites remain green;
+- documented unrelated repository baseline is unchanged;
+- git diff --check passes.
+```
+
+### Attempt 8 workflow evidence
+
+Preserve prior history and record actual observed values.
+
+At minimum:
+
+```text
+Attempt-6 claim:
+  8c09b6399d76314e37b80da2b33f2c86ba9ae364
+Attempt-6 evidence:
+  e96ca9e
+Attempt-6 report:
+  b84de1956950482c4f969353e9c3d5d327a3a77e
+
+Attempt-7 claim:
+  56fc5b1fca5c2d4e9b6615da18d529ecaf6fc9f7
+Attempt-7 evidence:
+  dd185efad1974b8e2bc6c6ea73343119279b018b
+Attempt-7 report:
+  dd6deec6a2a3c74562d7821fa6265d8d10f4fe33
+```
+
+Also include the mandatory physical-isolation, synchronization, database-submodule,
+dependency-ancestry and clean-handoff blocks used by earlier attempts.
+
+When complete:
+
+```text
+set this same task to review;
+publish evidence commit(s);
+publish the final factual 1–35 matrix;
+STOP for moda_architect.
+```
 
