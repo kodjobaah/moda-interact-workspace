@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 53
 executor: copilot
 claimed_at: '2026-09-13T14:19:21Z'
@@ -1224,4 +1224,82 @@ When all corrections and evidence are complete:
 2. update the Completion Report with exact Attempt 3 commands/results, worktree evidence, implementation commit and parent report commit;
 3. push both `task/ARCH-010-BACKGROUND-009` branches;
 4. STOP for architect review.
+
+## Attempt 3 Completion Report
+
+### Status
+
+Ready for architect review. Self-acceptance is not performed.
+
+### Corrections completed
+
+- Removed the continuation-only `id > lastRecoveryId` filter. Resume continuations now query the complete remaining durable set with `status = DETECTED`, `admissionBlockReason = RECOVERY_CAPACITY_EXHAUSTED`, `detectedAt ASC`, `id ASC`, and `take: 25`.
+- Removed the stale top-level `allowance-exhausted` blocked result and duplicate `reservation-in-flight` member while preserving BG8 billing-period reasons.
+- Added selected promotional grant epoch regression coverage for identical snapshots, grant-id changes, version changes, and committed/reserved accounting changes.
+- Added focused repair-service coverage for active blocked shops, the 100-shop bound, and non-fatal per-shop scheduling failure.
+- Added focused checkout-resume coverage for inactive shops and provider, ambiguous, and bounded lookup failures remaining retryable and non-terminal.
+
+### Files Changed in Attempt 3
+
+- `src/services/recovery-billing.service.ts`
+- `src/workers/recovery-capacity-resume.worker.ts`
+- `tests/unit/services/recovery-billing.service.test.ts`
+- `tests/unit/workers/recovery-capacity-resume.worker.test.ts`
+- `tests/unit/services/recovery-capacity-resume.service.test.ts`
+- `tests/unit/services/checkout-recovery.capacity-resume.test.ts`
+
+### Physical worktree isolation
+
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009
+  parent branch: task/ARCH-010-BACKGROUND-009
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009
+  implementation branch: task/ARCH-010-BACKGROUND-009
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+### Start-of-attempt synchronization
+
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+### Database submodule
+
+  database submodule initialized: yes
+  database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+  database submodule HEAD: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+  database gitlink staged/changed: no
+
+### BG8/main integration
+
+  Background origin/main SHA incorporated: a585139bb5f4c42d30ce0cc303f738f0c93c70b2
+  BG8 accepted commit b4ef7c885e03009f6622894230ab54a87bf4364a is ancestor of implementation HEAD: yes
+  BG8 merge commit a585139bb5f4c42d30ce0cc303f738f0c93c70b2 is ancestor of implementation HEAD: yes
+  BG8 preservation gate passed: yes
+
+### Validation Results
+
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- BG8 preservation gate: passed. The four-file gate passed 112 tests; the targeted matured-candidate revalidation test passed; the targeted ambiguous pending-intent test passed.
+- BG9 focused suites excluding the pre-existing purchased-credit drift: 75/75 passed across recovery billing, repair service, resume worker, and checkout resume tests.
+- Full required BG9 focused command including `recovery-credit-purchase.service.test.ts`: 8 existing purchased-credit baseline failures; the four BG9-owned changed/added files passed.
+- `npm run test:unit`: 10 baseline failures: 8 purchased-credit reconciliation failures caused by the accepted database gitlink/client drift and 2 pre-existing runtime observability assertion failures. No failure originated in an Attempt 3 changed file.
+- `npm run test:integration`: passed, 3/3 tests.
+- `npx tsc --noEmit`: blocked by 15 existing diagnostics in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no Attempt 3 changed file is implicated.
+- `npm run build`: blocked by the same existing Prisma/client drift; no Attempt 3 changed file is implicated.
+- `git diff --check`: passed.
+- Focused diagnostics: no errors in either changed production file or the four changed/added focused test files.
+
+### Git / VCS
+
+Implementation commit `3312900` is pushed to `origin/task/ARCH-010-BACKGROUND-009`.
+Attempt 3 parent claim commit `ba90d59` is pushed to `origin/task/ARCH-010-BACKGROUND-009`; the parent report commit follows this update. The Attempt 2 claim-reference correction is factual: the published Attempt 2 claim commit was `b2be595ff100364878a343914d286161687bd990`, not `9d0cbba`. The database submodule gitlink was not staged.
+
+### Architect Review
+
+Requested. Self-acceptance is not performed.
 
