@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 84
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-13T20:02:18Z
+attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-SHOPIFY-018
@@ -23,7 +23,7 @@ enables:
 - ARCH-010-SHOPIFY-022
 - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
-updated: '2026-09-13'
+updated: 2026-09-13
 ---
 
 # ARCH-010-SHOPIFY-021: Show eligible running promotion offers and let a merchant select one
