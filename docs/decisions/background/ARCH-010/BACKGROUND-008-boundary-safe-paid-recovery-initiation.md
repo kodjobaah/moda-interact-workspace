@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 46
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
 - ARCH-010-BACKGROUND-007
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-BACKGROUND-008: Make paid recovery initiation safe across the billing-cycle boundary

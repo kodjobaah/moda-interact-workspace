@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 53
 executor: null
 claimed_at: null
@@ -28,7 +28,7 @@ enables:
 - ARCH-010-SHOPIFY-008
 - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-BACKGROUND-009: Persist recovery exhaustion and resume blocked recoveries when capacity returns
