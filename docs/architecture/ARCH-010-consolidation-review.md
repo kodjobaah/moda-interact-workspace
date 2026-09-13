@@ -287,3 +287,35 @@ ARCH-010-ADMIN-006
 ARCH-010-BACKGROUND-003
 ARCH-010-SHOPIFY-022
 ```
+
+## Post-review update — SHOPIFY-022 Attempt 3 accepted
+
+`ARCH-010-SHOPIFY-022` Attempt 3 is architect-accepted Complete.
+
+Accepted implementation/evidence:
+
+```text
+implementation: 666409d
+parent report:  600e9ba
+focused:        28/28 and 46/46 passed
+full suite:     316 passed, 3 skipped
+build:          passed
+```
+
+The merchant promotion-history boundary now has explicit regression evidence that
+real `REOPENED` lifecycle state never overrides `EXHAUSTED`, `CLOSED`, `EXPIRED` or
+`NO_LONGER_ELIGIBLE`, and that reopen lifecycle evidence/internal provenance remains
+server-side only.
+
+`ARCH-010-SYSTEM-TEST-003` remains Pending / manual-gated because its other
+dependencies are still incomplete. No direct dependant becomes Ready solely from
+this acceptance.
+
+Current Ready frontier from authoritative ARCH-010 task YAML remains:
+
+```text
+ARCH-010-BACKGROUND-006
+ARCH-010-BACKGROUND-010
+ARCH-010-SHOPIFY-003
+```
+

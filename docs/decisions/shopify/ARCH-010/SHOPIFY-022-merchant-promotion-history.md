@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 86
 attempt: 3
 depends_on:
@@ -1012,4 +1012,86 @@ the claim, committing/pushing both mirrored task branches, STOP and return to
 `moda_architect`.
 
 Do not start `ARCH-010-SYSTEM-TEST-003` or any adjacent task.
+
+## Architect Review — Attempt 3
+
+### Review Status
+
+**Accepted**
+
+Attempt 3 satisfies the evidence-only correction contract from the Attempt-2
+Architect Review. No production, route, locale, schema or dependency changes were
+required or made.
+
+Accepted evidence:
+
+1. `tests/unit/services/promotion.service.test.ts` now proves all four higher-
+   precedence states against an otherwise genuine post-selection `REOPENED` event:
+
+```text
+REOPENED + exhausted                  -> EXHAUSTED
+REOPENED + CLOSED                     -> CLOSED
+REOPENED + expired                    -> EXPIRED
+REOPENED + no-longer-target-eligible  -> NO_LONGER_ELIGIBLE
+```
+
+2. The query-to-projection regression proves that the latest
+   `PromotionCampaignEvent(REOPENED).createdAt` is consumed only as server-side
+   classification evidence. The merchant history row is `REOPENED` while omitting:
+
+```text
+events
+reopenedAt
+platformAdminId
+targetPlanId
+targetShopId
+requestKey
+```
+
+3. The Prisma nested event read remains bounded to:
+
+```ts
+events: {
+  where: { kind: "REOPENED" },
+  orderBy: { createdAt: "desc" },
+  take: 1,
+  select: { createdAt: true },
+}
+```
+
+4. Snapshot comparison against Attempt 2 shows the only implementation-file change
+   is:
+
+```text
+moda-interact/tests/unit/services/promotion.service.test.ts
+```
+
+The accepted Attempt-2 production baseline therefore remains unchanged.
+
+Validation accepted from the Completion Report:
+
+```text
+Attempt-3 focused promotion service: 28/28 passed
+Focused service/route/i18n:          46/46 passed
+Full suite:                          316 passed, 3 skipped
+Build:                               passed
+git diff --check:                    passed
+```
+
+The unchanged repository typecheck/lint baseline was correctly not re-investigated
+for this test/evidence-only attempt.
+
+Published review evidence:
+
+```text
+implementation: 666409d
+parent report:  600e9ba
+attempt:        3
+```
+
+`ARCH-010-SHOPIFY-022` is Complete.
+
+`ARCH-010-SYSTEM-TEST-003` remains Pending / manual-gated. Completion of
+SHOPIFY-022 satisfies only one of its many dependencies and does not make that
+terminal system-test task Ready. No downstream task is promoted by this acceptance.
 
