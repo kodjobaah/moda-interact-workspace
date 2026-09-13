@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 89
-executor: copilot
-claimed_at: 2026-09-13T17:22:16Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-010-ADMIN-007
@@ -1652,5 +1652,469 @@ When complete:
 2. publish implementation commit(s);
 3. update Completion Report with exact commands/results and workflow evidence;
 4. publish parent task report;
+5. STOP for Architect Review.
+
+## Architect Review — Attempt 4
+
+### Changes Requested
+
+Attempt 4 is **not accepted**. Keep this same task and return it to `ready` for
+Attempt 5. Do not create a replacement task and do not begin
+`ARCH-010-SYSTEM-TEST-005`.
+
+The implementation under review is:
+
+```text
+e0ad1a9532e9b34e595647964c8236d42ce67b0c
+```
+
+The published Attempt-4 parent history is:
+
+```text
+claim:
+  3fd37dbb3c57200f44baf59058db350d8472a2f7
+
+report:
+  cbea546170fbd86f58870d3c35d70373e3705876
+```
+
+Preserve that history. Attempt 5 is the next claim; increment `attempt` exactly
+once when claimed.
+
+### Attempt-4 work accepted in substance — preserve it
+
+The following changes are architect-approved in substance and must not regress:
+
+```text
+- structural INVALID_UPGRADE_EDGE now takes precedence over stale pack evidence;
+- mutateBillingPlanAction uses applyBillingPlanUpdateInTransaction inside the real
+  Prisma transaction for economics-affecting plan edits;
+- the production mutation seam reads active adjacent edges and latest snapshots,
+  asserts PASS before catalog writes, records economics audit evidence, then writes
+  the plan/catalog audit;
+- FAIL/UNVERIFIED rejection leaves the catalog mutation path before BillingPlan
+  update;
+- UI presenters are extracted production components and are tested with
+  ReactDOMServer.renderToStaticMarkup;
+- audit evidence uses a whitelist projection and contains the required `topUpPath`
+  key;
+- Attempt-4 validation/worktree evidence is coherent and both canonical worktrees
+  were reported clean.
+```
+
+Do not redesign the mutation transaction seam unless the exact tests below expose
+a concrete defect.
+
+### Correction 1 — single-pack `topUpPath` must describe the actual pack route
+
+Primary files:
+
+```text
+src/lib/admin/billing-plan-guardrail.ts
+src/components/admin/billing-plan-economics-presentation.ts
+tests/security/admin-billing-plan.test.mjs
+tests/unit/billing-plan-economics-presentation.test.mjs
+```
+
+Do **not** modify:
+
+```text
+src/lib/admin/upgrade-economics-guardrail.ts
+```
+
+The accepted ADMIN-007 single-pack evaluator intentionally returns:
+
+```text
+details.packUnitsNeeded
+```
+
+for Shopify usage-meter pricing. It does not populate the multi-offer
+`details.packSummary` structure used by the older fixed-offer evaluator.
+
+Attempt 4 currently derives both:
+
+```text
+UI top-up path
+audit topUpPath
+```
+
+only from:
+
+```text
+details.packSummary
+```
+
+Therefore a valid single-pack evaluation can have:
+
+```text
+additionalCreditsNeeded = 300
+recoveryCreditsPerPack = 50
+packUnitsNeeded = 6
+```
+
+but ADMIN-009 renders:
+
+```text
+No top-up path
+```
+
+and records:
+
+```json
+"topUpPath": []
+```
+
+That is semantically wrong and violates scenarios 54 and 65.
+
+Add one ADMIN-owned projection helper. Suggested shape:
+
+```ts
+export type BillingUpgradeTopUpPathItem = {
+  quantity: number;
+  creditsGranted: number;
+};
+
+export function billingUpgradeTopUpPath(
+  evaluation: EvaluatedBillingUpgradeEdge,
+): BillingUpgradeTopUpPathItem[] {
+  // Existing multi-offer evidence, if present, remains authoritative.
+  if (evaluation.result.details.packSummary?.length) {
+    return evaluation.result.details.packSummary.map(({ quantity, creditsGranted }) => ({
+      quantity,
+      creditsGranted,
+    }));
+  }
+
+  const quantity = evaluation.result.details.packUnitsNeeded;
+  const creditsGranted = evaluation.lowerPlan.recoveryCreditsPerPack;
+
+  if (
+    quantity !== undefined &&
+    Number.isSafeInteger(quantity) &&
+    quantity > 0 &&
+    creditsGranted !== null &&
+    Number.isSafeInteger(creditsGranted) &&
+    creditsGranted > 0
+  ) {
+    return [{ quantity, creditsGranted }];
+  }
+
+  return [];
+}
+```
+
+Equivalent naming is allowed, but there must be **one** ADMIN projection used by
+both audit and presentation.
+
+Then:
+
+```text
+billingUpgradeEconomicsAuditEvidence(...).topUpPath
+  = billingUpgradeTopUpPath(evaluation)
+
+EconomicsExplanation top-up-path rendering
+  = billingUpgradeTopUpPath(evaluation)
+```
+
+Do not alter the economics calculation or invent a Shopify price/offer object.
+
+Required permanent regressions:
+
+```text
+Starter 100 -> Growth 400
+pack size = 50
+packUnitsNeeded = 6
+=> topUpPath = [{ quantity: 6, creditsGranted: 50 }]
+=> rendered top-up path contains "6 x 50"
+
+top-ups OFF / NO_TOPUPS_AVAILABLE
+=> topUpPath = []
+=> UI may render the existing no-top-up-path copy
+```
+
+The audit evidence test must assert the **value**, not merely that the key exists.
+
+### Correction 2 — scenarios 48–60 need exact production-seam coverage, not one-edge inference
+
+File:
+
+```text
+tests/security/admin-billing-plan.test.mjs
+```
+
+Attempt 4 correctly calls the real production seam, but its fixture contains only:
+
+```text
+Starter -> Growth
+```
+
+and every invocation mutates `Starter`.
+
+That cannot prove the claims made for:
+
+```text
+50 previous -> lower AND lower -> higher;
+51 lower -> higher AND higher -> next;
+60 updating the top plan without inventing a higher tier.
+```
+
+It also labels a top-ups-OFF mutation as `enabled`, so scenario 48
+"creating/enabling a top-up pack" is not actually covered.
+
+Keep the production seam unchanged unless these tests expose a defect.
+
+Build one explicit four-plan ladder:
+
+```text
+Free -> Starter -> Growth -> Scale
+```
+
+and make the fake transaction record, for each economics audit:
+
+```text
+relatedEntityId
+afterValue.status
+afterValue.code
+```
+
+as well as catalog-write order.
+
+Required behavioral cases through `applyBillingPlanUpdateInTransaction(...)`:
+
+```text
+48 Enable pack on Starter:
+   existing Starter pack OFF
+   proposed Starter pack ON with matching current verified snapshot
+   -> Starter->Growth is evaluated
+   -> mutation commits only if PASS
+
+49 Change Starter recoveryCreditsPerPack:
+   -> Starter->Growth is evaluated
+   -> stale size evidence rejects before catalog write
+
+50 Change Starter monthly included allowance:
+   configured edges Free->Starter and Starter->Growth
+   -> exactly both edge IDs receive UPGRADE_ECONOMICS_EVALUATED evidence
+
+51 Change Growth monthly included allowance:
+   configured edges Starter->Growth and Growth->Scale
+   -> exactly both edge IDs receive UPGRADE_ECONOMICS_EVALUATED evidence
+
+52 Disable Starter top-ups:
+   -> valid Starter->Growth result contains PASS / NO_TOPUPS_AVAILABLE
+   -> mutation commits
+
+53 Enable top-ups without compatible/current Starter snapshot:
+   -> UNVERIFIED
+   -> no catalog mutation
+
+54 PASS:
+   -> economics audit contains snapshot IDs, result/evidence and non-empty
+      single-pack topUpPath where applicable
+   -> audit happens before BillingPlan.update
+   -> PLAN_CATALOG_CHANGED happens after update
+
+55 FAIL:
+   -> no BillingPlan/features/catalog write
+
+56 UNVERIFIED:
+   -> no BillingPlan/features/catalog write
+
+57 Crafted direct production-seam invocation with FAIL:
+   -> still rejected; no catalog write
+
+58 Currency mismatch:
+   -> rejected before catalog write
+
+59 Plan with no incoming/outgoing configured edge:
+   -> zero economics audits
+   -> no invented edge lookup/result
+   -> ordinary allowed catalog edit may commit
+
+60 Update Scale with ladder Free->Starter->Growth->Scale:
+   -> exactly Growth->Scale is evaluated
+   -> no invented Scale->anything evaluation
+```
+
+Assert exact economics audit edge IDs/counts; do not use only
+`writes.includes(...)`.
+
+### Correction 3 — rendered PASS evidence must assert every scenario-65 field
+
+File:
+
+```text
+tests/unit/billing-plan-economics-presentation.test.mjs
+```
+
+The new render test is real, which is good, but the PASS case currently asserts only:
+
+```text
+Starter
+Growth
+GBP 170.00
+GBP 75.00
+PASS
+```
+
+It does not permanently prove the required capacity gap, pack units, top-up path,
+actual premium or required premium.
+
+For the existing fixture:
+
+```text
+Starter included = 100
+Growth included = 400
+pack size = 50
+usage unit price = GBP 20.00
+Starter recurring = GBP 50.00
+Growth recurring = GBP 75.00
+minimum premium = 20.0%
+```
+
+assert rendered visible evidence for:
+
+```text
+lower plan: Starter
+higher plan: Growth
+capacity gap: 300
+required pack units: 6
+top-up path: 6 x 50
+stay + top-ups: GBP 170.00
+upgrade: GBP 75.00
+actual premium: 126.7%
+required premium: 20.0%
+PASS
+```
+
+For FAIL, assert that the rendered calculation evidence is still present in
+addition to the blocked copy.
+
+For UNVERIFIED, preserve the exact missing/incompatible evidence assertion and
+prove PASS is absent.
+
+Keep the existing `NO_UPGRADE_EDGE` and charging-authority assertions.
+
+### Correction 4 — preserve exact Attempt-5 workflow evidence
+
+Attempt 5 must record actual observed values:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
+  parent branch: task/ARCH-010-ADMIN-009
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
+  implementation branch: task/ARCH-010-ADMIN-009
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Parent history reconciliation:
+  Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
+  Attempt-1 report 5a17755... ancestor of parent HEAD: yes
+  Attempt-2 claim 645574c... ancestor of parent HEAD: yes
+  Attempt-2 report eda0f87... ancestor of parent HEAD: yes
+  Attempt-3 claim 869c761... ancestor of parent HEAD: yes
+  Attempt-3 report 24083ae... ancestor of parent HEAD: yes
+  Attempt-4 claim 3fd37db... ancestor of parent HEAD: yes
+  Attempt-4 report cbea546... ancestor of parent HEAD: yes
+
+Handoff:
+  parent worktree clean: yes
+  implementation worktree clean: yes
+```
+
+Record only observed values.
+
+### Attempt 5 allowed scope
+
+Expected production changes:
+
+```text
+src/lib/admin/billing-plan-guardrail.ts
+src/components/admin/billing-plan-economics-presentation.ts
+```
+
+`src/lib/admin/billing-plan-mutation.ts` may change **only** if the explicit
+48–60 tests expose a production defect.
+
+Expected test changes:
+
+```text
+tests/security/admin-billing-plan.test.mjs
+tests/unit/billing-plan-economics-presentation.test.mjs
+```
+
+Do not modify:
+
+```text
+src/lib/admin/upgrade-economics-guardrail.ts
+database/**
+Shared/Shopify/Background/Messaging/Gateway repositories
+merchant runtime billing/admission
+Shopify prices/App Events
+```
+
+If satisfying these corrections requires changing ADMIN-007 arithmetic, another
+repository or schema, STOP and return to `moda_architect`.
+
+### Required Attempt 5 validation
+
+From the canonical Admin implementation worktree:
+
+```bash
+npm run prisma:validate
+
+node --experimental-strip-types --test \
+  tests/security/admin-billing-plan.test.mjs
+
+node --experimental-strip-types --test \
+  tests/unit/billing-plan-economics-presentation.test.mjs
+
+npm test
+npx tsc --noEmit --pretty false
+npm run lint
+npm run build
+git diff --check
+```
+
+Acceptance requires:
+
+```text
+- audit topUpPath contains the actual single-pack route;
+- rendered scenario 65 visibly contains 6 x 50 and every required calculation field;
+- scenarios 48–60 are evidenced through the production mutation seam with exact
+  adjacent-edge IDs/counts;
+- all focused/new tests pass;
+- full Admin suite passes;
+- TypeScript and Prisma validation pass;
+- lint has no new warning beyond the two documented existing queue-monitor hook
+  warnings;
+- build has no new warning beyond the documented BullMQ warning;
+- git diff --check passes.
+```
+
+### Attempt 5 stop conditions
+
+STOP and return this same task to `moda_architect` if:
+
+1. representing the single-pack top-up path requires changing ADMIN-007;
+2. explicit 48–60 tests expose a transaction-seam defect requiring schema changes;
+3. rendered evidence requires adding a new test framework/package;
+4. another repository must change.
+
+When complete:
+
+1. set this same task to `review`;
+2. publish implementation commit(s);
+3. update the Completion Report with exact commands/results and workflow evidence;
+4. publish the parent task report;
 5. STOP for Architect Review.
 
