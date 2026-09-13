@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 88
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: '2026-09-13T14:08:58Z'
+attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-ADMIN-001
@@ -165,7 +165,7 @@ Stop if DATABASE-013 is unavailable or if implementation would require putting m
 ## Completion Report
 
 ### Status
-Implemented and published. Awaiting architect review.
+In Progress.
 
 ### Files Changed
 - `moda-interact-admin/src/app/(protected)/billing/controls/page.tsx`
