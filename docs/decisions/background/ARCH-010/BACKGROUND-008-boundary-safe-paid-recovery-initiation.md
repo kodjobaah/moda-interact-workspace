@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: complete
 priority: 46
-executor: copilot
-claimed_at: '2026-09-13T13:30:00Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-BACKGROUND-002
@@ -319,11 +319,90 @@ database gitlink staged/changed: no
 
 Parent claim commit: `214097e`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
 Implementation commit: `b4ef7c8`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
-Parent report commit: pending publication.
+Parent report commit: `a8852ad`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
 Implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
-Changes Requested
+Accepted
+
+#### Attempt 3 — Accepted
+
+**Decision: Accepted.** `ARCH-010-BACKGROUND-008` is Complete at Attempt 3.
+
+Accepted implementation branch HEAD:
+
+```text
+b4ef7c885e03009f6622894230ab54a87bf4364a
+```
+
+Accepted parent report branch HEAD:
+
+```text
+a8852ada619b69d3cb6ad5dc53e8480cf0af8917
+```
+
+The architect reviewed the Attempt 3 implementation relative to accepted Attempt 2 commit `c369f64411cdcb17b4abace98973345a5f2c0d29`. The delta is one bounded commit and changes only:
+
+```text
+src/services/paid-included-recovery-reservation.service.ts
+tests/unit/services/paid-included-recovery-reservation.service.test.ts
+tests/unit/services/recovery-billing.service.test.ts
+```
+
+The Attempt 3 test-harness correction is accepted: Background billing tests now inject the sixth `promotionalReservationService` dependency instead of accidentally falling through to the real singleton/Prisma path.
+
+The new boundary evidence is accepted. It proves:
+
+- ACTIVE paid admission revalidated into DRAINING releases the old included reservation and reclassifies through the non-App-Event fallback path;
+- EXPIRED_RECONCILING releases both paid-included and purchased pre-provider reservations and blocks with `billing-period-reconciliation`;
+- a still-RESERVED paid-included reservation can be released after its owning period closes while direct stale-period commit remains rejected by the existing regression;
+- a timeout-shaped provider failure remains ambiguous and marks the owning reservation ambiguous rather than releasing it;
+- the previously-proven checkout no-send/no-commit boundary, 30-second WhatsApp timeout, period-scoped source identity and pause-aware pre-provider revalidation remain green.
+
+The 12-line production addition of `requireOpenReservationCounter()` is also accepted after architect inspection. The method was already called by `markAmbiguousInTransaction()` before Attempt 3 but was missing from the class. The added helper only reuses `requireReservationCounter()` and enforces the existing OPEN/unexpired BillingPeriod invariant before changing a RESERVED paid-included reservation to AMBIGUOUS. It introduces no new routing, persistence model or cross-repository contract.
+
+This production repair did deviate from the Attempt 3 execution instruction to STOP before making production changes if a new proof exposed a genuine defect. The architect explicitly ratifies the repair now because the defect and fix are both within the original BACKGROUND-008 reservation-safety scope and the implementation has been inspected. The deviation is recorded rather than rewritten as compliant historical execution; no Attempt 4 is required.
+
+Validation evidence accepted from the canonical implementation worktree:
+
+```text
+npm run prisma:validate                                      passed
+npm run prisma:generate                                      passed
+focused BG8 suite                                             106 passed
+BACKGROUND-008 boundary proofs                                5 passed
+checkout blocked-revalidation no-send/no-commit proof         passed
+WhatsApp suite                                                8 passed
+outbound ambiguity proof                                      passed
+git diff --check                                              passed
+database gitlink                                               5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+```
+
+Repository-wide `npm run test:unit` and `npm run build` remain non-green only in the documented unrelated observability/purchased-credit reconciliation and purchased-credit TypeScript baseline. Those failures are outside the Attempt 3 changed files and do not reopen BACKGROUND-008.
+
+##### Architect evidence reconciliation
+
+The Attempt 3 Completion Report incorrectly records:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-background
+```
+
+That value is not accepted as the workspace root. The recorded parent and implementation worktrees are the canonical dedicated worktrees under:
+
+```text
+/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-008
+/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-008
+```
+
+and the architect reconciles the canonical workspace root as:
+
+```text
+/Users/kwadwoadomafriyie/project/moda-interact-workspace
+```
+
+The historical Completion Report entry is intentionally left unchanged and this Architect Review records the correction explicitly.
+
+`ARCH-010-BACKGROUND-007` remains **Pending** after this acceptance because it also depends on `ARCH-010-BACKGROUND-009`, which is not Complete. Do not start BG7 yet.
 
 #### Attempt 1 — Changes Requested
 
