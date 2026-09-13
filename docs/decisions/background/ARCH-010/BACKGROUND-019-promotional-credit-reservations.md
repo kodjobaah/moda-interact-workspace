@@ -193,7 +193,7 @@ Stop if DATABASE-013 exact grant ownership is unavailable, or if implementing pr
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `src/services/promotional-recovery-reservation.service.ts`
@@ -215,13 +215,16 @@ In Progress.
 - Attempt 4 preserved the exact-grant production accounting fixes and added lifecycle coverage proving selection history remains owned by selection actions, including release/expiry/reopen behavior.
 - Attempt 4 expanded router coverage for promotional fallback to paid included capacity, replay ownership, and promotional commits that never invoke paid meter accounting.
 - Strengthened the PostgreSQL race assertion to prove only the pre-seeded lifetime entitlement counter exists and no promotional aggregate counter is used.
+- Attempt 5 revalidated all six Changes Requested correction groups against the published implementation; no additional source changes were required.
 
 ### Validation Results
-- Attempt 4 claimed durably with `executor: copilot`, `attempt: 4`, and claim timestamp `2026-09-14T00:00:00Z`.
+- Attempt 5 claimed durably with `executor: copilot`, `attempt: 5`, and claim timestamp `2026-09-13T00:00:00Z`.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - Focused `vitest` primitive/router suite: passed, 60 tests.
 - `npm run test:integration -- tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`: passed, 1 test.
+- Attempt 5 rerun of the focused primitive/router suite: passed, 60 tests.
+- Attempt 5 rerun of the PostgreSQL concurrency test: passed, 1 test.
 - `./node_modules/.bin/tsc --noEmit`: passed.
 - `npm run build`: passed.
 - `git diff --check`: passed.
@@ -264,8 +267,8 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md`
-  claim commit: `0ca27cc`
-  review report commit: `c48c3ac`
+  claim commit: `41e5bca`
+  review report commit: pending Attempt 5 publication
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: yes
   submodule gitlink staged: no
