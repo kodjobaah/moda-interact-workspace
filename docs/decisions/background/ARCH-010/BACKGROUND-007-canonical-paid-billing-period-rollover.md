@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 47
-executor: copilot
-claimed_at: 2026-09-13T17:32:47Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-010-BACKGROUND-001
@@ -2253,3 +2253,511 @@ When complete:
    mandatory workflow evidence;
 4. publish parent report;
 5. STOP for Architect Review.
+
+## Architect Review — Attempt 4
+
+### Changes Requested
+
+Attempt 4 is **not accepted**. Keep this same task and return it to `ready` for
+Attempt 5. Do not create a replacement task and do not begin any task enabled by
+`ARCH-010-BACKGROUND-007`.
+
+Implementation under review:
+
+```text
+1863a7fd0b91bdcafb4a8de8c20a4ec64718b447
+```
+
+Published Attempt-4 parent history:
+
+```text
+claim:
+  e519460d7a08c225b8db8ffedc9df81d44570fb0
+
+report:
+  a447733acac0917039d398517e31794fec36cabb
+
+review-status publication:
+  1b63e841adf009e37899f2849e399f1b8f820a87
+```
+
+Preserve all three commits. Attempt 5 is the next claim; increment `attempt`
+exactly once when claimed.
+
+### Attempt-4 work accepted in substance — preserve it
+
+The following Attempt-3 corrections are correct and must not regress:
+
+```text
+- scheduled provider-cycle lag records PROVIDER_CYCLE_LAG and moves the schedule
+  forward by 60 seconds;
+- scoped publisher stale-claim recovery is BillingPeriod-scoped;
+- PRE_CLOSE_USAGE_FLUSH_FAILED remains durable and bounded;
+- early pre-close rescheduling now uses plan/period/source-cycle CAS;
+- pack-disabled Free canonical rollover writes nextReconcileAt = null;
+- rotating reconciliation has a provider-cycle-lag branch;
+- BG8/BG9 preservation validation remains at the documented baseline.
+```
+
+Do not redesign those pieces unless the exact regressions below expose a defect.
+
+### Correction 1 — wire the existing billingSubscriptionQueue into rotating reconciliation in production
+
+Files:
+
+```text
+src/entrypoints/billing.ts
+src/services/billing-reconciliation.service.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/runtime/entrypoint-isolation.test.ts   # only if this is the existing
+                                                  # repository wiring-test location
+```
+
+Attempt 4 adds an optional `subscriptionQueue` dependency to
+`BillingReconciliationService`, and the rotating-lag branch enqueues only when that
+dependency exists.
+
+However production still exports:
+
+```ts
+export const billingReconciliationService = new BillingReconciliationService();
+```
+
+and `src/entrypoints/billing.ts` imports/runs that singleton. Therefore the actual
+billing worker uses a rotating-reconciliation instance with no queue.
+
+Fix the production wiring. Preferred deterministic shape:
+
+```ts
+export function createBillingReconciliationService(
+  subscriptionQueue?: SubscriptionQueue,
+): BillingReconciliationService {
+  return new BillingReconciliationService(
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    subscriptionQueue,
+  );
+}
+```
+
+Then in `src/entrypoints/billing.ts`:
+
+```text
+- load billingSubscriptionQueue;
+- construct the rotating BillingReconciliationService with that exact queue;
+- run that queue-backed instance in runBillingCycle();
+- keep the existing BillingSubscriptionReconciliationService on the same queue.
+```
+
+Equivalent dependency-injection structure is allowed, but:
+
+```text
+- do not import entrypoint resources from inside a service;
+- do not create a second Queue;
+- do not duplicate the Shared queue/job names;
+- do not rely on reconstruct() as the only way to publish a rotating lag retry.
+```
+
+Required regression:
+
+```text
+production billing entrypoint -> rotating reconciliation receives
+billingSubscriptionQueue
+```
+
+Use the repository's existing entrypoint/wiring test style. A small source-wiring
+assertion is acceptable for this bootstrap-only invariant; the lag behavior itself
+must remain behaviorally tested in the service test.
+
+### Correction 2 — rotating lag must repair a missing/null durable schedule for eligible cycle plans
+
+File:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+Attempt 4 currently requires:
+
+```ts
+existing.nextReconcileAt
+```
+
+to be truthy before the rotating `provider-cycle-lag` branch writes the +60-second
+retry.
+
+For a cycle-scheduled plan, rotating reconciliation must be able to repair:
+
+```text
+nextReconcileAt = null
+```
+
+as well as an expired non-null boundary timestamp.
+
+Cycle-scheduled plans are exactly:
+
+```text
+PAID_METERED
+OR
+FREE where recoveryCreditPackEnabled = true
+```
+
+For those plans:
+
+```text
+provider-cycle-lag
++ exact current billingPeriod/start/end
++ nextReconcileAt may be Date OR null
+
+-> CAS the exact current state, including nextReconcileAt as its observed value
+-> persist PROVIDER_CYCLE_LAG
+-> set nextReconcileAt = now + 60 seconds
+-> enqueue with the existing queue after the durable update
+```
+
+For:
+
+```text
+FREE + recoveryCreditPackEnabled = false
+```
+
+do not create a cycle-specific lag retry. Preserve the Attempt-4 rule that such a
+Free subscription has no monthly cycle schedule.
+
+Required tests:
+
+```text
+- Paid rotating lag with nextReconcileAt = null repairs to now+60s and enqueues;
+- pack-enabled Free rotating lag with nextReconcileAt = null repairs and enqueues;
+- pack-disabled Free rotating old-cycle observation does not create a cycle schedule;
+- queue rejection leaves the durable now+60s schedule committed and logs bounded
+  enqueue failure.
+```
+
+### Correction 3 — replace the inaccurate 1–35 mapping with factual permanent tests
+
+The Attempt-4 Completion Report's table is not acceptable evidence.
+
+Several rows name tests that do not exist, use the wrong test file, or map a test
+that proves a different behavior. Examples include:
+
+```text
+Scenario 2:
+  report says "uses exact source projection CAS..."
+  actual test name includes "uses the exact source projection CAS..."
+
+Scenario 12:
+  required = old PENDING/RETRYABLE events -> NEEDS_ATTENTION after rollover
+  report maps = rotating provider-cycle lag test
+
+Scenario 13:
+  required = old REPORTED remains REPORTED during rollover
+  report maps = ordinary publisher reporting test
+
+Scenario 14:
+  required = old IN_FLIGHT is not overwritten during rollover
+  report maps = scoped stale-claim recovery test
+
+Scenario 15:
+  report points to shopify-usage-event-publisher.service.test.ts, but the named
+  B008-R6 purchase-confirmation test is in billing-reconciliation.service.test.ts
+  and does not prove old-period rollover purchase preservation
+
+Scenarios 18, 19, 20, 21, 23:
+  the report names exact tests that do not exist in
+  same-plan-billing-period-rollover.service.test.ts
+
+Scenario 32:
+  required = old Free pack-purchase event becomes NEEDS_ATTENTION while linked
+  purchase remains REQUESTED/currentAmount=0/activatedAt=null
+  report maps = invalid default-provider configuration handling
+
+Scenario 34:
+  report claims a Free no-capacity-resume test that does not exist
+
+Scenarios 24, 30, 31:
+  the table contains descriptive prose rather than exact permanent test names.
+```
+
+Do not merely rename the report. Add real behavioral tests where the required
+behavior is not already permanently proven.
+
+At minimum add permanent rollover-specific coverage for:
+
+```text
+3  drain-window job calls publishDue({ billingPeriodId: oldPeriodId }) and moves
+   exact schedule to periodEnd on success;
+
+6  scheduled rollover Partner transport failure preserves current plan/period and
+   schedules retry;
+
+9  overlapping non-identical provider cycle fails closed;
+
+10 duplicate/concurrent rollover is serialized by Subscription ownership and leaves
+   one OPEN successor / one included grant;
+
+11 CLOSED successor is never reopened and replay does not duplicate grant;
+
+12 old PENDING/RETRYABLE UsageEvents -> NEEDS_ATTENTION with
+   PERIOD_CLOSED_BEFORE_REPORT;
+
+13 old REPORTED event remains REPORTED;
+
+14 old IN_FLIGHT event remains IN_FLIGHT during close;
+
+15 old RECOVERY_CREDIT_PACK_PURCHASE event does not activate its linked purchase;
+
+16 committed rollover remains durable when post-commit enqueue fails and repair can
+   reconstruct the missing delayed job;
+
+17 rotating later same-plan cycle uses canonical rollover and does not execute the
+   legacy independent BillingPeriod upsert path;
+
+18 RESERVED and AMBIGUOUS included reservations become RELEASED/PERIOD_CLOSED;
+
+19 final old Paid counter:
+   reservedQuantity = 0
+   committedQuantity + forfeitedQuantity = grantedQuantity;
+
+20 reservation aggregate != counter.reservedQuantity aborts the transition;
+
+21 successor Paid BillingPeriod exact snapshots/grant;
+
+22 successor included counter is created/reused exactly once and never reset;
+
+23 Paid transition sends exactly one post-commit recovery-capacity-resume hint;
+
+25 later same-plan Free cycle closes old period and opens exactly one successor;
+
+26 Free successor has planKindSnapshot=FREE and includedRecoveryCreditsGranted=null;
+
+27 Free rollover creates no included period counter;
+
+28 lifetime-Free durable quantities are unchanged by rollover;
+
+29 purchased lifetime credit balances/history are unchanged by rollover;
+
+32 old Free pack event -> UsageEvent NEEDS_ATTENTION while linked purchase remains
+   REQUESTED, currentAmount=0, activatedAt=null;
+
+33 pack-enabled Free successor receives the next pre-close schedule;
+
+34 Free rollover emits no recovery-capacity-resume hint;
+
+35 reconstruction test must explicitly use a pack-enabled Free subscription with a
+   missing delayed job.
+```
+
+For scenarios 24/30/31, reuse accepted BG8 tests only when the exact existing test
+name proves the requirement. Record the real file and exact test title. Do not use
+generic labels such as "accepted BG8 coverage".
+
+### Correction 4 — add the pre-close failure regressions that the Attempt-4 report says exist
+
+The Attempt-4 report says these regressions are permanently covered, but the
+published reconciliation test file does not contain them.
+
+Add explicit tests for:
+
+```text
+- scoped publishDue throws with >60 seconds remaining:
+  persist PRE_CLOSE_USAGE_FLUSH_FAILED
+  retryAt = now + 60s
+  retryAt < periodEnd
+  enqueue retry;
+
+- successful retry:
+  scoped publish succeeds
+  clear error metadata
+  nextReconcileAt = exact periodEnd
+  enqueue exact-boundary job;
+
+- scoped publish throws inside final minute:
+  preserve PRE_CLOSE_USAGE_FLUSH_FAILED
+  nextReconcileAt = exact periodEnd
+  enqueue exact-boundary job;
+
+- stale projection / CAS count=0:
+  no successor enqueue;
+  no period mutation.
+```
+
+Use a deterministic publisher dependency or existing spy seam. Do not satisfy these
+with source-text assertions.
+
+### Correction 5 — publish a factual Attempt-5 Completion Report
+
+Attempt 5 must include:
+
+```text
+Scenario | Exact test file | Exact test name | Result
+1        | ...             | ...             | passed
+...
+35       | ...             | ...             | passed
+```
+
+Before publishing, mechanically verify every quoted exact test name appears in the
+named file. If one requirement needs multiple tests, list all of them.
+
+Also record actual observed workflow evidence:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007
+  parent branch: task/ARCH-010-BACKGROUND-007
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007
+  implementation branch: task/ARCH-010-BACKGROUND-007
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: <full SHA>
+  database submodule HEAD: <full SHA>
+  database gitlink staged/changed: no
+
+Dependency integration:
+  BACKGROUND-008 accepted behavior present: yes
+  BACKGROUND-009 final accepted/evidence head
+    29478e94b8fc91bc4671a57c7af656ea20f1a66e
+    is ancestor of implementation HEAD: yes
+  Background origin/main SHA incorporated: <actual full SHA>
+
+Task history:
+  Attempt-1 claim b9eb75e3bf078743419688b72722bf49d88aa547: yes
+  Attempt-1 report 71d6f887aa4ac821fd3bbc175ff682a2c5297fb6: yes
+  Attempt-2 claim 31a9d89591b77d0a9cbe7f6d161983e983ad1acf: yes
+  Attempt-2 report 63c15052acec514f0d51defccfafb3108d632366: yes
+  Attempt-3 claim 2bcba51eea1c56ea6ea7b7e278bced3610419eac: yes
+  Attempt-3 report 98f6b9b271ff0fadde8c0129cf06cc1c8c21858b: yes
+  Attempt-4 claim e519460d7a08c225b8db8ffedc9df81d44570fb0: yes
+  Attempt-4 report a447733acac0917039d398517e31794fec36cabb: yes
+  Attempt-4 review-status 1b63e841adf009e37899f2849e399f1b8f820a87: yes
+
+Handoff:
+  parent worktree clean: yes
+  implementation worktree clean: yes
+```
+
+Record observed values only.
+
+### Attempt 5 allowed scope
+
+Production:
+
+```text
+src/services/billing-reconciliation.service.ts
+src/entrypoints/billing.ts
+```
+
+Change these only if new factual regressions expose a defect:
+
+```text
+src/services/same-plan-billing-period-rollover.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+Tests:
+
+```text
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/shopify-usage-event-publisher.service.test.ts
+tests/unit/runtime/entrypoint-isolation.test.ts
+```
+
+A narrowly scoped existing integration test file, or one new rollover concurrency
+integration test, is allowed for scenario 10 if unit mocks cannot truthfully prove
+row-lock serialization.
+
+Do not modify:
+
+```text
+database schema/migrations
+Shared contracts
+Shopify/Admin/Messaging/Gateway repositories
+BACKGROUND-008 admission semantics
+BACKGROUND-009 capacity-resume semantics
+BACKGROUND-012 lifecycle ownership
+BACKGROUND-021 purchase activation architecture
+```
+
+### Required Attempt 5 validation
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run \
+  tests/unit/services/same-plan-billing-period-rollover.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/services/shopify-usage-event-publisher.service.test.ts
+
+npx vitest run \
+  tests/unit/services/effective-billing-policy.service.test.ts \
+  tests/unit/services/paid-included-recovery-reservation.service.test.ts \
+  tests/unit/services/recovery-billing.service.test.ts \
+  tests/unit/services/whatsapp.service.test.ts
+
+npm run test:integration
+npm run test:unit
+npx tsc --noEmit
+npm run build
+git diff --check
+```
+
+If an entrypoint wiring test is changed/added, run it explicitly and record the
+exact command/result.
+
+Acceptance requires:
+
+```text
+- production rotating service is queue-backed;
+- eligible rotating lag repairs null or expired schedules and enqueues +60s;
+- pack-disabled Free remains unscheduled;
+- queue failure leaves durable retry state;
+- all 35 required scenarios map to factual permanent tests;
+- all pre-close failure regressions exist and pass;
+- focused and adjacent preservation gates pass;
+- integration remains green;
+- no changed/new file has a new TypeScript/build diagnostic;
+- only the documented repository-wide baseline may remain;
+- git diff --check passes.
+```
+
+### Stop conditions
+
+STOP and return to `moda_architect` if:
+
+1. queue-backed rotating reconciliation requires a new queue or Shared contract;
+2. scenario 10 cannot be proven without changing DB invariants;
+3. scenario 15/32 requires implementing BACKGROUND-021 rather than proving
+   non-activation;
+4. correcting evidence exposes a missing accepted BG8/BG9 behavior;
+5. another repository or schema must change.
+
+When complete:
+
+1. set this same task to `review`;
+2. publish implementation commit(s);
+3. publish a factual Completion Report and exact 1–35 mapping;
+4. publish the parent task;
+5. STOP for Architect Review.
+
