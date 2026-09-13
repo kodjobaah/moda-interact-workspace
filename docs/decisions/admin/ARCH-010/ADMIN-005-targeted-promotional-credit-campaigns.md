@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
-executor: null
-claimed_at: null
+status: in_progress
+executor: copilot
+claimed_at: '2026-09-13T19:12:41Z'
 priority: 85
-attempt: 2
+attempt: 3
 depends_on:
 - ARCH-010-ADMIN-004
 enables:
@@ -112,7 +112,7 @@ Stop if ADMIN-004/DATABASE-010 state names differ materially; reconcile with `mo
 ## Completion Report
 
 ### Status
-Review.
+In Progress.
 
 ### Files Changed
 - `src/app/(protected)/promotions/page.tsx`
