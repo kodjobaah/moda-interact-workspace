@@ -31,8 +31,8 @@ The current coordinated ARCH-010 state after DATABASE-014 Attempt 2 and ADMIN-01
 
 ```text
 all ARCH-010 task files: 86
-complete:                 40
-ready:                     4
+complete:                 41
+ready:                     3
 pending:                  34
 superseded:                8
 ```
@@ -42,7 +42,6 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 ### Ready frontier
 
 ```text
-ARCH-010-BACKGROUND-008
 ARCH-010-BACKGROUND-009
 ARCH-010-ADMIN-004
 ARCH-010-ADMIN-008
@@ -70,7 +69,7 @@ Do not reset either task to an earlier attempt or reopen it for first-production
 
 For Background, `BACKGROUND-011` is now Complete at accepted Attempt 4 and owns the narrow DATABASE-013 lifetime-counter conformance required by the accepted BACKGROUND-001 activation producer; its BullMQ/retry/CAS/onboarding semantics remain immutable.
 
-`BACKGROUND-002` is architect-accepted Complete at Attempt 3 (`97bf5f0`) and owns the concurrency-safe current-period Paid included-credit reservation primitive. `BACKGROUND-014` is architect-accepted Complete at Attempt 2 (`2104959`) and makes purchased reservations FIFO lot-aware. `BACKGROUND-019` is architect-accepted Complete at Attempt 6 (`08c288f`, final parent evidence `7fd5e1e`) and owns the final promotion-first routing plus exact promotional-grant reservation. Its completion releases `BACKGROUND-008` and `BACKGROUND-009` to Ready.
+`BACKGROUND-002` is architect-accepted Complete at Attempt 3 (`97bf5f0`) and owns the concurrency-safe current-period Paid included-credit reservation primitive. `BACKGROUND-014` is architect-accepted Complete at Attempt 2 (`2104959`) and makes purchased reservations FIFO lot-aware. `BACKGROUND-019` is architect-accepted Complete at Attempt 6 (`08c288f`, final parent evidence `7fd5e1e`) and owns the final promotion-first routing plus exact promotional-grant reservation. `BACKGROUND-008` is architect-accepted Complete at Attempt 3 (`b4ef7c8`, parent report `a8852ad`). `BACKGROUND-009` remains independently executable/reviewable; `BACKGROUND-007` remains gated until BG9 is Complete.
 
 For Shopify, `SHOPIFY-023` is architect-accepted Complete at Attempt 1 (`01f0605`) after developer-run validation against the materialized DATABASE-013 submodule. `SHOPIFY-018` is architect-accepted Complete at Attempt 3 (`9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD `e13673a`). Its enabled downstream tasks remain gated by other incomplete dependencies. SHOPIFY-003 and SHOPIFY-009 also remain gated by their other incomplete dependencies.
 
@@ -250,7 +249,7 @@ If a clean-baseline symbol is missing, do not recreate a legacy alias locally. R
 
 
 `ARCH-010-SHOPIFY-018` is architect-accepted Complete at Attempt 3. Accepted task branch HEAD: `9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD reconciled from the developer handoff: `e13673a`. No enabled downstream Shopify task becomes Ready yet because each still has other incomplete dependencies.
-`ARCH-010-BACKGROUND-019` is architect-accepted Complete at Attempt 6. Accepted implementation branch HEAD: `08c288f`; final parent publication evidence reconciled from the developer handoff: `7fd5e1e`. The accepted DATABASE-013 checkout remains validation-only and the Background database gitlink is unchanged. `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` are now Ready because all of their dependencies are Complete. `ARCH-010-BACKGROUND-007` remains Pending until BG8 and BG9 are Complete; ARCH-010 system tests remain terminal/manual-gated.
+`ARCH-010-BACKGROUND-019` is architect-accepted Complete at Attempt 6. Accepted implementation branch HEAD: `08c288f`; final parent publication evidence reconciled from the developer handoff: `7fd5e1e`. The accepted DATABASE-013 checkout remains validation-only and the Background database gitlink is unchanged. `ARCH-010-BACKGROUND-008` is now architect-accepted Complete at Attempt 3 (`b4ef7c8`; parent report `a8852ad`). `ARCH-010-BACKGROUND-009` remains the remaining Background frontier dependency for `ARCH-010-BACKGROUND-007`, so BG7 stays Pending; ARCH-010 system tests remain terminal/manual-gated.
 
 ## Recovery-credit purchase lifecycle/refund correction — 2026-09-13
 
