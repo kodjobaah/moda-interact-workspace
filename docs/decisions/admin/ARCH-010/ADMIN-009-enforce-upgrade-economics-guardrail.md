@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 89
 executor: null
 claimed_at: null
@@ -20,10 +20,13 @@ depends_on:
 enables:
 - ARCH-010-SYSTEM-TEST-005
 created: 2026-09-12
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-ADMIN-009: Hard-enforce upgrade economics on plan and recovery-pack configuration
+
+
+> **Readiness release — 2026-09-13:** `ARCH-010-ADMIN-008` is architect-accepted Complete at Attempt 2. `ARCH-010-ADMIN-007` was already Complete, so every dependency of this task is now Complete and this task is Ready.
 
 ## Objective
 
