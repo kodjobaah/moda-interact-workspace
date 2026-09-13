@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 84
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: '2026-09-13T13:31:36Z'
+attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-ADMIN-010
@@ -117,7 +117,7 @@ Stop if DATABASE-010 has not landed or if current Admin authorization/tenant-pla
 ## Completion Report
 
 ### Status
-Review.
+In Progress.
 
 ### Files Changed
 - `src/app/actions/promotions.ts`
