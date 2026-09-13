@@ -270,40 +270,54 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Review.
 
 ### Files Changed
 - `moda-interact-background/src/services/checkout-recovery.service.ts`
-- `moda-interact-background/src/services/effective-billing-policy.service.ts`
-- `moda-interact-background/src/services/paid-included-recovery-reservation.service.ts`
 - `moda-interact-background/src/services/recovery-billing.service.ts`
-- `moda-interact-background/src/services/whatsapp.service.ts`
+- `moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts`
 - `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts`
-- `moda-interact-background/tests/unit/services/whatsapp.service.test.ts`
 
 ### Work Completed
-- Added typed ACTIVE, DRAINING, and EXPIRED_RECONCILING paid-period phases using the published Shared drain-window constant.
-- Prevented included paid reservation and normal paid usage admission during DRAINING; preserved promotional, purchased, and lifetime-Free fallback order.
-- Added typed billing-period-closing and billing-period-reconciliation blocked outcomes.
-- Added one-shot pre-provider billing revalidation with release and re-admission across rollover, drain, and expiry; expired pre-provider reservations can be released.
-- Added a 30-second AbortSignal timeout to WhatsApp text and template requests while preserving ambiguous provider-failure handling.
-- Preserved asynchronous Shopify usage publication; no synchronous App Event call was added to the recovery hot path.
+- Attempt 2 now releases every admission kind when pre-provider revalidation observes `newRecoveriesPaused`, returning `paused` before provider work.
+- Checkout recovery now unconditionally revalidates billing before `sendTemplate`; blocked revalidation returns without sending or committing.
+- Added regression coverage for pause release across paid, purchased, free, lifetime-Free, and promotional admissions, plus the checkout blocked-send boundary.
+- Retained the Attempt 1 period-boundary, FIFO fallback, timeout, and asynchronous usage-publication behavior.
 
 ### Validation Results
-- `npx vitest run tests/unit/services/whatsapp.service.test.ts`: passed, 8 tests.
+- `npm run prisma:validate`: passed against `database/prisma/schema.prisma`.
+- `npm run prisma:generate`: passed.
+- `npx vitest run tests/unit/services/matured-candidate.materialization.test.ts`: passed, 24 tests.
+- Required focused suite: 3 of 5 files passed, 107 tests passed; 18 existing contract-dependent failures remain in paid-included and recovery-billing tests.
+- `npm run test:unit`: 44 files passed, 584 tests passed; 4 files and 27 tests remain failing in existing contract/schema-dependent billing, purchase, and observability paths.
+- `npm run build`: blocked by 16 existing TypeScript errors in `paid-included-recovery-reservation.service.ts`, `purchased-recovery-reservation.service.ts`, and `recovery-credit-purchase.service.ts`; none are in the touched files.
 - `git diff --check`: passed.
-- `npm run prisma:validate`: blocked by the clean checkout's existing `database/prisma/schema.prisma` script path; the tracked schema is `prisma/schema.prisma`.
-- `npm run prisma:generate`: blocked by the same existing schema-path mismatch; focused billing suites therefore stop before test execution because Prisma Client is not generated.
-- `npm run test:unit`: baseline blocked by the same ungenerated Prisma Client; also reports pre-existing unrelated failures in recovery-routing and observability startup tests.
-- `npm run build` and `npx tsc --noEmit`: blocked by the same generated-Prisma baseline diagnostics.
 
 ### Git / VCS
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-008`
-- Parent branch: `task/ARCH-010-BACKGROUND-008`; claim commit `c0dd717`; pushed to `origin/task/ARCH-010-BACKGROUND-008`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-008`
-- Implementation branch: `task/ARCH-010-BACKGROUND-008`; implementation commit `c2d326e`; pushed to `origin/task/ARCH-010-BACKGROUND-008`.
-- Both worktrees were created from and synchronized with current `origin/main` before claim; both were clean before implementation, and the implementation worktree is clean after publication.
-- `submodule gitlink staged: no`; main branches were not modified.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-background`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-008`
+  parent branch: `task/ARCH-010-BACKGROUND-008`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-008`
+  implementation branch: `task/ARCH-010-BACKGROUND-008`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: yes
+
+database submodule initialized: yes
+database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
+database submodule HEAD: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
+database gitlink staged/changed: no
+
+Parent claim commit: `c32bca9`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
+Implementation commit: `c369f64`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
+Implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
 Changes Requested
