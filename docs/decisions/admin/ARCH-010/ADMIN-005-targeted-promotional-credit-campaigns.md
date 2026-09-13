@@ -9,10 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 85
-executor: copilot
-claimed_at: '2026-09-13T18:37:03Z'
 attempt: 1
 depends_on:
 - ARCH-010-ADMIN-004
@@ -112,19 +110,55 @@ Stop if ADMIN-004/DATABASE-010 state names differ materially; reconcile with `mo
 ## Completion Report
 
 ### Status
-Not started.
+Review.
 
 ### Files Changed
-Populate during implementation.
+- `src/app/(protected)/promotions/page.tsx`
+- `src/app/actions/promotions.ts`
+- `src/components/admin/promotion-campaign-form.tsx`
+- `src/lib/admin/promotion-validation.ts`
+- `src/lib/admin/promotions.ts`
+- `tests/security/admin-promotions.test.mjs`
+- `tests/unit/promotion-validation.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added a durable SUPER_ADMIN promotion catalogue projection retaining DRAFT, ACTIVE, CLOSED, and expired campaigns, with bounded state/scope/target filters, persisted status, derived state, scope/target summary, quantity, dates, creator, creation time, and latest lifecycle event.
+- Added transactional close and reopen mutations using `PromotionCampaign.version` compare-and-set predicates. Close supports DRAFT/ACTIVE, writes CLOSED audit evidence, and immediately removes the campaign from the running state. Reopen preserves the same campaign ID and commercial terms, changes only expiry (and restores ACTIVE for CLOSED campaigns), and writes REOPENED plus EXPIRY_CHANGED evidence.
+- Enforced future expiry and `expiresAt > startsAt` on reopen; lifecycle forms expose no quantity, scope, target, or start-time editing.
+- Preserved existing grants, selections, usage, and committed history by keeping lifecycle mutations isolated from those models; no delete action was introduced.
+- Added focused validation and static security coverage for role gating, catalogue retention/derived state, lifecycle audit/CAS behavior, commercial-term immutability, preservation boundaries, and absence of deletion.
 
 ### Validation Results
-Populate during implementation.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts`: passed, 5 tests.
+- `node --test tests/security/admin-promotions.test.mjs`: passed, 12 tests.
+- `npm test`: passed.
+- `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx`.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
+- `git diff --check`: passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Physical worktree isolation:
+	canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+	parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-005`
+	parent branch: `task/ARCH-010-ADMIN-005`
+	implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-005`
+	implementation branch: `task/ARCH-010-ADMIN-005`
+	shared workspace checkout switched/mutated for task work: no
+	shared implementation checkout switched/mutated for task work: no
+	another task worktree reused: no
+
+database submodule initialized: yes
+database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
+database submodule HEAD: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
+database gitlink staged/changed: no
+
+Parent claim commit: `d1b58fc`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-workspace`.
+Implementation commit: `a8c13cf`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-admin`.
+Parent report commit: pending publication.
+The implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
 Pending.
