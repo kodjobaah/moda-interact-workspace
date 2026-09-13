@@ -16,9 +16,9 @@ Coordinator:
 
 `moda_architect`
 
-> Synchronized 2026-09-12 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
+> Synchronized 2026-09-13 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 5, `ready` 1, `pending` 14, `superseded` 4
+Current counts: `complete` 6, `ready` 0, `pending` 14, `superseded` 4
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -39,7 +39,7 @@ Current counts: `complete` 5, `ready` 1, `pending` 14, `superseded` 4
 | `SHOPIFY-015` | Implement Shopify-hosted plan management flow and production panel | Pending | ARCH-010-SHOPIFY-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-010, ARCH-010-SHOPIFY-018 |
 | `SHOPIFY-016` | Present cancellation, NO_CONTRACT and FROZEN merchant restriction states | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013 |
 | `SHOPIFY-017` | Present unused purchased-credit refundability and support CTA | Pending | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-012 |
-| `SHOPIFY-018` | Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze | **Ready** | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023 |
+| `SHOPIFY-018` | Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze | Complete | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023 |
 | `SHOPIFY-019` | Present frozen Shopify subscription state and disable business billing actions | Superseded | ARCH-010-BACKGROUND-017, ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-018 |
 | `SHOPIFY-020` | Present selected promotion and promo-first recovery capacity | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-021 |
 | `SHOPIFY-021` | Show eligible running promotion offers and let a merchant select one | Pending | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-018, ARCH-010-ADMIN-004 |
