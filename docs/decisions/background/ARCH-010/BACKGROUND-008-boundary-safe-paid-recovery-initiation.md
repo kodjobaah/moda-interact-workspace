@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 46
 executor: copilot
 claimed_at: '2026-09-13T12:12:45Z'
@@ -270,19 +270,40 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Implemented; awaiting architect review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/services/effective-billing-policy.service.ts`
+- `moda-interact-background/src/services/paid-included-recovery-reservation.service.ts`
+- `moda-interact-background/src/services/recovery-billing.service.ts`
+- `moda-interact-background/src/services/whatsapp.service.ts`
+- `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts`
+- `moda-interact-background/tests/unit/services/whatsapp.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added typed ACTIVE, DRAINING, and EXPIRED_RECONCILING paid-period phases using the published Shared drain-window constant.
+- Prevented included paid reservation and normal paid usage admission during DRAINING; preserved promotional, purchased, and lifetime-Free fallback order.
+- Added typed billing-period-closing and billing-period-reconciliation blocked outcomes.
+- Added one-shot pre-provider billing revalidation with release and re-admission across rollover, drain, and expiry; expired pre-provider reservations can be released.
+- Added a 30-second AbortSignal timeout to WhatsApp text and template requests while preserving ambiguous provider-failure handling.
+- Preserved asynchronous Shopify usage publication; no synchronous App Event call was added to the recovery hot path.
 
 ### Validation Results
-Populate during implementation.
+- `npx vitest run tests/unit/services/whatsapp.service.test.ts`: passed, 8 tests.
+- `git diff --check`: passed.
+- `npm run prisma:validate`: blocked by the clean checkout's existing `database/prisma/schema.prisma` script path; the tracked schema is `prisma/schema.prisma`.
+- `npm run prisma:generate`: blocked by the same existing schema-path mismatch; focused billing suites therefore stop before test execution because Prisma Client is not generated.
+- `npm run test:unit`: baseline blocked by the same ungenerated Prisma Client; also reports pre-existing unrelated failures in recovery-routing and observability startup tests.
+- `npm run build` and `npx tsc --noEmit`: blocked by the same generated-Prisma baseline diagnostics.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-008`
+- Parent branch: `task/ARCH-010-BACKGROUND-008`; claim commit `c0dd717`; pushed to `origin/task/ARCH-010-BACKGROUND-008`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-008`
+- Implementation branch: `task/ARCH-010-BACKGROUND-008`; implementation commit `c2d326e`; pushed to `origin/task/ARCH-010-BACKGROUND-008`.
+- Both worktrees were created from and synchronized with current `origin/main` before claim; both were clean before implementation, and the implementation worktree is clean after publication.
+- `submodule gitlink staged: no`; main branches were not modified.
 
 ### Architect Review
 Pending.
