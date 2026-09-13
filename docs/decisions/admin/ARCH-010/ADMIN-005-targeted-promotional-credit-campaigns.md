@@ -9,9 +9,9 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: '2026-09-13T19:30:30Z'
+status: review
+executor: null
+claimed_at: null
 priority: 85
 attempt: 4
 depends_on:
@@ -167,6 +167,40 @@ Parent claim commit: `50cf6ca`, pushed to `origin/task/ARCH-010-ADMIN-005` in `m
 Implementation commit: `6f3b065414d9a1ae41ee48db86f5e9fa9c26707c`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-admin`.
 Parent report commit: pending publication.
 The implementation worktree was clean after publication; main branches were not modified.
+
+### Attempt 4 Evidence
+
+Attempt 4 changed only `tests/unit/promotion-campaign-lifecycle.test.ts`; no
+production source, database schema, or other repository files were changed.
+
+The lifecycle fake transaction now records `findUnique`, `updateMany`, and
+`eventCreate` order; asserts the complete CLOSED reopen audit payload; covers
+stale expired-ACTIVE and CLOSED reopen attempts with zero evidence; traps and
+counts campaign create/delete, grant, and selection mutations; and asserts
+commercially immutable update keys for both reopen states.
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Task history:
+  Attempt-1 claim `d1b58fcf3d0278d7f9c54293697c00e9cdd51045` ancestor of parent HEAD: yes
+  Attempt-1 report `57bcf2f91916e58f972d7ab851a5e2357d49cd64` ancestor of parent HEAD: yes
+  Attempt-2 claim `50cf6cad2868c0275ee63bdbb3d60a06c94f1a11` ancestor of parent HEAD: yes
+  Attempt-2 report `18c58be69088a378b91ee9a8b07a0c5002c4481f` ancestor of parent HEAD: yes
+  Attempt-3 claim `6f0827485b54c8d3c02525e623710cc3c9fdb7fb` ancestor of parent HEAD: yes
+  Attempt-3 report `49edf3f3439976243c651f36b4b0d47ae88f251d` ancestor of parent HEAD: yes
+
+Validation:
+  focused unit tests: passed, 17 tests
+  security tests: passed, 12 tests
+  full Admin test suite: passed, 170 tests
+  typecheck: passed
+  lint: passed with two existing queue-monitor hook warnings
+  build: passed with existing BullMQ warnings
+  diff check: passed
 
 ### Architect Review
 Pending Attempt 3 review.
