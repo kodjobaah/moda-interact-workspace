@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 88
-executor: copilot
-claimed_at: '2026-09-13T14:08:58Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -605,4 +605,53 @@ After the corrections:
 4. STOP.
 
 Do not execute `ARCH-010-ADMIN-009`.
+
+#### Attempt 2 — Accepted
+
+**Decision: Accepted / Complete.**
+
+Accepted implementation:
+
+```text
+94d4fbb08f294b6e34cdf04c065949d82c19c519
+```
+
+Accepted parent review report:
+
+```text
+97495746b4699d8840fa924f3aedfe5c4e7484af
+```
+
+Attempt 2 satisfies the implementation corrections requested after Attempt 1:
+
+- exact inactive upgrade-edge pairs reactivate the existing durable row rather than colliding with DATABASE-013 permanent unique keys;
+- inactive conflicting declarations reject deterministically before Prisma persistence;
+- repeated deactivation is idempotent;
+- edge audit before/after evidence is retained;
+- `minimumUpgradePremiumBps` remains integer basis points and the Admin UI renders the required `20.00% (2000 bps)` default presentation;
+- persisted Prisma `Int` economics fields are bounded to `0..2147483647`;
+- append-only economics snapshots, SUPER_ADMIN mutation guards, Partner Dashboard evidence and no-Shopify-mutation boundaries are preserved;
+- canonical worktree, synchronization and database-submodule evidence is complete;
+- Prisma validation/generation, focused tests, 161 full tests, 42 unit tests, lint, typecheck, build, focused formatting and `git diff --check` passed; the repository-wide 87-file formatting deviation is accepted as unrelated baseline evidence.
+
+The final scenario-44 mapping-drift evidence was supplied manually against the exact accepted implementation SHA without changing the repository. A temporary Vitest harness imported the real production `recordEconomicsSnapshotAction()` and executed five cases:
+
+```text
+ADMIN-008: exact durable-plan snapshot mapping is accepted
+ADMIN-008: changed shopifyPlanHandle is rejected
+ADMIN-008: changed recoveryCreditPackEnabled is rejected
+ADMIN-008: changed enabled recoveryCreditsPerPack is rejected
+ADMIN-008: changed enabled shopifyRecoveryCreditPackEventHandle is rejected
+```
+
+Result:
+
+```text
+Test Files  1 passed (1)
+Tests       5 passed (5)
+```
+
+The temporary evidence test/config were then removed; `git status --short` and `git diff --check` were clean and implementation HEAD remained `94d4fbb08f294b6e34cdf04c065949d82c19c519`. The temporary Vitest harness is acceptance evidence only and is not required to become a repository dependency.
+
+No Attempt 3 implementation is required. The previously proposed evidence-only Attempt 3 overlay is superseded by this acceptance decision and must not be applied.
 
