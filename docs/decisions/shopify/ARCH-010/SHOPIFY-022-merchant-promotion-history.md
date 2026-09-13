@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 86
 executor: null
 claimed_at: null
@@ -789,3 +789,224 @@ Before returning this same task to review, the Completion Report must state:
 #### Follow-up / Stop Condition
 
 Return the **same** `ARCH-010-SHOPIFY-022` task through `/moda-task`. The next authorized claim must increment `attempt: 1` to **Attempt 2 exactly once**. After implementing only the corrections above, update the Completion Report, set the task to `review`, clear the claim, push both mirrored task branches and STOP. Do not start `ARCH-010-SYSTEM-TEST-003` or any adjacent task.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+**Changes Requested**
+
+Attempt 2 corrects both production defects identified in Attempt 1. The production
+implementation is accepted in substance:
+
+- `REOPENED` now derives from the latest server-side
+  `PromotionCampaignEvent(kind = REOPENED).createdAt`;
+- `selectionCount` and current-selection presence are no longer reopen evidence;
+- the exact required status precedence is implemented in production;
+- the merchant projection does not return lifecycle-event data;
+- all 20 locale catalogues contain the exact architect-specified history/status
+  translations and placeholders;
+- the route uses the existing merchant i18n runtime rather than raw English copy;
+- tenant scoping, 25-row pagination, exact grant-lot accounting and privacy
+  boundaries remain unchanged.
+
+No production source or locale correction is requested by this review.
+
+### Finding — required Attempt-2 regression evidence is incomplete
+
+The Attempt-1 Architect Review required this exact behavioural proof:
+
+```text
+EXHAUSTED / CLOSED / EXPIRED / NO_LONGER_ELIGIBLE
+continue to take precedence over an otherwise genuine REOPENED classification.
+```
+
+The current service test proves:
+
+```text
+REOPENED evidence + exhaustedAt -> EXHAUSTED
+REOPENED evidence + campaign CLOSED -> CLOSED
+```
+
+but its `EXPIRED` and `NO_LONGER_ELIGIBLE` assertions do **not** include a valid
+post-selection `reopenedAt`. Those two assertions therefore prove the ordinary
+terminal/ineligible statuses, not their precedence over `REOPENED`.
+
+The same review also required the returned merchant history row to prove that the
+server-side reopen evidence and internal provenance do not escape into the result.
+The query correctly selects only `events[].createdAt` and the projection is clean,
+but the current integration-style history assertion checks only
+`platformAdminId` and `targetPlanId`.
+
+### Required Attempt-3 correction
+
+Modify **only**:
+
+```text
+moda-interact/tests/unit/services/promotion.service.test.ts
+```
+
+plus this task's Completion Report through the normal coordination-document
+exception.
+
+Do not modify production code, route code, locale catalogues, Prisma schema,
+dependencies or any other repository.
+
+#### 1. Complete the reopen-precedence regression
+
+In the existing test:
+
+```text
+projects selected, used, exhausted, expired, closed, and reopened history safely
+```
+
+preserve the existing assertions and add/replace assertions so these two cases
+contain the same genuine post-selection reopen evidence already used by the
+`REOPENED` assertion:
+
+```ts
+const reopenedAt = new Date("2026-09-13T12:01:00.000Z");
+```
+
+Add an expired case equivalent to:
+
+```ts
+expect(projectPromotionHistoryRow({
+  ...baseGrant,
+  reopenedAt,
+  campaign: {
+    ...baseGrant.campaign,
+    expiresAt: new Date("2026-09-01T00:00:00.000Z"),
+  },
+}, "shop-1", "plan-1", now).status).toBe("EXPIRED");
+```
+
+Add a no-longer-eligible case equivalent to:
+
+```ts
+expect(projectPromotionHistoryRow({
+  ...baseGrant,
+  reopenedAt,
+  campaign: {
+    ...baseGrant.campaign,
+    scope: "PLAN",
+    targetPlanId: "plan-other",
+  },
+}, "shop-1", "plan-1", now).status).toBe("NO_LONGER_ELIGIBLE");
+```
+
+The test must therefore prove all four precedence cases with valid reopen evidence:
+
+```text
+REOPENED + exhausted                -> EXHAUSTED
+REOPENED + CLOSED                   -> CLOSED
+REOPENED + expired                  -> EXPIRED
+REOPENED + no longer target-eligible -> NO_LONGER_ELIGIBLE
+```
+
+Do not change the production precedence merely to satisfy the test; it is already
+ordered correctly.
+
+#### 2. Complete the query-to-projection privacy evidence
+
+In:
+
+```text
+reads only the authenticated shop's campaign-linked grants with bounded pagination
+```
+
+the mocked grant already contains:
+
+```ts
+events: [{ createdAt: new Date("2026-09-13T12:01:00.000Z") }]
+```
+
+After calling `getPromotionHistory(...)`, add assertions proving the query evidence
+was consumed for classification but was not returned to the merchant:
+
+```ts
+expect(history.entries[0]).toMatchObject({
+  campaignId: "campaign-1",
+  status: "REOPENED",
+});
+
+expect(history.entries[0]).not.toHaveProperty("events");
+expect(history.entries[0]).not.toHaveProperty("reopenedAt");
+expect(history.entries[0]).not.toHaveProperty("platformAdminId");
+expect(history.entries[0]).not.toHaveProperty("targetPlanId");
+expect(history.entries[0]).not.toHaveProperty("targetShopId");
+expect(history.entries[0]).not.toHaveProperty("requestKey");
+```
+
+Keep the existing assertion that the Prisma campaign event selection is exactly:
+
+```ts
+events: {
+  where: { kind: "REOPENED" },
+  orderBy: { createdAt: "desc" },
+  take: 1,
+  select: { createdAt: true },
+}
+```
+
+Do not expose the event object or timestamp merely to make the test pass.
+
+### Required validation
+
+From `moda-interact` run:
+
+```bash
+npm test -- tests/unit/services/promotion.service.test.ts
+
+npm test -- \
+  tests/unit/services/promotion.service.test.ts \
+  tests/unit/routes/promotion-route.test.ts \
+  tests/unit/merchant-i18n.test.ts
+
+npm test
+npm run build
+git diff --check
+```
+
+Because Attempt 3 is test/evidence-only, `npm run typecheck` and `npm run lint` do
+not need to be re-investigated unless the changed test produces a new diagnostic or
+the observed baseline differs from Attempt 2. If they are rerun, report the result
+honestly and do not modify unrelated baseline files.
+
+Record exact pass/fail/skip counts in the Completion Report.
+
+### Scope boundary
+
+Attempt 3 must make **no production changes**. In particular, do not modify:
+
+```text
+app/services/promotions/promotion.service.ts
+app/routes/app/promotions/route.tsx
+app/i18n/locales/*.json
+database/prisma/**
+package.json
+package-lock.json
+```
+
+Do not create a new history model, lifecycle rule, translation mechanism or privacy
+projection. The existing Attempt-2 implementation is the baseline to preserve.
+
+### Reclaim and stop condition
+
+Return this **same** task through `/moda-task`.
+
+The current attempt remains:
+
+```text
+attempt: 2
+```
+
+The next authorized claim must increment it to **Attempt 3 exactly once**.
+
+After adding only the required regression/privacy assertions, running the validation,
+updating the Completion Report, setting the task back to `status: review`, clearing
+the claim, committing/pushing both mirrored task branches, STOP and return to
+`moda_architect`.
+
+Do not start `ARCH-010-SYSTEM-TEST-003` or any adjacent task.
+
