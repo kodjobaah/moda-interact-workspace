@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 8
-executor: copilot
-claimed_at: '2026-09-13T10:44:26Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -314,24 +314,211 @@ None. The accepted platform-policy mutation and audit boundary remain unchanged.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 is functionally close to the ARCH-010 first-production baseline and does **not** require a redesign. The core implementation inspected by `moda_architect` is correct in the following respects:
+
+- `src/app/actions/billing-controls.ts` no longer creates `BillingAllowanceAdjustment` rows or emits `FREE_ALLOWANCE_ADJUSTED` audit events;
+- `src/lib/admin/billing-controls.ts` and `src/lib/admin/billing.ts` read shop-lifetime Free capacity only from `EntitlementCounter.LIFETIME_FREE_RECOVERY_CREDITS`;
+- `src/lib/admin/billing-plan-audit.ts` no longer serialises `BillingPlan.freeLifetimeConversationAllowance`;
+- the existing SUPER_ADMIN platform-policy mutation, `PLATFORM_POLICY_CHANGED` audit event, before/after audit values and internal Admin route boundary remain intact;
+- searches of `src/**` and `tests/**` found no runtime cancellation compatibility, no aggregate promotional counter compatibility, and no removed refund/negative-App-Event compatibility;
+- no downstream ADMIN-002/003/004/005/006/007/008/009 workflow was implemented opportunistically.
+
+Attempt 1 is **not accepted** because the correction task and its durable execution evidence are incomplete. Reclaim this same task as Attempt 2 and perform **only** the corrections below. Do not redesign the Admin billing UI or change accepted billing-policy behaviour.
+
+#### Correction 1 — remove the final obsolete allowance-adjustment i18n key
+
+The tenant billing UI no longer renders an allowance-adjustment value, but the obsolete key remains in the first-production catalogue/required-key list.
+
+Make exactly these source changes:
+
+1. In `src/i18n/locales/en.json`, delete the complete entry:
+
+   ```text
+   "billing.adjustments": "Allowance adjustments",
+   ```
+
+2. In `src/i18n/required-keys.ts`, delete the complete required-key entry:
+
+   ```text
+   "billing.adjustments",
+   ```
+
+3. In `tests/security/admin-billing-visibility.test.mjs`, add one focused regression test named exactly:
+
+   ```text
+   first-production tenant billing exposes no allowance-adjustment compatibility key
+   ```
+
+   That test must:
+
+   - load `src/i18n/locales/en.json`;
+   - load `src/i18n/required-keys.ts` as text;
+   - assert that `catalogue["billing.adjustments"]` is `undefined`;
+   - assert that `src/i18n/required-keys.ts` does not contain the literal string `"billing.adjustments"`.
+
+Do **not** rename the obsolete key, add an alias, or replace it with another adjustment concept. `billing.remaining`, `billing.committed`, `billing.reserved`, and the canonical lifetime-Free entitlement display remain unchanged.
+
+#### Correction 2 — complete the task-owned Work Item state
+
+The task reached `status: review` while every checkbox under `## Work Items` remained unchecked. The repository-agent execution protocol requires the implementing agent to update those task-owned checkboxes.
+
+During Attempt 2:
+
+1. Re-evaluate each existing Work Item against the final Attempt 2 implementation and validation.
+2. Change a Work Item from `[ ]` to `[x]` only when it is actually satisfied.
+3. Before returning the task to `review`, all nine Work Items in this task must be `[x]`.
+4. Do not delete, rename, merge, or rewrite the Work Items merely to make them appear complete.
+
+#### Correction 3 — record mandatory physical-worktree and synchronization evidence
+
+The Attempt 1 Completion Report does not contain the evidence required by `docs/agent-worktree-isolation-policy.md`.
+
+For Attempt 2, use the launcher-resolved canonical parent and implementation worktrees for `ARCH-010-ADMIN-010`. Do not invent paths from this review note and do not copy example paths from documentation.
+
+At the start of Attempt 2, perform the policy-required synchronization for **both** task worktrees and record the actual outcomes. Do not use a shared/default checkout or another task's worktree for task implementation or validation.
+
+For Attempt 2 validation, do **not** symlink `moda-interact-admin/database` or `moda-interact-admin/node_modules` from the shared/default Admin checkout. The validation must execute from the canonical `ARCH-010-ADMIN-010` implementation worktree using the database submodule revision recorded by that worktree and dependencies available to that worktree. If the canonical task worktree cannot be validated without mutating a shared/default checkout, STOP and report the exact isolation/environment problem instead of claiming conformance.
+
+Add the following block verbatim in structure under `## Completion Report`, filling every value with the **actual Attempt 2 evidence**:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <actual launcher-resolved path>
+  parent worktree: <actual launcher-resolved path>
+  parent branch: task/ARCH-010-ADMIN-010
+  implementation worktree: <actual launcher-resolved path>
+  implementation branch: task/ARCH-010-ADMIN-010
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Use only one of the allowed values shown for each synchronization result. If reality does not support one of the required `no` statements, STOP and report the non-conformance; do not falsify the Completion Report.
+
+#### Correction 4 — run the validation contract literally
+
+`moda-interact-admin/package.json` declares repository-wide lint. Attempt 1 reported focused ESLint only, so the minimum Validation section was not fully satisfied.
+
+From the canonical Attempt 2 implementation worktree, run all of the following after Correction 1:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+node --test \
+  tests/security/admin-billing-controls.test.mjs \
+  tests/security/admin-billing-plan.test.mjs \
+  tests/security/admin-billing-visibility.test.mjs
+npm test
+npm run test:unit
+npm run lint
+npm run build
+npm run format:check
+git diff --check
+```
+
+Also run this exact removed-symbol search over implementation/tests:
+
+```bash
+rg -n \
+  'freeLifetimeConversationAllowance|BillingAllowanceAdjustment|FREE_RECOVERY_LIFETIME|SubscriptionCancellationRequest|SubscriptionCancellationMode|SubscriptionCancellationStatus|BILLING_CANCELLATION_REQUEST_RECEIVED|BILLING_CANCELLATION_COMPLETED|BILLING_CANCELLATION_REJECTED|RecoveryCreditPurchaseStatus\.REFUNDED|RecoveryCreditRefundSettlementMode|CURRENT_CYCLE_APP_EVENT_CORRECTION|PROMOTIONAL_RECOVERY_CREDITS|FREE_ALLOWANCE_ADJUSTED' \
+  src tests
+```
+
+Expected search result: no implementation/runtime matches. Intentional **negative assertions in tests** that literally name a removed symbol are allowed and must be identified as such in the Completion Report.
+
+Run this exact stale-i18n search:
+
+```bash
+rg -n 'billing\.adjustments' src tests
+```
+
+Expected result after Correction 1: the only permitted match is the new negative regression assertion in `tests/security/admin-billing-visibility.test.mjs`. There must be no catalogue, required-key, component, action, helper, or type match.
+
+For repository-wide validation:
+
+- `npm run lint` must be executed; do not substitute a changed-file-only lint command.
+- `npm run format:check` may continue to report pre-existing unrelated formatting drift only if the Completion Report records the exact result and confirms that **none of the files changed by ADMIN-010** are among the failing files.
+- Do not edit unrelated files merely to make repository-wide formatting green.
+- Any lint/build/test/type/Prisma failure in a file changed by ADMIN-010 is blocking and must be corrected in this same task before returning to review.
+
+#### Attempt 2 scope boundary and stop conditions
+
+Allowed implementation changes for Attempt 2 are limited to:
+
+```text
+src/i18n/locales/en.json
+src/i18n/required-keys.ts
+tests/security/admin-billing-visibility.test.mjs
+```
+
+plus task-owned updates to:
+
+```text
+docs/decisions/admin/ARCH-010/ADMIN-010-conform-admin-to-first-production-billing-baseline.md
+```
+
+Do not modify the already-correct billing actions, readers, audit serializer, Prisma schema, Shared package, another repository, another ARCH-010 task, or architecture documents.
+
+If fulfilling these instructions appears to require any additional production source change, schema change, cross-service contract change, or another repository modification, STOP and return the exact gap to `moda_architect` instead of improvising.
+
+After all four corrections are complete and all required evidence is recorded:
+
+1. update `Completion Report` with Attempt 2 files changed, validation results, deviations, assumptions, unresolved issues, architectural concerns, and the mandatory worktree/synchronization block;
+2. ensure all nine Work Items are `[x]`;
+3. set Completion Report status to `Ready for Review`;
+4. set task status to `review`;
+5. commit and push the implementation task branch;
+6. commit and push the parent task branch containing the updated task file;
+7. STOP and return control to `moda_architect`.
+
+Do not start `ARCH-010-ADMIN-002`, `ARCH-010-ADMIN-004`, `ARCH-010-ADMIN-008`, or any other dependent/adjacent task.
 
 ### Reviewed Files
 
-None yet.
+- `src/app/actions/billing-controls.ts`
+- `src/components/admin/billing-controls.tsx`
+- `src/components/admin/tenant-billing.tsx`
+- `src/i18n/locales/en.json`
+- `src/i18n/required-keys.ts`
+- `src/lib/admin/billing-control-validation.ts`
+- `src/lib/admin/billing-controls.ts`
+- `src/lib/admin/billing-plan-audit.ts`
+- `src/lib/admin/billing.ts`
+- `src/lib/admin/types.ts`
+- `tests/security/admin-billing-controls.test.mjs`
+- `tests/security/admin-billing-plan.test.mjs`
+- `tests/security/admin-billing-visibility.test.mjs`
+- `docs/architecture/ARCH-010-first-production-baseline.md`
+- `docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md`
+- `docs/architecture/ARCH-010-promotional-campaigns.md`
+- `docs/agent-worktree-isolation-policy.md`
+- this task's Completion Report
 
 ### Validation Reviewed
 
-None yet.
+- Compared the returned implementation files against the pre-ADMIN-010 ARCH-010 snapshot.
+- Independently searched `src/**` and `tests/**` for all removed symbols required by this task; only intentional negative-test assertions remained for the named removed symbols.
+- Independently ran `admin-billing-controls.test.mjs` and `admin-billing-visibility.test.mjs` successfully from the review archive.
+- `admin-billing-plan.test.mjs` could not be independently executed from the compressed review archive because the archive intentionally contains no installed `@modainteract/moda-interact-shared` dependency. This review-environment limitation does not contradict the agent's reported validation, but Attempt 2 must rerun the complete validation set from the canonical implementation worktree.
+- Identified one stale, now-unused first-production catalogue/required-key pair: `billing.adjustments`.
+- Identified missing mandatory worktree/start-of-attempt evidence and incomplete Work Item checkboxes in the durable Completion Report/task state.
+- Identified that the declared repository-wide `npm run lint` validation was not reported as executed in Attempt 1.
 
 ### Architecture Conformance
 
-Pending.
+The production logic inspected in Attempt 1 conforms to the intended ARCH-010 Admin baseline: lifetime-Free authority is the platform policy plus `LIFETIME_FREE_RECOVERY_CREDITS`, legacy adjustment mutation is removed, and the authorization/audit boundary remains intact. Acceptance is withheld only for the bounded cleanup, validation, and execution-evidence corrections specified above.
 
 ### Follow-up
 
-None yet.
+Reclaim this same task as Attempt 2. No new architecture task is required. Dependants remain gated until `ARCH-010-ADMIN-010` is architect-accepted `complete`.
+
