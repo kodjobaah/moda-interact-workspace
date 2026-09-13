@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 43
-executor: copilot
-claimed_at: 2026-09-13T20:11:33Z
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -216,12 +214,14 @@ Implementation complete; returned to review.
 - Added idempotent canonical billing-period creation/replay with plan snapshots, included-credit counter creation, conflict detection, and lifetime Free grant creation only when absent.
 - Updated subscription state and onboarding in transaction order, persisted the shared drain-window schedule, and published the deterministic post-commit reconciliation job.
 - Reused the same paid activation transaction from rotating reconciliation without a duplicate Partner call.
-- Added focused coverage for successful activation, replay preservation, unsupported paid trials, invalid cycle/meter/allowance fail-closed behavior, lifetime grant handling, and existing reconciliation compatibility.
+- Revalidated the durable pending Shopify handle and the current BillingPlan inside the activation transaction, including active status, exact handle, usage meter, and allowance authority.
+- Made unsupported paid-trial recovery safe when `nextReconcileAt` is null and preserved nullable schedule comparison semantics.
+- Added focused coverage for exact handle mismatch, transactional plan mutations, null/negative/non-integer allowances, replay mutation preservation, and rotating reconciliation compatibility.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- Focused reconciliation suites: passed, 2 files / 71 tests.
+- Focused reconciliation suites: passed, 2 files / 78 tests.
 - `git diff --check`: passed.
 - `npm run test:unit`: blocked by 10 unrelated existing failures in recovery-credit purchase and observability-startup tests.
 - `npm run build`: blocked by existing generated-client/type mismatches in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no errors remain in the touched billing services.
@@ -230,10 +230,10 @@ Implementation complete; returned to review.
 ### Git / VCS
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-003`.
 - Implementation branch: `task/ARCH-010-BACKGROUND-003`.
-- Implementation commit: `c6d5c0a66de67cded04d8f60c2d268644286bb13` (`feat(background): activate first paid subscriptions`), pushed to origin.
+- Implementation commits: `c6d5c0a66de67cded04d8f60c2d268644286bb13` (`feat(background): activate first paid subscriptions`) and `3172334` (`fix(background): harden paid activation revalidation`), pushed to origin.
 - Parent task-report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-003`.
 - Database gitlink remains `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database commit or schema change was made.
-- Claim cleared in this report; parent report commit/push follows. No merge to `main` performed.
+- Attempt 2 claim cleared; parent report commit/push follows. No merge to `main` performed.
 
 ### Architect Review
 Pending.
