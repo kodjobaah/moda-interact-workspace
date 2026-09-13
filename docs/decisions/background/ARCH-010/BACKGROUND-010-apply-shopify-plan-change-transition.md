@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -800,5 +800,259 @@ The next authorized claim must increment it to **Attempt 2 exactly once**.
 After implementing only the corrections above, running the required validation,
 updating the Completion Report, setting the task back to `status: review`, clearing
 the active claim, committing/pushing both task branches, STOP and return to
+`moda_architect`.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested**
+
+Attempt 2 implements most of the requested production corrections, but it is not yet
+architect-acceptable. One queued fail-closed branch still leaves stale ACTIVE/TRIALING
+entitlement live after Shopify has made another plan current, and the explicit
+Attempt-2 regression contract was not implemented. The production correction and
+missing evidence below are the complete Attempt-3 contract.
+
+Do not redesign plan-change architecture. Preserve the accepted Attempt-2 work for
+Partner retries, retryable plan-change `SYNC_ERROR`, atomic pending refresh,
+Free -> Paid without an outgoing Free period, post-commit capacity resume, exact-cycle
+guards and stale-meter suppression.
+
+### Finding 1 — queued missing-cycle/meter plan-change failures do not enter `SYNC_ERROR`
+
+In `src/services/billing-subscription-reconciliation.service.ts`,
+`reconcileEstablishedPlanChange(...)` currently calls
+`recordEstablishedPlanChangeRetry(...)` for:
+
+```text
+MISSING_BILLING_CYCLE
+MISSING_USAGE_METER
+```
+
+but `recordEstablishedPlanChangeRetry(...)` only writes retry/error metadata. It does
+**not** change `Subscription.status`.
+
+That helper is also correctly used for Partner transport failure and unresolved
+provider state, where the current ACTIVE/TRIALING status must be preserved. Those two
+semantics cannot share one unconditional update shape.
+
+When Shopify already reports the pending target as **current**, but the exact cycle or
+required meter cannot be proven, continuing to expose the old ACTIVE/TRIALING
+projection violates the task's fail-closed contract. The next queued retry is then
+classified as a normal ACTIVE/TRIALING established plan change rather than as the
+specific retryable plan-change `SYNC_ERROR` state that Attempt 2 introduced.
+
+#### Required correction
+
+In `src/services/billing-subscription-reconciliation.service.ts`:
+
+1. Keep `PARTNER_API_ERROR` and `PROVIDER_STATE_UNRESOLVED` behaviour unchanged:
+   - preserve ACTIVE/TRIALING status;
+   - preserve current plan/period/pending target;
+   - update `nextReconcileAt`, `lastSyncedAt`, `lastSyncErrorCode`, `lastSyncErrorAt`;
+   - publish exactly one deterministic replacement job after a successful CAS.
+2. For `MISSING_BILLING_CYCLE` and `MISSING_USAGE_METER` when the provider-current
+   plan is the expected pending target:
+   - set `status = SubscriptionProjectionStatus.SYNC_ERROR` in the same guarded
+     `updateMany` that records the error and retry schedule;
+   - preserve `planId`, `billingPeriodId`, current-period fields and all pending target
+     fields;
+   - keep `nextReconcileAt = now + ROLLOVER_RETRY_MS`;
+   - publish exactly one deterministic replacement job only when the CAS updates one
+     row.
+3. Do not broaden this to arbitrary error codes. A small explicit boolean/branch or
+   separate helper is preferred over inferring status behaviour from string prefixes.
+4. The subsequent retry must be accepted by the existing
+   `RETRYABLE_PLAN_CHANGE_SYNC_ERRORS` classification and, once provider truth becomes
+   valid, must be able to reach `ShopifyPlanChangeTransitionService.transition(...)`.
+5. Do not change cancellation/freeze/no-contract ownership.
+
+### Finding 2 — the Attempt-2 regression contract is materially incomplete
+
+The latest implementation commit adds only:
+
+- one queued same-cycle fail-closed test in
+  `billing-subscription-reconciliation.service.test.ts`; and
+- one Free -> Paid/no-outgoing-period test in
+  `shopify-plan-change-transition.service.test.ts`.
+
+It makes **no Attempt-2 test change** to
+`tests/unit/services/billing-reconciliation.service.test.ts`.
+
+The Attempt-1 Architect Review explicitly required deterministic evidence for 20
+behaviours. Passing 96 focused tests is not a substitute for those assertions because
+most are pre-existing tests for other reconciliation paths.
+
+Attempt 3 must add permanent tests for every still-unproven item below. Reuse existing
+tests only when they already assert the exact required behaviour; if so, strengthen or
+rename them so the evidence is unambiguous rather than adding a duplicate.
+
+#### A. `billing-subscription-reconciliation.service.test.ts`
+
+Add/strengthen explicit tests proving:
+
+1. **Still-pending provider update** — provider current remains the local current plan
+   with the same pending target; one guarded `updateMany` writes `pendingPlanId`,
+   pending handle, pending effective time and schedule together; no follow-up
+   `subscription.update`; deterministic boundary job published.
+2. **Withdrawn pending update** — provider current remains the local current plan and
+   provider pending disappears; pending id/handle/effective fields clear atomically,
+   current entitlement remains unchanged, normal reconciliation schedule is written.
+3. **Established Partner exception** — ACTIVE/TRIALING/current period/pending target
+   preserved; `PARTNER_API_ERROR`; bounded retry; one replacement job; no
+   initial-activation `NO_CONTRACT` CAS.
+4. **Established provider null** — no `NO_CONTRACT`; current entitlement/pending target
+   preserved; `PROVIDER_STATE_UNRESOLVED`; one bounded retry.
+5. **Retryable same-cycle `SYNC_ERROR` executes** — start the job from
+   `status=SYNC_ERROR`, `lastSyncErrorCode=UNEXPECTED_IMMEDIATE_PLAN_CHANGE`; when a
+   later provider snapshot proves the boundary, transition is invoked rather than the
+   job being discarded.
+6. **Missing/invalid paid cycle** — provider target current; status becomes
+   `SYNC_ERROR`; code `MISSING_BILLING_CYCLE`; no transition; one bounded retry.
+7. **Missing required paid meter** — provider target current; status becomes
+   `SYNC_ERROR`; code `MISSING_USAGE_METER`; no transition; one bounded retry.
+8. **Paid transition capacity resume** — successful transition schedules exactly one
+   `{ shopId, trigger: "plan-change" }` hint after transition success.
+9. **Capacity-resume failure isolation** — rejected schedule logs a bounded warning
+   and does not turn the already-committed transition into a reconciliation failure.
+
+#### B. `billing-reconciliation.service.test.ts`
+
+Add explicit rotating-path tests proving:
+
+10. Provider target current before the expected boundary in the same local cycle:
+    `UNEXPECTED_IMMEDIATE_PLAN_CHANGE`, no transition, returned
+    `packMeterHandle === null`, bounded deterministic retry scheduled.
+11. A mapped provider-current plan other than the current/expected target also returns
+    `packMeterHandle === null`; old-plan pack meter is never exposed.
+12. Provider-current paid target with missing/invalid exact cycle:
+    `MISSING_BILLING_CYCLE`, `SYNC_ERROR`, no transition, `packMeterHandle === null`,
+    bounded deterministic retry scheduled.
+13. Successful resulting Paid transition schedules the best-effort
+    `trigger: "plan-change"` capacity-resume hint; Free result does not.
+14. Capacity-resume enqueue rejection after a successful rotating transition is
+    swallowed/logged and does not mark the successful transition failed.
+
+Do not satisfy these with source-text/regex tests. Invoke the actual service methods
+with observable mocks.
+
+#### C. `shopify-plan-change-transition.service.test.ts`
+
+The current four tests are insufficient for the transaction contract. Add/strengthen
+explicit tests proving:
+
+15. Free -> Paid **with an existing OPEN Free BillingPeriod** closes it exactly once
+    with `PLAN_CHANGED` and creates/reuses the exact paid successor.
+16. Replay against an already matching paid successor leaves existing successor
+    `committedQuantity`, `reservedQuantity`, `forfeitedQuantity` unchanged and creates
+    no second allowance/period.
+17. Paid -> Paid release includes both `RESERVED` and `AMBIGUOUS` reservations and the
+    final forfeiture increment produces total forfeiture equal to
+    `grantedQuantity - committedQuantity` after reservation release.
+18. Paid -> Free creates no included-credit counter and persists
+    `includedRecoveryCreditsGranted = null`.
+19. For Paid -> Paid, Paid -> Free and Free -> Paid, observable mocks prove **no
+    writes** to `shopEntitlementCounter`, `recoveryCreditPurchase`,
+    `promotionalCreditGrant`, or `merchantPromotionSelection`.
+20. Missing paid allowance, normal recovery meter, enabled pack meter, or required
+    exact cycle fails before closing the old period and before creating/upserting the
+    successor period/counter.
+21. A retryable plan-change `SYNC_ERROR` with one of the approved codes may transition;
+    an unrelated `SYNC_ERROR` must return `not-applicable` without period mutation.
+
+### Finding 3 — do not encode “no successor BillingPeriod” as an empty string
+
+`ShopifyPlanChangeTransitionService.transitionInTransaction(...)` currently returns:
+
+```ts
+{ kind: "transitioned", billingPeriodId: "", nextReconcileAt: null, ... }
+```
+
+for a provider-confirmed Free target that legitimately requires no BillingPeriod
+(pack billing disabled and provider has no cycle).
+
+An empty string is not a valid BillingPeriod identity and leaks an invalid sentinel
+through `BillingReconciliationService`.
+
+#### Required correction
+
+1. Change the transitioned result contract to allow:
+
+```ts
+billingPeriodId: string | null
+```
+
+2. Return `null` when the resulting Free projection has no BillingPeriod.
+3. Keep a real period id for every transition that creates/reuses a BillingPeriod.
+4. Update callers/tests accordingly. Do not create a fabricated Free BillingPeriod
+solely to avoid returning null.
+
+### Required validation for Attempt 3
+
+From `moda-interact-background` run:
+
+```bash
+npx vitest run \
+  tests/unit/services/shopify-plan-change-transition.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts
+
+npm run test:unit
+npm run test:integration
+npm run prisma:validate
+npm run prisma:generate
+npm run build
+git diff --check
+
+rg -n "tierRank|prorat" \
+  src/services/shopify-plan-change-transition.service.ts \
+  src/services/billing-subscription-reconciliation.service.ts \
+  src/services/billing-reconciliation.service.ts
+```
+
+Report exact pass/fail/skip counts. `rg` exit code `1` is expected only when there are
+zero matches. The known generated-client baseline may remain if unchanged; prove no
+new diagnostics originate from Attempt-3 changed files.
+
+### Allowed scope
+
+Production/test changes are limited to:
+
+```text
+moda-interact-background/src/services/shopify-plan-change-transition.service.ts
+moda-interact-background/src/services/billing-subscription-reconciliation.service.ts
+moda-interact-background/src/services/billing-reconciliation.service.ts
+moda-interact-background/tests/unit/services/shopify-plan-change-transition.service.test.ts
+moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
+moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+Normal task/Completion Report updates remain allowed through the coordination
+exception.
+
+Do not modify Prisma schema/migrations, Shared contracts/version, purchased-credit
+services, Shopify/Admin/Messaging/Gateway, cancellation/freeze/unfreeze, refunds, or
+promotional allocation logic.
+
+If correcting the findings above requires schema/contract changes or implementation
+outside this scope, STOP and return **Blocked** with the exact dependency gap.
+
+### Reclaim / stop condition
+
+Return this **same task** to the normal `/moda-task` path with:
+
+```text
+status: ready
+executor: null
+claimed_at: null
+attempt: 2
+```
+
+The next authorized claim must increment to **Attempt 3 exactly once**.
+
+After implementing only this correction contract, running the required validation,
+updating the Completion Report, setting `status: review`, clearing the claim,
+committing/pushing the implementation and parent task branches, STOP and return to
 `moda_architect`.
 
