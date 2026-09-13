@@ -24,7 +24,7 @@ enables:
 - ARCH-010-SHOPIFY-012
 - ARCH-010-SHOPIFY-014
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-SHOPIFY-007: Present App Pricing billing-cycle transition and guard late-cycle top-up purchase
@@ -42,6 +42,80 @@ Top-up purchase (Free or Paid) -> creates recovery-credit-pack App Event
 ```
 
 Merchants never access `moda-interact-admin`.
+
+## Architect handoff from BACKGROUND-007 Attempt 8
+
+BACKGROUND-007 Attempt 8 verified a current app-side server-guard gap that this task
+already owns.
+
+Verified current source:
+
+```text
+repository:
+  kodjobaah/moda-interact
+
+inspected main/source commit:
+  f0309e7e6a722955c890e8e6791f87667afb3eb0
+
+file:
+  app/services/billing/billing.service.ts
+
+method:
+  BillingService.requestRecoveryCreditPack(...)
+```
+
+At that source state, new pack creation verifies the mapped plan, pack meter,
+durable local cycle and exact provider/local cycle, but does **not** reject the
+request because the cycle has entered DRAINING or RECONCILING.
+
+This is mandatory SHOPIFY-007 implementation scope, not BACKGROUND-007 rework.
+
+Do not add persisted `DRAINING` or `RECONCILING` BillingPeriod statuses. The schema
+has only:
+
+```text
+OPEN
+CLOSED
+```
+
+Derive the purchase phase from durable timestamps and the Shared drain-window
+constant:
+
+```text
+drainStart =
+  currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+
+ACTIVE:
+  now < drainStart
+
+DRAINING:
+  drainStart <= now < currentPeriodEnd
+
+RECONCILING:
+  now >= currentPeriodEnd
+  AND Subscription still points to that old BillingPeriod
+```
+
+The **server mutation** must fail closed before creating either
+`UsageEvent(RECOVERY_CREDIT_PACK_PURCHASE)` or `RecoveryCreditPurchase`.
+
+Required permanent mutation tests must include at minimum:
+
+```text
+1. Paid ACTIVE + exact cycle/meter -> new purchase may proceed.
+2. Free ACTIVE + exact cycle/pack meter -> new purchase may proceed without requiring
+   the Paid normal recovery meter.
+3. Paid DRAINING -> creates no UsageEvent and no RecoveryCreditPurchase.
+4. Free DRAINING -> creates no UsageEvent and no RecoveryCreditPurchase.
+5. Paid RECONCILING -> creates no UsageEvent and no RecoveryCreditPurchase.
+6. Free RECONCILING -> creates no UsageEvent and no RecoveryCreditPurchase.
+7. same existing purchaseId replay remains idempotent even if the current wall-clock
+   phase has since entered DRAINING/RECONCILING;
+8. exact provider/local cycle or pack-meter mismatch continues to fail closed.
+```
+
+The loader/UI may mirror the phase for presentation, but UI disablement is not the
+security boundary.
 
 ## Inspect before editing
 

@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 43
 executor: null
 claimed_at: null
@@ -25,7 +25,7 @@ enables:
 - ARCH-010-BACKGROUND-010
 - ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-BACKGROUND-003: Reconcile first paid activation and create the first paid period
