@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 47
 executor: copilot
 claimed_at: '2026-09-13T16:43:26Z'
@@ -542,12 +542,15 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Architect Review.
 
 ### Files Changed
 - `moda-interact-background/src/services/same-plan-billing-period-rollover.service.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/shopify-usage-event-publisher.service.ts`
+- `moda-interact-background/tests/unit/services/same-plan-billing-period-rollover.service.test.ts`
+- `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
 - Added one transaction-owned same-plan rollover service for exact later provider cycles.
@@ -556,20 +559,28 @@ In Progress.
 - Preserved `REPORTED` and `IN_FLIGHT` usage events; moved only old `PENDING`/`RETRYABLE` events to `NEEDS_ATTENTION`.
 - Added exact-cycle idempotency, overlap rejection, successor reuse, provider-lag retry, pre-close drain scheduling, reconstruction, and post-commit Paid capacity-resume signaling.
 - Routed rotating and scheduled reconciliation through the canonical service; no second worker or queue was added.
+- Corrected released Paid reservation accounting so all remaining uncommitted capacity is forfeited after release, with aggregate reservation/invariant checks.
+- Added ACTIVE/TRIALING lifecycle gating, exact successor identity checks, and Paid successor-counter grant validation.
+- Added scoped App Events publication and exact pre-close stale projection revalidation.
+- Added dedicated 60-second rollover retry/CAS handling for Partner transport, null-provider, and old-cycle lag outcomes.
+- Made rotating same-plan reconciliation return the canonical projection instead of reopening or overwriting periods; null-provider evidence preserves the current projection and schedules retry.
+- Added behavioral rollover tests for non-active status rejection and incompatible successor identity; updated null-provider reconciliation coverage.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - Focused TypeScript diagnostics for all three changed files: passed; no diagnostics in changed files.
-- Focused billing suites: `46/46` passed.
+- Focused billing suites: `4 files, 63 tests passed`.
 - `git diff --check`: passed.
-- Full `npm test`: 54 files passed, 2 failed, 8 skipped; the failures are existing recovery-purchase/schema-state mismatches and unrelated observability startup tests.
-- `npm run build`: blocked by 15 existing Prisma-client/type mismatches in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no changed file appears in the build errors.
+- `npm run test:unit`: blocked by 10 existing failures in recovery-purchase/schema-state and observability startup tests; focused changed-file tests pass.
+- `npm run build`: blocked by existing Prisma-client/type mismatches in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no changed file appears in the build errors.
+- `npx tsc --noEmit`: no diagnostics in changed files; unrelated existing diagnostics remain in purchased recovery services.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007`
 - Branch: `task/ARCH-010-BACKGROUND-007`
-- Commit: `dd3b48e` (`Implement same-plan billing period rollover`)
+- Commit: `08cb369` (`fix(background): harden same-plan billing rollover`)
 - Pushed to `origin/task/ARCH-010-BACKGROUND-007`.
+- Parent report is being published from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007` after implementation synchronization; the Background submodule gitlink is not staged.
 
 ### Architect Review
 
