@@ -389,7 +389,7 @@ STOP and return evidence to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `moda-interact-database/prisma/schema.prisma`
@@ -403,6 +403,7 @@ In Progress.
 - Added restrictive billing-period linkage and immutable provider subscription, usage, valuation, amount, currency, and price provenance fields.
 - Replaced arbitrary refund quantity fields with request-time amount snapshots and provider settlement fields.
 - Added lifecycle/amount checks, partial unique refund indexes, migration foreign keys, validator coverage, and regenerated the ERD.
+- Attempt 2 added the exact cross-merchant refund queue index, the purchase-grant balance upper bound, confirmed valuation checks for every post-REQUESTED state, required refund provenance snapshots, and provider settlement precision without a fixed two-decimal annotation.
 
 ### Validation Results
 - `npm run prisma:validate` passed.
@@ -411,13 +412,42 @@ In Progress.
 - `npm run erd:puml` passed.
 - `git diff --check` passed.
 - The baseline migration remains clean: no `UPDATE`, `INSERT INTO`, or `DELETE FROM` statements.
+- `npm ci` installed the lockfile-pinned dependencies in the isolated worktree; the install reported existing npm audit warnings that did not affect validation.
 
 ### Git / VCS
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-014`
-- Implementation branch: `task/ARCH-010-DATABASE-014`
-- Implementation commit: `cd8dc213bc0a80601094253e3d0739cc6b479f5b`
-- Implementation remote verification: local `HEAD` and `origin/task/ARCH-010-DATABASE-014` both resolve to `cd8dc213bc0a80601094253e3d0739cc6b479f5b`.
-- Parent claim commit remains `e1ca470`; only this task report is changed in the parent workspace and the database submodule gitlink is not staged.
+Task branch: `task/ARCH-010-DATABASE-014`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010-task-ARCH-010-DATABASE-014`
+  parent branch: `task/ARCH-010-DATABASE-014`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010.worktrees/ARCH-010-DATABASE-014`
+  implementation branch: `task/ARCH-010-DATABASE-014`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact-database`
+  commit: `abee18e`
+  remote branch: `origin/task/ARCH-010-DATABASE-014`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/database/ARCH-010/DATABASE-014-recovery-credit-purchase-lifecycle-and-provenance.md`
+  commit: pending review-report commit
+  remote branch: `origin/task/ARCH-010-DATABASE-014`
+  pushed: pending review-report commit
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
