@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 84
 executor: copilot
 claimed_at: '2026-09-13T13:31:36Z'
@@ -117,29 +117,28 @@ Stop if DATABASE-010 has not landed or if current Admin authorization/tenant-pla
 ## Completion Report
 
 ### Status
-In Progress.
+Review.
 
 ### Files Changed
-- `src/app/actions/promotions.ts`
-- `src/components/admin/promotion-campaign-form.tsx`
-- `src/lib/admin/promotion-validation.ts`
+- `src/app/(protected)/promotions/page.tsx`
+- `src/components/admin/sidebar.tsx`
 - `tests/security/admin-promotions.test.mjs`
-- `tests/unit/promotion-validation.test.ts`
 
 ### Work Completed
-- Preserved the accepted Attempt 1 campaign route, navigation, authorization, target resolution, audit events, and no-grant/no-selection/no-counter/no-Shopify mutation boundaries.
-- Added versioned `id + DRAFT + version` compare-and-set transitions for both draft editing and activation; stale transitions require exactly one affected row and fail with a bounded reload error.
-- Activation now accepts only `intent` and `id`, re-reads persisted campaign terms, validates target/quantity/window, then writes `ACTIVE` and `ACTIVATED` evidence only after the winning CAS.
-- Added focused regression coverage for activation and draft-edit CAS predicates, stale transition rejection, persisted activation validation, command-only activation submission, and existing security boundaries.
+- Preserved the accepted Attempt 2 CAS, persisted-term activation validation, no-grant/no-selection/no-counter/no-Shopify boundaries, and existing campaign authoring behaviour.
+- Added a SUPER_ADMIN page boundary that retains the platform principal, redirects non-SUPER_ADMIN roles before loading campaign or target data, and preserves unauthenticated handling in `requirePlatformAdminPage()`.
+- Restricted the Promotions sidebar entry to SUPER_ADMIN while leaving all other navigation visibility unchanged.
+- Added deterministic security coverage for page role gating, redirect ordering, sidebar discoverability, and all existing ADMIN-004 mutation boundaries.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts`: passed, 4 tests.
-- `node --test tests/security/admin-promotions.test.mjs tests/unit/promotion-validation.test.ts`: passed, 11 tests.
-- `npm test`: passed, 155 tests; existing observability tests that require a prior build were skipped as designed.
+- `node --test tests/security/admin-promotions.test.mjs`: passed, 9 tests.
+- `node --test tests/unit/promotion-validation.test.ts`: passed, 4 tests.
+- `npm test`: passed, 157 tests; existing observability tests that require a prior build were skipped as designed.
 - `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx`.
-- `npx tsc --noEmit`: passed after the Attempt 2 correction.
+- `npx tsc --noEmit`: passed.
 - `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
 - `git diff --check`: passed.
 
@@ -165,8 +164,9 @@ database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
 database submodule HEAD: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
 database gitlink staged/changed: no
 
-Parent claim commit: `202b59d`, pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-workspace`.
-Implementation commit: `6683e19`, pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-admin`.
+Parent claim commit: `934a768`, pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-workspace`.
+Implementation commit: `b0fc432`, pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-admin`.
+Parent report commit: pending publication.
 The implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
