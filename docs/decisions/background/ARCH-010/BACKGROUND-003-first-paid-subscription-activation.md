@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 executor: null
 claimed_at: null
 priority: 43
@@ -1386,6 +1386,578 @@ When complete:
 set this same task to review;
 publish implementation/evidence commit(s);
 publish Completion Report with exact test titles/results/workflow evidence;
+STOP for moda_architect.
+```
+
+## Architect Review — Attempt 3
+
+### Changes Requested
+
+Attempt 3 is **not accepted**. Return this same task to `ready` for Attempt 4.
+
+Do not start any task listed under `enables`.
+
+Published Attempt-3 history to preserve:
+
+```text
+Attempt-3 claim:
+  f9a393135cf701091750784588b0d34394765b2a
+
+Attempt-3 evidence:
+  110b6f5f4a92d2f6d01c206182da0444d912af8a
+
+Attempt-3 parent report:
+  87c5064f8cc62ac73b79d85cb33e5c6e2526429c
+```
+
+Attempt 4 is the next claim. Increment `attempt` exactly once.
+
+### Attempt-3 evidence accepted in substance
+
+Preserve these new tests:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+
+- "uses canonical paid activation for a pending initial target during rotation"
+- "re-observes an unsupported paid trial with a null schedule and later activates
+   its exact cycle"
+
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+
+- "ignores a queued job when unsupported-trial recovery cleared the durable schedule"
+```
+
+They close the direct rotating-path/null-schedule evidence gap from Attempt 2.
+
+Attempt 3 also reports:
+
+```text
+focused reconciliation: 81/81 passed
+integration: 3/3 passed
+Prisma validate/generate: passed
+git diff --check: passed
+```
+
+The unrelated repository baseline remains documented.
+
+### Why Attempt 3 cannot be accepted
+
+GitHub verifies that:
+
+```text
+110b6f5f4a92d2f6d01c206182da0444d912af8a
+```
+
+is test-only and changes exactly:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+It makes **no production change**.
+
+Therefore the required Attempt-2 production correction for same-local-plan Shopify
+handle drift was never implemented.
+
+The uploaded source still does:
+
+```ts
+if (
+  plan?.active
+  && plan.id === row.subscription.pendingPlanId
+  && plan.shopifyPlanHandle === row.subscription.pendingShopifyPlanHandle
+  && provider.planHandle === row.subscription.pendingShopifyPlanHandle
+  && plan.kind === BillingPlanKind.PAID_METERED
+) {
+  await this.completeVerifiedPaid(...);
+  return;
+}
+
+await this.applyOtherCurrentPlan(...);
+```
+
+So this exact state still falls through:
+
+```text
+durable pendingPlanId = plan-paid
+durable pendingShopifyPlanHandle = paid-old
+provider.planHandle = paid-new
+provider handle lookup returns BillingPlan.id = plan-paid
+BillingPlan.shopifyPlanHandle = paid-new
+BillingPlan.kind = PAID_METERED
+```
+
+That fallthrough is unsafe because `applyOtherCurrentPlan(...)` may project
+`Subscription.status = ACTIVE/TRIALING` and create/reuse a BillingPeriod without
+creating/verifying the canonical Paid `INCLUDED_RECOVERY_CREDITS` counter.
+
+The existing unit test named:
+
+```text
+"does not activate when the provider handle differs from the durable pending handle"
+```
+
+still does **not** prove this case. Its transaction mock retains the harness default:
+
+```text
+pendingPlanId = plan-free
+pendingShopifyPlanHandle = free-2026
+```
+
+so `applyOtherCurrentPlan(...)` exits on stale durable state before any unsafe
+fallthrough can occur.
+
+### Correction 1 — implement the same-local-plan handle-drift guard
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+After provider handle -> local BillingPlan lookup, but **before**
+`applyOtherCurrentPlan(...)`, detect:
+
+```ts
+const samePendingPlanHandleDrift =
+  plan?.active === true
+  && plan.kind === BillingPlanKind.PAID_METERED
+  && plan.id === row.subscription.pendingPlanId
+  && (
+    provider.planHandle !== row.subscription.pendingShopifyPlanHandle
+    || plan.shopifyPlanHandle !== row.subscription.pendingShopifyPlanHandle
+  );
+```
+
+Equivalent code is allowed, but the predicate must preserve these semantics.
+
+When true:
+
+```text
+- never call completeVerifiedPaid;
+- never call applyOtherCurrentPlan;
+- never create/upsert a BillingPeriod;
+- never create/upsert an included counter;
+- never set Subscription ACTIVE/TRIALING;
+- never clear pendingPlanId/pendingShopifyPlanHandle/pendingEffectiveAt;
+- never set onboardingCompleted true.
+```
+
+For the queued path, call the existing bounded pending-failure mechanism with:
+
+```text
+PENDING_PLAN_HANDLE_MISMATCH
+```
+
+Extend the exact error-code union of `recordPaidActivationFailure(...)` to include:
+
+```text
+"PENDING_PLAN_HANDLE_MISMATCH"
+```
+
+Do not create another retry helper/queue.
+
+The existing `nextSubscriptionReconcileAt(...)` retry cadence remains authoritative.
+
+### Correction 2 — make the queued drift test exercise the real unsafe branch
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Replace or strengthen:
+
+```text
+"does not activate when the provider handle differs from the durable pending handle"
+```
+
+Use:
+
+```text
+row.subscription.pendingPlanId = plan-paid
+row.subscription.pendingShopifyPlanHandle = paid-old
+provider.planHandle = paid-new
+plan.id = plan-paid
+plan.shopifyPlanHandle = paid-new
+plan.kind = PAID_METERED
+```
+
+Critically, also make the **transactional reread** match the same durable state:
+
+```text
+status = NO_CONTRACT
+planId = null
+pendingPlanId = plan-paid
+pendingShopifyPlanHandle = paid-old
+pendingEffectiveAt = expected
+nextReconcileAt = expected
+```
+
+Then assert:
+
+```text
+database.subscription.updateMany called once with:
+  lastSyncErrorCode = PENDING_PLAN_HANDLE_MISMATCH
+  nextReconcileAt = bounded retry time
+
+transaction billingPeriod.findUnique/create/upsert not called
+transaction billingPeriodEntitlementCounter findUnique/upsert not called
+transaction subscription.update not called
+transaction shopSettings.update not called
+pending fields are not cleared
+queue publishes at most the bounded retry job from recordPaidActivationFailure
+```
+
+Do not accept "no mutation" caused by stale transaction state as evidence.
+
+### Correction 3 — guard the rotating path against the same drift
+
+File:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+Current rotating initial-activation branch is entered only when:
+
+```text
+existing.pendingShopifyPlanHandle === provider.planHandle
+```
+
+Preserve that direct canonical-activation condition.
+
+Add an explicit fail-closed branch for:
+
+```text
+initial activation state
+AND plan resolves from provider.planHandle
+AND plan.id === existing.pendingPlanId
+AND plan.kind === PAID_METERED
+AND provider.planHandle !== existing.pendingShopifyPlanHandle
+```
+
+Expected rotating behavior:
+
+```text
+- do not invoke activateInitialPaid;
+- do not use legacy database.billingPeriod.upsert;
+- do not update Subscription to ACTIVE/TRIALING;
+- do not clear durable pending intent;
+- return bounded/no-op rotating result and allow future rotation to re-observe.
+```
+
+Do not create a one-minute queued retry when the durable schedule is null.
+Rotation is already the recovery loop.
+
+Add direct evidence in:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+for this exact same-local-plan handle drift.
+
+### Correction 4 — add the missing existing-period conflict evidence
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+These tests required by Attempt 2 are still absent.
+
+#### 4.1 CLOSED historical exact period
+
+Arrange a canonical first-Paid activation with transactionally valid plan and an
+existing exact BillingPeriod whose:
+
+```text
+status = CLOSED
+```
+
+Assert:
+
+```text
+rejects with the production closed-period error;
+billingPeriod.create not called;
+included counter find/create/upsert not called;
+subscription.update not called;
+shopSettings.update not called.
+```
+
+#### 4.2 Incompatible existing period
+
+Use a table-driven test covering at least:
+
+```text
+subscriptionId mismatch
+planId mismatch
+shopifyPlanHandleSnapshot mismatch
+planNameSnapshot mismatch
+planKindSnapshot mismatch
+includedRecoveryCreditsGranted mismatch
+```
+
+For every row:
+
+```text
+throws "Initial paid activation found an incompatible billing period";
+existing period not rewritten;
+included counter not created/reset;
+subscription not activated;
+onboarding remains false.
+```
+
+### Correction 5 — add the missing conflicting included-counter evidence
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Arrange:
+
+```text
+existing exact OPEN BillingPeriod is fully compatible;
+existing INCLUDED_RECOVERY_CREDITS counter exists;
+counter.grantedQuantity != transactionally validated current plan allowance.
+```
+
+Assert:
+
+```text
+throws "Initial paid activation found an incompatible included-credit counter";
+billingPeriodEntitlementCounter.upsert not called;
+subscription.update not called;
+shopSettings.update not called;
+existing committed/reserved/forfeited values are untouched.
+```
+
+Keep the existing compatible replay test.
+
+### Correction 6 — add the missing successful Paid activation queue-failure repair evidence
+
+The task still lacks a test for:
+
+```text
+successful first Paid activation commits
+-> publishNext queue.add fails
+-> durable activation remains committed
+-> reconstruct() repairs the missing delayed job.
+```
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Add a dedicated test, not a renamed existing rollover/null-provider test.
+
+Suggested deterministic harness:
+
+```text
+1. Arrange canonical valid Paid activation.
+2. transaction callback records successful:
+     Subscription ACTIVE update
+     BillingPeriod create/reuse
+     INCLUDED counter create/upsert
+     ShopSettings onboardingCompleted=true
+3. queue.add rejects on the post-commit publish.
+4. reconcileJob rejects/logs according to current publishNext behavior.
+5. Assert all durable transaction calls above already occurred.
+6. Reset queue.add to succeed.
+7. database.shop.findMany returns one ACTIVE/onboarded Paid row with:
+     subscription.id
+     exact durable nextReconcileAt
+8. call reconstruct().
+9. assert reconstruct() == 1 and queue.add uses that exact durable schedule.
+```
+
+Also assert reconstruction does not invoke Partner or rerun activation.
+
+### Correction 7 — Completion Report must list exact Attempt-4 evidence
+
+Attempt 3 still reports aggregate counts but does not list the exact new test titles
+by requirement as instructed.
+
+Attempt 4 report must include a compact mapping:
+
+```text
+same-local-plan queued handle drift:
+  <exact test title>
+
+same-local-plan rotating handle drift:
+  <exact test title>
+
+rotating canonical activation:
+  uses canonical paid activation for a pending initial target during rotation
+
+unsupported trial null schedule:
+  re-observes an unsupported paid trial with a null schedule and later activates
+  its exact cycle
+
+CLOSED period:
+  <exact test title>
+
+incompatible period:
+  <exact test title>
+
+conflicting included counter:
+  <exact test title>
+
+Paid enqueue failure + reconstruct:
+  <exact test title>
+```
+
+Do not describe unrelated integration tests as proof of these unit-level invariants.
+
+### Correction 8 — mandatory workflow evidence must be recorded in the current report
+
+The required text currently exists only inside prior Architect Review instructions.
+It is not present in the current Attempt-3 Completion Report.
+
+Attempt 4 must record actual observed values:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-003
+  parent branch: task/ARCH-010-BACKGROUND-003
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-003
+  implementation branch: task/ARCH-010-BACKGROUND-003
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+  database submodule HEAD: <actual full SHA>
+  database gitlink staged/changed: no
+
+Task history:
+  Attempt-1 claim f536ff84f726654d6520ceac93aae1d5038edfc3
+    ancestor of parent HEAD: yes
+  Attempt-1 implementation c6d5c0a66de67cded04d8f60c2d268644286bb13
+    ancestor of implementation HEAD: yes
+  Attempt-1 report 082d6de3a1b35c735571a4c7a0238fb0e104eb42
+    ancestor of parent HEAD: yes
+
+  Attempt-2 claim 396d651734470326c6c5048af198d911281c7684
+    ancestor of parent HEAD: yes
+  Attempt-2 implementation 3172334ae2400bf8de95422d7e5630320bba0d55
+    ancestor of implementation HEAD: yes
+  Attempt-2 report 16ca4212344ab01a3552a341c3d54edbc59252cf
+    ancestor of parent HEAD: yes
+
+  Attempt-3 claim f9a393135cf701091750784588b0d34394765b2a
+    ancestor of parent HEAD: yes
+  Attempt-3 evidence 110b6f5f4a92d2f6d01c206182da0444d912af8a
+    ancestor of implementation HEAD: yes
+  Attempt-3 report 87c5064f8cc62ac73b79d85cb33e5c6e2526429c
+    ancestor of parent HEAD: yes
+
+Handoff:
+  parent worktree clean: yes
+  implementation worktree clean: yes
+```
+
+Record actual values only.
+
+### Attempt 4 allowed scope
+
+Production:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+Tests:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+Parent task document/report.
+
+Do not modify:
+
+```text
+database/**
+Shared contracts/package versions
+other repositories
+BACKGROUND-002 recovery admission
+BACKGROUND-007 rollover implementation
+queue/worker topology
+upgrade/downgrade/cancellation/refund/promotion behavior
+```
+
+If the required handle-drift guard needs a schema/Shared change, STOP and return to
+`moda_architect`.
+
+### Required Attempt 4 validation
+
+Run:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts
+
+npm run test:integration
+npm run test:unit
+npm run build
+git diff --check
+```
+
+Acceptance requires:
+
+```text
+- queued same-local-plan handle drift cannot reach applyOtherCurrentPlan;
+- queued drift preserves pending target and records PENDING_PLAN_HANDLE_MISMATCH;
+- rotating same-local-plan handle drift cannot use legacy BillingPeriod projection;
+- canonical rotating activation/null-schedule tests from Attempt 3 remain green;
+- CLOSED exact historical period fails closed;
+- incompatible existing period snapshots fail closed;
+- conflicting included counter grant fails closed;
+- successful first Paid activation survives queue publish failure and reconstruct
+  repairs the missing job;
+- compatible replay continues not to reset usage/lifetime state;
+- Attempt-2 transactional plan/allowance/handle validation remains green;
+- focused and available integration suites remain green;
+- unrelated full-unit/build baseline is unchanged;
+- workflow/history evidence is present in the current report;
+- database gitlink unchanged;
+- git diff --check passes.
+```
+
+When complete:
+
+```text
+set this same task to review;
+publish implementation/evidence commit(s);
+publish Completion Report;
 STOP for moda_architect.
 ```
 
