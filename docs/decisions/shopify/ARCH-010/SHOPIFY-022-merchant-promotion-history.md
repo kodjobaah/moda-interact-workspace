@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 86
 executor: null
 claimed_at: null
@@ -103,4 +103,664 @@ Ready for Review.
 - Implementation commit `0d66cc1` pushed to `origin/task/ARCH-010-SHOPIFY-022`.
 
 ### Architect Review
-Pending architect review after publication.
+
+#### Review Status
+
+Changes Requested
+
+#### Review Notes
+
+Attempt 1 is not accepted. Preserve the tenant-scoped grant query, 25-row pagination, exact grant-lot accounting, privacy-safe projection, current-selection projection and existing selection implementation. The correction is limited to the two findings below plus the tests/documentation required to prove them.
+
+##### Finding 1 — `REOPENED` is inferred from selection history instead of campaign lifecycle truth
+
+Current production logic classifies a row as `REOPENED` when:
+
+```text
+campaign.status == ACTIVE
+AND MerchantPromotionSelection is absent
+AND PromotionalCreditGrant.selectionCount > 1
+```
+
+That predicate does **not** prove the campaign was reopened. `selectionCount` records merchant selection/reselection, not `PromotionCampaignEvent(REOPENED)`. A merchant can increment `selectionCount` without any campaign close/reopen lifecycle event, and later have no current selection. Such a row is currently falsely labelled `REOPENED`.
+
+Correct this deterministically in `moda-interact/app/services/promotions/promotion.service.ts`:
+
+1. Keep `PromotionalCreditGrant(campaignId, shopId)` as the merchant-history/accounting authority. Do not add another history table or counter.
+2. In the existing nested `campaign` read for `getPromotionHistory`, read only the lifecycle evidence required to identify an actual reopen:
+
+```ts
+events: {
+  where: { kind: "REOPENED" },
+  orderBy: { createdAt: "desc" },
+  take: 1,
+  select: { createdAt: true },
+}
+```
+
+Do **not** select or return `platformAdminId`, the PlatformAdmin relation, old/new audit payloads, or the lifecycle event object in the merchant history result. The event timestamp is server-side classification evidence only.
+3. Extend the internal projection input to accept the selected reopen timestamp evidence. Do not expose that evidence as a merchant history field.
+4. Calculate remaining allocation exactly as today:
+
+```text
+max(0, quantity - reservedQuantity - committedQuantity)
+```
+
+5. Use this status precedence exactly:
+
+```text
+if exhaustedAt != null                         -> EXHAUSTED
+else if campaign.status == CLOSED              -> CLOSED
+else if campaign.expiresAt <= now              -> EXPIRED
+else if current merchant is not target-eligible -> NO_LONGER_ELIGIBLE
+else if latest REOPENED event exists
+     AND firstSelectedAt != null
+     AND reopenedAt > firstSelectedAt
+     AND remaining allocation > 0              -> REOPENED
+else if firstUsedAt != null                     -> USED
+else                                             -> SELECTED
+```
+
+6. Remove `selectionCount > 1` and `selection === null` as reopen evidence. `currentlySelected` remains a separate field derived only from `MerchantPromotionSelection`; it must not decide whether the campaign lifecycle was reopened.
+7. Preserve status precedence so a genuinely reopened campaign that is now exhausted, closed, expired or no-longer-eligible reports that current terminal/ineligible condition instead of `REOPENED`.
+
+Required focused behavioural evidence:
+
+- `selectionCount > 1` with **no** `REOPENED` campaign event does not report `REOPENED`;
+- a real `REOPENED` event after `firstSelectedAt`, with remaining allocation, reports `REOPENED`;
+- a `REOPENED` event that predates this merchant's `firstSelectedAt` does not make that merchant grant `REOPENED`;
+- actual reopen classification does not depend on `currentlySelected`; prove both selected and non-selected projections where practical;
+- EXHAUSTED/CLOSED/EXPIRED/NO_LONGER_ELIGIBLE continue to take precedence over reopen;
+- the returned merchant row contains no event object, Admin identity, target IDs, request keys or other internal provenance.
+
+##### Finding 2 — the new merchant history UI violates the accepted promotion i18n contract
+
+`SHOPIFY-021` established the merchant promotion route's invariant that **all new static promotion copy uses the existing merchant i18n runtime and all 20 locale catalogues**. Attempt 1 adds English-only strings including the history heading/suffix, empty state, Granted/Used/Selected labels, Currently selected, Yes/No, Status, lifecycle labels and Previous/Next.
+
+Correct this in `moda-interact/app/routes/app/promotions/route.tsx` and the existing locale catalogues. Use the existing `createMerchantI18n` runtime; do not introduce another localisation mechanism.
+
+Add and use this bounded key family (exact key names):
+
+```text
+promotions.history.title
+promotions.history.empty
+promotions.history.granted
+promotions.history.usedCredits
+promotions.history.selectedRange
+promotions.history.usedRange
+promotions.history.currentlySelected
+promotions.history.status
+promotions.history.yes
+promotions.history.no
+promotions.history.previous
+promotions.history.next
+promotions.status.used
+promotions.status.expired
+promotions.status.closed
+promotions.status.noLongerEligible
+promotions.status.reopened
+```
+
+Canonical English meanings:
+
+```text
+promotions.history.title               Promotion history
+promotions.history.empty               No selected promotion history.
+promotions.history.granted             Granted: {quantity}
+promotions.history.usedCredits         Used: {quantity}
+promotions.history.selectedRange       Selected: {first} – {last}
+promotions.history.usedRange           Used: {first} – {last}
+promotions.history.currentlySelected   Currently selected: {value}
+promotions.history.status              Status: {status}
+promotions.history.yes                 Yes
+promotions.history.no                  No
+promotions.history.previous            Previous
+promotions.history.next                Next
+promotions.status.used                 Used
+promotions.status.expired              Expired
+promotions.status.closed               Closed
+promotions.status.noLongerEligible     No longer eligible
+promotions.status.reopened             Reopened
+```
+
+Add locale-appropriate translations to **every** current catalogue. Do not make Luna discover or translate these strings. Use the exact translations below for the 19 non-English catalogues, and use the canonical English values above for `en.json`. Preserve the placeholders exactly (`{quantity}`, `{first}`, `{last}`, `{value}`, `{status}`).
+
+The 20 catalogue files are:
+
+```text
+cs.json
+da.json
+de.json
+en.json
+es.json
+fi.json
+fr.json
+it.json
+ja.json
+ko.json
+nb.json
+nl.json
+pl.json
+pt-BR.json
+pt-PT.json
+sv.json
+th.json
+tr.json
+zh-Hans.json
+zh-Hant.json
+```
+
+Exact non-English values:
+
+##### `cs.json`
+
+```json
+"promotions.history.title": "Historie akcí",
+"promotions.history.empty": "Žádná historie vybraných akcí.",
+"promotions.history.granted": "Přiděleno: {quantity}",
+"promotions.history.usedCredits": "Použito: {quantity}",
+"promotions.history.selectedRange": "Vybráno: {first} – {last}",
+"promotions.history.usedRange": "Použito: {first} – {last}",
+"promotions.history.currentlySelected": "Aktuálně vybráno: {value}",
+"promotions.history.status": "Stav: {status}",
+"promotions.history.yes": "Ano",
+"promotions.history.no": "Ne",
+"promotions.history.previous": "Předchozí",
+"promotions.history.next": "Další",
+"promotions.status.used": "Použito",
+"promotions.status.expired": "Vypršelo",
+"promotions.status.closed": "Uzavřeno",
+"promotions.status.noLongerEligible": "Již nesplňuje podmínky",
+"promotions.status.reopened": "Znovu otevřeno"
+```
+
+##### `da.json`
+
+```json
+"promotions.history.title": "Kampagnehistorik",
+"promotions.history.empty": "Ingen historik over valgte kampagner.",
+"promotions.history.granted": "Tildelt: {quantity}",
+"promotions.history.usedCredits": "Brugt: {quantity}",
+"promotions.history.selectedRange": "Valgt: {first} – {last}",
+"promotions.history.usedRange": "Brugt: {first} – {last}",
+"promotions.history.currentlySelected": "Aktuelt valgt: {value}",
+"promotions.history.status": "Status: {status}",
+"promotions.history.yes": "Ja",
+"promotions.history.no": "Nej",
+"promotions.history.previous": "Forrige",
+"promotions.history.next": "Næste",
+"promotions.status.used": "Brugt",
+"promotions.status.expired": "Udløbet",
+"promotions.status.closed": "Lukket",
+"promotions.status.noLongerEligible": "Ikke længere berettiget",
+"promotions.status.reopened": "Genåbnet"
+```
+
+##### `de.json`
+
+```json
+"promotions.history.title": "Aktionsverlauf",
+"promotions.history.empty": "Kein Verlauf ausgewählter Aktionen.",
+"promotions.history.granted": "Zugewiesen: {quantity}",
+"promotions.history.usedCredits": "Verwendet: {quantity}",
+"promotions.history.selectedRange": "Ausgewählt: {first} – {last}",
+"promotions.history.usedRange": "Verwendet: {first} – {last}",
+"promotions.history.currentlySelected": "Aktuell ausgewählt: {value}",
+"promotions.history.status": "Status: {status}",
+"promotions.history.yes": "Ja",
+"promotions.history.no": "Nein",
+"promotions.history.previous": "Zurück",
+"promotions.history.next": "Weiter",
+"promotions.status.used": "Verwendet",
+"promotions.status.expired": "Abgelaufen",
+"promotions.status.closed": "Geschlossen",
+"promotions.status.noLongerEligible": "Nicht mehr berechtigt",
+"promotions.status.reopened": "Wieder geöffnet"
+```
+
+##### `es.json`
+
+```json
+"promotions.history.title": "Historial de promociones",
+"promotions.history.empty": "No hay historial de promociones seleccionadas.",
+"promotions.history.granted": "Concedidos: {quantity}",
+"promotions.history.usedCredits": "Usados: {quantity}",
+"promotions.history.selectedRange": "Seleccionada: {first} – {last}",
+"promotions.history.usedRange": "Usada: {first} – {last}",
+"promotions.history.currentlySelected": "Seleccionada actualmente: {value}",
+"promotions.history.status": "Estado: {status}",
+"promotions.history.yes": "Sí",
+"promotions.history.no": "No",
+"promotions.history.previous": "Anterior",
+"promotions.history.next": "Siguiente",
+"promotions.status.used": "Usada",
+"promotions.status.expired": "Caducada",
+"promotions.status.closed": "Cerrada",
+"promotions.status.noLongerEligible": "Ya no cumple los requisitos",
+"promotions.status.reopened": "Reabierta"
+```
+
+##### `fi.json`
+
+```json
+"promotions.history.title": "Kampanjahistoria",
+"promotions.history.empty": "Ei valittujen kampanjoiden historiaa.",
+"promotions.history.granted": "Myönnetty: {quantity}",
+"promotions.history.usedCredits": "Käytetty: {quantity}",
+"promotions.history.selectedRange": "Valittu: {first} – {last}",
+"promotions.history.usedRange": "Käytetty: {first} – {last}",
+"promotions.history.currentlySelected": "Tällä hetkellä valittu: {value}",
+"promotions.history.status": "Tila: {status}",
+"promotions.history.yes": "Kyllä",
+"promotions.history.no": "Ei",
+"promotions.history.previous": "Edellinen",
+"promotions.history.next": "Seuraava",
+"promotions.status.used": "Käytetty",
+"promotions.status.expired": "Vanhentunut",
+"promotions.status.closed": "Suljettu",
+"promotions.status.noLongerEligible": "Ei enää kelvollinen",
+"promotions.status.reopened": "Avattu uudelleen"
+```
+
+##### `fr.json`
+
+```json
+"promotions.history.title": "Historique des promotions",
+"promotions.history.empty": "Aucun historique de promotions sélectionnées.",
+"promotions.history.granted": "Accordés : {quantity}",
+"promotions.history.usedCredits": "Utilisés : {quantity}",
+"promotions.history.selectedRange": "Sélectionnée : {first} – {last}",
+"promotions.history.usedRange": "Utilisée : {first} – {last}",
+"promotions.history.currentlySelected": "Actuellement sélectionnée : {value}",
+"promotions.history.status": "Statut : {status}",
+"promotions.history.yes": "Oui",
+"promotions.history.no": "Non",
+"promotions.history.previous": "Précédent",
+"promotions.history.next": "Suivant",
+"promotions.status.used": "Utilisée",
+"promotions.status.expired": "Expirée",
+"promotions.status.closed": "Fermée",
+"promotions.status.noLongerEligible": "Plus éligible",
+"promotions.status.reopened": "Rouverte"
+```
+
+##### `it.json`
+
+```json
+"promotions.history.title": "Cronologia promozioni",
+"promotions.history.empty": "Nessuna cronologia delle promozioni selezionate.",
+"promotions.history.granted": "Assegnati: {quantity}",
+"promotions.history.usedCredits": "Utilizzati: {quantity}",
+"promotions.history.selectedRange": "Selezionata: {first} – {last}",
+"promotions.history.usedRange": "Utilizzata: {first} – {last}",
+"promotions.history.currentlySelected": "Attualmente selezionata: {value}",
+"promotions.history.status": "Stato: {status}",
+"promotions.history.yes": "Sì",
+"promotions.history.no": "No",
+"promotions.history.previous": "Precedente",
+"promotions.history.next": "Successivo",
+"promotions.status.used": "Utilizzata",
+"promotions.status.expired": "Scaduta",
+"promotions.status.closed": "Chiusa",
+"promotions.status.noLongerEligible": "Non più idonea",
+"promotions.status.reopened": "Riaperta"
+```
+
+##### `ja.json`
+
+```json
+"promotions.history.title": "プロモーション履歴",
+"promotions.history.empty": "選択済みプロモーションの履歴はありません。",
+"promotions.history.granted": "付与: {quantity}",
+"promotions.history.usedCredits": "使用済み: {quantity}",
+"promotions.history.selectedRange": "選択: {first} – {last}",
+"promotions.history.usedRange": "使用: {first} – {last}",
+"promotions.history.currentlySelected": "現在選択中: {value}",
+"promotions.history.status": "ステータス: {status}",
+"promotions.history.yes": "はい",
+"promotions.history.no": "いいえ",
+"promotions.history.previous": "前へ",
+"promotions.history.next": "次へ",
+"promotions.status.used": "使用済み",
+"promotions.status.expired": "期限切れ",
+"promotions.status.closed": "終了",
+"promotions.status.noLongerEligible": "対象外",
+"promotions.status.reopened": "再開済み"
+```
+
+##### `ko.json`
+
+```json
+"promotions.history.title": "프로모션 기록",
+"promotions.history.empty": "선택한 프로모션 기록이 없습니다.",
+"promotions.history.granted": "지급: {quantity}",
+"promotions.history.usedCredits": "사용: {quantity}",
+"promotions.history.selectedRange": "선택: {first} – {last}",
+"promotions.history.usedRange": "사용: {first} – {last}",
+"promotions.history.currentlySelected": "현재 선택됨: {value}",
+"promotions.history.status": "상태: {status}",
+"promotions.history.yes": "예",
+"promotions.history.no": "아니요",
+"promotions.history.previous": "이전",
+"promotions.history.next": "다음",
+"promotions.status.used": "사용됨",
+"promotions.status.expired": "만료됨",
+"promotions.status.closed": "종료됨",
+"promotions.status.noLongerEligible": "더 이상 대상 아님",
+"promotions.status.reopened": "다시 열림"
+```
+
+##### `nb.json`
+
+```json
+"promotions.history.title": "Kampanjehistorikk",
+"promotions.history.empty": "Ingen historikk for valgte kampanjer.",
+"promotions.history.granted": "Tildelt: {quantity}",
+"promotions.history.usedCredits": "Brukt: {quantity}",
+"promotions.history.selectedRange": "Valgt: {first} – {last}",
+"promotions.history.usedRange": "Brukt: {first} – {last}",
+"promotions.history.currentlySelected": "Valgt nå: {value}",
+"promotions.history.status": "Status: {status}",
+"promotions.history.yes": "Ja",
+"promotions.history.no": "Nei",
+"promotions.history.previous": "Forrige",
+"promotions.history.next": "Neste",
+"promotions.status.used": "Brukt",
+"promotions.status.expired": "Utløpt",
+"promotions.status.closed": "Lukket",
+"promotions.status.noLongerEligible": "Ikke lenger kvalifisert",
+"promotions.status.reopened": "Gjenåpnet"
+```
+
+##### `nl.json`
+
+```json
+"promotions.history.title": "Promotiegeschiedenis",
+"promotions.history.empty": "Geen geschiedenis van geselecteerde promoties.",
+"promotions.history.granted": "Toegekend: {quantity}",
+"promotions.history.usedCredits": "Gebruikt: {quantity}",
+"promotions.history.selectedRange": "Geselecteerd: {first} – {last}",
+"promotions.history.usedRange": "Gebruikt: {first} – {last}",
+"promotions.history.currentlySelected": "Momenteel geselecteerd: {value}",
+"promotions.history.status": "Status: {status}",
+"promotions.history.yes": "Ja",
+"promotions.history.no": "Nee",
+"promotions.history.previous": "Vorige",
+"promotions.history.next": "Volgende",
+"promotions.status.used": "Gebruikt",
+"promotions.status.expired": "Verlopen",
+"promotions.status.closed": "Gesloten",
+"promotions.status.noLongerEligible": "Niet langer in aanmerking",
+"promotions.status.reopened": "Heropend"
+```
+
+##### `pl.json`
+
+```json
+"promotions.history.title": "Historia promocji",
+"promotions.history.empty": "Brak historii wybranych promocji.",
+"promotions.history.granted": "Przyznano: {quantity}",
+"promotions.history.usedCredits": "Wykorzystano: {quantity}",
+"promotions.history.selectedRange": "Wybrano: {first} – {last}",
+"promotions.history.usedRange": "Użyto: {first} – {last}",
+"promotions.history.currentlySelected": "Obecnie wybrana: {value}",
+"promotions.history.status": "Status: {status}",
+"promotions.history.yes": "Tak",
+"promotions.history.no": "Nie",
+"promotions.history.previous": "Poprzednia",
+"promotions.history.next": "Następna",
+"promotions.status.used": "Wykorzystana",
+"promotions.status.expired": "Wygasła",
+"promotions.status.closed": "Zamknięta",
+"promotions.status.noLongerEligible": "Już nie kwalifikuje się",
+"promotions.status.reopened": "Ponownie otwarta"
+```
+
+##### `pt-BR.json`
+
+```json
+"promotions.history.title": "Histórico de promoções",
+"promotions.history.empty": "Nenhum histórico de promoções selecionadas.",
+"promotions.history.granted": "Concedidos: {quantity}",
+"promotions.history.usedCredits": "Usados: {quantity}",
+"promotions.history.selectedRange": "Selecionada: {first} – {last}",
+"promotions.history.usedRange": "Usada: {first} – {last}",
+"promotions.history.currentlySelected": "Selecionada atualmente: {value}",
+"promotions.history.status": "Status: {status}",
+"promotions.history.yes": "Sim",
+"promotions.history.no": "Não",
+"promotions.history.previous": "Anterior",
+"promotions.history.next": "Próxima",
+"promotions.status.used": "Usada",
+"promotions.status.expired": "Expirada",
+"promotions.status.closed": "Encerrada",
+"promotions.status.noLongerEligible": "Não é mais elegível",
+"promotions.status.reopened": "Reaberta"
+```
+
+##### `pt-PT.json`
+
+```json
+"promotions.history.title": "Histórico de promoções",
+"promotions.history.empty": "Sem histórico de promoções selecionadas.",
+"promotions.history.granted": "Atribuídos: {quantity}",
+"promotions.history.usedCredits": "Utilizados: {quantity}",
+"promotions.history.selectedRange": "Selecionada: {first} – {last}",
+"promotions.history.usedRange": "Utilizada: {first} – {last}",
+"promotions.history.currentlySelected": "Atualmente selecionada: {value}",
+"promotions.history.status": "Estado: {status}",
+"promotions.history.yes": "Sim",
+"promotions.history.no": "Não",
+"promotions.history.previous": "Anterior",
+"promotions.history.next": "Seguinte",
+"promotions.status.used": "Utilizada",
+"promotions.status.expired": "Expirada",
+"promotions.status.closed": "Encerrada",
+"promotions.status.noLongerEligible": "Já não elegível",
+"promotions.status.reopened": "Reaberta"
+```
+
+##### `sv.json`
+
+```json
+"promotions.history.title": "Kampanjhistorik",
+"promotions.history.empty": "Ingen historik för valda kampanjer.",
+"promotions.history.granted": "Tilldelade: {quantity}",
+"promotions.history.usedCredits": "Använda: {quantity}",
+"promotions.history.selectedRange": "Vald: {first} – {last}",
+"promotions.history.usedRange": "Använd: {first} – {last}",
+"promotions.history.currentlySelected": "Vald just nu: {value}",
+"promotions.history.status": "Status: {status}",
+"promotions.history.yes": "Ja",
+"promotions.history.no": "Nej",
+"promotions.history.previous": "Föregående",
+"promotions.history.next": "Nästa",
+"promotions.status.used": "Använd",
+"promotions.status.expired": "Utgången",
+"promotions.status.closed": "Stängd",
+"promotions.status.noLongerEligible": "Inte längre behörig",
+"promotions.status.reopened": "Återöppnad"
+```
+
+##### `th.json`
+
+```json
+"promotions.history.title": "ประวัติโปรโมชัน",
+"promotions.history.empty": "ไม่มีประวัติโปรโมชันที่เลือก",
+"promotions.history.granted": "ได้รับ: {quantity}",
+"promotions.history.usedCredits": "ใช้แล้ว: {quantity}",
+"promotions.history.selectedRange": "เลือก: {first} – {last}",
+"promotions.history.usedRange": "ใช้: {first} – {last}",
+"promotions.history.currentlySelected": "เลือกอยู่ในขณะนี้: {value}",
+"promotions.history.status": "สถานะ: {status}",
+"promotions.history.yes": "ใช่",
+"promotions.history.no": "ไม่",
+"promotions.history.previous": "ก่อนหน้า",
+"promotions.history.next": "ถัดไป",
+"promotions.status.used": "ใช้แล้ว",
+"promotions.status.expired": "หมดอายุแล้ว",
+"promotions.status.closed": "ปิดแล้ว",
+"promotions.status.noLongerEligible": "ไม่มีสิทธิ์แล้ว",
+"promotions.status.reopened": "เปิดอีกครั้งแล้ว"
+```
+
+##### `tr.json`
+
+```json
+"promotions.history.title": "Promosyon geçmişi",
+"promotions.history.empty": "Seçilen promosyon geçmişi yok.",
+"promotions.history.granted": "Verilen: {quantity}",
+"promotions.history.usedCredits": "Kullanılan: {quantity}",
+"promotions.history.selectedRange": "Seçildi: {first} – {last}",
+"promotions.history.usedRange": "Kullanıldı: {first} – {last}",
+"promotions.history.currentlySelected": "Şu anda seçili: {value}",
+"promotions.history.status": "Durum: {status}",
+"promotions.history.yes": "Evet",
+"promotions.history.no": "Hayır",
+"promotions.history.previous": "Önceki",
+"promotions.history.next": "Sonraki",
+"promotions.status.used": "Kullanıldı",
+"promotions.status.expired": "Süresi doldu",
+"promotions.status.closed": "Kapatıldı",
+"promotions.status.noLongerEligible": "Artık uygun değil",
+"promotions.status.reopened": "Yeniden açıldı"
+```
+
+##### `zh-Hans.json`
+
+```json
+"promotions.history.title": "促销历史",
+"promotions.history.empty": "没有已选择的促销历史。",
+"promotions.history.granted": "已授予：{quantity}",
+"promotions.history.usedCredits": "已使用：{quantity}",
+"promotions.history.selectedRange": "已选择：{first} – {last}",
+"promotions.history.usedRange": "使用：{first} – {last}",
+"promotions.history.currentlySelected": "当前已选择：{value}",
+"promotions.history.status": "状态：{status}",
+"promotions.history.yes": "是",
+"promotions.history.no": "否",
+"promotions.history.previous": "上一页",
+"promotions.history.next": "下一页",
+"promotions.status.used": "已使用",
+"promotions.status.expired": "已过期",
+"promotions.status.closed": "已关闭",
+"promotions.status.noLongerEligible": "不再符合资格",
+"promotions.status.reopened": "已重新开放"
+```
+
+##### `zh-Hant.json`
+
+```json
+"promotions.history.title": "促銷歷史",
+"promotions.history.empty": "沒有已選擇的促銷歷史。",
+"promotions.history.granted": "已授予：{quantity}",
+"promotions.history.usedCredits": "已使用：{quantity}",
+"promotions.history.selectedRange": "已選擇：{first} – {last}",
+"promotions.history.usedRange": "使用：{first} – {last}",
+"promotions.history.currentlySelected": "目前已選擇：{value}",
+"promotions.history.status": "狀態：{status}",
+"promotions.history.yes": "是",
+"promotions.history.no": "否",
+"promotions.history.previous": "上一頁",
+"promotions.history.next": "下一頁",
+"promotions.status.used": "已使用",
+"promotions.status.expired": "已過期",
+"promotions.status.closed": "已關閉",
+"promotions.status.noLongerEligible": "不再符合資格",
+"promotions.status.reopened": "已重新開放"
+```
+
+Admin-authored campaign names remain displayed as authored; do not translate campaign content. Date/time values must continue through the existing merchant formatter.
+
+Update `tests/unit/merchant-i18n.test.ts` and `tests/unit/routes/promotion-route.test.ts` so the new keys are part of catalogue parity/route evidence and the route no longer contains the new raw English UI strings. Preserve the existing SHOPIFY-021 semantic-translation checks; extend them for representative new promotion-history keys rather than weakening/removing them.
+
+#### Reviewed Files
+
+```text
+moda-interact/app/services/promotions/promotion.service.ts
+moda-interact/app/routes/app/promotions/route.tsx
+moda-interact/tests/unit/services/promotion.service.test.ts
+moda-interact/tests/unit/routes/promotion-route.test.ts
+moda-interact/database/prisma/schema.prisma
+docs/architecture/ARCH-010-promotional-campaigns.md
+docs/decisions/database/ARCH-010/DATABASE-013-first-production-schema-baseline.md
+docs/decisions/shopify/ARCH-010/SHOPIFY-021-promotion-offer-catalogue-and-selection.md
+docs/decisions/shopify/ARCH-010/SHOPIFY-022-merchant-promotion-history.md
+```
+
+#### Validation Reviewed
+
+Attempt-1 reported evidence was inspected:
+
+```text
+focused promotion tests: 33/33 passed
+full tests: 316 passed, 3 skipped
+build: passed
+git diff --check: passed
+typecheck/lint: documented unrelated repository baseline diagnostics only
+```
+
+Those green checks do not cover the two semantic gaps above. Attempt 2 must run:
+
+```bash
+npm test -- \
+  tests/unit/services/promotion.service.test.ts \
+  tests/unit/routes/promotion-route.test.ts \
+  tests/unit/merchant-i18n.test.ts
+
+npm test
+npm run build
+npm run typecheck
+npm run lint
+git diff --check
+```
+
+For `typecheck`/`lint`, baseline failures may be reported only when they remain unrelated to the files changed by Attempt 2. Any diagnostic in the changed promotion service, route, locale/i18n path or changed tests is an Attempt-2 failure and must be fixed before returning to review.
+
+#### Architecture Conformance
+
+Conforms and must be preserved:
+
+- history query is scoped by authenticated `shopId` for both count and row retrieval;
+- one campaign-linked `PromotionalCreditGrant` is the history/accounting authority;
+- remaining allocation subtracts both reserved and committed quantities;
+- page size is bounded to 25;
+- current selection is distinct from historical grant ownership;
+- no history mutation path was introduced;
+- Admin identity, target IDs and other internal provenance are omitted from the merchant result.
+
+Does not yet conform:
+
+- `REOPENED` is not based on durable campaign lifecycle evidence;
+- new merchant-visible static promotion-history copy bypasses the accepted i18n contract.
+
+#### Scope / Non-Goals for Attempt 2
+
+Allowed implementation files:
+
+```text
+moda-interact/app/services/promotions/promotion.service.ts
+moda-interact/app/routes/app/promotions/route.tsx
+moda-interact/app/i18n/locales/*.json
+moda-interact/tests/unit/services/promotion.service.test.ts
+moda-interact/tests/unit/routes/promotion-route.test.ts
+moda-interact/tests/unit/merchant-i18n.test.ts
+```
+
+Do not change Prisma schema/migrations, Admin, Background, Shared, campaign selection rules, grant quantities, pagination page size, campaign lifecycle mutation, or any unrelated billing/runtime code. Do not expose campaign lifecycle audit rows to the browser merely to classify `REOPENED`.
+
+#### Attempt-2 Completion Evidence
+
+Before returning this same task to review, the Completion Report must state:
+
+1. the exact production rule now used to establish a real campaign reopen;
+2. the false-positive regression test proving `selectionCount` alone is insufficient;
+3. the genuine reopen test and terminal-status precedence tests;
+4. the exact locale files changed and confirmation that no new history key uses an English placeholder in non-English catalogues;
+5. focused test count including `merchant-i18n.test.ts`;
+6. full test/build/typecheck/lint/diff-check results with any baseline failures identified by existing baseline context;
+7. launcher/worktree/recursive-submodule evidence for Attempt 2.
+
+#### Follow-up / Stop Condition
+
+Return the **same** `ARCH-010-SHOPIFY-022` task through `/moda-task`. The next authorized claim must increment `attempt: 1` to **Attempt 2 exactly once**. After implementing only the corrections above, update the Completion Report, set the task to `review`, clear the claim, push both mirrored task branches and STOP. Do not start `ARCH-010-SYSTEM-TEST-003` or any adjacent task.
