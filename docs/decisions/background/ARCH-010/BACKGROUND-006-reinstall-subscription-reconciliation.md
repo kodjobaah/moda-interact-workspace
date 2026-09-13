@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 49
 executor: null
 claimed_at: null
@@ -408,174 +408,115 @@ Ready for Architect Review.
 Changes Requested
 
 #### Review Notes
-Attempt 1 is not acceptable yet. The implementation commit is `8da03a0c1908ffd97a72369784672936db5881a5`. The parent Completion Report is `c4a9262844e9164246e39923f58356e3b7bbd8e6`.
+Attempt 2 is **not yet acceptable**, but the production correction is substantially conformant. The reviewed implementation commit is `baa33fbae1a0f3883fe2beba27a0e57f98ef4ae3`; the parent Completion Report commit is `47f43f4e64b144d178df207077924da1f6df7a02`.
 
-The implementation has the correct high-level shape: it reuses the canonical subscription-reconciliation queue/provider, extends reconstruction, delegates same-plan cycle rollover to `SamePlanBillingPeriodRolloverService`, and keeps ordinary inactive-shop business work gated. However, the real reinstall execution path is currently unreachable and several required reinstall invariants are either not enforced or not covered by executable tests.
+Attempt 2 correctly addresses the eight production defects from the Attempt-1 review:
 
-This is a correction of the SAME task. Preserve the current `attempt: 1`; the next `/moda-task ARCH-010-BACKGROUND-006` claim increments it to Attempt 2 exactly once. Do not create another task.
+- `reconcileJob()` now selects the real `Shop.reinstallPendingAt` field and no longer type-casts an unselected Prisma field;
+- the UNINSTALLED exception checks `job.subscriptionId` before Partner access;
+- successful null/Free/Paid restoration revalidates the exact Shop reinstall marker and status under transaction/row lock;
+- Free and Paid successful restoration refresh Shopify pending-plan projection;
+- pack-enabled Free requires the configured pack-event handle and exact provider meter;
+- same-paid-cycle restoration validates the existing BillingPeriod and INCLUDED_RECOVERY_CREDITS counter without repairing/resetting quantities;
+- same-plan later-cycle reconciliation invokes `SamePlanBillingPeriodRolloverService.transitionInTransaction(...)` inside the reinstall-authority transaction;
+- successful same-paid-cycle restoration publishes the deterministic drain-window follow-up after commit.
 
-#### Blocking findings
+No additional production redesign is requested by this review. The blocker is that the executable test evidence still does not satisfy the explicit Attempt-2 test contract. This is a correction of the SAME task. Preserve `attempt: 2`; the next `/moda-task ARCH-010-BACKGROUND-006` claim increments it to Attempt 3 exactly once. Do not create a new task.
 
-1. **`reconcileJob()` does not select `Shop.reinstallPendingAt`.**
+#### Blocking evidence gaps
 
-   The production `shop.findUnique()` select contains `id`, `status`, `shopifyShopId`, `settings`, and `subscription`, but omits `reinstallPendingAt`. The code then type-casts the Prisma result to pretend the field exists. Real Prisma select results do not contain unselected columns, so `row.reinstallPendingAt` is `undefined` and every real `UNINSTALLED` job returns at `row.reinstallPendingAt == null` before Partner is called. The unit harness hides this by returning the entire mocked row regardless of the requested Prisma `select`.
+The implementation commit adds useful tests and makes the harness honor Prisma `select`, but the required reinstall matrix remains incomplete:
 
-2. **The reinstall branch does not verify `job.subscriptionId`.**
+1. **Provider-null preservation is not proved explicitly.** The existing reinstall-null test proves activation/NO_CONTRACT but does not install spies for and assert zero mutation of historical `BillingPeriod`/`BillingPeriodEntitlementCounter`, `ShopEntitlementCounter`, `RecoveryCreditPurchase`, `RecoveryCreditRefund`, `PromotionalCreditGrant`, or `MerchantPromotionSelection` state as required by Attempt 2.
 
-   The normal ACTIVE path checks `row.subscription.id !== job.subscriptionId`; the new UNINSTALLED branch does not. The reinstall exception must require the queued subscription id to equal the shop's current durable Subscription id before calling Partner.
+2. **Free lifetime preservation is under-proved.** The current Free reinstall test proves that a lifetime counter is not upserted, but it does not prove that an existing lifetime counter's `grantedQuantity`, `committedQuantity`, `reservedQuantity`, and `forfeitedQuantity` remain unchanged, nor that no lifetime counter create/upsert occurs.
 
-3. **A stale Partner response can reactivate a shop after the reinstall attempt changes.**
+3. **Free pending-plan projection lacks the unmapped/inactive case.** Mapped-active and null pending handles are covered. Add a provider pending handle whose local BillingPlan is missing or inactive and prove the provider handle/effective time are retained while `pendingPlanId` becomes null; do not apply that plan early.
 
-   `completeReinstallWithoutContract`, `completeReinstallFree`, `activateReinstallPaid`, and `activateReinstallAfterRollover` recheck only Subscription schedule/state. They do not transactionally prove that the Shop is still `UNINSTALLED` with the exact `reinstallPendingAt` captured before the Partner call. A concurrent retry, suspension, uninstall lifecycle change, or another restoration attempt can therefore be overwritten by an older Partner response.
+4. **The same-paid-period corruption matrix is incomplete.** Attempt 2 tests only missing period, CLOSED period, and overcommitted quantities. It still must prove fail-closed behavior for wrong period `shopId`, wrong `subscriptionId`, wrong `planId`, missing counter, counter `shopId`/`billingPeriodId` mismatch, a negative quantity, a non-integer quantity, and `counter.grantedQuantity != BillingPeriod.includedRecoveryCreditsGranted`.
 
-4. **Successful Free/Paid restoration does not faithfully refresh provider pending-plan projection.**
+5. **Successful same-paid-cycle pending projection is not proved.** Add a successful Paid reinstall with `provider.pendingPlanHandle`/`pendingEffectiveAt` and prove the mapped active pending plan id is written together with the provider handle/time while the current paid cycle/counter quantities remain unchanged.
 
-   Outcome B requires current/pending provider projection under the accepted mapping rules. `completeReinstallFree()` hard-clears all pending fields. `activateReinstallPaid()` leaves the preserved pending fields untouched. Both are wrong when Shopify currently reports `pendingPlanHandle` / `pendingEffectiveAt`.
+6. **Paid post-commit queue-loss repair is not proved.** Force the same-paid-cycle `publishNext` enqueue to reject. Prove PostgreSQL restoration remains committed (`Shop=ACTIVE`, reinstall marker cleared, subscription ACTIVE, exact `nextReconcileAt` retained, counter quantities unchanged), then call `reconstruct()` and prove it republishes the same deterministic job id/schedule without calling Shopify.
 
-5. **Pack-enabled Free mapping can activate with a missing configured pack meter handle.**
+7. **Later-cycle preservation is not proved.** The rollover delegation test proves `transitionInTransaction()` was invoked and Shop was activated, but not that historical/lifetime/purchased/promotional state is untouched by the reinstall wrapper. Add explicit no-mutation spies for state owned outside the canonical rollover and prove the normal rollover `nextReconcileAt` is retained/published.
 
-   The guard only rejects when `shopifyRecoveryCreditPackEventHandle` is non-null but absent from `provider.usageEventHandles`. For `recoveryCreditPackEnabled=true`, a null configured pack-event handle must also fail closed as `MISSING_USAGE_METER`, matching the accepted Free/rollover mapping rule.
+8. **Different paid plan fail-closed behavior is not directly tested.** Add a reinstall where Shopify current handle maps to a different active PAID_METERED plan than the preserved current plan. Prove Shop remains UNINSTALLED, `PERIOD_ALIGNMENT_REQUIRED` (or the existing deterministic blocked code for this path) is recorded, no upgrade/downgrade transition is invoked, and no BillingPeriod/counter quantity is mutated.
 
-6. **Same-paid-period validation proves counter existence but not counter integrity.**
+9. **Reinstall provider transport retry is not tested.** The current `PARTNER_API_ERROR` tests at this location exercise ordinary activation/rollover paths, not `recordReinstallProviderFailure(...)`. Add a true UNINSTALLED reinstall case where Partner throws and prove the only Subscription mutations are `lastSyncErrorCode`, `lastSyncErrorAt`, and `nextReconcileAt`; current/pending entitlement fields, Shop markers/status, period/counters, lifetime/purchased/promotional/refund state remain unchanged.
 
-   The task requires missing/inconsistent period-counter state to fail closed. Attempt 1 selects only `{ id: true }` from `BillingPeriodEntitlementCounter`. Before reactivation, verify the exact period/counter identity and quantity invariants used by the accepted Paid billing policy: matching shop/period, safe non-negative integer quantities, and `committedQuantity + reservedQuantity + forfeitedQuantity <= grantedQuantity`. The counter grant must agree with the immutable period grant snapshot; reinstall must never repair/reset these quantities.
+10. **The reinstall-specific 24-hour retry boundary is not tested.** Use `Shop.reinstallPendingAt` as the retry-age origin. Prove a pre-boundary failure persists/enqueues the deterministic next schedule, and at/after 24 hours it persists `nextReconcileAt=null`, leaves Shop UNINSTALLED with the reinstall marker intact, and does not enqueue.
 
-7. **Same-paid-period restoration stores a normal `nextReconcileAt` but does not best-effort publish the corresponding deterministic job.**
+The existing reconstruction test is acceptable for the startup/periodic no-Shopify requirement: it exercises an UNINSTALLED row with `reinstallPendingAt`, verifies the exact expected schedule and remaining delay, and verifies Partner is not called. Keep it green.
 
-   `activateReinstallPaid()` computes/persists the drain-window schedule and returns a boolean. `completeReinstallPaid()` returns immediately after it, without `publishNext(...)`. The task explicitly requires the normal paid follow-up job after commit. Queue failure must remain non-transactional and repairable by reconstruction.
+#### Required Attempt-3 implementation/test instructions
 
-8. **The submitted tests do not cover the task's required reinstall matrix.**
+**Production source:** preserve `src/services/billing-subscription-reconciliation.service.ts` at `baa33fb` unless one of the tests below exposes a real contract violation. Do not refactor working production code merely to create a new implementation commit. If a test exposes a defect, fix only the smallest defect inside this same allowed source file.
 
-   The added tests cover the mocked happy-path null/Free cases, stale schedule, and reconstruction, but no direct reinstall tests prove the required same-paid-cycle, rollover, changed-plan, missing/inconsistent counter, transport-expiry, SUSPENDED, pending-projection, or preservation cases. Passing 74 focused tests does not substitute for the task's explicit Required tests.
+**Focused test file:** update only `tests/unit/services/billing-subscription-reconciliation.service.test.ts` for the missing evidence. The harness may be extended with deterministic spies/mocks for owned models. Do not use source-text/regex assertions.
 
-#### Required Attempt-2 production corrections
+Add/strengthen executable tests with these deterministic expectations:
 
-Make only the following bounded corrections in `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`. Do not redesign unrelated billing reconciliation.
+1. `provider null preserves all detached/history credit state`
+   - start from `Shop.status=UNINSTALLED`, exact marker/schedule/subscription id;
+   - Partner returns null;
+   - assert Subscription becomes NO_CONTRACT and current/pending pointers are cleared, onboarding false, Shop ACTIVE/markers cleared;
+   - assert no create/update/upsert/delete/updateMany is called on historical period/counter, lifetime counter, purchased lot/refund, promotional grant/selection mocks.
 
-1. **Use the real Prisma reinstall field.**
-   - Add `reinstallPendingAt: true` to the `shop.findUnique()` select in `reconcileJob()`.
-   - Remove the unsafe cast that invents `{ reinstallPendingAt: Date | null }`. Let Prisma infer the selected field.
-   - Before any Partner call on the UNINSTALLED exception require all of:
+2. `verified Free preserves existing lifetime quantities`
+   - provide an existing lifetime counter with non-zero granted/committed/reserved/forfeited quantities;
+   - after restore assert those values are unchanged and `shopEntitlementCounter.create/upsert` were not called.
 
-     ```text
-     row.status == UNINSTALLED
-     row.reinstallPendingAt != null
-     row.subscription != null
-     row.subscription.id == job.subscriptionId
-     row.subscription.nextReconcileAt != null
-     row.subscription.nextReconcileAt.toISOString() == job.expectedNextReconcileAt
-     ```
+3. `Free pending handle without active local mapping keeps provider projection but null local id`
+   - provider supplies `pendingPlanHandle` and `pendingEffectiveAt`;
+   - transaction lookup returns null or `{active:false}`;
+   - assert `pendingShopifyPlanHandle=<provider value>`, `pendingEffectiveAt=<provider value>`, `pendingPlanId=null`.
 
-   - `SUSPENDED`, ordinary `UNINSTALLED`, mismatched subscription id, stale schedule, missing Shopify shop id, and missing Subscription remain terminal successful no-ops with no Partner call.
+4. Expand the exact-paid integrity table. For every row below, assert `PERIOD_ALIGNMENT_REQUIRED`, Shop remains UNINSTALLED, no subscription/shop restoration update occurs, no counter mutation occurs, and no queue publication occurs:
+   - period `shopId` mismatch;
+   - period `subscriptionId` mismatch;
+   - period `planId` mismatch;
+   - missing INCLUDED_RECOVERY_CREDITS counter;
+   - counter `shopId` mismatch;
+   - counter `billingPeriodId` mismatch;
+   - one negative quantity;
+   - one non-integer quantity;
+   - granted quantity differs from period `includedRecoveryCreditsGranted`.
+   Keep the existing missing-period/CLOSED/overcommitted rows.
 
-2. **Make the durable Shop reinstall marker part of every successful transaction.**
-   - Pass the captured `ReinstallExpected.reinstallPendingAt` through every completion path.
-   - Before committing ANY successful restoration, transactionally prove:
+5. `same paid cycle refreshes pending projection`
+   - provider has current exact paid cycle plus a pending mapped active plan;
+   - assert pending handle/id/effective time are refreshed and all existing counter quantities remain unchanged.
 
-     ```text
-     Shop.id == shopId
-     Shop.status == UNINSTALLED
-     Shop.reinstallPendingAt == expected.reinstallPendingAt
-     Subscription.id == expected.subscriptionId
-     Subscription.nextReconcileAt == expected.nextReconcileAt
-     ```
+6. `same paid cycle survives queue failure and reconstruct repairs it`
+   - make queue `.add()` reject once after successful commit;
+   - assert durable ACTIVE Shop/Subscription state and exact drain-window `nextReconcileAt` remain committed;
+   - set reconstruction query to return that ACTIVE scheduled subscription;
+   - call `reconstruct()` and assert the second queue call has the same deterministic `expectedNextReconcileAt`/job id and Partner remains at the one reconciliation call (reconstruct itself must not call Partner).
 
-   - The check must be concurrency-safe, not a non-locking read followed by unconditional `shop.update()`. Use one consistent transaction pattern that locks/CASes the Shop row and rolls back all Subscription/ShopSettings/BillingPeriod changes if the marker/status changed.
-   - Do not turn a stale marker/CAS miss into a provider/configuration error. It is a terminal stale-job no-op. Do not enqueue another job from that stale attempt.
-   - Apply this to provider-null, verified Free, same-paid-cycle, and later-cycle rollover success.
+7. `later paid rollover preserves wrapper-owned balances`
+   - spy on canonical `transitionInTransaction()` returning transitioned with a known next schedule;
+   - provide mocks/spies for lifetime/purchased/promotional/refund state and assert the reinstall wrapper does not mutate them;
+   - assert Shop activation happens only after canonical success and the returned next schedule is published.
 
-3. **Keep canonical rollover atomic with the reinstall authority.**
-   - For the later same-plan paid-cycle path, continue using `SamePlanBillingPeriodRolloverService`; do not copy its close/open implementation.
-   - Use its existing `transitionInTransaction(...)` capability (or an equivalently atomic use of the canonical service) so the exact reinstall Shop marker is verified in the same transaction that performs the rollover and final Shop activation.
-   - If the reinstall marker/status changed, the rollover must not commit for that stale attempt.
-   - Preserve `provider-cycle-lag` / integrity failure semantics from BACKGROUND-007; do not invent a replacement period.
+8. `different paid plan remains blocked`
+   - preserved plan/handle A; provider current mapped active paid plan/handle B;
+   - assert canonical same-plan rollover is not invoked, Shop is not activated, no period/counter mutation occurs, and blocked diagnostic state is persisted.
 
-4. **Refresh provider pending projection on successful current-plan reconciliation.**
-   - Resolve `provider.pendingPlanHandle` using the existing BillingPlan mapping rule used elsewhere in this service.
-   - On successful Free and same-paid-cycle restoration write:
+9. `reinstall provider transport failure preserves entitlement truth`
+   - Partner throws;
+   - capture the single `subscription.updateMany` call and assert its `data` contains only `lastSyncErrorCode`, `lastSyncErrorAt`, `nextReconcileAt`;
+   - assert no Shop/ShopSettings/period/counter/lifetime/purchased/promotional/refund mutation.
 
-     ```text
-     pendingShopifyPlanHandle = provider.pendingPlanHandle
-     pendingPlanId = mapped active local pending plan id, else null
-     pendingEffectiveAt = provider.pendingEffectiveAt
-     ```
+10. Add a two-case retry-boundary table driven by `reinstallPendingAt`:
+    - before 24h: deterministic `nextReconcileAt` is persisted and matching delayed job is published;
+    - at/after 24h: `nextReconcileAt=null`, no enqueue, Shop remains UNINSTALLED, same marker remains.
 
-   - If `pendingPlanHandle` is null, all three pending fields become null.
-   - Do not apply the pending plan early; this is projection only.
-   - Add equivalent projection after a successful same-plan rollover if the canonical rollover primitive does not already persist these three fields.
+Do not duplicate ordinary active-activation tests solely to increase counts. Keep the existing 86-test focused suite and adjacent gates green; the new evidence should raise the focused count deterministically.
 
-5. **Enforce the accepted pack-enabled Free meter rule.**
-   - If `plan.kind == FREE && plan.recoveryCreditPackEnabled == true`, require BOTH:
+#### Validation required for Attempt 3
 
-     ```text
-     plan.shopifyRecoveryCreditPackEventHandle != null
-     provider.usageEventHandles contains that exact handle
-     ```
-
-   - Otherwise keep Shop UNINSTALLED and record `MISSING_USAGE_METER`.
-   - Do not create a local substitute handle.
-
-6. **Validate exact same-paid-period integrity before restoration.**
-   - Revalidate under the final restoration transaction, not only before it.
-   - The pointed BillingPeriod must be OPEN and match at least:
-
-     ```text
-     period.id == Subscription.billingPeriodId
-     period.shopId == shopId
-     period.subscriptionId == Subscription.id
-     period.planId == current paid plan id
-     period.periodStart/end == Subscription.currentPeriodStart/end == provider current period
-     ```
-
-   - Load the unique `INCLUDED_RECOVERY_CREDITS` counter and require:
-
-     ```text
-     counter.shopId == shopId
-     counter.billingPeriodId == period.id
-     granted/committed/reserved/forfeited are safe non-negative integers
-     committed + reserved + forfeited <= granted
-     counter.grantedQuantity == period.includedRecoveryCreditsGranted
-     ```
-
-   - Any failure records `PERIOD_ALIGNMENT_REQUIRED`, leaves Shop UNINSTALLED, preserves all quantities, and performs no upgrade/downgrade.
-
-7. **Publish the exact paid follow-up job after a successful same-cycle commit.**
-   - Keep `nextReconcileAt = max(now, currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS)`.
-   - After the transaction commits, call the existing `publishNext(shopId, subscriptionId, nextReconcileAt)`.
-   - Do not make Redis success part of the PostgreSQL transaction. A queue failure must leave the committed durable schedule intact so `reconstruct()` repairs it.
-
-#### Required Attempt-2 tests
-
-Add executable tests in `tests/unit/services/billing-subscription-reconciliation.service.test.ts`. Existing unrelated tests may remain unchanged. Do not satisfy these requirements with source-text/regex assertions.
-
-At minimum add/strengthen tests that prove all of the following:
-
-1. The actual `shop.findUnique()` call selects `reinstallPendingAt: true`; remove reliance on the harness returning unselected fields.
-2. UNINSTALLED + exact marker + exact schedule + matching subscription id calls Partner.
-3. UNINSTALLED with a different `job.subscriptionId` is a no-op and never calls Partner.
-4. SUSPENDED with a reinstall marker/schedule is still a no-op and never calls Partner.
-5. A marker/status change after Partner returns causes the final transaction to do no restoration and does not enqueue. Cover at least `reinstallPendingAt` changed and Shop changed to `SUSPENDED`.
-6. Provider null establishes ACTIVE + NO_CONTRACT + onboarding false, clears current/pending Subscription pointers, and does not mutate/delete historical BillingPeriod/counter, lifetime-Free, purchased, promotional, purchase or refund state. Add spies/mocks for those owned models so preservation is explicit rather than inferred from absence of fixture fields.
-7. Verified Free preserves existing lifetime counter quantities exactly and creates no lifetime grant.
-8. Pack-enabled Free with `shopifyRecoveryCreditPackEventHandle=null` fails closed; pack-enabled Free whose configured handle is absent from provider handles also fails closed.
-9. Provider pending-plan projection is refreshed for a successful Free restore, including both mapped-active pending plan and null/unmapped cases.
-10. Same paid plan + exact same cycle reuses the existing BillingPeriod/counter, leaves all four counter quantities unchanged, restores ACTIVE/onboarding, and accepts `cancelAtPeriodEnd=true`.
-11. Same-paid-cycle restoration rejects: missing period, wrong shop/subscription/plan identity, CLOSED period, missing counter, counter identity mismatch, negative/non-integer quantity, `committed + reserved + forfeited > granted`, and grant mismatch with `BillingPeriod.includedRecoveryCreditsGranted`.
-12. Successful same-paid-cycle restoration refreshes provider pending projection and enqueues the deterministic drain-window job after commit.
-13. If that enqueue fails, durable ACTIVE state and `nextReconcileAt` remain committed and a later `reconstruct()` republishes the same deterministic job.
-14. Same-plan later/non-overlapping paid cycle delegates to the canonical BACKGROUND-007 transition, activates only after that transition succeeds, preserves historical/lifetime balances, and keeps the normal rollover schedule.
-15. A stale reinstall marker discovered during the later-cycle transaction rolls back/no-ops the canonical rollover for that stale attempt.
-16. Different provider paid plan remains fail-closed; no upgrade/downgrade and no counter mutation.
-17. Provider transport error while reinstalling updates only `lastSyncErrorCode`, `lastSyncErrorAt`, and `nextReconcileAt`; Shop remains UNINSTALLED and all entitlement/current/pending/credit fields are unchanged.
-18. Reinstall retry tiers are derived from `Shop.reinstallPendingAt`, enqueue the deterministic next job before 24h, and at/after 24h leave `nextReconcileAt=null`, Shop UNINSTALLED, marker present, and no enqueue.
-19. Startup/periodic `reconstruct()` includes pending reinstall rows, publishes with `delay=max(0,next-now)`, and never calls Shopify.
-20. Keep the existing active initial-activation tests green, plus the adjacent inactive recovery/WhatsApp and pre-uninstall usage-publication gates required by this task.
-
-The test harness must not mask Prisma-select mistakes. Where a production branch depends on a selected field, either assert the exact Prisma `select` or make the mock honor the select shape.
-
-#### Validation required for Attempt 2
-
-Run exactly the repository-declared validation that applies to this task:
+Run exactly:
 
 ```bash
 npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts
@@ -592,34 +533,35 @@ npm run build
 git diff --check
 ```
 
-Do not invent `npm run lint` or `npm run typecheck`; this repository does not declare those scripts. If full `npm test` / `npm run build` still fail only with the documented unrelated purchase/observability baseline, record exact counts/files and prove there are no diagnostics/failures in the files changed by BACKGROUND-006. Any new failure in the touched slice is a task failure.
+Do not invent `npm run lint` or `npm run typecheck`; this repository does not declare those scripts. Existing purchase/observability baseline failures remain non-blocking only if the counts/files are unchanged and the BACKGROUND-006 touched slice has no new failure/diagnostic.
 
 #### Scope / stop condition
 
-- Allowed production file: `src/services/billing-subscription-reconciliation.service.ts`.
+- Allowed production file only if a missing-evidence test reveals a real defect: `src/services/billing-subscription-reconciliation.service.ts`.
 - Allowed focused test file: `tests/unit/services/billing-subscription-reconciliation.service.test.ts`.
-- Do not modify Prisma schema, Shared contracts, queue names/payload schema, Shopify app, Admin, Messaging, purchase/refund semantics, generic inactive-shop gates, or `SamePlanBillingPeriodRolloverService` unless a concrete defect in that already-accepted primitive makes this correction impossible. If that occurs, STOP and return Blocked with exact evidence rather than modifying it opportunistically.
-- Preserve all valid Attempt-1 work, including reconstruction and canonical rollover delegation.
-- After the corrections and required validation, update the Completion Report, set the SAME task to `review`, clear `executor`/`claimed_at`, push both mirrored task branches, return to `moda_architect`, and STOP. Do not start `SHOPIFY-006` or any system-test task.
+- Do not modify Prisma schema, Shared contracts, queue schema/name, Shopify app, Admin, Messaging, purchased/refund semantics, promotion semantics, generic inactive-shop gates, or `SamePlanBillingPeriodRolloverService`.
+- Preserve implementation commit `baa33fb` behavior if all new tests pass without production changes. A test-only implementation commit is acceptable and preferred in that case.
+- If the canonical rollover primitive itself must change to satisfy these tests, STOP and return **Blocked** with exact evidence rather than editing it.
+- After validation, update the Completion Report, set this SAME task to `review`, clear `executor`/`claimed_at`, push both mirrored task branches, and return to `moda_architect`.
+- Do not start `ARCH-010-SHOPIFY-006` or `ARCH-010-SYSTEM-TEST-002`.
 
 #### Reviewed Files
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 - `moda-interact-background/src/services/same-plan-billing-period-rollover.service.ts`
-- `moda-interact-background/src/services/effective-billing-policy.service.ts`
 - `docs/decisions/background/ARCH-010/BACKGROUND-006-reinstall-subscription-reconciliation.md`
-- `docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md`
+- `docs/architecture/ARCH-010-implementation-handoff.md`
 
 #### Validation Reviewed
-- Reported focused reconciliation suite: 74/74 passed.
-- Reported adjacent gate suite: 49/49 passed.
+- Reported focused reinstall/reconciliation suite: 86 passed.
+- Reported adjacent gate suite: 49 passed.
 - Reported Prisma validation and `git diff --check`: passed.
-- Reported full-suite baseline: 718 passed / 10 failed / 12 skipped; failures reported outside the touched reconciliation slice.
-- Reported build baseline: 15 existing generated purchase-client/type errors in two unrelated purchase services; no reported errors in the touched service.
-- Review finding: the focused mocks do not model Prisma `select`, so those green results do not prove the real reinstall branch is reachable.
+- Reported full-suite baseline: 10 failures confined to the documented purchase/observability baseline; no reported failure in the touched slice.
+- Reported build baseline: 15 documented generated-client/type errors in unrelated purchase/recovery-credit services; no reported diagnostic in BACKGROUND-006 touched files.
+- Review independently verified that the harness now honors Prisma `select`, but the missing evidence above is not present in the submitted test file.
 
 #### Architecture Conformance
-Not yet conformant. The implementation preserves the intended queue/provider/reconstruction ownership boundaries, but the missing durable reinstall field, stale-attempt race, incomplete provider projection, counter-integrity gap and missing paid follow-up publication violate the explicit Iteration-5 restoration contract.
+Production path is substantially conformant after Attempt 2. Acceptance is withheld solely because the explicitly required reinstall preservation/failure matrix is not yet executable evidence. Downstream tasks remain gated until the SAME task is Accepted Complete.
 
 #### Follow-up
-Return `ARCH-010-BACKGROUND-006` to Attempt 2 on the same task branch. Downstream `ARCH-010-SHOPIFY-006` and `ARCH-010-SYSTEM-TEST-002` remain gated until BACKGROUND-006 is architect-accepted Complete.
+Return `ARCH-010-BACKGROUND-006` to Attempt 3 on the same task branch. `ARCH-010-SHOPIFY-006` and `ARCH-010-SYSTEM-TEST-002` remain gated until BACKGROUND-006 is architect-accepted Complete.
