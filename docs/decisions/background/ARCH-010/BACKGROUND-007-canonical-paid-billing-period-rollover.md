@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 47
-executor: copilot
-claimed_at: '2026-09-13T16:43:26Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-BACKGROUND-001
@@ -1158,3 +1158,517 @@ When the corrections and permanent evidence are complete:
 Canonical rollover MUST NOT close/grant a period merely because wall-clock `periodEnd` passes while the Subscription is FROZEN. BACKGROUND-012 owns the frozen retry.
 
 When unfreeze later proves the same mapped plan in a later Shopify currentBillingCycle, this rollover implementation MUST support direct catch-up from the preserved old period to the exact provider current cycle without fabricating intermediate monthly periods. Paid grants the provider current cycle allowance once; Free rotates provider billing scope only.
+
+## Architect Review — Attempt 2
+
+### Changes Requested
+
+Attempt 2 is **not accepted**. Keep this same task and return it to `ready` for
+Attempt 3. Do not create a replacement task and do not start any task enabled by
+`ARCH-010-BACKGROUND-007`.
+
+The implementation under review is:
+
+```text
+08cb3695e1c3add0ee51f19aba45783fac62d61e
+```
+
+The Attempt-2 parent task commits are:
+
+```text
+claim:
+  31a9d89591b77d0a9cbe7f6d161983e983ad1acf
+
+report:
+  63c15052acec514f0d51defccfafb3108d632366
+```
+
+Preserve that history. Attempt 3 is the next claim; increment `attempt` exactly once
+when claimed.
+
+### Attempt-2 corrections accepted in substance — preserve these
+
+The following Attempt-1 defects are corrected in substance and must not regress:
+
+```text
+- released Paid reservation quantity is now included in final forfeiture;
+- ACTIVE/TRIALING gating is enforced under the Subscription row lock;
+- incompatible existing successor period identity fails closed;
+- an existing Paid successor counter with the wrong grant fails closed;
+- rotating same-plan reconciliation no longer falls through to the legacy period
+  upsert after the canonical service returns;
+- Partner transport/null-provider scheduled rollover paths now preserve the current
+  projection and use a rollover-specific CAS retry path;
+- pre-close publication is invoked with billingPeriodId;
+- FROZEN/NO_CONTRACT/CANCELED subscriptions do not transition in the canonical
+  rollover service.
+```
+
+Do not redesign these pieces unless a required regression below proves a concrete
+defect.
+
+### Correction 1 — old exact provider cycle must take the +60-second lag retry path
+
+Files:
+
+```text
+src/services/same-plan-billing-period-rollover.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+The task contract requires:
+
+```text
+provider still reports the old exact cycle at/after currentPeriodEnd
+-> do not close/open
+-> preserve current plan/period
+-> record reconciliation-lag metadata
+-> schedule a new future retry beginning at +60 seconds
+-> enqueue a new deterministic reconcile job
+```
+
+Attempt 2 still does not do that.
+
+The canonical service currently returns:
+
+```ts
+{
+  kind: "unchanged",
+  billingPeriodId: subscription.billingPeriodId,
+  nextReconcileAt: subscription.nextReconcileAt,
+}
+```
+
+whenever provider start/end equal the current local start/end.
+
+`reconcileRollover(...)` then treats every result except `not-applicable` as success:
+
+```ts
+if (result.kind !== "not-applicable") {
+  const next = result.nextReconcileAt;
+  if (next) await this.publishNext(..., next);
+  return;
+}
+```
+
+At the exact boundary the durable `nextReconcileAt` is normally that same boundary
+timestamp. Re-publishing it can therefore reuse the currently executing deterministic
+job identity instead of producing the required +60-second retry.
+
+Implement one explicit old-cycle-lag outcome. Either:
+
+```text
+A. return a dedicated `provider-cycle-lag`/equivalent result from the canonical
+   service when now >= local currentPeriodEnd and provider cycle is still exactly
+   the old cycle;
+
+or
+
+B. detect this exact condition in reconcileRollover before treating `unchanged` as
+   successful.
+```
+
+Whichever shape is chosen must have these exact effects:
+
+```text
+- no BillingPeriod close/create;
+- no included counter mutation;
+- no capacity-resume hint;
+- preserve Subscription planId/billingPeriodId/currentPeriodStart/currentPeriodEnd;
+- CAS using id + ACTIVE/TRIALING + currentPlanId + billingPeriodId +
+  currentPeriodStart/currentPeriodEnd + expected nextReconcileAt;
+- set lastSyncErrorCode to a bounded lag code such as PROVIDER_CYCLE_LAG;
+- set lastSyncErrorAt = now;
+- set nextReconcileAt = now + 60 seconds for the first retry;
+- enqueue only after the CAS commits;
+- new expectedNextReconcileAt must create a different job id from the current job.
+```
+
+Do not treat the same exact current cycle as lag **before** the local period boundary.
+
+Required permanent tests:
+
+```text
+- same exact cycle before periodEnd is ordinary unchanged/current state;
+- same exact cycle at periodEnd produces +60s lag retry;
+- same exact cycle after periodEnd produces +60s lag retry;
+- retry CAS preserves plan/period fields and records PROVIDER_CYCLE_LAG;
+- retry expectedNextReconcileAt differs from the consumed boundary timestamp;
+- no capacity-resume hint is emitted during lag;
+- a later exact non-overlapping same-plan provider cycle transitions normally.
+```
+
+### Correction 2 — billingPeriodId-scoped publishing must scope stale-claim recovery too
+
+Files:
+
+```text
+src/services/shopify-usage-event-publisher.service.ts
+tests/unit/services/shopify-usage-event-publisher.service.test.ts
+```
+
+Attempt 2 adds:
+
+```ts
+publishDue({ billingPeriodId })
+```
+
+and correctly scopes the `PENDING`/`RETRYABLE` selection.
+
+However `publishDue(...)` still calls:
+
+```ts
+await this.recoverStaleClaims(now);
+```
+
+and `recoverStaleClaims(...)` currently updates **all** stale `IN_FLIGHT` UsageEvents
+without a BillingPeriod filter.
+
+Therefore a pre-close flush for one BillingPeriod can mutate stale claims belonging
+to another shop/period. That is not a period-scoped flush.
+
+Make stale recovery accept the same optional scope:
+
+```text
+recoverStaleClaims(now, { billingPeriodId })
+```
+
+or equivalent.
+
+Required behavior:
+
+```text
+publishDue()
+  -> current global behavior unchanged
+
+publishDue({ billingPeriodId: X })
+  -> stale IN_FLIGHT recovery is limited to X
+  -> due PENDING/RETRYABLE selection is limited to X
+  -> claims/provider sends/marking operate only on rows selected from X
+```
+
+Required test must include two stale `IN_FLIGHT` rows from different BillingPeriods
+and prove a scoped call recovers only the requested period.
+
+### Correction 3 — a thrown pre-close flush failure must remain observable and retryable
+
+Files:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Attempt 2 currently catches an exception from:
+
+```ts
+publishDue({ billingPeriodId })
+```
+
+logs it, and then unconditionally writes:
+
+```text
+nextReconcileAt = periodEnd
+lastSyncErrorCode = null
+lastSyncErrorAt = null
+```
+
+That erases the durable failure evidence and guarantees there is no subscription-
+reconciliation retry of the failed drain before the boundary.
+
+Required behavior when the scoped publisher itself throws:
+
+```text
+- do not close the period;
+- do not clear the error;
+- preserve the exact current projection;
+- set bounded error metadata, for example PRE_CLOSE_USAGE_FLUSH_FAILED;
+- if enough drain-window time remains, CAS nextReconcileAt to a short future retry
+  (start at +60 seconds, capped strictly before periodEnd) and enqueue it;
+- if no retry instant remains before periodEnd, preserve the failure metadata and
+  schedule the exact boundary job; the boundary transition may then apply the
+  existing rule that still-unreported old-period rows become NEEDS_ATTENTION;
+- never fabricate a reported App Event.
+```
+
+A successful scoped flush keeps the existing normal behavior:
+
+```text
+nextReconcileAt = exact periodEnd
+error metadata cleared
+boundary job enqueued after commit
+```
+
+Required tests:
+
+```text
+- thrown scoped publisher failure records error metadata;
+- failure with >60s remaining schedules a drain retry before periodEnd;
+- successful retry then schedules exact boundary;
+- failure inside the final minute preserves error metadata and schedules boundary;
+- stale guard failure performs no publish/no scheduling mutation.
+```
+
+This correction is for a thrown publisher operation. Do not convert ordinary
+per-event `RETRYABLE` results into thrown exceptions; the publisher owns those
+durable row-level retry states.
+
+### Correction 4 — permanent BACKGROUND-007 evidence is still materially incomplete
+
+Attempt 1 changed production without adding tests. Attempt 2 adds only:
+
+```text
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+```
+
+with coverage for non-active lifecycle states and incompatible successor identity,
+plus a small existing reconciliation-test adjustment.
+
+The implementation commit does **not** add/extend the scheduled reconciliation and
+publisher tests needed to prove the new capability. The reported `4 files, 63 tests`
+mostly executes pre-existing tests; it is not equivalent to the task's mandatory
+35-scenario rollover matrix.
+
+Attempt 3 must map every required BACKGROUND-007 scenario 1–35 to an exact permanent
+test name in the Completion Report. Existing tests may be referenced when they
+actually prove the requirement; add tests for every uncovered scenario.
+
+At minimum, permanent tests must explicitly prove all of the following:
+
+```text
+COMMON
+1  startup/pre-close schedule reconstruction;
+2  early job reschedules to drain start;
+3  drain job scopes old-period publication and schedules exact boundary;
+4  stale expectedNextReconcileAt is no-op;
+5  provider old exact cycle performs a new +60s retry;
+6  provider transport failure preserves known state and retries;
+7  contiguous later same-plan cycle transitions atomically;
+8  gap cycle creates only the exact provider current cycle;
+9  overlap fails closed;
+10 duplicate/concurrent rollover produces one successor;
+11 replay cannot reopen CLOSED target or duplicate grants;
+12 old PENDING/RETRYABLE events become NEEDS_ATTENTION after provider advance;
+13 REPORTED stays REPORTED;
+14 IN_FLIGHT is not overwritten by close;
+15 old unreported pack event does not activate RecoveryCreditPurchase;
+16 post-commit enqueue failure leaves transition durable and repair reconstructs;
+17 rotating reconciliation cannot create/reopen a later period outside canonical
+   rollover.
+
+PAID
+18 RESERVED/AMBIGUOUS release uses PERIOD_CLOSED;
+19 final included counter is reserved=0 and committed+forfeited=granted;
+20 reservation/counter mismatch aborts;
+21 successor Paid snapshots/grant exact;
+22 included counter exactly once;
+23 one post-commit capacity-resume hint;
+24 DRAINING/RECONCILING preserves BG8 admission/top-up boundaries.
+
+FREE
+25 later same-plan cycle closes old/open successor;
+26 Free successor snapshot has FREE + includedRecoveryCreditsGranted=null;
+27 no Free period included counter;
+28 lifetime-Free quantities unchanged;
+29 purchased lifetime quantities unchanged;
+30 Free DRAINING blocks pack purchase but not lifetime-Free recovery;
+31 Free RECONCILING does not expire lifetime entitlement;
+32 unreported old pack event -> UsageEvent NEEDS_ATTENTION;
+33 pack-enabled Free successor schedules next pre-close;
+34 Free rollover sends no capacity-resume hint solely for renewal;
+35 startup/repair reconstructs missing Free pack-cycle job.
+```
+
+Do not satisfy these with source-text assertions alone. Use behavioral service/harness
+tests around actual transaction and queue boundaries.
+
+Expected focused files now include:
+
+```text
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/shopify-usage-event-publisher.service.test.ts
+```
+
+If BG8 boundary behaviors for 24/30/31 are already permanently covered in existing
+BG8 tests, reference those exact test names and run them in the preservation gate
+rather than duplicating them.
+
+### Correction 5 — preserve DATABASE-014 purchase lifecycle in close tests
+
+For requirement 15/32, use the accepted first-production purchase model.
+
+When an old-period `RECOVERY_CREDIT_PACK_PURCHASE` UsageEvent is moved from
+`PENDING/RETRYABLE` to `ShopifyReportState.NEEDS_ATTENTION`:
+
+```text
+linked RecoveryCreditPurchase remains REQUESTED
+currentAmount remains 0
+activatedAt remains null
+no successor-period replay occurs
+```
+
+Do not add a RecoveryCreditPurchase `NEEDS_ATTENTION` lifecycle value. Do not edit
+DATABASE-014. BACKGROUND-021 remains the owner of provider-confirmed purchase
+activation.
+
+### Correction 6 — mandatory Attempt-3 isolation/synchronization evidence
+
+Attempt 2 again omits the mandatory evidence block. Do not invent or retroactively
+rewrite Attempt-2 observations.
+
+Attempt 3 must record actual observed values in this exact shape:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007
+  parent branch: task/ARCH-010-BACKGROUND-007
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007
+  implementation branch: task/ARCH-010-BACKGROUND-007
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: <full SHA>
+  database submodule HEAD: <full SHA>
+  database gitlink staged/changed: no
+
+Dependency integration:
+  BACKGROUND-008 accepted behavior present: yes
+  BACKGROUND-009 final accepted/evidence head
+    29478e94b8fc91bc4671a57c7af656ea20f1a66e
+    is ancestor of implementation HEAD: yes
+  Background origin/main SHA incorporated: <actual full SHA>
+
+Task history:
+  Attempt-1 claim b9eb75e3bf078743419688b72722bf49d88aa547
+    ancestor of parent HEAD: yes
+  Attempt-1 report 71d6f887aa4ac821fd3bbc175ff682a2c5297fb6
+    ancestor of parent HEAD: yes
+  Attempt-2 claim 31a9d89591b77d0a9cbe7f6d161983e983ad1acf
+    ancestor of parent HEAD: yes
+  Attempt-2 report 63c15052acec514f0d51defccfafb3108d632366
+    ancestor of parent HEAD: yes
+```
+
+The Completion Report must also state both worktrees were clean at handoff.
+
+### Attempt 3 allowed scope
+
+Production changes are limited to:
+
+```text
+src/services/same-plan-billing-period-rollover.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+src/services/shopify-usage-event-publisher.service.ts
+```
+
+`src/services/billing-reconciliation.service.ts` may be changed only if a new
+requirement-17 regression exposes a remaining rotating-path defect.
+
+Test changes are expected in:
+
+```text
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/shopify-usage-event-publisher.service.test.ts
+```
+
+Do not modify:
+
+```text
+database schema/migrations
+Shared contracts
+Shopify/Admin/Messaging/Gateway repositories
+BACKGROUND-008 admission semantics
+BACKGROUND-009 capacity-resume semantics
+BACKGROUND-012 freeze/cancel/no-contract ownership
+BACKGROUND-021 purchase activation architecture
+```
+
+If any correction requires one of those changes, STOP and return to
+`moda_architect`.
+
+### Required Attempt 3 validation
+
+From the canonical Background implementation worktree:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run \
+  tests/unit/services/same-plan-billing-period-rollover.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/services/shopify-usage-event-publisher.service.test.ts
+
+# BG8/BG9 preservation
+npx vitest run \
+  tests/unit/services/effective-billing-policy.service.test.ts \
+  tests/unit/services/paid-included-recovery-reservation.service.test.ts \
+  tests/unit/services/recovery-billing.service.test.ts \
+  tests/unit/services/whatsapp.service.test.ts
+
+npm run test:integration
+npm run test:unit
+npx tsc --noEmit
+npm run build
+git diff --check
+```
+
+Acceptance requires:
+
+```text
+- every BACKGROUND-007 focused test passes;
+- Completion Report maps required scenarios 1–35 to exact permanent tests;
+- old exact-cycle lag proves a new +60s job identity;
+- scoped publisher cannot mutate another period's stale claim;
+- thrown pre-close flush remains observable and retryable;
+- BG8/BG9 preservation gate passes;
+- integration remains green;
+- no changed/new file has a TypeScript/build diagnostic;
+- repository-wide purchased-credit/observability baseline may remain non-green only
+  if it is the same exact documented pre-existing set;
+- git diff --check passes.
+```
+
+### Attempt 3 stop conditions
+
+STOP and return this same task to `moda_architect` if:
+
+1. old-cycle lag retry requires changing the Shared reconcile-job contract;
+2. period-scoped stale recovery cannot be implemented without duplicating publisher
+   logic;
+3. correct pre-close retry would require a new worker/queue;
+4. required tests expose that BG8/BG9 accepted semantics are missing from current
+   main;
+5. purchase-state coverage would require changing DATABASE-014 or implementing
+   BACKGROUND-021;
+6. another repository must change.
+
+When complete:
+
+1. set this same task to `review`;
+2. publish implementation commit(s);
+3. update Completion Report with exact commands/results, 1–35 test mapping, and
+   mandatory evidence;
+4. publish parent report;
+5. STOP for Architect Review.
+
