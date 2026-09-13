@@ -10,10 +10,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 59
-executor: copilot
-claimed_at: '2026-09-13T09:44:10Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
@@ -178,11 +178,11 @@ Ready for Review.
 - Parent report branch: `task/ARCH-010-SHOPIFY-018`
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-018`
 - Attempt 2 report commit: `8a527ae`.
-- Parent remote task branch fast-forwarded: `5c58184`.
-- Parent `origin/main` incorporated: yes; merge-base `9ba97f0`.
-- Implementation remote task branch fast-forwarded: `9ce3dfa`.
-- Implementation `origin/main` incorporated: yes; merge-base `27ab1a9`.
-- Final parent report commit: `877ccff`.
+- Parent remote task branch fast-forwarded: `yes`.
+- Parent `origin/main` incorporated: `yes`.
+- Implementation remote task branch fast-forwarded: `yes`.
+- Implementation `origin/main` incorporated: `yes`.
+- Final parent report commit: `e13673a`.
 - Both branches were clean and synchronized with their remotes after validation; no origin/main merge was required.
 - Database gitlink staged: no.
 - Main branches modified: no.
@@ -900,4 +900,78 @@ No downstream task is released yet.
 `ARCH-010-SHOPIFY-012`, `ARCH-010-SHOPIFY-014`, `ARCH-010-SHOPIFY-015`, `ARCH-010-SHOPIFY-016`, and `ARCH-010-SHOPIFY-021` remain Pending.
 
 On successful SHOPIFY-018 acceptance, each enabled task must be re-evaluated against all of its other dependencies before any Pending -> Ready promotion.
+
+### Attempt 3 — Accepted
+
+#### Architect Decision
+
+**Accepted Complete — Attempt 3.**
+
+Attempt 3 closes the narrow proof/workflow gaps from Attempt 2.
+
+Accepted task branch HEAD:
+
+```text
+9ce3dfa
+```
+
+The production lifecycle implementation remains the previously reviewed production candidate introduced at:
+
+```text
+1605a3c
+```
+
+Architect review confirms the remaining required proof is now present:
+
+```text
+- the single Partner GraphQL request explicitly proves both activeSubscription(...) and events(...);
+- valid SUBSCRIPTION_UNFROZEN / UNFROZEN parses successfully;
+- valid SUBSCRIPTION_CANCELED / CANCELED parses successfully;
+- lifecycle read-only coverage explicitly proves database.billingPeriod.upsert is not called;
+- provider lifecycle query scoping and exact 365-day bound remain proved;
+- provider parser fail-closed behavior remains proved;
+- ACTIVE/FROZEN/CANCELED/UNRESOLVED/NO_ACTIVE_SUBSCRIPTION service classification remains proved;
+- mapped/unmapped FROZEN presentation remains separate from provider truth;
+- provider verification failure does not fall back to local commercial state;
+- no Subscription/BillingPeriod projection mutation occurs on the lifecycle read path.
+```
+
+Accepted validation:
+
+```text
+provider focused tests: 20 passed
+lifecycle service focused tests: 12 passed
+Prisma validate: passed
+Prisma generate: passed
+build: passed
+git diff --check: passed
+full suite: 280 passed with 2 unchanged unrelated baseline failures
+typecheck: unchanged pre-existing workspace diagnostics outside SHOPIFY-018
+```
+
+The Completion Report's four synchronization fields are normalized in this acceptance overlay from the explicit synchronization evidence already recorded by the implementation agent.
+
+Final pushed parent report HEAD from the developer handoff is reconciled as:
+
+```text
+e13673a
+```
+
+No further SHOPIFY-018 implementation work is required.
+
+#### Downstream dependency release
+
+SHOPIFY-018 enables:
+
+```text
+ARCH-010-SHOPIFY-012
+ARCH-010-SHOPIFY-014
+ARCH-010-SHOPIFY-015
+ARCH-010-SHOPIFY-016
+ARCH-010-SHOPIFY-021
+```
+
+None becomes Ready solely from this acceptance because each still has at least one other incomplete dependency.
+
+Therefore no downstream Shopify task is promoted in this acceptance overlay.
 

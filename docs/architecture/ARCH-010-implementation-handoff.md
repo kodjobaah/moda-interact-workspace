@@ -1,6 +1,6 @@
 # ARCH-010 Implementation Handoff
 
-Date: 2026-09-12
+Date: 2026-09-13
 Coordinator: `moda_architect`
 
 ## Current architecture state
@@ -27,13 +27,13 @@ There is no production billing state requiring compatibility with intermediate d
 
 ## Current audited task state
 
-The 2026-09-12 current-workspace audit, with durable architect-accepted history restored for BACKGROUND-001 Attempt 6 and SHOPIFY-002 Attempt 8, produces:
+The current coordinated ARCH-010 state after SHOPIFY-018 Attempt 3 acceptance is:
 
 ```text
 all ARCH-010 task files: 81
-complete:                 36
+complete:                 38
 ready:                     3
-pending:                  35
+pending:                  33
 superseded:                7
 ```
 
@@ -43,8 +43,8 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 
 ```text
 ARCH-010-ADMIN-010
-ARCH-010-BACKGROUND-019
-ARCH-010-SHOPIFY-018
+ARCH-010-BACKGROUND-008
+ARCH-010-BACKGROUND-009
 ```
 
 These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010.
@@ -69,9 +69,9 @@ Do not reset either task to an earlier attempt or reopen it for first-production
 
 For Background, `BACKGROUND-011` is now Complete at accepted Attempt 4 and owns the narrow DATABASE-013 lifetime-counter conformance required by the accepted BACKGROUND-001 activation producer; its BullMQ/retry/CAS/onboarding semantics remain immutable.
 
-`BACKGROUND-002` is architect-accepted Complete at Attempt 3 (`97bf5f0`) and owns the concurrency-safe current-period Paid included-credit reservation primitive and the interim `included -> purchased -> lifetime Free -> block` composition. `BACKGROUND-014` is now architect-accepted Complete at Attempt 2 (`2104959`) and makes the purchased step FIFO lot-aware. `BACKGROUND-019` is now Ready and owns the final promotion-first routing plus exact promotional-grant reservation.
+`BACKGROUND-002` is architect-accepted Complete at Attempt 3 (`97bf5f0`) and owns the concurrency-safe current-period Paid included-credit reservation primitive. `BACKGROUND-014` is architect-accepted Complete at Attempt 2 (`2104959`) and makes purchased reservations FIFO lot-aware. `BACKGROUND-019` is architect-accepted Complete at Attempt 6 (`08c288f`, final parent evidence `7fd5e1e`) and owns the final promotion-first routing plus exact promotional-grant reservation. Its completion releases `BACKGROUND-008` and `BACKGROUND-009` to Ready.
 
-For Shopify, `SHOPIFY-023` is architect-accepted Complete at Attempt 1 (`01f0605`) after developer-run validation against the materialized DATABASE-013 submodule. `SHOPIFY-018` is now Ready; SHOPIFY-003 and SHOPIFY-009 remain gated by other incomplete dependencies.
+For Shopify, `SHOPIFY-023` is architect-accepted Complete at Attempt 1 (`01f0605`) after developer-run validation against the materialized DATABASE-013 submodule. `SHOPIFY-018` is architect-accepted Complete at Attempt 3 (`9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD `e13673a`). Its enabled downstream tasks remain gated by other incomplete dependencies. SHOPIFY-003 and SHOPIFY-009 also remain gated by their other incomplete dependencies.
 
 `BACKGROUND-015` is architect-accepted Complete at Attempt 4 (`29c791c`). The Partner reconciliation snapshot now uses one request for live subscription plus the latest validated lifecycle event. `BACKGROUND-012` remains Pending because BACKGROUND-007, BACKGROUND-009 and BACKGROUND-010 are still incomplete.
 
@@ -247,8 +247,9 @@ For every Ready task, the repository agent must:
 
 If a clean-baseline symbol is missing, do not recreate a legacy alias locally. Return the contract gap to the architect.
 
-`BACKGROUND-019` remains Ready for Attempt 5 after a test-only review. The earlier instruction to commit the DATABASE-013 submodule gitlink as part of BG19 is rescinded; the accepted database checkout may be materialized locally for validation but the parent gitlink remains unchanged. When BG19 is architect-accepted Complete, re-evaluate its downstream graph: `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` are expected to become Ready if their other dependencies remain Complete.
 
-`ARCH-010-BACKGROUND-019` Attempt 5 is Changes Requested. The submitted Attempt 5 implementation test files are byte-for-byte identical to Attempt 4; the next claim is Attempt 6 and must contain a real test implementation delta for the outstanding retry/replay/concurrency/router proofs. `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` remain Pending until BG19 is architect-accepted Complete.
 
-`ARCH-010-SHOPIFY-018` Attempt 2 is Changes Requested (narrow proof/workflow correction). Production `1605a3c` and test commit `dbfb9fc` remain the current candidates. Attempt 3 must add only the missing query-shape/parser/no-write assertions and exact VCS synchronization/report metadata unless a new test exposes a production defect. No downstream Shopify task is released until SHOPIFY-018 is architect-accepted Complete.
+
+`ARCH-010-BACKGROUND-019` is architect-accepted Complete at Attempt 6. Accepted implementation branch HEAD: `08c288f`; final parent publication evidence reconciled from the developer handoff: `7fd5e1e`. The accepted DATABASE-013 checkout remains validation-only and the Background database gitlink is unchanged. `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` are now Ready because all of their dependencies are Complete. `ARCH-010-BACKGROUND-007` remains Pending until BG8 and BG9 are Complete; ARCH-010 system tests remain terminal/manual-gated.
+
+`ARCH-010-SHOPIFY-018` is architect-accepted Complete at Attempt 3. Accepted task branch HEAD: `9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD reconciled from the developer handoff: `e13673a`. No enabled downstream Shopify task becomes Ready yet because each still has other incomplete dependencies.
