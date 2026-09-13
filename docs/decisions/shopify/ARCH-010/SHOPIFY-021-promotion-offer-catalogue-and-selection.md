@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 84
 executor: null
 claimed_at: null
@@ -2553,3 +2553,82 @@ publish the implementation test/dependency/evidence commit;
 publish the parent Completion Report;
 STOP for moda_architect review.
 ```
+
+## Architect Review — Attempt 4
+
+### Accepted
+
+Attempt 4 is **architect-accepted Complete**. No Attempt 5 is required.
+
+Accepted published history:
+
+```text
+Attempt-4 implementation: af3a9c44
+Attempt-4 parent report:   b6253f1e
+Database gitlink:          5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+```
+
+The uploaded review archive has Git metadata stripped, so the architect cannot
+independently execute ancestry/push checks from the archive. The Attempt-4 Completion
+Report records the required real-worktree isolation, synchronization, ancestry and
+clean-handoff evidence, including the resolved full Attempt-3 report SHA. No contrary
+evidence is present in the reviewed snapshot.
+
+### Accepted implementation evidence
+
+The Attempt-4 correction satisfies the complete latest rework contract:
+
+```text
+- @testcontainers/postgresql is pinned exactly to 12.1.0 as a devDependency;
+- package-lock.json contains the corresponding Testcontainers dependency graph;
+- TEST_DATABASE_URL is absent from the permanent concurrency integration test;
+- the Docker-backed suite is gated only by MODA_DISPOSABLE_INTEGRATION=1;
+- the integration test pins postgres:17.6-alpine;
+- the test starts its own fresh PostgreSQL container;
+- prisma migrate deploy runs against the container-generated connection URI;
+- the primary, first concurrent and second concurrent Prisma clients all use that URI;
+- setup failure disconnects clients and stops a started container;
+- normal teardown disconnects clients, stops the container and restores DATABASE_URL;
+- the different-campaign scenario derives the winner from the fulfilled invocation,
+  proves the persisted selection/grant belongs to that winner with the exact campaign
+  quantity, and proves no loser grant survives;
+- the same-campaign scenario is fixture-independent, proves both calls fulfill, leaves
+  exactly one quantity-25 grant with selectionCount=2, and proves the current selection
+  points to that grant;
+- the mandatory real Testcontainers run passed 2 tests with 0 skipped;
+- the ordinary suite passed 313 tests with the 3 expected gated skips;
+- build, Prisma validation/generation, touched-file lint and diff checks passed;
+- Attempt-2 production promotion logic and Attempt-3 localisation/unit evidence are
+  unchanged;
+- snapshot comparison from Attempt 3 to Attempt 4 shows implementation-repository
+  changes only in package.json, package-lock.json and
+  tests/integration/promotion-selection.concurrency.integration.test.ts;
+- the database submodule/gitlink remains unchanged at
+  5443afdd8f0c816dc16e1f3e93f9906c5ca31d94.
+```
+
+Formatting-only differences from the architect-provided reference integration-test
+listing do not alter its required lifecycle or assertions and are accepted.
+
+### Dependency/frontier result
+
+Because this task uses `completion_mode: automatic`, architect acceptance completes
+`ARCH-010-SHOPIFY-021`.
+
+Recalculate dependants as follows:
+
+```text
+ARCH-010-SHOPIFY-022 -> Ready
+  all dependencies are now Complete:
+    ARCH-010-SHOPIFY-021
+    ARCH-010-DATABASE-013
+
+ARCH-010-SHOPIFY-020 -> remains Pending
+  other dependencies remain incomplete.
+
+ARCH-010-SYSTEM-TEST-003 -> remains Pending / manual-gated
+  multiple implementation dependencies remain incomplete.
+```
+
+Do not reopen SHOPIFY-021 or create correction work for this accepted implementation
+unless later integration evidence identifies a new defect.

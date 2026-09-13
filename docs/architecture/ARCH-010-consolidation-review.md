@@ -228,3 +228,32 @@ ARCH-010-BACKGROUND-015
 
 `BACKGROUND-019` is architect-accepted Complete at Attempt 6. Its accepted promo-first cross-bucket routing is immutable and must be preserved by later purchased-credit lifecycle corrections such as BACKGROUND-022.
 
+## Post-review update — SHOPIFY-021 Attempt 4 accepted
+
+`ARCH-010-SHOPIFY-021` Attempt 4 is architect-accepted Complete.
+
+Accepted implementation/evidence:
+
+```text
+implementation: af3a9c44
+parent report:  b6253f1e
+PostgreSQL:     self-provisioned postgres:17.6-alpine via Testcontainers
+concurrency:    2 passed / 0 skipped
+database:       5443afdd8f0c816dc16e1f3e93f9906c5ca31d94 unchanged
+```
+
+The accepted merchant promotion-selection boundary now has real PostgreSQL evidence
+for both different-campaign single-winner serialization and same-campaign exact-grant
+replay. The integration fixture provisions and migrates its own disposable database;
+`TEST_DATABASE_URL` is no longer part of this task's test contract.
+
+`ARCH-010-SHOPIFY-022` is newly Ready because both of its dependencies are Complete.
+`SHOPIFY-020` and `SYSTEM-TEST-003` remain gated by their other incomplete dependencies.
+
+Current Ready frontier from authoritative ARCH-010 task YAML after this acceptance:
+
+```text
+ARCH-010-ADMIN-006
+ARCH-010-BACKGROUND-003
+ARCH-010-SHOPIFY-022
+```
