@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 82
 executor: copilot
 claimed_at: '2026-09-13T10:42:00Z'
@@ -216,23 +216,25 @@ In Progress.
 - Attempt 4 expanded router coverage for promotional fallback to paid included capacity, replay ownership, and promotional commits that never invoke paid meter accounting.
 - Strengthened the PostgreSQL race assertion to prove only the pre-seeded lifetime entitlement counter exists and no promotional aggregate counter is used.
 - Attempt 5 revalidated all six Changes Requested correction groups against the published implementation; no additional source changes were required.
+- Attempt 6 added deterministic proofs for CAS count-zero retries, injected Prisma `P2034`/`P2002` retries, bounded retry exhaustion, released replay eligibility, post-expiry/closed commits, exact grant ownership, duplicate idempotency, selection-history preservation, and non-promotional same-source ownership.
+- Attempt 6 expanded billing routing coverage for Free and Paid promo-first admission, unavailable-promo fallback, released replay blocking, and promotional-only definitive/ambiguous/release transitions.
+- Attempt 6 fixed the PostgreSQL concurrency clock inside the campaign window and asserted exact grant ownership/conservation for both final-credit and same-source independent-client races.
 
 ### Validation Results
-- Attempt 5 claimed durably with `executor: copilot`, `attempt: 5`, and claim timestamp `2026-09-13T00:00:00Z`.
+- Attempt 6 claimed durably with `executor: copilot`, `attempt: 6`, and claim timestamp `2026-09-13T10:42:00Z`.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- Focused `vitest` primitive/router suite: passed, 60 tests.
-- `npm run test:integration -- tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`: passed, 1 test.
-- Attempt 5 rerun of the focused primitive/router suite: passed, 60 tests.
-- Attempt 5 rerun of the PostgreSQL concurrency test: passed, 1 test.
+- Focused `vitest` promotional reservation/router suite: passed, 74 tests.
+- `npm run test:integration -- tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`: passed, 2 tests.
 - `./node_modules/.bin/tsc --noEmit`: passed.
 - `npm run build`: passed.
 - `git diff --check`: passed.
-- Full `npm run test:unit`: 585 tests passed and 1 unrelated existing test failed because `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while `package.json` declares `0.11.0`.
+- Full `npm run test:unit`: 599 tests passed and 1 unrelated existing test failed because `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while `package.json` declares `0.11.0`.
 
 ### Deviations
 - Full unit validation retains one pre-existing shared-runtime version assertion failure; no unrelated test or package metadata was changed.
 - The unrelated shared-runtime version assertion remains unresolved; no unrelated test or package metadata was changed.
+- Attempt 6 intentionally changed tests only; accepted production source and database gitlink remain unchanged.
 
 ### Assumptions
 - The initialized `database` submodule at accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736` is the intended dependency state; its parent gitlink was user-authorized but intentionally not staged by this task-owned implementation commit.
@@ -261,17 +263,25 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-background`
-  implementation commit: `4191fd0`
+  implementation commit: `08c288f`
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md`
   claim commit: `41e5bca`
-  review report commit: pending Attempt 5 publication
+  review report commit: pending Attempt 6 publication
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: yes
   submodule gitlink staged: no
+
+Attempt 6 publication:
+  implementation tests commit: `08c288f`
+  implementation tests pushed: yes
+  parent report commit: pending
+  parent report pushed: pending
+  database gitlink staged: no
+  main branches modified: no
 
 Merged to implementation main: no
 Merged to workspace main: no
