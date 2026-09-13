@@ -2835,7 +2835,7 @@ Parent workspace:
 ```text
 task file: docs/decisions/background/ARCH-010/BACKGROUND-007-canonical-paid-billing-period-rollover.md
 claim commit: 343495ea424f439e8eeac9faa5cfaf447f55f7f2
-report commit: pending
+report commit: 3d974c91edc1013f6692fcaff2e830b8b3bc14de
 remote branch: origin/task/ARCH-010-BACKGROUND-007
 submodule gitlink staged: no
 ```
