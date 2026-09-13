@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 46
-executor: copilot
-claimed_at: '2026-09-13T12:47:07Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-BACKGROUND-002
@@ -551,6 +551,245 @@ STOP and return this same task to `moda_architect` with exact evidence if:
 6. satisfying this review would require synchronous Shopify App Event publication in the recovery hot path.
 
 After the scoped correction and validation, set this same task to `status: review`, update the Completion Report with the new implementation commit and parent-report commit, push both task branches, and STOP for `moda_architect`. Do not execute `ARCH-010-BACKGROUND-007`.
+
+
+#### Attempt 2 — Changes Requested after developer validation
+
+Attempt 2 production code at `c369f64` remains **accepted in substance**. Developer-run canonical-worktree validation on 2026-09-13 proved Prisma validation/generation, paid-included reservation identity/release tests, checkout blocked-revalidation no-send/no-commit, WhatsApp timeout-signal tests, outbound ambiguous-failure policy, `git diff --check`, and worktree cleanliness. The remaining correction is **test-harness + missing boundary evidence only**. Do not change production source unless a corrected/new BG8 test demonstrates a genuine defect.
+
+##### Correction A — fix the four false-negative `RecoveryBillingService` tests by injecting the sixth dependency
+
+File:
+
+```text
+moda-interact-background/tests/unit/services/recovery-billing.service.test.ts
+```
+
+The developer reproduced exactly four failures in the focused BG8 subset. All four fail with:
+
+```text
+EffectiveBillingPolicyError: Shop shop-1 has no active Shopify billing contract
+reason: NO_CONTRACT
+stack:
+  PromotionalRecoveryReservationService.findUsableGrant
+  PromotionalRecoveryReservationService.reserveInTransaction
+  RecoveryBillingService.admit
+```
+
+These are test-harness failures, not production failures. `RecoveryBillingService` constructor order is exactly:
+
+```ts
+constructor(
+  database,
+  policyResolver,
+  reservationService,
+  purchasedReservationService,
+  paidIncludedReservationService,
+  promotionalReservationService,
+)
+```
+
+The failing tests pass only five constructor arguments, so the sixth argument falls back to the real singleton `promotionalRecoveryReservationService`. Because paid policies contain `planId`, `admit()` checks promotion first and the real service touches Prisma, producing `NO_CONTRACT`.
+
+The four reproduced failing test names are exactly:
+
+```text
+does not reserve paid included capacity while the billing period is draining
+uses the closing reason only after all DRAINING fallbacks are exhausted
+preserves an included admission when the same period remains ACTIVE
+releases and re-admits included capacity when the period changes before the provider
+```
+
+Add one deterministic test helper in this file, or equivalent inline stubs, with this behaviour:
+
+```ts
+function unavailablePromotionalReservationService() {
+  return {
+    reserve: vi.fn(async () => ({ kind: "unavailable" as const })),
+    commit: vi.fn(),
+    release: vi.fn(),
+    markAmbiguous: vi.fn(),
+  };
+}
+```
+
+For each of the four tests above, pass the helper as the **sixth** `RecoveryBillingService` constructor argument. Do not change production code to make these tests pass. Do not remove `planId` from the paid policy fixture; promotion-first ordering is part of the accepted architecture.
+
+Where a BG8 test intentionally needs a usable promotion, pass a dedicated sixth-argument stub whose `reserve()` returns the exact promotional outcome required by that test. Never allow a BG8 unit test to fall through to the real promotional singleton.
+
+After this harness fix, rerun exactly:
+
+```bash
+npx vitest run \
+  tests/unit/services/recovery-billing.service.test.ts \
+  -t 'does not reserve paid included capacity while the billing period is draining|blocks an expired paid period with the reconciliation reason|uses the closing reason only after all DRAINING fallbacks are exhausted|preserves an included admission when the same period remains ACTIVE|releases and re-admits included capacity when the period changes before the provider|releases a .* admission when new recoveries become paused'
+```
+
+Expected result: every selected test passes. A `NO_CONTRACT` stack through `PromotionalRecoveryReservationService` after the sixth dependency is injected is a blocker and must be reported without production changes.
+
+##### Correction B — retain already-green developer evidence
+
+Do not rewrite tests that the developer has already demonstrated green unless needed mechanically for a shared helper. Preserve these exact proven results:
+
+```text
+Prisma schema at database/prisma/schema.prisma: valid
+Prisma client generation: passed
+database submodule HEAD: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+```
+
+Selected `PaidIncludedRecoveryReservationService` evidence: 5/5 passed:
+
+```text
+derives the period-scoped source key after current period validation
+does not double-increment a duplicate reserve
+uses a different source key when the same recovery enters a different period
+releases definitive failure capacity once
+rejects commit after the owning period closes
+```
+
+Checkout boundary evidence: `does not send or commit when billing revalidation blocks the admission` passed.
+
+WhatsApp evidence: full `whatsapp.service.test.ts` passed 8/8.
+
+Outbound ambiguity evidence: `removes definitive failures but preserves ambiguous pending intent` passed.
+
+`git diff --check` passed and the canonical implementation worktree was clean at local/remote HEAD `c369f64411cdcb17b4abace98973345a5f2c0d29`.
+
+##### Correction C — add only the still-missing explicit BG8 proofs
+
+After fixing Correction A, add narrowly-scoped tests for these behaviours. Prefix every newly-added Attempt 3 test title with exactly `BACKGROUND-008:`.
+
+1. **ACTIVE paid -> DRAINING pre-provider revalidation**
+   - create/admit a `paid` admission for `period-1` while ACTIVE;
+   - current policy becomes DRAINING before provider action;
+   - release `paid-included:period-1:<recoveryId>` exactly once;
+   - re-admit exactly once;
+   - prove fallback order promotional -> purchased -> lifetime Free;
+   - prove paid-included `reserve()` is not called during the DRAINING re-admission;
+   - if all three fallback sources are unavailable, return `{ kind: "blocked", reason: "billing-period-closing" }`.
+
+2. **EXPIRED_RECONCILING release for paid and purchased**
+   - use explicit admission objects; do not require initial `admit()` if that adds irrelevant fixture complexity;
+   - for original `paid`, current policy EXPIRED_RECONCILING -> paid-included `release()` exactly once -> `billing-period-reconciliation`;
+   - for original `purchased`, current policy EXPIRED_RECONCILING -> purchased `release()` exactly once -> `billing-period-reconciliation`;
+   - assert no re-admission/reserve call occurs after the reconciliation result.
+
+3. **Still-RESERVED paid-included release after period close/expiry**
+   - in `paid-included-recovery-reservation.service.test.ts`, reserve while the period is current/open;
+   - mutate the fixture period to CLOSED or expired while the reservation remains RESERVED;
+   - `release()` must succeed and decrement reserved capacity once;
+   - duplicate release must remain idempotent;
+   - `commit()` for the same stale reservation must still fail closed.
+
+4. **Timeout/abort maps to ambiguous billing ownership**
+   - in `recovery-billing.service.test.ts`, create an admitted reservation and a timeout-shaped error, e.g. `const error = new Error("timeout"); error.name = "TimeoutError";`;
+   - call `handleProviderFailure({ admission, error })`;
+   - expect returned disposition `"ambiguous"`;
+   - expect the exact owning reservation service `markAmbiguous()` once;
+   - expect that service `release()` not called.
+
+Do not add another timeout constant and do not change `WhatsAppService`; the 30-second AbortSignal transport evidence is already green.
+
+##### Correction D — exact Attempt 3 validation
+
+From the canonical implementation worktree:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+test -f database/prisma/schema.prisma
+EXPECTED_DATABASE_GITLINK="$(git rev-parse HEAD:database)"
+ACTUAL_DATABASE_HEAD="$(git -C database rev-parse HEAD)"
+test "$EXPECTED_DATABASE_GITLINK" = "$ACTUAL_DATABASE_HEAD"
+
+npm run prisma:validate
+npm run prisma:generate
+
+# First prove the corrected existing BG8 subset.
+npx vitest run \
+  tests/unit/services/recovery-billing.service.test.ts \
+  -t 'does not reserve paid included capacity while the billing period is draining|blocks an expired paid period with the reconciliation reason|uses the closing reason only after all DRAINING fallbacks are exhausted|preserves an included admission when the same period remains ACTIVE|releases and re-admits included capacity when the period changes before the provider|releases a .* admission when new recoveries become paused'
+
+# Then prove every newly-added Attempt 3 case independently.
+npx vitest run \
+  tests/unit/services/recovery-billing.service.test.ts \
+  tests/unit/services/paid-included-recovery-reservation.service.test.ts \
+  -t '^BACKGROUND-008:'
+
+# Preserve previously-green boundary evidence.
+npx vitest run \
+  tests/unit/services/matured-candidate.materialization.test.ts \
+  -t 'does not send or commit when billing revalidation blocks the admission'
+
+npx vitest run tests/unit/services/whatsapp.service.test.ts
+
+npx vitest run \
+  tests/unit/services/outbound-whatsapp-admission.service.test.ts \
+  -t 'removes definitive failures but preserves ambiguous pending intent'
+
+git diff --check
+```
+
+All commands above must pass. Then run the repository-wide evidence commands required by the task:
+
+```bash
+npm run test:unit
+npm run build
+```
+
+Repository-wide unit/build may remain non-green only for failures outside the Attempt 3 changed files and outside the behaviours above. Record exact failing files/errors; do not fix unrelated purchase/refund/observability/schema-contract drift in BG8.
+
+##### Correction E — Attempt 3 allowed scope and stop rules
+
+Production source changes are not expected and are not authorised by default.
+
+Allowed implementation changes:
+
+```text
+moda-interact-background/tests/unit/services/recovery-billing.service.test.ts
+moda-interact-background/tests/unit/services/paid-included-recovery-reservation.service.test.ts
+```
+
+Only if a shared helper must be mechanically adjusted to preserve already-green evidence, these existing test files may also change:
+
+```text
+moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts
+moda-interact-background/tests/unit/services/whatsapp.service.test.ts
+moda-interact-background/tests/unit/services/outbound-whatsapp-admission.service.test.ts
+```
+
+Task-owned documentation may update:
+
+```text
+docs/decisions/background/ARCH-010/BACKGROUND-008-boundary-safe-paid-recovery-initiation.md
+```
+
+Do **not** modify these production files unless a corrected/new required test proves a genuine defect, and if that happens STOP before editing and return the exact failing test to `moda_architect`:
+
+```text
+src/services/checkout-recovery.service.ts
+src/services/recovery-billing.service.ts
+src/services/effective-billing-policy.service.ts
+src/services/paid-included-recovery-reservation.service.ts
+src/services/whatsapp.service.ts
+```
+
+Do not modify Shared, Database, Shopify, Admin, Messaging, Gateway, or System-Test. Do not start BACKGROUND-007.
+
+##### Correction F — durable lifecycle/worktree evidence
+
+The current parent task is returned to:
+
+```yaml
+status: ready
+executor: null
+claimed_at: null
+attempt: 2
+```
+
+The next legitimate claim increments exactly once to Attempt 3. Record actual values in the mandatory evidence block. `canonical workspace root` is the workspace root (expected `/Users/kwadwoadomafriyie/project/moda-interact-workspace` if that is what the launcher resolves), not `/Users/.../moda-interact-workspace/moda-interact-background`.
+
+After validation, set `status: review`, record Attempt 3 commits/evidence, push both task branches, and STOP.
 
 
 ## Final promotional fallback during drain/revalidation
