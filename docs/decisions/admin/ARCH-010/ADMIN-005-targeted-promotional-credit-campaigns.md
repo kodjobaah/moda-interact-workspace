@@ -9,9 +9,9 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: '2026-09-13T18:54:07Z'
+status: review
+executor: null
+claimed_at: null
 priority: 85
 attempt: 2
 depends_on:
@@ -112,7 +112,7 @@ Stop if ADMIN-004/DATABASE-010 state names differ materially; reconcile with `mo
 ## Completion Report
 
 ### Status
-In Progress.
+Review.
 
 ### Files Changed
 - `src/app/(protected)/promotions/page.tsx`
@@ -120,24 +120,29 @@ In Progress.
 - `src/components/admin/promotion-campaign-form.tsx`
 - `src/lib/admin/promotion-validation.ts`
 - `src/lib/admin/promotions.ts`
+- `src/lib/admin/promotion-catalogue.ts`
+- `src/lib/admin/promotion-campaign-lifecycle.ts`
 - `tests/security/admin-promotions.test.mjs`
 - `tests/unit/promotion-validation.test.ts`
+- `tests/unit/promotion-catalogue.test.ts`
+- `tests/unit/promotion-campaign-lifecycle.test.ts`
 
 ### Work Completed
-- Added a durable SUPER_ADMIN promotion catalogue projection retaining DRAFT, ACTIVE, CLOSED, and expired campaigns, with bounded state/scope/target filters, persisted status, derived state, scope/target summary, quantity, dates, creator, creation time, and latest lifecycle event.
-- Added transactional close and reopen mutations using `PromotionCampaign.version` compare-and-set predicates. Close supports DRAFT/ACTIVE, writes CLOSED audit evidence, and immediately removes the campaign from the running state. Reopen preserves the same campaign ID and commercial terms, changes only expiry (and restores ACTIVE for CLOSED campaigns), and writes REOPENED plus EXPIRY_CHANGED evidence.
+- Added a durable SUPER_ADMIN promotion catalogue projection retaining DRAFT, ACTIVE, CLOSED, scheduled, running, and expired campaigns, with bounded state/scope/target filters, displayed plan-name/shop-domain matching, persisted status, derived state, scope/target summary, quantity, dates, creator, creation time, and deterministic latest lifecycle event selection.
+- Added a transaction-owned close/reopen lifecycle seam using `PromotionCampaign.version` compare-and-set predicates. Close supports DRAFT/ACTIVE, writes CLOSED audit evidence, and immediately removes the campaign from the running state. Reopen is limited to expired ACTIVE or CLOSED campaigns, preserves the same campaign ID and commercial terms, changes only expiry (and restores ACTIVE for CLOSED campaigns), and writes REOPENED plus EXPIRY_CHANGED evidence.
 - Enforced future expiry and `expiresAt > startsAt` on reopen; lifecycle forms expose no quantity, scope, target, or start-time editing.
+- Added fixed-clock five-state catalogue tests and behavioral lifecycle tests for CAS ordering, stale writes, expiry eligibility, deterministic audit ordering, and preservation boundaries.
 - Preserved existing grants, selections, usage, and committed history by keeping lifecycle mutations isolated from those models; no delete action was introduced.
 - Added focused validation and static security coverage for role gating, catalogue retention/derived state, lifecycle audit/CAS behavior, commercial-term immutability, preservation boundaries, and absence of deletion.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts`: passed, 5 tests.
+- `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts tests/unit/promotion-catalogue.test.ts tests/unit/promotion-campaign-lifecycle.test.ts`: passed, 13 tests.
 - `node --test tests/security/admin-promotions.test.mjs`: passed, 12 tests.
-- `npm test`: passed.
+- `npm test`: passed, 170 tests.
 - `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx`.
-- `npx tsc --noEmit`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
 - `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
 - `git diff --check`: passed.
 
@@ -157,13 +162,13 @@ database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
 database submodule HEAD: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
 database gitlink staged/changed: no
 
-Parent claim commit: `d1b58fc`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-workspace`.
-Implementation commit: `a8c13cf`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-admin`.
+Parent claim commit: `50cf6ca`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-workspace`.
+Implementation commit: `62ae6ae64c5c752b4b6e6c84a15c90d1da13ed72`, pushed to `origin/task/ARCH-010-ADMIN-005` in `moda-interact-admin`.
 Parent report commit: pending publication.
 The implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
-Pending.
+Pending Attempt 2 review.
 
 ## Architect Review — Attempt 1
 
