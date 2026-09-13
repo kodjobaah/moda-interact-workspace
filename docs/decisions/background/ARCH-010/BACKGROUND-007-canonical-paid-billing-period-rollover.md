@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 47
 executor: copilot
 claimed_at: 2026-09-13T17:14:20Z
@@ -1206,6 +1206,99 @@ The following Attempt-1 defects are corrected in substance and must not regress:
 
 Do not redesign these pieces unless a required regression below proves a concrete
 defect.
+
+## Attempt 3 Completion Report
+
+Status: Review
+
+Implementation commit:
+
+```text
+3cc2582b1710f6e2a35041e94956b3eb122068fd
+```
+
+The canonical rollover service now returns an explicit `provider-cycle-lag`
+result when Shopify still reports the exact old cycle at or after the local
+period end. The reconciliation service records `PROVIDER_CYCLE_LAG`, advances
+the exact-CAS schedule by 60 seconds, and publishes a new deterministic job.
+Pre-close publisher failure now remains observable as
+`PRE_CLOSE_USAGE_FLUSH_FAILED` and retries before the boundary (or at the exact
+boundary in the final minute). Stale in-flight usage recovery is scoped by
+`billingPeriodId` for scoped flushes while global publishing remains unchanged.
+
+Physical worktree isolation:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007
+parent branch: task/ARCH-010-BACKGROUND-007
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007
+implementation branch: task/ARCH-010-BACKGROUND-007
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+```
+
+Start-of-attempt synchronization:
+
+```text
+parent remote task branch fast-forwarded: not-needed; claim was already at 2bcba51
+parent origin/main incorporated: already-current at claim
+implementation remote task branch fast-forwarded: not-needed; started from 08cb369
+implementation origin/main incorporated: already-current at claim
+```
+
+Database and dependency evidence:
+
+```text
+database submodule initialized: yes
+database gitlink expected/actual: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+database gitlink staged/changed: no
+BACKGROUND-009 accepted head 29478e94b8fc91bc4671a57c7af656ea20f1a66e ancestor of implementation HEAD: yes
+implementation origin/main observed: 0a752729e92002416c4b86db3fa5ef5004f78def
+parent origin/main observed: 4bc98f906bdec7d9bfcbfe895bfff5e87e006263
+```
+
+Focused behavioral evidence:
+
+```text
+same-plan-billing-period-rollover.service.test.ts: 7 tests
+billing-subscription-reconciliation.service.test.ts: 36 tests
+billing-reconciliation.service.test.ts: 12 tests
+shopify-usage-event-publisher.service.test.ts: 12 tests
+focused BACKGROUND-007 total: 67 passed
+```
+
+The exact new regressions are `returns provider-cycle-lag when the provider
+still reports the old cycle at the boundary`, `returns provider-cycle-lag when
+the provider still reports the old cycle after the boundary`, `records a
+provider-cycle lag retry with a new deterministic job after the boundary`, and
+`scopes stale in-flight recovery to the requested BillingPeriod`. Existing
+permanent tests additionally cover stale schedule guards, reconstruction and
+deterministic jobs, Free snapshots/lifetime replay, FROZEN lifecycle no-op,
+successor identity rejection, provider/report retry state, idempotent claims,
+and rotating reconciliation behavior.
+
+Validation:
+
+```text
+git submodule sync -- database: passed
+git submodule update --init --recursive database: passed
+npm run prisma:validate: passed
+npm run prisma:generate: passed
+focused BACKGROUND-007 suites: passed, 67/67
+BG8/BG9 preservation suites: passed, 111/111
+npm run test:integration: passed, 3/3
+npm run test:unit: baseline failure, same 10 pre-existing failures (8 purchase lifecycle tests, 2 observability startup/version assertions)
+npx tsc --noEmit: baseline failure, same 15 pre-existing Prisma client drift errors in purchased-recovery-reservation.service.ts and recovery-credit-purchase.service.ts
+npm run build: same 15 baseline type errors as typecheck
+git diff --check: passed
+```
+
+The implementation commit is pushed to
+`origin/task/ARCH-010-BACKGROUND-007`. No database, Shared, or other repository
+changes were required. This report is returned to `moda_architect`; no merge or
+architect acceptance is claimed here.
 
 ### Correction 1 — old exact provider cycle must take the +60-second lag retry path
 
