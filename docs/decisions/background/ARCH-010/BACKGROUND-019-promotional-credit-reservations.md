@@ -270,7 +270,7 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md`
   claim commit: `41e5bca`
-  review report commit: pending Attempt 6 publication
+  review report commit: `d1bca06`
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: yes
   submodule gitlink staged: no
@@ -278,8 +278,8 @@ Parent workspace:
 Attempt 6 publication:
   implementation tests commit: `08c288f`
   implementation tests pushed: yes
-  parent report commit: pending
-  parent report pushed: pending
+  parent report commit: `d1bca06`
+  parent report pushed: yes
   database gitlink staged: no
   main branches modified: no
 
