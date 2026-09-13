@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 46
-executor: copilot
-claimed_at: '2026-09-13T12:12:45Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-BACKGROUND-002
@@ -306,7 +306,237 @@ Implemented; awaiting architect review.
 - `submodule gitlink staged: no`; main branches were not modified.
 
 ### Architect Review
-Pending.
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+Attempt 1 is **not accepted**. Keep this same task and return it to `ready` for Attempt 2. Do not create a replacement task and do not start `ARCH-010-BACKGROUND-007`.
+
+The implemented period-phase calculation, DRAINING exclusion of paid included capacity, period-scoped paid-included source identity, release support for an old period reservation, one-shot rollover re-admission shape, and 30-second WhatsApp timeout are retained. The corrections below are intentionally narrow.
+
+##### Correction 1 — a newly-active recovery pause must win at pre-provider revalidation
+
+File: `moda-interact-background/src/services/recovery-billing.service.ts`.
+
+`revalidateBeforeProvider()` currently resolves the current policy but then preserves `free`, `lifetime-free`, and `purchased` admissions unconditionally and preserves same-period `paid` admission whenever the period is still ACTIVE. Therefore a global/shop `newRecoveriesPaused` change that occurs after initial admission but before WhatsApp can be bypassed.
+
+After the existing `EXPIRED_RECONCILING` branch and **before** any admission-preservation branch, add an exact current-policy pause guard equivalent to:
+
+```ts
+if (current.newRecoveriesPaused) {
+  await this.releaseBeforeProvider(input.admission);
+  return { kind: "blocked", reason: "paused" };
+}
+```
+
+Required ordering:
+
+```text
+1. resolve current policy
+2. if current Paid period is EXPIRED_RECONCILING:
+     release original reservation
+     return billing-period-reconciliation
+3. if current.newRecoveriesPaused:
+     release original reservation
+     return paused
+4. only then apply preserved/reclassified admission logic
+```
+
+This guard applies to **every** original admission kind: `paid`, `purchased`, `free`, `lifetime-free`, and `promotional`.
+
+Do not call `admit()` after returning `paused`. Do not keep the original reservation held after returning `paused`. Do not introduce a new blocked-reason string. Do not change `automatedWhatsappPaused`; outbound WhatsApp admission already owns that separate execution gate.
+
+##### Correction 2 — the checkout pre-provider hook must be mandatory, not optional
+
+File: `moda-interact-background/src/services/checkout-recovery.service.ts`.
+
+Replace the optional/fallback form:
+
+```ts
+const revalidated = this.billingService.revalidateBeforeProvider
+  ? await this.billingService.revalidateBeforeProvider(...)
+  : billing;
+```
+
+with one unconditional call to `this.billingService.revalidateBeforeProvider(...)`. `CheckoutRecoveryService` is constructed with a `RecoveryBillingService`; the safety hook is part of that concrete contract and must not silently disappear.
+
+Required behaviour:
+
+- if revalidation returns `blocked`, return before `outboundWhatsAppAdmissionService.sendTemplate(...)`;
+- do not call `commitSuccessfulInitiation()` for that blocked attempt;
+- do not add a fallback that sends with the stale original admission;
+- do not move Shopify App Event publication into this hot path.
+
+##### Correction 3 — add the missing boundary regression coverage
+
+Use the existing test files where possible. New tests may be added only when needed to prove the checkout send boundary.
+
+Required files to update/add:
+
+```text
+moda-interact-background/tests/unit/services/recovery-billing.service.test.ts
+moda-interact-background/tests/unit/services/paid-included-recovery-reservation.service.test.ts
+moda-interact-background/tests/unit/services/effective-billing-policy.service.test.ts
+moda-interact-background/tests/unit/services/whatsapp.service.test.ts
+moda-interact-background/tests/unit/services/checkout-recovery.service.billing-boundary.test.ts   # add only if no existing focused checkout harness fits
+```
+
+The Attempt 2 focused coverage must prove all of the following literally:
+
+1. an initial `paid` admission for the same still-ACTIVE BillingPeriod is released and returns `{ kind: "blocked", reason: "paused" }` when current `newRecoveriesPaused` becomes true;
+2. an initial `purchased` admission is released and blocked as `paused` under the same race;
+3. an initial `lifetime-free`/Free admission is released and blocked as `paused` under the same race;
+4. a promotional admission is also released and blocked if the current pause is active;
+5. DRAINING initial admission checks selected promotion first, then purchased FIFO, then lifetime Free, and returns `billing-period-closing` only when all three are unavailable;
+6. pre-provider transition from an old `paid` admission into DRAINING releases the old included reservation and re-admits in the exact order `promotional -> purchased -> lifetime Free`;
+7. the DRAINING revalidation path returns `billing-period-closing` only after all three non-App-Event sources are unavailable;
+8. pre-provider transition into `EXPIRED_RECONCILING` releases an old paid-included reservation and returns `billing-period-reconciliation`;
+9. pre-provider transition into `EXPIRED_RECONCILING` releases an already-created purchased reservation and returns `billing-period-reconciliation`;
+10. `PaidIncludedRecoveryReservationService.release()` succeeds for a still-RESERVED paid-included reservation even after its owning BillingPeriod is expired/closed, while `commit()` still fails for that stale period;
+11. period-scoped source identity remains different across two BillingPeriods for the same recovery and duplicate reserve inside one period remains idempotent;
+12. checkout-level blocked revalidation performs **no** `sendTemplate` call and **no** `commitSuccessfulInitiation` call;
+13. a timeout/abort-style provider error is classified as `ambiguous`: the relevant reservation service receives `markAmbiguous`, not `release`;
+14. both text and template WhatsApp sends pass an AbortSignal created for `WHATSAPP_SEND_TIMEOUT_MS`, and `WHATSAPP_SEND_TIMEOUT_MS === 30_000`;
+15. no test or production change introduces a synchronous Shopify App Events provider call in `handleCheckoutCreated`.
+
+Do not delete existing BACKGROUND-002/BACKGROUND-019 regression cases to make the new tests pass.
+
+##### Correction 4 — validate from the declared database submodule; do not rewrite the Prisma scripts
+
+The Attempt 1 report describes a schema-path mismatch, but this repository declares:
+
+```text
+[submodule "database"]
+  path = database
+```
+
+and `package.json` intentionally runs Prisma against:
+
+```text
+database/prisma/schema.prisma
+```
+
+The review archive contains an empty `database/` directory, which is consistent with an uninitialised submodule checkout. Treat this as task-worktree materialisation, not as a reason to change `package.json`.
+
+From the canonical BACKGROUND-008 implementation worktree, before validation, run exactly:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+test -f database/prisma/schema.prisma
+
+EXPECTED_DATABASE_GITLINK="$(git rev-parse HEAD:database)"
+ACTUAL_DATABASE_HEAD="$(git -C database rev-parse HEAD)"
+test "$EXPECTED_DATABASE_GITLINK" = "$ACTUAL_DATABASE_HEAD"
+```
+
+Do **not**:
+
+- edit `package.json` to point Prisma at `prisma/schema.prisma`;
+- stage or advance the `database` gitlink;
+- switch the database submodule to another task branch;
+- copy a schema manually into `database/`;
+- use another task's database worktree.
+
+If the recorded gitlink initializes successfully but does not contain `database/prisma/schema.prisma`, STOP and return the exact gitlink SHA and directory listing to `moda_architect`.
+
+##### Correction 5 — required Attempt 2 validation
+
+After the submodule is correctly initialized, run from the canonical implementation worktree:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run \
+  tests/unit/services/effective-billing-policy.service.test.ts \
+  tests/unit/services/paid-included-recovery-reservation.service.test.ts \
+  tests/unit/services/recovery-billing.service.test.ts \
+  tests/unit/services/whatsapp.service.test.ts \
+  tests/unit/services/checkout-recovery.service.billing-boundary.test.ts
+
+npm run test:unit
+npm run build
+git diff --check
+```
+
+If the checkout-boundary regression is added to an existing test file instead of the named new file, replace only that one path in the focused Vitest command with the actual file used.
+
+Focused boundary tests, Prisma validate/generate, build, and `git diff --check` must pass. If the repository-wide unit suite still has unrelated pre-existing failures after Prisma generation, record the exact failing test names and evidence; do not modify unrelated tests or production code.
+
+Run `npm run test:integration` only when its declared PostgreSQL/Redis infrastructure is available. Record whether it ran or was unavailable.
+
+##### Correction 6 — Completion Report must use the mandatory isolation evidence shape
+
+Attempt 1's general statement that both worktrees were synchronized is not the complete evidence required by `docs/agent-worktree-isolation-policy.md`.
+
+For Attempt 2, record the actual observed values in this exact structure:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <actual launcher-resolved workspace root>
+  parent worktree: <actual canonical parent BACKGROUND-008 worktree>
+  parent branch: task/ARCH-010-BACKGROUND-008
+  implementation worktree: <actual canonical Background BACKGROUND-008 worktree>
+  implementation branch: task/ARCH-010-BACKGROUND-008
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Also record:
+
+```text
+database submodule initialized: yes
+database gitlink expected: <full SHA>
+database submodule HEAD: <full SHA>
+database gitlink staged/changed: no
+```
+
+Record only values actually observed during Attempt 2. Do not reconstruct missing Attempt 1 evidence.
+
+##### Attempt 2 allowed implementation scope
+
+Production changes are limited to:
+
+```text
+moda-interact-background/src/services/recovery-billing.service.ts
+moda-interact-background/src/services/checkout-recovery.service.ts
+```
+
+Test-only changes may touch the five focused test locations listed above. The task file may be updated for execution metadata and Completion Report evidence.
+
+Do not change unless a required focused test proves the existing implementation is wrong:
+
+```text
+src/services/effective-billing-policy.service.ts
+src/services/paid-included-recovery-reservation.service.ts
+src/services/whatsapp.service.ts
+```
+
+In particular, do not redesign the phase calculation, period-scoped source key, promotion ordering, or 30-second timeout.
+
+Do not modify Shared, Database, Shopify, Admin, Messaging, Gateway, or System-Test repositories. Do not modify another ARCH-010 task.
+
+##### Attempt 2 stop conditions
+
+STOP and return this same task to `moda_architect` with exact evidence if:
+
+1. the canonical BACKGROUND-008 worktree is not on `task/ARCH-010-BACKGROUND-008`;
+2. the `database` submodule cannot be initialized at the recorded gitlink without changing the gitlink;
+3. the pause race cannot be fixed without changing a cross-repository contract;
+4. mandatory revalidation cannot be called before `sendTemplate` without moving an irreversible provider action earlier;
+5. a required focused boundary test fails after the scoped correction and fixing it would require changing an accepted dependency task;
+6. satisfying this review would require synchronous Shopify App Event publication in the recovery hot path.
+
+After the scoped correction and validation, set this same task to `status: review`, update the Completion Report with the new implementation commit and parent-report commit, push both task branches, and STOP for `moda_architect`. Do not execute `ARCH-010-BACKGROUND-007`.
 
 
 ## Final promotional fallback during drain/revalidation
