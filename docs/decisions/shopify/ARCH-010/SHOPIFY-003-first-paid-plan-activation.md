@@ -257,7 +257,7 @@ Ready for Review.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
 - Implementation commit: `8c3f15beafc659a875caf38d60544a63c90c71ae`, pushed to `origin/task/ARCH-010-SHOPIFY-003`.
-- Parent report commit and push follow on the mirrored parent branch.
+- Parent report commit: `911cc2b84dd598b76d51198f4444081a5c2cea66`, pushed to `origin/task/ARCH-010-SHOPIFY-003`.
 
 ### Architect Review
 Pending.
