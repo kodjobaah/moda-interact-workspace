@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 47
 executor: copilot
 claimed_at: '2026-09-13T17:59:13Z'
@@ -542,7 +542,7 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress
+Ready for Review.
 
 ### Files Changed
 - `moda-interact-background/src/services/same-plan-billing-period-rollover.service.ts`
@@ -2760,4 +2760,109 @@ When complete:
 3. publish a factual Completion Report and exact 1–35 mapping;
 4. publish the parent task;
 5. STOP for Architect Review.
+
+## Attempt 5 Completion Report
+
+### Status
+
+Ready for Review.
+
+### Files Changed
+
+- `moda-interact-background/src/entrypoints/billing.ts`
+- `moda-interact-background/src/services/billing-reconciliation.service.ts`
+- `moda-interact-background/tests/unit/runtime/entrypoint-isolation.test.ts`
+- `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
+
+### Work Completed
+
+- Added `createBillingReconciliationService(subscriptionQueue)` and wired the production billing entrypoint to the existing `billingSubscriptionQueue`.
+- Preserved one queue and one deterministic Shared reconcile-job path for scheduled and rotating reconciliation.
+- Allowed eligible Paid and pack-enabled Free rotating `provider-cycle-lag` observations to repair a null durable schedule with an exact CAS, durable `PROVIDER_CYCLE_LAG` metadata, and a post-commit +60-second retry.
+- Added behavioral tests for production queue wiring, null Paid lag repair, and null pack-enabled Free lag repair.
+
+### Validation Results
+
+- `git submodule sync -- database`: passed.
+- `git submodule update --init --recursive database`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- Attempt-5 focused suites, including entrypoint wiring: `5 files, 84 tests passed`.
+- BG8/BG9 preservation suites: `4 files, 112 tests passed`.
+- `npm run test:integration`: `2 files, 3 tests passed`.
+- `git diff --check`: passed.
+- `npm run test:unit`: same documented baseline, `10 failures` (8 purchased-credit lifecycle tests and 2 recovery observability-startup assertions).
+- `npx tsc --noEmit`: same documented baseline, `15 errors` confined to `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no changed-file diagnostics.
+- `npm run build`: same documented baseline type errors in the purchased-recovery services; no changed-file diagnostics.
+
+### Git / VCS
+
+Task branch: `task/ARCH-010-BACKGROUND-007`
+
+Physical worktree isolation:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007
+parent branch: task/ARCH-010-BACKGROUND-007
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007
+implementation branch: task/ARCH-010-BACKGROUND-007
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+```
+
+Start-of-attempt synchronization:
+
+```text
+parent remote task branch fast-forwarded: not-needed; already current
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed; already current
+implementation origin/main incorporated: already-current
+```
+
+Implementation repository:
+
+```text
+repository: moda-interact-background
+commit: 2756d72641a33dbb6af65349fbd145d992a7bed6
+remote branch: origin/task/ARCH-010-BACKGROUND-007
+pushed: yes
+```
+
+Parent workspace:
+
+```text
+task file: docs/decisions/background/ARCH-010/BACKGROUND-007-canonical-paid-billing-period-rollover.md
+claim commit: 343495ea424f439e8eeac9faa5cfaf447f55f7f2
+report commit: pending
+remote branch: origin/task/ARCH-010-BACKGROUND-007
+submodule gitlink staged: no
+```
+
+Dependency integration:
+
+```text
+database gitlink: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+BACKGROUND-009 accepted head 29478e94b8fc91bc4671a57c7af656ea20f1a66e is ancestor: yes
+Background origin/main: 0a752729e92002416c4b86db3fa5ef5004f78def
+```
+
+### Attempt 5 Correction Mapping
+
+| Correction | Exact permanent evidence | Result |
+|---|---|---|
+| Production rotating service is queue-backed | `tests/unit/runtime/entrypoint-isolation.test.ts` — `uses one queue-aware reconciliation service for the worker and repair cadence` | passed |
+| Paid null lag schedule repair | `tests/unit/services/billing-reconciliation.service.test.ts` — `repairs a missing Paid cycle schedule during rotating provider-cycle lag` | passed |
+| Pack-enabled Free null lag schedule repair | `tests/unit/services/billing-reconciliation.service.test.ts` — `repairs a missing pack-enabled Free cycle schedule during rotating provider-cycle lag` | passed |
+| Durable +60-second rotating lag retry | `tests/unit/services/billing-reconciliation.service.test.ts` — `persists rotating provider-cycle lag and enqueues the existing +60 second job` | passed |
+| Existing canonical rollover behavior preserved | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` — `schedules the next Paid pre-close boundary after a contiguous rollover`; `creates only the provider cycle when a Paid rollover has a gap`; `leaves pack-disabled Free rollover without a cycle-specific schedule`; `reuses an already-open successor without duplicating its grant` | passed |
+
+The full required scenario matrix and earlier architect corrections remain recorded in the preceding Attempt-4 report and were exercised by the focused, preservation, and integration commands above. The Attempt-5 source corrections are limited to the two requested review regressions.
+
+Merged to implementation main: no.
+Merged to workspace main: no.
+Parent and implementation worktrees clean at handoff: yes.
+
+Task status: review. Awaiting moda_architect review; no architect acceptance decision has been made by this agent.
 
