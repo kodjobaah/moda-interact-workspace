@@ -64,11 +64,12 @@ path.
 
 The canonical workspace root is resolved by the Moda task launchers and
 `scripts/start-agent-task.py`. `/moda-task`, `/moda_developer_create` and
-`/moda_developer_update` share this topology contract. The resolver derives the
-workspace from the launcher script's own location and emits the authoritative
-absolute execution topology. Agents/developer workflow commands must not infer
-the canonical workspace from the current Git repository or from machine-specific
-paths.
+`/moda_developer_update` share this topology contract. For agent execution the
+resolver canonicalizes marker-bearing candidates through Git `--git-common-dir`
+identity so a linked parent task worktree is mapped back to the primary workspace
+before new paths are derived. Agents/developer workflow commands must not derive
+a new task path from `$PWD`, a previous task worktree basename, or a
+machine-specific path.
 
 When the launcher skill itself must locate `scripts/start-agent-task.py`, it may
 use only:
@@ -79,7 +80,9 @@ use only:
 
 This supports invocation from dedicated parent/implementation worktrees without
 assuming `/Users/...`, `~/project`, `/home/...`, or any fixed checkout parent.
-If those bounded mechanisms cannot establish the workspace, report
+When a parent-chain candidate is itself a linked task worktree, it must be
+canonicalized through its Git common directory before acceptance. If those
+bounded mechanisms cannot establish the primary workspace, report
 `MODA_TASK_ERROR` rather than searching the wider filesystem.
 
 Once resolved, `MODA_WORKSPACE_ROOT` is the stable shell anchor for the lifetime

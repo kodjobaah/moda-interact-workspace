@@ -108,6 +108,32 @@ MODA-TASK-FEATURE-BRANCH-GIT-POLICY:END
 ===============================================================================
 
 ===============================================================================
+DETERMINISTIC /MODA-TASK PREPARATION OWNERSHIP
+===============================================================================
+
+For normal `/moda-task <TASK_ID>` agent execution, deterministic startup belongs
+to `scripts/start-agent-task.py --prepare`, not to the repository model. The
+launcher must resolve the canonical primary workspace through Git common-dir
+identity, establish/synchronize the exact parent and implementation worktrees,
+verify explicit dependencies, recursively materialise implementation submodules,
+re-gate the task, durably claim it and return preparation evidence before the
+repository agent starts.
+
+The architect must treat a matching prepared execution packet as valid
+start-of-attempt evidence. Do not require the repository agent to rerun launcher
+work merely to reproduce discovery steps. Review still requires the Completion
+Report to record the packet's physical-isolation, synchronization and recursive
+submodule evidence.
+
+A previous task worktree is never the canonical base for a new task. Sequential
+tasks must derive sibling worktree paths from the primary workspace root; path
+forms that append a new task ID to the previous task worktree name are workflow
+non-conformance.
+
+The workspace doctor remains diagnostic/validation tooling, not part of prepared
+launch.
+
+===============================================================================
 SHARED STRUCTURED LOGGING CONVENTION
 ===============================================================================
 
@@ -194,12 +220,16 @@ capability the repository does not provide, report that gap to `moda_architect`.
 LEAN DEVELOPMENT ENVIRONMENT AND WORKSPACE PATH POLICY
 ===============================================================================
 
-Establish one `MODA_WORKSPACE_ROOT` for the task. If it is not already provided,
-walk upward only through the current directory's parent chain until a directory
-contains `.nvmrc`, `.codex/agents`, `.claude/agents`, and
-`docs/agent-task-execution-template.md`. Do NOT search the wider filesystem,
+Establish one canonical **primary** `MODA_WORKSPACE_ROOT` for the task. When a
+prepared launcher packet supplies `workspace_root`, use that value exactly. A
+previous parent task worktree may contain `.nvmrc`, agent directories and normal
+workspace markers, but it is NOT a valid canonical root for deriving another
+task's paths. If root recovery is ever required outside prepared execution, use
+the bounded launcher/Git-common-dir resolution contract in the `/moda-task`
+skill and `docs/agent-worktree-isolation-policy.md`; do not accept a linked task
+worktree merely because marker files exist. Do NOT search the wider filesystem,
 reconstruct a developer-specific absolute path, or assume a username/home
-location. If no valid root exists in the parent chain, stop and report it.
+location.
 
 Use the environment already available. Before the first Node-related command:
 

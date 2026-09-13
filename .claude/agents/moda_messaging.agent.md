@@ -192,12 +192,16 @@ capability the repository does not provide, report that gap to `moda_architect`.
 LEAN DEVELOPMENT ENVIRONMENT AND WORKSPACE PATH POLICY
 ===============================================================================
 
-Establish one `MODA_WORKSPACE_ROOT` for the task. If it is not already provided,
-walk upward only through the current directory's parent chain until a directory
-contains `.nvmrc`, `.codex/agents`, `.claude/agents`, and
-`docs/agent-task-execution-template.md`. Do NOT search the wider filesystem,
+Establish one canonical **primary** `MODA_WORKSPACE_ROOT` for the task. When a
+prepared launcher packet supplies `workspace_root`, use that value exactly. A
+previous parent task worktree may contain `.nvmrc`, agent directories and normal
+workspace markers, but it is NOT a valid canonical root for deriving another
+task's paths. If root recovery is ever required outside prepared execution, use
+the bounded launcher/Git-common-dir resolution contract in the `/moda-task`
+skill and `docs/agent-worktree-isolation-policy.md`; do not accept a linked task
+worktree merely because marker files exist. Do NOT search the wider filesystem,
 reconstruct a developer-specific absolute path, or assume a username/home
-location. If no valid root exists in the parent chain, stop and report it.
+location.
 
 Use the environment already available. Before the first Node-related command:
 
@@ -469,6 +473,61 @@ When moda_architect assigns a task, the task file and its parent architecture
 document are authoritative for scope, dependencies, contracts and acceptance
 criteria.
 
+
+===============================================================================
+PREPARED /MODA-TASK EXECUTION FAST PATH
+===============================================================================
+
+When the execution prompt contains a deterministic preparation packet with:
+
+    prepared_execution: true
+
+and the packet task ID matches the assigned task, `/moda-task` has already
+performed the mechanical start-of-attempt protocol before this logical agent is
+entered. The launcher has already:
+
+- resolved the canonical primary workspace through Git common-dir identity;
+- derived fresh parent/implementation worktree paths from that canonical root
+  plus the current TASK_ID, never from a previous task worktree;
+- created/reused and synchronized both dedicated task worktrees;
+- verified `status: ready`, `execution_mode: agent`, assigned agent and every
+  explicit `depends_on` dependency;
+- run `git submodule sync --recursive` and
+  `git submodule update --init --recursive` in the implementation worktree;
+- verified recursive submodules are at their recorded commits;
+- re-read/re-gated the task immediately before claim;
+- changed the task to `in_progress`, incremented `attempt`, recorded the
+  normalized executor/claimed_at timestamp, committed the task file and pushed
+  the durable parent claim.
+
+For that prepared path:
+
+1. EXPECT the task to be `in_progress` for the packet's executor. Do not require
+   it to still be `ready` and do not claim it again.
+2. DO NOT redo task discovery, dependency-status discovery, worktree creation,
+   start-of-attempt synchronization, recursive submodule initialization or
+   launcher Git evidence collection merely as startup ritual.
+3. Use the packet's exact canonical `workspace_root`, parent worktree,
+   implementation worktree and task branch. Never derive paths from `$PWD` or
+   append the current task ID to a previous task worktree name.
+4. Read the complete task file, then only task-explicit `Read first` documents
+   and contracts needed by the bounded implementation.
+5. If rework/Architect Review exists, read the complete latest review before
+   implementation-source inspection and execute every Changes Requested item.
+6. Proceed directly to implementation source in the prepared implementation
+   worktree, task-required validation, implementation commit/push and parent task
+   review submission.
+7. Use launcher packet evidence in the Completion Report instead of rerunning
+   deterministic startup discovery solely to reproduce that evidence.
+
+The generic Ready-task discovery/claim instructions elsewhere in this agent
+definition apply only when execution was NOT launched with a matching prepared
+packet.
+
+The workspace doctor remains diagnostic/validation tooling and is not added back
+into prepared launch. Run it only under the explicit conditions in the Lean
+Development Environment policy.
+
 ===============================================================================
 ARCHITECT REVIEW REWORK INVARIANT
 ===============================================================================
@@ -524,7 +583,7 @@ If asked to execute architecture work without a specific task ID:
 
 Task discovery does not constitute a claim.
 
-Before beginning an architecture task:
+For an unprepared/discovered architecture task that was not launcher-prepared:
 
 1. re-read the task file immediately before claiming it;
 2. read the parent docs/architecture/ARCH-XXX-*.md document;
