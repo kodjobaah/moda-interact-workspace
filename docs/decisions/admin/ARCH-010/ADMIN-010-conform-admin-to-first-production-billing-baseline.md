@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 8
 executor: copilot
 claimed_at: '2026-09-13T11:40:21Z'
@@ -168,15 +168,15 @@ If accepted Admin business behaviour genuinely cannot be represented by DATABASE
 
 ## Work Items
 
-- [ ] Verify DATABASE-013 and SHARED-008 are Complete and installed/resolved by the task worktree.
-- [ ] Search for every removed baseline symbol listed in this task.
-- [ ] Remove lifetime-Free legacy plan/adjustment compatibility.
-- [ ] Remove local cancellation compatibility if present.
-- [ ] Remove direct/campaign-less promotion compatibility if present.
-- [ ] Remove old refund/negative-App-Event compatibility if present.
-- [ ] Preserve accepted platform-policy controls and authorization/audit boundaries.
-- [ ] Add/update focused regression coverage.
-- [ ] Run repository-declared validation.
+- [x] Verify DATABASE-013 and SHARED-008 are Complete and installed/resolved by the task worktree.
+- [x] Search for every removed baseline symbol listed in this task.
+- [x] Remove lifetime-Free legacy plan/adjustment compatibility.
+- [x] Remove local cancellation compatibility if present.
+- [x] Remove direct/campaign-less promotion compatibility if present.
+- [x] Remove old refund/negative-App-Event compatibility if present.
+- [x] Preserve accepted platform-policy controls and authorization/audit boundaries.
+- [x] Add/update focused regression coverage.
+- [x] Run repository-declared validation.
 
 ## Interfaces / Contracts
 
@@ -254,7 +254,7 @@ This task is deliberately a correction/conformance task. Do not opportunisticall
 
 ### Status
 
-In Progress.
+Ready for Review.
 
 ### Files Changed
 
@@ -280,19 +280,40 @@ In Progress.
 - Preserved SUPER_ADMIN platform-policy authorization, `PLATFORM_POLICY_CHANGED`, before/after audit values, and policy revalidation paths.
 - Updated focused security coverage and removed obsolete adjustment translation keys.
 - No Admin cancellation, promotion-counter, refund-status, or App Event correction compatibility code was present; no speculative replacements were added.
+- Attempt 2 removed the obsolete `billing.adjustments` catalogue and required-key entries.
+- Attempt 2 added the exact first-production tenant billing regression asserting the compatibility key is absent.
+- Attempt 2 revalidated the existing production conformance implementation without changing billing actions, readers, schema, Shared contracts, or downstream Admin workflows.
 
 ### Validation Results
 
-- Focused billing security tests: 18 passed, 0 failed.
-- Full Admin tests: 144 passed, 3 skipped, 0 failed.
+- Focused billing security tests: 30 passed, 0 failed.
+- Full Admin tests: 148 passed, 0 failed.
 - Admin unit tests: 42 passed, 0 failed.
 - `prisma:validate`: passed.
 - `prisma:generate`: passed.
+- `npm run lint`: passed with two pre-existing `react-hooks/exhaustive-deps` warnings in `src/components/admin/queue-monitor.tsx`.
 - Production build: passed; existing BullMQ optional-dependency warnings remain.
-- Focused ESLint and formatting checks for all changed files: passed.
+- Focused Prettier checks for all three Attempt 2 files: passed.
 - `git diff --check`: passed.
-- Repository-wide `format:check` still reports the unchanged baseline's existing 75 unformatted files; changed files pass the focused check.
-- Removed-symbol search is clean in implementation code; the only remaining legacy-name matches are intentional negative assertions in `admin-billing-controls.test.mjs` and existing legacy-input absence assertions in `admin-billing-plan.test.mjs`.
+- Repository-wide `npm run format:check` reports 78 pre-existing unformatted files; none are the three files changed by Attempt 2.
+- Removed-symbol search has no runtime/production matches; remaining matches are intentional negative assertions in `admin-billing-controls.test.mjs` and `admin-billing-plan.test.mjs`.
+- Stale-i18n search has only the new negative assertion in `admin-billing-visibility.test.mjs`.
+
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010
+  parent branch: task/ARCH-010-ADMIN-010
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-010
+  implementation branch: task/ARCH-010-ADMIN-010
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
 
 ### Deviations
 
@@ -300,7 +321,8 @@ Repository-wide formatting is not green because of pre-existing formatting drift
 
 ### Assumptions
 
-- The implementation branch reuses the resolved DATABASE-013 Prisma schema and SHARED-008 package contract; the isolated worktree's database submodule and dependencies were temporarily linked from the already-resolved Admin checkout for validation and removed afterward.
+- The implementation worktree uses its recorded database gitlink `014408e0402221f08a3961880b34e828a8bdc736`; that submodule was initialized in the canonical implementation worktree for validation.
+- Dependencies were installed with `npm ci` in the canonical implementation worktree only. No shared/default checkout was linked, switched, or mutated.
 
 ### Unresolved Issues
 
