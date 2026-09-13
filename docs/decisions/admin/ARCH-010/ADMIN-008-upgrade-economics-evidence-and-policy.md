@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 88
-executor: copilot
-claimed_at: '2026-09-13T13:39:52Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -203,4 +203,380 @@ Implemented and published. Awaiting architect review.
 - Database submodule remained at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database gitlink change was staged.
 
 ### Architect Review
-Pending.
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+Attempt 1 is **not accepted**. Keep this same task and return it to `ready` for Attempt 2. Do not create a replacement task and do not start `ARCH-010-ADMIN-009`.
+
+The following Attempt 1 implementation is retained unless a required regression test proves it wrong:
+
+- SUPER_ADMIN mutation guards;
+- `PlatformBillingPolicy.minimumUpgradePremiumBps` persisted through the existing `PLATFORM_POLICY_CHANGED` audit path;
+- append-only `BillingEconomicsSnapshot.create(...)`;
+- Shopify plan-handle / pack-enable / pack-size / pack-meter drift checks;
+- normalized FIXED / GRADUATED / VOLUME snapshot parsing;
+- manual Partner Dashboard evidence marker;
+- no Shopify provider mutation/API call;
+- no monetary price fields added back to `BillingPlan`.
+
+Attempt 2 is intentionally bounded to the corrections and evidence below.
+
+##### Correction 1 — make upgrade-edge deactivate/reactivate compatible with DATABASE-013 uniqueness
+
+Files:
+
+```text
+moda-interact-admin/src/app/actions/billing-economics.ts
+moda-interact-admin/src/lib/admin/billing-economics-validation.ts   # only if form intent/types need a bounded adjustment
+moda-interact-admin/src/components/admin/billing-controls.tsx       # only if UI needs reactivation/reason wiring
+```
+
+DATABASE-013 has permanent uniqueness:
+
+```prisma
+@@unique([lowerPlanId])
+@@unique([higherPlanId])
+```
+
+The Attempt 1 create path checks only `lowerEdge?.active` / `higherEdge?.active`. Therefore, after an edge is deactivated, the row still owns both unique keys and a later `create()` for the same pair reaches Prisma `P2002`. The Admin UI currently exposes deactivation, so the ladder can be placed into a state that cannot be restored through the same control.
+
+Required behavior for `intent=create`:
+
+```text
+load current durable lower plan and higher plan
+load any declared row by lowerPlanId
+load any declared row by higherPlanId
+
+if either requested plan is missing/inactive:
+  reject
+
+if lowerPlanId == higherPlanId:
+  reject
+
+if higher monthly included allowance <= lower monthly included allowance:
+  reject
+
+if an ACTIVE lower or higher declaration conflicts:
+  reject with the existing bounded branching error
+
+if the SAME exact lowerPlanId -> higherPlanId row exists and is inactive:
+  reactivate that existing row
+  do NOT create a second row
+  write one BillingAuditEvent with beforeValue + afterValue
+
+if an INACTIVE lower/higher declaration exists but belongs to a DIFFERENT pair:
+  reject with a bounded declared-edge conflict
+  do NOT fall through to Prisma unique-constraint failure
+  do NOT delete historical rows in this task
+
+only when neither unique key is already declared:
+  create the new row
+  audit the create
+```
+
+The same exact inactive row may be detected through both the lower and higher lookups; compare by durable row `id`.
+
+For `intent=deactivate`:
+
+- re-read by durable edge id;
+- transition only an ACTIVE row to inactive;
+- avoid appending duplicate deactivation audit evidence for an already-inactive row;
+- the audit must contain the actual persisted before/after edge, not client-hidden lower/higher IDs.
+
+Do not change DATABASE-013 schema or its unique constraints in ADMIN-008.
+
+##### Correction 2 — present the premium as the required percentage, while persisting bps
+
+File:
+
+```text
+moda-interact-admin/src/components/admin/billing-controls.tsx
+```
+
+The task contract requires:
+
+```text
+Minimum stay+top-up premium above next-plan upgrade
+Default display = 20.00% for 2000 bps
+```
+
+Attempt 1 currently exposes only:
+
+```text
+Minimum upgrade premium (basis points)
+2000
+```
+
+Keep the durable/form value in basis points, but the UI must visibly explain the percentage.
+
+Required initial/current display:
+
+```text
+20.00% (2000 bps)
+```
+
+when the current/default value is 2000.
+
+Use the current policy value when present:
+
+```text
+percentage = minimumUpgradePremiumBps / 100
+```
+
+and render it with exactly two decimal places for this control. Do not change durable storage to floating point.
+
+The visible label/help must use the task meaning:
+
+```text
+Minimum stay+top-up premium above next-plan upgrade
+```
+
+A bps input may remain, provided the corresponding percentage is plainly visible.
+
+##### Correction 3 — bound persisted Prisma `Int` economics values before database execution
+
+File:
+
+```text
+moda-interact-admin/src/lib/admin/billing-economics-validation.ts
+```
+
+`BillingEconomicsSnapshot.monthlyRecurringAmountMinor` and
+`BillingEconomicsSnapshot.recoveryCreditsPerPackSnapshot` are Prisma `Int`
+fields. Attempt 1 accepts any JavaScript safe integer, including values larger
+than PostgreSQL/Prisma `Int`, so form validation can pass and persistence can
+fail later.
+
+For fields persisted into Prisma `Int`, validate against:
+
+```text
+0 .. 2147483647
+```
+
+with pack size still strictly positive when present.
+
+At minimum prove:
+
+```text
+monthlyRecurringAmountMinor = 2147483647 -> accepted
+monthlyRecurringAmountMinor = 2147483648 -> rejected
+
+recoveryCreditsPerPackSnapshot = 2147483647 -> accepted when packs enabled
+recoveryCreditsPerPackSnapshot = 2147483648 -> rejected
+```
+
+Do not arbitrarily apply the 32-bit bound to JSON-only tier fields unless the
+accepted evaluator/database contract requires it.
+
+##### Correction 4 — replace source-only assertions with behavior evidence for scenarios 43–47 and snapshot portions of 61–64
+
+Attempt 1's `admin-billing-economics.test.mjs` mainly proves source text is
+present. Keep useful source-boundary assertions, but the task explicitly
+requires behavior for integration scenarios 43–47 and snapshot-management
+portions of 61–64.
+
+Add focused behavior tests. Use existing repository test conventions. If the
+Next server action itself is awkward to import without the full Next runtime,
+extract only the smallest pure/testable decision helpers from the action path;
+the server action must call those exact helpers.
+
+Required behavior proofs:
+
+```text
+43:
+  non-SUPER_ADMIN mutation remains rejected at the server-action boundary
+  for threshold, edge and snapshot mutations
+
+44:
+  matching durable plan/Shopify handles succeeds
+  mismatched current plan handle rejects
+  mismatched enabled pack size rejects
+  mismatched enabled pack meter handle rejects
+
+45:
+  lowerPlanId == higherPlanId rejects
+
+46:
+  active branching lower successor rejects
+  active branching higher predecessor rejects
+  exact inactive pair reactivates instead of create/P2002
+  inactive conflicting declaration rejects deterministically before create
+
+47:
+  higher monthly included allowance <= lower allowance rejects
+
+snapshot append-only:
+  record path creates a new snapshot
+  no snapshot update/upsert/delete path is used
+
+61:
+  snapshot recording does not mutate Subscription, Shop, BillingPeriod,
+  merchant entitlement/reservation state, promotion state or Shopify billing
+
+62:
+  no appSubscriptionCreate, appPurchaseOneTimeCreate, App Events or other
+  Shopify billing mutation is invoked by snapshot/edge/policy evidence work
+
+63:
+  persisted providerEvidence/audit data contains no token, secret, cookie,
+  password, access token or raw Partner credential field
+
+64:
+  no merchant billing or promotional-credit mutation is introduced
+```
+
+The tests do not need to invent a new live database test infrastructure. A
+small deterministic decision/helper test plus existing source security checks
+is acceptable where the repository has no server-action harness, but **source
+regex alone is not sufficient** for the edge lifecycle, drift validation and
+numeric boundary behavior.
+
+Do not implement ADMIN-007 evaluator behavior or ADMIN-009 hard enforcement in
+these tests.
+
+##### Correction 5 — run the required toolchain validation from the isolated worktree
+
+The Completion Report says Prisma, ESLint and TypeScript were unavailable
+because dependencies were not installed. Missing `node_modules` in a new
+worktree is setup state, not evidence that the required validation itself is
+unavailable.
+
+At Attempt 2 start, after synchronization and submodule initialization:
+
+```bash
+cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-008
+
+git submodule sync -- database
+git submodule update --init --recursive database
+
+EXPECTED_DATABASE_GITLINK="$(git rev-parse HEAD:database)"
+ACTUAL_DATABASE_HEAD="$(git -C database rev-parse HEAD)"
+test "$EXPECTED_DATABASE_GITLINK" = "$ACTUAL_DATABASE_HEAD"
+
+npm ci
+```
+
+Do not edit the database gitlink or database schema for this task.
+
+Then run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+node --experimental-strip-types --test \
+  tests/unit/billing-economics-validation.test.ts
+
+node --test \
+  tests/security/admin-billing-economics.test.mjs \
+  tests/security/admin-billing-controls.test.mjs
+
+# Include the new Attempt 2 behavior test file(s) explicitly here.
+npm test
+npm run lint
+npx tsc --noEmit --pretty false
+npm run build
+git diff --check
+```
+
+All ADMIN-008 focused tests, Prisma validate/generate, lint, typecheck, build
+and `git diff --check` must pass.
+
+If `npm ci` itself fails because of a real external registry/network/tooling
+outage, record the exact command/error and return the task as **blocked** rather
+than claiming required validation passed.
+
+Existing unrelated warnings may be recorded exactly; do not fix them in this task.
+
+##### Correction 6 — mandatory physical-worktree and synchronization evidence
+
+Attempt 1 records worktree paths but not the mandatory exact physical-isolation
+and start-of-attempt synchronization evidence.
+
+Attempt 2 must begin with synchronization in both canonical task worktrees
+before editing. If a remote task branch already exists, fast-forward it first,
+then incorporate current `origin/main`. Stop on divergence or unresolved
+conflict rather than inventing history.
+
+The Completion Report must contain this exact-shaped evidence using actual
+Attempt 2 observations:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-008
+  parent branch: task/ARCH-010-ADMIN-008
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-008
+  implementation branch: task/ARCH-010-ADMIN-008
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: <full SHA>
+  database submodule HEAD: <full SHA>
+  database gitlink staged/changed: no
+```
+
+Do not reconstruct or rewrite Attempt 1 history. Record only what is actually
+observed during Attempt 2.
+
+##### Attempt 2 scope boundary
+
+Production changes are limited to ADMIN-008 economics/policy surfaces:
+
+```text
+src/app/actions/billing-economics.ts
+src/components/admin/billing-controls.tsx
+src/lib/admin/billing-economics-validation.ts
+src/lib/admin/billing-economics.ts        # only if a testable helper belongs here
+src/app/actions/billing-controls.ts       # only if needed to preserve threshold wiring
+src/lib/admin/billing-control-validation.ts
+```
+
+Focused test changes are allowed under:
+
+```text
+tests/security/admin-billing-economics.test.mjs
+tests/security/admin-billing-controls.test.mjs
+tests/unit/billing-economics-validation.test.ts
+tests/unit/<new narrowly-scoped ADMIN-008 behavior test>.ts
+```
+
+Do not:
+
+- modify Prisma schema/migrations;
+- add monetary authority to `BillingPlan`;
+- implement ADMIN-007 evaluator calculations;
+- implement ADMIN-009 hard enforcement;
+- call Shopify Partner/Admin/App Billing APIs;
+- modify merchant subscriptions, purchases, refunds, promotions or entitlement accounting;
+- broaden into unrelated Admin UI cleanup.
+
+##### Stop conditions
+
+STOP and return to `moda_architect` if:
+
+1. current DATABASE-013 schema differs materially from the permanent lower/higher unique-key contract described above;
+2. making a deactivated exact edge restorable would require a database schema change;
+3. behavior testing requires changing a cross-repository contract;
+4. current `origin/main` introduces a conflicting economics architecture that cannot be reconciled within the files above;
+5. required validation cannot run after successful dependency installation for a reason that would require unrelated repository repair.
+
+After the corrections:
+
+1. set this same task to `review`;
+2. update the Completion Report with the new implementation commit and parent report commit;
+3. push both `task/ARCH-010-ADMIN-008` branches;
+4. STOP.
+
+Do not execute `ARCH-010-ADMIN-009`.
+
