@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 8
-executor: copilot
-claimed_at: '2026-09-13T11:40:21Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -336,7 +336,7 @@ None. The accepted platform-policy mutation and audit boundary remain unchanged.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
@@ -543,4 +543,86 @@ The production logic inspected in Attempt 1 conforms to the intended ARCH-010 Ad
 ### Follow-up
 
 Reclaim this same task as Attempt 2. No new architecture task is required. Dependants remain gated until `ARCH-010-ADMIN-010` is architect-accepted `complete`.
+
+### Attempt 2 — Accepted
+
+#### Review Status
+
+Accepted.
+
+Attempt 2 satisfied the bounded Changes Requested contract without reopening the accepted Admin billing design.
+
+The architect verified the published implementation commit `8eb55556bfd64124543fa7dd9915934467b0cc27`. It changes exactly the three files permitted for Attempt 2:
+
+```text
+src/i18n/locales/en.json
+src/i18n/required-keys.ts
+tests/security/admin-billing-visibility.test.mjs
+```
+
+The obsolete `billing.adjustments` entry is absent from both the locale catalogue and required-key list. The required regression test exists with the exact name:
+
+```text
+first-production tenant billing exposes no allowance-adjustment compatibility key
+```
+
+and proves both catalogue absence and required-key absence.
+
+Repository-wide removed-symbol inspection of the returned source found no runtime/production compatibility references. The remaining legacy-name matches are intentional negative assertions in tests, exactly as permitted by the Attempt 2 review contract.
+
+The architect independently executed:
+
+```text
+node --test tests/security/admin-billing-visibility.test.mjs
+```
+
+and confirmed:
+
+```text
+12 tests
+12 passed
+0 failed
+```
+
+The Completion Report records the required canonical parent/implementation worktrees, no shared-checkout mutation, no reuse of another task worktree, and all four start-of-attempt synchronization outcomes. All nine task-owned Work Items are complete.
+
+The reported repository validation is accepted:
+
+```text
+focused billing/security: 30 passed
+full Admin tests: 148 passed
+unit tests: 42 passed
+Prisma validate/generate: passed
+repository-wide lint: passed with two pre-existing warnings
+production build: passed
+git diff --check: passed
+```
+
+Repository-wide `npm run format:check` continues to report 78 pre-existing files, but none of the three Attempt 2 files are among them; focused formatting for all three Attempt 2 files passed. This is an unchanged baseline deviation and is not an ADMIN-010 acceptance blocker.
+
+Published evidence:
+
+```text
+implementation commit: 8eb55556bfd64124543fa7dd9915934467b0cc27
+parent Completion Report commit: 39db0530f9a760d816967635b4366d9aadcf32eb
+```
+
+Both remote task branches were verified at those published heads.
+
+#### Architect Decision
+
+**Accepted — Attempt 2.**
+
+Because `completion_mode: automatic`, the task is now:
+
+```text
+status: complete
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+#### Dependency reconciliation
+
+Acceptance of ADMIN-010 does not by itself promote its listed dependants in the returned snapshot because each still has additional incomplete dependencies. Do not start ADMIN-002, ADMIN-004, or ADMIN-008 solely because ADMIN-010 is now Complete; readiness must be recalculated from each authoritative individual task file against the latest workspace state.
 
