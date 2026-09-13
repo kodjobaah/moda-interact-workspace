@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 47
-executor: copilot
-claimed_at: '2026-09-13T18:27:35Z'
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
 - ARCH-010-BACKGROUND-001
@@ -3543,4 +3543,73 @@ When evidence is complete:
 - publish a factual Completion Report and exact 1–35 matrix;
 - STOP for moda_architect.
 ```
+
+## Attempt 6 Completion Report
+
+Attempt 6 was stopped at the architect boundary after the required permanent
+evidence exposed a real production defect. No production, schema, shared
+contract, or unrelated repository files were changed.
+
+### Published evidence
+
+Implementation task branch:
+
+```text
+e96ca9e test(background): document rollover evidence blocker
+```
+
+The published test additions in
+`tests/unit/services/same-plan-billing-period-rollover.service.test.ts` cover
+overlap rejection, CLOSED-successor replay, old UsageEvent finalization,
+purchase preservation, Paid reservation/counter/snapshot behavior, and the
+post-commit callback seam.
+
+Focused validation:
+
+```text
+npx vitest run tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+18 passed, 1 failed
+git diff --check: passed
+```
+
+### Blocking production defect
+
+Test:
+
+```text
+SamePlanBillingPeriodRolloverService > calls the Paid post-commit hook once and not for replay or Free rollover
+```
+
+Observed failure at
+`tests/unit/services/same-plan-billing-period-rollover.service.test.ts:434`:
+
+```text
+expected afterTransitionCommitted to be called once, but got 2 times
+```
+
+The Paid transition invokes `afterTransitionCommitted` once as expected. A
+same-state replay invokes no additional callback. A successful Free rollover
+invokes the callback a second time, but the Attempt-6 contract requires that
+callback to be treated as a Paid capacity-resume hint and not invoked for Free.
+The source currently calls the callback for every transitioned result without a
+Paid-plan guard. Per the architect review, this is a production defect and this
+evidence attempt must stop rather than patch production during the evidence
+pass.
+
+### Workflow evidence
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007
+parent branch: task/ARCH-010-BACKGROUND-007
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007
+implementation branch: task/ARCH-010-BACKGROUND-007
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+Attempt-6 claim: 8c09b63
+parent and implementation worktrees clean at handoff: yes
+```
+
+Task status: review. Awaiting moda_architect review; no architect acceptance decision has been made by this agent.
 
