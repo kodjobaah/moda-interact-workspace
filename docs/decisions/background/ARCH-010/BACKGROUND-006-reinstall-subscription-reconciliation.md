@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 49
-executor: copilot
-claimed_at: 2026-09-13T22:29:27Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -383,21 +383,22 @@ Ready for Architect Review.
 - Reconciled Partner null, verified Free, same paid period, and later same-plan paid cycle outcomes while preserving historical and lifetime entitlement state.
 - Delegated later same-plan paid cycle rotation to `SamePlanBillingPeriodRolloverService` and reactivated the shop only after successful canonical transition.
 - Added bounded 24-hour reinstall provider retry metadata and fail-closed period/plan diagnostics.
-- Added focused regressions for stale/missing reinstall authorization, null-provider activation, Free reactivation, reconstruction, and no-Shopify reconstruction behavior.
+- Added exact Prisma selection and subscription-id authorization checks, transactionally guarded reinstall markers, pending-plan projection refresh, pack-meter validation, paid-period/counter integrity validation, and deterministic paid follow-up publication.
+- Added focused regressions for stale/missing reinstall authorization, SUSPENDED shops, stale restoration attempts, null-provider activation and preservation, Free reactivation and pack meters, pending-plan projection, same-paid-period integrity and queue repair, rollover delegation, changed plans, transport retry expiry, reconstruction, and no-Shopify reconstruction behavior.
 
 ### Validation Results
-- `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 1 file and 74 tests.
+- `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 1 file and 86 tests.
 - Adjacent gate suite (`billing-scheduler`, `entrypoint-isolation`, `shopify-usage-event-publisher`, `recovery-routing`): passed, 4 files and 49 tests.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
-- `npm test`: baseline failures remain in `tests/unit/services/recovery-credit-purchase.service.test.ts` (8 failures caused by the existing generated purchase schema/status mismatch) and `tests/unit/runtime/observability-startup.test.ts` (2 existing observability/runtime-version expectations); no failures occurred in the touched reconciliation tests.
-- `npm run build`: baseline TypeScript failures remain in purchase/recovery-credit services for the same generated schema/status mismatch; no errors in task-touched files.
+- `npm test`: 10 documented baseline failures remain in `tests/unit/services/recovery-credit-purchase.service.test.ts` (8 failures caused by the existing generated purchase schema/status mismatch) and `tests/unit/runtime/observability-startup.test.ts` (2 existing observability/runtime-version expectations); no failures occurred in the touched reconciliation tests.
+- `npm run build`: 15 documented baseline TypeScript errors remain in the unrelated purchase/recovery-credit services for the same generated schema/status mismatch; no errors in task-touched files.
 
 ### Git / VCS
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
-- Implementation commit: `8da03a0` (`feat(background): reconcile subscriptions after reinstall`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
+- Implementation commit: `baa33fb` (`fix(background): harden reinstall reconciliation`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
 - Launcher claim commit: `8b70d55c32a24b1dd79de279785d4138cc120642`, pushed before implementation.
 - Isolated worktrees used; shared checkout was not switched or mutated.
 
