@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 47
-executor: copilot
-claimed_at: 2026-09-13T17:14:20Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-BACKGROUND-001
@@ -1765,3 +1765,430 @@ When complete:
 4. publish parent report;
 5. STOP for Architect Review.
 
+## Architect Review — Attempt 3
+
+### Changes Requested
+
+Attempt 3 is **not accepted**. Keep this same task and return it to `ready` for
+Attempt 4. Do not create a replacement task and do not begin any task enabled by
+`ARCH-010-BACKGROUND-007`.
+
+The implementation under review is:
+
+```text
+3cc2582b1710f6e2a35041e94956b3eb122068fd
+```
+
+The published Attempt-3 parent history is:
+
+```text
+claim:
+  2bcba51eea1c56ea6ea7b7e278bced3610419eac
+
+report:
+  98f6b9b271ff0fadde8c0129cf06cc1c8c21858b
+```
+
+Preserve that history. Attempt 4 is the next claim; increment `attempt` exactly
+once when claimed.
+
+### Attempt-3 corrections accepted in substance — preserve these
+
+The following Attempt-2 defects are now corrected and must not regress:
+
+```text
+- exact old provider cycle at/after the local boundary returns provider-cycle-lag;
+- the scheduled reconciliation path records PROVIDER_CYCLE_LAG and advances the
+  durable schedule by 60 seconds;
+- period-scoped publishDue(...) scopes stale IN_FLIGHT recovery by billingPeriodId;
+- a thrown pre-close flush records PRE_CLOSE_USAGE_FLUSH_FAILED instead of clearing
+  the error;
+- a thrown pre-close flush schedules a bounded retry before periodEnd, or the exact
+  boundary when less than one retry interval remains;
+- accepted Paid reservation forfeiture, lifecycle gating, successor identity,
+  rotating canonical-transition ownership and BG8/BG9 behavior remain intact.
+```
+
+Do not redesign those pieces unless one of the required permanent tests proves a
+concrete defect.
+
+### Correction 1 — rotating reconciliation must handle provider-cycle-lag
+
+Primary file:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+Related service/test files:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+`SamePlanBillingPeriodRolloverService` now returns `provider-cycle-lag` when the
+provider still reports the exact old cycle at/after the local period end.
+
+The scheduled reconciliation caller handles this result correctly.
+
+The rotating reconciliation caller does not. Its same-plan branch returns directly
+only for `transitioned` and `unchanged`, then falls through for
+`provider-cycle-lag`, merely rereading/returning the current BillingPeriod pointer.
+
+Required rotating behavior:
+
+```text
+provider-cycle-lag
+-> no BillingPeriod close/create
+-> preserve current plan/period
+-> persist lastSyncErrorCode = PROVIDER_CYCLE_LAG
+-> persist lastSyncErrorAt = now
+-> advance nextReconcileAt = now + 60 seconds with exact CAS
+-> best-effort enqueue the existing reconcile-subscription job after commit
+```
+
+Reuse the existing reconcile-subscription job/id semantics. Do not create a second
+queue or duplicate deterministic job-id construction.
+
+Required tests:
+
+```text
+- rotating reconciliation sees old exact provider cycle after boundary;
+- no period create/close occurs;
+- PROVIDER_CYCLE_LAG is persisted;
+- nextReconcileAt advances by +60 seconds;
+- new deterministic job identity differs from the old boundary identity;
+- queue failure does not roll back the durable lag schedule.
+```
+
+### Correction 2 — pack-disabled Free rollover must not retain cycle-specific scheduling
+
+Primary file:
+
+```text
+src/services/same-plan-billing-period-rollover.service.ts
+```
+
+Related callers/tests:
+
+```text
+src/services/billing-reconciliation.service.ts
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+The task scheduling contract is:
+
+```text
+PAID_METERED -> schedule next pre-close
+FREE + recoveryCreditPackEnabled=true -> schedule next pre-close
+FREE + recoveryCreditPackEnabled=false -> no monthly App-Event rollover schedule
+  unless another independent pending/reinstall reason owns nextReconcileAt
+```
+
+Attempt 3 still computes a non-null nextReconcileAt for every successful transition,
+including pack-disabled Free. The scheduled worker and reconstruction logic then
+exclude that Free plan, leaving a stale schedule/no-op job.
+
+Required behavior:
+
+```text
+Paid successor:
+  nextReconcileAt = max(now, providerEnd - drainWindow)
+
+Free pack-enabled successor:
+  same schedule
+
+Free pack-disabled successor:
+  cycle-specific nextReconcileAt = null
+```
+
+It is acceptable for `SamePlanRolloverResult.transitioned.nextReconcileAt` to become
+`Date | null`. Callers enqueue only when non-null.
+
+Required tests:
+
+```text
+- Paid successor schedules pre-close;
+- pack-enabled Free successor schedules pre-close;
+- pack-disabled Free successor writes nextReconcileAt=null;
+- rotating reconciliation does not enqueue a pack-disabled Free cycle job;
+- reconstruction excludes pack-disabled Free even if legacy stale nextReconcileAt
+  data exists.
+```
+
+### Correction 3 — early pre-close reschedule must CAS the exact source projection
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+The service correctly rereads status, planId, billingPeriodId, current period
+start/end and nextReconcileAt before pre-close work.
+
+The early-job branch still updates using only `id + nextReconcileAt`. A concurrent
+source-period/plan transition can therefore retain the same timestamp and receive a
+stale reschedule.
+
+Use the same exact CAS fields as the flush-success/failure branches:
+
+```text
+id
+ACTIVE/TRIALING
+planId
+billingPeriodId
+currentPeriodStart
+currentPeriodEnd
+nextReconcileAt
+```
+
+Required race regression:
+
+```text
+- initial reread matches expected state;
+- simulated concurrent source-plan/period change keeps the same nextReconcileAt;
+- early update count is 0;
+- no successor job is enqueued.
+```
+
+### Correction 4 — materialise the required permanent scenarios 1–35
+
+The published Attempt-3 report does not satisfy the explicit acceptance condition
+that scenarios 1–35 are mapped to exact permanent tests.
+
+It reports an aggregate `67/67`, names four new regressions, and summarizes the rest
+generically. That is not the required mapping.
+
+Attempt 4 must include this table in the Completion Report:
+
+```text
+Scenario | Exact test file | Exact test name | Result
+1        | ...             | ...             | passed
+...
+35       | ...             | ...             | passed
+```
+
+Existing BG8 tests may satisfy 24/30/31 where they really prove the requirement;
+reference the exact test names rather than duplicating them.
+
+The current permanent suite still needs explicit behavioral evidence for the
+uncovered rollover paths, including at minimum:
+
+```text
+1  rollover reconstruction for Paid and pack-enabled Free;
+2  early rollover job -> drain start;
+3  scoped pre-close flush -> exact boundary;
+4  rollover stale expectedNextReconcileAt no-op;
+6  rollover Partner transport failure preserves current period and retries;
+7  successful contiguous Paid transition;
+8  gap Paid transition without synthetic intermediate periods;
+9  overlapping provider cycle fails closed;
+10 duplicate/concurrent rollover creates one successor;
+11 replay cannot reopen CLOSED successor or duplicate grants;
+12 old PENDING/RETRYABLE events -> NEEDS_ATTENTION;
+13 REPORTED remains REPORTED;
+14 IN_FLIGHT remains untouched;
+15 old pack event does not activate RecoveryCreditPurchase;
+16 committed transition survives enqueue failure and repair reconstructs;
+17 rotating reconciliation cannot bypass canonical period ownership;
+18 RESERVED/AMBIGUOUS reservations release with PERIOD_CLOSED;
+19 final Paid included-counter invariant;
+20 reservation/counter mismatch aborts;
+21 exact Paid successor snapshots/grant;
+22 Paid included counter created/reused exactly once;
+23 exactly one Paid post-commit capacity-resume hint;
+25 successful same-plan Free rollover;
+26 exact Free successor snapshot/null included grant;
+27 no Free included period counter;
+28 lifetime Free quantities unchanged;
+29 purchased lifetime credits/history unchanged;
+32 old Free pack event -> UsageEvent NEEDS_ATTENTION while linked purchase remains
+   REQUESTED/currentAmount=0/activatedAt=null;
+33 pack-enabled Free successor schedules pre-close;
+34 Free rollover sends no capacity-resume hint;
+35 repair reconstructs missing Free pack-cycle job.
+```
+
+Also add the permanent pre-close-failure regressions required by Attempt 2:
+
+```text
+- thrown scoped publisher failure records PRE_CLOSE_USAGE_FLUSH_FAILED;
+- >60s remaining schedules a retry before periodEnd;
+- successful retry schedules exact boundary;
+- final-minute failure preserves error metadata and schedules exact boundary;
+- stale projection guard performs no publish/no scheduling mutation.
+```
+
+Do not satisfy these with source-text assertions.
+
+### Correction 5 — correct Attempt-3 evidence forward
+
+Do not rewrite Attempt-3 history.
+
+The aggregate focused total can be 67, but the current expanded inventory is:
+
+```text
+same-plan-billing-period-rollover.service.test.ts: 6 cases
+billing-subscription-reconciliation.service.test.ts: 35 tests
+billing-reconciliation.service.test.ts: 12 tests
+shopify-usage-event-publisher.service.test.ts: 14 tests
+total: 67
+```
+
+Attempt 4 must report the counts actually produced by the test runner.
+
+It must also record actual observed values for:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007
+  parent branch: task/ARCH-010-BACKGROUND-007
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007
+  implementation branch: task/ARCH-010-BACKGROUND-007
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: <full SHA>
+  database submodule HEAD: <full SHA>
+  database gitlink staged/changed: no
+
+Dependency integration:
+  BACKGROUND-008 accepted behavior present: yes
+  BACKGROUND-009 final accepted/evidence head
+    29478e94b8fc91bc4671a57c7af656ea20f1a66e
+    is ancestor of implementation HEAD: yes
+  Background origin/main SHA incorporated: <actual full SHA>
+
+Task history:
+  Attempt-1 claim b9eb75e3bf078743419688b72722bf49d88aa547
+    ancestor of parent HEAD: yes
+  Attempt-1 report 71d6f887aa4ac821fd3bbc175ff682a2c5297fb6
+    ancestor of parent HEAD: yes
+  Attempt-2 claim 31a9d89591b77d0a9cbe7f6d161983e983ad1acf
+    ancestor of parent HEAD: yes
+  Attempt-2 report 63c15052acec514f0d51defccfafb3108d632366
+    ancestor of parent HEAD: yes
+  Attempt-3 claim 2bcba51eea1c56ea6ea7b7e278bced3610419eac
+    ancestor of parent HEAD: yes
+  Attempt-3 report 98f6b9b271ff0fadde8c0129cf06cc1c8c21858b
+    ancestor of parent HEAD: yes
+
+Handoff:
+  parent worktree clean: yes
+  implementation worktree clean: yes
+```
+
+Record observed values only.
+
+### Attempt 4 allowed scope
+
+Production changes are limited to:
+
+```text
+src/services/same-plan-billing-period-rollover.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+A narrow shared scheduling helper may be extracted only if needed so rotating and
+scheduled reconciliation can share the accepted reconcile-job semantics.
+
+Test changes are expected in:
+
+```text
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/shopify-usage-event-publisher.service.test.ts
+```
+
+Existing BG8/BG9 tests may be referenced or minimally extended only for
+BACKGROUND-007 evidence for 24/30/31.
+
+Do not modify:
+
+```text
+database schema/migrations
+Shared contracts
+Shopify/Admin/Messaging/Gateway repositories
+BACKGROUND-008 admission semantics
+BACKGROUND-009 capacity-resume semantics
+BACKGROUND-012 freeze/cancel/no-contract ownership
+BACKGROUND-021 purchase activation architecture
+```
+
+If satisfying a correction requires one of those changes, STOP and return to
+`moda_architect`.
+
+### Required Attempt 4 validation
+
+From the canonical Background implementation worktree:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run   tests/unit/services/same-plan-billing-period-rollover.service.test.ts   tests/unit/services/billing-subscription-reconciliation.service.test.ts   tests/unit/services/billing-reconciliation.service.test.ts   tests/unit/services/shopify-usage-event-publisher.service.test.ts
+
+npx vitest run   tests/unit/services/effective-billing-policy.service.test.ts   tests/unit/services/paid-included-recovery-reservation.service.test.ts   tests/unit/services/recovery-billing.service.test.ts   tests/unit/services/whatsapp.service.test.ts
+
+npm run test:integration
+npm run test:unit
+npx tsc --noEmit
+npm run build
+git diff --check
+```
+
+Acceptance requires:
+
+```text
+- rotating provider-cycle-lag produces a durable +60s retry;
+- pack-disabled Free rollover leaves no cycle-specific nextReconcileAt/job;
+- early pre-close reschedule uses exact source-projection CAS;
+- scenarios 1–35 map to exact permanent behavioral tests;
+- all BACKGROUND-007 focused tests pass;
+- BG8/BG9 preservation gate passes;
+- integration remains green;
+- no changed/new file has a TypeScript/build diagnostic;
+- repository-wide purchased-credit/observability baseline may remain non-green only
+  if it is the same exact documented pre-existing set;
+- git diff --check passes.
+```
+
+### Attempt 4 stop conditions
+
+STOP and return this same task to `moda_architect` if:
+
+1. rotating lag retry requires changing the Shared reconcile-job contract;
+2. pack-disabled Free scheduling requires a schema change;
+3. exact early-reschedule CAS cannot be implemented without a new transaction/worker;
+4. required tests expose missing accepted BG8/BG9 behavior;
+5. purchase-state coverage would require changing DATABASE-014 or implementing
+   BACKGROUND-021;
+6. another repository must change.
+
+When complete:
+
+1. set this same task to `review`;
+2. publish implementation commit(s);
+3. update Completion Report with exact commands/results, the 1–35 mapping, and
+   mandatory workflow evidence;
+4. publish parent report;
+5. STOP for Architect Review.
