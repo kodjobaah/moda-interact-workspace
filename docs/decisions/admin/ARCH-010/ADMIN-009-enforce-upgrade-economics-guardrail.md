@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 89
 executor: copilot
 claimed_at: '2026-09-13T18:02:00Z'
@@ -927,6 +927,73 @@ src/app/actions/billing-plan.ts
 Only change `src/lib/admin/billing-plan.ts` or
 `src/components/admin/billing-plan-catalog.tsx` if the required UI/render test
 exposes the `NO_UPGRADE_EDGE` derivation issue described above.
+
+### Attempt 3 Completion Report
+
+#### Status
+
+Review.
+
+#### Files Changed
+
+- `moda-interact-admin/src/lib/admin/billing-plan-guardrail.ts`
+- `moda-interact-admin/src/components/admin/billing-plan-catalog.tsx`
+- `moda-interact-admin/src/i18n/locales/en.json`
+- `moda-interact-admin/src/i18n/required-keys.ts`
+- `moda-interact-admin/tests/security/admin-billing-plan.test.mjs`
+
+#### Work Completed
+
+- Added Admin-owned structural edge validation before the accepted evaluator's top-ups-off shortcut: plan IDs must differ and the higher plan must have a strictly larger monthly included allowance, otherwise the result is `UNVERIFIED / INVALID_UPGRADE_EDGE`.
+- Added behavioral adjacent-edge re-evaluation coverage for pack and allowance changes, valid top-ups-off PASS behavior, missing evidence, invalid edges, atomic rejection, and successful audit sequencing.
+- Added deterministic UI contract coverage for `NO_UPGRADE_EDGE`, PASS/FAIL/UNVERIFIED evidence fields, blocked-state copy, integer-minor display formatting, verified-Shopify-evidence wording, and secret-free output.
+- Added explicit invalid-edge Admin copy while preserving the existing Shopify charging-authority disclaimer.
+- Preserved `validateSinglePackShopifyEconomics(...)` arithmetic and verified audit evidence includes `topUpPath` plus the required calculation fields without provider secrets or raw responses.
+
+#### Validation Results
+
+- `npm run prisma:validate`: passed.
+- `node --experimental-strip-types --test tests/security/admin-billing-plan.test.mjs`: 14 passed, 0 failed.
+- `npm test`: 166 passed, 0 failed.
+- `npx tsc --noEmit --pretty false`: passed.
+- `npm run lint`: 0 errors; two pre-existing `queue-monitor.tsx` hook warnings.
+- `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
+- `git diff --check`: passed.
+
+#### Git / VCS
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009`.
+- Implementation branch: `task/ARCH-010-ADMIN-009`.
+- Attempt-3 implementation commit: `0b55c6e` (`fix(admin): close upgrade economics edge gaps`), pushed to `origin/task/ARCH-010-ADMIN-009`.
+- Parent claim commit: `869c761`, pushed to `origin/task/ARCH-010-ADMIN-009`.
+
+#### Attempt 3 Workflow And Synchronization Evidence
+
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
+  parent branch: task/ARCH-010-ADMIN-009
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
+  implementation branch: task/ARCH-010-ADMIN-009
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Parent history reconciliation:
+  Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
+  Attempt-1 report 5a17755... ancestor of parent HEAD: yes
+  Attempt-2 claim 645574c... ancestor of parent HEAD: yes
+  Attempt-2 report eda0f87... ancestor of parent HEAD: yes
+
+#### Architect Review
+
+Pending.
 
 Test/i18n changes are allowed in:
 
