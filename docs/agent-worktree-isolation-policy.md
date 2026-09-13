@@ -31,18 +31,33 @@ home-directory conventions or examples from another developer's machine.
 
 ## Canonical topology
 
-The only filesystem root the workflow treats as canonical is the resolved Moda
-Interact workspace root. The launcher derives everything else from it:
+The only filesystem root the workflow treats as canonical is the **primary Moda
+Interact workspace worktree**. A linked parent task worktree may contain
+`scripts/start-agent-task.py` and all normal workspace markers, but it is never
+allowed to become the base for another task's paths.
+
+The launcher canonicalizes any candidate workspace through Git common-dir
+identity. If launched from:
+
+- the shared/primary workspace;
+- a previous parent task worktree; or
+- an implementation worktree/submodule worktree;
+
+it must resolve back to the same primary Moda workspace before deriving task
+paths. It must not accept the first marker-bearing directory in `$PWD`'s parent
+chain without this canonicalization.
+
+The launcher then derives everything else only from that canonical primary root:
 
 ```text
 WORKSPACE_ROOT
-  = directory containing scripts/start-agent-task.py
+  = canonical primary workspace resolved through Git common-dir identity
 
 WORKSPACE_PARENT
   = parent of WORKSPACE_ROOT
 
 WORKSPACE_NAME
-  = basename of WORKSPACE_ROOT
+  = basename of canonical WORKSPACE_ROOT
 
 TASK_BRANCH
   = task/<TASK_ID>
@@ -52,6 +67,18 @@ PARENT_TASK_WORKTREE
 
 IMPLEMENTATION_TASK_WORKTREE
   = WORKSPACE_PARENT / (WORKSPACE_NAME + ".worktrees") / TASK_ID
+```
+
+For sequential tasks, `TASK-B` must therefore resolve independently of the
+current location even when `/moda-task TASK-B` is invoked while the shell is
+inside `TASK-A`:
+
+```text
+TASK-A parent: <workspace>-task-TASK-A
+TASK-B parent: <workspace>-task-TASK-B
+
+NOT:
+<workspace>-task-TASK-A-task-TASK-B
 ```
 
 No rule may assume `/Users/...`, `~/project`, `/home/...` or another fixed
@@ -262,8 +289,38 @@ if ! git -C "$TASK_WORKTREE" merge-base --is-ancestor origin/main HEAD; then
 fi
 ```
 
-The agent must record whether each fast-forward/mainline merge was performed or
-already unnecessary in the Completion Report.
+The launcher/agent must record whether each fast-forward/mainline merge was
+performed or already unnecessary in the Completion Report.
+
+## Mandatory implementation submodule preparation
+
+For `/moda-task` agent execution, after the implementation task worktree has been
+created/reused and synchronized, but **before the task is claimed**, the launcher
+must materialise all implementation-repository submodules recursively:
+
+```bash
+git -C "$IMPLEMENTATION_TASK_WORKTREE" submodule sync --recursive
+git -C "$IMPLEMENTATION_TASK_WORKTREE" submodule update --init --recursive
+git -C "$IMPLEMENTATION_TASK_WORKTREE" submodule status --recursive
+```
+
+The launcher must verify that no recursive status entry is uninitialised (`-`),
+at a commit different from the recorded gitlink (`+`), or unresolved (`U`). A
+failure is `MODA_SUBMODULE_PREPARATION_ERROR` and the task must remain unclaimed.
+
+Do **not** use:
+
+```bash
+git submodule update --remote
+```
+
+Task preparation must check out the exact submodule commits recorded by the
+prepared implementation branch; it must not advance nested repositories to a
+newer remote commit.
+
+A successful prepared execution packet is authoritative evidence for this
+startup step. The repository agent does not rerun recursive submodule
+materialisation merely to prove it happened.
 
 ## Claim and publication boundaries
 

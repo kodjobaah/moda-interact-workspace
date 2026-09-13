@@ -4,57 +4,25 @@ description: Launch a Moda Interact architecture task by task ID.
 disable-model-invocation: true
 ---
 
-You begin in a task-launcher phase.
+`/moda-task <TASK_ID>` is a deterministic **prepare then hand off** workflow.
+The implementation model must not spend its startup budget rediscovering task
+routing, worktree locations, dependency state, Git synchronization or claim
+state when the launcher can prove those facts mechanically.
 
-The launcher phase exists only to resolve authoritative routing, materialise a
-supplied architect definition when necessary, and prepare the handoff. While
-that phase is active, do not claim, implement or perform architect review.
-
-A successful resolver response does not finish the `/moda-task` invocation.
-After successful resolution/materialisation, continue immediately to the
-`## Handoff` section.
-
-Read and obey:
-
-```text
-docs/task-definition-materialization.md
-docs/developer-task-workflow.md
-docs/agent-worktree-isolation-policy.md
-docs/agent-vcs-ownership-policy.md
-```
-
-Canonical forms are:
+Canonical forms:
 
 ```text
 /moda-task <TASK_ID>
 /moda-task <TASK_ID> --definition <portable-task.md>
 ```
 
-The optional `--definition` notation identifies a portable architect task
-handoff. A matching attached/current-session definition may be used without an
-explicit filesystem path.
+The optional `--definition` form is only for an architect-authored portable task
+that has not yet been materialised in the development workspace. Read
+`docs/task-definition-materialization.md` for that exceptional path.
 
-Extract exactly one fully qualified Moda Interact task ID from the invocation,
-for example `ARCH-002-SHOPIFY-001`.
+## Canonical executor
 
-## Canonical executor identity
-
-The resolved logical agent must use the workspace executor normalization policy:
-
-```text
-docs/agent-executor-normalization-policy.md
-```
-
-Before claiming, normalize the execution surface to exactly one of:
-
-```text
-copilot
-codex
-claude
-continue
-```
-
-Required mappings include:
+Normalize the current runtime exactly as follows:
 
 ```text
 GitHub Copilot / github-copilot / copilot -> copilot
@@ -63,51 +31,29 @@ Claude Code / claude-code / claude     -> claude
 Continue                               -> continue
 ```
 
-Do not store raw provider/runtime labels in task YAML.
-
-For GitHub Copilot Agent Mode specifically:
-
-```yaml
-executor: copilot
-```
-
-not:
-
-```yaml
-executor: github-copilot
-```
-
-When an existing active claim uses an alias-equivalent value, treat it as the
-same executor identity rather than as a competing claim.
+Use only `copilot`, `codex`, `claude` or `continue` in task metadata.
 
 ## Mandatory first action
 
-After extracting `TASK_ID`, your **first tool action MUST** invoke the
-deterministic resolver.
+After extracting exactly one fully qualified `<TASK_ID>`, the first tool action
+must invoke the deterministic launcher with `--prepare` and the current canonical
+executor.
 
-Before that action, do NOT:
+Do not search/glob/grep for the task, inspect implementation source, inspect Git
+history, run workspace doctor, create worktrees or infer paths before this action.
 
-- search/glob/grep for the task ID or task file;
-- inspect implementation repositories;
-- inspect Git history or VS Code/user prompts;
-- inspect sibling/external directories;
-- infer architecture, domain, agent or repository.
+### Resolve the canonical primary workspace
 
-Resolve the canonical workspace root only from:
+A previous parent task worktree contains normal workspace markers and therefore
+must **not** be accepted as the canonical root merely because it looks like a
+workspace. Canonicalize through Git common-dir identity so sequential tasks never
+extend the previous task's worktree name.
 
-1. a valid existing `MODA_WORKSPACE_ROOT`;
-2. the current directory's parent chain; or
-3. the current Git repository's `--git-common-dir` parent chain.
-
-The third case deliberately supports launching from an existing parent task
-worktree or implementation worktree. Do not assume a fixed user home, checkout
-parent directory, `/Users/...`, `~/project`, or any other machine-specific path.
-Do not search the wider filesystem or guess a sibling checkout by name.
-
-Run the normal resolver first, replacing `<TASK_ID>`:
+Use this shell pattern, replacing `<TASK_ID>` and `<EXECUTOR>`:
 
 ```bash
 TASK_ID="<TASK_ID>"
+EXECUTOR="<EXECUTOR>"
 ROOT="${MODA_WORKSPACE_ROOT:-}"
 
 is_moda_workspace() {
@@ -115,326 +61,233 @@ is_moda_workspace() {
   [ -f "$1/.nvmrc" ] &&
   [ -f "$1/scripts/start-agent-task.py" ] &&
   [ -f "$1/docs/agent-task-execution-template.md" ] &&
-  [ -d "$1/.codex/agents" ]
+  [ -d "$1/.codex/agents" ] &&
+  [ -d "$1/.claude/agents" ]
 }
 
-if [ -n "$ROOT" ] && ! is_moda_workspace "$ROOT"; then
-  echo "MODA_TASK_ERROR: MODA_WORKSPACE_ROOT is not a valid Moda Interact workspace" >&2
-  exit 64
+canonicalize_moda_workspace() {
+  CANDIDATE="$1"
+  [ -n "$CANDIDATE" ] || return 1
+
+  COMMON_DIR="$(git -C "$CANDIDATE" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+  if [ -n "$COMMON_DIR" ]; then
+    PROBE="$COMMON_DIR"
+    while [ "$PROBE" != "/" ]; do
+      if is_moda_workspace "$PROBE"; then
+        (cd "$PROBE" && pwd -P)
+        return 0
+      fi
+      if [ "$(basename "$PROBE")" = ".git" ] && is_moda_workspace "$(dirname "$PROBE")"; then
+        (cd "$(dirname "$PROBE")" && pwd -P)
+        return 0
+      fi
+      PROBE="$(dirname "$PROBE")"
+    done
+  fi
+
+  if is_moda_workspace "$CANDIDATE"; then
+    (cd "$CANDIDATE" && pwd -P)
+    return 0
+  fi
+
+  return 1
+}
+
+# 1. Validate/canonicalize explicit MODA_WORKSPACE_ROOT if supplied.
+if [ -n "$ROOT" ]; then
+  ROOT="$(canonicalize_moda_workspace "$ROOT")" || {
+    echo "MODA_TASK_ERROR: MODA_WORKSPACE_ROOT is not a valid canonical Moda workspace" >&2
+    exit 64
+  }
 fi
 
+# 2. Walk the current directory's parent chain only to find a candidate, then
+#    canonicalize it through Git common-dir before accepting it.
 if [ -z "$ROOT" ]; then
   CANDIDATE="$PWD"
   while [ "$CANDIDATE" != "/" ]; do
     if is_moda_workspace "$CANDIDATE"; then
-      ROOT="$CANDIDATE"
-      break
+      ROOT="$(canonicalize_moda_workspace "$CANDIDATE")" || true
+      [ -n "$ROOT" ] && break
     fi
     CANDIDATE="$(dirname "$CANDIDATE")"
   done
 fi
 
+# 3. Launching from an implementation worktree may have no workspace markers in
+#    its parent chain. Use only that Git repository's common-dir parent chain to
+#    locate the canonical workspace; never search the wider filesystem.
 if [ -z "$ROOT" ]; then
-  GIT_COMMON_DIR="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
-  CANDIDATE="$GIT_COMMON_DIR"
-  while [ -n "$CANDIDATE" ] && [ "$CANDIDATE" != "/" ]; do
-    if is_moda_workspace "$CANDIDATE"; then
-      ROOT="$CANDIDATE"
-      break
+  COMMON_DIR="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+  PROBE="$COMMON_DIR"
+  while [ -n "$PROBE" ] && [ "$PROBE" != "/" ]; do
+    if is_moda_workspace "$PROBE"; then
+      ROOT="$(canonicalize_moda_workspace "$PROBE")" || true
+      [ -n "$ROOT" ] && break
     fi
-    CANDIDATE="$(dirname "$CANDIDATE")"
+    PROBE="$(dirname "$PROBE")"
   done
 fi
 
 if ! is_moda_workspace "$ROOT"; then
-  echo "MODA_TASK_ERROR: unable to resolve Moda Interact workspace root" >&2
+  echo "MODA_TASK_ERROR: unable to resolve canonical Moda Interact workspace root" >&2
   exit 64
 fi
 
-ROOT="$(cd "$ROOT" && pwd -P)"
 export MODA_WORKSPACE_ROOT="$ROOT"
-python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" "$TASK_ID" --json
+python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" \
+  "$TASK_ID" \
+  --prepare \
+  --executor "$EXECUTOR" \
+  --json
 ```
 
-### Task-file-not-found exception: materialisation
+The Python launcher independently canonicalizes its own workspace root through
+Git common-dir as a second safety boundary. Do not replace the returned
+`workspace_root`, `parent_worktree_path`, `implementation_worktree_path`,
+`repository_path` or `task_branch` with values derived from `$PWD`.
 
-Workspace-root failure or any resolver failure other than **task file not found**
-is a hard stop.
+## What `--prepare` owns
 
-If and only if the normal resolver reports that the task file does not exist:
+For a normal executable agent task the launcher performs, in one deterministic
+operation:
 
-1. immediately invoke:
+```text
+resolve canonical primary workspace
+-> resolve task route
+-> create/reuse parent task worktree
+-> fetch/prune + synchronize parent task branch
+-> read authoritative task from parent worktree
+-> verify task identity/status/execution_mode
+-> verify every explicit depends_on task is complete
+-> create/reuse implementation worktree
+-> fetch/prune + synchronize implementation task branch
+-> git submodule sync --recursive
+-> git submodule update --init --recursive
+-> verify recursive submodule commits
+-> re-fetch/re-read/re-gate parent task
+-> claim Attempt N
+-> commit/push durable parent claim
+-> return prepared execution packet + rendered prompt
+```
+
+The launcher never uses `git submodule update --remote`; implementation
+submodules must materialise at the exact commits recorded by the task branch.
+
+If any worktree mapping is inconsistent, the launcher stops with
+`MODA_WORKTREE_ISOLATION_ERROR` rather than switching/reusing another task's
+worktree. A task branch registered at another path is a hard failure.
+
+## Normal prepared result
+
+A successful result must contain:
+
+```text
+prepared_execution: true
+status: in_progress
+preparation.execution_state: claimed
+preparation.dependency_gate: passed
+preparation.implementation_worktree.submodules.status: ready
+preparation.claim.pushed: true
+```
+
+The returned `prompt` is the complete repository-agent execution handoff. The
+prepared result also preserves `execution_mode`, `completion_mode` and
+`task_materialized` so downstream tooling can verify the same lifecycle contract.
+Do not weaken or replace it.
+
+The prepared agent must **not** redo:
+
+- task discovery;
+- generic dependency discovery;
+- worktree creation/path inference;
+- start-of-attempt Git synchronization;
+- recursive submodule initialization merely as startup ritual;
+- task claim/attempt increment;
+- workspace doctor merely as startup ritual.
+
+It should proceed from task/context reads directly to source inspection,
+implementation and task-required validation.
+
+## Task-file-not-found / portable-definition exception
+
+If and only if `--prepare` reports that the task file does not exist after the
+canonical parent task worktree has been established/synchronized:
+
+1. run:
 
    ```bash
    python3 "$MODA_WORKSPACE_ROOT/scripts/start-agent-task.py" \
      "$TASK_ID" --route-only --json
    ```
 
-2. treat the route-only result as authoritative topology; for an
-   unmaterialised route, `execution_mode`/`completion_mode` may be `null` and must
-   not be guessed;
-3. if a matching portable architect task definition is supplied through
-   `--definition`, attachment, or current-session artifact, materialise it using
+2. treat the route-only result as authoritative topology;
+3. if a matching portable architect definition was supplied through
+   `--definition`, attachment or current-session artifact, materialise it under
+   the canonical parent `task/<TASK_ID>` branch using
    `docs/task-definition-materialization.md`;
-4. commit/push the materialised definition on the canonical parent
-   `task/<TASK_ID>` branch;
-5. rerun the normal resolver and continue only after it succeeds.
+4. commit/push that definition;
+5. rerun the normal `--prepare --executor ... --json` command;
+6. do not create the implementation worktree merely to materialise a definition.
 
-If no portable definition is available, STOP with:
+If no portable definition exists, stop with:
 
 ```text
 TASK_DEFINITION_NOT_MATERIALIZED
 ```
 
-and explain that `/moda-task` executes architect-defined tasks but does not invent
-an architecture task from the ID alone.
+Do not invent an architecture task from the ID alone.
 
-Do not fall back to broad task search, repository search, Git history, prompt
-search or model inference.
-
-## Portable-definition materialisation boundary
-
-When `/moda-task` materialises an external architect definition:
-
-- the architect may have created **no local branch/worktree at all**;
-- create/reuse only the canonical parent task worktree needed to publish the
-  definition first;
-- validate filename/frontmatter identity against the route-only output;
-- preserve its architectural scope/dependencies/status/modes;
-- do not manufacture `ready` from `pending`;
-- rerun the normal resolver after publication;
-- only then create/reuse the implementation worktree and enter agent execution.
-
-If the materialised task resolves to:
-
-```text
-execution_mode: developer
-```
-
-then `/moda-task` MUST NOT claim it. Direct execution to
-`/moda_developer_create <TASK_ID>`.
-
-## Resolver contract
-
-Read the returned JSON.
-
-The normal resolver output is authoritative for:
-
-- architecture;
-- domain;
-- task/task file;
-- logical `agent`;
-- `repository`;
-- canonical `workspace_root`;
-- `workspace_parent`;
-- `task_branch`;
-- `parent_worktree_path`;
-- `implementation_worktree_path`;
-- canonical repository source/reference `repository_path`;
-- `task_materialized` / `task_definition_state`;
-- current task status;
-- `execution_mode`;
-- `completion_mode`;
-- rendered `prompt`.
-
-Do not rediscover, recompute, weaken or override those values. In particular,
-do not infer task execution paths from `$PWD`. `repository_path` is the
-canonical repository source/reference checkout used to create or inspect Git
-worktree registrations; it is NOT the task implementation checkout. Actual
-implementation work must occur only at `implementation_worktree_path`.
-
-`prompt` is the complete execution instruction. Do not summarize, weaken or
-replace it.
-
-Legacy omission of `execution_mode` means `agent`. If the resolver returns:
-
-```text
-execution_mode: developer
-```
-
-this is not a normal repository-agent execution. Do not claim it through
-`/moda-task`. Direct the developer to `/moda_developer_create <TASK_ID>` when the
-task is Ready/inactive, or `/moda_developer_update <TASK_ID>` for an active/review
-developer cycle. The assigned agent may assist only when the developer explicitly
-requests developer-assistance mode under that policy.
+If the materialised task resolves to `execution_mode: developer`, `/moda-task`
+must not claim it. Use the developer flow documented in
+`docs/developer-task-workflow.md` (`/moda_developer_create` or
+`/moda_developer_update`).
 
 ## Handoff
 
-Successful resolution ends the launcher phase, not the task invocation.
-
-If the resolver returns a valid task route, the next required action is to
-enter the resolved logical-agent execution context using the resolver's
-authoritative `agent`, `repository` and rendered `prompt`.
-
-The following are valid reasons to STOP before task execution:
-
-- workspace-root resolution failed;
-- `start-agent-task.py` failed;
-- the resolved task is not executable after the explicit dependency gate;
-- the runtime genuinely cannot perform either named delegation or same-context
-  logical-agent adoption.
-
-The following are **not** valid reasons to STOP:
-
-- the resolver returned `status: ready`;
-- the resolver successfully identified the agent/repository/task file;
-- the launcher itself is prohibited from claiming during the pre-handoff phase;
-- no implementation has happened yet immediately after resolver execution.
-
-
-### Claude Code
-
-For task metadata, the canonical executor value is:
-
-```text
-claude
-```
-
-Invoke the named custom subagent from `.claude/agents` and pass `prompt`
-unchanged.
-
-If named delegation is unavailable but the runtime can continue in the current
-context, read the resolved generated agent definition and adopt that logical
-agent in the current context using `prompt` unchanged.
-
-Only report a delegation limitation and STOP when the runtime genuinely cannot
-perform either named delegation or same-context logical-agent adoption.
+After a successful prepared result, immediately enter the resolved logical-agent
+execution context using the returned `agent`, `repository` and `prompt`.
 
 ### Codex
 
-For task metadata, the canonical executor value is:
+Read `.codex/agents/<resolved-agent>.toml`, adopt that logical agent and execute
+the returned prepared prompt. Canonical task executor: `codex`.
 
-```text
-codex
-```
+### Claude Code
 
-Read the resolved logical-agent definition from:
-
-```text
-.codex/agents/<resolved-agent>.toml
-```
-
-Adopt that logical agent and the resolver's rendered `prompt` unchanged in the
-current execution context, then continue with eligibility verification, claim
-and execution.
-
-Do **not** stop after successful routing merely because the pre-handoff launcher
-phase itself is not allowed to claim the task.
+Use the corresponding named/generated agent under `.claude/agents/` and pass the
+prepared prompt unchanged. Canonical task executor: `claude`.
 
 ### GitHub Copilot Agent Mode
 
-For task metadata, the canonical executor value is:
+Read/adopt `.claude/agents/<resolved-agent>.agent.md` in the current Agent Mode
+context and continue with the prepared prompt. Canonical task executor: `copilot`.
+
+A successful prepared launch is not a terminal routing response. Continue through
+implementation/validation/review submission in the same `/moda-task` invocation.
+
+## Diagnostic tooling
+
+The workspace doctor remains available, but it is not part of launch. Run it only
+for an actual environment/dependency issue, relevant toolchain/configuration
+change, explicit task Validation requirement, explicit architect request, or
+behaviour materially contradicting `docs/development-baseline.md`.
+
+The same rule applies to baseline/Zod rediscovery: do not investigate healthy,
+unrelated baseline state at every task start.
+
+## Durable policies
+
+Prepared execution must remain consistent with:
 
 ```text
-copilot
+docs/agent-worktree-isolation-policy.md
+docs/agent-vcs-ownership-policy.md
+docs/developer-task-workflow.md
+docs/task-definition-materialization.md
 ```
 
-Do not use `github-copilot`, `github_copilot`, or another provider display
-label.
-
-Copilot does not use Claude's named-subagent mechanism.
-
-Use the resolver's `agent` and `repository` exactly, read the corresponding
-generated definition under `.claude/agents/`, then adopt `prompt` unchanged in
-the current Agent Mode context.
-
-This same-context adoption is the handoff. After adopting the resolved logical
-agent, continue with dependency verification, claim and execution. Do **not**
-finish the `/moda-task` invocation after merely reporting the resolver output.
-
-Before inspecting implementation source, the resolved repository-agent protocol
-MUST verify:
-
-```text
-status: ready
-assigned_agent: <resolved agent>
-all tasks explicitly listed in depends_on: complete
-```
-
-The dependency gate is limited to the current task's explicit `depends_on` list.
-Do not invent additional dependency gates from the parent architecture, indexes,
-`enables` lists, sibling tasks, transitive references, historical notes, or
-superseded task records.
-
-A task marked `superseded` elsewhere does not block the resolved task merely
-because it is mentioned. Treat a superseded task as relevant only when:
-
-1. it is still explicitly present in the resolved task's `depends_on` list, in
-   which case report coordination drift to `moda_architect`; or
-2. the resolved task's own implementation scope directly duplicates the
-   superseded capability, in which case report the concrete scope conflict.
-
-When reporting a conflict, identify the exact current-task field, contract or
-scope requirement that conflicts. Do not stop solely because a separate task is
-marked `superseded`.
-
-If the task is not executable, do not claim it, inspect implementation source,
-modify task state or implement anything. Report the blocking state/dependency
-and STOP.
-
-## Architect Review rework gate
-
-After the resolver identifies an executable `status: ready` task and BEFORE
-claiming or inspecting implementation source, read the assigned task file in
-full.
-
-If the task's existing YAML `attempt` is greater than `0`, or the task contains
-`## Architect Review`, you MUST:
-
-1. read through the complete latest Architect Review; do not stop at an arbitrary
-   line limit before the section;
-2. determine the latest Architect Review outcome;
-3. when it is `Changes Requested`, treat the complete latest correction list as
-   mandatory execution scope for this attempt;
-4. create an explicit correction checklist and ensure every item is implemented
-   or returned as blocked with concrete conflict evidence;
-5. never substitute "existing tests pass" or "no source changes are needed" for
-   an Architect Review item that explicitly requires changed behaviour/source/
-   tests;
-6. ensure the Completion Report maps every requested correction to changed files
-   and focused validation.
-
-Task identity consistency is a hard gate. The resolver task ID, claimed task ID,
-logical-agent handoff, progress/TODO labels, Completion Report and final response
-must all refer to the same task. A stale progress label naming another task is
-not harmless metadata: stop, clear/repair that stale execution state, and only
-continue when the identity is consistent.
-
-Repository agents may not edit Architect Review or self-accept the task.
-
-Only after eligibility is verified and the task is claimed may normal
-implementation-repository inspection begin.
-
-Required flow:
-
-```text
-TASK_ID
-  |
-  v
-start-agent-task.py
-  |
-  v
-authoritative routing + prompt
-  |
-  v
-resolved logical agent
-  |
-  v
-explicit dependency verification
-  |
-  +--> not executable -> STOP
-  |
-  v
-claim -> inspect -> implement -> validate -> review
-```
-
-A successful `status: ready` resolver result must proceed through this flow in
-the same `/moda-task` invocation. A response such as:
-
-```text
-No claim, implementation, or task-state modification was performed.
-```
-
-is only appropriate when execution is actually blocked or handoff is genuinely
-unavailable. It is not an acceptable terminal response after successful routing
-to an executable task.
+Those policies preserve mirrored branches, dedicated physical worktrees,
+repository ownership, no-main-merge authority and architect review. The prepared
+launcher changes **who performs deterministic startup work**, not those safety
+invariants.

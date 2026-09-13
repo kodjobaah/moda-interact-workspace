@@ -82,9 +82,13 @@ contract.
 
 ## Canonical task topology
 
-The launcher resolves the canonical workspace from the actual checkout and derives
-all paths. Never assume another developer's `/Users/...`, `~/project`, `/home/...`
-or other directory layout.
+The launcher resolves the canonical **primary** workspace from Git repository
+identity and derives all task paths from that one root. A previous parent task
+worktree may contain all normal workspace marker files, but it must never become
+the base for the next task. This makes sequential launches location-independent:
+launching TASK-B while the shell is still inside TASK-A still produces sibling
+TASK-A/TASK-B worktrees rather than extending TASK-A's path. Never assume another
+developer's `/Users/...`, `~/project`, `/home/...` or other directory layout.
 
 Every executable task eventually uses:
 
@@ -133,9 +137,17 @@ A clean shared checkout is not a substitute for a dedicated task worktree.
 
 Use this for `execution_mode: agent`.
 
-The command resolves/materialises the task when necessary, creates or reuses the
-canonical task worktrees, synchronises branches, checks eligibility, claims the
-next attempt and hands execution to the assigned logical repository agent.
+The command resolves/materialises the task when necessary and, for a normal
+materialised agent task, deterministically prepares execution before the
+repository model starts: it creates/reuses the canonical task worktrees,
+synchronises both branches, checks the explicit dependency gate, recursively
+materialises implementation submodules at their recorded commits, re-gates and
+claims the next attempt, pushes the durable claim, then hands a preparation
+packet to the assigned logical repository agent.
+
+The repository model does not repeat that startup discovery/preparation. It
+starts from the task/context reads and implementation source. Workspace doctor
+is diagnostic tooling, not part of this normal launch path.
 
 The repository agent implements, validates, updates the Completion Report, commits
 and pushes task-owned task branches, moves the task to `review`, then stops for the

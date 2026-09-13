@@ -300,11 +300,50 @@ parent `main` before execution can begin.
 
 ## Claim protocol
 
-The remote parent task branch is part of the durable claim mechanism. Physical
-branch establishment and synchronization MUST follow
+The remote parent task branch remains the durable claim mechanism. Physical
+branch establishment and synchronization follow
 `docs/agent-worktree-isolation-policy.md`.
 
-Use the launcher-resolved values rather than substituting a current/shared
+### Prepared `/moda-task` claim path
+
+For a normal `/moda-task <TASK_ID>` agent execution, the deterministic launcher
+owns the mechanical pre-implementation sequence. Before handing control to the
+repository agent it must:
+
+1. resolve the canonical **primary** workspace root through Git common-dir
+   identity, even when invoked from a previous task worktree;
+2. derive the parent/implementation task paths solely from that root and the new
+   task ID;
+3. establish/reuse and synchronize the parent task worktree;
+4. read the authoritative task from that synchronized parent worktree;
+5. verify `status: ready`, `execution_mode: agent`, assigned agent and every
+   explicit `depends_on` task;
+6. establish/reuse and synchronize the implementation task worktree;
+7. run recursive implementation-submodule preparation required by
+   `docs/agent-worktree-isolation-policy.md`;
+8. re-fetch/re-read/re-gate the parent task immediately before claim;
+9. atomically update the task YAML to `in_progress`, normalized executor,
+   `claimed_at`, incremented `attempt` and `updated`;
+10. commit only the task file and push `origin/task/<TASK_ID>`;
+11. return a prepared execution packet containing worktree, synchronization,
+    dependency, submodule and durable-claim evidence.
+
+Only after step 10 succeeds may the implementation agent start source work. If
+recursive submodule preparation fails, the task is not claimed. If the durable
+claim push loses a race/fails, the launcher must not start the agent.
+
+A repository agent receiving `prepared_execution: true` with a matching task ID
+and durable claim **does not claim again** and does not require the task to still
+say `ready`; the expected state is already `in_progress` for the packet's
+executor. It must not repeat worktree creation, dependency discovery,
+start-of-attempt synchronization or recursive submodule initialization merely as
+startup ritual.
+
+### Unprepared/manual fallback
+
+The older model-driven claim steps below apply only to a deliberately
+unprepared/manual execution path. They are not the normal `/moda-task` path.
+Such a path must still use launcher-resolved values rather than a current/shared
 checkout:
 
 ```text
@@ -315,40 +354,9 @@ IMPLEMENTATION_TASK_WORKTREE
 REPOSITORY_PATH
 ```
 
-Before claiming, establish or restore the canonical parent task worktree. A
-missing directory is the normal first-claim case and must be created. An
-existing correct task worktree is reused. An inconsistent mapping is
-`MODA_WORKTREE_ISOLATION_ERROR` and must not be repaired by switching the shared
-workspace checkout.
-
-Synchronize the parent task branch before reading/claiming:
-
-```text
-fetch origin --prune
-fast-forward from origin/task/<TASK_ID> when present
-merge current origin/main INTO task/<TASK_ID> when needed
-```
-
-Do not rebase, reset or force published task history merely to synchronize.
-
-Read the task file from the canonical parent task worktree. If it contains an
-active claim by another executor, do not claim it.
-
-Then set the task YAML to `in_progress`, populate executor/claimed_at/attempt,
-commit **only the task file** in the parent task worktree, and push the parent
-task branch promptly. Agent execution uses a normalized runtime executor;
-developer execution uses exactly `executor: developer`:
-
-```bash
-git -C <PARENT_TASK_WORKTREE> add <TASK_FILE>
-git -C <PARENT_TASK_WORKTREE> diff --cached -- <TASK_FILE>
-git -C <PARENT_TASK_WORKTREE> commit -m "task(<TASK_ID>): claim task"
-git -C <PARENT_TASK_WORKTREE> push -u origin "task/<TASK_ID>"
-```
-
-That pushed parent branch is the durable remote claim.
-
-Only after the claim is durable should implementation begin.
+Establish/reuse the canonical parent task worktree, synchronize it, read/re-gate
+the task, then set `in_progress`/executor/claimed_at/attempt, commit only the task
+file and push the parent task branch. Do not overwrite another active claim.
 
 ## Implementation task worktree
 
@@ -357,23 +365,14 @@ worktree. `<REPOSITORY_PATH>` is the canonical repository source/reference
 checkout used to create/inspect Git worktrees; it is not the implementation
 execution checkout.
 
-A missing implementation task worktree is normal on first claim and must be
-created from the task branch according to
-`docs/agent-worktree-isolation-policy.md`. Existing correct task worktrees are
-reused for later attempts.
+For prepared `/moda-task`, the implementation worktree has already been
+created/reused, synchronized and recursively submodule-initialized before the
+agent starts. Do not create a sibling/replacement path and do not switch a
+shared/default implementation checkout onto the task branch.
 
-Before implementation, synchronize it:
-
-```text
-fetch origin --prune
-fast-forward from origin/task/<TASK_ID> when present
-merge current origin/main INTO task/<TASK_ID> when needed
-```
-
-Do not create the task branch from a sibling task branch. Do not use `git switch`
-in the shared/default implementation checkout as a substitute for a dedicated
-worktree. If the task branch is registered at a non-canonical task path, STOP
-with `MODA_WORKTREE_ISOLATION_ERROR`.
+If the task branch is registered at a non-canonical task path, stop with
+`MODA_WORKTREE_ISOLATION_ERROR`. Never derive the new task path from a previous
+task's worktree basename.
 
 ## Implementation commit authority
 
