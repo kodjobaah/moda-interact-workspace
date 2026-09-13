@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 85
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
 - ARCH-010-ADMIN-006
 - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-ADMIN-005: Manage promotion catalogue, close campaigns and reopen by expiry only
