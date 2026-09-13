@@ -9,9 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-13T20:58:37Z
+status: review
+executor: null
+claimed_at: null
 priority: 43
 attempt: 4
 depends_on:
@@ -204,7 +204,7 @@ STOP if:
 ## Completion Report
 
 ### Status
-Implementation complete; returned to architect review after Attempt 3 validation.
+Implementation complete; returned to architect review after Attempt 4 validation. Downstream tasks remain blocked pending architect review.
 
 ### Files Changed
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
@@ -213,33 +213,87 @@ Implementation complete; returned to architect review after Attempt 3 validation
 - `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
-- Added fail-closed initial paid activation after Partner confirms the matching active `PAID_METERED` plan, exact billing cycle, configured usage meter, and safe included allowance.
-- Added idempotent canonical billing-period creation/replay with plan snapshots, included-credit counter creation, conflict detection, and lifetime Free grant creation only when absent.
-- Updated subscription state and onboarding in transaction order, persisted the shared drain-window schedule, and published the deterministic post-commit reconciliation job.
-- Reused the same paid activation transaction from rotating reconciliation without a duplicate Partner call.
-- Added direct rotating-path evidence for canonical activation and later activation after unsupported trial observation.
-- Revalidated the durable pending Shopify handle and the current BillingPlan inside the activation transaction, including active status, exact handle, usage meter, and allowance authority.
-- Made unsupported paid-trial recovery safe when `nextReconcileAt` is null and preserved nullable schedule comparison semantics.
-- Added stale queued-job coverage after unsupported-trial recovery clears the durable schedule.
-- Added focused coverage for exact handle mismatch, transactional plan mutations, null/negative/non-integer allowances, replay mutation preservation, and rotating reconciliation compatibility.
+- Added a queued-path `PENDING_PLAN_HANDLE_MISMATCH` guard for same-local-plan Shopify handle drift before `applyOtherCurrentPlan`, preserving the pending target and bounded retry.
+- Added a rotating-path fail-closed guard for the same drift, preventing legacy BillingPeriod projection and preserving durable pending intent.
+- Added permanent evidence for the real queued drift state, rotating drift, CLOSED exact periods, incompatible period snapshots, conflicting included-credit grants, and successful Paid activation queue failure followed by `reconstruct()` repair.
+- Preserved all Attempt 1-3 production corrections: transactional plan revalidation, nullable unsupported-trial recovery, canonical rotating activation, exact cycle/meter/allowance validation, and replay usage preservation.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- Focused reconciliation suites: passed, 2 files / 81 tests.
+- Focused reconciliation suites: passed, 2 files / 91 tests.
 - `npm run test:integration`: passed, 2 files / 3 tests.
 - `git diff --check`: passed.
-- `npm run test:unit`: blocked by 10 unrelated existing failures in recovery-credit purchase and observability-startup tests.
-- `npm run build`: blocked by existing generated-client/type mismatches in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no errors remain in the touched billing services.
+- `npm run test:unit`: 53 files passed, 2 failed; 709 tests passed, 10 failed. All failures are the documented unrelated baseline in recovery-credit purchase and observability-startup tests.
+- `npm run build`: blocked by 15 existing generated-client/type errors in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no errors were reported in the touched billing services.
+- Focused lint was unavailable because this repository does not declare/install ESLint; npm opened an install prompt, which was stopped without changing dependencies.
 - Database submodule verified at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+
+### Attempt 4 Evidence Map
+
+- Same-local-plan queued handle drift: `does not activate when the provider handle differs from the durable pending handle`.
+- Same-local-plan rotating handle drift: `leaves a same-local-plan handle drift pending during rotation`.
+- Rotating canonical activation: `uses canonical paid activation for a pending initial target during rotation`.
+- Unsupported trial with null schedule: `re-observes an unsupported paid trial with a null schedule and later activates its exact cycle`.
+- CLOSED period: `fails closed for a closed exact paid billing period`.
+- Incompatible period: `fails closed for an incompatible paid period %s` table covering subscription, plan, handle, name, kind, and grant snapshots.
+- Conflicting included counter: `fails closed for a conflicting included-credit counter grant`.
+- Paid enqueue failure plus reconstruction: `repairs a missing Paid activation job after post-commit queue failure`.
+
+### Workflow Evidence
+
+Physical worktree isolation:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-003`.
+- Parent branch: `task/ARCH-010-BACKGROUND-003`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-003`.
+- Implementation branch: `task/ARCH-010-BACKGROUND-003`.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+
+Start-of-attempt synchronization:
+
+- Parent remote task branch fast-forwarded: not-needed.
+- Parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed.
+- Implementation `origin/main` incorporated: already-current.
+
+Recursive implementation submodules:
+
+- `git submodule sync --recursive`: passed.
+- `git submodule update --init --recursive`: passed.
+- Database gitlink expected and HEAD: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Database initialized: yes.
+- Database gitlink staged/changed: no.
+
+Task history:
+
+- Attempt-1 claim `f536ff84f726654d6520ceac93aae1d5038edfc3`: ancestor of parent HEAD, yes.
+- Attempt-1 implementation `c6d5c0a66de67cded04d8f60c2d268644286bb13`: ancestor of implementation HEAD, yes.
+- Attempt-1 report `082d6de3a1b35c735571a4c7a0238fb0e104eb42`: ancestor of parent HEAD, yes.
+- Attempt-2 claim `396d651734470326c6c5048af198d911281c7684`: ancestor of parent HEAD, yes.
+- Attempt-2 implementation `3172334ae2400bf8de95422d7e5630320bba0d55`: ancestor of implementation HEAD, yes.
+- Attempt-2 report `16ca4212344ab01a3552a341c3d54edbc59252cf`: ancestor of parent HEAD, yes.
+- Attempt-3 claim `f9a393135cf701091750784588b0d34394765b2a`: ancestor of parent HEAD, yes.
+- Attempt-3 evidence `110b6f5f4a92d2f6d01c206182da0444d912af8a`: ancestor of implementation HEAD, yes.
+- Attempt-3 report `87c5064f8cc62ac73b79d85cb33e5c6e2526429c`: ancestor of parent HEAD, yes.
+- Attempt-4 claim `c1d7ead3941dab01a27c636d9969822f0d849655`: pushed by launcher.
+- Attempt-4 implementation `fbd24668b0a32ee085f8d02c219fd7d505a68a1e`: ancestor of implementation HEAD, yes; pushed.
+
+Handoff:
+
+- Parent worktree clean before report commit: yes.
+- Implementation worktree clean after implementation commit: yes.
 
 ### Git / VCS
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-003`.
 - Implementation branch: `task/ARCH-010-BACKGROUND-003`.
-- Implementation commits: `c6d5c0a66de67cded04d8f60c2d268644286bb13` (`feat(background): activate first paid subscriptions`), `3172334` (`fix(background): harden paid activation revalidation`), and `110b6f5` (`test(ARCH-010-BACKGROUND-003): prove rotating paid activation recovery`).
+- Implementation commits: `c6d5c0a66de67cded04d8f60c2d268644286bb13` (`feat(background): activate first paid subscriptions`), `3172334` (`fix(background): harden paid activation revalidation`), `110b6f5` (`test(ARCH-010-BACKGROUND-003): prove rotating paid activation recovery`), and `fbd24668b0a32ee085f8d02c219fd7d505a68a1e` (`fix(ARCH-010-BACKGROUND-003): guard paid activation handle drift`), pushed.
 - Parent task-report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-003`.
 - Database gitlink remains `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database commit or schema change was made.
-- Attempt 3 claim cleared; parent report commit/push follows. No merge to `main` performed.
+- Attempt 4 claim is cleared in this report; parent report commit/push follows. No merge to `main` performed.
 
 ### Architect Review
 Requested. Focused task behavior and integration validation pass; unrelated full-suite and build baseline blockers are documented above.
