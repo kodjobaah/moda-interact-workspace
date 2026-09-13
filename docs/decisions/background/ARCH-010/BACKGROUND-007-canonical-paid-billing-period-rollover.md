@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 47
 executor: null
 claimed_at: null
@@ -31,7 +31,7 @@ enables:
 - ARCH-010-SHOPIFY-007
 - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-BACKGROUND-007: Canonical same-plan App Pricing BillingPeriod rollover for Paid and Free

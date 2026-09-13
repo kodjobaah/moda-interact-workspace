@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 53
-executor: copilot
-claimed_at: '2026-09-13T14:19:21Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
@@ -1303,3 +1303,97 @@ Attempt 3 parent claim commit `ba90d59` is pushed to `origin/task/ARCH-010-BACKG
 
 Requested. Self-acceptance is not performed.
 
+## Attempt 3 — Architect Acceptance
+
+### Review Status
+
+**Accepted — Complete**
+
+`ARCH-010-BACKGROUND-009` is architect-accepted at **Attempt 3**.
+
+The accepted production implementation remains:
+
+```text
+331290096baecf1ef832bc6b0793dc623f80711b
+```
+
+During architect review, the remaining gap was permanent regression evidence rather
+than a production correctness defect. The developer and architect therefore added
+the missing tests directly on the same implementation task branch. The final
+architect-directed evidence commit is:
+
+```text
+29478e94b8fc91bc4671a57c7af656ea20f1a66e
+```
+
+GitHub comparison confirms `29478e94...` is exactly one commit ahead of
+`331290096...`, with no production-source changes. It changes only:
+
+```text
+tests/unit/domain/recovery-capacity-resume.test.ts
+tests/unit/runtime/recovery-entrypoint.capacity-resume.test.ts
+tests/unit/services/checkout-recovery.capacity-resume.test.ts
+tests/unit/services/order-recovery-correlation.test.ts
+tests/unit/services/recovery-capacity-resume.service.test.ts
+tests/unit/services/recovery-credit-purchase.resume-hint.test.ts
+```
+
+This evidence-only follow-up does **not** create Attempt 4 and does not rewrite the
+Attempt 3 Completion Report history.
+
+### Final architect validation
+
+The canonical BACKGROUND-009 implementation worktree was validated at
+`29478e94b8fc91bc4671a57c7af656ea20f1a66e` with a clean working tree.
+
+```text
+Prisma validate:                                   passed
+Prisma generate:                                   passed
+BG8 four-suite preservation gate:                  112/112 passed
+BG8 matured-candidate pre-provider boundary:       1/1 passed
+BG8 ambiguous pending-intent boundary:             1/1 passed
+BG9 permanent evidence gate:                       104/104 passed
+Integration suite:                                 3/3 passed
+git diff --check:                                  passed
+```
+
+The permanent evidence now covers checkout-resume guards and replay, checkout lock
+identity, fresh provider revalidation, retryable lookup failures, terminal block
+clearing, successful re-entry, first-block timestamp preservation, MESSAGE_SENT and
+order-completion clearing, purchased-credit post-commit resume hints, queue-failure
+isolation, repair payload/bounds, deterministic continuation job identity, startup
+repair, five-minute periodic repair, worker/telemetry registration, and shutdown
+cleanup.
+
+Repository-wide non-green evidence remains the same accepted unrelated baseline:
+
+```text
+npm run test:unit:
+  10 baseline failures
+  - 8 purchased-credit reconciliation / Prisma-client drift
+  - 2 pre-existing runtime observability assertions
+
+npx tsc --noEmit:
+  15 existing diagnostics in purchased-recovery-reservation.service.ts
+  and recovery-credit-purchase.service.ts
+
+npm run build:
+  blocked by the same existing Prisma/client drift
+```
+
+No failure originates from a file changed by the architect-directed evidence commit,
+and no unrelated production source was modified to silence the baseline.
+
+### Dependency release
+
+`ARCH-010-BACKGROUND-007` is now **Ready** because all of its dependencies are
+Complete after this acceptance.
+
+`ARCH-010-BACKGROUND-012` remains Pending because it still depends on
+`ARCH-010-BACKGROUND-007` and `ARCH-010-BACKGROUND-010`.
+
+`ARCH-010-SHOPIFY-008` remains Pending because `ARCH-010-SHOPIFY-009` and
+`ARCH-010-SHOPIFY-012` are still gating dependencies.
+
+`ARCH-010-SYSTEM-TEST-001` remains terminal/manual-gated and is not started by this
+acceptance.
