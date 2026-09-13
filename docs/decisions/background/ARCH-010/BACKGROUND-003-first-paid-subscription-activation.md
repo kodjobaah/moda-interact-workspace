@@ -9,9 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-13T20:34:28Z
+status: review
+executor: null
+claimed_at: null
 priority: 43
 attempt: 3
 depends_on:
@@ -204,41 +204,45 @@ STOP if:
 ## Completion Report
 
 ### Status
-Implementation complete; returned to review.
+Implementation complete; returned to architect review after Attempt 3 validation.
 
 ### Files Changed
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+- `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
 - Added fail-closed initial paid activation after Partner confirms the matching active `PAID_METERED` plan, exact billing cycle, configured usage meter, and safe included allowance.
 - Added idempotent canonical billing-period creation/replay with plan snapshots, included-credit counter creation, conflict detection, and lifetime Free grant creation only when absent.
 - Updated subscription state and onboarding in transaction order, persisted the shared drain-window schedule, and published the deterministic post-commit reconciliation job.
 - Reused the same paid activation transaction from rotating reconciliation without a duplicate Partner call.
+- Added direct rotating-path evidence for canonical activation and later activation after unsupported trial observation.
 - Revalidated the durable pending Shopify handle and the current BillingPlan inside the activation transaction, including active status, exact handle, usage meter, and allowance authority.
 - Made unsupported paid-trial recovery safe when `nextReconcileAt` is null and preserved nullable schedule comparison semantics.
+- Added stale queued-job coverage after unsupported-trial recovery clears the durable schedule.
 - Added focused coverage for exact handle mismatch, transactional plan mutations, null/negative/non-integer allowances, replay mutation preservation, and rotating reconciliation compatibility.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- Focused reconciliation suites: passed, 2 files / 78 tests.
+- Focused reconciliation suites: passed, 2 files / 81 tests.
+- `npm run test:integration`: passed, 2 files / 3 tests.
 - `git diff --check`: passed.
 - `npm run test:unit`: blocked by 10 unrelated existing failures in recovery-credit purchase and observability-startup tests.
 - `npm run build`: blocked by existing generated-client/type mismatches in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no errors remain in the touched billing services.
-- No integration run: full unit/build validation is currently blocked by the unrelated failures above.
+- Database submodule verified at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 
 ### Git / VCS
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-003`.
 - Implementation branch: `task/ARCH-010-BACKGROUND-003`.
-- Implementation commits: `c6d5c0a66de67cded04d8f60c2d268644286bb13` (`feat(background): activate first paid subscriptions`) and `3172334` (`fix(background): harden paid activation revalidation`), pushed to origin.
+- Implementation commits: `c6d5c0a66de67cded04d8f60c2d268644286bb13` (`feat(background): activate first paid subscriptions`), `3172334` (`fix(background): harden paid activation revalidation`), and `110b6f5` (`test(ARCH-010-BACKGROUND-003): prove rotating paid activation recovery`).
 - Parent task-report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-003`.
 - Database gitlink remains `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database commit or schema change was made.
-- Attempt 2 claim cleared; parent report commit/push follows. No merge to `main` performed.
+- Attempt 3 claim cleared; parent report commit/push follows. No merge to `main` performed.
 
 ### Architect Review
-Pending.
+Requested. Focused task behavior and integration validation pass; unrelated full-suite and build baseline blockers are documented above.
 
 ## Architect Review — Attempt 1
 
