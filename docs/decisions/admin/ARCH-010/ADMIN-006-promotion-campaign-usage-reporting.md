@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 86
 executor: null
 claimed_at: null
@@ -379,4 +379,140 @@ push both mirrored `task/ARCH-010-ADMIN-006` branches, return control to
 `moda_architect`, and STOP.
 
 Do not start `ARCH-010-SYSTEM-TEST-003` or any adjacent Admin task.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted.
+
+### Implementation reviewed
+
+```text
+implementation repository: moda-interact-admin
+implementation commit: b0332e51f95eaa6072bc482db84dcc01489ecf1d
+parent Completion Report commit: bbe6647975b0dccf8d4f50ce424e045786d1a41b
+attempt reviewed: 2
+```
+
+Attempt 2 satisfies the bounded Changes Requested contract from Attempt 1.
+The implementation remains within ADMIN-006 scope and preserves the already
+accepted campaign accounting/security design.
+
+The architect verified that the report now visibly presents the complete minimum
+merchant-history projection required by this task:
+
+```text
+firstSelectedAt
+lastSelectedAt
+selectionCount
+quantityGranted
+reserved
+committed
+remainingAllocation
+firstUsedAt
+lastUsedAt
+exhaustedAt / status
+currentlySelected
+```
+
+Nullable first/last selection/use timestamps use the deterministic `-` placeholder.
+The status presentation distinguishes exhausted, currently selected and no-longer-current
+grants without adding a mutation path.
+
+Pagination is now operable from the server-rendered report. `Previous` is emitted
+only when `report.page > 1`; `Next` is emitted only when
+`report.page < report.totalPages`; both use normal Next `Link` navigation and
+preserve the normalized status filter plus a non-empty merchant search. The report
+remains server-side and `PROMOTION_REPORT_PAGE_SIZE` remains exactly 25.
+
+The new pure production seam:
+
+```text
+src/lib/admin/promotion-report-model.ts
+```
+
+is imported by `promotion-report.ts` and owns the page/search normalization and
+grant-to-row projection. The unit tests execute those production helpers directly;
+they no longer rely on source-text matching for the accounting/history semantics.
+
+The permanent behavioural tests prove:
+
+```text
+- selected-but-unused is distinct from used;
+- first/last selection history is preserved;
+- first/last use history is preserved independently;
+- remaining = max(0, quantity - reserved - committed);
+- reselection with selectionCount > 1 preserves one original grant allocation;
+- exhaustion timestamp is preserved;
+- currentlySelected is derived only from the current selection relation;
+- invalid/fractional/non-finite pages normalize to page 1;
+- positive integer pages are preserved;
+- merchant search is trimmed and truncated to 255 characters.
+```
+
+Security/presentation evidence continues to prove SUPER_ADMIN gating, bounded
+server-side pagination, safe shop ID/domain search, read-only report behaviour,
+last-selection/last-use presentation, Previous/Next navigation and preservation of
+status/search query state. No Prisma create/update/upsert/delete path was introduced
+by ADMIN-006.
+
+### Validation Reviewed
+
+The architect independently reran against the uploaded Attempt-2 snapshot:
+
+```text
+node --experimental-strip-types --test \
+  tests/unit/promotion-report.test.ts \
+  tests/security/admin-promotions.test.mjs
+
+20 tests
+20 passed
+0 failed
+```
+
+The Completion Report additionally records:
+
+```text
+npm test: 171/171 passed
+npm run build: passed
+npm run lint: passed with only the two documented pre-existing queue-monitor warnings
+git diff --check: passed
+database submodule: unchanged at 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+```
+
+The reported launcher evidence records the canonical isolated parent and
+implementation worktrees, synchronized mirrored `task/ARCH-010-ADMIN-006`
+branches and recursively materialized database submodule. No shared/default or
+other-task worktree execution is reported.
+
+### Architecture Conformance
+
+Conformant.
+
+`PromotionalCreditGrant(campaignId, shopId)` remains the campaign merchant-history
+and accounting authority. `MerchantPromotionSelection` is used only to derive
+current selection. Campaign-wide summary counts remain read-only. The task does
+not alter campaign lifecycle, grant persistence, selection persistence, the Prisma
+schema, another repository or the promotion-consumption architecture.
+
+### Architect Decision
+
+**Accepted — Attempt 2.**
+
+Because `completion_mode: automatic`, the task is now:
+
+```text
+status: complete
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+### Dependency reconciliation
+
+`ARCH-010-SYSTEM-TEST-003` remains `pending / manual-gated`. ADMIN-006 is now a
+satisfied dependency, but SYSTEM-TEST-003 still has multiple incomplete
+implementation dependencies. Do not claim or start it solely because ADMIN-006 is
+Complete.
 
