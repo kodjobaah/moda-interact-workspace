@@ -246,3 +246,5 @@ For every Ready task, the repository agent must:
 7. return to review and STOP after the task's validation/completion report.
 
 If a clean-baseline symbol is missing, do not recreate a legacy alias locally. Return the contract gap to the architect.
+
+`BACKGROUND-019` remains Ready for Attempt 5 after a test-only review. The earlier instruction to commit the DATABASE-013 submodule gitlink as part of BG19 is rescinded; the accepted database checkout may be materialized locally for validation but the parent gitlink remains unchanged. When BG19 is architect-accepted Complete, re-evaluate its downstream graph: `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` are expected to become Ready if their other dependencies remain Complete.
