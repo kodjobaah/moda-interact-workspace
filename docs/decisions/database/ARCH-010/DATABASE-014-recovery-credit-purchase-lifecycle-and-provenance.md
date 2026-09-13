@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 5
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: '2026-09-13T11:26:59Z'
+attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
 enables:
@@ -389,19 +389,115 @@ STOP and return evidence to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Complete.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql`
+- `moda-interact-database/scripts/validate-first-production-baseline.mjs`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Replaced the development purchase status enum with the canonical `REQUESTED`, `ACTIVE`, `COMPLETED`, `WITHDRAWN`, and `REFUNDED` lifecycle.
+- Replaced per-purchase legacy quantity counters with `currentAmount` and `reservedAmount`, retaining aggregate `ShopEntitlementCounter.refundingQuantity`.
+- Added restrictive billing-period linkage and immutable provider subscription, usage, valuation, amount, currency, and price provenance fields.
+- Replaced arbitrary refund quantity fields with request-time amount snapshots and provider settlement fields.
+- Added lifecycle/amount checks, partial unique refund indexes, migration foreign keys, validator coverage, and regenerated the ERD.
+- Attempt 2 added the exact cross-merchant refund queue index, the purchase-grant balance upper bound, confirmed valuation checks for every post-REQUESTED state, required refund provenance snapshots, and provider settlement precision without a fixed two-decimal annotation.
 
 ### Validation Results
-Populate during implementation.
+- `npm run prisma:validate` passed.
+- `npm run prisma:generate` passed.
+- `npm run test:first-production-baseline` passed.
+- `npm run erd:puml` passed.
+- `git diff --check` passed.
+- The baseline migration remains clean: no `UPDATE`, `INSERT INTO`, or `DELETE FROM` statements.
+- `npm ci` installed the lockfile-pinned dependencies in the isolated worktree; the install reported existing npm audit warnings that did not affect validation.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Task branch: `task/ARCH-010-DATABASE-014`
 
-### Architect Review
-Pending.
+Attempt 2 implementation publication:
+  implementation repository: `moda-interact-database`
+  implementation commit: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+  remote branch: `origin/task/ARCH-010-DATABASE-014`
+  pushed: yes
+
+Attempt 2 originally executed from a DATABASE-014 worktree incorrectly rooted under the ADMIN-010 task-worktree lineage. Architect review therefore required canonical-worktree remediation without further source changes.
+
+Post-review canonical remediation performed by the developer:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-014`
+  parent branch: `task/ARCH-010-DATABASE-014`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-014`
+  implementation branch: `task/ARCH-010-DATABASE-014`
+  canonical implementation worktree fast-forwarded from `cd8dc21` to `abee18e`
+  implementation HEAD: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+  remote task HEAD: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+  implementation source changes made during remediation: no
+
+Canonical-worktree revalidation:
+  `npm run prisma:validate`: passed
+  `npm run prisma:generate`: passed
+  `npm run test:first-production-baseline`: passed
+  `npm run erd:puml`: passed
+  regenerated ERD differed from committed `abee18e` output only by whitespace (`git diff --ignore-all-space --exit-code` returned 0)
+  committed ERD restored from `HEAD` after the generator-only whitespace drift check
+  `git diff --check`: passed
+  final implementation HEAD/remote identity: passed
+
+The terminal recorder created an unrelated untracked `typescript` transcript during evidence capture. This is not task implementation state and must be removed from the worktree before final developer integration.
+
+Merged to implementation main: no
+Merged to workspace main: no
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 2 is architect-accepted after canonical-worktree remediation. The database implementation itself was verified directly at pushed commit `abee18e8c55b7a79f8234490fa4df66d3d228f0c`; no additional source-code correction was required after Attempt 2.
+
+The accepted implementation includes:
+
+- exact five-state `RecoveryCreditPurchase` lifecycle;
+- `currentAmount <= creditsGranted` database enforcement;
+- confirmed valuation integrity for every non-`REQUESTED` purchase state;
+- required immutable refund purchase-value snapshots;
+- status-leading Admin refund queue index;
+- provider settlement precision without the obsolete fixed `DECIMAL(20,2)` assumption;
+- baseline validator coverage for the corrected invariants;
+- regenerated ERD;
+- no second production migration and no compatibility schema.
+
+The original Attempt 2 worktree lineage was non-conformant because it was rooted beneath the ADMIN-010 task worktree. The developer subsequently restored the canonical DATABASE-014 implementation worktree, fast-forwarded it to the already-pushed accepted commit `abee18e`, and reran the required validation there. This remediation required no implementation commit.
+
+The ERD generator produced whitespace-only local drift during the canonical revalidation. `git diff --ignore-all-space --exit-code` returned 0; the committed generated ERD from `abee18e` was restored and `git diff --check` then passed. This does not change the accepted implementation semantics.
+
+### Reviewed Files
+
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql`
+- `moda-interact-database/scripts/validate-first-production-baseline.mjs`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
+- `docs/decisions/database/ARCH-010/DATABASE-014-recovery-credit-purchase-lifecycle-and-provenance.md`
+
+### Validation Reviewed
+
+- `npm run prisma:validate`: passed from canonical DATABASE-014 implementation worktree.
+- `npm run prisma:generate`: passed from canonical DATABASE-014 implementation worktree.
+- `npm run test:first-production-baseline`: passed from canonical DATABASE-014 implementation worktree.
+- `npm run erd:puml`: passed; local regeneration drift proved whitespace-only.
+- `git diff --check`: passed after restoring the committed generated ERD.
+- Local implementation HEAD and `origin/task/ARCH-010-DATABASE-014` both resolve to `abee18e8c55b7a79f8234490fa4df66d3d228f0c`.
+
+### Architecture Conformance
+
+Accepted. The implementation conforms to the ARCH-010 purchase/refund lifecycle, immutable provenance, database integrity, precision, queue-index, and clean-first-production-baseline requirements. No cross-repository implementation was introduced by DATABASE-014.
+
+### Follow-up
+
+`ARCH-010-DATABASE-014` is Complete. Recalculate dependent task eligibility from individual task metadata. Do not treat architect acceptance as permission to bypass any remaining dependencies on `ARCH-010-BACKGROUND-021`, `ARCH-010-BACKGROUND-022`, `ARCH-010-SHOPIFY-025`, `ARCH-010-ADMIN-010`, or other declared prerequisites.
