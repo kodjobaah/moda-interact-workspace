@@ -315,7 +315,7 @@ Ready for Review.
 - Implementation branch: `task/ARCH-010-BACKGROUND-010`.
 - Prepared start-of-attempt synchronization, dedicated worktrees, and recursive submodule materialisation were supplied by the launcher packet; no launcher discovery or re-claim was repeated.
 - Database submodule was supplied ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; database gitlink before/after remained `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`, and no database files or gitlink were changed.
-- Implementation commit `ac4593f4d40f4d1d13e4f7c0bc710abf1fdc6a4f` was pushed to `origin/task/ARCH-010-BACKGROUND-010`.
+- Implementation commit `ac4593f6dc6f152a02878a535af05bfc034180bf` was pushed to `origin/task/ARCH-010-BACKGROUND-010`.
 - Parent report commit is recorded by the parent-branch publication following this report update; no merge to `main` or force-push was performed.
 - No merge to `main` or force-push was performed.
 
