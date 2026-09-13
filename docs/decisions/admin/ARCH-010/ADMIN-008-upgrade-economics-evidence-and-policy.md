@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 88
 executor: copilot
 claimed_at: '2026-09-13T14:08:58Z'
@@ -165,7 +165,7 @@ Stop if DATABASE-013 is unavailable or if implementation would require putting m
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `moda-interact-admin/src/app/(protected)/billing/controls/page.tsx`
@@ -177,6 +177,7 @@ In Progress.
 - `moda-interact-admin/src/lib/admin/billing-economics-validation.ts`
 - `moda-interact-admin/src/lib/admin/billing-economics.ts`
 - `moda-interact-admin/tests/security/admin-billing-economics.test.mjs`
+- `moda-interact-admin/tests/unit/billing-economics-behavior.test.ts`
 - `moda-interact-admin/tests/unit/billing-economics-validation.test.ts`
 
 ### Work Completed
@@ -184,23 +185,48 @@ In Progress.
 - Added SUPER_ADMIN-only exact durable-plan upgrade-edge creation/deactivation with self-edge, active-plan, duplicate predecessor/successor, and increasing-allowance checks.
 - Added SUPER_ADMIN-only append-only verified Shopify economics snapshots with normalized FIXED, GRADUATED, and VOLUME pricing evidence.
 - Added exact local Shopify handle, pack enablement, pack size, and pack-meter drift checks before snapshot persistence.
+- Corrected edge lifecycle handling for permanent DATABASE-013 unique keys: exact inactive pairs reactivate, inactive conflicting declarations reject before Prisma, and repeated deactivation is idempotent.
+- Added the required percentage display (`20.00% (2000 bps)` by default) while retaining integer bps persistence, and bounded persisted Prisma `Int` economics fields to `0..2147483647`.
 - Added bounded Admin controls and the required Shopify charging-authority disclaimer. No Shopify API calls, provider mutations, merchant UI, or monetary fields on `BillingPlan` were introduced.
-- Added focused parser and source/security coverage for authorization, drift, append-only storage, tier validation, no-secret evidence, and no-Shopify-mutation boundaries.
+- Added focused behavior coverage for scenarios 43–47 and snapshot-management boundaries, alongside parser and source/security coverage for authorization, drift, append-only storage, tier validation, no-secret evidence, and no-Shopify-mutation boundaries.
 
 ### Validation Results
-- PASS: `node --experimental-strip-types --test tests/unit/billing-economics-validation.test.ts` (3/3).
-- PASS: `node --test tests/security/admin-billing-economics.test.mjs tests/security/admin-billing-controls.test.mjs` (13/13).
-- PASS: `git diff --check`.
-- PASS: database submodule SHA verified as `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; schema inspection confirmed the DATABASE-013 models and fields used by the implementation.
-- BLOCKED: `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, and `npx tsc --noEmit --pretty false` because this isolated worktree has no installed Prisma, ESLint, or TypeScript binaries.
-- BLOCKED/ENVIRONMENTAL: full `npm test` reaches existing suites but fails in spawned TypeScript module checks because the worktree has no configured alias-aware test dependency/toolchain; the focused ADMIN-008 and existing billing-controls suites pass.
+- PASS: `npm run prisma:validate` and `npm run prisma:generate`.
+- PASS: focused unit/parser and behavior tests, 6/6; focused security tests, 13/13.
+- PASS: `npm test`, 161/161; `npm run test:unit`, 42/42.
+- PASS: `npm run lint` (two pre-existing warnings in `src/components/admin/queue-monitor.tsx`, zero errors).
+- PASS: `npx tsc --noEmit --pretty false` and `npm run build`.
+- PASS: focused Prettier check for all six changed implementation/test files and `git diff --check`.
+- EXPECTED BASELINE DEVIATION: repository-wide `npm run format:check` reports 87 pre-existing unformatted files; none of the six ADMIN-008 files are among the reported files.
+- PASS: database submodule initialized and gitlink verified. Expected and actual SHA: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- PASS: exact removed-symbol search has only intentional negative assertions in existing tests; exact `billing.adjustments` search has only the intentional negative assertion in `tests/security/admin-billing-visibility.test.mjs`.
 
 ### Git / VCS
-- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-008`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-008`.
-- Implementation branch: `task/ARCH-010-ADMIN-008`.
-- Implementation commit: `52de3e2` (`Implement ADMIN-008 billing economics evidence and policy`), pushed to `origin/task/ARCH-010-ADMIN-008`.
-- Database submodule remained at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database gitlink change was staged.
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-008
+  parent branch: task/ARCH-010-ADMIN-008
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-008
+  implementation branch: task/ARCH-010-ADMIN-008
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: yes
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+  database submodule HEAD: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+  database gitlink staged/changed: no
+
+### Attempt 2 Git / VCS
+- Parent claim commit: `bf0ae72`, pushed to `origin/task/ARCH-010-ADMIN-008`.
+- Implementation branch: `task/ARCH-010-ADMIN-008`; implementation changes are ready to commit and push.
 
 ### Architect Review
 Changes Requested
