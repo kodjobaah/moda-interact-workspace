@@ -270,7 +270,7 @@ Current counts: `complete` 21, `pending` 13, `ready` 5
 
 > Synchronized by `moda_architect` on 2026-09-12 after current-workspace audit and Luna-oriented task consolidation. ARCH-010 is a PRE-PRODUCTION / BREAKING ROLLOUT. Superseded tasks are history only; system-test tasks remain terminal/manual-gated.
 
-Current counts: `complete` 35, `ready` 4, `pending` 35, `superseded` 7
+Current counts: `complete` 36, `ready` 3, `pending` 35, `superseded` 7
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
@@ -343,7 +343,7 @@ Current counts: `complete` 35, `ready` 4, `pending` 35, `superseded` 7
 | ARCH-010-SHOPIFY-015 | shopify | Pending | 0 | ARCH-010-SHOPIFY-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-010, ARCH-010-SHOPIFY-018 |
 | ARCH-010-SHOPIFY-016 | shopify | Pending | 0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013 |
 | ARCH-010-SHOPIFY-017 | shopify | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-012 |
-| ARCH-010-SHOPIFY-018 | shopify | **Ready** | 0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023 |
+| ARCH-010-SHOPIFY-018 | shopify | **Ready** | 1 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023 |
 | ARCH-010-SHOPIFY-019 | shopify | Superseded | 0 | ARCH-010-BACKGROUND-017, ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-018 |
 | ARCH-010-SHOPIFY-020 | shopify | Pending | 0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-021 |
 | ARCH-010-SHOPIFY-021 | shopify | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-018, ARCH-010-ADMIN-004 |
@@ -356,7 +356,7 @@ Current counts: `complete` 35, `ready` 4, `pending` 35, `superseded` 7
 | ARCH-010-SYSTEM-TEST-004 | system-test | Pending / manual-gated | 0 | ARCH-010-SYSTEM-TEST-001, ARCH-010-SYSTEM-TEST-002, ARCH-010-SYSTEM-TEST-003, ARCH-010-SYSTEM-TEST-005 |
 | ARCH-010-SYSTEM-TEST-005 | system-test | Pending / manual-gated | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-009 |
 
-Current Ready frontier: `ARCH-010-ADMIN-010`, `ARCH-010-BACKGROUND-015`, `ARCH-010-BACKGROUND-019`, `ARCH-010-SHOPIFY-018`.
+Current Ready frontier: `ARCH-010-ADMIN-010`, `ARCH-010-BACKGROUND-019`, `ARCH-010-SHOPIFY-018`.
 
 `ARCH-010-SHOPIFY-002` is architect-accepted Complete at Attempt 8. `ARCH-010-BACKGROUND-001` is architect-accepted Complete at Attempt 6. Their accepted task histories are immutable; clean first-production conformance is owned by later Pending/Ready tasks.
 

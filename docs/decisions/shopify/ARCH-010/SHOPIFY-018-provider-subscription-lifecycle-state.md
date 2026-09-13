@@ -10,10 +10,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 59
-executor: copilot
-claimed_at: '2026-09-12T23:41:20Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -26,7 +26,7 @@ enables:
 - ARCH-010-SHOPIFY-016
 - ARCH-010-SHOPIFY-021
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-SHOPIFY-018: Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze
@@ -170,3 +170,441 @@ Ready for Review.
 - Parent report branch: `task/ARCH-010-SHOPIFY-018`
 
 Returned to `moda_architect` for review. This report does not claim architect acceptance.
+
+## Architect Review
+
+### Attempt 1 — Changes Requested
+
+#### Review Status
+
+Changes Requested.
+
+The implementation direction is architecturally correct. The submitted production source matches the canonical ARCH-010 lifecycle design and BACKGROUND-015 provider semantics:
+
+```text
+- one Partner GraphQL request combines activeSubscription + root events;
+- events uses edges[0].node;
+- lifecycle history is filtered to exactly the six required subscription event types;
+- history is scoped by app subject + shop and bounded by occurredAtMin/occurredAtMax;
+- SubscriptionStatus/AppReference/shop identity are validated;
+- exact lifecycle state/eventType pairing is enforced;
+- active Shopify commercial data remains provider-authoritative;
+- latest FROZEN takes precedence over a temporarily non-null activeSubscription;
+- null + CANCELED maps to CANCELED;
+- other lifecycle evidence without a live subscription maps fail-closed to UNRESOLVED;
+- no provider failure is converted to local commercial truth;
+- the merchant lifecycle read path performs no Subscription mutation.
+```
+
+No production-source change is currently requested. Preserve implementation commit:
+
+```text
+1605a3c
+```
+
+unless one of the missing tests below exposes a genuine defect.
+
+Attempt 1 cannot be accepted because the task's **Required tests** section says "At minimum prove" twelve lifecycle behaviours, while the submitted focused coverage directly proves only a subset. The Completion Report also omits the mandatory four start-of-attempt synchronization outcomes and the task metadata remains `in_progress` despite the handoff claiming review.
+
+This is therefore a **test / validation / Completion Report / task-metadata only** Attempt 2 unless a new test exposes a real implementation defect.
+
+#### Finding 1 — Prove ACTIVE and FROZEN precedence through the service read model
+
+Extend:
+
+```text
+tests/unit/services/billing.service.test.ts
+```
+
+Directly prove both cases:
+
+```text
+A. live activeSubscription + no effective FROZEN event
+   -> state = ACTIVE
+   -> subscription preserves the complete SHOPIFY-013 commercial projection:
+      planHandle
+      description
+      price amount/currency
+      billingPeriod
+      currentPeriodStart/currentPeriodEnd
+      trialEndsAt
+      cancelAtEndOfCycle
+      pendingUpdate
+      usageItems
+   -> mapped/unmapped local plan information remains mapping only
+
+B. live activeSubscription + latest SUBSCRIPTION_FROZEN/FROZEN event
+   -> state = FROZEN, not ACTIVE
+   -> live subscription may still be returned for display
+   -> frozen provider planHandle/billingPeriod come from the lifecycle event
+```
+
+The existing null-live-subscription FROZEN case may remain.
+
+This directly proves Required Tests 1, 2 and 11.
+
+#### Finding 2 — Complete the null-live-subscription lifecycle matrix
+
+Keep the existing CANCELED/UNFROZEN coverage and add explicit cases for the remaining provider evidence:
+
+```text
+activeSubscription = null + latest CREATED
+  -> UNRESOLVED
+
+activeSubscription = null + latest UPDATED
+  -> UNRESOLVED
+
+activeSubscription = null + latest CANCELLATION_SCHEDULED
+  -> UNRESOLVED
+  -> cancelEffectiveOn preserved
+
+activeSubscription = null + latest UNFROZEN
+  -> UNRESOLVED
+
+activeSubscription = null + latest CANCELED
+  -> CANCELED
+
+activeSubscription = null + latest FROZEN
+  -> FROZEN
+
+activeSubscription = null + no lifecycle event
+  -> NO_ACTIVE_SUBSCRIPTION
+```
+
+Do not reinterpret any of these states from local `Subscription.status`.
+
+#### Finding 3 — Prove frozen provider presentation data remains provider-owned
+
+Add mapped and unmapped FROZEN service cases.
+
+Mapped:
+
+```text
+latestEvent.planHandle = "growth"
+BillingPlan(shopifyPlanHandle="growth") exists
+-> providerPlanHandle = "growth"
+-> billingPeriod comes from provider event
+-> mappingStatus = MAPPED
+-> modaMapping is local label/features only
+```
+
+Unmapped:
+
+```text
+latestEvent.planHandle = "provider-plan-not-in-moda"
+no BillingPlan row
+-> state = FROZEN
+-> providerPlanHandle preserved exactly
+-> billingPeriod preserved exactly
+-> mappingStatus = UNMAPPED
+-> modaMapping = null
+```
+
+Do not add/fabricate historical price data. The FROZEN read model must not invent a `price` field from local `BillingPlan` data.
+
+This proves Required Tests 7 and 8.
+
+#### Finding 4 — Prove lifecycle provider failure never falls back to local truth
+
+Add a service test with durable/local commercial-looking state present, for example:
+
+```text
+local Subscription/plan exists
+provider.getSubscriptionLifecycleSnapshot() rejects
+```
+
+Required outcome:
+
+```text
+getMerchantShopifyLifecycleState() rejects with the provider verification failure
+no ACTIVE/FROZEN/CANCELED/NO_ACTIVE state is manufactured from local Subscription
+no Subscription mutation occurs
+```
+
+Also add direct provider snapshot failure coverage in:
+
+```text
+tests/unit/services/shopify-billing.provider.test.ts
+```
+
+for:
+
+```text
+non-2xx Partner HTTP response -> reject
+GraphQL errors -> reject
+```
+
+Do not reuse only the pre-existing `getActiveSubscription()` failure tests; the new lifecycle snapshot path must be proved directly.
+
+This proves Required Test 9.
+
+#### Finding 5 — Prove exact query scope and the 365-day bound
+
+Strengthen the lifecycle provider request test so it asserts all of:
+
+```text
+one fetch call only
+query contains activeSubscription(
+query contains events(
+query contains subjectId: $appId
+query contains shopId: $shopId
+query contains occurredAtMin: $occurredAtMin
+query contains occurredAtMax: $occurredAtMax
+orderBy: OCCURRED_AT_DESC
+first: 1
+```
+
+Variables must prove:
+
+```text
+appId === configured SHOPIFY_APP_ID
+shopId === requested shopifyShopId
+
+eventTypes exactly equal:
+  SUBSCRIPTION_CREATED
+  SUBSCRIPTION_UPDATED
+  SUBSCRIPTION_CANCELLATION_SCHEDULED
+  SUBSCRIPTION_CANCELED
+  SUBSCRIPTION_FROZEN
+  SUBSCRIPTION_UNFROZEN
+```
+
+Parse `occurredAtMin` and `occurredAtMax` and assert:
+
+```text
+occurredAtMax - occurredAtMin
+  == 365 * 24 * 60 * 60 * 1000
+```
+
+Do not weaken this to merely checking that the variable names exist.
+
+This proves Required Test 10.
+
+#### Finding 6 — Prove the new provider parser fails closed
+
+`getSubscriptionLifecycleSnapshot()` introduces a new parser surface. Add focused provider tests proving:
+
+```text
+events.edges = []
+  -> latestLifecycleEvent = null
+
+wrong AppReference id
+  -> reject
+
+wrong shop id
+  -> reject
+
+invalid occurredAt
+  -> reject
+
+valid state + wrong eventType
+  -> reject
+
+malformed lifecycle root/edges
+  -> reject
+```
+
+Also directly prove at least:
+
+```text
+CANCELLATION_SCHEDULED preserves cancelEffectiveOn
+UNFROZEN parses as UNFROZEN
+CANCELED parses as CANCELED
+```
+
+The production parser already appears to implement these rules. This finding is missing proof, not a request to redesign it.
+
+#### Finding 7 — Prove read-only Prisma behaviour explicitly
+
+For lifecycle service tests, assert the read path does not perform projection writes.
+
+At minimum:
+
+```text
+database.subscription.upsert -> not called
+database.billingPeriod.upsert -> not called
+database.$transaction -> not called
+```
+
+If the test fixture exposes other Subscription mutation methods, assert those are also not called.
+
+Local `Shop.findUnique` and `BillingPlan.findUnique` reads are allowed.
+
+This proves Required Test 12.
+
+#### Finding 8 — Preserve scope
+
+Unless a new test fails because production behavior is genuinely wrong:
+
+```text
+DO NOT MODIFY:
+app/services/billing/providers/shopify-billing.provider.ts
+app/services/billing/billing.types.ts
+app/services/billing/billing.service.ts
+```
+
+Expected Attempt 2 code changes are test/report-only:
+
+```text
+tests/unit/services/shopify-billing.provider.test.ts
+tests/unit/services/billing.service.test.ts
+docs/decisions/shopify/ARCH-010/SHOPIFY-018-provider-subscription-lifecycle-state.md
+```
+
+Do not implement:
+
+```text
+SHOPIFY-012 billing route/UI
+SHOPIFY-014 top-up adapter
+SHOPIFY-015 plan-management UI/flow
+SHOPIFY-016 cancellation/FROZEN presentation
+SHOPIFY-021 promotion selection
+Background reconciliation/persistence
+database schema changes
+legacy billing webhooks/Admin Billing API fallback
+```
+
+#### Finding 9 — Validation
+
+Materialize the task's accepted DATABASE-013 dependency as required by the repository, without changing/staging the database gitlink.
+
+Run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+./node_modules/.bin/vitest run \
+  tests/unit/services/shopify-billing.provider.test.ts
+
+./node_modules/.bin/vitest run \
+  tests/unit/services/billing.service.test.ts \
+  -t "SHOPIFY-018|lifecycle|provider history"
+
+npm run typecheck
+npm run build
+npm test
+git diff --check
+```
+
+If the focused service test naming does not support the filter above, prefix/rename the SHOPIFY-018 lifecycle test descriptions so they can be selected deterministically; do not skip required lifecycle tests because the broader file contains an unrelated baseline failure.
+
+Expected:
+
+```text
+SHOPIFY-018 focused provider/lifecycle tests: PASS
+Prisma validate/generate: PASS
+git diff --check: PASS
+```
+
+The currently reported unrelated baselines may remain only if unchanged:
+
+```text
+billing.service full-file/full-suite:
+  pre-existing pack-enabled Free Date { NaN } scheduling failure
+
+repository typecheck:
+  pre-existing shared-package export diagnostic for
+  APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+```
+
+The Completion Report must give the exact command, failing test/diagnostic, and changed-file non-regression evidence. A generic "unrelated failures documented" statement is insufficient.
+
+#### Finding 10 — Mandatory VCS/workflow evidence
+
+Attempt 1 does not record the mandatory four start-of-attempt synchronization outcomes.
+
+Attempt 2 Completion Report must explicitly record:
+
+```text
+parent remote task branch fast-forwarded: yes | not-needed
+parent origin/main incorporated: yes | already-current
+implementation remote task branch fast-forwarded: yes | not-needed
+implementation origin/main incorporated: yes | already-current
+```
+
+Also record:
+
+```text
+parent physical worktree
+implementation physical worktree
+parent task branch
+implementation task branch
+implementation commit
+final parent report commit
+both branches pushed
+both branches clean
+database gitlink staged: no
+main branches modified: no
+```
+
+The user handoff identifies the Attempt 1 commits as:
+
+```text
+implementation: 1605a3c
+parent report: 53d7653
+```
+
+The embedded Completion Report currently records only the implementation commit and parent claim commit. Attempt 2 must record the actual final parent report HEAD after all report metadata is committed.
+
+#### Finding 11 — Correct task metadata on return
+
+The submitted archive still contains:
+
+```text
+status: in_progress
+executor: copilot
+claimed_at: 2026-09-12T23:41:20Z
+attempt: 1
+```
+
+despite the handoff saying it was returned for review.
+
+For this Changes Requested handoff, return the task to:
+
+```text
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next authorized:
+
+```text
+/moda-task ARCH-010-SHOPIFY-018
+```
+
+claim becomes Attempt 2.
+
+Attempt 2 must return with:
+
+```text
+status: review
+attempt: 2
+```
+
+before architect review.
+
+#### Architect Decision
+
+**Changes Requested — Attempt 1.**
+
+The production implementation remains the current accepted candidate pending completion of the required proof:
+
+```text
+1605a3c
+```
+
+No downstream task is released by this review.
+
+`ARCH-010-SHOPIFY-012`, `ARCH-010-SHOPIFY-014`, `ARCH-010-SHOPIFY-015`, `ARCH-010-SHOPIFY-016`, and `ARCH-010-SHOPIFY-021` remain Pending because SHOPIFY-018 is not Complete and each also has other incomplete prerequisites.
+
+The ARCH-010 Ready frontier remains:
+
+```text
+ARCH-010-ADMIN-010
+ARCH-010-BACKGROUND-019
+ARCH-010-SHOPIFY-018
+```
+

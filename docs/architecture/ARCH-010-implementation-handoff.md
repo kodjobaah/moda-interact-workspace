@@ -31,8 +31,8 @@ The 2026-09-12 current-workspace audit, with durable architect-accepted history 
 
 ```text
 all ARCH-010 task files: 81
-complete:                 35
-ready:                     4
+complete:                 36
+ready:                     3
 pending:                  35
 superseded:                7
 ```
@@ -244,3 +244,5 @@ For every Ready task, the repository agent must:
 7. return to review and STOP after the task's validation/completion report.
 
 If a clean-baseline symbol is missing, do not recreate a legacy alias locally. Return the contract gap to the architect.
+
+`ARCH-010-SHOPIFY-018` Attempt 1 is Changes Requested and returned to Ready. Production implementation `1605a3c` remains the candidate; Attempt 2 is test/validation/report-only unless new coverage exposes a genuine defect. No downstream Shopify task is released until SHOPIFY-018 is architect-accepted Complete.
