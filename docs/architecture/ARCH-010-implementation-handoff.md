@@ -27,13 +27,13 @@ There is no production billing state requiring compatibility with intermediate d
 
 ## Current audited task state
 
-The current coordinated ARCH-010 state after BACKGROUND-019 Attempt 6 and SHOPIFY-018 Attempt 3 acceptance, plus purchase-lifecycle/refund-management reconciliation, is:
+The current coordinated ARCH-010 state after DATABASE-014 Attempt 2 and ADMIN-010 Attempt 2 acceptance, with dependency readiness recomputed from the authoritative task files, is:
 
 ```text
 all ARCH-010 task files: 86
-complete:                 38
+complete:                 40
 ready:                     4
-pending:                  36
+pending:                  34
 superseded:                8
 ```
 
@@ -42,13 +42,13 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 ### Ready frontier
 
 ```text
-ARCH-010-ADMIN-010
 ARCH-010-BACKGROUND-008
 ARCH-010-BACKGROUND-009
-ARCH-010-DATABASE-014
+ARCH-010-ADMIN-004
+ARCH-010-ADMIN-008
 ```
 
-These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010.
+These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010. `DATABASE-014` and `ADMIN-010` are now Complete; their acceptance is what releases `ADMIN-004` and `ADMIN-008`.
 
 ## Accepted-history reconciliation
 

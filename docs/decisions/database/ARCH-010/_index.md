@@ -18,7 +18,7 @@ Coordinator:
 
 > Synchronized 2026-09-13 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 12, `ready` 1, `superseded` 1
+Current counts: `complete` 13, `superseded` 1
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -35,7 +35,7 @@ Current counts: `complete` 12, `ready` 1, `superseded` 1
 | `DATABASE-011` | Persist merchant promotion selection and exact promotional grant-lot accounting | Complete | ARCH-010-DATABASE-009, ARCH-010-DATABASE-010 |
 | `DATABASE-012` | Persist upgrade economics policy, plan edges and audited Shopify pricing snapshots | Superseded | ARCH-010-DATABASE-006 |
 | `DATABASE-013` | Materialise the clean ARCH-010 first-production database baseline | Complete | ARCH-010-DATABASE-001, ARCH-010-DATABASE-002, ARCH-010-DATABASE-003, ARCH-010-DATABASE-004, ARCH-010-DATABASE-005, ARCH-010-DATABASE-006, ARCH-010-DATABASE-007, ARCH-010-DATABASE-008, ARCH-010-DATABASE-009, ARCH-010-DATABASE-010, ARCH-010-DATABASE-011 |
-| `DATABASE-014` | Materialise canonical recovery-credit purchase lifecycle and immutable purchase provenance | **Ready** | ARCH-010-DATABASE-013 |
+| `DATABASE-014` | Materialise canonical recovery-credit purchase lifecycle and immutable purchase provenance | Complete | ARCH-010-DATABASE-013 |
 
 ## Execution note
 
