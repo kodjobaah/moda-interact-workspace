@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 47
-executor: copilot
-claimed_at: '2026-09-13T19:19:37Z'
+executor: null
+claimed_at: null
 attempt: 8
 depends_on:
 - ARCH-010-BACKGROUND-001
@@ -4985,4 +4985,83 @@ publish evidence commit(s);
 publish the final factual 1–35 matrix;
 STOP for moda_architect.
 ```
+
+## Attempt 8 Completion Report
+
+Attempt 8 was evidence-only and introduced no production, schema, shared-contract,
+or cross-repository changes. The implementation evidence is published at:
+
+```text
+680056b test(background): complete rollover evidence attempt 8
+origin/task/ARCH-010-BACKGROUND-007: 680056b
+```
+
+Changed file:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Added evidence:
+
+```text
+- successful early rollover job reschedules to the exact drain start with the
+  full source-projection CAS and deterministic delayed job;
+- scheduled transport failure preserves plan, period, and cycle timestamps while
+  recording the retry and publishing its deterministic job;
+- a failed pre-close flush retries successfully, clears error metadata, and
+  schedules the exact boundary;
+- a committed rollover remains durable after queue publication failure and the
+  repair reconstruction publishes the missing delayed job;
+- later same-plan pack-enabled Free rollover publishes the successor pre-close
+  job at the caller boundary;
+- pack-enabled Free startup/repair reconstruction publishes one deterministic
+  delayed job and repeats the same job identity.
+```
+
+Validation observed:
+
+```text
+npx vitest run tests/unit/services/billing-subscription-reconciliation.service.test.ts
+  passed: 46 tests
+
+Focused rollover/reconciliation/BG8/BG9 command:
+  reconciliation and rollover suites passed;
+  recovery-credit-purchase.service.test.ts had 8 failures in the existing
+  purchase-reconciliation fixture/service contract;
+  git diff --check passed.
+```
+
+The required BG8 purchase-admission evidence could not be completed within this
+task's allowed scope. Purchase creation is owned by
+`moda-interact/app/services/billing/billing.service.ts`, outside the assigned
+Background repository. Its `requestRecoveryCreditPack` path verifies mapped plan,
+pack meter, and exact provider/local cycle identity, but does not reject a local
+`DRAINING` or `EXPIRED_RECONCILING` BillingPeriod. Background's purchase service
+only reconciles already-created purchases and cannot prove admission blocking.
+Per the Attempt 8 stop condition, no production patch was made and this genuine
+cross-repository gap is returned to `moda_architect` for disposition.
+
+Attempt 8 workflow evidence:
+
+```text
+parent worktree:
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007
+  branch: task/ARCH-010-BACKGROUND-007
+  claim commit: 488f21f
+  report commit: pending
+
+implementation worktree:
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007
+  branch: task/ARCH-010-BACKGROUND-007
+  evidence commit: 680056b
+  pushed: yes
+
+dependencies:
+  all seven explicit dependencies were status complete before claim;
+  both task worktrees were canonical, clean, and synchronized before claim.
+```
+
+Task status: review. Awaiting moda_architect review; no architect acceptance
+decision has been made by this agent.
 
