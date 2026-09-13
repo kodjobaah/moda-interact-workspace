@@ -10,11 +10,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 59
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: '2026-09-13T09:26:58Z'
+attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-SHOPIFY-013
@@ -134,7 +134,7 @@ STOP if root Historical Events subscription status is unavailable in the configu
 ## Completion Report
 
 ### Status
-Ready for Review.
+Review.
 
 ### Implementation
 
@@ -155,19 +155,30 @@ Ready for Review.
 
 ### Validation
 
-- Passed: focused provider and lifecycle service tests, 7 tests.
-- Passed: changed-file editor diagnostics.
-- Full provider/service test run: provider tests passed; one unrelated existing service test failed with `Date { NaN }` while scheduling a pack-enabled Free cycle.
-- Full TypeScript check: reached an unrelated pre-existing shared-package export error for `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`; no SHOPIFY-018-specific type errors remain.
+- Passed: `npm run prisma:validate`.
+- Passed: `npm run prisma:generate`.
+- Passed: `./node_modules/.bin/vitest run tests/unit/services/shopify-billing.provider.test.ts` (18 tests).
+- Passed: `./node_modules/.bin/vitest run tests/unit/services/billing.service.test.ts -t "lifecycle|provider history|SHOPIFY-018"` (12 tests).
+- Passed: lifecycle-focused provider/service run (24 tests, 67 skipped).
+- Passed: `npm run build`.
+- Passed: `git diff --check`.
+- Full `npm test`: 278 passed, 1 skipped, 2 unrelated baseline failures: `billing.service.test.ts` `schedules the next pre-close reconciliation for a pack-enabled Free cycle` received `Date { NaN }`; `billing-reconciliation.service.test.ts` `uses the shared contract and deterministic delayed job identity` observed zero `queue.add` calls.
+- `npm run typecheck`: pre-existing workspace diagnostics outside SHOPIFY-018, including JSX implicit-any/session errors and missing shared-package exports `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS` in existing billing files/tests; no changed lifecycle test diagnostic was reported.
 - `git diff --check` passed.
 
 ### Handoff Evidence
 
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-018`
 - Implementation branch: `task/ARCH-010-SHOPIFY-018`
-- Implementation commit: `1605a3c`
+- Implementation commit: `1605a3c` (production implementation preserved).
+- Attempt 2 implementation test commit: `dbfb9fc`.
 - Parent claim commit: `51d0ef0`
 - Parent report branch: `task/ARCH-010-SHOPIFY-018`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-018`
+- Attempt 2 report commit: pending until this report is committed.
+- Both branches were synchronized with their remotes before validation; no origin/main merge was required.
+- Database gitlink staged: no.
+- Main branches modified: no.
 
 Returned to `moda_architect` for review. This report does not claim architect acceptance.
 
