@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 86
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-SHOPIFY-022: Show merchant promotion selection and usage history
