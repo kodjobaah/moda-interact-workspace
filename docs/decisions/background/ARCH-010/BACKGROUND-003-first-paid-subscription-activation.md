@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 executor: null
 claimed_at: null
 priority: 43
@@ -2289,3 +2289,87 @@ If `production source changed in Attempt 5: no`, an implementation-source commit
 **not required**. Commit/push the corrected permanent test on the existing
 implementation task branch, update the parent Completion Report, set this same task
 to `review`, clear the claim and STOP for `moda_architect`.
+
+## Architect Review — Attempt 5
+
+### Accepted
+
+Attempt 5 is **architect-accepted Complete**. No Attempt 6 is required.
+
+Accepted published history:
+
+```text
+Attempt-5 claim:
+  b5f3f9d90e9598b8f4ff32463bdd2dc9ed43a256
+
+Attempt-5 implementation/evidence:
+  0fe699ced684a1c2ffde09cc3510eea2d98524e1
+
+Attempt-5 parent report:
+  445d1874
+```
+
+The Attempt-4 production correction in
+`fbd24668b0a32ee085f8d02c219fd7d505a68a1e` remains accepted and is now final for
+this task. Attempt 5 correctly made **no production-source changes**.
+
+The permanent queued handle-drift regression now models the real unique-lookup state
+required by the Attempt-4 review:
+
+```text
+durable pending plan id:      plan-paid
+durable pending handle:       paid-old
+provider current handle:       paid-new
+BillingPlan lookup key:        paid-new
+returned BillingPlan id:       plan-paid
+returned BillingPlan handle:   paid-new
+returned BillingPlan kind:     PAID_METERED
+```
+
+The reviewed test proves all required fail-closed effects:
+
+```text
+Partner observation occurs exactly once.
+billingPlan.findUnique resolves paid-new and returns the paid-new row.
+PENDING_PLAN_HANDLE_MISMATCH is recorded with the bounded retry timestamp.
+database.$transaction is never entered.
+No Subscription activation mutation occurs.
+No ShopSettings onboarding mutation occurs.
+No BillingPeriod or included-credit-counter mutation occurs.
+The durable pending-plan fields are not cleared.
+Exactly one retry is published for the durable retry timestamp.
+```
+
+Therefore the previously unsafe path cannot reach `applyOtherCurrentPlan(...)` for
+same-local-plan Shopify handle drift, and the evidence no longer depends on an
+impossible mock where the provider lookup key and returned BillingPlan handle differ.
+
+Validation accepted for this final evidence-only attempt:
+
+```text
+focused reconciliation suites: 2 files / 91 tests passed
+Prisma validate/generate:       passed
+integration:                    2 files / 3 tests passed
+git diff --check:               passed
+database gitlink:               5443afdd8f0c816dc16e1f3e93f9906c5ca31d94 unchanged
+```
+
+The repository-wide `npm run test:unit` and `npm run build` remain non-zero only in
+the already-documented unrelated purchased-credit / observability generated-client
+baseline. Attempt 5 changed only permanent test/evidence for this task, and the
+latest Architect Review required the focused reconciliation suites plus
+`git diff --check` when production source remained unchanged. Those baseline
+conditions therefore do not block acceptance.
+
+Dependency reconciliation after this acceptance:
+
+```text
+ARCH-010-BACKGROUND-006 -> Ready
+ARCH-010-BACKGROUND-010 -> Ready
+ARCH-010-SHOPIFY-003    -> Ready
+```
+
+Every dependency of those three tasks is Complete in this task-branch snapshot.
+No other dependant is promoted transitively merely because these tasks are now
+Ready. Each newly Ready task must be claimed through its normal `/moda-task` path
+and must use its own launcher-resolved sibling parent/implementation worktrees.

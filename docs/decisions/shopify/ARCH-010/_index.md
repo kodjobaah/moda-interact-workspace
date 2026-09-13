@@ -18,13 +18,13 @@ Coordinator:
 
 > Synchronized 2026-09-13 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 6, `ready` 1, `pending` 14, `superseded` 5
+Current counts: `complete` 6, `ready` 2, `pending` 13, `superseded` 5
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | `SHOPIFY-001` | Establish fresh-install no-plan state and onboarding-only merchant access | Complete | ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
 | `SHOPIFY-002` | Activate Free plan with durable asynchronous Shopify verification | Complete | ARCH-010-DATABASE-006, ARCH-010-SHOPIFY-001, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
-| `SHOPIFY-003` | Activate first verified paid plan with exact billing period | Pending | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-002, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-003, ARCH-008-SHOPIFY-001, ARCH-010-SHOPIFY-023 |
+| `SHOPIFY-003` | Activate first verified paid plan with exact billing period | **Ready** | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-002, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-003, ARCH-008-SHOPIFY-001, ARCH-010-SHOPIFY-023 |
 | `SHOPIFY-004` | Present current paid-period entitlement to merchants | Pending | ARCH-010-SHOPIFY-003, ARCH-010-DATABASE-013 |
 | `SHOPIFY-005` | Make uninstall an execution gate without resetting billing state | Superseded | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005 |
 | `SHOPIFY-006` | Gate reinstall until Background restores Shopify subscription truth | Pending | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-006 |

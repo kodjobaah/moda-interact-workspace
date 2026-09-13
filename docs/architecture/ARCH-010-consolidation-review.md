@@ -228,3 +228,33 @@ ARCH-010-BACKGROUND-015
 
 `BACKGROUND-019` is architect-accepted Complete at Attempt 6. Its accepted promo-first cross-bucket routing is immutable and must be preserved by later purchased-credit lifecycle corrections such as BACKGROUND-022.
 
+## Post-cleanup review update — BACKGROUND-003 Attempt 5 accepted
+
+`ARCH-010-BACKGROUND-003` Attempt 5 is architect-accepted Complete.
+
+Accepted history:
+
+```text
+Attempt-5 claim:          b5f3f9d90e9598b8f4ff32463bdd2dc9ed43a256
+Attempt-5 evidence:       0fe699ced684a1c2ffde09cc3510eea2d98524e1
+Attempt-5 parent report:  445d1874
+```
+
+The final evidence proves that queued first-Paid reconciliation fails closed when a
+local BillingPlan still has the same `plan-paid` identity but Shopify's current plan
+handle has drifted from durable pending intent (`paid-old -> paid-new`). The guard
+records `PENDING_PLAN_HANDLE_MISMATCH`, schedules the bounded retry, preserves the
+pending target and returns before any transaction/activation path. Attempt 5 required
+no production-source change.
+
+Direct dependency promotion caused by this acceptance:
+
+```text
+ARCH-010-BACKGROUND-006 -> Ready
+ARCH-010-BACKGROUND-010 -> Ready
+ARCH-010-SHOPIFY-003    -> Ready
+```
+
+Only these direct dependants are promoted here. Their own dependants remain gated
+until the corresponding newly Ready task is separately implemented and
+architect-accepted Complete.
