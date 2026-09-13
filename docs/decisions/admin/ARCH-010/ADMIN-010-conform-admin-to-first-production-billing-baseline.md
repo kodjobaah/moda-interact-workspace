@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 8
 executor: copilot
 claimed_at: '2026-09-13T10:44:26Z'
@@ -254,35 +254,61 @@ This task is deliberately a correction/conformance task. Do not opportunisticall
 
 ### Status
 
-In Progress.
+Ready for Review.
 
 ### Files Changed
 
-Populate during implementation.
+- `src/app/actions/billing-controls.ts`
+- `src/components/admin/billing-controls.tsx`
+- `src/components/admin/tenant-billing.tsx`
+- `src/i18n/locales/en.json`
+- `src/i18n/required-keys.ts`
+- `src/lib/admin/billing-control-validation.ts`
+- `src/lib/admin/billing-controls.ts`
+- `src/lib/admin/billing-plan-audit.ts`
+- `src/lib/admin/billing.ts`
+- `src/lib/admin/types.ts`
+- `tests/security/admin-billing-controls.test.mjs`
+- `tests/security/admin-billing-plan.test.mjs`
+- `tests/security/admin-billing-visibility.test.mjs`
 
 ### Work Completed
 
-Populate during implementation.
+- Removed the obsolete `BillingAllowanceAdjustment` action, parser, reads, audit action, and UI form.
+- Migrated Admin lifetime recovery reads to `EntitlementCounter.LIFETIME_FREE_RECOVERY_CREDITS` and counter-only allowance values.
+- Removed legacy `BillingPlan.freeLifetimeConversationAllowance` audit serialization and fixtures.
+- Preserved SUPER_ADMIN platform-policy authorization, `PLATFORM_POLICY_CHANGED`, before/after audit values, and policy revalidation paths.
+- Updated focused security coverage and removed obsolete adjustment translation keys.
+- No Admin cancellation, promotion-counter, refund-status, or App Event correction compatibility code was present; no speculative replacements were added.
 
 ### Validation Results
 
-Populate during implementation.
+- Focused billing security tests: 18 passed, 0 failed.
+- Full Admin tests: 144 passed, 3 skipped, 0 failed.
+- Admin unit tests: 42 passed, 0 failed.
+- `prisma:validate`: passed.
+- `prisma:generate`: passed.
+- Production build: passed; existing BullMQ optional-dependency warnings remain.
+- Focused ESLint and formatting checks for all changed files: passed.
+- `git diff --check`: passed.
+- Repository-wide `format:check` still reports the unchanged baseline's existing 75 unformatted files; changed files pass the focused check.
+- Removed-symbol search is clean in implementation code; the only remaining legacy-name matches are intentional negative assertions in `admin-billing-controls.test.mjs` and existing legacy-input absence assertions in `admin-billing-plan.test.mjs`.
 
 ### Deviations
 
-None.
+Repository-wide formatting is not green because of pre-existing formatting drift outside this task. The changed-file formatting check is green.
 
 ### Assumptions
 
-None.
+- The implementation branch reuses the resolved DATABASE-013 Prisma schema and SHARED-008 package contract; the isolated worktree's database submodule and dependencies were temporarily linked from the already-resolved Admin checkout for validation and removed afterward.
 
 ### Unresolved Issues
 
-None.
+None blocking review.
 
 ### Architectural Concerns
 
-None.
+None. The accepted platform-policy mutation and audit boundary remain unchanged.
 
 ## Architect Review
 
