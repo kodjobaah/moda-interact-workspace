@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: copilot
 claimed_at: '2026-09-13T10:34:07Z'
@@ -389,19 +389,35 @@ STOP and return evidence to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql`
+- `moda-interact-database/scripts/validate-first-production-baseline.mjs`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Work Completed
-Populate during implementation.
+- Replaced the development purchase status enum with the canonical `REQUESTED`, `ACTIVE`, `COMPLETED`, `WITHDRAWN`, and `REFUNDED` lifecycle.
+- Replaced per-purchase legacy quantity counters with `currentAmount` and `reservedAmount`, retaining aggregate `ShopEntitlementCounter.refundingQuantity`.
+- Added restrictive billing-period linkage and immutable provider subscription, usage, valuation, amount, currency, and price provenance fields.
+- Replaced arbitrary refund quantity fields with request-time amount snapshots and provider settlement fields.
+- Added lifecycle/amount checks, partial unique refund indexes, migration foreign keys, validator coverage, and regenerated the ERD.
 
 ### Validation Results
-Populate during implementation.
+- `npm run prisma:validate` passed.
+- `npm run prisma:generate` passed.
+- `npm run test:first-production-baseline` passed.
+- `npm run erd:puml` passed.
+- `git diff --check` passed.
+- The baseline migration remains clean: no `UPDATE`, `INSERT INTO`, or `DELETE FROM` statements.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-014`
+- Implementation branch: `task/ARCH-010-DATABASE-014`
+- Implementation commit: `cd8dc213bc0a80601094253e3d0739cc6b479f5b`
+- Implementation remote verification: local `HEAD` and `origin/task/ARCH-010-DATABASE-014` both resolve to `cd8dc213bc0a80601094253e3d0739cc6b479f5b`.
+- Parent claim commit remains `e1ca470`; only this task report is changed in the parent workspace and the database submodule gitlink is not staged.
 
 ### Architect Review
-Pending.
+Ready for `moda_architect` review.
