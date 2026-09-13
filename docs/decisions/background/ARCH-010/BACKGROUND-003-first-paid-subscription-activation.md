@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 43
 executor: null
 claimed_at: null
@@ -237,3 +237,596 @@ Implementation complete; returned to review.
 
 ### Architect Review
 Pending.
+
+## Architect Review — Attempt 1
+
+### Changes Requested
+
+Attempt 1 is **not accepted**. Return this same task to `ready` for Attempt 2.
+
+Do not start any task listed under `enables`.
+
+Published Attempt-1 history to preserve:
+
+```text
+claim:
+  f536ff84f726654d6520ceac93aae1d5038edfc3
+
+implementation:
+  c6d5c0a66de67cded04d8f60c2d268644286bb13
+
+parent report:
+  082d6de3a1b35c735571a4c7a0238fb0e104eb42
+```
+
+Attempt 2 is the next claim. Increment `attempt` exactly once.
+
+### Attempt-1 implementation accepted in substance — preserve it
+
+The following behavior is directionally correct and must not regress:
+
+```text
+- the existing BACKGROUND-001 BullMQ payload/queue/runtime is reused;
+- provider observation happens before the database transaction;
+- a successful first Paid activation creates/reuses the canonical
+  (shopId, periodStart, periodEnd) BillingPeriod;
+- the first Paid BillingPeriod contains subscription/plan snapshots and
+  includedRecoveryCreditsGranted;
+- INCLUDED_RECOVERY_CREDITS is a BillingPeriodEntitlementCounter;
+- a newly created included counter starts with:
+    granted = plan allowance
+    committed = 0
+    reserved = 0
+    forfeited = 0;
+- existing included counters are replayed with update: {} so usage quantities are
+  not reset;
+- a CLOSED historical BillingPeriod is not reopened;
+- incompatible existing period/counter evidence fails closed;
+- LIFETIME_FREE_RECOVERY_CREDITS is created only when absent and otherwise
+  preserved;
+- subscription activation, pending-field clearing, current-period pointer and
+  onboarding completion are transaction-owned;
+- nextReconcileAt uses:
+    max(now, periodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS);
+- next reconciliation is published after the activation transaction;
+- future Paid trial with no cycle records UNSUPPORTED_PAID_TRIAL and does not
+  synthesize credits or a BillingPeriod;
+- missing cycle/meter/invalid allowance does not activate;
+- rotating reconciliation was changed to call the same paid-activation service
+  rather than creating a legacy period directly;
+- no schema, Shared payload, second queue, second worker or Render process was
+  introduced.
+```
+
+### Finding 1 — provider current handle is not required to equal the durable pending handle
+
+Task contract:
+
+```text
+provider current plan handle == pendingShopifyPlanHandle
+local pending plan id maps to that same active BillingPlan
+```
+
+Current BullMQ flow looks up the local BillingPlan by `provider.planHandle`, then
+checks only:
+
+```text
+plan.id === row.subscription.pendingPlanId
+```
+
+That is insufficient.
+
+If the same BillingPlan row has had its Shopify handle changed since the merchant's
+pending selection was recorded, this state is possible:
+
+```text
+pendingPlanId              = plan-paid
+pendingShopifyPlanHandle   = paid-old
+provider.planHandle        = paid-new
+BillingPlan.id             = plan-paid
+BillingPlan.shopifyHandle  = paid-new
+```
+
+The current code can activate even though Shopify is **not** reporting the durable
+requested handle.
+
+#### Required correction
+
+File:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+Before entering first-Paid activation, require all of:
+
+```text
+provider.planHandle === expected.pendingShopifyPlanHandle
+plan.id === expected.pendingPlanId
+plan.shopifyPlanHandle === expected.pendingShopifyPlanHandle
+plan.active === true
+plan.kind === PAID_METERED
+```
+
+Do not reinterpret "same local plan id" as equivalent to "same requested Shopify
+handle".
+
+A mismatched current provider handle must not activate the requested Paid target.
+
+The existing `applyOtherCurrentPlan(...)` ownership for genuinely different provider
+truth may remain; do not redesign it in this task.
+
+### Finding 2 — the transaction does not re-read/revalidate the pending BillingPlan
+
+The task explicitly requires the successful transaction to:
+
+```text
+reload Subscription / ShopSettings / pending BillingPlan
+and confirm this is still initial activation
+```
+
+Attempt 1 locks/reloads ShopSettings and Subscription, but it continues to use the
+BillingPlan object read **before** the Partner call/transaction.
+
+This leaves a race where the plan can be changed between observation and commit:
+
+```text
+active -> inactive
+PAID_METERED -> other kind
+shopifyPlanHandle changed
+shopifyUsageEventHandle changed
+includedRecoveryConversationAllowance changed
+plan name changed
+```
+
+The transaction can then persist stale plan snapshots or a stale included grant.
+
+#### Required correction
+
+Inside the successful activation transaction, after locking/rereading the source
+activation state, re-read the plan by the current/pending plan id using the
+transaction client.
+
+Select at least:
+
+```text
+id
+active
+name
+kind
+shopifyPlanHandle
+shopifyUsageEventHandle
+includedRecoveryConversationAllowance
+```
+
+Fail closed unless the transactional plan satisfies:
+
+```text
+id === current.pendingPlanId
+id === expected.pendingPlanId
+active === true
+kind === PAID_METERED
+shopifyPlanHandle === current.pendingShopifyPlanHandle
+shopifyPlanHandle === expected.pendingShopifyPlanHandle
+shopifyPlanHandle === provider.planHandle
+shopifyUsageEventHandle is non-null
+provider.usageEventHandles contains shopifyUsageEventHandle
+includedRecoveryConversationAllowance is a non-negative safe integer
+```
+
+The period snapshot, `planId`, plan name, configured handle and included grant used
+for the commit must come from this **transactionally re-read plan**, not a stale
+pre-transaction plan object.
+
+Do not perform another Shopify/Partner call inside the transaction. The provider
+observation remains immutable input; only local durable configuration is revalidated.
+
+If the local plan changed during verification, throw/fail closed. Do not activate
+and do not set onboarding complete.
+
+### Finding 3 — rotating reconciliation is unsafe after UNSUPPORTED_PAID_TRIAL
+
+Attempt 1 intentionally records an unsupported Paid trial with:
+
+```text
+nextReconcileAt = null
+```
+
+That avoids a one-minute retry loop across the entire trial.
+
+However `BillingReconciliationService` currently enters the initial-Paid branch
+without requiring `existing.nextReconcileAt` and passes:
+
+```ts
+nextReconcileAt: existing.nextReconcileAt!
+```
+
+The paid activation helper currently types `nextReconcileAt` as non-null and later
+calls:
+
+```ts
+expected.nextReconcileAt.toISOString()
+```
+
+Therefore a merchant previously placed into `UNSUPPORTED_PAID_TRIAL` can be seen by
+rotating reconciliation with a null durable schedule and cause a runtime exception
+instead of being safely re-observed after the trial.
+
+#### Required correction
+
+Files:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+The shared first-Paid helper must safely support the exact durable state observed by
+rotating reconciliation after unsupported trial.
+
+Preferred deterministic contract:
+
+```ts
+type InitialActivationExpected = {
+  subscriptionId: string;
+  pendingPlanId: string;
+  pendingShopifyPlanHandle: string;
+  pendingEffectiveAt: Date;
+  nextReconcileAt: Date | null;
+};
+```
+
+The BullMQ initial-activation path still requires a non-null schedule before
+constructing/executing its queued job.
+
+The rotating path may pass the exact current nullable schedule.
+
+Use null-safe exact comparison, for example:
+
+```text
+both null -> equal
+one null -> different
+both Date -> equal timestamps
+```
+
+Do not use a non-null assertion followed by `.toISOString()`.
+
+Required behavior:
+
+```text
+future unsupported Paid trial, no cycle:
+  no activation
+  no synthetic period
+  no one-minute loop across the trial
+  no rotating crash
+
+later rotating observation after Shopify supplies an exact Paid cycle:
+  same durable pending intent may activate through the canonical helper
+  even when the prior nextReconcileAt is null
+```
+
+Do not invent a synthetic trial period or trial credits.
+
+### Finding 4 — rotating reconciliation needs permanent same-helper evidence
+
+Attempt 1 changes the rotating production path but adds no direct behavioral test in:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+Add a focused test proving:
+
+```text
+ShopSettings.onboardingCompleted = false
+Subscription = NO_CONTRACT
+planId = null
+pending Paid plan/handle identify provider current plan
+provider exact cycle is present
+```
+
+Then assert:
+
+```text
+Partner is called once by rotating reconciliation;
+canonical first-Paid activation helper/path is used;
+legacy generic BillingPeriod upsert path is not used to create a first Paid period;
+the resulting activation path owns creation/verification of the included counter.
+```
+
+Also add the unsupported-trial recovery case:
+
+```text
+pending Paid intent remains
+nextReconcileAt = null
+provider later reports exact Paid current cycle
+rotating reconciliation does not throw
+canonical Paid activation is allowed to commit.
+```
+
+Do not add a second queue or duplicated activation implementation to make the test
+pass.
+
+### Finding 5 — required Paid activation evidence is incomplete
+
+Attempt 1 adds seven focused tests, but the task requires more exact Paid-specific
+evidence.
+
+Add permanent tests for all of the following.
+
+#### 5.1 Exact provider/pending handle mismatch
+
+Construct:
+
+```text
+pendingPlanId = plan-paid
+pendingShopifyPlanHandle = paid-old
+provider.planHandle = paid-new
+local provider-handle lookup returns id = plan-paid
+```
+
+Expected:
+
+```text
+requested Paid target is not activated;
+no Paid BillingPeriod/counter is created for the requested activation;
+onboardingCompleted is not set true by the Paid activation path.
+```
+
+#### 5.2 Transactional plan revalidation
+
+Pre-transaction plan read is valid.
+
+Transaction re-read changes one required authority fact.
+
+At minimum test:
+
+```text
+active = false
+shopifyPlanHandle differs
+shopifyUsageEventHandle differs/missing
+includedRecoveryConversationAllowance differs or becomes invalid
+```
+
+Each must fail closed before:
+
+```text
+BillingPeriod create
+included-counter create/upsert
+Subscription ACTIVE update
+ShopSettings.onboardingCompleted = true
+```
+
+A table-driven test is acceptable.
+
+#### 5.3 Allowance validation
+
+The task explicitly requires:
+
+```text
+null
+negative
+non-integer
+```
+
+to fail closed.
+
+Attempt 1 currently proves only one invalid numeric example.
+
+Add exact cases for:
+
+```text
+null
+-1
+1.5
+```
+
+You may also retain an unsafe integer case.
+
+#### 5.4 Conflicting existing included counter
+
+Create an existing exact BillingPeriod and an existing
+`INCLUDED_RECOVERY_CREDITS` counter whose grant differs from the current plan grant.
+
+Expected:
+
+```text
+fail closed;
+counter is not rewritten/reset;
+Subscription does not become ACTIVE through this transaction;
+onboardingCompleted remains false.
+```
+
+#### 5.5 Existing period conflict / CLOSED history
+
+Permanently prove at least:
+
+```text
+exact historical period status CLOSED -> not reopened;
+existing period snapshot with wrong plan/subscription/handle/grant -> not rewritten.
+```
+
+#### 5.6 Successful Paid enqueue failure + reconstruction repair
+
+This must exercise the **successful Paid activation path**, not the existing generic
+null-provider retry test.
+
+Required sequence:
+
+```text
+1. Paid activation transaction commits successfully;
+2. post-commit queue.add throws;
+3. activation remains durable:
+     ACTIVE
+     billingPeriodId set
+     currentPeriodStart/end set
+     nextReconcileAt set
+     onboardingCompleted true;
+4. later reconstruct() sees the durable Paid schedule;
+5. reconstruct publishes the missing deterministic job.
+```
+
+No database rollback is expected after queue publication failure.
+
+### Finding 6 — replay evidence should assert no usage reset through actual mutation calls
+
+Keep the current replay test, but strengthen it so it proves:
+
+```text
+existing BillingPeriod is reused;
+billingPeriod.create is not called;
+included counter upsert uses update: {};
+existing committed/reserved/forfeited values are not supplied in any update payload;
+existing lifetime counter causes:
+  no PlatformBillingPolicy dependency
+  no lifetime counter create/update/reset.
+```
+
+The existing in-memory object remaining unchanged is supplementary evidence; the
+mutation-call assertions are authoritative.
+
+### Attempt 2 allowed production scope
+
+Expected production files:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+Expected test files:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+No other production file is expected.
+
+Do not modify:
+
+```text
+database/**
+Shared contracts/package versions
+Shopify app
+Admin
+Messaging
+Gateway
+BACKGROUND-002 paid recovery reservation routing
+BACKGROUND-007 rollover implementation
+upgrade/downgrade/cancellation/refund/promotion logic
+queue/worker topology
+```
+
+If a required correction needs schema or Shared payload changes, STOP and return to
+`moda_architect`.
+
+### Attempt 2 validation
+
+Run:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts
+
+npm run test:unit
+npm run build
+git diff --check
+```
+
+Run `npm run test:integration` when the repository's required PostgreSQL/Redis
+dependencies are available. If unavailable, record that fact; do not fabricate a
+result.
+
+Acceptance requires:
+
+```text
+- exact provider current handle == durable pending handle is enforced;
+- pending BillingPlan is re-read/revalidated inside the activation transaction;
+- period snapshots/grant use the transactionally current plan facts;
+- unsupported Paid trial cannot crash rotating reconciliation;
+- rotating reconciliation can later activate the same durable pending Paid intent
+  when an exact provider cycle appears;
+- null/negative/non-integer allowances all fail closed;
+- closed/incompatible period evidence is not rewritten;
+- conflicting counter grant is not rewritten;
+- Paid replay does not reset usage/lifetime state;
+- successful Paid activation survives queue-add failure and reconstruction repairs
+  the missing job;
+- rotating reconciliation has direct same-helper evidence;
+- Free activation and BACKGROUND-007 rollover preservation suites remain green;
+- no schema/Shared/queue/runtime topology change;
+- documented unrelated baseline remains unchanged;
+- git diff --check passes.
+```
+
+### Attempt 2 workflow evidence
+
+The Completion Report must record actual observed values.
+
+At minimum:
+
+```text
+Physical worktree isolation:
+  canonical workspace root:
+    /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree:
+    /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-003
+  parent branch:
+    task/ARCH-010-BACKGROUND-003
+  implementation worktree:
+    /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-003
+  implementation branch:
+    task/ARCH-010-BACKGROUND-003
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected:
+    <full SHA>
+  database submodule HEAD:
+    <full SHA>
+  database gitlink staged/changed: no
+
+Task history:
+  Attempt-1 claim
+    f536ff84f726654d6520ceac93aae1d5038edfc3
+    ancestor of parent HEAD: yes
+  Attempt-1 implementation
+    c6d5c0a66de67cded04d8f60c2d268644286bb13
+    ancestor of implementation HEAD: yes
+  Attempt-1 report
+    082d6de3a1b35c735571a4c7a0238fb0e104eb42
+    ancestor of parent HEAD: yes
+
+Handoff:
+  parent worktree clean: yes
+  implementation worktree clean: yes
+```
+
+Record observed values only.
+
+When complete:
+
+```text
+set this same task to review;
+publish implementation commit(s);
+publish the Completion Report;
+STOP for moda_architect review.
+```
+
