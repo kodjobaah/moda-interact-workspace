@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 53
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: '2026-09-13T14:30:00Z'
+attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-SHARED-008
@@ -359,7 +359,7 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Review.
+In Progress.
 
 ### Files Changed
 - `moda-interact-background/src/domain/recovery-capacity-resume.ts`
