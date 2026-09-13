@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
 executor: copilot
 claimed_at: '2026-09-13T13:05:59Z'
@@ -359,22 +359,40 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-background/src/domain/recovery-capacity-resume.ts`
+- `moda-interact-background/src/services/recovery-capacity-resume.service.ts`
+- `moda-interact-background/src/services/recovery-billing.service.ts`
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/services/recovery-credit-purchase.service.ts`
+- `moda-interact-background/src/workers/recovery-capacity-resume.worker.ts`
+- `moda-interact-background/src/entrypoints/recovery.ts`
+- `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Changed full-capacity admission to the canonical `capacity-exhausted` result and retained the existing promotion/purchased/lifetime/included routing without paid overage.
+- Persisted `RECOVERY_CAPACITY_EXHAUSTED` and the first block timestamp on DETECTED recoveries; successful MESSAGE_SENT transitions clear both fields.
+- Added deterministic generic Free/Paid exhaustion epochs using durable subscription, billing-period, entitlement-counter, and pack facts.
+- Added a Background-owned tenant-scoped BullMQ resume queue, deterministic IDs, bounded startup/periodic PostgreSQL repair, FIFO batches of 25, checkout locks, current Shopify revalidation, retryable provider errors, and terminal handling for unrecoverable checkouts.
+- Added post-commit best-effort resume scheduling after confirmed purchased-credit activation; queue failures do not roll back activation.
 
 ### Validation Results
-Populate during implementation.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- Focused billing suite: `npx vitest run tests/unit/services/recovery-billing.service.test.ts`, 45/45 passed.
+- `npm run test:integration`: passed, 3/3 tests.
+- `npm run test:unit`: 10 existing failures remain in purchased-credit reconciliation and runtime observability baseline tests; the purchased-credit failures are caused by the accepted database gitlink/client lacking fields and enum members already used by the pre-existing source (`PENDING_BILLING`, `NEEDS_ATTENTION`, refund counters), and the observability failures retain the pre-existing shared-runtime version assertion.
+- `npm run build`: blocked by the same pre-existing accepted-gitlink Prisma/client drift; `git diff --check`: passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+Implementation repository: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009` on `task/ARCH-010-BACKGROUND-009`, pushed at commit `50bcda3`.
+Parent repository: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009` on `task/ARCH-010-BACKGROUND-009`, claim commit `9d0cbba` pushed.
+Both canonical worktrees were created from current `origin/main`; no remote task branch existed before creation.
 
 ### Architect Review
-Pending.
+Requested. Self-acceptance is not performed.
 
 
 ## Final promotional capacity and restoration
