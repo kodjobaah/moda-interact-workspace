@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 89
 executor: copilot
 claimed_at: 2026-09-13T17:22:16Z
@@ -215,7 +215,7 @@ Stop if ADMIN-007 reference semantics would need to be changed, if DATABASE-013 
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `moda-interact-admin/src/app/actions/billing-plan.ts`
@@ -1064,6 +1064,89 @@ STOP and return this same task to `moda_architect` if:
 3. deterministic UI evidence requires introducing a new test framework rather than
    using the repository's existing test tooling;
 4. another repository or schema must change.
+
+## Attempt 4 Completion Report
+
+### Status
+
+Ready for Review.
+
+### Files Changed
+
+- `moda-interact-admin/src/lib/admin/billing-plan-guardrail.ts`
+- `moda-interact-admin/src/lib/admin/billing-plan-mutation.ts`
+- `moda-interact-admin/src/app/actions/billing-plan.ts`
+- `moda-interact-admin/src/components/admin/billing-plan-catalog.tsx`
+- `moda-interact-admin/src/components/admin/billing-plan-economics-presentation.ts`
+- `moda-interact-admin/tests/security/admin-billing-plan.test.mjs`
+- `moda-interact-admin/tests/unit/billing-plan-economics-presentation.test.mjs`
+
+### Work Completed
+
+- Structural invalid-edge results now take precedence over stale pack-size or pack-handle evidence and return `UNVERIFIED / INVALID_UPGRADE_EDGE`.
+- `mutateBillingPlanAction` now delegates economics-affecting updates to the production `applyBillingPlanUpdateInTransaction` seam. The seam evaluates every affected active adjacent edge using the proposal, asserts all results before catalog writes, records economics evidence, then writes the catalog audit and plan update.
+- Deterministic fake transaction tests exercise the production seam for affected-edge reevaluation, valid top-ups-off behavior, stale/missing/currency evidence rejection, atomic no-write failures, and no-edge behavior.
+- Economics and no-edge presenters are production exports rendered through `ReactDOMServer.renderToStaticMarkup` tests for PASS, FAIL, UNVERIFIED, integer-minor currency formatting, `NO_UPGRADE_EDGE`, authority wording, and secret/raw-provider-response exclusion.
+- Audit evidence tests now require every evaluator evidence key, including `topUpPath`, and assert serialized whitelist evidence excludes credential and raw-provider sentinel values.
+- ADMIN-007 evaluator arithmetic, Prisma schema, database, Shopify charging, merchant admission, and other repositories were unchanged.
+
+### Validation Results
+
+- PASS: `npm run prisma:validate`.
+- PASS: `node --experimental-strip-types --test tests/security/admin-billing-plan.test.mjs` (15/15).
+- PASS: `node --experimental-strip-types --test tests/unit/billing-plan-economics-presentation.test.mjs` (2/2).
+- PASS: `npm test` (167/167).
+- PASS: `npx tsc --noEmit --pretty false`.
+- PASS: `npm run lint` with only the two pre-existing `queue-monitor.tsx` React Hook dependency warnings and zero errors.
+- PASS: `npm run build`; only the documented BullMQ optional-dependency/critical-dependency warnings remain.
+- PASS: `git diff --check`.
+
+### Git / VCS
+
+Implementation commit:
+
+```text
+e0ad1a9532e9b34e595647964c8236d42ce67b0c
+```
+
+Remote implementation branch: `origin/task/ARCH-010-ADMIN-009` (pushed).
+
+Attempt 4 claim commit: `3fd37db` on `origin/task/ARCH-010-ADMIN-009` in the parent workspace repository.
+
+Physical worktree isolation:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
+parent branch: task/ARCH-010-ADMIN-009
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
+implementation branch: task/ARCH-010-ADMIN-009
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+```
+
+Start-of-attempt synchronization:
+
+```text
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+```
+
+Parent history reconciliation:
+
+```text
+Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
+Attempt-1 report 5a17755... ancestor of parent HEAD: yes
+Attempt-2 claim 645574c... ancestor of parent HEAD: yes
+Attempt-2 report eda0f87... ancestor of parent HEAD: yes
+Attempt-3 claim 869c761... ancestor of parent HEAD: yes
+Attempt-3 report 24083ae... ancestor of parent HEAD: yes
+```
+
+Both canonical task worktrees were clean at handoff after the parent report update.
 
 When complete:
 
