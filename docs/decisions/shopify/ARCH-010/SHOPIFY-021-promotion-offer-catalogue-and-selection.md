@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 84
 executor: null
 claimed_at: null
@@ -983,6 +983,703 @@ When complete:
 ```text
 set this same task to review;
 publish implementation/evidence commit(s);
+publish the Completion Report;
+STOP for moda_architect review.
+```
+
+## Architect Review — Attempt 2
+
+### Changes Requested — Evidence and Localisation Completion
+
+Attempt 2 is **not accepted yet**. Return this same task to `ready` for Attempt 3.
+
+Do not start `ARCH-010-SHOPIFY-020`, `ARCH-010-SHOPIFY-022` or
+`ARCH-010-SYSTEM-TEST-003`.
+
+Published Attempt-2 history to preserve:
+
+```text
+Attempt-2 claim:
+  4eb92ab802328f0e4e318e043341b67d61f96f1b
+
+Attempt-2 implementation:
+  625b7ea30a1608db71671a5d2cf4efdf5cd6bd59
+
+Attempt-2 parent report:
+  7388dbe6ae6923f39f86326a064ef697319016a4
+```
+
+Attempt 3 is the next claim. Increment `attempt` exactly once.
+
+### Attempt-2 production logic accepted in substance
+
+Preserve the following implementation:
+
+```text
+- the current MerchantPromotionSelection query loads the selected grant's campaign
+  usability/targeting relation before dereferencing it;
+- old selection usability is re-evaluated against the merchant's current shop and
+  current local plan;
+- catalogue state distinguishes:
+    currentlySelected
+    previouslyClaimed
+    remainingQuantity
+    usable
+    exhausted;
+- merchant projection omits target ids and Admin/audit metadata;
+- first grant snapshots exactly campaign.quantity;
+- repeated selection uses grant upsert update: {};
+- SERIALIZABLE retry has a three-attempt bound;
+- every retry re-runs the transaction callback and therefore re-reads merchant
+  context, requested campaign, current selection and grant state;
+- route boundary no longer serializes grantId or raw PromotionSelectionError.code;
+- route uses promotion-specific presentation keys rather than billing/change-plan
+  or purchased-pack wording;
+- app navigation uses the merchant i18n runtime;
+- all 20 registered locale files contain the complete promotion key family.
+```
+
+No change to:
+
+```text
+app/services/promotions/promotion.service.ts
+app/routes/app/promotions/route.tsx
+app/routes/app/route.jsx
+```
+
+is authorized in Attempt 3 unless the required real concurrency test exposes a
+genuine defect. If that happens, STOP and return to `moda_architect`.
+
+### Finding 1 — Czech, Danish and Finnish promotion copy is still English placeholder copy
+
+Attempt 1 explicitly required:
+
+```text
+For non-English catalogues, add semantically equivalent translations.
+Do not copy English into every locale merely to satisfy key parity.
+```
+
+Attempt 2 added all 17 promotion keys to 20 catalogues, but these three catalogues
+contain the **entire promotion key family byte-for-byte equal to English**:
+
+```text
+app/i18n/locales/cs.json
+app/i18n/locales/da.json
+app/i18n/locales/fi.json
+```
+
+This is not accepted localisation evidence.
+
+#### Required Czech values
+
+Use exactly:
+
+```json
+{
+  "promotions.nav": "Akce",
+  "promotions.page.title": "Propagační nabídky",
+  "promotions.page.description": "Vyberte dostupnou akci a přidejte do svého obchodu propagační kredity pro obnovu.",
+  "promotions.empty": "Momentálně nejsou k dispozici žádné propagační nabídky.",
+  "promotions.credits": "{quantity} propagačních kreditů pro obnovu",
+  "promotions.expires": "Platnost končí",
+  "promotions.remaining": "Zbývá {quantity} kreditů",
+  "promotions.status.available": "Dostupná",
+  "promotions.status.selected": "Vybraná",
+  "promotions.status.claimed": "Dříve vybraná",
+  "promotions.status.exhausted": "Vyčerpaná",
+  "promotions.action.select": "Vybrat akci",
+  "promotions.action.reselect": "Vybrat akci znovu",
+  "promotions.success": "Akce byla vybrána.",
+  "promotions.error.activeSelected": "Než vyberete jinou akci, využijte nebo vyčerpejte aktuálně vybranou akci.",
+  "promotions.error.notEligible": "Tato akce již není pro váš obchod dostupná.",
+  "promotions.error.unavailable": "Akce nelze měnit, když vaše předplatné není dostupné."
+}
+```
+
+#### Required Danish values
+
+Use exactly:
+
+```json
+{
+  "promotions.nav": "Kampagner",
+  "promotions.page.title": "Kampagnetilbud",
+  "promotions.page.description": "Vælg en tilgængelig kampagne for at tilføje kampagnekreditter til gendannelse til din butik.",
+  "promotions.empty": "Der er ingen kampagnetilbud tilgængelige i øjeblikket.",
+  "promotions.credits": "{quantity} kampagnekreditter til gendannelse",
+  "promotions.expires": "Udløber",
+  "promotions.remaining": "{quantity} kreditter tilbage",
+  "promotions.status.available": "Tilgængelig",
+  "promotions.status.selected": "Valgt",
+  "promotions.status.claimed": "Tidligere valgt",
+  "promotions.status.exhausted": "Opbrugt",
+  "promotions.action.select": "Vælg kampagne",
+  "promotions.action.reselect": "Vælg kampagne igen",
+  "promotions.success": "Kampagne valgt.",
+  "promotions.error.activeSelected": "Brug eller opbrug din aktuelt valgte kampagne, før du vælger en anden.",
+  "promotions.error.notEligible": "Denne kampagne er ikke længere tilgængelig for din butik.",
+  "promotions.error.unavailable": "Kampagner kan ikke ændres, mens dit abonnement ikke er tilgængeligt."
+}
+```
+
+#### Required Finnish values
+
+Use exactly:
+
+```json
+{
+  "promotions.nav": "Kampanjat",
+  "promotions.page.title": "Kampanjatarjoukset",
+  "promotions.page.description": "Valitse saatavilla oleva kampanja lisätäksesi kauppaasi kampanjan palautuskrediittejä.",
+  "promotions.empty": "Kampanjatarjouksia ei ole tällä hetkellä saatavilla.",
+  "promotions.credits": "{quantity} kampanjan palautuskrediittiä",
+  "promotions.expires": "Vanhenee",
+  "promotions.remaining": "{quantity} krediittiä jäljellä",
+  "promotions.status.available": "Saatavilla",
+  "promotions.status.selected": "Valittu",
+  "promotions.status.claimed": "Valittu aiemmin",
+  "promotions.status.exhausted": "Käytetty loppuun",
+  "promotions.action.select": "Valitse kampanja",
+  "promotions.action.reselect": "Valitse kampanja uudelleen",
+  "promotions.success": "Kampanja valittu.",
+  "promotions.error.activeSelected": "Käytä tai kuluta loppuun tällä hetkellä valittu kampanja ennen kuin valitset toisen.",
+  "promotions.error.notEligible": "Tämä kampanja ei ole enää saatavilla kaupallesi.",
+  "promotions.error.unavailable": "Kampanjoita ei voi vaihtaa, kun tilauksesi ei ole käytettävissä."
+}
+```
+
+Keep all other locale translations from Attempt 2.
+
+Add a permanent test in:
+
+```text
+tests/unit/merchant-i18n.test.ts
+```
+
+that verifies for each of `cs`, `da`, `fi` that representative promotion keys are
+not equal to English:
+
+```text
+promotions.page.title
+promotions.page.description
+promotions.action.select
+promotions.error.activeSelected
+```
+
+The existing all-locale key-parity/ICU validation must remain green.
+
+### Finding 2 — the required PostgreSQL concurrency test file was never added
+
+Attempt 2 correctly did **not** claim the unit P2034 test as database-concurrency
+proof.
+
+However the uploaded snapshot contains no:
+
+```text
+tests/integration/promotion-selection.concurrency.integration.test.ts
+```
+
+Therefore there is currently no permanent real two-tab test waiting behind the
+disposable-database gate.
+
+Add that file in Attempt 3.
+
+#### Gate
+
+The test must run only when both are true:
+
+```text
+process.env.MODA_DISPOSABLE_INTEGRATION === "1"
+process.env.TEST_DATABASE_URL is non-empty
+```
+
+Otherwise the integration suite must skip with an explicit reason.
+
+Do **not** set `MODA_DISPOSABLE_INTEGRATION=1` automatically against an unknown
+database.
+
+#### Database clients
+
+Use two independent Prisma clients connected to the same disposable test database.
+
+One acceptable shape is:
+
+```ts
+const databaseUrl = process.env.TEST_DATABASE_URL;
+
+const clientA = new PrismaClient({
+  datasourceUrl: databaseUrl,
+});
+
+const clientB = new PrismaClient({
+  datasourceUrl: databaseUrl,
+});
+```
+
+If the generated Prisma version in this repository requires the existing supported
+`datasources.db.url` form instead, use that form. Do not alter Prisma configuration.
+
+Disconnect both clients in `afterAll`.
+
+#### Fixture
+
+Use unique identifiers derived from process id/time so the test cannot collide with
+other disposable tests.
+
+Create only the minimum durable rows required by `selectPromotionOffer(...)`:
+
+```text
+PlatformAdmin:
+  active SUPER_ADMIN fixture creator
+
+BillingPlan:
+  active=true
+  kind=PAID_METERED
+  unique shopifyPlanHandle
+  non-null normal usage handle
+  valid included allowance and required safety-limit fields
+
+Shop:
+  status=ACTIVE
+  unique myshopify domain
+
+Subscription:
+  shopId=<shop>
+  status=ACTIVE
+  planId=<plan>
+
+PromotionCampaign A:
+  status=ACTIVE
+  scope=GLOBAL
+  startsAt < now
+  expiresAt > now
+  quantity=25
+  createdByPlatformAdminId=<fixture admin>
+
+PromotionCampaign B:
+  same eligibility
+  quantity=40
+```
+
+Use schema-required values exactly; do not add production defaults/schema changes.
+
+Clean up test-owned rows in dependency-safe order after each scenario.
+
+### Required concurrency scenario A — different campaigns
+
+Start simultaneously from two independent clients:
+
+```ts
+await Promise.allSettled([
+  selectPromotionOffer(shopId, campaignA.id, now, clientA),
+  selectPromotionOffer(shopId, campaignB.id, now, clientB),
+]);
+```
+
+Required durable assertions:
+
+```text
+exactly one call succeeds;
+the other rejects with ACTIVE_PROMOTION_ALREADY_SELECTED;
+exactly one MerchantPromotionSelection exists for the shop;
+the selected grant belongs to the winning campaign;
+exactly one PromotionalCreditGrant remains for the shop;
+winner grant quantity equals the campaign's original quantity;
+no loser/orphan grant survives the rolled-back serialization attempt.
+```
+
+If the database returns a different genuine concurrency failure, record it and STOP;
+do not rewrite the service in this attempt.
+
+### Required concurrency scenario B — same campaign
+
+Reset the selection/grant fixture, then run two simultaneous selections of campaign A.
+
+Required durable assertions:
+
+```text
+both actions eventually succeed under the three-attempt retry;
+exactly one PromotionalCreditGrant exists for (campaignA, shop);
+grant.quantity == campaignA.quantity exactly;
+one MerchantPromotionSelection points to that grant;
+no duplicate grant quantity exists;
+no action is surfaced as ACTIVE_PROMOTION_ALREADY_SELECTED merely because of P2034;
+selectionCount reflects the two successful user actions and not aborted retry attempts.
+```
+
+The exact expected `selectionCount` is therefore:
+
+```text
+2
+```
+
+### Integration execution
+
+If the developer environment has deliberately enabled the disposable gate, run:
+
+```bash
+MODA_DISPOSABLE_INTEGRATION=1 \
+TEST_DATABASE_URL="$TEST_DATABASE_URL" \
+npx vitest run tests/integration/promotion-selection.concurrency.integration.test.ts
+```
+
+If `MODA_DISPOSABLE_INTEGRATION` remains unset:
+
+```text
+- add the permanent integration file;
+- run it once and record that it skipped because the disposable gate is closed;
+- do not claim scenarios 6/different-campaign concurrency as passed;
+- return the task to review with the exact blocker.
+```
+
+Architect acceptance still requires one real green disposable-PostgreSQL run. A
+closed gate is an execution blocker, not a reason to invent or weaken the test.
+
+### Finding 3 — several original scenario requirements still lack direct behavioral evidence
+
+Keep the existing Attempt-2 tests and add the following to:
+
+```text
+tests/unit/services/promotion.service.test.ts
+```
+
+#### 3.1 Requested campaign target rejection
+
+Add direct `selectPromotionOffer(...)` tests for:
+
+```text
+PLAN campaign targetPlanId != current Subscription.planId
+SHOP campaign targetShopId != authenticated shopId
+```
+
+Expected for each:
+
+```text
+PROMOTION_NOT_ELIGIBLE
+no grant upsert
+no grant update
+no MerchantPromotionSelection upsert
+```
+
+Do not rely only on catalogue SQL-filter shape.
+
+#### 3.2 Requested campaign lifecycle/time rejection
+
+Add direct mutation tests for:
+
+```text
+ACTIVE but startsAt > now
+ACTIVE but expiresAt <= now
+CLOSED
+```
+
+Expected:
+
+```text
+PROMOTION_NOT_ELIGIBLE
+no grant/selection mutation
+```
+
+#### 3.3 Still-usable old PLAN and SHOP selections
+
+The existing old GLOBAL selection block is good.
+
+Add table-driven current-selection cases:
+
+```text
+PLAN target matches current plan -> ACTIVE_PROMOTION_ALREADY_SELECTED
+SHOP target matches current shop -> ACTIVE_PROMOTION_ALREADY_SELECTED
+SHOP target points elsewhere -> replacement permitted
+```
+
+Keep the existing PLAN-after-plan-change permitted case.
+
+#### 3.4 Reopened partially used campaign
+
+Requested campaign and existing grant have the same campaign id.
+
+Existing grant:
+
+```text
+quantity = 25
+committedQuantity = 7
+reservedQuantity = 3
+exhaustedAt = null
+```
+
+Expected:
+
+```text
+grant upsert uses update: {};
+grant create quantity remains 25 but is not executed for existing row;
+returned remainingQuantity = 15;
+no quantity/reset field is present in any update payload;
+selection pointer may be refreshed;
+selection timestamps/count increment exactly once for this successful action.
+```
+
+#### 3.5 Reopened exhausted campaign
+
+Existing same-campaign grant:
+
+```text
+quantity = 25
+committedQuantity = 25
+reservedQuantity = 0
+exhaustedAt != null
+```
+
+Expected:
+
+```text
+grant upsert update: {};
+no quantity increase/reset;
+returned remainingQuantity = 0;
+persisted quantity remains 25.
+```
+
+The task does not require inventing a second grant for a reopened campaign.
+
+#### 3.6 Actual frozen/suspended lifecycle evidence
+
+The current test labelled `"inactive shop"` supplies:
+
+```text
+shopStatus = "FROZEN"
+```
+
+but persisted `ShopStatus` is:
+
+```text
+ACTIVE | UNINSTALLED | SUSPENDED
+```
+
+and `FROZEN` belongs to SubscriptionProjectionStatus.
+
+Replace/add factual cases:
+
+```text
+Shop.status = SUSPENDED -> PROMOTION_SELECTION_UNAVAILABLE
+Subscription.status = FROZEN -> PROMOTION_SELECTION_UNAVAILABLE
+Subscription.status = NO_CONTRACT -> PROMOTION_SELECTION_UNAVAILABLE
+inactive BillingPlan -> PROMOTION_SELECTION_UNAVAILABLE
+```
+
+Do not use an impossible ShopStatus value as primary evidence.
+
+#### 3.7 Retry eventually succeeds
+
+Keep:
+
+```text
+three consecutive P2034 -> PROMOTION_SELECTION_UNAVAILABLE
+```
+
+and add:
+
+```text
+first transaction P2034
+second transaction executes successful same-campaign selection
+```
+
+Assert:
+
+```text
+$transaction called twice;
+successful result returned;
+logical `now` passed into the service remains the same;
+aborted attempt contributes no extra selectionCount/timestamp mutation in the
+successful transaction fixture.
+```
+
+This is unit evidence for the retry contract; it does not replace PostgreSQL
+concurrency evidence.
+
+### Finding 4 — localisation report must be factual
+
+Attempt-2 report says:
+
+```text
+"localized UI across 20 locales"
+```
+
+Key parity is true, but Czech/Danish/Finnish are English placeholders.
+
+Attempt 3 Completion Report must distinguish:
+
+```text
+20/20 locale key parity: passed
+19/19 non-English catalogues contain semantic non-English promotion copy: passed
+```
+
+Do not describe English placeholders as localisation.
+
+### Finding 5 — mandatory workflow evidence is still absent
+
+Attempt-2 Completion Report records worktree paths and gitlink but not the mandatory
+synchronization/history blocks.
+
+Attempt 3 must record actual observed values:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-021
+  parent branch: task/ARCH-010-SHOPIFY-021
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-021
+  implementation branch: task/ARCH-010-SHOPIFY-021
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+  database submodule HEAD: <actual full SHA>
+  database gitlink staged/changed: no
+
+Task history:
+  Attempt-1 claim 5c544355ff8f4201e55139371abe5dc4ce2e6330
+    ancestor of parent HEAD: yes
+  Attempt-1 implementation a329079b004ae1b142aee92f417071fcedece70f
+    ancestor of implementation HEAD: yes
+  Attempt-1 report 7eeffc25b5c5317ca1bdd9c2ce7a9c22a763b0db
+    ancestor of parent HEAD: yes
+  Attempt-2 claim 4eb92ab802328f0e4e318e043341b67d61f96f1b
+    ancestor of parent HEAD: yes
+  Attempt-2 implementation 625b7ea30a1608db71671a5d2cf4efdf5cd6bd59
+    ancestor of implementation HEAD: yes
+  Attempt-2 report 7388dbe6ae6923f39f86326a064ef697319016a4
+    ancestor of parent HEAD: yes
+
+Handoff:
+  parent worktree clean: yes
+  implementation worktree clean: yes
+```
+
+Record observed values only.
+
+### Attempt 3 allowed scope
+
+Production/localisation files:
+
+```text
+app/i18n/locales/cs.json
+app/i18n/locales/da.json
+app/i18n/locales/fi.json
+```
+
+Test files:
+
+```text
+tests/unit/services/promotion.service.test.ts
+tests/unit/merchant-i18n.test.ts
+tests/integration/promotion-selection.concurrency.integration.test.ts
+```
+
+The parent task report may also change.
+
+No service/route production changes are authorized unless the real concurrency test
+exposes a genuine defect.
+
+Do not modify:
+
+```text
+app/services/promotions/promotion.service.ts
+app/routes/app/promotions/route.tsx
+app/routes/app/route.jsx
+database/**
+Shared contracts/package versions
+Background/Admin/Messaging/Gateway repositories
+billing plan transition
+recovery pack purchase/refund logic
+```
+
+If the new concurrency test fails because of production semantics:
+
+```text
+STOP;
+do not patch the service;
+record the exact database outcome;
+return to moda_architect.
+```
+
+### Required Attempt 3 validation
+
+Run:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run \
+  tests/unit/services/promotion.service.test.ts \
+  tests/unit/merchant-i18n.test.ts \
+  tests/unit/routes/promotion-route.test.ts \
+  tests/unit/routes/explicit-route-config.test.ts
+
+npx vitest run tests/integration/promotion-selection.concurrency.integration.test.ts
+
+npm test
+npm run typecheck
+npm run build
+
+npx eslint \
+  app/i18n/locales/cs.json \
+  app/i18n/locales/da.json \
+  app/i18n/locales/fi.json \
+  tests/unit/services/promotion.service.test.ts \
+  tests/unit/merchant-i18n.test.ts \
+  tests/integration/promotion-selection.concurrency.integration.test.ts
+
+git diff --check
+```
+
+If ESLint does not lint JSON files under the current repository configuration,
+record that fact and lint the touched TypeScript test files; do not invent another
+lint configuration.
+
+Full repository typecheck/ESLint may retain the documented unrelated baseline.
+Touched task files must introduce no new diagnostic.
+
+### Acceptance requires
+
+```text
+- Attempt-2 promotion service/route behavior remains unchanged;
+- Czech, Danish and Finnish no longer contain English placeholder promotion copy;
+- all 20 locale catalogues retain exact key parity and valid ICU syntax;
+- wrong requested PLAN/SHOP target mutation is directly proven fail-closed;
+- future/expired/CLOSED requested campaign mutation is directly proven fail-closed;
+- current GLOBAL/PLAN/SHOP usability/replacement rules have factual tests;
+- reopened partially-used campaign reuses exact original grant/remaining amount;
+- reopened exhausted campaign receives no new quantity;
+- factual SUSPENDED Shop and FROZEN Subscription evidence exists;
+- bounded P2034 retry has both exhaustion and eventual-success unit evidence;
+- real PostgreSQL different-campaign concurrency passes;
+- real PostgreSQL same-campaign concurrency passes;
+- different-campaign loser leaves no orphan grant;
+- same-campaign concurrency leaves exactly one original-quantity grant;
+- workflow/synchronization/history evidence is complete;
+- full repository suite remains 300+/baseline-equivalent with no task regression;
+- build and touched-file lint pass;
+- database gitlink remains unchanged;
+- git diff --check passes.
+```
+
+When complete:
+
+```text
+set this same task to review;
+publish evidence/localisation commit(s);
 publish the Completion Report;
 STOP for moda_architect review.
 ```
