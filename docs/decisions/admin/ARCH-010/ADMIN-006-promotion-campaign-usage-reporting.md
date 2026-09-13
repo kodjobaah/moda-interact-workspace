@@ -82,19 +82,36 @@ Stop if DATABASE-011 does not expose deterministic per-campaign/shop grant histo
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-admin/src/lib/admin/promotion-report.ts`
+- `moda-interact-admin/src/app/(protected)/promotions/page.tsx`
+- `moda-interact-admin/src/app/(protected)/promotions/[campaignId]/page.tsx`
+- `moda-interact-admin/tests/unit/promotion-report.test.ts`
+- `moda-interact-admin/tests/security/admin-promotions.test.mjs`
 
 ### Work Completed
-Populate during implementation.
+- Added a SUPER_ADMIN-only, server-side campaign usage report derived from exact `PromotionalCreditGrant(campaignId, shopId)` lots.
+- Added bounded 25-row pagination and bounded merchant search across safe shop ID/domain fields, with selected/used/exhausted filters.
+- Added campaign-wide selected, used, exhausted and committed-credit summaries.
+- Added merchant rows with selection/use timestamps, selection count, granted/reserved/committed/remaining quantities, exhaustion and current-selection derivation from `MerchantPromotionSelection`.
+- Added a read-only detail route and linked it from the existing campaign catalogue. No grant, selection, campaign, entitlement or audit mutation is exposed.
+- Added focused unit/security coverage for selected-vs-used distinction, remaining calculation, exhaustion/current selection fields, pagination/filter bounds, SUPER_ADMIN gating and mutation absence.
 
 ### Validation Results
-Populate during implementation.
+- `node --experimental-strip-types --test tests/unit/promotion-report.test.ts tests/security/admin-promotions.test.mjs`: passed, 15/15.
+- `npm test`: passed (declared observability/security suite).
+- `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx` (missing `refresh` hook dependencies); no errors.
+- `npm run build`: passed; Prisma client generated and TypeScript/Next production build completed, including `/promotions/[campaignId]`.
+- `git diff --check`: passed.
+- Build emitted existing BullMQ warnings for dynamic dependency resolution and optional `@valkey/valkey-glide`; no build failure.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Launcher packet evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-006` on `task/ARCH-010-ADMIN-006`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-006` on the same branch name.
+- Prepared execution reported physical isolation/synchronization ready, dependency gate passed, parent head `a72e144342dd0335cf5ccaac822c2fe9e2dab51f`, implementation head `7f484c3883400fa36ac472222e48389c9390fbd8`, and initialized database submodule at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Implementation commit and push: `4fca6c8` pushed to `origin/task/ARCH-010-ADMIN-006`.
+- Parent report commit and push: recorded by the parent publication commit after this report update.
 
 ### Architect Review
-Pending.
+No Architect Review section was present in the complete claimed task file; there were no Changes Requested items. Ready for architect review after implementation publication.
