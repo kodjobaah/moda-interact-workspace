@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 82
-executor: copilot
-claimed_at: '2026-09-13T10:42:00Z'
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
 - ARCH-010-DATABASE-013
@@ -2193,4 +2193,104 @@ ARCH-010-BACKGROUND-009 remains Pending
 ```
 
 When BG19 is accepted, both must be re-evaluated immediately and promoted to Ready if their other dependencies remain Complete.
+
+#### Attempt 6 — Accepted
+
+##### Architect Decision
+
+**Accepted Complete — Attempt 6.**
+
+The implementation and proof now satisfy the BACKGROUND-019 acceptance contract.
+
+Accepted implementation branch HEAD:
+
+```text
+08c288f
+```
+
+The production reservation/routing implementation remains unchanged from the previously reviewed production candidate; Attempt 6 adds the missing deterministic proof rather than redesigning the runtime path.
+
+Architect review confirms:
+
+```text
+- exact selected PromotionalCreditGrant is the promotional capacity owner;
+- promotional capacity is attempted before every other capacity source;
+- PAID order is promotional -> current-period included -> purchased FIFO -> lifetime Free -> block;
+- FREE order is promotional -> purchased FIFO -> lifetime Free -> block;
+- reserve/commit/release never write merchant selection-history fields;
+- exhaustedAt is derived from the true post-commit remaining quantity;
+- reservation ownership survives replay and cannot switch to another capacity source;
+- released reservations reactivate only when the same exact promotional grant is again usable;
+- CLOSED / expired / plan-ineligible / changed-selection states cannot reactivate the old reservation;
+- already-admitted promotional reservations can commit after campaign expiry or close;
+- CAS, Prisma P2034 and Prisma P2002 conflict paths are retried within the bounded retry budget;
+- max-retry exhaustion terminates rather than looping indefinitely;
+- promotional commit creates internal RECOVERY_CONVERSATION evidence with Shopify reporting NOT_APPLICABLE;
+- promotional admission/commit/provider-failure routing does not invoke the normal Paid Shopify meter path;
+- definitive provider failure, ambiguous provider outcome and pre-provider release remain owned by the promotional reservation service;
+- real PostgreSQL final-credit concurrency cannot overspend the exact grant;
+- real PostgreSQL same-source concurrency produces one durable UsageReservation and one exact grant reservation;
+- the PostgreSQL tests use an explicit fixed `now` inside the campaign window, so calendar time cannot invalidate the race fixture;
+- the database gitlink remains unchanged; the accepted DATABASE-013 checkout is validation materialization only.
+```
+
+Validation accepted:
+
+```text
+focused unit tests: 74 passed
+promotional PostgreSQL integration: 2 passed
+Prisma validate: passed
+Prisma generate: passed
+TypeScript --noEmit: passed
+build: passed
+git diff --check: passed
+full unit suite: 599 passed, 1 unchanged unrelated observability version assertion
+```
+
+The remaining unit failure is the previously known unrelated assertion:
+
+```text
+tests/unit/runtime/observability-startup.test.ts
+expected shared runtime 0.9.0
+package declares 0.11.0
+```
+
+It is outside BACKGROUND-019 and does not block acceptance.
+
+Attempt 6 records the four mandatory synchronization outcomes:
+
+```text
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+```
+
+The submitted archive contains the intermediate parent report commit `d1bca06`; the developer handoff identifies the final pushed parent task-branch HEAD after report finalization as:
+
+```text
+7fd5e1e
+```
+
+Architect reconciliation accepts `7fd5e1e` as the final parent publication evidence for Attempt 6.
+
+##### Downstream release
+
+All non-BG19 prerequisites are already Complete for:
+
+```text
+ARCH-010-BACKGROUND-008
+ARCH-010-BACKGROUND-009
+```
+
+Therefore this acceptance releases both tasks:
+
+```text
+ARCH-010-BACKGROUND-008: Pending -> Ready
+ARCH-010-BACKGROUND-009: Pending -> Ready
+```
+
+`ARCH-010-BACKGROUND-007` remains Pending because it depends on both BG8 and BG9 becoming Complete.
+
+`ARCH-010-SYSTEM-TEST-001` and `ARCH-010-SYSTEM-TEST-003` remain Pending/manual-gated because they still have other incomplete dependencies. System tests are not auto-started.
 
