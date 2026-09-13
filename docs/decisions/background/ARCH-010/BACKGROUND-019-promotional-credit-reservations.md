@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 82
-executor: copilot
-claimed_at: '2026-09-13T00:00:00Z'
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
 - ARCH-010-DATABASE-013
@@ -1837,4 +1837,350 @@ ARCH-010-BACKGROUND-009 remains Pending
 ```
 
 On successful BG19 acceptance, both should be re-evaluated and promoted to Ready if their other dependencies remain Complete.
+
+#### Attempt 5 — Changes Requested
+
+##### Review Status
+
+Changes Requested.
+
+Attempt 5 did not implement the Attempt 4 architect corrections.
+
+The submitted Attempt 5 archive was compared directly with the submitted Attempt 4 archive. The three implementation-owned test files are byte-for-byte identical:
+
+```text
+tests/unit/services/promotional-recovery-reservation.service.test.ts
+  SHA-256 prefix: 006ffc5e8dd3
+
+tests/unit/services/recovery-billing.service.test.ts
+  SHA-256 prefix: 27a70463f8a5
+
+tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts
+  SHA-256 prefix: b0a6677919ba
+```
+
+The production files are also unchanged, which is correct:
+
+```text
+src/services/promotional-recovery-reservation.service.ts
+src/services/recovery-billing.service.ts
+```
+
+The implementation commit remains:
+
+```text
+4191fd0
+```
+
+The parent report advanced to:
+
+```text
+bc74dcd
+```
+
+but the required test implementation did not advance.
+
+The Attempt 5 Completion Report says that the six correction groups were "revalidated". That is not sufficient. The architect requested new deterministic tests because the existing 60-test suite did not contain those proofs.
+
+Attempt 6 must therefore make a real test implementation commit.
+
+No production-source change is currently requested.
+
+##### Required implementation delta for Attempt 6
+
+Modify:
+
+```text
+tests/unit/services/promotional-recovery-reservation.service.test.ts
+tests/unit/services/recovery-billing.service.test.ts
+tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts
+```
+
+The resulting files must no longer be byte-for-byte identical to Attempt 4/5.
+
+###### 1. Retry/CAS/P2034/P2002/maxRetries tests
+
+In:
+
+```text
+tests/unit/services/promotional-recovery-reservation.service.test.ts
+```
+
+add deterministic tests that explicitly exercise:
+
+```text
+A. optimistic CAS/updateMany count=0 conflict
+   -> retry
+   -> successful reserve
+   -> reservedQuantity increments exactly once
+   -> exactly one UsageReservation for the sourceKey
+
+B. Prisma P2034 on the first transaction attempt
+   -> retry
+   -> successful operation
+   -> accounting mutates exactly once
+
+C. Prisma P2002 during reservation create
+   -> retry/replay
+   -> same sourceKey resolves to the durable existing reservation
+   -> no second UsageReservation
+   -> reservedQuantity increments exactly once
+
+D. retryable conflict on every attempt
+   -> stops at maxRetries
+   -> final error/conflict surfaces
+   -> no unbounded retry
+```
+
+The test source itself must contain direct injected/constructed coverage for `P2034` and `P2002`; merely relying on the integration race is insufficient.
+
+###### 2. RELEASED replay eligibility matrix
+
+Add same-source replay tests proving:
+
+```text
+ACTIVE + eligible after release
+  -> reactivates same reservation and same promotionalCreditGrantId
+
+CLOSED after release
+  -> already-released / no reactivation
+
+PLAN campaign + current effective plan no longer matches
+  -> already-released / no reactivation
+
+merchant selection moved to another grant
+  -> old released reservation does not switch grant ownership
+  -> no new reservation row for same sourceKey
+```
+
+The existing expiry/reopen test does not replace these cases.
+
+###### 3. Commit after campaign becomes unusable
+
+Add:
+
+```text
+reserve while ACTIVE
+-> expire campaign
+-> commit succeeds against original exact grant
+
+reserve while ACTIVE
+-> set campaign CLOSED
+-> commit succeeds against original exact grant
+```
+
+Also prove duplicate commit does not rewrite:
+
+```text
+committedQuantity
+reservedQuantity
+UsageEvent count
+exhaustedAt
+firstUsedAt
+lastUsedAt
+```
+
+after the first successful commit.
+
+###### 4. Exact ownership/idempotency assertions
+
+Directly assert:
+
+```text
+new UsageReservation.promotionalCreditGrantId === selected grant id
+duplicate reserve does not increment grant.reservedQuantity again
+duplicate release does not decrement grant.reservedQuantity again
+reserve/commit/release preserve firstSelectedAt/lastSelectedAt/selectionCount
+non-promotional same-source reservation is never converted to promotional ownership
+```
+
+###### 5. Missing router cases
+
+In:
+
+```text
+tests/unit/services/recovery-billing.service.test.ts
+```
+
+add explicit tests for:
+
+```text
+Free promo available
+  -> promotional wins before purchased and lifetime Free
+
+Paid promo unavailable + included exhausted
+  -> purchased wins
+  -> lifetime Free not called
+
+promotional already-released replay
+  -> same recovery blocked
+  -> no fallback owner called
+
+definitive promotional provider failure
+  -> promotional release only
+  -> paid/purchased/lifetime owners not invoked
+
+ambiguous promotional provider result
+  -> promotional markAmbiguous only
+  -> no fallback owner called
+
+releaseBeforeProvider on promotional reservation
+  -> promotional release only
+```
+
+Do not implement BACKGROUND-008 DRAINING behavior.
+
+###### 6. Fixed-clock PostgreSQL race
+
+In:
+
+```text
+tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts
+```
+
+stop constructing the service with the real process clock.
+
+Use the existing constructor seam with a fixed instant inside the campaign window, for example:
+
+```text
+2026-09-15T00:00:00.000Z
+```
+
+for every competing service instance.
+
+Do not extend the campaign expiry as a substitute.
+
+###### 7. Strengthen PostgreSQL exact-grant proof
+
+The existing final-credit race must additionally assert:
+
+```text
+winning UsageReservation.promotionalCreditGrantId === grant.id
+reservedQuantity + committedQuantity <= quantity
+```
+
+Add a second real PostgreSQL race:
+
+```text
+two independent clients
+same sourceKey
+same selected grant
+
+expected:
+  exactly one durable UsageReservation
+  grant.reservedQuantity increments exactly once
+  both calls resolve idempotently without overspend
+```
+
+This is the real-database proof for same-source replay/P2002 behavior.
+
+##### Production source freeze
+
+Unless a newly added test exposes a genuine defect:
+
+```text
+DO NOT MODIFY:
+src/services/promotional-recovery-reservation.service.ts
+src/services/recovery-billing.service.ts
+```
+
+The production implementation remains accepted as the current candidate.
+
+##### Database dependency state
+
+The earlier architect instruction to commit the DATABASE-013 gitlink remains rescinded.
+
+Attempt 6 must:
+
+```text
+leave the parent database gitlink unchanged
+leave the authorized 014408e... checkout unstaged
+make no database schema/migration/source changes
+```
+
+The local database checkout is validation materialization only.
+
+##### Validation
+
+After the new tests exist, run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+./node_modules/.bin/vitest run \
+  tests/unit/services/promotional-recovery-reservation.service.test.ts \
+  tests/unit/services/recovery-billing.service.test.ts
+
+npm run test:integration -- \
+  tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts
+
+./node_modules/.bin/tsc --noEmit
+npm run build
+npm run test:unit
+git diff --check
+```
+
+The existing unrelated observability assertion:
+
+```text
+expected shared runtime 0.9.0
+package declares 0.11.0
+```
+
+may remain if it is still the only full-unit failure.
+
+##### Mandatory Attempt 6 Completion Report evidence
+
+Record all four start-of-attempt synchronization outcomes:
+
+```text
+parent remote task branch fast-forwarded: yes | not-needed
+parent origin/main incorporated: yes | already-current
+implementation remote task branch fast-forwarded: yes | not-needed
+implementation origin/main incorporated: yes | already-current
+```
+
+Also record:
+
+```text
+new Attempt 6 implementation commit containing the test changes
+final parent report commit
+both branches pushed
+both branches clean except the explicitly authorized unstaged database materialization
+database gitlink staged: no
+main branches modified: no
+```
+
+A report-only commit with no test implementation delta is not acceptable.
+
+##### Architect Decision
+
+**Changes Requested — Attempt 5.**
+
+Return the same task to:
+
+```text
+status: ready
+attempt: 5
+executor: null
+claimed_at: null
+```
+
+The next authorized:
+
+```text
+/moda-task ARCH-010-BACKGROUND-019
+```
+
+claim becomes Attempt 6.
+
+Until BG19 is architect-accepted Complete:
+
+```text
+ARCH-010-BACKGROUND-008 remains Pending
+ARCH-010-BACKGROUND-009 remains Pending
+```
+
+When BG19 is accepted, both must be re-evaluated immediately and promoted to Ready if their other dependencies remain Complete.
 
