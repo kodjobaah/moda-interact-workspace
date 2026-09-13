@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: copilot
 claimed_at: '2026-09-13T11:26:59Z'
@@ -389,7 +389,7 @@ STOP and return evidence to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Ready for Review.
+Complete.
 
 ### Files Changed
 - `moda-interact-database/prisma/schema.prisma`
@@ -417,34 +417,36 @@ Ready for Review.
 ### Git / VCS
 Task branch: `task/ARCH-010-DATABASE-014`
 
-Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010-task-ARCH-010-DATABASE-014`
+Attempt 2 implementation publication:
+  implementation repository: `moda-interact-database`
+  implementation commit: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+  remote branch: `origin/task/ARCH-010-DATABASE-014`
+  pushed: yes
+
+Attempt 2 originally executed from a DATABASE-014 worktree incorrectly rooted under the ADMIN-010 task-worktree lineage. Architect review therefore required canonical-worktree remediation without further source changes.
+
+Post-review canonical remediation performed by the developer:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-014`
   parent branch: `task/ARCH-010-DATABASE-014`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010.worktrees/ARCH-010-DATABASE-014`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-014`
   implementation branch: `task/ARCH-010-DATABASE-014`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+  canonical implementation worktree fast-forwarded from `cd8dc21` to `abee18e`
+  implementation HEAD: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+  remote task HEAD: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+  implementation source changes made during remediation: no
 
-Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+Canonical-worktree revalidation:
+  `npm run prisma:validate`: passed
+  `npm run prisma:generate`: passed
+  `npm run test:first-production-baseline`: passed
+  `npm run erd:puml`: passed
+  regenerated ERD differed from committed `abee18e` output only by whitespace (`git diff --ignore-all-space --exit-code` returned 0)
+  committed ERD restored from `HEAD` after the generator-only whitespace drift check
+  `git diff --check`: passed
+  final implementation HEAD/remote identity: passed
 
-Implementation repository:
-  repository: `moda-interact-database`
-  commit: `abee18e`
-  remote branch: `origin/task/ARCH-010-DATABASE-014`
-  pushed: yes
-
-Parent workspace:
-  task file: `docs/decisions/database/ARCH-010/DATABASE-014-recovery-credit-purchase-lifecycle-and-provenance.md`
-  commit: `c6b6db0`
-  remote branch: `origin/task/ARCH-010-DATABASE-014`
-  pushed: yes
-  submodule gitlink staged: no
+The terminal recorder created an unrelated untracked `typescript` transcript during evidence capture. This is not task implementation state and must be removed from the worktree before final developer integration.
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -453,311 +455,27 @@ Merged to workspace main: no
 
 ### Review Status
 
-Changes Requested
+Accepted
 
-### Attempt 1 — Changes Requested
+### Review Notes
 
-Attempt 1 is **not accepted**. The canonical five-state lifecycle and overall schema direction are correct, but the database invariants are not yet strong enough for downstream purchase/refund tasks.
+Attempt 2 is architect-accepted after canonical-worktree remediation. The database implementation itself was verified directly at pushed commit `abee18e8c55b7a79f8234490fa4df66d3d228f0c`; no additional source-code correction was required after Attempt 2.
 
-This is an **Attempt 2 correction on the same task**. Do not create a replacement task. Do not modify any dependent repository. Do not redesign the lifecycle.
+The accepted implementation includes:
 
-#### Attempt 2 implementation scope — exact files
+- exact five-state `RecoveryCreditPurchase` lifecycle;
+- `currentAmount <= creditsGranted` database enforcement;
+- confirmed valuation integrity for every non-`REQUESTED` purchase state;
+- required immutable refund purchase-value snapshots;
+- status-leading Admin refund queue index;
+- provider settlement precision without the obsolete fixed `DECIMAL(20,2)` assumption;
+- baseline validator coverage for the corrected invariants;
+- regenerated ERD;
+- no second production migration and no compatibility schema.
 
-Implementation changes are limited to:
+The original Attempt 2 worktree lineage was non-conformant because it was rooted beneath the ADMIN-010 task worktree. The developer subsequently restored the canonical DATABASE-014 implementation worktree, fast-forwarded it to the already-pushed accepted commit `abee18e`, and reran the required validation there. This remediation required no implementation commit.
 
-- `moda-interact-database/prisma/schema.prisma`
-- `moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql`
-- `moda-interact-database/scripts/validate-first-production-baseline.mjs`
-- `moda-interact-database/docs/generated/prisma-erd.puml` — generated output only
-- this task file — execution metadata and Completion Report only
-
-Do **not** create a second migration. ARCH-010 is still pre-production and this task owns correction of the existing clean first-production baseline.
-
-Do **not** modify `DATABASE-007`, `DATABASE-013`, BACKGROUND, SHOPIFY, ADMIN, SHARED, GATEWAY, SYSTEM-TEST, architecture documents, or another task file.
-
-Do **not** add another `RecoveryCreditPurchaseStatus`. The purchase enum must remain exactly:
-
-```text
-REQUESTED
-ACTIVE
-COMPLETED
-WITHDRAWN
-REFUNDED
-```
-
-#### Correction 1 — add the exact Admin refund-queue index
-
-In `prisma/schema.prisma`, inside `model RecoveryCreditRefund`, add exactly:
-
-```prisma
-@@index([status, createdAt, id])
-```
-
-Keep the existing shop-scoped and purchase-scoped indexes.
-
-In the clean baseline migration, create the matching PostgreSQL index:
-
-```sql
-CREATE INDEX "RecoveryCreditRefund_status_createdAt_id_idx"
-ON "billing"."RecoveryCreditRefund"("status", "createdAt", "id");
-```
-
-Do not substitute a shop-leading index. This index exists specifically for the cross-merchant Admin queue in `ARCH-010-ADMIN-002`.
-
-Update `scripts/validate-first-production-baseline.mjs` so validation fails if either the Prisma index or this migration index is absent.
-
-#### Correction 2 — purchase balances must never exceed the immutable grant
-
-Keep `RecoveryCreditPurchase_creditsGranted_positive`.
-
-Strengthen the existing `RecoveryCreditPurchase_amounts_non_negative` migration constraint so it enforces all of the following:
-
-```text
-currentAmount >= 0
-currentAmount <= creditsGranted
-reservedAmount >= 0
-reservedAmount <= currentAmount
-version >= 0
-```
-
-The resulting SQL condition must include:
-
-```sql
-"currentAmount" <= "creditsGranted"
-```
-
-Do not add another mutable balance field. Do not reintroduce `committedQuantity`, per-purchase `refundingQuantity`, or per-purchase `refundedQuantity`.
-
-Update the baseline validator to fail if `currentAmount <= creditsGranted` is not DB-enforced.
-
-#### Correction 3 — confirmed purchase valuation must survive every post-REQUESTED lifecycle state
-
-The current migration constraint named:
-
-```text
-RecoveryCreditPurchase_active_valuation_complete
-```
-
-is insufficient because it protects only `ACTIVE` rows.
-
-Replace it with a constraint named exactly:
-
-```text
-RecoveryCreditPurchase_confirmed_valuation_complete
-```
-
-The constraint must allow `REQUESTED` rows without provider-confirmed after/final valuation. For **every non-REQUESTED state** (`ACTIVE`, `COMPLETED`, `WITHDRAWN`, `REFUNDED`), it must require all of the following:
-
-```text
-providerUsageQuantityAfterSnapshot IS NOT NULL
-providerUsageCostAfterSnapshot IS NOT NULL
-providerUsageCostCurrencyAfterSnapshot IS NOT NULL
-providerPurchaseAmount IS NOT NULL
-providerPurchaseAmount > 0
-providerPurchaseCurrency IS NOT NULL
-providerValuationConfirmedAt IS NOT NULL
-providerPriceSnapshot IS NOT NULL
-providerUsageCostCurrencyBeforeSnapshot = providerUsageCostCurrencyAfterSnapshot
-providerUsageCostCurrencyAfterSnapshot = providerPurchaseCurrency
-providerUsageCostAfterSnapshot > providerUsageCostBeforeSnapshot
-providerPurchaseAmount = providerUsageCostAfterSnapshot - providerUsageCostBeforeSnapshot
-```
-
-Use a `CHECK` whose outer shape is equivalent to:
-
-```sql
-CHECK (
-  "status" = 'REQUESTED'
-  OR (
-    ...all confirmed-valuation requirements above...
-  )
-)
-```
-
-Do **not** make the nullable after/final valuation fields globally `NOT NULL` in Prisma, because `REQUESTED` purchases must still be representable before provider confirmation.
-
-Do **not** calculate the purchase amount from current `BillingPlan` pricing or any later price. This constraint only verifies the already-snapshotted provider before/after values.
-
-Update the baseline validator to assert the new constraint name and every required condition above, and to reject the old ACTIVE-only constraint as the final baseline authority.
-
-#### Correction 4 — refund request provenance must be complete and immutable at row creation
-
-In `model RecoveryCreditRefund` in `prisma/schema.prisma`, change:
-
-```prisma
-purchaseProviderAmountSnapshot   Decimal?
-purchaseProviderCurrencySnapshot String? @db.VarChar(3)
-```
-
-to exactly:
-
-```prisma
-purchaseProviderAmountSnapshot   Decimal
-purchaseProviderCurrencySnapshot String @db.VarChar(3)
-```
-
-In the clean baseline migration, these columns must therefore be:
-
-```sql
-"purchaseProviderAmountSnapshot" DECIMAL(65,30) NOT NULL,
-"purchaseProviderCurrencySnapshot" VARCHAR(3) NOT NULL,
-```
-
-Do not add defaults. The refund creator must copy these values from the already provider-confirmed purchase.
-
-Strengthen `RecoveryCreditRefund_snapshot_amounts` so it enforces all of the following:
-
-```text
-purchaseCreditsGrantedSnapshot > 0
-purchaseProviderAmountSnapshot > 0
-currentAmountAtRequestSnapshot >= 0
-currentAmountAtRequestSnapshot <= purchaseCreditsGrantedSnapshot
-reservedAmountAtRequestSnapshot >= 0
-reservedAmountAtRequestSnapshot <= currentAmountAtRequestSnapshot
-availableAmountAtRequestSnapshot = currentAmountAtRequestSnapshot - reservedAmountAtRequestSnapshot
-availableAmountAtRequestSnapshot > 0
-finalCreditQuantity IS NULL OR finalCreditQuantity > 0
-finalCreditQuantity IS NULL OR finalCreditQuantity <= currentAmountAtRequestSnapshot
-expectedProviderAmount IS NULL OR expectedProviderAmount >= 0
-```
-
-The upper bound for `finalCreditQuantity` must be `currentAmountAtRequestSnapshot`, **not** `availableAmountAtRequestSnapshot`. Existing reservations may release after withdrawal, so the final refundable quantity may legitimately be greater than the request-time available amount, but it cannot exceed the request-time current amount.
-
-Do not reintroduce `creditsRequested`, `creditsApproved`, a merchant-selected quantity, a percentage, or any arbitrary partial-refund authority.
-
-Update the baseline validator to prove the required/non-null snapshot fields and every amount invariant above.
-
-#### Correction 5 — remove the remaining fixed two-decimal provider settlement column
-
-In `model RecoveryCreditRefund`, replace:
-
-```prisma
-providerAmount Decimal? @db.Decimal(20, 2)
-```
-
-with exactly:
-
-```prisma
-providerAmount Decimal?
-```
-
-Do not add another native precision annotation.
-
-In the clean baseline migration, change:
-
-```sql
-"providerAmount" DECIMAL(20,2),
-```
-
-to:
-
-```sql
-"providerAmount" DECIMAL(65,30),
-```
-
-This intentionally aligns actual provider settlement precision with `providerPurchaseAmount`, `purchaseProviderAmountSnapshot`, and `expectedProviderAmount` in the current first-production Prisma representation.
-
-Do not round or truncate to two decimal places in DATABASE-014. Do not introduce floating-point storage.
-
-Update the baseline validator to fail if `providerAmount` is still `DECIMAL(20,2)` / `@db.Decimal(20, 2)`.
-
-#### Correction 6 — regenerate the ERD, do not hand-edit it
-
-After the Prisma schema and baseline migration corrections are complete, regenerate:
-
-```text
-moda-interact-database/docs/generated/prisma-erd.puml
-```
-
-using the repository's existing `npm run erd:puml` command.
-
-Do not manually edit generated ERD output to make validation pass.
-
-#### Correction 7 — Attempt 2 worktree/VCS evidence must be recorded prospectively
-
-Do **not** invent or retrospectively reconstruct missing Attempt 1 synchronization evidence.
-
-When Attempt 2 is claimed, reuse the canonical dedicated task worktrees and perform the mandatory start-of-attempt synchronization before implementation changes.
-
-The Attempt 2 Completion Report must contain this exact evidence structure with the actual launcher-resolved paths and actual outcomes:
-
-```text
-Physical worktree isolation:
-  canonical workspace root: <actual path>
-  parent worktree: <actual canonical parent task worktree>
-  parent branch: task/ARCH-010-DATABASE-014
-  implementation worktree: <actual canonical implementation task worktree>
-  implementation branch: task/ARCH-010-DATABASE-014
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
-
-Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: yes|not-needed
-  parent origin/main incorporated: yes|already-current
-  implementation remote task branch fast-forwarded: yes|not-needed
-  implementation origin/main incorporated: yes|already-current
-```
-
-Record only outcomes actually observed during Attempt 2.
-
-If either canonical worktree is mapped to the wrong repository/branch, another task worktree is being reused, the worktree is unexpectedly dirty, a task branch diverges from its remote, or merging `origin/main` conflicts, STOP using the error/stop behaviour in `docs/agent-worktree-isolation-policy.md`. Do not repair this by switching a shared checkout, rebasing published history, force-pushing, resetting another task, or deleting another worktree.
-
-#### Correction 8 — required Attempt 2 validation
-
-Extend `scripts/validate-first-production-baseline.mjs` for Corrections 1–5. Do not satisfy this review only by changing source text; the validator must protect the final baseline invariants.
-
-From the canonical implementation worktree run, in this order:
-
-```bash
-npm run prisma:validate
-npm run prisma:generate
-npm run test:first-production-baseline
-npm run erd:puml
-git diff --check
-```
-
-All five commands must pass for Attempt 2 to return to `review`.
-
-Also verify that the clean baseline migration still contains no data-migration DML:
-
-```text
-no UPDATE
-no INSERT INTO
-no DELETE FROM
-```
-
-Record each command and result in the Completion Report.
-
-Commit and push the implementation task branch, then update the parent Completion Report/status, commit and push the parent task branch according to the normal task protocol. Record the new implementation commit and new parent Completion Report commit.
-
-#### Explicit non-goals for Attempt 2
-
-Do not implement:
-
-- purchase creation or provider reconciliation runtime;
-- BACKGROUND-021 activation logic;
-- BACKGROUND-022 reservation/refund concurrency;
-- merchant purchase/refund actions or UI;
-- Admin provider settlement;
-- system tests;
-- new observability;
-- compatibility schema for the development-only DATABASE-007 model.
-
-Do not start or modify any task listed under `enables`.
-
-#### Attempt 2 stop conditions
-
-STOP and return the same DATABASE-014 task to `moda_architect` without implementing an alternative design if any of the following is true:
-
-1. an accepted first-production consumer requires one of the removed legacy purchase/refund fields;
-2. the provider monetary values cannot be represented exactly by the repository's current Decimal representation;
-3. satisfying these corrections requires a second production migration instead of correcting the clean baseline;
-4. satisfying these corrections requires changing a completed task or another repository;
-5. the canonical task worktree isolation/synchronization rules cannot be satisfied;
-6. any required validation command fails because of a change made by Attempt 2.
-
-After successful implementation and validation, set this same task to `status: review`, update the Completion Report, push both task branches, and STOP for `moda_architect` review. Do not execute downstream work.
+The ERD generator produced whitespace-only local drift during the canonical revalidation. `git diff --ignore-all-space --exit-code` returned 0; the committed generated ERD from `abee18e` was restored and `git diff --check` then passed. This does not change the accepted implementation semantics.
 
 ### Reviewed Files
 
@@ -766,24 +484,20 @@ After successful implementation and validation, set this same task to `status: r
 - `moda-interact-database/scripts/validate-first-production-baseline.mjs`
 - `moda-interact-database/docs/generated/prisma-erd.puml`
 - `docs/decisions/database/ARCH-010/DATABASE-014-recovery-credit-purchase-lifecycle-and-provenance.md`
-- `docs/decisions/admin/ARCH-010/ADMIN-002-triage-partial-topup-refund-requests.md`
-- `docs/decisions/admin/ARCH-010/ADMIN-003-approve-settle-partial-topup-refunds.md`
-- `docs/decisions/background/ARCH-010/BACKGROUND-021-confirm-purchase-commercial-value.md`
-- `docs/decisions/shopify/ARCH-010/SHOPIFY-014-topup-purchase-lifecycle-adapter.md`
 
 ### Validation Reviewed
 
-- Independent `node scripts/validate-first-production-baseline.mjs`: passed against Attempt 1 in the supplied review snapshot.
-- The Attempt 1 Completion Report records `npm run prisma:validate`, `npm run prisma:generate`, `npm run test:first-production-baseline`, `npm run erd:puml`, and `git diff --check` as passed.
-- Clean-baseline migration DML scan found no `UPDATE`, `INSERT INTO`, or `DELETE FROM` statements.
-- Cross-repository source inspection found no current non-document first-production consumer requiring the removed `PENDING_BILLING`, purchase-level `NEEDS_ATTENTION/CANCELLED`, `creditsRequested/creditsApproved`, or per-purchase legacy quantity fields.
+- `npm run prisma:validate`: passed from canonical DATABASE-014 implementation worktree.
+- `npm run prisma:generate`: passed from canonical DATABASE-014 implementation worktree.
+- `npm run test:first-production-baseline`: passed from canonical DATABASE-014 implementation worktree.
+- `npm run erd:puml`: passed; local regeneration drift proved whitespace-only.
+- `git diff --check`: passed after restoring the committed generated ERD.
+- Local implementation HEAD and `origin/task/ARCH-010-DATABASE-014` both resolve to `abee18e8c55b7a79f8234490fa4df66d3d228f0c`.
 
 ### Architecture Conformance
 
-The exact five-state purchase lifecycle, removal of arbitrary merchant-selected refund quantities, direct BillingPeriod/provider provenance, request-time refund snapshots, aggregate-only `ShopEntitlementCounter.refundingQuantity`, and partial unique refund indexes conform to the agreed ARCH-010 architecture.
-
-Acceptance is blocked only by the database integrity, queue-index, precision and durable execution-evidence corrections defined above.
+Accepted. The implementation conforms to the ARCH-010 purchase/refund lifecycle, immutable provenance, database integrity, precision, queue-index, and clean-first-production-baseline requirements. No cross-repository implementation was introduced by DATABASE-014.
 
 ### Follow-up
 
-Reclaim **this same task** as Attempt 2. Leave `attempt: 1` in this overlay; the authorized Attempt 2 claim must increment it exactly once. All tasks depending on `ARCH-010-DATABASE-014` remain gated until this task is architect-accepted and `status: complete`.
+`ARCH-010-DATABASE-014` is Complete. Recalculate dependent task eligibility from individual task metadata. Do not treat architect acceptance as permission to bypass any remaining dependencies on `ARCH-010-BACKGROUND-021`, `ARCH-010-BACKGROUND-022`, `ARCH-010-SHOPIFY-025`, `ARCH-010-ADMIN-010`, or other declared prerequisites.
