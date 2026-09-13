@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 82
-executor: null
-claimed_at: null
-attempt: 4
+executor: copilot
+claimed_at: '2026-09-13T00:00:00Z'
+attempt: 5
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-BACKGROUND-002
@@ -193,7 +193,7 @@ Stop if DATABASE-013 exact grant ownership is unavailable, or if implementing pr
 ## Completion Report
 
 ### Status
-Ready for Review.
+In Progress.
 
 ### Files Changed
 - `src/services/promotional-recovery-reservation.service.ts`
