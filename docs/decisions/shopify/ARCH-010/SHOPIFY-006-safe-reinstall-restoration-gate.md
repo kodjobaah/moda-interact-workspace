@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-13T23:21:30Z
+attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-SHARED-008
@@ -21,7 +21,7 @@ depends_on:
 enables:
 - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-14
+updated: 2026-09-13
 ---
 
 # ARCH-010-SHOPIFY-006: Gate reinstall until Background restores Shopify subscription truth
