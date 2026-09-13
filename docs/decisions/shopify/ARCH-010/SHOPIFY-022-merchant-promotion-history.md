@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 86
-executor: copilot
-claimed_at: 2026-09-13T22:14:34Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-SHOPIFY-021
@@ -73,23 +73,47 @@ Do not allow selecting campaigns from history, mutate campaign/grant quantities,
 ## Completion Report
 
 ### Status
-Ready for Review.
+Ready for Architect Review.
 
 ### Files Changed
 - `moda-interact/app/services/promotions/promotion.service.ts`
 - `moda-interact/app/routes/app/promotions/route.tsx`
+- `moda-interact/app/i18n/locales/cs.json`
+- `moda-interact/app/i18n/locales/da.json`
+- `moda-interact/app/i18n/locales/de.json`
+- `moda-interact/app/i18n/locales/en.json`
+- `moda-interact/app/i18n/locales/es.json`
+- `moda-interact/app/i18n/locales/fi.json`
+- `moda-interact/app/i18n/locales/fr.json`
+- `moda-interact/app/i18n/locales/it.json`
+- `moda-interact/app/i18n/locales/ja.json`
+- `moda-interact/app/i18n/locales/ko.json`
+- `moda-interact/app/i18n/locales/nb.json`
+- `moda-interact/app/i18n/locales/nl.json`
+- `moda-interact/app/i18n/locales/pl.json`
+- `moda-interact/app/i18n/locales/pt-BR.json`
+- `moda-interact/app/i18n/locales/pt-PT.json`
+- `moda-interact/app/i18n/locales/sv.json`
+- `moda-interact/app/i18n/locales/th.json`
+- `moda-interact/app/i18n/locales/tr.json`
+- `moda-interact/app/i18n/locales/zh-Hans.json`
+- `moda-interact/app/i18n/locales/zh-Hant.json`
 - `moda-interact/tests/unit/services/promotion.service.test.ts`
 - `moda-interact/tests/unit/routes/promotion-route.test.ts`
+- `moda-interact/tests/unit/merchant-i18n.test.ts`
 
 ### Work Completed
 - Added a tenant-scoped `getPromotionHistory` query over exact `PromotionalCreditGrant` rows, bounded to 25 entries per page and ordered by selection history.
 - Added merchant-safe campaign history projection for granted, committed, remaining, selection/use timestamps, current expiry, current-selection state and lifecycle status.
 - Distinguishes selected, used, exhausted, expired, closed, no-longer-eligible and reopened history without reading aggregate promotional counters or internal provenance.
 - Added history presentation and Previous/Next pagination to the existing promotions route; history exposes no mutation controls or internal admin metadata.
+- Real `REOPENED` now requires the latest server-side `PromotionCampaignEvent` of kind `REOPENED` to have `createdAt > firstSelectedAt` and positive remaining allocation; selection count and current selection are not lifecycle evidence.
+- Added regressions for selection-count false positives, genuine and pre-selection reopen events, selected/non-selected independence, terminal precedence and merchant-safe output privacy.
+- Replaced all new history copy with `createMerchantI18n` keys and added the exact 17-key promotion-history/status family to all 20 locale catalogues. Non-English catalogues use the reviewed translated values; placeholders remain `{quantity}`, `{first}`, `{last}`, `{value}` and `{status}`.
 
 ### Validation Results
-- Focused promotion service/route tests: passed, 33/33.
-- Full test suite: passed, 316 tests; 34 files passed and 2 skipped.
+- Focused promotion service/route/merchant-i18n tests: passed, 46/46 across 3 files.
+- Full test suite: passed, 316 tests; 34 files passed and 2 skipped (3 tests skipped).
 - Production build: passed; Prisma client generated and React Router client/SSR bundles built.
 - `git diff --check`: passed.
 - `npm run typecheck`: repository baseline failure; no diagnostics in the changed promotion service or route. Existing errors remain across unrelated JSX, billing, webhook and Redis files.
@@ -99,8 +123,9 @@ Ready for Review.
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`.
-- Launcher preparation: dependency gate passed; parent and implementation worktrees created and synchronized; recursive database submodule ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; Attempt 1 claim committed and pushed by launcher as `e16ba673b0236aaba9ab1772d5334a9cdf0dfae4`.
-- Implementation commit `0d66cc1` pushed to `origin/task/ARCH-010-SHOPIFY-022`.
+- Launcher preparation for Attempt 2: dependency gate passed; existing parent and implementation worktrees reused and synchronized; recursive database submodule ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; Attempt 2 claim committed and pushed by launcher as `91bd36157f7623bbe9e0a918ae175011798f1aa4`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`; implementation commit `836983f` pushed to `origin/task/ARCH-010-SHOPIFY-022`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-022` on the mirrored task branch; claim cleared for Architect Review.
 
 ### Architect Review
 
