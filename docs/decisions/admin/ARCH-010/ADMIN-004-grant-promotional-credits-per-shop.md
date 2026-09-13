@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 84
 executor: copilot
 claimed_at: '2026-09-13T12:35:36Z'
@@ -117,19 +117,43 @@ Stop if DATABASE-010 has not landed or if current Admin authorization/tenant-pla
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `src/app/(protected)/promotions/page.tsx`
+- `src/app/actions/promotions.ts`
+- `src/components/admin/admin-shell.tsx`
+- `src/components/admin/promotion-campaign-form.tsx`
+- `src/components/admin/sidebar.tsx`
+- `src/lib/admin/promotion-validation.ts`
+- `src/lib/admin/promotions.ts`
+- `tests/security/admin-promotions.test.mjs`
+- `tests/unit/promotion-validation.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added a protected Admin campaign history/editor route with exact active BillingPlan and Shop selectors.
+- Added SUPER_ADMIN-only server actions for draft creation, draft editing, and transactional activation.
+- Added server-side validation for GLOBAL/PLAN/SHOP target exclusivity, exact durable target lookup, positive bounded quantity, and ordered campaign windows.
+- Activation re-reads the campaign, requires DRAFT, preserves immutable commercial terms, sets ACTIVE, and appends `PromotionCampaignEvent.ACTIVATED` evidence.
+- Creation appends `PromotionCampaignEvent.CREATED` evidence.
+- No merchant grant, selection, entitlement counter, Shopify App Event, or compatibility-model mutation is present.
 
 ### Validation Results
-Populate during implementation.
+- `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts`: 3 passed.
+- `node --test tests/security/admin-promotions.test.mjs tests/unit/promotion-validation.test.ts`: 8 passed.
+- `npm test`: passed; existing observability tests that require a prior build were skipped as designed.
+- `npm run lint`: passed with two unchanged warnings in `src/components/admin/queue-monitor.tsx`.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
+- `git diff --check`: passed.
+- Exact clean-baseline search: no implementation references to removed compatibility symbols; historical assertions remain in the existing regression test.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-004`
+- Implementation branch: `task/ARCH-010-ADMIN-004`
+- Implementation commit/push: `6df7899` pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-admin`.
+- Parent claim commit/push: `54288b7` pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-workspace`.
+- Database submodule gitlink remained unchanged at accepted commit `5443afd`.
 
 ### Architect Review
 Pending.
