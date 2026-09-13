@@ -9,10 +9,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 86
-executor: copilot
-claimed_at: 2026-09-13T22:32:51Z
 attempt: 3
 depends_on:
 - ARCH-010-SHOPIFY-021
@@ -73,7 +71,7 @@ Do not allow selecting campaigns from history, mutate campaign/grant quantities,
 ## Completion Report
 
 ### Status
-Ready for Architect Review.
+Ready for Architect Review. Attempt 3 completed.
 
 ### Files Changed
 - `moda-interact/app/services/promotions/promotion.service.ts`
@@ -110,12 +108,15 @@ Ready for Architect Review.
 - Real `REOPENED` now requires the latest server-side `PromotionCampaignEvent` of kind `REOPENED` to have `createdAt > firstSelectedAt` and positive remaining allocation; selection count and current selection are not lifecycle evidence.
 - Added regressions for selection-count false positives, genuine and pre-selection reopen events, selected/non-selected independence, terminal precedence and merchant-safe output privacy.
 - Replaced all new history copy with `createMerchantI18n` keys and added the exact 17-key promotion-history/status family to all 20 locale catalogues. Non-English catalogues use the reviewed translated values; placeholders remain `{quantity}`, `{first}`, `{last}`, `{value}` and `{status}`.
+- Attempt 3 completed the required evidence-only corrections in `moda-interact/tests/unit/services/promotion.service.test.ts`: expired and no-longer-eligible cases now include the same genuine post-selection `reopenedAt` evidence as the reopened case, proving all four terminal/ineligible precedence rules; the query-to-projection assertion proves reopen evidence classifies the row without exposing `events`, `reopenedAt`, Admin identity, target IDs or `requestKey`.
 
 ### Validation Results
 - Focused promotion service/route/merchant-i18n tests: passed, 46/46 across 3 files.
+- Attempt 3 focused promotion service tests: passed, 28/28.
 - Full test suite: passed, 316 tests; 34 files passed and 2 skipped (3 tests skipped).
 - Production build: passed; Prisma client generated and React Router client/SSR bundles built.
 - `git diff --check`: passed.
+- Attempt 3 made no production, route, locale, schema or dependency changes; the implementation worktree contained only the authorized service test change.
 - `npm run typecheck`: repository baseline failure; no diagnostics in the changed promotion service or route. Existing errors remain across unrelated JSX, billing, webhook and Redis files.
 - `npm run lint`: repository baseline failure with 11 unrelated errors in onboarding, billing, merchant support, privacy and webhook files; no errors in changed promotion files. TypeScript 5.9 unsupported-version warning also remains baseline.
 
@@ -125,7 +126,9 @@ Ready for Architect Review.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`.
 - Launcher preparation for Attempt 2: dependency gate passed; existing parent and implementation worktrees reused and synchronized; recursive database submodule ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; Attempt 2 claim committed and pushed by launcher as `91bd36157f7623bbe9e0a918ae175011798f1aa4`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`; implementation commit `836983f` pushed to `origin/task/ARCH-010-SHOPIFY-022`.
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-022` on the mirrored task branch; claim cleared for Architect Review.
+- Attempt 3 prepared launcher evidence: canonical parent and implementation worktrees were reused and synchronized on the mirrored task branch; dependencies passed; recursive database submodule was ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; the Attempt 3 claim commit was `c4216dcff4c2054e22e961b76e284f545a1a8a52`.
+- Implementation Attempt 3 commit `666409d` was pushed to `origin/task/ARCH-010-SHOPIFY-022`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-022` on the mirrored task branch; claim metadata cleared for Architect Review and this report is ready to commit and push.
 
 ### Architect Review
 
