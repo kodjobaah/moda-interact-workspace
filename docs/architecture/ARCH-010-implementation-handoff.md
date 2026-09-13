@@ -27,13 +27,13 @@ There is no production billing state requiring compatibility with intermediate d
 
 ## Current audited task state
 
-The current coordinated ARCH-010 state after DATABASE-014 Attempt 2 and ADMIN-010 Attempt 2 acceptance, with dependency readiness recomputed from the authoritative task files, is:
+The current coordinated ARCH-010 state after ADMIN-006 Attempt 2 acceptance, with dependency readiness recomputed from the authoritative task files in this review snapshot, is:
 
 ```text
 all ARCH-010 task files: 86
-complete:                 41
-ready:                     3
-pending:                  34
+complete:                 48
+ready:                     2
+pending:                  28
 superseded:                8
 ```
 
@@ -42,12 +42,11 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 ### Ready frontier
 
 ```text
-ARCH-010-BACKGROUND-009
-ARCH-010-ADMIN-004
-ARCH-010-ADMIN-008
+ARCH-010-BACKGROUND-003
+ARCH-010-SHOPIFY-021
 ```
 
-These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010. `DATABASE-014` and `ADMIN-010` are now Complete; their acceptance is what releases `ADMIN-004` and `ADMIN-008`.
+These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010. ADMIN-006 is now Complete at accepted Attempt 2; its only listed dependant, SYSTEM-TEST-003, remains Pending/manual-gated because other implementation dependencies are incomplete.
 
 ## Accepted-history reconciliation
 
@@ -74,6 +73,8 @@ For Background, `BACKGROUND-011` is now Complete at accepted Attempt 4 and owns 
 For Shopify, `SHOPIFY-023` is architect-accepted Complete at Attempt 1 (`01f0605`) after developer-run validation against the materialized DATABASE-013 submodule. `SHOPIFY-018` is architect-accepted Complete at Attempt 3 (`9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD `e13673a`). Its enabled downstream tasks remain gated by other incomplete dependencies. SHOPIFY-003 and SHOPIFY-009 also remain gated by their other incomplete dependencies.
 
 `BACKGROUND-015` is architect-accepted Complete at Attempt 4 (`29c791c`). The Partner reconciliation snapshot now uses one request for live subscription plus the latest validated lifecycle event. `BACKGROUND-012` remains Pending because BACKGROUND-007, BACKGROUND-009 and BACKGROUND-010 are still incomplete.
+
+`ADMIN-006` is architect-accepted Complete at Attempt 2 (`b0332e5`; parent Completion Report `bbe6647`). Campaign reporting now exposes exact grant-lot merchant history with bounded/filterable pagination and read-only SUPER_ADMIN presentation. This acceptance does not release `SYSTEM-TEST-003`, which remains manual-gated behind its other incomplete dependencies.
 
 ## Luna-oriented task consolidation
 

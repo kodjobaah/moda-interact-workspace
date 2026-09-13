@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 44
 executor: null
 claimed_at: null
@@ -25,7 +25,7 @@ enables:
 - ARCH-010-SHOPIFY-004
 - ARCH-010-SHOPIFY-007
 created: 2026-09-11
-updated: '2026-09-12'
+updated: 2026-09-13
 ---
 
 # ARCH-010-SHOPIFY-003: Activate first verified paid plan with exact billing period
