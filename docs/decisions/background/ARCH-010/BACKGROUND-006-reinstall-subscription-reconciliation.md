@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 49
 attempt: 3
 depends_on:
@@ -580,3 +580,383 @@ Production path is substantially conformant after Attempt 2. Acceptance is withh
 
 #### Follow-up
 Return `ARCH-010-BACKGROUND-006` to Attempt 3 on the same task branch. `ARCH-010-SHOPIFY-006` and `ARCH-010-SYSTEM-TEST-002` remain gated until BACKGROUND-006 is architect-accepted Complete.
+
+## Architect Review — Attempt 3
+
+### Review Status
+
+**Changes Requested**
+
+Attempt 3 substantially closes the missing reinstall matrix and preserves the accepted
+Attempt-2 production implementation. No production defect has been identified in
+`src/services/billing-subscription-reconciliation.service.ts`, and no production
+source change is requested.
+
+The remaining blocker is narrower: several preservation tests prove only that one
+write method (usually `create`) was not called, while the Attempt-2 Architect Review
+explicitly required executable proof that protected historical/lifetime/purchased/
+refund/promotion state cannot be mutated through **any available mutator**. The
+reinstall transport and 24-hour-boundary tests also prove retry metadata/scheduling,
+but do not yet explicitly prove that the Shop lifecycle transaction and protected
+entitlement state are untouched.
+
+This is evidence-only correction work on the SAME task.
+
+### Accepted Attempt-3 evidence
+
+The following Attempt-3 additions are accepted and must be preserved:
+
+- provider-null transitions to ACTIVE + NO_CONTRACT with pointers cleared;
+- existing Free lifetime quantities remain unchanged;
+- unmapped/inactive Free pending handle keeps provider handle/effective time and
+  writes `pendingPlanId = null`;
+- exact-paid integrity table covers period ownership, missing/mismatched counter,
+  negative/non-integer quantity and grant mismatch;
+- same-paid-cycle pending projection is refreshed without quantity reset;
+- post-commit queue failure is repaired by `reconstruct()` with the same deterministic
+  schedule/job id and no second Partner call;
+- later-cycle path delegates to `SamePlanBillingPeriodRolloverService`;
+- different paid plan remains fail-closed;
+- retry timing uses `Shop.reinstallPendingAt`;
+- reported focused suite is 104 passed and adjacent gates are 49 passed;
+- reported repository-wide failures/build diagnostics remain confined to the known
+  unrelated purchase/observability baseline.
+
+Do not rewrite those tests or production code merely to create another commit.
+
+### Required Attempt-4 correction
+
+Modify **only**:
+
+```text
+moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+plus this task's Completion Report through the normal coordination-document
+exception.
+
+Do not modify production source unless one of the exact assertions below exposes an
+actual contradiction. If that happens, STOP and return to `moda_architect` with the
+failing assertion; do not make an inferred production redesign.
+
+#### 1. Add one deterministic no-mutation assertion helper
+
+Immediately after `configureReinstallPaidPeriod(...)`, add this helper:
+
+```ts
+function expectNoModelMutations(model: any) {
+  for (const method of [
+    "create",
+    "update",
+    "updateMany",
+    "upsert",
+    "delete",
+    "deleteMany",
+  ]) {
+    if (model?.[method]) {
+      expect(model[method]).not.toHaveBeenCalled();
+    }
+  }
+}
+```
+
+Also extend these existing harness models so each exposes an `upsert: vi.fn()` spy in
+addition to its existing mutators:
+
+```text
+recoveryCreditPurchase
+recoveryCreditRefund
+promotionalCreditGrant
+merchantPromotionSelection
+```
+
+Do not add `billingPeriodEntitlementCounter` globally because existing tests
+intentionally prove that it is absent on paths which must not query it.
+
+#### 2. Complete provider-null preservation evidence
+
+In:
+
+```text
+provider null preserves all detached history and credit state
+```
+
+before calling `reconcileJob(...)`, install a test-local
+`billingPeriodEntitlementCounter` mutation-spy object:
+
+```ts
+test.transaction.billingPeriodEntitlementCounter = {
+  create: vi.fn(),
+  update: vi.fn(),
+  updateMany: vi.fn(),
+  upsert: vi.fn(),
+  delete: vi.fn(),
+  deleteMany: vi.fn(),
+};
+```
+
+After the existing successful lifecycle assertions, replace the partial individual
+write assertions with:
+
+```ts
+expectNoModelMutations(test.transaction.billingPeriod);
+expectNoModelMutations(test.transaction.billingPeriodEntitlementCounter);
+expectNoModelMutations(test.transaction.shopEntitlementCounter);
+expectNoModelMutations(test.transaction.recoveryCreditPurchase);
+expectNoModelMutations(test.transaction.recoveryCreditRefund);
+expectNoModelMutations(test.transaction.promotionalCreditGrant);
+expectNoModelMutations(test.transaction.merchantPromotionSelection);
+```
+
+This test must prove no historical period/counter, lifetime counter, purchase/refund,
+promotion grant or merchant selection can be created, updated, upserted, updateMany'd,
+deleted or deleteMany'd by provider-null reinstall handling.
+
+#### 3. Complete exact-paid corruption no-mutation evidence
+
+In the existing table:
+
+```text
+fails closed for reinstall exact paid-period integrity: %s
+```
+
+preserve all current assertions and additionally assert:
+
+```ts
+expectNoModelMutations(test.transaction.billingPeriod);
+expectNoModelMutations(test.transaction.billingPeriodEntitlementCounter);
+```
+
+The `findUnique` reads performed to validate the period/counter are allowed; only
+write mutators must remain untouched.
+
+#### 4. Complete later-rollover wrapper preservation evidence
+
+In:
+
+```text
+later paid rollover preserves wrapper-owned balances and publishes the canonical schedule
+```
+
+replace the create-only protected-state assertions with:
+
+```ts
+expectNoModelMutations(test.transaction.shopEntitlementCounter);
+expectNoModelMutations(test.transaction.recoveryCreditPurchase);
+expectNoModelMutations(test.transaction.recoveryCreditRefund);
+expectNoModelMutations(test.transaction.promotionalCreditGrant);
+expectNoModelMutations(test.transaction.merchantPromotionSelection);
+```
+
+Do **not** assert that BillingPeriod/BillingPeriodEntitlementCounter are untouched in
+this test: the canonical rollover primitive owns those mutations. The requirement is
+that the reinstall wrapper does not mutate balances/history owned outside that
+primitive.
+
+#### 5. Add the explicit reinstall transport-preservation test required by Attempt 2
+
+Add a standalone test named exactly:
+
+```text
+reinstall provider transport failure preserves entitlement truth
+```
+
+Use an actual reinstall row, not the ordinary activation path:
+
+```ts
+const reinstallPendingAt = new Date("2026-09-12T11:30:00.000Z");
+const row = reinstallPaidRow({ reinstallPendingAt });
+const test = harness({
+  row,
+  providerError: new Error("timeout"),
+});
+```
+
+Run:
+
+```ts
+await test.service.reconcileJob(payload);
+```
+
+Then prove the durable subscription write is retry metadata only:
+
+```ts
+expect(test.database.subscription.updateMany).toHaveBeenCalledOnce();
+
+const update = test.database.subscription.updateMany.mock.calls[0][0];
+
+expect(update.where).toEqual({
+  id: "subscription-1",
+  nextReconcileAt: new Date("2026-09-12T12:00:00.000Z"),
+});
+
+expect(Object.keys(update.data).sort()).toEqual([
+  "lastSyncErrorAt",
+  "lastSyncErrorCode",
+  "nextReconcileAt",
+].sort());
+
+expect(update.data.lastSyncErrorCode).toBe("PARTNER_API_ERROR");
+expect(update.data.nextReconcileAt).toEqual(
+  new Date("2026-09-12T12:05:00.000Z"),
+);
+```
+
+Then explicitly prove that no reinstall lifecycle/entitlement transaction happened:
+
+```ts
+expect(test.database.$transaction).not.toHaveBeenCalled();
+expect(test.database.subscription.update).not.toHaveBeenCalled();
+
+expect(test.transaction.shop.update).not.toHaveBeenCalled();
+expect(test.transaction.shopSettings.update).not.toHaveBeenCalled();
+
+expectNoModelMutations(test.transaction.billingPeriod);
+expectNoModelMutations(test.transaction.shopEntitlementCounter);
+expectNoModelMutations(test.transaction.recoveryCreditPurchase);
+expectNoModelMutations(test.transaction.recoveryCreditRefund);
+expectNoModelMutations(test.transaction.promotionalCreditGrant);
+expectNoModelMutations(test.transaction.merchantPromotionSelection);
+
+expect(row.status).toBe("UNINSTALLED");
+expect(row.reinstallPendingAt).toEqual(reinstallPendingAt);
+```
+
+Also assert exactly one deterministic retry is published with
+`expectedNextReconcileAt = 2026-09-12T12:05:00.000Z`.
+
+This test is separate from the retry-boundary table because it proves the complete
+preservation contract, not only timing.
+
+#### 6. Strengthen the existing 24-hour retry-boundary table
+
+Keep both existing rows:
+
+```text
+before 24 hours
+at 24 hours
+```
+
+For **both** rows add:
+
+```ts
+expect(test.database.$transaction).not.toHaveBeenCalled();
+expect(test.transaction.shop.update).not.toHaveBeenCalled();
+expect(test.transaction.shopSettings.update).not.toHaveBeenCalled();
+
+expectNoModelMutations(test.transaction.billingPeriod);
+expectNoModelMutations(test.transaction.shopEntitlementCounter);
+expectNoModelMutations(test.transaction.recoveryCreditPurchase);
+expectNoModelMutations(test.transaction.recoveryCreditRefund);
+expectNoModelMutations(test.transaction.promotionalCreditGrant);
+expectNoModelMutations(test.transaction.merchantPromotionSelection);
+```
+
+Keep a local `row` variable rather than constructing the row inline and assert:
+
+```ts
+expect(row.status).toBe("UNINSTALLED");
+expect(row.reinstallPendingAt).toEqual(reinstallAt);
+```
+
+For the `at 24 hours` row, retain:
+
+```ts
+expect(update.data.nextReconcileAt).toBeNull();
+expect(test.queue.add).not.toHaveBeenCalled();
+```
+
+For the pre-boundary row, retain the exact persisted/published schedule assertion.
+
+### Required validation for Attempt 4
+
+Run exactly:
+
+```bash
+npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts
+
+npm test -- --run \
+  tests/unit/runtime/billing-scheduler.test.ts \
+  tests/unit/runtime/entrypoint-isolation.test.ts \
+  tests/unit/services/shopify-usage-event-publisher.service.test.ts \
+  tests/unit/services/recovery-routing.service.test.ts
+
+npm run prisma:validate
+npm test
+npm run build
+git diff --check
+```
+
+Record exact pass/fail/skip counts.
+
+Do not run or invent `npm run lint` or `npm run typecheck`; this repository does not
+declare those scripts.
+
+The existing purchase/observability full-suite failures and 15 generated-client build
+diagnostics remain non-blocking only if:
+
+- their files/counts are unchanged from Attempt 3; and
+- no Attempt-4 changed test/source file introduces a new failure/diagnostic.
+
+### Scope boundaries
+
+Attempt 4 is expected to be **test-only**.
+
+Allowed implementation file:
+
+```text
+moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Do not modify:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+src/services/same-plan-billing-period-rollover.service.ts
+database/prisma/**
+Shared contracts
+queue schema/name
+Shopify app
+Admin
+Messaging
+purchased/refund semantics
+promotion semantics
+generic inactive-shop gates
+```
+
+If an exact required assertion fails because the accepted Attempt-2 production source
+actually violates the contract, STOP and return the failing assertion and observed
+runtime calls to `moda_architect`. Do not change production code automatically.
+
+### Workflow evidence required
+
+The Attempt-4 Completion Report must preserve/record:
+
+- launcher-resolved canonical workspace;
+- dedicated parent task worktree/branch;
+- dedicated implementation worktree/branch;
+- start-of-attempt synchronization evidence;
+- recursive database-submodule materialisation evidence;
+- unchanged database gitlink;
+- Attempt-4 implementation commit full SHA;
+- parent Completion Report commit full SHA;
+- both mirrored task branches pushed and clean.
+
+### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+The current attempt remains:
+
+```text
+attempt: 3
+```
+
+The next authorized claim must increment it to **Attempt 4 exactly once**.
+
+After adding only the assertions above, running validation, updating the Completion
+Report, setting the task back to `status: review`, clearing `executor`/`claimed_at`,
+committing/pushing both mirrored task branches, STOP and return to `moda_architect`.
+
+Do not start `ARCH-010-SHOPIFY-006` or `ARCH-010-SYSTEM-TEST-002`.
+
