@@ -655,3 +655,89 @@ The temporary evidence test/config were then removed; `git status --short` and `
 
 No Attempt 3 implementation is required. The previously proposed evidence-only Attempt 3 overlay is superseded by this acceptance decision and must not be applied.
 
+#### Post-acceptance architect reconciliation — permanent scenario-44 regression preservation
+
+The original Attempt 2 acceptance above is retained as immutable review history. After that acceptance was published, `moda_architect` explicitly directed one additional **behavior-preserving regression-test preservation commit** so the manually-proven scenario-44 mapping-drift contract would remain permanently covered by the repository's existing Node test runner rather than only by temporary Vitest evidence.
+
+This is **not Attempt 3** and does not reopen ADMIN-008 implementation scope.
+
+Final accepted implementation branch HEAD:
+
+```text
+c970fb4fba1ca5b171a46f9113ec829d38a92cc7
+```
+
+The remote `moda-interact-admin` task branch was verified at that exact SHA. The commit is a direct child of the originally accepted Attempt 2 implementation:
+
+```text
+parent: 94d4fbb08f294b6e34cdf04c065949d82c19c519
+head:   c970fb4fba1ca5b171a46f9113ec829d38a92cc7
+```
+
+The architect-directed preservation commit changes exactly:
+
+```text
+src/app/actions/billing-economics.ts
+src/lib/admin/billing-economics-validation.ts
+tests/security/admin-billing-economics.test.mjs
+tests/unit/billing-economics-behavior.test.ts
+```
+
+The production behavior is unchanged:
+
+- the four existing durable-plan/snapshot drift checks were extracted into `validateEconomicsSnapshotAgainstPlan(...)`;
+- `recordEconomicsSnapshotAction()` calls that exact helper after re-reading the durable `BillingPlan` and before append-only snapshot creation;
+- no schema, pricing, audit, provider, merchant-accounting, ADMIN-007 evaluator or ADMIN-009 enforcement behavior was added;
+- the existing source-security test was updated only to follow the accepted helper extraction and still proves the action invokes the guard and that all four drift guards remain present.
+
+Permanent scenario-44 Node-runner coverage now proves:
+
+```text
+exact durable-plan snapshot mapping                         accepted
+changed shopifyPlanHandle                                  rejected
+changed recoveryCreditPackEnabled                          rejected
+changed enabled recoveryCreditsPerPack                     rejected
+changed enabled shopifyRecoveryCreditPackEventHandle       rejected
+```
+
+Final validation evidence accepted from the canonical implementation worktree:
+
+```text
+tests/unit/billing-economics-behavior.test.ts               8 passed, 0 failed
+focused billing security/control tests                     13 passed, 0 failed
+npm test                                                   161 passed, 0 failed
+npm run test:unit                                           42 passed, 0 failed
+npm run lint                                                 0 errors, 2 pre-existing warnings
+npx tsc --noEmit --pretty false                              passed
+npm run build                                                passed
+git diff --check                                             passed
+implementation worktree                                     clean
+```
+
+The BullMQ/Valkey build warnings and the two `queue-monitor.tsx` lint warnings remain accepted unrelated baseline warnings; the build completed successfully.
+
+The implementation commit was pushed to:
+
+```text
+origin/task/ARCH-010-ADMIN-008
+```
+
+and the implementation worktree was clean after publication.
+
+##### Final architect decision
+
+`ARCH-010-ADMIN-008` remains:
+
+```text
+status: complete
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+No Attempt 3 is required.
+
+`ARCH-010-ADMIN-009` was already promoted to `ready` by the earlier acceptance commit because both of its dependencies, ADMIN-007 and ADMIN-008, are Complete. No additional readiness transition is required by this reconciliation.
+
+For eventual merge/integration, treat `c970fb4fba1ca5b171a46f9113ec829d38a92cc7` as the final accepted ADMIN-008 implementation task-branch head. Follow normal submodule merge ordering: merge the implementation task branch into `moda-interact-admin/main`, then update the parent workspace task gitlink to the resulting implementation-main commit, then merge the parent task branch.
+
