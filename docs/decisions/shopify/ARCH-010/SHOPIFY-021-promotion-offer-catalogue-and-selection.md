@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 84
-executor: copilot
-claimed_at: 2026-09-13T20:24:26Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -184,6 +184,46 @@ Implementation complete; returned to review.
 
 ### Architect Review
 Pending.
+
+## Attempt 2 Completion Report
+
+Attempt 2 implementation is complete and returned to architect review. The claim is cleared in this report; no merge to `main` was performed.
+
+### Implementation
+
+- Corrected the real Prisma current-selection read to load only campaign usability facts.
+- Re-evaluated old selection eligibility against the current shop and mapped plan before blocking replacement.
+- Separated `currentlySelected` from `previouslyClaimed` in the merchant projection.
+- Added promotion-specific localized UI and safe route-boundary error mapping without grant IDs, raw service codes, Admin metadata, target IDs, or audit fields.
+- Added bounded three-attempt SERIALIZABLE `P2034` retry behavior.
+- Added focused service, route, and locale parity evidence; all 20 registered catalogues contain the promotion key family.
+
+### Validation Results
+
+- `git submodule sync -- database`: passed.
+- `git submodule update --init --recursive database`: passed; database submodule HEAD `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- SHOPIFY-021 focused service/route/i18n tests: 30 passed.
+- Full repository Vitest suite: 34 files passed, 1 skipped; 300 tests passed, 1 skipped.
+- `npm run build`: passed.
+- Touched-file ESLint: passed.
+- `git diff --check`: passed.
+- `npm run typecheck`: repository baseline remains non-zero, with no diagnostics in the touched promotion service, promotion route, or promotion service tests after local fixes. Existing diagnostics remain in unrelated JS routes, billing, pending-recovery, shop service, and billing/shop tests.
+- Full ESLint: repository baseline remains non-zero with 11 unrelated errors outside this task. Touched-file lint passed.
+
+### Concurrency Evidence
+
+- Required integration test execution was not available in this environment. `TEST_DATABASE_URL` is set, but `MODA_DISPOSABLE_INTEGRATION=1` is not set, so the repository's disposable PostgreSQL integration gate is closed. No fake P2034 test is claimed as proof of database concurrency; the unit suite only proves the exact three-attempt retry bound.
+
+### Git / VCS
+
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-021`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-021`.
+- Implementation branch: `task/ARCH-010-SHOPIFY-021`.
+- Implementation commit: `625b7ea30a1608db71671a5d2cf4efdf5cd6bd59` (`fix(shopify): complete promotion offer selection corrections`), pushed to origin.
+- No database schema or submodule gitlink changes were made.
+- Claim cleared; parent report commit/push follows.
 
 ## Architect Review — Attempt 1
 
