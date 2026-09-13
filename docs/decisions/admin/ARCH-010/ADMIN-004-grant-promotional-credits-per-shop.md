@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 84
-executor: copilot
-claimed_at: '2026-09-13T12:58:24Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -399,3 +399,176 @@ STOP and return this same task to `moda_architect` without inventing an alternat
 6. a required focused validation fails because of the Attempt 2 change.
 
 After the corrections and validation pass, set this same task back to `status: review`, update the Completion Report, push both task branches, and STOP for `moda_architect` review. Do not start `ADMIN-005` or `SHOPIFY-021`.
+
+#### Attempt 2 — Changes Requested
+
+Attempt 2 is **accepted in substance for the campaign transition implementation**, but this task is not yet architect-accepted Complete. Keep the same task and reclaim it as Attempt 3. Do not redesign the CAS/activation implementation.
+
+The following Attempt 2 work is accepted and must be preserved unchanged unless a required test proves a defect:
+
+- versioned `id + DRAFT + version` compare-and-set for draft editing;
+- versioned `id + DRAFT + version` compare-and-set for activation;
+- stale/lost transitions require `count === 1` and otherwise fail with the bounded reload/retry error;
+- `ACTIVATED` audit evidence is appended only after the activation CAS succeeds in the same transaction;
+- activation submits only `intent=activate` and the campaign `id`;
+- activation re-reads persisted campaign terms and validates persisted target/quantity/window state;
+- no merchant grant, selection, reservation, entitlement-counter, purchased-credit, lifetime-Free or Shopify App Event mutation was introduced;
+- implementation commit `6683e190c28536f768dd9fafa4e4ccfed38c4aae` is the accepted-in-substance Attempt 2 source baseline.
+
+Attempt 3 is intentionally narrow. Do not change the accepted CAS logic or persisted-term validation unless one of the required focused tests fails because that implementation is genuinely wrong.
+
+##### Correction 1 — enforce the original `SUPER_ADMIN only` contract at the page boundary
+
+The task's Security section says `SUPER_ADMIN only`. The mutation action is correctly SUPER_ADMIN-gated, but the `/promotions` page currently calls only `requirePlatformAdminPage()`, which permits any authorized platform-admin role to read campaign history/targets and see campaign authoring controls.
+
+File:
+
+```text
+moda-interact-admin/src/app/(protected)/promotions/page.tsx
+```
+
+Required behaviour:
+
+1. call `requirePlatformAdminPage()` and retain the returned principal;
+2. before calling `getPromotionTargets()` or `getPromotionCampaigns()`, require `principal.role === "SUPER_ADMIN"`;
+3. for any authenticated non-SUPER_ADMIN, redirect to `/` using the repository/Next.js page convention;
+4. do not query promotion campaigns or target lists before that role check;
+5. unauthenticated behaviour remains owned by `requirePlatformAdminPage()` and must continue to redirect to `/login`;
+6. do not create a second auth/session system.
+
+A conforming shape is conceptually:
+
+```ts
+const principal = await requirePlatformAdminPage();
+if (principal.role !== "SUPER_ADMIN") redirect("/");
+
+const [{ plans, shops }, campaigns] = await Promise.all([...]);
+```
+
+Use `redirect` from `next/navigation`. Do not expose a raw authorization/Prisma error to the page.
+
+##### Correction 2 — hide the Promotions navigation entry from non-SUPER_ADMIN roles
+
+File:
+
+```text
+moda-interact-admin/src/components/admin/sidebar.tsx
+```
+
+The sidebar already receives `administratorRole`. Render the `/promotions` link only when:
+
+```text
+administratorRole === "SUPER_ADMIN"
+```
+
+Do not change the visibility of tenant directory, billing, merchant-support or observability navigation. This is UI discoverability only; the page-level role check from Correction 1 remains mandatory and is the security boundary.
+
+##### Correction 3 — add deterministic security regression coverage
+
+File:
+
+```text
+moda-interact-admin/tests/security/admin-promotions.test.mjs
+```
+
+Extend the existing source/security tests to prove all of the following:
+
+1. the Promotions page retains the principal returned by `requirePlatformAdminPage()`;
+2. the page checks `principal.role !== "SUPER_ADMIN"` before campaign/target data is loaded;
+3. a non-SUPER_ADMIN page request follows the bounded `/` redirect path;
+4. the Sidebar renders the `/promotions` link only behind `administratorRole === "SUPER_ADMIN"`;
+5. the existing mutation-level `requirePlatformAdminMutation()` + SUPER_ADMIN guard remains present;
+6. all Attempt 2 CAS/persisted-authority/no-grant/no-Shopify assertions remain green.
+
+Use the repository's existing source/security-test style. Do not introduce a browser/system-test harness for this correction.
+
+##### Correction 4 — exact Attempt 3 production scope
+
+Attempt 3 production/test changes are limited to:
+
+```text
+moda-interact-admin/src/app/(protected)/promotions/page.tsx
+moda-interact-admin/src/components/admin/sidebar.tsx
+moda-interact-admin/tests/security/admin-promotions.test.mjs
+```
+
+plus this task file for execution metadata and Completion Report evidence.
+
+Do **not** change:
+
+```text
+src/app/actions/promotions.ts
+src/components/admin/promotion-campaign-form.tsx
+src/lib/admin/promotion-validation.ts
+tests/unit/promotion-validation.test.ts
+database/prisma/**
+```
+
+unless a required Attempt 3 test demonstrates a concrete defect in the accepted-in-substance Attempt 2 implementation. If that occurs, STOP and return the exact failing test and reason to `moda_architect` before editing those files.
+
+No other repository, task file, architecture document, Shared contract, merchant-facing Shopify code or Background code is in scope.
+
+##### Correction 5 — task lifecycle and worktree evidence
+
+The published parent branch at Attempt 2 incorrectly remained:
+
+```yaml
+status: in_progress
+executor: copilot
+claimed_at: '2026-09-13T12:58:24Z'
+attempt: 2
+```
+
+while its Completion Report said `Review.`. This overlay deliberately returns the same task to the reclaimable state:
+
+```yaml
+status: ready
+executor: null
+claimed_at: null
+attempt: 2
+```
+
+The next authorized `/moda-task ARCH-010-ADMIN-004` claim must increment exactly once to Attempt 3. At the end of Attempt 3, the repository agent must actually set the task frontmatter to `status: review` before publishing the parent report. A Completion Report that merely says Review while YAML remains `in_progress` is not sufficient.
+
+Attempt 3 must again record the real canonical worktree and start-of-attempt synchronization evidence using the mandatory structure. Do not fabricate or rewrite Attempt 2 history.
+
+##### Correction 6 — required Attempt 3 validation
+
+From the canonical ADMIN-004 implementation worktree, with the recorded database submodule initialized and gitlink unchanged, run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+node --experimental-strip-types --test tests/unit/promotion-validation.test.ts
+node --test tests/security/admin-promotions.test.mjs
+npm test
+npm run lint
+npx tsc --noEmit
+npm run build
+git diff --check
+```
+
+Expected:
+
+- the ADMIN-004 focused security tests pass;
+- the existing promotion validation tests pass;
+- full repository tests pass under the same accepted baseline;
+- lint/typecheck/build pass subject only to already-documented unrelated warnings;
+- no changed Attempt 3 file introduces formatting/diff-check failures;
+- database submodule HEAD remains `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`;
+- no database gitlink change is staged.
+
+The Completion Report must list the Attempt 3 implementation commit and parent report commit, exact command outcomes, exact worktree/synchronization evidence, and confirm only the three authorized implementation/test files changed.
+
+##### Attempt 3 stop conditions
+
+STOP and return to `moda_architect` if:
+
+1. enforcing SUPER_ADMIN page access requires a new authentication system or cross-repository contract;
+2. the existing page principal does not expose a reliable `role`;
+3. satisfying this correction requires a schema/migration change;
+4. a required focused test demonstrates the accepted Attempt 2 CAS implementation is actually defective;
+5. canonical worktree isolation/synchronization cannot be satisfied.
+
+After the corrections pass, set this same task to `status: review`, push the implementation and parent task branches, and STOP. Do not start `ADMIN-005` or `SHOPIFY-021`.
+
