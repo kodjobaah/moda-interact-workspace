@@ -215,19 +215,43 @@ Stop if ADMIN-007 reference semantics would need to be changed, if DATABASE-013 
 ## Completion Report
 
 ### Status
-Not started.
+Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-admin/src/app/actions/billing-plan.ts`
+- `moda-interact-admin/src/app/actions/billing-economics.ts`
+- `moda-interact-admin/src/components/admin/billing-plan-catalog.tsx`
+- `moda-interact-admin/src/i18n/locales/en.json`
+- `moda-interact-admin/src/i18n/required-keys.ts`
+- `moda-interact-admin/src/lib/admin/billing-plan.ts`
+- `moda-interact-admin/src/lib/admin/billing-plan-guardrail.ts`
+- `moda-interact-admin/tests/security/admin-billing-plan.test.mjs`
+- `moda-interact-admin/src/app/(protected)/billing/page.tsx`
 
 ### Work Completed
-Populate during implementation.
+- Reused the accepted ADMIN-007 single-pack evaluator through a shared Admin adapter.
+- Re-read current policy, active adjacent edges, latest verified snapshots, and proposed plan values inside the mutation transaction.
+- Blocked `FAIL` and `UNVERIFIED` outcomes before plan, feature, pack, or edge activation writes.
+- Preserved transaction atomicity and recorded `UPGRADE_ECONOMICS_EVALUATED` evidence with evaluator inputs, result, and snapshot IDs.
+- Guarded edge creation/reactivation and economics-affecting plan updates/toggles.
+- Added deterministic per-edge capacity, pack, cost, premium, status, and evidence explanations using Admin ICU keys.
+- Added focused regression coverage for guard outcomes, audit evidence, mutation blocking, and server-side enforcement.
 
 ### Validation Results
-Populate during implementation.
+- `npm test`: 163 passed, 0 failed, 3 skipped.
+- `node --test tests/security/admin-billing-plan.test.mjs`: 11 passed, 0 failed.
+- `npx tsc --noEmit --pretty false`: passed.
+- `npm run lint`: 0 errors; two existing `queue-monitor.tsx` hook warnings.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
+- Prettier check and `git diff --check`: passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-ADMIN-009`.
+- Branch: `task/ARCH-010-ADMIN-009`.
+- Claim commit: `97bed1e`.
+- Implementation commit: `19f649a` (`feat(admin): enforce upgrade economics guardrail`).
+- Remote branch: `origin/task/ARCH-010-ADMIN-009`.
 
 ### Architect Review
 Pending.
