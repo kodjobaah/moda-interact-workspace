@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
 executor: copilot
 claimed_at: '2026-09-13T14:30:00Z'
@@ -359,7 +359,7 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for architect review.
 
 ### Files Changed
 - `moda-interact-background/src/domain/recovery-capacity-resume.ts`
@@ -370,6 +370,7 @@ In Progress.
 - `moda-interact-background/src/workers/recovery-capacity-resume.worker.ts`
 - `moda-interact-background/src/entrypoints/recovery.ts`
 - `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts`
+- `moda-interact-background/tests/unit/workers/recovery-capacity-resume.worker.test.ts`
 
 ### Work Completed
 - Changed full-capacity admission to the canonical `capacity-exhausted` result and retained the existing promotion/purchased/lifetime/included routing without paid overage.
@@ -377,19 +378,22 @@ In Progress.
 - Added deterministic generic Free/Paid exhaustion epochs using durable subscription, billing-period, entitlement-counter, and pack facts.
 - Added a Background-owned tenant-scoped BullMQ resume queue, deterministic IDs, bounded startup/periodic PostgreSQL repair, FIFO batches of 25, checkout locks, current Shopify revalidation, retryable provider errors, and terminal handling for unrecoverable checkouts.
 - Added post-commit best-effort resume scheduling after confirmed purchased-credit activation; queue failures do not roll back activation.
+- Corrected exhaustion epochs to include selected promotional grant state, kept ambiguous and bounded Shopify lookup outcomes retryable, cleared stale block fields on order completion, and advanced continuation jobs past the last processed recovery.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- Focused billing suite: `npx vitest run tests/unit/services/recovery-billing.service.test.ts`, 45/45 passed.
+- Focused billing suite: `npx vitest run tests/unit/services/recovery-billing.service.test.ts`, 60/60 passed.
+- Focused resume worker suite: `npx vitest run tests/unit/workers/recovery-capacity-resume.worker.test.ts`, 3/3 passed.
+- `npx tsc --noEmit`: no diagnostics in the corrected billing, checkout, resume, worker, domain, observability, or resume-worker test files; remaining diagnostics are the accepted Prisma/client drift in purchased-credit code.
 - `npm run test:integration`: passed, 3/3 tests.
 - `npm run test:unit`: 10 existing failures remain in purchased-credit reconciliation and runtime observability baseline tests; the purchased-credit failures are caused by the accepted database gitlink/client lacking fields and enum members already used by the pre-existing source (`PENDING_BILLING`, `NEEDS_ATTENTION`, refund counters), and the observability failures retain the pre-existing shared-runtime version assertion.
 - `npm run build`: blocked by the same pre-existing accepted-gitlink Prisma/client drift; `git diff --check`: passed.
 
 ### Git / VCS
-Implementation repository: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009` on `task/ARCH-010-BACKGROUND-009`, pushed at commit `50bcda3`.
+Implementation repository: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009` on `task/ARCH-010-BACKGROUND-009`, pushed at commit `2a6ef86`.
 Parent repository: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009` on `task/ARCH-010-BACKGROUND-009`, claim commit `9d0cbba` pushed.
-Both canonical worktrees were created from current `origin/main`; no remote task branch existed before creation.
+Attempt 2 sync evidence: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009` were verified on the task branch after parent/main synchronization. Implementation HEAD contains BG8 commit `b4ef7c885e03009f6622894230ab54a87bf4364a` and current Background `origin/main` `a585139bb5f4c42d30ce0cc303f738f0c93c70b2` as ancestors. Attempt 2 correction commit `2a6ef86` is pushed.
 
 ### Architect Review
 Requested. Self-acceptance is not performed.
