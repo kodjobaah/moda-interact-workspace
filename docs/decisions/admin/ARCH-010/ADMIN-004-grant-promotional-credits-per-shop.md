@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 84
-executor: copilot
-claimed_at: '2026-09-13T12:35:36Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -156,4 +156,232 @@ Ready for Review.
 - Database submodule gitlink remained unchanged at accepted commit `5443afd`.
 
 ### Architect Review
-Pending.
+
+#### Review Status
+
+Changes Requested
+
+#### Attempt 1 — Changes Requested
+
+Attempt 1 is **not accepted**. The overall ADMIN-004 implementation is within scope and the campaign authoring model is correct, but the mutation path does not yet enforce the post-activation immutability invariant under concurrent requests.
+
+The accepted parts of Attempt 1 should be preserved:
+
+- the `/promotions` Admin route and existing Admin navigation integration;
+- SUPER_ADMIN mutation authorization;
+- GLOBAL / PLAN / SHOP target-shape validation;
+- exact durable `BillingPlan.id` and `Shop.id` lookup;
+- positive bounded quantity and ordered start/expiry validation;
+- transactional `CREATED` and `ACTIVATED` lifecycle events;
+- zero `PromotionalCreditGrant`, `MerchantPromotionSelection`, entitlement-counter, Shopify App Event or compatibility-model mutation;
+- the existing UI rule that non-DRAFT campaigns are not editable;
+- the existing full-repository validation baseline.
+
+This is an **Attempt 2 correction on the same task**. Do not create a replacement task and do not redesign the promotion architecture.
+
+##### Attempt 2 production scope — exact files
+
+Production/test changes are limited to:
+
+- `moda-interact-admin/src/app/actions/promotions.ts`
+- `moda-interact-admin/src/components/admin/promotion-campaign-form.tsx`
+- `moda-interact-admin/src/lib/admin/promotion-validation.ts` only if a reusable persisted-campaign validation helper is required
+- `moda-interact-admin/tests/security/admin-promotions.test.mjs`
+- `moda-interact-admin/tests/unit/promotion-validation.test.ts` only if the validation helper above is added
+- this ADMIN-004 task file for execution metadata and Completion Report evidence only
+
+Do **not** modify Prisma schema/migrations, Shared contracts, merchant-facing Shopify code, Background code, promotion grant/selection models, another task file, or architecture documents.
+
+##### Correction 1 — make DRAFT edit and activation a compare-and-set transition
+
+The current implementation does:
+
+```text
+findUnique(id)
+require status == DRAFT
+update(where: { id })
+```
+
+for both activation and draft editing.
+
+That is not race-safe. Two transactions may both read the same DRAFT row. A draft edit may then update the row after another transaction has activated it, changing scope/target/quantity after first activation. Two activation requests may also both append `ACTIVATED` events.
+
+Use the existing `PromotionCampaign.version` field and persisted `DRAFT` state as the compare-and-set authority. No schema change is required.
+
+For **activation**, after re-reading the campaign and validating the persisted campaign values, perform a conditional update equivalent to:
+
+```ts
+const result = await transaction.promotionCampaign.updateMany({
+  where: {
+    id: existing.id,
+    status: PromotionCampaignStatus.DRAFT,
+    version: existing.version,
+  },
+  data: {
+    status: PromotionCampaignStatus.ACTIVE,
+    version: { increment: 1 },
+  },
+});
+
+if (result.count !== 1) {
+  throw new Error("Promotion campaign changed; reload and retry.");
+}
+```
+
+Create the `PromotionCampaignEventType.ACTIVATED` event **only after** that conditional update wins inside the same transaction.
+
+For **draft editing**, use the same conditional authority:
+
+```text
+id = existing.id
+status = DRAFT
+version = existing.version
+```
+
+and update the requested draft fields plus `version += 1` only when exactly one row matches. If the conditional update loses, throw the same bounded stale-state/reload error. Do not retry with stale submitted data and do not fall back to an unconditional `update({ where: { id } })`.
+
+The resulting invariant must be:
+
+```text
+once any transaction wins DRAFT -> ACTIVE,
+no concurrent or later ADMIN-004 draft edit can mutate campaign terms.
+```
+
+Do not use a force update, last-write-wins behaviour, or an in-memory mutex.
+
+##### Correction 2 — activation must use only the persisted re-read campaign as commercial authority
+
+The current activation form submits hidden copies of:
+
+```text
+name
+scope
+quantity
+targetPlanId
+targetShopId
+startsAt
+expiresAt
+```
+
+and `parsePromotionCampaignForm()` parses those client values before the transaction, even though activation subsequently re-reads the database row.
+
+For activation, the client must submit only command identity required to request the transition:
+
+```text
+intent=activate
+id=<campaign id>
+```
+
+Do not require or trust hidden commercial values for activation.
+
+Inside the transaction:
+
+1. re-read the campaign by `id`;
+2. require `status === DRAFT`;
+3. validate the **persisted** target shape and exact target existence;
+4. validate the persisted quantity is a positive bounded integer using the same ADMIN-004 quantity rule;
+5. validate `expiresAt > startsAt` using the persisted values;
+6. perform the version/status CAS from Correction 1;
+7. append `ACTIVATED` evidence only after the winning CAS.
+
+It is acceptable to factor the quantity/window/target checks into a reusable helper in `src/lib/admin/promotion-validation.ts`. Do not duplicate a second, different validation policy for activation.
+
+Do not calculate activation state from current pricing, merchant balances, promotion grants or merchant selections.
+
+##### Correction 3 — add deterministic regression coverage for the immutable transition boundary
+
+Extend the existing ADMIN-004 focused tests. At minimum prove all of the following:
+
+1. activation uses a conditional mutation containing `id`, `status: DRAFT`, and `version: existing.version`;
+2. draft editing uses the same `id + DRAFT + version` conditional authority;
+3. both conditional mutations require exactly one affected row and reject a stale/lost transition;
+4. the `ACTIVATED` event is written only after the activation CAS succeeds;
+5. the activation form submits `intent` and `id` but no hidden `name`, `scope`, `quantity`, target, start, or expiry commercial authority;
+6. activation validates the persisted target, quantity, and window after re-read;
+7. the existing non-SUPER_ADMIN, GLOBAL/PLAN/SHOP, mixed-target, quantity/window, no-grant/no-selection/no-counter/no-Shopify assertions remain green.
+
+The tests may use the repository's existing source/security-test style. If a helper is introduced in `promotion-validation.ts`, add direct unit tests for the helper as appropriate.
+
+Do not add a database integration harness solely for this task if the repository does not already have one.
+
+##### Correction 4 — preserve the existing security and scope boundaries
+
+Attempt 2 must not broaden access or behaviour:
+
+- mutations remain SUPER_ADMIN-only;
+- no merchant Shopify session path is introduced;
+- exact Shop/BillingPlan IDs remain server-resolved;
+- no raw Prisma object is intentionally returned to the client;
+- no merchant grant, selection, reservation, entitlement counter, purchased-credit, lifetime-Free, or Shopify App Event write is added;
+- campaign close/reopen/expiry-change lifecycle remains ADMIN-005 scope.
+
+Do not change the database schema or add a new campaign status.
+
+##### Correction 5 — record mandatory Attempt 2 worktree/synchronisation evidence prospectively
+
+Attempt 1's Completion Report records the implementation worktree and commits but does not contain the complete mandatory physical-isolation/start-of-attempt evidence structure.
+
+Do **not** invent missing Attempt 1 evidence.
+
+When Attempt 2 is actually claimed, use the canonical dedicated ADMIN-004 worktrees and perform the normal start-of-attempt synchronization. Record the actual Attempt 2 results using this exact structure:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <actual launcher-resolved workspace root>
+  parent worktree: <actual canonical ADMIN-004 parent worktree>
+  parent branch: task/ARCH-010-ADMIN-004
+  implementation worktree: <actual canonical ADMIN-004 implementation worktree>
+  implementation branch: task/ARCH-010-ADMIN-004
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Record only outcomes actually observed during Attempt 2. Stop under `docs/agent-worktree-isolation-policy.md` if the canonical worktrees cannot be used cleanly.
+
+##### Correction 6 — required Attempt 2 validation
+
+From the canonical ADMIN-004 implementation worktree, initialize the already-recorded database submodule/gitlink as required by the Admin repository without changing the gitlink, then run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+node --experimental-strip-types --test tests/unit/promotion-validation.test.ts
+node --test tests/security/admin-promotions.test.mjs tests/unit/promotion-validation.test.ts
+npm test
+npm run lint
+npx tsc --noEmit
+npm run build
+git diff --check
+```
+
+All task-owned/focused tests must pass.
+
+Repository-wide warnings may be reported only when they are demonstrably pre-existing and unrelated to ADMIN-004. Do not suppress or rewrite unrelated baseline files merely to make this task green.
+
+The Completion Report must record:
+
+- each command and outcome;
+- the new implementation commit;
+- the parent Completion Report commit;
+- the unchanged database submodule gitlink;
+- the exact Attempt 2 worktree/synchronisation evidence above.
+
+##### Attempt 2 stop conditions
+
+STOP and return this same task to `moda_architect` without inventing an alternative design if:
+
+1. enforcing the DRAFT/version CAS requires a Prisma/schema change;
+2. the accepted `PromotionCampaign.version` field is not available at the recorded database gitlink;
+3. exact durable Shop/BillingPlan target validation cannot be performed inside the existing transaction;
+4. satisfying the correction requires merchant grant/selection/counter mutation or another repository;
+5. canonical worktree isolation/synchronization cannot be satisfied;
+6. a required focused validation fails because of the Attempt 2 change.
+
+After the corrections and validation pass, set this same task back to `status: review`, update the Completion Report, push both task branches, and STOP for `moda_architect` review. Do not start `ADMIN-005` or `SHOPIFY-021`.
