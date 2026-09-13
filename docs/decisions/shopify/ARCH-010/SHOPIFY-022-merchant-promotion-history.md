@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 86
-executor: copilot
-claimed_at: 2026-09-13T21:43:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-SHOPIFY-021
@@ -73,19 +73,34 @@ Do not allow selecting campaigns from history, mutate campaign/grant quantities,
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact/app/services/promotions/promotion.service.ts`
+- `moda-interact/app/routes/app/promotions/route.tsx`
+- `moda-interact/tests/unit/services/promotion.service.test.ts`
+- `moda-interact/tests/unit/routes/promotion-route.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added a tenant-scoped `getPromotionHistory` query over exact `PromotionalCreditGrant` rows, bounded to 25 entries per page and ordered by selection history.
+- Added merchant-safe campaign history projection for granted, committed, remaining, selection/use timestamps, current expiry, current-selection state and lifecycle status.
+- Distinguishes selected, used, exhausted, expired, closed, no-longer-eligible and reopened history without reading aggregate promotional counters or internal provenance.
+- Added history presentation and Previous/Next pagination to the existing promotions route; history exposes no mutation controls or internal admin metadata.
 
 ### Validation Results
-Populate during implementation.
+- Focused promotion service/route tests: passed, 33/33.
+- Full test suite: passed, 316 tests; 34 files passed and 2 skipped.
+- Production build: passed; Prisma client generated and React Router client/SSR bundles built.
+- `git diff --check`: passed.
+- `npm run typecheck`: repository baseline failure; no diagnostics in the changed promotion service or route. Existing errors remain across unrelated JSX, billing, webhook and Redis files.
+- `npm run lint`: repository baseline failure with 11 unrelated errors in onboarding, billing, merchant support, privacy and webhook files; no errors in changed promotion files. TypeScript 5.9 unsupported-version warning also remains baseline.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`.
+- Launcher preparation: dependency gate passed; parent and implementation worktrees created and synchronized; recursive database submodule ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; Attempt 1 claim committed and pushed by launcher as `e16ba673b0236aaba9ab1772d5334a9cdf0dfae4`.
+- Implementation commit `0d66cc1` pushed to `origin/task/ARCH-010-SHOPIFY-022`.
 
 ### Architect Review
-Pending.
+Pending architect review after publication.
