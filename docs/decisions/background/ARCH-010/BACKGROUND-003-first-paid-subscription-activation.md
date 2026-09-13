@@ -9,9 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-13T21:36:11Z
+status: review
+executor: null
+claimed_at: null
 priority: 43
 attempt: 5
 depends_on:
@@ -204,7 +204,7 @@ STOP if:
 ## Completion Report
 
 ### Status
-Implementation complete; returned to architect review after Attempt 4 validation. Downstream tasks remain blocked pending architect review.
+Implementation complete; Attempt 5 evidence correction is complete and the task is returned to architect review. Downstream tasks remain blocked pending architect review.
 
 ### Files Changed
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
@@ -216,12 +216,13 @@ Implementation complete; returned to architect review after Attempt 4 validation
 - Added a queued-path `PENDING_PLAN_HANDLE_MISMATCH` guard for same-local-plan Shopify handle drift before `applyOtherCurrentPlan`, preserving the pending target and bounded retry.
 - Added a rotating-path fail-closed guard for the same drift, preventing legacy BillingPeriod projection and preserving durable pending intent.
 - Added permanent evidence for the real queued drift state, rotating drift, CLOSED exact periods, incompatible period snapshots, conflicting included-credit grants, and successful Paid activation queue failure followed by `reconstruct()` repair.
+- Strengthened `does not activate when the provider handle differs from the durable pending handle` with a realistic `paid-new` provider lookup and explicit no-transaction, no-activation, pending-state, and bounded-retry assertions.
 - Preserved all Attempt 1-3 production corrections: transactional plan revalidation, nullable unsupported-trial recovery, canonical rotating activation, exact cycle/meter/allowance validation, and replay usage preservation.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- Focused reconciliation suites: passed, 2 files / 91 tests.
+- Focused reconciliation suites: passed, 2 files / 91 tests, including the strengthened Attempt 5 queued drift evidence.
 - `npm run test:integration`: passed, 2 files / 3 tests.
 - `git diff --check`: passed.
 - `npm run test:unit`: 53 files passed, 2 failed; 709 tests passed, 10 failed. All failures are the documented unrelated baseline in recovery-credit purchase and observability-startup tests.
@@ -239,6 +240,11 @@ Implementation complete; returned to architect review after Attempt 4 validation
 - Incompatible period: `fails closed for an incompatible paid period %s` table covering subscription, plan, handle, name, kind, and grant snapshots.
 - Conflicting included counter: `fails closed for a conflicting included-credit counter grant`.
 - Paid enqueue failure plus reconstruction: `repairs a missing Paid activation job after post-commit queue failure`.
+
+### Attempt 5 Evidence Map
+
+- Realistic queued same-local-plan handle drift: `does not activate when the provider handle differs from the durable pending handle` maps both the provider handle and provider-handle lookup result to `paid-new`, records `PENDING_PLAN_HANDLE_MISMATCH`, proves no transaction or activation mutation, preserves pending fields, and publishes the exact bounded retry timestamp.
+- Production source unchanged from Attempt 4; this attempt is test/evidence only as required by the latest Architect Review.
 
 ### Workflow Evidence
 
@@ -281,6 +287,8 @@ Task history:
 - Attempt-3 report `87c5064f8cc62ac73b79d85cb33e5c6e2526429c`: ancestor of parent HEAD, yes.
 - Attempt-4 claim `c1d7ead3941dab01a27c636d9969822f0d849655`: pushed by launcher.
 - Attempt-4 implementation `fbd24668b0a32ee085f8d02c219fd7d505a68a1e`: ancestor of implementation HEAD, yes; pushed.
+- Attempt-5 claim `b5f3f9d90e9598b8f4ff32463bdd2dc9ed43a256`: ancestor of parent HEAD, yes.
+- Attempt-5 implementation/evidence `0fe699ced684a1c2ffde09cc3510eea2d98524e1`: pushed on the implementation task branch, yes.
 
 Handoff:
 
@@ -291,12 +299,13 @@ Handoff:
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-003`.
 - Implementation branch: `task/ARCH-010-BACKGROUND-003`.
 - Implementation commits: `c6d5c0a66de67cded04d8f60c2d268644286bb13` (`feat(background): activate first paid subscriptions`), `3172334` (`fix(background): harden paid activation revalidation`), `110b6f5` (`test(ARCH-010-BACKGROUND-003): prove rotating paid activation recovery`), and `fbd24668b0a32ee085f8d02c219fd7d505a68a1e` (`fix(ARCH-010-BACKGROUND-003): guard paid activation handle drift`), pushed.
+- Attempt 5 implementation/evidence: `0fe699ced684a1c2ffde09cc3510eea2d98524e1` (`test(ARCH-010-BACKGROUND-003): prove realistic paid handle drift guard`), pushed.
 - Parent task-report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-003`.
 - Database gitlink remains `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database commit or schema change was made.
-- Attempt 4 claim is cleared in this report; parent report commit/push follows. No merge to `main` performed.
+- Attempt 5 claim is cleared in this report; parent report commit/push follows. No merge to `main` performed.
 
 ### Architect Review
-Requested. Focused task behavior and integration validation pass; unrelated full-suite and build baseline blockers are documented above.
+Requested. Focused task behavior and integration validation pass; unrelated full-suite and build baseline blockers are documented above. Attempt 5 awaits architect review.
 
 ## Architect Review — Attempt 1
 
