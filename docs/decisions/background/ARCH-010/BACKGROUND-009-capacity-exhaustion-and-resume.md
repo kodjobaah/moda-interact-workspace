@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 53
-executor: copilot
-claimed_at: '2026-09-13T13:05:59Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -409,3 +409,417 @@ The exhaustion epoch key must include promotional `grantedQuantity`, `committedQ
 Merchant exhaustion copy must mention promotional credits when applicable without exposing internal campaign metadata.
 
 A promotional grant can restore blocked recoveries. No direct Admin->Background queue is required: the existing PostgreSQL repair scan/re-admission path is correctness authority and must see the newly available promotional counter on its next pass.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Attempt 1 — Changes Requested
+
+Attempt 1 is **not accepted**. Keep this same task and return it to `ready` for Attempt 2. Do not create a replacement task and do not begin `ARCH-010-BACKGROUND-007`, `ARCH-010-BACKGROUND-012`, `ARCH-010-SHOPIFY-008` or `ARCH-010-SYSTEM-TEST-001` from this task.
+
+The following Attempt 1 implementation choices are directionally correct and should be preserved unless one of the required regression tests below proves a concrete defect:
+
+- canonical `{ kind: "blocked", reason: "capacity-exhausted" }` for full capacity exhaustion;
+- persistence of `RECOVERY_CAPACITY_EXHAUSTED` only on `DETECTED` recoveries and preservation of the first `admissionBlockedAt` through the `admissionBlockReason: null` CAS predicate;
+- clearing block fields on successful `MESSAGE_SENT` transition;
+- Background-owned `recovery-capacity-resume` BullMQ queue using the existing Redis/telemetry conventions;
+- startup plus five-minute repair cadence and the 100-shop / 25-recovery bounds;
+- FIFO recovery query order `detectedAt ASC, id ASC`;
+- checkout-scoped locking and fresh `abandonedCheckoutLookupService` lookup before resumed initiation;
+- post-transaction purchased-credit activation hint with queue failure isolated from the committed credit activation;
+- no automatic paid-overage branch and no `BILLING_FREE_ALLOWANCE_EXHAUSTED` producer.
+
+The corrections below are bounded to this task's original architecture. Do not redesign the billing model, add a cross-repository queue contract, or move resume ownership out of Background.
+
+#### Correction 1 — the exhaustion epoch must include the selected promotional grant state
+
+Files:
+
+```text
+moda-interact-background/src/services/recovery-billing.service.ts
+moda-interact-background/tests/unit/services/recovery-billing.service.test.ts
+```
+
+`createCapacityExhaustedMessage()` currently builds its lifecycle key from plan/subscription, BillingPeriod, lifetime-Free, included and purchased state, plus the configured recovery-pack handle. It does **not** include the currently selected `PromotionalCreditGrant` identity/accounting state. This contradicts the task's explicit final promotional-capacity requirement and means a later promotion selection/restoration can return capacity and then exhaust again while deduplicating against the old SYSTEM-message epoch.
+
+Extend the database view used by `RecoveryBillingService` so the exhaustion snapshot can read the shop's current `MerchantPromotionSelection` and selected `PromotionalCreditGrant`.
+
+The deterministic lifecycle input must contain, when a selection/grant exists, at minimum:
+
+```text
+promotionalCreditGrant.id
+promotionalCreditGrant.version
+promotionalCreditGrant.quantity            # canonical granted quantity in this schema
+promotionalCreditGrant.committedQuantity
+promotionalCreditGrant.reservedQuantity
+```
+
+Use a deterministic sentinel such as `no-selected-promotion` when there is no selected grant. Do not use campaign copy, checkout/customer identity, phone numbers or any other customer data in the source key. `recoveryCreditPack.shopifyEventHandle` is configuration metadata and is **not** a substitute for promotional grant state.
+
+Required regression coverage:
+
+1. two blocked recoveries with the identical selected promotional grant snapshot deduplicate to one SYSTEM-message source key;
+2. a different selected grant id creates a new exhaustion epoch;
+3. a version/accounting change to the selected grant changes the exhaustion epoch;
+4. the existing purchased/lifetime/included epoch assertions remain green.
+
+#### Correction 2 — continuation after a full 25-row batch must not enqueue the currently-active BullMQ job id
+
+Files:
+
+```text
+moda-interact-background/src/domain/recovery-capacity-resume.ts
+moda-interact-background/src/services/recovery-capacity-resume.service.ts
+moda-interact-background/src/workers/recovery-capacity-resume.worker.ts
+```
+
+The current worker does:
+
+```ts
+if (recoveries.length === MAX_RECOVERIES_PER_JOB) {
+  await recoveryCapacityResumeService.schedule(job.data);
+}
+```
+
+`job.data` produces the same deterministic job id as the job that is still executing. BullMQ can therefore deduplicate the attempted continuation against the active job; once the active job completes/removes, no successor remains. The worker also reaches this branch when the query returned 25 rows even if processing stopped on the first `capacity-exhausted` result.
+
+Required behaviour:
+
+- track how many selected rows were actually attempted and whether `capacity-exhausted` was returned;
+- when any attempt returns `capacity-exhausted`, stop immediately **and do not enqueue a continuation**;
+- when fewer than 25 rows were selected, do not enqueue a continuation;
+- when all 25 selected rows were consumed without capacity exhaustion, enqueue one successor job with a **different but deterministic** bounded trigger/job id;
+- the successor identity may use a bounded internal continuation marker derived from the last processed recovery id (for example `continuation-<lastRecoveryId>`), or an equivalent deterministic non-customer-data identity; it must not contain `:`;
+- duplicate workers reaching the same continuation boundary must resolve to the same successor job id so BullMQ deduplication remains useful;
+- do not loop over more than 25 recoveries in one job.
+
+Do not solve this by disabling job-id deduplication or by globally serialising all shops.
+
+Required worker tests:
+
+1. 25 successful/terminal/ignored attempts with capacity still available enqueue one distinct successor;
+2. a capacity-exhausted result on any row stops immediately and schedules no successor;
+3. fewer than 25 selected rows schedule no successor;
+4. duplicate continuation attempts produce the same deterministic successor id.
+
+#### Correction 3 — ambiguous/bounded Shopify lookup outcomes are not terminal checkout evidence
+
+File:
+
+```text
+moda-interact-background/src/services/checkout-recovery.service.ts
+```
+
+`resumeCapacityBlockedRecovery()` currently terminalizes every lookup outcome other than `found` or `provider-error`. That includes:
+
+```text
+ambiguous
+bounded-limit-exceeded
+```
+
+Those outcomes do not prove that the abandoned checkout is no longer recoverable. They must not transition the durable recovery to `CANCELLED`.
+
+Required classification:
+
+```text
+provider-error             -> throw; BullMQ retry policy applies
+ambiguous                  -> throw/retry or otherwise return a retryable non-terminal failure
+bounded-limit-exceeded     -> throw/retry or otherwise return a retryable non-terminal failure
+found + completedAt != null -> terminalize without sending
+not-found                  -> may terminalize using the existing lifecycle convention
+found + still abandoned    -> continue through ordinary initiation
+```
+
+For every non-terminal lookup failure, preserve `DETECTED + RECOVERY_CAPACITY_EXHAUSTED`; never send from the stale stored checkout snapshot.
+
+Add focused tests proving ambiguous/bounded/provider failure never writes a terminal status and never invokes the provider-send path.
+
+#### Correction 4 — every task-owned terminal transition must clear stale capacity-block fields
+
+File:
+
+```text
+moda-interact-background/src/services/checkout-recovery.service.ts
+```
+
+The new resume-specific `CANCELLED` transition clears `admissionBlockedAt` and `admissionBlockReason`, but the existing order-completion transition can move a capacity-blocked `DETECTED` recovery to `COMPLETED` while leaving both block fields populated.
+
+When the order-completion transaction wins its status transition, clear:
+
+```text
+admissionBlockedAt = null
+admissionBlockReason = null
+```
+
+in the same durable update. Inspect other terminal writes in this service that can consume a blocked `DETECTED` recovery and apply the same invariant where applicable. Do not change recovered-revenue semantics or invent a new status.
+
+Required regression test: a `DETECTED + RECOVERY_CAPACITY_EXHAUSTED` recovery completed by the order path ends `COMPLETED` with both block fields null.
+
+#### Correction 5 — add focused tests for the actual resume capability, not only the billing reason rename
+
+Attempt 1 changes seven production files implementing a new durable queue/repair/resume mechanism, but the only changed test file is `tests/unit/services/recovery-billing.service.test.ts`. The passing 3-test integration suite is pre-existing purchased-reservation coverage and does not prove the new worker/repair/resume lifecycle.
+
+Add focused tests using existing Vitest/module-mocking conventions. Prefer these files (names may vary only to match repository conventions):
+
+```text
+moda-interact-background/tests/unit/services/recovery-billing.service.test.ts
+moda-interact-background/tests/unit/services/recovery-capacity-resume.service.test.ts
+moda-interact-background/tests/unit/workers/recovery-capacity-resume.worker.test.ts
+moda-interact-background/tests/unit/services/checkout-recovery.capacity-resume.test.ts
+moda-interact-background/tests/unit/services/recovery-credit-purchase.service.test.ts
+```
+
+At minimum produce durable evidence for all of the following BG9-owned behaviours:
+
+1. Free full exhaustion returns `capacity-exhausted`, creates no normal recovery UsageEvent/provider call and persists the generic block through the checkout service;
+2. Paid full exhaustion has the same generic block with no overage UsageEvent;
+3. purchased capacity is consumed before blocking;
+4. block replay preserves the first `admissionBlockedAt`;
+5. one Free epoch and one Paid epoch each deduplicate across multiple blocked recoveries;
+6. purchased counter restoration and a new BillingPeriod produce new epoch identities;
+7. selected promotional grant restoration produces a new epoch identity (Correction 1);
+8. successful resumed initiation clears both block fields;
+9. normal order completion clears both block fields (Correction 4);
+10. purchased-credit activation schedules a resume hint **after** the reconciliation transaction returns successfully;
+11. queue-add failure after purchase activation does not reject/roll back the already-successful reconciliation result;
+12. repair selects only active shops with blocked DETECTED recoveries and never schedules more than 100 shops per pass;
+13. a schedule failure for one repaired shop is non-fatal and does not prevent later shops from being attempted;
+14. inactive-shop resume is a successful terminal no-op;
+15. worker query is FIFO and bounded to 25;
+16. fresh checkout lookup occurs before resumed initiation;
+17. provider/ambiguous/bounded lookup failures are retryable/non-terminal (Correction 3);
+18. still-exhausted resume stops the batch immediately and produces no continuation;
+19. a full successful 25-row batch schedules exactly one distinct deterministic continuation (Correction 2);
+20. duplicate resume delivery cannot produce duplicate initial send: prove the checkout lock/status guard and existing `recovery-message:<recoveryId>` idempotency path remain in force;
+21. the startup repair and five-minute periodic repair are both wired to the recovery worker entrypoint;
+22. no new generic logger or duplicate BullMQ telemetry mechanism is introduced;
+23. no `BILLING_FREE_ALLOWANCE_EXHAUSTED` producer or paid-overage recovery branch is reintroduced.
+
+Existing tests that already prove one of these points may be cited in the Completion Report instead of duplicated, but the report must name the exact test/file. Do not claim the pre-existing three integration tests validate the resume worker unless they actually exercise it.
+
+#### Correction 6 — BACKGROUND-008 is Complete and merged to Background `main`; integrate it before any BG9 editing
+
+`ARCH-010-BACKGROUND-008` is no longer a hypothetical overlap. It has been architect-accepted **Complete at Attempt 3** and its accepted implementation is now part of `moda-interact-background/main`.
+
+Recorded accepted/mainline evidence:
+
+```text
+BACKGROUND-008 accepted implementation:
+  b4ef7c885e03009f6622894230ab54a87bf4364a
+
+moda-interact-background main merge containing BACKGROUND-008:
+  a585139bb5f4c42d30ce0cc303f738f0c93c70b2
+```
+
+`BACKGROUND-009` Attempt 1 was created before this BG8 mainline merge. Therefore Attempt 2 MUST first bring current `origin/main` into the canonical BG9 implementation worktree and MUST implement BG9 **on top of** the accepted BG8 boundary-safety behavior.
+
+Before changing any BG9 source file in the implementation worktree:
+
+```bash
+cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009
+
+git fetch origin
+git status --short
+
+# Synchronize the task branch with its own remote task branch first.
+# If local/remote task history has diverged rather than being fast-forwardable, STOP.
+git merge --ff-only origin/task/ARCH-010-BACKGROUND-009
+
+# Then incorporate current Background main.
+# A merge commit is allowed/expected because BG9 Attempt 1 and BG8 mainline diverged.
+git merge --no-edit origin/main
+```
+
+Do not start implementation until that merge is complete.
+
+After the merge, prove that accepted BG8 is in the implementation ancestry:
+
+```bash
+git merge-base --is-ancestor b4ef7c885e03009f6622894230ab54a87bf4364a HEAD
+echo "BG8 accepted commit ancestor: $?"
+
+git merge-base --is-ancestor a585139bb5f4c42d30ce0cc303f738f0c93c70b2 HEAD
+echo "BG8 main merge ancestor: $?"
+```
+
+Both exit codes MUST be `0`. Record the actual current Background `origin/main` SHA in the Completion Report because `main` may advance beyond `a585139`.
+
+The merged implementation must retain all accepted BG8 semantics, including at minimum:
+
+```text
+revalidateBeforeProvider(...) remains mandatory before irreversible WhatsApp provider work
+
+fresh newRecoveriesPaused state wins at pre-provider revalidation
+
+Paid BillingPeriod phases/reasons remain:
+  ACTIVE
+  DRAINING
+  EXPIRED_RECONCILING
+  billing-period-closing
+  billing-period-reconciliation
+
+DRAINING does not consume paid included capacity and retains:
+  promotional -> purchased -> lifetime-Free fallback ordering
+
+EXPIRED_RECONCILING releases pre-provider reservations and blocks provider work
+
+period-specific paid-included source identity remains:
+  paid-included:<billingPeriodId>:<recovery identity>
+
+a still-reserved paid-included reservation can be released after its owning period closes
+
+WhatsApp text/template sends retain the accepted 30-second bounded timeout
+
+timeout/provider uncertainty remains ambiguous rather than definitive
+
+blocked pre-provider revalidation performs no WhatsApp send and no successful billing commit
+```
+
+When applying BG9 changes to overlapping files, use these deterministic ownership rules.
+
+**`src/services/recovery-billing.service.ts`**
+
+- preserve the BG8/main version of `revalidateBeforeProvider()` and its pause/DRAINING/EXPIRED semantics;
+- layer BG9's generic `capacity-exhausted` result, durable exhaustion epoch, and promotional-state epoch correction around the accepted BG8 admission/revalidation behavior;
+- do not replace BG8's revalidation function with the older Attempt 1 BG9/pre-BG8 form;
+- do not collapse `billing-period-closing` or `billing-period-reconciliation` into `capacity-exhausted`.
+
+**`src/services/checkout-recovery.service.ts`**
+
+- preserve BG8's unconditional billing revalidation immediately before provider send;
+- if revalidation blocks, preserve the BG8 no-send/no-commit boundary;
+- layer BG9's durable `RECOVERY_CAPACITY_EXHAUSTED` marking and resume lifecycle onto that flow;
+- a BG9 capacity block must not create a bypass around BG8 revalidation.
+
+**`src/services/paid-included-recovery-reservation.service.ts`**
+
+- preserve the accepted BG8 `requireOpenReservationCounter()` behavior;
+- preserve release of a still-reserved included reservation after its period closes;
+- do not reintroduce a rule that prevents definitive release merely because the BillingPeriod is now closed.
+
+**BG8 regression tests**
+
+- retain the accepted BG8 tests;
+- do not delete, weaken, rename away from execution, `.skip`, or rewrite them merely to satisfy BG9;
+- BG9 tests may extend the same files, but all accepted BG8 boundary proofs must continue to pass.
+
+If `git merge --no-edit origin/main` produces conflicts, resolve them only when the result can satisfy the ownership rules above without architectural guesswork. Do **not** use whole-file `--ours` or `--theirs` on the overlapping billing/checkout files.
+
+If a conflict cannot be resolved while preserving the listed BG8 invariants and the bounded BG9 corrections, STOP and return the exact conflicted files/hunks to `moda_architect`. Do not implement an alternative billing boundary design inside BG9.
+#### Correction 7 — record the mandatory Attempt 2 worktree/synchronisation evidence exactly
+
+Attempt 1 used the correct-looking dedicated paths, but the Completion Report does not contain the complete mandatory physical-isolation/start-of-attempt evidence structure. Do not invent historical Attempt 1 evidence.
+
+For Attempt 2, record actual observed results in this exact form:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009
+  parent branch: task/ARCH-010-BACKGROUND-009
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009
+  implementation branch: task/ARCH-010-BACKGROUND-009
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Also record the actual initialized `database` submodule gitlink/HEAD and whether it changed.
+
+Because BG8 is now merged to Background main, also record:
+
+```text
+BG8/main integration:
+  Background origin/main SHA incorporated: <actual SHA>
+  BG8 accepted commit b4ef7c885e03009f6622894230ab54a87bf4364a is ancestor of implementation HEAD: yes
+  BG8 merge commit a585139bb5f4c42d30ce0cc303f738f0c93c70b2 is ancestor of implementation HEAD: yes
+  BG8 preservation gate passed: yes
+```
+
+If either ancestry check is not `yes`, or canonical worktree restoration/synchronization cannot be performed cleanly, STOP under `docs/agent-worktree-isolation-policy.md`.
+
+#### Correction 8 — Attempt 2 validation and baseline classification
+
+From the canonical BG9 implementation worktree, initialize the recorded database submodule without changing its gitlink.
+
+First run the **BG8 preservation gate** against the post-merge implementation. These tests are mandatory because BG8 is accepted mainline behavior and BG9 overlaps its billing/checkout surfaces:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+npx vitest run \
+  tests/unit/services/effective-billing-policy.service.test.ts \
+  tests/unit/services/paid-included-recovery-reservation.service.test.ts \
+  tests/unit/services/recovery-billing.service.test.ts \
+  tests/unit/services/whatsapp.service.test.ts
+
+npx vitest run \
+  tests/unit/services/matured-candidate.materialization.test.ts \
+  -t 'does not send or commit when billing revalidation blocks the admission'
+
+npx vitest run \
+  tests/unit/services/outbound-whatsapp-admission.service.test.ts \
+  -t 'removes definitive failures but preserves ambiguous pending intent'
+```
+
+Every BG8 preservation-gate test above MUST pass. A failure in a BG8-owned boundary test is a BG9 regression and is not an acceptable repository baseline failure.
+
+Then run the BG9 focused validation:
+
+```bash
+npx vitest run \
+  tests/unit/services/recovery-billing.service.test.ts \
+  tests/unit/services/recovery-capacity-resume.service.test.ts \
+  tests/unit/workers/recovery-capacity-resume.worker.test.ts \
+  tests/unit/services/checkout-recovery.capacity-resume.test.ts \
+  tests/unit/services/recovery-credit-purchase.service.test.ts
+
+npm run test:unit
+npm run test:integration
+npm run build
+git diff --check
+```
+If one of the suggested new test filenames differs because the repository already has a better matching harness, use that harness and record the exact command. All BG9-owned focused tests must pass.
+
+The known full-suite/build Prisma/client drift may remain non-green only if the Attempt 2 report demonstrates that the failing diagnostics are pre-existing/unrelated to BG9 and none originates from a BG9-touched source/test file. Do not modify unrelated purchased-refund or observability code merely to make this task green.
+
+#### Attempt 2 allowed scope
+
+Production changes are limited to the existing BG9 capability surfaces plus focused tests:
+
+```text
+src/domain/recovery-capacity-resume.ts
+src/services/recovery-capacity-resume.service.ts
+src/services/recovery-billing.service.ts
+src/services/checkout-recovery.service.ts
+src/services/recovery-credit-purchase.service.ts
+src/workers/recovery-capacity-resume.worker.ts
+src/entrypoints/recovery.ts
+tests/unit/**               # BG9-focused tests only
+this BACKGROUND-009 task file for execution metadata / Completion Report
+```
+
+Do not change Prisma schema/migrations, Shared contracts, Shopify/Admin/Messaging repositories, subscription/refund architecture, paid-overage policy, or another task file.
+
+#### Attempt 2 stop conditions
+
+STOP and return this same task to `moda_architect` without inventing a new design if:
+
+1. the selected promotional grant snapshot required for the exhaustion epoch is not available at the recorded database gitlink;
+2. a correct bounded continuation requires disabling BullMQ idempotency/deduplication globally;
+3. preserving ambiguous/bounded checkout outcomes requires changing the cross-repository Shopify lookup contract;
+4. current `origin/main` cannot be integrated while preserving the accepted BG8 invariants listed in Correction 6;
+5. fixing BG9 requires schema/migration changes or another repository.
+
+When the corrections, focused tests and required evidence are complete, set this same task to `review`, publish the implementation and parent report commits, then STOP for `moda_architect` review.
+
