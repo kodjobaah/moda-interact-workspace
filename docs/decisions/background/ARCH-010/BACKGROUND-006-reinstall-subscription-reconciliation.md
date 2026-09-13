@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 49
-executor: copilot
-claimed_at: 2026-09-13T22:56:01Z
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
@@ -374,7 +372,6 @@ STOP and return to `moda_architect` if:
 Ready for Architect Review.
 
 ### Files Changed
-- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 
 ### Work Completed
@@ -384,22 +381,40 @@ Ready for Architect Review.
 - Delegated later same-plan paid cycle rotation to `SamePlanBillingPeriodRolloverService` and reactivated the shop only after successful canonical transition.
 - Added bounded 24-hour reinstall provider retry metadata and fail-closed period/plan diagnostics.
 - Added exact Prisma selection and subscription-id authorization checks, transactionally guarded reinstall markers, pending-plan projection refresh, pack-meter validation, paid-period/counter integrity validation, and deterministic paid follow-up publication.
-- Added focused regressions for stale/missing reinstall authorization, SUSPENDED shops, stale restoration attempts, null-provider activation and preservation, Free reactivation and pack meters, pending-plan projection, same-paid-period integrity and queue repair, rollover delegation, changed plans, transport retry expiry, reconstruction, and no-Shopify reconstruction behavior.
+- Added executable preservation spies for provider-null detached history, lifetime counters, purchased/refund state, promotional balances, and reinstall wrapper state.
+- Added the missing Free pending-plan unmapped case, exact same-paid-period corruption table, successful paid pending projection, paid queue-loss reconstruction, later-cycle wrapper preservation, changed-paid-plan blocking, and reinstall-specific transport retry boundary cases.
 
 ### Validation Results
-- `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 1 file and 86 tests.
+- `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 1 file and 104 tests.
 - Adjacent gate suite (`billing-scheduler`, `entrypoint-isolation`, `shopify-usage-event-publisher`, `recovery-routing`): passed, 4 files and 49 tests.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
 - `npm test`: 10 documented baseline failures remain in `tests/unit/services/recovery-credit-purchase.service.test.ts` (8 failures caused by the existing generated purchase schema/status mismatch) and `tests/unit/runtime/observability-startup.test.ts` (2 existing observability/runtime-version expectations); no failures occurred in the touched reconciliation tests.
 - `npm run build`: 15 documented baseline TypeScript errors remain in the unrelated purchase/recovery-credit services for the same generated schema/status mismatch; no errors in task-touched files.
 
+### Attempt 3 Correction Disposition
+- Provider-null history and credit preservation: implemented in the focused provider-null preservation test; no history, counter, purchase, refund, promotion, or selection mutation spies were called.
+- Free lifetime quantity preservation: implemented with non-zero granted/committed/reserved/forfeited quantities and no create/upsert/update calls.
+- Unmapped/inactive Free pending projection: implemented; provider handle/time are retained and local pending plan id remains null.
+- Exact paid-period corruption matrix: implemented for wrong period ownership, missing counter, counter ownership mismatch, invalid quantities, and grant mismatch; each remains `PERIOD_ALIGNMENT_REQUIRED` and unpublished.
+- Successful paid pending projection: implemented with unchanged included-credit quantities.
+- Paid post-commit queue-loss repair: implemented; durable activation remains committed and reconstruction republishes the identical deterministic job without another Partner call.
+- Later-cycle wrapper preservation: implemented with canonical rollover delegation, activation-after-success, normal returned schedule publication, and no wrapper-owned balance mutations.
+- Different paid plan fail-closed behavior: implemented; no rollover or restoration mutation occurs.
+- Reinstall transport retry preservation: implemented; `updateMany.data` contains only bounded error metadata and schedule fields.
+- Reinstall 24-hour boundary: implemented for pre-boundary delayed publication and at-boundary unscheduled UNINSTALLED retention.
+
 ### Git / VCS
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
 - Implementation commit: `baa33fb` (`fix(background): harden reinstall reconciliation`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
+- Attempt 3 implementation commit: `42d99a4` (`test(background): complete reinstall reconciliation evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
 - Launcher claim commit: `8b70d55c32a24b1dd79de279785d4138cc120642`, pushed before implementation.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
+- Launcher isolation/synchronization evidence: prepared packet confirmed canonical worktrees, parent `origin/main` incorporation, implementation `origin/main` current, and task branch synchronization before Attempt 3.
+- Database submodule was initialized and verified at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no submodule gitlink was staged.
 - Isolated worktrees used; shared checkout was not switched or mutated.
 
 ### Architect Review
