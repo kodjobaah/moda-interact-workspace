@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 executor: null
 claimed_at: null
 priority: 85
@@ -1678,4 +1678,142 @@ publish test-only evidence commit;
 publish Completion Report with exact workflow evidence;
 STOP for moda_architect.
 ```
+
+## Architect Review — Attempt 4
+
+### Accepted — Complete
+
+`ARCH-010-ADMIN-005` is **Accepted — Complete at Attempt 4**.
+
+Accepted Attempt-4 evidence:
+
+```text
+claim:
+  acb1b5694d7227d7f7814c95aec4dbb75cdbb23e
+
+implementation evidence:
+  a4a756ee48426ed14a7d9dc90a521735a17e5253
+
+parent report:
+  d16cc0919e64631c67ec9a38237351d96f32660d
+```
+
+Attempt 4 is test/evidence-only. It changes only:
+
+```text
+tests/unit/promotion-campaign-lifecycle.test.ts
+```
+
+No production source, schema, Shared contract or other repository implementation is
+changed by Attempt 4.
+
+### Acceptance findings
+
+The final evidence now permanently proves the ADMIN-005 lifecycle contract:
+
+```text
+- successful close uses exact id + persisted status + version CAS;
+- CLOSED audit evidence is appended only after the winning close CAS;
+- expired ACTIVE reopen uses exact id + ACTIVE + version CAS;
+- expired ACTIVE reopen mutates only expiresAt + version;
+- CLOSED reopen uses exact id + CLOSED + version CAS;
+- CLOSED reopen mutates only expiresAt + status=ACTIVE + version;
+- CLOSED reopen appends full REOPENED then EXPIRY_CHANGED audit payloads;
+- stale close appends no lifecycle evidence;
+- stale expired-ACTIVE reopen appends no lifecycle evidence;
+- stale CLOSED reopen appends no lifecycle evidence;
+- no campaign clone/create/delete path is used by lifecycle transitions;
+- no PromotionalCreditGrant or MerchantPromotionSelection creation path is used;
+- call ordering is findUnique -> updateMany -> lifecycle event(s);
+- visible campaign/plan/shop filtering and 255-character server bound remain proven;
+- five-state DRAFT/SCHEDULED/RUNNING/EXPIRED/CLOSED derivation remains proven;
+- equal-timestamp REOPENED + EXPIRY_CHANGED projection remains deterministic.
+```
+
+The production implementation accepted in Attempt 2 remains unchanged:
+
+```text
+62ae6ae64c5c752b4b6e6c84a15c90d1da13ed72
+```
+
+Attempts 3 and 4 add only permanent evidence.
+
+### Accepted validation
+
+Attempt 4 records:
+
+```text
+focused promotion unit tests: 17 passed
+promotion security tests: 12 passed
+full Admin tests: 170 passed
+Prisma validation/generation: passed
+typecheck: passed
+lint: passed with only the two existing queue-monitor hook warnings
+build: passed with the existing BullMQ warnings
+git diff --check: passed
+database gitlink:
+  5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+database gitlink changed: no
+```
+
+The Completion Report also records the required start-of-attempt synchronization and
+prior task-history ancestry evidence.
+
+### Workflow note — implementation already integrated
+
+After the Attempt-4 parent report was published, the Admin implementation task
+branch was merged to `moda-interact-admin/main` through PR #13:
+
+```text
+merge commit:
+  7f484c3883400fa36ac472222e48389c9390fbd8
+
+included Attempt-4 evidence:
+  a4a756ee48426ed14a7d9dc90a521735a17e5253
+```
+
+This occurred before architect acceptance, so it is a sequencing deviation from the
+normal architect-controlled merge order.
+
+The report's earlier statement that main had not been modified was not false at
+report publication time; the merge occurred afterward.
+
+Do not revert or re-merge the correct Admin implementation solely to recreate the
+intended sequence. Record this deviation and continue forward. The remaining
+integration step after this acceptance is the parent/workspace task branch only.
+
+### Dependency promotion
+
+With ADMIN-005 Complete and `ARCH-010-DATABASE-013` already Complete, every declared
+dependency of:
+
+```text
+ARCH-010-ADMIN-006
+```
+
+is Complete.
+
+Therefore:
+
+```text
+ARCH-010-ADMIN-006
+pending -> ready
+```
+
+This acceptance does not claim or start ADMIN-006.
+
+`ARCH-010-SYSTEM-TEST-003` remains `pending` and manual-gated because it still has
+multiple incomplete dependencies, including ADMIN-006.
+
+### Final status
+
+```text
+ARCH-010-ADMIN-005
+status: complete
+attempt: 4
+executor: null
+claimed_at: null
+```
+
+No Attempt 5 is created.
 
