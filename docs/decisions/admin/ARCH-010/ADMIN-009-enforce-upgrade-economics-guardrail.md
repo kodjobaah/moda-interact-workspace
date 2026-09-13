@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 89
-executor: copilot
-claimed_at: '2026-09-13T17:45:45Z'
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
 - ARCH-010-ADMIN-007
@@ -2226,4 +2226,178 @@ Handoff:
 ### Architect Review
 
 Pending Architect Review.
+
+## Architect Review — Attempt 5
+
+### Accepted — Complete
+
+`ARCH-010-ADMIN-009` is architect-accepted at **Attempt 5**.
+
+Accepted implementation:
+
+```text
+70dbfe72c3eeaa9052300e11bace381dd3d2bb84
+```
+
+Accepted parent task history:
+
+```text
+Attempt-5 claim:
+  1296955e383f1bbfa1050949b17e2f271c032d03
+
+Attempt-5 report:
+  c1ae524357dbb322e81c6c41291b9657820968f0
+
+Attempt-5 final handoff evidence:
+  958c899bf63bb10240515bebce2ad93335ab570d
+```
+
+The implementation is exactly one commit after the reviewed Attempt-4 implementation
+`e0ad1a9532e9b34e595647964c8236d42ce67b0c`.
+
+### Acceptance Findings
+
+The Attempt-5 corrections satisfy the remaining architect requirements:
+
+```text
+1. Single-pack top-up path
+
+   ADMIN-owned `billingUpgradeTopUpPath(...)` now derives the actual Shopify
+   single-pack route from:
+
+     result.details.packUnitsNeeded
+     lowerPlan.recoveryCreditsPerPack
+
+   while preserving an existing multi-offer `packSummary` when present.
+
+   For the canonical Starter -> Growth fixture:
+
+     additionalCreditsNeeded = 300
+     recoveryCreditsPerPack = 50
+     packUnitsNeeded = 6
+
+   the durable/rendered path is:
+
+     [{ quantity: 6, creditsGranted: 50 }]
+
+   rather than an empty route.
+
+2. Shared audit/UI projection
+
+   `billingUpgradeEconomicsAuditEvidence(...)` and the rendered Admin economics
+   explanation use the same `billingUpgradeTopUpPath(...)` projection.
+
+   The audit therefore records the actual route and the UI renders `6 x 50`.
+
+3. Scenarios 48-60 production transaction evidence
+
+   The permanent production-seam regression now uses the explicit configured ladder:
+
+     Free -> Starter -> Growth -> Scale
+
+   and exercises `applyBillingPlanUpdateInTransaction(...)` directly.
+
+   The evidence proves:
+   - pack enablement evaluates the affected adjacent edges;
+   - stale pack-size evidence fails before catalog writes;
+   - Starter allowance mutation evaluates Free->Starter and Starter->Growth;
+   - Growth allowance mutation evaluates Starter->Growth and Growth->Scale;
+   - top-ups OFF commits only with PASS / NO_TOPUPS_AVAILABLE;
+   - missing/stale evidence, FAIL and currency mismatch reject atomically;
+   - an isolated plan invents no economics edge;
+   - Scale mutation evaluates only Growth->Scale and invents no Scale successor;
+   - economics audits precede BillingPlan.update;
+   - PLAN_CATALOG_CHANGED follows the successful plan write.
+
+4. Rendered scenarios 59 and 65-69
+
+   ReactDOM static-render tests now prove visible PASS evidence for:
+   - Starter / Growth;
+   - capacity gap 300;
+   - required pack units 6;
+   - top-up path 6 x 50;
+   - stay + top-ups GBP 170.00;
+   - upgrade GBP 75.00;
+   - actual premium 126.7%;
+   - required premium 20.0%;
+   - PASS.
+
+   FAIL preserves the available calculation evidence and renders blocked copy.
+   UNVERIFIED renders its evidence state without PASS.
+   NO_UPGRADE_EDGE is rendered for plans without a configured outgoing edge.
+   The verified-Shopify-evidence wording and charging-authority disclaimer remain.
+
+5. Audit evidence and secret exclusion
+
+   Permanent evidence asserts every required whitelist field, including `topUpPath`,
+   and proves the serialized audit evidence excludes credential/provider-response
+   sentinel values.
+
+6. Accepted boundaries preserved
+
+   Attempt 5 does not alter:
+   - ADMIN-007 evaluator arithmetic;
+   - Prisma schema;
+   - Shopify charging/App Events;
+   - merchant billing/admission runtime;
+   - other repositories.
+```
+
+### Validation Accepted
+
+The Completion Report records:
+
+```text
+npm run prisma:validate
+  PASS
+
+node --experimental-strip-types --test tests/security/admin-billing-plan.test.mjs
+  15/15 PASS
+
+node --experimental-strip-types --test tests/unit/billing-plan-economics-presentation.test.mjs
+  2/2 PASS
+
+npm test
+  167/167 PASS
+
+npx tsc --noEmit --pretty false
+  PASS
+
+npm run lint
+  PASS with only the two documented pre-existing queue-monitor hook warnings
+
+npm run build
+  PASS with only the documented existing BullMQ warnings
+
+focused prettier check
+  PASS
+
+git diff --check
+  PASS
+```
+
+No new validation warning or failure is attributed to ADMIN-009.
+
+### Workflow Acceptance
+
+Attempt-5 Completion Report contains the required physical worktree isolation and
+start-of-attempt synchronization evidence.
+
+The parent publication lineage is coherent:
+
+```text
+1296955e... -> c1ae5243... -> 958c899b...
+```
+
+Both canonical task worktrees were reported clean at handoff.
+
+`attempt: 5` is preserved. No Attempt 6 is created.
+
+### Dependency / system-test status
+
+`ARCH-010-SYSTEM-TEST-005` is **not started by this acceptance**.
+
+It remains terminal/manual-gated and currently also depends on
+`ARCH-010-SYSTEM-TEST-004`, which remains Pending. Therefore no automatic system-test
+promotion or execution is performed here.
 
