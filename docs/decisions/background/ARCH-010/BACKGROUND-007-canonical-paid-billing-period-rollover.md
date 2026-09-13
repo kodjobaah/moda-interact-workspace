@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 47
 executor: null
 claimed_at: null
@@ -5064,4 +5064,186 @@ dependencies:
 
 Task status: review. Awaiting moda_architect review; no architect acceptance
 decision has been made by this agent.
+
+## Architect Review — Attempt 8
+
+### Accepted — Complete
+
+`ARCH-010-BACKGROUND-007` is **Accepted — Complete at Attempt 8**.
+
+Accepted production baseline remains the previously reviewed same-plan rollover
+implementation. Attempt 8 itself is evidence-only.
+
+Accepted Attempt-8 evidence:
+
+```text
+claim:
+  488f21fa79da65e331a04a6a9b490a9c755eb2fa
+
+implementation evidence:
+  680056b6673bc197d275ca6fd1185d77c38e4998
+
+parent report:
+  d25368dca5ad8c20a83a42b07ad9d0a1e1580550
+```
+
+Attempt 8 changed only:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+No Background production source, schema, Shared contract or other repository was
+modified.
+
+### Acceptance findings
+
+Attempt 8 completes the remaining Background-owned rollover/reconciliation evidence:
+
+```text
+- successful early cycle job -> exact pre-close/drain schedule;
+- exact source-projection compare-and-set on that reschedule;
+- scoped pre-close UsageEvent flush -> exact boundary schedule;
+- failed pre-close flush -> bounded retry;
+- successful retry after PRE_CLOSE_USAGE_FLUSH_FAILED clears error metadata and
+  schedules the exact boundary;
+- provider transport failure preserves current plan/period/cycle projection and
+  publishes a deterministic retry;
+- committed same-plan rollover survives queue-publication failure;
+- startup/repair reconstructs that missing delayed job;
+- later same-plan pack-enabled Free rollover publishes its successor pre-close job;
+- startup/repair reconstructs a missing pack-enabled Free cycle job with
+  deterministic identity;
+- rotating reconciliation cannot bypass the canonical rollover owner;
+- pack-disabled Free provider-cycle lag does not invent a cycle retry;
+- real PostgreSQL concurrency serializes two rollover callers into one successor
+  period/counter without duplicate grant;
+- Paid rollover reservation/event/counter/snapshot invariants remain covered;
+- Free rollover closes/reuses the commercial period without creating an included
+  counter or resetting lifetime Free/purchased balances;
+- Paid capacity-resume remains Paid-only while the generic post-transition callback
+  remains usable for Free.
+```
+
+Focused Attempt-8 reconciliation validation reports `46/46` passing. Earlier
+Attempt-7 focused rollover/reconciliation and PostgreSQL concurrency evidence remains
+part of the accepted task history.
+
+### Architect scope correction — pack-purchase phase guard is Shopify-owned
+
+Attempt 8 correctly discovered that the current merchant-app
+`BillingService.requestRecoveryCreditPack(...)` path does not yet reject a new pack
+purchase solely because the durable cycle has entered DRAINING or
+EXPIRED_RECONCILING.
+
+That is a genuine first-production gap, but it is **not owned by
+BACKGROUND-007**.
+
+The architecture and task graph already assign that mutation boundary to:
+
+```text
+ARCH-010-SHOPIFY-007
+repository: moda-interact
+title: Present App Pricing billing-cycle transition and guard late-cycle top-up purchase
+```
+
+`SHOPIFY-007` depends on `BACKGROUND-007`. Therefore making BACKGROUND-007 wait for
+the app-side purchase guard would invert the intended dependency and incorrectly
+require a Background task to modify the Shopify/app repository.
+
+For BACKGROUND-007 acceptance, required scenarios 24/30/31 are interpreted only for
+the Background-owned recovery-admission boundary:
+
+```text
+24:
+  Paid DRAINING/EXPIRED_RECONCILING does not admit new paid-included meter capacity.
+
+30:
+  Free cycle transition does not consume/reset/pause lifetime-Free recovery
+  entitlement merely because the commercial cycle is draining.
+
+31:
+  Free post-boundary reconciliation does not convert lifetime-Free entitlement into
+  expired period capacity.
+```
+
+The **new pack-purchase blocked** portion of scenarios 24/30/31 remains a required
+system behavior, but its implementation and permanent server-side evidence are
+owned by SHOPIFY-007 and its downstream purchase adapter/integration tasks.
+
+This is a task-ownership correction, not a relaxation of the product invariant.
+
+### Verified Shopify gap handed forward
+
+The current app purchase path verifies:
+
+```text
+- ACTIVE/TRIALING Subscription;
+- active mapped BillingPlan;
+- pack enabled/configured;
+- durable exact local BillingPeriod identity;
+- provider plan handle;
+- provider pack meter;
+- exact provider/local cycle identity.
+```
+
+It does not yet apply the canonical phase rule:
+
+```text
+ACTIVE:
+  now < currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+
+DRAINING:
+  currentPeriodEnd - drainWindow <= now < currentPeriodEnd
+
+RECONCILING:
+  now >= currentPeriodEnd while Subscription still points at the old period
+```
+
+`BillingPeriod.status` itself is only `OPEN | CLOSED`; DRAINING/RECONCILING must not
+be implemented as invented persisted enum states.
+
+The exact app correction is recorded on `ARCH-010-SHOPIFY-007` by this acceptance
+overlay.
+
+### Dependency promotion
+
+With BACKGROUND-007 now Complete, every declared dependency of:
+
+```text
+ARCH-010-BACKGROUND-003
+```
+
+is Complete:
+
+```text
+ARCH-010-DATABASE-013
+ARCH-010-BACKGROUND-001
+ARCH-010-BACKGROUND-007
+ARCH-010-SHARED-008
+ARCH-007-BACKGROUND-008
+```
+
+Therefore `ARCH-010-BACKGROUND-003` is promoted:
+
+```text
+pending -> ready
+```
+
+This acceptance does not claim or start BACKGROUND-003.
+
+Other dependants remain pending because they still have additional incomplete
+dependencies.
+
+### Final status
+
+```text
+ARCH-010-BACKGROUND-007
+status: complete
+attempt: 8
+executor: null
+claimed_at: null
+```
+
+No Attempt 9 is created.
 
