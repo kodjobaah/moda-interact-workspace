@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-13T22:21:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -283,22 +283,25 @@ Ready for Review.
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/tests/unit/services/shopify-plan-change-transition.service.test.ts`
+- `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 
 ### Work Completed
-- Added one transaction-only Shopify plan-change transition service for effective mapped plan changes.
-- Wired queued and rotating reconciliation to distinguish still-pending, withdrawn, effective, unmapped, and unexpected same-cycle provider states.
-- Paid transitions close the old period with `PLAN_CHANGED`, release RESERVED/AMBIGUOUS included reservations, forfeit unused included capacity, and create/reuse one exact successor counter without resetting usage.
-- Free successor periods snapshot `FREE` with `includedRecoveryCreditsGranted = null` and create no monthly included counter; lifetime and purchased counters are untouched.
-- Added normal and optional pack-meter validation, exact-cycle validation, deterministic next reconciliation scheduling, and replay-safe successor checks.
-- Added focused tests for Paid-to-Paid close/forfeit/grant, Paid-to-Free snapshot/no-counter behavior, and replay-safe successor reuse.
+- Added retryable established-plan-change handling for Partner failures and unresolved provider state, preserving ACTIVE/TRIALING entitlement and publishing one bounded deterministic retry after a successful CAS.
+- Enforced the same-cycle immediate-change guard before pending-boundary scheduling in queued and rotating reconciliation; refused transitions expose no stale pack meter and enter `UNEXPECTED_IMMEDIATE_PLAN_CHANGE` fail-closed state.
+- Allowed only plan-change `SYNC_ERROR` rows to retry and transition; exact paid/pack-enabled cycles and configured meters are required, with `MISSING_BILLING_CYCLE`/`MISSING_USAGE_METER` retries.
+- Made provider pending-state refresh atomic by writing pending id, handle, effective time, and schedule in one guarded update.
+- Supported Free-to-Paid when no outgoing Free BillingPeriod exists, while retaining canonical paid successor creation and preserving lifetime, purchased, and promotional state.
+- Added post-commit best-effort `plan-change` capacity-resume scheduling and focused regressions for same-cycle fail-closed and Free-to-Paid behavior.
 
 ### Acceptance / Validation Evidence
-- Focused transition and reconciliation suites: passed, 3 files / 94 tests.
+- Focused transition and reconciliation suites: passed, 3 files / 96 tests.
+- `npm run test:integration`: passed, 2 files / 3 tests.
+- `npm run test:unit`: 56 files / 724 tests executed; 54 files / 714 tests passed. Ten failures remain in unchanged recovery-credit purchase and observability-startup baseline tests.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
+- `npm run build`: blocked by 16 unchanged generated-client diagnostics in `src/services/purchased-recovery-reservation.service.ts` and `src/services/recovery-credit-purchase.service.ts`; zero diagnostics remain in Attempt-2 changed files.
 - `git diff --check`: passed.
-- `npm run build`: blocked by 15 pre-existing generated-client errors in `src/services/purchased-recovery-reservation.service.ts` and `src/services/recovery-credit-purchase.service.ts`; no build errors remain in changed files.
-- Full unit suite was started; its captured terminal summary was unavailable after completion, so no pass/fail claim is made beyond the focused 94-test result.
+- Static `rg -n "tierRank|prorat"` over the three production files returned no matches, as required.
 
 ### Workflow Evidence
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
@@ -306,12 +309,15 @@ Ready for Review.
 - Parent branch: `task/ARCH-010-BACKGROUND-010`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-010`.
 - Implementation branch: `task/ARCH-010-BACKGROUND-010`.
-- Database submodule was supplied ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database files or gitlink were changed.
-- Implementation commit `0c24b1d` was pushed to `origin/task/ARCH-010-BACKGROUND-010`.
+- Prepared start-of-attempt synchronization, dedicated worktrees, and recursive submodule materialisation were supplied by the launcher packet; no launcher discovery or re-claim was repeated.
+- Database submodule was supplied ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; database gitlink before/after remained `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`, and no database files or gitlink were changed.
+- Implementation commit `b9e6e5b5d09ede1e43a4d934af68cd80ffdd19cc` was pushed to `origin/task/ARCH-010-BACKGROUND-010`.
+- Parent report commit is recorded by the parent-branch publication following this report update; no merge to `main` or force-push was performed.
 - No merge to `main` or force-push was performed.
 
 ### Unresolved Issues
 - Shopify immediate different-plan current state remains intentionally fail-closed as `UNEXPECTED_IMMEDIATE_PLAN_CHANGE`; normal production occurrence requires a separate architecture decision for mid-cycle entitlement segments.
+- Full-unit baseline failures are outside the allowed Attempt-2 scope: eight recovery-credit purchase tests and two observability-startup tests fail against the prepared generated-client/shared-runtime baseline.
 
 
 ## Final promotional preservation contract
