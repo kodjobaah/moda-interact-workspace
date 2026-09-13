@@ -270,27 +270,29 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Review.
 
 ### Files Changed
-- `moda-interact-background/src/services/checkout-recovery.service.ts`
-- `moda-interact-background/src/services/recovery-billing.service.ts`
-- `moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts`
+- `moda-interact-background/src/services/paid-included-recovery-reservation.service.ts`
+- `moda-interact-background/tests/unit/services/paid-included-recovery-reservation.service.test.ts`
 - `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
-- Attempt 2 now releases every admission kind when pre-provider revalidation observes `newRecoveriesPaused`, returning `paused` before provider work.
-- Checkout recovery now unconditionally revalidates billing before `sendTemplate`; blocked revalidation returns without sending or committing.
-- Added regression coverage for pause release across paid, purchased, free, lifetime-Free, and promotional admissions, plus the checkout blocked-send boundary.
-- Retained the Attempt 1 period-boundary, FIFO fallback, timeout, and asynchronous usage-publication behavior.
+- Attempt 3 corrected all paid recovery test fixtures to provide the accepted sixth promotional reservation dependency.
+- Added boundary proofs for ACTIVE-to-DRAINING fallback/release, EXPIRED paid and purchased release, and ambiguous provider timeout ownership.
+- Added stale-period paid-included release coverage and repaired the missing `requireOpenReservationCounter()` production helper used by ambiguous reservation transitions.
+- Preserved period-boundary routing, pre-provider revalidation, 30-second WhatsApp timeout, and asynchronous usage publication behavior.
 
 ### Validation Results
 - `npm run prisma:validate`: passed against `database/prisma/schema.prisma`.
 - `npm run prisma:generate`: passed.
-- `npx vitest run tests/unit/services/matured-candidate.materialization.test.ts`: passed, 24 tests.
-- Required focused suite: 3 of 5 files passed, 107 tests passed; 18 existing contract-dependent failures remain in paid-included and recovery-billing tests.
-- `npm run test:unit`: 44 files passed, 584 tests passed; 4 files and 27 tests remain failing in existing contract/schema-dependent billing, purchase, and observability paths.
-- `npm run build`: blocked by 16 existing TypeScript errors in `paid-included-recovery-reservation.service.ts`, `purchased-recovery-reservation.service.ts`, and `recovery-credit-purchase.service.ts`; none are in the touched files.
+- Required focused suite (`effective-billing-policy`, `paid-included-recovery-reservation`, `recovery-billing`, `whatsapp`): passed, 4 files and 106 tests.
+- BACKGROUND-008 boundary proofs: passed, 5 tests in `recovery-billing` and `paid-included-recovery-reservation`.
+- Checkout blocked-send proof: passed, 1 test.
+- WhatsApp suite: passed, 8 tests.
+- Outbound ambiguity proof: passed, 1 test.
+- `npm run test:unit`: 46 files passed, 607 tests passed; 2 files and 9 tests remain failing in existing observability release and recovery-credit purchase reconciliation assertions.
+- `npm run build`: blocked by existing TypeScript errors in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; none are in the touched files.
 - `git diff --check`: passed.
 
 ### Git / VCS
@@ -315,8 +317,9 @@ database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
 database submodule HEAD: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
 database gitlink staged/changed: no
 
-Parent claim commit: `c32bca9`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
-Implementation commit: `c369f64`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
+Parent claim commit: `214097e`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
+Implementation commit: `b4ef7c8`, pushed to `origin/task/ARCH-010-BACKGROUND-008`.
+Parent report commit: pending publication.
 Implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
