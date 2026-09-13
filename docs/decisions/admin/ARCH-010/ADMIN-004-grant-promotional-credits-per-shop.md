@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 84
-executor: copilot
-claimed_at: '2026-09-13T13:31:36Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
@@ -571,4 +571,122 @@ STOP and return to `moda_architect` if:
 5. canonical worktree isolation/synchronization cannot be satisfied.
 
 After the corrections pass, set this same task to `status: review`, push the implementation and parent task branches, and STOP. Do not start `ADMIN-005` or `SHOPIFY-021`.
+
+#### Attempt 3 — Accepted
+
+`ARCH-010-ADMIN-004` is **Accepted — Complete at Attempt 3**.
+
+Accepted implementation:
+
+```text
+b0fc432db9271ec287e71cdfd67d2b61faabde3e
+```
+
+Accepted parent task report:
+
+```text
+c5ec20e09aaa45065bdd5cbc73a7597ef6a66a61
+```
+
+Accepted Attempt-3 claim:
+
+```text
+934a7686578ebfa38eec2ea6a2f7f36b3a844aa2
+```
+
+##### Acceptance findings
+
+The Attempt-3 correction satisfies the remaining `SUPER_ADMIN only` security
+contract without changing the accepted Attempt-2 campaign transition architecture.
+
+The accepted behavior is:
+
+```text
+- PromotionsPage retains the principal returned by requirePlatformAdminPage();
+- authenticated non-SUPER_ADMIN roles redirect to "/";
+- the role check occurs before getPromotionTargets() and getPromotionCampaigns();
+- unauthenticated behavior remains owned by requirePlatformAdminPage();
+- the /promotions sidebar entry renders only for administratorRole === "SUPER_ADMIN";
+- mutation-level SUPER_ADMIN authorization remains in place;
+- Attempt-2 id + DRAFT + version compare-and-set logic remains unchanged;
+- persisted activation terms are re-read and validated;
+- ACTIVATED evidence is appended only after the winning CAS;
+- activation creates no PromotionalCreditGrant, MerchantPromotionSelection,
+  entitlement-counter, purchased-credit, lifetime-Free or Shopify App Event mutation.
+```
+
+The implementation delta from the accepted-in-substance Attempt-2 baseline
+`6683e190c28536f768dd9fafa4e4ccfed38c4aae` is exactly one commit and is limited to:
+
+```text
+src/app/(protected)/promotions/page.tsx
+src/components/admin/sidebar.tsx
+tests/security/admin-promotions.test.mjs
+```
+
+##### Accepted validation
+
+The Completion Report records:
+
+```text
+npm run prisma:validate
+  PASS
+
+npm run prisma:generate
+  PASS
+
+node --experimental-strip-types --test tests/unit/promotion-validation.test.ts
+  4/4 PASS
+
+node --test tests/security/admin-promotions.test.mjs
+  9/9 PASS
+
+node --test tests/unit/promotion-validation.test.ts
+  4/4 PASS
+
+npm test
+  157 PASS
+
+npm run lint
+  PASS with only the two documented pre-existing queue-monitor hook warnings
+
+npx tsc --noEmit
+  PASS
+
+npm run build
+  PASS with only the documented existing BullMQ warnings
+
+git diff --check
+  PASS
+```
+
+The database gitlink remains:
+
+```text
+5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+```
+
+with no staged gitlink change.
+
+##### Workflow acceptance
+
+Attempt 3 records the mandatory physical worktree isolation and start-of-attempt
+synchronization evidence. Both task branches were published, the implementation
+worktree was reported clean, and main branches were not modified by the task agent.
+
+`attempt: 3` is preserved. No Attempt 4 is created.
+
+##### Dependency promotion
+
+Acceptance of ADMIN-004 completes the remaining direct dependency for:
+
+```text
+ARCH-010-ADMIN-005
+ARCH-010-SHOPIFY-021
+```
+
+All declared dependencies of both tasks are now Complete, so both are promoted from
+`pending` to `ready`.
+
+This acceptance does **not** claim or start either task.
 
