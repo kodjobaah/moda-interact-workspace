@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 executor: null
 claimed_at: null
 priority: 85
@@ -1241,6 +1241,407 @@ When complete:
 set this same task to review;
 publish evidence commit(s);
 publish Completion Report with exact commands/results/workflow evidence;
+STOP for moda_architect.
+```
+
+## Architect Review — Attempt 3
+
+### Changes Requested — Final Evidence Completion Only
+
+Attempt 3 is **not accepted yet**. Return this same task to `ready` for Attempt 4.
+
+No production source change is authorized.
+
+The Attempt-2 production implementation remains accepted in substance. Attempt 3
+correctly strengthened the successful CAS/payload and visible-target evidence, but it
+did not complete every behavioral requirement from the Attempt-2 architect review.
+
+Published history to preserve:
+
+```text
+Attempt-3 claim:
+  6f0827485b54c8d3c02525e623710cc3c9fdb7fb
+
+Attempt-3 evidence:
+  6f3b065414d9a1ae41ee48db86f5e9fa9c26707c
+
+Attempt-3 report:
+  49edf3f3439976243c651f36b4b0d47ae88f251d
+```
+
+Attempt 4 is the next claim. Increment `attempt` exactly once.
+
+### Attempt-3 evidence accepted in substance
+
+Preserve the following tests unchanged unless required to extend their harness:
+
+```text
+- five-state catalogue derivation;
+- campaign-name / target-plan-name / target-shop-domain filtering;
+- 255-character target bound;
+- equal-timestamp EXPIRY_CHANGED lifecycle priority;
+- exact successful ACTIVE close CAS payload;
+- exact successful expired-ACTIVE reopen CAS/update payload;
+- exact successful CLOSED reopen CAS/update payload;
+- unexpired ACTIVE reopen rejection;
+- stale close count=0 -> no audit event.
+```
+
+GitHub confirms Attempt 3 is test-only and changes only:
+
+```text
+tests/unit/promotion-campaign-lifecycle.test.ts
+tests/unit/promotion-catalogue.test.ts
+```
+
+Do not modify production source merely to satisfy this review.
+
+### Correction 1 — record lifecycle call ordering in the fake transaction
+
+File:
+
+```text
+tests/unit/promotion-campaign-lifecycle.test.ts
+```
+
+Extend the existing fake transaction with:
+
+```ts
+calls: Array<
+  | { kind: "findUnique"; args: unknown }
+  | { kind: "updateMany"; args: unknown }
+  | { kind: "eventCreate"; args: unknown }
+>
+```
+
+Record calls in actual execution order.
+
+For successful close assert:
+
+```text
+findUnique
+updateMany
+eventCreate(CLOSED)
+```
+
+For successful CLOSED reopen assert:
+
+```text
+findUnique
+updateMany
+eventCreate(REOPENED)
+eventCreate(EXPIRY_CHANGED)
+```
+
+This permanently proves lifecycle evidence is appended only after the winning CAS.
+
+### Correction 2 — full CLOSED reopen audit payload
+
+The current CLOSED-reopen test checks only event kinds.
+
+Assert the complete event payloads:
+
+```ts
+[
+  {
+    campaignId: base.id,
+    kind: "REOPENED",
+    platformAdminId: "admin-1",
+  },
+  {
+    campaignId: base.id,
+    kind: "EXPIRY_CHANGED",
+    oldExpiresAt: base.expiresAt,
+    newExpiresAt,
+    platformAdminId: "admin-1",
+  },
+]
+```
+
+Also retain the exact update payload assertion:
+
+```ts
+where: {
+  id: base.id,
+  status: "CLOSED",
+  version: 3,
+}
+data: {
+  expiresAt: newExpiresAt,
+  status: "ACTIVE",
+  version: { increment: 1 },
+}
+```
+
+### Correction 3 — stale reopen evidence for both allowed reopen states
+
+Add two behavioral tests through the real production seam.
+
+#### Expired ACTIVE stale reopen
+
+Configure:
+
+```text
+existing.status = ACTIVE
+existing.expiresAt <= now
+updateMany.count = 0
+```
+
+Call reopen with a valid future expiry.
+
+Assert:
+
+```text
+- exact ACTIVE id/status/version updateMany attempt occurs once;
+- rejects with:
+    Promotion campaign changed; reload and retry.
+- zero EXPIRY_CHANGED events;
+- zero REOPENED events.
+```
+
+#### CLOSED stale reopen
+
+Configure:
+
+```text
+existing.status = CLOSED
+updateMany.count = 0
+```
+
+Call reopen with a valid future expiry.
+
+Assert:
+
+```text
+- exact CLOSED id/status/version updateMany attempt occurs once;
+- rejects with the same bounded changed/reload error;
+- zero REOPENED events;
+- zero EXPIRY_CHANGED events.
+```
+
+Do not combine these into the existing stale-close test.
+
+### Correction 4 — same-row/no-clone and preservation traps
+
+Extend the fake transaction with trap/counter methods for production surfaces that
+must never be called by `mutatePromotionCampaignLifecycle(...)`.
+
+At minimum expose:
+
+```text
+promotionCampaign.create
+promotionCampaign.delete
+promotionCampaign.deleteMany
+promotionalCreditGrant.create
+promotionalCreditGrant.createMany
+merchantPromotionSelection.create
+merchantPromotionSelection.createMany
+```
+
+If the current generated Prisma client has additional directly relevant mutation
+methods/models used for promotional grant accounting, they may be included too.
+
+The trap methods may either:
+
+```text
+- increment counters and return harmless values; or
+- throw "unexpected lifecycle mutation"
+```
+
+Run at least one successful close and one successful reopen with those traps present.
+
+Assert all forbidden mutation counters are zero.
+
+The production lifecycle seam must use only:
+
+```text
+promotionCampaign.findUnique
+promotionCampaign.updateMany
+promotionCampaignEvent.create
+```
+
+for close/reopen lifecycle work.
+
+This proves:
+
+```text
+same campaign id / no clone
+no merchant grant creation
+no merchant selection creation
+no delete of campaign history
+```
+
+Do not add nonexistent Prisma models merely for test completeness.
+
+### Correction 5 — commercial immutability must be explicit
+
+For both expired-ACTIVE reopen and CLOSED reopen, assert:
+
+```text
+Object.keys(update.data)
+```
+
+is exactly:
+
+Expired ACTIVE:
+
+```text
+expiresAt
+version
+```
+
+CLOSED:
+
+```text
+expiresAt
+status
+version
+```
+
+This permanently proves absence of:
+
+```text
+name
+merchantDescription
+scope
+quantity
+targetPlanId
+targetShopId
+startsAt
+createdByPlatformAdminId
+```
+
+Do not rely only on source-regex security checks for this requirement.
+
+### Correction 6 — Attempt-4 workflow evidence must be recorded, not only instructed
+
+The Attempt-3 Completion Report still does not contain the mandatory
+`Start-of-attempt synchronization` or task-history blocks. Those strings currently
+appear only inside prior architect review instructions.
+
+Attempt 4 Completion Report must record actual observed values:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-005
+  parent branch: task/ARCH-010-ADMIN-005
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-005
+  implementation branch: task/ARCH-010-ADMIN-005
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: <full SHA>
+  database submodule HEAD: <full SHA>
+  database gitlink staged/changed: no
+
+Task history:
+  Attempt-1 claim d1b58fcf3d0278d7f9c54293697c00e9cdd51045
+    ancestor of parent HEAD: yes
+  Attempt-1 report 57bcf2f91916e58f972d7ab851a5e2357d49cd64
+    ancestor of parent HEAD: yes
+  Attempt-2 claim 50cf6cad2868c0275ee63bdbb3d60a06c94f1a11
+    ancestor of parent HEAD: yes
+  Attempt-2 report 18c58be69088a378b91ee9a8b07a0c5002c4481f
+    ancestor of parent HEAD: yes
+  Attempt-3 claim 6f0827485b54c8d3c02525e623710cc3c9fdb7fb
+    ancestor of parent HEAD: yes
+  Attempt-3 report 49edf3f3439976243c651f36b4b0d47ae88f251d
+    ancestor of parent HEAD: yes
+
+Handoff:
+  parent worktree clean: yes
+  implementation worktree clean: yes
+```
+
+Record actual values only.
+
+### Attempt 4 allowed scope
+
+Expected implementation changes:
+
+```text
+tests/unit/promotion-campaign-lifecycle.test.ts
+```
+
+`tests/unit/promotion-catalogue.test.ts` does not need further change unless a test
+fixture must be shared.
+
+Parent report/task document will also change.
+
+No production change is authorized:
+
+```text
+src/**
+database/**
+other repositories
+```
+
+If any stronger behavioral test exposes a genuine production defect:
+
+```text
+STOP;
+do not patch production;
+record the exact failure;
+return this same task to moda_architect.
+```
+
+### Required Attempt 4 validation
+
+Run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+node --experimental-strip-types --test \
+  tests/unit/promotion-validation.test.ts \
+  tests/unit/promotion-catalogue.test.ts \
+  tests/unit/promotion-campaign-lifecycle.test.ts
+
+node --test tests/security/admin-promotions.test.mjs
+
+npm test
+npx tsc --noEmit --pretty false
+npm run lint
+npm run build
+git diff --check
+```
+
+Acceptance requires:
+
+```text
+- no production source changes;
+- close call order proves CAS before CLOSED event;
+- CLOSED reopen call order proves CAS before REOPENED/EXPIRY_CHANGED;
+- full CLOSED audit payload is asserted;
+- stale expired-ACTIVE reopen produces zero lifecycle events;
+- stale CLOSED reopen produces zero lifecycle events;
+- lifecycle fake transaction proves zero campaign create/delete, grant and selection
+  mutations;
+- successful reopen mutation keys prove commercial immutability;
+- Attempt-4 synchronization/history evidence is actually present in Completion Report;
+- all focused/full Admin validation remains green;
+- only documented existing lint/BullMQ warnings remain;
+- database gitlink remains unchanged;
+- git diff --check passes.
+```
+
+When complete:
+
+```text
+set this same task to review;
+publish test-only evidence commit;
+publish Completion Report with exact workflow evidence;
 STOP for moda_architect.
 ```
 
