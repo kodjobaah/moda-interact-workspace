@@ -9,18 +9,18 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 89
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: '2026-09-13T15:07:44Z'
+attempt: 1
 depends_on:
 - ARCH-010-ADMIN-007
 - ARCH-010-ADMIN-008
 enables:
 - ARCH-010-SYSTEM-TEST-005
 created: 2026-09-12
-updated: '2026-09-13'
+updated: '2026-09-13T15:07:44Z'
 ---
 
 # ARCH-010-ADMIN-009: Hard-enforce upgrade economics on plan and recovery-pack configuration
@@ -215,7 +215,7 @@ Stop if ADMIN-007 reference semantics would need to be changed, if DATABASE-013 
 ## Completion Report
 
 ### Status
-Not started.
+In Progress.
 
 ### Files Changed
 Populate during implementation.
