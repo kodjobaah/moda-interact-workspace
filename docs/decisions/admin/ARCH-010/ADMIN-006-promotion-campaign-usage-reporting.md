@@ -9,18 +9,18 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 86
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-13T21:04:14Z
+attempt: 1
 depends_on:
 - ARCH-010-ADMIN-005
 - ARCH-010-DATABASE-013
 enables:
 - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
-updated: '2026-09-13'
+updated: 2026-09-13
 ---
 
 # ARCH-010-ADMIN-006: Report campaign merchant selection and promotional-credit usage
