@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-13T23:21:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -21,7 +21,7 @@ depends_on:
 enables:
 - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-13
+updated: 2026-09-14
 ---
 
 # ARCH-010-SHOPIFY-006: Gate reinstall until Background restores Shopify subscription truth
@@ -281,19 +281,42 @@ Do not deploy SHOPIFY-006 producer behaviour before the Background consumer/reco
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `app/routes.ts`
+- `app/routes/auth/catchall/route.jsx`
+- `app/routes/app/reinstalling/route.jsx`
+- `app/services/billing/billing-reconciliation.service.ts`
+- `app/services/shop/shop-access-policy.ts`
+- `app/services/shop/shop.service.ts`
+- `tests/unit/services/shop.service.test.ts`
+- `tests/unit/routes/auth-catchall.test.ts`
+- `tests/unit/routes/reinstalling-route.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- APP_UNINSTALLED now transactionally preserves subscription, billing-period, credit, refund, history and onboarding state while setting `UNINSTALLED`, preserving the first uninstall cutoff, and clearing `reinstallPendingAt`.
+- Removed direct `markInstalled` reactivation. Active shops remain lifecycle no-ops and suspended shops cannot be silently reactivated.
+- Added durable first-attempt and explicit retry reinstall scheduling, preserving existing subscription projection state and returning committed reconciliation inputs.
+- Reused the canonical Shared `reconcile-subscription` producer with deterministic `expectedNextReconcileAt` payloads and shared structured logging for best-effort enqueue failures.
+- Added `/app/reinstalling` pending/stopped/retry behavior and routed pending product access to it while keeping authenticated merchant support available.
+- Added focused lifecycle, auth, access-policy, route and producer tests. No Partner API calls, entitlement mutation, billing-period mutation, Admin UI, or other repository changes were made.
 
 ### Validation Results
-Populate during implementation.
+- Focused tests first: `npm test -- --run tests/unit/services/shop.service.test.ts tests/unit/shop-access-policy.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/home-route.test.ts tests/unit/routes/auth-catchall.test.ts tests/unit/routes/reinstalling-route.test.ts tests/unit/routes/explicit-route-config.test.ts` -> 7 files passed, 32 tests passed.
+- Full tests after `npm run prisma:generate`: `npm test` -> 36 files passed, 2 skipped; 321 tests passed, 3 skipped.
+- Production build: `npm run build` -> passed, including Prisma generation and client/server bundles.
+- Changed-file lint -> passed. Repository lint -> baseline failure with 11 errors in unrelated onboarding, billing-options/select, merchant-support, privacy, billing-provider and webhook-test files.
+- Typecheck -> baseline failure after Prisma generation; remaining diagnostics are existing auth-catchall JSX typing and pre-existing test typing issues, with no diagnostics in the new reinstalling route or newly typed shop-service transactions.
+- `git diff --check` -> passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-006`
+- Implementation branch: `task/ARCH-010-SHOPIFY-006`
+- Implementation commit: `6c62577` (`feat(shopify): gate reinstall on subscription restoration`)
+- Implementation branch pushed to `origin/task/ARCH-010-SHOPIFY-006`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-006`
+- Parent branch/report commit and push: pending completion of this report update.
 
 ### Architect Review
 Pending.
