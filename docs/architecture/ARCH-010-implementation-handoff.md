@@ -27,26 +27,28 @@ There is no production billing state requiring compatibility with intermediate d
 
 ## Current audited task state
 
-The current coordinated ARCH-010 state after ADMIN-006 Attempt 2 acceptance, with dependency readiness recomputed from the authoritative task files in this review snapshot, is:
+The current coordinated ARCH-010 state after BACKGROUND-006 Attempt 1 Changes Requested, with dependency readiness recomputed from the authoritative task files in this review snapshot, is:
 
 ```text
 all ARCH-010 task files: 86
-complete:                 48
-ready:                     2
-pending:                  28
+complete:                 50
+ready:                     4
+pending:                  24
 superseded:                8
 ```
 
-There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
+There is no active `in_progress` or `review` ARCH-010 task in this snapshot after the architect review is applied.
 
 ### Ready frontier
 
 ```text
-ARCH-010-BACKGROUND-003
-ARCH-010-SHOPIFY-021
+ARCH-010-BACKGROUND-006
+ARCH-010-BACKGROUND-010
+ARCH-010-SHOPIFY-003
+ARCH-010-SHOPIFY-022
 ```
 
-These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010. ADMIN-006 is now Complete at accepted Attempt 2; its only listed dependant, SYSTEM-TEST-003, remains Pending/manual-gated because other implementation dependencies are incomplete.
+These tasks are independently executable according to their own dependencies. BACKGROUND-006 is Ready only for its architect-requested Attempt-2 corrections; its dependants remain gated until it is architect-accepted Complete.
 
 ## Accepted-history reconciliation
 
