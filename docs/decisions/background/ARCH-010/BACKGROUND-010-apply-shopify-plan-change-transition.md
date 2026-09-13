@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-13T22:44:52Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
@@ -284,6 +284,7 @@ Ready for Review.
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/tests/unit/services/shopify-plan-change-transition.service.test.ts`
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+- `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
 - Added retryable established-plan-change handling for Partner failures and unresolved provider state, preserving ACTIVE/TRIALING entitlement and publishing one bounded deterministic retry after a successful CAS.
@@ -292,14 +293,17 @@ Ready for Review.
 - Made provider pending-state refresh atomic by writing pending id, handle, effective time, and schedule in one guarded update.
 - Supported Free-to-Paid when no outgoing Free BillingPeriod exists, while retaining canonical paid successor creation and preserving lifetime, purchased, and promotional state.
 - Added post-commit best-effort `plan-change` capacity-resume scheduling and focused regressions for same-cycle fail-closed and Free-to-Paid behavior.
+- Entered `SYNC_ERROR` for provider-confirmed plan changes missing an exact cycle or required meter, while retaining bounded deterministic retries; preserved ACTIVE/TRIALING status for Partner transport and unresolved-provider failures.
+- Returned `billingPeriodId: null` for valid pack-disabled Free transitions without a provider BillingPeriod instead of an empty sentinel.
+- Suppressed stale pack meters in rotating reconciliation before effective transition and added observable Attempt-3 regressions for atomic pending refresh, retryable failures, transition mutation boundaries, rotating fail-closed behavior, and capacity-resume failure isolation.
 
 ### Acceptance / Validation Evidence
-- Focused transition and reconciliation suites: passed, 3 files / 96 tests.
+- Focused transition and reconciliation suites: passed, 3 files / 108 tests.
 - `npm run test:integration`: passed, 2 files / 3 tests.
-- `npm run test:unit`: 56 files / 724 tests executed; 54 files / 714 tests passed. Ten failures remain in unchanged recovery-credit purchase and observability-startup baseline tests.
+- `npm run test:unit`: 56 files / 724 tests executed; 54 files / 714 tests passed. Ten failures remain in unchanged recovery-credit purchase and observability-startup baseline tests: 8 recovery-credit purchase tests and 2 observability-startup tests.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- `npm run build`: blocked by 16 unchanged generated-client diagnostics in `src/services/purchased-recovery-reservation.service.ts` and `src/services/recovery-credit-purchase.service.ts`; zero diagnostics remain in Attempt-2 changed files.
+- `npm run build`: blocked by 15 unchanged generated-client diagnostics in `src/services/purchased-recovery-reservation.service.ts` and `src/services/recovery-credit-purchase.service.ts`; zero diagnostics remain in Attempt-3 changed files.
 - `git diff --check`: passed.
 - Static `rg -n "tierRank|prorat"` over the three production files returned no matches, as required.
 
@@ -311,13 +315,24 @@ Ready for Review.
 - Implementation branch: `task/ARCH-010-BACKGROUND-010`.
 - Prepared start-of-attempt synchronization, dedicated worktrees, and recursive submodule materialisation were supplied by the launcher packet; no launcher discovery or re-claim was repeated.
 - Database submodule was supplied ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; database gitlink before/after remained `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`, and no database files or gitlink were changed.
-- Implementation commit `b9e6e5b5d09ede1e43a4d934af68cd80ffdd19cc` was pushed to `origin/task/ARCH-010-BACKGROUND-010`.
+- Implementation commit `ac4593f4d40f4d1d13e4f7c0bc710abf1fdc6a4f` was pushed to `origin/task/ARCH-010-BACKGROUND-010`.
 - Parent report commit is recorded by the parent-branch publication following this report update; no merge to `main` or force-push was performed.
 - No merge to `main` or force-push was performed.
 
 ### Unresolved Issues
 - Shopify immediate different-plan current state remains intentionally fail-closed as `UNEXPECTED_IMMEDIATE_PLAN_CHANGE`; normal production occurrence requires a separate architecture decision for mid-cycle entitlement segments.
-- Full-unit baseline failures are outside the allowed Attempt-2 scope: eight recovery-credit purchase tests and two observability-startup tests fail against the prepared generated-client/shared-runtime baseline.
+- Full-unit baseline failures are outside the allowed Attempt-3 scope: eight recovery-credit purchase tests fail against the prepared generated-client baseline, and two observability-startup tests fail against the prepared shared-runtime/version baseline.
+
+### Attempt 3 correction evidence
+
+- Architect Review Finding 1: `billing-subscription-reconciliation.service.ts` now enters `SYNC_ERROR` only for `MISSING_BILLING_CYCLE` and `MISSING_USAGE_METER`; Partner and unresolved-provider retries preserve ACTIVE/TRIALING. Focused reconciliation suite passed 76/76.
+- Architect Review Finding 2: `billing-reconciliation.service.ts` returns `packMeterHandle: null` before an effective same-cycle transition; focused rotating suite passed 24/24.
+- Architect Review Finding 3: retryable plan-change `SYNC_ERROR` classification remains bounded to the approved codes, and transition eligibility is covered by the focused transition/reconciliation tests.
+- Architect Review Finding 4: Free-to-Paid with no outgoing Free period remains supported; nullable-period and existing-Free-period tests pass.
+- Architect Review Finding 5: exact paid cycle and meter preconditions fail closed and schedule deterministic retries; missing-cycle/meter tests pass.
+- Architect Review Finding 6: successful Paid transitions schedule post-commit `plan-change` capacity resume, and rejected enqueue is swallowed/logged; rotating capacity tests pass.
+- Architect Review Finding 7: provider-current pending fields, including `pendingPlanId`, are written in one guarded update with no follow-up unguarded update; atomic refresh test passes.
+- Architect Review Finding 8: transitioned results use `billingPeriodId: string | null`; the no-period Free result is explicitly tested.
 
 
 ## Final promotional preservation contract
