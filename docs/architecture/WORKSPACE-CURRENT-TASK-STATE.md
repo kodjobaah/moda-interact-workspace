@@ -377,3 +377,19 @@ SHOPIFY-019   -> SHOPIFY-016
 `ARCH-010-DATABASE-012` remains Superseded by DATABASE-013, and `ARCH-010-SHOPIFY-005` remains Superseded by SHOPIFY-006.
 
 For current sequencing use `ARCH-010-implementation-handoff.md`; individual task `depends_on` remains authoritative.
+
+
+## ARCH-011
+
+Current counts: `pending` 5, `ready` 3
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-011-DATABASE-001 | database | **Ready** | 0 | ARCH-010-DATABASE-014 |
+| ARCH-011-SHARED-001 | shared | **Ready** | 0 | ARCH-010-SHARED-008 |
+| ARCH-011-SHARED-002 | shared | Pending | 0 | ARCH-011-SHARED-001 |
+| ARCH-011-BACKGROUND-001 | background | **Ready** | 0 | ARCH-010-BACKGROUND-015 |
+| ARCH-011-BACKGROUND-002 | background | Pending | 0 | ARCH-011-DATABASE-001, ARCH-011-SHARED-002, ARCH-011-BACKGROUND-001, ARCH-010-BACKGROUND-010 |
+| ARCH-011-SHOPIFY-001 | shopify | Pending | 0 | ARCH-011-DATABASE-001, ARCH-011-SHARED-002, ARCH-010-SHOPIFY-014, ARCH-010-SHOPIFY-015 |
+| ARCH-011-ADMIN-001 | admin | Pending | 0 | ARCH-011-DATABASE-001, ARCH-011-SHARED-002, ARCH-010-ADMIN-009 |
+| ARCH-011-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-011-DATABASE-001, ARCH-011-SHARED-002, ARCH-011-BACKGROUND-001, ARCH-011-BACKGROUND-002, ARCH-011-SHOPIFY-001, ARCH-011-ADMIN-001 |

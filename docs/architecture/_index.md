@@ -1,6 +1,6 @@
 # Architecture index
 
-> **State synchronization:** ARCH-001..007 rows retain the 2026-09-08 rollup; ARCH-008..009 retain the 2026-09-12 rollup; ARCH-010 is synchronized 2026-09-13. Current task state is generated in
+> **State synchronization:** ARCH-001..007 rows retain the 2026-09-08 rollup; ARCH-008..009 retain the 2026-09-12 rollup; ARCH-010 and ARCH-011 are synchronized 2026-09-13. Current task state is generated in
 > [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md).
 > Individual task YAML remains authoritative. Historical review/amendment documents
 > preserve the state that existed when they were written and should not be used as
@@ -18,11 +18,13 @@
 | ARCH-008 | complete 7, ready 1, superseded 1 | [Shopify App Pricing conformance](ARCH-008-shopify-app-pricing-conformance.md) |
 | ARCH-009 | complete 5, pending 2, ready 2 | [Merchant billing lifecycle, cancellations and refunds](ARCH-009-merchant-billing-lifecycle-cancellations-refunds.md) |
 | ARCH-010 | complete 40, pending 34, ready 4, superseded 8 | [Merchant lifecycle state transitions and behavioural access](ARCH-010-merchant-lifecycle-state-transitions.md) · [First-production baseline](ARCH-010-first-production-baseline.md) |
+| ARCH-011 | pending 5, ready 3 | [Pro-rated same-cycle subscription upgrades](ARCH-011-pro-rated-same-cycle-subscription-upgrades.md) |
 
 ## Current execution highlights
 
 - `ARCH-010`: first-production baseline consolidation is current. Ready frontier: `BACKGROUND-008`, `BACKGROUND-009`, `ADMIN-004`, `ADMIN-008`. `DATABASE-014` and `ADMIN-010` are architect-accepted Complete; superseded tasks remain history only.
 - `ARCH-010` system-test tasks remain terminal/manual-gated and never block implementation startup.
+- `ARCH-011`: consolidated initial frontier is `DATABASE-001`, `SHARED-001`, `BACKGROUND-001`. Shared publication and runtime/UI tasks remain dependency-gated; `SYSTEM-TEST-001` is terminal/manual-gated.
 - For architectures other than ARCH-010, use [`WORKSPACE-CURRENT-TASK-STATE.md`](WORKSPACE-CURRENT-TASK-STATE.md) plus individual task YAML rather than relying on an old highlight bullet.
 
 ## Historical architecture material
