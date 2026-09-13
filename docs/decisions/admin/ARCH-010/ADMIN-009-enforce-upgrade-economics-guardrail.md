@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 89
-executor: copilot
-claimed_at: '2026-09-13T16:28:30Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-ADMIN-007
@@ -591,3 +591,418 @@ Acceptance requires:
 
 When complete, set this same task to `review`, publish the implementation and parent
 report branches, and STOP for architect review.
+
+### Attempt 2 — Changes Requested
+
+Attempt 2 is **not accepted**. Keep this same task and return it to `ready` for
+Attempt 3. Do not create a replacement task and do not begin
+`ARCH-010-SYSTEM-TEST-005`.
+
+The implementation commit under review is:
+
+```text
+2f0572a0a3336e8a8e88d42f3d25d9df9f25d09f
+```
+
+It is one commit on top of Attempt 1 implementation
+`19f649a3dd903705485750878b211be3022334e7`.
+
+#### Accepted-in-substance Attempt 2 corrections — preserve these
+
+The following Attempt 1 defects are corrected in substance and must not be
+regressed:
+
+1. enabled local top-up pack size/handle now has to match the latest verified
+   lower-plan Shopify economics snapshot;
+2. stale pack size or pack-meter handle produces
+   `UNVERIFIED / INVALID_TOPUP_CONFIGURATION`;
+3. proposed `recoveryCreditPackEnabled=false` is evaluated as the proposed state
+   and produces `PASS / NO_TOPUPS_AVAILABLE`;
+4. the Admin plan page now includes top-up-path output, guardrail result code,
+   verified-Shopify-evidence wording, and a `NO_UPGRADE_EDGE` presentation;
+5. accepted ADMIN-007 arithmetic remains unchanged.
+
+Do not rewrite ADMIN-007 to address the remaining issues below.
+
+#### Correction 1 — structural edge validity must be checked before NO_TOPUPS_AVAILABLE
+
+Primary file:
+
+```text
+moda-interact-admin/src/lib/admin/billing-plan-guardrail.ts
+```
+
+Server mutation integration:
+
+```text
+moda-interact-admin/src/app/actions/billing-plan.ts
+```
+
+Attempt 2 still permits an existing upgrade edge to become structurally invalid
+when the lower plan has top-ups disabled.
+
+The current adapter delegates directly to:
+
+```text
+validateSinglePackShopifyEconomics(...)
+```
+
+with:
+
+```text
+topUpsEnabled = false
+```
+
+for a proposed top-ups-off lower plan. The accepted ADMIN-007 evaluator correctly
+implements scenario 52 by returning `PASS / NO_TOPUPS_AVAILABLE` early when top-ups
+are disabled. That early PASS is valid only for an otherwise-valid upgrade edge.
+
+ADMIN-009 must separately enforce the structural invariant:
+
+```text
+higher monthly included > lower monthly included
+higher plan id != lower plan id
+```
+
+using the canonical monthly-capacity mapping:
+
+```text
+FREE = 0
+PAID_METERED = includedRecoveryConversationAllowance
+```
+
+before applying the top-ups-off shortcut.
+
+Concrete failing Attempt 2 case:
+
+```text
+existing active edge:
+  Starter -> Growth
+
+proposed Starter:
+  kind = PAID_METERED
+  included = 300
+  recoveryCreditPackEnabled = false
+
+Growth:
+  kind = PAID_METERED
+  included = 200
+
+actual Attempt 2 adapter result:
+  PASS
+  NO_TOPUPS_AVAILABLE
+  additionalCreditsNeeded = -100
+```
+
+This must instead be:
+
+```text
+UNVERIFIED
+INVALID_UPGRADE_EDGE
+```
+
+and the server mutation must be rejected before any BillingPlan or
+BillingPlanFeature write.
+
+Do not change `validateSinglePackShopifyEconomics(...)`. Add the structural
+precondition in the ADMIN-009 adapter, before pack-mapping mismatch/top-up
+evaluation.
+
+Required permanent tests:
+
+```text
+- top-ups OFF + valid lower<higher edge => PASS / NO_TOPUPS_AVAILABLE;
+- top-ups OFF + lower allowance == higher allowance => UNVERIFIED / INVALID_UPGRADE_EDGE;
+- top-ups OFF + lower allowance > higher allowance => UNVERIFIED / INVALID_UPGRADE_EDGE;
+- changing the lower plan allowance through mutateBillingPlanAction cannot make an
+  existing lower->higher edge invalid;
+- changing the higher plan allowance through mutateBillingPlanAction cannot make an
+  existing previous->higher or higher->next edge invalid;
+- blocked invalid-edge mutations leave BillingPlan and BillingPlanFeature rows
+  unchanged.
+```
+
+#### Correction 2 — complete the behavioral server-action evidence from Attempt 1 review
+
+Attempt 2 adds one useful direct adapter regression, but it still does not add the
+behavioral server-action tests required by the Attempt 1 review.
+
+The existing test named:
+
+```text
+hard-enforces economics before every economics-affecting catalog write
+```
+
+is still primarily a source-order/source-presence assertion. That does not prove the
+transactional server-action behavior.
+
+Add permanent behavioral tests for scenarios 48–60 owned by ADMIN-009, including at
+minimum:
+
+```text
+48 enabling/creating top-ups re-evaluates lower->higher;
+49 pack-size change re-evaluates lower->higher;
+50 lower allowance change evaluates previous->lower and lower->higher;
+51 higher allowance change evaluates lower->higher and higher->next;
+52 top-ups OFF commits with PASS / NO_TOPUPS_AVAILABLE;
+53 top-ups ON without current compatible snapshot blocks UNVERIFIED;
+54 PASS commits and writes UPGRADE_ECONOMICS_EVALUATED evidence;
+55 FAIL leaves BillingPlan + BillingPlanFeature + pack fields unchanged;
+56 UNVERIFIED leaves BillingPlan + BillingPlanFeature + pack fields unchanged;
+57 crafted server-action invocation with FAIL is rejected server-side;
+58 recurring/usage currency mismatch blocks server-side;
+59 no outgoing edge performs no invented evaluation;
+60 top plan performs no invented higher-plan evaluation.
+```
+
+The tests must execute the mutation behavior through a deterministic harness or
+service boundary. Merely checking source strings, function ordering, or calling
+`evaluateBillingUpgradeEdge(...)` directly is not sufficient for scenarios 48–60.
+
+For rejected mutations, prove no durable catalog/audit mutation occurs before the
+guardrail rejection unless that audit is explicitly a rollback-contained write in
+the same transaction and is demonstrated to roll back.
+
+#### Correction 3 — add deterministic UI/render evidence for scenarios 59 and 65–69
+
+Attempt 2 production UI changes are directionally correct, but no new component or
+render test was added.
+
+Add a focused deterministic UI/render test file, for example:
+
+```text
+moda-interact-admin/tests/unit/billing-plan-economics-presentation.test.tsx
+```
+
+or another repository-consistent test location.
+
+Prove:
+
+```text
+59 plan with no outgoing active upgrade edge renders NO_UPGRADE_EDGE and no invented
+   next plan/evaluation;
+
+65 PASS renders:
+   lower plan
+   higher plan
+   capacity gap
+   required pack units
+   top-up path / packSummary
+   stay + top-ups cost
+   upgrade cost
+   actual premium
+   required premium
+   PASS;
+
+66 FAIL renders the same available calculation evidence and clearly states the
+   activation/change is blocked;
+
+67 UNVERIFIED names the exact missing/incompatible evidence and never renders PASS;
+
+68 money formatting occurs from already-computed integer-minor values; UI does not
+   recompute economics;
+
+69 UI visibly labels the source as "verified Shopify economics evidence used by the
+   Admin guardrail" and explicitly does not claim charging authority.
+```
+
+Do not satisfy these with source-text searches only.
+
+Also ensure `NO_UPGRADE_EDGE` is derived from the actual configured active ladder,
+not merely from absence in a filtered evaluation array in a way that could falsely
+claim an edge is unconfigured.
+
+#### Correction 4 — complete audit evidence regression, including topUpPath and secret exclusion
+
+Production `billingUpgradeEconomicsAuditEvidence(...)` currently includes
+`topUpPath`, which is correct. Preserve it.
+
+The permanent test currently checks many evidence keys but omits `topUpPath`.
+
+Add assertions proving the successful guarded mutation audit contains all of:
+
+```text
+lowerPlanId
+higherPlanId
+lowerSnapshotId
+higherSnapshotId
+minimumUpgradePremiumBps
+lowerMonthlyIncluded
+higherMonthlyIncluded
+recoveryCreditsPerPack
+packUnitsNeeded
+topUpPath
+topUpCostMinor
+stayAndTopUpCostMinor
+upgradeCostMinor
+requiredMinimumMinor
+premiumBps
+status
+code
+```
+
+Also prove the serialized audit evidence does not include:
+
+```text
+access token
+Partner token
+credential
+secret
+raw provider response
+```
+
+No raw provider object should be spread into the audit payload.
+
+#### Correction 5 — correct Attempt 2 workflow evidence prospectively
+
+The parent history reconciliation is now real and must be preserved.
+
+GitHub confirms both Attempt-1 siblings are ancestors of the Attempt-2 parent report
+head:
+
+```text
+Attempt-1 claim:
+  97bed1e1d28d9c8dcc87bb1b57e61a87066b5d26
+
+Attempt-1 report:
+  5a177551d12ba7ac6825430550f2bfd9d6bbeb77
+```
+
+The actual Attempt-2 claim commit is:
+
+```text
+645574c67fce300f56fbe5dcfd841dd0546d2976
+```
+
+The Attempt-2 parent report is:
+
+```text
+eda0f87cfc09dc68075190038e301a2d2501e10b
+```
+
+The Attempt-2 Completion Report incorrectly still labels `97bed1e` as the claim
+commit and does not contain the mandatory exact isolation/synchronization evidence
+blocks.
+
+Do not rewrite Attempt-2 history. Record the correction in the Attempt-3 Completion
+Report.
+
+Attempt 3 must record actual observed values in exactly this form:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
+  parent branch: task/ARCH-010-ADMIN-009
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
+  implementation branch: task/ARCH-010-ADMIN-009
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Parent history reconciliation:
+  Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
+  Attempt-1 report 5a17755... ancestor of parent HEAD: yes
+  Attempt-2 claim 645574c... ancestor of parent HEAD: yes
+  Attempt-2 report eda0f87... ancestor of parent HEAD: yes
+```
+
+Record only values actually observed during Attempt 3.
+
+#### Attempt 3 allowed scope
+
+Production changes are expected only in:
+
+```text
+src/lib/admin/billing-plan-guardrail.ts
+src/app/actions/billing-plan.ts
+```
+
+Only change `src/lib/admin/billing-plan.ts` or
+`src/components/admin/billing-plan-catalog.tsx` if the required UI/render test
+exposes the `NO_UPGRADE_EDGE` derivation issue described above.
+
+Test/i18n changes are allowed in:
+
+```text
+tests/security/admin-billing-plan.test.mjs
+tests/**/billing-plan-*.test.*
+src/i18n/locales/en.json
+src/i18n/required-keys.ts
+```
+
+Do not modify:
+
+```text
+src/lib/admin/upgrade-economics-guardrail.ts
+database/**
+Shared/Shopify/Background/Messaging/Gateway repositories
+merchant runtime billing/admission
+Shopify prices/App Events
+```
+
+If satisfying structural edge validity requires changing accepted ADMIN-007
+arithmetic, STOP and return to `moda_architect`.
+
+#### Required Attempt 3 validation
+
+From the canonical Admin implementation worktree run:
+
+```bash
+npm run prisma:validate
+
+node --experimental-strip-types --test \
+  tests/security/admin-billing-plan.test.mjs
+
+# Run the new focused server-action and UI/render test files explicitly.
+# Use the exact paths created by Attempt 3.
+
+npm test
+npx tsc --noEmit --pretty false
+npm run lint
+npm run build
+git diff --check
+```
+
+Acceptance requires:
+
+```text
+- top-ups-off valid edge remains PASS / NO_TOPUPS_AVAILABLE;
+- top-ups-off invalid/equal edge is UNVERIFIED / INVALID_UPGRADE_EDGE;
+- scenarios 48–60 have behavioral server-action evidence;
+- scenarios 59 and 65–69 have deterministic UI/render evidence;
+- audit evidence test includes topUpPath and secret exclusion;
+- all focused/new tests pass;
+- full test suite passes;
+- TypeScript and Prisma validation pass;
+- lint has no new warnings beyond the two documented existing queue-monitor hook
+  warnings;
+- build has no new warning beyond the documented BullMQ optional-dependency warning;
+- git diff --check passes.
+```
+
+#### Attempt 3 stop conditions
+
+STOP and return this same task to `moda_architect` if:
+
+1. enforcing structural edge validity would require changing ADMIN-007;
+2. server-action behavioral tests cannot be isolated without changing the production
+   transaction boundary;
+3. deterministic UI evidence requires introducing a new test framework rather than
+   using the repository's existing test tooling;
+4. another repository or schema must change.
+
+When complete:
+
+1. set this same task to `review`;
+2. publish implementation commit(s);
+3. update Completion Report with exact commands/results and mandatory evidence;
+4. publish parent task report;
+5. STOP for architect review.
+
