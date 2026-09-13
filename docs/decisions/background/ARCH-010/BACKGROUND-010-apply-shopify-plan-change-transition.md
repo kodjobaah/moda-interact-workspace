@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-13T23:18:41Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-010-DATABASE-013
@@ -25,7 +25,7 @@ enables:
 - ARCH-010-SHOPIFY-015
 - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: 2026-09-13
+updated: 2026-09-14
 ---
 
 # ARCH-010-BACKGROUND-010: Apply Shopify-authoritative plan changes without resetting lifetime credit history
@@ -1571,3 +1571,66 @@ The next authorized claim must increment to **Attempt 4 exactly once**.
 After implementing only this correction contract, run the required validation, update
 the Completion Report/evidence map, set `status: review`, clear the claim, commit/push
 both task branches, verify both are clean, STOP and return to `moda_architect`.
+
+## Attempt 4 Completion Report
+
+### Status
+
+Ready for Review.
+
+### Correction Completed
+
+- Queued and rotating reconciliation now validate exact provider cycles, paid included allowance, normal paid meters, and enabled pack meters before invoking the transition transaction.
+- Known validation failures persist typed `SYNC_ERROR` state (`MISSING_BILLING_CYCLE`, `INVALID_INCLUDED_ALLOWANCE`, or `MISSING_USAGE_METER`), retain the current/pending entitlement projection, and publish one deterministic retry only after a winning guarded update.
+- `INVALID_INCLUDED_ALLOWANCE` is included in retryable plan-change `SYNC_ERROR` eligibility for both reconciliation and transition services.
+- A valid expected target returning `not-applicable` now enters the existing fail-closed `UNEXPECTED_IMMEDIATE_PLAN_CHANGE` retry path; rotating reconciliation returns a null pack meter.
+- Rotating Paid capacity-resume fixtures now include the provider-matching target handle, allowance, and old-plan snapshot, proving the real transition branch and enqueue-failure isolation.
+
+### Evidence Map
+
+1. `refreshes pending provider state in one guarded update`.
+2. `keeps provider pending truth when another current plan is returned`.
+3. `keeps established entitlement on Partner failure and publishes one bounded retry`.
+4. `keeps established entitlement unresolved when Partner reports no active subscription`.
+5. `fails closed before the pending boundary when the provider target uses the current cycle`.
+6. `enters fail-closed SYNC_ERROR for a provider-current target with a missing cycle`; `enters fail-closed SYNC_ERROR for a provider-current target with a missing meter`.
+7. `schedules plan-change capacity resume after a successful rotating Paid transition`.
+8. `swallows rotating capacity-resume enqueue failure after a successful transition`.
+9. `fails closed before the boundary and never exposes the stale pack meter`.
+10. `enters fail-closed SYNC_ERROR for a provider-current target with a missing cycle`.
+11. `fails closed before the boundary and never exposes the stale pack meter`.
+12. `enters fail-closed SYNC_ERROR for a provider-current target with a missing cycle`.
+13. `schedules plan-change capacity resume after a successful rotating Paid transition`; `swallows rotating capacity-resume enqueue failure after a successful transition`.
+14. `swallows rotating capacity-resume enqueue failure after a successful transition`.
+15. `closes an existing outgoing Free period exactly once before Free -> Paid`.
+16. `reuses a matching successor without resetting its included usage`.
+17. `closes Paid -> Paid with PLAN_CHANGED and grants the new period once`.
+18. `creates a Free successor without a monthly counter`.
+19. `does not write lifetime, purchased, or promotional state during plan transitions`.
+20. `does not close the old period when a required paid cycle is missing`.
+
+### Validation
+
+- Focused suites: passed, 3 files / 108 tests.
+- `npm run test:integration`: passed, 2 files / 3 tests.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `git diff --check`: passed.
+- Static `rg -n "tierRank|prorat"` over the three production files: zero matches, expected exit 1.
+- `npm run test:unit`: 56 files / 724 tests executed; 54 files / 714 tests passed. The unchanged baseline remains 10 failures: 8 recovery-credit purchase tests and 2 observability-startup tests.
+- `npm run build`: blocked by the unchanged 15 generated-client diagnostics in `src/services/purchased-recovery-reservation.service.ts` and `src/services/recovery-credit-purchase.service.ts`; no diagnostics were reported in Attempt 4 changed files.
+
+### Workflow Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-010`, `task/ARCH-010-BACKGROUND-010`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-010`, `task/ARCH-010-BACKGROUND-010`.
+- Launcher Attempt 4 claim commit and prepared synchronization were supplied by the launcher packet; no launcher invocation or re-claim was performed.
+- Recursive database submodule materialisation was supplied by the launcher packet. Database gitlink remained `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` before and after; no database files or gitlink were changed.
+- Implementation commit: `17ffe40` (`fix(background): fail closed on invalid plan transition prerequisites`), pushed to `origin/task/ARCH-010-BACKGROUND-010`.
+- Parent report commit: recorded after this update and pushed to the mirrored parent task branch.
+- No merge to `main` and no force-push performed.
+
+### Unresolved Baseline
+
+- The full-unit and build failures remain the documented generated-client/shared-runtime baseline outside this task scope. No unrelated purchased-credit or observability files were changed.
