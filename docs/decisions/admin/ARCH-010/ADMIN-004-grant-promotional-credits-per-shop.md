@@ -117,43 +117,57 @@ Stop if DATABASE-010 has not landed or if current Admin authorization/tenant-pla
 ## Completion Report
 
 ### Status
-In Progress.
+Review.
 
 ### Files Changed
-- `src/app/(protected)/promotions/page.tsx`
 - `src/app/actions/promotions.ts`
-- `src/components/admin/admin-shell.tsx`
 - `src/components/admin/promotion-campaign-form.tsx`
-- `src/components/admin/sidebar.tsx`
 - `src/lib/admin/promotion-validation.ts`
-- `src/lib/admin/promotions.ts`
 - `tests/security/admin-promotions.test.mjs`
 - `tests/unit/promotion-validation.test.ts`
 
 ### Work Completed
-- Added a protected Admin campaign history/editor route with exact active BillingPlan and Shop selectors.
-- Added SUPER_ADMIN-only server actions for draft creation, draft editing, and transactional activation.
-- Added server-side validation for GLOBAL/PLAN/SHOP target exclusivity, exact durable target lookup, positive bounded quantity, and ordered campaign windows.
-- Activation re-reads the campaign, requires DRAFT, preserves immutable commercial terms, sets ACTIVE, and appends `PromotionCampaignEvent.ACTIVATED` evidence.
-- Creation appends `PromotionCampaignEvent.CREATED` evidence.
-- No merchant grant, selection, entitlement counter, Shopify App Event, or compatibility-model mutation is present.
+- Preserved the accepted Attempt 1 campaign route, navigation, authorization, target resolution, audit events, and no-grant/no-selection/no-counter/no-Shopify mutation boundaries.
+- Added versioned `id + DRAFT + version` compare-and-set transitions for both draft editing and activation; stale transitions require exactly one affected row and fail with a bounded reload error.
+- Activation now accepts only `intent` and `id`, re-reads persisted campaign terms, validates target/quantity/window, then writes `ACTIVE` and `ACTIVATED` evidence only after the winning CAS.
+- Added focused regression coverage for activation and draft-edit CAS predicates, stale transition rejection, persisted activation validation, command-only activation submission, and existing security boundaries.
 
 ### Validation Results
-- `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts`: 3 passed.
-- `node --test tests/security/admin-promotions.test.mjs tests/unit/promotion-validation.test.ts`: 8 passed.
-- `npm test`: passed; existing observability tests that require a prior build were skipped as designed.
-- `npm run lint`: passed with two unchanged warnings in `src/components/admin/queue-monitor.tsx`.
-- `npx tsc --noEmit`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts`: passed, 4 tests.
+- `node --test tests/security/admin-promotions.test.mjs tests/unit/promotion-validation.test.ts`: passed, 11 tests.
+- `npm test`: passed, 155 tests; existing observability tests that require a prior build were skipped as designed.
+- `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx`.
+- `npx tsc --noEmit`: passed after the Attempt 2 correction.
 - `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
 - `git diff --check`: passed.
-- Exact clean-baseline search: no implementation references to removed compatibility symbols; historical assertions remain in the existing regression test.
 
 ### Git / VCS
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-004`
-- Implementation branch: `task/ARCH-010-ADMIN-004`
-- Implementation commit/push: `6df7899` pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-admin`.
-- Parent claim commit/push: `54288b7` pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-workspace`.
-- Database submodule gitlink remained unchanged at accepted commit `5443afd`.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-004`
+  parent branch: `task/ARCH-010-ADMIN-004`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-004`
+  implementation branch: `task/ARCH-010-ADMIN-004`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+database submodule initialized: yes
+database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
+database submodule HEAD: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
+database gitlink staged/changed: no
+
+Parent claim commit: `202b59d`, pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-workspace`.
+Implementation commit: `6683e19`, pushed to `origin/task/ARCH-010-ADMIN-004` in `moda-interact-admin`.
+The implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
 
