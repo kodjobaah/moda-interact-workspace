@@ -42,8 +42,8 @@ Current counts: `complete` 6, `ready` 2, `pending` 13, `superseded` 5
 | `SHOPIFY-018` | Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze | Complete | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023 |
 | `SHOPIFY-019` | Present frozen Shopify subscription state and disable business billing actions | Superseded | ARCH-010-BACKGROUND-017, ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-018 |
 | `SHOPIFY-020` | Present selected promotion and promo-first recovery capacity | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-021 |
-| `SHOPIFY-021` | Show eligible running promotion offers and let a merchant select one | **Ready** | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-018, ARCH-010-ADMIN-004 |
-| `SHOPIFY-022` | Show merchant promotion selection and usage history | Pending | ARCH-010-SHOPIFY-021, ARCH-010-DATABASE-013 |
+| `SHOPIFY-021` | Show eligible running promotion offers and let a merchant select one | Complete | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-018, ARCH-010-ADMIN-004 |
+| `SHOPIFY-022` | Show merchant promotion selection and usage history | **Ready** | ARCH-010-SHOPIFY-021, ARCH-010-DATABASE-013 |
 | `SHOPIFY-023` | Conform Shopify billing runtime to the clean first-production baseline | Complete | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-002 |
 | `SHOPIFY-024` | Remove pre-publication Shopify consumers of retired Shared billing contracts | Complete | ARCH-010-SHARED-006, ARCH-010-SHOPIFY-002 |
 | `SHOPIFY-025` | Add merchant recovery-credit purchase history read model and refund lifecycle actions | Pending | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-014, ARCH-010-SHARED-008 |
