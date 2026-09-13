@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 84
 executor: null
 claimed_at: null
@@ -1736,3 +1736,745 @@ publish the Completion Report;
 STOP for moda_architect review.
 ```
 
+## Architect Review — Attempt 3
+
+### Changes Requested — self-provisioned PostgreSQL concurrency evidence
+
+Attempt 3 is **not accepted yet**. Return this same task to `ready` for Attempt 4.
+
+Do not start `ARCH-010-SHOPIFY-020`, `ARCH-010-SHOPIFY-022` or
+`ARCH-010-SYSTEM-TEST-003`.
+
+Preserve the current task attempt value:
+
+```text
+attempt: 3
+```
+
+The next authorized `/moda-task ARCH-010-SHOPIFY-021` claim must increment this
+same task to **Attempt 4 exactly once**.
+
+### Attempt-3 work accepted in substance — preserve it
+
+Preserve all of the following Attempt-3 work:
+
+```text
+- Czech promotion copy in app/i18n/locales/cs.json;
+- Danish promotion copy in app/i18n/locales/da.json;
+- Finnish promotion copy in app/i18n/locales/fi.json;
+- representative non-English promotion-copy regression assertions;
+- requested PLAN/SHOP mutation rejection tests;
+- future/expired/CLOSED requested-campaign rejection tests;
+- current PLAN/SHOP selection usability/replacement tests;
+- reopened partially-used/exhausted same-campaign grant tests;
+- SUSPENDED Shop / FROZEN / NO_CONTRACT / inactive-plan fail-closed tests;
+- P2034 exhaustion and eventual-success unit evidence;
+- Attempt-2 production promotion service and route behavior.
+```
+
+Attempt-3 implementation reviewed:
+
+```text
+622605f02a871ee4f3f0d7197aa354aa307bbf8d
+```
+
+The uploaded review archive has Git metadata stripped, so the architect cannot
+independently verify the parent Git ancestry from this archive. The developer reports
+Attempt-3 parent report `8d75e88`; Attempt 4 must resolve that short SHA to its full
+commit in the real parent worktree and record the ancestry result.
+
+### Architectural correction — the integration test must provision its own PostgreSQL
+
+The previous Attempt-3 review instruction requiring an externally supplied
+`TEST_DATABASE_URL` is superseded by this review.
+
+For Attempt 4:
+
+```text
+TEST_DATABASE_URL MUST NOT be required.
+TEST_DATABASE_URL MUST NOT be read by the integration test.
+TEST_DATABASE_URL MUST NOT be invented or written by the agent.
+```
+
+The permanent concurrency integration test must use Testcontainers for Node.js to
+start its own disposable PostgreSQL container when the Docker-backed integration gate
+is enabled.
+
+Keep this explicit opt-in gate:
+
+```text
+MODA_DISPOSABLE_INTEGRATION=1
+```
+
+The gate means "run Docker-backed disposable integration tests". It does **not**
+identify a database. When the gate is open, the test itself owns PostgreSQL creation,
+migration, connections and teardown.
+
+Use the architecture-approved PostgreSQL image already established by the platform's
+ephemeral PostgreSQL test infrastructure:
+
+```text
+postgres:17.6-alpine
+```
+
+Do not choose another PostgreSQL image/version.
+
+### Required dependency change
+
+From `moda-interact/`, add this exact development dependency and update the lock file
+normally:
+
+```bash
+npm install --save-dev --save-exact @testcontainers/postgresql@12.1.0
+```
+
+Authorized dependency files:
+
+```text
+package.json
+package-lock.json
+```
+
+Do not add `testcontainers` separately. `@testcontainers/postgresql` owns its required
+core Testcontainers dependency.
+
+### Replace the permanent concurrency integration test with this exact implementation
+
+Replace the complete contents of:
+
+```text
+tests/integration/promotion-selection.concurrency.integration.test.ts
+```
+
+with the following code. Do not redesign this code, substitute another container
+library, introduce a shared helper, or restore external `TEST_DATABASE_URL` handling
+in this task.
+
+```ts
+import { execFile } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+import { resolve } from "node:path";
+
+import { PrismaClient } from "@prisma/client";
+import {
+  PostgreSqlContainer,
+  type StartedPostgreSqlContainer,
+} from "@testcontainers/postgresql";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "vitest";
+
+const execFileAsync = promisify(execFile);
+const integrationEnabled = process.env.MODA_DISPOSABLE_INTEGRATION === "1";
+const describeWithDatabase = integrationEnabled ? describe : describe.skip;
+const postgresImage = "postgres:17.6-alpine";
+const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
+const prismaExecutable = resolve(
+  repositoryRoot,
+  "node_modules",
+  ".bin",
+  process.platform === "win32" ? "prisma.cmd" : "prisma",
+);
+
+const fixtureId = randomUUID();
+const adminId = `admin-${fixtureId}`;
+const planId = `plan-${fixtureId}`;
+const shopId = `shop-${fixtureId}`;
+const campaignAId = `campaign-a-${fixtureId}`;
+const campaignBId = `campaign-b-${fixtureId}`;
+const selectionTime = new Date("2026-09-13T12:00:00.000Z");
+
+let postgres: StartedPostgreSqlContainer | undefined;
+let database: PrismaClient | undefined;
+let firstClient: PrismaClient | undefined;
+let secondClient: PrismaClient | undefined;
+let selectPromotionOffer:
+  typeof import("../../app/services/promotions/promotion.service")["selectPromotionOffer"];
+
+const originalDatabaseUrl = process.env.DATABASE_URL;
+
+async function deployMigrations(databaseUrl: string): Promise<void> {
+  await execFileAsync(
+    prismaExecutable,
+    [
+      "migrate",
+      "deploy",
+      "--schema",
+      "database/prisma/schema.prisma",
+    ],
+    {
+      cwd: repositoryRoot,
+      env: {
+        ...process.env,
+        DATABASE_URL: databaseUrl,
+      },
+      timeout: 120_000,
+      maxBuffer: 10 * 1024 * 1024,
+    },
+  );
+}
+
+async function disconnectClients(): Promise<void> {
+  await Promise.allSettled([
+    database?.$disconnect() ?? Promise.resolve(),
+    firstClient?.$disconnect() ?? Promise.resolve(),
+    secondClient?.$disconnect() ?? Promise.resolve(),
+  ]);
+}
+
+async function resetSelection(): Promise<void> {
+  if (!database) {
+    throw new Error("Disposable database client is unavailable");
+  }
+
+  await database.merchantPromotionSelection.deleteMany({ where: { shopId } });
+  await database.promotionalCreditGrant.deleteMany({ where: { shopId } });
+}
+
+async function createCommonFixtures(): Promise<void> {
+  if (!database) {
+    throw new Error("Disposable database client is unavailable");
+  }
+
+  await database.platformAdmin.create({
+    data: {
+      id: adminId,
+      email: `${adminId}@example.test`,
+      role: "SUPER_ADMIN",
+      active: true,
+    },
+  });
+
+  await database.billingPlan.create({
+    data: {
+      id: planId,
+      shopifyPlanHandle: planId,
+      name: "Promotion integration plan",
+      kind: "PAID_METERED",
+      active: true,
+      shopifyUsageEventHandle: "promotion-meter",
+      includedRecoveryConversationAllowance: 100,
+      defaultOutboundSoftLimit: 10,
+      defaultOutboundHardLimit: 20,
+      terminalMessageReservedSlots: 1,
+    },
+  });
+
+  await database.shop.create({
+    data: {
+      id: shopId,
+      domain: `${shopId}.test`,
+      status: "ACTIVE",
+    },
+  });
+
+  await database.subscription.create({
+    data: {
+      shopId,
+      planId,
+      status: "ACTIVE",
+      observedShopifyPlanHandle: planId,
+    },
+  });
+
+  await database.promotionCampaign.createMany({
+    data: [
+      {
+        id: campaignAId,
+        name: "Campaign A",
+        merchantDescription: "A",
+        scope: "GLOBAL",
+        quantity: 25,
+        startsAt: new Date("2026-09-01T00:00:00.000Z"),
+        expiresAt: new Date("2026-10-01T00:00:00.000Z"),
+        status: "ACTIVE",
+        createdByPlatformAdminId: adminId,
+      },
+      {
+        id: campaignBId,
+        name: "Campaign B",
+        merchantDescription: "B",
+        scope: "GLOBAL",
+        quantity: 40,
+        startsAt: new Date("2026-09-01T00:00:00.000Z"),
+        expiresAt: new Date("2026-10-01T00:00:00.000Z"),
+        status: "ACTIVE",
+        createdByPlatformAdminId: adminId,
+      },
+    ],
+  });
+}
+
+describeWithDatabase(
+  "Promotion selection PostgreSQL concurrency (Testcontainers)",
+  () => {
+    beforeAll(async () => {
+      try {
+        postgres = await new PostgreSqlContainer(postgresImage)
+          .withDatabase("moda_interact_test")
+          .withUsername("moda_test")
+          .withPassword("moda_test_password")
+          .start();
+
+        const databaseUrl = postgres.getConnectionUri();
+
+        // The process-local DATABASE_URL exists only so application modules loaded
+        // by this integration test cannot accidentally bind to an external database.
+        // All test-owned Prisma clients below also receive the container URL
+        // explicitly through datasourceUrl.
+        process.env.DATABASE_URL = databaseUrl;
+
+        await deployMigrations(databaseUrl);
+
+        database = new PrismaClient({ datasourceUrl: databaseUrl });
+        firstClient = new PrismaClient({ datasourceUrl: databaseUrl });
+        secondClient = new PrismaClient({ datasourceUrl: databaseUrl });
+
+        await Promise.all([
+          database.$connect(),
+          firstClient.$connect(),
+          secondClient.$connect(),
+        ]);
+
+        ({ selectPromotionOffer } = await import(
+          "../../app/services/promotions/promotion.service"
+        ));
+
+        await createCommonFixtures();
+      } catch (error) {
+        await disconnectClients();
+        await postgres?.stop();
+        postgres = undefined;
+        throw error;
+      }
+    }, 120_000);
+
+    beforeEach(async () => {
+      await resetSelection();
+    });
+
+    afterEach(async () => {
+      await resetSelection();
+    });
+
+    afterAll(async () => {
+      try {
+        if (database) {
+          await database.merchantPromotionSelection.deleteMany({
+            where: { shopId },
+          });
+          await database.promotionalCreditGrant.deleteMany({
+            where: { shopId },
+          });
+          await database.promotionCampaign.deleteMany({
+            where: { id: { in: [campaignAId, campaignBId] } },
+          });
+          await database.subscription.deleteMany({ where: { shopId } });
+          await database.shop.deleteMany({ where: { id: shopId } });
+          await database.billingPlan.deleteMany({ where: { id: planId } });
+          await database.platformAdmin.deleteMany({ where: { id: adminId } });
+        }
+      } finally {
+        await disconnectClients();
+        await postgres?.stop();
+        postgres = undefined;
+
+        if (originalDatabaseUrl === undefined) {
+          delete process.env.DATABASE_URL;
+        } else {
+          process.env.DATABASE_URL = originalDatabaseUrl;
+        }
+      }
+    }, 120_000);
+
+    it(
+      "allows exactly one winner when two different campaigns are selected concurrently",
+      async () => {
+        if (!database || !firstClient || !secondClient) {
+          throw new Error("Disposable database clients are unavailable");
+        }
+
+        const candidates = [
+          { campaignId: campaignAId, quantity: 25 },
+          { campaignId: campaignBId, quantity: 40 },
+        ] as const;
+
+        const outcomes = await Promise.allSettled([
+          selectPromotionOffer(
+            shopId,
+            campaignAId,
+            selectionTime,
+            firstClient,
+          ),
+          selectPromotionOffer(
+            shopId,
+            campaignBId,
+            selectionTime,
+            secondClient,
+          ),
+        ]);
+
+        const fulfilledIndexes = outcomes
+          .map((outcome, index) => ({ outcome, index }))
+          .filter(({ outcome }) => outcome.status === "fulfilled")
+          .map(({ index }) => index);
+
+        expect(fulfilledIndexes).toHaveLength(1);
+
+        const winningIndex = fulfilledIndexes[0];
+        if (winningIndex !== 0 && winningIndex !== 1) {
+          throw new Error("Expected exactly one fulfilled promotion selection");
+        }
+
+        const losingIndex = winningIndex === 0 ? 1 : 0;
+        const winningCampaign = candidates[winningIndex];
+        const losingCampaign = candidates[losingIndex];
+        const losingOutcome = outcomes[losingIndex];
+
+        expect(losingOutcome.status).toBe("rejected");
+        if (losingOutcome.status !== "rejected") {
+          throw new Error("Expected the losing promotion selection to reject");
+        }
+        expect(losingOutcome.reason).toMatchObject({
+          code: "ACTIVE_PROMOTION_ALREADY_SELECTED",
+        });
+
+        expect(
+          await database.merchantPromotionSelection.count({
+            where: { shopId },
+          }),
+        ).toBe(1);
+        expect(
+          await database.promotionalCreditGrant.count({
+            where: { shopId },
+          }),
+        ).toBe(1);
+
+        const selection = await database.merchantPromotionSelection.findUnique({
+          where: { shopId },
+          include: { promotionalCreditGrant: true },
+        });
+
+        expect(selection).not.toBeNull();
+        expect(selection?.promotionalCreditGrant.campaignId).toBe(
+          winningCampaign.campaignId,
+        );
+        expect(selection?.promotionalCreditGrant.quantity).toBe(
+          winningCampaign.quantity,
+        );
+        expect(
+          await database.promotionalCreditGrant.count({
+            where: {
+              campaignId: losingCampaign.campaignId,
+              shopId,
+            },
+          }),
+        ).toBe(0);
+      },
+      30_000,
+    );
+
+    it(
+      "reuses one exact grant when the same campaign is selected concurrently",
+      async () => {
+        if (!database || !firstClient || !secondClient) {
+          throw new Error("Disposable database clients are unavailable");
+        }
+
+        const outcomes = await Promise.allSettled([
+          selectPromotionOffer(
+            shopId,
+            campaignAId,
+            selectionTime,
+            firstClient,
+          ),
+          selectPromotionOffer(
+            shopId,
+            campaignAId,
+            selectionTime,
+            secondClient,
+          ),
+        ]);
+
+        expect(outcomes.every((outcome) => outcome.status === "fulfilled")).toBe(
+          true,
+        );
+
+        const grants = await database.promotionalCreditGrant.findMany({
+          where: { campaignId: campaignAId, shopId },
+        });
+
+        expect(grants).toHaveLength(1);
+        expect(grants[0]).toMatchObject({
+          quantity: 25,
+          selectionCount: 2,
+        });
+
+        const selection = await database.merchantPromotionSelection.findUnique({
+          where: { shopId },
+        });
+
+        expect(selection).not.toBeNull();
+        expect(selection?.promotionalCreditGrantId).toBe(grants[0]?.id);
+      },
+      30_000,
+    );
+  },
+);
+```
+
+### Required lifecycle semantics of the exact Testcontainers implementation
+
+The code above establishes these non-negotiable behaviours:
+
+```text
+1. ordinary npm test with no MODA_DISPOSABLE_INTEGRATION=1:
+   - the Docker-backed suite remains skipped;
+   - no PostgreSQL container is started.
+
+2. focused integration run with MODA_DISPOSABLE_INTEGRATION=1:
+   - Testcontainers starts a fresh postgres:17.6-alpine container;
+   - no pre-existing database is required;
+   - no TEST_DATABASE_URL is read;
+   - the generated container URI becomes the test DATABASE_URL;
+   - prisma migrate deploy applies database/prisma/schema.prisma migrations;
+   - three independent Prisma clients connect to the same disposable database;
+   - common fixtures are created once;
+   - selection/grant state is reset before and after every scenario;
+   - each scenario performs real concurrent transactions through independent clients;
+   - all Prisma clients disconnect during teardown;
+   - the PostgreSQL container is stopped during teardown;
+   - setup failure also stops any container that was started.
+
+3. Docker/Testcontainers unavailable:
+   - the focused gated integration run MUST fail;
+   - do not convert Docker startup failure into a skip;
+   - record the exact failure in the Completion Report;
+   - STOP for architect review because the hard concurrency gate remains unsatisfied.
+```
+
+Do not use `.withReuse()` or a fixed container name. Every gated integration invocation
+must receive a clean disposable PostgreSQL instance owned by that invocation.
+
+### Scenario assertions that must remain exactly enforced
+
+Different-campaign concurrency:
+
+```text
+- call order remains:
+    outcomes[0] -> campaignAId -> quantity 25
+    outcomes[1] -> campaignBId -> quantity 40
+- exactly one call fulfills;
+- exactly one call rejects;
+- the rejecting error code is exactly ACTIVE_PROMOTION_ALREADY_SELECTED;
+- the fulfilled result index determines the winning campaign;
+- exactly one MerchantPromotionSelection exists;
+- exactly one PromotionalCreditGrant exists for the shop;
+- the selected grant campaignId equals the winning campaign;
+- the selected grant quantity equals the winning campaign quantity;
+- no grant exists for the losing campaign.
+```
+
+Same-campaign concurrency:
+
+```text
+- both calls fulfill;
+- exactly one campaignA grant exists;
+- grant quantity is exactly 25;
+- grant selectionCount is exactly 2;
+- exactly one MerchantPromotionSelection exists by virtue of the unique shop row;
+- MerchantPromotionSelection.promotionalCreditGrantId equals that one grant.id.
+```
+
+The second scenario must remain independently fixture-safe; it must not require the
+first scenario to run first.
+
+### Production code remains out of scope
+
+No change to the following is authorized in Attempt 4 unless the real Testcontainers
+PostgreSQL run exposes a genuine production defect:
+
+```text
+app/services/promotions/promotion.service.ts
+app/routes/app/promotions/route.tsx
+app/routes/app/route.jsx
+app/i18n/locales/*.json
+tests/unit/services/promotion.service.test.ts
+tests/unit/merchant-i18n.test.ts
+database/**
+Shared contracts/package versions
+Background/Admin/Messaging/Gateway repositories
+```
+
+If the real concurrency test exposes a production defect, **STOP**. Do not patch
+production code in Attempt 4. Record the exact PostgreSQL/Testcontainers outcome and
+return this same task to `moda_architect`.
+
+### Attempt-3 workflow/history evidence remains incomplete
+
+Attempt 4 must record actual observed values from the real Git worktrees. Do not copy
+`yes` values without running the corresponding Git checks.
+
+Record:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-021
+  parent branch: task/ARCH-010-SHOPIFY-021
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-021
+  implementation branch: task/ARCH-010-SHOPIFY-021
+  shared workspace checkout switched/mutated for task work: no|<actual>
+  shared implementation checkout switched/mutated for task work: no|<actual>
+  another task worktree reused: no|<actual>
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Database submodule:
+  database submodule initialized: yes
+  database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+  database submodule HEAD: <actual full SHA>
+  database gitlink staged/changed: no
+
+Task history:
+  Attempt-1 claim 5c544355ff8f4201e55139371abe5dc4ce2e6330
+    ancestor of parent HEAD: yes|no
+  Attempt-1 implementation a329079b004ae1b142aee92f417071fcedece70f
+    ancestor of implementation HEAD: yes|no
+  Attempt-1 report 7eeffc25b5c5317ca1bdd9c2ce7a9c22a763b0db
+    ancestor of parent HEAD: yes|no
+  Attempt-2 claim 4eb92ab802328f0e4e318e043341b67d61f96f1b
+    ancestor of parent HEAD: yes|no
+  Attempt-2 implementation 625b7ea30a1608db71671a5d2cf4efdf5cd6bd59
+    ancestor of implementation HEAD: yes|no
+  Attempt-2 report 7388dbe6ae6923f39f86326a064ef697319016a4
+    ancestor of parent HEAD: yes|no
+  Attempt-3 claim 32d303cdb1c05bf2e236aac96ac92ae61ff940f2
+    ancestor of parent HEAD: yes|no
+  Attempt-3 implementation 622605f02a871ee4f3f0d7197aa354aa307bbf8d
+    ancestor of implementation HEAD: yes|no
+  Attempt-3 report <full SHA resolved from developer-reported 8d75e88>
+    ancestor of parent HEAD: yes|no
+
+Handoff:
+  parent worktree clean: yes|no
+  implementation worktree clean: yes|no
+```
+
+Any `no` ancestry/isolation result is a workflow non-conformance: record it and STOP
+rather than rewriting Git history.
+
+### Attempt 4 allowed scope
+
+The only implementation-repository files authorized for normal Attempt-4 edits are:
+
+```text
+tests/integration/promotion-selection.concurrency.integration.test.ts
+package.json
+package-lock.json
+```
+
+The parent task file may be updated for claim/Completion Report evidence.
+
+Do not modify production code to make the test pass. If real PostgreSQL exposes a
+genuine production concurrency defect, STOP and return the exact evidence to the
+architect.
+
+### Required Attempt 4 validation
+
+Docker Engine / Docker Desktop must be running and accessible to the task process.
+No manually created PostgreSQL server or `TEST_DATABASE_URL` is required.
+
+Run exactly from `moda-interact/`:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive database
+
+npm run prisma:validate
+npm run prisma:generate
+
+MODA_DISPOSABLE_INTEGRATION=1 \
+  npx vitest run tests/integration/promotion-selection.concurrency.integration.test.ts
+
+npx vitest run \
+  tests/unit/services/promotion.service.test.ts \
+  tests/unit/merchant-i18n.test.ts \
+  tests/unit/routes/promotion-route.test.ts \
+  tests/unit/routes/explicit-route-config.test.ts
+
+npm test
+npm run build
+
+npx eslint \
+  tests/integration/promotion-selection.concurrency.integration.test.ts
+
+git diff --check
+```
+
+Do not claim success if the focused Testcontainers integration output contains skipped
+tests. Required focused result:
+
+```text
+promotion-selection.concurrency.integration.test.ts:
+  2 passed
+  0 skipped
+```
+
+For `npm test` without `MODA_DISPOSABLE_INTEGRATION=1`, the two Docker-backed tests may
+remain explicitly skipped. That ordinary-suite skip is expected and is not the hard
+acceptance evidence. The separate gated focused run above is the required evidence.
+
+Full repository typecheck/ESLint baselines do not need to be repaired in this
+Attempt-4 integration-test/dependency/evidence-only scope. If they are rerun, report
+existing unrelated baseline diagnostics factually and do not modify unrelated files.
+
+### Attempt 4 acceptance requires
+
+```text
+- @testcontainers/postgresql is present as exact devDependency 12.1.0;
+- package-lock.json records the corresponding dependency graph;
+- TEST_DATABASE_URL is absent from the concurrency integration test;
+- the test pins postgres:17.6-alpine;
+- the gated test creates its PostgreSQL instance through Testcontainers;
+- prisma migrate deploy succeeds against the generated container URI;
+- all three Prisma clients use that same generated container URI;
+- Attempt-2 production promotion logic remains unchanged from the reviewed Attempt-3 snapshot;
+- Attempt-3 localisation and unit-test evidence remains preserved;
+- scenario A derives the winner from the fulfilled call and proves the persisted selection/grant belongs to that campaign;
+- scenario A proves no losing-campaign grant survives;
+- scenario B is independently fixture-safe and does not depend on scenario A;
+- scenario B proves both calls fulfill;
+- scenario B leaves exactly one quantity=25 grant with selectionCount=2;
+- scenario B directly proves MerchantPromotionSelection points to that grant;
+- the gated Testcontainers integration run reports 2 passed / 0 skipped;
+- no P2034 or other unexpected database error escapes either successful scenario;
+- Prisma clients disconnect and the PostgreSQL container is stopped;
+- full suite/build/touched integration-test lint remain regression-free;
+- database gitlink remains unchanged;
+- complete worktree/synchronization/history evidence is recorded;
+- git diff --check passes.
+```
+
+When all requirements pass:
+
+```text
+set this same task to status: review;
+clear executor and claimed_at;
+keep attempt: 4;
+publish the implementation test/dependency/evidence commit;
+publish the parent Completion Report;
+STOP for moda_architect review.
+```
