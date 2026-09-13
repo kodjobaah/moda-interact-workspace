@@ -45,6 +45,10 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 ARCH-010-ADMIN-010
 ARCH-010-BACKGROUND-008
 ARCH-010-BACKGROUND-009
+<<<<<<< HEAD
+=======
+ARCH-010-SHOPIFY-018
+>>>>>>> main
 ```
 
 These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010.
@@ -250,6 +254,7 @@ If a clean-baseline symbol is missing, do not recreate a legacy alias locally. R
 
 
 
-`ARCH-010-BACKGROUND-019` is architect-accepted Complete at Attempt 6. Accepted implementation branch HEAD: `08c288f`; final parent publication evidence reconciled from the developer handoff: `7fd5e1e`. The accepted DATABASE-013 checkout remains validation-only and the Background database gitlink is unchanged. `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` are now Ready because all of their dependencies are Complete. `ARCH-010-BACKGROUND-007` remains Pending until BG8 and BG9 are Complete; ARCH-010 system tests remain terminal/manual-gated.
-
 `ARCH-010-SHOPIFY-018` is architect-accepted Complete at Attempt 3. Accepted task branch HEAD: `9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD reconciled from the developer handoff: `e13673a`. No enabled downstream Shopify task becomes Ready yet because each still has other incomplete dependencies.
+`ARCH-010-SHOPIFY-018` Attempt 2 is Changes Requested (narrow proof/workflow correction). Production `1605a3c` and test commit `dbfb9fc` remain the current candidates. Attempt 3 must add only the missing query-shape/parser/no-write assertions and exact VCS synchronization/report metadata unless a new test exposes a production defect. No downstream Shopify task is released until SHOPIFY-018 is architect-accepted Complete.
+
+`ARCH-010-BACKGROUND-019` is architect-accepted Complete at Attempt 6. Accepted implementation branch HEAD: `08c288f`; final parent publication evidence reconciled from the developer handoff: `7fd5e1e`. The accepted DATABASE-013 checkout remains validation-only and the Background database gitlink is unchanged. `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` are now Ready because all of their dependencies are Complete. `ARCH-010-BACKGROUND-007` remains Pending until BG8 and BG9 are Complete; ARCH-010 system tests remain terminal/manual-gated.
