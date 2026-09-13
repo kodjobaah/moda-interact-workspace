@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-13T21:56:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -276,7 +276,42 @@ STOP and report to `moda_architect` if observed Shopify behaviour makes the `UNE
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
+
+### Files Changed
+- `moda-interact-background/src/services/shopify-plan-change-transition.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-reconciliation.service.ts`
+- `moda-interact-background/tests/unit/services/shopify-plan-change-transition.service.test.ts`
+
+### Work Completed
+- Added one transaction-only Shopify plan-change transition service for effective mapped plan changes.
+- Wired queued and rotating reconciliation to distinguish still-pending, withdrawn, effective, unmapped, and unexpected same-cycle provider states.
+- Paid transitions close the old period with `PLAN_CHANGED`, release RESERVED/AMBIGUOUS included reservations, forfeit unused included capacity, and create/reuse one exact successor counter without resetting usage.
+- Free successor periods snapshot `FREE` with `includedRecoveryCreditsGranted = null` and create no monthly included counter; lifetime and purchased counters are untouched.
+- Added normal and optional pack-meter validation, exact-cycle validation, deterministic next reconciliation scheduling, and replay-safe successor checks.
+- Added focused tests for Paid-to-Paid close/forfeit/grant, Paid-to-Free snapshot/no-counter behavior, and replay-safe successor reuse.
+
+### Acceptance / Validation Evidence
+- Focused transition and reconciliation suites: passed, 3 files / 94 tests.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `git diff --check`: passed.
+- `npm run build`: blocked by 15 pre-existing generated-client errors in `src/services/purchased-recovery-reservation.service.ts` and `src/services/recovery-credit-purchase.service.ts`; no build errors remain in changed files.
+- Full unit suite was started; its captured terminal summary was unavailable after completion, so no pass/fail claim is made beyond the focused 94-test result.
+
+### Workflow Evidence
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-010`.
+- Parent branch: `task/ARCH-010-BACKGROUND-010`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-010`.
+- Implementation branch: `task/ARCH-010-BACKGROUND-010`.
+- Database submodule was supplied ready at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database files or gitlink were changed.
+- Implementation commit `0c24b1d` was pushed to `origin/task/ARCH-010-BACKGROUND-010`.
+- No merge to `main` or force-push was performed.
+
+### Unresolved Issues
+- Shopify immediate different-plan current state remains intentionally fail-closed as `UNEXPECTED_IMMEDIATE_PLAN_CHANGE`; normal production occurrence requires a separate architecture decision for mid-cycle entitlement segments.
 
 
 ## Final promotional preservation contract
