@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 78
 executor: null
 claimed_at: null
@@ -18,13 +18,18 @@ depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-SHARED-008
 - ARCH-010-SHOPIFY-012
-enables:
-- ARCH-010-SYSTEM-TEST-003
+enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
+superseded_by: ARCH-010-SHOPIFY-026
 ---
 
 # ARCH-010-SHOPIFY-017: Present unused purchased-credit refundability and support CTA
+
+> **Superseded by `ARCH-010-SHOPIFY-026`. Do not implement this task.**
+> The product no longer uses a support-message-only refund request. `ARCH-010-SHOPIFY-025` owns the merchant purchase-history/refund lifecycle server actions and `ARCH-010-SHOPIFY-026` owns the dedicated merchant UI. The original definition below is retained as design provenance only.
+
+## Original superseded definition
 
 ## Objective
 

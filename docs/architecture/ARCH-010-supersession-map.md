@@ -33,9 +33,9 @@ For current merchant billing/lifecycle behaviour use, in order:
 | Free plan has no BillingPeriod | A `$0` App Pricing plan may still have a provider BillingPeriod because it carries the top-up usage meter. That period never resets lifetime Free credits. |
 | Top-up should use `appPurchaseOneTimeCreate` | Under the current App Pricing design, use the dedicated **usage meter + App Event** and reconcile provider confirmation before activating credits. |
 | A successful App Event HTTP response means credits are confirmed | Submission is asynchronous. Credits become spendable only after provider reconciliation/confirmation. |
-| Purchased credits can be tracked only as one aggregate balance | ARCH-010 adds **FIFO purchase-lot accounting** so partial unused-credit refunds are provable. |
-| Refund only a complete pack | Refunds can cover an explicit unused quantity from a purchase lot, subject to reservations/previous refunds/holds. |
-| Use a negative App Event as the normal partial-refund mechanism | ARCH-010 uses human-verified Shopify provider refund/credit settlement plus exactly-once local finalisation. |
+| Purchased credits can be tracked only as one aggregate balance | ARCH-010 uses **independent FIFO `RecoveryCreditPurchase` lifecycle lots** so withdrawal/refund of one purchase never freezes another. |
+| Refund only a complete original pack or choose an arbitrary partial quantity | Merchant selects one or more ACTIVE purchases; each selected purchase is withdrawn and refunds **all credits that ultimately remain unused** after its pre-existing reservations settle. No quantity input exists. |
+| Use a negative App Event as the normal refund mechanism | ARCH-010 uses merchant self-service refund **request/reactivation**, followed by human-verified Shopify provider refund/credit settlement plus exactly-once local finalisation. |
 | `activeSubscription = null` proves cancellation | Not for an established merchant. Reconcile live Partner state with provider lifecycle/Historical Events; `FROZEN` is distinct from `CANCELED`. |
 | Cancellation and downgrade-to-Free are equivalent | They are distinct. Downgrade retains an executable Free contract; effective cancellation produces `NO_CONTRACT`. |
 | Moda should initiate App Pricing cancellation with `appSubscriptionCancel` | ARCH-010 observes/reconciles Shopify cancellation; it does not initiate cancellation through that mutation. |
@@ -87,7 +87,7 @@ The following intermediate development concepts are now removed rather than pres
 | campaign-less/direct `PromotionalCreditGrant` | Removed from first-production schema; `campaignId` is required. |
 | `MIGRATION_RECONCILED` | Removed. DATABASE-013 is generated from an empty database; development BillingPeriod normalization is not production migration history. |
 | local `SubscriptionCancellationRequest` state machine | Removed. Shopify lifecycle evidence + reconciliation is cancellation authority. |
-| `RecoveryCreditPurchaseStatus.REFUNDED` | Removed. Partial refund keeps purchase `ACTIVE` and records refunded quantity/history. |
+| Development-era purchase status model (`PENDING_BILLING / ACTIVE / NEEDS_ATTENTION / CANCELLED`) | Replaced before first production by `REQUESTED / ACTIVE / COMPLETED / WITHDRAWN / REFUNDED`; provider ambiguity stays in operational usage/refund evidence rather than a sixth purchase lifecycle state. |
 | negative/fractional App Event refund correction | Removed. Human Shopify Partner Dashboard `REFUND | CREDIT` settlement plus local exactly-once finalisation is canonical. |
 
 Completed DATABASE-001..011 and other completed task files remain accepted development history; these removals are implemented by DATABASE-013 and dependent runtime conformance work rather than reopening those completed task records.

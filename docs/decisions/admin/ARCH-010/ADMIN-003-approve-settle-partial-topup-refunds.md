@@ -1,7 +1,7 @@
 ---
 id: ARCH-010-ADMIN-003
 architecture_id: ARCH-010
-title: Approve, hold and settle partial top-up refunds through Shopify Partner Dashboard
+title: Lock and settle withdrawn recovery-credit purchases through Shopify Partner Dashboard
 task_kind: implementation
 domain: admin
 repository: moda-interact-admin
@@ -10,299 +10,299 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 80
+priority: 82
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-010-ADMIN-002
-- ARCH-010-BACKGROUND-014
+- ARCH-010-BACKGROUND-022
 - ARCH-010-SHARED-008
+- ARCH-010-DATABASE-014
+- ARCH-010-BACKGROUND-021
 enables:
 - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
-# ARCH-010-ADMIN-003: Approve, hold and settle partial top-up refunds through Shopify Partner Dashboard
+# ARCH-010-ADMIN-003: Lock and settle withdrawn recovery-credit purchases through Shopify Partner Dashboard
 
-## Objective
+## Product correction
 
-Provide the internal SUPER_ADMIN-only workflow that:
+The old arbitrary-partial approval/hold workflow is superseded.
 
-1. revalidates an exact requested unused-credit quantity;
-2. atomically holds those credits;
-3. instructs the human to perform the correct Shopify Partner Dashboard refund/credit action;
-4. records provider evidence;
-5. atomically removes the refunded credits from Moda exactly once.
+The merchant already placed the exact purchase into `WITHDRAWN` through SHOPIFY-025. That transition removed the purchase from future FIFO allocation and placed its currently unreserved credits into aggregate `refundingQuantity`.
 
-There is no Shopify refund API call in browser/server code in this task.
+ADMIN-003 does **not** choose or hold a partial quantity. It waits for all pre-existing reservations on that purchase to settle, then locks the purchase's **entire remaining `currentAmount`** as the final provider refund quantity.
+
+There is no Shopify refund API call in application code; the human uses Shopify Partner Dashboard/Support and records evidence.
 
 ## Authorization
 
 Only active `SUPER_ADMIN` may:
 
 ```text
-approve
-reject after request
-release an approved pre-provider hold
-confirm provider action
+lock provider action
+reject before provider action
+record provider action
 complete refund
+move/resolve NEEDS_ATTENTION according to existing Admin conventions
 ```
 
-Use existing platform-admin authorization and audit infrastructure.
+Use existing platform-admin authorization/audit infrastructure.
 
-## Approval transaction
+## Irreversible provider-action boundary
 
-Approval is one Serializable transaction.
-
-Re-read:
+Provider action may begin only when a fresh Serializable transaction proves:
 
 ```text
-RecoveryCreditRefund REQUESTED
-same-shop RecoveryCreditPurchase
-same-shop PURCHASED_RECOVERY_CREDITS aggregate counter
-purchase/refund version fields
+refund.status = REQUESTED
+purchase.status = WITHDRAWN
+purchase.currentAmount > 0
+purchase.reservedAmount = 0
+refund/purchase belong to same shop
+purchase immutable commercial provenance is complete
+the aggregate purchased counter exists and is internally consistent
 ```
+
+If `reservedAmount > 0`, return `WAITING_FOR_RESERVATIONS`; do not create provider instructions and do not guess final quantity.
+
+If `currentAmount = 0`, no money is refundable. Close according to the canonical no-credits terminal path and ensure purchase is `COMPLETED`; do not create a £0 provider action.
+
+## Final credit quantity
+
+At the winning provider-action transaction:
+
+```text
+finalCreditQuantity = purchase.currentAmount
+```
+
+The merchant/Admin never enters this value.
+
+Persist it in the canonical DATABASE-014 refund field (for example `finalCreditQuantity`) together with the deterministic expected provider amount/currency.
+
+Once refund moves:
+
+```text
+REQUESTED -> PROVIDER_ACTION_REQUIRED
+```
+
+merchant reactivation is forbidden.
+
+### Race with merchant reactivation
+
+SHOPIFY-025 and ADMIN-003 both CAS the exact refund `status + version`.
+
+If merchant reactivation wins first, Admin retry sees refund `CANCELLED`/purchase ACTIVE and must not begin provider action.
+
+If Admin provider-action lock wins first, merchant retry sees `PROVIDER_ACTION_REQUIRED` and cannot reactivate.
+
+Exactly one wins; no global lock.
+
+## Historical monetary value
+
+Refund money comes only from the exact purchase's immutable provider-confirmed original value.
+
+Let:
+
+```text
+G = purchase.creditsGranted
+R = finalCreditQuantity
+M = purchase.providerPurchaseAmount
+```
+
+Require valid purchase amount/currency/provenance and `0 < R <= G`.
+
+Compute the expected provider refund for `R/G` of the original purchase using the deterministic currency-safe precision/rounding rule established by DATABASE-014/provider representation.
+
+Persist:
+
+```text
+expectedProviderAmount
+expectedProviderCurrency = purchase.providerPurchaseCurrency
+```
+
+Never use:
+
+```text
+current BillingPlan price
+current Shopify plan/tier
+current top-up meter rate
+another purchase lot
+later BillingEconomicsSnapshot
+browser/Admin-entered amount as expected truth
+```
+
+Because a successful refund makes this purchase terminal REFUNDED, first production has at most one completed refund per purchase; no cumulative multi-partial-refund arithmetic is required.
+
+## Aggregate hold invariant at provider-action boundary
+
+When `reservedAmount = 0`, every remaining current credit on a WITHDRAWN purchase must already be represented in aggregate `refundingQuantity` through SHOPIFY-025/BACKGROUND-022.
+
+Require enough aggregate held quantity for the exact final credit quantity. If parity is inconsistent, do not start provider action; move/report integrity attention rather than repairing by subtraction from another lot.
+
+## Provider settlement instructions
+
+Display exact durable evidence:
+
+```text
+shop
+purchase/refund IDs
+original purchase date
+plan/provider subscription/BillingPeriod/meter snapshots
+creditsGranted
+finalCreditQuantity
+original providerPurchaseAmount/providerPurchaseCurrency
+expectedProviderAmount/expectedProviderCurrency
+```
+
+Human selects actual Shopify action:
+
+```text
+REFUND  -> paid charge/invoice can be refunded
+CREDIT  -> Shopify requires a credit/adjustment for unpaid charge
+```
+
+Do not offer negative/fractional App Events or current-cycle correction events for first-production purchase refunds.
+
+Warn that provider limitations may require Shopify Support/manual escalation. If provider settlement cannot be confirmed, retain purchase WITHDRAWN and aggregate hold.
+
+## Provider evidence
 
 Require:
 
 ```text
-creditsRequested > 0
-current lot refundableQuantity >= creditsRequested
-aggregate availablePurchasedRecoveryCredits >= creditsRequested
-no conflicting active hold for the same credits
-```
-
-ARCH-010 does not silently approve a smaller quantity.
-
-Set:
-
-```text
-creditsApproved = creditsRequested
-approvedByPlatformAdminId
-approvedAt
-reason (bounded, required)
-```
-
-Atomically hold exact quantity in **both** places:
-
-```text
-purchase.refundingQuantity += creditsApproved
-aggregate.refundingQuantity += creditsApproved
-```
-
-Use purchase + aggregate version/CAS semantics and retry only repository-approved transient serialization conflicts.
-
-After successful hold transition refund to:
-
-```text
-PROVIDER_ACTION_REQUIRED
-```
-
-No Background lag is allowed between approval and hold.
-
-## Provider settlement decision
-
-Display the durable local purchase/refund snapshots and a prominent instruction:
-
-```text
-Do not calculate the provider money from Moda BillingPlan/current plan price.
-Open Shopify Partner Dashboard for this shop's actual app charge/invoice.
-```
-
-Human chooses provider action based on Shopify:
-
-```text
-REFUND
-  use when Shopify charge/invoice has been paid and Partner Dashboard offers partial/full refund
-
-CREDIT
-  use when charge has not been paid and Shopify requires a credit/adjustment rather than cash refund
-```
-
-Do not offer `CURRENT_CYCLE_APP_EVENT_CORRECTION` for new ARCH-010 partial refunds.
-
-Do not create negative/fractional App Events.
-
-## Provider limitations
-
-The UI must explicitly warn:
-
-- Shopify refunds can only be issued for paid charges;
-- unpaid charges should be credited/adjusted instead;
-- Partner Dashboard/provider limitations can prevent ordinary refund action (including age/amount/payment-method limitations);
-- if the provider action cannot be completed, Moda must not mark the refund complete.
-
-If provider settlement needs Shopify Support/manual escalation, move/request may remain `PROVIDER_ACTION_REQUIRED` or be changed to `NEEDS_ATTENTION` according to the existing status semantics, **keeping the hold**.
-
-Never release held credits merely because provider settlement is inconvenient/slow after the operator has started/confirmed a provider action.
-
-## Provider confirmation fields
-
-Confirmation form requires:
-
-```text
-refundId
 providerActionKind = REFUND | CREDIT
-providerReference (1..512 or repository canonical bound)
-providerAmount (positive decimal string/Decimal from Shopify evidence)
-providerCurrency (provider currency code)
-explicit confirmation checkbox
+providerReference bounded string
+providerAmount
+providerCurrency
+explicit confirmation
 ```
 
-`providerAmount/providerCurrency` are audit evidence copied from Shopify. They are not calculated from local current pricing.
+Before local completion require exact match:
+
+```text
+providerAmount == expectedProviderAmount
+providerCurrency == expectedProviderCurrency
+```
+
+If provider evidence differs or action may be ambiguous:
+
+```text
+refund -> NEEDS_ATTENTION (or retain equivalent accepted attention state)
+purchase stays WITHDRAWN
+aggregate hold stays in place
+merchant cannot reactivate because provider action may have started
+```
+
+Do not silently change expected amount to what the operator typed.
 
 ## Completion transaction
 
-After human provider action, confirmation + local finalization must be one Serializable transaction.
-
-Re-read exact refund/purchase/aggregate versions and require:
+After confirmed provider action, one Serializable/CAS transaction re-reads exact refund/purchase/aggregate state and requires:
 
 ```text
-status = PROVIDER_ACTION_REQUIRED or retry-safe equivalent
-hold exists
-creditsApproved exact
-purchase.refundingQuantity >= creditsApproved
-aggregate.refundingQuantity >= creditsApproved
-aggregate.grantedQuantity >= creditsApproved
+refund.status = PROVIDER_ACTION_REQUIRED (or retry-safe attention resolution path)
+purchase.status = WITHDRAWN
+purchase.reservedAmount = 0
+purchase.currentAmount = refund.finalCreditQuantity
+aggregate.refundingQuantity >= finalCreditQuantity
+aggregate.grantedQuantity >= finalCreditQuantity
+provider evidence exactly matches expected amount/currency
 ```
 
 Then atomically:
 
 ```text
-purchase.refundingQuantity -= creditsApproved
-purchase.refundedQuantity  += creditsApproved
+purchase.currentAmount = 0
+purchase.reservedAmount = 0
+purchase.status = REFUNDED
 purchase.version += 1
 
-aggregate.refundingQuantity -= creditsApproved
-aggregate.grantedQuantity   -= creditsApproved
+aggregate.refundingQuantity -= finalCreditQuantity
+aggregate.grantedQuantity   -= finalCreditQuantity
 aggregate.version += 1
 
-refund.creditsRefunded = creditsApproved
-refund.providerActionKind = selected action
-refund.providerReference = provider reference
-refund.providerAmount/providerCurrency = provider evidence
-refund.providerConfirmedAt = now
-refund.providerConfirmedByPlatformAdminId = actor
-refund.completedAt = now
 refund.status = COMPLETED
+refund provider evidence fields = confirmed evidence
+refund.completedAt = now
 refund.version += 1
 ```
 
-Do not decrement purchase/aggregate committed or reserved quantities.
+Do not increment a per-purchase `refundedQuantity`; first production has no such lot counter.
 
-Do not set new ARCH-010 partial purchase status to REFUNDED; keep original provider-confirmation status and use `refundedQuantity/refunds[]` as refund history.
+Do not modify aggregate committed/reserved quantities during provider completion because `reservedAmount=0` was already required and consumed credits remain committed history.
 
-Write existing `RECOVERY_CREDIT_REFUND` audit evidence in the same Admin action according to audit conventions.
+Write existing `RECOVERY_CREDIT_REFUND` audit evidence and create exactly one merchant `BILLING_REFUND_COMPLETED` message using refund ID identity.
 
-Create merchant message exactly once:
+## Reject before provider action
 
-```text
-BILLING_REFUND_COMPLETED
-```
+A SUPER_ADMIN may reject only while exact refund is still `REQUESTED` and no provider action may have occurred.
 
-Shopify does not automatically notify merchants of Partner Dashboard refund completion, so this message is required.
+This is concurrency-equivalent to merchant reactivation and must use fresh CAS.
 
-## Rejection/withdrawal before provider action
-
-### REQUESTED with no hold
-
-SUPER_ADMIN may reject directly; no counter mutation.
-
-Send exactly one:
+If purchase still has `currentAmount > 0`, atomically:
 
 ```text
-BILLING_REFUND_REJECTED
+heldAvailable = currentAmount - reservedAmount
+aggregate.refundingQuantity -= heldAvailable
+purchase WITHDRAWN -> ACTIVE
+refund REQUESTED -> REJECTED
 ```
 
-### Held / PROVIDER_ACTION_REQUIRED before provider action
+Do not change purchase current/reserved quantities.
 
-If the merchant withdraws or Admin rejects **before any provider action was performed**, release hold atomically from both purchase + aggregate and transition terminal according to existing status enum.
+If currentAmount has reached 0, make/retain purchase COMPLETED and reject/close refund with no provider money movement.
 
-Require a bounded reason and audit.
+Create exactly one `BILLING_REFUND_REJECTED` merchant message with bounded reason.
 
-### Provider action ambiguity
+Never reject/release hold after provider action may have started. Use NEEDS_ATTENTION instead.
 
-If provider action may already have happened, do not release hold. Set/retain `NEEDS_ATTENTION` and require human reconciliation.
+## Multiple purchases
 
-## Multiple partial refunds
-
-Support sequential refunds for the same purchase.
-
-Example:
+Different purchase lots are independent. Admin may simultaneously have:
 
 ```text
-creditsGranted = 100
-committed = 30
-completed refund A = 20
-completed refund B = 10
-refundable now = 40
+Purchase A refund waiting for reservations
+Purchase B ready for provider action
+Purchase C provider action required
+Purchase D completed/refunded
 ```
 
-A new request is allowed only for current refundable quantity.
+No shop-wide refund lock is allowed. Every mutation scopes to exact purchase/refund plus the shared aggregate counter under versioned CAS.
 
-Concurrency between two approvals for one purchase must never hold more than the remaining lot capacity.
-
-## Subscription independence
-
-Do not require an active Shopify subscription for historical refund approval. The shop may currently be Free, Paid or onboarded NO_CONTRACT.
-
-Do require exact shop/purchase ownership and provider evidence.
-
-Uninstall does not itself approve or reject a refund.
-
-## Provider reconciliation guard
-
-Because Partner Dashboard refund/credit does not reduce original top-up App Pricing meter units, finalization must not mutate the original purchase UsageEvent or create a correction UsageEvent.
-
-After completion, normal top-up reconciliation must not re-grant refunded credits. This is covered by BACKGROUND-014.
-
-## Tests
+## Required tests
 
 At minimum prove:
 
-1. only SUPER_ADMIN mutates;
-2. exact requested quantity revalidated on approval;
-3. lower current refundable amount causes approval failure, not silent reduction;
-4. approval holds lot + aggregate atomically;
-5. concurrent recovery reservation vs approval cannot overspend;
-6. concurrent two-refund approvals cannot over-hold lot;
-7. held amount immediately unavailable to recovery;
-8. REFUND/CREDIT are only new provider actions;
-9. no negative/fractional App Event created;
-10. no Shopify API network call from Admin;
-11. provider amount/currency/reference required on confirmation;
-12. completion decrements only aggregate granted/refunding and lot refunding, increments lot refunded;
-13. committed/reserved untouched;
-14. completion replay does not double-decrement;
-15. purchase remains provider-confirmed ACTIVE for new partial refund;
-16. second partial refund on same purchase allowed when capacity remains;
-17. request rejection before hold sends one rejection message;
-18. safe pre-provider hold release restores spendability exactly once;
-19. provider ambiguity never releases hold;
-20. Free lifetime counter untouched;
-21. refund works when current Subscription is NO_CONTRACT;
-22. merchant completion message exactly once;
-23. audit and i18n complete.
-
-Run actual Admin focused/full tests, typecheck, lint, build, Prisma validation and `git diff --check` according to repository scripts.
-
-## Stop conditions
-
-STOP and return to `moda_architect` if:
-
-- provider settlement would require a locally guessed money amount;
-- Shopify Partner Dashboard cannot identify a refundable/creditable charge for the merchant and manual Shopify Support handling is not clear;
-- integrated schema still enforces one refund per purchase after DATABASE-007;
-- BACKGROUND-014 lot accounting is not available;
-- completing the refund would require altering committed/reserved/lifetime Free quantities.
-
-Do not bypass provider evidence to make the workflow complete.
+1. only SUPER_ADMIN can mutate settlement;
+2. reservedAmount>0 blocks provider-action lock;
+3. currentAmount=0 cannot create £0 refund;
+4. final credit quantity is always exact currentAmount, never operator input;
+5. historical purchase amount/currency is sole expected-money authority;
+6. current plan/top-up rate changes do not affect expected refund;
+7. REQUESTED -> PROVIDER_ACTION_REQUIRED freezes final quantity/amount;
+8. merchant-reactivation vs Admin-lock race has exactly one winner;
+9. provider-action-required/needs-attention blocks merchant reactivation contractually;
+10. aggregate held parity is required;
+11. provider amount/currency mismatch cannot complete;
+12. successful completion sets purchase REFUNDED/current=0 and removes exact aggregate grant+hold;
+13. no per-lot refundedQuantity is written;
+14. replay does not double-remove credits or duplicate messages/audit;
+15. pre-provider Admin reject reactivates exact purchase and releases only its current unreserved hold;
+16. rejection while provider action may have happened never releases hold;
+17. other purchase lots remain untouched;
+18. no negative App Event/automatic refund API is introduced;
+19. focused tests, concurrency tests where applicable, repository build/full suite and `git diff --check` pass.
 
 ## Non-goals
 
-Do not automate Shopify provider refunds/credits, emit negative App Events as the normal refund mechanism, refund subscription fees, refund promotional/lifetime-Free credits, create merchant Admin access, or change recovery source priority.
+Do not create merchant refund requests, implement merchant UI, change FIFO reservation logic, or refund Shopify recurring subscription fees.
+
+## Stop conditions
+
+STOP if a provider refund cannot be tied to exact immutable purchase value, if aggregate hold parity is ambiguous, if exact money cannot be represented safely, or if a completed task must be rewritten.
 
 ## Completion Report
 

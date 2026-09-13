@@ -20,12 +20,15 @@ depends_on:
 - ARCH-010-BACKGROUND-009
 - ARCH-010-BACKGROUND-010
 - ARCH-010-BACKGROUND-019
+- ARCH-010-DATABASE-014
+- ARCH-010-BACKGROUND-021
+- ARCH-010-BACKGROUND-022
 - ARCH-010-SHOPIFY-012
 - ARCH-010-SHOPIFY-020
 enables:
 - ARCH-010-SYSTEM-TEST-004
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-SYSTEM-TEST-001: Validate core subscription, capacity, top-up and billing-period lifecycle
@@ -127,10 +130,11 @@ For both a mapped Free subscription and mapped Paid subscription:
 2. request one merchant-semantic top-up;
 3. prove the App Event is reported through the Shopify App Pricing meter path, not a Billing API one-time purchase;
 4. prove HTTP/provider submission alone does not activate local credits;
-5. reconcile provider meter quantity;
-6. activate exactly one local purchase lot;
-7. prove replay does not double-grant;
-8. prove purchased balance survives plan/cycle transitions.
+5. reconcile exact provider meter quantity **and cost/currency** against the purchase-time before snapshot;
+6. prove purchase remains REQUESTED/non-spendable until exact monetary valuation succeeds;
+7. activate exactly one local purchase lot with immutable commercial provenance and `currentAmount=creditsGranted`;
+8. prove replay does not double-grant or overwrite purchase amount/currency;
+9. prove purchased balance survives plan/cycle transitions and historical purchase value remains unchanged.
 
 ### E. Same-plan provider billing-cycle rollover
 
@@ -183,7 +187,7 @@ Live-provider/manual steps may supplement automated checks but may not replace d
 
 ## Non-goals
 
-Do not validate uninstall/reinstall/freeze/cancellation here; SYSTEM-TEST-002 owns those. Do not validate partial refunds or campaign-grant Admin workflows here; SYSTEM-TEST-003 owns those.
+Do not validate uninstall/reinstall/freeze/cancellation here; SYSTEM-TEST-002 owns those. Do not validate merchant refund request/reactivation/provider settlement or campaign-grant Admin workflows here; SYSTEM-TEST-003 owns those.
 
 Do not change production implementation to make the test pass. Implementation defects return to `moda_architect` as Changes Requested against the owning task.
 

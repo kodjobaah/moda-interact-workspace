@@ -109,34 +109,50 @@ BILLING_FREE_ALLOWANCE_EXHAUSTED historical-row compatibility
 
 `BillingPeriodCloseReason` contains real product lifecycle reasons only. `MIGRATION_RECONCILED` is development-migration history and is absent from the baseline.
 
-### Purchased recovery credits and partial refunds
+### Purchased recovery credits and whole-remaining refunds
 
-Purchased-credit lot accounting remains first-release behaviour.
-
-A new ARCH-010 partial refund:
+Each `RecoveryCreditPurchase` is an independent first-production lifecycle object with exactly:
 
 ```text
-RecoveryCreditPurchase remains ACTIVE
-purchase.refundedQuantity records removed quantity
-RecoveryCreditRefund records request/approval/provider evidence/completion
-human Shopify Partner Dashboard REFUND or CREDIT
-no negative/fractional App Event correction
+REQUESTED
+ACTIVE
+COMPLETED
+WITHDRAWN
+REFUNDED
 ```
 
-First production has no legacy `RecoveryCreditPurchaseStatus.REFUNDED` compatibility state and no automatic negative-App-Event refund processor.
+Canonical balance state is:
 
-`RecoveryCreditRefund` does not need the old automatic-settlement state/fields. The canonical human workflow uses:
+```text
+creditsGranted   immutable original pack quantity
+currentAmount    credits not yet successfully consumed/refunded
+reservedAmount   subset of currentAmount owned by in-flight conversations
+availableAmount  derived only = currentAmount - reservedAmount
+version          CAS/optimistic-concurrency version
+```
+
+`availableAmount` is never persisted. Per-purchase `refundingQuantity/refundedQuantity` are not part of the final first-production model. The shop aggregate purchased counter retains `refundingQuantity` as the hot-path hold for unreserved credits belonging to WITHDRAWN purchases.
+
+A merchant may request refund only from ACTIVE and only when a fresh Serializable/versioned-CAS read proves `availableAmount > 0`. The action transitions that purchase to WITHDRAWN, blocks new reservations from that lot, and leaves pre-existing reservations able to commit/release.
+
+Provider settlement may begin only after `reservedAmount = 0`; final refund quantity is then exactly `currentAmount`. Before provider action begins, merchant reactivation returns the purchase to ACTIVE and its original FIFO position. Successful provider settlement sets the purchase REFUNDED/currentAmount=0. If all remaining reservations consume the purchase first, it becomes COMPLETED and no provider refund occurs.
+
+Every provider-confirmed purchase also stores immutable purchase-time BillingPeriod/provider-subscription/plan/meter/amount/currency provenance. Current/later pricing is never refund authority.
+
+`RecoveryCreditRefund` keeps request/provider workflow history:
 
 ```text
 REQUESTED
 PROVIDER_ACTION_REQUIRED
 COMPLETED
 REJECTED
-WITHDRAWN
+CANCELLED
 NEEDS_ATTENTION
 ```
 
-Provider evidence remains durable through the explicit REFUND/CREDIT action, provider reference, amount, currency, confirming admin and confirmation time.
+Here refund `CANCELLED` is a terminal cancelled request; purchase `WITHDRAWN` means the purchase itself is removed from new allocation pending refund.
+
+First production has no automatic negative-App-Event refund processor and no arbitrary merchant/Admin-selected partial-credit quantity.
 
 ### Subscription cancellation
 

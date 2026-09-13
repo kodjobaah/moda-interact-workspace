@@ -239,7 +239,7 @@ Do not publish before the transaction commits. Queue failure must not roll back 
 
 ### Other restoration paths
 
-A lifetime-Free adjustment, promotional grant or other capacity restoration does not need to enqueue directly. The repair scan below is the durable recovery mechanism.
+A lifetime-Free adjustment, promotional grant, merchant reactivation of a WITHDRAWN purchased-credit lot, or other capacity restoration does not need to enqueue directly. The repair scan below is the durable recovery mechanism. Do not couple the Shopify merchant app to this Background-internal queue solely for refund reactivation.
 
 ## 7. Startup and periodic repair after Redis loss
 

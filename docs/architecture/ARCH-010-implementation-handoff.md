@@ -27,14 +27,14 @@ There is no production billing state requiring compatibility with intermediate d
 
 ## Current audited task state
 
-The current coordinated ARCH-010 state after SHOPIFY-018 Attempt 3 acceptance is:
+The current coordinated ARCH-010 state after BACKGROUND-019 Attempt 6 and SHOPIFY-018 Attempt 3 acceptance, plus purchase-lifecycle/refund-management reconciliation, is:
 
 ```text
-all ARCH-010 task files: 81
+all ARCH-010 task files: 86
 complete:                 38
-ready:                     3
-pending:                  33
-superseded:                7
+ready:                     4
+pending:                  36
+superseded:                8
 ```
 
 There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
@@ -45,10 +45,7 @@ There is no active `in_progress` or `review` ARCH-010 task in this snapshot.
 ARCH-010-ADMIN-010
 ARCH-010-BACKGROUND-008
 ARCH-010-BACKGROUND-009
-<<<<<<< HEAD
-=======
-ARCH-010-SHOPIFY-018
->>>>>>> main
+ARCH-010-DATABASE-014
 ```
 
 These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010.
@@ -78,8 +75,6 @@ For Background, `BACKGROUND-011` is now Complete at accepted Attempt 4 and owns 
 For Shopify, `SHOPIFY-023` is architect-accepted Complete at Attempt 1 (`01f0605`) after developer-run validation against the materialized DATABASE-013 submodule. `SHOPIFY-018` is architect-accepted Complete at Attempt 3 (`9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD `e13673a`). Its enabled downstream tasks remain gated by other incomplete dependencies. SHOPIFY-003 and SHOPIFY-009 also remain gated by their other incomplete dependencies.
 
 `BACKGROUND-015` is architect-accepted Complete at Attempt 4 (`29c791c`). The Partner reconciliation snapshot now uses one request for live subscription plus the latest validated lifecycle event. `BACKGROUND-012` remains Pending because BACKGROUND-007, BACKGROUND-009 and BACKGROUND-010 are still incomplete.
-
-`BACKGROUND-019` Attempt 4 is Ready with an explicit upstream dependency-release step: the `moda-interact-background/database` gitlink must advance to the architect-accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736`. This is a consumer gitlink release only; database source must remain unchanged. Shared `0.11.0` is already consumed and BACKGROUND-002/011/014 are same-repository accepted prerequisites, so they require no additional release action.
 
 ## Luna-oriented task consolidation
 
@@ -255,6 +250,29 @@ If a clean-baseline symbol is missing, do not recreate a legacy alias locally. R
 
 
 `ARCH-010-SHOPIFY-018` is architect-accepted Complete at Attempt 3. Accepted task branch HEAD: `9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD reconciled from the developer handoff: `e13673a`. No enabled downstream Shopify task becomes Ready yet because each still has other incomplete dependencies.
-`ARCH-010-SHOPIFY-018` Attempt 2 is Changes Requested (narrow proof/workflow correction). Production `1605a3c` and test commit `dbfb9fc` remain the current candidates. Attempt 3 must add only the missing query-shape/parser/no-write assertions and exact VCS synchronization/report metadata unless a new test exposes a production defect. No downstream Shopify task is released until SHOPIFY-018 is architect-accepted Complete.
-
 `ARCH-010-BACKGROUND-019` is architect-accepted Complete at Attempt 6. Accepted implementation branch HEAD: `08c288f`; final parent publication evidence reconciled from the developer handoff: `7fd5e1e`. The accepted DATABASE-013 checkout remains validation-only and the Background database gitlink is unchanged. `ARCH-010-BACKGROUND-008` and `ARCH-010-BACKGROUND-009` are now Ready because all of their dependencies are Complete. `ARCH-010-BACKGROUND-007` remains Pending until BG8 and BG9 are Complete; ARCH-010 system tests remain terminal/manual-gated.
+
+## Recovery-credit purchase lifecycle/refund correction — 2026-09-13
+
+Current first-production rule:
+
+```text
+RecoveryCreditPurchase.status = REQUESTED | ACTIVE | COMPLETED | WITHDRAWN | REFUNDED
+ACTIVE availableAmount = currentAmount - reservedAmount
+```
+
+Each purchase is independent. Merchant refund request uses versioned CAS to transition only an eligible ACTIVE purchase to WITHDRAWN; no quantity is supplied by the browser. Existing reservations continue to settle, and provider action waits for `reservedAmount=0`. Merchant reactivation is allowed only while the exact refund remains pre-provider-action.
+
+Forward tasks:
+
+```text
+DATABASE-014   canonical purchase lifecycle/balances + immutable commercial provenance
+BACKGROUND-021 provider-confirmed purchase valuation and REQUESTED -> ACTIVE
+BACKGROUND-022 final purchased-lot reservation/refund concurrency; must preserve accepted BACKGROUND-019 promo-first routing
+SHOPIFY-025    purchase history + per-purchase/batch refund/reactivation server actions
+SHOPIFY-026    dedicated purchase/refund-management UI
+ADMIN-002/003  human triage + provider settlement against exact purchase evidence
+SYSTEM-TEST-003 terminal integrated refund/multi-purchase validation
+```
+
+`SHOPIFY-017` is superseded. DATABASE-007, BACKGROUND-014, BACKGROUND-019 and SHOPIFY-018 remain immutable accepted history and are not edited by this correction.

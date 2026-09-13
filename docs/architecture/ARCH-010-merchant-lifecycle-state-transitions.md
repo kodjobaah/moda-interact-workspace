@@ -1673,7 +1673,7 @@ This rollover iteration does not itself implement:
 - paid -> Free or paid -> different Paid effective transitions (owned by BACKGROUND-010 / Shopify plan-change tasks);
 - verified cancellation/no-contract outcome (owned by BACKGROUND-012/013 and SHOPIFY-016);
 - merchant-facing plan-management UX (owned by SHOPIFY-011/012/015);
-- partial purchased-credit refunds (owned by DATABASE-007/BACKGROUND-014/ADMIN-002/003/SHOPIFY-017);
+- purchased-credit withdrawal/refund management (owned by DATABASE-014/BACKGROUND-021/BACKGROUND-022/SHOPIFY-025/SHOPIFY-026/ADMIN-002/003);
 - promotional credits (owned by DATABASE-009/BACKGROUND-019/ADMIN-004/005/SHOPIFY-020);
 - promotional-credit expiration/revocation or deterministic shop re-identification redesign (explicit future scope outside ARCH-010).
 
@@ -2100,7 +2100,7 @@ READY
 Moda verifies current Shopify contract, exact pack meter and billing cycle
       ↓
 transaction creates:
-  RecoveryCreditPurchase(PENDING_BILLING)
+  RecoveryCreditPurchase(REQUESTED)
   UsageEvent(RECOVERY_CREDIT_PACK_PURCHASE +1, PENDING)
       ↓
 merchant sees "being confirmed by Shopify"
@@ -2119,12 +2119,12 @@ Background Partner reconciliation checks provider pack-meter usage
       │
       ├── publisher definitive failure
       │       ↓
-      │   purchase/usage NEEDS_ATTENTION
+      │   purchase remains REQUESTED / usage-reporting evidence NEEDS_ATTENTION
       │   grant 0
       │
       └── provider not yet confirmed
               ↓
-          remain PENDING_BILLING
+          remain REQUESTED
           grant 0
 ```
 
@@ -2137,7 +2137,7 @@ A `202 Accepted` App Events response is never sufficient to activate credits bec
 - current purchased credits available;
 - local `creditsPerPack` (what one provider meter unit grants inside Moda);
 - current provider pack-meter commercial/pricing representation when safely available;
-- pending/active/attention state of the latest durable request;
+- REQUESTED/ACTIVE/historical state of the latest durable purchase plus bounded linked provider-reporting attention state;
 - one Buy CTA only when current provider/local eligibility is safe.
 
 It never fabricates local £/$ pricing.
@@ -2515,253 +2515,401 @@ No new Database, Shared, Gateway, Messaging or Admin task is required for Iterat
 - local cancellation mutation/approval;
 - merchant access to `moda-interact-admin`.
 
-## Iteration 10 — Partial refund of unused purchased top-up credits
+## Iteration 10 — RecoveryCreditPurchase lifecycle and whole-remaining refund management
 
-### Scope
+This iteration replaces the development-era arbitrary partial-credit refund design before first production.
 
-Iteration 10 covers only Moda's purchased recovery-credit top-ups.
-
-It does **not** refund Shopify recurring subscription fees. Shopify remains authority for recurring subscription cancellation/refund handling.
-
-The one-time shop-lifetime Free recovery grant is never refundable.
-
-### Product rule
-
-A provider-confirmed top-up purchase creates a durable purchased-credit lot.
-
-For one historical top-up:
+The product object is the exact `RecoveryCreditPurchase`. A shop may own many purchases simultaneously and each purchase advances independently through exactly:
 
 ```text
-creditsGranted = 100
-committed       = 30
-reserved        = 0
-refunding       = 0
-refunded        = 0
-
-refundable now = 70
+REQUESTED
+ACTIVE
+COMPLETED
+WITHDRAWN
+REFUNDED
 ```
 
-A merchant may request any positive whole-credit quantity up to the currently unused portion of one purchase lot.
-
-Multiple partial refunds of the same purchase are allowed as long as unused refundable credits remain.
-
-The canonical per-purchase refundable quantity is:
+Normal lifecycle:
 
 ```text
-refundable = max(
-  creditsGranted
-  - committedQuantity
-  - reservedQuantity
-  - refundingQuantity
-  - refundedQuantity,
-  0
-)
+REQUESTED
+   |
+   | provider quantity + cost + currency + exact purchase provenance confirmed
+   v
+ACTIVE
+   |\
+   | \ all credits successfully consumed
+   |  -------------------------------> COMPLETED
+   |
+   | merchant requests refund and fresh availableAmount > 0
+   v
+WITHDRAWN
+   |\
+   | \ merchant changes mind before provider action
+   |  -----------------------------------------------> ACTIVE
+   |
+   | existing reservations continue settling
+   |
+   | currentAmount reaches 0
+   |-----------------------------------------------> COMPLETED
+   |
+   | reservedAmount reaches 0 while currentAmount > 0
+   | human/provider settlement succeeds
+   v
+REFUNDED
 ```
 
-`AMBIGUOUS` purchased reservations remain unavailable and therefore count with reserved quantity until explicitly resolved.
-
-### Purchased-credit lot consumption
-
-Purchased credits remain higher priority than lifetime Free credits.
-
-Within the purchased bucket, recovery reservations consume the oldest provider-confirmed purchase lot first:
+### Canonical per-purchase credit state
 
 ```text
-activatedAt ASC
-createdAt   ASC
-id          ASC
+creditsGranted   = immutable original provider-confirmed pack quantity
+currentAmount    = credits not yet successfully consumed/refunded
+reservedAmount   = subset of currentAmount currently owned by in-flight conversations
+availableAmount  = currentAmount - reservedAmount   // derived, never persisted
+version          = CAS/optimistic-concurrency version
 ```
 
-This FIFO rule is durable policy, not a query convenience. It is required so Moda can determine which historical purchase still owns unused refundable credits.
+The final first-production purchase model has no per-purchase `refundingQuantity` or `refundedQuantity`.
 
-A recovery reservation must be associated with the exact purchase lot that funded it. Commit/release/ambiguous transitions must update both:
+The shop aggregate `ShopEntitlementCounter(PURCHASED_RECOVERY_CREDITS).refundingQuantity` remains the hot-path hold for unreserved credits belonging to WITHDRAWN purchases.
+
+### REQUESTED -> ACTIVE
+
+A top-up request starts as `REQUESTED`, with zero spendable current amount. SHOPIFY-014 snapshots the exact provider subscription, BillingPeriod, plan/meter and provider usage quantity/cost/currency before the App Event.
+
+BACKGROUND-021 may transition to ACTIVE only after exact provider after-state proves the purchase's quantity and monetary cost. Activation freezes immutable purchase amount/currency and sets:
 
 ```text
-ShopEntitlementCounter(PURCHASED_RECOVERY_CREDITS)
-AND
-RecoveryCreditPurchase lot quantities
+currentAmount = creditsGranted
+reservedAmount = 0
 ```
 
-inside one Serializable transaction.
+Provider ambiguity remains operationally represented by the linked usage/reporting evidence; it does not create a sixth purchase lifecycle status.
 
-### Refund request surface
+### ACTIVE reservation semantics
 
-Refunds are not self-service money movement.
+Only ACTIVE purchases may receive new purchased-credit reservations.
 
-`/app/billing/options` may explain that unused purchased top-up credits can be requested for refund and provide a CTA to `/app/merchant-support`.
-
-The merchant does not choose a Shopify charge ID, provider refund amount, refund/credit provider action or settlement mechanism.
-
-A human Admin maps the support request to one purchase lot and one requested whole-credit quantity.
-
-### Request and approval
-
-Admin triage creates one `RecoveryCreditRefund` for one purchase lot.
-
-The request does not hold capacity. A merchant may continue using purchased credits before a SUPER_ADMIN approves the request.
-
-Approval therefore re-reads the exact lot and aggregate counter in a Serializable transaction and requires the exact requested quantity still to be refundable.
-
-ARCH-010 does **not** silently approve a lower quantity. If the requested quantity is no longer refundable, approval fails and the merchant must agree/request a new quantity.
-
-Successful approval atomically holds the exact quantity:
+Canonical FIFO order remains original purchase order:
 
 ```text
-purchase.refundingQuantity += approvedQuantity
-aggregate.refundingQuantity += approvedQuantity
+activatedAt ASC NULLS LAST
+createdAt ASC
+id ASC
 ```
 
-Held credits are immediately unavailable to recovery admission.
+A reactivated purchase returns to that original FIFO position; reactivation is not a new purchase.
 
-### Shopify provider settlement
-
-ARCH-010 partial refunds use a human Shopify Partner Dashboard settlement path.
-
-Do not create a new negative/fractional App Event for an ARCH-010 partial refund.
-
-Reasons:
-
-1. Shopify App Events are aggregate meter adjustments, not a per-purchase refund primitive.
-2. Shopify does not expose an event-level billing result that can be deterministically correlated to Moda's App Event idempotency key after asynchronous billing validation.
-3. Partial negative usage can change aggregate meter quantity/pricing semantics and would complicate the existing provider-confirmed top-up reconciliation.
-4. Shopify's Partner Dashboard already supports full/partial app-charge refunds and multiple partial refunds while refundable balance remains.
-
-Provider action is selected from the actual Shopify charge/invoice state:
+New reservation requires a fresh CAS proving:
 
 ```text
-paid charge/invoice
-    -> PARTNER_DASHBOARD_REFUND
-
-not-yet-paid charge
-    -> PARTNER_DASHBOARD_CREDIT
+status = ACTIVE
+currentAmount - reservedAmount >= quantity
+version = expected
 ```
 
-Admin must use Shopify's charge/invoice monetary source. Moda does not infer refund money from the current BillingPlan, current meter rate or current subscription price.
+Successful reservation increments only the purchase `reservedAmount` plus aggregate reserved quantity.
 
-Provider refund eligibility remains subject to Shopify limitations. If the Partner Dashboard cannot settle the charge automatically (including age/provider limitations), Admin must not fabricate success; retain the credit hold and move the request to `NEEDS_ATTENTION` for Shopify Support/manual resolution.
-
-### Provider confirmation and local finalization
-
-After the SUPER_ADMIN performs the Shopify provider action, they record the provider reference plus the actual provider amount/currency and confirm the action.
-
-The same Admin confirmation operation finalizes local capacity atomically:
+Successful WhatsApp confirmation commits the exact reservation:
 
 ```text
-purchase.refundingQuantity -= quantity
-purchase.refundedQuantity  += quantity
-
-aggregate.refundingQuantity -= quantity
-aggregate.grantedQuantity   -= quantity
-
-refund.status = COMPLETED
+purchase.currentAmount  -= quantity
+purchase.reservedAmount -= quantity
+aggregate.reservedQuantity  -= quantity
+aggregate.committedQuantity += quantity
 ```
 
-Do not change purchase `committedQuantity` or `reservedQuantity` during refund finalization.
-
-New ARCH-010 refunds keep the `RecoveryCreditPurchase` provider-confirmation status `ACTIVE`; refund state is represented by lot quantities and `RecoveryCreditRefund[]`. Do not set `RecoveryCreditPurchase.status=REFUNDED` for a new partial refund. The removed `REFUNDED` enum value is development provenance only and is not present in the first-production schema.
-
-This is deliberate: a Partner Dashboard refund/credit does not remove the original +1 App Pricing usage event from the provider meter, and provider purchase reconciliation must not mistake a refunded historical provider unit for an unactivated new purchase.
-
-### Multiple refunds and idempotency
-
-`RecoveryCreditRefund.purchaseId` is no longer unique.
-
-One purchase may have:
+Provider/business failure releases it:
 
 ```text
-refund A: 20 credits COMPLETED
-refund B: 30 credits COMPLETED
-refund C: 10 credits REQUESTED
+purchase.reservedAmount -= quantity
+aggregate.reservedQuantity -= quantity
 ```
 
-provided each request passes the current per-lot refundable check.
+If purchase is WITHDRAWN when a pre-existing reservation releases, the same transaction also increments aggregate `refundingQuantity` by that quantity because the returned credit remains held for refund and cannot become spendable.
 
-Every request has its own durable `requestKey` and version/CAS lifecycle.
+### ACTIVE -> COMPLETED
 
-Approval, hold, rejection/withdrawal hold release, provider confirmation and completion are replay-safe and exactly-once.
-
-### Hold release
-
-Before any provider action is confirmed, SUPER_ADMIN may reject/withdraw an approved refund and atomically release the hold:
+When the final successful reservation leaves:
 
 ```text
-purchase.refundingQuantity -= quantity
-aggregate.refundingQuantity -= quantity
+currentAmount = 0
+reservedAmount = 0
 ```
 
-Once a provider action has been performed or confirmation evidence exists, never auto-release the hold. Provider/local ambiguity is `NEEDS_ATTENTION` until reconciled by a human.
+transition purchase to COMPLETED atomically. COMPLETED is terminal and non-refundable.
 
-### Subscription independence
+### Merchant refund request
 
-Purchased-credit refund eligibility is independent of the current Shopify plan.
+Refund initiation is self-service **request management**, not self-service provider money movement.
 
-A historical unused purchased lot may be refunded while the shop is currently:
+The merchant uses a dedicated purchased-credit management UI and selects one or more ACTIVE purchase lots. The merchant never enters a credit quantity.
+
+For each selected purchase the server independently starts a Serializable/versioned-CAS transaction and re-reads:
 
 ```text
-Free
-Paid
-NO_CONTRACT after cancellation
+status
+currentAmount
+reservedAmount
+version
+aggregate purchased counter + version
+live refund state
 ```
 
-provided Admin can identify the shop/purchase and Shopify can settle the historical charge.
-
-Uninstall does not itself create/refund anything. If the merchant cannot use in-app support after uninstall, operational support may still identify the durable shop/purchase outside the merchant UI. Deterministic shop re-identification remains out of scope for ARCH-010.
-
-### Provider reconciliation compatibility
-
-The top-up activation reconciler must distinguish:
+Compute from the winning database state:
 
 ```text
-provider-confirmed original purchase units
-from
-local spendable purchased-credit balance
+availableAmount = currentAmount - reservedAmount
 ```
 
-Manual Partner Dashboard refunds/credits do not reduce the App Pricing usage-meter quantity. Therefore a completed partial refund must never cause the original provider-confirmed purchase to be treated as a new unmatched unit or re-grant credits.
-
-Development-era `REFUNDED` purchase state and negative correction events are not part of the first-production baseline and are not migrated. Provider reconciliation must instead treat the canonical ACTIVE purchase lot plus local refunded quantities as the durable explanation of the original provider top-up unit.
-
-### Merchant messaging
-
-Use shared billing system message codes for:
+Refund request is allowed only when:
 
 ```text
-refund request received
-refund completed
-refund rejected
+status = ACTIVE
+availableAmount >= 1
+no non-terminal refund already exists
 ```
 
-Messages are idempotent by refund identity. Shopify does not automatically notify the merchant of Partner Dashboard refund completion, so Moda must provide the merchant-facing completion/rejection message.
+If `availableAmount < 1`, return refund-not-available with no state change.
 
-### ARCH-009 supersession
-
-The frozen ARCH-009 full-pack-only refund design is superseded for new refund work.
-
-In particular ARCH-010 does not preserve these ARCH-009 assumptions:
+If eligible, atomically:
 
 ```text
-purchaseId unique on RecoveryCreditRefund
-creditsSnapshot always equals full pack
-one refund per purchase
-purchase status becomes REFUNDED on completion
-CURRENT_CYCLE_APP_EVENT_CORRECTION as the normal refund path
+purchase ACTIVE -> WITHDRAWN
+purchase.version += 1
+
+aggregate.refundingQuantity += availableAmount
+aggregate.version += 1
+
+create RecoveryCreditRefund(REQUESTED)
+  currentAmountAtRequestSnapshot
+  reservedAmountAtRequestSnapshot
+  availableAmountAtRequestSnapshot
+  immutable purchase commercial snapshots
 ```
 
-Accepted ARCH-009 branch work may be inspected/reused where compatible, but ARCH-010 tasks must implement the rules above and must not depend on the frozen ARCH-009 execution graph.
+The request-time available snapshot is evidence of what was unreserved when withdrawal won. It is **not** the final provider refund quantity.
 
-### Tasks created by Iteration 10
+### Refund versus conversation race
 
-- `ARCH-010-DATABASE-007` — add deterministic purchased-credit lot accounting and multi-partial-refund schema/migration/backfill.
-- `ARCH-010-BACKGROUND-014` — make purchased recovery reservations FIFO lot-aware, remove the development automatic negative-App-Event refund path, and keep provider activation reconciliation consistent with local partial refunds.
-- `ARCH-010-SHARED-005` — define refund merchant-message codes/contracts.
-- `ARCH-010-SHARED-006` — publish the accepted Shared refund contract.
-- `ARCH-010-SHOPIFY-017` — expose refundability information/support CTA on merchant billing surfaces without self-service provider money movement.
-- `ARCH-010-ADMIN-002` — triage merchant support refund requests into exact purchase-lot/credit-quantity requests.
-- `ARCH-010-ADMIN-003` — approve/hold, guide Shopify Partner Dashboard refund/credit settlement, confirm provider evidence and finalize local credit removal exactly once.
+Conversation reservation and refund transition deliberately compete using the same purchase version/CAS convention.
 
-No new BullMQ queue, Gateway, Messaging or subscription-cancellation task is required for Iteration 10.
+Example — one available credit:
 
+```text
+current=1 reserved=0 version=N
+```
 
+If conversation reservation wins first:
+
+```text
+reserved=1 version=N+1
+```
+
+refund CAS fails/retries, sees available=0 and returns refund not available. Purchase stays ACTIVE.
+
+If refund wins first:
+
+```text
+status=WITHDRAWN version=N+1
+```
+
+reservation CAS fails/retries, skips this purchase and may use the next eligible ACTIVE FIFO lot.
+
+Example — two available credits and one conversation wins first:
+
+```text
+fresh state: current=2 reserved=1 available=1
+```
+
+refund may still succeed on the fresh version. Merchant is told that 1 credit is currently unreserved while 1 remains in progress. Final refund quantity remains undecided until the existing reservation settles.
+
+### WITHDRAWN semantics
+
+WITHDRAWN means:
+
+> this purchase has been removed from future credit allocation because the merchant requested refund of every credit that ultimately remains unused.
+
+It does **not** mean the merchant cancelled the refund request.
+
+While WITHDRAWN:
+
+```text
+new reservations                     forbidden
+commit existing exact reservation    allowed
+release existing exact reservation   allowed
+mark/reconcile existing reservation   allowed
+```
+
+Withdrawing one purchase never freezes another purchase. A shop may simultaneously have:
+
+```text
+Purchase A = COMPLETED
+Purchase B = ACTIVE
+Purchase C = WITHDRAWN
+Purchase D = ACTIVE
+Purchase E = REFUNDED
+Purchase F = REQUESTED
+```
+
+New allocation considers only B and D.
+
+### Final provider refund quantity
+
+Admin/provider settlement is prohibited while:
+
+```text
+reservedAmount > 0
+```
+
+Existing reservations may change the final remainder:
+
+```text
+release -> currentAmount unchanged, reservedAmount decreases
+commit  -> currentAmount decreases, reservedAmount decreases
+```
+
+When:
+
+```text
+purchase.status = WITHDRAWN
+reservedAmount = 0
+currentAmount > 0
+refund.status = REQUESTED
+```
+
+ADMIN-003 freezes:
+
+```text
+finalCreditQuantity = currentAmount
+```
+
+The provider refund amount is calculated only from the exact purchase's immutable purchase-time amount/currency and `finalCreditQuantity / creditsGranted`. Current plan/current top-up pricing is never authority.
+
+### WITHDRAWN -> COMPLETED before provider action
+
+If every pre-existing reservation commits and the purchase reaches:
+
+```text
+currentAmount = 0
+reservedAmount = 0
+```
+
+BACKGROUND-022 transitions it to COMPLETED and terminally closes the refund request without provider settlement. No £0 refund is created.
+
+### Merchant changes mind: WITHDRAWN -> ACTIVE
+
+The merchant may reactivate while the live refund is strictly pre-provider-action:
+
+```text
+purchase.status = WITHDRAWN
+refund.status = REQUESTED
+no provider action may have started
+```
+
+Freshly compute:
+
+```text
+heldAvailable = currentAmount - reservedAmount
+```
+
+Then atomically:
+
+```text
+aggregate.refundingQuantity -= heldAvailable
+purchase WITHDRAWN -> ACTIVE
+refund REQUESTED -> CANCELLED   // terminal cancelled refund request
+```
+
+Do not change purchase `currentAmount`, `reservedAmount`, purchase identity or FIFO timestamps.
+
+If purchase currentAmount is already zero, it cannot reactivate and belongs in COMPLETED.
+
+### Merchant reactivation versus Admin provider lock
+
+ADMIN-003 freezes provider action by CAS transition:
+
+```text
+refund REQUESTED -> PROVIDER_ACTION_REQUIRED
+```
+
+Merchant reactivation and Admin lock both CAS the exact refund `status + version`. Exactly one wins.
+
+If Admin wins first, merchant reactivation is no longer available because provider action may have begun.
+
+### Provider settlement
+
+Provider money movement remains human-verified through Shopify Partner Dashboard/Support.
+
+No automatic negative/fractional App Event refund is used.
+
+After provider evidence exactly matches the expected historical-purchase amount/currency, finalization atomically:
+
+```text
+purchase.currentAmount = 0
+purchase.reservedAmount = 0
+purchase WITHDRAWN -> REFUNDED
+
+aggregate.refundingQuantity -= finalCreditQuantity
+aggregate.grantedQuantity   -= finalCreditQuantity
+
+refund -> COMPLETED with provider evidence
+```
+
+There is no per-purchase refunded counter. The completed `RecoveryCreditRefund` is the durable record of the refunded final quantity and provider amount/currency.
+
+At most one refund may complete for a purchase because successful completion makes the purchase terminal REFUNDED. Historical rejected/merchant-cancelled refund attempts may remain as separate terminal rows.
+
+### Dedicated merchant purchase/refund management UI
+
+`SHOPIFY-026` owns `/app/billing/recovery-credit-purchases` (or exact integrated equivalent).
+
+Required merchant views:
+
+```text
+Active
+Refund pending
+Completed
+Refunded
+All
+```
+
+All also exposes REQUESTED purchases awaiting provider confirmation.
+
+ACTIVE rows with loaded availableAmount > 0 are selectable. The merchant may select one or more purchase rows and request refund. Each selected purchase is processed independently; one race failure does not roll back another successful withdrawal.
+
+WITHDRAWN + refund REQUESTED exposes Reactivate. Once provider action begins, Reactivate is disabled/hidden with an explanation.
+
+COMPLETED and REFUNDED rows are historical only.
+
+The UI never offers a refund quantity control and never trusts browser balances as mutation authority.
+
+### Refund task ownership
+
+New/corrective tasks:
+
+- `ARCH-010-DATABASE-014` — final purchase lifecycle, balances, commercial provenance and refund schema invariants.
+- `ARCH-010-BACKGROUND-021` — provider monetary valuation and `REQUESTED -> ACTIVE` purchase activation.
+- `ARCH-010-BACKGROUND-022` — adapt accepted FIFO reservation runtime to ACTIVE/WITHDRAWN/COMPLETED lifecycle and aggregate refund holds.
+- `ARCH-010-SHOPIFY-025` — merchant purchase-history read model, batch refund request and pre-provider reactivation CAS actions.
+- `ARCH-010-SHOPIFY-026` — dedicated purchase-history/refund-management UI.
+- `ARCH-010-ADMIN-002` — internal review queue for merchant-created requests.
+- `ARCH-010-ADMIN-003` — freeze final quantity after reservations drain and perform human provider settlement.
+- `ARCH-010-SYSTEM-TEST-003` — terminal integrated multi-purchase/refund concurrency/UI/provider evidence validation.
+
+`ARCH-010-SHOPIFY-017` is superseded; support-message-only refund initiation is no longer the product flow.
+
+Existing completed DATABASE-007/BACKGROUND-014/SHARED refund tasks remain immutable implementation history. The forward-correction tasks above own the first-production semantic changes.
+
+### Explicit non-goals for Iteration 10
+
+- merchant-selected partial credit quantity;
+- Admin-selected partial credit quantity;
+- automatic Shopify refund API execution;
+- negative/fractional App Event refund settlement;
+- recurring subscription-fee refunds;
+- shop-global purchase/refund lock;
+- refunding promotional or lifetime Free credits.
 
 ## Iteration 11 — Shopify subscription freeze / unfreeze
 
@@ -2860,7 +3008,7 @@ No new billable event may be created for business work after freeze is known.
 
 A UsageEvent already committed before the freeze may remain durable, but provider publication must not retimestamp it or move it into a later Shopify cycle. If Shopify resumes within the same cycle, normal publication may continue. If the provider cycle advanced and the old event can no longer be billed, preserve the original event/evidence and use the existing attention/error path; do not silently bill it in the new cycle.
 
-A top-up purchase that was already `PENDING_BILLING` before freeze remains pending. It does not grant credits merely because the shop later freezes. Provider confirmation can resume after unfreeze.
+A top-up purchase that was already `REQUESTED` before freeze remains pending. It does not grant credits merely because the shop later freezes. Provider confirmation can resume after unfreeze.
 
 ### Detecting freeze and cancellation safely
 
@@ -3049,7 +3197,7 @@ The consolidation pass re-verified the current Shopify App Pricing documentation
 - App Events are the App Pricing mechanism for usage-meter billing, including migrations from repeated one-time charges;
 - Shopify App Pricing does not provide native one-time app purchases; Manual Pricing/Billing API remains the legacy/outlier route for those;
 - usage-only / zero-recurring plans can carry usage meters;
-- app-charge refunds/credits are handled through Shopify provider billing workflows, including partial refunds for paid charges and credits for unpaid charges.
+- app-charge refunds/credits are handled through Shopify provider billing workflows, including partial monetary refunds of paid charges and credits for unpaid charges; Moda still refunds the whole unused remainder of one selected purchase lot rather than letting merchants choose a credit quantity.
 
 ARCH-010 therefore does not introduce `appSubscriptionCreate`, `appSubscriptionCancel`, `appPurchaseOneTimeCreate` or `APP_SUBSCRIPTIONS_UPDATE` as App Pricing authority.
 

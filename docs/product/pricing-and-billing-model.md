@@ -109,14 +109,29 @@ See [ARCH-010 promotional campaigns](../architecture/ARCH-010-promotional-campai
 
 ### 3.3 Purchased lifetime top-up credits
 
+Purchased top-up credits are durable independent purchase lots. Each `RecoveryCreditPurchase` has its own lifecycle:
+
+```text
+REQUESTED -> ACTIVE -> COMPLETED
+                  \-> WITHDRAWN -> ACTIVE      (merchant changes mind before provider action)
+                                \-> COMPLETED   (all in-flight reservations consume the remainder)
+                                \-> REFUNDED    (human/provider settlement completes)
+```
+
 Purchased top-up credits:
 
 - are merchant-funded;
 - survive monthly renewal and plan changes;
-- survive uninstall/reinstall, cancellation and freeze as owned balance;
-- use FIFO purchase-lot accounting;
-- are refundable only to the extent that a specific purchased lot remains unused and is not reserved/held for another refund;
-- become spendable only after provider billing confirmation/reconciliation.
+- survive uninstall/reinstall, cancellation and freeze as owned history/balance;
+- use FIFO purchase-lot accounting across only currently `ACTIVE` lots;
+- become spendable only after provider billing confirmation plus immutable purchase-time monetary valuation;
+- expose `currentAmount` and `reservedAmount`, with `availableAmount = currentAmount - reservedAmount` while ACTIVE;
+- can be withdrawn for refund only while ACTIVE and only when a fresh server-side CAS read proves `availableAmount > 0`;
+- are refunded as **all credits that ultimately remain unused on that exact purchase**, never a merchant-selected quantity;
+- may be reactivated while the refund is still pre-provider-action;
+- become terminal `COMPLETED` when all credits are used and terminal `REFUNDED` when the remaining unused credits are provider-refunded.
+
+A shop may have many purchases in different states at the same time. Withdrawing one purchase never freezes another ACTIVE purchase.
 
 ### 3.4 Shop-lifetime Free credits
 
@@ -272,7 +287,7 @@ commit or safely release/reconcile reservation
 
 Concurrency must not let two workers spend the same final credit.
 
-Purchased capacity additionally identifies the exact FIFO purchase lot that funded the reservation so unused/refundable quantity remains provable.
+Purchased capacity additionally identifies the exact FIFO ACTIVE purchase lot that funded the reservation. A withdrawn purchase cannot accept new reservations, but reservations created before withdrawal remain attached to that exact lot and may still commit/release.
 
 ---
 
@@ -371,26 +386,43 @@ Reinstall never regrants lifetime Free credits.
 
 ---
 
-## 13. Partial purchased-credit refunds
+## 13. Whole-remaining purchased-credit refunds
 
-Only **unused purchased top-up credits** are refundable through the ARCH-010 refund workflow.
+Only merchant-funded `RecoveryCreditPurchase` lots are refundable. Promotional and lifetime Free credits are never refundable.
 
-Promotional and lifetime Free credits are not refundable.
+A merchant never chooses a refund credit quantity. On the dedicated purchased-credit management UI, the merchant selects one or more ACTIVE purchases and requests refund of each selected purchase. Each selected purchase is processed independently.
 
-Refundability is purchase-lot based:
+For one ACTIVE purchase:
 
 ```text
-refundable from purchase lot
-= granted
-- committed
-- currently reserved
-- already refunded
-- currently held for refund
+availableAmount = currentAmount - reservedAmount
 ```
 
-ARCH-010 uses human-verified Shopify provider settlement for partial refund/credit actions. It does not automatically use negative App Events as the refund mechanism.
+The server re-reads that value inside the same Serializable/versioned-CAS transaction that attempts `ACTIVE -> WITHDRAWN`. If `availableAmount < 1`, the request fails with no state change. Browser-displayed balances are never authority.
 
-The local refund flow holds approved unused credits before provider settlement so concurrent recovery cannot spend the same quantity.
+When withdrawal wins:
+
+- the purchase becomes `WITHDRAWN`;
+- no new recovery reservation may use that purchase;
+- already-existing reservations may still commit/release;
+- currently unreserved credits are held in the aggregate purchased-credit `refundingQuantity`;
+- a later release from an existing reservation moves that credit from aggregate reserved to aggregate refunding;
+- a later commit consumes that credit normally;
+- provider settlement cannot begin until `reservedAmount = 0`.
+
+The final refund credit quantity is therefore determined only after all pre-existing reservations settle:
+
+```text
+finalCreditQuantity = purchase.currentAmount
+```
+
+If every outstanding reservation commits and `currentAmount` reaches zero, the purchase becomes `COMPLETED` and no provider refund occurs.
+
+Before provider action begins, the merchant may reactivate the purchase. Reactivation cancels the live refund request, returns `WITHDRAWN -> ACTIVE`, releases only that purchase's aggregate unreserved refund hold, and preserves the purchase's original FIFO age.
+
+Once the Admin locks the refund into `PROVIDER_ACTION_REQUIRED`, merchant reactivation is forbidden. Human/provider settlement uses the purchase's immutable purchase-time monetary basis, never current plan/top-up pricing. Successful settlement sets the purchase `REFUNDED`, zeroes its current balance, removes the exact aggregate grant/hold and records provider evidence.
+
+There is no automatic negative-App-Event refund path and no sequence of completed arbitrary partial refunds for one purchase.
 
 ---
 
@@ -469,8 +501,8 @@ Free capacity order: lifetime Free -> purchased
 Paid capacity order: included -> purchased -> overage
 activeSubscription=null automatically means canceled
 uninstall clears owned entitlement/history
-full-pack-only purchased-credit refund
-negative App Event as the normal partial-refund mechanism
+merchant/Admin-selected arbitrary partial-credit refund quantity
+negative App Event as the normal purchased-credit refund mechanism
 Moda-initiated App Pricing cancellation
 ```
 

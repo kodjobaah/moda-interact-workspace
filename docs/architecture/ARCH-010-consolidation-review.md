@@ -76,7 +76,7 @@ FREE_RECOVERY_LIFETIME
 ShopEntitlementCounter(PROMOTIONAL_RECOVERY_CREDITS)
 MIGRATION_RECONCILED
 SubscriptionCancellationRequest / local appSubscriptionCancel state machine
-RecoveryCreditPurchaseStatus.REFUNDED
+arbitrary merchant/Admin-selected purchased-credit refund quantity
 negative/fractional App Event refund correction
 campaign-less PromotionalCreditGrant
 BILLING_FREE_ALLOWANCE_EXHAUSTED
@@ -111,13 +111,26 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ## Current Ready frontier
 
 ```text
-ARCH-010-ADMIN-007
 ARCH-010-ADMIN-010
-ARCH-010-BACKGROUND-002
-ARCH-010-BACKGROUND-014
-ARCH-010-BACKGROUND-015
-ARCH-010-SHOPIFY-023
+ARCH-010-BACKGROUND-008
+ARCH-010-BACKGROUND-009
+ARCH-010-DATABASE-014
 ```
+
+
+## Purchase-lifecycle/refund forward correction — 2026-09-13
+
+The first-production product definition now treats each `RecoveryCreditPurchase` as an independent lifecycle:
+
+```text
+REQUESTED / ACTIVE / COMPLETED / WITHDRAWN / REFUNDED
+```
+
+The merchant withdraws an entire purchase from new allocation and requests refund of **all credits that ultimately remain unused** after pre-existing reservations settle. There is no merchant/Admin quantity input.
+
+Completed DATABASE-007/BACKGROUND-014 remain immutable history. Forward corrections are owned by DATABASE-014, BACKGROUND-021 and BACKGROUND-022. The old pending support-only SHOPIFY-017 is superseded by SHOPIFY-025 (server read/actions) + SHOPIFY-026 (dedicated purchase/refund UI).
+
+This correction deliberately preserves the existing aggregate purchased counter for the hot path while removing per-lot refunding/refunded counters from the final baseline.
 
 ## System-test boundary
 
@@ -213,5 +226,5 @@ ARCH-010-BACKGROUND-014
 ARCH-010-BACKGROUND-015
 ```
 
-`BACKGROUND-019` remains Pending until both BACKGROUND-002 and BACKGROUND-014 complete.
+`BACKGROUND-019` is architect-accepted Complete at Attempt 6. Its accepted promo-first cross-bucket routing is immutable and must be preserved by later purchased-credit lifecycle corrections such as BACKGROUND-022.
 

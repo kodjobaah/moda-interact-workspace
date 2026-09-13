@@ -25,11 +25,11 @@ depends_on:
 enables:
 - ARCH-010-SHOPIFY-008
 - ARCH-010-SHOPIFY-016
-- ARCH-010-SHOPIFY-017
+- ARCH-010-SHOPIFY-026
 - ARCH-010-SHOPIFY-020
 - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-13'
 ---
 
 # ARCH-010-SHOPIFY-012: Integrate real billing options route and purchase hub
