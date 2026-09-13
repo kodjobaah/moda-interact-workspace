@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 84
-executor: copilot
-claimed_at: 2026-09-13T20:50:12Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
@@ -224,6 +224,58 @@ Attempt 2 implementation is complete and returned to architect review. The claim
 - Implementation commit: `625b7ea30a1608db71671a5d2cf4efdf5cd6bd59` (`fix(shopify): complete promotion offer selection corrections`), pushed to origin.
 - No database schema or submodule gitlink changes were made.
 - Claim cleared; parent report commit/push follows.
+
+## Attempt 3 Completion Report
+
+### Status
+
+Implementation complete; returned to architect review. Downstream tasks remain blocked pending architect review.
+
+### Implementation
+
+- Replaced the English promotion placeholders in the Czech, Danish, and Finnish merchant catalogues with the architect-specified translations.
+- Added permanent regression assertions for representative non-English promotion copy.
+- Added the permanent two-client PostgreSQL concurrency test with an explicit `MODA_DISPOSABLE_INTEGRATION=1` and `TEST_DATABASE_URL` gate.
+- Added direct service evidence for requested target/lifecycle rejection, current PLAN/SHOP selection blocking, stale SHOP replacement, partially used and exhausted grant replay, suspended/frozen lifecycle gates, and retry-success behavior.
+- Preserved Attempt 2 production logic; no production service, route, schema, Shared contract, or cross-repository changes were made.
+
+### Validation Results
+
+- Database submodule sync/update: passed; HEAD `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- SHOPIFY-021 focused service/route/i18n tests: `45/45` passed.
+- Locale key parity: `20/20` catalogues passed.
+- Semantic non-English promotion copy: `19/19` non-English catalogues passed; Czech, Danish, and Finnish are no longer English placeholders.
+- Concurrency integration file: present and executed; `2` tests skipped because `MODA_DISPOSABLE_INTEGRATION=1` is not set. No real PostgreSQL concurrency result is claimed.
+- Full repository Vitest suite: `34` files passed, `2` skipped; `313` tests passed, `3` skipped.
+- `npm run build`: passed.
+- Touched-file ESLint: passed.
+- `npm run typecheck`: repository baseline remains non-zero; no diagnostics were reported in the touched promotion service/tests or new integration test.
+- Full ESLint: repository baseline remains non-zero with `11` unrelated errors outside this task.
+- `git diff --check`: passed.
+
+### Workflow Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-021` on `task/ARCH-010-SHOPIFY-021`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-021` on `task/ARCH-010-SHOPIFY-021`.
+- Shared checkout switched or mutated for task work: no. Another task worktree reused: no.
+- Parent and implementation `origin/main` ancestry: already-current; no task-branch fast-forward was needed.
+- Attempt-3 claim commit: `32d303cdb1c05bf2e236aac96ac92ae61ff940f2`.
+- Attempt-2 implementation `625b7ea30a1608db71671a5d2cf4efdf5cd6bd59` remains an ancestor of the Attempt-3 implementation.
+- Attempt-3 implementation commit: `622605f02a871ee4f3f0d7197aa354aa307bbf8d`.
+- Database submodule was synchronized and remains at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no schema or gitlink changes were made.
+
+### Git / VCS
+
+- Implementation commit: `622605f` (`test(ARCH-010-SHOPIFY-021): complete localization and concurrency evidence`), push pending.
+- Parent claim is cleared in this report; parent report commit/push follows.
+- No merge to `main` performed.
+
+### Architect Review
+
+Requested. The real PostgreSQL concurrency scenarios remain execution-blocked by the closed disposable-database gate and require architect review of that evidence limitation.
 
 ## Architect Review — Attempt 1
 
