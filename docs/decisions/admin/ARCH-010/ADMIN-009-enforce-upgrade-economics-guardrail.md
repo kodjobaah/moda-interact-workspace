@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 89
 executor: copilot
 claimed_at: '2026-09-13T17:45:45Z'
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-010-SYSTEM-TEST-005
 created: 2026-09-12
-updated: '2026-09-13'
+updated: '2026-09-13T17:52:07Z'
 ---
 
 # ARCH-010-ADMIN-009: Hard-enforce upgrade economics on plan and recovery-pack configuration
@@ -2117,4 +2117,112 @@ When complete:
 3. update the Completion Report with exact commands/results and workflow evidence;
 4. publish the parent task report;
 5. STOP for Architect Review.
+
+## Attempt 5 Completion Report
+
+### Status
+
+Ready for Review.
+
+### Files Changed
+
+- `moda-interact-admin/src/lib/admin/billing-plan-guardrail.ts`
+- `moda-interact-admin/src/components/admin/billing-plan-economics-presentation.ts`
+- `moda-interact-admin/tests/security/admin-billing-plan.test.mjs`
+- `moda-interact-admin/tests/unit/billing-plan-economics-presentation.test.mjs`
+
+### Work Completed
+
+- Added one Admin-owned `billingUpgradeTopUpPath` projection that preserves existing multi-offer summaries and derives the actual single-pack route from `packUnitsNeeded` and the lower plan pack size.
+- Reused that projection for both `UPGRADE_ECONOMICS_EVALUATED.topUpPath` audit evidence and the rendered Admin explanation, proving the required `6 x 50` route instead of reporting no top-up path.
+- Expanded production transaction-seam coverage to an exact `Free -> Starter -> Growth -> Scale` ladder, including adjacent incoming/outgoing edge IDs, top-ups-on/off transitions, stale and missing evidence, FAIL, currency mismatch, no-edge edits, and top-plan edits without invented successors.
+- Strengthened render coverage for capacity gap, required pack units, top-up path, integer-minor currency values, actual premium, required premium, blocked FAIL copy, UNVERIFIED evidence, no-upgrade-edge presentation, authority wording, and secret exclusion.
+
+### Correction-to-File Mapping
+
+- Actual single-pack `topUpPath` projection: `src/lib/admin/billing-plan-guardrail.ts`; shared presentation use: `src/components/admin/billing-plan-economics-presentation.ts`.
+- Exact production transaction adjacent-edge coverage and audit-path value: `tests/security/admin-billing-plan.test.mjs`.
+- Complete rendered scenario-65/66 evidence: `tests/unit/billing-plan-economics-presentation.test.mjs`.
+
+### Validation Results
+
+- PASS: `npm run prisma:validate`.
+- PASS: `node --experimental-strip-types --test tests/security/admin-billing-plan.test.mjs` (15/15).
+- PASS: `node --experimental-strip-types --test tests/unit/billing-plan-economics-presentation.test.mjs` (2/2).
+- PASS: `npm test` (167/167).
+- PASS: `npx tsc --noEmit --pretty false`.
+- PASS: `npm run lint` with only the two pre-existing `queue-monitor.tsx` React Hook dependency warnings and zero errors.
+- PASS: `npm run build` with only the documented BullMQ optional-dependency/critical-dependency warnings.
+- PASS: focused `npx prettier --check` for all four changed files.
+- PASS: `git diff --check`.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+None.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None. ADMIN-007 arithmetic, the Prisma schema, Shopify charging, merchant admission, and other repositories were unchanged.
+
+### Git / VCS
+
+Task branch: `task/ARCH-010-ADMIN-009`
+
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
+  parent branch: task/ARCH-010-ADMIN-009
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
+  implementation branch: task/ARCH-010-ADMIN-009
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Parent history reconciliation:
+  Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
+  Attempt-1 report 5a17755... ancestor of parent HEAD: yes
+  Attempt-2 claim 645574c... ancestor of parent HEAD: yes
+  Attempt-2 report eda0f87... ancestor of parent HEAD: yes
+  Attempt-3 claim 869c761... ancestor of parent HEAD: yes
+  Attempt-3 report 24083ae... ancestor of parent HEAD: yes
+  Attempt-4 claim 3fd37db... ancestor of parent HEAD: yes
+  Attempt-4 report cbea546... ancestor of parent HEAD: yes
+
+Implementation repository:
+  repository: moda-interact-admin
+  commit: 70dbfe72c3eeaa9052300e11bace381dd3d2bb84
+  remote branch: origin/task/ARCH-010-ADMIN-009
+  pushed: yes
+
+Parent workspace:
+  task file: docs/decisions/admin/ARCH-010/ADMIN-009-enforce-upgrade-economics-guardrail.md
+  claim commit: 1296955
+  remote branch: origin/task/ARCH-010-ADMIN-009
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+
+Handoff:
+  parent worktree clean: pending final report commit
+  implementation worktree clean: yes
+
+### Architect Review
+
+Pending Architect Review.
 
