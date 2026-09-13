@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 84
-executor: copilot
-claimed_at: 2026-09-13T20:02:18Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -148,19 +148,39 @@ Stop if DATABASE-011 selection/grant uniqueness is unavailable or SHOPIFY-018/cu
 ## Completion Report
 
 ### Status
-Not started.
+Implementation complete; returned to review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact/app/services/promotions/promotion.service.ts`
+- `moda-interact/app/routes/app/promotions/route.tsx`
+- `moda-interact/app/routes.ts`
+- `moda-interact/app/routes/app/route.jsx`
+- `moda-interact/tests/unit/services/promotion.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added a merchant-safe running promotion catalogue filtered by ACTIVE status, time window, GLOBAL/SHOP/PLAN targeting, and local subscription plan projection.
+- Added authenticated merchant selection with executable lifecycle checks, serializable transaction isolation, one grant per campaign/shop, exact first-claim quantity, replay-safe reuse, selection timestamps/counts, and blocking of a different usable selection.
+- Added merchant route/action and app navigation without exposing admin IDs, audit metadata, or internal selection error codes.
+- Added focused tests for catalogue filtering/projection, exact grant creation/reselection, and competing selection protection.
 
 ### Validation Results
-Populate during implementation.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run typecheck`: passed for the touched implementation; no diagnostics were reported for SHOPIFY-021 files.
+- Focused tests: 9 passed across promotion service and explicit route configuration suites.
+- Full unit suite: 34 files, 285 passed, 1 skipped.
+- `npm run build`: passed.
+- Touched-file ESLint: passed.
+- Full ESLint: blocked by 12 existing repository errors outside this task, including onboarding prop validation, billing options, billing select, merchant support, privacy, Shopify billing provider, and existing test files.
+- `git diff --check`: passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-021`.
+- Implementation branch: `task/ARCH-010-SHOPIFY-021`.
+- Implementation commit: `a329079` (`feat(shopify): add promotion offer selection`), pushed to origin.
+- Parent task-report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-021`.
+- No database schema or submodule gitlink changes were made.
+- Claim cleared in this report; parent report commit/push follows. No merge to `main` performed.
 
 ### Architect Review
 Pending.
