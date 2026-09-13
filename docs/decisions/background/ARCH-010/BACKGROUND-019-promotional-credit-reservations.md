@@ -193,7 +193,7 @@ Stop if DATABASE-013 exact grant ownership is unavailable, or if implementing pr
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `src/services/promotional-recovery-reservation.service.ts`
@@ -212,24 +212,27 @@ In Progress.
 - Added direct primitive coverage for scope/time/status eligibility, exact ownership, replay/lifecycle transitions, internal event semantics, timestamps, and exhaustion behavior.
 - Added disposable PostgreSQL concurrency coverage proving one final-credit reservation wins without aggregate promotional entitlement accounting.
 - Expanded router coverage for ordered fallback and promotional release, definitive failure, and ambiguous-provider ownership.
+- Attempt 4 preserved the exact-grant production accounting fixes and added lifecycle coverage proving selection history remains owned by selection actions, including release/expiry/reopen behavior.
+- Attempt 4 expanded router coverage for promotional fallback to paid included capacity, replay ownership, and promotional commits that never invoke paid meter accounting.
+- Strengthened the PostgreSQL race assertion to prove only the pre-seeded lifetime entitlement counter exists and no promotional aggregate counter is used.
 
 ### Validation Results
-- Attempt 3 claimed durably with `executor: copilot`, `attempt: 3`, and claim timestamp `2026-09-12T23:25:08Z`.
+- Attempt 4 claimed durably with `executor: copilot`, `attempt: 4`, and claim timestamp `2026-09-14T00:00:00Z`.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- Focused `vitest` primitive/router suite: passed, 55 tests.
+- Focused `vitest` primitive/router suite: passed, 60 tests.
 - `npm run test:integration -- tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`: passed, 1 test.
 - `./node_modules/.bin/tsc --noEmit`: passed.
 - `npm run build`: passed.
 - `git diff --check`: passed.
-- Full `npm run test:unit`: 580 tests passed and 1 unrelated existing test failed because `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while `package.json` declares `0.11.0`.
+- Full `npm run test:unit`: 585 tests passed and 1 unrelated existing test failed because `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while `package.json` declares `0.11.0`.
 
 ### Deviations
 - Full unit validation retains one pre-existing shared-runtime version assertion failure; no unrelated test or package metadata was changed.
 - The unrelated shared-runtime version assertion remains unresolved; no unrelated test or package metadata was changed.
 
 ### Assumptions
-- The initialized `database` submodule at accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736` is the intended dependency state; its parent gitlink was intentionally not staged by this task.
+- The initialized `database` submodule at accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736` is the intended dependency state; its parent gitlink was user-authorized but intentionally not staged by this task-owned implementation commit.
 
 ### Unresolved Issues
 - The architect should decide whether to reconcile the existing shared-runtime `0.9.0` test expectation separately; it is outside BACKGROUND-019.
@@ -255,13 +258,13 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-background`
-  implementation commit: `ed28c98`
+  implementation commit: `4191fd0`
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md`
-  claim commit: `d711795`
+  claim commit: `0ca27cc`
   review report commit: `c48c3ac`
   remote branch: `origin/task/ARCH-010-BACKGROUND-019`
   pushed: yes
