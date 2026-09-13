@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 49
 attempt: 4
 depends_on:
@@ -24,9 +24,7 @@ enables:
 - ARCH-010-SHOPIFY-006
 - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-13
-executor: copilot
-claimed_at: 2026-09-13T23:08:29Z
+updated: 2026-09-14
 ---
 
 # ARCH-010-BACKGROUND-006: Reconcile reinstalled shops before business execution resumes
@@ -387,7 +385,7 @@ Ready for Architect Review.
 - Added the missing Free pending-plan unmapped case, exact same-paid-period corruption table, successful paid pending projection, paid queue-loss reconstruction, later-cycle wrapper preservation, changed-paid-plan blocking, and reinstall-specific transport retry boundary cases.
 
 ### Validation Results
-- `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 1 file and 104 tests.
+- `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 1 file and 105 tests.
 - Adjacent gate suite (`billing-scheduler`, `entrypoint-isolation`, `shopify-usage-event-publisher`, `recovery-routing`): passed, 4 files and 49 tests.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
@@ -406,18 +404,26 @@ Ready for Architect Review.
 - Reinstall transport retry preservation: implemented; `updateMany.data` contains only bounded error metadata and schedule fields.
 - Reinstall 24-hour boundary: implemented for pre-boundary delayed publication and at-boundary unscheduled UNINSTALLED retention.
 
+### Attempt 4 Correction Disposition
+- Full protected-state mutator coverage: implemented in `tests/unit/services/billing-subscription-reconciliation.service.test.ts` with `expectNoModelMutations(...)`, local historical counter spies for provider-null reinstall, and `upsert` spies on purchase/refund/promotion harness models.
+- Exact paid-period corruption preservation: implemented; every integrity-table row now asserts no BillingPeriod or BillingPeriodEntitlementCounter mutator is called.
+- Later-cycle wrapper preservation: implemented; wrapper-owned lifetime, purchased, refund, promotional, and merchant-selection models are checked across every available mutator while canonical rollover remains responsible for period state.
+- Reinstall transport preservation: implemented as a standalone actual-UNINSTALLED test; only bounded retry metadata is persisted, Shop lifecycle and entitlement mutations are absent, and exactly one deterministic retry is published.
+- Reinstall retry-boundary preservation: implemented for both pre-24-hour and at/after-24-hour cases; no lifecycle or protected-state mutation occurs, and the reinstall marker/status remain unchanged.
+
 ### Git / VCS
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
 - Implementation commit: `baa33fb` (`fix(background): harden reinstall reconciliation`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
 - Attempt 3 implementation commit: `42d99a4` (`test(background): complete reinstall reconciliation evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
-- Launcher claim commit: `8b70d55c32a24b1dd79de279785d4138cc120642`, pushed before implementation.
+- Attempt 4 implementation commit: `da921da5c5385ff9b32155316f97e01a42f1f749` (`test(background): complete reinstall preservation evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-006`.
+- Attempt 4 launcher claim commit: `15655b9de090c65ebbdf38a9ea5995a12db18495`, pushed before implementation.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
-- Launcher isolation/synchronization evidence: prepared packet confirmed canonical worktrees, parent `origin/main` incorporation, implementation `origin/main` current, and task branch synchronization before Attempt 3.
+- Launcher isolation/synchronization evidence: prepared packet confirmed the canonical workspace, dedicated parent and implementation worktrees, mirrored `task/ARCH-010-BACKGROUND-006` branches, parent `origin/main` incorporation, implementation `origin/main` current, and task branch synchronization before Attempt 4.
 - Database submodule was initialized and verified at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no submodule gitlink was staged.
-- Isolated worktrees used; shared checkout was not switched or mutated.
+- Isolated worktrees used; shared checkout was not switched or mutated. Implementation branch is clean after push; parent report branch is being updated for review.
 
 ### Architect Review
 
