@@ -316,7 +316,7 @@ Ready for Review.
 - Implementation commit: `6c62577` (`feat(shopify): gate reinstall on subscription restoration`)
 - Implementation branch pushed to `origin/task/ARCH-010-SHOPIFY-006`.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-006`
-- Parent branch/report commit and push: pending completion of this report update.
+- Parent branch/report commit and push: `0e23b44` pushed to `origin/task/ARCH-010-SHOPIFY-006`.
 
 ### Architect Review
 Pending.
