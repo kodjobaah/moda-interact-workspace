@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -320,3 +320,335 @@ Ready for Review.
 
 ### Architect Review
 Pending.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested**
+
+Attempt 1 establishes the correct overall reinstall architecture: direct
+`UNINSTALLED -> ACTIVE` reactivation is removed, billing/credit projection is
+preserved on uninstall, the canonical Shared reconciliation queue is reused,
+`/app/reinstalling` is present, active product routes use the Shop access policy,
+and Partner verification remains owned by BACKGROUND-006.
+
+The implementation is not yet safe under duplicate uninstall delivery and concurrent
+or repeated reinstall requests. The corrections below are the complete Attempt-2
+contract. Preserve the accepted architecture and do not redesign subscription,
+billing-period, credit, queue, or shop-identity contracts.
+
+### Finding 1 — a delayed duplicate uninstall can erase a new reinstall attempt
+
+`app/services/shop/shop.service.ts::markUninstalled(...)` currently performs two Shop
+writes:
+
+1. a guarded write where `uninstalledAt = null` that records the stable uninstall
+   cutoff and clears `reinstallPendingAt`; then
+2. an unconditional second `updateMany({ where: { id } ... })` that again sets
+   `status = UNINSTALLED` and `reinstallPendingAt = null`.
+
+The first write is the duplicate-safe uninstall boundary. The second write defeats
+that boundary. If a duplicate webhook from the original uninstall arrives after the
+merchant has reinstalled and `reinstallPendingAt` has been established, the duplicate
+can clear the live reinstall marker and invalidate BACKGROUND-006 authority.
+
+#### Required correction
+
+In `app/services/shop/shop.service.ts`:
+
+- remove the unconditional second Shop mutation;
+- for a genuine new uninstall, keep one guarded mutation equivalent to:
+
+```ts
+where: {
+  id: shop.id,
+  uninstalledAt: null,
+},
+data: {
+  status: "UNINSTALLED",
+  uninstalledAt,
+  reinstallPendingAt: null,
+}
+```
+
+- do not modify Subscription, BillingPeriod, ShopSettings, lifetime/purchased/
+  promotional credits, refund state, or history;
+- a duplicate delivery when `uninstalledAt` is already non-null must perform no
+  second lifecycle mutation and therefore must preserve any `reinstallPendingAt`
+  created after the original uninstall;
+- do not add event-time heuristics or a second uninstall identity model. A successful
+  BACKGROUND-006 restoration already clears `uninstalledAt`, so a genuinely later
+  uninstall can again satisfy the guarded `uninstalledAt = null` transition.
+
+### Finding 2 — ordinary auth silently restarts a stopped reinstall attempt
+
+`beginReinstallReconciliation(...)` treats:
+
+```text
+reinstallPendingAt != null
+Subscription.nextReconcileAt == null
+```
+
+as a reason to set `nextReconcileAt = now` again. Therefore a normal OAuth/auth
+callback can restart a Background attempt that Background intentionally stopped and
+that `/app/reinstalling` is supposed to present as the explicit Retry/support state.
+
+This violates Part E: **only the explicit Retry action may restart a stopped attempt**.
+
+#### Required correction
+
+For `beginReinstallReconciliation(...)`:
+
+- when `Shop.status != UNINSTALLED`, return `null`;
+- when `reinstallPendingAt != null` and the existing Subscription has
+  `nextReconcileAt != null`, preserve both durable values and return them for the
+  deterministic best-effort enqueue;
+- when `reinstallPendingAt != null` and Subscription is absent or has
+  `nextReconcileAt == null`, do **not** reset either value and return `null`; this is
+  the stopped state owned by the restoration screen/explicit Retry action;
+- ordinary auth must never reset `reinstallPendingAt` or restart the bounded retry
+  window.
+
+Update `app/routes/auth/catchall/route.jsx` so every resolved `UNINSTALLED` Shop is
+redirected to `/app/reinstalling` after the begin operation, even when the begin
+operation returns `null`. Only call
+`enqueueBillingSubscriptionReconcileBestEffort(...)` when a non-null durable
+reconciliation payload is returned.
+
+### Finding 3 — first-attempt CAS loss can return a marker that was never persisted
+
+The first-attempt path reads `reinstallPendingAt = null`, calls guarded
+`shop.updateMany(...)`, but ignores `updated.count`. Two concurrent authenticated
+requests can both classify themselves as `isFirstAttempt`; the loser can then write a
+new `Subscription.nextReconcileAt` and return its local `now` as
+`reinstallPendingAt` even though another request owns the durable marker.
+
+The task explicitly requires returned values to be the committed durable values used
+for deterministic enqueue.
+
+#### Required correction
+
+Keep the existing conditional/CAS approach, but make its result authoritative:
+
+1. if the first-attempt `Shop.updateMany` updates exactly one row, this transaction
+   owns the new marker and may set/create the Subscription immediate schedule;
+2. if it updates zero rows, do not write a competing schedule from the stale read;
+   re-read the durable Shop/Subscription state after the conflicting transaction is
+   visible;
+3. if the re-read is still `UNINSTALLED`, has a durable `reinstallPendingAt`, and has
+   non-null `nextReconcileAt`, return those **actual** values without mutation;
+4. if the re-read is stopped (`nextReconcileAt == null`) or lifecycle state changed,
+   return `null`;
+5. never return the losing request's local timestamp as the durable marker.
+
+Do not introduce a process-local mutex. PostgreSQL durable state/CAS remains the
+source of truth.
+
+### Finding 4 — Retry is not restricted to stopped state and is stale-race unsafe
+
+`retryReinstallReconciliation(...)` currently permits any
+`UNINSTALLED + reinstallPendingAt != null` row, including a still-pending attempt with
+non-null `nextReconcileAt`. A crafted/replayed POST can therefore reset the retry
+window while reconciliation is still live.
+
+It also ignores the result of its guarded Shop write. If BACKGROUND-006 activates or
+suspends the Shop between the read and update, this method can still overwrite
+`Subscription.nextReconcileAt` and publish a stale job after lifecycle authority has
+changed.
+
+#### Required correction
+
+The Retry transaction must be all-or-nothing and must require the stopped state:
+
+```text
+Shop.status = UNINSTALLED
+Shop.reinstallPendingAt = <non-null exact current marker>
+Subscription.nextReconcileAt = null
+```
+
+An absent Subscription may be treated as stopped and recreated as `NO_CONTRACT`, as
+already allowed by this task, but do not alter any existing plan/cycle/credit fields.
+
+Required transaction behaviour:
+
+1. read the exact current Shop marker and Subscription schedule;
+2. if an existing Subscription has `nextReconcileAt != null`, return `null` with **no
+   Shop or Subscription mutation**;
+3. CAS the Shop using `status = UNINSTALLED` **and the exact previously-read
+   `reinstallPendingAt`**; set the new marker only if that CAS updates exactly one row;
+4. if the Shop CAS updates zero rows, return/abort with no Subscription mutation;
+5. only after the Shop CAS succeeds, set/create `Subscription.nextReconcileAt = now`;
+6. return the committed new marker/schedule for post-commit deterministic enqueue;
+7. if a subsequent guarded Subscription mutation cannot be completed, roll back the
+   transaction rather than leaving the Shop marker reset without its matching
+   schedule.
+
+The route action may continue redirecting to `/app/reinstalling`; when the service
+returns `null`, it must not enqueue anything.
+
+### Finding 5 — required access/restoration evidence is incomplete
+
+The production `assertActiveShop`/`assertSupportShop` shape is directionally correct,
+but the focused suite does not prove several explicit SHOPIFY-006 acceptance cases.
+For example, `shop-access-policy.test.ts` currently tests only an UNINSTALLED Shop
+**without** a reinstall marker, so it never executes the new `/app/reinstalling`
+branch.
+
+Attempt 2 must add deterministic executable tests rather than source-only comments.
+
+#### `tests/unit/services/shop.service.test.ts`
+
+Add/strengthen tests proving:
+
+1. delayed duplicate uninstall after a reinstall marker exists performs no
+   unconditional marker-clearing mutation;
+2. first begin attempt persists marker + immediate schedule;
+3. existing pending attempt preserves marker and schedule;
+4. existing stopped attempt (`marker != null`, `nextReconcileAt == null`) is **not**
+   automatically restarted by begin/auth;
+5. simulated first-attempt CAS loss re-reads and returns the competing transaction's
+   durable marker/schedule, with no stale schedule overwrite;
+6. Retry while `nextReconcileAt != null` is rejected with no marker/schedule mutation;
+7. stopped Retry resets the exact old marker and immediate schedule once;
+8. stale Retry Shop CAS failure after lifecycle change performs no Subscription
+   update/create and returns `null`.
+
+#### `tests/unit/routes/auth-catchall.test.ts`
+
+Prove:
+
+9. ACTIVE is a lifecycle no-op;
+10. SUSPENDED never calls begin/enqueue;
+11. first/pending UNINSTALLED state redirects `/app/reinstalling` and enqueues only
+    when a durable payload exists;
+12. stopped UNINSTALLED state still redirects `/app/reinstalling` when begin returns
+    `null`, and does not enqueue.
+
+#### `tests/unit/shop-access-policy.test.ts`
+
+Prove separately:
+
+13. `UNINSTALLED + reinstallPendingAt` on an active/product capability redirects
+    `/app/reinstalling`;
+14. `UNINSTALLED` without a marker retains the existing fallback redirect;
+15. `UNINSTALLED + reinstallPendingAt` is allowed through `assertSupportShop`;
+16. SUSPENDED support remains allowed.
+
+#### `tests/unit/home-route.test.ts`
+
+Add a pending-reinstall loader test proving the redirect occurs **before** calls to:
+
+```text
+shopSettings.findUnique
+billingService.getSubscription
+readPendingRecoveries
+checkoutRecovery.findMany
+billingPeriod.findMany
+usageEvent.findMany
+```
+
+Also retain/prove the existing Background outcomes:
+
+- ACTIVE + onboarding incomplete/NO_CONTRACT reaches onboarding without product data;
+- ACTIVE Free/Paid/Trialing can continue through the normal merchant application.
+
+#### `tests/unit/routes/reinstalling-route.test.ts`
+
+Add explicit loader/action cases proving:
+
+17. ACTIVE -> `/app`;
+18. SUSPENDED -> `/app/merchant-support`;
+19. UNINSTALLED with no marker -> normal auth/install handling (`/auth/login` in the
+    current implementation);
+20. ordinary pending/stopped loader reads only the Shop + reinstall Subscription
+    schedule and does not reset the retry window;
+21. Retry action with a null service result does not enqueue.
+
+#### Existing merchant/billing route suites
+
+Add/strengthen behavioural tests proving:
+
+22. `/app/billing/select` for
+    `UNINSTALLED + reinstallPendingAt` redirects `/app/reinstalling` before Shopify
+    hosted-pricing redirect is invoked;
+23. authenticated pending-reinstall merchant support remains reachable and uses only
+    the authenticated Shop id;
+24. the reinstall page/routes add no `moda-interact-admin` route/link.
+
+Reuse `tests/unit/billing-ui.test.ts` and
+`tests/unit/merchant-support-route.test.ts` where practical; do not create duplicate
+access-policy implementations inside tests.
+
+### Scope / non-goals for Attempt 2
+
+Allowed production scope:
+
+```text
+app/services/shop/shop.service.ts
+app/routes/auth/catchall/route.jsx
+```
+
+`app/routes/app/reinstalling/route.jsx` may be changed only if necessary to consume the
+corrected service result; its product/state design should otherwise remain intact.
+
+Allowed test scope includes the focused files listed above.
+
+Do **not** modify:
+
+- Prisma schema/migrations;
+- Shared package/contracts;
+- BACKGROUND-006;
+- Partner API/provider calls;
+- BillingPeriod/credit/refund/promotion business state;
+- shop identity resolution;
+- Admin, Messaging or Gateway;
+- upgrade/downgrade/cancellation/freeze logic.
+
+Do not add a second queue producer or a local subscription-reconciliation contract.
+
+### Required validation for Attempt 2
+
+Run from `moda-interact`:
+
+```bash
+npm test -- --run \
+  tests/unit/services/shop.service.test.ts \
+  tests/unit/shop-access-policy.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/home-route.test.ts \
+  tests/unit/routes/auth-catchall.test.ts \
+  tests/unit/routes/reinstalling-route.test.ts \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/merchant-support-route.test.ts \
+  tests/unit/routes/explicit-route-config.test.ts
+
+npm test
+npm run build
+npm run typecheck
+npm run lint
+git diff --check
+```
+
+Report exact pass/fail/skip counts. Existing unrelated repository lint/typecheck
+baselines may be documented, but there must be no diagnostic in an Attempt-2 changed
+file.
+
+### Workflow / stop condition
+
+Return this **same task** through the normal `/moda-task` workflow.
+
+Keep:
+
+```text
+attempt: 1
+```
+
+The next authorized claim increments it to **Attempt 2 exactly once**.
+
+After implementing only these corrections, updating the Completion Report, setting
+`status: review`, clearing `executor`/`claimed_at`, committing/pushing both mirrored
+task branches, STOP and return to `moda_architect`.
+
+`ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
+
