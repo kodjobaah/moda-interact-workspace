@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 89
 executor: copilot
 claimed_at: '2026-09-13T16:28:30Z'
@@ -215,7 +215,7 @@ Stop if ADMIN-007 reference semantics would need to be changed, if DATABASE-013 
 ## Completion Report
 
 ### Status
-In Progress.
+Review.
 
 ### Files Changed
 - `moda-interact-admin/src/app/actions/billing-plan.ts`
@@ -236,25 +236,32 @@ In Progress.
 - Guarded edge creation/reactivation and economics-affecting plan updates/toggles.
 - Added deterministic per-edge capacity, pack, cost, premium, status, and evidence explanations using Admin ICU keys.
 - Added focused regression coverage for guard outcomes, audit evidence, mutation blocking, and server-side enforcement.
+- Attempt 2 correction: enabled local pack mappings now require exact agreement with the latest verified Shopify snapshot; stale size or handle evidence returns `UNVERIFIED / INVALID_TOPUP_CONFIGURATION` before mutation.
+- Attempt 2 correction: proposed top-ups-off state is evaluated with top-ups disabled and produces `PASS / NO_TOPUPS_AVAILABLE` rather than inheriting historical snapshot enablement.
+- Attempt 2 correction: the catalog explains verified Shopify evidence, top-up path, guardrail result codes, and plans with no outgoing upgrade edge; the new copy is registered in the Admin ICU manifest.
+- Attempt 2 correction: added behavioral regression coverage for exact pack evidence, stale size/handle rejection, and top-ups-off semantics while preserving the accepted evaluator arithmetic.
 
 ### Validation Results
-- `npm test`: 163 passed, 0 failed, 3 skipped.
-- `node --test tests/security/admin-billing-plan.test.mjs`: 11 passed, 0 failed.
+- `npm test`: 164 passed, 0 failed.
+- `node --experimental-strip-types --test tests/security/admin-billing-plan.test.mjs`: 12 passed, 0 failed.
 - `npx tsc --noEmit --pretty false`: passed.
 - `npm run lint`: 0 errors; two existing `queue-monitor.tsx` hook warnings.
 - `npm run prisma:validate`: passed.
 - `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
-- Prettier check and `git diff --check`: passed.
+- Focused Prettier check for changed files and `git diff --check`: passed. Repository-wide Prettier check remains noisy on 267 existing files and was not used as a failure gate.
 
 ### Git / VCS
 - Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-ADMIN-009`.
 - Branch: `task/ARCH-010-ADMIN-009`.
 - Claim commit: `97bed1e`.
-- Implementation commit: `19f649a` (`feat(admin): enforce upgrade economics guardrail`).
+- Implementation commit: `2f0572a` (`fix(admin): close upgrade economics review gaps`), parent `19f649a`.
 - Remote branch: `origin/task/ARCH-010-ADMIN-009`.
+- Parent worktree: `moda-interact-workspace-task-ARCH-010-ADMIN-009`, branch `task/ARCH-010-ADMIN-009`.
+- Parent synchronization includes current `origin/main`; Attempt-1 claim `97bed1e` and report `5a17755` are ancestors of the parent HEAD.
+- No Admin submodule gitlink or unrelated repository was staged or modified by the parent report update.
 
 ### Architect Review
-Pending.
+Pending Architect Review.
 
 ## Architect Review
 
