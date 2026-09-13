@@ -9,9 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 49
-attempt: 3
+attempt: 4
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-SHARED-008
@@ -25,6 +25,8 @@ enables:
 - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
 updated: 2026-09-13
+executor: copilot
+claimed_at: 2026-09-13T23:08:29Z
 ---
 
 # ARCH-010-BACKGROUND-006: Reconcile reinstalled shops before business execution resumes
