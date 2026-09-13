@@ -11,9 +11,9 @@ execution_mode: agent
 completion_mode: automatic
 status: ready
 priority: 53
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: '2026-09-13T14:19:21Z'
+attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
 - ARCH-010-SHARED-008
