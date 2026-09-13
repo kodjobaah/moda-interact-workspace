@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 47
-executor: copilot
-claimed_at: '2026-09-13T18:45:31Z'
+executor:
+claimed_at:
 attempt: 7
 depends_on:
 - ARCH-010-BACKGROUND-001
@@ -542,7 +542,7 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Review.
 
 ### Files Changed
 - `moda-interact-background/src/services/same-plan-billing-period-rollover.service.ts`
@@ -4156,4 +4156,91 @@ publish evidence commit(s);
 publish factual Completion Report + exact 1–35 matrix;
 STOP for moda_architect.
 ```
+
+## Attempt 7 Completion Report
+
+Attempt 7 was evidence-only. No production source, schema, or shared-contract
+file was changed. The implementation evidence was published as:
+
+```text
+dd185ef test(background): complete billing rollover evidence
+origin/task/ARCH-010-BACKGROUND-007: dd185ef
+```
+
+Changed files:
+
+```text
+tests/unit/services/same-plan-billing-period-rollover.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts
+```
+
+Validation observed:
+
+```text
+npm run prisma:validate: passed
+npm run prisma:generate: passed
+Focused transition/reconciliation/publisher suites: 4 files, 94 passed
+Adjacent BG8/BG9 suites: 4 files, 112 passed
+Concurrency integration wrapper: 1 file, 1 passed
+Full integration suite: 2 files, 3 passed
+Full unit suite: 53 files, 677 passed, 10 pre-existing failures
+npx tsc --noEmit: 15 pre-existing diagnostics in two untouched services
+npm run build: blocked by the same pre-existing Prisma-client drift
+git diff --check: passed
+```
+
+The full-unit failures are the existing recovery-credit purchase and
+observability-startup baseline failures. The typecheck/build diagnostics are in
+`src/services/purchased-recovery-reservation.service.ts` and
+`src/services/recovery-credit-purchase.service.ts`; no changed file is named in
+those diagnostics.
+
+### Required Scenario Mapping
+
+| Scenario | Exact test file | Exact test title | Result |
+|---|---|---|---|
+| 1 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
+| 2 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `uses the exact source projection CAS when rescheduling an early rollover job` | passed |
+| 3 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `does not mutate or enqueue when the schedule changes during Partner verification` | passed |
+| 4 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `ignores stale jobs after the durable schedule changes` | passed |
+| 5 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `records a provider-cycle lag retry with a new deterministic job after the boundary` | passed |
+| 6 | `tests/unit/services/billing-reconciliation.service.test.ts` | `preserves the mapped plan when the Partner API fails` | passed |
+| 7 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `schedules the next Paid pre-close boundary after a contiguous rollover` | passed |
+| 8 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `creates only the provider cycle when a Paid rollover has a gap` | passed |
+| 9 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `fails closed when a successor has incompatible canonical identity` | passed |
+| 10 | `tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts` | `serializes two independent transitions into one successor period` | passed |
+| 11 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `does not reopen a CLOSED successor during replay` | passed |
+| 12 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `moves only old PENDING and RETRYABLE events to bounded attention` | passed |
+| 13 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `does not overwrite old REPORTED or IN_FLIGHT events during rollover` | passed |
+| 14 | `tests/unit/services/shopify-usage-event-publisher.service.test.ts` | `scopes stale in-flight recovery to the requested BillingPeriod` | passed |
+| 15 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `leaves an old pack purchase REQUESTED when its event is closed before reporting` | passed |
+| 16 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `does not roll back durable state when queue publication fails` | passed |
+| 17 | `tests/unit/services/billing-reconciliation.service.test.ts` | `lets the canonical rollover return its successor without using the legacy period upsert` | passed |
+| 18 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `releases RESERVED and AMBIGUOUS reservations as PERIOD_CLOSED and closes the counter invariant` | passed |
+| 19 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `releases RESERVED and AMBIGUOUS reservations as PERIOD_CLOSED and closes the counter invariant` | passed |
+| 20 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `aborts before releasing or closing when reservation aggregate mismatches the counter` | passed |
+| 21 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `creates an exact Paid successor snapshot and included grant` | passed |
+| 22 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `does not reset a compatible successor included counter on replay` | passed |
+| 23 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `emits one Paid capacity hint while allowing the generic hook for Free rollover` | passed |
+| 24 | `tests/unit/services/recovery-billing.service.test.ts` | `does not reserve paid included capacity while the billing period is draining` | passed |
+| 25 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `creates one canonical Free period for an exact cycle without a credit counter` | passed |
+| 26 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `creates the full Free period snapshot without an included-credit counter` | passed |
+| 27 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `rotates an existing pack-enabled Free period without counters or lifetime-state mutation` | passed |
+| 28 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `preserves an existing lifetime counter and exact period replay state` | passed |
+| 29 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `rotates an existing pack-enabled Free period without counters or lifetime-state mutation` | passed |
+| 30 | `tests/unit/services/recovery-billing.service.test.ts` | `uses the closing reason only after all DRAINING fallbacks are exhausted` | passed |
+| 31 | `tests/unit/services/recovery-billing.service.test.ts` | `blocks an expired paid period with the reconciliation reason` | passed |
+| 32 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `moves only old PENDING and RETRYABLE events to bounded attention` | passed |
+| 33 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `creates one canonical Free period for an exact cycle without a credit counter` | passed |
+| 34 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `emits one Paid capacity hint while allowing the generic hook for Free rollover` | passed |
+| 35 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
+
+The matrix titles were mechanically checked with `rg` against their named test
+files. Parent report status is `Review`; the task claim is cleared. The parent
+and implementation worktrees were clean before report finalization, and the
+implementation branch was pushed at `dd185ef`.
+
+Task status: review. Awaiting moda_architect review; no architect acceptance decision has been made by this agent.
 
