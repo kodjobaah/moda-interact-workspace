@@ -542,14 +542,14 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-In Progress.
+Ready for Review.
 
 ### Files Changed
 - `moda-interact-background/src/services/same-plan-billing-period-rollover.service.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
-- `moda-interact-background/src/services/shopify-usage-event-publisher.service.ts`
 - `moda-interact-background/tests/unit/services/same-plan-billing-period-rollover.service.test.ts`
+- `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 - `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
@@ -565,22 +565,83 @@ In Progress.
 - Added dedicated 60-second rollover retry/CAS handling for Partner transport, null-provider, and old-cycle lag outcomes.
 - Made rotating same-plan reconciliation return the canonical projection instead of reopening or overwriting periods; null-provider evidence preserves the current projection and schedules retry.
 - Added behavioral rollover tests for non-active status rejection and incompatible successor identity; updated null-provider reconciliation coverage.
+- Attempt 4 specifically fixed rotating provider-cycle lag to persist `PROVIDER_CYCLE_LAG`, retry after 60 seconds, reuse the deterministic existing queue job, and isolate enqueue failure; cleared cycle-specific Free scheduling when pack billing is disabled; and strengthened early pre-close rescheduling with exact source-projection CAS.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
-- Focused TypeScript diagnostics for all three changed files: passed; no diagnostics in changed files.
-- Focused billing suites: `4 files, 63 tests passed`.
+- `npm run prisma:generate`: passed.
+- Focused billing suites: `4 files, 74 tests passed`.
+- Adjacent required unit suites: `112 tests passed`.
+- `npm run test:integration`: `3 tests passed`.
 - `git diff --check`: passed.
-- `npm run test:unit`: blocked by 10 existing failures in recovery-purchase/schema-state and observability startup tests; focused changed-file tests pass.
-- `npm run build`: blocked by existing Prisma-client/type mismatches in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no changed file appears in the build errors.
-- `npx tsc --noEmit`: no diagnostics in changed files; unrelated existing diagnostics remain in purchased recovery services.
+- `npm run test:unit`: `53 files passed; 657/667 tests passed`; 10 failures remain in the pre-existing recovery-credit/schema-drift and observability-startup baseline.
+- `npm run build`: blocked by the same pre-existing Prisma-client/type mismatches in `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no changed file appears in the errors.
+- `npx tsc --noEmit`: no diagnostics in changed files; 15 unrelated diagnostics remain in the purchased recovery services.
+
+### Required Scenario Mapping
+
+| Scenario | Exact permanent test | Result |
+|---|---|---|
+| 1 | `billing-subscription-reconciliation.service.test.ts` — `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
+| 2 | `billing-subscription-reconciliation.service.test.ts` — `uses exact source projection CAS when rescheduling an early rollover job` | passed |
+| 3 | `billing-subscription-reconciliation.service.test.ts` — `does not mutate or enqueue when the schedule changes during Partner verification` | passed |
+| 4 | `billing-subscription-reconciliation.service.test.ts` — `ignores stale jobs after the durable schedule changes` | passed |
+| 5 | `billing-subscription-reconciliation.service.test.ts` — `records a provider-cycle lag retry with a new deterministic job after the boundary` | passed |
+| 6 | `billing-reconciliation.service.test.ts` — `preserves the mapped plan when the Partner API fails` | passed |
+| 7 | `same-plan-billing-period-rollover.service.test.ts` — `schedules the next Paid pre-close boundary after a contiguous rollover` | passed |
+| 8 | `same-plan-billing-period-rollover.service.test.ts` — `creates only the provider cycle when a Paid rollover has a gap` | passed |
+| 9 | `same-plan-billing-period-rollover.service.test.ts` — `fails closed when a successor has incompatible canonical identity` | passed |
+| 10 | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant` | passed |
+| 11 | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant` | passed |
+| 12 | `billing-reconciliation.service.test.ts` — `persists rotating provider-cycle lag and enqueues the existing +60 second job` | passed |
+| 13 | `shopify-usage-event-publisher.service.test.ts` — `claims and reports positive and negative usage with persisted identity` | passed |
+| 14 | `shopify-usage-event-publisher.service.test.ts` — `scopes stale in-flight recovery to the requested BillingPeriod` | passed |
+| 15 | `shopify-usage-event-publisher.service.test.ts` — `B008-R6 activates packs only through provider-confirmed current-cycle reconciliation` | passed |
+| 16 | `billing-subscription-reconciliation.service.test.ts` — `does not roll back durable state when queue publication fails` | passed |
+| 17 | `billing-reconciliation.service.test.ts` — `B008-R5 links the latest open billing cycle as current` | passed |
+| 18 | `same-plan-billing-period-rollover.service.test.ts` — `releases old reservations with PERIOD_CLOSED` | passed |
+| 19 | `same-plan-billing-period-rollover.service.test.ts` — `forfeits all remaining included capacity after reservation release` | passed |
+| 20 | `same-plan-billing-period-rollover.service.test.ts` — `fails closed when reservation and included-counter invariants mismatch` | passed |
+| 21 | `same-plan-billing-period-rollover.service.test.ts` — `creates exact successor Paid snapshots and grant` | passed |
+| 22 | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant` | passed |
+| 23 | `same-plan-billing-period-rollover.service.test.ts` — `sends one post-commit capacity-resume hint for Paid rollover` | passed |
+| 24 | `effective-billing-policy.service.test.ts` — accepted BG8 draining admission coverage | passed |
+| 25 | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter` | passed |
+| 26 | `billing-subscription-reconciliation.service.test.ts` — `creates the full Free period snapshot without an included-credit counter` | passed |
+| 27 | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter` | passed |
+| 28 | `billing-subscription-reconciliation.service.test.ts` — `preserves an existing lifetime counter and exact period replay state` | passed |
+| 29 | `billing-subscription-reconciliation.service.test.ts` — `preserves an existing lifetime counter and exact period replay state` | passed |
+| 30 | `effective-billing-policy.service.test.ts` — accepted BG8 Free draining pack-purchase block | passed |
+| 31 | `effective-billing-policy.service.test.ts` — accepted BG8 Free reconciling lifetime-admission coverage | passed |
+| 32 | `shopify-usage-event-publisher.service.test.ts` — `marks a valid event needs attention when default provider configuration is invalid` | passed |
+| 33 | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter` | passed |
+| 34 | `same-plan-billing-period-rollover.service.test.ts` — Free rollover emits no Paid capacity-resume hint | passed |
+| 35 | `billing-subscription-reconciliation.service.test.ts` — `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
+
+Permanent pre-close failure regressions are covered by the reconciliation tests for scoped publisher failure, retry-before-boundary, exact-boundary retry, final-minute failure metadata, and stale projection CAS; all passed in the focused suite.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007`
 - Branch: `task/ARCH-010-BACKGROUND-007`
-- Commit: `08cb369` (`fix(background): harden same-plan billing rollover`)
+- Commit: `1863a7fd0b91bdcafb4a8de8c20a4ec64718b447` (`fix(background): close billing rollover review gaps`)
 - Pushed to `origin/task/ARCH-010-BACKGROUND-007`.
-- Parent report is being published from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007` after implementation synchronization; the Background submodule gitlink is not staged.
+- Parent report is being published from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007`; the Background submodule gitlink is not staged.
+
+### Attempt 4 Workflow Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-007` / `task/ARCH-010-BACKGROUND-007`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007` / `task/ARCH-010-BACKGROUND-007`.
+- Shared checkout switched or mutated: no. Another task worktree reused: no.
+- Start synchronization: task branches already current; origin/main already incorporated.
+- Database submodule initialized: yes; HEAD `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; gitlink unchanged.
+- BACKGROUND-009 accepted head `29478e94b8fc91bc4671a57c7af656ea20f1a66e` is an ancestor of the implementation branch: yes.
+- Attempt 1 claim/report, Attempt 2 claim/report, and Attempt 3 claim/report remain ancestors of the parent branch: yes.
+- Parent and implementation worktrees are clean after publication.
+
+### Attempt 4 Handoff
+
+Status is `review`. Implementation and parent report are published. Stop for `moda_architect` review.
 
 ### Architect Review
 
