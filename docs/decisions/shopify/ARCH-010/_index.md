@@ -18,7 +18,7 @@ Coordinator:
 
 > Synchronized 2026-09-13 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 6, `ready` 2, `pending` 13, `superseded` 5
+Current counts: `complete` 6, `ready` 3, `pending` 12, `superseded` 5
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -27,7 +27,7 @@ Current counts: `complete` 6, `ready` 2, `pending` 13, `superseded` 5
 | `SHOPIFY-003` | Activate first verified paid plan with exact billing period | **Ready** | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-002, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-003, ARCH-008-SHOPIFY-001, ARCH-010-SHOPIFY-023 |
 | `SHOPIFY-004` | Present current paid-period entitlement to merchants | Pending | ARCH-010-SHOPIFY-003, ARCH-010-DATABASE-013 |
 | `SHOPIFY-005` | Make uninstall an execution gate without resetting billing state | Superseded | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005 |
-| `SHOPIFY-006` | Gate reinstall until Background restores Shopify subscription truth | Pending | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-006 |
+| `SHOPIFY-006` | Gate reinstall until Background restores Shopify subscription truth | **Ready** | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-006 |
 | `SHOPIFY-007` | Present App Pricing billing-cycle transition and guard late-cycle top-up purchase | Pending | ARCH-010-BACKGROUND-007, ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-003, ARCH-010-SHOPIFY-004 |
 | `SHOPIFY-008` | Present recovery-capacity exhaustion on merchant dashboard and history | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-BACKGROUND-009, ARCH-010-SHARED-008 |
 | `SHOPIFY-009` | Add local merchant recovery-capacity projection | Pending | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-004, ARCH-010-SHOPIFY-023 |

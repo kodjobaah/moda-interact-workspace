@@ -48,7 +48,7 @@ ARCH-010-SHOPIFY-003
 ARCH-010-SHOPIFY-022
 ```
 
-These tasks are independently executable according to their own dependencies. Do not serialize them merely because they share ARCH-010. BACKGROUND-010 remains incomplete and its dependants (`BACKGROUND-012`, `SHOPIFY-015`, and `SYSTEM-TEST-001`) remain gated until BACKGROUND-010 is architect-accepted Complete.
+These tasks are independently executable according to their own dependencies. BACKGROUND-006 is Ready only for its architect-requested Attempt-3 evidence completion; its production correction at `baa33fb` is substantially conformant, but its dependants remain gated until the task is architect-accepted Complete.
 
 ## Accepted-history reconciliation
 
