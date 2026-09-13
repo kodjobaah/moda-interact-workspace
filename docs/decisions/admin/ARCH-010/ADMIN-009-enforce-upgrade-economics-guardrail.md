@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 89
-executor: copilot
-claimed_at: '2026-09-13T18:02:00Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-ADMIN-007
@@ -1072,4 +1072,502 @@ When complete:
 3. update Completion Report with exact commands/results and mandatory evidence;
 4. publish parent task report;
 5. STOP for architect review.
+
+## Architect Review — Attempt 3
+
+### Changes Requested
+
+Attempt 3 is **not accepted**. Keep this same task and return it to `ready` for
+Attempt 4. Do not create a replacement task and do not begin
+`ARCH-010-SYSTEM-TEST-005`.
+
+The implementation under review is:
+
+```text
+0b55c6e35f2a14b650f21910e4ce8831d65bac21
+```
+
+The Attempt-3 parent task history is:
+
+```text
+claim:
+  869c7619503de08361de370bc1c6e7deecffd040
+
+report:
+  24083ae1447c72dde95b184ed46f61548b3e2e02
+```
+
+Preserve that history. Attempt 4 is the next claim; increment `attempt` exactly once
+when claimed.
+
+### Attempt-3 corrections accepted in substance — preserve these
+
+The following behavior is now correct and must not regress:
+
+```text
+- lower==higher or higher monthly allowance <= lower monthly allowance is blocked;
+- invalid structural edges return UNVERIFIED / INVALID_UPGRADE_EDGE when no earlier
+  pack-evidence mismatch masks that result;
+- valid top-ups-off edges still return PASS / NO_TOPUPS_AVAILABLE;
+- stale pack size/handle evidence still fails closed;
+- INVALID_UPGRADE_EDGE has dedicated Admin copy;
+- UI production markup still includes top-up path, result code,
+  verified-Shopify-evidence wording, charging-authority disclaimer and
+  NO_UPGRADE_EDGE presentation;
+- accepted ADMIN-007 evaluator arithmetic remains unchanged;
+- full Admin validation remains green apart from the documented existing warnings.
+```
+
+### Correction 1 — structural edge validation must run before pack-evidence mismatch
+
+Primary file:
+
+```text
+src/lib/admin/billing-plan-guardrail.ts
+```
+
+Attempt 2 explicitly required structural validity to be checked before pack-mapping
+mismatch/top-up evaluation.
+
+Attempt 3 computes both results, but resolves them in this order:
+
+```ts
+const result =
+  mismatchResult ??
+  invalidEdgeResult ??
+  validateSinglePackShopifyEconomics(...);
+```
+
+Therefore a proposal that is simultaneously:
+
+```text
+- structurally invalid, and
+- using stale/mismatched enabled-pack evidence
+```
+
+returns:
+
+```text
+UNVERIFIED / INVALID_TOPUP_CONFIGURATION
+```
+
+instead of the canonical structural result:
+
+```text
+UNVERIFIED / INVALID_UPGRADE_EDGE
+```
+
+Change only the precedence:
+
+```ts
+const result =
+  invalidEdgeResult ??
+  mismatchResult ??
+  validateSinglePackShopifyEconomics(...);
+```
+
+Do not modify ADMIN-007 arithmetic.
+
+Required permanent tests:
+
+```text
+- invalid edge + exact pack evidence -> INVALID_UPGRADE_EDGE;
+- invalid edge + stale pack size -> INVALID_UPGRADE_EDGE;
+- invalid edge + stale pack handle -> INVALID_UPGRADE_EDGE;
+- valid edge + stale pack size/handle -> INVALID_TOPUP_CONFIGURATION;
+- valid top-ups-off edge -> PASS / NO_TOPUPS_AVAILABLE.
+```
+
+### Correction 2 — scenarios 48–60 must exercise the real mutation transaction boundary
+
+Files:
+
+```text
+src/app/actions/billing-plan.ts
+tests/security/admin-billing-plan.test.mjs
+```
+
+A narrowly scoped helper file is allowed if required:
+
+```text
+src/lib/admin/billing-plan-mutation.ts
+```
+
+Attempt 3's new test:
+
+```text
+re-evaluates every affected edge and blocks invalid or unverifiable proposals atomically
+```
+
+does **not** invoke the production mutation path.
+
+It builds:
+
+```js
+const mutate = (affectedEdges) => {
+  const writes = [];
+  try {
+    assertBillingUpgradeEconomicsPass(affectedEdges);
+    writes.push("billingPlan", "billingPlanFeature", "audit");
+    ...
+  }
+}
+```
+
+That proves the assertion helper throws, but it does not prove
+`mutateBillingPlanAction` / its transaction core:
+
+```text
+- loads every affected active adjacent edge;
+- substitutes the proposed plan on both incoming and outgoing edges;
+- loads latest verified snapshots;
+- blocks before catalog writes;
+- commits PASS mutations;
+- writes UPGRADE_ECONOMICS_EVALUATED evidence in the same transaction.
+```
+
+Create one deterministic production transaction seam and test that seam directly.
+
+Preferred implementation shape:
+
+```ts
+// Either in billing-plan.ts or a new billing-plan-mutation.ts:
+
+export async function applyBillingPlanUpdateInTransaction({
+  transaction,
+  existing,
+  proposed,
+  adminId,
+  reason,
+}: {
+  transaction: BillingPlanMutationTransaction;
+  existing: ...;
+  proposed: ...;
+  adminId: string;
+  reason: string;
+}): Promise<...>
+```
+
+`mutateBillingPlanAction(...)` must call this exact helper inside
+`prisma.$transaction(...)`.
+
+The helper must own the actual order:
+
+```text
+1. determine whether economics changed;
+2. evaluate every affected active edge using the proposed plan;
+3. assert all results PASS;
+4. write UPGRADE_ECONOMICS_EVALUATED audit rows;
+5. update BillingPlan/BillingPlanFeature;
+6. write PLAN_CATALOG_CHANGED audit.
+```
+
+If you use another helper name/signature, keep the same ownership boundary. Do not
+create a fake test-only mutation function.
+
+Use a deterministic fake transaction object in tests so no live database is required.
+
+Required behavioral tests through this production transaction helper:
+
+```text
+48 enabling top-ups re-evaluates lower->higher;
+49 pack-size change re-evaluates lower->higher;
+50 lower allowance change re-evaluates previous->lower and lower->higher;
+51 higher allowance change re-evaluates lower->higher and higher->next;
+52 top-ups OFF valid edge commits with PASS / NO_TOPUPS_AVAILABLE;
+53 top-ups ON without compatible current evidence rejects UNVERIFIED;
+54 PASS performs economics audit then catalog write;
+55 FAIL performs no BillingPlan/BillingPlanFeature write;
+56 UNVERIFIED performs no BillingPlan/BillingPlanFeature write;
+57 a crafted production mutation invocation cannot bypass FAIL;
+58 currency mismatch rejects before catalog write;
+59 no outgoing/incoming edge performs no invented evaluation;
+60 top plan performs no invented higher-plan evaluation.
+```
+
+For scenarios 55/56/57/58 assert the fake transaction's write-call log contains no
+catalog mutation after the guard throws.
+
+Do not satisfy these scenarios with source-order regexes or by calling only
+`evaluateBillingUpgradeEdge(...)`.
+
+### Correction 3 — scenarios 59 and 65–69 require real rendered UI evidence
+
+Files:
+
+```text
+src/components/admin/billing-plan-catalog.tsx
+tests/**/billing-plan-economics-presentation.test.*
+```
+
+Attempt 3's test:
+
+```text
+renders deterministic economics evidence without exposing provider credentials
+```
+
+is still source-text matching:
+
+```js
+assert.match(componentSource, ...)
+assert.doesNotMatch(componentSource, ...)
+```
+
+That is not a render test.
+
+Do not introduce a new testing framework.
+
+Use the already-installed React/ReactDOM runtime and Node's test runner. A valid
+approach is:
+
+```ts
+import { renderToStaticMarkup } from "react-dom/server";
+```
+
+Export the smallest presentation components needed for deterministic rendering,
+for example:
+
+```ts
+export function EconomicsExplanation(...)
+export function NoUpgradeEdgeNotice(...)
+```
+
+or export one dedicated presentation wrapper.
+
+Render fixture data to static markup and assert the visible text/values.
+
+Required render cases:
+
+```text
+59 no active outgoing upgrade edge:
+   renders NO_UPGRADE_EDGE;
+   does not render an invented higher plan;
+
+65 PASS:
+   renders lower plan;
+   higher plan;
+   capacity gap;
+   required pack units;
+   top-up path / packSummary;
+   stay + top-ups cost;
+   upgrade cost;
+   actual premium;
+   required premium;
+   PASS;
+
+66 FAIL:
+   renders available calculation evidence;
+   visibly states activation/change is blocked;
+
+67 UNVERIFIED:
+   renders the exact incompatible/missing-evidence message;
+   never displays PASS for that evaluation;
+
+68 integer-minor display:
+   feed known integer-minor values and assert exact formatted visible currency;
+   do not recompute economics in the component;
+
+69 authority wording:
+   rendered markup contains
+   "Verified Shopify economics evidence used by the Admin guardrail";
+   rendered markup contains the charging-authority disclaimer;
+   rendered markup contains no provider token/credential/raw-response fixture value.
+```
+
+`NO_UPGRADE_EDGE` must be based on actual configured active ladder/evaluation input,
+not a source-string assertion.
+
+### Correction 4 — audit evidence test must actually assert topUpPath and secret exclusion
+
+Files:
+
+```text
+src/lib/admin/billing-plan-guardrail.ts
+tests/security/admin-billing-plan.test.mjs
+```
+
+Production `billingUpgradeEconomicsAuditEvidence(...)` already includes:
+
+```text
+topUpPath
+```
+
+Preserve it.
+
+The permanent key assertion still omits `topUpPath`.
+
+Update the behavioral audit test to assert every required key:
+
+```text
+lowerPlanId
+higherPlanId
+lowerSnapshotId
+higherSnapshotId
+minimumUpgradePremiumBps
+lowerMonthlyIncluded
+higherMonthlyIncluded
+recoveryCreditsPerPack
+packUnitsNeeded
+topUpPath
+topUpCostMinor
+stayAndTopUpCostMinor
+upgradeCostMinor
+requiredMinimumMinor
+premiumBps
+status
+code
+```
+
+Then serialize the returned audit evidence:
+
+```js
+const serialized = JSON.stringify(evidence);
+```
+
+and prove it does not contain sentinel fixture values placed in unrelated
+provider/credential objects, including examples such as:
+
+```text
+TEST_ACCESS_TOKEN_123
+TEST_PARTNER_SECRET_456
+TEST_RAW_PROVIDER_RESPONSE_789
+```
+
+Do not merely regex-search the component source for `accessToken`/`clientSecret`.
+
+The audit helper must remain a whitelist projection of evaluator evidence; never
+spread a provider response or principal object into it.
+
+### Correction 5 — Attempt-4 workflow evidence
+
+Attempt 3 now contains the required physical-isolation and synchronization evidence.
+Preserve that good workflow discipline.
+
+Attempt 4 must record actual observed values and extend the history block:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
+  parent branch: task/ARCH-010-ADMIN-009
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
+  implementation branch: task/ARCH-010-ADMIN-009
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Parent history reconciliation:
+  Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
+  Attempt-1 report 5a17755... ancestor of parent HEAD: yes
+  Attempt-2 claim 645574c... ancestor of parent HEAD: yes
+  Attempt-2 report eda0f87... ancestor of parent HEAD: yes
+  Attempt-3 claim 869c761... ancestor of parent HEAD: yes
+  Attempt-3 report 24083ae... ancestor of parent HEAD: yes
+```
+
+Also state both canonical task worktrees are clean at handoff.
+
+### Attempt 4 allowed scope
+
+Expected production scope:
+
+```text
+src/lib/admin/billing-plan-guardrail.ts
+src/app/actions/billing-plan.ts
+src/components/admin/billing-plan-catalog.tsx
+```
+
+One narrowly scoped production helper is allowed if used by the real action:
+
+```text
+src/lib/admin/billing-plan-mutation.ts
+```
+
+Expected tests:
+
+```text
+tests/security/admin-billing-plan.test.mjs
+tests/**/billing-plan-economics-presentation.test.*
+```
+
+Only change these i18n files if render evidence exposes a wording defect:
+
+```text
+src/i18n/locales/en.json
+src/i18n/required-keys.ts
+```
+
+Do not modify:
+
+```text
+src/lib/admin/upgrade-economics-guardrail.ts
+database/**
+Shared/Shopify/Background/Messaging/Gateway repositories
+merchant runtime billing/admission
+Shopify prices/App Events
+```
+
+If satisfying the real mutation tests requires changing ADMIN-007 arithmetic or
+another repository/schema, STOP and return to `moda_architect`.
+
+### Required Attempt 4 validation
+
+From the canonical Admin implementation worktree:
+
+```bash
+npm run prisma:validate
+
+node --experimental-strip-types --test \
+  tests/security/admin-billing-plan.test.mjs
+
+# Run the new render test explicitly using its exact path.
+node --experimental-strip-types --test \
+  <exact billing-plan economics presentation test path>
+
+npm test
+npx tsc --noEmit --pretty false
+npm run lint
+npm run build
+git diff --check
+```
+
+Acceptance requires:
+
+```text
+- structural invalid-edge precedence tests all pass;
+- scenarios 48–60 exercise the production mutation transaction seam;
+- scenarios 59 and 65–69 exercise rendered markup, not source text;
+- audit evidence includes topUpPath and secret-exclusion assertions;
+- all focused/new tests pass;
+- full test suite passes;
+- TypeScript and Prisma validation pass;
+- lint has no new warnings beyond the two documented existing queue-monitor hook
+  warnings;
+- build has no new warning beyond the documented BullMQ warning;
+- git diff --check passes.
+```
+
+### Attempt 4 stop conditions
+
+STOP and return this same task to `moda_architect` if:
+
+1. production transaction behavior cannot be exposed to tests without changing the
+   actual action ownership boundary;
+2. rendered UI evidence would require adding a new testing framework/package;
+3. structural precedence requires changing ADMIN-007;
+4. another repository or schema must change.
+
+When complete:
+
+1. set this same task to `review`;
+2. publish implementation commit(s);
+3. update Completion Report with exact commands/results and workflow evidence;
+4. publish parent task report;
+5. STOP for Architect Review.
 
