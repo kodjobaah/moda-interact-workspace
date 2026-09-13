@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 84
-executor: copilot
-claimed_at: 2026-09-13T21:20:04Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-010-DATABASE-013
@@ -1038,6 +1038,81 @@ publish implementation/evidence commit(s);
 publish the Completion Report;
 STOP for moda_architect review.
 ```
+
+## Attempt 4 Completion Report
+
+### Status
+
+Implementation complete; returned to architect review. Attempt 4 remains the current attempt. Claim metadata is cleared. No downstream task was started.
+
+### Changes Requested Resolution
+
+- Implemented the mandatory self-provisioned PostgreSQL correction in `tests/integration/promotion-selection.concurrency.integration.test.ts`: `@testcontainers/postgresql` starts `postgres:17.6-alpine`, applies `prisma migrate deploy`, creates three independent Prisma clients from the generated container URI, and tears down clients/container on success or setup failure.
+- Added exact devDependency `@testcontainers/postgresql` version `12.1.0` and its lockfile graph in `package.json` and `package-lock.json`.
+- Removed all `TEST_DATABASE_URL` handling from the permanent concurrency test. The only gate is `MODA_DISPOSABLE_INTEGRATION=1`.
+- Preserved the reviewed Attempt 2 production promotion logic, Attempt 3 localisation, and unit-test evidence; no production, schema, shared-contract, or cross-repository files changed.
+- Scenario A derives the winner from the fulfilled invocation and verifies the persisted selection/grant, exact winning quantity, one grant total, and no losing-campaign grant. Scenario B independently resets state and verifies both calls fulfill, one quantity-25 grant remains with `selectionCount: 2`, and the current selection points to that grant.
+
+### Files Changed
+
+- `moda-interact/package.json`
+- `moda-interact/package-lock.json`
+- `moda-interact/tests/integration/promotion-selection.concurrency.integration.test.ts`
+
+### Validation Results
+
+- `git submodule sync -- database`: passed.
+- `git submodule update --init --recursive database`: passed; database HEAD `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- Docker-backed Testcontainers integration: `MODA_DISPOSABLE_INTEGRATION=1 npx vitest run tests/integration/promotion-selection.concurrency.integration.test.ts` passed with `2` tests passed and `0` skipped.
+- Ordinary focused integration run with the gate closed: `1` file and `2` tests skipped as expected.
+- SHOPIFY-021 focused service/route/i18n tests: `4` files, `49` tests passed.
+- Full repository suite: `34` files passed, `2` skipped; `313` tests passed, `3` skipped.
+- `npm run build`: passed.
+- Touched integration-test ESLint: passed.
+- `git diff --check`: passed.
+- Full typecheck/full ESLint were not rerun because Attempt 4 validation scope explicitly limits this evidence-only change; no unrelated baseline was modified or re-investigated.
+
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-021`.
+- Parent branch: `task/ARCH-010-SHOPIFY-021`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-021`.
+- Implementation branch: `task/ARCH-010-SHOPIFY-021`.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+
+### Synchronization and History Evidence
+
+- Parent remote task branch fast-forwarded: not-needed; prepared Attempt 4 claim commit was `c80d92ba001803028336421947f991bcfdaa7543`.
+- Parent `origin/main` incorporated: already-current at preparation.
+- Implementation remote task branch fast-forwarded: not-needed; implementation started at prepared head `622605f02a871ee4f3f0d7197aa354aa307bbf8d`.
+- Implementation `origin/main` incorporated: already-current at preparation.
+- Attempt-1 claim `5c544355ff8f4201e55139371abe5dc4ce2e6330`: ancestor of parent HEAD, yes.
+- Attempt-1 implementation `a329079b004ae1b142aee92f417071fcedece70f`: preserved in implementation history, yes.
+- Attempt-1 report `7eeffc25b5c5317ca1bdd9c2ce7a9c22a763b0db`: ancestor of parent HEAD, yes.
+- Attempt-2 claim `4eb92ab802328f0e4e318e043341b67d61f96f1b`: ancestor of parent HEAD, yes.
+- Attempt-2 implementation `625b7ea30a1608db71671a5d2cf4efdf5cd6bd59`: ancestor of implementation HEAD, yes.
+- Attempt-2 report `7388dbe6ae6923f39f86326a064ef697319016a4`: ancestor of parent HEAD, yes.
+- Attempt-3 claim `32d303cdb1c05bf2e236aac96ac92ae61ff940f2`: ancestor of parent HEAD, yes.
+- Attempt-3 implementation `622605f02a871ee4f3f0d7197aa354aa307bbf8d`: ancestor of implementation HEAD, yes.
+- Attempt-3 report `8d75e88f47b78e162068ef27cb021e724e968778`: ancestor of parent HEAD, yes.
+- Database gitlink expected and actual: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; gitlink staged/changed: no.
+- Parent and implementation worktrees were clean before the report update. The implementation branch is clean after commit; the parent contains only this authorized report update.
+
+### Git / VCS
+
+- Implementation commit: `af3a9c4` (`test(ARCH-010-SHOPIFY-021): provision postgres concurrency evidence`), pushed to `origin/task/ARCH-010-SHOPIFY-021`.
+- Parent report commit/push: follows after this report update.
+- No merge to `main`, force-push, database schema change, or submodule gitlink change was performed.
+
+### Baseline Findings
+
+- The previous external-database integration blocker is resolved by the self-provisioned Testcontainers run; both required real concurrency scenarios passed.
+- The ordinary suite retains its expected two skipped integration tests because the Docker gate is unset. No new task failure was observed.
 
 ## Architect Review — Attempt 2
 
