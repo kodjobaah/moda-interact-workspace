@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 88
 executor: copilot
 claimed_at: '2026-09-13T13:39:52Z'
@@ -165,19 +165,42 @@ Stop if DATABASE-013 is unavailable or if implementation would require putting m
 ## Completion Report
 
 ### Status
-In Progress.
+Implemented and published. Awaiting architect review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-admin/src/app/(protected)/billing/controls/page.tsx`
+- `moda-interact-admin/src/app/(protected)/billing/page.tsx`
+- `moda-interact-admin/src/app/actions/billing-controls.ts`
+- `moda-interact-admin/src/app/actions/billing-economics.ts`
+- `moda-interact-admin/src/components/admin/billing-controls.tsx`
+- `moda-interact-admin/src/lib/admin/billing-control-validation.ts`
+- `moda-interact-admin/src/lib/admin/billing-economics-validation.ts`
+- `moda-interact-admin/src/lib/admin/billing-economics.ts`
+- `moda-interact-admin/tests/security/admin-billing-economics.test.mjs`
+- `moda-interact-admin/tests/unit/billing-economics-validation.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added the bounded `minimumUpgradePremiumBps` platform policy field with a 2000 bps default and existing `PLATFORM_POLICY_CHANGED` audit path.
+- Added SUPER_ADMIN-only exact durable-plan upgrade-edge creation/deactivation with self-edge, active-plan, duplicate predecessor/successor, and increasing-allowance checks.
+- Added SUPER_ADMIN-only append-only verified Shopify economics snapshots with normalized FIXED, GRADUATED, and VOLUME pricing evidence.
+- Added exact local Shopify handle, pack enablement, pack size, and pack-meter drift checks before snapshot persistence.
+- Added bounded Admin controls and the required Shopify charging-authority disclaimer. No Shopify API calls, provider mutations, merchant UI, or monetary fields on `BillingPlan` were introduced.
+- Added focused parser and source/security coverage for authorization, drift, append-only storage, tier validation, no-secret evidence, and no-Shopify-mutation boundaries.
 
 ### Validation Results
-Populate during implementation.
+- PASS: `node --experimental-strip-types --test tests/unit/billing-economics-validation.test.ts` (3/3).
+- PASS: `node --test tests/security/admin-billing-economics.test.mjs tests/security/admin-billing-controls.test.mjs` (13/13).
+- PASS: `git diff --check`.
+- PASS: database submodule SHA verified as `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; schema inspection confirmed the DATABASE-013 models and fields used by the implementation.
+- BLOCKED: `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, and `npx tsc --noEmit --pretty false` because this isolated worktree has no installed Prisma, ESLint, or TypeScript binaries.
+- BLOCKED/ENVIRONMENTAL: full `npm test` reaches existing suites but fails in spawned TypeScript module checks because the worktree has no configured alias-aware test dependency/toolchain; the focused ADMIN-008 and existing billing-controls suites pass.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-008`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-008`.
+- Implementation branch: `task/ARCH-010-ADMIN-008`.
+- Implementation commit: `52de3e2` (`Implement ADMIN-008 billing economics evidence and policy`), pushed to `origin/task/ARCH-010-ADMIN-008`.
+- Database submodule remained at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no database gitlink change was staged.
 
 ### Architect Review
 Pending.
