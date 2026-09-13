@@ -9,8 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 49
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-010-DATABASE-013
@@ -369,7 +371,7 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Ready for Architect Review.
+Architect Accepted — Complete.
 
 ### Files Changed
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
@@ -968,4 +970,74 @@ Report, setting the task back to `status: review`, clearing `executor`/`claimed_
 committing/pushing both mirrored task branches, STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-006` or `ARCH-010-SYSTEM-TEST-002`.
+
+## Architect Review — Attempt 4
+
+### Review Status
+
+**Accepted — Complete**
+
+Attempt 4 satisfies the remaining evidence-only correction contract. No production
+source change was required after the accepted Attempt-2 hardening.
+
+Accepted implementation history:
+
+```text
+production hardening: baa33fbae1a0f3883fe2beba27a0e57f98ef4ae3
+Attempt 3 evidence: 42d99a4
+Attempt 4 evidence: da921da5c5385ff9b32155316f97e01a42f1f749
+parent review handoff: 352f1fd9d0c8dc4ad55f1b8bc49e1293ea47eae8
+```
+
+The Attempt-4 test-only commit is accepted because it closes every preservation
+evidence gap from the Attempt-3 Architect Review:
+
+- `expectNoModelMutations(...)` covers every available `create`, `update`,
+  `updateMany`, `upsert`, `delete`, and `deleteMany` mutator;
+- provider-null reinstall proves no historical BillingPeriod/counter, lifetime,
+  purchase/refund, promotion-grant, or merchant-selection mutation;
+- every exact-paid corruption row proves no BillingPeriod or
+  BillingPeriodEntitlementCounter write;
+- later-cycle canonical rollover proves the reinstall wrapper does not mutate
+  lifetime, purchased, refund, promotion, or merchant-selection state;
+- the standalone reinstall Partner transport-failure case proves retry-metadata-only
+  persistence, no reinstall lifecycle transaction, preserved UNINSTALLED marker/state,
+  and exactly one deterministic retry;
+- both pre-24-hour and at-24-hour retry-boundary rows prove protected-state and Shop
+  lifecycle preservation, with deterministic retry before expiry and no automatic
+  schedule at expiry.
+
+The previously accepted Attempt-3 evidence remains intact: provider-null NO_CONTRACT
+restoration, Free lifetime preservation, unmapped pending projection, the complete
+exact-paid integrity matrix, paid pending projection, post-commit queue repair,
+canonical later-cycle rollover delegation, changed-plan fail-closed behaviour, and
+no-Shopify reconstruction.
+
+Reported validation for the accepted branch:
+
+```text
+focused reconciliation tests: 105 passed
+adjacent gates:             49 passed
+Prisma validation:          passed
+git diff --check:           passed
+full suite:                 10 known unrelated baseline failures
+build:                      15 known unrelated generated-client diagnostics
+```
+
+The full-suite/build baseline remains non-blocking because the reported failures are
+unchanged and outside BACKGROUND-006 scope; Attempt 4 changed only the focused test
+file. The uploaded review snapshot does not contain `node_modules`, so the architect
+review inspected the executable assertions and published commit diff but did not
+independently rerun npm validation from the snapshot.
+
+### Dependency release
+
+`ARCH-010-BACKGROUND-006` is now Complete at Attempt 4.
+
+`ARCH-010-SHOPIFY-006` has no remaining incomplete dependency in this review snapshot
+(`DATABASE-013` and `SHARED-008` are Complete), so it is released to **Ready**. Do not
+auto-start it.
+
+`ARCH-010-SYSTEM-TEST-002` remains **Pending / manual-gated** because its other
+implementation dependencies are incomplete and system tests must not auto-start.
 
