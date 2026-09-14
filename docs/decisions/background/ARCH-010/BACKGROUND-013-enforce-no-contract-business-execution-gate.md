@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 59
-executor: copilot
-claimed_at: 2026-09-14T11:14:49Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-010-BACKGROUND-004
@@ -1490,4 +1490,44 @@ then STOP and hand back to `moda_architect`.
 
 `ARCH-010-SHOPIFY-016` and `ARCH-010-SYSTEM-TEST-002` remain gated until
 `BACKGROUND-013` is architect-accepted Complete.
+
+## Completion Report — Attempt 3
+
+### Status
+Ready for Review.
+
+### Corrections Mapping
+- Latest Review Finding 1 implemented: `ShopExecutionEligibilityService.evaluateResolvedShop(...)` now provides the canonical no-I/O mapping for an already-loaded Shop + Subscription projection; `checkout.updated` and `cart.activity` use it before candidate refresh, recovery lookup, mutation, or provider work. `resolveShopById(...)` now honors the injected client. Covered by ACTIVE/TRIALING, NO_CONTRACT, FROZEN, UNMAPPED, SYNC_ERROR, and inactive-Shop decision tests plus both hot-path denial matrices.
+- Latest Review Finding 2 implemented: capacity-resume stops as a successful terminal ignored result when a lifecycle denial appears during page processing, and re-evaluates immediately before scheduling a continuation. Covered by the 25-item mid-page denial and final pre-continuation denial tests.
+- Accepted Attempt 2 behavior was preserved: pre-lock and in-lock recovery gates, matured-candidate in-lock gate, outbound provider-send recheck, prepared-message cleanup, and distinct lifecycle suppression remain unchanged.
+
+### Files Changed
+- Implementation commit `aba4023a39ccaf9f0c61f3e7747e4737157879e0` changed exactly six task-owned files in `moda-interact-background`: `src/services/checkout-recovery.service.ts`, `src/services/shop-execution-eligibility.service.ts`, `src/workers/recovery-capacity-resume.worker.ts`, `tests/unit/services/checkout-refresh.test.ts`, `tests/unit/services/shop-execution-eligibility.service.test.ts`, and `tests/unit/workers/recovery-capacity-resume.worker.test.ts`.
+- Parent repository change: this task report only.
+
+### Work Completed
+- Reused the canonical execution policy without adding database reads to the BACKGROUND-018 hot-path projection checks.
+- Prevented NO_CONTRACT, FROZEN, UNMAPPED, and SYNC_ERROR candidate/recovery advancement on `checkout.updated` and `cart.activity`, while preserving distinct contract-required and subscription-frozen results.
+- Prevented stale capacity-resume jobs from processing later recoveries or scheduling continuation work after lifecycle denial.
+- Added focused functional regression coverage for the resolved-shop policy mapping and both continuation race windows.
+- No Partner API call, Shopify/Meta HTTP-ingress lifecycle lookup, queue contract, schema, or submodule change was introduced.
+
+### Validation Results
+- Focused Attempt 3 suite: `npm exec vitest run tests/unit/services/shop-execution-eligibility.service.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts` — 6 files passed, 101 tests passed, 0 failed.
+- `npm run prisma:validate` — passed; schema valid.
+- `git diff --check` — passed.
+- `npm run test:unit` — 56 files passed, 2 failed; 10 failures total, matching the documented baseline: 8 in `tests/unit/services/recovery-credit-purchase.service.test.ts` and 2 in `tests/unit/runtime/observability-startup.test.ts`. No Attempt 3 file failed.
+- `npm run build` — same documented baseline: 15 TypeScript errors in unrelated `src/services/purchased-recovery-reservation.service.ts` (10) and `src/services/recovery-credit-purchase.service.ts` (5). Prisma client generation completed; no Attempt 3 file is implicated.
+
+### Git / VCS
+- Launcher-provided worktrees were used exactly as supplied without repeating preparation, claim, dependency discovery, synchronization, or submodule initialization: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-013`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-013`; mirrored branch `task/ARCH-010-BACKGROUND-013`.
+- Attempt 3 launcher claim: `a6c4984248041a965dc90a96f49202278fc6e1f4`.
+- Attempt 2 implementation: `d3be8d81b1b96ae2300202d9d41a6c176aed4cd2`.
+- Attempt 2 final parent/report: `563e1a0af9829722c8f15a0bce2afd8671f68f2d`.
+- Attempt 3 implementation: `aba4023a39ccaf9f0c61f3e7747e4737157879e0`, pushed to `origin/task/ARCH-010-BACKGROUND-013`.
+- Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no gitlink was staged.
+- Attempt 1 immutable evidence preserved: launcher claim `68a61af9e36bc42c4d01ff87dc05f66432f4d831`, implementation `40fedb029a2b3ae53ed7a8083cd5d0122e3b1695`, final parent/report `324b958bfc96ddd8e4ea4e79aae37e6cce88e278`.
+
+### Architect Review
+Pending. Task returned to `review` with `executor: null`, `claimed_at: null`, and `attempt: 3`.
 
