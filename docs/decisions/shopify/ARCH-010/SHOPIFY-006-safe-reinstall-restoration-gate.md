@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-14T00:01:21Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -281,7 +281,7 @@ Do not deploy SHOPIFY-006 producer behaviour before the Background consumer/reco
 ## Completion Report
 
 ### Status
-Ready for Review.
+Ready for Review. Attempt 2 completed; returned for architect review.
 
 ### Files Changed
 - `app/routes.ts`
@@ -293,6 +293,7 @@ Ready for Review.
 - `tests/unit/services/shop.service.test.ts`
 - `tests/unit/routes/auth-catchall.test.ts`
 - `tests/unit/routes/reinstalling-route.test.ts`
+- `tests/unit/shop-access-policy.test.ts`
 
 ### Work Completed
 - APP_UNINSTALLED now transactionally preserves subscription, billing-period, credit, refund, history and onboarding state while setting `UNINSTALLED`, preserving the first uninstall cutoff, and clearing `reinstallPendingAt`.
@@ -301,22 +302,24 @@ Ready for Review.
 - Reused the canonical Shared `reconcile-subscription` producer with deterministic `expectedNextReconcileAt` payloads and shared structured logging for best-effort enqueue failures.
 - Added `/app/reinstalling` pending/stopped/retry behavior and routed pending product access to it while keeping authenticated merchant support available.
 - Added focused lifecycle, auth, access-policy, route and producer tests. No Partner API calls, entitlement mutation, billing-period mutation, Admin UI, or other repository changes were made.
+- Attempt 2 corrected delayed duplicate-uninstall handling, stopped-attempt auth restart, first-attempt CAS-loss return values, and stale/live retry races. It also added executable evidence for suspended/stopped auth, pending and unmarked access routing, restoration redirects, rejected retry enqueue, and pending support access.
 
 ### Validation Results
-- Focused tests first: `npm test -- --run tests/unit/services/shop.service.test.ts tests/unit/shop-access-policy.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/home-route.test.ts tests/unit/routes/auth-catchall.test.ts tests/unit/routes/reinstalling-route.test.ts tests/unit/routes/explicit-route-config.test.ts` -> 7 files passed, 32 tests passed.
-- Full tests after `npm run prisma:generate`: `npm test` -> 36 files passed, 2 skipped; 321 tests passed, 3 skipped.
+- Focused tests first: the required nine-file command -> 9 files passed, 57 tests passed. After Attempt 2 corrections, the same command -> 9 files passed, 66 tests passed.
+- Full tests: `npm test` -> 36 files passed, 2 skipped; 334 tests passed, 3 skipped.
 - Production build: `npm run build` -> passed, including Prisma generation and client/server bundles.
-- Changed-file lint -> passed. Repository lint -> baseline failure with 11 errors in unrelated onboarding, billing-options/select, merchant-support, privacy, billing-provider and webhook-test files.
-- Typecheck -> baseline failure after Prisma generation; remaining diagnostics are existing auth-catchall JSX typing and pre-existing test typing issues, with no diagnostics in the new reinstalling route or newly typed shop-service transactions.
+- Repository lint -> baseline failure with 11 errors, all in unrelated onboarding, billing-options/select, merchant-support, privacy, billing-provider and webhook-test files; no Attempt 2 changed file was reported.
+- Typecheck -> baseline failure from unrelated billing-provider test typing; no diagnostics remain in Attempt 2 changed files.
 - `git diff --check` -> passed.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-006`
 - Implementation branch: `task/ARCH-010-SHOPIFY-006`
-- Implementation commit: `6c62577` (`feat(shopify): gate reinstall on subscription restoration`)
+- Implementation commit: `9d55513` (`fix(shopify): harden reinstall restoration gate`)
 - Implementation branch pushed to `origin/task/ARCH-010-SHOPIFY-006`.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-006`
-- Parent branch/report commit and push: `0e23b44` pushed to `origin/task/ARCH-010-SHOPIFY-006`.
+- Implementation submodule revision: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Parent branch/report commit and push: recorded after this Attempt 2 report update on `origin/task/ARCH-010-SHOPIFY-006`.
 
 ### Architect Review
 Pending.
