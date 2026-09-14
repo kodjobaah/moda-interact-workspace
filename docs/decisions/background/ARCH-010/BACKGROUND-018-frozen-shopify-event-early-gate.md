@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -366,3 +366,209 @@ No Shopify ingress, shared event contract, Partner API call, Redis subscription 
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-018`; parent and implementation use the mirrored task branch name.
 - Prepared launcher verified recursive submodule synchronization/initialization and that submodules matched recorded commits before implementation.
 - Dependencies passed: `ARCH-010-BACKGROUND-004` and `ARCH-010-BACKGROUND-012`.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Accepted**
+
+This review intentionally prioritises functional correctness and architectural
+behaviour over exhaustive permutation coverage.
+
+The implementation satisfies the functional objective of BACKGROUND-018.
+
+### Accepted functional behaviour
+
+#### `checkout.created`
+
+The existing first durable Shop read now also carries `Subscription.status`.
+
+For:
+
+```text
+Shop.status = ACTIVE
+Subscription.status = FROZEN
+```
+
+the handler returns the stable terminal outcome:
+
+```text
+discarded-subscription-frozen
+```
+
+before:
+
+```text
+BullMQ pending-candidate creation/refresh
+candidate Redis index mutation
+recovery-delay scheduling
+Shopify abandoned-checkout lookup
+CheckoutRecovery mutation
+```
+
+The worker awaits the handler and returns normally, so this is a successful terminal
+job outcome rather than a retryable worker failure.
+
+#### `checkout.updated`
+
+The existing Shop-by-domain read now includes `Subscription.status`.
+
+A FROZEN subscription returns:
+
+```text
+{ kind: "ignored", reason: "subscription-frozen" }
+```
+
+before:
+
+```text
+pending candidate refresh
+CheckoutRecovery lookup/mutation
+Shopify abandoned-checkout provider lookup
+```
+
+No second subscription query was added.
+
+#### `cart.activity`
+
+The path now performs one minimal durable Shop lookup using the canonical internal
+`event.shopId`.
+
+For FROZEN it returns before pending-candidate Redis/index work.
+
+The lookup is bounded to:
+
+```text
+Shop.id
+Shop.status
+Subscription.status
+```
+
+and no Partner API request is introduced.
+
+#### `order.completed`
+
+The existing ACTIVE-shop order path remains intentionally available while FROZEN.
+
+This is accepted because the existing path is already bounded to terminal safety
+bookkeeping:
+
+```text
+resolve existing candidate correlation
+cancel an existing candidate
+write the existing order-processed tombstone
+complete an already-existing CheckoutRecovery
+write its existing COMPLETED status-history entry
+```
+
+It does not create a new recovery, customer, conversation, reservation, UsageEvent,
+outbound message, or new recovery/business work.
+
+Therefore an order received during FROZEN can still prevent a stale abandoned-cart
+recovery from being resumed after unfreeze.
+
+### Race / execution semantics
+
+The durable subscription state is checked when the queued checkout/cart event is
+executed.
+
+Therefore:
+
+```text
+event accepted while executable
+-> Subscription commits FROZEN
+-> queued event starts
+-> FROZEN early gate
+-> terminal no-op
+```
+
+works without queue purging or cross-process serialization.
+
+A job that passed this early gate before the FROZEN commit remains subject to the
+separate BACKGROUND-013 downstream execution gates. This task does not weaken or
+replace those gates.
+
+### Performance acceptance
+
+The implementation preserves the intended hot-path shape:
+
+```text
+checkout.created:
+  +0 PostgreSQL queries
+  +0 Redis operations for the gate
+
+checkout.updated:
+  +0 PostgreSQL queries
+  +0 Redis operations for the gate
+
+cart.activity:
+  1 minimal PostgreSQL Shop/subscription lookup
+  0 Redis operations when FROZEN
+
+order.completed:
+  existing terminal-safety query shape unchanged
+```
+
+No Partner subscription API call, Redis lifecycle cache, new event-contract field,
+global lock, or per-shop serialization was introduced.
+
+The architecture target of approximately 22,000 Shopify webhook events/minute remains
+a later integrated/manual capacity-validation target; this unit implementation review
+does not claim that throughput has been load-tested.
+
+### Validation accepted
+
+```text
+Focused tests:
+  63 / 63 passed
+
+git diff --check:
+  passed
+
+Build:
+  15 documented unrelated baseline diagnostics
+
+Full unit suite:
+  10 documented unrelated baseline failures
+
+Changed-file functional diagnostics:
+  none reported
+
+Implementation:
+  a8d4bfc
+
+Parent report:
+  0355c92
+```
+
+The baseline build/unit failures are non-blocking because the focused changed-path
+tests pass and no functional defect was identified in the BACKGROUND-018 source.
+
+### Manual/system follow-up
+
+Retain these scenarios for the terminal lifecycle/system validation rather than
+blocking this implementation task:
+
+```text
+1. queue checkout.created while executable, commit FROZEN, then execute the queued job;
+2. verify frozen checkout.updated/cart.activity cause no Redis/provider/recovery churn;
+3. complete an order while FROZEN and verify an existing candidate/recovery is
+   terminally cancelled/completed without new customer/business work;
+4. restore ACTIVE/TRIALING and verify new checkout/cart events process normally;
+5. validate the high-volume worker path under the architecture capacity target.
+```
+
+`ARCH-010-BACKGROUND-018` is Complete.
+
+Dependency reconciliation:
+
+```text
+ARCH-010-BACKGROUND-013 remains Ready.
+
+ARCH-010-SYSTEM-TEST-002 remains Pending/manual-gated because
+ARCH-010-BACKGROUND-013 and ARCH-010-SHOPIFY-016 are still incomplete.
+```
+
+No additional BACKGROUND-018 implementation attempt is required.
+
