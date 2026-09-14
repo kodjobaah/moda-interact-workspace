@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 58
 executor: null
 claimed_at: null
@@ -3908,3 +3908,999 @@ commit/push both mirrored task branches, verify both are clean, and STOP.
 
 Do not start `ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`,
 `ARCH-010-SHOPIFY-016` or `ARCH-010-SYSTEM-TEST-002`.
+
+## Architect Review — Attempt 6 Blocked Handoff
+
+### Status
+
+**Changes Requested — narrowed completion attempt**
+
+The Attempt 6 block is correct. The task MUST NOT be marked Complete or returned to
+ordinary Architect Review while the original 1-26 acceptance matrix still contains
+behavioural gaps.
+
+The block can now be narrowed substantially.
+
+Architect inspection of the uploaded Attempt-6 snapshot accepts the substantive
+Attempt-6 production corrections for:
+
+```text
+- mandatory combined BACKGROUND-015 snapshot consumption;
+- established/FROZEN provider-failure retry handling;
+- FROZEN/replayed lifecycle scheduling;
+- stale lifecycle comparison under the Subscription lock;
+- UNFROZEN-without-contract fail-closed handling;
+- validated same-cycle/later-cycle/changed-plan restoration structure;
+- post-commit best-effort unfreeze capacity-resume scheduling;
+- pending-plan precedence over outgoing cancellation;
+- exact pre-close/period-boundary scheduling for queued pending/cancellation state;
+- effective cancellation SERIALIZABLE transaction;
+- Paid reservation/counter close CAS;
+- fresh NO_CONTRACT cancellation-history protection;
+- existing deterministic subscription-reconcile queue/reconstruction path.
+```
+
+Do not redesign those paths in Attempt 7.
+
+One production correction remains, followed by permanent evidence completion.
+
+### Finding 1 — successful exact-cycle drain retry leaves stale `PRE_CLOSE_USAGE_FLUSH_FAILED`
+
+In:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+the exact-cycle provider projection branch correctly writes:
+
+```text
+PRE_CLOSE_USAGE_FLUSH_FAILED
+```
+
+when:
+
+```text
+now is inside the drain window
+publishDue({ billingPeriodId }) throws
+```
+
+and persists the provider pending/cancellation/reversal truth with one bounded retry.
+
+However, when that exact retry later succeeds:
+
+```text
+publishDue(...) succeeds
+```
+
+the following guarded Subscription update refreshes provider truth and
+`nextReconcileAt`, but does not clear the previously task-owned:
+
+```text
+lastSyncErrorCode = PRE_CLOSE_USAGE_FLUSH_FAILED
+lastSyncErrorAt
+```
+
+The stale error can therefore remain after the condition has been successfully
+resolved.
+
+#### Required production correction
+
+Modify only the existing successful exact-cycle provider-projection write in:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+Use the already selected:
+
+```text
+row.subscription.lastSyncErrorCode
+```
+
+and calculate:
+
+```ts
+const clearPreCloseFailure =
+  row.subscription.lastSyncErrorCode === "PRE_CLOSE_USAGE_FLUSH_FAILED";
+```
+
+After a successful `publishDue(...)` inside the drain window, include in the guarded
+provider-state update:
+
+```ts
+...(clearPreCloseFailure
+  ? {
+      lastSyncErrorCode: null,
+      lastSyncErrorAt: null,
+    }
+  : {}),
+```
+
+Rules:
+
+```text
+before drain window:
+  do not clear PRE_CLOSE_USAGE_FLUSH_FAILED merely from provider observation
+
+publishDue throws:
+  persist PRE_CLOSE_USAGE_FLUSH_FAILED exactly as now
+
+publishDue succeeds:
+  clear PRE_CLOSE_USAGE_FLUSH_FAILED only
+
+unrelated error code:
+  do not clear or replace it
+```
+
+Do not change status, plan, BillingPeriod, entitlement counters or queue contracts.
+
+### Finding 2 — do not repeat the entire Attempt-6 test list; close only the original 26 requirements
+
+The blocked Completion Report is correct that the repository does not yet contain
+enough permanent evidence, but Attempt 7 does **not** need another broad redesign or a
+duplicate matrix in every reconciliation entry point.
+
+The acceptance target is the original `## Required tests` list 1-26.
+
+Existing passing tests may be reused when their assertions actually prove the row.
+Only the missing/partial evidence below must be added or strengthened.
+
+### Attempt-7 permanent evidence — lifecycle service
+
+File:
+
+```text
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts
+```
+
+First extend the lifecycle test transaction fake so available mutators are observable
+for:
+
+```text
+billingPeriod
+billingPeriodEntitlementCounter
+shopEntitlementCounter
+recoveryCreditPurchase
+recoveryCreditRefund
+promotionalCreditGrant
+merchantPromotionSelection
+usageReservation
+usageEvent
+```
+
+Add a helper equivalent to:
+
+```ts
+function expectNoModelMutations(model: any) {
+  for (const method of [
+    "create",
+    "createMany",
+    "update",
+    "updateMany",
+    "upsert",
+    "delete",
+    "deleteMany",
+  ]) {
+    if (model?.[method]) expect(model[method]).not.toHaveBeenCalled();
+  }
+}
+```
+
+Do not hide missing preservation evidence by omitting a fake model.
+
+Add these exact permanent tests.
+
+#### L1
+
+```text
+projects FROZEN without mutating entitlement or history state
+```
+
+Use established Paid state with:
+
+```text
+planId
+billingPeriod
+pending plan fields
+purchased/lifetime/promotion/refund fixtures
+```
+
+and `activeSubscription = null`, latest lifecycle FROZEN.
+
+Prove:
+
+```text
+status -> FROZEN
+plan/current period/pending identity not cleared
+nextReconcileAt = now + 1 hour
+no BillingPeriod/counter/lifetime/purchase/refund/promotion/selection/reservation mutation
+never NO_CONTRACT
+```
+
+This closes requirements 2 and 16.
+
+#### L2
+
+```text
+restores same mapped plan and same cycle without granting or resetting capacity
+```
+
+Prove:
+
+```text
+FROZEN -> ACTIVE/TRIALING
+same plan
+same exact provider cycle
+no BillingPeriod create/close
+no included/lifetime/purchased/refund/promotion mutation
+live pending provider truth projected
+```
+
+This closes requirement 6.
+
+#### L3
+
+```text
+restores pack-disabled Free with no cycle without resetting lifetime Free
+```
+
+Use:
+
+```text
+FREE
+recoveryCreditPackEnabled = false
+provider currentPeriodStart = null
+provider currentPeriodEnd = null
+local currentPeriodStart = null
+local currentPeriodEnd = null
+```
+
+Prove no lifetime-Free mutation.
+
+This supports requirements 6 and 9.
+
+#### L4
+
+```text
+restores later same-plan Paid cycle through BACKGROUND-007 exactly once
+```
+
+Spy on:
+
+```text
+SamePlanBillingPeriodRolloverService.prototype.transitionInTransaction
+```
+
+Return a successful transition.
+
+Assert:
+
+```text
+called exactly once
+ShopifyPlanChangeTransitionService.transitionInTransaction not called
+no intermediate local period is created by the lifecycle wrapper
+result = restored
+```
+
+The returned transition fixture must represent the current provider cycle only.
+
+This closes requirement 7.
+
+#### L5
+
+```text
+restores later same-plan Paid cycle with only the verified current-period grant
+```
+
+Use the real/integrated accepted BACKGROUND-007 transaction path if the existing fake
+can support it; otherwise expose the returned current-cycle period/counter result from
+the transition spy and assert the lifecycle wrapper performs **no second**
+period/counter grant.
+
+The proof required from this task is:
+
+```text
+one BACKGROUND-007 transition
+zero wrapper-owned second BillingPeriod/counter grant
+no intermediate cycle fabrication
+```
+
+This closes requirement 8 without re-testing all BACKGROUND-007 internals.
+
+#### L6
+
+```text
+restores later same-plan Free cycle without resetting lifetime Free
+```
+
+Spy/delegate to BACKGROUND-007 exactly once and prove zero
+`shopEntitlementCounter` mutation by the lifecycle wrapper.
+
+This closes requirement 9.
+
+#### L7
+
+```text
+restores changed mapped plan through BACKGROUND-010 exactly once
+```
+
+Spy on:
+
+```text
+ShopifyPlanChangeTransitionService.prototype.transitionInTransaction
+```
+
+and prove:
+
+```text
+called exactly once
+SamePlanBillingPeriodRolloverService.transitionInTransaction not called
+no second wrapper-owned BillingPeriod/counter grant
+```
+
+This closes requirement 10.
+
+#### L8 — keep the fail-closed validation table as one parameterized test
+
+Add:
+
+```text
+keeps unfreeze fail closed for invalid mapped provider plan: %s
+```
+
+Rows:
+
+```text
+inactive mapping                         -> UNMAPPED_PLAN_HANDLE
+Paid allowance null                      -> INVALID_INCLUDED_ALLOWANCE
+Paid allowance negative                  -> INVALID_INCLUDED_ALLOWANCE
+Paid allowance non-integer               -> INVALID_INCLUDED_ALLOWANCE
+Paid allowance unsafe                    -> INVALID_INCLUDED_ALLOWANCE
+Paid normal meter missing                -> MISSING_USAGE_METER
+provider omits Paid normal meter         -> MISSING_USAGE_METER
+enabled Paid pack meter missing          -> MISSING_USAGE_METER
+provider omits Paid pack meter           -> MISSING_USAGE_METER
+enabled Free pack meter missing          -> MISSING_USAGE_METER
+provider omits Free pack meter           -> MISSING_USAGE_METER
+Paid cycle missing                       -> MISSING_BILLING_CYCLE
+Paid cycle invalid                       -> MISSING_BILLING_CYCLE
+pack-enabled Free cycle missing          -> MISSING_BILLING_CYCLE
+```
+
+For every row prove:
+
+```text
+never ACTIVE/TRIALING
+never BillingPeriod/counter grant
+preserve current entitlement/history state
+bounded retry metadata written
+live provider pending truth projected
+```
+
+This is one table, not fourteen separate hand-written tests.
+
+#### L9
+
+```text
+publishes one best-effort unfreeze capacity-resume hint after commit
+```
+
+Record event order:
+
+```text
+transaction start
+transaction commit/return
+resumeService.schedule({ shopId, trigger: "unfreeze" })
+method return
+```
+
+This closes requirement 23.
+
+#### L10
+
+```text
+does not publish unfreeze capacity-resume for unresolved or repeated FROZEN state
+```
+
+Parameterize:
+
+```text
+UNFROZEN + no live contract
+replayed FROZEN
+strictly older FROZEN
+```
+
+Assert no resume hint.
+
+#### L11
+
+```text
+swallows unfreeze capacity-resume failure after committed restoration
+```
+
+Prove restoration remains committed and is not rewritten to sync error/retry because
+the hint enqueue failed.
+
+#### L12
+
+```text
+closes Paid cancellation with canonical reservation/counter CAS at serializable isolation
+```
+
+Prove:
+
+```text
+SERIALIZABLE
+RESERVED | AMBIGUOUS reservation aggregate/release
+counter reserved CAS
+exact forfeiture close
+OPEN -> CLOSED
+CONTRACT_ENDED
+NO_CONTRACT
+no successor BillingPeriod
+```
+
+This closes requirement 14 for the Paid path.
+
+#### L13
+
+```text
+replays effective cancellation without a second close or counter mutation
+```
+
+Start from the already-cancelled `NO_CONTRACT` projection and replay the same/newer
+CANCELED evidence.
+
+Assert zero second:
+
+```text
+BillingPeriod close
+counter mutation
+reservation release
+history deletion
+```
+
+This closes requirement 15.
+
+#### L14
+
+```text
+preserves lifetime purchased refund promotion and selection state on cancellation
+```
+
+During established cancellation, assert no mutator call on:
+
+```text
+shopEntitlementCounter
+recoveryCreditPurchase
+recoveryCreditRefund
+promotionalCreditGrant
+merchantPromotionSelection
+```
+
+This closes requirement 18.
+
+#### L15
+
+```text
+does not retimestamp old-cycle UsageEvents during effective cancellation
+```
+
+Capture the exact `usageEvent.updateMany(...)` data and assert it may change report
+state/error scheduling only and does **not** contain:
+
+```text
+occurredAt
+createdAt
+billingPeriodId
+providerIdempotencyKey
+```
+
+This closes requirement 21.
+
+The existing:
+
+```text
+ignores CANCELED lifecycle history for a genuinely fresh NO_CONTRACT row
+```
+
+may be added if absent, but it is a safety regression and does not require another
+production change.
+
+### Attempt-7 permanent evidence — queued reconciliation
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Add or strengthen only these tests.
+
+#### Q1
+
+```text
+preserves FROZEN state and publishes an hourly retry when the combined Partner snapshot fails
+```
+
+Assert exact queue payload timestamp equals the durable `nextReconcileAt`.
+
+Supports requirements 1 and 16.
+
+#### Q2
+
+```text
+replays FROZEN lifecycle evidence and republishes the committed hourly job
+```
+
+Assert one deterministic existing subscription-reconcile job using the committed
+hourly timestamp.
+
+This strengthens requirement 3 end-to-end.
+
+#### Q3
+
+Strengthen the existing scheduled-cancellation boundary test or add:
+
+```text
+projects scheduled full cancellation without changing current entitlement
+```
+
+Assert:
+
+```text
+cancelAtPeriodEnd = true
+current plan/status/billingPeriod preserved
+zero BillingPeriod/counter/grant/purchase/refund/promotion mutation
+```
+
+This closes requirement 12.
+
+#### Q4
+
+Add:
+
+```text
+clears reversed scheduled cancellation without granting entitlement
+```
+
+Provider:
+
+```text
+pendingPlanHandle = null
+cancelAtEndOfCycle = false
+```
+
+Local:
+
+```text
+cancelAtPeriodEnd = true
+```
+
+Assert:
+
+```text
+cancelAtPeriodEnd -> false
+zero BillingPeriod/counter/grant mutation
+```
+
+This closes requirement 13.
+
+#### Q5 — complete the drain-failure provider-truth variants
+
+The current:
+
+```text
+persists pending provider truth when pre-close drain fails
+```
+
+is accepted.
+
+Add:
+
+```text
+persists scheduled cancellation when pre-close drain fails
+persists cancellation reversal when pre-close drain fails
+```
+
+Each must prove:
+
+```text
+publishDue once
+one guarded Subscription write
+provider cancellation/reversal truth persisted
+PRE_CLOSE_USAGE_FLUSH_FAILED persisted
+one retry job
+no period-end job
+zero entitlement/BillingPeriod mutation
+```
+
+#### Q6 — prove the production correction from Finding 1
+
+Add:
+
+```text
+clears only PRE_CLOSE_USAGE_FLUSH_FAILED after a successful exact-cycle drain retry
+```
+
+Fixture:
+
+```text
+inside drain window
+local lastSyncErrorCode = PRE_CLOSE_USAGE_FLUSH_FAILED
+provider exact same cycle
+publishDue succeeds
+```
+
+Assert:
+
+```text
+lastSyncErrorCode = null
+lastSyncErrorAt = null
+nextReconcileAt = exact period boundary
+provider pending/cancellation/reversal truth persisted
+```
+
+Then run the same path with an unrelated error, for example:
+
+```text
+MISSING_USAGE_METER
+```
+
+and assert the successful exact-cycle drain update does **not** clear or replace that
+unrelated error.
+
+#### Q7
+
+Strengthen:
+
+```text
+keeps established entitlement unresolved when Partner reports no active subscription
+```
+
+with:
+
+```text
+billingPeriod.update/updateMany not called
+billingPeriodEntitlementCounter mutators not called
+never writes NO_CONTRACT
+```
+
+This closes requirement 17.
+
+#### Q8
+
+Add:
+
+```text
+reconstructs a missing FROZEN reconciliation job with one deterministic logical identity
+```
+
+Call `reconstruct()` twice over the same durable:
+
+```text
+FROZEN
+nextReconcileAt = fixed timestamp
+```
+
+Assert both attempts use the exact same:
+
+```text
+job name
+payload expectedNextReconcileAt
+jobId
+delay target
+```
+
+There must be no second **distinct** job identity.
+
+Together with the existing scheduler cadence test:
+
+```text
+runs periodic reconstruction when it is part of the billing cadence
+```
+
+this closes requirement 19.
+
+Do not add a misleading scheduler test that claims BullMQ identity behaviour without
+using `BillingSubscriptionReconciliationService.reconstruct()`.
+
+#### Q9
+
+Add:
+
+```text
+does not reconcile a pending top-up as spendable while lifecycle remains FROZEN
+```
+
+Use a FROZEN reconciliation job with a pending purchase/provider quantity fixture.
+
+Assert lifecycle handling returns before any purchase activation/grant path.
+
+This closes requirement 20.
+
+### Attempt-7 permanent evidence — rotating reconciliation
+
+File:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+Only two new rotating-path tests are mandatory.
+
+#### R1
+
+```text
+stops rotating subscription mutation after verified lifecycle restoration
+```
+
+Make lifecycle reconciliation return/produce a verified restoration.
+
+Assert the rotating pass:
+
+```text
+re-reads committed billingPeriodId
+returns packMeterHandle = null
+does not invoke same-plan rollover again
+does not invoke plan-change transition again
+does not reconcile a purchase in the same pass
+```
+
+This proves the no-double-transition rule.
+
+#### R2
+
+```text
+keeps pack purchase reconciliation disabled while FROZEN lifecycle is effective
+```
+
+Assert:
+
+```text
+lifecycle handled
+purchase reconcile not called
+no pack meter exposed
+```
+
+This reinforces requirement 20.
+
+The existing queued pending/cancellation/reversal tests are sufficient for requirements
+11-13 once Q3/Q4 are complete. Do **not** duplicate the full cancellation matrix in the
+rotating test file merely to increase counts.
+
+### Existing evidence that may be reused without rewriting
+
+Attempt 7 should reuse, not replace, these passing tests:
+
+```text
+keeps established entitlement on Partner failure and publishes one bounded retry
+replays the same FROZEN event and advances one hourly retry
+ignores stale FROZEN evidence and continues with live provider truth
+keeps newer lifecycle identity when older unresolved evidence arrives
+keeps FROZEN for UNFROZEN with no live contract and retries in one hour
+projects pending update even when outgoing cancelAtEndOfCycle is false
+uses the exact drain boundary for pending update before the drain window
+uses the exact period boundary for pending update inside the drain window
+uses the exact drain boundary for scheduled cancellation before the drain window
+uses the exact period boundary for scheduled cancellation inside the drain window
+persists pending provider truth when pre-close drain fails
+requires the combined subscription reconciliation snapshot contract
+runs periodic reconstruction when it is part of the billing cadence
+```
+
+Do not rename these merely to match older Architect Review wording.
+
+### Pre-authorized 26-row evidence map
+
+Attempt 7 Completion Report must contain exactly one current evidence table:
+
+```text
+Requirement | Exact test/static evidence | Result
+```
+
+with requirements 1-26 in order.
+
+Use the following minimum mapping. Multiple tests may be listed in one row.
+
+```text
+1  -> existing Partner-failure test + Q1
+2  -> L1
+3  -> existing replayed-FROZEN test + Q2
+4  -> existing stale/newer lifecycle tests
+5  -> existing UNFROZEN-null-live test
+6  -> L2
+7  -> L4 and L6
+8  -> L4 + L5
+9  -> L3 + L6
+10 -> L7
+11 -> existing pending-update precedence tests
+12 -> Q3 + existing exact cancellation boundary tests
+13 -> Q4
+14 -> existing Free cancellation test + L12
+15 -> L13
+16 -> L1 + Q1
+17 -> strengthened existing ambiguous-null test (Q7)
+18 -> L14
+19 -> Q8 + existing scheduler cadence test
+20 -> Q9 + R2
+21 -> L15
+22 -> forbidden local-cancellation `rg`
+23 -> L9 + L10 + L11
+24 -> L9/R1 and proof that lifecycle restoration emits only the existing
+      `recovery-capacity-resume` hint and the rotating pass does not recreate business
+      work in the same pass
+25 -> changed-file/static evidence: no new queue/job schema
+26 -> changed-file ownership + canonical sibling search; absence of a materialized
+      sibling directory must be reported truthfully, not treated as a successful scan
+```
+
+Every Result must be:
+
+```text
+Proven
+```
+
+If a behavioural row cannot honestly be marked Proven, remain `blocked`; do not
+invent an assertion or return to review.
+
+### Attempt-7 scope
+
+Allowed production file:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+Only the stale `PRE_CLOSE_USAGE_FLUSH_FAILED` clearing correction above is authorized.
+
+Do not change these production files unless a newly required permanent test exposes a
+specific failing invariant and the agent STOPS for architect review:
+
+```text
+src/services/shopify-subscription-lifecycle-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+src/services/same-plan-billing-period-rollover.service.ts
+src/services/shopify-plan-change-transition.service.ts
+src/providers/shopify-partner-billing.provider.ts
+```
+
+Allowed test files:
+
+```text
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+tests/unit/runtime/billing-scheduler.test.ts
+```
+
+The provider and scheduler test files should normally remain unchanged; they are listed
+only so existing permanent evidence may be retained/referenced.
+
+Do not modify:
+
+```text
+recovery-credit-purchase business semantics
+shopify-usage-event-publisher business semantics
+Shared contracts/package
+Prisma schema/migrations
+BACKGROUND-013
+BACKGROUND-018
+Shopify merchant app
+Admin
+Messaging
+Gateway
+refund/promotion/reservation business rules
+```
+
+### Validation required for Attempt 7
+
+Run from `moda-interact-background`:
+
+```bash
+npx vitest run \
+  tests/unit/providers/shopify-partner-billing.provider.test.ts \
+  tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/runtime/billing-scheduler.test.ts \
+  tests/unit/services/recovery-credit-purchase.service.test.ts \
+  tests/unit/services/shopify-usage-event-publisher.service.test.ts
+
+npm run test:unit
+npm run test:integration
+npm run prisma:validate
+npm run prisma:generate
+npm run build
+git diff --check
+```
+
+Run:
+
+```bash
+rg -n \
+  "SubscriptionCancellationRequest|SubscriptionCancellationMode|SubscriptionCancellationStatus|ShopifySubscriptionCancellationArgs|SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS|appSubscriptionCancel|BILLING_CANCELLATION_REQUEST_RECEIVED|BILLING_CANCELLATION_COMPLETED|BILLING_CANCELLATION_REJECTED" \
+  src tests
+```
+
+Expected: no task-forbidden local cancellation executor/symbol.
+
+Run the canonical parent sibling ownership search used in Attempt 6. If
+`moda-interact-messaging/src` or another sibling is not materialized, say exactly that.
+Do not report an unexecuted path as a passing search.
+
+Known baseline remains non-blocking only if unchanged:
+
+```text
+seven-file suite:
+  8 existing recovery-credit failures
+
+full unit:
+  10 existing failures
+
+build:
+  15 existing generated-client diagnostics
+```
+
+No Attempt-7 changed file may add a failure or diagnostic.
+
+### Workflow evidence
+
+Preserve:
+
+```text
+Attempt-6 launcher claim:
+cce177d8c31a84854daee6c2adfb49114cc99ee5
+
+Attempt-6 implementation:
+2d5eb94b3f348ccdb10183517c0e7fa56d5ebf2c
+
+Attempt-6 final parent/report:
+resolve the full SHA corresponding to developer handoff 7a62c74
+```
+
+Attempt 7 Completion Report must record:
+
+```text
+Attempt-7 launcher claim full SHA
+Attempt-7 implementation full SHA
+Attempt-7 parent/report publication full SHA
+database gitlink before/after
+dedicated parent worktree/branch
+dedicated implementation worktree/branch
+both branches clean/pushed/remote-synchronized
+```
+
+### Reclaim / stop condition
+
+This remains the SAME task.
+
+Preserve:
+
+```text
+attempt: 6
+```
+
+Return through `/moda-task`; the next authorized claim must increment to
+**Attempt 7 exactly once**.
+
+Attempt 7 may return to `review` only if:
+
+```text
+1. the stale PRE_CLOSE_USAGE_FLUSH_FAILED production defect is corrected;
+2. every original requirement 1-26 is mapped to real permanent evidence;
+3. every evidence-map Result is Proven;
+4. required validation is run and baselines are unchanged;
+5. status = review;
+6. executor = null;
+7. claimed_at = null;
+8. both branches are clean and pushed.
+```
+
+Otherwise remain `blocked` and STOP with the exact unproven requirement number(s).
+
+Do not start `ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`,
+`ARCH-010-SHOPIFY-016` or `ARCH-010-SYSTEM-TEST-002`.
+
