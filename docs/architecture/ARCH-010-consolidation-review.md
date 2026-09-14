@@ -111,9 +111,8 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ## Current Ready frontier
 
 ```text
-ARCH-010-BACKGROUND-012
-ARCH-010-SHOPIFY-007
-ARCH-010-SHOPIFY-009
+ARCH-010-BACKGROUND-013
+ARCH-010-BACKGROUND-018
 ```
 
 
@@ -442,5 +441,41 @@ Current Ready frontier from authoritative ARCH-010 task YAML:
 ARCH-010-BACKGROUND-012
 ARCH-010-SHOPIFY-007
 ARCH-010-SHOPIFY-009
+```
+
+## Post-review update — BACKGROUND-012 Attempt 8 accepted with manual validation follow-up
+
+`ARCH-010-BACKGROUND-012` Attempt 8 is architect-accepted Complete.
+
+The final production implementation is frozen. Attempt 8 changed tests only and left
+three evidence rows (17, 24, 26) without complete executable proof. Architect review
+classified those as non-blocking evidence/workspace gaps rather than demonstrated
+production defects.
+
+Manual/system lifecycle validation remains required before final ARCH-010 release
+acceptance for:
+
+```text
+ambiguous provider-null established contract preservation
+freeze/unfreeze recovery admission behaviour
+fully materialized Shopify/Messaging ingress ownership scan
+```
+
+This acceptance promotes:
+
+```text
+ARCH-010-BACKGROUND-013
+ARCH-010-BACKGROUND-018
+```
+
+to Ready.
+
+`SHOPIFY-016` and `SYSTEM-TEST-002` remain gated by their remaining dependencies.
+
+Current authoritative Ready frontier:
+
+```text
+ARCH-010-BACKGROUND-013
+ARCH-010-BACKGROUND-018
 ```
 
