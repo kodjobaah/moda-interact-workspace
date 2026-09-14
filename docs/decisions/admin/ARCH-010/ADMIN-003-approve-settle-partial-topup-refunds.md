@@ -324,7 +324,7 @@ Inspected the complete task definition, current local Admin conventions, Prisma 
 Launcher claim commit: `1d0d2246b6703c56b14ee802b2d1a5569d0f2bf5`.
 Authoritative implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`.
 Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`.
-No implementation commit was created because the required shared contract is unavailable. Parent report commit/push is required after this blocker update.
+No implementation commit was created because the required shared contract is unavailable. This blocker report is published in commit `a765fc7`.
 
 ### Architect Review
 Blocked pending `ARCH-010-SHARED-008` publishing the refund message-code contract in the shared package consumed by Admin, or otherwise sequencing a compatible shared dependency release. Do not implement local message-code fallbacks in Admin.
