@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -1634,3 +1634,915 @@ Ready for Review.
 ### Unresolved Baseline
 
 - The full-unit and build failures remain the documented generated-client/shared-runtime baseline outside this task scope. No unrelated purchased-credit or observability files were changed.
+
+## Architect Review — Attempt 4
+
+### Status
+
+**Changes Requested**
+
+Attempt 4 closes the remaining production precondition-classification defect from
+Attempt 3. The inspected production code now:
+
+- validates exact target cycle before transition when required;
+- validates Paid included allowance before transition;
+- validates the normal Paid meter before transition;
+- validates enabled Paid/Free pack-meter evidence before transition;
+- records the required typed plan-change `SYNC_ERROR`;
+- includes `INVALID_INCLUDED_ALLOWANCE` in retryable plan-change eligibility;
+- converts an expected-target `not-applicable` result into
+  `UNEXPECTED_IMMEDIATE_PLAN_CHANGE`;
+- preserves the current/pending projection while scheduling the deterministic
+  one-minute retry;
+- returns a null pack meter from rotating fail-closed paths.
+
+No further production source change is requested by this review.
+
+The task is still not acceptable because the explicit Attempt-4 permanent-evidence
+contract was not completed. The Completion Report's numbered evidence map also maps
+multiple required items to unrelated tests. A passing focused total does not replace
+the exact regression evidence required by the previous review.
+
+This is an **evidence/test-only Attempt 5** unless one of the exact assertions below
+exposes a real contradiction in the accepted Attempt-4 production source.
+
+### Finding 1 — queued established-plan-change evidence remains incomplete
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+The existing tests for missing cycle/meter, Partner failure, provider-null and
+pending refresh are useful but do not prove the complete Attempt-4 contract.
+
+#### 1. Strengthen the still-pending provider-update test
+
+Keep:
+
+```text
+refreshes pending provider state in one guarded update
+```
+
+and make it prove all of these exact facts:
+
+```ts
+expect(test.database.subscription.updateMany).toHaveBeenCalledOnce();
+
+expect(test.database.subscription.updateMany).toHaveBeenCalledWith({
+  where: expect.objectContaining({
+    id: "subscription-1",
+    planId: "plan-current",
+    pendingPlanId: "plan-target",
+    pendingShopifyPlanHandle: "paid-2026",
+    pendingEffectiveAt,
+  }),
+  data: expect.objectContaining({
+    pendingPlanId: "plan-next",
+    pendingShopifyPlanHandle: "paid-next",
+    pendingEffectiveAt: new Date("2026-10-01T00:00:00.000Z"),
+    nextReconcileAt: new Date("2026-10-01T00:00:00.000Z"),
+  }),
+});
+
+expect(test.database.subscription.update).not.toHaveBeenCalled();
+expect(test.queue.add).toHaveBeenCalledOnce();
+expect(test.queue.add).toHaveBeenCalledWith(
+  expect.any(String),
+  expect.objectContaining({
+    expectedNextReconcileAt: "2026-10-01T00:00:00.000Z",
+  }),
+  expect.objectContaining({
+    jobId: expect.any(String),
+  }),
+);
+```
+
+The test must prove `pendingPlanId`, provider handle, effective time and schedule are
+written by the **same guarded `updateMany`**.
+
+#### 2. Add established pending-withdrawal evidence
+
+Add a test named exactly:
+
+```text
+clears a withdrawn established pending update atomically
+```
+
+Initial durable state:
+
+```text
+status = ACTIVE
+planId = plan-current
+billingPeriodId = period-current
+currentPeriodStart = 2026-09-01T00:00:00.000Z
+currentPeriodEnd = 2026-10-01T00:00:00.000Z
+pendingPlanId = plan-target
+pendingShopifyPlanHandle = paid-2026
+pendingEffectiveAt = 2026-10-01T00:00:00.000Z
+```
+
+Provider truth:
+
+```text
+planHandle = current-plan handle
+pendingPlanHandle = null
+pendingEffectiveAt = null
+```
+
+Assert one guarded `subscription.updateMany` clears:
+
+```text
+pendingPlanId = null
+pendingShopifyPlanHandle = null
+pendingEffectiveAt = null
+```
+
+while the update data does **not** contain:
+
+```text
+planId
+billingPeriodId
+currentPeriodStart
+currentPeriodEnd
+status
+```
+
+Assert `nextReconcileAt` equals the value calculated by the existing
+`nextPlanReconcileAt(...)` rule for the current plan.
+
+Assert:
+
+```text
+ShopifyPlanChangeTransitionService.transition not called
+no follow-up subscription.update
+```
+
+If the calculated next schedule is non-null, prove exactly one deterministic job is
+published for that timestamp.
+
+#### 3. Strengthen Partner-exception preservation
+
+Keep:
+
+```text
+keeps established entitlement on Partner failure and publishes one bounded retry
+```
+
+After capturing the `updateMany` call, assert its `data` does **not** contain:
+
+```text
+status
+planId
+billingPeriodId
+currentPeriodStart
+currentPeriodEnd
+pendingPlanId
+pendingShopifyPlanHandle
+pendingEffectiveAt
+```
+
+Assert the only business-state additions are retry/error metadata:
+
+```text
+nextReconcileAt
+lastSyncedAt
+lastSyncErrorCode = PARTNER_API_ERROR
+lastSyncErrorAt
+```
+
+and exactly one deterministic replacement job is published.
+
+#### 4. Strengthen provider-null preservation
+
+Keep:
+
+```text
+keeps established entitlement unresolved when Partner reports no active subscription
+```
+
+Add the same no-entitlement/pending-field mutation assertions as item 3.
+
+Additionally inspect every `subscription.updateMany` call and assert **none** uses the
+initial-activation `NO_CONTRACT + planId:null` predicate.
+
+The test must prove:
+
+```text
+lastSyncErrorCode = PROVIDER_STATE_UNRESOLVED
+ACTIVE/TRIALING current entitlement preserved
+pending target preserved
+one bounded retry
+```
+
+#### 5. Add retryable plan-change SYNC_ERROR execution evidence
+
+Add a parameterized test named:
+
+```text
+retries established plan changes from retryable SYNC_ERROR: %s
+```
+
+Rows:
+
+```text
+UNEXPECTED_IMMEDIATE_PLAN_CHANGE
+MISSING_BILLING_CYCLE
+MISSING_USAGE_METER
+INVALID_INCLUDED_ALLOWANCE
+```
+
+For each row:
+
+- durable subscription starts `status = SYNC_ERROR`;
+- `lastSyncErrorCode` is the table value;
+- all current/pending identifiers match the expected plan change;
+- provider now proves a valid exact effective target;
+- target plan has valid cycle/allowance/meters.
+
+Mock `ShopifyPlanChangeTransitionService.prototype.transition(...)` to return:
+
+```ts
+{
+  kind: "transitioned",
+  billingPeriodId: "period-new",
+  nextReconcileAt: null,
+  planKind: "PAID_METERED",
+}
+```
+
+Assert:
+
+```text
+transition called once
+job is not discarded by classification
+```
+
+Then add one unrelated code, for example:
+
+```text
+PARTNER_API_ERROR
+```
+
+with `status = SYNC_ERROR` and assert Partner/transition execution does **not** treat
+that row as a retryable established plan-change state.
+
+#### 6. Add the complete queued known-precondition matrix
+
+Add a parameterized test named:
+
+```text
+fails established queued plan change closed for invalid target prerequisite: %s
+```
+
+Use an established ACTIVE plan-change row for every case; do **not** reuse the initial
+`NO_CONTRACT` Paid-activation tests.
+
+Required rows:
+
+```text
+missing cycle                       -> MISSING_BILLING_CYCLE
+invalid cycle                       -> MISSING_BILLING_CYCLE
+null Paid allowance                 -> INVALID_INCLUDED_ALLOWANCE
+negative Paid allowance             -> INVALID_INCLUDED_ALLOWANCE
+non-integer Paid allowance          -> INVALID_INCLUDED_ALLOWANCE
+unsafe Paid allowance               -> INVALID_INCLUDED_ALLOWANCE
+missing normal Paid meter config    -> MISSING_USAGE_METER
+provider omits normal Paid meter    -> MISSING_USAGE_METER
+enabled Paid pack meter null        -> MISSING_USAGE_METER
+provider omits Paid pack meter      -> MISSING_USAGE_METER
+enabled Free pack meter null        -> MISSING_USAGE_METER
+provider omits Free pack meter      -> MISSING_USAGE_METER
+```
+
+For each row assert:
+
+```text
+status = SYNC_ERROR
+exact expected lastSyncErrorCode
+nextReconcileAt = now + 60 seconds
+transition not called
+current plan/current period fields absent from update data
+pending id/handle/effective fields absent from update data
+exactly one deterministic retry job
+```
+
+The Free rows must use a Free target with `recoveryCreditPackEnabled = true`.
+
+#### 7. Add queued Paid capacity-resume evidence
+
+Add:
+
+```text
+schedules plan-change capacity resume after a successful queued Paid transition
+```
+
+Mock a successful established Paid transition and assert exactly:
+
+```ts
+expect(resume).toHaveBeenCalledOnce();
+expect(resume).toHaveBeenCalledWith({
+  shopId: "shop-1",
+  trigger: "plan-change",
+});
+```
+
+Assert the call occurs only after transition returns `transitioned`.
+
+#### 8. Add queued capacity-resume failure isolation
+
+Add:
+
+```text
+swallows queued plan-change capacity-resume enqueue failure after transition
+```
+
+Make:
+
+```ts
+recoveryCapacityResumeService.schedule(...)
+```
+
+reject.
+
+Assert:
+
+```text
+reconcileJob resolves successfully
+transition remains successful
+logger.warn called with billing.recovery_capacity_resume.enqueue_failed
+no rollback/retry classification is written for the already committed transition
+```
+
+### Finding 2 — rotating reconciliation still lacks the required plan-change matrix
+
+File:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+The current file contains only the same-cycle fail-closed case and the two Paid
+capacity-resume tests for this plan-change slice. Add the following permanent
+evidence.
+
+#### 9. Mapped but unexpected provider-current plan
+
+Add:
+
+```text
+fails closed for a mapped unexpected provider-current plan without exposing a pack meter
+```
+
+Configure:
+
+```text
+local current = plan-current
+expected pending = plan-target
+provider current = plan-third
+plan-third exists and is active
+```
+
+Assert:
+
+```text
+status = SYNC_ERROR
+lastSyncErrorCode = UNEXPECTED_IMMEDIATE_PLAN_CHANGE
+nextReconcileAt = now + 60 seconds
+transition not called
+purchase reconciliation receives no stale pack meter
+result/effective projection packMeterHandle = null
+exactly one deterministic subscription-reconcile job
+```
+
+#### 10. Rotating missing/invalid cycle evidence
+
+Add a parameterized test for:
+
+```text
+missing cycle
+invalid cycle
+```
+
+using provider-current expected target.
+
+Assert:
+
+```text
+MISSING_BILLING_CYCLE
+SYNC_ERROR
+transition not called
+packMeterHandle = null
+one deterministic retry
+```
+
+#### 11. Rotating meter/allowance matrix
+
+Add the applicable rows from item 6:
+
+```text
+null/negative/non-integer/unsafe Paid allowance
+missing normal Paid meter config
+provider omits normal Paid meter
+enabled Paid pack meter null
+provider omits Paid pack meter
+enabled Free pack meter null
+provider omits Free pack meter
+```
+
+Assert for every row:
+
+```text
+typed SYNC_ERROR (INVALID_INCLUDED_ALLOWANCE or MISSING_USAGE_METER)
+transition not called
+packMeterHandle = null
+one deterministic retry
+markSyncError(... PARTNER_API_ERROR ...) is not the handling path
+```
+
+You may prove the last point by asserting the typed guarded `updateMany` call and that
+the service returns `subscriptionErrors: 0`.
+
+#### 12. Free transition must not resume Paid capacity
+
+Add:
+
+```text
+does not schedule plan-change capacity resume after a successful Free transition
+```
+
+Mock:
+
+```ts
+{
+  kind: "transitioned",
+  billingPeriodId: null,
+  nextReconcileAt: null,
+  planKind: "FREE",
+}
+```
+
+Assert `recoveryCapacityResumeService.schedule` is not called.
+
+#### 13. Expected target `not-applicable` must fail closed
+
+Add:
+
+```text
+fails closed when the expected effective target transition returns not-applicable
+```
+
+Use a fully valid target/provider precondition set so no earlier guard fires.
+
+Mock transition result:
+
+```ts
+{ kind: "not-applicable" }
+```
+
+Assert:
+
+```text
+status = SYNC_ERROR
+lastSyncErrorCode = UNEXPECTED_IMMEDIATE_PLAN_CHANGE
+packMeterHandle = null
+exactly one deterministic retry
+```
+
+### Finding 3 — transaction-service evidence remains materially incomplete
+
+File:
+
+```text
+tests/unit/services/shopify-plan-change-transition.service.test.ts
+```
+
+The existing file has only eight tests. Attempt 4 did **not** implement the required
+transaction-service matrix.
+
+#### Harness additions required
+
+Extend the observable harness before writing the tests:
+
+- add `create: vi.fn()` to `billingPeriodEntitlementCounter`;
+- ensure each protected model exposes at least:
+
+```text
+create
+update
+updateMany
+upsert
+delete
+deleteMany
+```
+
+for:
+
+```text
+shopEntitlementCounter
+recoveryCreditPurchase
+promotionalCreditGrant
+merchantPromotionSelection
+```
+
+Add this local helper:
+
+```ts
+function expectNoWrites(model: Record<string, unknown>) {
+  for (const method of [
+    "create",
+    "update",
+    "updateMany",
+    "upsert",
+    "delete",
+    "deleteMany",
+  ]) {
+    const spy = model[method];
+    if (typeof spy === "function") {
+      expect(spy).not.toHaveBeenCalled();
+    }
+  }
+}
+```
+
+If Vitest spy typing requires a narrower helper type, use an equivalent typed helper;
+do not remove any required mutator from the assertion set.
+
+#### 14. Replay preserves successor usage exactly
+
+Strengthen:
+
+```text
+reuses a matching successor without resetting its included usage
+```
+
+Assert:
+
+```text
+billingPeriod.create not called
+billingPeriodEntitlementCounter.upsert called once
+upsert.update exactly {}
+```
+
+Capture the existing successor counter values:
+
+```text
+committedQuantity = 3
+reservedQuantity = 1
+forfeitedQuantity = 2
+```
+
+Assert no update/updateMany call attempts to rewrite any of those fields for the
+successor counter.
+
+No second BillingPeriod and no second allowance-bearing counter creation may occur.
+
+#### 15. Paid close reservation semantics
+
+Strengthen:
+
+```text
+closes Paid -> Paid with PLAN_CHANGED and grants the new period once
+```
+
+Assert both:
+
+```ts
+usageReservation.aggregate
+usageReservation.updateMany
+```
+
+use exactly:
+
+```ts
+status: {
+  in: ["RESERVED", "AMBIGUOUS"],
+}
+```
+
+For the existing fixture:
+
+```text
+granted = 100
+committed = 20
+reserved = 10
+forfeited = 0
+```
+
+assert:
+
+```text
+released quantity = 10
+reservedQuantity decrement = 10
+forfeitedQuantity increment = 80
+```
+
+The post-close total forfeiture therefore equals:
+
+```text
+granted - committed = 80
+```
+
+Do not change the production formula merely to match the test.
+
+#### 16. Paid -> Free monthly-counter prohibition
+
+Strengthen:
+
+```text
+creates a Free successor without a monthly counter
+```
+
+Assert successor snapshot:
+
+```text
+planKindSnapshot = FREE
+includedRecoveryCreditsGranted = null
+```
+
+and assert **no successor included-counter**:
+
+```text
+create
+upsert
+updateMany
+```
+
+is called after the outgoing Paid close. If the outgoing Paid close legitimately
+reads/updates its old counter, distinguish that call by `billingPeriodId` and prove no
+write targets the Free successor period.
+
+#### 17. Protected-state no-write assertions for all directions
+
+Replace the single-direction coverage with a parameterized test named:
+
+```text
+preserves lifetime purchased and promotion state for transition direction: %s
+```
+
+Rows:
+
+```text
+Paid -> Paid
+Paid -> Free
+Free -> Paid (no outgoing Free period)
+```
+
+For each row assert `expectNoWrites(...)` for:
+
+```text
+shopEntitlementCounter
+recoveryCreditPurchase
+promotionalCreditGrant
+merchantPromotionSelection
+```
+
+The current single Paid->Paid test is insufficient.
+
+#### 18. Complete transaction-level precondition matrix
+
+Add a parameterized test named:
+
+```text
+does not mutate periods before target prerequisite validation: %s
+```
+
+Rows:
+
+```text
+missing cycle
+invalid cycle
+null Paid allowance
+negative Paid allowance
+non-integer Paid allowance
+unsafe Paid allowance
+missing configured normal Paid meter
+provider omits normal Paid meter
+enabled Paid pack meter missing/null
+provider omits enabled Paid pack meter
+enabled Free pack meter missing/null
+provider omits enabled Free pack meter
+```
+
+For every row assert before/after rejection/not-applicable:
+
+```text
+old billingPeriod.updateMany not called
+successor billingPeriod.create not called
+successor counter create/upsert/updateMany not called
+```
+
+Expected thrown errors are acceptable for the meter/allowance invariant guard.
+Missing/invalid cycle may return `not-applicable`.
+
+#### 19. Retryable versus unrelated SYNC_ERROR eligibility
+
+Add a parameterized test named:
+
+```text
+allows retryable plan-change SYNC_ERROR transition: %s
+```
+
+Rows:
+
+```text
+UNEXPECTED_IMMEDIATE_PLAN_CHANGE
+MISSING_BILLING_CYCLE
+MISSING_USAGE_METER
+INVALID_INCLUDED_ALLOWANCE
+```
+
+For each row, set:
+
+```text
+subscription.status = SYNC_ERROR
+subscription.lastSyncErrorCode = row code
+```
+
+with otherwise valid exact state and assert a successful transition.
+
+Then add:
+
+```text
+rejects unrelated SYNC_ERROR as not-applicable
+```
+
+using an unrelated code such as:
+
+```text
+PARTNER_API_ERROR
+```
+
+Assert:
+
+```text
+result = { kind: "not-applicable" }
+no period close
+no successor create
+```
+
+#### 20. Preserve existing Free transition evidence
+
+Keep green, without weakening:
+
+```text
+supports Free -> Paid without an outgoing Free billing period
+closes an existing outgoing Free period exactly once before Free -> Paid
+returns a null billing period for a pack-disabled Free transition without a provider cycle
+```
+
+### Finding 4 — Completion Report evidence map is inaccurate
+
+Attempt 4's `### Evidence Map` must not be copied forward.
+
+Examples of incorrect mappings in the current report:
+
+- item 14 points to a rotating capacity-resume test instead of successor replay;
+- item 15 points to a Free-period close test instead of Paid reservation semantics;
+- item 16 points to successor replay instead of Paid -> Free no-counter evidence;
+- item 17 points to a single Paid -> Paid test instead of all three transition
+  directions;
+- item 18 points to one Free-successor test instead of the precondition matrix;
+- item 19 points to one partial no-write test instead of retryable `SYNC_ERROR`
+  eligibility;
+- item 20 points to one missing-cycle test instead of the complete required set.
+
+Attempt 5 must replace that section with a truthful table:
+
+```text
+Requirement | Exact test title(s) | Test file
+```
+
+covering items 1 through 20 above. Do not map one test to a requirement unless its
+assertions actually prove that requirement.
+
+### Finding 5 — workflow publication evidence is incomplete
+
+The Attempt-4 Completion Report currently records only:
+
+```text
+Implementation commit: 17ffe40
+Parent report commit: recorded after this update
+```
+
+The previous Architect Review required full immutable SHAs.
+
+Attempt 5 Completion Report must run and record the actual outputs of:
+
+```bash
+git -C "$MODA_WORKSPACE_ROOT/moda-interact-background" rev-parse HEAD
+git -C "$MODA_WORKSPACE_ROOT" rev-parse HEAD
+```
+
+using the correct dedicated task worktrees from the prepared execution packet, not
+the shared primary checkout.
+
+Record:
+
+```text
+Attempt-4 implementation full SHA/history
+Attempt-5 implementation full SHA
+Attempt-5 parent Completion Report full SHA
+launcher Attempt-5 claim commit/full SHA if supplied
+database gitlink before/after
+both branches clean/pushed
+```
+
+Do not write "recorded after this update" as a substitute for the actual SHA.
+
+### Required validation for Attempt 5
+
+This is expected to be test/evidence-only. From `moda-interact-background` run:
+
+```bash
+npx vitest run \
+  tests/unit/services/shopify-plan-change-transition.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts
+
+npm run test:unit
+npm run test:integration
+npm run prisma:validate
+npm run prisma:generate
+npm run build
+git diff --check
+
+rg -n "tierRank|prorat" \
+  src/services/shopify-plan-change-transition.service.ts \
+  src/services/billing-subscription-reconciliation.service.ts \
+  src/services/billing-reconciliation.service.ts
+```
+
+Record exact pass/fail/skip counts.
+
+The known 10 full-unit failures and 15 generated-client build diagnostics may remain
+non-blocking only if:
+
+- they match the Attempt-4 documented baseline exactly; and
+- no Attempt-5 changed file introduces a new failure/diagnostic.
+
+`rg` exit code `1` is expected only when there are zero matches.
+
+### Allowed Attempt-5 scope
+
+Implementation/test files allowed:
+
+```text
+moda-interact-background/tests/unit/services/shopify-plan-change-transition.service.test.ts
+moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
+moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+Normal task/Completion Report updates are allowed through the coordination exception.
+
+Do **not** modify production files:
+
+```text
+src/services/shopify-plan-change-transition.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+and do not modify:
+
+```text
+Prisma schema/migrations
+Shared package/contracts
+purchased-credit services
+SamePlanBillingPeriodRolloverService
+Shopify merchant app
+Admin
+Messaging
+Gateway
+cancellation/freeze/unfreeze
+refunds
+promotion semantics
+```
+
+If any exact Attempt-5 assertion fails because the accepted Attempt-4 production code
+does not satisfy the contract, **STOP** and return the failing test name, observed
+calls/state and expected calls/state to `moda_architect`. Do not modify production
+source on your own.
+
+### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 4
+```
+
+The next authorized claim must increment to **Attempt 5 exactly once**.
+
+After implementing only the evidence corrections above, running the full required
+validation, replacing the inaccurate evidence map, recording full immutable workflow
+SHAs, setting the task back to `status: review`, clearing `executor`/`claimed_at`,
+committing/pushing both mirrored task branches and verifying they are clean, STOP and
+return to `moda_architect`.
+
+Do not start `ARCH-010-BACKGROUND-012`, `ARCH-010-SHOPIFY-015` or
+`ARCH-010-SYSTEM-TEST-001`.
+
