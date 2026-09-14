@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 79
 executor: null
 claimed_at: null
@@ -885,4 +885,251 @@ Then STOP and return to `moda_architect`.
 `ARCH-010-SHOPIFY-026`, `ARCH-010-ADMIN-002`, and
 `ARCH-010-SYSTEM-TEST-003` remain gated until `SHOPIFY-025` is
 architect-accepted Complete.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted**
+
+This review intentionally prioritises production functionality, merchant isolation,
+refund-state correctness, and concurrency behaviour over exhaustive test coverage.
+
+Attempt 3 closes the remaining different-request `P2002` race without regressing the
+previously accepted purchase-history, refund, reactivation, or accounting behavior.
+
+### Accepted uniqueness-conflict recovery
+
+The refund service now distinguishes the two authoritative database conflict paths
+without relying on Prisma error-message text or index names.
+
+On `P2002`:
+
+```text
+1. reload the exact deterministic requestKey;
+2. if that exact request exists for the authenticated shop, return persisted state;
+3. otherwise reload purchase by exact:
+     purchase.id
+     + authenticated shopId
+4. inspect only current non-terminal/live refunds;
+5. if an authoritative live refund exists, return that persisted outcome;
+6. otherwise rethrow the unexplained uniqueness error.
+```
+
+This correctly handles both:
+
+```text
+same-request transport replay
+```
+
+and:
+
+```text
+different-request race for the same ACTIVE purchase
+```
+
+where the second transaction loses the database's one-live-refund-per-purchase unique
+constraint.
+
+The losing merchant request therefore no longer receives an avoidable server error
+when another request has already established the authoritative refund state.
+
+### Accepted shop isolation
+
+The different-request fallback is scoped at the database query boundary:
+
+```text
+purchase.id = requested purchase
+AND
+purchase.shopId = authenticated shop
+```
+
+The implementation does not fetch a cross-shop purchase and filter it in memory.
+
+Therefore a uniqueness conflict cannot be used to discover another shop's purchase or
+refund lifecycle.
+
+Unknown/cross-shop purchase IDs continue to resolve through the bounded merchant
+not-found behavior.
+
+### Accepted refund outcome mapping
+
+A persisted live refund is mapped from durable state:
+
+```text
+REQUESTED
+  -> REQUESTED
+
+PROVIDER_ACTION_REQUIRED
+  -> ALREADY_WITHDRAWN
+
+NEEDS_ATTENTION
+  -> ALREADY_WITHDRAWN
+```
+
+and current/reserved/available amounts are returned from the authoritative winning
+purchase state.
+
+The conflict path does not:
+
+```text
+create a second refund
+generate another request key
+repeat the provider action
+trust client quantity
+trust client money
+wrap the whole batch in one transaction
+weaken the partial unique index
+```
+
+### Accepted reactivation / later-new-request semantics
+
+The fallback loads only live statuses:
+
+```text
+REQUESTED
+PROVIDER_ACTION_REQUIRED
+NEEDS_ATTENTION
+```
+
+A refund cancelled by successful merchant reactivation is therefore historical rather
+than an active conflict owner.
+
+A later genuine refund request with a new request identity can proceed against the
+reactivated ACTIVE purchase, subject to the ordinary fresh-state availability and CAS
+rules.
+
+This preserves the task requirement that transport replay remains bounded while a
+later new refund request after reactivation is still possible.
+
+### Previously accepted functionality preserved
+
+Architect inspection confirms the following remain intact:
+
+```text
+authenticated merchant resource route
+shop-scoped purchase-history query
+default/max pagination bounds
+all canonical purchase states
+server-computed availableAmount
+no client-trusted refund quantity or money
+bounded unique batch input
+per-purchase batch independence
+Serializable per-purchase transaction
+bounded whole-transaction retry
+fresh-state refund availability
+purchase ACTIVE -> WITHDRAWN CAS
+aggregate refundingQuantity hold
+one live refund per purchase
+same-request deterministic requestKey replay
+pre-provider REQUESTED refund reactivation
+WITHDRAWN -> ACTIVE reactivation
+zero-current WITHDRAWN -> COMPLETED
+provider-action/reference/confirmation reactivation lockout
+purchase/refund/aggregate versioned CAS
+no provider refund API call
+no negative Shopify App Event
+no schema / Shared / Background / Admin / page-UI change
+```
+
+No additional architectural correction is required.
+
+### Validation accepted
+
+```text
+Focused service tests:
+  12 passed
+
+Full application suite:
+  516 passed
+  3 skipped
+
+Prisma generate:
+  passed
+
+Prisma validate:
+  passed
+
+Production build:
+  passed
+
+Changed-file lint:
+  passed
+
+git diff --check:
+  passed
+
+Repository-wide lint/typecheck:
+  known unrelated baseline failures remain
+  no changed-file diagnostic introduced
+```
+
+Acceptance is based on the runtime behavior above, not on satisfying a particular
+test-count target.
+
+### Accepted implementation evidence
+
+Developer handoff:
+
+```text
+Attempt-3 implementation:
+957990b0b36b63eb4ff9f5871abead8d4d6ce68e
+
+Attempt-3 parent report:
+57eaa82
+```
+
+Preserve the full parent-report SHA from repository history when publishing the
+architect acceptance.
+
+Both worktrees were reported clean and pushed.
+
+### Dependency reconciliation
+
+`ARCH-010-SHOPIFY-025` is Complete.
+
+All declared prerequisites of:
+
+```text
+ARCH-010-SHOPIFY-026
+```
+
+are now Complete:
+
+```text
+ARCH-010-SHOPIFY-025
+ARCH-010-SHOPIFY-012
+```
+
+Therefore `SHOPIFY-026` is promoted to `ready`.
+
+All declared prerequisites of:
+
+```text
+ARCH-010-ADMIN-002
+```
+
+are also now Complete:
+
+```text
+ARCH-010-DATABASE-014
+ARCH-010-BACKGROUND-022
+ARCH-010-SHOPIFY-025
+ARCH-010-SHARED-008
+ARCH-010-ADMIN-010
+```
+
+Therefore `ADMIN-002` is promoted to `ready`.
+
+`ARCH-010-SYSTEM-TEST-003` remains Pending/manual-gated because it still depends on
+`SHOPIFY-026`, `ADMIN-003`, and its other declared implementation prerequisites.
+
+The current automatic implementation-ready frontier is:
+
+```text
+ARCH-010-SHOPIFY-026
+ARCH-010-ADMIN-002
+```
+
+No Attempt 4 is required for `ARCH-010-SHOPIFY-025`.
 

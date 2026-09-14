@@ -111,7 +111,8 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ## Current Ready frontier
 
 ```text
-ARCH-010-SHOPIFY-025
+ARCH-010-SHOPIFY-026
+ARCH-010-ADMIN-002
 ```
 
 
@@ -668,5 +669,40 @@ Current automatic implementation-ready frontier:
 
 ```text
 ARCH-010-SHOPIFY-025
+```
+
+## Post-review update — SHOPIFY-025 Attempt 3 accepted
+
+`ARCH-010-SHOPIFY-025` is architect-accepted Complete on merchant purchase-history,
+refund lifecycle, shop isolation, accounting and concurrency behavior.
+
+Accepted uniqueness-conflict behavior:
+
+```text
+P2002
+  -> exact requestKey reload first
+  -> if absent, authenticated id + shopId purchase reload
+  -> inspect live refund only
+  -> return persisted authoritative refund outcome
+  -> no duplicate refund / no cross-shop disclosure / no avoidable 500
+```
+
+This acceptance promotes:
+
+```text
+ARCH-010-SHOPIFY-026
+ARCH-010-ADMIN-002
+```
+
+to Ready.
+
+`SYSTEM-TEST-003` remains Pending/manual-gated until its remaining downstream
+implementation prerequisites are Complete.
+
+Current automatic implementation-ready frontier:
+
+```text
+ARCH-010-SHOPIFY-026
+ARCH-010-ADMIN-002
 ```
 
