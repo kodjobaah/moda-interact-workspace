@@ -349,7 +349,7 @@ Ready for Review.
 - Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-015`; canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-015`; both use `task/ARCH-010-SHOPIFY-015`.
 - Launcher claim commit: `bf32268f965829470459d28512222962e3faedb5`; preparation synchronization merge: `1ca0cb0b95e2bbeca37d33d27037521f2eb6b67c`.
 - Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
-- Implementation branch is pushed and clean; no implementation submodule gitlink was staged or changed. Parent report publication SHA is recorded after the parent commit below.
+- Implementation branch is pushed and clean; no implementation submodule gitlink was staged or changed. Attempt 5 initial parent/report publication: `693a9817bbc572747e7b04897dc276400790a7d9`; the final parent report publication is this metadata-only follow-up.
 
 ### Architect Review — Attempt 1
 
