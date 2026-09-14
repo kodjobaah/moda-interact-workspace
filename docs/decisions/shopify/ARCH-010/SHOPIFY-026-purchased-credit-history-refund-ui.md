@@ -9,18 +9,18 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 80
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-14T19:42:33Z
+attempt: 1
 depends_on:
 - ARCH-010-SHOPIFY-025
 - ARCH-010-SHOPIFY-012
 enables:
 - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-13
-updated: '2026-09-13'
+updated: 2026-09-14
 ---
 
 # ARCH-010-SHOPIFY-026: Build dedicated purchased-credit history and refund-management UI
