@@ -317,7 +317,7 @@ Ready for Review.
 - Launcher-provided isolated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-014`.
 - Mirrored task branch: `task/ARCH-010-SHOPIFY-014` in both repositories.
 - Implementation commit `bfc7af3` (`feat(shopify): finalize recovery credit top-up lifecycle`) pushed to `origin/task/ARCH-010-SHOPIFY-014`.
-- Parent report changes are being committed and pushed on the matching parent task branch.
+- Parent report commit `77944d9` (`task: return SHOPIFY-014 for review`) is pushed to `origin/task/ARCH-010-SHOPIFY-014`.
 
 ### Architect Review
 Pending moda_architect review.
