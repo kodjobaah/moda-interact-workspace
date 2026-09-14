@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 52
 executor: null
 claimed_at: null
@@ -744,3 +744,71 @@ The next authorized `/moda-task ARCH-010-SHOPIFY-009` claim MUST increment to At
 
 Do not start `ARCH-010-SHOPIFY-008`, `ARCH-010-SHOPIFY-012`,
 `ARCH-010-SHOPIFY-016`, or `ARCH-010-SHOPIFY-020`.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Accepted — Complete**
+
+Attempt 2 satisfies the complete correction contract from Attempt 1. The accepted
+implementation is `66f25bc06a02856e74740f8d0f2cae9d740c53a2`; the reviewed parent
+Completion Report is `06596f0b6fc0ef54e52e78755f23600a3893c27d`.
+
+### Acceptance findings
+
+- `getMerchantRecoveryCapacityState(shopId)` remains a PostgreSQL-only operational
+  projection and makes no Shopify Partner provider call.
+- A structurally valid Paid BillingPeriod and INCLUDED_RECOVERY_CREDITS counter are
+  retained as informational `paidIncluded` state for `FROZEN`, while admission remains
+  fail-closed as `CONTRACT_FROZEN`, `capacitySource=null`, `canStartRecovery=false`.
+- Missing `LIFETIME_FREE_RECOVERY_CREDITS` fails closed as
+  `CONFIGURATION_UNAVAILABLE` only after promotional, Paid-included and purchased
+  sources are unavailable; a deterministic higher-priority source is not blocked by
+  the missing fallback counter.
+- Capacity ordering remains exact: Free uses
+  `PROMOTIONAL -> PURCHASED -> FREE_LIFETIME`; Paid uses
+  `PROMOTIONAL -> PAID_INCLUDED -> PURCHASED -> FREE_LIFETIME`.
+- Purchased availability subtracts `refundingQuantity`; Paid included availability
+  subtracts committed, reserved and forfeited quantities; promotional spendability
+  comes only from the exact selected usable campaign grant.
+- `NO_CONTRACT` remains `CONTRACT_REQUIRED` regardless of preserved or zero balances,
+  and `FROZEN`/`NO_CONTRACT` never expose a spendable capacity source.
+- No aggregate promotional counter, UsageEvent capacity aggregation, plan-owned
+  lifetime allowance or signed lifetime adjustment was introduced.
+- Attempt 2 is limited to `billing.service.ts` and its permanent service tests. No
+  route, component, provider, Background, Shared, Admin, schema, purchase or
+  reservation mutation scope was introduced.
+
+### Validation reviewed
+
+The Completion Report evidence is accepted:
+
+```text
+focused BillingService tests: 141 passed
+full suite: 426 passed, 3 skipped
+Prisma generation: passed
+build: passed
+static authority scan: passed
+git diff --check: passed
+typecheck: 119 TYPECHECK-001 baseline diagnostics; no Attempt-2 regression
+database dependency: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+```
+
+The review snapshot does not contain `node_modules`, so Node validation was not rerun
+by the architect. Source inspection, permanent-test inspection and the published
+Attempt-2 diff support the reported results.
+
+### Dependency release
+
+No dependent task becomes Ready solely from this acceptance:
+
+- `ARCH-010-SHOPIFY-008` still depends on `ARCH-010-SHOPIFY-012`,
+  `ARCH-010-BACKGROUND-009` and `ARCH-010-SHARED-008`;
+- `ARCH-010-SHOPIFY-012` still has additional incomplete dependencies;
+- `ARCH-010-SHOPIFY-016` still depends on SHOPIFY-012 and Background cancellation
+  tasks;
+- `ARCH-010-SHOPIFY-020` still depends on `ARCH-010-SHOPIFY-012`.
+
+Those tasks remain Pending and are not started by this review.
+
