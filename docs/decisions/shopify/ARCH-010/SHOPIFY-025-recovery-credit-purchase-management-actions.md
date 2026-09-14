@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 79
 executor: copilot
 claimed_at: 2026-09-14T18:42:06Z
@@ -408,35 +408,69 @@ STOP if DATABASE-014/BACKGROUND-022 are not integrated, if authenticated shop sc
 ### Status
 Ready for Review.
 
+### Initial Audit Findings and Corrections
+- The existing service had no authenticated server resource boundary for the future merchant page. Added `app/routes/app/billing/recovery-credits/route.ts` with shop resolution, capability checks, paginated loader, bounded batch action, and reactivation action; no page UI or provider call was added.
+- A `P2002` request-key conflict was reported as `REQUESTED` without reading the authoritative row. The service now reloads the refund by its deterministic request key and returns the persisted purchase/refund lifecycle outcome.
+- The original pagination test fixture ignored its `shopId` filter and falsely expected a cross-shop row. The fixture now applies the filter and the assertion proves the other shop is excluded.
+- The Prisma schema was inspected and validated: `requestKey` is unique, aggregate identity is `(shopId, counter)`, and all fields/enums used by the service match the existing schema. No schema change is required.
+
+### Requirement Checklist
+- Shop-scoped history, default page size 20, hard maximum 50, all five statuses, safe summaries, and computed availability: implemented and tested.
+- Fresh Serializable refund transactions, bounded retry, purchase/refund/aggregate CAS, exact hold/release accounting, and no shop-global lock: implemented.
+- Client quantity/money is ignored; the resource action accepts only authenticated shop context, purchase IDs, and request identity.
+- Batch input is unique and bounded to 20, each lot is independent, replay is deterministic, and unknown/cross-shop IDs do not disclose data.
+- Reactivation requires `WITHDRAWN` plus a strictly pre-provider-action `REQUESTED` refund, preserves current/reserved values, releases only the held aggregate amount, and completes zero-current purchases.
+- No provider refund API, negative App Event, new Shared code, schema, Background, Admin, or page-UI change was introduced.
+
+### Required Test Items
+1. Shop-scoped paginated list: covered by the list test and corrected fixture filter.
+2. All five purchase states: covered by the status mapping test.
+3. ACTIVE availability: covered by computed availability assertions.
+4. Client quantity/money cannot control the operation: covered by the withdrawal test with conflicting client values.
+5. Zero availability is a no-op: covered by the zero-availability test.
+6. Successful refund creates one refund, withdraws the purchase, and holds aggregate capacity: covered.
+7. Same-request replay is idempotent: covered.
+8. Request-key uniqueness conflict is deterministic: covered by the added persisted-state conflict test.
+9. Displayed 1 but reservation wins: covered by fresh zero availability.
+10. Displayed 2 but one reservation wins: covered by fresh partial availability and request snapshot behavior.
+11. Refund wins against stale reservation CAS: covered by the Serializable/CAS retry contract and conflict retry test.
+12. Batch partial success and independent outcomes: covered.
+13. Cross-shop purchase cannot be read or mutated: covered.
+14. Reactivation restores ACTIVE and releases the aggregate hold: covered.
+15. Reactivation preserves current/reserved values: covered by returned state assertions and CAS predicates.
+16. Provider-action-required refund cannot reactivate: covered.
+17. Reactivation/Admin-lock race has one CAS winner: covered by provider-action lock rejection and shared refund-version CAS boundary.
+18. Zero-current purchase completes instead of reactivating: covered.
+19. No provider refund API or negative App Event is called: the service has no provider/event dependency; the focused path is database-only and the build/test suite passes.
+20. Focused tests, relevant suite, full suite, Prisma validation/generation, build, touched lint, typecheck review, and `git diff --check`: recorded below.
+
 ### Files Changed
 - `moda-interact/app/services/billing/recovery-credit-purchase-management.service.ts`
+- `moda-interact/app/routes/app/billing/recovery-credits/route.ts`
 - `moda-interact/tests/unit/services/recovery-credit-purchase-management.service.test.ts`
 
-### Work Completed
-- Added a shop-scoped, paginated purchase-history read model with default page size 20, hard maximum 50, all five canonical purchase statuses, computed non-negative availability, safe plan and original-provider-purchase summaries, and safe live/completed refund summaries.
-- Added Serializable bounded-retry refund withdrawal for one purchase and bounded batches of up to 20 unique purchase IDs. Each transaction fresh-reads the purchase, live refund state, and purchased-credit aggregate, ignores client quantity/money fields, creates immutable `MERCHANT_UI` refund snapshots, and CAS-updates `ACTIVE -> WITHDRAWN` plus aggregate `refundingQuantity`.
-- Added deterministic request keys, idempotent live-refund replay, independent batch outcomes, authenticated shop scoping, cross-shop not-found behavior, and no provider refund API or negative App Event path.
-- Added Serializable/CAS reactivation for strictly pre-provider-action `REQUESTED` refunds, including aggregate hold release, unchanged current/reserved balances, provider-action rejection, and `currentAmount = 0` completion with `NO_CREDITS_REMAINING` cancellation.
-- Added focused coverage for pagination/scoping, every status, fresh availability and client-input rejection, zero-availability no-op, atomic hold, replay/conflict retry, reservation-race outcomes through the service contract, partial batch success, reactivation preservation, provider-action locking, and empty-purchase completion.
-
 ### Validation Results
-- `npm test -- --run tests/unit/services/recovery-credit-purchase-management.service.test.ts`: passed, 10/10.
-- Relevant billing suites (`billing.service`, `billing-reconciliation.service`, and the new management service): passed, 3 files and 197 tests.
-- `npm test`: passed, 42 files and 514 tests; 2 files and 3 tests skipped.
+- Focused management service: passed, 11/11.
+- Relevant billing suites: passed, 3 files and 198 tests.
+- Full suite: passed, 42 files and 515 tests; 2 files and 3 tests skipped.
 - `npm run prisma:generate`: passed.
 - `npm run prisma:validate`: passed.
 - `npm run build`: passed.
-- Touched-file ESLint: passed; only the repository's TypeScript-version support warning was emitted.
+- Direct ESLint on all three changed files: passed; only the repository TypeScript-version support warning was emitted.
+- Repository lint script: reports 16 pre-existing errors outside the changed files because its script ignores positional file arguments; no changed-file lint error.
 - `git diff --check`: passed.
-- `npm run typecheck`: existing baseline failure with 141 diagnostics across the repository; no diagnostic referenced either changed file. The observed baseline includes existing untyped JSX route/component diagnostics, missing `d3` declarations, an existing nullable `subscription.plan` diagnostic in `billing.service.ts`, and the existing Redis `zrange` type mismatch.
+- `npm run typecheck`: remains non-zero on the known repository baseline (existing JSX implicit-any/Polaris diagnostics, missing `d3` declarations, existing nullable billing plan, Redis overload, and incomplete billing test mocks); no diagnostic remains in the changed service, route, or focused test.
 
-### Git / VCS
+### Git / VCS Evidence
+- Claim commit: `08d85bb9ac97e30ca1c2d8e4b2af3879e376ea09` on parent and implementation task branches.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-025`.
 - Implementation branch: `task/ARCH-010-SHOPIFY-025`.
-- Implementation commit: `7ac42c4f24ada3321f1aff9ec6e8cf32697ef982` (`feat(shopify): manage recovery credit purchase refunds`).
-- Implementation branch pushed successfully to `origin/task/ARCH-010-SHOPIFY-025`.
+- Implementation commit: `1db0a03` (`fix(shopify): harden recovery credit management actions`), pushed to `origin/task/ARCH-010-SHOPIFY-025`.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-025`.
-- No schema, Shared, Background, Admin, provider, route, or UI files were changed.
+- No schema, Shared, Background, Admin, provider, or page-UI files were changed.
+
+### Unresolved Issues
+- The repository-wide typecheck and lint baselines remain unresolved outside this task; they do not reference the final changed files.
 
 ### Architect Review
 Pending.
