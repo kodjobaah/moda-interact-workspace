@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 59
 executor: copilot
 claimed_at: 2026-09-14T05:33:38Z
@@ -267,6 +267,34 @@ Ready for Review.
 
 ### Architect Review
 Pending.
+
+## Completion Report — Attempt 2
+
+### Status
+Ready for Review.
+
+### Corrections Mapping
+- Finding 1 implemented in `src/workers/recovery-capacity-resume.worker.ts`: queued resume jobs now evaluate the canonical Shop + Subscription gate before blocked-recovery lookup and continuation scheduling; NO_CONTRACT/FROZEN jobs return successful ignored results. `src/services/checkout-recovery.service.ts` now rechecks before lock acquisition and again after lock acquisition, before abandoned-checkout provider lookup or mutation. Covered by the worker parameterized NO_CONTRACT/FROZEN test and capacity-resume service pre-lock/post-lock tests.
+- Finding 2 implemented in `src/services/checkout-recovery.service.ts`: matured-candidate materialization retains its outer early gate and performs the first in-lock authority check before order correlation, provider lookup, materialization, customer/conversation work, billing, or send. Covered by the matured-candidate lock-race test.
+- Finding 3 implemented in `src/services/outbound-whatsapp-admission.service.ts`: admitted results retain durable `shopId`; both prepared text and template sends re-evaluate the canonical gate immediately before provider invocation, clean up denied prepared messages through `failPrepared`, and preserve `contract-required` versus `subscription-frozen` suppression reasons. Covered by direct prepared-text FROZEN and template NO_CONTRACT tests; existing active-send tests remain green.
+
+### Files Changed
+- Implementation commit `d3be8d8` changed exactly 7 files in `moda-interact-background`: 3 production files (`checkout-recovery.service.ts`, `outbound-whatsapp-admission.service.ts`, `recovery-capacity-resume.worker.ts`) and 4 focused test files (`checkout-recovery.capacity-resume.test.ts`, `matured-candidate.materialization.test.ts`, `outbound-whatsapp-admission.service.test.ts`, `recovery-capacity-resume.worker.test.ts`).
+- Parent repository change: this task report only.
+
+### Validation Results
+- Focused Attempt 2 validation: `npm exec vitest run tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts` — 4 test files passed, 63 tests passed, 0 failed.
+- `npm run prisma:validate` — passed; schema valid.
+- `git diff --check` — passed in the implementation worktree.
+- `npm run test:unit` — 58 test files: 56 passed, 2 failed; 874 passed and 10 failed. The 10 failures match the documented baseline: 8 in `tests/unit/services/recovery-credit-purchase.service.test.ts` and 2 in `tests/unit/runtime/observability-startup.test.ts`. No changed Attempt 2 path failed.
+- `npm run build` — remains at the documented baseline: 15 TypeScript errors in the unrelated `src/services/purchased-recovery-reservation.service.ts` (10) and `src/services/recovery-credit-purchase.service.ts` (5). Prisma generation completed; no changed Attempt 2 file is implicated.
+
+### Attempt 2 Git / Launcher Evidence
+- Launcher-provided canonical worktrees were used exactly as supplied, without rerunning preparation, synchronization discovery, claim, or submodule setup: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-013` on `task/ARCH-010-BACKGROUND-013`, parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-013` on the same branch.
+- Attempt 2 started from implementation head `6f6985144b4f095e70ac010884c311e93b6d9859`; launcher claim synchronization was already complete and the dependency gate passed for BACKGROUND-004, BACKGROUND-005, and BACKGROUND-012.
+- Launcher verified the database submodule at recorded commit `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`. No submodule gitlink was staged or changed.
+- Implementation branch is pushed at `d3be8d81b1b96ae2300202d9d41a6c176aed4cd2`, and only the 7 task-owned implementation files were committed. No merge, force-push, main-branch update, or unrelated user change was performed.
+- Parent task report is the only parent-workspace file changed by this attempt; it is ready to commit and push on the mirrored task branch.
 
 ## Architect Review — Attempt 1
 
