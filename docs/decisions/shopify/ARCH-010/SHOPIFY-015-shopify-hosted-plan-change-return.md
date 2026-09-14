@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 56
-executor: copilot
-claimed_at: 2026-09-14T00:49:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-SHOPIFY-013
@@ -259,19 +259,28 @@ Return the mismatch to `moda_architect` rather than expanding scope.
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact/app/components/dashboard/SubscriptionChangePanel.jsx`
+- `moda-interact/app/routes/app/billing/callback/route.tsx`
+- `moda-interact/app/routes/app/billing/options/route.tsx`
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/tests/unit/routes/billing-callback.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Implemented Shopify-hosted plan-change return handling and provider-derived subscription state rendering.
+- Removed local mock plan catalogue, local price/rank classification, and prototype selection behavior from the production panel/options route.
+- Preserved provider verification, current/pending subscription facts, and reconciliation-owned transition behavior.
 
 ### Validation Results
-Populate during implementation.
+- Focused validation passed: 2 test files, 79 passed, 9 skipped.
+- `git diff --check` passed with no whitespace errors.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation branch: `task/ARCH-010-SHOPIFY-015`
+- Implementation commit: `43aed6d196eac0ff1a9abd1d05ab2c08a40e23b1`
+- Implementation branch pushed to `origin`.
 
 ### Architect Review
 Pending.
