@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -954,6 +954,483 @@ The next authorized claim must increment it to **Attempt 3 exactly once**.
 After implementing only the corrections above, set `status: review`, clear
 `executor`/`claimed_at`, update the Completion Report with exact test-title evidence,
 commit/push both mirrored task branches, STOP and return to `moda_architect`.
+
+`ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Changes Requested**
+
+Attempt 3 correctly implements the standalone `/app/reinstalling` topology, the
+minimal restoration shell, the `/app/additional` child-route gate, and the explicit
+Attempt-2 child/service regression cases. The accepted `ShopService` concurrency
+work remains valid.
+
+One route-tree defect remains. It is a production correctness issue, not merely a
+missing assertion.
+
+### Finding — the parent `/app` loader performs app-shell reads before nested product routes can fail closed
+
+`app/routes.ts` correctly keeps normal merchant pages nested under:
+
+```text
+route("app", "./routes/app/route.jsx", [ ... ])
+```
+
+and correctly makes:
+
+```text
+/app/reinstalling
+```
+
+standalone.
+
+However, `app/routes/app/route.jsx::loader(...)` currently does:
+
+```text
+authenticate.admin(request)
+-> resolveShopifyShop(...)
+-> readMerchantSupportMessages(...)
+-> db.shopSettings.findUnique(...)
+```
+
+with **no lifecycle gate**.
+
+React Router executes this parent loader for nested paths such as:
+
+```text
+/app
+/app/additional
+/app/billing
+/app/promotions
+/app/usage
+/app/merchant-support
+```
+
+before the nested child loader completes.
+
+Therefore the new child tests:
+
+```text
+home redirects pending reinstall before product reads
+additional redirects pending reinstall
+billing/select redirects pending reinstall
+```
+
+do not prove the real matched `/app` route tree is fail closed. For a pending
+reinstall request to an ordinary nested product path, the parent currently reads
+merchant-support data and `ShopSettings` before the child can redirect.
+
+The task contract explicitly requires `/app` to redirect a pending reinstall before
+ordinary app/product reads. Merchant support is the one intended nested exception and
+must remain reachable.
+
+### Required Attempt-4 correction
+
+Modify:
+
+```text
+moda-interact/app/routes/app/route.jsx
+```
+
+and add one focused parent-layout test file:
+
+```text
+moda-interact/tests/unit/routes/app-layout-access.test.ts
+```
+
+Do not modify the accepted standalone reinstall route, ShopService reinstall
+concurrency code, database schema, Shared contracts or BACKGROUND-006 unless the exact
+tests below expose an unrelated defect.
+
+#### 1. Gate the parent app layout before shell reads
+
+In:
+
+```text
+app/routes/app/route.jsx
+```
+
+import the existing shared access-policy functions:
+
+```js
+import {
+  assertActiveShop,
+  assertSupportShop,
+} from "@/services/shop/shop-access-policy";
+```
+
+Immediately after:
+
+```js
+const shop = await shopService.resolveShopifyShop({
+  admin,
+  domain: session.shop,
+});
+```
+
+derive the request pathname:
+
+```js
+const pathname = new URL(request.url).pathname;
+```
+
+Define the merchant-support exception exactly:
+
+```js
+const isMerchantSupport =
+  pathname === "/app/merchant-support" ||
+  pathname === "/app/merchant-support/";
+```
+
+Then gate **before** either of these calls:
+
+```text
+readMerchantSupportMessages(...)
+db.shopSettings.findUnique(...)
+```
+
+Use:
+
+```js
+if (isMerchantSupport) {
+  assertSupportShop(shop, {
+    route: "/app/merchant-support",
+    capability: "read-messages",
+    redirectTo: "/auth/login",
+  });
+} else {
+  assertActiveShop(shop, {
+    route: pathname,
+    redirectTo: "/app/merchant-support",
+  });
+}
+```
+
+Only after that gate succeeds may the loader read:
+
+```text
+readMerchantSupportMessages(...)
+db.shopSettings.findUnique(...)
+```
+
+Do not duplicate lifecycle-state branching locally. The shared access policy remains
+authoritative.
+
+Expected behaviour:
+
+```text
+ACTIVE + ordinary /app child
+  -> allowed
+  -> app-shell support/settings reads may execute
+
+UNINSTALLED + reinstallPendingAt != null + ordinary /app child
+  -> redirect /app/reinstalling
+  -> no support/settings read
+
+SUSPENDED + ordinary /app child
+  -> redirect /app/merchant-support
+  -> no support/settings read
+
+UNINSTALLED + reinstallPendingAt != null + /app/merchant-support
+  -> allowed
+  -> support/settings reads may execute
+
+SUSPENDED + /app/merchant-support
+  -> allowed by existing support policy
+
+UNINSTALLED + reinstallPendingAt == null + /app/merchant-support
+  -> redirect /auth/login
+  -> no support/settings read
+```
+
+Do not move `/app/merchant-support` to another route topology in this task. The
+smallest correction is to gate the existing parent loader while preserving the
+explicit support exception.
+
+#### 2. Add matched-parent loader regression evidence
+
+Create:
+
+```text
+tests/unit/routes/app-layout-access.test.ts
+```
+
+Mock only:
+
+```text
+authenticate.admin
+shopService.resolveShopifyShop
+readMerchantSupportMessages
+db.shopSettings.findUnique
+```
+
+Import the **real** loader from:
+
+```text
+app/routes/app/route.jsx
+```
+
+Use a helper that captures a thrown redirect response and assert its exact
+`Location` header. Do not accept only `instanceof Response`.
+
+Add a parameterized test named:
+
+```text
+redirects pending reinstall before app-shell reads for product path: %s
+```
+
+Rows:
+
+```text
+/app
+/app/additional
+/app/billing
+/app/promotions
+/app/usage
+```
+
+For every row configure:
+
+```text
+Shop.status = UNINSTALLED
+Shop.reinstallPendingAt = non-null
+```
+
+and assert:
+
+```text
+Location = /app/reinstalling
+readMerchantSupportMessages not called
+shopSettings.findUnique not called
+```
+
+Add:
+
+```text
+redirects suspended merchant before app-shell reads
+```
+
+for a normal product path and assert:
+
+```text
+Location = /app/merchant-support
+readMerchantSupportMessages not called
+shopSettings.findUnique not called
+```
+
+Add:
+
+```text
+keeps pending reinstall merchant support reachable
+```
+
+Configure:
+
+```text
+request = /app/merchant-support?shopId=other-shop
+Shop.status = UNINSTALLED
+Shop.reinstallPendingAt = non-null
+```
+
+Return:
+
+```ts
+readMerchantSupportMessages -> { unread: 2 }
+shopSettings.findUnique -> null
+```
+
+Assert the loader resolves and:
+
+```ts
+expect(readMerchantSupportMessages).toHaveBeenCalledWith({
+  shopId: "shop-1",
+  page: 1,
+  pageSize: 1,
+});
+expect(db.shopSettings.findUnique).toHaveBeenCalledWith({
+  where: { shopId: "shop-1" },
+});
+```
+
+The query-string `shopId` must have no effect.
+
+Add:
+
+```text
+rejects unmarked uninstalled merchant support before app-shell reads
+```
+
+Configure:
+
+```text
+Shop.status = UNINSTALLED
+Shop.reinstallPendingAt = null
+```
+
+and assert:
+
+```text
+Location = /auth/login
+readMerchantSupportMessages not called
+shopSettings.findUnique not called
+```
+
+Add:
+
+```text
+allows active merchant app shell
+```
+
+Configure ACTIVE and assert both app-shell reads execute using the authenticated
+internal Shop id.
+
+#### 3. Strengthen the existing child-route redirect assertions
+
+In these already-scoped tests:
+
+```text
+tests/unit/home-route.test.ts
+tests/unit/routes/additional-route.test.ts
+tests/unit/billing-ui.test.ts
+```
+
+where a pending-reinstall redirect is asserted only as:
+
+```ts
+headers: expect.any(Headers)
+```
+
+strengthen the assertion to prove:
+
+```text
+Location = /app/reinstalling
+```
+
+Do not otherwise rewrite those accepted tests.
+
+### Production scope for Attempt 4
+
+Allowed production file:
+
+```text
+app/routes/app/route.jsx
+```
+
+Allowed test files:
+
+```text
+tests/unit/routes/app-layout-access.test.ts
+tests/unit/home-route.test.ts
+tests/unit/routes/additional-route.test.ts
+tests/unit/billing-ui.test.ts
+```
+
+The task/Completion Report may be updated through the normal coordination-document
+exception.
+
+Do **not** modify:
+
+```text
+app/routes.ts
+app/routes/app/reinstalling/route.jsx
+app/services/shop/shop.service.ts
+app/services/shop/shop-access-policy.ts
+Prisma schema/migrations
+Shared contracts/package
+BACKGROUND-006
+Partner API/provider calls
+BillingPeriod/credit/refund/promotion state
+Admin
+Messaging
+Gateway
+upgrade/downgrade/cancellation/freeze logic
+```
+
+If the existing access policy cannot express the exact parent-layout behaviour above,
+STOP and return the observed incompatibility to `moda_architect`; do not invent a
+second access policy.
+
+### Required validation for Attempt 4
+
+From `moda-interact`, run:
+
+```bash
+npm test -- --run \
+  tests/unit/routes/app-layout-access.test.ts \
+  tests/unit/services/shop.service.test.ts \
+  tests/unit/shop-access-policy.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/home-route.test.ts \
+  tests/unit/routes/auth-catchall.test.ts \
+  tests/unit/routes/reinstalling-route.test.ts \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/merchant-support-route.test.ts \
+  tests/unit/routes/explicit-route-config.test.ts \
+  tests/unit/routes/additional-route.test.ts
+
+npm test
+npm run build
+npm run typecheck
+npm run lint
+git diff --check
+```
+
+Report exact pass/fail/skip counts.
+
+The existing unrelated typecheck/lint baseline remains non-blocking only if:
+
+- no Attempt-4 changed file has a diagnostic;
+- the repository-wide baseline is not worse than Attempt 3.
+
+### Workflow evidence correction
+
+Attempt 3 currently records the implementation commit only as the abbreviated:
+
+```text
+c15265e
+```
+
+and the user-facing handoff reports parent report:
+
+```text
+75c1702d
+```
+
+Attempt 4 Completion Report must record:
+
+```text
+Attempt-3 implementation full SHA
+Attempt-3 final parent/report full SHA
+Attempt-4 launcher claim full SHA
+Attempt-4 implementation full SHA
+Attempt-4 parent/report publication full SHA
+database gitlink before/after
+parent task branch clean/pushed
+implementation task branch clean/pushed
+```
+
+If `75c1702d` is the final Attempt-3 parent report commit, record its full SHA. Do not
+leave `"recorded after this update"` placeholders.
+
+### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 3
+```
+
+The next authorized claim must increment to **Attempt 4 exactly once**.
+
+After implementing only the correction above, running validation, updating the
+Completion Report, setting the task back to `status: review`, clearing
+`executor`/`claimed_at`, committing/pushing both mirrored task branches and verifying
+both are clean, STOP and return to `moda_architect`.
 
 `ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
 
