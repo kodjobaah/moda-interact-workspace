@@ -9,9 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-14T00:27:13Z
+status: review
 priority: 44
 attempt: 3
 depends_on:
@@ -261,6 +259,33 @@ Ready for Review.
 - Implementation Attempt-1 history preserved: `8c3f15beafc659a875caf38d60544a63c90c71ae`.
 - Implementation Attempt-2 commit: `53e07302c6be761939268b80cca70959913be73b`, pushed to `origin/task/ARCH-010-SHOPIFY-003`.
 - Parent report intermediate commit: `65b38382f86a4ec95c29c232def7755e56dd33ce`, pushed to `origin/task/ARCH-010-SHOPIFY-003`; final parent HEAD is recorded by the follow-up report commit below.
+
+### Attempt 3 Completion Report
+
+#### Status
+Ready for Review.
+
+#### Work Completed
+- Added the required `Shop` row `FOR UPDATE` lock after the existing ShopSettings/Subscription lock ordering and before accepting initial Paid activation.
+- Converted deterministic initial-Paid local/provider configuration conflicts, CLOSED or conflicting exact periods, conflicting included counters, and invalid lifetime policy into durable `SYNC_ERROR / INVALID_PAID_PLAN_CONFIGURATION` projections before entitlement creation; Partner transport failures retain the existing bounded retry path.
+- Added executable regression coverage for transactional plan revalidation, usage-meter and allowance failures, Shop locking, inactive shops, stale identity, replay quantity preservation through the initial-Paid branch, closed/conflicting period and counter state, exact drain-window scheduling, and callback durable-error classification.
+- Restored the RecoveryCreditPurchase create payload to the accepted pre-Attempt-2 state; no purchase lifecycle behavior was added.
+
+#### Validation Results
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run test -- tests/unit/routes/billing-callback.test.ts tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing-reconciliation.service.test.ts`: passed, 4 files / 134 tests.
+- `npm run typecheck`: repository-wide failure, 121 diagnostics. Changed-file diagnostics: the restored pre-Attempt-2 RecoveryCreditPurchase payload remains incompatible with the synchronized DATABASE-014 generated client (missing `billingPeriodId` and provider provenance fields), which is the task's explicit cross-task purchase-schema stop condition; `tests/unit/services/billing.service.test.ts:1290` retains the pre-existing provider-shape diagnostic. No new diagnostics remain from the Attempt-3 activation changes.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `rg -n "moda-interact-admin" app/routes`: no matches (expected empty scan, exit 1).
+
+#### Git / VCS
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
+- Implementation Attempt-1 history preserved: `8c3f15beafc659a875caf38d60544a63c90c71ae`.
+- Implementation Attempt-2 commit preserved: `53e07302c6be761939268b80cca70959913be73b`.
+- Implementation Attempt-3 commit: `c84a361`; pushed to `origin/task/ARCH-010-SHOPIFY-003`.
 
 ### Architect Review
 Pending.
