@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 48
-executor: copilot
-claimed_at: 2026-09-14T03:14:13Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-BACKGROUND-007
@@ -367,6 +367,63 @@ Ready for Review.
 - Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-007`, branch `task/ARCH-010-SHOPIFY-007`.
 - Launcher evidence: dependency gate passed; recursive submodule sync/update passed; implementation database submodule was `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` before and after; parent and implementation origins were current with no startup fast-forward required.
 - No implementation submodule gitlink was staged or changed.
+
+### Attempt-3 Completion
+
+#### Status
+Ready for Review.
+
+#### Files Changed
+- `app/services/billing/billing.service.ts`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-ui.test.ts`
+
+#### Correction-to-Test Mapping
+| Attempt-3 correction | Exact test evidence | Result |
+|---|---|---|
+| Derive phase from exact durable local OPEN cycle before Shopify verification | `derives RECONCILING from the durable local period when Shopify has already advanced to the successor cycle`; `does not derive a merchant billing phase from an invalid local cycle` | Passed |
+| Preserve local phase when provider verification fails | `preserves durable local billing phase when Shopify verification fails: DRAINING`, `RECONCILING` | Passed; meter verification false and purchase eligibility false |
+| Keep provider truth separate from local presentation phase | Successor-cycle test asserts local `RECONCILING`, verified pack meter, and ineligible purchase despite provider successor dates | Passed |
+| Hide stale Paid included capacity during local RECONCILING | `uses durable RECONCILING phase to hide expired Paid included capacity` | Passed; non-null `paidIncluded` remains data projection but route excludes it |
+| Make successor-Free test time-independent | `restores Free pack eligibility on an exact successor BillingPeriod without changing lifetime Free state` | Passed with fixed `2026-10-02T00:00:00.000Z` clock |
+
+#### Cycle Phase Authority
+```text
+Cycle phase authority:
+  durable local exact OPEN BillingPeriod timestamps
+
+New top-up authority:
+  local ACTIVE phase
+  + exact provider/local cycle
+  + provider plan
+  + provider pack meter
+
+Provider failure/moved successor:
+  does not erase local phase
+  does make new purchase ineligible
+```
+
+#### Attempt-3 Validation Results
+- Focused Attempt-3 suites: 2 files, 177 passed, 0 skipped.
+- Required focused routes/services/i18n: 5 discovered files, 185 passed, 0 skipped.
+- Full suite: `npm test` -> 38 files passed, 2 skipped; 450 tests passed, 3 skipped.
+- `npm run prisma:validate` -> passed.
+- `npm run prisma:generate` -> passed.
+- `npm run typecheck` -> existing `TYPECHECK-001` baseline: 160 errors in 24 files; no new Attempt-3 diagnostic remains in the changed production or added regression lines. Existing billing-service and test diagnostics remain baseline-only.
+- `npm run build` -> passed; existing Zod annotation, Prisma external-resolution, and bundle-size warnings only.
+- `git diff --check` -> passed.
+- Admin isolation scan across merchant routes -> 0 matches.
+- Drain-window literal scan -> 0 matches.
+
+#### Attempt-3 Git / VCS
+- Attempt-3 launcher claim full SHA: `04694ee7c8dd88d8af642312372b7f3f4f664cb6`.
+- Attempt-3 implementation commit: `11b3c690e53115a8c22b0fdc0deee331c1137f2a`, pushed to `origin/task/ARCH-010-SHOPIFY-007` in `moda-interact`.
+- Attempt-3 parent/report publication commit: to be recorded after this report is committed and pushed.
+- Database gitlink before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Dedicated parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-007`, branch `task/ARCH-010-SHOPIFY-007`.
+- Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-007`, branch `task/ARCH-010-SHOPIFY-007`.
+- Launcher evidence: dependency gate passed; recursive submodule sync/update passed; parent and implementation origins were current with no startup fast-forward required.
+- Implementation branch pushed clean at `11b3c69`; no implementation submodule gitlink was staged or changed.
 
 ## Architect Review — Attempt 1
 
