@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -674,5 +674,477 @@ claimed_at: null
 ```
 
 The next `/moda-task ARCH-010-SHOPIFY-012` claim MUST increment to Attempt 2 exactly once.
+
+Do not start `ARCH-010-SHOPIFY-008`, `ARCH-010-SHOPIFY-016`, `ARCH-010-SHOPIFY-026`, `ARCH-010-SHOPIFY-020` or `ARCH-010-SYSTEM-TEST-001` from this review.
+
+
+
+## Architect Review — Attempt 2 (Revised after flow clarification)
+
+### Decision
+
+**Changes Requested — narrow integration correction.** This revised review supersedes the earlier provisional Attempt-2 review that treated `UNMAPPED` as though it were the normal post-Shopify-return waiting state. **Do not apply the earlier `ARCH-010-SHOPIFY-012-attempt2-changes-requested.patch` (SHA-256 `2ca6716d1aea775169405fc3cd89b7ae46fa67cca63280160e603b562f31df35`).**
+
+This decision remains focused on functionality, not exhaustive test coverage.
+
+### Correct state model — do not conflate these states
+
+The production flow has three distinct concepts:
+
+```text
+A. Confirmed current Shopify commercial plan
+   Authority: Partner activeSubscription.current plan
+
+B. Provider-confirmed pending Shopify update
+   Authority: Partner activeSubscription.pendingUpdate
+
+C. Merchant-selected target returned by Shopify pricing,
+   but Partner activeSubscription does not yet report that handle
+   as current or pending
+   Authority: callback plan_handle as SELECTION CONTEXT ONLY
+```
+
+`UNMAPPED` is **not C**.
+
+The canonical SHOPIFY-013 meaning of:
+
+```text
+mappingStatus = UNMAPPED
+```
+
+is:
+
+```text
+Partner activeSubscription has confirmed a current Shopify plan handle,
+but PostgreSQL has no active BillingPlan mapping for that confirmed handle.
+```
+
+Preserve that meaning. Do not rename it and do not use `UNMAPPED` as an "awaiting Shopify confirmation" state.
+
+### Functionality that already exists — preserve, do not duplicate
+
+The following functionality is already present and MUST remain unchanged:
+
+1. `getMerchantShopifySubscriptionState()` returns provider current commercial truth and provider `pendingUpdate` separately.
+2. `SubscriptionChangePanel` already renders `current` and provider-confirmed `pending` separately.
+3. Provider-confirmed pending commercial state does not replace current recovery entitlement before Background reconciliation.
+4. `recordHostedPlanChangeReturn()` treats callback `plan_handle` as selection context only and does not grant entitlement from the URL.
+5. `CURRENT`, provider-confirmed `PENDING`, `NO_ACTIVE`, `UNVERIFIED` and `MISMATCH` remain distinct callback outcomes.
+6. Attempt-2 presentation corrections remain accepted: four independent capacity balances, provider-verification copy, configured-but-ineligible top-up explanation, and no fabricated zeroes for unavailable capacity.
+7. SHOPIFY-009 remains sole local recovery-capacity projection authority. SHOPIFY-012 MUST NOT override or recalculate `canStartRecovery`/`capacitySource` from commercial mapping state.
+
+### Remaining functional gap — returned selection context is discarded before Partner catches up
+
+The current callback has this safe classification rule:
+
+```text
+requested plan_handle != provider current handle
+AND requested plan_handle != provider pending handle
+  -> MISMATCH
+```
+
+That rule must remain safe for entitlement. However, the callback currently redirects with only:
+
+```text
+/app/billing/options?plan_change=mismatch
+```
+
+so the merchant-selected target handle is discarded.
+
+This creates a poor but common eventual-consistency experience:
+
+```text
+Current confirmed Shopify plan: Growth
+Merchant selects Scale in Shopify managed pricing
+Shopify redirects back with plan_handle=scale
+Partner activeSubscription still reports Growth and no pendingUpdate yet
+
+Current implementation:
+  -> MISMATCH
+  -> selected Scale context is lost
+  -> billing page shows only Growth
+
+Required presentation:
+  -> Growth remains current and authoritative
+  -> Scale is shown separately as a NON-AUTHORITATIVE selected target
+  -> Scale is visually greyed out
+  -> exact copy says "Waiting for confirmation from Shopify."
+  -> no Scale price/cycle/features/credits are invented
+  -> no entitlement changes occur
+```
+
+This is a presentation handoff state only. Call it `requestedSelection` / `AWAITING_SHOPIFY_CONFIRMATION` in route/component code if a name is needed. **Do not add a new Prisma enum, provider enum or durable subscription status.**
+
+### Attempt 3 required implementation
+
+#### 1. Preserve callback selection context without making it entitlement authority
+
+In:
+
+```text
+app/routes/app/billing/callback/route.tsx
+```
+
+Do not change `recordHostedPlanChangeReturn()` classification or persistence semantics.
+
+For `result.result === "mismatch"`, preserve the requested handle only in the redirect query string:
+
+```text
+/app/billing/options?plan_change=mismatch&requested_plan_handle=<URL-encoded requestedPlanHandle>
+```
+
+For Partner verification failure, also preserve the same non-authoritative selection context:
+
+```text
+/app/billing/options?plan_change=unverified&requested_plan_handle=<URL-encoded requestedPlanHandle>
+```
+
+Do not write `requestedPlanHandle` into:
+
+```text
+Subscription.planId
+Subscription.observedShopifyPlanHandle
+Subscription.pendingPlanId
+Subscription.pendingShopifyPlanHandle
+Subscription.pendingEffectiveAt
+BillingPeriod
+any entitlement counter
+```
+
+Do not enqueue a new transition solely because the URL contains the requested handle. Existing reconciliation ownership remains unchanged.
+
+#### 2. Derive a transient requested selection in the billing-options loader
+
+In:
+
+```text
+app/routes/app/billing/options/route.tsx
+```
+
+Read:
+
+```text
+plan_change
+requested_plan_handle
+```
+
+from `request.url`.
+
+The query value is display-only selection context. React escaping must remain the only rendering mechanism; never inject it as HTML or a URL destination.
+
+Construct `requestedSelection` only when all of the following are true:
+
+```text
+requested_plan_handle is non-empty after trim
+requested_plan_handle length <= 128
+plan_change is "mismatch" or "unverified"
+```
+
+Then suppress the transient requested selection if the fresh SHOPIFY-013 read on the options page has already caught up and proves the same handle as either:
+
+```text
+commercial.subscription.planHandle
+OR
+commercial.subscription.pendingUpdate.planHandle
+```
+
+This suppression is mandatory. Once Partner has confirmed the target as current or pending, the existing provider-authoritative `current` / `pending` rendering owns presentation and no duplicate grey card may remain.
+
+Return only:
+
+```ts
+requestedSelection: {
+  shopifyPlanHandle: string;
+} | null
+```
+
+Do not attach price, currency, billing interval, effective date, plan allowance, pack size or entitlement to this transient object because Shopify `activeSubscription` has not yet supplied those facts for this target.
+
+#### 3. Show the selected target as greyed-out and explicitly unconfirmed
+
+In:
+
+```text
+app/components/dashboard/SubscriptionChangePanel.jsx
+```
+
+add an optional display-only prop equivalent to:
+
+```ts
+requestedSelection: {
+  shopifyPlanHandle: string;
+} | null
+```
+
+The component MUST render in this order:
+
+```text
+confirmed current provider plan        # normal/current presentation
+provider-confirmed pending update       # existing pending presentation, if any
+requestedSelection                     # only when provider has not confirmed it
+```
+
+For `requestedSelection`:
+
+- render the raw Shopify-returned handle as selection context;
+- render `billingCommerce.plans.awaitingShopifyConfirmation`;
+- use a dedicated class such as `moda-provider-plan-awaiting-confirmation`;
+- do not render a price, currency, interval, effective date, included allowance, pack size or credits for it;
+- do not call it current;
+- do not call it an upgrade/downgrade;
+- do not expose any mutation button on the grey card.
+
+When `requestedSelection` exists, the billing-options page SHOULD open the plan view initially so the merchant immediately sees the selected target and waiting state. It is acceptable to pass:
+
+```text
+initialView="plans"
+```
+
+for this case only. Otherwise preserve the existing default view.
+
+#### 4. Make the grey state visually real
+
+In:
+
+```text
+app/components/dashboard/BillingPurchaseHub.css
+```
+
+add deterministic styling for:
+
+```text
+.moda-provider-plan-awaiting-confirmation
+```
+
+Use the existing design tokens. Required visual semantics:
+
+```text
+opacity: approximately 0.55 to 0.65
+muted/soft background
+non-interactive appearance
+clearly secondary to the confirmed current plan
+```
+
+Do not use a disabled form control to represent the plan; this is informational presentation.
+
+The existing `moda-provider-plan-pending` class is already emitted for Partner-confirmed pending plans. You may give it a subdued style too, but do not make the two semantic states identical in copy:
+
+```text
+provider pendingUpdate = Shopify-confirmed pending commercial update
+requestedSelection = merchant selection awaiting Partner confirmation
+```
+
+#### 5. Keep genuine `UNMAPPED` semantics narrow and truthful
+
+Pass SHOPIFY-013 `mappingStatus` explicitly into `BillingPurchaseHub` if needed for presentation. Do not infer mapping from `mappedModaPlanName` alone.
+
+For a genuine:
+
+```text
+verificationState == ACTIVE_SUBSCRIPTION
+AND mappingStatus == UNMAPPED
+```
+
+preserve:
+
+- exact Shopify current handle/price/currency/interval/cycle;
+- all durable local balances exactly as supplied by SHOPIFY-009;
+- SHOPIFY-009 availability/capacity semantics without UI recalculation.
+
+Show the existing mapping-specific warning:
+
+```text
+billing.configurationUnavailableDescription
+```
+
+and keep plan-specific top-up mutation disabled because Moda cannot safely resolve the current Shopify handle to pack configuration.
+
+Do **not** suppress or zero purchased, lifetime-Free, promotional or other SHOPIFY-009 balances merely because the commercial handle is unmapped.
+
+Do not present `billingCommerce.topup.verificationUnavailable` for genuine `UNMAPPED`. That copy is only for an already-MAPPED contract whose exact cycle/meter cannot currently be verified. Its predicate must therefore require:
+
+```text
+mappingStatus == MAPPED
+```
+
+This is the only part of the earlier provisional `UNMAPPED` review that remains applicable.
+
+### Exact new catalogue key
+
+Add this key to all 20 merchant catalogues exactly as follows:
+
+| Locale | `billingCommerce.plans.awaitingShopifyConfirmation` |
+| --- | --- |
+| `cs` | Čekáme na potvrzení od Shopify. |
+| `da` | Venter på bekræftelse fra Shopify. |
+| `de` | Warten auf Bestätigung von Shopify. |
+| `en` | Waiting for confirmation from Shopify. |
+| `es` | Esperando la confirmación de Shopify. |
+| `fi` | Odotetaan vahvistusta Shopifylta. |
+| `fr` | En attente de confirmation de Shopify. |
+| `it` | In attesa della conferma di Shopify. |
+| `ja` | Shopify からの確認を待っています。 |
+| `ko` | Shopify 확인을 기다리는 중입니다. |
+| `nb` | Venter på bekreftelse fra Shopify. |
+| `nl` | Wachten op bevestiging van Shopify. |
+| `pl` | Oczekiwanie na potwierdzenie od Shopify. |
+| `pt-BR` | Aguardando confirmação da Shopify. |
+| `pt-PT` | A aguardar confirmação da Shopify. |
+| `sv` | Väntar på bekräftelse från Shopify. |
+| `th` | กำลังรอการยืนยันจาก Shopify |
+| `tr` | Shopify onayı bekleniyor. |
+| `zh-Hans` | 正在等待 Shopify 确认。 |
+| `zh-Hant` | 正在等待 Shopify 確認。 |
+
+Do not ask the implementation model to invent translations.
+
+### Attempt 3 allowed production files
+
+```text
+app/routes/app/billing/callback/route.tsx
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/BillingPurchaseHub.jsx
+app/components/dashboard/SubscriptionChangePanel.jsx
+app/components/dashboard/BillingPurchaseHub.css
+app/i18n/locales/cs.json
+app/i18n/locales/da.json
+app/i18n/locales/de.json
+app/i18n/locales/en.json
+app/i18n/locales/es.json
+app/i18n/locales/fi.json
+app/i18n/locales/fr.json
+app/i18n/locales/it.json
+app/i18n/locales/ja.json
+app/i18n/locales/ko.json
+app/i18n/locales/nb.json
+app/i18n/locales/nl.json
+app/i18n/locales/pl.json
+app/i18n/locales/pt-BR.json
+app/i18n/locales/pt-PT.json
+app/i18n/locales/sv.json
+app/i18n/locales/th.json
+app/i18n/locales/tr.json
+app/i18n/locales/zh-Hans.json
+app/i18n/locales/zh-Hant.json
+```
+
+Tests may change only the directly relevant files:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+tests/unit/billing-ui.test.ts
+tests/unit/billing-purchase-hub.test.tsx
+tests/unit/subscription-change-panel.test.tsx
+```
+
+### Forbidden scope
+
+Do NOT change:
+
+```text
+app/services/billing/billing.service.ts
+app/services/billing/billing.types.ts
+app/services/billing/providers/**
+database/**
+shared/**
+background/**
+admin/**
+```
+
+Do not change SHOPIFY-015's durable callback classification/persistence rules. In particular, callback URL `plan_handle` remains selection context only and MUST NOT become entitlement evidence.
+
+Do not change SHOPIFY-009 capacity semantics or derive recovery admission from the requested selection.
+
+### Mandatory focused functional regressions
+
+Add focused evidence for these exact behaviors:
+
+1. `preserves an unconfirmed managed-pricing selection in the mismatch redirect`
+   - callback receives `plan_handle=scale`;
+   - Partner still reports another current plan and no matching pending update;
+   - `recordHostedPlanChangeReturn()` remains `mismatch`;
+   - callback performs no new durable pending-plan write;
+   - redirect includes URL-encoded `requested_plan_handle=scale`.
+
+2. `preserves selection context when Partner verification is unavailable`
+   - provider verification throws;
+   - existing verification-failure scheduling behavior remains unchanged;
+   - redirect contains `plan_change=unverified` and the URL-encoded requested handle;
+   - no entitlement state is created from the URL.
+
+3. `renders current confirmed plan and unconfirmed selection separately`
+   - current provider plan is `growth`;
+   - requested selection is `scale`;
+   - current `growth` remains normal/current;
+   - `scale` renders in the awaiting-confirmation class;
+   - markup contains `Waiting for confirmation from Shopify.`;
+   - the requested card contains no fabricated price, interval, allowance or credits.
+
+4. `does not duplicate requested selection after Partner confirms it as pending`
+   - fresh commercial state contains `pendingUpdate.planHandle=scale`;
+   - query still carries `requested_plan_handle=scale`;
+   - transient `requestedSelection` is suppressed;
+   - existing provider-confirmed pending rendering owns `scale` exactly once.
+
+5. `does not duplicate requested selection after Partner confirms it as current`
+   - fresh commercial current handle is `scale`;
+   - query still carries `requested_plan_handle=scale`;
+   - transient requested card is absent.
+
+6. `keeps genuine unmapped current contract distinct from awaiting confirmation`
+   - provider confirms a current Shopify handle;
+   - `mappingStatus=UNMAPPED`;
+   - current Shopify handle remains visible;
+   - mapping-unavailable copy renders;
+   - awaiting-confirmation copy does not render unless explicit requested-selection query context exists;
+   - generic cycle/meter top-up verification copy does not own the unmapped state;
+   - SHOPIFY-009 balances are not zeroed or suppressed by mapping state.
+
+Do not add broad combinatorial tests merely to increase test count.
+
+### Attempt 3 validation
+
+Run:
+
+```text
+npm test -- --run \
+  tests/unit/routes/billing-callback.test.ts \
+  tests/unit/billing-purchase-hub.test.tsx \
+  tests/unit/subscription-change-panel.test.tsx \
+  tests/unit/billing-ui.test.ts
+
+npm test
+npm run typecheck
+npm run build
+git diff --check
+```
+
+`npm run typecheck` may retain only the already documented unrelated JSX baseline diagnostics. There must be no new diagnostic in an Attempt-3 touched file.
+
+### Stop conditions
+
+STOP and return to `moda_architect` without widening scope if the correction appears to require:
+
+- persisting callback `plan_handle` as a durable current/pending subscription fact before Partner confirms it;
+- changing `recordHostedPlanChangeReturn()` classification semantics;
+- changing SHOPIFY-013 provider/commercial types;
+- changing SHOPIFY-009 capacity semantics;
+- changing SHOPIFY-014 purchase lifecycle/idempotency/provider-evidence semantics;
+- granting/forfeiting/opening/closing any entitlement from the callback;
+- changing Prisma/shared/background contracts;
+- implementing SHOPIFY-016 or SHOPIFY-020.
+
+### Workflow state after this revised review
+
+Authoritative state after applying this review:
+
+```text
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+The next `/moda-task ARCH-010-SHOPIFY-012` claim MUST increment to Attempt 3 exactly once.
 
 Do not start `ARCH-010-SHOPIFY-008`, `ARCH-010-SHOPIFY-016`, `ARCH-010-SHOPIFY-026`, `ARCH-010-SHOPIFY-020` or `ARCH-010-SYSTEM-TEST-001` from this review.
