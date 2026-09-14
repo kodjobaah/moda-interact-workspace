@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 81
-executor: copilot
-claimed_at: 2026-09-14T20:22:07Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-014
@@ -230,6 +230,7 @@ Ready for Review.
 - Added the billing Refund requests tab and detail drawer. The UI has no quantity, percentage, money-entry, approval or provider-settlement control and explicitly treats plan/top-up price as non-authoritative evidence.
 - Preserved merchant-created request identity; no support-message prerequisite, NLP creation path, Shopify call, purchase mutation or provider action was added.
 - Updated the directly affected billing-view and i18n contract tests and added focused refund triage security coverage.
+- Attempt 3 corrected the derived `NEEDS_ATTENTION` filter so persisted attention rows and `REQUESTED` rows with invalid purchase states or zero-credit withdrawn balances are database-filtered into the same operator view as `queueStatus()`. Valid waiting and ready withdrawn states remain excluded from this filter.
 
 ### Validation Results
 - `node --test tests/security/admin-recovery-credit-refunds.test.mjs`: passed, 2 tests.
@@ -240,21 +241,22 @@ Ready for Review.
 - `npm run lint`: passed with 2 existing warnings in `src/components/admin/queue-monitor.tsx` for missing `refresh` hook dependencies; no errors.
 - `npm run build`: passed. Existing non-blocking BullMQ webpack warnings remain for an expression dependency and optional `@valkey/valkey-glide` resolution.
 - `git diff --check`: passed.
+- Attempt 3 focused predicate assertions: passed; the test covers persisted `NEEDS_ATTENTION`, `REQUESTED` + invalid `REQUESTED`/`ACTIVE`/`COMPLETED`/`REFUNDED`, and zero-credit `WITHDRAWN` attention branches while retaining the valid waiting/ready predicates.
 
 ### Two-Pass Audit
-- First pass omitted/partially met: exact request detail did not visibly render the already-loaded BillingPeriod dates/plan provenance, provider usage valuation before/after evidence, support-context message identity, or sufficient historical refund-attempt evidence for amount/currency/time/reason. No queue, authorization, state-derivation, pagination, read-only, quantity-control, provider-action, Shopify, support-message-prerequisite, or cross-shop boundary omission was found.
-- Corrections: extended the existing bounded read projection/type and drawer rendering; added focused regression assertions. No database, workflow, provider, or cross-repository changes were required.
-- Second independent pass: all objective requirements now pass. Queue/detail authorization uses the existing platform-admin read guard; queue filters use database `count` plus bounded `skip`/`take` with default 20 and max 50; derived waiting/ready states use the exact withdrawn purchase conditions; snapshots and live values are distinct; invalid ACTIVE/COMPLETED/REFUNDED non-terminal cases surface attention without repair; terminal cancellation history remains visible; no arbitrary quantity or settlement control exists.
+- First pass: all queue/detail authorization and merchant-route boundaries, shop isolation, database pagination/sorting, lifecycle derivation, snapshots versus live values, provenance, support context, reservation/refund history, read-only behavior, UI controls, non-goals, and existing validation coverage were present. One production omission was found: derived invalid `REQUESTED` rows were shown as `NEEDS_ATTENTION` in the queue but excluded by the `NEEDS_ATTENTION` database filter.
+- Correction: added the explicit database `OR` predicate in `src/lib/admin/recovery-credit-refunds.ts` and focused assertions in `tests/security/admin-recovery-credit-refunds.test.mjs`. No schema, database, Shopify, Background, Shared, provider, or ADMIN-003 changes were required.
+- Second independent pass: the filter now includes persisted `NEEDS_ATTENTION`, `REQUESTED` + invalid `REQUESTED`/`ACTIVE`/`COMPLETED`/`REFUNDED`, and invalid zero-credit `WITHDRAWN` rows; valid waiting and ready withdrawn states remain excluded. Queue queries remain database-scoped and bounded, and no mutation, provider action, quantity control, or settlement behavior was added. All task requirements pass. Residual validation limitation: focused security tests inspect the generated Prisma predicate rather than using a database fixture, consistent with the Architect Review allowance; full existing tests remain green.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-002`.
 - Implementation branch: `task/ARCH-010-ADMIN-002`.
-- Implementation commits: `cd0eda5` (`feat(admin): triage recovery credit refund requests`), `9e571cd` (`fix(admin): complete refund triage detail evidence`).
+- Implementation commits: `cd0eda5` (`feat(admin): triage recovery credit refund requests`), `9e571cd5076b3783f6a8845ba860c3ab7d2e9fd7` (`fix(admin): complete refund triage detail evidence`), `bb7ccc10ec3aadfe19693143f47d6a7c2ad922a7` (`fix(admin): include derived refund attention states`).
 - Implementation branch pushed to `origin/task/ARCH-010-ADMIN-002`.
 - Parent report is being published from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-002` on the mirrored `task/ARCH-010-ADMIN-002` branch.
 
 ### Architect Review
-Pending architect review. No unresolved task-scope blocker identified.
+Ready for architect review. No unresolved task-scope blocker identified.
 
 ## Architect Review — Attempt 2
 
