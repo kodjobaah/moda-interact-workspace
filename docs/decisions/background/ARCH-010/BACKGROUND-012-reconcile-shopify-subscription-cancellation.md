@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 58
-executor: copilot
-claimed_at: 2026-09-14T03:18:15Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-010-DATABASE-013
@@ -1364,6 +1364,57 @@ both are clean, STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`,
 `ARCH-010-SHOPIFY-016` or `ARCH-010-SYSTEM-TEST-002`.
+
+## Completion Report — Attempt 6
+
+### Status
+
+Blocked. The Attempt 6 production corrections and focused regressions are implemented and published, but the mandatory permanent 26-item acceptance matrix is not complete. The task cannot truthfully return to `review` with every behavioural requirement marked `Proven`.
+
+### Correction Mapping
+
+- Attempt 5 Finding 1: `src/services/billing-subscription-reconciliation.service.ts` now schedules exact-cycle pending updates at the canonical drain boundary instead of `pendingEffectiveAt`; `uses the exact drain boundary for pending update before the drain window` and `uses the exact period boundary for pending update inside the drain window` prove the timestamps and flush behavior.
+- Attempt 5 Finding 2: the same service persists pending provider truth, cancellation state, and `PRE_CLOSE_USAGE_FLUSH_FAILED` in the guarded drain-failure write; `persists pending provider truth when pre-close drain fails` proves the pending case.
+- Attempt 5 Finding 3: `src/services/shopify-subscription-lifecycle-reconciliation.service.ts` now classifies and applies stale lifecycle actions under one subscription lock; `ignores stale FROZEN evidence and continues with live provider truth` and `keeps FROZEN and advances one hourly retry for stale UNFROZEN evidence` cover the live and frozen outcomes.
+
+### Files Changed
+
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/shopify-subscription-lifecycle-reconciliation.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+- `tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts`
+
+### Validation Results
+
+- Focused two-service validation: **passed**, 2 files and 149 tests.
+- Required seven-file focused validation: **237 passed, 8 failed**, 7 files and 245 tests. All 8 failures are the unchanged `recovery-credit-purchase.service.test.ts` generated-client/DATABASE-013 baseline.
+- `npm run test:unit`: **237 passed, 10 failed** in the task-relevant baseline: 8 recovery-credit purchase failures and 2 existing observability-startup source/release assertions. No changed test failed.
+- `npm run test:integration`: **passed**, 2 files and 3 tests.
+- `npm run prisma:validate`: **passed**.
+- `npm run prisma:generate`: **passed**.
+- `npm run build`: **baseline failure**, 15 TypeScript diagnostics confined to `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no changed file diagnostic.
+- `git diff --check`: **passed**.
+- Forbidden local cancellation search: **no matches** in `src` or `tests`.
+- Canonical parent sibling search: existing matches only in `moda-interact/app` billing provider/service; `moda-interact-messaging/src` is not materialized in the canonical parent workspace. No Shopify/Admin/Messaging/Gateway file changed in this attempt, so no ingress lifecycle lookup was introduced.
+
+### Acceptance Evidence Disposition
+
+The following Attempt 6 permanent evidence is present and passing: provider snapshot contract, provider failure retry, FROZEN projection/replay, stale lifecycle ordering, unresolved UNFROZEN handling, pending-update precedence, exact scheduled-cancellation boundaries, exact pending-update drain boundaries, flush-failure pending projection, no local cancellation executor, no new queue schema, and no ingress ownership change.
+
+The required permanent evidence remains incomplete for later-cycle Paid/Free restoration, changed-plan delegation, the full invalid-plan table, same-cycle no-write preservation across every listed model, all cancellation replay/history assertions, all queued cancellation/reversal drain-failure variants, rotating restored-state matrix, and the exact scheduler test title. These are not marked `Proven`.
+
+### Git / VCS
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-012`, branch `task/ARCH-010-BACKGROUND-012`, clean and pushed.
+- Implementation commit: `2d5eb94b3f348ccdb10183517c0e7fa56d5ebf2c` (`fix: complete subscription reconciliation rework`).
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-012`, branch `task/ARCH-010-BACKGROUND-012`.
+- Attempt 6 launcher claim: `cce177d8c31a84854daee6c2adfb49114cc99ee5`.
+- Database submodule evidence: unchanged from the prepared packet; no parent implementation gitlink was staged or changed.
+- The implementation branch was committed and pushed. The parent report remains unpublished until this blocked report is committed below.
+
+### Unresolved Issue
+
+The task requires every original requirement 1 through 26 to have a permanent executable assertion and every result to be `Proven`. The current repository does not contain that matrix, and adding unsupported assertions would make the report inaccurate. The task is therefore returned as blocked for architect narrowing or a further test-completion attempt.
 
 ## Completion Report — Attempt 4
 
