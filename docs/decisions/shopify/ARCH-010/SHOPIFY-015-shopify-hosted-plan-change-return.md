@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 56
 executor: null
 claimed_at: null
@@ -2175,4 +2175,116 @@ committing/pushing both mirrored branches and verifying them clean, STOP and ret
 `moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-012`.
+
+### Architect Review — Attempt 5
+
+#### Status
+
+**Accepted**
+
+Attempt 5 closes the final null-Subscription durable-fence defect from Attempt 4.
+
+Architect verification against the uploaded Attempt-4 and Attempt-5 snapshots confirms
+that the Attempt-5 implementation delta is limited to:
+
+```text
+app/services/billing/billing.service.ts
+tests/unit/services/billing.service.test.ts
+tests/unit/routes/billing-callback.test.ts
+```
+
+No schema, Shared, Background, panel/options, provider, Admin, Messaging or Gateway
+implementation changed.
+
+Accepted production behavior:
+
+1. `getHostedPlanVerificationFence(...)` returns the actual nullable durable
+   Subscription projection:
+
+```text
+present Subscription -> full immutable hosted verification fence
+absent Subscription  -> null
+```
+
+2. The accepted field-by-field equality fence for present rows remains unchanged,
+   including exact nullable Date equality and the current/pending/error projection.
+3. An unchanged absent Subscription now compares deterministically as `null == null`.
+4. `NO_ACTIVE_SUBSCRIPTION` with no durable Subscription returns exactly:
+
+```ts
+{
+  result: "no_active",
+  subscriptionId: null,
+  nextReconcileAt: null,
+}
+```
+
+without BillingPlan lookup, Subscription mutation, reconciliation enqueue, or
+protected-model mutation.
+5. Provider verification failure with no durable Subscription returns `null` and does
+   not manufacture retry/error metadata or a Subscription row.
+6. The callback propagates the same nullable fence through both successful
+   `NO_ACTIVE` verification and Partner-failure handling.
+7. The accepted Attempt-4 commit-order fence, identical-`updatedAt` projection fence,
+   exact nullable provider projection, single Partner read, lock order, and protected
+   no-write invariants remain intact.
+
+Permanent Attempt-5 regression evidence:
+
+```text
+returns null hosted verification fence when no durable Subscription exists
+
+classifies unchanged absent durable Subscription as no_active
+
+does not manufacture retry metadata when durable Subscription is absent
+
+passes an absent durable verification fence unchanged through hosted NO_ACTIVE verification
+
+passes an absent durable verification fence unchanged to failure recording
+```
+
+Accepted validation evidence:
+
+```text
+Focused:              196 passed, 0 failed, 0 skipped
+Full suite:           438 passed, 3 skipped, 0 failed
+Prisma validate:      passed
+Prisma generate:      passed
+Build:                passed
+git diff --check:     passed
+callback skip scan:   zero matches
+prohibited scan:      zero matches
+Typecheck baseline:   151 existing TYPECHECK-001 diagnostics; no new Attempt-5 diagnostic
+Database gitlink:     5443afdd8f0c816dc16e1f3e93f9906c5ca31d94 unchanged
+```
+
+Accepted workflow evidence:
+
+```text
+Attempt-4 final parent/report:
+4f2abd4d138e1882b9da560e6d27615e9d4c6a50
+
+Attempt-5 launcher claim:
+bf32268f965829470459d28512222962e3faedb5
+
+Attempt-5 implementation:
+0fad89ce76d59d954a0bd8894d527eaadda478b1
+
+Attempt-5 initial report publication:
+693a9817bbc572747e7b04897dc276400790a7d9
+
+Final parent/report handoff reported by developer:
+65f7e68923de648e317dee602c78ad3571129f4d
+```
+
+The final developer handoff SHA is a later metadata-only parent state than the immutable
+initial report-publication commit. No self-referential report-commit cycle is required.
+
+`ARCH-010-SHOPIFY-015` is Complete.
+
+Dependency reconciliation:
+
+- `ARCH-010-SHOPIFY-012` remains Pending because `ARCH-010-SHOPIFY-007`,
+  `ARCH-010-SHOPIFY-009`, and `ARCH-010-SHOPIFY-014` are still incomplete.
+- No normal implementation task becomes newly Ready solely from this acceptance.
 
