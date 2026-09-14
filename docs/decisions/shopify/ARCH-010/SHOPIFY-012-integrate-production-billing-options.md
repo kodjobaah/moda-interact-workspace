@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-14T11:40:15Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-SHOPIFY-009
@@ -311,32 +311,32 @@ STOP if `requestRecoveryCreditPack` cannot be reused without changing its accept
 Ready for Review.
 
 ### Files Changed
-- `app/routes/app/billing/options/route.tsx`
 - `app/components/dashboard/BillingPurchaseHub.jsx`
-- `tests/unit/billing-ui.test.ts`
-- `app/i18n/locales/*.json` (promotional balance catalogue key)
+- `app/components/dashboard/SubscriptionChangePanel.jsx`
+- `app/i18n/locales/cs.json` through `app/i18n/locales/zh-Hant.json` (two Attempt-2 catalogue keys in all 20 merchant locales)
+- `tests/unit/billing-purchase-hub.test.tsx`
+- `tests/unit/subscription-change-panel.test.tsx`
 
 ### Work Completed
-- Composed SHOPIFY-013 commercial subscription verification, SHOPIFY-009 capacity, SHOPIFY-018 lifecycle/FROZEN state, SHOPIFY-007 billing phase, and SHOPIFY-014 billing state through `billingService` abstractions.
-- Preserved no-active, unmapped, verification-unavailable, FROZEN, DRAINING, and RECONCILING states without using local `BillingPlan` as Shopify commercial truth; billing mutations are disabled unless the provider contract is active, mapped, and executable.
-- Integrated real `TopUpPurchasePanel` and `SubscriptionChangePanel`, removed mock/default plan dependencies, kept one page wrapper, and routed plan management to `/app/billing/select`.
-- Rendered provider current/pending plan facts and separate paid-included, lifetime-Free, promotional, and purchased balances without fabricated pricing or Free monthly allowance.
-- Added focused source-contract coverage for authoritative reads and production component constraints.
+- Preserved the accepted Attempt-1 production mechanics and implemented every Attempt-2 correction: Paid-included and lifetime-Free balances now render as separate ICU-formatted items, with promotional and purchased balances remaining separate.
+- Mapped provider verification failure to its dedicated merchant copy and unavailable current-plan value, while preserving mapping-specific copy for verified `UNMAPPED` contracts.
+- Added the exact provider-verification and configured-but-ineligible top-up messages to all 20 merchant catalogues; the Free top-up explanation is shown only for the required ACTIVE/missing-cycle conditions and remains suppressed for pending, FROZEN, DRAINING and RECONCILING states.
+- Capacity `null` now renders one bounded unavailable summary without fabricated zero balances. Added the required direct-render regression coverage; no route, service, provider, shared, database or lifecycle contract files were changed.
 
 ### Validation Results
-- Focused billing route/component/service tests: `npm test -- --run tests/unit/billing-ui.test.ts tests/unit/services/billing.service.test.ts tests/unit/subscription-change-panel.test.tsx` -> 3 files passed, 204 tests passed.
-- Final focused billing UI contract test: `npm test -- --run tests/unit/billing-ui.test.ts` -> 15 tests passed.
-- Full tests: `npm test` -> 39 files passed, 2 skipped; 489 tests passed, 3 skipped.
-- Typecheck: `npm run typecheck` exits nonzero on pre-existing JSX baseline diagnostics in unrelated dashboard/home/support/usage files; no diagnostics were reported for `app/routes/app/billing/options/route.tsx` or `app/components/dashboard/BillingPurchaseHub.jsx`.
-- Production build: `npm run build` passed; only existing bundler warnings were emitted.
+- Focused billing tests: `npm test -- --run tests/unit/billing-purchase-hub.test.tsx tests/unit/subscription-change-panel.test.tsx tests/unit/billing-ui.test.ts` -> 3 files passed, 25 tests passed.
+- Full tests: `npm test` -> 40 files passed, 2 skipped; 494 tests passed, 3 skipped.
+- Typecheck: `npm run typecheck` retains the documented unrelated JSX baseline diagnostics in dashboard/home/merchant-support/pending-recoveries/usage files; no diagnostics referenced Attempt-2 touched files.
+- Production build: `npm run build` passed; only existing bundler/chunk-size warnings were emitted.
 - Whitespace: `git diff --check` passed.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-012`
 - Implementation branch: `task/ARCH-010-SHOPIFY-012`
-- Implementation commit: `ee310ac` (`feat(shopify): integrate production billing options`), pushed to `origin/task/ARCH-010-SHOPIFY-012`.
+- Implementation commits: `ee310ac` (`feat(shopify): integrate production billing options`) and `012b88e` (`fix(shopify): correct billing capacity presentation`), both pushed to `origin/task/ARCH-010-SHOPIFY-012`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-012`
-- Parent branch/report commit and push: this report update is committed and published on `task/ARCH-010-SHOPIFY-012`.
+- Launcher VCS evidence: prepared Attempt 2 reused the canonical parent/implementation worktrees, passed all seven dependencies, initialized submodules, and durably claimed executor `copilot` before implementation.
+- Parent branch/report commit and push: this Attempt-2 report update is committed and published on `task/ARCH-010-SHOPIFY-012`.
 
 ### Architect Review
 Pending.
