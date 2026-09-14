@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 44
 attempt: 3
 depends_on:
@@ -1395,3 +1395,93 @@ mirrored task branches, then STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-004`, `ARCH-010-SHOPIFY-007`, or any system-test task.
 
+
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted — Complete**
+
+Attempt 3 satisfies the first-Paid activation contract and the complete correction
+contract from Attempt 2. The accepted implementation head is:
+
+```text
+c84a3612680a048f81f3c042c1aaab8a5ac986be
+```
+
+The final parent report reviewed is:
+
+```text
+b94a5f8d44e6b16fe118f86241fbdcf9526ed091
+```
+
+### Acceptance findings
+
+1. Initial Paid activation now uses one provider observation and one guarded database
+   transaction. The callback no longer performs a second entitlement mutation through
+   `completePaidActivation()`.
+2. The transaction locks `ShopSettings`, `Subscription`, and the exact `Shop` row with
+   `FOR UPDATE` before accepting `Shop.status = ACTIVE`. An uninstall/suspension cannot
+   race between the lifecycle check and the entitlement/onboarding commit.
+3. The pending Paid identity, active mapped plan, configured recovery meter, integer
+   allowance, exact provider cycle, and supported non-trial state are revalidated inside
+   that transaction before period/counter creation.
+4. Deterministic local incompatibilities — including CLOSED/conflicting exact period,
+   conflicting included counter, invalid lifetime policy, invalid plan/meter/allowance,
+   and unsupported Paid trial — fail closed as durable `SYNC_ERROR` state. They are not
+   reclassified by the callback as Partner transport failures.
+5. Replay reuses the exact period/counter and preserves committed/reserved/forfeited
+   Paid quantities plus lifetime-Free quantities. The new allowance is not granted twice.
+6. The accepted exact period produces the canonical pre-close `nextReconcileAt`, and the
+   callback publishes the existing deterministic reconciliation hint only after a
+   verified durable Paid activation.
+7. Attempt 3 restored the unrelated `RecoveryCreditPurchase.create(...)` block to its
+   pre-Attempt-2 state. No DATABASE-014 purchase lifecycle semantics are implemented by
+   SHOPIFY-003.
+
+### Typecheck baseline disposition
+
+The remaining `RecoveryCreditPurchase.create(...)` diagnostic in
+`app/services/billing/billing.service.ts` does **not** block this task. Architect review
+verified that the exact incomplete purchase payload already exists in SHOPIFY-003's
+pre-task parent commit:
+
+```text
+d3217c8e6cd49e0974a934353a3f8787e87f89f6
+```
+
+and that the mandatory purchase provenance fields already existed in the accepted
+DATABASE-013 schema (`5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`). DATABASE-014 is
+also Complete (`abee18e8c55b7a79f8234490fa4df66d3d228f0c`) and assigns runtime
+purchase creation/conformance to the dedicated purchase tasks. Therefore this is a
+pre-existing repository/runtime-conformance baseline, not a regression introduced by
+SHOPIFY-003 Attempt 3.
+
+Do not reopen SHOPIFY-003 to implement the purchase lifecycle merely to clear that
+baseline diagnostic.
+
+### Validation accepted
+
+The Completion Report records:
+
+```text
+focused tests: 4 files / 134 passed
+Prisma validate: passed
+Prisma generate: passed
+build: passed
+git diff --check: passed
+route admin-safety scan: no matches
+repository typecheck: 121 documented diagnostics; no new Attempt-3 activation diagnostic
+```
+
+The reported repository-wide typecheck baseline does not invalidate the focused
+acceptance above.
+
+### Downstream release
+
+`ARCH-010-SHOPIFY-004` depends only on SHOPIFY-003 and DATABASE-013. Both are now
+Complete, so SHOPIFY-004 is released from `pending` to `ready`.
+
+`ARCH-010-SHOPIFY-007` remains Pending because SHOPIFY-004 and its other dependencies
+must independently become Complete. No system-test task is auto-started.
