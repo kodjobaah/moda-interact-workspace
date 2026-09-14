@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 58
 executor: null
 claimed_at: null
@@ -1349,6 +1349,844 @@ attempt: 1
 ```
 
 The next authorized claim must increment to **Attempt 2 exactly once**.
+
+After implementing only the corrections above, completing the 26-item evidence map,
+running validation, setting the task back to `status: review`, clearing
+`executor`/`claimed_at`, committing/pushing both mirrored task branches and verifying
+both are clean, STOP and return to `moda_architect`.
+
+Do not start `ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`,
+`ARCH-010-SHOPIFY-016` or `ARCH-010-SYSTEM-TEST-002`.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested**
+
+Attempt 2 fixes a substantial part of the Attempt-1 production review:
+
+- the BACKGROUND-015 combined reconciliation snapshot is now mandatory;
+- the compatibility fallback to `getActiveSubscription(...)` is removed;
+- queued FROZEN snapshot failure now preserves FROZEN state and writes an hourly retry;
+- lifecycle event ordering now distinguishes strictly older evidence from same-event replay;
+- FROZEN projection preserves unrelated sync errors;
+- `UNFROZEN + null live contract` now uses the one-hour retry;
+- verified unfreeze now has same-plan rollover / plan-change delegation scaffolding;
+- successful verified unfreeze publishes the existing best-effort `recovery-capacity-resume` hint;
+- rotating snapshot failure now writes a durable deterministic retry;
+- effective cancellation now uses reservation/counter CAS checks;
+- genuinely fresh `NO_CONTRACT` rows no longer acquire stale CANCELED lifecycle history.
+
+Those corrections are accepted and must be preserved.
+
+The task is still not architecture-complete. There are five remaining production
+correctness defects and the mandatory permanent-evidence contract was not implemented.
+The current Completion Report explicitly acknowledges that scheduled
+cancellation/reversal, pending-update precedence, later-cycle/change-plan delegation,
+capacity-resume publication, repair exactness and pre-freeze top-up behaviour remain
+unproven.
+
+The corrections below are the complete Attempt-3 contract.
+
+### Finding 1 — lifecycle reconciliation persists a schedule but does not republish the consumed deterministic job
+
+`ShopifySubscriptionLifecycleReconciliationService` now writes:
+
+```text
+FROZEN                         -> nextReconcileAt = now + 1 hour
+UNFROZEN with no live contract -> nextReconcileAt = now + 1 hour
+unresolved lifecycle state     -> bounded nextReconcileAt
+verified restoration           -> canonical transition schedule
+```
+
+but the service owns no BullMQ producer.
+
+In the queued path:
+
+```text
+BillingSubscriptionReconciliationService.reconcileJob(...)
+  -> lifecycle.reconcile(...)
+  -> result == "handled"
+  -> return
+```
+
+The currently executing delayed job is consumed and no replacement job is published.
+A later process restart may reconstruct the row, but startup repair is not the normal
+retry mechanism.
+
+This still violates the task requirement that FROZEN/lifecycle retries use the
+existing deterministic `billing-subscription-reconcile` queue.
+
+#### Required correction
+
+Do not introduce a new queue or lifecycle queue contract.
+
+In:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+add a private helper that reads only the committed current schedule after lifecycle
+reconciliation:
+
+```ts
+private async publishCommittedLifecycleSchedule(
+  shopId: string,
+  subscriptionId: string,
+): Promise<void> {
+  const current = await this.database.subscription.findUnique({
+    where: { id: subscriptionId },
+    select: { nextReconcileAt: true },
+  });
+
+  if (current?.nextReconcileAt) {
+    await this.publishNext(shopId, subscriptionId, current.nextReconcileAt);
+  }
+}
+```
+
+Equivalent code is acceptable if it uses the same durable timestamp and existing
+`publishNext(...)`.
+
+After:
+
+```ts
+const lifecycleResult =
+  await new ShopifySubscriptionLifecycleReconciliationService(...).reconcile(...);
+```
+
+handle **both** terminal lifecycle results:
+
+```text
+handled
+restored
+```
+
+as follows:
+
+```text
+read committed Subscription.nextReconcileAt
+publish exactly one deterministic existing subscription-reconcile job if non-null
+return from reconcileJob
+```
+
+Do not fall through into initial activation, rollover, plan-change or
+`applyOtherCurrentPlan(...)` after lifecycle reconciliation has already handled or
+restored the subscription.
+
+For effective cancellation the committed schedule is null, so no replacement job is
+published.
+
+For repeated/new FROZEN evidence and unresolved UNFROZEN, the exact committed hourly
+timestamp must be the job's `expectedNextReconcileAt`.
+
+### Finding 2 — a successful `restored` result is currently reconciled a second time
+
+The lifecycle service returns:
+
+```text
+"restored"
+```
+
+after it has already committed same-cycle restoration, BACKGROUND-007 rollover or
+BACKGROUND-010 plan change.
+
+Both callers only stop on:
+
+```text
+"handled"
+```
+
+#### Queued defect
+
+For an original FROZEN job, `reconcileJob(...)` continues with an `expected` object
+shaped like `RolloverExpected`, then later reaches code that casts it to
+`InitialActivationExpected`.
+
+That can execute Paid/Free activation or `applyOtherCurrentPlan(...)` against a
+subscription that was already restored in the lifecycle transaction.
+
+#### Rotating defect
+
+`BillingReconciliationService.applySubscription(...)` can run accepted rollover or
+plan-change logic a second time using the stale pre-restoration `existing` projection.
+
+#### Required correction
+
+In both:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+treat:
+
+```text
+lifecycleResult === "restored"
+```
+
+as a terminal subscription-projection decision for that reconciliation attempt.
+
+Queued:
+
+```text
+publish committed nextReconcileAt through the existing queue helper
+return
+```
+
+Rotating:
+
+1. re-read the committed Subscription after restoration;
+2. return its current `billingPeriodId`;
+3. return `packMeterHandle = null` for this same rotating pass;
+4. do not invoke rollover/plan-change a second time;
+5. do not activate/reconcile a purchased top-up in the same pass as lifecycle
+   restoration.
+
+A later ordinary rotating pass may reconcile pack purchases after the merchant is
+durably executable again.
+
+This is intentionally conservative and prevents FROZEN work from becoming spendable
+inside the same lifecycle transition pass.
+
+### Finding 3 — verified unfreeze does not validate the mapped plan configuration before restoring executable state
+
+Current `restore(...)` checks only:
+
+```text
+mapped BillingPlan exists
+BillingPlan.active == true
+```
+
+before the same-cycle branch writes:
+
+```text
+ACTIVE / TRIALING
+```
+
+It does **not** validate the configuration required by the mapped plan.
+
+For example, an active Paid plan can be restored even when:
+
+```text
+includedRecoveryConversationAllowance is null/negative/non-integer/unsafe
+shopifyUsageEventHandle is null
+provider does not expose the configured normal meter
+enabled pack meter is null
+provider does not expose the configured pack meter
+```
+
+The same issue exists for pack-enabled Free.
+
+For later-cycle/change-plan unfreeze, accepted transition primitives may return
+`not-applicable` or throw for these invalid prerequisites. The lifecycle wrapper does
+not convert those known configuration failures to the required typed durable
+fail-closed representation.
+
+#### Required correction
+
+In:
+
+```text
+src/services/shopify-subscription-lifecycle-reconciliation.service.ts
+```
+
+after mapping the provider handle to an active BillingPlan, validate the provider
+snapshot and mapped plan **before** temporarily making the row executable.
+
+Use these exact rules:
+
+##### Paid target
+
+Require:
+
+```text
+includedRecoveryConversationAllowance is a non-negative safe integer
+shopifyUsageEventHandle is non-null/non-blank
+provider.usageEventHandles contains shopifyUsageEventHandle
+```
+
+If `recoveryCreditPackEnabled == true`, also require:
+
+```text
+shopifyRecoveryCreditPackEventHandle is non-null/non-blank
+provider.usageEventHandles contains shopifyRecoveryCreditPackEventHandle
+```
+
+##### Free target
+
+If `recoveryCreditPackEnabled == true`, require:
+
+```text
+shopifyRecoveryCreditPackEventHandle is non-null/non-blank
+provider.usageEventHandles contains shopifyRecoveryCreditPackEventHandle
+```
+
+##### Cycle
+
+For:
+
+```text
+PAID_METERED
+FREE with recoveryCreditPackEnabled = true
+```
+
+require an exact provider cycle:
+
+```text
+currentPeriodStart != null
+currentPeriodEnd != null
+currentPeriodStart < currentPeriodEnd
+```
+
+A pack-disabled Free plan may legitimately restore without a provider cycle when the
+local projection also has no cycle.
+
+#### Typed fail-closed state
+
+Known invalid prerequisites must not escape as an unclassified thrown exception.
+
+Persist the newer UNFROZEN lifecycle evidence and keep the subscription
+non-executable:
+
+```text
+unmapped/inactive handle       -> status UNMAPPED, UNMAPPED_PLAN_HANDLE
+missing/invalid exact cycle    -> status SYNC_ERROR, MISSING_BILLING_CYCLE
+invalid Paid allowance         -> status SYNC_ERROR, INVALID_INCLUDED_ALLOWANCE
+missing/provider-absent meter  -> status SYNC_ERROR, MISSING_USAGE_METER
+```
+
+For retryable configuration errors:
+
+```text
+nextReconcileAt = now + 5 minutes
+```
+
+Preserve:
+
+```text
+current plan identity
+current BillingPeriod/counters
+lifetime Free
+purchased/refund state
+promotion state
+pending state unless current live pending truth replaces it
+```
+
+Do not set `ACTIVE`/`TRIALING` before these prerequisites pass.
+
+#### Same-cycle pending truth
+
+On successful same-cycle unfreeze, project the live provider pending truth in the same
+transaction:
+
+```text
+pendingShopifyPlanHandle = provider.pendingPlanHandle
+pendingEffectiveAt = provider.pendingEffectiveAt
+pendingPlanId = mapped active pending plan id, otherwise null
+```
+
+Do not leave stale pre-freeze pending state when the complete provider snapshot proves
+that the pending state changed or was withdrawn.
+
+### Finding 4 — scheduled cancellation, reversal and pending-update precedence are still not implemented on established same-cycle paths
+
+Attempt 1 Finding 8 remains unresolved.
+
+There is no task-owned established same-cycle branch in either entry point that
+projects:
+
+```text
+provider.cancelAtEndOfCycle
+```
+
+before an accepted rollover service returns `unchanged`.
+
+The current focused test files also contain no permanent scheduled-cancellation or
+reversal cases.
+
+#### Required correction
+
+Implement the same deterministic helper/logic in both entry points:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+Apply it only to an already-established current plan where the live provider current
+handle maps to that same local current plan.
+
+Classification order:
+
+#### 4A. Provider pending update wins
+
+When:
+
+```text
+provider.pendingPlanHandle != null
+```
+
+map the pending handle to an active local BillingPlan when possible and guarded-write
+the complete pending truth:
+
+```text
+pendingShopifyPlanHandle = provider.pendingPlanHandle
+pendingPlanId = mapped active id or null
+pendingEffectiveAt = provider.pendingEffectiveAt
+cancelAtPeriodEnd = false
+```
+
+Do not interpret the outgoing subscription's:
+
+```text
+cancelAtEndOfCycle = true
+```
+
+as a full cancellation when a provider pending plan update exists.
+
+Schedule the exact pending effective time when present; otherwise use the existing
+bounded/current-plan reconciliation rule.
+
+Return after the guarded projection so the same attempt does not also execute an
+ordinary rollover.
+
+#### 4B. Scheduled full cancellation
+
+Only when:
+
+```text
+provider.pendingPlanHandle == null
+provider.cancelAtEndOfCycle == true
+provider current plan == local current plan
+provider exact cycle == local exact cycle
+```
+
+guarded-write:
+
+```text
+cancelAtPeriodEnd = true
+pendingShopifyPlanHandle = null
+pendingPlanId = null
+pendingEffectiveAt = null
+currentPeriodEnd = provider.currentPeriodEnd
+```
+
+Preserve:
+
+```text
+status ACTIVE/TRIALING
+planId
+billingPeriodId
+currentPeriodStart
+all entitlement/counter state
+```
+
+Schedule/reuse the existing canonical pre-close/boundary time:
+
+```text
+preCloseAt = currentPeriodEnd
+             - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+```
+
+If `now < preCloseAt`, schedule `preCloseAt`.
+If `preCloseAt <= now < currentPeriodEnd`, schedule `currentPeriodEnd`.
+If the provider cycle is already at/past the boundary, do not manufacture a future
+scheduled-cancellation state; allow effective lifecycle/rollover classification to
+continue.
+
+Publish exactly one deterministic subscription job when the guarded update commits.
+
+#### 4C. Cancellation reversal
+
+When:
+
+```text
+provider.pendingPlanHandle == null
+provider.cancelAtEndOfCycle == false
+local cancelAtPeriodEnd == true
+provider current plan/cycle == local current plan/cycle
+```
+
+guarded-write:
+
+```text
+cancelAtPeriodEnd = false
+```
+
+Preserve all entitlement/counter state and return without creating/granting/resetting
+a period.
+
+Restore the ordinary current-plan next reconciliation schedule and publish it only
+when non-null.
+
+No local Shopify cancellation mutation is allowed.
+
+### Finding 5 — effective cancellation is still not SERIALIZABLE
+
+The new `closePaidPeriod(...)` helper now performs the required:
+
+```text
+RESERVED | AMBIGUOUS aggregate
+reservedQuantity equality check
+version/reservedQuantity updateMany CAS
+post-update closed-counter verification
+guarded BillingPeriod OPEN -> CLOSED
+```
+
+That work is accepted.
+
+However, `cancel(...)` currently calls:
+
+```ts
+this.database.$transaction(async (transaction) => { ... })
+```
+
+without the Attempt-2-required SERIALIZABLE isolation.
+
+#### Required correction
+
+Run effective cancellation with:
+
+```ts
+{
+  isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+}
+```
+
+Do not otherwise redesign the accepted counter-close algorithm.
+
+### Finding 6 — the mandatory permanent evidence and 26-item map were not delivered
+
+The current Completion Report says explicitly:
+
+```text
+"The focused tests do not yet prove every enumerated branch..."
+```
+
+and names scheduled cancellation/reversal, pending-update precedence,
+later-cycle/change-plan delegation, capacity-resume publication, startup repair and
+pre-freeze top-up behaviour as remaining architect-review items.
+
+The uploaded test snapshot confirms this:
+
+- `shopify-subscription-lifecycle-reconciliation.service.test.ts` still contains only
+  four lifecycle tests;
+- the mandatory provider-snapshot fallback-removal regression was not added;
+- there is no 26-item evidence table;
+- the focused total remains 198 because the required lifecycle matrix was not built.
+
+A task with acknowledged required gaps must not be returned to Architect Review as
+complete.
+
+### Required Attempt-3 permanent tests
+
+Use real task-owned methods and add the following exact tests.
+
+#### Provider snapshot
+
+File:
+
+```text
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+```
+
+Add:
+
+```text
+requires the combined subscription reconciliation snapshot contract
+```
+
+Prove a lifecycle reconciliation test double without
+`getSubscriptionReconciliationSnapshot(...)` cannot silently fall back to
+`getActiveSubscription(...)`.
+
+Preserve all existing lifecycle parse/scope/malformed tests.
+
+#### Lifecycle service
+
+File:
+
+```text
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts
+```
+
+Add/replace coverage with exact test titles:
+
+```text
+replays the same FROZEN event and advances one hourly retry
+ignores strictly older lifecycle evidence without overwriting newer identity
+preserves unrelated sync error while projecting FROZEN
+uses live cancelAtEndOfCycle while preserving FROZEN entitlement
+keeps FROZEN for UNFROZEN with no live contract and retries in one hour
+restores same mapped plan and same cycle without granting or resetting capacity
+restores pack-disabled Free with no cycle without resetting lifetime Free
+restores later same-plan Paid cycle through BACKGROUND-007 exactly once
+restores later same-plan Free cycle without resetting lifetime Free
+restores changed mapped plan through BACKGROUND-010 exactly once
+keeps unfreeze fail closed for invalid mapped provider plan: %s
+projects live pending truth during same-cycle unfreeze
+publishes one best-effort unfreeze capacity-resume hint after commit
+swallows unfreeze capacity-resume enqueue failure after committed restoration
+does not publish capacity-resume for unresolved or repeated FROZEN state
+closes Paid cancellation with canonical reservation/counter CAS semantics
+runs effective cancellation at serializable isolation
+replays effective cancellation without a second close or counter mutation
+preserves lifetime purchased refund promotion and selection state on cancellation
+ignores CANCELED lifecycle history for a genuinely fresh NO_CONTRACT row
+```
+
+The invalid-plan table must contain at least:
+
+```text
+inactive mapped plan                    -> UNMAPPED_PLAN_HANDLE
+Paid allowance null                     -> INVALID_INCLUDED_ALLOWANCE
+Paid allowance negative                 -> INVALID_INCLUDED_ALLOWANCE
+Paid allowance non-integer              -> INVALID_INCLUDED_ALLOWANCE
+Paid allowance unsafe                   -> INVALID_INCLUDED_ALLOWANCE
+Paid normal meter missing               -> MISSING_USAGE_METER
+provider omits Paid normal meter        -> MISSING_USAGE_METER
+enabled Paid pack meter missing         -> MISSING_USAGE_METER
+provider omits Paid pack meter          -> MISSING_USAGE_METER
+enabled Free pack meter missing         -> MISSING_USAGE_METER
+provider omits Free pack meter          -> MISSING_USAGE_METER
+Paid cycle missing                      -> MISSING_BILLING_CYCLE
+Paid cycle invalid                      -> MISSING_BILLING_CYCLE
+pack-enabled Free cycle missing         -> MISSING_BILLING_CYCLE
+```
+
+For same-cycle unfreeze no-write evidence must cover available mutators of:
+
+```text
+billingPeriod
+billingPeriodEntitlementCounter
+shopEntitlementCounter
+recoveryCreditPurchase
+recoveryCreditRefund
+promotionalCreditGrant
+merchantPromotionSelection
+```
+
+No grant/reset may occur.
+
+#### Queued reconciliation
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+Add exact tests:
+
+```text
+preserves FROZEN state and publishes an hourly retry when the combined Partner snapshot fails
+replays FROZEN lifecycle evidence and republishes the committed hourly job
+stops queued reconciliation after verified lifecycle restoration
+pending update takes precedence over scheduled cancellation interpretation
+projects scheduled full cancellation without changing current entitlement
+clears reversed scheduled cancellation without granting entitlement
+does not retimestamp old-cycle UsageEvents during effective cancellation
+reconstructs a missing FROZEN reconciliation job effectively once
+does not reconcile a pending top-up as spendable while lifecycle remains FROZEN
+```
+
+`stops queued reconciliation after verified lifecycle restoration` must prove none of:
+
+```text
+completeVerifiedPaid
+completeVerifiedFree
+applyOtherCurrentPlan
+ordinary rollover
+ordinary established-plan-change transition
+```
+
+runs after the lifecycle service has already returned `restored`.
+
+For FROZEN replay assert:
+
+```text
+durable nextReconcileAt == now + 1 hour
+queue add exactly once
+job.expectedNextReconcileAt == durable nextReconcileAt.toISOString()
+deterministic job id uses that same timestamp
+```
+
+For scheduled cancellation/reversal, assert zero BillingPeriod/counter/grant writes.
+
+#### Rotating reconciliation
+
+File:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+Add exact tests:
+
+```text
+records durable deterministic retry when lifecycle snapshot transport fails
+stops rotating subscription mutation after verified lifecycle restoration
+projects scheduled cancellation before an unchanged same-cycle return
+clears reversed scheduled cancellation before an unchanged same-cycle return
+keeps pending plan update ahead of outgoing cancelAtEndOfCycle
+keeps pack purchase reconciliation disabled while FROZEN lifecycle is effective
+keeps pack purchase reconciliation disabled in the same pass as verified unfreeze
+```
+
+For the restored cases prove the accepted rollover/plan-change primitive is not
+invoked a second time.
+
+### Required 26-item Completion Report evidence map
+
+Attempt 3 must replace the current "known gaps" statement with:
+
+```text
+Requirement | Exact test title(s) | Test file | Result
+```
+
+covering original task requirements **1 through 26 in order**.
+
+Every row must identify an actual assertion in the uploaded test source.
+
+Do not mark a requirement proven merely because the overall focused suite is green.
+
+If any original requirement remains unproven, do not return the task as complete
+review evidence.
+
+### Required validation for Attempt 3
+
+From `moda-interact-background` run exactly:
+
+```bash
+npx vitest run \
+  tests/unit/providers/shopify-partner-billing.provider.test.ts \
+  tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/runtime/billing-scheduler.test.ts \
+  tests/unit/services/recovery-credit-purchase.service.test.ts \
+  tests/unit/services/shopify-usage-event-publisher.service.test.ts
+
+npm run test:unit
+npm run test:integration
+npm run prisma:validate
+npm run prisma:generate
+npm run build
+git diff --check
+```
+
+Also rerun and record:
+
+```bash
+rg -n \
+  "SubscriptionCancellationRequest|SubscriptionCancellationMode|SubscriptionCancellationStatus|ShopifySubscriptionCancellationArgs|SHOPIFY_SUBSCRIPTION_CANCELLATION_ARGS|appSubscriptionCancel|BILLING_CANCELLATION_REQUEST_RECEIVED|BILLING_CANCELLATION_COMPLETED|BILLING_CANCELLATION_REJECTED" \
+  src tests
+
+rg -n \
+  "getSubscriptionReconciliationSnapshot|getSubscriptionLifecycle|SUBSCRIPTION_FROZEN|SUBSCRIPTION_CANCELED" \
+  ../moda-interact/app ../moda-interact-messaging/src
+```
+
+Record exact pass/fail/skip counts.
+
+The documented baseline remains non-blocking only if it is unchanged:
+
+```text
+10 unrelated unit failures
+15 unrelated generated-client build diagnostics
+```
+
+No Attempt-3 changed file may introduce an additional failure/diagnostic.
+
+### Allowed Attempt-3 production scope
+
+Allowed production files:
+
+```text
+src/services/shopify-subscription-lifecycle-reconciliation.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+`src/providers/shopify-partner-billing.provider.ts` is already accepted for the
+mandatory-snapshot correction. Do not change it unless the required provider test
+exposes a concrete defect.
+
+Allowed focused tests:
+
+```text
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/runtime/billing-scheduler.test.ts
+tests/unit/services/recovery-credit-purchase.service.test.ts
+tests/unit/services/shopify-usage-event-publisher.service.test.ts
+```
+
+The task/Completion Report may be updated through the normal coordination-document
+exception.
+
+Do **not** modify:
+
+```text
+src/services/same-plan-billing-period-rollover.service.ts
+src/services/shopify-plan-change-transition.service.ts
+Shared contracts/package version
+Prisma schema/migrations
+BACKGROUND-013 business-execution gates
+BACKGROUND-018 Shopify-event early gate
+Shopify merchant app
+Admin
+Messaging
+Gateway
+recovery-capacity reservation algorithms
+refund semantics
+promotion semantics
+```
+
+If either accepted transition primitive cannot satisfy the exact unfreeze matrix
+without modification, STOP and return the incompatibility to `moda_architect`.
+
+### Workflow evidence required
+
+Attempt 3 Completion Report must record full immutable evidence:
+
+```text
+Attempt-1 implementation full SHA
+Attempt-1 final parent/report full SHA
+Attempt-2 launcher claim full SHA
+Attempt-2 implementation full SHA:
+cf9319c9eeb48d6422aac20497adbe3332741491
+Attempt-2 final parent/report full SHA corresponding to user handoff d533994
+Attempt-3 launcher claim full SHA
+Attempt-3 implementation full SHA
+Attempt-3 parent/report publication full SHA
+database gitlink before/after
+dedicated parent worktree/branch
+dedicated implementation worktree/branch
+start-of-attempt synchronization evidence
+recursive submodule materialisation evidence
+both branches clean/pushed
+```
+
+Do not use abbreviated SHAs or `"recorded after this update"` placeholders.
+
+### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 2
+```
+
+The next authorized claim must increment to **Attempt 3 exactly once**.
 
 After implementing only the corrections above, completing the 26-item evidence map,
 running validation, setting the task back to `status: review`, clearing
