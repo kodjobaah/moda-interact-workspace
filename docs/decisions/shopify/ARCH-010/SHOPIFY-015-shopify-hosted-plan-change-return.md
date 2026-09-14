@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 56
 executor: null
 claimed_at: null
@@ -982,3 +982,621 @@ attempt: 2
 The next authorized claim must increment it to **Attempt 3 exactly once**.
 
 After corrections, set `status: review`, clear `executor`/`claimed_at`, commit and push both task branches, and STOP for architect review. Do not start SHOPIFY-012.
+
+### Architect Review — Attempt 3
+
+#### Status
+
+**Changes Requested**
+
+Attempt 3 correctly implements the previously requested wall-clock freshness check,
+restores the accepted SHOPIFY-003 callback suite, and adds direct hosted-return
+protected-model evidence. The focused/full/static validation reported by the task is
+also consistent with the uploaded snapshot.
+
+Two production correctness defects remain:
+
+1. the wall-clock freshness comparison is not a valid commit-order fence across the
+   Shopify app and Background worker;
+2. nullable provider cycle/trial facts are persisted as `undefined`, which preserves
+   stale local values instead of projecting the exact provider observation.
+
+Attempt 4 must correct those two points and strengthen the hosted-return regression
+evidence. Do not churn the accepted panel/options work.
+
+#### Finding 1 — `verificationStartedAt` does not safely order concurrent durable commits
+
+Attempt 3 implements:
+
+```text
+callback captures verificationStartedAt = new Date()
+  -> Partner read
+  -> transaction locks Subscription
+  -> if Subscription.updatedAt > verificationStartedAt, reject stale observation
+```
+
+This still permits the race that SHOPIFY-015 is intended to prevent.
+
+A concrete interleaving is:
+
+```text
+T-1 BACKGROUND-010 acquires/updates the Subscription row inside its transaction.
+    The row's new updatedAt is generated now, but the transaction has not committed.
+
+T0  callback captures verificationStartedAt.
+
+T1  callback reads Shopify and receives the pre-transition/current+pending observation.
+
+T2  callback tries to lock Subscription and waits behind BACKGROUND-010.
+
+T3  BACKGROUND-010 commits its newer effective transition.
+
+T4  callback obtains the lock and rereads Subscription.
+```
+
+The Background row is newer in **commit order**, but its stored `updatedAt` can be
+earlier than `verificationStartedAt` because the Background mutation occurred before
+T0. The current strict `updatedAt > verificationStartedAt` test therefore accepts the
+older provider observation and can overwrite the newer projection.
+
+Cross-process clock skew between the Shopify app and Background worker is an
+additional reason not to compare their wall clocks for optimistic concurrency.
+
+The correct fence is the durable Subscription projection observed **before** the
+Partner request, compared for equality after the accepted row lock.
+
+##### Required Attempt-4 correction
+
+In:
+
+```text
+app/services/billing/billing.service.ts
+```
+
+add a repository-local hosted-verification fence type and reader. It must not require
+schema or Shared changes.
+
+Use a shape equivalent to:
+
+```ts
+export type HostedPlanVerificationFence = {
+  id: string | null;
+  updatedAt: Date | null;
+  status: SubscriptionProjectionStatus | null;
+  observedShopifyPlanHandle: string | null;
+  planId: string | null;
+  billingPeriodId: string | null;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  trialEndsAt: Date | null;
+  cancelAtPeriodEnd: boolean | null;
+  pendingShopifyPlanHandle: string | null;
+  pendingPlanId: string | null;
+  pendingEffectiveAt: Date | null;
+  nextReconcileAt: Date | null;
+  lastSyncedAt: Date | null;
+  lastSyncErrorCode: string | null;
+  lastSyncErrorAt: Date | null;
+};
+```
+
+A null Subscription must return the same shape with null values, or another explicit
+`subscription: null` representation that can be compared deterministically.
+
+Add:
+
+```ts
+async getHostedPlanVerificationFence(
+  shopId: string,
+): Promise<HostedPlanVerificationFence>
+```
+
+using one ordinary PostgreSQL/Prisma read before the provider request.
+
+Do **not** acquire a row lock and do **not** call Shopify in this method.
+
+Create one local equality helper which compares:
+
+- id;
+- `updatedAt`;
+- every projection field above;
+- nullable Dates by exact `getTime()` equality.
+
+The purpose is not merely to compare timestamps. Even if `updatedAt` collides at the
+same millisecond, a changed entitlement/current/pending/error projection must make the
+fence unequal.
+
+In:
+
+```text
+app/routes/app/billing/callback/route.tsx
+```
+
+replace:
+
+```ts
+const verificationStartedAt = new Date();
+```
+
+with:
+
+```ts
+const verificationFence =
+  await billingService.getHostedPlanVerificationFence(shop.id);
+```
+
+Capture it **immediately before**:
+
+```ts
+billingService.getMerchantShopifySubscriptionState(shop.id)
+```
+
+and after the initial Free/Paid activation branch has returned no activation.
+
+Call the Partner/read-model method exactly once.
+
+Pass that **same immutable fence value** to:
+
+```text
+recordHostedPlanChangeReturn(...)
+recordHostedPlanVerificationFailure(...)
+```
+
+depending on success/failure.
+
+Do not reread the fence after the Partner request.
+
+In both persistence methods:
+
+1. preserve the accepted ShopSettings -> Subscription lock order;
+2. reread the locked Subscription with the complete fence fields;
+3. compare the locked projection to the pre-provider `verificationFence`;
+4. if unequal:
+   - successful observation: return
+     `{ result: "unverified", subscriptionId: current?.id ?? null, nextReconcileAt: null }`;
+   - failed observation: return `null`;
+   - perform zero BillingPlan mapping lookup needed only for that observation;
+   - perform zero Subscription mutation;
+   - perform zero protected entitlement/history mutation;
+5. only an unchanged durable fence may apply CURRENT/PENDING/NO_ACTIVE projection or
+   verification-error metadata.
+
+Remove `verificationStartedAt` from the hosted-return/failure method contracts once
+the durable fence is in place. Do not keep the wall-clock comparison as a second
+authority.
+
+This correction uses the durable row as the optimistic token. It does not change
+BACKGROUND-010 or hold a database lock across a network call.
+
+#### Finding 2 — null provider period/trial facts currently preserve stale local values
+
+`recordHostedPlanChangeReturn(...)` currently writes:
+
+```ts
+currentPeriodStart:
+  provider.currentPeriodStart ? new Date(provider.currentPeriodStart) : undefined,
+
+currentPeriodEnd:
+  provider.currentPeriodEnd ? new Date(provider.currentPeriodEnd) : undefined,
+
+trialEndsAt:
+  provider.trialEndsAt ? new Date(provider.trialEndsAt) : undefined,
+```
+
+For Prisma updates, `undefined` means "do not change this column".
+
+Therefore a verified provider observation such as:
+
+```text
+currentPeriodStart = null
+currentPeriodEnd   = null
+trialEndsAt        = null
+```
+
+can leave old non-null local values in place.
+
+That violates this task's `CURRENT`/`PENDING` requirement to persist the exact
+provider current projection. It can also leave a stale trial end after Shopify has
+already removed the trial.
+
+##### Required correction
+
+For a non-stale verified CURRENT or PENDING provider observation, persist exact
+nullable facts:
+
+```ts
+currentPeriodStart: provider.currentPeriodStart
+  ? new Date(provider.currentPeriodStart)
+  : null,
+
+currentPeriodEnd: provider.currentPeriodEnd
+  ? new Date(provider.currentPeriodEnd)
+  : null,
+
+trialEndsAt: provider.trialEndsAt
+  ? new Date(provider.trialEndsAt)
+  : null,
+```
+
+Do not manufacture a cycle or trial date.
+
+This task still does not open/close BillingPeriod or grant/forfeit entitlement in the
+HTTP request.
+
+#### Required Attempt-4 regression evidence
+
+Only the hosted-return/callback tests need additional work.
+
+##### A. Callback durable-fence propagation
+
+In:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+```
+
+mock:
+
+```text
+getHostedPlanVerificationFence
+```
+
+with one frozen object.
+
+Add:
+
+```text
+captures the durable hosted verification fence before the Partner read
+```
+
+Prove invocation order:
+
+```text
+getHostedPlanVerificationFence
+  before
+getMerchantShopifySubscriptionState
+```
+
+and prove the exact returned fence object is passed to
+`recordHostedPlanChangeReturn(...)`.
+
+Add:
+
+```text
+passes the same durable hosted verification fence to provider failure recording
+```
+
+Make the Partner read reject and prove the exact same fence object is passed to
+`recordHostedPlanVerificationFailure(...)`.
+
+Keep:
+
+```text
+does not enqueue a freshness-fenced unverified result
+```
+
+and update it to the durable-fence API.
+
+The Partner read must still be called exactly once.
+
+##### B. Commit-order race regression
+
+In:
+
+```text
+tests/unit/services/billing.service.test.ts
+```
+
+replace the Attempt-3 wall-clock-only stale tests with durable-fence tests.
+
+Add:
+
+```text
+fences a durable commit that is newer than the pre-provider projection even when its updatedAt is earlier than the old wall-clock start
+```
+
+Use:
+
+```text
+pre-provider fence updatedAt = 2026-09-01T10:00:00.000Z
+locked/current updatedAt     = 2026-09-01T10:00:00.500Z
+hypothetical old wall-clock verification start
+                             = 2026-09-01T10:00:01.000Z
+```
+
+The important proof is that:
+
+```text
+locked.updatedAt < old wall-clock start
+locked projection != pre-provider fence
+```
+
+and the result is still:
+
+```text
+unverified
+zero BillingPlan lookup
+zero Subscription writes
+zero protected-model writes
+```
+
+The test must not call or depend on a `verificationStartedAt` production parameter.
+
+Add:
+
+```text
+fences a changed durable projection even when updatedAt is identical
+```
+
+Keep the same `updatedAt` in the pre-provider fence and locked row, but change at
+least one authority field such as:
+
+```text
+planId
+billingPeriodId
+pendingShopifyPlanHandle
+```
+
+Assert the provider observation is rejected with zero writes.
+
+This proves the fence is not relying on timestamp uniqueness.
+
+Add the equivalent failed-provider case:
+
+```text
+does not record provider failure when the durable projection changed during verification
+```
+
+and assert:
+
+```text
+recordHostedPlanVerificationFailure -> null
+zero Subscription writes
+zero protected writes
+```
+
+##### C. Exact-null provider projection
+
+Add:
+
+```text
+clears stale nullable provider cycle and trial facts from a verified hosted observation
+```
+
+Start the local Subscription with non-null:
+
+```text
+currentPeriodStart
+currentPeriodEnd
+trialEndsAt
+```
+
+Use a verified provider state with all three values null.
+
+After CURRENT or PENDING persistence assert all three durable fields are exactly null.
+
+Also assert:
+
+```text
+status unchanged
+planId unchanged
+billingPeriodId unchanged
+zero BillingPeriod/counter/credit/promotion/refund writes
+```
+
+##### D. Complete hosted protected-state spy set
+
+Extend the hosted-return protected-model fixture to include:
+
+```text
+recoveryCreditRefund
+```
+
+in addition to:
+
+```text
+billingPeriod
+billingPeriodEntitlementCounter
+shopEntitlementCounter
+recoveryCreditPurchase
+promotionalCreditGrant
+merchantPromotionSelection
+```
+
+Keep the existing no-write helper over:
+
+```text
+create
+createMany
+update
+updateMany
+upsert
+delete
+deleteMany
+```
+
+where available.
+
+##### E. Tighten existing CURRENT/PENDING/failure assertions
+
+For PENDING assert explicitly that these remain unchanged:
+
+```text
+status
+planId
+billingPeriodId
+```
+
+For CURRENT assert the same.
+
+For provider verification failure, capture the `subscription.updateMany(...)` payload
+and assert its business data contains only:
+
+```text
+nextReconcileAt
+lastSyncErrorCode = PARTNER_API_ERROR
+lastSyncErrorAt
+```
+
+For NO_ACTIVE, assert the Subscription update changes only:
+
+```text
+nextReconcileAt
+lastSyncErrorCode = null
+lastSyncErrorAt = null
+```
+
+plus Prisma-managed `updatedAt` outside the supplied data object.
+
+Do not weaken accepted protected no-write assertions.
+
+#### Accepted Attempt-3 work — do not churn
+
+Keep the restored executable:
+
+```text
+describe("billing callback activation", ...)
+```
+
+suite and its accepted SHOPIFY-003 defaults.
+
+Keep the hosted-flow nested setup that explicitly sets:
+
+```text
+prepareFreeActivation -> null
+preparePaidActivation -> null
+```
+
+Do not reintroduce callback skips.
+
+Unless a focused test exposes a direct defect, do not change:
+
+```text
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/SubscriptionChangePanel.jsx
+```
+
+The accepted provider-commercial-truth/component behavior remains final for this task.
+
+#### Attempt-4 allowed scope
+
+Production:
+
+```text
+app/routes/app/billing/callback/route.tsx
+app/services/billing/billing.service.ts
+```
+
+Tests:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+tests/unit/services/billing.service.test.ts
+```
+
+Plus this task/Completion Report.
+
+Do not modify:
+
+```text
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/SubscriptionChangePanel.jsx
+app/components/dashboard/BillingPurchaseHub.jsx
+app/components/dashboard/billing-purchase.mock.js
+app/services/billing/providers/shopify-billing.provider.ts
+Prisma schema/migrations
+Shared contracts/package version
+Background services
+Admin
+Messaging
+Gateway
+SHOPIFY-012/014/016 implementation
+```
+
+If a durable pre-provider fence cannot be implemented without a schema/Shared/
+Background change, STOP and return the exact limitation to `moda_architect`.
+
+#### Required validation for Attempt 4
+
+From `moda-interact` run:
+
+```bash
+npm test -- --run \
+  tests/unit/routes/billing-callback.test.ts \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/subscription-change-panel.test.tsx \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/billing-i18n.test.ts \
+  tests/unit/merchant-i18n.test.ts
+
+npm test
+npm run prisma:validate
+npm run prisma:generate
+npm run typecheck
+npm run build
+git diff --check
+
+rg -n "describe\\.skip|it\\.skip|test\\.skip" \
+  tests/unit/routes/billing-callback.test.ts
+
+rg -n "verificationStartedAt|rank|isUpgrade|isDowngrade|upgradeAction|downgradeAction|appSubscriptionCreate|billing\\.request|moda-interact-admin" \
+  app/components/dashboard/SubscriptionChangePanel.jsx \
+  app/routes/app/billing/callback/route.tsx \
+  app/services/billing/billing.service.ts
+```
+
+Expected:
+
+- callback skip scan: zero matches;
+- production scan: zero matches for `verificationStartedAt` and all prohibited
+  inference/mutation/Admin terms;
+- exact focused/full pass/fail/skip totals recorded;
+- Prisma validation/generation and build pass;
+- `git diff --check` passes;
+- typecheck may retain `TYPECHECK-001` only if no Attempt-4 changed line introduces a
+  new diagnostic.
+
+#### Completion Report required
+
+Record:
+
+- Attempt-3 implementation full SHA:
+  `69c79a6214dd74521453456724c63092bf369230`;
+- Attempt-3 final parent/report full SHA corresponding to the developer handoff
+  `7bd791e`;
+- synchronization merge
+  `1ca0cb0b95e2bbeca37d33d27037521f2eb6b67c`;
+- Attempt-4 launcher claim full SHA;
+- Attempt-4 implementation full SHA;
+- Attempt-4 parent/report publication full SHA;
+- canonical parent/implementation worktrees and branches;
+- database submodule SHA before/after;
+- exact durable-fence test titles;
+- exact nullable-provider-projection test title;
+- exact protected no-write tests;
+- focused/full/typecheck/build/static scan results;
+- both branches clean and pushed.
+
+Resolve the full Attempt-3 parent SHA with `git rev-parse` from the dedicated parent
+task branch. Do not leave `Parent report commit: pending` in the next Completion
+Report.
+
+#### Reclaim / stop condition
+
+Return this **same task** through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 3
+```
+
+The next authorized claim must increment to **Attempt 4 exactly once**.
+
+After implementing only the corrections above, updating the Completion Report,
+running validation, setting `status: review`, clearing `executor`/`claimed_at`,
+committing/pushing both mirrored task branches and verifying both are clean, STOP and
+return to `moda_architect`.
+
+Do not start `ARCH-010-SHOPIFY-012`.
+
