@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 59
-executor: copilot
-claimed_at: 2026-09-14T05:33:38Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-010-BACKGROUND-004
@@ -963,4 +963,531 @@ Then STOP and return to `moda_architect`.
 
 `ARCH-010-SHOPIFY-016` and `ARCH-010-SYSTEM-TEST-002` remain gated until this task is
 architect-accepted Complete.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — two functional corrections only**
+
+This review continues to prioritise runtime functionality over exhaustive coverage.
+
+Attempt 2 correctly fixes the three defects raised in Attempt 1:
+
+```text
+1. stale capacity-resume jobs now evaluate the canonical execution gate before
+   blocked-recovery lookup;
+
+2. resumeCapacityBlockedRecovery(...) now rechecks execution both before the checkout
+   lock and again after lock acquisition before provider lookup/mutation;
+
+3. matured-candidate materialisation now rechecks execution inside the checkout lock
+   before order correlation/provider/materialisation work;
+
+4. outbound text/template sends recheck the canonical execution gate after admission
+   and before provider invocation, clean up denied prepared messages, and preserve
+   distinct CONTRACT_REQUIRED / SUBSCRIPTION_FROZEN suppression.
+```
+
+Those corrections are accepted and MUST NOT be redesigned.
+
+Two runtime integration defects remain.
+
+---
+
+### Finding 1 — BACKGROUND-018 hot-path changes weakened the canonical gate on `checkout.updated` and `cart.activity`
+
+The current `checkout.updated` path reads:
+
+```text
+Shop.status
+Subscription.status
+```
+
+but only rejects:
+
+```text
+Shop != ACTIVE
+Subscription == FROZEN
+```
+
+The current `cart.activity` path does the same.
+
+Therefore these states are currently allowed to continue into pending-candidate
+refresh / recovery refresh:
+
+```text
+NO_CONTRACT
+UNMAPPED
+SYNC_ERROR
+```
+
+This contradicts the BACKGROUND-013 behaviour matrix:
+
+```text
+NO_CONTRACT -> deny new/advancing business state
+FROZEN      -> deny new/advancing business state
+UNMAPPED    -> preserve fail-closed behaviour
+SYNC_ERROR  -> preserve fail-closed behaviour
+```
+
+It also contradicts the explicit recovery/event requirement:
+
+```text
+prevent candidate refresh that schedules future business execution
+prevent new CheckoutRecovery materialisation/business mutation
+```
+
+This is not a coverage issue. A merchant with `NO_CONTRACT` can currently refresh a
+pending candidate and an existing recovery can perform a Shopify abandoned-checkout
+lookup plus basket mutation.
+
+#### Required correction
+
+Preserve the BACKGROUND-018 hot-path query count. Do **not** add a second PostgreSQL
+lookup merely to call `evaluate(...)`.
+
+Use the already-loaded Shop + Subscription projection as the authority.
+
+In:
+
+```text
+src/services/shop-execution-eligibility.service.ts
+```
+
+add one canonical no-I/O helper/method equivalent to:
+
+```ts
+evaluateResolvedShop(input: {
+  id: string;
+  status: "ACTIVE" | "UNINSTALLED" | "SUSPENDED";
+  subscription: { status: string } | null;
+}): ShopExecutionDecision
+```
+
+Exact behaviour:
+
+```text
+Shop.status != ACTIVE
+  -> SHOP_UNAVAILABLE
+
+missing Subscription
+  -> SHOP_UNAVAILABLE
+
+Subscription.NO_CONTRACT
+  -> CONTRACT_REQUIRED
+
+Subscription.FROZEN
+  -> SUBSCRIPTION_FROZEN
+
+Subscription.UNMAPPED
+  -> UNMAPPED_PLAN
+
+Subscription.SYNC_ERROR
+  -> SYNC_ERROR
+
+otherwise
+  -> allowed
+```
+
+Refactor the existing async `evaluate(shopId, ...)` to use the same mapping after its
+database read so there remains one canonical interpretation of lifecycle state.
+
+Do not create a second status switch inside `checkout-recovery.service.ts`.
+
+While touching this service, change `resolveShopById(...)` to use the injected
+`this.client.shop` rather than the module-global `prisma.shop`; return `null` if the
+client does not expose `shop`. This keeps the canonical service deterministic under
+its existing dependency-injection contract.
+
+Then in:
+
+```text
+src/services/checkout-recovery.service.ts
+```
+
+for both:
+
+```text
+handleCheckoutUpdatedContract(...)
+handleCartActivityContract(...)
+```
+
+evaluate the already-loaded Shop projection with `evaluateResolvedShop(...)`.
+
+If denied, return before:
+
+```text
+pendingRecoveryCandidateService.refreshCandidateActivity(...)
+CheckoutRecovery lookup/update
+abandonedCheckoutLookupService.lookup(...)
+Redis candidate mutation
+provider work
+```
+
+Preserve distinct merchant-facing reasons at least for:
+
+```text
+CONTRACT_REQUIRED
+  -> contract-required
+
+SUBSCRIPTION_FROZEN
+  -> subscription-frozen
+```
+
+`UNMAPPED_PLAN`, `SYNC_ERROR`, and `SHOP_UNAVAILABLE` may continue to use the existing
+generic fail-closed `shop-unavailable` result if that is the current external contract.
+
+Do not change `order.completed`; its terminal bookkeeping exception remains accepted.
+
+Do not add Partner API calls or additional database reads to these hot paths.
+
+---
+
+### Finding 2 — capacity-resume can still enqueue a continuation after lifecycle denial occurs mid-page
+
+The worker now correctly checks execution once before loading blocked recoveries.
+
+However, lifecycle can change after that first check:
+
+```text
+worker starts while ACTIVE
+-> initial gate passes
+-> 25 blocked recoveries loaded
+-> Subscription becomes FROZEN / NO_CONTRACT
+-> resumeCapacityBlockedRecovery(...) returns lifecycle-denied ignored result
+-> worker increments attempted and continues
+-> attempted reaches 25
+-> continuation job is scheduled
+```
+
+The service-level recheck protects provider/business work, but the stale job chain is
+not yet terminal.
+
+That violates:
+
+```text
+denied stale jobs complete as a successful terminal no-op
+do not create retry/continuation storms
+```
+
+#### Required correction
+
+In:
+
+```text
+src/workers/recovery-capacity-resume.worker.ts
+```
+
+after each:
+
+```ts
+const result =
+  await checkoutRecoveryService.resumeCapacityBlockedRecovery(recovery.id);
+```
+
+if the result is an execution denial, immediately return a successful ignored result
+and do not process another recovery.
+
+Treat these as terminal execution-denial reasons:
+
+```text
+CONTRACT_REQUIRED
+SUBSCRIPTION_FROZEN
+UNMAPPED_PLAN
+SYNC_ERROR
+SHOP_UNAVAILABLE
+shop-unavailable
+```
+
+Do **not** treat normal item-level outcomes such as:
+
+```text
+not-capacity-blocked
+already-transitioned
+```
+
+as a reason to abort the page.
+
+Also re-evaluate the canonical execution gate once immediately before scheduling a
+25-item continuation. This closes the race where lifecycle changes after the final
+recovery result but before:
+
+```ts
+recoveryCapacityResumeService.schedule(...)
+```
+
+If denied at that final check:
+
+```text
+return successful ignored result
+do not schedule continuation
+```
+
+The worker must still stop on `capacity-exhausted` exactly as it does now.
+
+---
+
+### Attempt-3 focused functional evidence
+
+No broad coverage expansion is required.
+
+#### `checkout.updated` / `cart.activity`
+
+In:
+
+```text
+tests/unit/services/checkout-refresh.test.ts
+```
+
+add one parameterized functional test for each path, or one shared matrix if cleaner:
+
+```text
+NO_CONTRACT
+UNMAPPED
+SYNC_ERROR
+```
+
+Prove for each denied state:
+
+```text
+pendingRecoveryCandidateService.refreshCandidateActivity not called
+abandonedCheckoutLookupService.lookup not called
+CheckoutRecovery mutation not called
+```
+
+Keep the existing FROZEN tests.
+
+For NO_CONTRACT also assert the distinct result is:
+
+```text
+contract-required
+```
+
+#### canonical resolved-shop decision
+
+In:
+
+```text
+tests/unit/services/shop-execution-eligibility.service.test.ts
+```
+
+add a small table proving `evaluateResolvedShop(...)` maps:
+
+```text
+NO_CONTRACT -> CONTRACT_REQUIRED
+FROZEN      -> SUBSCRIPTION_FROZEN
+UNMAPPED    -> UNMAPPED_PLAN
+SYNC_ERROR  -> SYNC_ERROR
+ACTIVE      -> allowed
+TRIALING    -> allowed
+```
+
+and inactive Shop -> `SHOP_UNAVAILABLE`.
+
+This is functional contract evidence, not an exhaustive matrix.
+
+#### capacity-resume mid-page denial
+
+In:
+
+```text
+tests/unit/workers/recovery-capacity-resume.worker.test.ts
+```
+
+add:
+
+```text
+stops a capacity-resume page when lifecycle becomes denied after the initial gate
+```
+
+Use 25 recoveries.
+
+Sequence:
+
+```text
+initial worker evaluate -> allowed
+first resume            -> initiated
+second resume           -> ignored SUBSCRIPTION_FROZEN
+```
+
+Assert:
+
+```text
+resume called exactly twice
+continuation not scheduled
+job resolves normally with ignored/lifecycle-denied result
+```
+
+Add:
+
+```text
+does not schedule a continuation when execution becomes denied after the last item
+```
+
+Use 25 normal item results, then make the final pre-continuation execution recheck
+return `CONTRACT_REQUIRED`.
+
+Assert no continuation.
+
+No other new tests are required.
+
+---
+
+### Accepted Attempt-2 work — do not churn
+
+Do not rewrite:
+
+```text
+src/services/outbound-whatsapp-admission.service.ts
+src/services/recovery-billing.service.ts
+src/services/effective-billing-policy.service.ts
+src/services/recovery-routing.service.ts
+src/services/conversation-turn-processor.service.ts
+src/workers/whatsapp.worker.ts
+```
+
+Preserve the accepted Attempt-2 behaviour:
+
+```text
+capacity-resume pre-lock + in-lock gate
+matured-candidate in-lock gate
+outbound provider-send lifecycle recheck
+prepared-message cleanup on lifecycle denial
+distinct contract-required / subscription-frozen outbound suppression
+```
+
+Do not add new schema, Shared contracts, queue contracts, HTTP-ingress lifecycle
+lookups, Redis lifecycle caches, queue purges, global locks, or Subscription row
+serialization.
+
+---
+
+### Attempt-3 allowed scope
+
+Production:
+
+```text
+src/services/shop-execution-eligibility.service.ts
+src/services/checkout-recovery.service.ts
+src/workers/recovery-capacity-resume.worker.ts
+```
+
+Tests:
+
+```text
+tests/unit/services/shop-execution-eligibility.service.test.ts
+tests/unit/services/checkout-refresh.test.ts
+tests/unit/workers/recovery-capacity-resume.worker.test.ts
+```
+
+plus this task/Completion Report.
+
+If the correction requires a different repository or schema/Shared change, STOP and
+return the exact limitation to `moda_architect`.
+
+---
+
+### Attempt-3 validation
+
+Prioritise the functional slice:
+
+```bash
+npm exec vitest run \
+  tests/unit/services/shop-execution-eligibility.service.test.ts \
+  tests/unit/services/checkout-refresh.test.ts \
+  tests/unit/workers/recovery-capacity-resume.worker.test.ts \
+  tests/unit/services/checkout-recovery.capacity-resume.test.ts \
+  tests/unit/services/matured-candidate.materialization.test.ts \
+  tests/unit/services/outbound-whatsapp-admission.service.test.ts
+
+npm run prisma:validate
+git diff --check
+```
+
+Run repository unit/build only for regression awareness:
+
+```bash
+npm run test:unit
+npm run build
+```
+
+The documented unrelated baseline remains non-blocking only if unchanged:
+
+```text
+unit:
+  10 baseline failures
+
+build:
+  15 baseline diagnostics
+```
+
+Do not fix those baselines in this task.
+
+---
+
+### Workflow / Completion Report
+
+Preserve:
+
+```text
+Attempt-1 launcher claim:
+68a61af9e36bc42c4d01ff87dc05f66432f4d831
+
+Attempt-1 implementation:
+40fedb029a2b3ae53ed7a8083cd5d0122e3b1695
+
+Attempt-1 final parent/report:
+324b958bfc96ddd8e4ea4e79aae37e6cce88e278
+
+Attempt-2 implementation:
+d3be8d81b1b96ae2300202d9d41a6c176aed4cd2
+
+Attempt-2 final developer parent/report:
+resolve and record the full SHA corresponding to
+563e1a0a
+```
+
+Also record:
+
+```text
+Attempt-3 launcher claim full SHA
+Attempt-3 implementation full SHA
+Attempt-3 parent/report publication full SHA
+database gitlink before/after
+both worktrees clean/pushed/remote-synchronized
+```
+
+The uploaded Attempt-2 snapshot still carries:
+
+```text
+executor: copilot
+claimed_at: 2026-09-14T05:33:38Z
+```
+
+despite the handoff stating they were cleared. This Architect Review resets the task
+to:
+
+```text
+status: ready
+executor: null
+claimed_at: null
+attempt: 2
+```
+
+The next `/moda-task` claim must increment to **Attempt 3 exactly once**.
+
+After the two functional corrections above pass focused validation, return to:
+
+```text
+status: review
+executor: null
+claimed_at: null
+attempt: 3
+```
+
+then STOP and hand back to `moda_architect`.
+
+`ARCH-010-SHOPIFY-016` and `ARCH-010-SYSTEM-TEST-002` remain gated until
+`BACKGROUND-013` is architect-accepted Complete.
 
