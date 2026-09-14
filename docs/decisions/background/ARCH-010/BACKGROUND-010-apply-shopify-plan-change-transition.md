@@ -1629,7 +1629,7 @@ Ready for Review.
 - Launcher Attempt-5 claim commit: `f65587a0f46388c9ff399b976d0af31d47cff34f`; prepared synchronization, dedicated topology, and recursive database-submodule materialisation were supplied by the launcher packet.
 - Database gitlink before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 - Attempt-4 implementation full SHA: `17ffe4060f9fba85c4a129e390ef718b31523948`; Attempt-5 implementation full SHA: `a5dc1a168b396d1629d565f00cea58d9f4d30228`.
-- Attempt-5 parent Completion Report full SHA before publication: `f65587a0f46388c9ff399b976d0af31d47cff34f`; the publication commit is recorded below after commit.
+- Attempt-5 parent Completion Report publication commit: `7c0fe4d5bb98b04b7788c645f1fc55b79c485c60`.
 - No database files/gitlink, production source, shared contracts, or unrelated task files changed. No merge to `main` or force-push performed.
 
 ### Unresolved Baseline
