@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
 executor: copilot
 claimed_at: 2026-09-14T19:42:33Z
@@ -297,19 +297,52 @@ STOP if SHOPIFY-025 does not expose all lifecycle/action states required for det
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact/app/routes.ts`
+- `moda-interact/app/routes/app/billing/recovery-credit-purchases/route.tsx`
+- `moda-interact/app/components/dashboard/RecoveryCreditPurchaseManager.jsx`
+- `moda-interact/app/components/dashboard/BillingPurchaseHub.jsx`
+- `moda-interact/app/i18n/catalogues.js`
+- `moda-interact/app/i18n/locales/en.json`
 
 ### Work Completed
-Populate during implementation.
+- Added the authenticated canonical `/app/billing/recovery-credit-purchases` route using the SHOPIFY-025 loader/action contract, bounded to the server page/pageSize limits and the server-owned purchase IDs, amounts and outcomes.
+- Added Active, Refund pending, Completed, Refunded and All views. All exposes REQUESTED as awaiting Shopify confirmation without selection controls.
+- Added eligible ACTIVE selection only when server `availableAmount > 0`, current-page unique select-all, bounded multi-purchase submission, no quantity or money inputs, and no browser quantity/money authority.
+- Added confirmation dialogs with all five required uncertainty statements, loading/submitting/disabled states, keyboard-operable controls, live result announcements and modal labels/focus.
+- Added independent per-purchase result rendering for request races, partial availability, mixed batches and non-active/refunded outcomes, followed by server refresh.
+- Added Reactivate only for WITHDRAWN plus exact REQUESTED refund state; provider-action states are blocked with explanatory copy. COMPLETED and REFUNDED rows have no refund/reactivation controls.
+- Added persisted original purchase money and persisted completed settlement money/currency display without recalculation or provider/internal reference exposure.
+- Added a production billing/capacity link while preserving the existing top-up CTA.
+- Added merchant catalogue parity through the existing catalogue registry with English fallback values for all supported merchant locales.
+
+### Correction Checklist
+- The launcher/task context identified `rework_required`, but the complete authoritative task file contained no `## Architect Review` section or Changes Requested items. No review section was edited; the full task acceptance criteria were treated as the correction checklist.
+- Authenticated route and production navigation: implemented.
+- Lifecycle filters, REQUESTED visibility/non-selection and bounded pagination: implemented.
+- Server-authoritative eligibility, payload bounds and stale-value exclusion: implemented.
+- Confirmation uncertainty statements and accessible loading/submission/result states: implemented.
+- Independent race/mixed outcomes and post-action refresh: implemented.
+- Reactivation/provider-action gating and historical terminal controls: implemented.
+- Persisted settlement/money safety, cross-shop/internal data safety and merchant i18n: implemented.
 
 ### Validation Results
-Populate during implementation.
+- Passed focused route/configuration test: `tests/unit/routes/explicit-route-config.test.ts` (7 tests).
+- Passed focused billing/i18n tests: `tests/unit/routes/explicit-route-config.test.ts`, `tests/unit/billing-purchase-hub.test.tsx`, `tests/unit/billing-i18n.test.ts`, `tests/unit/merchant-i18n.test.ts` (4 files, 27 tests).
+- Passed changed-file ESLint and `git diff --check`.
+- Passed `npm run build` after final changes; Prisma client generation and client/SSR builds completed.
+- `npm run typecheck` remains blocked by the documented repository baseline: 256 errors across 30 existing files, including generated Prisma-client enum/API mismatch and existing checked-JavaScript diagnostics. No diagnostics remained in the task-owned manager, route, route table or catalogue files after local fixes.
+- Full `npm test` remains blocked by the same baseline/generated-client state: 5 suites fail to initialize because `@prisma/client` is not initialized in the Vitest process and 7 existing billing-callback tests fail on missing generated enum values. The task-focused suites pass.
+- Contract limitation for architect review: SHOPIFY-025 exposes bounded pagination but no lifecycle filter parameter. The UI keeps server pagination bounded and filters the loaded page; it does not load unbounded history or invent a server contract.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-026`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-026`.
+- Mirrored branch: `task/ARCH-010-SHOPIFY-026`.
+- Implementation commit/push: `e37f9a7` pushed to `origin/task/ARCH-010-SHOPIFY-026`.
+- Parent report commit/push: pending this report update.
 
 ### Architect Review
-Pending.
+Pending. The task is returned for architect review; this agent made no architect acceptance decision.
