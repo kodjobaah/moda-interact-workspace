@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 48
 executor: null
 claimed_at: null
@@ -326,3 +326,717 @@ Correction mapping from the launcher handoff: exact timestamp phase derivation -
 
 ### Architect Review
 Pending.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested**
+
+Attempt 1 correctly introduces the shared-constant phase derivation, preserves
+existing purchase-id replay before provider verification, keeps Free pack purchase
+independent from the Paid normal recovery meter, and adds the server-side wall-clock
+guard before creating a new pack UsageEvent/RecoveryCreditPurchase.
+
+Three production issues remain:
+
+1. the merchant loader can still mark a DRAINING/RECONCILING top-up as eligible;
+2. the UI uses unrelated existing copy and continues to present expired Paid included
+   capacity during RECONCILING;
+3. the server-side mutation requires an OPEN local BillingPeriod only for Free, so a
+   stale/corrupt CLOSED Paid period can still pass the new-purchase guard if its
+   timestamps are otherwise in ACTIVE phase.
+
+The required Attempt-1 test matrix is also incomplete: the current mutation test
+covers DRAINING only, not RECONCILING, and there is no successor-Free restoration
+test.
+
+Attempt 2 must make only the bounded corrections below.
+
+### Accepted Attempt-1 behavior to preserve
+
+Preserve:
+
+- `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS` from
+  `@modainteract/moda-interact-shared/billing`;
+- derived phases:
+
+```text
+ACTIVE
+DRAINING
+RECONCILING
+```
+
+with exact drain-start and exact period-end boundaries;
+
+- no persisted phase/status field;
+- no app-side BillingPeriod rollover;
+- existing purchase replay before provider/phase verification;
+- exact provider/local cycle comparison;
+- exact recovery-credit-pack meter verification;
+- Free pack purchase does not require `shopifyUsageEventHandle`;
+- no lifetime-Free counter mutation during pack purchase;
+- no Admin merchant link;
+- existing Shopify plan selection/support routes.
+
+### Finding 1 — merchant pack eligibility ignores cycle phase
+
+`getMerchantBillingState(...)` currently derives `billingPeriodPhase`, but
+`recoveryCreditPackPurchaseEligible` is calculated only from:
+
+```text
+meter verified
+exact local/provider cycle
+```
+
+It does **not** require:
+
+```text
+billingPeriodPhase === ACTIVE
+```
+
+Therefore a DRAINING or RECONCILING billing loader can return:
+
+```text
+recoveryCreditPackPurchaseEligible = true
+```
+
+and `app/routes/app/billing/route.tsx` can still render the Buy form even though the
+POST correctly rejects the request.
+
+The UI is not the security boundary, but it must be truthful.
+
+#### Required correction
+
+In:
+
+```text
+app/services/billing/billing.service.ts
+```
+
+set merchant purchase eligibility true only when all are true:
+
+```text
+provider current plan == mapped local current plan
+exact provider/local cycle matches
+configured pack meter is present in provider usageEventHandles
+pointed local BillingPeriod status == OPEN
+billingPeriodPhase == ACTIVE
+```
+
+Use the existing derived `billingPeriodPhase`; do not add another clock calculation.
+
+The result must be:
+
+```text
+ACTIVE       -> eligible only if all existing meter/cycle conditions pass
+DRAINING     -> false
+RECONCILING  -> false
+```
+
+In:
+
+```text
+app/routes/app/billing/route.tsx
+```
+
+also include an explicit presentation guard:
+
+```text
+billingPeriodPhase === "ACTIVE"
+```
+
+around the new-top-up purchase form.
+
+Do not rely only on this UI guard; the server mutation remains authoritative.
+
+### Finding 2 — transition copy and Paid RECONCILING presentation are not truthful
+
+Current route behavior uses:
+
+```text
+DRAINING:
+  billing.recoveryCreditPurchasePending
+  -> "Recovery credit purchase is being confirmed by Shopify."
+
+RECONCILING:
+  billing.configurationUnavailableDescription
+  -> generic mapping/support error copy
+```
+
+Neither describes a billing-cycle transition.
+
+Also, during Paid RECONCILING the route still renders:
+
+```text
+billing.paidIncludedAllowance
+```
+
+from the expired old BillingPeriod before rendering the generic message.
+
+The task explicitly requires that RECONCILING must not present expired included
+allowance as spendable current capacity.
+
+#### Required correction
+
+Add these merchant i18n keys to **every supported locale catalogue**:
+
+```text
+billing.paidCycleDraining
+billing.paidCycleReconciling
+billing.freeCycleDraining
+billing.freeCycleReconciling
+```
+
+Use these exact English values:
+
+```text
+billing.paidCycleDraining
+  Shopify is changing your billing cycle. New paid recovery activity and top-up purchases are briefly paused.
+
+billing.paidCycleReconciling
+  We are confirming your new Shopify billing cycle. Paid included recovery capacity and new top-up purchases are temporarily unavailable.
+
+billing.freeCycleDraining
+  Shopify is changing your billing cycle. Your remaining lifetime Free recoveries are unchanged; only new top-up purchases are briefly paused.
+
+billing.freeCycleReconciling
+  We are confirming your Shopify billing cycle. Your remaining lifetime Free recoveries are unchanged; new top-up purchases are temporarily unavailable.
+```
+
+For every non-English catalogue add a localized equivalent in that catalogue's
+existing language. Do not copy the English sentence into non-English catalogues.
+These four keys have **no ICU placeholders**.
+
+In:
+
+```text
+app/routes/app/billing/route.tsx
+```
+
+render phase copy deterministically:
+
+```text
+Paid + DRAINING
+  -> billing.paidCycleDraining
+
+Paid + RECONCILING
+  -> billing.paidCycleReconciling
+
+Free + DRAINING
+  -> billing.freeCycleDraining
+
+Free + RECONCILING
+  -> billing.freeCycleReconciling
+```
+
+For Paid:
+
+```text
+ACTIVE
+  -> existing SHOPIFY-004 included allowance presentation
+
+DRAINING
+  -> existing current-period balance may remain visible,
+     but the paid-cycle pause message must be visible and no new App-Event-backed
+     purchase form may be shown
+
+RECONCILING
+  -> do NOT render billing.paidIncludedAllowance for the expired old period
+  -> render billing.paidCycleReconciling
+```
+
+For Free:
+
+```text
+ACTIVE / DRAINING / RECONCILING
+  -> keep billing.lifetimeFreeAllowance derived from the lifetime Free counter
+```
+
+Do not hide or zero lifetime Free capacity merely because the Shopify billing cycle
+is DRAINING/RECONCILING.
+
+Do not use `billing.configurationUnavailableDescription` as normal
+RECONCILING-cycle copy.
+
+Do not use `billing.recoveryCreditPurchasePending` as normal DRAINING-cycle copy;
+that key remains reserved for an actual purchase that has already been created and is
+waiting for Shopify billing confirmation.
+
+### Finding 3 — new Paid top-up mutation can target a CLOSED BillingPeriod
+
+`requestRecoveryCreditPack(...)` currently enforces:
+
+```text
+Free -> local BillingPeriod.status == OPEN
+```
+
+but does not enforce the same OPEN condition for Paid.
+
+A stale/corrupt Paid Subscription can therefore point to:
+
+```text
+billingPeriod.status = CLOSED
+currentPeriodEnd = future
+```
+
+and still pass:
+
+```text
+hasDurableBillingPeriod(...)
+exact provider/local cycle
+deriveBillingPeriodPhase(...) == ACTIVE
+```
+
+That can create a new pack UsageEvent referencing a CLOSED BillingPeriod.
+
+#### Required correction
+
+For **both Free and Paid**, before the provider call require:
+
+```text
+subscription.billingPeriod != null
+subscription.billingPeriod.id == subscription.billingPeriodId
+subscription.billingPeriod.status == OPEN
+```
+
+Preserve all existing exact-boundary checks.
+
+Inside the transaction re-read, require again for **both Free and Paid**:
+
+```text
+currentSubscription.billingPeriod?.status == OPEN
+```
+
+before creating:
+
+```text
+UsageEvent(RECOVERY_CREDIT_PACK_PURCHASE)
+RecoveryCreditPurchase
+```
+
+If the local period is CLOSED or missing, fail closed using the existing
+merchant-safe local/configuration-unavailable error family.
+
+Do not reopen the period and do not change Background-owned period state.
+
+### Required Attempt-2 permanent tests
+
+#### Billing service phase/read-model tests
+
+File:
+
+```text
+tests/unit/services/billing.service.test.ts
+```
+
+Keep the existing exact boundary test and add:
+
+```text
+marks pack purchase ineligible during merchant billing phase: %s
+```
+
+Rows:
+
+```text
+Paid DRAINING
+Paid RECONCILING
+Free DRAINING
+Free RECONCILING
+```
+
+For every row configure:
+
+```text
+exact provider/local cycle
+verified pack meter
+OPEN local period
+```
+
+and assert:
+
+```text
+billingPeriodPhase == expected phase
+recoveryCreditPackMeterVerified == true
+recoveryCreditPackPurchaseEligible == false
+```
+
+For Free rows also assert the returned lifetime-Free quantities are unchanged.
+
+Add:
+
+```text
+keeps pack purchase eligible for exact ACTIVE cycle: %s
+```
+
+Rows:
+
+```text
+Paid
+Free
+```
+
+Assert:
+
+```text
+billingPeriodPhase == ACTIVE
+recoveryCreditPackPurchaseEligible == true
+```
+
+Free must use:
+
+```text
+shopifyUsageEventHandle = null
+```
+
+and still pass.
+
+#### Server mutation phase matrix
+
+Replace/extend the current single transition test with:
+
+```text
+blocks new pack request during billing-cycle phase: %s
+```
+
+Rows:
+
+```text
+Paid DRAINING
+Paid RECONCILING
+Free DRAINING
+Free RECONCILING
+```
+
+Freeze system time deterministically with `vi.useFakeTimers()` /
+`vi.setSystemTime(...)`; do not derive the fixture from the machine's real current
+time.
+
+For every row assert:
+
+```text
+rejects with the canonical transition-unavailable message
+zero new UsageEvent
+zero new RecoveryCreditPurchase
+zero shopEntitlementCounter update/upsert
+```
+
+Restore real timers after each test.
+
+Add:
+
+```text
+rejects new pack request for CLOSED local BillingPeriod: %s
+```
+
+Rows:
+
+```text
+Paid
+Free
+```
+
+Use an otherwise exact ACTIVE provider/local cycle.
+
+Assert:
+
+```text
+provider need not be called if the local CLOSED period is rejected preflight
+zero UsageEvent
+zero RecoveryCreditPurchase
+```
+
+#### Replay after phase transition
+
+Add:
+
+```text
+replays existing purchase after cycle enters %s
+```
+
+Rows:
+
+```text
+DRAINING
+RECONCILING
+```
+
+Create/store the purchase once while ACTIVE, move/freeze time into the requested
+phase, make the provider unavailable, then replay the **same purchaseId**.
+
+Assert:
+
+```text
+same purchase returned
+provider not called for replay
+still exactly one UsageEvent
+still exactly one RecoveryCreditPurchase
+```
+
+This proves idempotent replay remains allowed even when new purchases are blocked.
+
+#### Successor Free cycle
+
+Add:
+
+```text
+restores Free pack eligibility on an exact successor BillingPeriod without changing lifetime Free state
+```
+
+Use Free with:
+
+```text
+shopifyUsageEventHandle = null
+pack meter configured
+old cycle no longer current
+Subscription now points to successor OPEN BillingPeriod
+provider current cycle exactly equals successor cycle
+phase ACTIVE
+```
+
+Assert:
+
+```text
+new pack request succeeds
+UsageEvent.billingPeriodId == successor BillingPeriod id
+shopEntitlementCounter.update not called
+shopEntitlementCounter.upsert not called
+```
+
+Do not create/reset a monthly Free included counter.
+
+### Required billing UI evidence
+
+File:
+
+```text
+tests/unit/billing-ui.test.ts
+```
+
+Add source/loader assertions proving:
+
+```text
+billingPeriodPhase === "ACTIVE"
+```
+
+is part of the buy-form condition.
+
+Add exact phase presentation tests/source assertions:
+
+```text
+Paid DRAINING references billing.paidCycleDraining
+Paid RECONCILING references billing.paidCycleReconciling
+Free DRAINING references billing.freeCycleDraining
+Free RECONCILING references billing.freeCycleReconciling
+```
+
+Also prove the Paid included allowance branch excludes RECONCILING.
+
+For Free DRAINING and Free RECONCILING, the loader/state fixture must preserve the
+same:
+
+```text
+lifetimeFree.grantedQuantity
+lifetimeFree.committedQuantity
+lifetimeFree.reservedQuantity
+lifetimeFree.remaining
+```
+
+and the route must continue to contain/use:
+
+```text
+billing.lifetimeFreeAllowance
+```
+
+Do not claim Free lifetime recovery is paused.
+
+### Required i18n evidence
+
+File:
+
+```text
+tests/unit/billing-i18n.test.ts
+```
+
+Add all four phase keys to the task key list.
+
+For each supported locale assert:
+
+```text
+key exists
+value is non-empty
+placeholder set == []
+merchant runtime resolves the key
+```
+
+Keep billing-key parity across all catalogues.
+
+For every non-English locale also assert its value for each new phase key is not
+byte-for-byte equal to the English value. This prevents accidental English fallback
+copy in localized catalogues.
+
+### Required Attempt-2 validation
+
+From `moda-interact` run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+npm test -- --run \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/billing-i18n.test.ts \
+  tests/unit/usage-route.test.ts \
+  tests/unit/home-route.test.ts \
+  tests/unit/routes/pending-recoveries-route.test.ts
+
+npm test
+npm run typecheck
+npm run build
+git diff --check
+
+rg -n "moda-interact-admin" \
+  app/routes/app/billing \
+  app/routes/app/usage \
+  app/routes/app/home \
+  app/routes/app/pending-recoveries
+
+rg -n "5 \* 60 \* 1000|300000" \
+  app/services/billing \
+  app/routes/app/billing
+```
+
+Expected static results:
+
+```text
+merchant/Admin coupling scan -> zero matches
+literal drain-window business-logic scan -> zero matches
+```
+
+The existing repository `TYPECHECK-001` baseline is non-blocking only if:
+
+- the repository-wide total does not worsen from the Attempt-1 documented baseline;
+- no Attempt-2 changed line introduces a new diagnostic.
+
+### Allowed Attempt-2 scope
+
+Production:
+
+```text
+app/services/billing/billing.service.ts
+app/routes/app/billing/route.tsx
+app/i18n/locales/*.json
+```
+
+Tests:
+
+```text
+tests/unit/services/billing.service.test.ts
+tests/unit/billing-ui.test.ts
+tests/unit/billing-i18n.test.ts
+```
+
+Normal task/Completion Report updates are allowed through the coordination-document
+exception.
+
+`app/services/billing/billing.types.ts` should remain unchanged unless TypeScript
+requires no more than a direct type correction for the existing
+`BillingPeriodPhase`.
+
+Do not modify:
+
+```text
+Prisma schema/migrations
+Shared package/contracts
+BACKGROUND-007
+BACKGROUND rollover/admission code
+RecoveryCreditPurchase settlement logic
+UsageEvent publishing worker
+plan-change/cancellation/refund/promotion behavior
+Admin
+Messaging
+Gateway
+ordinary merchant route topology
+```
+
+If satisfying the correction would require any Background/schema/Shared change, STOP
+and return the exact dependency gap to `moda_architect`.
+
+### Completion Report requirements
+
+Attempt 2 must replace the broad correction summary with a truthful evidence table:
+
+```text
+Requirement | Exact test(s) | Result
+```
+
+covering original task requirements 1 through 19.
+
+At minimum the table must explicitly map:
+
+```text
+Paid ACTIVE
+Free ACTIVE
+exact drain-start
+exact period-end
+Paid DRAINING presentation
+Paid RECONCILING presentation
+Free DRAINING lifetime presentation
+Free RECONCILING lifetime presentation
+ACTIVE new purchase
+Paid/Free DRAINING server block
+Paid/Free RECONCILING server block
+existing-purchase replay after transition
+Free no Paid normal-meter dependency
+Free missing exact period
+Free missing pack meter
+successor Free BillingPeriod restoration
+route availability
+Admin isolation
+i18n parity
+```
+
+Also record immutable workflow evidence:
+
+```text
+Attempt-1 claim full SHA:
+ef68ab10bd9a39ecf485383248c6c91eac3fd780
+
+Attempt-1 implementation full SHA corresponding to:
+58a138c
+
+Attempt-1 final parent/report full SHA corresponding to:
+c522bd7
+
+Attempt-2 launcher claim full SHA
+Attempt-2 implementation full SHA
+Attempt-2 parent/report publication full SHA
+database gitlink before/after
+dedicated parent worktree/branch
+dedicated implementation worktree/branch
+both branches clean and pushed
+```
+
+Resolve abbreviated Attempt-1 SHAs to full SHAs from the dedicated task worktrees.
+Do not leave publication placeholders.
+
+### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 1
+```
+
+The next authorized claim must increment to **Attempt 2 exactly once**.
+
+After implementing only the corrections above, running validation, completing the
+19-item evidence map, updating the Completion Report, setting `status: review`,
+clearing `executor`/`claimed_at`, committing/pushing both mirrored task branches and
+verifying both are clean, STOP and return to `moda_architect`.
+
+Do not start `ARCH-010-SHOPIFY-012` or `ARCH-010-SHOPIFY-014`.
+
