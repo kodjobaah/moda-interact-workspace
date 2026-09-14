@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 56
-executor: copilot
-claimed_at: 2026-09-14T02:34:46Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-010-SHOPIFY-013
@@ -262,49 +262,49 @@ Return the mismatch to `moda_architect` rather than expanding scope.
 Ready for Review.
 
 ### Files Changed
-- `app/routes/app/billing/callback/route.tsx`
-- `app/services/billing/billing.service.ts`
-- `tests/unit/routes/billing-callback.test.ts`
-- `tests/unit/services/billing.service.test.ts`
-- Accepted Attempt-2 files remain in the implementation history: `app/components/dashboard/SubscriptionChangePanel.jsx`, `app/routes/app/billing/options/route.tsx`, and `tests/unit/subscription-change-panel.test.tsx`.
+- Attempt 4 production: `app/routes/app/billing/callback/route.tsx`, `app/services/billing/billing.service.ts`.
+- Attempt 4 tests: `tests/unit/routes/billing-callback.test.ts`, `tests/unit/services/billing.service.test.ts`.
+- Accepted prior-attempt files remain unchanged: `app/components/dashboard/SubscriptionChangePanel.jsx`, `app/routes/app/billing/options/route.tsx`, and `tests/unit/subscription-change-panel.test.tsx`.
 
 ### Work Completed
-- Attempt 2 remains preserved: the billing-options route is restored to parent snapshot `d3217c8e6cd49e0974a934353a3f8787e87f89f6`, hosted returns use active-only exact pending mappings and accepted lock ordering, and the panel preserves provider commercial truth without local plan inference.
-- Attempt 3 captures one `verificationStartedAt` fence per callback, rejects stale successful observations as `unverified` without mapping or writes, and rejects stale provider failures without retry/error writes.
-- Callback enqueueing is limited to `current`, `pending`, and `no_active`; the restored SHOPIFY-003 activation suite remains executable.
-- Hosted-return fixtures now observe protected-model writes and prove preservation/no-write behavior without changing provider, shared, background, schema, or Admin code.
+- Attempt 4 replaces the wall-clock `verificationStartedAt` check with one immutable durable projection fence captured immediately before the single Partner read; the locked projection is compared field-for-field, including exact nullable dates, before any mapping or write.
+- Verified CURRENT/PENDING projections now persist provider `currentPeriodStart`, `currentPeriodEnd`, and `trialEndsAt` as exact nullable values, including clearing stale local facts.
+- Attempt 4 preserves the accepted active-only pending mapping, lock ordering, callback activation suite, protected-model no-write contract, hosted route composition boundary, provider commercial truth, and callback enqueue restrictions.
+- No schema, shared contract, background, provider, Admin, or SHOPIFY-012 implementation was changed.
 
-### Attempt 3 Correction Mapping
-- Finding 1: implemented by `verificationStartedAt` propagation in `app/routes/app/billing/callback/route.tsx` and strict `updatedAt > verificationStartedAt` fences in `app/services/billing/billing.service.ts`; tests `fences a stale successful provider observation without mapping or writing` and `fences a stale failed provider observation without retry or protected writes`.
-- Finding 2: implemented by restoring executable `describe("billing callback activation", ...)`, restoring the initial Free activation default, and isolating hosted-flow defaults; focused/full runs contain no callback skip directives.
-- Finding 3: implemented with protected delegate spies in `tests/unit/services/billing.service.test.ts`; tests `stores only an active exact pending mapping for %s provider plans`, `schedules current state without changing entitlement ownership`, `does not mutate a mismatch or invent a plan when there is no active subscription`, `updates only retry metadata when provider verification fails`, and both freshness-fence tests prove zero protected writes.
+### Attempt 4 Correction Mapping
+- Review Finding 1, durable commit-order fence: `app/services/billing/billing.service.ts` adds `HostedPlanVerificationFence`, the pre-provider reader, complete projection equality, and locked re-read; `app/routes/app/billing/callback/route.tsx` passes the same object to success/failure persistence. Tests in `tests/unit/routes/billing-callback.test.ts`: `captures the durable hosted verification fence before the Partner read`, `passes the same durable hosted verification fence to provider failure recording`, and `does not enqueue a freshness-fenced unverified result`. Service tests in `tests/unit/services/billing.service.test.ts`: `fences a durable commit that is newer than the pre-provider projection even when its updatedAt is earlier than the old wall-clock start`, `fences a changed durable projection even when updatedAt is identical`, and `does not record provider failure when the durable projection changed during verification`.
+- Review Finding 2, exact nullable provider projection: `app/services/billing/billing.service.ts` writes provider cycle/trial facts as `Date | null`; `tests/unit/services/billing.service.test.ts` adds `clears stale nullable provider cycle and trial facts from a verified hosted observation`.
+- Protected no-write and preservation evidence remains in `tests/unit/services/billing.service.test.ts`: `stores only an active exact pending mapping for %s provider plans`, `locks the accepted settings/subscription pair before rereading the hosted projection`, `schedules current state without changing entitlement ownership`, `does not mutate a mismatch or invent a plan when there is no active subscription`, `updates only retry metadata when provider verification fails`, plus the three durable-fence tests above. The fixture covers BillingPeriod, BillingPeriodEntitlementCounter, ShopEntitlementCounter, RecoveryCreditPurchase, RecoveryCreditRefund, PromotionalCreditGrant, and MerchantPromotionSelection write methods.
 
 ### Required Test Mapping
-- Callback fence propagation: `requires plan_handle`, `does not enqueue a freshness-fenced unverified result`, `passes one read fence into provider failure recording`, `distinguishes no active subscription from verification failure` - `tests/unit/routes/billing-callback.test.ts`.
-- Hosted-return persistence: `stores only an active exact pending mapping for %s provider plans`, `locks the accepted settings/subscription pair before rereading the hosted projection`, `schedules current state without changing entitlement ownership`, `does not mutate a mismatch or invent a plan when there is no active subscription`, `updates only retry metadata when provider verification fails` - `tests/unit/services/billing.service.test.ts`.
-- Freshness and protected no-write evidence: `fences a stale successful provider observation without mapping or writing`, `fences a stale failed provider observation without retry or protected writes` - `tests/unit/services/billing.service.test.ts`.
-- Accepted panel, selection, and i18n coverage remains in `tests/unit/subscription-change-panel.test.tsx`, `tests/unit/billing-ui.test.ts`, `tests/unit/billing-i18n.test.ts`, and `tests/unit/merchant-i18n.test.ts` and is included in the full suite.
+- Callback durable-fence propagation: `captures the durable hosted verification fence before the Partner read`, `passes the same durable hosted verification fence to provider failure recording`, `does not enqueue a freshness-fenced unverified result`, and `distinguishes no active subscription from verification failure` - `tests/unit/routes/billing-callback.test.ts`.
+- Hosted-return persistence and protected no-write evidence: `stores only an active exact pending mapping for %s provider plans`, `locks the accepted settings/subscription pair before rereading the hosted projection`, `schedules current state without changing entitlement ownership`, `does not mutate a mismatch or invent a plan when there is no active subscription`, and `updates only retry metadata when provider verification fails` - `tests/unit/services/billing.service.test.ts`.
+- Durable-fence tests: `fences a durable commit that is newer than the pre-provider projection even when its updatedAt is earlier than the old wall-clock start`, `fences a changed durable projection even when updatedAt is identical`, and `does not record provider failure when the durable projection changed during verification` - `tests/unit/services/billing.service.test.ts`.
+- Nullable projection test: `clears stale nullable provider cycle and trial facts from a verified hosted observation` - `tests/unit/services/billing.service.test.ts`.
+- Accepted panel, selection, and i18n coverage remains in `tests/unit/subscription-change-panel.test.tsx`, `tests/unit/billing-ui.test.ts`, `tests/unit/billing-i18n.test.ts`, and `tests/unit/merchant-i18n.test.ts`.
 
 ### Validation Results
-- Attempt 3 focused pair: `npx vitest run tests/unit/routes/billing-callback.test.ts tests/unit/services/billing.service.test.ts` passed, 2 files and 128 tests passed.
-- Full validation: `npm test -- --run` passed, 39 files passed and 2 skipped; 403 tests passed and 3 skipped.
-- Callback skip scan passed with zero matches for `describe.skip`, `it.skip`, or `test.skip`.
-- Prohibited production scan passed with zero matches for local rank inference, Billing API mutation, or Admin references.
-- `npm run prisma:validate` passed.
-- `npm run prisma:generate` passed as part of `npm run build`.
-- `npm run typecheck` reproduced the repository baseline of 151 diagnostics; the only changed-file hits are pre-existing lines in `app/services/billing/billing.service.ts:1069` and `tests/unit/services/billing.service.test.ts:1290`, with no diagnostics on Attempt 3 lines.
-- `npm run build` passed; only existing bundler warnings were emitted.
-- `git diff --check` passed before the implementation commit.
+- Focused command passed: 6 files, 191 tests passed, 0 failed, 0 skipped.
+- `npm test` passed: 39 files passed, 2 skipped; 433 tests passed, 3 skipped, 0 failed.
+- `npm run prisma:validate` passed; `npm run prisma:generate` passed.
+- `npm run typecheck` reproduced baseline `TYPECHECK-001`: 151 errors in 23 files. Existing changed-file baseline diagnostics remain at `app/services/billing/billing.service.ts:1270` and `tests/unit/services/billing.service.test.ts:1290`; no new Attempt 4 diagnostic was introduced.
+- `npm run build` passed; only existing Zod/Rollup, unresolved Prisma browser import, empty chunk, chunk-size, and unused React import warnings were emitted.
+- `git diff --check` passed.
+- Callback skip scan exited 1 with zero matches for `describe.skip`, `it.skip`, `test.skip`.
+- Prohibited production scan exited 1 with zero matches for `verificationStartedAt`, local rank/upgrade inference, Billing API mutation, or Admin references.
 
 ### Git / VCS
 - Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-015`, branch `task/ARCH-010-SHOPIFY-015`.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-015`, branch `task/ARCH-010-SHOPIFY-015`.
-- Preparation synchronization merge preserved: `1ca0cb0b95e2bbeca37d33d27037521f2eb6b67c`.
+- Attempt 3 implementation SHA: `69c79a6214dd74521453456724c63092bf369230`.
+- Attempt 3 final parent/report SHA: `7bd791e4662c2d554ebbcaf40cbc93dce9a2920e`.
+- Attempt 4 launcher claim SHA: `c481e7ad8b83823536b6ef1566259c2250bf6404`.
+- Attempt 4 implementation SHA: `aeceed5cb1aa6bd0c9e20bced0130171305a3fa9` (pushed; remote matches).
+- Preparation synchronization merge: `1ca0cb0b95e2bbeca37d33d27037521f2eb6b67c`.
 - Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
-- Implementation branch: `task/ARCH-010-SHOPIFY-015`
-- Implementation commit: `69c79a6214dd74521453456724c63092bf369230` (pushed to `origin`).
-- Parent report commit: pending.
-- No implementation submodule gitlink was staged or changed; implementation worktree is clean after push.
+- Parent report publication SHA: pending until this report edit is committed; no implementation submodule gitlink is staged or changed.
+- Baseline evidence: implementation worktree is clean and remote-matching before this report edit; parent branch remains the dedicated mirrored task branch.
 
 ### Architect Review — Attempt 1
 
