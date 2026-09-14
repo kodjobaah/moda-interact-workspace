@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 48
-executor: copilot
-claimed_at: 2026-09-14T02:17:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-BACKGROUND-007
@@ -294,19 +294,35 @@ STOP if:
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/billing.types.ts`
+- `moda-interact/app/routes/app/billing/route.tsx`
+- `moda-interact/tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added derived `ACTIVE`, `DRAINING`, and `RECONCILING` phase calculation from exact local/provider period timestamps using `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`; no persisted phase statuses or app-side rollover were added.
+- Enforced the server-side ACTIVE-only new top-up guard for Free and Paid before UsageEvent/RecoveryCreditPurchase creation, including transaction re-read verification; Free requires only the recovery-credit-pack meter and an exact OPEN local period, while lifetime Free entitlement remains unchanged.
+- Preserved existing purchase-id replay idempotency before provider/phase verification and retained merchant billing/navigation routes.
+- Added phase boundary tests and Paid/Free transition tests asserting no UsageEvent or RecoveryCreditPurchase is created.
+
+Correction mapping from the launcher handoff: exact timestamp phase derivation -> `billing.service.ts` helper and boundary tests; Free/Paid ACTIVE-only top-up guard -> `requestRecoveryCreditPack` preflight and transaction checks plus transition tests; replay idempotency -> existing replay path and passing replay test; lifetime Free semantics -> Free meter/OPEN-period guard without entitlement mutation and existing lifetime tests; merchant presentation/i18n path -> billing loader/route uses the derived phase and existing parity-backed localized messages; route availability/Admin isolation -> existing focused route/navigation tests pass.
 
 ### Validation Results
-Populate during implementation.
+- Focused billing service: `npm test -- --run tests/unit/services/billing.service.test.ts` -> 124 passed.
+- Focused billing/UI/i18n: `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts tests/unit/billing-i18n.test.ts` -> 139 passed.
+- Additional merchant route coverage -> 25 passed across billing UI, i18n, usage, home, and pending-recoveries route tests.
+- Full test suite: `npm test` -> 38 files passed, 2 skipped; 409 tests passed, 3 skipped.
+- Production build: `npm run build` -> passed; Prisma client generation and client/SSR bundles completed. Existing bundle-size and dependency warnings only.
+- `git diff --check` -> passed.
+- `npm run typecheck` -> baseline failure: 155 errors in 24 files. The three touched-file diagnostics are pre-existing contract issues at `app/routes/app/billing/route.tsx:89`, `app/services/billing/billing.service.ts:1045`, and `tests/unit/services/billing.service.test.ts:1291`; no diagnostic references the new phase helper or phase field.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Prepared packet evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-007`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-007`, mirrored branch `task/ARCH-010-SHOPIFY-007`, claim commit `ef68ab10bd9a39ecf485383248c6c91eac3fd780`, dependency gate passed, attempt 1, executor `copilot`.
+- Implementation commit: `58a138c` (`feat(shopify): guard billing-cycle transition top-ups`), pushed to `origin/task/ARCH-010-SHOPIFY-007` in `moda-interact`.
+- No parent submodule gitlink was staged or changed.
 
 ### Architect Review
 Pending.
