@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-14T12:35:14Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-SHOPIFY-009
@@ -337,6 +337,39 @@ Ready for Review.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-012`
 - Launcher VCS evidence: prepared Attempt 2 reused the canonical parent/implementation worktrees, passed all seven dependencies, initialized submodules, and durably claimed executor `copilot` before implementation.
 - Parent branch/report commit and push: this Attempt-2 report update is committed and published on `task/ARCH-010-SHOPIFY-012`.
+
+### Attempt-3 Correction Report
+
+#### Correction Mapping
+- Implemented the revised callback contract: mismatch and Partner-verification-failure redirects preserve only URL-encoded `requested_plan_handle`; verification-fence failure recording and bounded reconciliation scheduling remain unchanged.
+- Added bounded transient selection derivation in the options loader, with `mismatch`/`unverified` gating and suppression when fresh Shopify current or pending state confirms the handle.
+- Added explicit `requestedSelection` and `mappingStatus` composition. Confirmed current/pending plans remain authoritative; the transient target is greyed out, has only the raw handle plus localized waiting copy, and receives no price, cycle, allowance, credit or mutation semantics.
+- Preserved genuine `UNMAPPED` behavior and restricted the configured-but-ineligible top-up verification message to mapped active subscriptions.
+- Added the exact awaiting-Shopify-confirmation catalogue key to all 20 merchant locales and focused regression coverage for redirect context and transient presentation.
+
+#### Files Changed
+- `app/routes/app/billing/callback/route.tsx`
+- `app/routes/app/billing/options/route.tsx`
+- `app/components/dashboard/BillingPurchaseHub.jsx`
+- `app/components/dashboard/SubscriptionChangePanel.jsx`
+- `app/components/dashboard/BillingPurchaseHub.css`
+- `app/i18n/locales/cs.json` through `app/i18n/locales/zh-Hant.json` (one Attempt-3 catalogue key in all 20 merchant locales)
+- `tests/unit/routes/billing-callback.test.ts`
+- `tests/unit/billing-purchase-hub.test.tsx`
+- `tests/unit/subscription-change-panel.test.tsx`
+
+#### Validation Results
+- Focused billing tests: `npm test -- --run tests/unit/routes/billing-callback.test.ts tests/unit/billing-purchase-hub.test.tsx tests/unit/subscription-change-panel.test.tsx tests/unit/billing-ui.test.ts` -> 4 files passed, 53 tests passed.
+- Full tests: `npm test` -> 40 files passed, 2 skipped; 495 tests passed, 3 skipped.
+- Typecheck: `npm run typecheck` exits nonzero only on the existing unrelated JSX implicit-any/session diagnostics in dashboard/home/merchant-support/pending-recoveries/usage files; no Attempt-3 touched file has a diagnostic.
+- Production build: `npm run build` passed; existing dependency annotation, unresolved Prisma browser import, empty-route-chunk and chunk-size warnings remain.
+- Whitespace: `git diff --check` passed.
+
+#### Git / VCS
+- Implementation commit: `b15580e` (`fix(shopify): preserve hosted billing selection context`) pushed to `origin/task/ARCH-010-SHOPIFY-012`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-012`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-012`.
+- Launcher evidence: prepared Attempt 3 reused the exact canonical worktrees, passed all seven dependencies, initialized submodules, and durably claimed executor `copilot` before implementation.
 
 ### Architect Review
 Pending.
