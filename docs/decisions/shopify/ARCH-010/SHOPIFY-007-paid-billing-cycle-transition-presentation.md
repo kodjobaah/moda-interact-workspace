@@ -418,7 +418,7 @@ Provider failure/moved successor:
 #### Attempt-3 Git / VCS
 - Attempt-3 launcher claim full SHA: `04694ee7c8dd88d8af642312372b7f3f4f664cb6`.
 - Attempt-3 implementation commit: `11b3c690e53115a8c22b0fdc0deee331c1137f2a`, pushed to `origin/task/ARCH-010-SHOPIFY-007` in `moda-interact`.
-- Attempt-3 parent/report publication commit: to be recorded after this report is committed and pushed.
+- Attempt-3 parent/report publication commit: `33a5fd556a1992a76320f8fbd639c58e522b3a25`; this evidence amendment is the only subsequent report change.
 - Database gitlink before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 - Dedicated parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-007`, branch `task/ARCH-010-SHOPIFY-007`.
 - Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-007`, branch `task/ARCH-010-SHOPIFY-007`.
