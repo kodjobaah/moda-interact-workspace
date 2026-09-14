@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 56
 executor: null
 claimed_at: null
@@ -696,3 +696,317 @@ requires:
 
 After corrections and validation, set `status: review`, clear claim metadata,
 commit/push both task branches, and STOP for architect review.
+
+
+### Architect Review — Attempt 2
+
+#### Status
+
+**Changes Requested**
+
+Attempt 2 correctly resolves the five defects called out in the Attempt-1 review:
+
+- `app/routes/app/billing/options/route.tsx` is restored to the pre-SHOPIFY-015 parent, preserving SHOPIFY-012 ownership;
+- pending provider handles map only to an exact active local `BillingPlan`;
+- hosted-return and verification-failure writes use the accepted ShopSettings -> Subscription lock order;
+- `SubscriptionChangePanel` no longer invents GBP or a pending interval and renders provider/mapping state separately;
+- direct hosted-return and component tests now exist and the reported focused/full/typecheck/build validation is green.
+
+Preserve all of that work. Attempt 3 is narrow. There is one remaining runtime concurrency defect and one synchronization/test-regression that must be corrected before this task can complete.
+
+#### Finding 1 — a pre-lock provider snapshot can overwrite a newer BACKGROUND-010 projection
+
+The callback currently performs this order:
+
+```text
+getMerchantShopifySubscriptionState(shopId)   # Partner observation
+  -> recordHostedPlanChangeReturn(...)
+       -> begin DB transaction
+       -> lock ShopSettings + Subscription
+       -> write the earlier Partner observation
+```
+
+The row lock prevents simultaneous local writes, but it does **not** make the already-acquired provider snapshot fresh.
+
+A concrete failing interleaving is:
+
+```text
+T0 callback reads Shopify:
+     current = Growth
+     pending = Starter
+     effectiveAt = boundary
+
+T1 BACKGROUND-010 reaches/proves the boundary, acquires the same Subscription lock,
+   commits Starter as the effective current plan, clears the pending transition and
+   writes the newer Subscription projection.
+
+T2 callback acquires the lock after BACKGROUND-010 and writes its older T0 snapshot:
+     observedShopifyPlanHandle = Growth
+     currentPeriodStart/End     = old Growth cycle
+     pendingShopifyPlanHandle   = Starter
+     pendingPlanId              = Starter
+     nextReconcileAt            = old boundary
+```
+
+`planId`/`billingPeriodId` remain the newer Background values, so the row becomes internally inconsistent. The immediate queue hint may later repair it, but queue publication is best-effort and the HTTP path must not regress a newer durable projection in the first place.
+
+The same race exists for Partner failure: a callback Partner request may fail, BACKGROUND-010 may successfully synchronize while that request is in flight, and `recordHostedPlanVerificationFailure()` can then overwrite the newer success metadata with `PARTNER_API_ERROR` and a one-minute schedule.
+
+##### Required Attempt-3 correction
+
+Use the existing `Subscription.updatedAt` as the local freshness fence. Do **not** add schema, Shared or Background changes and do **not** hold a database row lock across a Partner network request.
+
+In `app/routes/app/billing/callback/route.tsx`:
+
+1. immediately before starting the hosted-flow Partner read, capture exactly one timestamp, for example:
+
+   ```ts
+   const verificationStartedAt = new Date();
+   ```
+
+2. call `getMerchantShopifySubscriptionState(shop.id)` exactly once as today;
+3. on success, pass that same `verificationStartedAt` into `recordHostedPlanChangeReturn(...)`;
+4. on Partner exception, pass that same `verificationStartedAt` into `recordHostedPlanVerificationFailure(...)`;
+5. do not re-query Partner and do not move the Partner call inside the DB transaction.
+
+In `BillingService.recordHostedPlanChangeReturn(...)`:
+
+1. keep the accepted ShopSettings -> Subscription lock order;
+2. after the lock, re-read the Subscription and include at least:
+
+   ```text
+   id
+   updatedAt
+   status
+   observedShopifyPlanHandle
+   planId
+   billingPeriodId
+   pendingShopifyPlanHandle
+   pendingPlanId
+   pendingEffectiveAt
+   nextReconcileAt
+   ```
+
+3. before any BillingPlan lookup or Subscription write, compare the locked row with the provider-read fence;
+4. if:
+
+   ```text
+   current.updatedAt > verificationStartedAt
+   ```
+
+   treat the provider snapshot as superseded by newer durable reconciliation state:
+
+   - perform **zero** Subscription writes;
+   - perform zero BillingPlan mapping writes/lookups needed only for the stale snapshot;
+   - perform zero BillingPeriod/counter/credit/promotion/history writes;
+   - return `result: "unverified"` with the existing subscription id and no newly-created schedule;
+   - do not rewrite `observedShopifyPlanHandle`, period timestamps, pending fields, error fields or `lastSyncedAt` from the stale snapshot.
+
+5. when the row has not changed since the provider read began, preserve the current Attempt-2 CURRENT/PENDING/MISMATCH/NO_ACTIVE behavior.
+
+Use strict `>` for the timestamp fence. Do not manufacture an ordering from provider timestamps that are not present in the accepted SHOPIFY-013 contract.
+
+In `recordHostedPlanVerificationFailure(...)`:
+
+1. accept the same `verificationStartedAt`;
+2. acquire the same accepted locks;
+3. re-read `Subscription.updatedAt` before writing failure metadata;
+4. if the row is newer than the failed provider-read start, return `null` and write **nothing**;
+5. otherwise preserve the current bounded `PARTNER_API_ERROR` + retry scheduling behavior.
+
+In the callback enqueue condition, enqueue the return schedule only for classifications that actually created/reused a reconciliation schedule from this observation (`current`, `pending`, and `no_active`). A freshness-fenced `unverified` result must not publish a stale queue hint.
+
+This is a freshness/CAS guard only. Do not change BACKGROUND-010 transition semantics, plan-change effective-time rules, Shopify authority or the result URLs.
+
+#### Finding 2 — the synchronization merge disabled the accepted SHOPIFY-003 callback regression suite
+
+The synchronized implementation correctly preserves the accepted first-install/first-Paid callback code, but `tests/unit/routes/billing-callback.test.ts` currently contains:
+
+```ts
+describe.skip("legacy billing callback activation", ...)
+```
+
+Those tests are not legacy. They are the permanent accepted regression evidence from SHOPIFY-003, including first Free activation, first Paid activation, paid provider-null/Partner-failure retry behavior, unsupported Paid trials, fail-closed configuration errors and stale-selection behavior.
+
+The accepted SHOPIFY-003 commit `c84a3612680a048f81f3c042c1aaab8a5ac986be` had this suite enabled as:
+
+```ts
+describe("billing callback activation", ...)
+```
+
+and its `beforeEach` defaulted `prepareFreeActivation` to the initial Free activation token. The SHOPIFY-015 hosted-flow setup changed that default to `null`, which is why simply removing `.skip` is not sufficient.
+
+##### Required Attempt-3 correction
+
+In `tests/unit/routes/billing-callback.test.ts`:
+
+1. restore the accepted SHOPIFY-003 activation suite to executable `describe(...)`;
+2. preserve all accepted SHOPIFY-003 test cases; do not delete or weaken them;
+3. restore the activation-suite default setup required by those tests (the accepted default Free activation token/plan behavior);
+4. add a nested `beforeEach` inside the hosted-plan-change `describe(...)` that explicitly sets both:
+
+   ```text
+   prepareFreeActivation -> null
+   preparePaidActivation -> null
+   ```
+
+   so hosted-flow tests deterministically enter the SHOPIFY-015 branch;
+5. there must be no `describe.skip`/`it.skip`/`test.skip` covering the callback activation or hosted-return contracts;
+6. record the new focused/full pass/skip totals. Do not count the 15 disabled SHOPIFY-003 tests as acceptable skipped coverage.
+
+#### Finding 3 — hosted-return preservation evidence is still too indirect
+
+The Attempt-2 Completion Report maps some hosted-return preservation requirements to the older SHOPIFY-003 test `preserves replayed period and lifetime quantities`. That test exercises first-Paid activation, not `recordHostedPlanChangeReturn(...)`.
+
+The hosted-return test fixture also omits the protected model delegates, so it cannot prove the Attempt-1 requirement that CURRENT/PENDING/MISMATCH perform zero writes to:
+
+```text
+BillingPeriod
+BillingPeriodEntitlementCounter
+ShopEntitlementCounter
+RecoveryCreditPurchase
+PromotionalCreditGrant
+MerchantPromotionSelection
+```
+
+##### Required Attempt-3 evidence
+
+Extend the **hosted-return** service fixture itself with observable write spies for the protected delegates. At minimum expose/spies for the write methods that production code could call (`create`, `createMany`, `update`, `updateMany`, `upsert`, `delete`, `deleteMany` as applicable to the mock delegate).
+
+Add/strengthen executable tests proving:
+
+1. PENDING preserves existing `status`, `planId`, `billingPeriodId`, current entitlement identity and performs zero protected-model writes;
+2. CURRENT preserves `status`, `planId`, `billingPeriodId` and performs zero protected-model writes;
+3. MISMATCH performs zero Subscription writes and zero protected-model writes;
+4. NO_ACTIVE changes only the accepted reconciliation/error scheduling fields and performs zero protected-model writes;
+5. Partner verification failure changes only retry/error metadata when the freshness fence permits it and performs zero protected-model writes;
+6. stale **successful** provider observation (`Subscription.updatedAt > verificationStartedAt`) returns `unverified`, performs zero Subscription/protected-model writes and preserves the newer durable current/pending projection;
+7. stale **failed** provider observation performs zero Subscription/protected-model writes and returns no new retry schedule;
+8. callback success passes the provider-read fence into `recordHostedPlanChangeReturn`;
+9. callback failure passes the same provider-read fence into `recordHostedPlanVerificationFailure`;
+10. freshness-fenced `unverified` callback result does not enqueue reconciliation.
+
+The Completion Report must map these tests to their exact titles. Do not use unrelated SHOPIFY-003 activation tests as evidence for hosted-return no-write behavior.
+
+#### Accepted Attempt-2 work — do not churn
+
+Unless one of the focused tests exposes a direct defect, do **not** change:
+
+```text
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/SubscriptionChangePanel.jsx
+```
+
+The following Attempt-2 outcomes are accepted and must remain:
+
+```text
+billing-options route == exact pre-SHOPIFY-015 parent composition
+active-only pending BillingPlan mapping
+provider currency is never defaulted to GBP
+pending interval is not fabricated
+unmapped current contract remains visible
+pending mapped Moda name is decoration only
+supplied managePlansHref is the only CTA destination
+no local rank/price upgrade/downgrade inference
+```
+
+#### Attempt-3 allowed scope
+
+Production:
+
+```text
+app/routes/app/billing/callback/route.tsx
+app/services/billing/billing.service.ts
+```
+
+Tests:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+tests/unit/services/billing.service.test.ts
+```
+
+Plus this task file / Completion Report.
+
+Do not modify:
+
+```text
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/SubscriptionChangePanel.jsx
+app/components/dashboard/BillingPurchaseHub.jsx
+app/components/dashboard/billing-purchase.mock.js
+app/services/billing/providers/shopify-billing.provider.ts
+Prisma schema/migrations
+Shared contracts/package version
+Background services
+Admin, Messaging or Gateway
+SHOPIFY-012/014/016 implementation
+```
+
+If fixing the freshness race requires a provider-contract/schema/Background change, STOP and return the exact conflict to `moda_architect` rather than expanding scope.
+
+#### Required validation for Attempt 3
+
+From `moda-interact` run:
+
+```bash
+npm test -- --run \
+  tests/unit/routes/billing-callback.test.ts \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/subscription-change-panel.test.tsx \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/billing-i18n.test.ts \
+  tests/unit/merchant-i18n.test.ts
+
+npm test
+npm run prisma:validate
+npm run prisma:generate
+npm run typecheck
+npm run build
+git diff --check
+
+rg -n "describe\\.skip|it\\.skip|test\\.skip" \
+  tests/unit/routes/billing-callback.test.ts
+
+rg -n "rank|isUpgrade|isDowngrade|upgradeAction|downgradeAction|appSubscriptionCreate|billing\\.request|moda-interact-admin" \
+  app/components/dashboard/SubscriptionChangePanel.jsx \
+  app/routes/app/billing/callback/route.tsx \
+  app/services/billing/billing.service.ts
+```
+
+Expected results:
+
+- callback skip scan exits 1 with zero matches;
+- prohibited production scan exits 1 with zero matches;
+- focused/full tests record exact pass/fail/skip totals;
+- callback activation and hosted-return suites are both executable;
+- Prisma validation/generation, typecheck, build and `git diff --check` pass, or any truly unrelated repository baseline is identified with exact changed-file proof.
+
+#### Completion Report required
+
+Record:
+
+- implementation full SHA;
+- parent report full SHA;
+- preservation of synchronization merge `1ca0cb0b95e2bbeca37d33d27037521f2eb6b67c`;
+- canonical parent/implementation worktrees and task branches;
+- database submodule SHA before/after;
+- exact focused/full test totals and callback skip count;
+- exact stale-success/stale-failure freshness-fence test titles;
+- exact protected-model no-write test titles;
+- Prisma validation/generation, typecheck, build, both static scans and `git diff --check` results;
+- clean/pushed branch state.
+
+#### Reclaim / stop condition
+
+Return this **same task** to `/moda-task`.
+
+The current attempt counter remains:
+
+```text
+attempt: 2
+```
+
+The next authorized claim must increment it to **Attempt 3 exactly once**.
+
+After corrections, set `status: review`, clear `executor`/`claimed_at`, commit and push both task branches, and STOP for architect review. Do not start SHOPIFY-012.
