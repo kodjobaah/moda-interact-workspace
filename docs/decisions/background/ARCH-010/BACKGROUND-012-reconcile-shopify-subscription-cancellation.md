@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: complete
 priority: 58
 executor: null
 claimed_at: null
@@ -5700,4 +5700,195 @@ assertions.
 
 Do not start `ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`,
 `ARCH-010-SHOPIFY-016` or `ARCH-010-SYSTEM-TEST-002`.
+
+## Architect Review — Attempt 8
+
+### Status
+
+**Accepted — manual lifecycle validation retained as a follow-up**
+
+`ARCH-010-BACKGROUND-012` is architect-accepted Complete.
+
+The task is being accepted because the remaining Attempt-8 blockers are evidence
+gaps rather than demonstrated production defects, and keeping this task blocked now
+prevents implementation of the downstream execution gates that are themselves part of
+the end-to-end safety story.
+
+### Production acceptance
+
+Architect review accepts the current production implementation as the canonical
+ARCH-010 subscription cancellation / freeze / unfreeze reconciliation path.
+
+Attempt 8 changed no production files. The final production correction was completed
+in Attempt 7:
+
+```text
+successful exact-cycle drain retry
+  -> clears PRE_CLOSE_USAGE_FLUSH_FAILED only
+
+unrelated sync error
+  -> preserved
+```
+
+The permanent suite now proves 23 of the original 26 requirements directly.
+
+The remaining three rows are accepted as non-blocking for the reasons below.
+
+### Requirement 17 — accepted from control-flow / authority evidence
+
+Requirement:
+
+```text
+null provider subscription plus ambiguous lifecycle evidence
+must not close the established BillingPeriod or write NO_CONTRACT
+```
+
+For an established subscription, `BillingSubscriptionReconciliationService` classifies
+the row as rollover/current-contract reconciliation. When provider active subscription
+is null, that path calls the bounded rollover/provider-state retry branch and returns.
+
+The `recordMissingSubscription(...)` / `NO_CONTRACT` path is guarded by the initial
+activation authority shape (`NO_CONTRACT`, `planId = null`, matching pending-plan
+identity) and is therefore not authoritative for an established subscription.
+
+The missing Attempt-8 evidence is a combined negative-mutator assertion, not a
+demonstrated production branch that closes the period incorrectly.
+
+**Architect disposition:** accepted; retain manual verification below.
+
+### Requirement 24 — accepted as a cross-service evidence gap
+
+Requirement:
+
+```text
+verified unfreeze must not recreate business work that was intentionally dropped
+because execution was FROZEN
+```
+
+BACKGROUND-012 owns the lifecycle projection and emits only the already accepted
+`recovery-capacity-resume` hint after verified restoration.
+
+The actual decision about which recoveries may be resumed belongs to the accepted
+capacity-resume/admission implementation, not to the lifecycle projection service.
+No Attempt-8 production change altered those semantics.
+
+The missing evidence is a cross-service end-to-end assertion distinguishing:
+
+```text
+RECOVERY_CAPACITY_EXHAUSTED work
+```
+
+from work denied because the subscription was FROZEN.
+
+**Architect disposition:** accepted pending manual/system validation; no further
+BACKGROUND-012 production change is authorized for this evidence gap.
+
+### Requirement 26 — accepted from repository ownership / changed-file evidence
+
+Requirement:
+
+```text
+BACKGROUND-012 must not introduce Shopify lifecycle lookups into high-volume Shopify
+or Messaging HTTP ingress
+```
+
+Attempt 8 changed only Background test files. The canonical Shopify lifecycle snapshot
+lookup remains in the Background reconciliation runtime.
+
+The Attempt-8 scan could not inspect `moda-interact-messaging/src` because that sibling
+was not materialized in the task workspace. That is a workspace-observability
+limitation, not evidence that this task introduced an ingress lookup.
+
+**Architect disposition:** accepted. Re-run the sibling scan from the fully
+materialized canonical workspace during manual/system validation.
+
+### Manual validation follow-up
+
+Before final ARCH-010 lifecycle release acceptance, manually/system-test these three
+scenarios:
+
+1. **Ambiguous provider-null established subscription**
+   - start from an established ACTIVE/TRIALING subscription with an OPEN BillingPeriod;
+   - return no active provider subscription without authoritative CANCELED lifecycle
+     evidence;
+   - verify the merchant remains on the existing contract projection;
+   - verify the BillingPeriod remains OPEN;
+   - verify no `NO_CONTRACT` transition occurs;
+   - verify one bounded reconciliation retry is scheduled.
+
+2. **Freeze -> unfreeze recovery admission**
+   - create/observe work denied while the subscription is FROZEN;
+   - unfreeze the merchant;
+   - verify the unfreeze capacity-resume hint does not recreate work that was dropped
+     specifically because execution was FROZEN;
+   - independently verify capacity-exhausted recoveries remain eligible for the
+     accepted resume mechanism.
+
+3. **Ingress ownership**
+   - from the fully materialized parent workspace, run the lifecycle symbol scan over
+     Shopify and Messaging ingress;
+   - verify no BACKGROUND-012 lifecycle/provider lookup was introduced into HTTP
+     webhook/merchant ingress.
+
+These are release/manual-validation items. They do not keep BACKGROUND-012 blocked.
+
+### Accepted validation
+
+```text
+Attempt-8 focused evidence suite:
+  268 passed
+  8 documented baseline failures
+
+Full unit suite:
+  837 passed
+  10 documented baseline failures
+
+Integration:
+  3 passed
+
+Prisma validate/generate:
+  passed
+
+git diff --check:
+  passed
+
+Attempt-8 production files changed:
+  none
+
+Database gitlink:
+  5443afdd8f0c816dc16e1f3e93f9906c5ca31d94 unchanged
+```
+
+Accepted implementation/evidence publication:
+
+```text
+Attempt-7 production implementation:
+4d116ab129b284e1fb4374d64f71b5575d0dd2ee
+
+Attempt-8 evidence implementation:
+392873f9cc37e5ddd00d9823acfea085d44a7a42
+
+Attempt-8 final parent/report:
+a5b84b210b307738041fb723d72c95f35e987529
+```
+
+### Dependency reconciliation
+
+This acceptance directly releases:
+
+```text
+ARCH-010-BACKGROUND-013
+ARCH-010-BACKGROUND-018
+```
+
+Both have all remaining prerequisites Complete and are promoted to `ready`.
+
+`ARCH-010-SHOPIFY-016` remains Pending because it still depends on
+`ARCH-010-SHOPIFY-012` and `ARCH-010-BACKGROUND-013`.
+
+`ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated because it still depends on
+`ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`, and
+`ARCH-010-SHOPIFY-016`.
+
+`ARCH-010-BACKGROUND-012` requires no Attempt 9.
 
