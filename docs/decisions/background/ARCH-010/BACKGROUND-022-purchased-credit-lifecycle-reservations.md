@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 69
 executor: null
 claimed_at: null
@@ -761,4 +761,230 @@ Then STOP and return to `moda_architect`.
 `ARCH-010-SHOPIFY-025`, `ARCH-010-ADMIN-002`, `ARCH-010-ADMIN-003`,
 `ARCH-010-SYSTEM-TEST-001`, and `ARCH-010-SYSTEM-TEST-003` remain gated until
 `BACKGROUND-022` is architect-accepted Complete.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted**
+
+This review intentionally prioritises production functionality and state-machine
+correctness over exhaustive coverage.
+
+Attempt 3 closes the only remaining production defect identified in Attempt 2.
+
+### Accepted reservation CAS
+
+Both purchased-credit reservation paths now use the exact fresh purchase-lot snapshot
+as mutation authority:
+
+```text
+id
+version
+status = ACTIVE
+currentAmount
+reservedAmount
+```
+
+after the transaction has already proven:
+
+```text
+currentAmount - reservedAmount >= requested quantity
+```
+
+The accepted update shape is therefore:
+
+```text
+fresh lot snapshot proves spendability
+-> exact snapshot CAS increments reservedAmount and version
+-> CAS loss restarts the whole Serializable transaction from fresh state
+```
+
+This correctly allows multiple simultaneous/live reservations from the same
+multi-credit purchase lot up to its actual remaining spendable balance.
+
+Concrete accepted behavior:
+
+```text
+ACTIVE purchase
+currentAmount = 2
+reservedAmount = 0
+
+reserve A(1)
+  -> reservedAmount = 1
+
+reserve B(1) before A commits/releases
+  -> reservedAmount = 2
+
+reserve C(1)
+  -> credits-exhausted
+```
+
+A valid second reservation is no longer rejected merely because another reservation
+already holds part of the same lot.
+
+### Accepted concurrency model
+
+The exact lot CAS composes correctly with the existing aggregate counter CAS and
+Serializable transaction retry.
+
+If another reservation, refund, commit, release, or lifecycle transition changes the
+lot between selection and mutation, at least one of:
+
+```text
+version
+status
+currentAmount
+reservedAmount
+```
+
+changes, causing the CAS to lose and the entire transaction to restart.
+
+No raw row lock, Redis lock, process-local lock, blind same-lot retry, or unversioned
+mutation is introduced.
+
+### Accepted lifecycle semantics preserved
+
+Architect inspection confirms the previously accepted purchase-lifecycle behavior
+remains intact:
+
+```text
+new allocation:
+  ACTIVE lots only
+
+REQUESTED / WITHDRAWN / COMPLETED / REFUNDED:
+  no new spendable reservation allocation
+
+FIFO:
+  activatedAt ASC NULLS LAST
+  createdAt ASC
+  id ASC
+
+ACTIVE commit:
+  decrement lot current/reserved
+  decrement aggregate reserved
+  increment aggregate committed
+  create one recovery UsageEvent
+
+WITHDRAWN commit:
+  existing reservation ownership remains valid
+
+WITHDRAWN final-credit commit:
+  atomically moves purchase to COMPLETED
+  cancels live refund as NO_CREDITS_REMAINING
+  performs no provider-refund movement
+
+ACTIVE release:
+  returns reservation capacity without refund hold
+
+WITHDRAWN release:
+  decrements reserved
+  moves released quantity into aggregate refunding
+
+AMBIGUOUS:
+  retains the reservation hold
+
+released source-key replay:
+  preserves one reservation identity
+  reselects only eligible ACTIVE spendable capacity
+```
+
+The final withdrawn-credit correction from the prior audit is therefore retained and
+the invalid intermediate `WITHDRAWN/currentAmount=0` state is avoided.
+
+### Functional accounting acceptance
+
+The reservation implementation preserves the required conservation relationship
+between:
+
+```text
+purchase.currentAmount
+purchase.reservedAmount
+
+and aggregate:
+  grantedQuantity
+  committedQuantity
+  reservedQuantity
+  refundingQuantity
+```
+
+Provider refund settlement remains owned by the downstream refund workflow; this task
+does not move provider money.
+
+### Validation accepted
+
+```text
+Focused unit:
+  14 / 14 passed
+
+PostgreSQL integration:
+  3 tests across 2 files
+  all 8 required race behaviors covered
+
+Prisma validation:
+  passed
+
+Build:
+  passed
+
+git diff --check:
+  passed
+
+Full unit:
+  915 / 917 passed
+  2 unchanged observability baseline failures
+```
+
+These results support the implementation, but acceptance is based on the runtime
+behavior above rather than test-count completeness.
+
+### Accepted implementation evidence
+
+Developer handoff:
+
+```text
+Implementation:
+af2e2f13
+(full SHA recorded in task report:
+af2e2f134387e7da768ce8fe68f27c83654cbc6b)
+
+Parent report:
+2064c279
+```
+
+Both task worktrees were reported clean and remote-synchronised.
+
+### Dependency reconciliation
+
+`ARCH-010-BACKGROUND-022` is Complete.
+
+All prerequisites of:
+
+```text
+ARCH-010-SHOPIFY-025
+```
+
+are now Complete:
+
+```text
+ARCH-010-DATABASE-014
+ARCH-010-BACKGROUND-021
+ARCH-010-BACKGROUND-022
+ARCH-010-SHOPIFY-014
+ARCH-010-SHARED-008
+```
+
+Therefore `ARCH-010-SHOPIFY-025` is promoted to `ready`.
+
+The downstream Admin/System-Test tasks remain Pending because they still depend on
+`SHOPIFY-025` and/or later tasks.
+
+The authoritative current implementation-ready frontier is:
+
+```text
+ARCH-010-SHOPIFY-016
+ARCH-010-SHOPIFY-025
+```
+
+No Attempt 4 is required for `ARCH-010-BACKGROUND-022`.
 

@@ -111,8 +111,8 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ## Current Ready frontier
 
 ```text
-ARCH-010-SHOPIFY-012
-ARCH-010-BACKGROUND-022
+ARCH-010-SHOPIFY-016
+ARCH-010-SHOPIFY-025
 ```
 
 
@@ -594,5 +594,46 @@ Current implementation-ready frontier:
 ```text
 ARCH-010-SHOPIFY-012
 ARCH-010-BACKGROUND-022
+```
+
+## Post-review update — BACKGROUND-022 Attempt 3 accepted
+
+`ARCH-010-BACKGROUND-022` is architect-accepted Complete on functional behavior.
+
+Accepted purchased-credit reservation model:
+
+```text
+fresh ACTIVE lot snapshot
+  -> prove currentAmount - reservedAmount >= quantity
+  -> exact id/version/status/currentAmount/reservedAmount CAS
+  -> increment reservedAmount
+  -> whole Serializable retry on CAS loss
+```
+
+This allows multiple live reservations from one multi-credit lot without weakening
+refund/lifecycle concurrency.
+
+The earlier final-withdrawn-credit correction remains accepted:
+
+```text
+last reserved credit committed from WITHDRAWN lot
+  -> COMPLETED atomically
+  -> live refund cancelled NO_CREDITS_REMAINING
+  -> no provider-refund movement
+```
+
+This acceptance promotes:
+
+```text
+ARCH-010-SHOPIFY-025
+```
+
+to Ready.
+
+Current implementation-ready frontier:
+
+```text
+ARCH-010-SHOPIFY-016
+ARCH-010-SHOPIFY-025
 ```
 
