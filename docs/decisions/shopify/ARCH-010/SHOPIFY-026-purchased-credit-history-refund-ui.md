@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
 executor: null
 claimed_at: null
@@ -2647,3 +2647,85 @@ both implementation and parent worktrees are clean and pushed
 ```
 
 `ARCH-010-SYSTEM-TEST-003` remains gated until SHOPIFY-026 is accepted Complete.
+## Architect Review — Attempt 3
+
+### Decision
+
+**Accepted — Complete.**
+
+Implementation reviewed:
+
+```text
+7e4a0b0e33583438c34b8aeb415ce28da4f4d708
+```
+
+Published parent review branch head verified:
+
+```text
+f2edd70d454a05f9ae57a4881d664bc092ab4c06
+```
+
+The final implementation satisfies the deterministic Attempt-3 functional
+contract.
+
+Accepted functional findings:
+
+```text
+1. lifecycle status is filtered on the server before pagination;
+2. listPurchaseHistory accepts optional canonical RecoveryCreditPurchaseStatus;
+3. count() and findMany() reuse the same shop/status where predicate;
+4. ACTIVE/WITHDRAWN/COMPLETED/REFUNDED/ALL route mapping is canonical;
+5. missing or invalid filter resolves to ACTIVE;
+6. the manager renders the server-owned page dataset and does not re-filter one
+   paginated page as lifecycle authority;
+7. filter changes reset to page 1 and pagination preserves the canonical filter;
+8. bounded page-size/order/shop isolation remain unchanged;
+9. accepted refund request, CAS, batch, race, reactivation and accounting
+   semantics remain unchanged;
+10. browser quantity/money remains non-authoritative;
+11. expectedProviderAmount / expectedProviderCurrency is not presented as
+    confirmed refund settlement;
+12. genuine UNMAPPED Shopify contracts hide plan-specific top-up configuration,
+    retain independent SHOPIFY-009 balances and show the mapping warning;
+13. later FROZEN, scheduled-cancellation, CONTRACT_REQUIRED, DRAINING,
+    RECONCILING and verification-unavailable precedence remains intact;
+14. the purchased-credit management navigation remains present;
+15. the global English catalogue mutation was removed;
+16. all 20 raw merchant locale files contain exactly the prescribed 58
+    billingPurchases.* source translations with ICU-placeholder parity.
+```
+
+The upstream limitation that SHOPIFY-025 does not expose an actual
+provider-confirmed final refund amount/currency is accepted as non-blocking.
+SHOPIFY-026 correctly omits final settlement money rather than presenting
+expected provider values as confirmed money.
+
+Validation evidence accepted from the Completion Report:
+
+```text
+focused final suite: 47 passed
+full suite: 524 passed, 3 skipped
+production build: passed
+changed production diagnostics: passed
+git diff --check: passed
+repository-wide typecheck/lint failures: documented pre-existing baseline only
+```
+
+The uploaded review snapshot contains no `node_modules`, so npm validation was
+not independently rerun by the architect. Acceptance is based on direct source
+inspection, exact locale-manifest comparison, published commit verification and
+the task's validation evidence.
+
+### Dependency release
+
+`ARCH-010-SYSTEM-TEST-003` remains **Pending**.
+
+SHOPIFY-026 is no longer its blocker, but the terminal/manual system-test task
+still has incomplete dependencies, including:
+
+```text
+ARCH-010-ADMIN-003
+ARCH-010-SHOPIFY-020
+```
+
+Do not auto-start or release the manual gate until every dependency is Complete.
