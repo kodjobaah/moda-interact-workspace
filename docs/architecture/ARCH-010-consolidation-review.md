@@ -112,8 +112,7 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 
 ```text
 ARCH-010-BACKGROUND-012
-ARCH-010-SHOPIFY-003
-ARCH-010-SHOPIFY-006
+ARCH-010-SHOPIFY-004
 ARCH-010-SHOPIFY-015
 ```
 
@@ -353,6 +352,43 @@ Current Ready frontier from authoritative task YAML after this acceptance:
 ARCH-010-BACKGROUND-012
 ARCH-010-SHOPIFY-003
 ARCH-010-SHOPIFY-006
+ARCH-010-SHOPIFY-015
+```
+
+## Post-review update — SHOPIFY-006 Attempt 4 accepted
+
+`ARCH-010-SHOPIFY-006` Attempt 4 is architect-accepted Complete.
+
+Accepted result:
+
+```text
+parent /app loader gates lifecycle before app-shell reads
+pending reinstall ordinary product paths -> /app/reinstalling
+suspended ordinary product paths -> /app/merchant-support
+pending reinstall merchant support remains reachable
+unmarked uninstall merchant support -> /auth/login
+standalone reinstall route remains outside the normal app layout
+```
+
+Accepted evidence:
+
+```text
+implementation: 5aa1a1898ffbdd4191354a4f62d0cbc0f4ab7ddf
+focused:        83 passed
+full suite:     380 passed, 3 skipped
+build:          passed
+database:       5443afdd8f0c816dc16e1f3e93f9906c5ca31d94 unchanged
+```
+
+`ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated because its other lifecycle
+dependencies are incomplete. No normal implementation task is promoted by this
+acceptance.
+
+Current Ready frontier from authoritative ARCH-010 task YAML:
+
+```text
+ARCH-010-BACKGROUND-012
+ARCH-010-SHOPIFY-004
 ARCH-010-SHOPIFY-015
 ```
 
