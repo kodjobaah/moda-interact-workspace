@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 58
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 - ARCH-010-SHARED-008
 enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-09-14'
 ---
 
 # ARCH-010-SHOPIFY-008: Present recovery-capacity exhaustion on merchant dashboard and history

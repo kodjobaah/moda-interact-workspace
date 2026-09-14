@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
-executor: copilot
-claimed_at: 2026-09-14T13:01:29Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-010-SHOPIFY-009
@@ -1443,3 +1443,42 @@ The next `/moda-task ARCH-010-SHOPIFY-012` claim MUST increment to Attempt 4 exa
 
 Do not start `ARCH-010-SHOPIFY-008`, `ARCH-010-SHOPIFY-016`, `ARCH-010-SHOPIFY-026`, `ARCH-010-SHOPIFY-020` or `ARCH-010-SYSTEM-TEST-001` from this review.
 
+## Architect Review — Attempt 4
+
+### Decision
+
+**Accepted — Complete.**
+
+This review remains focused on functional correctness rather than maximizing test coverage. Attempt 4 resolves the final bounded authority defect without reopening the accepted callback, subscription-verification, capacity-projection or purchase-lifecycle contracts.
+
+### Accepted functional behavior
+
+- A verified Shopify `ACTIVE_SUBSCRIPTION` with `mappingStatus=UNMAPPED` keeps Shopify commercial truth visible while local plan-specific recovery-credit-pack configuration is suppressed.
+- `configured`, `creditsPerPack` and `shopifyPackMeter` are exposed only when the current verified Shopify contract is `MAPPED`; purchase eligibility remains fail-closed.
+- SHOPIFY-009 capacity remains independent Moda truth: paid-included, lifetime-Free, promotional and purchased balances are not zeroed, recalculated or hidden merely because the confirmed Shopify handle is unmapped.
+- The default top-up view now surfaces `billing.configurationUnavailableDescription` for genuine `UNMAPPED`, and does not misdiagnose that state as cycle/meter verification unavailability.
+- The accepted Attempt-3 `requested_plan_handle` / `requestedSelection` flow remains unchanged: merchant-selected targets are transient display context only, current Shopify truth remains authoritative, and provider `pendingUpdate` supersedes the grey awaiting-confirmation card once Shopify catches up.
+- No callback, billing service, provider, Prisma, shared, background or locale contract was changed in Attempt 4.
+
+### VCS and validation evidence
+
+- Implementation commit: `94a2d893b24ef30bc45c907e210106edff5b082d` (`fix(shopify): gate unmapped billing pack configuration`).
+- Parent report commit: `4ba367dd79aba7573bee3edeb245463207941236` (`docs(shopify): submit billing options attempt 4`).
+- Focused billing tests reported: 20 passed.
+- Full suite reported: 496 passed, 3 skipped.
+- Production build and `git diff --check` reported passing.
+- Typecheck retains only the documented unrelated baseline diagnostics; no Attempt-4 production-file diagnostic was reported.
+
+The returned review metadata still carried the Attempt-4 claim (`executor: copilot`, non-null `claimed_at`) while `status: review`; this acceptance normalizes both fields to `null` as part of completing the task. This is workflow metadata only and is not an implementation defect.
+
+### Dependency release
+
+After this task becomes Complete:
+
+- `ARCH-010-SHOPIFY-008` becomes **Ready**: all dependencies are Complete.
+- `ARCH-010-SHOPIFY-016` becomes **Ready**: all dependencies are Complete.
+- `ARCH-010-SHOPIFY-020` becomes **Ready**: all dependencies are Complete.
+- `ARCH-010-SHOPIFY-026` remains **Pending** because `ARCH-010-SHOPIFY-025` is still Pending.
+- `ARCH-010-SYSTEM-TEST-001` remains **Pending / manual-gated** because `BACKGROUND-021`, `BACKGROUND-022` and `SHOPIFY-020` are not all Complete.
+
+Do not launch any dependent automatically.
