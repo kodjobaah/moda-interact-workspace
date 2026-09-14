@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 48
-executor: copilot
-claimed_at: 2026-09-14T02:54:48Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-BACKGROUND-007
@@ -297,35 +297,76 @@ STOP if:
 Ready for Review.
 
 ### Files Changed
-- `moda-interact/app/services/billing/billing.service.ts`
-- `moda-interact/app/services/billing/billing.types.ts`
-- `moda-interact/app/routes/app/billing/route.tsx`
-- `moda-interact/tests/unit/services/billing.service.test.ts`
+- `app/services/billing/billing.service.ts`
+- `app/routes/app/billing/route.tsx`
+- `app/i18n/locales/*.json` (20 supported catalogues)
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/billing-ui.test.ts`
+- `tests/unit/billing-i18n.test.ts`
 
 ### Work Completed
-- Added derived `ACTIVE`, `DRAINING`, and `RECONCILING` phase calculation from exact local/provider period timestamps using `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`; no persisted phase statuses or app-side rollover were added.
-- Enforced the server-side ACTIVE-only new top-up guard for Free and Paid before UsageEvent/RecoveryCreditPurchase creation, including transaction re-read verification; Free requires only the recovery-credit-pack meter and an exact OPEN local period, while lifetime Free entitlement remains unchanged.
-- Preserved existing purchase-id replay idempotency before provider/phase verification and retained merchant billing/navigation routes.
-- Added phase boundary tests and Paid/Free transition tests asserting no UsageEvent or RecoveryCreditPurchase is created.
+- Preserved derived `ACTIVE`, `DRAINING`, and `RECONCILING` phases from exact timestamps and `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`; no persisted phase or app-side rollover was added.
+- Made merchant top-up eligibility ACTIVE-only and required an exact OPEN local BillingPeriod for both Free and Paid before provider verification and again inside the write transaction.
+- Added truthful Paid/Free transition copy in every locale, suppressed expired Paid included allowance during RECONCILING, preserved lifetime-Free presentation, and kept the buy form behind an explicit ACTIVE guard.
+- Preserved replay-before-provider verification and Free pack independence from the Paid normal meter; successor Free cycles continue without lifetime counter mutation.
 
-Correction mapping from the launcher handoff: exact timestamp phase derivation -> `billing.service.ts` helper and boundary tests; Free/Paid ACTIVE-only top-up guard -> `requestRecoveryCreditPack` preflight and transaction checks plus transition tests; replay idempotency -> existing replay path and passing replay test; lifetime Free semantics -> Free meter/OPEN-period guard without entitlement mutation and existing lifetime tests; merchant presentation/i18n path -> billing loader/route uses the derived phase and existing parity-backed localized messages; route availability/Admin isolation -> existing focused route/navigation tests pass.
+### Correction-to-Test Mapping
+| Correction | Exact test evidence | Result |
+|---|---|---|
+| Loader eligibility requires ACTIVE | `marks pack purchase ineligible during merchant billing phase: Paid DRAINING`, `Paid RECONCILING`, `Free DRAINING`, `Free RECONCILING`; `keeps pack purchase eligible for exact ACTIVE cycle: Paid`, `Free` | Passed |
+| Paid/Free transition presentation and no expired Paid allowance | `uses explicit phase copy for each plan and preserves Free lifetime presentation`; `reads paid included capacity from the current period counter` | Passed |
+| OPEN local period required for Paid and Free | `rejects new pack request for CLOSED local BillingPeriod: Paid`, `Free` | Passed |
+| Exact phase boundaries | `derives ACTIVE`, `DRAINING`, and `RECONCILING` from exact period timestamps | Passed |
+| DRAINING/RECONCILING mutation blocks | `blocks new pack request during billing-cycle phase: Paid DRAINING`, `Paid RECONCILING`, `Free DRAINING`, `Free RECONCILING` | Passed; zero UsageEvent, purchase, and counter writes asserted |
+| Replay after transition | `replays existing purchase after cycle enters DRAINING`, `RECONCILING` | Passed; provider not called on replay and one event/purchase retained |
+| Successor Free cycle | `restores Free pack eligibility on an exact successor BillingPeriod without changing lifetime Free state` | Passed; successor period referenced and no counter update/upsert |
+
+### Requirement Evidence
+| Requirement | Exact test(s) | Result |
+|---|---|---|
+| Paid ACTIVE derives ACTIVE | `keeps pack purchase eligible for exact ACTIVE cycle: Paid` | Passed |
+| Free ACTIVE derives ACTIVE | `keeps pack purchase eligible for exact ACTIVE cycle: Free` | Passed |
+| Exact drain-start derives DRAINING | `derives DRAINING from exact period timestamps`; phase matrix rows | Passed |
+| Exact period-end derives RECONCILING | `derives RECONCILING from exact period timestamps`; phase matrix rows | Passed |
+| Paid DRAINING presentation | `uses explicit phase copy for each plan and preserves Free lifetime presentation` | Passed |
+| Paid RECONCILING presentation | Same UI test; `billingPeriodPhase !== "RECONCILING"` excludes `paidIncludedAllowance` | Passed |
+| Free DRAINING lifetime presentation | `marks pack purchase ineligible during merchant billing phase: Free DRAINING` | Passed; lifetime quantities unchanged |
+| Free RECONCILING lifetime presentation | `marks pack purchase ineligible during merchant billing phase: Free RECONCILING` | Passed; lifetime quantities unchanged |
+| ACTIVE new purchase | `creates a pending pack request for a mapped FREE plan`, `PAID_METERED` | Passed |
+| Paid/Free DRAINING server block | `blocks new pack request during billing-cycle phase: Paid DRAINING`, `Free DRAINING` | Passed |
+| Paid/Free RECONCILING server block | `blocks new pack request during billing-cycle phase: Paid RECONCILING`, `Free RECONCILING` | Passed |
+| Existing-purchase replay after transition | `replays existing purchase after cycle enters DRAINING`, `RECONCILING` | Passed |
+| Free has no Paid normal-meter dependency | `creates a pending pack request for a mapped FREE plan`; Free ACTIVE eligibility row uses `shopifyUsageEventHandle: null` | Passed |
+| Free missing exact period | `fails closed when billingPeriodId is null`; initial pack-enabled Free activation coverage | Passed |
+| Free missing pack meter | `creates no usage event for missing meter` | Passed |
+| Free DRAINING admission remains lifetime-based | Free phase read-model rows preserve lifetime counter; Background-007 dependency remains admission authority | Passed / prerequisite evidence |
+| Free RECONCILING does not reset lifetime entitlement | Free RECONCILING read-model row and successor-cycle test assert unchanged lifetime state | Passed |
+| Plan selection/support/navigation remain available | Existing billing UI route, selection redirect, and system-message action tests | Passed |
+| No merchant Admin link | `keeps merchant billing surfaces out of the Admin application`; required route scan | Passed; 0 matches |
+| i18n parity and localized phase messages | `defines every billing key in every locale catalogue`; `preserves ICU placeholders and resolves every task key through the merchant runtime` | Passed; 20 catalogues, zero placeholders on new keys |
 
 ### Validation Results
-- Focused billing service: `npm test -- --run tests/unit/services/billing.service.test.ts` -> 124 passed.
-- Focused billing/UI/i18n: `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts tests/unit/billing-i18n.test.ts` -> 139 passed.
-- Additional merchant route coverage -> 25 passed across billing UI, i18n, usage, home, and pending-recoveries route tests.
-- Full test suite: `npm test` -> 38 files passed, 2 skipped; 409 tests passed, 3 skipped.
-- Production build: `npm run build` -> passed; Prisma client generation and client/SSR bundles completed. Existing bundle-size and dependency warnings only.
+- Focused required routes/services/i18n: 5 files, 158 passed, 0 skipped.
+- Final changed-slice rerun: 3 files, 153 passed, 0 skipped.
+- Full suite: `npm test` -> 38 files passed, 2 skipped; 423 tests passed, 3 skipped.
+- `npm run prisma:validate` -> passed.
+- `npm run prisma:generate` -> passed.
+- `npm run typecheck` -> existing `TYPECHECK-001` baseline: 155 errors in 24 files. Changed-file diagnostics remain only the pre-existing `app/routes/app/billing/route.tsx:89`, `app/services/billing/billing.service.ts:1053`, and `tests/unit/services/billing.service.test.ts:1291`; no new Attempt-2 diagnostic remains.
+- `npm run build` -> passed; existing Zod annotation, Prisma external-resolution, and bundle-size warnings only.
 - `git diff --check` -> passed.
-- `npm run typecheck` -> baseline failure: 155 errors in 24 files. The three touched-file diagnostics are pre-existing contract issues at `app/routes/app/billing/route.tsx:89`, `app/services/billing/billing.service.ts:1045`, and `tests/unit/services/billing.service.test.ts:1291`; no diagnostic references the new phase helper or phase field.
+- Admin isolation scan across merchant routes -> 0 matches.
+- Drain-window literal scan -> 0 matches.
 
 ### Git / VCS
-- Prepared packet evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-007`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-007`, mirrored branch `task/ARCH-010-SHOPIFY-007`, claim commit `ef68ab10bd9a39ecf485383248c6c91eac3fd780`, dependency gate passed, attempt 1, executor `copilot`.
-- Implementation commit: `58a138c` (`feat(shopify): guard billing-cycle transition top-ups`), pushed to `origin/task/ARCH-010-SHOPIFY-007` in `moda-interact`.
-- No parent submodule gitlink was staged or changed.
-
-### Architect Review
-Pending.
+- Attempt-1 claim full SHA: `ef68ab10bd9a39ecf485383248c6c91eac3fd780`.
+- Attempt-1 implementation full SHA: `58a138cd27174d09843d04683547310a9e36c8b2`.
+- Attempt-1 parent/report full SHA: `c522bd727a9c860b7e1689da95b1d06eefe20faa`.
+- Attempt-2 launcher claim full SHA: `37be206ceb4228cce37f7449ddd88ff54139cb88`.
+- Attempt-2 implementation commit: `140c476f789fe5694b5c2632413caebc7e9c1f06`, pushed to `origin/task/ARCH-010-SHOPIFY-007` in `moda-interact`.
+- Dedicated parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-007`, branch `task/ARCH-010-SHOPIFY-007`.
+- Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-007`, branch `task/ARCH-010-SHOPIFY-007`.
+- Launcher evidence: dependency gate passed; recursive submodule sync/update passed; implementation database submodule was `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` before and after; parent and implementation origins were current with no startup fast-forward required.
+- No implementation submodule gitlink was staged or changed.
 
 ## Architect Review — Attempt 1
 
