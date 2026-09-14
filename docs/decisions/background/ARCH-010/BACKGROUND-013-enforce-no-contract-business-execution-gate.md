@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 59
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-14T04:36:40Z
+attempt: 1
 depends_on:
   - ARCH-010-BACKGROUND-004
   - ARCH-010-BACKGROUND-005
@@ -22,7 +22,7 @@ enables:
   - ARCH-010-SHOPIFY-016
   - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-12
+updated: 2026-09-14
 ---
 
 # ARCH-010-BACKGROUND-013: Enforce NO_CONTRACT and FROZEN business-execution gates
