@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 79
 executor: copilot
 claimed_at: 2026-09-14T18:07:40Z
@@ -406,19 +406,37 @@ STOP if DATABASE-014/BACKGROUND-022 are not integrated, if authenticated shop sc
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact/app/services/billing/recovery-credit-purchase-management.service.ts`
+- `moda-interact/tests/unit/services/recovery-credit-purchase-management.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Added a shop-scoped, paginated purchase-history read model with default page size 20, hard maximum 50, all five canonical purchase statuses, computed non-negative availability, safe plan and original-provider-purchase summaries, and safe live/completed refund summaries.
+- Added Serializable bounded-retry refund withdrawal for one purchase and bounded batches of up to 20 unique purchase IDs. Each transaction fresh-reads the purchase, live refund state, and purchased-credit aggregate, ignores client quantity/money fields, creates immutable `MERCHANT_UI` refund snapshots, and CAS-updates `ACTIVE -> WITHDRAWN` plus aggregate `refundingQuantity`.
+- Added deterministic request keys, idempotent live-refund replay, independent batch outcomes, authenticated shop scoping, cross-shop not-found behavior, and no provider refund API or negative App Event path.
+- Added Serializable/CAS reactivation for strictly pre-provider-action `REQUESTED` refunds, including aggregate hold release, unchanged current/reserved balances, provider-action rejection, and `currentAmount = 0` completion with `NO_CREDITS_REMAINING` cancellation.
+- Added focused coverage for pagination/scoping, every status, fresh availability and client-input rejection, zero-availability no-op, atomic hold, replay/conflict retry, reservation-race outcomes through the service contract, partial batch success, reactivation preservation, provider-action locking, and empty-purchase completion.
 
 ### Validation Results
-Populate during implementation.
+- `npm test -- --run tests/unit/services/recovery-credit-purchase-management.service.test.ts`: passed, 10/10.
+- Relevant billing suites (`billing.service`, `billing-reconciliation.service`, and the new management service): passed, 3 files and 197 tests.
+- `npm test`: passed, 42 files and 514 tests; 2 files and 3 tests skipped.
+- `npm run prisma:generate`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- Touched-file ESLint: passed; only the repository's TypeScript-version support warning was emitted.
+- `git diff --check`: passed.
+- `npm run typecheck`: existing baseline failure with 141 diagnostics across the repository; no diagnostic referenced either changed file. The observed baseline includes existing untyped JSX route/component diagnostics, missing `d3` declarations, an existing nullable `subscription.plan` diagnostic in `billing.service.ts`, and the existing Redis `zrange` type mismatch.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-025`.
+- Implementation branch: `task/ARCH-010-SHOPIFY-025`.
+- Implementation commit: `7ac42c4f24ada3321f1aff9ec6e8cf32697ef982` (`feat(shopify): manage recovery credit purchase refunds`).
+- Implementation branch pushed successfully to `origin/task/ARCH-010-SHOPIFY-025`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-025`.
+- No schema, Shared, Background, Admin, provider, route, or UI files were changed.
 
 ### Architect Review
 Pending.
