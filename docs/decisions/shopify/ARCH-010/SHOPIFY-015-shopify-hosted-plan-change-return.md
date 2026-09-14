@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 56
-executor: copilot
-claimed_at: 2026-09-14T01:33:07Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-010-SHOPIFY-013
@@ -263,24 +263,76 @@ Ready for Review.
 
 ### Files Changed
 - `moda-interact/app/components/dashboard/SubscriptionChangePanel.jsx`
-- `moda-interact/app/routes/app/billing/callback/route.tsx`
 - `moda-interact/app/routes/app/billing/options/route.tsx`
 - `moda-interact/app/services/billing/billing.service.ts`
-- `moda-interact/tests/unit/routes/billing-callback.test.ts`
+- `moda-interact/tests/unit/services/billing.service.test.ts`
+- `moda-interact/tests/unit/subscription-change-panel.test.tsx`
 
 ### Work Completed
-- Implemented Shopify-hosted plan-change return handling and provider-derived subscription state rendering.
-- Removed local mock plan catalogue, local price/rank classification, and prototype selection behavior from the production panel/options route.
-- Preserved provider verification, current/pending subscription facts, and reconciliation-owned transition behavior.
+- Attempt 2 restored `app/routes/app/billing/options/route.tsx` exactly to parent snapshot `d3217c8e6cd49e0974a934353a3f8787e87f89f6`; SHOPIFY-012 remains the owner of that composition.
+- Hosted returns now lock the accepted ShopSettings/Subscription pair before rereading, map only an exact active pending BillingPlan, preserve current entitlement/history, and leave effective transitions to BACKGROUND-010.
+- The panel renders explicit provider current/pending facts, does not fabricate currency or pending interval, distinguishes unmapped/no-active/unverified state, and uses only the supplied hosted CTA.
+- Added direct service and component regression evidence without changing provider, shared, background, schema, or Admin code.
+
+### Attempt 2 Correction Mapping
+- Finding 1: implemented by exact route restoration; focused `tests/unit/billing-ui.test.ts` continues to prove hosted selection and Admin exclusion.
+- Finding 2: implemented by exact verified pending-handle lookup with `active: true`; `tests/unit/services/billing.service.test.ts` title `stores only an active exact pending mapping for %s provider plans` covers active, inactive, and unmapped cases.
+- Finding 3: implemented by `lockInitialFreeActivationState` at transaction start; service test title `locks the accepted settings/subscription pair before rereading the hosted projection` proves lock order.
+- Finding 4: implemented in `SubscriptionChangePanel.jsx`; `tests/unit/subscription-change-panel.test.tsx` covers provider facts, pending separation, cancellation, unmapped state, null currency, CTA, and no local mutation patterns.
+- Finding 5: implemented with executable callback coverage in `tests/unit/routes/billing-callback.test.ts`, hosted-return service coverage in `tests/unit/services/billing.service.test.ts`, and component coverage in `tests/unit/subscription-change-panel.test.tsx`.
+
+### Required Test Mapping
+1. `redirects the selection route to Shopify pricing with a top-level target` - `tests/unit/billing-ui.test.ts`.
+2. `requires plan_handle` - `tests/unit/routes/billing-callback.test.ts`.
+3. `classifies provider state: %s` plus `getState`/`recordReturn` assertions - `tests/unit/routes/billing-callback.test.ts`.
+4. `distinguishes no active subscription from verification failure` - `tests/unit/routes/billing-callback.test.ts`.
+5. `distinguishes no active subscription from verification failure` - `tests/unit/routes/billing-callback.test.ts`.
+6. `classifies provider state: %s` - `tests/unit/routes/billing-callback.test.ts`.
+7. `schedules reconciliation for verified current or pending state` - `tests/unit/routes/billing-callback.test.ts`.
+8. `schedules reconciliation for verified current or pending state` - `tests/unit/routes/billing-callback.test.ts`.
+9. `schedules current state without changing entitlement ownership` - `tests/unit/services/billing.service.test.ts`.
+10. `schedules current state without changing entitlement ownership` - `tests/unit/services/billing.service.test.ts`.
+11. `does not mutate a mismatch or invent a plan when there is no active subscription` - `tests/unit/services/billing.service.test.ts`.
+12. `preserves replayed period and lifetime quantities` - `tests/unit/services/billing.service.test.ts`.
+13. `preserves replayed period and lifetime quantities` - `tests/unit/services/billing.service.test.ts`.
+14. `contains no local catalogue, rank inference, or provider mutation` - `tests/unit/subscription-change-panel.test.tsx`.
+15. `contains no local catalogue, rank inference, or provider mutation` - `tests/unit/subscription-change-panel.test.tsx`.
+16. `keeps merchant billing surfaces out of the Admin application` - `tests/unit/billing-ui.test.ts`.
+17. `renders provider current and pending commercial facts separately` - `tests/unit/subscription-change-panel.test.tsx`.
+18. `renders provider current and pending commercial facts separately` - `tests/unit/subscription-change-panel.test.tsx`.
+19. `renders provider current and pending commercial facts separately` - `tests/unit/subscription-change-panel.test.tsx`.
+20. `keeps cancellation distinct from a pending provider update` - `tests/unit/subscription-change-panel.test.tsx`.
+21. `renders unmapped current contracts and verification states distinctly` - `tests/unit/subscription-change-panel.test.tsx`.
+22. `renders unmapped current contracts and verification states distinctly` - `tests/unit/subscription-change-panel.test.tsx`.
+23. `renders unmapped current contracts and verification states distinctly` - `tests/unit/subscription-change-panel.test.tsx`.
+24. `contains no local catalogue, rank inference, or provider mutation` - `tests/unit/subscription-change-panel.test.tsx`.
+25. `contains no local catalogue, rank inference, or provider mutation` - `tests/unit/subscription-change-panel.test.tsx`.
+26. `uses only the supplied hosted plan-management destination` - `tests/unit/subscription-change-panel.test.tsx`.
+27. `contains no local catalogue, rank inference, or provider mutation` - `tests/unit/subscription-change-panel.test.tsx`.
+28. Exact route restoration and component source assertion - `tests/unit/billing-ui.test.ts`, `tests/unit/subscription-change-panel.test.tsx`.
+29. `uses only the supplied hosted plan-management destination` - `tests/unit/subscription-change-panel.test.tsx`.
+30. `does not invent a currency when the provider omits it` - `tests/unit/subscription-change-panel.test.tsx`.
+31. `defines every billing key in every locale catalogue` - `tests/unit/billing-i18n.test.ts`, `tests/unit/merchant-i18n.test.ts`.
 
 ### Validation Results
-- Focused validation passed: 2 test files, 79 passed, 9 skipped.
-- `git diff --check` passed with no whitespace errors.
+- Focused validation: 6 files, 142 passed, 15 skipped.
+- Full validation: 39 files passed, 2 skipped; 384 passed, 18 skipped.
+- `npm run prisma:validate` passed.
+- `npm run prisma:generate` passed.
+- `npm run typecheck` passed with zero diagnostics.
+- `npm run build` passed; only existing bundler warnings were emitted.
+- `git diff --check` passed.
+- Prohibited static scan returned zero matches for local rank inference, Billing API mutation, and Admin references.
 
 ### Git / VCS
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-015`, branch `task/ARCH-010-SHOPIFY-015`.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-015`, branch `task/ARCH-010-SHOPIFY-015`.
+- Preparation synchronization merge preserved: `1ca0cb0b95e2bbeca37d33d27037521f2eb6b67c`.
+- Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 - Implementation branch: `task/ARCH-010-SHOPIFY-015`
-- Implementation commit: `43aed6d196eac0ff1a9abd1d05ab2c08a40e23b1`
-- Implementation branch pushed to `origin`.
+- Implementation commit: `4858aabbfdbe75f307adfb60dbc52697b43d1570` (pushed to `origin`).
+- Parent report commit: pending.
+- No implementation submodule gitlink was staged or changed.
 
 ### Architect Review — Attempt 1
 
