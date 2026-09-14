@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 58
 executor: null
 claimed_at: null
@@ -4965,6 +4965,667 @@ Attempt 7 may return to `review` only if:
 ```
 
 Otherwise remain `blocked` and STOP with the exact unproven requirement number(s).
+
+Do not start `ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`,
+`ARCH-010-SHOPIFY-016` or `ARCH-010-SYSTEM-TEST-002`.
+
+## Architect Review — Attempt 7 Blocked Handoff
+
+### Status
+
+**Changes Requested — Attempt 8 is evidence-only**
+
+The Attempt 7 block is correct.
+
+Architect inspection accepts the Attempt-7 production correction:
+
+```text
+successful exact-cycle drain retry
+  + existing PRE_CLOSE_USAGE_FLUSH_FAILED
+  -> clear lastSyncErrorCode/lastSyncErrorAt
+
+successful exact-cycle drain retry
+  + unrelated sync error
+  -> preserve unrelated error
+```
+
+The implementation and both new regressions are accepted.
+
+No further production change is authorized for Attempt 8.
+
+### Acceptance state after Attempt 7
+
+The original requirements with sufficient permanent/static evidence are:
+
+```text
+1  provider transport/history failure preserves state and schedules retry
+4  older lifecycle evidence cannot overwrite newer evidence
+5  UNFROZEN + null live contract remains FROZEN/fail-closed
+11 pendingUpdate takes precedence over cancellation interpretation
+22 no local appSubscriptionCancel/cancellation executor remains
+25 no new queue schema is introduced
+26 no Shopify HTTP ingress lifecycle lookup is introduced
+```
+
+Do not rewrite those tests merely to increase coverage counts.
+
+The remaining requirements that are not yet fully proven are:
+
+```text
+2, 3, 6, 7, 8, 9, 10,
+12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+23, 24
+```
+
+Attempt 8 exists only to close those evidence rows.
+
+### Hard scope rule for Attempt 8
+
+**No production source file may change.**
+
+Allowed files:
+
+```text
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+The existing provider/scheduler tests may be referenced in the Completion Report but
+should not be edited unless a title/path correction is required for evidence only.
+
+The task/Completion Report may be updated through the normal coordination-document
+exception.
+
+If any required assertion fails against current production code:
+
+```text
+STOP
+leave status: blocked
+record exact requirement number
+record exact observed production behavior
+do not edit production
+return to moda_architect
+```
+
+### Evidence group A — lifecycle service
+
+File:
+
+```text
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts
+```
+
+Extend the transaction fake so these models expose available mutators:
+
+```text
+billingPeriod
+billingPeriodEntitlementCounter
+shopEntitlementCounter
+recoveryCreditPurchase
+recoveryCreditRefund
+promotionalCreditGrant
+merchantPromotionSelection
+usageReservation
+usageEvent
+```
+
+Add one reusable no-mutation helper over available:
+
+```text
+create
+createMany
+update
+updateMany
+upsert
+delete
+deleteMany
+```
+
+#### A1 — requirements 2 and 16
+
+Add:
+
+```text
+projects FROZEN while preserving plan period and all capacity state
+```
+
+Use established Paid state with current plan/BillingPeriod and detached lifetime,
+purchased/refund/promotion fixtures.
+
+Assert:
+
+```text
+status = FROZEN
+planId unchanged
+billingPeriod/currentPeriod unchanged
+nextReconcileAt = now + 1 hour
+never NO_CONTRACT
+
+zero mutation:
+  billingPeriod
+  billingPeriodEntitlementCounter
+  shopEntitlementCounter
+  recoveryCreditPurchase
+  recoveryCreditRefund
+  promotionalCreditGrant
+  merchantPromotionSelection
+  usageReservation
+```
+
+#### A2 — requirement 6
+
+Add:
+
+```text
+restores same mapped plan and same cycle without granting or resetting capacity
+```
+
+Assert:
+
+```text
+result = restored
+status -> ACTIVE/TRIALING
+same plan/cycle
+live pending provider truth projected
+
+zero BillingPeriod create/close
+zero included-counter mutation
+zero lifetime/purchased/refund/promotion mutation
+```
+
+#### A3 — requirements 7 and 8
+
+Add:
+
+```text
+restores later same-plan Paid cycle through BACKGROUND-007 exactly once
+```
+
+Spy on:
+
+```text
+SamePlanBillingPeriodRolloverService.prototype.transitionInTransaction
+ShopifyPlanChangeTransitionService.prototype.transitionInTransaction
+```
+
+Assert:
+
+```text
+same-plan transition exactly once
+plan-change transition zero times
+result = restored
+lifecycle wrapper performs zero second BillingPeriod/counter grant
+no fabricated intermediate period
+```
+
+The mocked accepted BACKGROUND-007 result must represent only the current verified
+provider cycle.
+
+Add:
+
+```text
+does not add a second Paid grant after BACKGROUND-007 restoration
+```
+
+Assert the lifecycle wrapper itself performs zero:
+
+```text
+billingPeriod.create
+billingPeriodEntitlementCounter.create/upsert/update/updateMany
+```
+
+after the delegated transition returns.
+
+#### A4 — requirement 9
+
+Add:
+
+```text
+restores later same-plan Free cycle without resetting lifetime Free
+```
+
+Assert BACKGROUND-007 exactly once and zero `shopEntitlementCounter` mutation.
+
+Also add:
+
+```text
+restores pack-disabled Free with no provider cycle without resetting lifetime Free
+```
+
+to prove the valid no-cycle Free case.
+
+#### A5 — requirement 10
+
+Add:
+
+```text
+restores changed mapped plan through BACKGROUND-010 exactly once
+```
+
+Assert:
+
+```text
+ShopifyPlanChangeTransitionService.transitionInTransaction exactly once
+SamePlanBillingPeriodRolloverService.transitionInTransaction zero times
+zero wrapper-owned second period/counter grant
+result = restored
+```
+
+#### A6 — requirements 14, 15, 18 and 21
+
+Add:
+
+```text
+closes Paid cancellation once with canonical reservation and counter CAS
+```
+
+Assert:
+
+```text
+transaction isolation = Serializable
+RESERVED | AMBIGUOUS aggregate
+reserved counter CAS
+OPEN -> CLOSED
+closeReason = CONTRACT_ENDED
+Subscription -> NO_CONTRACT
+no successor BillingPeriod
+```
+
+Add:
+
+```text
+replays effective cancellation without a second close or counter mutation
+```
+
+Start from already-cancelled NO_CONTRACT state and assert zero second period/counter/
+reservation mutation.
+
+Add:
+
+```text
+preserves lifetime purchased refund promotion and selection history on cancellation
+```
+
+Assert zero mutator calls on:
+
+```text
+shopEntitlementCounter
+recoveryCreditPurchase
+recoveryCreditRefund
+promotionalCreditGrant
+merchantPromotionSelection
+```
+
+Add:
+
+```text
+does not retimestamp old-cycle UsageEvents during effective cancellation
+```
+
+If `usageEvent.updateMany(...)` is called, assert `data` does not contain:
+
+```text
+occurredAt
+createdAt
+billingPeriodId
+providerIdempotencyKey
+```
+
+### Evidence group B — queued reconciliation
+
+File:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+#### B1 — requirement 3
+
+Add:
+
+```text
+replays FROZEN lifecycle evidence and republishes the committed hourly job
+```
+
+Assert:
+
+```text
+durable nextReconcileAt = fixed now + 1 hour
+queue.add exactly once
+payload.expectedNextReconcileAt == durable timestamp ISO
+same timestamp participates in deterministic jobId
+```
+
+#### B2 — requirement 12
+
+Strengthen/add:
+
+```text
+projects scheduled full cancellation without changing current entitlement
+```
+
+Assert:
+
+```text
+cancelAtPeriodEnd = true
+plan/status/billingPeriod preserved
+zero BillingPeriod mutation
+zero included/lifetime counter mutation
+zero purchase/refund/promotion mutation
+```
+
+The existing exact drain/boundary scheduling tests remain part of the evidence.
+
+#### B3 — requirement 13
+
+Add:
+
+```text
+clears reversed scheduled cancellation without granting entitlement
+```
+
+Assert:
+
+```text
+cancelAtPeriodEnd: true -> false
+same plan/period
+zero BillingPeriod/counter/grant mutation
+```
+
+#### B4 — requirement 17
+
+Strengthen existing:
+
+```text
+keeps established entitlement unresolved when Partner reports no active subscription
+```
+
+Add assertions:
+
+```text
+never writes NO_CONTRACT
+billingPeriod update/updateMany not called
+billingPeriodEntitlementCounter mutators not called
+```
+
+#### B5 — requirement 19
+
+Add:
+
+```text
+reconstructs a missing FROZEN reconciliation job with one deterministic identity
+```
+
+Call `reconstruct()` twice with one durable row:
+
+```text
+Subscription.status = FROZEN
+nextReconcileAt = fixed timestamp
+```
+
+Assert both attempts use identical:
+
+```text
+job name
+payload.expectedNextReconcileAt
+jobId
+delay target
+```
+
+It is acceptable for `queue.add` to be invoked twice by the unit fake; the proof is
+that no second distinct logical job identity is created.
+
+Reuse:
+
+```text
+runs periodic reconstruction when it is part of the billing cadence
+```
+
+from `billing-scheduler.test.ts` for the cadence half of requirement 19.
+
+#### B6 — requirement 20
+
+Add:
+
+```text
+does not reconcile a pending top-up as spendable while lifecycle remains FROZEN
+```
+
+Use a FROZEN lifecycle result and a pending purchase/provider-quantity fixture.
+
+Assert lifecycle handling returns before:
+
+```text
+purchase activation
+purchased-credit grant
+pack-meter reconciliation
+```
+
+#### B7 — requirement 23
+
+No new production behavior is needed.
+
+The actual lifecycle service owns the post-commit resume call, so add the lifecycle
+tests below if not already covered by group A:
+
+```text
+publishes one best-effort unfreeze capacity-resume hint after commit
+does not publish unfreeze capacity-resume for unresolved or repeated FROZEN state
+swallows unfreeze capacity-resume failure after committed restoration
+```
+
+For the first test record call order:
+
+```text
+transaction callback completes
+transaction promise resolves
+resumeService.schedule({ shopId, trigger: "unfreeze" })
+```
+
+The enqueue failure test must prove committed restoration is not reclassified to
+SYNC_ERROR/retry.
+
+### Evidence group C — rotating reconciliation
+
+File:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+#### C1 — requirement 24 and no-double-transition safety
+
+Add:
+
+```text
+stops rotating subscription mutation after verified lifecycle restoration
+```
+
+Make lifecycle reconciliation restore the Subscription.
+
+Assert rotating reconciliation:
+
+```text
+re-reads committed billingPeriodId
+returns packMeterHandle = null
+does not invoke same-plan rollover again
+does not invoke plan-change transition again
+does not reconcile a purchase in the same pass
+```
+
+This proves lifecycle restoration emits only the existing resume hint and does not
+recreate business work in the same pass.
+
+#### C2 — requirement 20 reinforcement
+
+Add:
+
+```text
+keeps pack purchase reconciliation disabled while FROZEN lifecycle is effective
+```
+
+Assert:
+
+```text
+purchase reconciliation not called
+packMeterHandle = null
+no pack-backed business work recreated
+```
+
+### Exact 26-row Completion Report map
+
+Attempt 8 must contain exactly one current table:
+
+```text
+Requirement | Exact test/static evidence | Result
+```
+
+Rows 1-26, in order.
+
+Use this mapping:
+
+```text
+1  existing "keeps established entitlement on Partner failure and publishes one bounded retry"
+2  A1
+3  existing lifecycle replay test + B1
+4  existing strictly-older/newer lifecycle tests
+5  existing "keeps FROZEN for UNFROZEN with no live contract and retries in one hour"
+6  A2
+7  A3 + A4 later-Free test
+8  A3 + "does not add a second Paid grant after BACKGROUND-007 restoration"
+9  A4
+10 A5
+11 existing "projects pending update even when outgoing cancelAtEndOfCycle is false"
+12 B2 + existing exact scheduled-cancellation drain/boundary tests
+13 B3
+14 existing Free cancellation evidence + A6 Paid CAS test
+15 A6 replay test
+16 A1
+17 strengthened existing ambiguous-null test from B4
+18 A6 history-preservation test
+19 B5 + existing scheduler cadence test
+20 B6 + C2
+21 A6 UsageEvent timestamp test
+22 forbidden local-cancellation rg
+23 three resume-hint tests from B7
+24 C1
+25 changed-file/static evidence: no queue/job schema production change
+26 canonical sibling ownership/static search already recorded in Attempt 7
+```
+
+Every row must say:
+
+```text
+Proven
+```
+
+If any row cannot truthfully say Proven, keep `status: blocked` and identify only the
+unproven row numbers.
+
+### Validation for Attempt 8
+
+Run from `moda-interact-background`:
+
+```bash
+npx vitest run \
+  tests/unit/providers/shopify-partner-billing.provider.test.ts \
+  tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/runtime/billing-scheduler.test.ts \
+  tests/unit/services/recovery-credit-purchase.service.test.ts \
+  tests/unit/services/shopify-usage-event-publisher.service.test.ts
+
+npm run test:unit
+npm run test:integration
+npm run prisma:validate
+npm run prisma:generate
+npm run build
+git diff --check
+```
+
+Also rerun the forbidden local-cancellation scan and the canonical sibling ownership
+search.
+
+Known baselines remain non-blocking only if unchanged:
+
+```text
+required seven-file suite:
+  8 existing recovery-credit baseline failures
+
+full unit:
+  10 existing baseline failures
+
+build:
+  15 existing generated-client diagnostics
+```
+
+Because Attempt 8 is evidence-only:
+
+```text
+no production file may have a diff
+```
+
+Record and run:
+
+```bash
+git diff --name-only <ATTEMPT_8_PREPARATION_HEAD>..HEAD
+```
+
+The implementation-side changed-file set must contain only the three authorized test
+files.
+
+### Workflow evidence
+
+Preserve:
+
+```text
+Attempt-7 launcher claim:
+897f08c63deeac6aec54e5838f740b7d7ef27106
+
+Attempt-7 implementation:
+4d116ab129b284e1fb4374d64f71b5575d0dd2ee
+
+Attempt-7 final parent/report:
+9ac262d066959f7b23d9e2d8c009132765a3885d
+```
+
+Attempt 8 must record:
+
+```text
+Attempt-8 launcher claim full SHA
+Attempt-8 preparation HEAD full SHA
+Attempt-8 implementation full SHA
+Attempt-8 parent/report publication full SHA
+database gitlink before/after
+both dedicated branches/worktrees
+both branches clean/pushed/remote-synchronized
+```
+
+### Reclaim / stop condition
+
+Preserve:
+
+```text
+attempt: 7
+```
+
+Return the same task through `/moda-task`; the next authorized claim must increment to
+**Attempt 8 exactly once**.
+
+Attempt 8 may set `status: review` only when all 26 rows are genuinely Proven.
+
+Otherwise:
+
+```text
+status: blocked
+executor: null
+claimed_at: null
+```
+
+and return only the remaining unproven requirement numbers and observed failed
+assertions.
 
 Do not start `ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`,
 `ARCH-010-SHOPIFY-016` or `ARCH-010-SYSTEM-TEST-002`.
