@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-09-14T04:38:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-BACKGROUND-004
@@ -329,4 +329,40 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
+
+### Implementation
+
+Implementation commit: `a8d4bfc` (`feat(background): gate frozen Shopify events early`), pushed to `origin/task/ARCH-010-BACKGROUND-018`.
+
+Changed files:
+
+- `src/services/shop-execution-eligibility.service.ts`: extended the existing domain Shop read with `Subscription.status` and added one minimal Shop-by-id lifecycle read for cart activity.
+- `src/services/pending-recovery-candidate.service.ts`: returns `discarded-subscription-frozen` before BullMQ or candidate-index work for `checkout.created`.
+- `src/services/checkout-recovery.service.ts`: gates frozen `checkout.updated` and `cart.activity` before candidate, recovery, or Shopify provider work; leaves `order.completed` terminal safety behavior unchanged.
+- Focused service tests cover frozen early exits, forbidden dependency calls, one cart lifecycle lookup, inactive-shop preservation, and frozen order candidate cancellation.
+
+No Shopify ingress, shared event contract, Partner API call, Redis subscription cache, new event field, or global/per-shop serialization was added.
+
+### Hot-path evidence
+
+- `checkout.created`: 0 additional PostgreSQL queries and 0 additional Redis operations relative to the existing first Shop lookup. The existing lookup now selects only `Shop.id`, `Shop.status`, `Subscription.status`, and the pre-existing recovery-delay setting.
+- `checkout.updated`: 0 additional PostgreSQL queries and 0 additional Redis operations relative to the existing Shop lookup. The same lookup now selects `Subscription.status`; frozen events return before pending-candidate Redis access, recovery reads/writes, and Shopify lookup.
+- `cart.activity`: 1 minimal PostgreSQL Shop lookup by the canonical `event.shopId`, which replaces the previous Shop-status lookup and selects only `Shop.id`, `Shop.status`, and `Subscription.status`; 0 Redis operations for frozen events. No second lifecycle lookup or Partner request is made.
+- `order.completed`: unchanged PostgreSQL/Redis query shape and existing bounded candidate/recovery terminal bookkeeping; the active-shop query intentionally does not gate on subscription state.
+
+### Validation
+
+- Focused: `npx vitest run tests/unit/services/pending-recovery-candidate.service.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts` -> **passed, 3 files / 63 tests**.
+- Declared build: `npm run build` -> Prisma generation passed; task-local TypeScript errors were resolved. The command remains non-zero on 15 pre-existing errors in `src/services/purchased-recovery-reservation.service.ts` and `src/services/recovery-credit-purchase.service.ts`; no errors remain in changed source files.
+- Declared unit suite: `npm run test:unit` -> **10 pre-existing failures** in `tests/unit/services/recovery-credit-purchase.service.test.ts` (8) and `tests/unit/runtime/observability-startup.test.ts` (2); changed focused suites pass.
+- No separate `typecheck` script is declared in `package.json`.
+- `git diff --check` -> **passed**.
+
+### Prepared packet evidence
+
+- Prepared execution packet: `prepared_execution=true`, `execution_state=claimed`, `dependency_gate=passed`, `attempt=1`, `executor=copilot`, claim commit `154a944f67683b34fea5d05062ffc035ec10ab88`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-018`, branch `task/ARCH-010-BACKGROUND-018`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-018`; parent and implementation use the mirrored task branch name.
+- Prepared launcher verified recursive submodule synchronization/initialization and that submodules matched recorded commits before implementation.
+- Dependencies passed: `ARCH-010-BACKGROUND-004` and `ARCH-010-BACKGROUND-012`.
