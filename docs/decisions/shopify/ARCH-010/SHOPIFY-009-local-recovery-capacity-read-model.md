@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
-executor: copilot
-claimed_at: 2026-09-14T02:19:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -289,7 +289,45 @@ STOP if implementing this task would require treating `BillingPlan` as Shopify p
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
+
+### Files Changed
+
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/billing.types.ts`
+- `tests/unit/services/billing.service.test.ts`
+
+### Work Completed
+
+- Added `getMerchantRecoveryCapacityState(shopId)`, a PostgreSQL-only local projection that never calls the configured `BillingProvider`.
+- Reads the integrated lifetime Free, current paid-period, purchased, and selected campaign grant counters using DATABASE-013 fields only; no legacy plan allowance, signed adjustment, aggregate promotional counter, or usage-event capacity fallback is used.
+- Implements exact promotional, paid included, purchased, and lifetime Free ordering with committed/reserved/forfeited/refunding arithmetic and explicit `CONTRACT_REQUIRED`, `CONTRACT_FROZEN`, `CONFIGURATION_UNAVAILABLE`, and `EXHAUSTED` outcomes.
+- Returns the local `BillingPlan` row only as `reconciledPlanMapping`, preserves observed Shopify handle separately, returns informational balances for lifecycle-blocked states, and exposes `canStartRecovery` without changing routes, components, or admission.
+- Added focused coverage for Free/Paid ordering, promotional targeting/window/selection usability, reserved grant quantities, missing paid state, lifecycle blocking, no legacy reads, and provider-call isolation.
+
+### Validation Results
+
+- `npm run prisma:generate` — passed against the integrated DATABASE-013 schema.
+- `npm test -- tests/unit/services/billing.service.test.ts` — passed, 133 tests.
+- `npm run build` — passed.
+- `npm test` — passed, 38 files; 416 passed, 3 skipped; 2 files skipped.
+- `git diff --check` — passed.
+- `npm run typecheck` — non-zero only for existing `TYPECHECK-001` baseline diagnostics; no new diagnostics were reported in the changed projection/type/test additions.
+
+### Launcher Worktree / Synchronization / Submodule Evidence
+
+- Prepared launcher packet used without rerunning startup routing, dependency discovery, worktree creation, synchronization, or submodule initialization.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-009`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-009`.
+- Both mirrored task branches were prepared and synchronized by the launcher; parent and implementation `origin/main` were already current and remote task branches required no fast-forward.
+- Recursive submodule sync/update passed; DATABASE-013 dependency checkout was `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- No parent implementation submodule gitlink was staged or changed.
+
+### Git / VCS
+
+- Implementation commits: `9e4ef65` and `d73153d`, pushed to `origin/task/ARCH-010-SHOPIFY-009`.
+- Parent claim commit supplied by launcher: `00143ecb67400a1ba5e495a5cce33595b80edbd4`.
+- Parent report commit: to be recorded after this report update and pushed to the mirrored parent task branch.
 
 
 ## Final frozen capacity projection
