@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -1479,4 +1479,104 @@ Completion Report, setting the task back to `status: review`, clearing
 both are clean, STOP and return to `moda_architect`.
 
 `ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
+
+## Architect Review — Attempt 4
+
+### Status
+
+**Accepted**
+
+Attempt 4 closes the remaining route-tree correctness defect from Attempt 3.
+
+Architect verification of the uploaded snapshot confirms:
+
+1. `app/routes/app/route.jsx` now gates immediately after authenticated Shop
+   resolution and before either app-shell read:
+
+```text
+readMerchantSupportMessages(...)
+db.shopSettings.findUnique(...)
+```
+
+2. The parent loader uses the existing shared access policy rather than introducing a
+   second lifecycle policy:
+
+```text
+ordinary /app child -> assertActiveShop(...)
+merchant support    -> assertSupportShop(...)
+```
+
+3. Pending reinstall merchants requesting normal nested product paths are redirected
+   to `/app/reinstalling` before app-shell reads.
+4. Suspended merchants requesting normal nested product paths are redirected to
+   `/app/merchant-support` before app-shell reads.
+5. Pending reinstall merchant support remains reachable and all support/settings
+   reads use the authenticated internal Shop id rather than query-string tenant
+   input.
+6. Unmarked `UNINSTALLED` merchant support redirects to `/auth/login` before
+   app-shell reads.
+7. ACTIVE merchants retain the normal app-shell path.
+8. `tests/unit/routes/app-layout-access.test.ts` exercises the real parent loader and
+   asserts exact `Location` headers for:
+
+```text
+/app
+/app/additional
+/app/billing
+/app/promotions
+/app/usage
+```
+
+9. The accepted child-route tests now also assert exact
+   `Location: /app/reinstalling`.
+10. The previously accepted standalone `/app/reinstalling` topology and ShopService
+    reinstall concurrency implementation remain unchanged by the Attempt-4 scoped
+    correction.
+
+Accepted validation evidence:
+
+```text
+Focused Attempt-4 matrix: 83 passed
+Parent-layout regression: 9 passed
+Full suite:                380 passed, 3 skipped
+Build:                     passed
+git diff --check:          passed
+Typecheck baseline:        155 unrelated diagnostics; none in Attempt-4 changed files
+Lint baseline:             11 unrelated errors; none in Attempt-4 changed files
+Database gitlink:          5443afdd8f0c816dc16e1f3e93f9906c5ca31d94 unchanged
+```
+
+Workflow evidence accepted:
+
+```text
+Attempt-3 implementation:
+c15265e3e72027b77938378ecb36a0ed17aa2cee
+
+Attempt-3 parent/report:
+75c1702da3a3b6d800c02b656fad560ffe7bb3d8
+
+Attempt-4 launcher claim:
+6478ec300e08d5958e709f1b23124d0887719f0f
+
+Attempt-4 implementation:
+5aa1a1898ffbdd4191354a4f62d0cbc0f4ab7ddf
+
+Attempt-4 report publication:
+204657e8a6db6d3b5e05e38fa56c5cf0becd1931
+
+Final parent report/branch handoff reported by developer:
+a7361bf9
+```
+
+The final short parent SHA is a later pushed parent state than the immutable report
+publication commit; no self-referential report-commit cycle is required.
+
+`ARCH-010-SHOPIFY-006` is Complete.
+
+Dependency reconciliation:
+
+- `ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated because
+  `BACKGROUND-012`, `BACKGROUND-013`, `BACKGROUND-018` and `SHOPIFY-016` are still
+  incomplete.
+- No normal implementation task becomes newly Ready solely from this acceptance.
 
