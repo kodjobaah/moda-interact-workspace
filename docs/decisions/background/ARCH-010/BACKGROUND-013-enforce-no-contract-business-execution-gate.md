@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 59
 executor: null
 claimed_at: null
@@ -267,3 +267,672 @@ Ready for Review.
 
 ### Architect Review
 Pending.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested — functional boundary corrections only**
+
+This review intentionally prioritises runtime functionality over exhaustive coverage.
+
+The broad BACKGROUND-013 design is accepted:
+
+```text
+canonical Shop + Subscription execution gate
+ACTIVE/TRIALING -> executable
+NO_CONTRACT     -> CONTRACT_REQUIRED
+FROZEN          -> SUBSCRIPTION_FROZEN
+UNMAPPED        -> fail closed
+SYNC_ERROR      -> fail closed
+inactive Shop   -> SHOP_UNAVAILABLE
+```
+
+Accepted functional work includes:
+
+```text
+pending checkout scheduling gate
+initial matured-candidate gate
+effective billing-policy lifecycle denial
+recovery billing denial before credit reservation
+recovery billing revalidation before recovery provider send
+queued WhatsApp conversation-turn recheck
+existing inbound routing use of the canonical execution gate
+capacity-repair scheduler eligibility check
+BACKGROUND-018 ownership of raw checkout/cart/order FROZEN hot-path filtering
+```
+
+The 26 focused policy tests are sufficient for the accepted policy layer in this
+functionality-first review.
+
+Three runtime timing boundaries remain unsafe. These are production defects, not
+coverage requests.
+
+---
+
+### Finding 1 — an already-queued capacity-resume job can run after FROZEN/NO_CONTRACT
+
+Current worker:
+
+```text
+src/workers/recovery-capacity-resume.worker.ts
+```
+
+checks only:
+
+```text
+Shop.status == ACTIVE
+```
+
+before loading capacity-blocked recoveries.
+
+That is insufficient after BACKGROUND-013 because lifecycle denial is carried by
+`Subscription.status`, while the Shop correctly remains ACTIVE during both
+`NO_CONTRACT` and `FROZEN`.
+
+A capacity-resume job may therefore be:
+
+```text
+scheduled while ACTIVE
+-> subscription becomes FROZEN or NO_CONTRACT
+-> queued resume job starts
+-> Shop.status is still ACTIVE
+-> worker loads blocked recoveries
+-> resumeCapacityBlockedRecovery(...) runs
+```
+
+`resumeCapacityBlockedRecovery(...)` currently also checks only Shop.status before
+entering its checkout lock. Inside the lock it performs the abandoned-checkout
+provider lookup and can update recovery/customer state before `handleCheckoutCreated`
+eventually reaches the later billing gate.
+
+That violates the task requirement:
+
+```text
+capacity becomes available
+-> Subscription NO_CONTRACT/FROZEN? stop
+-> otherwise run normal re-admission
+```
+
+and the requirement that denied stale jobs become terminal no-ops rather than
+re-entering business work.
+
+#### Required correction
+
+Modify:
+
+```text
+src/workers/recovery-capacity-resume.worker.ts
+src/services/checkout-recovery.service.ts
+```
+
+##### Worker gate
+
+In `recovery-capacity-resume.worker.ts` import the canonical:
+
+```ts
+shopExecutionEligibilityService
+```
+
+Immediately after validating the job name and before:
+
+```text
+findBlockedRecoveries(...)
+checkoutRecoveryService.resumeCapacityBlockedRecovery(...)
+```
+
+evaluate:
+
+```ts
+const execution =
+  await shopExecutionEligibilityService.evaluate(job.data.shopId);
+```
+
+If denied, return successfully:
+
+```ts
+{
+  kind: "ignored",
+  reason: execution.reason,
+}
+```
+
+Do not throw.
+
+Do not schedule a continuation.
+
+Do not query blocked recoveries.
+
+Do not call Shopify/Meta providers.
+
+The existing Shop-only helper may be removed if it becomes redundant. Do not keep a
+parallel lifecycle policy.
+
+##### Service recheck
+
+`CheckoutRecoveryService.resumeCapacityBlockedRecovery(...)` must also be safe when
+called directly or when lifecycle changes after the worker-level check.
+
+After confirming the target recovery is still:
+
+```text
+status = DETECTED
+admissionBlockReason = RECOVERY_CAPACITY_EXHAUSTED
+Shop.status = ACTIVE
+```
+
+evaluate the canonical execution gate.
+
+If denied, return a terminal ignored result before provider lookup or mutation.
+
+Then, inside:
+
+```ts
+pendingRecoveryCandidateService.withCheckoutLock(...)
+```
+
+after re-reading the current recovery and before:
+
+```ts
+abandonedCheckoutLookupService.lookup(...)
+```
+
+evaluate the gate again.
+
+This second check is required because the worker/service may wait for the checkout
+lock while the subscription transitions to FROZEN/NO_CONTRACT.
+
+If denied at that point:
+
+```text
+no abandoned-checkout provider lookup
+no recovery update
+no customer mutation
+no billing reservation
+no WhatsApp
+no continuation
+```
+
+Return normally.
+
+This is a low-volume recovery-resume path; the additional durable lifecycle read is
+intentional.
+
+Do not relabel the recovery as `RECOVERY_CAPACITY_EXHAUSTED`, `CANCELLED`, or another
+lifecycle state when execution is denied. Leave its durable capacity-blocked state
+unchanged so a later verified ACTIVE/TRIALING capacity-resume event may reconsider it.
+
+---
+
+### Finding 2 — matured candidate checks lifecycle before the checkout lock, not after it
+
+Current:
+
+```text
+CheckoutRecoveryService.materializeMaturedCandidate(...)
+```
+
+checks the canonical execution gate before resolving the Shop domain and before
+entering:
+
+```ts
+pendingRecoveryCandidateService.withCheckoutLock(...)
+```
+
+That is a good early rejection, but it does not close this race:
+
+```text
+queued candidate starts while ACTIVE
+-> outer eligibility check passes
+-> waits for checkout lock
+-> subscription commits FROZEN/NO_CONTRACT
+-> lock acquired
+-> provider lookup/materialisation continues
+```
+
+BACKGROUND-013 explicitly requires queued pre-denial work to become a terminal no-op
+when the denial state is known before new business work is performed.
+
+#### Required correction
+
+Keep the existing outer early gate.
+
+Inside the existing `withCheckoutLock(...)` callback, make the **first business
+authority check** another call to the canonical execution gate.
+
+It must occur before:
+
+```text
+hasOrderProcessed(...)
+abandonedCheckoutLookupService.lookup(...)
+CheckoutRecovery creation/update
+customer creation/attachment
+conversation creation
+billing reservation
+outbound send
+```
+
+If denied, return the same terminal discarded result used by the outer gate,
+including the distinct lifecycle reason where already supported.
+
+Do not create a second policy mechanism or lock Subscription rows.
+
+---
+
+### Finding 3 — outbound WhatsApp can be sent after the subscription freezes between admission and provider send
+
+`OutboundWhatsAppAdmissionService.reserve(...)` correctly evaluates the effective
+billing policy inside the admission transaction.
+
+However, admission and provider send are separate phases.
+
+For conversation turns the window is material:
+
+```text
+reserve while ACTIVE
+-> create PENDING outbound message + UsageEvent
+-> run CommerceAgent
+-> subscription becomes FROZEN/NO_CONTRACT
+-> sendPreparedText(...)
+-> provider WhatsApp send still occurs
+```
+
+The queued-turn gate in `loadConversationTurn(...)` cannot close this race because it
+runs before CommerceAgent execution.
+
+The task permits accounting finalisation after an irreversible action, but it does
+**not** permit creating a new customer-facing message after lifecycle denial becomes
+effective.
+
+#### Required correction
+
+Modify:
+
+```text
+src/services/outbound-whatsapp-admission.service.ts
+```
+
+Use the existing canonical execution gate immediately before every new provider send.
+
+Do not query Shopify Partner API.
+
+A deterministic implementation is:
+
+1. Extend the admitted result with the durable ownership already known at reserve time:
+
+```ts
+{
+  kind: "admitted";
+  shopId: string;
+  messageId: string;
+  conversationId: string;
+  terminal: boolean;
+}
+```
+
+and return `shopId: input.shopId` from the reserve transaction.
+
+2. Inject/reuse the canonical `shopExecutionEligibilityService` in
+`OutboundWhatsAppAdmissionService`; do not duplicate lifecycle interpretation.
+
+3. Before the provider call in both:
+
+```text
+sendPreparedText(...)
+sendTemplate(...)
+```
+
+re-evaluate:
+
+```ts
+executionEligibility.evaluate(admission.shopId)
+```
+
+`sendTemplate(...)` already has `input.shopId`; the returned admission should still
+carry the same ownership.
+
+4. If denied before provider send:
+
+```text
+do not call WhatsApp provider
+do not send terminal text
+do not send template
+```
+
+Clean up the pre-provider reservation using the existing:
+
+```ts
+failPrepared(messageId)
+```
+
+semantics so the prepared Message is terminally FAILED and its unreported UsageEvent
+is removed.
+
+Return a normal suppressed result.
+
+5. Preserve distinct lifecycle reasons. Extend `OutboundSuppressionReason` with:
+
+```text
+contract-required
+subscription-frozen
+```
+
+Map:
+
+```text
+CONTRACT_REQUIRED    -> contract-required
+SUBSCRIPTION_FROZEN  -> subscription-frozen
+```
+
+Do not map FROZEN to `shop-unavailable`.
+
+Existing `SHOP_UNAVAILABLE`, `UNMAPPED_PLAN`, and `SYNC_ERROR` may retain the existing
+generic fail-closed suppression semantics.
+
+6. The provider call itself remains the irreversible boundary. Once the provider call
+has been attempted successfully, existing `markSent`, provider-failure, delivery
+status, and accounting-finalisation semantics remain unchanged.
+
+Do not attempt to cancel already-sent WhatsApp messages.
+
+---
+
+### Attempt-2 focused functional tests
+
+This is **not** a request to complete the original 23-item test matrix.
+
+Add only enough permanent regression coverage to prove the three corrections above.
+
+#### Capacity resume worker
+
+File:
+
+```text
+tests/unit/workers/recovery-capacity-resume.worker.test.ts
+```
+
+Add one parameterized test:
+
+```text
+terminates a queued capacity-resume job before recovery lookup when execution is %s
+```
+
+Rows:
+
+```text
+NO_CONTRACT -> CONTRACT_REQUIRED
+FROZEN      -> SUBSCRIPTION_FROZEN
+```
+
+Assert:
+
+```text
+job resolves normally
+find/load blocked recovery path not entered
+resumeCapacityBlockedRecovery not called
+continuation not scheduled
+no provider work
+```
+
+If the worker module is difficult to unit-call because it constructs BullMQ at import
+time, extract only the existing job-body function into an exported testable function.
+Do not redesign the queue.
+
+#### Capacity resume service / checkout recovery
+
+File:
+
+```text
+tests/unit/services/checkout-recovery.service.test.ts
+```
+
+Add:
+
+```text
+stops capacity resume before provider lookup when subscription is frozen
+```
+
+and:
+
+```text
+rechecks capacity resume after checkout-lock acquisition
+```
+
+For the lock-race test, return:
+
+```text
+first execution check  -> allowed
+inside-lock check      -> SUBSCRIPTION_FROZEN
+```
+
+Assert zero:
+
+```text
+abandonedCheckoutLookup
+handleCheckoutCreated
+recovery/customer mutation
+billing/provider send
+```
+
+#### Matured candidate lock race
+
+In the same test file add:
+
+```text
+rechecks matured candidate after checkout-lock acquisition
+```
+
+Sequence:
+
+```text
+outer execution check -> allowed
+inside-lock check     -> CONTRACT_REQUIRED or SUBSCRIPTION_FROZEN
+```
+
+Assert zero provider lookup/materialisation.
+
+#### Outbound provider-send recheck
+
+File:
+
+```text
+tests/unit/services/outbound-whatsapp-admission.service.test.ts
+```
+
+Add:
+
+```text
+suppresses a prepared WhatsApp send when subscription freezes after admission
+```
+
+and one direct template equivalent for NO_CONTRACT or FROZEN.
+
+Prove:
+
+```text
+reserve/admission exists from earlier ACTIVE state
+send-time execution recheck denies
+provider send not called
+prepared message cleanup runs
+unreported UsageEvent removed
+returned suppression reason remains distinct
+```
+
+The existing active send tests must continue to prove normal execution remains
+unchanged.
+
+No additional combinatorial lifecycle tests are required for this review.
+
+---
+
+### Accepted work — do not churn
+
+Do not rewrite:
+
+```text
+src/services/shop-execution-eligibility.service.ts
+src/services/effective-billing-policy.service.ts
+src/services/recovery-billing.service.ts
+src/services/pending-recovery-candidate.service.ts
+src/workers/whatsapp.worker.ts
+src/services/recovery-routing.service.ts
+```
+
+unless compilation from the narrow outbound admitted-result type change requires a
+mechanical type propagation.
+
+Preserve:
+
+```text
+ACTIVE/TRIALING allow
+CONTRACT_REQUIRED distinction
+SUBSCRIPTION_FROZEN distinction
+UNMAPPED/SYNC_ERROR fail closed
+Shop inactive/uninstalled denial
+recovery billing revalidateBeforeProvider
+Meta message-status bookkeeping
+BACKGROUND-018 raw-event ownership
+```
+
+Do not add HTTP-ingress Partner API calls, queue purges, lifecycle Redis caches,
+global locks, or Subscription row serialization.
+
+---
+
+### Attempt-2 allowed scope
+
+Production:
+
+```text
+src/services/checkout-recovery.service.ts
+src/services/outbound-whatsapp-admission.service.ts
+src/services/recovery-capacity-resume.service.ts
+src/workers/recovery-capacity-resume.worker.ts
+```
+
+`recovery-capacity-resume.service.ts` may remain unchanged if the worker + checkout
+service correction makes its existing repair gate sufficient.
+
+Mechanical type propagation is allowed only where the added admitted `shopId` field
+requires it.
+
+Tests:
+
+```text
+tests/unit/services/checkout-recovery.service.test.ts
+tests/unit/services/outbound-whatsapp-admission.service.test.ts
+tests/unit/workers/recovery-capacity-resume.worker.test.ts
+```
+
+plus this task/Completion Report.
+
+If fixing one of these three defects requires schema, Shared contract, Shopify/Meta
+HTTP-ingress, or another repository change, STOP and return the exact limitation to
+`moda_architect`.
+
+---
+
+### Attempt-2 validation
+
+Prioritise the changed functional slice.
+
+Run:
+
+```bash
+npm exec vitest run \
+  tests/unit/services/shop-execution-eligibility.service.test.ts \
+  tests/unit/services/effective-billing-policy.service.test.ts \
+  tests/unit/services/checkout-recovery.service.test.ts \
+  tests/unit/services/outbound-whatsapp-admission.service.test.ts \
+  tests/unit/workers/recovery-capacity-resume.worker.test.ts
+
+npm run prisma:validate
+git diff --check
+```
+
+Then run the repository unit suite and build for regression awareness:
+
+```bash
+npm run test:unit
+npm run build
+```
+
+The documented existing baseline remains non-blocking only if unchanged:
+
+```text
+unit:
+  10 baseline failures
+
+build:
+  15 baseline diagnostics
+```
+
+Do not spend Attempt 2 fixing those unrelated baselines.
+
+---
+
+### Completion Report requirements
+
+Record:
+
+```text
+Attempt-1 launcher claim:
+68a61af9e36bc42c4d01ff87dc05f66432f4d831
+
+Attempt-1 implementation:
+40fedb029a2b3ae53ed7a8083cd5d0122e3b1695
+
+Attempt-1 final developer parent/report:
+324b958bfc96ddd8e4ea4e79aae37e6cce88e278
+```
+
+The existing Completion Report also mentions an earlier report publication
+`c2a99c3ec791b7a3ca863889e191439b2b55c6e4`; preserve it as immutable publication
+history rather than replacing it.
+
+Record additionally:
+
+```text
+Attempt-2 launcher claim full SHA
+Attempt-2 implementation full SHA
+Attempt-2 parent/report publication full SHA
+database gitlink before/after
+both worktrees clean/pushed/remote-synchronized
+```
+
+Report the exact focused test pass/fail total.
+
+No requirement-by-requirement coverage spreadsheet is required for Attempt 2.
+
+---
+
+### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 1
+```
+
+The next authorized claim must increment to **Attempt 2 exactly once**.
+
+Attempt 2 may return to `review` when:
+
+```text
+1. stale capacity-resume jobs stop on the canonical lifecycle gate;
+2. resumeCapacityBlockedRecovery rechecks inside the checkout lock;
+3. matured candidate materialisation rechecks inside the checkout lock;
+4. outbound provider send rechecks lifecycle after admission and before provider call;
+5. focused functional tests pass;
+6. no new unit/build regression is introduced;
+7. status = review, executor = null, claimed_at = null;
+8. both task branches are clean and pushed.
+```
+
+Then STOP and return to `moda_architect`.
+
+`ARCH-010-SHOPIFY-016` and `ARCH-010-SYSTEM-TEST-002` remain gated until this task is
+architect-accepted Complete.
+
