@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 54
-executor: copilot
-claimed_at: 2026-09-14T05:44:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-SHOPIFY-013
@@ -291,33 +291,37 @@ STOP if Shopify App Pricing/App Events is no longer the actual mechanism, exact 
 ## Completion Report
 
 ### Status
-Ready for Review.
+Ready for Architect Review.
 
 ### Files Changed
 - `app/components/dashboard/TopUpPurchasePanel.jsx`
-- `app/i18n/locales/en.json`
+- `app/i18n/locales/{cs,da,de,en,es,fi,fr,it,ja,ko,nb,nl,pl,pt-BR,pt-PT,sv,th,tr,zh-Hans,zh-Hant}.json`
 - `app/routes/app/billing/options/route.tsx`
-- `app/routes/app/billing/route.tsx`
 - `app/services/billing/billing.service.ts`
 - `tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
-- Implemented the merchant-safe top-up read model and action using the canonical `REQUESTED` lifecycle.
-- Added coherent provider subscription/cycle/meter verification, required provider BEFORE usage/cost/currency evidence, immutable purchase snapshots, zero initial balances, and unresolved-purchase concurrency protection.
-- Preserved idempotent replay and prevented HTTP-side activation or direct App Event publication.
-- Replaced mock pricing/purchase UI with the explicit server-state `TopUpPurchasePanel`, canonical status rendering, pending-state duplicate prevention, provider-derived pricing, and localized copy.
-- Added focused service coverage for evidence gates, REQUESTED initialization, and unresolved-purchase prevention.
+- Applied Attempt 2 review corrections: shared local executable eligibility gates now require an ACTIVE shop, executable subscription/plan/period configuration, and complete provider lifecycle evidence.
+- Top-up read and mutation now use one `getSubscriptionLifecycleSnapshot` provider authority, fail closed when unavailable, and reject effective FROZEN lifecycle evidence even when an active subscription is temporarily present.
+- Restored `/app/billing/options` ownership boundary for SHOPIFY-012 while preserving the approved production child-panel integration and the existing `PENDING_BILLING` to `REQUESTED` correction.
+- Exposed bounded `RETRYABLE` and `NEEDS_ATTENTION` provider-report copy without adding lifecycle states, and localized all six task-visible keys across all 20 supported catalogues.
+- Preserved REQUESTED creation, immutable before snapshots, zero initial balances, idempotent replay, unresolved-purchase concurrency protection, no HTTP activation, and no direct App Event publication.
 
 ### Validation Results
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts`: passed, 2 files and 196 tests.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts`: passed, 2 files and 198 tests.
 - `git diff --check`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed with the repository's documented baseline diagnostics only; no Attempt 2 changed-line diagnostic was introduced.
 
 ### Git / VCS
 - Launcher-provided isolated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-014`.
 - Launcher-provided isolated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-014`.
 - Mirrored task branch: `task/ARCH-010-SHOPIFY-014` in both repositories.
-- Implementation commit `bfc7af3` (`feat(shopify): finalize recovery credit top-up lifecycle`) pushed to `origin/task/ARCH-010-SHOPIFY-014`.
-- Parent report commit `77944d9` (`task: return SHOPIFY-014 for review`) is pushed to `origin/task/ARCH-010-SHOPIFY-014`.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; shared checkouts were not switched or mutated for task work.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-014`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-014`.
+- Both branches: `task/ARCH-010-SHOPIFY-014`; no other task worktree was reused. Parent origin/main was incorporated; implementation origin/main was already current.
+- Recursive submodule sync/update passed; `database` is pinned at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Implementation commit `c139dc4` (`fix(shopify): apply top-up lifecycle review corrections`) pushed to `origin/task/ARCH-010-SHOPIFY-014`.
 
 ### Architect Review
 Pending moda_architect review.
