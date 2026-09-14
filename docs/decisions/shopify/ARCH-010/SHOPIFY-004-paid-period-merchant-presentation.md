@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
-executor: copilot
-claimed_at: 2026-09-14T01:25:03Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-SHOPIFY-003
@@ -153,19 +153,44 @@ STOP if the integrated paid period counter/read model differs materially from AR
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `app/services/billing/billing.service.ts`
+- `app/routes/app/billing/route.tsx`
+- `app/i18n/locales/*.json` (all 20 supported merchant locales)
+- `tests/unit/billing-ui.test.ts`
+- `tests/unit/billing-i18n.test.ts`
+- `tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Updated `getMerchantBillingState` to read the durable current `BillingPeriod` included-credit counter.
+- Paid included remaining is calculated as `max(granted - committed - reserved - forfeited, 0)` and is not derived from the shop-wide usage aggregate.
+- Added paid-period/counter consistency validation and fail-closed configuration-unavailable projection.
+- Kept lifetime Free capacity and purchased credits as separate merchant-facing balances.
+- Preserved Shopify-hosted plan selection/change flow and existing exact top-up eligibility gate.
+- Added merchant i18n keys for paid-period and lifetime Free presentation across every supported locale.
+- Added focused UI, service, and locale contract coverage for the acceptance matrix.
 
 ### Validation Results
-Populate during implementation.
+- `npm run prisma:validate` — passed.
+- `npm run prisma:generate` — passed.
+- `npm run test -- tests/unit/billing-ui.test.ts tests/unit/billing-i18n.test.ts` — passed, 15 tests.
+- Focused final billing validation (`billing.service.test.ts`, `billing-ui.test.ts`, `billing-i18n.test.ts`) — passed, 111 tests.
+- `npm test` — passed, 38 test files; 381 passed, 3 skipped.
+- `npm run build` — passed.
+- `git diff --check` — passed.
+- `npm run typecheck` — non-zero under documented `TYPECHECK-001` repository baseline; no new TypeScript errors were reported in the changed billing service or route.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-004`.
+- Implementation branch: `task/ARCH-010-SHOPIFY-004`.
+- Implementation commit: `03ba8f5c7d0bfe0c051f09e1ddd6639ee3c1c356` (pushed to `origin/task/ARCH-010-SHOPIFY-004`).
+- Implementation worktree was clean after commit; the prepared packet's physical worktree and dependency-gate evidence were retained.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-004`.
+- Parent branch: `task/ARCH-010-SHOPIFY-004`.
+- Parent claim commit: `2edf9d7bd57f7c7755d987ab42be660e26fa42d3`.
+- Parent submodule pointer was not staged or changed; implementation publication remains on its task branch for architect review.
 
 ### Architect Review
 Pending.
