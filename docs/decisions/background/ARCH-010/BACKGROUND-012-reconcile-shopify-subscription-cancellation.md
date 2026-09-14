@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 58
-executor: copilot
-claimed_at: 2026-09-14T03:37:32Z
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
   - ARCH-010-DATABASE-013
@@ -1364,6 +1364,71 @@ both are clean, STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-BACKGROUND-013`, `ARCH-010-BACKGROUND-018`,
 `ARCH-010-SHOPIFY-016` or `ARCH-010-SYSTEM-TEST-002`.
+
+## Completion Report — Attempt 7
+
+### Status
+
+Blocked. The remaining Attempt 7 production correction is implemented and
+validated, but the mandatory permanent evidence matrix is still incomplete. The
+task must not claim architecture completion or mark missing behavioural evidence
+as proven.
+
+### Correction Mapping
+
+- Attempt 7 Finding 1: `src/services/billing-subscription-reconciliation.service.ts`
+  now clears `lastSyncErrorCode` and `lastSyncErrorAt` only when a successful
+  exact-cycle drain retry resolves `PRE_CLOSE_USAGE_FLUSH_FAILED`. Unrelated
+  sync errors are preserved.
+- Attempt 7 regression coverage: `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+  adds successful drain-retry clearing and unrelated-error preservation tests.
+
+### Files Changed
+
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+
+### Validation Results
+
+- Focused queued reconciliation: **passed**, 1 file and 139 tests.
+- Required seven-file focused command: **239 passed, 8 failed**, 7 files and 247 tests. The 8 failures are the unchanged recovery-credit purchase DATABASE-013/generated-client baseline; all 6 task-focused files passed.
+- `npm run test:unit`: **837 passed, 10 failed**, 57 files and 847 tests. The 10 failures match the documented recovery-credit purchase and observability baseline.
+- `npm run test:integration`: **passed**, 2 files and 3 tests.
+- `npm run prisma:validate`: **passed**.
+- `npm run prisma:generate`: **passed**.
+- `npm run build`: **baseline failure**, 15 diagnostics confined to `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts`; no Attempt 7 changed file diagnostic.
+- `git diff --check`: **passed**.
+- Forbidden local cancellation search: no matches in Background `src` or `tests`.
+- Canonical sibling search: existing lifecycle matches were found in `moda-interact/app`; `moda-interact-messaging/src` is not materialized in the canonical workspace, so no search result from that absent path is claimed. Attempt 7 changed no Shopify, Messaging, Admin, Gateway or ingress file.
+
+### Evidence Disposition
+
+The existing repository contains passing evidence for provider-failure retry,
+FROZEN replay/order handling, UNFROZEN null-live handling, pending-update
+precedence, exact queued drain boundaries, pre-close projection, provider
+snapshot contract, scheduler cadence and the negative cancellation search.
+The permanent assertions required by the latest review remain absent for the
+full lifecycle restoration matrix, cancellation replay/history preservation,
+pending-top-up gating, rotating post-restore isolation and deterministic
+reconstruction identity. Those requirements are therefore not marked Proven.
+
+### Git / VCS
+
+- Task: `ARCH-010-BACKGROUND-012`, Attempt 7, branch `task/ARCH-010-BACKGROUND-012`.
+- Launcher claim: `897f08c63deeac6aec54e5838f740b7d7ef27106`.
+- Implementation preparation HEAD: `2d5eb94c4fa4f0f35bdaa21e00f3fdbb207f267d`.
+- Attempt 7 implementation commit: `4d116ab` (`fix: clear resolved pre-close reconciliation error`), pushed to `origin/task/ARCH-010-BACKGROUND-012`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-012`, branch `task/ARCH-010-BACKGROUND-012`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-012`, branch `task/ARCH-010-BACKGROUND-012`.
+- Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / unchanged.
+- Prepared worktrees and recursive submodule materialisation were reused; no launcher rerun, worktree recreation, claim increment, main merge or implementation gitlink staging occurred.
+- Parent report publication SHA: recorded after this report commit.
+
+### Architect Handoff
+
+The implementation correction is ready for inspection, but this task is blocked
+on the remaining permanent evidence contract. No architect acceptance decision has
+been made by this agent.
 
 ## Completion Report — Attempt 6
 
