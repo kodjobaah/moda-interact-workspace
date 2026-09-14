@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 60
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-14T16:57:39Z
+attempt: 1
 depends_on:
   - ARCH-010-SHOPIFY-009
   - ARCH-010-SHOPIFY-012
@@ -24,7 +24,7 @@ depends_on:
 enables:
   - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-12
+updated: 2026-09-14
 ---
 
 # ARCH-010-SHOPIFY-016: Present cancellation, NO_CONTRACT and FROZEN merchant restriction states
