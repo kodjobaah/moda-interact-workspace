@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 59
 executor: null
 claimed_at: null
@@ -1530,4 +1530,216 @@ Ready for Review.
 
 ### Architect Review
 Pending. Task returned to `review` with `executor: null`, `claimed_at: null`, and `attempt: 3`.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted**
+
+This review intentionally prioritises functional correctness and runtime behaviour
+over exhaustive coverage.
+
+Attempt 3 closes the two functional defects raised in Attempt 2 without regressing
+the previously accepted lifecycle gates.
+
+### Accepted canonical execution policy
+
+`ShopExecutionEligibilityService` now has one canonical mapping that can be applied to
+an already-loaded Shop + Subscription projection without adding another hot-path
+database read.
+
+Accepted mapping:
+
+```text
+Shop inactive / missing Subscription -> SHOP_UNAVAILABLE
+Subscription.NO_CONTRACT             -> CONTRACT_REQUIRED
+Subscription.FROZEN                  -> SUBSCRIPTION_FROZEN
+Subscription.UNMAPPED                -> UNMAPPED_PLAN
+Subscription.SYNC_ERROR              -> SYNC_ERROR
+Subscription.ACTIVE                  -> allowed
+Subscription.TRIALING                -> allowed
+```
+
+The async durable `evaluate(...)` path and the no-I/O `evaluateResolvedShop(...)`
+path share the same lifecycle interpretation.
+
+`resolveShopById(...)` now uses the injected client instead of bypassing dependency
+injection through the module-global Prisma client.
+
+### Accepted checkout/cart functional boundary
+
+`checkout.updated` and `cart.activity` now use the already-loaded durable Shop +
+Subscription projection before any candidate/recovery advancement.
+
+Therefore:
+
+```text
+NO_CONTRACT
+FROZEN
+UNMAPPED
+SYNC_ERROR
+inactive Shop
+```
+
+all stop before:
+
+```text
+pending candidate refresh
+CheckoutRecovery lookup/update
+abandoned-checkout provider lookup
+Redis candidate mutation
+future business execution scheduling
+```
+
+The BACKGROUND-018 hot-path shape is preserved: the correction does not add a second
+database read merely to interpret Subscription state.
+
+Distinct externally useful lifecycle results remain:
+
+```text
+NO_CONTRACT -> contract-required
+FROZEN      -> subscription-frozen
+```
+
+while the existing generic fail-closed result remains acceptable for
+UNMAPPED/SYNC_ERROR/Shop unavailability.
+
+`order.completed` remains outside this denial rule because it is bounded terminal
+safety bookkeeping for existing recovery state, as accepted in BACKGROUND-018.
+
+### Accepted capacity-resume lifecycle behaviour
+
+The capacity-resume worker now has all three necessary lifecycle boundaries:
+
+```text
+1. before blocked-recovery lookup;
+2. during page processing when resumeCapacityBlockedRecovery(...) reports lifecycle
+   denial;
+3. immediately before scheduling a 25-item continuation.
+```
+
+If lifecycle becomes:
+
+```text
+CONTRACT_REQUIRED
+SUBSCRIPTION_FROZEN
+UNMAPPED_PLAN
+SYNC_ERROR
+SHOP_UNAVAILABLE
+```
+
+the job terminates successfully as an ignored lifecycle result.
+
+It does not:
+
+```text
+process later recoveries in the same page
+schedule a continuation
+create a retry/continuation storm
+```
+
+Normal item-level outcomes remain page-local and do not incorrectly abort the batch.
+
+### Previously accepted Attempt-2 behaviour preserved
+
+Architect inspection confirms the following remain in place:
+
+```text
+capacity-resume pre-lock lifecycle gate
+capacity-resume in-lock lifecycle recheck
+matured-candidate in-lock lifecycle recheck
+outbound lifecycle recheck after admission and before provider send
+prepared outbound cleanup when lifecycle becomes denied
+distinct contract-required / subscription-frozen outbound suppression
+queued conversation-turn execution recheck
+billing/capacity denial before new spend
+```
+
+No new Shopify Partner API lookup, HTTP-ingress lifecycle lookup, Redis lifecycle
+cache, queue purge, queue-contract change, global lock, or Subscription-row
+serialization was introduced.
+
+### Functional race model
+
+This task intentionally does not attempt impossible global serialization between
+every lifecycle commit and every asynchronous business operation.
+
+The accepted rule is:
+
+```text
+known durable denial before a business boundary
+  -> terminal no-op
+
+work that passed an earlier gate
+  -> rechecked at the next owned irreversible/business boundary
+
+provider action already irreversibly committed
+  -> bounded accounting/finalisation only
+```
+
+This is sufficient for first-production lifecycle execution safety and composes with
+BACKGROUND-012 and BACKGROUND-018.
+
+### Validation accepted
+
+```text
+Focused Attempt-3 suite:
+  6 files passed
+  101 tests passed
+  0 failed
+
+Prisma validation:
+  passed
+
+git diff --check:
+  passed
+
+Full unit suite:
+  56 files passed
+  2 files failed
+  10 documented unrelated baseline failures
+
+Build:
+  15 documented unrelated baseline diagnostics
+  no Attempt-3 changed file implicated
+
+Database gitlink:
+  5443afdd8f0c816dc16e1f3e93f9906c5ca31d94 unchanged
+```
+
+Accepted workflow evidence:
+
+```text
+Attempt-3 launcher claim:
+a6c4984248041a965dc90a96f49202278fc6e1f4
+
+Attempt-3 implementation:
+aba4023a39ccaf9f0c61f3e7747e4737157879e0
+
+Attempt-3 final parent/report:
+830a8304
+```
+
+The abbreviated parent/report SHA above is the developer handoff reference; preserve
+the full immutable parent publication SHA in repository history when available.
+
+### Dependency reconciliation
+
+`ARCH-010-BACKGROUND-013` is Complete.
+
+This does **not** make `ARCH-010-SHOPIFY-016` Ready yet because
+`ARCH-010-SHOPIFY-012` is still incomplete.
+
+`ARCH-010-SYSTEM-TEST-002` also remains Pending/manual-gated until
+`ARCH-010-SHOPIFY-016` is Complete.
+
+The current implementation-ready ARCH-010 frontier from authoritative task YAML is:
+
+```text
+ARCH-010-SHOPIFY-012
+ARCH-010-BACKGROUND-021
+```
+
+No Attempt 4 is required for `ARCH-010-BACKGROUND-013`.
 
