@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 81
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-14T19:43:49Z
+attempt: 1
 depends_on:
 - ARCH-010-DATABASE-014
 - ARCH-010-BACKGROUND-022
@@ -23,7 +23,7 @@ depends_on:
 enables:
 - ARCH-010-ADMIN-003
 created: 2026-09-11
-updated: '2026-09-13'
+updated: 2026-09-14
 ---
 
 # ARCH-010-ADMIN-002: Review merchant recovery-credit purchase refund requests
