@@ -303,7 +303,7 @@ Ready for Review.
 - Attempt 4 implementation SHA: `aeceed5cb1aa6bd0c9e20bced0130171305a3fa9` (pushed; remote matches).
 - Preparation synchronization merge: `1ca0cb0b95e2bbeca37d33d27037521f2eb6b67c`.
 - Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
-- Parent report publication SHA: `7fa80f3` (initial Attempt 4 report publication; this metadata-only SHA update follows it); no implementation submodule gitlink is staged or changed.
+- Parent report publication SHA: `7fa80f3c3428ad36540ee51f2946e67f0c60bbf0` (initial Attempt 4 report publication; this metadata-only SHA update follows it); no implementation submodule gitlink is staged or changed.
 - Baseline evidence: implementation worktree is clean and remote-matching before this report edit; parent branch remains the dedicated mirrored task branch.
 
 ### Architect Review — Attempt 1
