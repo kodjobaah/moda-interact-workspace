@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 56
 executor: null
 claimed_at: null
@@ -282,5 +282,365 @@ Ready for Review.
 - Implementation commit: `43aed6d196eac0ff1a9abd1d05ab2c08a40e23b1`
 - Implementation branch pushed to `origin`.
 
-### Architect Review
-Pending.
+### Architect Review — Attempt 1
+
+#### Status
+
+**Changes Requested**
+
+Attempt 1 has the correct high-level direction: the callback re-queries Shopify,
+classifies provider current/pending/mismatch/no-active state, removes local rank/price
+upgrade/downgrade inference from `SubscriptionChangePanel`, and leaves effective
+entitlement transition to BACKGROUND-010.
+
+It is not yet acceptable because the implementation crosses the explicit SHOPIFY-012
+integration boundary, persists an inactive pending Moda mapping, presents fabricated
+commercial facts in the panel, and does not provide executable service/component
+evidence for the task's required invariants. The corrections below are the complete
+Attempt-2 contract. Preserve the accepted provider read model from SHOPIFY-013 and the
+accepted BACKGROUND-010 transition contract; do not redesign either.
+
+#### Finding 1 — SHOPIFY-015 has absorbed SHOPIFY-012's billing-options composition
+
+`app/routes/app/billing/options/route.tsx` is owned by `ARCH-010-SHOPIFY-012` for the
+real purchase-hub/capacity/top-up/plan-management composition. Attempt 1 replaces the
+prototype `BillingPurchaseHub` route with only `SubscriptionChangePanel` and removes
+the existing top-up/purchase-hub surface.
+
+That is explicitly outside this task's integration boundary and creates ordering risk:
+SHOPIFY-012 still needs to compose SHOPIFY-009 capacity, SHOPIFY-014 top-up lifecycle,
+SHOPIFY-007 cycle phase, and this task's finished panel.
+
+##### Required correction
+
+Restore:
+
+```text
+app/routes/app/billing/options/route.tsx
+```
+
+to its exact pre-SHOPIFY-015 content from implementation parent:
+
+```text
+d3217c8e6cd49e0974a934353a3f8787e87f89f6
+```
+
+Do not productionise `BillingPurchaseHub`, delete `billing-purchase.mock.js`, wire
+SHOPIFY-009/014 capacity/top-up state, or otherwise perform SHOPIFY-012 work here.
+
+The callback may continue to redirect to `/app/billing/options?...`; SHOPIFY-012 owns
+how that route eventually composes and renders the completed child panel.
+
+#### Finding 2 — pending provider state can persist an inactive Moda plan mapping
+
+`recordHostedPlanChangeReturn(...)` currently writes:
+
+```ts
+pendingPlanId: state.pendingModaMapping?.id ?? null
+```
+
+The SHOPIFY-013 read model treats an existing `BillingPlan` row as mapping metadata and
+does not prove that row is currently active. SHOPIFY-015 is stricter: for a provider
+PENDING change, `pendingPlanId` may be persisted only when the exact pending Shopify
+handle maps to an **active** local BillingPlan.
+
+##### Required correction
+
+Inside the same database transaction that persists the hosted return:
+
+1. derive `pendingHandle` only from the verified provider snapshot;
+2. when `pendingHandle != null`, query the local BillingPlan by exact
+   `shopifyPlanHandle = pendingHandle` and require `active = true`;
+3. persist that active row's `id` as `pendingPlanId`;
+4. if no active mapping exists, persist:
+
+```text
+pendingShopifyPlanHandle = exact provider pending handle
+pendingPlanId            = null
+pendingEffectiveAt       = exact provider effectiveAt or null
+```
+
+5. never substitute the requested URL handle or the provider current plan's local id.
+
+Do not change the completed SHOPIFY-013 mapping semantics globally merely to satisfy
+this task.
+
+#### Finding 3 — hosted-return persistence must serialize with Background reconciliation
+
+`recordHostedPlanChangeReturn(...)` currently performs a normal `findUnique` followed
+by an unconditional `subscription.update({ where: { shopId } })`. BACKGROUND-010 can
+mutate the same Subscription projection concurrently. The HTTP callback must not race
+an effective Background transition and overwrite its pending/schedule projection.
+
+##### Required correction
+
+At the start of the hosted-return transaction, acquire the existing accepted
+Subscription row lock used by Shopify billing state mutations (preserve the repository
+lock ordering; do not introduce a process-local mutex). Re-read the Subscription only
+after the lock is held, then perform the hosted-return write.
+
+For CURRENT and PENDING callback results the HTTP transaction may update only provider
+observation/projection and reconciliation scheduling fields, including as applicable:
+
+```text
+observedShopifyPlanHandle
+currentPeriodStart
+currentPeriodEnd
+trialEndsAt
+cancelAtPeriodEnd
+pendingShopifyPlanHandle
+pendingPlanId
+pendingEffectiveAt
+nextReconcileAt
+lastSyncedAt
+lastSyncErrorCode / lastSyncErrorAt
+```
+
+It MUST NOT write or recreate:
+
+```text
+Subscription.status
+Subscription.planId
+Subscription.billingPeriodId
+BillingPeriod
+BillingPeriodEntitlementCounter
+ShopEntitlementCounter
+RecoveryCreditPurchase
+PromotionalCreditGrant
+MerchantPromotionSelection
+```
+
+MISMATCH remains a no-mutation classification. `NO_ACTIVE` must not manufacture or
+clear current/pending entitlement from the callback URL. Partner failure must update
+only bounded verification-error/retry metadata and preserve all current/pending
+entitlement fields.
+
+If the accepted repository lock primitive cannot be reused without changing
+BACKGROUND-010 or database schema, STOP and return the exact lock-order conflict to
+`moda_architect`.
+
+#### Finding 4 — the panel fabricates provider commercial facts
+
+Attempt 1 contains two provider-truth violations:
+
+1. `SubscriptionChangePanel` formats a null Shopify currency using `"GBP"` as a
+   fallback. A missing provider currency must never become GBP merely for display.
+2. the attempted `/app/billing/options` integration supplies the **current** billing
+   interval as the pending plan's interval. SHOPIFY-013 does not currently expose a
+   pending interval through the accepted panel contract, so the panel must not label a
+   pending update with the current plan's interval.
+
+The panel also fails to distinguish an existing unmapped Shopify current contract from
+an ordinary mapped plan clearly enough, and it does not render the pending mapped Moda
+name as decoration when supplied.
+
+##### Required correction
+
+In `SubscriptionChangePanel.jsx`:
+
+- never default provider currency to GBP or any other local currency;
+- when provider currency is null, preserve the amount and render a localized
+  unavailable/unknown currency indication, or omit currency formatting entirely; do
+  not call `formatMoney` with an invented currency;
+- current interval may render only from `current.interval` supplied by provider truth;
+- remove `pending.interval` as a required prop unless SHOPIFY-013 genuinely supplies a
+  pending interval in its accepted contract; do not copy current interval into pending;
+- render pending handle/price/effective date distinctly;
+- render `pending.mappedModaPlanName` only as optional decoration;
+- when the current provider plan exists but `current.mappedModaPlanName == null`, keep
+  the provider handle/price visible and render the localized Moda configuration-
+  unavailable state rather than treating the Shopify contract as absent;
+- keep `cancelAtEndOfCycle` distinct from a pending update;
+- keep CTA navigation entirely driven by supplied `managePlansHref`.
+
+Do not add a local plan catalogue, price/rank comparison, or upgrade/downgrade labels.
+
+#### Finding 5 — the required regression contract is largely unimplemented
+
+The report records only two focused files (`79 passed, 9 skipped`). The changed
+callback test skips the legacy suite and mocks `recordHostedPlanChangeReturn`, so it
+does not prove the new service persistence semantics. There is no executable
+`SubscriptionChangePanel` test at all.
+
+Attempt 2 must add permanent tests. Reuse existing tests only when they execute the
+exact production method/branch and assert the exact contract.
+
+##### A. Callback / hosted flow tests
+
+In `tests/unit/routes/billing-callback.test.ts` and existing select-route coverage,
+prove:
+
+1. `/app/billing/select` redirects to Shopify-hosted pricing with `_top` target;
+2. missing `plan_handle` returns 400 before provider verification;
+3. callback calls the canonical provider-backed read exactly once and does not use URL
+   context as entitlement proof;
+4. provider exception calls `recordHostedPlanVerificationFailure`, redirects to
+   `plan_change=unverified`, and enqueues only the exact returned durable schedule;
+5. provider `null`/NO_ACTIVE is distinct from transport failure and redirects to
+   `plan_change=no_active`;
+6. CURRENT, PENDING and MISMATCH redirect to their exact merchant result values;
+7. CURRENT/PENDING enqueue exactly the `subscriptionId` + persisted
+   `expectedNextReconcileAt` returned by the service;
+8. MISMATCH performs no enqueue;
+9. every redirect remains under `/app/...`; no Admin route/link is introduced.
+
+Do not keep required SHOPIFY-015 evidence only inside `describe.skip(...)`.
+
+##### B. `BillingService.recordHostedPlanChangeReturn` tests
+
+Add executable service tests proving:
+
+10. PENDING preserves existing `status`, `planId`, `billingPeriodId`, current period
+    entitlement and all credit/history models;
+11. mapped **active** pending handle stores exact handle/id/effective time and the
+    deterministic reconciliation schedule;
+12. an inactive local BillingPlan for the exact pending handle stores
+    `pendingPlanId = null` while preserving provider handle/effective time;
+13. an unmapped pending handle behaves the same way (`pendingPlanId = null`);
+14. PENDING never uses requested URL handle as the mapping authority;
+15. CURRENT schedules immediate reconciliation while opening/closing no BillingPeriod
+    and granting/forfeiting no capacity;
+16. MISMATCH makes no Subscription mutation;
+17. NO_ACTIVE schedules the accepted immediate reconciliation without manufacturing a
+    current/pending plan from the URL;
+18. provider verification failure preserves current plan/period/pending fields and
+    changes only retry/error metadata;
+19. hosted-return transaction takes the accepted Subscription lock before reading and
+    writing the durable projection;
+20. observable mocks prove no writes to BillingPeriod,
+    BillingPeriodEntitlementCounter, ShopEntitlementCounter, RecoveryCreditPurchase,
+    PromotionalCreditGrant or MerchantPromotionSelection for CURRENT/PENDING/MISMATCH.
+
+##### C. `SubscriptionChangePanel` tests
+
+Create a focused component test (for example
+`tests/unit/subscription-change-panel.test.tsx`) using the repository's React/Vitest
+stack and prove:
+
+21. current provider handle/amount/currency/interval render from explicit props;
+22. mapped current Moda name is decoration only;
+23. pending provider handle/price/effective date render separately from current;
+24. pending mapped Moda name is optional decoration;
+25. current `cancelAtEndOfCycle=true` renders without erasing a pending update;
+26. unmapped current provider contract remains visible and shows localized
+    configuration-unavailable state;
+27. NO_ACTIVE renders distinctly;
+28. VERIFICATION_UNAVAILABLE renders distinctly;
+29. supplied `managePlansHref` is the only CTA destination;
+30. null provider currency does not render/fabricate GBP;
+31. component source/runtime contains no local `plans[]`, rank sorting,
+    upgrade/downgrade inference, console mutation, provider/network call or Admin link.
+
+##### D. i18n parity
+
+The current referenced static keys already exist in the 20 merchant catalogues. Keep
+that parity and execute the existing billing/merchant i18n tests. If Attempt 2 adds any
+new static visible string, add the exact key to all 20 catalogues in the same attempt.
+Do not leave English-only fallback copy.
+
+#### Attempt-2 allowed scope
+
+Production files:
+
+```text
+app/routes/app/billing/callback/route.tsx
+app/services/billing/billing.service.ts
+app/components/dashboard/SubscriptionChangePanel.jsx
+app/routes/app/billing/options/route.tsx   # RESTORE ONLY to d3217c8... parent content
+```
+
+Test files:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+tests/unit/services/billing.service.test.ts
+tests/unit/billing-ui.test.ts
+tests/unit/billing-i18n.test.ts
+tests/unit/merchant-i18n.test.ts
+tests/unit/subscription-change-panel.test.tsx   # may be added
+```
+
+Do not modify in Attempt 2:
+
+```text
+app/components/dashboard/BillingPurchaseHub.jsx
+app/components/dashboard/billing-purchase.mock.js
+app/services/billing/providers/shopify-billing.provider.ts
+Prisma schema/migrations
+Shared contracts/package version
+Background services
+SHOPIFY-009/012/014/016 implementation
+Admin, Messaging or Gateway
+```
+
+`/app/billing/select` should remain unchanged unless a focused test exposes a defect in
+its already-hosted redirect behaviour; if so, STOP and report the exact defect before
+editing it.
+
+#### Required validation for Attempt 2
+
+From `moda-interact`, run the repository-declared commands:
+
+```bash
+npm test -- --run \
+  tests/unit/routes/billing-callback.test.ts \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/subscription-change-panel.test.tsx \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/billing-i18n.test.ts \
+  tests/unit/merchant-i18n.test.ts
+
+npm test
+npm run prisma:validate
+npm run prisma:generate
+npm run typecheck
+npm run build
+git diff --check
+
+rg -n "rank|isUpgrade|isDowngrade|upgradeAction|downgradeAction|appSubscriptionCreate|billing\\.request|moda-interact-admin" \
+  app/components/dashboard/SubscriptionChangePanel.jsx \
+  app/routes/app/billing/callback/route.tsx \
+  app/services/billing/billing.service.ts
+```
+
+For `rg`, exit 1 because there are zero prohibited matches is the expected clean
+result. If repository typecheck still has documented unrelated baseline diagnostics,
+record the exact count and prove zero diagnostics in the Attempt-2 changed production
+and test files. Report exact test pass/fail/skip totals; do not report only aggregate
+"validation passed".
+
+#### Completion Report required
+
+Map every numbered item 1-31 above to an exact test title/file. Record:
+
+- implementation full SHA;
+- parent report full SHA;
+- canonical parent and implementation worktrees/branches;
+- database submodule SHA before/after;
+- focused/full test counts;
+- Prisma validation/generation, typecheck, build and `git diff --check` outcomes;
+- zero prohibited static-scan matches;
+- clean/pushed branch state.
+
+#### Reclaim / stop condition
+
+Return this **same task** to `/moda-task`.
+
+The current attempt counter remains:
+
+```text
+attempt: 1
+```
+
+The next authorized claim must increment it to **Attempt 2 exactly once**.
+
+STOP and return to `moda_architect` rather than expanding scope if any correction
+requires:
+
+- changing SHOPIFY-013's provider contract to invent a pending billing interval;
+- changing BACKGROUND-010 effective-transition semantics;
+- changing Prisma/Shared contracts;
+- implementing SHOPIFY-012 billing-options composition or SHOPIFY-014 top-up runtime.
+
+After corrections and validation, set `status: review`, clear claim metadata,
+commit/push both task branches, and STOP for architect review.
