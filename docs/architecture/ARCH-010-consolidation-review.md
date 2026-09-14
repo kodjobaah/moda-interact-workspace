@@ -479,3 +479,40 @@ ARCH-010-BACKGROUND-013
 ARCH-010-BACKGROUND-018
 ```
 
+## Post-review update — BACKGROUND-018 Attempt 1 accepted
+
+`ARCH-010-BACKGROUND-018` is architect-accepted Complete on functional behaviour.
+
+Accepted boundary:
+
+```text
+FROZEN checkout.created
+  -> stop before BullMQ candidate/index work
+
+FROZEN checkout.updated
+  -> stop before candidate/recovery/provider work
+
+FROZEN cart.activity
+  -> one minimal durable lifecycle read
+  -> stop before candidate/index work
+
+FROZEN order.completed
+  -> retain bounded terminal safety bookkeeping only
+```
+
+No synchronous Shopify/Partner lifecycle lookup was added to HTTP ingress, and no
+new lifecycle cache or global serialization was introduced.
+
+The approximately 22,000-events/minute architecture target remains a later
+integrated/manual capacity-validation item.
+
+Current Background Ready frontier:
+
+```text
+ARCH-010-BACKGROUND-013
+```
+
+`ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated until its remaining
+implementation dependencies, including `BACKGROUND-013` and `SHOPIFY-016`, are
+Complete.
+
