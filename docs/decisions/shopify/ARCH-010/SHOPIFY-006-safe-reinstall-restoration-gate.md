@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -652,6 +652,261 @@ The next authorized claim increments it to **Attempt 2 exactly once**.
 After implementing only these corrections, updating the Completion Report, setting
 `status: review`, clearing `executor`/`claimed_at`, committing/pushing both mirrored
 task branches, STOP and return to `moda_architect`.
+
+`ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested**
+
+Attempt 2 correctly fixes the four concurrency/lifecycle defects identified in the
+Attempt-1 review: delayed duplicate uninstall is reduced to one guarded cutoff write;
+normal authentication no longer restarts a stopped attempt; first-attempt CAS loss
+returns the competing durable marker/schedule; and explicit Retry is stopped-only and
+checks the exact marker before touching Subscription state.
+
+The task is not yet acceptable because the merchant restoration route still executes
+inside the normal `/app` layout and therefore performs normal app-shell data reads and
+renders normal product navigation during a fail-closed reinstall. In addition, several
+explicit Attempt-2 regression cases were not added even though the focused aggregate
+is green. The corrections below are the complete Attempt-3 contract. Preserve the
+accepted `9d55513` ShopService concurrency work unless a required executable test
+exposes a genuine defect.
+
+### Finding 1 — `/app/reinstalling` still executes the normal app-shell loader
+
+`app/routes.ts` currently declares:
+
+```text
+route("app", "./routes/app/route.jsx", [
+  ...
+  route("reinstalling", "./routes/app/reinstalling/route.jsx"),
+  ...
+])
+```
+
+Therefore a request for `/app/reinstalling` matches `app/routes/app/route.jsx` as its
+parent. That parent loader currently calls:
+
+```text
+readMerchantSupportMessages(...)
+db.shopSettings.findUnique(...)
+```
+
+and the parent component renders the normal Home / Messages / Promotions navigation.
+The child reinstall loader itself is narrow, but the complete matched request is not.
+This violates the SHOPIFY-006 restoration contract that pending/stopped restoration
+must not enter normal product/app-shell reads and that the restoration surface must be
+a fail-closed route with only the support escape hatch.
+
+#### Required correction
+
+Use one deterministic topology:
+
+1. In `app/routes.ts`, remove `reinstalling` from the nested `route("app", ...)`
+   children.
+2. Add it as a standalone top-level route at the same URL:
+
+```ts
+route("app/reinstalling", "./routes/app/reinstalling/route.jsx"),
+```
+
+3. Because the route no longer inherits the App layout, update
+   `app/routes/app/reinstalling/route.jsx` to own the minimal embedded shell:
+   - import/use `AppProvider` from `@shopify/shopify-app-react-router/react`;
+   - loader returns `apiKey: process.env.SHOPIFY_API_KEY || ""` together with the
+     existing `state` / `nextReconcileAt` values;
+   - wrap the restoration UI in `<AppProvider embedded apiKey={apiKey}>`;
+   - add the normal Shopify `boundary.error(...)` ErrorBoundary and
+     `boundary.headers(...)` export because the route is now standalone;
+   - keep the existing Shopify authentication, `resolveShopifyShop`, lifecycle
+     redirects and `getReinstallSubscription` lookup unchanged;
+   - do not call/read merchant support messages, ShopSettings, recoveries,
+     conversations, customers, usage, BillingPeriod or UsageEvent from this route;
+   - render only restoration status, Retry when stopped, and the existing Contact
+     support link. Do not reproduce the normal app navigation on this route.
+
+Do not move Partner reconciliation into this route. BACKGROUND-006 remains the only
+restoration authority.
+
+### Finding 2 — `/app/additional` remains an ungated product surface
+
+`app/routes/app/additional/route.jsx` has no loader or lifecycle gate. Because it is a
+normal `/app` child route, an authenticated pending-reinstall merchant can navigate to
+it directly even though SHOPIFY-006 requires ordinary app/product surfaces to remain
+unavailable while `Shop.status = UNINSTALLED`.
+
+#### Required correction
+
+In `app/routes/app/additional/route.jsx` add only the standard existing merchant gate:
+
+```text
+authenticate.admin(request)
+-> shopService.resolveShopifyShop({ admin, domain: session.shop })
+-> assertActiveShop(shop, {
+     route: "/app/additional",
+     redirectTo: "/app/merchant-support"
+   })
+```
+
+No other data query is required. For
+`UNINSTALLED + reinstallPendingAt != null`, the existing access policy must redirect
+`/app/reinstalling`. ACTIVE remains allowed. Do not create another access-policy
+implementation.
+
+### Finding 3 — the explicit Attempt-2 evidence matrix is still incomplete
+
+Passing 66 focused tests is not a substitute for the named acceptance cases in the
+Attempt-1 review. Add/strengthen the following executable tests.
+
+#### `tests/unit/services/shop.service.test.ts`
+
+1. Strengthen delayed duplicate-uninstall evidence so it proves there is exactly one
+   Shop lifecycle write. Simulate the guarded `uninstalledAt = null` update returning
+   `count: 0` and assert `shop.updateMany` is called **exactly once**; there must be no
+   second unconditional marker-clearing call.
+2. Add the missing **successful stopped Retry** case:
+   - existing Shop is `UNINSTALLED` with exact old `reinstallPendingAt`;
+   - existing Subscription has `nextReconcileAt = null`;
+   - exact-marker Shop CAS returns `count: 1`;
+   - Subscription upsert updates only `nextReconcileAt = now` for an existing row;
+   - returned `reinstallPendingAt` and `expectedNextReconcileAt` are exactly `now`;
+   - no current/pending plan, period or credit field is written/reset.
+
+Retain the accepted tests for live Retry rejection and stale-marker CAS loss.
+
+#### `tests/unit/home-route.test.ts`
+
+3. Add a pending-reinstall case where `resolveShopifyShop` returns:
+
+```text
+status = UNINSTALLED
+reinstallPendingAt != null
+```
+
+Invoke the real home loader and assert it redirects to `/app/reinstalling` before all
+of these mocks are called:
+
+```text
+shopSettings.findUnique
+billingService.getSubscription
+readPendingRecoveries
+checkoutRecovery.findMany
+billingPeriod.findMany
+usageEvent.findMany
+```
+
+Keep the existing ACTIVE onboarding / NO_CONTRACT evidence green.
+
+#### `tests/unit/billing-ui.test.ts`
+
+4. Add a `/app/billing/select` pending-reinstall case. The real loader must redirect
+   to `/app/reinstalling` and `hostedPricingRedirect` must not be called.
+
+#### `tests/unit/merchant-support-route.test.ts`
+
+5. Add an authenticated pending-reinstall Shop
+   (`UNINSTALLED + reinstallPendingAt != null`) and prove the real loader remains
+   reachable and calls `readMerchantSupportMessages` only with the authenticated
+   internal Shop id. A query-string `shopId` must not alter tenant scope.
+
+#### `tests/unit/routes/reinstalling-route.test.ts`
+
+6. After making the route standalone, retain/prove ACTIVE, SUSPENDED, unmarked,
+   pending, stopped, successful Retry and rejected Retry behaviours.
+7. Add a source/import assertion or observable mocks proving the standalone route does
+   not import/call the normal app-shell merchant support reader or DB product models.
+8. Assert the reinstall route source contains no `moda-interact-admin` route/link.
+
+#### `tests/unit/routes/explicit-route-config.test.ts`
+
+9. Prove `/app/reinstalling` is declared as the standalone exact path and is no longer
+   a nested child entry.
+
+#### Additional-route access test
+
+10. Add a focused behavioural test for `app/routes/app/additional/route.jsx` proving a
+    pending reinstall redirects `/app/reinstalling` and ACTIVE is allowed. This may be
+    a new `tests/unit/routes/additional-route.test.ts` file.
+
+### Scope / non-goals for Attempt 3
+
+Allowed production scope:
+
+```text
+app/routes.ts
+app/routes/app/reinstalling/route.jsx
+app/routes/app/additional/route.jsx
+```
+
+`app/services/shop/shop.service.ts` is **not** expected to change in Attempt 3. Only
+change it if one of the required executable tests proves `9d55513` is incorrect; if
+so, document the exact defect in the Completion Report.
+
+Allowed test scope:
+
+```text
+tests/unit/services/shop.service.test.ts
+tests/unit/home-route.test.ts
+tests/unit/billing-ui.test.ts
+tests/unit/merchant-support-route.test.ts
+tests/unit/routes/reinstalling-route.test.ts
+tests/unit/routes/explicit-route-config.test.ts
+tests/unit/routes/additional-route.test.ts   # if created
+```
+
+Do not modify Prisma schema/migrations, Shared contracts, BACKGROUND-006, Partner API
+calls, BillingPeriod/credit/refund/promotion state, shop identity, Admin, Messaging,
+Gateway, upgrade/downgrade/cancellation/freeze logic, or create another reconciliation
+queue contract.
+
+### Required validation for Attempt 3
+
+From `moda-interact`, run:
+
+```bash
+npm test -- --run \
+  tests/unit/services/shop.service.test.ts \
+  tests/unit/shop-access-policy.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/home-route.test.ts \
+  tests/unit/routes/auth-catchall.test.ts \
+  tests/unit/routes/reinstalling-route.test.ts \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/merchant-support-route.test.ts \
+  tests/unit/routes/explicit-route-config.test.ts \
+  tests/unit/routes/additional-route.test.ts
+
+npm test
+npm run build
+npm run typecheck
+npm run lint
+git diff --check
+```
+
+If the additional-route test is incorporated into an existing focused test file
+instead, omit only that final path and state exactly where its two behavioural cases
+live.
+
+Report exact pass/fail/skip counts. Existing unrelated repository lint/typecheck
+baselines may be recorded, but there must be no diagnostic in an Attempt-3 changed
+file.
+
+### Reclaim / stop condition
+
+Return this **same task** through the normal `/moda-task` workflow. Keep:
+
+```text
+attempt: 2
+```
+
+The next authorized claim must increment it to **Attempt 3 exactly once**.
+
+After implementing only the corrections above, set `status: review`, clear
+`executor`/`claimed_at`, update the Completion Report with exact test-title evidence,
+commit/push both mirrored task branches, STOP and return to `moda_architect`.
 
 `ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
 
