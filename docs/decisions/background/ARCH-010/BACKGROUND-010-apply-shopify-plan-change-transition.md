@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-14T00:16:07Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
 - ARCH-010-DATABASE-013
@@ -1572,7 +1572,7 @@ After implementing only this correction contract, run the required validation, u
 the Completion Report/evidence map, set `status: review`, clear the claim, commit/push
 both task branches, verify both are clean, STOP and return to `moda_architect`.
 
-## Attempt 4 Completion Report
+## Attempt 5 Completion Report
 
 ### Status
 
@@ -1580,60 +1580,61 @@ Ready for Review.
 
 ### Correction Completed
 
-- Queued and rotating reconciliation now validate exact provider cycles, paid included allowance, normal paid meters, and enabled pack meters before invoking the transition transaction.
-- Known validation failures persist typed `SYNC_ERROR` state (`MISSING_BILLING_CYCLE`, `INVALID_INCLUDED_ALLOWANCE`, or `MISSING_USAGE_METER`), retain the current/pending entitlement projection, and publish one deterministic retry only after a winning guarded update.
-- `INVALID_INCLUDED_ALLOWANCE` is included in retryable plan-change `SYNC_ERROR` eligibility for both reconciliation and transition services.
-- A valid expected target returning `not-applicable` now enters the existing fail-closed `UNEXPECTED_IMMEDIATE_PLAN_CHANGE` retry path; rotating reconciliation returns a null pack meter.
-- Rotating Paid capacity-resume fixtures now include the provider-matching target handle, allowance, and old-plan snapshot, proving the real transition branch and enqueue-failure isolation.
+- Resolved the pre-existing merge markers in the queued reconciliation test file while retaining both accepted test branches.
+- Added executable Attempt-5 evidence for atomic pending refresh/withdrawal, preserved Partner/provider-null entitlement state, retryable and unrelated `SYNC_ERROR` classification, the complete queued prerequisite matrix, and queued capacity-resume success/failure isolation.
+- Added executable rotating-path evidence for mapped unexpected plans, missing/invalid cycles, the paid/free meter and allowance matrix, null pack-meter projection, Free capacity suppression, and `not-applicable` fail-closed fallback.
+- Strengthened transition-service evidence for replay preservation, `RESERVED`/`AMBIGUOUS` release semantics, all transition-direction protected-state no-writes, precondition-before-mutation ordering, and retryable `SYNC_ERROR` eligibility.
 
 ### Evidence Map
 
-1. `refreshes pending provider state in one guarded update`.
-2. `keeps provider pending truth when another current plan is returned`.
-3. `keeps established entitlement on Partner failure and publishes one bounded retry`.
-4. `keeps established entitlement unresolved when Partner reports no active subscription`.
-5. `fails closed before the pending boundary when the provider target uses the current cycle`.
-6. `enters fail-closed SYNC_ERROR for a provider-current target with a missing cycle`; `enters fail-closed SYNC_ERROR for a provider-current target with a missing meter`.
-7. `schedules plan-change capacity resume after a successful rotating Paid transition`.
-8. `swallows rotating capacity-resume enqueue failure after a successful transition`.
-9. `fails closed before the boundary and never exposes the stale pack meter`.
-10. `enters fail-closed SYNC_ERROR for a provider-current target with a missing cycle`.
-11. `fails closed before the boundary and never exposes the stale pack meter`.
-12. `enters fail-closed SYNC_ERROR for a provider-current target with a missing cycle`.
-13. `schedules plan-change capacity resume after a successful rotating Paid transition`; `swallows rotating capacity-resume enqueue failure after a successful transition`.
-14. `swallows rotating capacity-resume enqueue failure after a successful transition`.
-15. `closes an existing outgoing Free period exactly once before Free -> Paid`.
-16. `reuses a matching successor without resetting its included usage`.
-17. `closes Paid -> Paid with PLAN_CHANGED and grants the new period once`.
-18. `creates a Free successor without a monthly counter`.
-19. `does not write lifetime, purchased, or promotional state during plan transitions`.
-20. `does not close the old period when a required paid cycle is missing`.
+| Requirement | Exact test title(s) | Test file |
+|---|---|---|
+| 1 | `refreshes pending provider state in one guarded update` | `billing-subscription-reconciliation.service.test.ts` |
+| 2 | `clears a withdrawn established pending update atomically` | `billing-subscription-reconciliation.service.test.ts` |
+| 3 | `keeps established entitlement on Partner failure and publishes one bounded retry` | `billing-subscription-reconciliation.service.test.ts` |
+| 4 | `keeps established entitlement unresolved when Partner reports no active subscription` | `billing-subscription-reconciliation.service.test.ts` |
+| 5 | `fails closed before the pending boundary when the provider target uses the current cycle` | `billing-subscription-reconciliation.service.test.ts` |
+| 6 | `retries established plan changes from retryable SYNC_ERROR: %s` | `billing-subscription-reconciliation.service.test.ts` |
+| 7 | `fails established queued plan change closed for invalid target prerequisite: %s` | `billing-subscription-reconciliation.service.test.ts` |
+| 8 | `schedules plan-change capacity resume after a successful queued Paid transition` | `billing-subscription-reconciliation.service.test.ts` |
+| 9 | `swallows queued plan-change capacity-resume enqueue failure after transition` | `billing-subscription-reconciliation.service.test.ts` |
+| 10 | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter` | `billing-reconciliation.service.test.ts` |
+| 11 | `fails closed for rotating provider-current target with %s` | `billing-reconciliation.service.test.ts` |
+| 12 | `fails closed for rotating target prerequisite: %s` | `billing-reconciliation.service.test.ts` |
+| 13 | `does not schedule plan-change capacity resume after a successful Free transition`; `schedules plan-change capacity resume after a successful rotating Paid transition` | `billing-reconciliation.service.test.ts` |
+| 14 | `fails closed when the expected effective target transition returns not-applicable` | `billing-reconciliation.service.test.ts` |
+| 15 | `closes an existing outgoing Free period exactly once before Free -> Paid` | `shopify-plan-change-transition.service.test.ts` |
+| 16 | `reuses a matching successor without resetting its included usage` | `shopify-plan-change-transition.service.test.ts` |
+| 17 | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once` | `shopify-plan-change-transition.service.test.ts` |
+| 18 | `creates a Free successor without a monthly counter` | `shopify-plan-change-transition.service.test.ts` |
+| 19 | `preserves lifetime purchased and promotion state for transition direction: %s` | `shopify-plan-change-transition.service.test.ts` |
+| 20 | `does not mutate periods before target prerequisite validation: %s` | `shopify-plan-change-transition.service.test.ts` |
 
 ### Validation
 
-- Focused suites: passed, 3 files / 108 tests.
+- Focused suites: passed, 3 files / 198 tests.
 - `npm run test:integration`: passed, 2 files / 3 tests.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
+- `npm run test:unit`: 56 files / 724 tests executed; 54 files / 714 tests passed; 10 baseline failures remain, exactly 8 recovery-credit purchase tests and 2 observability-startup tests.
+- `npm run build`: failed with exactly 15 unchanged generated-client diagnostics, 10 in `src/services/purchased-recovery-reservation.service.ts` and 5 in `src/services/recovery-credit-purchase.service.ts`; zero diagnostics were reported in the Attempt-5 changed test files.
 - `git diff --check`: passed.
-- Static `rg -n "tierRank|prorat"` over the three production files: zero matches, expected exit 1.
-- `npm run test:unit`: 56 files / 724 tests executed; 54 files / 714 tests passed. The unchanged baseline remains 10 failures: 8 recovery-credit purchase tests and 2 observability-startup tests.
-- `npm run build`: blocked by the unchanged 15 generated-client diagnostics in `src/services/purchased-recovery-reservation.service.ts` and `src/services/recovery-credit-purchase.service.ts`; no diagnostics were reported in Attempt 4 changed files.
+- `rg -n "tierRank|prorat"` over the three production files returned no matches (expected exit 1).
 
 ### Workflow Evidence
 
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
-- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-010`, `task/ARCH-010-BACKGROUND-010`.
+- Parent report worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-010`, `task/ARCH-010-BACKGROUND-010`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-010`, `task/ARCH-010-BACKGROUND-010`.
-- Launcher Attempt 4 claim commit and prepared synchronization were supplied by the launcher packet; no launcher invocation or re-claim was performed.
-- Recursive database submodule materialisation was supplied by the launcher packet. Database gitlink remained `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` before and after; no database files or gitlink were changed.
-- Implementation commit: `17ffe40` (`fix(background): fail closed on invalid plan transition prerequisites`), pushed to `origin/task/ARCH-010-BACKGROUND-010`.
-- Parent report commit: recorded after this update and pushed to the mirrored parent task branch.
-- No merge to `main` and no force-push performed.
+- Launcher Attempt-5 claim commit: `f65587a0f46388c9ff399b976d0af31d47cff34f`; prepared synchronization, dedicated topology, and recursive database-submodule materialisation were supplied by the launcher packet.
+- Database gitlink before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Attempt-4 implementation full SHA: `17ffe4060f9fba85c4a129e390ef718b31523948`; Attempt-5 implementation full SHA: `a5dc1a168b396d1629d565f00cea58d9f4d30228`.
+- Attempt-5 parent Completion Report full SHA before publication: `f65587a0f46388c9ff399b976d0af31d47cff34f`; the publication commit is recorded below after commit.
+- No database files/gitlink, production source, shared contracts, or unrelated task files changed. No merge to `main` or force-push performed.
 
 ### Unresolved Baseline
 
-- The full-unit and build failures remain the documented generated-client/shared-runtime baseline outside this task scope. No unrelated purchased-credit or observability files were changed.
+- Full-unit and build failures remain the documented generated-client/shared-runtime baseline outside this task scope. No unrelated purchased-credit or observability files were changed.
 
 ## Architect Review — Attempt 4
 
