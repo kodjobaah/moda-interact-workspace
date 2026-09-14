@@ -265,9 +265,9 @@ Correction mapping: no Architect Review corrections were present; the latest rev
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-021`
 - Implementation branch: `task/ARCH-010-BACKGROUND-021`
-- Implementation commits: `229fd5f` (`Confirm recovery credit purchase commercial value`) and `cbdd18e` (`fix background purchase reservation balances`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
+- Implementation commits: `229fd5f` (`Confirm recovery credit purchase commercial value`), `cbdd18e` (`fix background purchase reservation balances`), and `59206a6` (`test background purchase valuation evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
 - Database gitlink was not changed or staged.
-- Parent report is being committed separately on the mirrored parent task branch.
+- Parent report commits: `e308a3e` (claim), `7090504` (return for review), `5f047e5` (validation evidence), and `4731de0` (`docs background 021 audit evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
 
 ### Architect Review
 Pending.
