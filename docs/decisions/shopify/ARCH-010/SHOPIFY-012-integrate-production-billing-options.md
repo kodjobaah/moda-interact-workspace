@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -1181,3 +1181,241 @@ claimed_at: null
 The next `/moda-task ARCH-010-SHOPIFY-012` claim MUST increment to Attempt 3 exactly once.
 
 Do not start `ARCH-010-SHOPIFY-008`, `ARCH-010-SHOPIFY-016`, `ARCH-010-SHOPIFY-026`, `ARCH-010-SHOPIFY-020` or `ARCH-010-SYSTEM-TEST-001` from this review.
+
+## Architect Review — Attempt 3
+
+### Decision
+
+**Changes Requested — one remaining functional presentation/authority correction.**
+
+The new awaiting-Shopify-confirmation flow is accepted. Do not rework it in Attempt 4.
+
+The review remains focused on functional correctness, not exhaustive test coverage.
+
+### Accepted Attempt-3 behavior — preserve exactly
+
+The following implementation is functionally correct and MUST remain unchanged unless a directly required compile fix is necessary:
+
+1. callback `plan_handle` remains non-authoritative selection context only;
+2. `mismatch` and provider-verification-failure redirects preserve the URL-encoded requested handle;
+3. `recordHostedPlanChangeReturn()` classification/persistence semantics remain unchanged;
+4. the options loader derives only `{ shopifyPlanHandle }` as transient `requestedSelection`;
+5. the transient selection is suppressed when fresh Shopify commercial truth confirms the same handle as current or provider-pending;
+6. the requested selection opens the plans view, renders greyed out, and shows exactly `billingCommerce.plans.awaitingShopifyConfirmation`;
+7. the requested selection carries no price, currency, interval, effective date, included allowance, pack configuration or entitlement;
+8. provider-confirmed `pendingUpdate` remains distinct and authoritative once Shopify catches up;
+9. SHOPIFY-009 balances remain independent from commercial mapping state;
+10. `billingCommerce.topup.verificationUnavailable` is already correctly restricted to `mappingStatus === "MAPPED"`.
+
+Do not add another durable/persistent awaiting-confirmation state.
+
+### Remaining functional defect — genuine `UNMAPPED` still leaks stale plan-specific top-up configuration
+
+A genuine `UNMAPPED` state means:
+
+```text
+Shopify activeSubscription confirms current handle H
+AND
+SHOPIFY-013 cannot resolve H to a Moda BillingPlan
+```
+
+The current Attempt-3 route correctly disables `purchaseEligible`, but it still constructs `topUpState` from `getMerchantBillingState()` using:
+
+```text
+configured: data.topUp.configured
+creditsPerPack: data.topUp.creditsPerPack
+shopifyPackMeter: data.topUp.shopifyPackMeter
+```
+
+Those values come from the local Subscription/BillingPlan projection. When the newly confirmed Shopify current handle is `UNMAPPED`, that local plan-specific configuration is not proof of the pack configuration for the confirmed Shopify contract.
+
+This creates a misleading default top-up view: the merchant can see a pack quantity/meter-derived presentation that belongs to local/stale plan configuration while Shopify's authoritative current handle is explicitly unmapped.
+
+In addition, the existing mapping-specific warning is only visible after switching to the plan panel, and even there the component currently emits the short `billing.configurationUnavailable` label. The task contract requires the mapping-specific `billing.configurationUnavailableDescription` warning to be visible for the genuine `UNMAPPED` current contract.
+
+### Attempt 4 required correction
+
+#### 1. Gate only plan-specific top-up configuration on confirmed mapping
+
+In:
+
+```text
+app/routes/app/billing/options/route.tsx
+```
+
+derive one explicit boolean from the already loaded commercial result:
+
+```ts
+const hasMappedCurrentContract =
+  data.verificationState === "ACTIVE_SUBSCRIPTION" &&
+  mappingStatus === "MAPPED";
+```
+
+Build the merchant `topUpState` so plan-specific configuration is exposed only when `hasMappedCurrentContract` is true.
+
+Required behavior:
+
+```text
+purchaseEligible       = existing predicate, still false unless MAPPED
+configured             = hasMappedCurrentContract ? data.topUp.configured : false
+creditsPerPack          = hasMappedCurrentContract ? data.topUp.creditsPerPack : null
+shopifyPackMeter        = hasMappedCurrentContract ? data.topUp.shopifyPackMeter : null
+```
+
+Do NOT suppress shop-owned/durable purchase information:
+
+```text
+purchasedCreditsAvailable  -> preserve actual value
+latestPurchase              -> preserve actual value
+```
+
+Do NOT alter the independent SHOPIFY-009 capacity object passed to `BillingPurchaseHub`:
+
+```text
+paidIncluded
+freeLifetime
+promotional
+purchased
+canStartRecovery / capacitySource semantics
+```
+
+SHOPIFY-012 must present those values exactly as SHOPIFY-009 supplies them; it must not zero or recalculate them because of `UNMAPPED`.
+
+This same gate intentionally fails closed for `VERIFICATION_UNAVAILABLE` / `NO_ACTIVE_SUBSCRIPTION`, because without a verified mapped current Shopify contract the page must not present local plan-specific pack configuration as though it belongs to Shopify's current contract.
+
+#### 2. Show the genuine mapping warning on the default billing surface
+
+In:
+
+```text
+app/components/dashboard/BillingPurchaseHub.jsx
+```
+
+derive exactly:
+
+```ts
+const mappingUnavailable =
+  verificationState === "ACTIVE_SUBSCRIPTION" &&
+  mappingStatus === "UNMAPPED";
+```
+
+The page-level explanatory copy must use:
+
+```text
+billing.configurationUnavailableDescription
+```
+
+for `mappingUnavailable`, so the merchant sees the mapping problem even when the default view is `topup` and never opens the Plans tab.
+
+Preserve existing state precedence:
+
+```text
+FROZEN / DRAINING / RECONCILING presentation first
+VERIFICATION_UNAVAILABLE presentation next
+UNMAPPED mapping warning next
+normal billing-commerce description otherwise
+```
+
+Do not relabel `UNMAPPED` as awaiting confirmation. The confirmed Shopify current handle remains visible as current commercial truth.
+
+The existing short mapping label inside `SubscriptionChangePanel` may remain, but the page-level descriptive warning is mandatory.
+
+#### 3. Preserve the awaiting-confirmation implementation unchanged
+
+Do not change the accepted logic in:
+
+```text
+app/routes/app/billing/callback/route.tsx
+requested_plan_handle query handling
+requestedSelection suppression against current/pending Shopify handles
+moda-provider-plan-awaiting-confirmation rendering/styling
+billingCommerce.plans.awaitingShopifyConfirmation catalogues
+```
+
+No new locale strings are required for Attempt 4.
+
+### Attempt 4 allowed production files
+
+Only:
+
+```text
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/BillingPurchaseHub.jsx
+```
+
+Tests may change only directly relevant existing billing UI tests, preferably:
+
+```text
+tests/unit/billing-purchase-hub.test.tsx
+tests/unit/billing-ui.test.ts
+```
+
+Do not touch callback, service, provider, Prisma, shared, background or locale files unless a compile error proves an unavoidable direct dependency. If that happens, STOP and return to `moda_architect` rather than widening scope.
+
+### Mandatory focused functional evidence
+
+Prove these exact behaviors; do not add broad combinatorial coverage merely to increase test count.
+
+1. `genuine unmapped current contract keeps commercial truth and durable balances but hides local pack configuration`
+   - `verificationState = ACTIVE_SUBSCRIPTION`;
+   - `mappingStatus = UNMAPPED`;
+   - current Shopify handle remains visible;
+   - actual SHOPIFY-009 balances remain visible and unchanged;
+   - merchant top-up state has `purchaseEligible=false`, `configured=false`, `creditsPerPack=null`, `shopifyPackMeter=null`;
+   - purchased-credit balance and any existing purchase lifecycle status remain informationally visible.
+
+2. `genuine unmapped contract shows mapping warning on default top-up view`
+   - default view remains top-up when there is no `requestedSelection`;
+   - markup contains `billing.configurationUnavailableDescription` English rendering;
+   - markup does not contain `billingCommerce.topup.verificationUnavailable` English rendering for this state.
+
+3. `mapped current contract preserves existing top-up composition`
+   - `mappingStatus=MAPPED` keeps the accepted `configured`, pack size, meter and eligibility inputs unchanged.
+
+4. `awaiting Shopify confirmation remains unchanged`
+   - one existing focused regression is sufficient; do not expand this area unless the two-file correction accidentally breaks it.
+
+### Validation
+
+Run:
+
+```text
+npm test -- --run \
+  tests/unit/billing-purchase-hub.test.tsx \
+  tests/unit/billing-ui.test.ts
+
+npm test
+npm run typecheck
+npm run build
+git diff --check
+```
+
+`npm run typecheck` may retain only the already documented unrelated baseline diagnostics. There must be no new diagnostic in either Attempt-4 production file.
+
+### Stop conditions
+
+STOP and return to `moda_architect` without widening scope if this correction appears to require:
+
+- changing `recordHostedPlanChangeReturn()` or callback classification;
+- persisting `requestedSelection`;
+- changing SHOPIFY-013 provider/commercial contracts;
+- changing SHOPIFY-009 capacity semantics;
+- changing SHOPIFY-014 purchase lifecycle/idempotency/provider-evidence semantics;
+- changing Prisma/shared/background contracts;
+- suppressing or recalculating durable SHOPIFY-009 balances because of `UNMAPPED`.
+
+### Workflow state after this review
+
+Authoritative task state after applying this review:
+
+```text
+status: ready
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+The next `/moda-task ARCH-010-SHOPIFY-012` claim MUST increment to Attempt 4 exactly once.
+
+Do not start `ARCH-010-SHOPIFY-008`, `ARCH-010-SHOPIFY-016`, `ARCH-010-SHOPIFY-026`, `ARCH-010-SHOPIFY-020` or `ARCH-010-SYSTEM-TEST-001` from this review.
+
