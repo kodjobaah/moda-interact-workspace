@@ -111,7 +111,6 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ## Current Ready frontier
 
 ```text
-ARCH-010-SHOPIFY-016
 ARCH-010-SHOPIFY-025
 ```
 
@@ -634,6 +633,40 @@ Current implementation-ready frontier:
 
 ```text
 ARCH-010-SHOPIFY-016
+ARCH-010-SHOPIFY-025
+```
+
+## Post-review update — SHOPIFY-016 Attempt 3 accepted
+
+`ARCH-010-SHOPIFY-016` is architect-accepted Complete on merchant-facing lifecycle
+functionality.
+
+Accepted billing action matrix:
+
+```text
+scheduled full cancellation
+  -> top-up unavailable
+  -> Shopify plan management available
+
+FROZEN/restoring
+  -> top-up unavailable
+  -> plan-change CTA unavailable
+  -> direct billing actions fail closed
+
+effective post-onboarding NO_CONTRACT
+  -> top-up unavailable
+  -> Shopify plan selection remains available
+```
+
+`SYSTEM-TEST-002` now has all implementation prerequisites Complete but remains
+Pending/manual-gated by design.
+
+The Shopify task index also had stale metadata for `SHOPIFY-012`; its individual task
+is already Complete and the index is reconciled here.
+
+Current automatic implementation-ready frontier:
+
+```text
 ARCH-010-SHOPIFY-025
 ```
 
