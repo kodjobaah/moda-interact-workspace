@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 79
-executor: copilot
-claimed_at: 2026-09-14T19:19:14Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-014
@@ -407,6 +407,44 @@ STOP if DATABASE-014/BACKGROUND-022 are not integrated, if authenticated shop sc
 
 ### Status
 Ready for Review.
+
+### Attempt-3 Completion Report
+
+#### Initially Missing
+- `requestRefundWithRetry` handled `P2002` only by reloading the exact deterministic request key. A concurrent request for the same purchase with a different request ID could therefore rethrow the partial one-live-refund uniqueness conflict as a server error.
+
+#### Applied Fixes
+- Added a shop-scoped `RecoveryCreditPurchase.findFirst` fallback after the exact request-key lookup. The fallback reloads only live refund statuses and returns the persisted purchase/refund outcome, preserving `REQUESTED` versus `ALREADY_WITHDRAWN` semantics and winning current/reserved/available values.
+- Added the required regression test for request B losing to a different-request live refund from request A. It proves no second refund is created and no Prisma error escapes.
+- No route, schema, Shared, Background, Admin, provider, page-UI, quantity, money, or transaction-boundary changes were made.
+
+#### Final Checklist Audit
+- Authenticated shop resolution, shop-scoped paginated history, all five purchase states, safe refund summaries, computed availability, bounded unique batch input, ordered independent outcomes, client-quantity/money rejection by omission, Serializable per-purchase transactions, bounded retry, purchase/refund/aggregate CAS, exact hold/release accounting, reactivation/provider-action protection, zero-credit completion, and no provider/App Event call remain intact from the prior implementation.
+- Same-request request-key replay remains deterministic.
+- Different-request one-live-refund `P2002` now resolves from authenticated persisted `id + shopId` purchase state; cross-shop fallback state is not queried or exposed.
+- Prisma schema conventions were rechecked: `RecoveryCreditRefund.requestKey` is unique, the partial live-refund uniqueness is authoritative, and `ShopEntitlementCounter` identity is `(shopId, counter)` with versioned fields. No schema change is required.
+- All task non-goals remain satisfied. No unresolved functional requirement was found in the second explicit pass.
+
+#### Validation
+- Focused service test: passed, 12/12.
+- Related billing tests: passed, 2 files and 196 tests.
+- Full test suite: passed, 42 files and 516 tests; 2 files and 3 tests skipped.
+- `npm run prisma:generate`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- Direct ESLint for the changed service, route, and test: passed; only the repository TypeScript-version support warning was emitted.
+- Changed-file diagnostics: no errors.
+- `git diff --check`: passed.
+- Repository `npm run lint`: remains non-zero on 16 pre-existing errors outside changed files. Repository `npm run typecheck`: remains non-zero on the known baseline JSX implicit-any/Polaris, missing `d3` declarations, nullable billing plan, Redis overload, and incomplete billing test mock diagnostics; no diagnostic references the changed files.
+
+#### Git / Worktree / Claim Evidence
+- Launcher claim commit: `ec9e45437bbc889fa04c5e6c0bc947afe350c395`; attempt 3 was already claimed by the launcher and was not re-prepared or reclaimed.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-025`, branch `task/ARCH-010-SHOPIFY-025`, clean after publication.
+- Implementation commit: `957990b0b36b63eb4ff9f5871abead8d4d6ce68e`, pushed to `origin/task/ARCH-010-SHOPIFY-025`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-025`, branch `task/ARCH-010-SHOPIFY-025`.
+
+#### Unresolved Baseline Issues
+- Repository-wide lint and typecheck baseline failures remain outside this task and do not reference the final changed files.
 
 ### Initial Audit Findings and Corrections
 - The existing service had no authenticated server resource boundary for the future merchant page. Added `app/routes/app/billing/recovery-credits/route.ts` with shop resolution, capability checks, paginated loader, bounded batch action, and reactivation action; no page UI or provider call was added.
