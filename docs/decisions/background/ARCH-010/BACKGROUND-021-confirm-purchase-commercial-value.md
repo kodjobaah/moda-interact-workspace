@@ -251,21 +251,35 @@ Ready for Architect Review.
 - Preserved post-commit best-effort capacity-resume scheduling and replay idempotency.
 - Updated purchased recovery reservation accounting and its test harness to use the current Prisma purchase balance fields, `currentAmount` and `reservedAmount`, while retaining aggregate counter quantity accounting.
 - Added explicit focused coverage that REQUESTED purchases provide no capacity, provider plan price snapshots do not determine the stored purchase amount, and a later plan handle cannot alter an activated purchase's immutable provider amount/currency.
+- Audit-strengthened the tests against mutation-style weaknesses: activation now asserts the complete after quantity/cost/currency, purchase amount/currency, valuation/activation timestamps, balance/status/version write set, Serializable transaction option, and aggregate grant; identity negatives mutate the purchase snapshot scope independently of the linked UsageEvent; reservation fixtures now pass through the production ACTIVE filter so REQUESTED/WITHDRAWN/REFUNDED lots cannot be excluded by the mock itself.
+
+### Behavioral Test Matrix
+
+| Required behavior | Production symbol | Test evidence |
+| --- | --- | --- |
+| No capacity before valuation | `selectOldestSpendableLot`, `reserveInTransaction` | `purchased-recovery-reservation.service.test.ts`: REQUESTED lot returns `credits-exhausted`, remains at zero reserved/current balance unchanged. |
+| Exact quantity/cost/currency and immutable snapshots | `reconcileProviderConfirmed` | `recovery-credit-purchase.service.test.ts`: before quantity `2` plus one provider unit yields after `3`; cost `12.50 - 10.00` yields `2.5`; USD is persisted in both after and purchase fields; timestamps and version are asserted. |
+| Subscription, cycle, plan, and meter identity | reconciliation `scope` and candidate checks; `BillingReconciliationService.reconcilePackPurchases` | Focused billing test asserts exact period, plan, meter, subscription, quantity, cost, and currency handoff; purchase tests mutate purchase period/plan/meter snapshots and require fail-closed `over` discrepancy. |
+| Ambiguity and quantity-only fail closed | `reconcileProviderConfirmed` | Multiple unresolved candidates, missing cost, non-positive delta, currency/subscription mismatch, quantity mismatch, and non-REPORTED/mismatched UsageEvent cases assert no activation, no capacity, and no aggregate grant. |
+| Atomic ACTIVE/currentAmount/aggregate grant | Serializable `$transaction`, CAS `updateMany`, counter `upsert` | Activation test asserts ACTIVE, `currentAmount = creditsGranted`, `reservedAmount = 0`, all valuation fields, version increment, aggregate grant, and Serializable transaction option. |
+| Idempotent replay | ACTIVE count and REQUESTED candidate selection in `reconcileProviderConfirmed` | Replay test asserts zero second activation and aggregate grant remains exactly `5`; reservation commit replay returns `already-committed` with one usage event. |
+| Plan-price independence and immutable historical value | `providerPurchaseAmount` calculation in `reconcileProviderConfirmed` | Plan snapshot price `999.00` still stores provider delta `2.5`; later plan handle/cost leaves ACTIVE purchase amount/currency unchanged. |
+| Post-commit resume hint | `recoveryCapacityResumeService.schedule` after `$transaction` | Resume-hint tests assert event order transaction-complete -> schedule, no hint on zero activation, and activation result survives queue failure. |
 
 Correction mapping: no Architect Review corrections were present; the latest review section remained `Pending`.
 
 ### Validation Results
-- Focused purchase, reconciliation, resume-hint, and reservation tests: passed, 68/68 tests.
+- Focused purchase, reconciliation, resume-hint, and reservation tests: passed, 70/70 tests after mutation-strengthening edits; the two edited files are committed as implementation `b10c5d1`.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- `npm run test:unit`: 57 files passed and 910 tests passed; 2 unchanged baseline failures in `tests/unit/runtime/observability-startup.test.ts` (worker close-resource source assertion and expected shared runtime `0.9.0` versus package `0.11.0`).
+- `npm run test:unit`: 57 files passed and 912 tests passed; 2 unchanged baseline failures in `tests/unit/runtime/observability-startup.test.ts` (worker close-resource source assertion and expected shared runtime `0.9.0` versus package `0.11.0`).
 - `npm run build`: passed, including Prisma generation and TypeScript compilation.
 - `git diff --check`: passed.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-021`
 - Implementation branch: `task/ARCH-010-BACKGROUND-021`
-- Implementation commits: `229fd5f` (`Confirm recovery credit purchase commercial value`), `cbdd18e` (`fix background purchase reservation balances`), and `59206a6` (`test background purchase valuation evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
+- Implementation commits: `229fd5f` (`Confirm recovery credit purchase commercial value`), `cbdd18e` (`fix background purchase reservation balances`), `59206a6` (`test background purchase valuation evidence`), and `b10c5d1` (`test background purchase mutation strength`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
 - Database gitlink was not changed or staged.
 - Parent report commits: `e308a3e` (claim), `7090504` (return for review), `5f047e5` (validation evidence), `4731de0` (`docs background 021 audit evidence`), and `00af590` (`docs background 021 git evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
 
