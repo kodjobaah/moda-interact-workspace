@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 59
-executor: copilot
-claimed_at: 2026-09-14T04:36:40Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-BACKGROUND-004
@@ -238,19 +238,32 @@ STOP if implementing one lifecycle reason would require bypassing the existing a
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- Implementation repository commit `40fedb029a2b3ae53ed7a8083cd5d0122e3b1695` changed exactly these 10 files in `moda-interact-background`: 8 production files (`checkout-recovery.service.ts`, `effective-billing-policy.service.ts`, `outbound-whatsapp-admission.service.ts`, `pending-recovery-candidate.service.ts`, `recovery-billing.service.ts`, `recovery-capacity-resume.service.ts`, `shop-execution-eligibility.service.ts`, `whatsapp.worker.ts`) and 2 focused test files (`effective-billing-policy.service.test.ts`, `shop-execution-eligibility.service.test.ts`).
+- Parent repository change: this task report only.
 
 ### Work Completed
-Populate during implementation.
+- Reused and extended the canonical shop execution-eligibility gate to distinguish executable ACTIVE/TRIALING from `NO_CONTRACT` (`CONTRACT_REQUIRED`) and `FROZEN` (`SUBSCRIPTION_FROZEN`) outcomes.
+- Applied the lifecycle gate before new recovery/candidate execution, billing reservation/finalisation, outbound WhatsApp admission, queued WhatsApp processing, and capacity-resume re-admission; denied lifecycle jobs remain terminal no-ops where the existing queue contract permits.
+- Preserved bounded accounting/bookkeeping paths and existing inactive/uninstalled, unmapped/sync-error, and capacity-exhaustion semantics. No Partner API or Shopify/Meta HTTP-ingress lifecycle lookup was added, and BACKGROUND-018 remains the raw checkout/cart/order early gate.
+- Focused tests cover active execution, distinct NO_CONTRACT/FROZEN policy results, lifecycle denial, and no regression of the accepted gate boundary. No production implementation changes were needed after the pushed commit.
 
 ### Validation Results
-Populate during implementation.
+- Focused validation after the pushed implementation commit: `npm exec vitest run tests/unit/services/effective-billing-policy.service.test.ts tests/unit/services/shop-execution-eligibility.service.test.ts` — 2 test files passed, 26 tests passed, 0 failed.
+- `npm run prisma:validate` — passed; schema valid.
+- `git diff --check` in the implementation worktree — passed; implementation worktree clean.
+- `npm run test:unit` — 58 test files total: 56 passed, 2 failed; 884 tests total: 874 passed, 10 failed. The 10 failures are unchanged documented baseline diagnostics: 8 in `tests/unit/services/recovery-credit-purchase.service.test.ts` and 2 in `tests/unit/runtime/observability-startup.test.ts`. No BACKGROUND-013 focused test failed.
+- `npm run build` — remains at the documented baseline: 15 TypeScript errors in 2 unrelated files, 10 errors in `src/services/purchased-recovery-reservation.service.ts` and 5 in `src/services/recovery-credit-purchase.service.ts`; no touched BACKGROUND-013 file is implicated. Prisma client generation completed before the typecheck errors.
+- The implementation commit was already fully validated and pushed before report completion; the focused rerun and required whitespace check above reconfirm the task-owned slice.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Launcher-provided canonical worktrees were used without recreation or resynchronization: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-013`, parent/report `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-013`.
+- Implementation branch `task/ARCH-010-BACKGROUND-013` is clean, remote-matching, and points to pushed commit `40fedb029a2b3ae53ed7a8083cd5d0122e3b1695`.
+- Launcher synchronization evidence: parent branch started at launcher claim `68a61af9e36bc42c4d01ff87dc05f66432f4d831`, remote matched; implementation branch was synchronized with its task branch and initialized submodules were at recorded commits. No submodule gitlink was staged or changed.
+- Parent report publication SHA: to be recorded in the publication commit after this report update.
+- Status metadata for return to review: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`.
 
 ### Architect Review
 Pending.
