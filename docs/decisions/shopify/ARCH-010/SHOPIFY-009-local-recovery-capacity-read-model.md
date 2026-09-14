@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 52
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ enables:
 - ARCH-010-SHOPIFY-016
 - ARCH-010-SHOPIFY-020
 created: 2026-09-11
-updated: '2026-09-12'
+updated: 2026-09-14
 ---
 
 # ARCH-010-SHOPIFY-009: Add local merchant recovery-capacity projection
