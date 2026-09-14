@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 81
 executor: null
 claimed_at: null
@@ -602,3 +602,179 @@ Attempt 3 may return to review when:
 Then STOP and return to `moda_architect`.
 
 `ARCH-010-ADMIN-003` remains gated until `ADMIN-002` is architect-accepted Complete.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted**
+
+This review intentionally prioritises operator-facing functionality, queue semantics,
+authorization and read-only safety over exhaustive test coverage.
+
+Attempt 3 closes the only remaining production defect identified in Attempt 2.
+
+### Accepted `NEEDS_ATTENTION` semantics
+
+The queue now uses one consistent semantic interpretation between row projection and
+database filtering.
+
+The `NEEDS_ATTENTION` filter includes:
+
+```text
+persisted refund.status = NEEDS_ATTENTION
+
+OR
+
+refund.status = REQUESTED
++ purchase.status in REQUESTED / ACTIVE / COMPLETED / REFUNDED
+
+OR
+
+refund.status = REQUESTED
++ purchase.status = WITHDRAWN
++ reservedAmount = 0
++ currentAmount <= 0
+```
+
+These rows are the same lifecycle anomalies that the existing `queueStatus(...)`
+projection labels as operator attention.
+
+Therefore an integrity anomaly no longer:
+
+```text
+appears as NEEDS_ATTENTION in All/Requested
+-> disappears when the operator selects Needs attention
+```
+
+### Valid withdrawn states remain excluded
+
+The filter continues to exclude the two valid `REQUESTED` withdrawn states:
+
+```text
+WITHDRAWN + reservedAmount > 0
+  -> WAITING_FOR_RESERVATIONS
+
+WITHDRAWN + reservedAmount = 0 + currentAmount > 0
+  -> READY_FOR_PROVIDER_ACTION
+```
+
+Those states therefore remain independently actionable/observable and are not
+misclassified as integrity attention.
+
+### Accepted database/read-model boundary
+
+The correction is performed in the Prisma `where` predicate before count/pagination.
+
+Therefore:
+
+```text
+pagination remains database-scoped
+count uses the same semantic filter as findMany
+page size remains bounded
+no in-memory post-filter changes page membership
+```
+
+No persisted refund/purchase status is rewritten to manufacture an attention state.
+`DATA_INTEGRITY_ATTENTION` remains a read-model/operator interpretation only.
+
+### Previously accepted ADMIN-002 functionality preserved
+
+Architect inspection confirms the following remain intact:
+
+```text
+ADMIN / SUPER_ADMIN authenticated read access
+merchant isolation from Admin routes
+bounded queue pagination (20 default / 50 maximum)
+merchant-created refund identity without support-message prerequisite
+request-time snapshots distinct from current purchase balances
+purchase/BillingPeriod/plan/meter/provider provenance
+provider valuation before/after evidence
+support-context display as contextual evidence only
+bounded reservation history
+bounded refund history
+current plan/top-up price explicitly non-authoritative
+no quantity / percentage / money-entry input
+no approval / provider-settlement control in ADMIN-002
+no refund creation
+no purchase/hold mutation
+no Shopify/provider call
+no ADMIN-003 settlement behavior
+```
+
+The detail-drawer evidence correction from Attempt 2 is accepted and unchanged.
+
+### Validation accepted
+
+```text
+Focused refund-triage tests:
+  2 / 2 passed
+
+Unit tests:
+  42 / 42 passed
+
+Full tests:
+  173 / 173 passed
+
+TypeScript:
+  passed
+
+Production build:
+  passed
+
+git diff --check:
+  passed
+```
+
+The existing unrelated lint warnings and BullMQ build warnings remain non-blocking.
+Acceptance is based on the production queue behavior above rather than test-count
+completeness.
+
+### Accepted implementation evidence
+
+Developer handoff:
+
+```text
+Attempt-3 implementation:
+bb7ccc10ec3aadfe19693143f47d6a7c2ad922a7
+
+Attempt-3 parent report:
+70470627
+```
+
+Preserve the full parent-report SHA from repository history when publishing the
+architect acceptance.
+
+Both worktrees were reported clean and pushed.
+
+### Dependency reconciliation
+
+`ARCH-010-ADMIN-002` is Complete.
+
+All declared prerequisites of:
+
+```text
+ARCH-010-ADMIN-003
+```
+
+are now Complete:
+
+```text
+ARCH-010-ADMIN-002
+ARCH-010-BACKGROUND-022
+ARCH-010-SHARED-008
+ARCH-010-DATABASE-014
+ARCH-010-BACKGROUND-021
+```
+
+Therefore `ARCH-010-ADMIN-003` is promoted to `ready`.
+
+The current automatic implementation-ready frontier is:
+
+```text
+ARCH-010-SHOPIFY-026
+ARCH-010-ADMIN-003
+```
+
+No Attempt 4 is required for `ARCH-010-ADMIN-002`.
+
