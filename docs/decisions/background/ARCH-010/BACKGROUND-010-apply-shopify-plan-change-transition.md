@@ -10,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-14T00:34:41Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
 - ARCH-010-DATABASE-013
@@ -2546,6 +2546,75 @@ return to `moda_architect`.
 
 Do not start `ARCH-010-BACKGROUND-012`, `ARCH-010-SHOPIFY-015` or
 `ARCH-010-SYSTEM-TEST-001`.
+
+## Attempt 6 Completion Report
+
+### Status
+
+Ready for Review.
+
+### Correction Mapping
+
+| Architect Review correction | Evidence added |
+|---|---|
+| Withdrawn pending update must publish the exact deterministic replacement payload | `clears a withdrawn established pending update atomically` now asserts the exact `expectedNextReconcileAt` and deterministic `jobId` options. |
+| Capacity-resume enqueue failure must not classify the committed transition as failed | `swallows queued plan-change capacity-resume enqueue failure after transition` now inspects every guarded subscription update and rejects `SYNC_ERROR`, error-code, and bounded-retry writes. |
+| Rotating fail-closed paths must prove transition suppression | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter`, `fails closed for rotating provider-current target with %s`, and `fails closed for rotating target prerequisite: %s` now spy on `ShopifyPlanChangeTransitionService.transition` and assert it is not called. |
+| Evidence map must align with the required 1-20 contract | Replaced below with the corrected requirement map; no production source changes were made. |
+
+### Evidence Map
+
+| Requirement | Exact test title(s) | Test file |
+|---|---|---|
+| 1 | `refreshes pending provider state in one guarded update` | `billing-subscription-reconciliation.service.test.ts` |
+| 2 | `clears a withdrawn established pending update atomically` | `billing-subscription-reconciliation.service.test.ts` |
+| 3 | `keeps established entitlement on Partner failure and publishes one bounded retry` | `billing-subscription-reconciliation.service.test.ts` |
+| 4 | `keeps established entitlement unresolved when Partner reports no active subscription` | `billing-subscription-reconciliation.service.test.ts` |
+| 5 | `retries established plan changes from retryable SYNC_ERROR: %s`; `does not execute an unrelated SYNC_ERROR as an established plan change` | `billing-subscription-reconciliation.service.test.ts` |
+| 6 | `fails established queued plan change closed for invalid target prerequisite: %s` | `billing-subscription-reconciliation.service.test.ts` |
+| 7 | `schedules plan-change capacity resume after a successful queued Paid transition` | `billing-subscription-reconciliation.service.test.ts` |
+| 8 | `swallows queued plan-change capacity-resume enqueue failure after transition` | `billing-subscription-reconciliation.service.test.ts` |
+| 9 | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter` | `billing-reconciliation.service.test.ts` |
+| 10 | `fails closed for rotating provider-current target with %s` | `billing-reconciliation.service.test.ts` |
+| 11 | `fails closed for rotating target prerequisite: %s` | `billing-reconciliation.service.test.ts` |
+| 12 | `does not schedule plan-change capacity resume after a successful Free transition` | `billing-reconciliation.service.test.ts` |
+| 13 | `fails closed when the expected effective target transition returns not-applicable` | `billing-reconciliation.service.test.ts` |
+| 14 | `reuses a matching successor without resetting its included usage` | `shopify-plan-change-transition.service.test.ts` |
+| 15 | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once` | `shopify-plan-change-transition.service.test.ts` |
+| 16 | `creates a Free successor without a monthly counter` | `shopify-plan-change-transition.service.test.ts` |
+| 17 | `preserves lifetime purchased and promotion state for transition direction: %s` | `shopify-plan-change-transition.service.test.ts` |
+| 18 | `does not mutate periods before target prerequisite validation: %s` | `shopify-plan-change-transition.service.test.ts` |
+| 19 | `allows retryable plan-change SYNC_ERROR transition: %s`; `rejects unrelated SYNC_ERROR as not-applicable` | `shopify-plan-change-transition.service.test.ts` |
+| 20 | `supports Free -> Paid without an outgoing Free billing period`; `closes an existing outgoing Free period exactly once before Free -> Paid`; `returns a null billing period for a pack-disabled Free transition without a provider cycle` | `shopify-plan-change-transition.service.test.ts` |
+
+### Validation
+
+- Focused suites: passed, 3 files / 198 tests.
+- `npm run test:integration`: passed, 2 files / 3 tests.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run test:unit`: 56 files / 724 tests executed; 54 files / 714 tests passed; 10 unchanged baseline failures remain, exactly 8 recovery-credit purchase tests and 2 observability-startup tests.
+- `npm run build`: failed with exactly 15 unchanged generated-client diagnostics, 10 in `src/services/purchased-recovery-reservation.service.ts` and 5 in `src/services/recovery-credit-purchase.service.ts`; no diagnostics were reported in either Attempt 6 changed test file.
+- `git diff --check`: passed.
+- `rg -n "tierRank|prorat"` over the three production files returned no matches (expected exit 1).
+
+### Workflow Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-010`, `task/ARCH-010-BACKGROUND-010`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-010`, `task/ARCH-010-BACKGROUND-010`.
+- Launcher Attempt 6 claim commit: `7979fe9a9f338236dcb5d849aef7ab84bfc29087`.
+- Prepared synchronization, dedicated worktrees, and recursive database-submodule materialisation were supplied by the launcher packet; no launcher discovery, re-claim, synchronization, or submodule initialization was repeated.
+- Database gitlink before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Attempt 5 implementation full SHA: `a5dc1a168b396d1629d565f00cea58d9f4d30228`.
+- Attempt 5 final parent full SHA: `7c5327207e8c38004069a64ec84fffca6e225283`.
+- Attempt 6 implementation full SHA: `48f1b40` (full SHA recorded after the parent publication below).
+- Attempt 6 parent report publication commit: recorded after this report update; parent HEAD before publication was `7979fe9a9f338236dcb5d849aef7ab84bfc29087`.
+- Both task branches track their `origin/task/ARCH-010-BACKGROUND-010` upstream; no merge to `main` or force-push was performed.
+
+### Unresolved Baseline
+
+- The same 10 full-unit failures and 15 build diagnostics documented in Attempt 5 remain outside this task scope. No production source, schema, shared contract, purchased-credit, database gitlink, or unrelated task file was changed in Attempt 6.
 
 ## Architect Review — Attempt 5
 
