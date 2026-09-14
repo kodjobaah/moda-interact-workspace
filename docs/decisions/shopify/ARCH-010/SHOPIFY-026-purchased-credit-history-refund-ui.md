@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
 executor: copilot
 claimed_at: 2026-09-14T20:09:41Z
@@ -318,6 +318,38 @@ Ready for Review.
 - Added a production billing/capacity link while preserving the existing top-up CTA.
 - Added merchant catalogue parity through the existing catalogue registry with English fallback values for all supported merchant locales.
 
+### Second Review Findings and Fixes
+- Initially omitted: no dedicated route/component test covered the 23 required UI checks; added `tests/unit/recovery-credit-purchase-manager.test.tsx` with lifecycle, selection, internal-data, payload, authentication and route-registration assertions.
+- Initially omitted: `eligibleVisible` was recreated for every render and used by a cleanup effect that always returned a new array; memoized it to prevent render-loop state churn.
+- Initially incorrect: REFUNDED rows displayed `expectedProviderAmount/currency` as confirmed settlement money even though SHOPIFY-025 does not expose provider-confirmed settlement fields; removed that speculative display while retaining persisted refunded credit quantity and completion date.
+- Initially incomplete: race and refund summaries passed raw server numbers to merchant copy; now format returned values through the merchant i18n runtime.
+- Second-review feedback: route authentication, read/manage capability metadata, route registration, production navigation, server-owned IDs/amounts, current-page selection, confirmation statements, independent outcomes, reactivation gating, terminal controls, internal-data omission and i18n parity are present and covered by focused tests.
+
+### Requirement and Test Checklist
+1. Dedicated authenticated route: satisfied by explicit route and authenticated loader/action assertions.
+2. Billing surface link preserving top-up CTA: satisfied and covered by billing purchase hub test.
+3. Active, Refund pending, Completed, Refunded and All views: satisfied by filter model and focused render test.
+4. REQUESTED visible and non-selectable: satisfied in All view and focused render test.
+5. ACTIVE available > 0 selectable: satisfied by `eligible` and focused render fixture.
+6. ACTIVE available = 0 explanatory/non-selectable state: satisfied and focused render test.
+7. No quantity input: satisfied; manager submits purchase IDs only and test asserts no quantity form field.
+8. One selected purchase sends one purchase ID: satisfied by one-item `forEach` FormData construction.
+9. Multiple selected purchases send bounded unique IDs: satisfied by current-page selection deduplication and route max 20 validation.
+10. Stale displayed quantities are not authority: satisfied; no displayed amount is submitted.
+11. Partial batch outcomes render independently: satisfied by ordered per-item outcome rendering.
+12. Refund-not-available race: satisfied by exact outcome catalogue copy.
+13. Fresh reduced availability race: satisfied using returned outcome numbers, now locale-formatted.
+14. WITHDRAWN plus REQUESTED refund shows Reactivate: satisfied.
+15. Provider-action-started state blocks Reactivate: satisfied for non-REQUESTED live refund states.
+16. Reactivation refreshes to ACTIVE without changing identity/date: satisfied by action revalidation and server-owned row identity/date.
+17. COMPLETED/REFUNDED have no refund controls: satisfied by status-conditional controls.
+18. REFUNDED settlement data is not misrepresented: only persisted refunded credits/completion date are shown because confirmed amount/currency are absent from SHOPIFY-025.
+19. Original money is immutable provenance, not recalculated: satisfied by `originalProviderPurchase` only.
+20. Cross-shop/internal provider data safety: satisfied by SHOPIFY-025 shop scope and no provider/internal fields rendered.
+21. Pagination/filter state bounded: satisfied by server page/pageSize bounds; lifecycle filtering remains page-local because SHOPIFY-025 has no server lifecycle filter.
+22. Merchant i18n parity and fallback: satisfied by catalogue registry/parity tests and merchant runtime fallback.
+23. Component/route tests, typecheck/build/lint and diff check: focused tests, build, changed-file lint and diff check passed; typecheck remains baseline-blocked only outside task files.
+
 ### Correction Checklist
 - The launcher/task context identified `rework_required`, but the complete authoritative task file contained no `## Architect Review` section or Changes Requested items. No review section was edited; the full task acceptance criteria were treated as the correction checklist.
 - Authenticated route and production navigation: implemented.
@@ -329,20 +361,22 @@ Ready for Review.
 - Persisted settlement/money safety, cross-shop/internal data safety and merchant i18n: implemented.
 
 ### Validation Results
-- Passed focused route/configuration test: `tests/unit/routes/explicit-route-config.test.ts` (7 tests).
-- Passed focused billing/i18n tests: `tests/unit/routes/explicit-route-config.test.ts`, `tests/unit/billing-purchase-hub.test.tsx`, `tests/unit/billing-i18n.test.ts`, `tests/unit/merchant-i18n.test.ts` (4 files, 27 tests).
-- Passed changed-file ESLint and `git diff --check`.
+- Passed final focused suite: `tests/unit/recovery-credit-purchase-manager.test.tsx`, `tests/unit/routes/explicit-route-config.test.ts`, `tests/unit/billing-purchase-hub.test.tsx`, `tests/unit/billing-i18n.test.ts`, `tests/unit/merchant-i18n.test.ts`, `tests/unit/services/recovery-credit-purchase-management.service.test.ts` (6 files, 42 tests).
+- Passed changed-file ESLint; only the repository's existing unsupported-TypeScript-version warning was emitted.
+- Passed `git diff --check`.
 - Passed `npm run build` after final changes; Prisma client generation and client/SSR builds completed.
 - `npm run typecheck` remains blocked by the documented repository baseline: 256 errors across 30 existing files, including generated Prisma-client enum/API mismatch and existing checked-JavaScript diagnostics. No diagnostics remained in the task-owned manager, route, route table or catalogue files after local fixes.
 - Full `npm test` remains blocked by the same baseline/generated-client state: 5 suites fail to initialize because `@prisma/client` is not initialized in the Vitest process and 7 existing billing-callback tests fail on missing generated enum values. The task-focused suites pass.
-- Contract limitation for architect review: SHOPIFY-025 exposes bounded pagination but no lifecycle filter parameter. The UI keeps server pagination bounded and filters the loaded page; it does not load unbounded history or invent a server contract.
+- Contract limitations for architect review: SHOPIFY-025 exposes bounded pagination but no lifecycle filter parameter, so the UI filters only the loaded bounded page and does not claim complete lifecycle totals; SHOPIFY-025 also does not expose provider-confirmed refund amount/currency, so the UI omits that value rather than displaying `expectedProviderAmount` as settlement.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-026`.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-026`.
 - Mirrored branch: `task/ARCH-010-SHOPIFY-026`.
-- Implementation commit/push: `e37f9a7` pushed to `origin/task/ARCH-010-SHOPIFY-026`.
-- Parent report commit/push: `0b6711a` pushed to `origin/task/ARCH-010-SHOPIFY-026`.
+- Claim commit: `f6318efcad3d527296e1860c6581f1b2eebc5dad`.
+- Implementation commit/push: `2134bdb` pushed to `origin/task/ARCH-010-SHOPIFY-026` (prior implementation baseline `e37f9a7`).
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-026`.
+- Parent report commit/push: pending until this report update is committed and pushed.
 
 ### Architect Review
 Pending. The task is returned for architect review; this agent made no architect acceptance decision.
