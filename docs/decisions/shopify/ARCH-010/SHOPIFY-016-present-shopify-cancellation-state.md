@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-09-14T17:48:18Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-010-SHOPIFY-009
@@ -219,35 +219,29 @@ STOP and return to `moda_architect` if:
 ### Completion Report
 
 ### Status
-Ready for Review after corrective attempt 2.
+Ready for Review after corrective attempt 3.
 
 ### Files Changed
-- Implementation commit `10a6eaf` changed 27 task-owned files in `moda-interact`: dashboard lifecycle presentation, home and billing action routes, all merchant locale catalogues with translated lifecycle copy, and focused home/billing/lifecycle tests.
-- Parent repository change: this task report only.
+- Implementation: `app/routes/app/billing/route.tsx` and `tests/unit/billing-ui.test.ts` only.
+- Parent repository: this task report only.
 
 ### Work Completed
-- Preserved the ordinary merchant dashboard for completed shops in effective `NO_CONTRACT`, while keeping fresh incomplete onboarding on the existing onboarding surface and retaining readable history/support data.
-- Wired the canonical SHOPIFY-009 `CONTRACT_REQUIRED` and `CONTRACT_FROZEN` projections into the actual `/app` usage and detail dashboard surfaces, preserving visible balances and history without presenting frozen or ended contracts as ordinary exhaustion.
-- Added lifecycle presentation precedence for FROZEN/restoring, pending plan changes, scheduled cancellation with exact provider cycle end, and effective NO_CONTRACT.
-- Added fail-closed direct server guards to both `/app/billing` and `/app/billing/options`; kept Shopify-hosted plan selection unavailable while FROZEN and available for scheduled cancellation/effective NO_CONTRACT.
-- Added focused regression coverage for dashboard presentation and direct billing actions. No Admin exposure, local Shopify cancellation mutation, or recurring Partner API polling was introduced.
-- Added translated values for the new lifecycle strings in every non-English locale while preserving key parity across all 20 catalogues.
+- `/app/billing` now reads the existing local recovery-capacity projection alongside billing state and returns only `lifecycleRestriction: capacity.availability`.
+- Scheduled full cancellation uses `cancelAtPeriodEnd === true` with no pending plan to suppress the legacy top-up control while retaining Shopify-hosted plan management.
+- `CONTRACT_FROZEN` suppresses both the legacy top-up control and `/app/billing/select` plan-management link; existing server action guards and all unrelated lifecycle behavior remain unchanged.
+- Added the two required rendered billing UI regression tests; existing direct-action rejection tests remain intact.
 
 ### Validation Results
-- Focused validation: `npm exec vitest run tests/unit/home-route.test.ts tests/unit/billing-ui.test.ts tests/unit/lifecycle-restriction-banner.test.jsx` -> 3 files passed, 25 tests passed, 0 failed.
-- Full tests: 41 files passed, 2 skipped; 502 tests passed, 3 skipped.
-- Prisma generation completed successfully as part of the build.
-- Production build: `npm run build` passed; existing Zod annotation, unresolved Prisma browser import, empty-route-chunk, unused-import, and chunk-size warnings remain.
-- Typecheck: `npm run typecheck` remains nonzero on the repository's existing JSX implicit-any and unrelated service/test diagnostics; no new lifecycle-specific failure was identified.
-- Locale verification: all 20 locale files contain all new lifecycle keys; all 19 non-English catalogues use translated values distinct from English.
-- Whitespace: `git diff --check` passed.
+- Focused validation: `npm test -- --run tests/unit/billing-ui.test.ts` -> 1 file passed, 20 tests passed, 0 failed.
+- `git diff --check` passed.
+- `npm run typecheck` remains nonzero on existing repository-wide JSX implicit-any and unrelated diagnostics; neither touched file appears in the diagnostics after the local test typing fix.
 
 ### Git / VCS
-- Launcher corrective claim commit: `920cdf03038265aa17117ee0491d4128a4965d03`; attempt 2, executor `copilot`, dependency gate passed.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-016`.
-- Implementation branch: `task/ARCH-010-SHOPIFY-016`, commit `10a6eaf`, pushed to `origin/task/ARCH-010-SHOPIFY-016`.
+- Implementation branch: `task/ARCH-010-SHOPIFY-016`, commit `3de1f33fd321e72919cb26f7f1dca56c2abdad16`, pushed to `origin/task/ARCH-010-SHOPIFY-016`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-016`.
-- Database submodule remained at the launcher-recorded commit `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no submodule gitlink was changed.
+- Attempt-3 parent claim commit: `920cdf03038265aa17117ee0491d4128a4965d03`.
+- No submodule gitlink or unrelated parent files were changed.
 
 ### Architect Review
 Pending.
