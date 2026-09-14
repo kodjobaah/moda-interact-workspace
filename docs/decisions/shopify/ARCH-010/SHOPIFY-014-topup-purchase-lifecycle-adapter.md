@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 54
 executor: null
 claimed_at: null
@@ -325,6 +325,182 @@ Ready for Architect Review.
 
 ### Architect Review
 Pending moda_architect review.
+
+
+## Architect Review — Attempt 2
+
+### Decision
+
+**Changes Requested — return the same task to Ready for Attempt 3.**
+
+Implementation reviewed:
+
+```text
+c139dc49df028ae3f781d04240b356fa17e9154c
+```
+
+Parent/report evidence reviewed:
+
+```text
+38b46cae9a2c38d1a8b465b0a7ea6401f20c3f52
+```
+
+### Functional review result
+
+Attempt 2 closes the service-level functional findings from Attempt 1. Preserve the current implementation of:
+
+```text
+app/services/billing/billing.service.ts
+app/components/dashboard/TopUpPurchasePanel.jsx
+app/i18n/locales/*.json
+app/routes/app/billing/route.tsx
+```
+
+unless restoring the route below exposes a concrete compile failure.
+
+The following behaviour is accepted for this task:
+
+- merchant read and mutation use the accepted SHOPIFY-018 `getSubscriptionLifecycleSnapshot` authority;
+- effective `FROZEN` lifecycle evidence blocks a top-up even when `activeSubscription` remains non-null;
+- mutation requires an ACTIVE Shop and executable ACTIVE/TRIALING local subscription policy before provider verification;
+- exact provider subscription/plan/cycle/pack-meter and required BEFORE quantity/cost/currency are verified;
+- Paid additionally verifies the primary recovery meter without imposing that requirement on Free;
+- new purchases remain `REQUESTED` with `currentAmount=0` and `reservedAmount=0`;
+- exact BillingPeriod/provider subscription/plan/meter/BEFORE evidence and provider price shape remain snapshotted;
+- same purchase identity replays without another UsageEvent;
+- unresolved REQUESTED arbitration remains server-side/concurrency-safe;
+- HTTP still performs neither direct App Event publication nor `REQUESTED -> ACTIVE` activation;
+- REQUESTED `RETRYABLE` / `NEEDS_ATTENTION` presentation does not create a sixth purchase lifecycle state;
+- all six task-visible merchant strings are now present across the 20 supported catalogues.
+
+Do not churn these accepted mechanics in Attempt 3.
+
+### Remaining functional blocker — `/app/billing/options` was not restored
+
+Attempt-1 Finding 2 required this file:
+
+```text
+app/routes/app/billing/options/route.tsx
+```
+
+to be restored **exactly** to pre-task parent:
+
+```text
+64b535798ed03ca08045fbfa96ff364f7be26f77
+```
+
+with no partial SHOPIFY-014 production wiring retained there.
+
+Attempt 2 did not do that. The current route still:
+
+```text
+imports TopUpPurchasePanel
+imports billingService
+exports a purchase action
+loads getMerchantBillingState(...)
+generates purchaseId
+renders only TopUpPurchasePanel
+```
+
+This remains a functional regression because it removes the plan-management half of the billing-options experience before `ARCH-010-SHOPIFY-012` performs the authorised final composition of:
+
+```text
+SHOPIFY-009 recovery capacity
+SHOPIFY-013 commercial state
+SHOPIFY-014 TopUpPurchasePanel
+SHOPIFY-015 SubscriptionChangePanel
+```
+
+The Completion Report statement that the route ownership boundary was restored is therefore not true for the published Attempt-2 implementation.
+
+### Exact Attempt-3 correction
+
+In the `moda-interact` implementation worktree, perform exactly:
+
+```bash
+git restore \
+  --source=64b535798ed03ca08045fbfa96ff364f7be26f77 \
+  -- app/routes/app/billing/options/route.tsx
+```
+
+After the restore, verify:
+
+```bash
+git diff 64b535798ed03ca08045fbfa96ff364f7be26f77 \
+  -- app/routes/app/billing/options/route.tsx
+```
+
+Expected output:
+
+```text
+<empty>
+```
+
+The restored file must therefore contain the pre-task mock `BillingPurchaseHub` route until SHOPIFY-012 replaces it. That temporary mock route is intentional ownership sequencing, not a request to re-implement the production composition here.
+
+Do **not** restore or modify:
+
+```text
+app/routes/app/billing/route.tsx
+```
+
+The existing `PENDING_BILLING -> REQUESTED` lifecycle correction there remains accepted.
+
+### Attempt-3 production scope
+
+Allowed production change:
+
+```text
+app/routes/app/billing/options/route.tsx   # exact restore only
+```
+
+No production changes are authorised in:
+
+```text
+app/services/billing/billing.service.ts
+app/components/dashboard/TopUpPurchasePanel.jsx
+app/i18n/locales/*.json
+app/routes/app/billing/route.tsx
+Prisma/database
+Background
+Shared
+Admin
+Shopify provider GraphQL
+```
+
+unless the exact route restore causes a compile failure attributable to an Attempt-2 import/export mismatch. If that occurs, STOP and report the concrete compiler error instead of broadening scope.
+
+### Functional validation
+
+This is not a coverage-expansion attempt. Run only the checks needed to prove the route correction did not regress the accepted implementation:
+
+```text
+git diff 64b535798ed03ca08045fbfa96ff364f7be26f77 -- app/routes/app/billing/options/route.tsx
+# expected: empty
+
+npm test -- --run \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/billing-ui.test.ts
+
+npm run build
+git diff --check
+```
+
+Preserve the already-passing 198 focused functional tests. Do not add tests merely to increase coverage unless the route restore exposes a real functional regression.
+
+### Stop condition
+
+Return to `moda_architect` only when:
+
+```text
+- app/routes/app/billing/options/route.tsx is byte-for-byte/effective-diff identical to 64b5357;
+- the accepted Attempt-2 service/panel/i18n/purchase lifecycle implementation is unchanged;
+- the ordinary /app/billing REQUESTED correction remains present;
+- focused functional tests, build and git diff --check pass;
+- task metadata is review / executor null / claimed_at null / attempt 3.
+```
+
+Do not start `ARCH-010-SHOPIFY-012` or `ARCH-010-BACKGROUND-021` from this task.
 
 ## Architect Review — Attempt 1
 
