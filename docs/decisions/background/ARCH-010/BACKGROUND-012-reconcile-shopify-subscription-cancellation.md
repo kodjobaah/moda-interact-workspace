@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 58
-executor: copilot
-claimed_at: 2026-09-14T01:15:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-010-DATABASE-013
@@ -399,19 +399,37 @@ Do not solve those conditions by inventing compatibility state.
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-background/src/providers/shopify-partner-billing.provider.ts`
+- `moda-interact-background/src/services/billing-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/shopify-subscription-lifecycle-reconciliation.service.ts`
+- `moda-interact-background/tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Wired subscription reconciliation to the BACKGROUND-015 combined live-subscription/lifecycle snapshot, with a compatibility fallback for existing provider test doubles.
+- Added lifecycle reconciliation for FROZEN, effective CANCELED, unresolved/null-contract, and same-cycle UNFROZEN restoration paths.
+- Preserved newer persisted lifecycle evidence over older provider evidence; frozen rows remain actionable through the existing durable scheduler query.
+- Effective cancellation closes the open period with `CONTRACT_ENDED`, releases period-scoped reservations through existing service behavior, marks retryable usage work for attention, and projects the subscription to `NO_CONTRACT` without a local Shopify cancellation mutation.
+- Added focused lifecycle regression coverage for frozen preservation, stale evidence rejection, effective cancellation, and same-cycle unfreeze restoration.
+- Negative hard-removal search found no local cancellation executor or cancellation symbols matching the task list in Background `src`/`tests`.
 
 ### Validation Results
-Populate during implementation.
+- Focused unit suite: **passed**, 4 files and 198 tests.
+- Integration suite: **passed**, 2 files and 3 tests.
+- `npm run test:unit`: **baseline failure**, 10 unchanged failures: 8 in `recovery-credit-purchase.service.test.ts` from the documented DATABASE-013/generated-client purchase schema/status mismatch, and 2 in `runtime/observability-startup.test.ts` from existing source/release assertions.
+- `npm run build`: **baseline failure**, 15 unchanged TypeScript errors confined to the purchased-credit/recovery-credit consumers of the documented `TYPECHECK-001` generated-client drift; no diagnostic occurred in a task-touched file.
+- `git diff --check`: **passed**.
+- The focused tests do not yet prove every enumerated branch in the task contract, including scheduled cancellation/reversal, pending-update precedence, later-cycle/change-plan delegation, capacity-resume publication, startup repair exactness, and pre-freeze top-up behavior. These remain explicit architect review items rather than being represented as completed evidence.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-012`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-012`.
+- Mirrored branch: `task/ARCH-010-BACKGROUND-012`.
+- Implementation commit: `b5fb379` (`Reconcile Shopify subscription lifecycle state`), pushed to `origin/task/ARCH-010-BACKGROUND-012`.
+- Parent task report is the only parent-workspace file changed; the implementation submodule gitlink was not staged or changed.
 
 ### Architect Review
 Pending.
