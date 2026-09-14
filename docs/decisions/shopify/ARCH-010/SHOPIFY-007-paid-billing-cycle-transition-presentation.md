@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 48
 executor: null
 claimed_at: null
@@ -1078,6 +1078,587 @@ After implementing only the corrections above, running validation, completing th
 19-item evidence map, updating the Completion Report, setting `status: review`,
 clearing `executor`/`claimed_at`, committing/pushing both mirrored task branches and
 verifying both are clean, STOP and return to `moda_architect`.
+
+Do not start `ARCH-010-SHOPIFY-012` or `ARCH-010-SHOPIFY-014`.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested**
+
+Attempt 2 correctly closes the three defects from Attempt 1:
+
+- merchant top-up eligibility is ACTIVE-only;
+- Paid/Free DRAINING and RECONCILING have dedicated localized presentation;
+- Paid RECONCILING no longer renders the old included allowance;
+- the Buy form has an explicit ACTIVE presentation guard;
+- both Paid and Free new pack creation require the pointed BillingPeriod to be OPEN
+  before provider verification and again inside the write transaction;
+- Paid/Free DRAINING and RECONCILING server blocks are covered;
+- existing-purchase replay remains provider-independent after the wall clock moves
+  into DRAINING/RECONCILING;
+- successor Free cycle purchase uses the successor BillingPeriod without lifetime
+  counter mutation;
+- all 20 locale catalogues contain localized phase copy.
+
+One production correctness defect remains: the merchant cycle phase is currently
+conditioned on the provider still reporting the same cycle. That reverses the
+authority defined by this task.
+
+No purchase-mutation, i18n-copy, route-topology or Background redesign is requested.
+
+### Finding — `billingPeriodPhase` is incorrectly dependent on provider/local cycle equality
+
+The task defines phase from the **durable local current BillingPeriod**:
+
+```text
+drainStart =
+  Subscription.currentPeriodEnd
+    - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+
+ACTIVE:
+  now < drainStart
+
+DRAINING:
+  drainStart <= now < currentPeriodEnd
+
+RECONCILING:
+  now >= currentPeriodEnd
+  AND Subscription still points to that old BillingPeriod
+```
+
+This is intentionally local derived state. Provider verification is an additional
+requirement for creating a new App-Event-backed purchase.
+
+Attempt 2 currently does:
+
+```ts
+const providerSubscription =
+  await this.provider.getActiveSubscription(...);
+
+if (
+  providerSubscription
+  && hasMatchingBillingCycle(subscription, providerSubscription)
+) {
+  billingPeriodPhase =
+    deriveBillingPeriodPhase(subscription.currentPeriodEnd);
+}
+```
+
+Therefore phase becomes `null` in exactly the transition states where the provider is
+most likely to have advanced first.
+
+Example:
+
+```text
+local Subscription:
+  billingPeriodId = old-period
+  currentPeriodEnd = 2026-10-01T00:00:00Z
+  old BillingPeriod still OPEN
+
+now:
+  2026-10-01T00:00:00Z
+
+Shopify provider:
+  same plan
+  successor currentPeriodStart = 2026-10-01T00:00:00Z
+  successor currentPeriodEnd   = 2026-10-31T00:00:00Z
+```
+
+The correct local phase is:
+
+```text
+RECONCILING
+```
+
+because Background has not yet replaced the old local BillingPeriod.
+
+The current implementation instead gets:
+
+```text
+hasMatchingBillingCycle(...) = false
+billingPeriodPhase = null
+```
+
+For a Paid merchant, `paidIncluded` may still be a valid projection of that old OPEN
+period, so the route condition:
+
+```ts
+billingPeriodPhase !== "RECONCILING" && paidIncluded
+```
+
+can render the **expired old included balance** as if it were current spendable
+capacity.
+
+The same false-null phase occurs when the Partner read temporarily fails. A provider
+outage must make a new top-up ineligible, but it must not erase the locally known
+DRAINING/RECONCILING phase.
+
+### Required Attempt-3 correction
+
+Modify only:
+
+```text
+app/services/billing/billing.service.ts
+tests/unit/services/billing.service.test.ts
+tests/unit/billing-ui.test.ts
+```
+
+plus this task/Completion Report.
+
+Do not modify locale copy unless a test exposes an actual catalogue defect.
+
+#### 1. Derive phase from the exact OPEN durable local cycle before the provider request
+
+In:
+
+```text
+BillingService.getMerchantBillingState(...)
+```
+
+derive `billingPeriodPhase` from local durable state **before** calling Shopify.
+
+Use one explicit local validity predicate equivalent to:
+
+```ts
+const hasExactOpenLocalCycle = Boolean(
+  subscription?.plan?.active
+    && subscription.status !== SubscriptionProjectionStatus.NO_CONTRACT
+    && hasDurableBillingPeriod(subscription)
+    && subscription.billingPeriod?.status === BillingPeriodStatus.OPEN
+    && subscription.currentPeriodStart
+    && subscription.currentPeriodEnd
+    && subscription.currentPeriodStart.getTime()
+         < subscription.currentPeriodEnd.getTime()
+);
+```
+
+Then:
+
+```ts
+const billingPeriodPhase =
+  hasExactOpenLocalCycle
+    ? deriveBillingPeriodPhase(subscription!.currentPeriodEnd)
+    : null;
+```
+
+Equivalent TypeScript narrowing is acceptable.
+
+Do not require the provider current cycle to match before deriving this local phase.
+
+Do not derive a phase for:
+
+```text
+missing BillingPeriod
+mismatched billingPeriodId/relation
+CLOSED BillingPeriod
+missing local start/end
+local periodStart >= periodEnd
+NO_CONTRACT
+inactive mapped plan
+```
+
+Those are not an exact OPEN local current cycle.
+
+#### 2. Keep provider truth as a separate purchase-verification authority
+
+The provider read still owns:
+
+```text
+current provider plan handle
+provider current cycle
+active usage-event handles
+```
+
+Preserve:
+
+```text
+recoveryCreditPackMeterVerified
+```
+
+as provider meter verification.
+
+Preserve new-purchase eligibility as requiring **all** of:
+
+```text
+local billingPeriodPhase == ACTIVE
+local pointed BillingPeriod == OPEN
+provider plan == mapped local plan
+provider/local cycle exact match
+provider exposes exact pack meter
+```
+
+If provider verification fails or the provider has already advanced to another
+cycle:
+
+```text
+billingPeriodPhase
+  -> remains the locally derived ACTIVE/DRAINING/RECONCILING value
+
+recoveryCreditPackPurchaseEligible
+  -> false
+```
+
+Do not overwrite the local phase to `null` in the provider `catch`.
+
+#### 3. Keep server mutation authority unchanged
+
+`requestRecoveryCreditPack(...)` already performs the correct stricter mutation
+sequence:
+
+```text
+existing purchase replay first
+exact OPEN local period
+provider plan/meter
+exact provider/local cycle
+provider-derived ACTIVE phase
+transactional re-read
+create UsageEvent + RecoveryCreditPurchase
+```
+
+Do not rewrite this path for Attempt 3 unless an exact focused test fails.
+
+The server may continue deriving the phase from the provider end there because
+`hasMatchingBillingCycle(...)` has already proven provider/local start and end are
+identical.
+
+### Required Attempt-3 permanent tests
+
+#### A. Provider already advanced but local period is still old
+
+In:
+
+```text
+tests/unit/services/billing.service.test.ts
+```
+
+add:
+
+```text
+derives RECONCILING from the durable local period when Shopify has already advanced to the successor cycle
+```
+
+Freeze:
+
+```text
+local period:
+  start = 2026-09-01T00:00:00.000Z
+  end   = 2026-10-01T00:00:00.000Z
+
+now = 2026-10-01T00:00:00.000Z
+```
+
+Keep local:
+
+```text
+billingPeriodId = period-old
+billingPeriod.status = OPEN
+Subscription still points to period-old
+```
+
+Return provider truth for the **same plan and same pack meter** but successor cycle:
+
+```text
+start = 2026-10-01T00:00:00.000Z
+end   = 2026-10-31T00:00:00.000Z
+```
+
+Assert:
+
+```ts
+expect(result.billingPeriodPhase).toBe("RECONCILING");
+expect(result.recoveryCreditPackMeterVerified).toBe(true);
+expect(result.recoveryCreditPackPurchaseEligible).toBe(false);
+```
+
+For Paid also assert the underlying `paidIncluded` projection may still exist; the
+route presentation, not the read model, suppresses it while RECONCILING.
+
+#### B. Provider transport failure does not erase local phase
+
+Add a parameterized test:
+
+```text
+preserves durable local billing phase when Shopify verification fails: %s
+```
+
+Rows:
+
+```text
+DRAINING
+RECONCILING
+```
+
+Use exact OPEN local state and make:
+
+```ts
+provider.getActiveSubscription.mockRejectedValue(
+  new Error("Shopify unavailable"),
+);
+```
+
+Assert:
+
+```text
+billingPeriodPhase == expected local phase
+recoveryCreditPackMeterVerified == false
+recoveryCreditPackPurchaseEligible == false
+```
+
+For the RECONCILING Paid row, assert `paidIncluded` remains a data projection so the
+UI test can prove it is hidden specifically because phase is RECONCILING.
+
+#### C. Malformed local cycle does not become ACTIVE/DRAINING/RECONCILING
+
+Add:
+
+```text
+does not derive a merchant billing phase from an invalid local cycle
+```
+
+Use:
+
+```text
+currentPeriodStart >= currentPeriodEnd
+BillingPeriod relation uses the same invalid boundaries
+status = OPEN
+```
+
+Assert:
+
+```text
+billingPeriodPhase = null
+recoveryCreditPackPurchaseEligible = false
+```
+
+The provider may return matching malformed boundaries; local invalidity must still
+prevent phase/purchase eligibility.
+
+#### D. UI proof for provider-moved local RECONCILING
+
+In:
+
+```text
+tests/unit/billing-ui.test.ts
+```
+
+add a loader/render-source regression named:
+
+```text
+uses durable RECONCILING phase to hide expired Paid included capacity
+```
+
+Supply loader state with:
+
+```text
+planKind = PAID_METERED
+billingPeriodPhase = RECONCILING
+paidIncluded = {
+  grantedQuantity: 100,
+  committedQuantity: 20,
+  reservedQuantity: 0,
+  forfeitedQuantity: 0,
+  remaining: 80,
+}
+recoveryCreditPackPurchaseEligible = false
+```
+
+Preserve the current source assertions proving:
+
+```text
+billingPeriodPhase !== "RECONCILING"
+```
+
+guards `billing.paidIncludedAllowance`, and:
+
+```text
+billing.paidCycleReconciling
+```
+
+is the merchant phase message.
+
+The important evidence is that Paid included projection may be non-null while the
+RECONCILING phase still prevents it being presented as current capacity.
+
+#### E. Make the successor-Free test time-independent
+
+The current test:
+
+```text
+restores Free pack eligibility on an exact successor BillingPeriod without changing lifetime Free state
+```
+
+uses fixed October 2026 dates without freezing the wall clock.
+
+Wrap it in:
+
+```ts
+vi.useFakeTimers();
+vi.setSystemTime(new Date("2026-10-02T00:00:00.000Z"));
+...
+vi.useRealTimers();
+```
+
+or another fixed ACTIVE time within the successor cycle.
+
+Do not leave the test dependent on the machine/current calendar date.
+
+### Completion Report correction
+
+Keep the existing 19-requirement evidence table but correct the phase-authority rows
+so they refer to executable tests demonstrating that phase is local durable derived
+state.
+
+Add a short invariant section:
+
+```text
+Cycle phase authority:
+  durable local exact OPEN BillingPeriod timestamps
+
+New top-up authority:
+  local ACTIVE phase
+  + exact provider/local cycle
+  + provider plan
+  + provider pack meter
+
+Provider failure/moved successor:
+  does not erase local phase
+  does make new purchase ineligible
+```
+
+Do not claim that exact provider/local cycle equality is required merely to determine
+DRAINING/RECONCILING presentation.
+
+### Required Attempt-3 validation
+
+From `moda-interact` run:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+npm test -- --run \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/billing-i18n.test.ts \
+  tests/unit/usage-route.test.ts \
+  tests/unit/home-route.test.ts \
+  tests/unit/routes/pending-recoveries-route.test.ts
+
+npm test
+npm run typecheck
+npm run build
+git diff --check
+
+rg -n "moda-interact-admin" \
+  app/routes/app/billing \
+  app/routes/app/usage \
+  app/routes/app/home \
+  app/routes/app/pending-recoveries
+
+rg -n "5 \* 60 \* 1000|300000" \
+  app/services/billing \
+  app/routes/app/billing
+```
+
+Record exact pass/fail/skip totals.
+
+The existing `TYPECHECK-001` baseline remains non-blocking only if:
+
+- it does not worsen from Attempt 2;
+- no Attempt-3 changed line introduces a new diagnostic.
+
+### Attempt-3 allowed scope
+
+Production:
+
+```text
+app/services/billing/billing.service.ts
+```
+
+Tests:
+
+```text
+tests/unit/services/billing.service.test.ts
+tests/unit/billing-ui.test.ts
+```
+
+Task/Completion Report updates are allowed through the coordination-document
+exception.
+
+Do not modify:
+
+```text
+app/routes/app/billing/route.tsx
+app/i18n/locales/*.json
+app/services/billing/billing.types.ts
+Prisma schema/migrations
+Shared package/contracts
+BACKGROUND-007 or any Background service
+RecoveryCreditPurchase settlement
+UsageEvent publishing
+plan-change/cancellation/refund/promotion logic
+Admin
+Messaging
+Gateway
+```
+
+If deriving the local phase independently requires any schema/Shared/Background
+change, STOP and return the exact incompatibility to `moda_architect`.
+
+### Workflow evidence required
+
+Preserve:
+
+```text
+Attempt-1 claim:
+ef68ab10bd9a39ecf485383248c6c91eac3fd780
+
+Attempt-1 implementation:
+58a138cd27174d09843d04683547310a9e36c8b2
+
+Attempt-1 parent/report:
+c522bd727a9c860b7e1689da95b1d06eefe20faa
+
+Attempt-2 launcher claim:
+37be206ceb4228cce37f7449ddd88ff54139cb88
+
+Attempt-2 implementation:
+140c476f789fe5694b5c2632413caebc7e9c1f06
+
+Attempt-2 final parent/report:
+947179a0c96ee91a0b9fdc6ad653009a71681c3a
+```
+
+Record additionally:
+
+```text
+Attempt-3 launcher claim full SHA
+Attempt-3 implementation full SHA
+Attempt-3 parent/report publication full SHA
+database gitlink before/after
+parent task branch clean/pushed
+implementation task branch clean/pushed
+```
+
+### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 2
+```
+
+The next authorized claim must increment to **Attempt 3 exactly once**.
+
+After implementing only the local-phase-authority correction, adding the focused
+regressions above, making the successor-Free test time-independent, running
+validation, updating the Completion Report, setting `status: review`, clearing
+`executor`/`claimed_at`, committing/pushing both mirrored task branches and verifying
+both are clean, STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-012` or `ARCH-010-SHOPIFY-014`.
 
