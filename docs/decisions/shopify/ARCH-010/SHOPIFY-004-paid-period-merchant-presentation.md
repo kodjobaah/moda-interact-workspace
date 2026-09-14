@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
-executor: copilot
-claimed_at: 2026-09-14T01:48:05Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-SHOPIFY-003
@@ -155,6 +155,12 @@ STOP if the integrated paid period counter/read model differs materially from AR
 ### Status
 Ready for Review.
 
+### Attempt 2 Correction Mapping
+- Finding 1 implemented: purchased availability now subtracts `refundingQuantity`; all 20 supported locale catalogues and the route use the exact five-placeholder contract.
+- Finding 2 implemented: paid presentation now requires active mapped plan ownership, exact period ownership/snapshots, open valid boundaries, safe grants, and non-negative counters whose committed/reserved/forfeited total does not exceed the period grant; failures project configuration unavailable.
+- Finding 3 implemented: the service test contains the complete 22-row inconsistency matrix, including missing period relation and counter, and proves usage aggregate is not substituted.
+- Finding 4 implemented: service coverage proves refund holds and aggregate independence; route coverage proves exact durable period dates and independent purchased balance.
+
 ### Files Changed
 - `app/services/billing/billing.service.ts`
 - `app/routes/app/billing/route.tsx`
@@ -164,36 +170,49 @@ Ready for Review.
 - `tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
-- Updated `getMerchantBillingState` to read the durable current `BillingPeriod` included-credit counter.
-- Paid included remaining is calculated as `max(granted - committed - reserved - forfeited, 0)` and is not derived from the shop-wide usage aggregate.
-- Added paid-period/counter consistency validation and fail-closed configuration-unavailable projection.
-- Kept lifetime Free capacity and purchased credits as separate merchant-facing balances.
-- Preserved Shopify-hosted plan selection/change flow and existing exact top-up eligibility gate.
-- Added merchant i18n keys for paid-period and lifetime Free presentation across every supported locale.
-- Added focused UI, service, and locale contract coverage for the acceptance matrix.
+- Preserved durable current-period included capacity and exact Shopify-derived period dates.
+- Kept lifetime Free and purchased balances separate; purchased availability excludes refund holds.
+- Preserved Shopify-hosted plan selection and the exact ARCH-008 top-up eligibility gate.
+- Kept merchant copy in i18n and verified no Admin application coupling in billing routes/services.
+
+### Evidence Table
+| Requirement | Exact test(s) | Result |
+|---|---|---|
+| 1. Paid screen reads period counter | `uses the current paid period counter and preserves lifetime Free capacity`; `reads paid included capacity from the current period counter` | Passed |
+| 2. Remaining subtracts committed, reserved, forfeited | `uses the current paid period counter and preserves lifetime Free capacity` | Passed |
+| 3. No shop-wide aggregate for included remaining | `uses the current paid period counter and preserves lifetime Free capacity`; `subtracts purchased refund holds from merchant available credits` | Passed |
+| 4. Exact current period dates | `reads paid included capacity from the current period counter` | Passed |
+| 5. Purchased credits separate | `returns ineligible state while preserving the purchased balance` | Passed |
+| 5a. Lifetime Free remains separate | `uses the current paid period counter and preserves lifetime Free capacity` | Passed |
+| 6. Missing period fails closed | `fails merchant Paid presentation closed for inconsistent current period: billingPeriod relation missing` | Passed |
+| 7. Missing counter fails closed | `fails merchant Paid presentation closed for inconsistent current period: included counter missing` | Passed |
+| 8. Top-up CTA keeps exact eligibility | `presents purchased balance independently from pack purchase eligibility`; `returns ineligible state while preserving the purchased balance` | Passed |
+| 9. Shopify-hosted plan link | `redirects the selection route to Shopify pricing with a top-level target` | Passed |
+| 10. No Admin links/redirects | `keeps merchant billing surfaces out of the Admin application`; `rg -n "moda-interact-admin" app/routes/app/billing app/services/billing` | Passed, no matches |
+| 11. Free billing remains correct | `returns Free allowance and pending plan state without changing current plan` | Passed |
+| 12. Merchant i18n locale contract | `defines every billing key in every locale catalogue`; `keeps the purchased-credit placeholder contract exact`; `keeps task-visible billing copy in the merchant i18n path` | Passed |
+| Purchased refunding reduces available | `subtracts purchased refund holds from merchant available credits` | Passed, 100 - 20 - 5 - 10 = 65 |
+| Paid ownership/snapshot inconsistencies fail closed | `fails merchant Paid presentation closed for inconsistent current period: %s` (22 rows) | Passed |
 
 ### Validation Results
 - `npm run prisma:validate` — passed.
 - `npm run prisma:generate` — passed.
-- `npm run test -- tests/unit/billing-ui.test.ts tests/unit/billing-i18n.test.ts` — passed, 15 tests.
-- Focused final billing validation (`billing.service.test.ts`, `billing-ui.test.ts`, `billing-i18n.test.ts`) — passed, 111 tests.
-- `npm test` — passed, 38 test files; 381 passed, 3 skipped.
+- Focused billing tests — passed, 3 files / 134 tests.
+- `npm test` — passed, 38 files; 404 passed, 3 skipped; 2 files skipped.
 - `npm run build` — passed.
 - `git diff --check` — passed.
-- `npm run typecheck` — non-zero under documented `TYPECHECK-001` repository baseline; no new TypeScript errors were reported in the changed billing service or route.
+- Admin coupling scan — passed with no matches.
+- `npm run typecheck` — non-zero under `TYPECHECK-001`; no Attempt-2 changed lines introduced diagnostics. Three pre-existing diagnostics remain at unchanged lines in touched files: `app/routes/app/billing/route.tsx:88`, `app/services/billing/billing.service.ts:1017`, and `tests/unit/services/billing.service.test.ts:1290`.
 
 ### Git / VCS
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-004`.
-- Implementation branch: `task/ARCH-010-SHOPIFY-004`.
-- Implementation commit: `03ba8f5c7d0bfe0c051f09e1ddd6639ee3c1c356` (pushed to `origin/task/ARCH-010-SHOPIFY-004`).
-- Implementation worktree was clean after commit; the prepared packet's physical worktree and dependency-gate evidence were retained.
-- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-004`.
-- Parent branch: `task/ARCH-010-SHOPIFY-004`.
-- Parent claim commit: `2edf9d7bd57f7c7755d987ab42be660e26fa42d3`.
-- Parent submodule pointer was not staged or changed; implementation publication remains on its task branch for architect review.
-
-### Architect Review
-Pending.
+- Attempt-1 implementation full SHA: `03ba8f5c7d0bfe0c051f09e1ddd6639ee3c1c356`.
+- Attempt-1 final parent/report full SHA: `70b6d4c5fbbec099c1c2ad6aab73ee7a19d7648a`.
+- Attempt-2 launcher claim full SHA: `f9a4dfde978218eacba107438a41ce58e0920dc6`.
+- Attempt-2 implementation full SHA: `e224dabd2c391551cde416df7725f3c2e3204be9` (pushed to `origin/task/ARCH-010-SHOPIFY-004`).
+- Parent preparation HEAD: `0cf4183d572bde50a00a17fa5388ea602c420180`; prepared implementation HEAD: `03ba8f5c7d0bfe0c051f09e1ddd6639ee3c1c356`.
+- Launcher synchronization/submodule evidence: parent and implementation task branches were current; recursive submodule sync/update passed; database dependency checkout was `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Parent recorded database gitlink before/after: `d845f721ed83980503d656862bdbbbaf53d08167` unchanged; no submodule gitlink was staged.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-004`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-004`.
 
 ## Architect Review — Attempt 1
 
