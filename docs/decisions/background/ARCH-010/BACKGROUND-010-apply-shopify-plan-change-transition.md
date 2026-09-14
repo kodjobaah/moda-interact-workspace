@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
 executor: null
 claimed_at: null
@@ -2965,4 +2965,113 @@ clean, STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-BACKGROUND-012`, `ARCH-010-SHOPIFY-015` or
 `ARCH-010-SYSTEM-TEST-001`.
+
+## Architect Review — Attempt 6
+
+### Status
+
+**Accepted**
+
+Attempt 6 satisfies the remaining evidence-only corrections from the Attempt-5
+Architect Review. No production source changed in Attempt 6.
+
+Architect verification against the uploaded Attempt-5 and Attempt-6 snapshots
+established that the implementation delta is limited to:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+plus this task/Completion Report.
+
+Accepted evidence:
+
+1. `clears a withdrawn established pending update atomically` now proves the exact
+   persisted replacement timestamp is also used as
+   `expectedNextReconcileAt` in the deterministic queue publication.
+2. `swallows queued plan-change capacity-resume enqueue failure after transition`
+   now proves the best-effort queue failure does not write a `SYNC_ERROR`,
+   `lastSyncErrorCode`, or the one-minute plan-change retry classification after the
+   transition has already committed.
+3. All three rotating fail-closed families now spy on
+   `ShopifyPlanChangeTransitionService.transition(...)` and prove it is not invoked
+   before the typed fail-closed durable retry is written.
+4. The Completion Report now contains the required one-to-one 1-20 Evidence Map,
+   including:
+   - retryable versus unrelated transaction-service `SYNC_ERROR`;
+   - the three preserved Free-transition cases.
+5. The existing Attempt-5 transaction-service matrix remains present and green:
+   - successor replay preservation;
+   - `RESERVED | AMBIGUOUS` Paid close semantics;
+   - Paid -> Free no-counter behaviour;
+   - all three protected-state transition directions;
+   - complete transaction-level prerequisite matrix;
+   - retryable versus unrelated `SYNC_ERROR`;
+   - all required Free transition cases.
+
+Accepted validation evidence:
+
+```text
+Focused tests:       198/198 passed
+Integration tests:   3/3 passed
+Prisma validate:     passed
+Prisma generate:     passed
+git diff --check:    passed
+prohibited scan:     no matches
+Full unit baseline:  714/724 passed; 10 documented unrelated failures
+Build baseline:      15 documented unrelated generated-client diagnostics
+```
+
+The 10 unit failures and 15 build diagnostics remain confined to the documented
+purchase/observability baseline and are not introduced by Attempt 6.
+
+Workflow evidence accepted:
+
+```text
+Attempt-6 claim:
+7979fe9a9f338236dcb5d849aef7ab84bfc29087
+
+Attempt-5 implementation:
+a5dc1a168b396d1629d565f00cea58d9f4d30228
+
+Attempt-5 final parent evidence:
+7c5327207e8c38004069a64ec84fffca6e225283
+
+Attempt-6 implementation:
+48f1b40bea8093b5e5a1b99ed9ca4d67ffbbac7d
+
+Attempt-6 report publication:
+63ab878cdc4527e86c02a786b796215663a6c83a
+
+Attempt-6 report-evidence correction:
+417bac2578b7a74685bbec71676f2ecab1684788
+
+Final parent branch publication reported by developer handoff:
+2845635f
+```
+
+The final parent short SHA is necessarily outside the immutable content of the
+earlier report commit that records its predecessor SHAs. The report publication and
+evidence-correction SHAs, together with the final pushed/clean handoff, satisfy the
+workflow evidence contract; no further self-referential "commit that records its own
+SHA" cycle is required.
+
+Database gitlink remained:
+
+```text
+5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+```
+
+`ARCH-010-BACKGROUND-010` is Complete.
+
+Dependency reconciliation:
+
+- `ARCH-010-BACKGROUND-012` becomes Ready because every declared dependency is now
+  Complete.
+- `ARCH-010-SHOPIFY-015` becomes Ready because every declared dependency is now
+  Complete.
+- `ARCH-010-SYSTEM-TEST-001` remains Pending/manual-gated because several other
+  declared dependencies are still incomplete.
+- No other task is promoted solely by this acceptance.
 

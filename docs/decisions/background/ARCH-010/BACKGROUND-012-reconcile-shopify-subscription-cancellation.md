@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 58
 executor: null
 claimed_at: null
@@ -27,7 +27,7 @@ enables:
   - ARCH-010-SHOPIFY-016
   - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-12
+updated: 2026-09-14
 ---
 
 # ARCH-010-BACKGROUND-012: Reconcile Shopify cancellation, freeze and unfreeze lifecycle state
