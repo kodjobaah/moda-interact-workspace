@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 56
 executor: null
 claimed_at: null
@@ -1597,6 +1597,537 @@ After implementing only the corrections above, updating the Completion Report,
 running validation, setting `status: review`, clearing `executor`/`claimed_at`,
 committing/pushing both mirrored task branches and verifying both are clean, STOP and
 return to `moda_architect`.
+
+Do not start `ARCH-010-SHOPIFY-012`.
+
+### Architect Review — Attempt 4
+
+#### Status
+
+**Changes Requested**
+
+Attempt 4 satisfies the substantive durable-fence correction from Attempt 3:
+
+- the callback captures one durable Subscription projection immediately before the
+  single Partner read;
+- the locked Subscription projection is compared field-for-field after the accepted
+  ShopSettings -> Subscription lock;
+- changed authority state is fenced even when the old wall-clock ordering would have
+  accepted it;
+- changed projection is fenced even when `updatedAt` is identical;
+- failed Partner verification is also fenced by the same durable projection;
+- verified provider `currentPeriodStart`, `currentPeriodEnd` and `trialEndsAt` now
+  persist exact null values;
+- protected no-write evidence includes `RecoveryCreditRefund`;
+- the accepted callback activation, panel/options and provider-commercial-truth work
+  remains unchanged.
+
+One narrow production defect remains in the null-Subscription representation. No
+other Attempt-4 production correction is requested.
+
+#### Finding — an unchanged absent Subscription always fails the durable fence
+
+`getHostedPlanVerificationFence(...)` currently declares:
+
+```ts
+Promise<HostedPlanVerificationFence>
+```
+
+and represents no durable Subscription as an object whose every field is null.
+
+The post-lock reread in both hosted persistence methods is:
+
+```ts
+const current = await transaction.subscription.findUnique(...);
+```
+
+which is actual:
+
+```ts
+null
+```
+
+when no Subscription exists.
+
+The equality helper begins:
+
+```ts
+if (!left || !right) return left === right;
+```
+
+Therefore this unchanged durable state:
+
+```text
+pre-provider: no Subscription
+post-lock:    no Subscription
+```
+
+is compared as:
+
+```text
+left  = null
+right = { id:null, updatedAt:null, ... }
+```
+
+and is incorrectly classified as changed/stale.
+
+Consequences:
+
+- a fresh merchant with no durable Subscription and provider
+  `NO_ACTIVE_SUBSCRIPTION` cannot reach the task's distinct `no_active`
+  classification;
+- it is returned as `unverified` even though no concurrent durable change occurred;
+- provider failure for an absent durable Subscription also cannot distinguish
+  "unchanged but there is no row to update" from a stale fence.
+
+The Attempt-3 Architect Review explicitly required:
+
+```text
+A null Subscription must return the same shape with null values,
+or another explicit subscription:null representation that can be
+compared deterministically.
+```
+
+The current implementation creates the first representation before the Partner read
+but compares it to the second representation after the lock.
+
+#### Required Attempt-5 correction
+
+Keep the existing field-by-field durable fence exactly as implemented for present
+Subscription rows.
+
+Use actual `null` as the canonical absence representation.
+
+In:
+
+```text
+app/services/billing/billing.service.ts
+```
+
+change:
+
+```ts
+async getHostedPlanVerificationFence(
+  shopId: string,
+): Promise<HostedPlanVerificationFence>
+```
+
+to:
+
+```ts
+async getHostedPlanVerificationFence(
+  shopId: string,
+): Promise<HostedPlanVerificationFence | null>
+```
+
+and return the Prisma result directly:
+
+```ts
+return subscription;
+```
+
+Do not manufacture an all-null object.
+
+The existing local type:
+
+```ts
+type HostedPlanVerificationFenceSource =
+  HostedPlanVerificationFence | null;
+```
+
+and:
+
+```ts
+sameHostedPlanVerificationFence(...)
+```
+
+already support deterministic:
+
+```text
+null == null
+```
+
+comparison. Preserve their present-field comparison logic unchanged.
+
+Change both persistence method parameters to accept the same nullable fence type:
+
+```ts
+recordHostedPlanChangeReturn({
+  ...
+  verificationFence,
+}: {
+  ...
+  verificationFence: HostedPlanVerificationFence | null;
+})
+```
+
+and:
+
+```ts
+recordHostedPlanVerificationFailure(
+  shopId: string,
+  verificationFence: HostedPlanVerificationFence | null,
+)
+```
+
+Do not add a sentinel string, synthetic ID, schema field or Shared contract.
+
+##### Absent Subscription + NO_ACTIVE
+
+After an unchanged:
+
+```text
+verificationFence = null
+locked current = null
+state.status = NO_ACTIVE_SUBSCRIPTION
+```
+
+`recordHostedPlanChangeReturn(...)` must return exactly:
+
+```ts
+{
+  result: "no_active",
+  subscriptionId: null,
+  nextReconcileAt: null,
+}
+```
+
+with:
+
+```text
+zero BillingPlan lookup
+zero Subscription write
+zero protected-model write
+```
+
+This does not manufacture a Subscription merely to schedule reconciliation.
+
+##### Absent Subscription + Partner failure
+
+After an unchanged:
+
+```text
+verificationFence = null
+locked current = null
+```
+
+`recordHostedPlanVerificationFailure(...)` must return:
+
+```ts
+null
+```
+
+without issuing a Subscription mutation.
+
+After the fence equality check, add:
+
+```ts
+if (!current) return null;
+```
+
+before `subscription.updateMany(...)`.
+
+There is no durable Subscription row on which retry/error metadata can be stored.
+
+Do not create one.
+
+#### Required Attempt-5 regression evidence
+
+Allowed tests remain:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+tests/unit/services/billing.service.test.ts
+```
+
+##### Service fence-reader evidence
+
+Add:
+
+```text
+returns null hosted verification fence when no durable Subscription exists
+```
+
+Mock `database.subscription.findUnique(...)` to return null.
+
+Assert:
+
+```ts
+await expect(
+  service.getHostedPlanVerificationFence("shop-1"),
+).resolves.toBeNull();
+```
+
+Also assert the reader performs no write/transaction/provider operation.
+
+##### NO_ACTIVE absent-row evidence
+
+Add:
+
+```text
+classifies unchanged absent durable Subscription as no_active
+```
+
+Use:
+
+```text
+verificationFence = null
+transaction subscription findUnique = null
+state = {
+  status: "NO_ACTIVE_SUBSCRIPTION",
+  subscription: null,
+}
+```
+
+Assert exactly:
+
+```ts
+expect(result).toEqual({
+  result: "no_active",
+  subscriptionId: null,
+  nextReconcileAt: null,
+});
+
+expect(billingPlan.findUnique).not.toHaveBeenCalled();
+expect(subscription.update).not.toHaveBeenCalled();
+expect(subscription.updateMany).not.toHaveBeenCalled();
+expectNoProtectedWrites(protectedModels);
+```
+
+##### Provider-failure absent-row evidence
+
+Add:
+
+```text
+does not manufacture retry metadata when durable Subscription is absent
+```
+
+Use:
+
+```text
+verificationFence = null
+locked current = null
+```
+
+Assert:
+
+```ts
+await expect(
+  service.recordHostedPlanVerificationFailure("shop-1", null),
+).resolves.toBeNull();
+
+expect(subscription.update).not.toHaveBeenCalled();
+expect(subscription.updateMany).not.toHaveBeenCalled();
+expectNoProtectedWrites(protectedModels);
+```
+
+##### Callback nullable-fence propagation
+
+Add:
+
+```text
+passes an absent durable verification fence unchanged through hosted NO_ACTIVE verification
+```
+
+Mock:
+
+```text
+getHostedPlanVerificationFence -> null
+getMerchantShopifySubscriptionState ->
+  { status: "NO_ACTIVE_SUBSCRIPTION", subscription: null }
+recordHostedPlanChangeReturn ->
+  { result: "no_active", subscriptionId: null, nextReconcileAt: null }
+```
+
+Prove:
+
+```text
+getHostedPlanVerificationFence called before Partner read
+Partner read called exactly once
+recordHostedPlanChangeReturn receives verificationFence: null
+no reconciliation enqueue
+redirect = /app/billing/options?plan_change=no_active
+```
+
+Add the provider-failure equivalent:
+
+```text
+passes an absent durable verification fence unchanged to failure recording
+```
+
+and prove:
+
+```text
+recordHostedPlanVerificationFailure("shop-1", null)
+```
+
+is called.
+
+#### Accepted Attempt-4 work — do not churn
+
+Do not rewrite the accepted durable fence for present rows.
+
+In particular preserve these permanent tests:
+
+```text
+captures the durable hosted verification fence before the Partner read
+passes the same durable hosted verification fence to provider failure recording
+fences a durable commit that is newer than the pre-provider projection even when its updatedAt is earlier than the old wall-clock start
+fences a changed durable projection even when updatedAt is identical
+does not record provider failure when the durable projection changed during verification
+clears stale nullable provider cycle and trial facts from a verified hosted observation
+```
+
+Keep the field-by-field fence comparison including exact nullable Date equality.
+
+Keep provider read count exactly one.
+
+Keep the accepted CURRENT/PENDING/NO_ACTIVE business-write restrictions and all
+protected no-write assertions.
+
+Do not change:
+
+```text
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/SubscriptionChangePanel.jsx
+app/components/dashboard/BillingPurchaseHub.jsx
+app/services/billing/providers/shopify-billing.provider.ts
+```
+
+#### Attempt-5 allowed scope
+
+Production:
+
+```text
+app/services/billing/billing.service.ts
+app/routes/app/billing/callback/route.tsx
+```
+
+The callback production file should require only TypeScript nullable-fence propagation;
+do not change callback behavior unless compilation requires it.
+
+Tests:
+
+```text
+tests/unit/services/billing.service.test.ts
+tests/unit/routes/billing-callback.test.ts
+```
+
+Plus this task/Completion Report.
+
+Do not modify:
+
+```text
+Prisma schema/migrations
+Shared contracts/package
+Background
+Admin
+Messaging
+Gateway
+SHOPIFY-012/014/016
+panel/options commercial presentation
+billing purchase behavior
+```
+
+If the null fence cannot be implemented using the existing repository-local type
+without schema/Shared changes, STOP and return the exact limitation to
+`moda_architect`.
+
+#### Required Attempt-5 validation
+
+From `moda-interact` run:
+
+```bash
+npm test -- --run \
+  tests/unit/routes/billing-callback.test.ts \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/subscription-change-panel.test.tsx \
+  tests/unit/billing-ui.test.ts \
+  tests/unit/billing-i18n.test.ts \
+  tests/unit/merchant-i18n.test.ts
+
+npm test
+npm run prisma:validate
+npm run prisma:generate
+npm run typecheck
+npm run build
+git diff --check
+
+rg -n "describe\\.skip|it\\.skip|test\\.skip" \
+  tests/unit/routes/billing-callback.test.ts
+
+rg -n "verificationStartedAt|rank|isUpgrade|isDowngrade|upgradeAction|downgradeAction|appSubscriptionCreate|billing\\.request|moda-interact-admin" \
+  app/components/dashboard/SubscriptionChangePanel.jsx \
+  app/routes/app/billing/callback/route.tsx \
+  app/services/billing/billing.service.ts
+```
+
+Expected:
+
+```text
+callback skip scan -> zero matches
+prohibited production scan -> zero matches
+```
+
+Record exact focused/full pass/fail/skip totals.
+
+`TYPECHECK-001` remains non-blocking only if no Attempt-5 changed line introduces a
+new diagnostic and the repository baseline does not worsen.
+
+#### Completion Report requirements
+
+Preserve and record:
+
+```text
+Attempt-3 implementation:
+69c79a6214dd74521453456724c63092bf369230
+
+Attempt-3 parent/report:
+7bd791e4662c2d554ebbcaf40cbc93dce9a2920e
+
+Attempt-4 launcher claim:
+c481e7ad8b83823536b6ef1566259c2250bf6404
+
+Attempt-4 implementation:
+aeceed5cb1aa6bd0c9e20bced0130171305a3fa9
+
+Attempt-4 initial report publication:
+7fa80f3c3428ad36540ee51f2946e67f0c60bbf0
+
+Attempt-4 final parent/report:
+resolve and record the full SHA corresponding to developer handoff
+4f2abd4d138e1882b9da560e6d27615e9d4c6a50
+
+Attempt-5 launcher claim full SHA
+Attempt-5 implementation full SHA
+Attempt-5 parent/report publication full SHA
+
+database gitlink before/after:
+5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+```
+
+Also record the four exact null-fence regression test titles above and both branches
+clean/pushed/remote-synchronized.
+
+Do not create an endless report-commit self-reference; record immutable predecessor
+publication SHAs plus the final developer handoff SHA in the normal way.
+
+#### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 4
+```
+
+The next authorized claim must increment to **Attempt 5 exactly once**.
+
+After implementing only the null-fence correction, running validation, updating the
+Completion Report, setting `status: review`, clearing `executor`/`claimed_at`,
+committing/pushing both mirrored branches and verifying them clean, STOP and return to
+`moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-012`.
 
