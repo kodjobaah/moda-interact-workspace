@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 48
 executor: null
 claimed_at: null
@@ -1718,4 +1718,84 @@ validation, updating the Completion Report, setting `status: review`, clearing
 both are clean, STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-012` or `ARCH-010-SHOPIFY-014`.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted — Complete**
+
+Attempt 3 closes the only remaining production defect from Attempt 2. Merchant
+`billingPeriodPhase` is now derived from the exact durable local OPEN BillingPeriod
+before Shopify verification, so provider successor-cycle movement or a temporary
+provider failure cannot erase a locally known DRAINING/RECONCILING phase.
+
+Accepted implementation:
+
+```text
+11b3c690e53115a8c22b0fdc0deee331c1137f2a
+```
+
+The implementation preserves the required authority split:
+
+```text
+cycle phase presentation:
+  exact durable local OPEN BillingPeriod timestamps
+
+new top-up creation:
+  local ACTIVE phase
+  + exact provider/local cycle
+  + exact provider plan
+  + exact provider recovery-credit-pack meter
+```
+
+The server-side `requestRecoveryCreditPack(...)` mutation path remains unchanged and
+continues to fail closed for new purchases while preserving existing-purchase replay
+before provider verification.
+
+### Accepted evidence
+
+Permanent regressions prove:
+
+- successor provider cycle + old pointed local OPEN period => local `RECONCILING`;
+- provider transport failure preserves local DRAINING/RECONCILING while making a new
+  top-up ineligible;
+- invalid local cycle boundaries derive no merchant billing phase;
+- a non-null old Paid included projection is hidden specifically by local
+  RECONCILING presentation;
+- the successor-Free purchase test uses a frozen wall clock and does not mutate the
+  lifetime-Free counter;
+- the complete prior Paid/Free ACTIVE, DRAINING, RECONCILING, replay, OPEN-period,
+  meter, navigation and i18n matrix remains green.
+
+Validation recorded by the implementation report:
+
+```text
+Attempt-3 focused: 177 passed, 0 skipped
+required focused slice: 185 passed, 0 skipped
+full suite: 450 passed, 3 skipped
+Prisma validate/generate: passed
+build: passed
+git diff --check: passed
+Admin isolation scan: 0 matches
+drain-window literal scan: 0 matches
+```
+
+`TYPECHECK-001` remains a repository baseline. The synchronized Attempt-3 base
+contains additional diagnostics relative to the older Attempt-2 repository state,
+but the Attempt-3 implementation diff introduces no new diagnostic in its changed
+production or regression lines; no unrelated baseline correction is assigned to
+this task.
+
+### Scope / dependency decision
+
+Attempt 3 changed only the authorised production file and the two authorised test
+files relative to its prepared implementation parent. No schema, Shared, Background,
+route, i18n, Admin, Messaging, Gateway, purchase-settlement or UsageEvent-publishing
+work was introduced.
+
+`ARCH-010-SHOPIFY-014` remains Pending because `ARCH-007-SHOPIFY-004` is not
+Complete in the authoritative task snapshot. `ARCH-010-SHOPIFY-012` also remains
+Pending because its other prerequisites are not all Complete. Do not start either
+solely from this acceptance.
 
