@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 58
-executor: copilot
-claimed_at: 2026-09-14T02:58:18Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-010-DATABASE-013
@@ -424,20 +424,27 @@ Ready for Review.
 - Snapshot-driven lifecycle routing and provider-error preservation: `src/services/billing-reconciliation.service.ts`; `tests/unit/services/billing-reconciliation.service.test.ts`.
 - Lifecycle event ordering, FROZEN projection, unresolved UNFROZEN handling, verified restoration delegation, and effective cancellation: `src/services/shopify-subscription-lifecycle-reconciliation.service.ts`; `tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts`.
 
+### Attempt 5 Correction-to-File Mapping
+- Pending-update precedence and exact scheduled-cancellation drain-boundary handling: `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts` and `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`.
+- Older lifecycle evidence ordering while preserving frozen retry scheduling: `moda-interact-background/src/services/shopify-subscription-lifecycle-reconciliation.service.ts` and `moda-interact-background/tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts`.
+- Removed temporary diagnostic output and retained only the four intended Attempt 5 implementation/test files.
+
 ### Validation Results
-- Focused unit suite rerun after final test correction: **passed**, 4 files and 198 tests.
+- Focused Attempt 5 service suite after final correction: **passed**, 2 files and 143 tests.
 - Integration suite: **passed**, 2 files and 3 tests.
 - `npm run test:unit`: **baseline failure**, 10 unchanged failures: 8 in `recovery-credit-purchase.service.test.ts` from the documented DATABASE-013/generated-client purchase schema/status mismatch, and 2 in `runtime/observability-startup.test.ts` from existing source/release assertions.
-- `npm run build`: **baseline failure**, 15 unchanged TypeScript errors confined to the purchased-credit/recovery-credit consumers of the documented `TYPECHECK-001` generated-client drift; no diagnostic occurred in a task-touched file.
+- `npm run build`: **baseline failure**, 15 unchanged TypeScript errors confined to `purchased-recovery-reservation.service.ts` and `recovery-credit-purchase.service.ts` from the documented `TYPECHECK-001` generated-client drift; no diagnostic occurred in a task-touched file.
 - `git diff --check`: **passed**.
-- The focused tests do not yet prove every enumerated branch in the task contract, including scheduled cancellation/reversal, pending-update precedence, later-cycle/change-plan delegation, capacity-resume publication, startup repair exactness, and pre-freeze top-up behavior. These remain explicit architect review items rather than being represented as completed evidence.
+- The focused Attempt 5 tests cover pending-update projection, scheduled-cancellation pre-close scheduling at and before the drain boundary, and stale lifecycle replay retry behavior. Other enumerated branches remain explicit architect review items rather than being represented as completed evidence.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-012`.
 - Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-012`.
 - Mirrored branch: `task/ARCH-010-BACKGROUND-012`.
-- Implementation commit: `cf9319c9eeb48d6422aac20497adbe3332741491` (`Complete Shopify subscription lifecycle reconciliation`), pushed to `origin/task/ARCH-010-BACKGROUND-012`.
-- Parent task report is the only parent-workspace file changed; the implementation submodule gitlink was not staged or changed.
+- Implementation commit: `f4ef6d0226d2f541e2537bda6e3bfe603dc609ff` (`fix: finalize subscription reconciliation corrections`), pushed to `origin/task/ARCH-010-BACKGROUND-012`.
+- Implementation physical worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-012`, branch `task/ARCH-010-BACKGROUND-012`, HEAD `f4ef6d0`.
+- Parent/report physical worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-012`, branch `task/ARCH-010-BACKGROUND-012`, pre-report-update HEAD `d76094d`.
+- Recursive parent submodule evidence was unchanged; `moda-interact-background` remained recorded at `eff586b2a23c1315018bbd27cefb96500d7681da`, and the implementation submodule gitlink was not staged or changed.
 
 ### Architect Review
 Pending.
