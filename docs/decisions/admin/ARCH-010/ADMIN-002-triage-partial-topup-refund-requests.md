@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 81
-executor: copilot
-claimed_at: 2026-09-14T20:03:33Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-014
@@ -255,3 +255,348 @@ Ready for Review.
 
 ### Architect Review
 Pending architect review. No unresolved task-scope blocker identified.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — one functional queue-filter correction only**
+
+This review intentionally prioritises operator/runtime functionality over exhaustive
+test coverage.
+
+The Attempt-2 implementation is broadly accepted.
+
+Accepted behavior includes:
+
+```text
+ADMIN / SUPER_ADMIN authenticated read access through existing platform-admin auth
+merchant users cannot access Admin routes
+database-bounded queue pagination (default 20, maximum 50)
+merchant-created refund requests require no support message
+request-time snapshots remain distinct from current purchase balances
+WITHDRAWN + reservedAmount > 0 -> WAITING_FOR_RESERVATIONS
+WITHDRAWN + reservedAmount = 0 + currentAmount > 0 -> READY_FOR_PROVIDER_ACTION
+ACTIVE / COMPLETED / REFUNDED invalid non-terminal combinations are surfaced as
+integrity attention rather than repaired
+terminal CANCELLED / COMPLETED / REJECTED / NEEDS_ATTENTION history remains visible
+detail drawer exposes purchase/BillingPeriod/provider/plan/event provenance
+provider before/after valuation evidence is bounded for operator display
+support context remains contextual only
+bounded reservation/refund history is read-only
+no refund quantity / percentage / money-entry control exists
+current plan/top-up price is explicitly non-authoritative
+no Shopify call, provider action, purchase mutation, refund creation, or settlement
+is introduced
+```
+
+The Attempt-2 correction that completed the detail drawer is accepted and MUST NOT be
+redesigned.
+
+One operator-facing read-model defect remains.
+
+---
+
+### Finding — the `NEEDS_ATTENTION` filter omits rows that the queue itself derives as attention
+
+The queue derives:
+
+```ts
+if (refund.status === REQUESTED) {
+  if (purchase is valid WITHDRAWN waiting/ready) {
+    ...
+  }
+
+  return "NEEDS_ATTENTION";
+}
+```
+
+Therefore examples such as:
+
+```text
+refund REQUESTED + purchase ACTIVE
+refund REQUESTED + purchase COMPLETED
+refund REQUESTED + purchase REFUNDED
+refund REQUESTED + purchase REQUESTED
+refund REQUESTED + purchase WITHDRAWN with currentAmount <= 0 and no reservations
+```
+
+are rendered as:
+
+```text
+queueStatus = NEEDS_ATTENTION
+```
+
+and the detail drawer correctly says:
+
+```text
+Data integrity attention: this request is not in a valid withdrawn-purchase state.
+```
+
+However the database filter currently handles:
+
+```text
+status = NEEDS_ATTENTION
+```
+
+by returning only:
+
+```ts
+{ status: RecoveryCreditRefundStatus.NEEDS_ATTENTION }
+```
+
+That excludes the derived integrity-attention rows above because their persisted
+refund status is still `REQUESTED`.
+
+Functionally this means:
+
+```text
+operator sees an anomaly in All/Requested
+-> operator selects Needs attention
+-> the anomaly disappears
+```
+
+This contradicts the task's triage objective and the explicit requirement to surface
+invalid ACTIVE/COMPLETED/REFUNDED non-terminal states for operator attention.
+
+This is a production read-model defect, not a request for broader test coverage.
+
+---
+
+### Required correction
+
+Modify only:
+
+```text
+moda-interact-admin/src/lib/admin/recovery-credit-refunds.ts
+```
+
+Make the database `NEEDS_ATTENTION` filter match the same semantic set that
+`queueStatus(...)` labels as `NEEDS_ATTENTION`.
+
+The query must include:
+
+```text
+A. persisted refund.status = NEEDS_ATTENTION
+
+OR
+
+B. refund.status = REQUESTED
+   AND the purchase is not one of the two valid withdrawn states:
+     1. WITHDRAWN + reservedAmount > 0
+     2. WITHDRAWN + reservedAmount = 0 + currentAmount > 0
+```
+
+Prefer an explicit Prisma predicate rather than loading rows and filtering in memory.
+
+A deterministic equivalent is:
+
+```ts
+if (status === "NEEDS_ATTENTION") {
+  return {
+    OR: [
+      {
+        status: RecoveryCreditRefundStatus.NEEDS_ATTENTION,
+      },
+      {
+        status: RecoveryCreditRefundStatus.REQUESTED,
+        purchase: {
+          status: {
+            in: [
+              RecoveryCreditPurchaseStatus.REQUESTED,
+              RecoveryCreditPurchaseStatus.ACTIVE,
+              RecoveryCreditPurchaseStatus.COMPLETED,
+              RecoveryCreditPurchaseStatus.REFUNDED,
+            ],
+          },
+        },
+      },
+      {
+        status: RecoveryCreditRefundStatus.REQUESTED,
+        purchase: {
+          status: RecoveryCreditPurchaseStatus.WITHDRAWN,
+          reservedAmount: 0,
+          currentAmount: { lte: 0 },
+        },
+      },
+    ],
+  };
+}
+```
+
+Any equivalent database-scoped predicate is acceptable if it exactly mirrors the
+current derived queue semantics.
+
+Do not change:
+
+```text
+READY_FOR_PROVIDER_ACTION
+WAITING_FOR_RESERVATIONS
+REQUESTED raw-status filter
+persisted refund status
+database schema
+refund/purchase lifecycle
+```
+
+Do not create a new database enum such as `DATA_INTEGRITY_ATTENTION`.
+
+`DATA_INTEGRITY_ATTENTION` remains a read-model/operator interpretation, not persisted
+workflow state.
+
+---
+
+### Functional regression evidence required
+
+No broad test expansion is required.
+
+Update only the focused refund triage test(s), preferably:
+
+```text
+moda-interact-admin/tests/security/admin-recovery-credit-refunds.test.mjs
+```
+
+or an existing service-level test if one already exercises Prisma arguments.
+
+Prove the resulting `NEEDS_ATTENTION` query includes:
+
+```text
+persisted NEEDS_ATTENTION
+REQUESTED + ACTIVE
+REQUESTED + COMPLETED
+REQUESTED + REFUNDED
+REQUESTED + invalid zero-credit WITHDRAWN
+```
+
+and excludes the two valid REQUESTED withdrawn queue states:
+
+```text
+WITHDRAWN + reservedAmount > 0
+WITHDRAWN + reservedAmount = 0 + currentAmount > 0
+```
+
+The test may validate the generated Prisma predicate or the actual bounded query
+behavior. Do not build a large new integration fixture solely for this correction.
+
+Existing authorization/detail/read-only tests must continue to pass.
+
+---
+
+### Accepted Attempt-2 work — do not churn
+
+Do not redesign:
+
+```text
+moda-interact-admin/src/components/admin/recovery-credit-refunds.tsx
+moda-interact-admin/src/lib/admin/types.ts
+moda-interact-admin/src/components/admin/billing-tabs.tsx
+moda-interact-admin/src/app/(protected)/billing/page.tsx
+moda-interact-admin/src/i18n/*
+```
+
+unless a mechanical import/type adjustment is required by the narrow filter change.
+
+Preserve:
+
+```text
+bounded pagination
+existing queue status names
+exact detail drawer evidence
+support-context read-only display
+reservation/refund-history bounds
+Admin authentication
+no quantity/provider controls
+no mutation/provider behavior
+```
+
+---
+
+### Attempt-3 allowed scope
+
+Production:
+
+```text
+moda-interact-admin/src/lib/admin/recovery-credit-refunds.ts
+```
+
+Tests:
+
+```text
+moda-interact-admin/tests/security/admin-recovery-credit-refunds.test.mjs
+```
+
+plus this task/Completion Report.
+
+If the correction requires schema, Shopify, Background, Shared, provider, or ADMIN-003
+changes, STOP and return the exact limitation to `moda_architect`.
+
+---
+
+### Attempt-3 validation
+
+Prioritise the functional slice:
+
+```bash
+cd moda-interact-admin
+
+node --test tests/security/admin-recovery-credit-refunds.test.mjs
+npm exec tsc -- --noEmit
+npm run build
+git diff --check
+```
+
+Run the existing broader tests only for regression awareness.
+
+The two pre-existing queue-monitor lint warnings and existing BullMQ build warnings
+remain non-blocking if unchanged.
+
+Do not spend Attempt 3 fixing unrelated warnings.
+
+---
+
+### Workflow / Completion Report
+
+Preserve immutable Attempt-2 publication history:
+
+```text
+Attempt-2 implementation:
+9e571cd5
+
+Attempt-2 parent report:
+d438b2d7
+```
+
+Also preserve the earlier implementation commit:
+
+```text
+cd0eda5
+```
+
+Record full SHAs from repository history where available.
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 2
+```
+
+The next authorised claim must increment to **Attempt 3 exactly once**.
+
+Attempt 3 may return to review when:
+
+```text
+1. the Needs attention filter returns both persisted NEEDS_ATTENTION rows and derived
+   integrity-attention REQUESTED rows;
+2. valid READY_FOR_PROVIDER_ACTION / WAITING_FOR_RESERVATIONS rows remain excluded
+   from Needs attention;
+3. pagination remains database-scoped and bounded;
+4. no mutation/provider/quantity behavior is introduced;
+5. focused validation passes;
+6. status = review, executor = null, claimed_at = null;
+7. both worktrees are clean and pushed.
+```
+
+Then STOP and return to `moda_architect`.
+
+`ARCH-010-ADMIN-003` remains gated until `ADMIN-002` is architect-accepted Complete.
