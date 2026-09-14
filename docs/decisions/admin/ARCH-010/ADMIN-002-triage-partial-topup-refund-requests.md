@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 81
 executor: copilot
 claimed_at: 2026-09-14T20:03:33Z
@@ -226,6 +226,7 @@ Ready for Review.
 - Added an authorized, read-only, database-paginated recovery-credit refund queue with default page size 20 and maximum page size 50.
 - Added derived `READY_FOR_PROVIDER_ACTION` and `WAITING_FOR_RESERVATIONS` labels from the exact withdrawn purchase state; invalid active/non-terminal combinations surface integrity attention.
 - Added bounded refund detail data for request-time snapshots, current purchase amounts, billing-period/provider/plan provenance, provider valuation evidence, support context identity, reservation history and refund history.
+- Attempt 2 audit found a partial requirement gap: the first implementation loaded billing-period dates/plan provenance, provider usage before/after valuation evidence, support-context identity and refund-history fields but did not render all of them in the detail drawer. The drawer now displays those fields, including bounded refund-history reason, amount/currency and created time.
 - Added the billing Refund requests tab and detail drawer. The UI has no quantity, percentage, money-entry, approval or provider-settlement control and explicitly treats plan/top-up price as non-authoritative evidence.
 - Preserved merchant-created request identity; no support-message prerequisite, NLP creation path, Shopify call, purchase mutation or provider action was added.
 - Updated the directly affected billing-view and i18n contract tests and added focused refund triage security coverage.
@@ -233,17 +234,22 @@ Ready for Review.
 ### Validation Results
 - `node --test tests/security/admin-recovery-credit-refunds.test.mjs`: passed, 2 tests.
 - `node --test tests/security/admin-billing-progressive-disclosure.test.mjs tests/security/admin-internationalization.test.mjs tests/security/admin-recovery-credit-refunds.test.mjs`: passed, 18 tests.
-- `npm exec tsc -- --noEmit`: passed after `npm run prisma:generate`.
+- `npm exec tsc -- --noEmit`: passed after `npm run prisma:generate`; the first post-edit run caught and the focused rerun confirmed the optional support-context identifier fix.
 - `npm run test:unit`: passed, 42 tests.
-- `npm test`: passed, 170 tests; 3 skipped; 0 failures.
+- `npm test`: passed, 173 tests; 0 failures.
 - `npm run lint`: passed with 2 existing warnings in `src/components/admin/queue-monitor.tsx` for missing `refresh` hook dependencies; no errors.
 - `npm run build`: passed. Existing non-blocking BullMQ webpack warnings remain for an expression dependency and optional `@valkey/valkey-glide` resolution.
 - `git diff --check`: passed.
 
+### Two-Pass Audit
+- First pass omitted/partially met: exact request detail did not visibly render the already-loaded BillingPeriod dates/plan provenance, provider usage valuation before/after evidence, support-context message identity, or sufficient historical refund-attempt evidence for amount/currency/time/reason. No queue, authorization, state-derivation, pagination, read-only, quantity-control, provider-action, Shopify, support-message-prerequisite, or cross-shop boundary omission was found.
+- Corrections: extended the existing bounded read projection/type and drawer rendering; added focused regression assertions. No database, workflow, provider, or cross-repository changes were required.
+- Second independent pass: all objective requirements now pass. Queue/detail authorization uses the existing platform-admin read guard; queue filters use database `count` plus bounded `skip`/`take` with default 20 and max 50; derived waiting/ready states use the exact withdrawn purchase conditions; snapshots and live values are distinct; invalid ACTIVE/COMPLETED/REFUNDED non-terminal cases surface attention without repair; terminal cancellation history remains visible; no arbitrary quantity or settlement control exists.
+
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-002`.
 - Implementation branch: `task/ARCH-010-ADMIN-002`.
-- Implementation commit: `cd0eda5` (`feat(admin): triage recovery credit refund requests`).
+- Implementation commits: `cd0eda5` (`feat(admin): triage recovery credit refund requests`), `9e571cd` (`fix(admin): complete refund triage detail evidence`).
 - Implementation branch pushed to `origin/task/ARCH-010-ADMIN-002`.
 - Parent report is being published from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-002` on the mirrored `task/ARCH-010-ADMIN-002` branch.
 
