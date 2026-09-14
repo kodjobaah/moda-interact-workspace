@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 69
-executor: copilot
-claimed_at: 2026-09-14T17:00:59Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-014
@@ -319,18 +319,20 @@ Ready for Review.
 
 ### Work Completed
 - Preserved the accepted serializable transaction, versioned CAS, bounded whole-transaction retry, exact purchase-lot ownership, and FIFO allocation conventions.
+- Corrected both new-reservation and released-reservation replay lot CAS predicates to require the exact freshly read `currentAmount`, `reservedAmount`, `version`, and `ACTIVE` status.
+- Added the required regression proving two live 1-credit reservations can occupy one 2-credit ACTIVE lot and that a third independent source key is exhausted.
 - Restricted new and replayed purchased-credit reservations to ACTIVE spendable lots, with released replay retaining one reservation identity while selecting a fresh eligible lot when necessary.
 - Allowed existing reservations to commit or release against ACTIVE and WITHDRAWN lots with the required aggregate reserved/refunding conservation, completed-lot transition, and no-provider-refund cancellation for a final withdrawn consumption.
 - Preserved AMBIGUOUS ownership and expanded unit coverage for lifecycle transitions, FIFO/status filtering, replay, CAS retry, and conservation.
 - Added a disposable PostgreSQL integration race using independent Prisma clients/connections for reservation versus refund withdrawal.
 
 ### Validation Results
-- `npx vitest run tests/unit/services/purchased-recovery-reservation.service.test.ts`: PASS, 1 file and 13 tests.
-- `npm run test:integration`: PASS, 2 files and 3 tests, including the PostgreSQL concurrency test.
+- `npx vitest run tests/unit/services/purchased-recovery-reservation.service.test.ts`: PASS, 1 file and 14 tests.
+- `npm run test:integration`: PASS, 2 files and 3 tests, including all eight required PostgreSQL race behaviors across the concurrency suite.
 - `npm run prisma:validate`: PASS; Prisma schema is valid.
-- `npm run test:unit`: BASELINE FAIL, 57 files and 914/916 tests passed. The two failures are unrelated `tests/unit/runtime/observability-startup.test.ts` expectations for the recovery entrypoint source shape and shared runtime version (`0.9.0` expected versus repository `0.11.0`); no purchased-credit tests failed.
+- `npm run test:unit`: BASELINE FAIL, 57 files and 915/917 tests passed. The two failures are unchanged and unrelated `tests/unit/runtime/observability-startup.test.ts` expectations for the recovery entrypoint source shape and shared runtime version (`0.9.0` expected versus repository `0.11.0`); no purchased-credit tests failed.
 - `npm run build`: PASS; Prisma client generation and TypeScript compilation completed successfully.
-- `git diff --check 992638f^ 992638f`: PASS; no whitespace errors.
+- `git diff --check`: PASS; no whitespace errors.
 
 ### Requirement Matrix
 
@@ -353,11 +355,39 @@ Ready for Review.
 
 The audit found one concrete production gap: final consumption of a `WITHDRAWN` lot previously wrote an invalid intermediate `WITHDRAWN/currentAmount=0` state, violating the `RecoveryCreditPurchase_lifecycle_amounts` check constraint. The final lot CAS now sets `COMPLETED` atomically when balances reach zero. Focused PostgreSQL validation caught and then passed this correction.
 
+### Attempt 3 Audit Matrix
+
+| Requirement | Audit evidence | Result |
+|---|---|---|
+| ACTIVE-only new allocation | `selectOldestSpendableLot` filters `status = ACTIVE`; lot CAS repeats `ACTIVE` predicate; unit and PostgreSQL tests pass | PASS |
+| Requested, withdrawn, completed, and refunded exclusion | New allocation queries only ACTIVE lots and checks positive `currentAmount - reservedAmount`; status-filter unit test passes | PASS |
+| FIFO ordering | Ordering remains `activatedAt ASC NULLS LAST`, `createdAt ASC`, `id ASC`; unit FIFO and PostgreSQL reactivation tests pass | PASS |
+| Reactivation preserves original FIFO age | PostgreSQL reactivation helper changes status only; old lot remains ahead of newer lots | PASS |
+| Fresh-read lot CAS | Both reservation sites now use exact fresh `id`, `version`, `status`, `currentAmount`, and `reservedAmount`; strict unit harness verifies equality fields | PASS |
+| Aggregate CAS and whole-transaction retry | Aggregate `updateMany` remains versioned; `ReservationConcurrencyConflict` retries the complete Serializable transaction; CAS-loss unit test passes | PASS |
+| Serializable isolation | Reserve, commit, release, and ambiguous transitions use Prisma Serializable transactions; refund helpers use the same level | PASS |
+| One-credit reservation wins race | Two independent reservation/refund PostgreSQL clients leave exactly one owner and no over-allocation | PASS |
+| One-credit refund wins race | Refund-first PostgreSQL scenario withdraws the old lot and reservation selects the next ACTIVE FIFO lot | PASS |
+| Two-credit reservation/refund race | Reservation leaves one available credit; PostgreSQL refund transition withdraws with `currentAmount=2`, `reservedAmount=1` | PASS |
+| ACTIVE commit | Commit decrements lot reserved/current and aggregate reserved, increments committed, and emits one usage event | PASS |
+| WITHDRAWN commit | Existing RESERVED ownership remains valid; PostgreSQL test commits a withdrawn lot and conserves aggregate quantities | PASS |
+| ACTIVE release | Release decrements lot and aggregate reserved without changing aggregate refunding | PASS |
+| WITHDRAWN release | Release decrements lot/aggregate reserved and increments aggregate refunding; unit and PostgreSQL tests pass | PASS |
+| Final withdrawn completion and refund closure | Last commit atomically sets `COMPLETED` and cancels live refund as `NO_CREDITS_REMAINING` with no provider reference | PASS |
+| Ambiguous hold | `markAmbiguous` changes only reservation status; lot and aggregate holds remain; subsequent capacity is exhausted in unit test | PASS |
+| Released replay idempotency | Source key reuses the same reservation/counter identity, excludes ineligible original lots, and can select a fresh eligible lot; replay tests pass | PASS |
+| Multiple live reservations per lot | New 14-test unit regression reserves two sequential source keys on one 2-credit lot, asserts same lot and `reservedAmount=2`, then third exhaustion | PASS |
+| Multiple-lot isolation | Old/completed/withdrawn/refunded/requested lots are skipped; unrelated active lot remains unchanged in PostgreSQL test | PASS |
+| Aggregate conservation | Reserve, commit, release, withdrawal, reactivation, completion, and provider-settlement ownership boundaries are asserted; ADMIN-003 owns provider movement | PASS |
+| Eight real PostgreSQL races | Independent Prisma clients/connections exercise: reservation-first one-credit, refund-first alternate lot, two-credit withdrawal, withdrawn release, withdrawn commit, final completion/refund cancellation, reactivation FIFO, and unrelated-lot isolation | PASS |
+| Validations | Focused unit PASS; integration PASS; Prisma PASS; build PASS; diff check PASS; full unit suite only has the unchanged observability baseline failures | PASS |
+| Non-goals and ownership | Diff is limited to the reservation service, focused unit test, and task report; no endpoint, UI, valuation, provider settlement, schema, or shared-contract changes | PASS |
+
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-022`
-- Implementation branch/commit: `task/ARCH-010-BACKGROUND-022` at `2f08bd7` (`Strengthen purchased credit lifecycle concurrency evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-022`; worktree clean after validation.
+- Implementation branch/commit: `task/ARCH-010-BACKGROUND-022` at `af2e2f134387e7da768ce8fe68f27c83654cbc6b` (`Fix purchased credit lot reservation CAS`), pushed to `origin/task/ARCH-010-BACKGROUND-022`; worktree clean after validation.
 - Implementation base: `992638f0e7be8c40249adfece485fb4f65439c53`.
-- Parent report branch: `task/ARCH-010-BACKGROUND-022`; report status commit `f94ad48` is pushed, with this matrix update pending as the next report-only commit.
+- Parent report branch: `task/ARCH-010-BACKGROUND-022`; report update pending as the next parent-only commit.
 
 ### Architect Review
 Pending.
