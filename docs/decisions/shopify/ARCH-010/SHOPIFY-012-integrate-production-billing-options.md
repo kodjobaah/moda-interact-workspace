@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
 executor: copilot
 claimed_at: 2026-09-14T13:01:29Z
@@ -370,6 +370,30 @@ Ready for Review.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-012`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-012`.
 - Launcher evidence: prepared Attempt 3 reused the exact canonical worktrees, passed all seven dependencies, initialized submodules, and durably claimed executor `copilot` before implementation.
+
+### Attempt-4 Correction Report
+
+#### Correction Mapping
+- Gated `configured`, `creditsPerPack` and `shopifyPackMeter` in the billing-options composition on a verified `ACTIVE_SUBSCRIPTION` with `mappingStatus=MAPPED`; preserved purchased-credit lifecycle information and all independent SHOPIFY-009 capacity balances for genuine `UNMAPPED` contracts.
+- Added the genuine `UNMAPPED` mapping warning to the default top-up view while preserving the accepted verification-unavailable, lifecycle and awaiting-Shopify-confirmation precedence.
+- Added focused regression coverage for commercial truth, durable balances, hidden stale pack configuration and mapping-warning presentation.
+
+#### Files Changed
+- `app/routes/app/billing/options/route.tsx`
+- `app/components/dashboard/BillingPurchaseHub.jsx`
+- `tests/unit/billing-purchase-hub.test.tsx`
+- `tests/unit/billing-ui.test.ts`
+
+#### Validation Results
+- Focused billing tests: `npm test -- --run tests/unit/billing-purchase-hub.test.tsx tests/unit/billing-ui.test.ts` -> 2 files passed, 20 tests passed.
+- Full tests: `npm test` -> 40 files passed, 2 skipped; 496 tests passed, 3 skipped.
+- Typecheck: `npm run typecheck` retains only existing diagnostics outside Attempt-4 touched files; the temporary test annotation diagnostic was corrected and no Attempt-4 production file has a diagnostic.
+- Production build: `npm run build` passed; existing unused-import and chunk-size warnings remain.
+- Whitespace: `git diff --check` passed.
+
+#### Git / VCS
+- Implementation commit: `94a2d89` (`fix(shopify): gate unmapped billing pack configuration`) pushed to `origin/task/ARCH-010-SHOPIFY-012`.
+- Parent report update is committed and will be pushed on the mirrored `task/ARCH-010-SHOPIFY-012` branch.
 
 ### Architect Review
 Pending.
