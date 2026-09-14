@@ -9,10 +9,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 44
-executor: copilot
-claimed_at: 2026-09-13T23:47:53Z
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -25,7 +23,7 @@ enables:
 - ARCH-010-SHOPIFY-004
 - ARCH-010-SHOPIFY-007
 created: 2026-09-11
-updated: 2026-09-13
+updated: 2026-09-14
 ---
 
 # ARCH-010-SHOPIFY-003: Activate first verified paid plan with exact billing period
@@ -238,26 +236,29 @@ Ready for Review.
 - `moda-interact/tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
-- Added first-paid pending intent handling while preserving the existing initial reconciliation path.
-- Required exact mapped paid handle, normal usage meter, valid current cycle, non-negative safe allowance, and supported non-trial state before activation.
-- Atomically reused or created the exact open Shopify billing period and included-credit counter with ownership and snapshot conflict checks; replay preserves committed, reserved, and forfeited quantities.
-- Ensured the one-time lifetime free counter without rewriting existing lifetime or purchased state, cleared pending/error state only on successful activation, completed onboarding last, and scheduled the shared drain-window reconciliation.
-- Reused the existing deterministic post-commit reconciliation enqueue and durable repair behavior.
-- Changed exact-period reuse to use the unique `(shopId, periodStart, periodEnd)` key rather than relying only on the subscription pointer.
+- Preserved the Attempt-1 pending initial Paid intent and existing reconciliation producer.
+- Moved verified first-Paid period/counter creation and onboarding completion into the single `syncSubscription` transaction using the immutable single Partner observation.
+- Revalidated Shop status, onboarding state, exact pending token and transactionally re-read active Paid plan, normal usage meter, allowance, and exact provider cycle before commit.
+- Preserved period/counter usage on replay, failed closed on snapshot/grant conflicts, preserved lifetime and purchased balances, and completed onboarding only after exact period and counter state existed.
+- Recorded unsupported Paid trials as `SYNC_ERROR` / `UNSUPPORTED_PAID_TRIAL` with `nextReconcileAt = null`, preserved pending intent, and avoided the one-minute enqueue path.
+- Removed the callback's second mutating Paid activation step; successful sync now only schedules the existing best-effort reconciliation job after the committed row proves activation.
+- Added regression coverage for the review corrections and retained the exact-period, meter, allowance, replay, balance, provider-null, Partner-failure, and queue-failure cases.
 
 ### Validation Results
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- `npm run test -- tests/unit/routes/billing-callback.test.ts tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts`: passed, 3 files / 110 tests.
-- `npm run typecheck`: repository baseline failure, 168 errors across 29 files; task-file diagnostics are pre-existing unrelated lifecycle/purchase typing issues, with no new error in the changed paid-activation slice.
+- `npm run test -- tests/unit/routes/billing-callback.test.ts tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing-reconciliation.service.test.ts`: passed, 4 files / 120 tests.
+- `npm run typecheck`: repository baseline failure, 166 errors across 29 files. The changed-file diagnostics are the pre-existing billing purchase/provider typing diagnostic at `app/services/billing/billing.service.ts:933` and the pre-existing test provider-shape diagnostic at `tests/unit/services/billing.service.test.ts:1153`; the Attempt-2 lines introduce no new diagnostics.
 - `npm run build`: passed.
 - `git diff --check`: passed.
+- `rg -n "moda-interact-admin" app/routes`: passed with no matches.
 
 ### Git / VCS
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
-- Implementation commit: `8c3f15beafc659a875caf38d60544a63c90c71ae`, pushed to `origin/task/ARCH-010-SHOPIFY-003`.
-- Parent report commit: `911cc2b84dd598b76d51198f4444081a5c2cea66`, pushed to `origin/task/ARCH-010-SHOPIFY-003`.
+- Implementation Attempt-1 history preserved: `8c3f15beafc659a875caf38d60544a63c90c71ae`.
+- Implementation Attempt-2 commit: `53e07302c6be761939268b80cca70959913be73b`, pushed to `origin/task/ARCH-010-SHOPIFY-003`.
+- Parent report commit: pending; this report will be committed and pushed after the task-file update.
 
 ### Architect Review
 Pending.
