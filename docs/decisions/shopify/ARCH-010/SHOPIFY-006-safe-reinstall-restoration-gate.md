@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-14T01:01:33Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-010-DATABASE-013
@@ -699,6 +699,51 @@ The next authorized claim increments it to **Attempt 2 exactly once**.
 After implementing only these corrections, updating the Completion Report, setting
 `status: review`, clearing `executor`/`claimed_at`, committing/pushing both mirrored
 task branches, STOP and return to `moda_architect`.
+
+`ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
+
+### Attempt 4 Completion Report
+
+#### Status
+
+Ready for Review. Attempt 4 correction implemented; returned for architect review.
+
+#### Correction Mapping
+
+- Architect Review Attempt 3 Finding: gated the real parent `/app` loader with the shared `assertActiveShop` and `assertSupportShop` policies immediately after authenticated Shop resolution and before `readMerchantSupportMessages` or `db.shopSettings.findUnique`. Pending reinstall product paths redirect to `/app/reinstalling`; suspended product paths redirect to `/app/merchant-support`; authenticated pending support remains reachable; unmarked uninstall support redirects to `/auth/login`.
+- Added `tests/unit/routes/app-layout-access.test.ts` with exact `Location` assertions for `/app`, `/app/additional`, `/app/billing`, `/app/promotions`, `/app/usage`, suspended product access, pending support tenant scoping, unmarked support rejection, and ACTIVE shell access. The test proves shell reads are not called before fail-closed redirects.
+- Strengthened pending redirect assertions in `tests/unit/home-route.test.ts`, `tests/unit/routes/additional-route.test.ts`, and `tests/unit/billing-ui.test.ts` to require `Location: /app/reinstalling`.
+- Cleared the changed parent route's local type diagnostics with JSX-compatible JSDoc and Shopify custom-element annotations; no typecheck diagnostic remains in Attempt 4 changed files.
+
+#### Files Changed in Attempt 4
+
+- `app/routes/app/route.jsx`
+- `tests/unit/routes/app-layout-access.test.ts`
+- `tests/unit/home-route.test.ts`
+- `tests/unit/routes/additional-route.test.ts`
+- `tests/unit/billing-ui.test.ts`
+
+#### Validation Results
+
+- Focused Attempt-4 matrix: 11 files passed, 83 tests passed.
+- Parent-layout regression test: 1 file passed, 9 tests passed.
+- Full tests: `npm test` -> 38 files passed, 2 skipped; 380 tests passed, 3 skipped.
+- Production build: `npm run build` -> passed; existing Zod/Rollup annotation, unresolved Prisma browser import, empty route chunks, and chunk-size warnings remained.
+- Typecheck: `npm run typecheck` -> exit 2 with 155 repository-wide baseline diagnostics; no diagnostics in `app/routes/app/route.jsx` or `tests/unit/routes/app-layout-access.test.ts` after final cleanup. The baseline is outside Attempt 4 scope.
+- Lint: `npm run lint` -> exit 1 with 11 existing unrelated errors in onboarding, billing-options/select, merchant-support, privacy, billing-provider, and webhook-test files; no Attempt-4 changed file was reported.
+- `git diff --check` -> passed.
+
+#### Git / VCS
+
+- Attempt-3 implementation full SHA: `c15265e3e72027b77938378ecb36a0ed17aa2cee`.
+- Attempt-3 final parent/report full SHA: `75c1702da3a3b6d800c02b656fad560ffe7bb3d8`.
+- Attempt-4 launcher claim full SHA: `6478ec300e08d5958e709f1b23124d0887719f0f`.
+- Parent preparation HEAD: `ed0673699928e5fb4e97498a2898511f56604664`.
+- Implementation preparation HEAD: `d1d14a24876081462148afac270d38c3a7b67872`.
+- Attempt-4 implementation full SHA: `5aa1a1898ffbdd4191354a4f62d0cbc0f4ab7ddf` (`fix(shopify): gate app layout during reinstall`), pushed to `origin/task/ARCH-010-SHOPIFY-006`.
+- Database gitlink before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` (unchanged; not staged).
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-006`; task branch clean and pushed.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-006`; task branch publication pending this report commit, then will be clean and pushed.
 
 `ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
 
