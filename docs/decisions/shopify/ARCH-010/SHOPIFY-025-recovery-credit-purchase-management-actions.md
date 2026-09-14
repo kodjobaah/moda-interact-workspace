@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 79
-executor: copilot
-claimed_at: 2026-09-14T18:42:06Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-014
@@ -474,3 +474,377 @@ Ready for Review.
 
 ### Architect Review
 Pending.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — one functional conflict-recovery correction only**
+
+This review intentionally prioritises merchant/runtime functionality over exhaustive
+test coverage.
+
+The second-pass implementation is broadly accepted:
+
+```text
+authenticated merchant resource route
+shop-scoped purchase-history query
+bounded pagination
+all five purchase lifecycle states
+server-computed availableAmount
+fresh-state refund quantity
+one Serializable transaction per selected purchase
+independent batch-lot outcomes
+ACTIVE -> WITHDRAWN + aggregate refund hold
+pre-provider WITHDRAWN -> ACTIVE reactivation
+zero-current WITHDRAWN -> COMPLETED
+provider-action lock blocks reactivation
+exact purchase/refund/aggregate CAS
+no client-trusted quantity/money
+no provider refund API or negative App Event
+no schema / Background / Admin / Shared / page-UI change
+```
+
+The corrected cross-shop test fixture and deterministic same-request `requestKey`
+replay are also accepted.
+
+One explicit database race is still not handled functionally.
+
+---
+
+### Finding — `P2002` from the one-live-refund-per-purchase index can escape as a 500
+
+The database has two independent uniqueness constraints relevant to refund creation:
+
+```text
+1. RecoveryCreditRefund.requestKey UNIQUE
+
+2. RecoveryCreditRefund_one_non_terminal_per_purchase_key
+   UNIQUE (purchaseId)
+   WHERE status IN (
+     REQUESTED,
+     PROVIDER_ACTION_REQUIRED,
+     NEEDS_ATTENTION
+   )
+```
+
+The current `requestRefundWithRetry(...)` catches any `P2002`, but recovery then looks
+up only:
+
+```ts
+RecoveryCreditRefund.findUnique({
+  where: {
+    requestKey: requestKey(
+      input.shopId,
+      input.requestId,
+      input.purchaseId,
+    ),
+  },
+})
+```
+
+That correctly resolves a replay/race where the conflicting unique constraint is the
+same deterministic `requestKey`.
+
+It does **not** resolve this normal merchant race:
+
+```text
+Request A:
+  requestId = A
+  purchase  = P
+
+Request B:
+  requestId = B
+  purchase  = P
+
+both read P as ACTIVE with no live refund
+both attempt RecoveryCreditRefund.create(...)
+
+A wins:
+  creates requestKey(..., A, P)
+  withdraws P
+
+B loses:
+  PostgreSQL raises P2002 from the partial
+  one-non-terminal-refund-per-purchase unique index
+```
+
+B then searches for:
+
+```text
+requestKey(..., B, P)
+```
+
+but the authoritative winning row is:
+
+```text
+requestKey(..., A, P)
+```
+
+so the lookup returns null and the Prisma error is rethrown.
+
+The merchant therefore receives a server failure for a concurrency condition that the
+task explicitly requires to be deterministic.
+
+This violates:
+
+```text
+one-live-refund DB conflict is handled deterministically
+safe HTTP/batch concurrency
+bounded per-purchase outcome under races
+```
+
+This is a production functionality defect, not a request for additional coverage
+breadth.
+
+---
+
+### Required correction
+
+Modify only:
+
+```text
+app/services/billing/recovery-credit-purchase-management.service.ts
+```
+
+Keep the current same-request `requestKey` reload first.
+
+When a `P2002` occurs:
+
+```text
+1. reload by the exact deterministic requestKey;
+2. if found and shop ownership matches, return the persisted authoritative outcome;
+3. if not found, resolve the purchase under authenticated shopId and reload its
+   current non-terminal refund;
+4. if a live refund now exists for that purchase, return the deterministic current
+   purchase/refund outcome;
+5. only rethrow if neither the exact request nor an authoritative live-refund state
+   can explain the uniqueness conflict.
+```
+
+The purchase fallback must be shop-scoped at the database query boundary, e.g. an
+equivalent of:
+
+```ts
+recoveryCreditPurchase.findFirst({
+  where: {
+    id: input.purchaseId,
+    shopId: input.shopId,
+  },
+  include: {
+    refunds: {
+      where: {
+        status: {
+          in: [...LIVE_REFUND_STATUSES],
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 1,
+    },
+  },
+})
+```
+
+Do not fetch a cross-shop purchase and then expose its refund state.
+
+For an authoritative live refund, preserve the existing outcome semantics:
+
+```text
+REQUESTED                -> REQUESTED
+PROVIDER_ACTION_REQUIRED -> ALREADY_WITHDRAWN
+NEEDS_ATTENTION          -> ALREADY_WITHDRAWN
+```
+
+and include current/reserved/available amounts from the winning purchase state.
+
+Do not create another refund row.
+
+Do not retry with a new request key.
+
+Do not wrap the whole batch in one transaction.
+
+Do not weaken the database partial unique index.
+
+Do not inspect Prisma error-message text or index names as business authority; the
+persisted purchase/refund state is authoritative.
+
+---
+
+### Functional regression evidence required
+
+No broad test expansion is required.
+
+Update only:
+
+```text
+tests/unit/services/recovery-credit-purchase-management.service.test.ts
+```
+
+Add one permanent functional regression:
+
+```text
+resolves a different-request P2002 live-refund race from the persisted purchase state
+```
+
+Exact scenario:
+
+```text
+purchase P initially ACTIVE
+
+winning persisted state after concurrent request A:
+  purchase P = WITHDRAWN
+  live refund = REQUESTED
+  requestKey = key for request A
+
+current call:
+  requestId = B
+
+transaction throws P2002
+exact key-B lookup returns null
+shop-scoped purchase fallback returns P + winning live refund
+```
+
+Require:
+
+```text
+service resolves normally
+code = REQUESTED
+purchaseId = P
+no second refund is created
+no Prisma error escapes
+```
+
+Also preserve the existing same-request request-key conflict test.
+
+One additional row using `PROVIDER_ACTION_REQUIRED` is optional, not required for this
+functionality-first review, because it uses the same persisted-state mapping.
+
+No new integration/race suite is required solely for this deterministic post-conflict
+read.
+
+---
+
+### Accepted work — do not churn
+
+Do not redesign:
+
+```text
+app/routes/app/billing/recovery-credits/route.ts
+history pagination/read model
+batch independence
+refund request transaction/CAS
+aggregate refundingQuantity accounting
+reactivation transaction/CAS
+zero-current completion
+provider-action protection
+requestKey format
+purchase/refund schema
+```
+
+Do not add:
+
+```text
+provider refund calls
+negative Shopify App Events
+Background dependencies
+Admin behavior
+React/page UI
+Shared codes
+schema migrations
+shop-global locks
+```
+
+unless the narrow conflict-resolution correction proves one of those is genuinely
+required, in which case STOP and return the limitation to `moda_architect`.
+
+---
+
+### Attempt-3 allowed scope
+
+Production:
+
+```text
+app/services/billing/recovery-credit-purchase-management.service.ts
+```
+
+Tests:
+
+```text
+tests/unit/services/recovery-credit-purchase-management.service.test.ts
+```
+
+plus this task/Completion Report.
+
+---
+
+### Attempt-3 validation
+
+Prioritise the functional slice:
+
+```bash
+npm exec vitest run \
+  tests/unit/services/recovery-credit-purchase-management.service.test.ts
+
+npm run build
+npm run prisma:validate
+git diff --check
+```
+
+Run the relevant/full repository suite only for regression awareness.
+
+The known unrelated repository typecheck/lint baseline remains non-blocking if the
+changed service/test have no new diagnostics.
+
+Do not spend Attempt 3 fixing unrelated baseline diagnostics.
+
+---
+
+### Workflow / Completion Report
+
+Preserve immutable Attempt-2 publication history:
+
+```text
+Claim:
+08d85bb9ac97e30ca1c2d8e4b2af3879e376ea09
+
+Attempt-2 implementation:
+1db0a03
+
+Attempt-2 parent report:
+78bd50f
+```
+
+Record full SHAs from repository history where available.
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 2
+```
+
+The next authorised claim must increment to **Attempt 3 exactly once**.
+
+Attempt 3 may return to `review` when:
+
+```text
+1. same-request requestKey P2002 remains deterministic;
+2. different-request one-live-refund P2002 resolves from authenticated persisted
+   purchase/refund state;
+3. no duplicate refund is created;
+4. no Prisma error escapes for that normal concurrency race;
+5. focused functional validation passes;
+6. no changed-file regression is introduced;
+7. status = review, executor = null, claimed_at = null;
+8. both worktrees are clean and pushed.
+```
+
+Then STOP and return to `moda_architect`.
+
+`ARCH-010-SHOPIFY-026`, `ARCH-010-ADMIN-002`, and
+`ARCH-010-SYSTEM-TEST-003` remain gated until `SHOPIFY-025` is
+architect-accepted Complete.
+
