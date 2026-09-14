@@ -332,10 +332,32 @@ Ready for Review.
 - `npm run build`: PASS; Prisma client generation and TypeScript compilation completed successfully.
 - `git diff --check 992638f^ 992638f`: PASS; no whitespace errors.
 
+### Requirement Matrix
+
+| Requirement | Evidence | Result |
+|---|---|---|
+| Allocation predicates, FIFO, status filtering, reactivation age | Service `selectOldestSpendableLot`; unit FIFO/status tests; PostgreSQL reactivation test | PASS |
+| Fresh-read versioned CAS and whole-transaction retry | Counter and lot `updateMany` predicates; unit CAS-loss retry; serializable integration transactions | PASS |
+| One-credit reservation/refund races | Two-client PostgreSQL winner test plus refund-first alternate-lot test | PASS |
+| Two-credit reservation/refund race | PostgreSQL reservation-first test proves one reserved and one refund-available credit | PASS |
+| ACTIVE/WITHDRAWN commit and release | Unit and PostgreSQL withdrawn commit/release tests with aggregate assertions | PASS |
+| Final completion and refund closure | PostgreSQL test verifies `COMPLETED`, `CANCELLED`, `NO_CREDITS_REMAINING`, and no provider reference | PASS |
+| Ambiguous holds | Unit test verifies `AMBIGUOUS` retains lot and aggregate reservation and blocks further capacity | PASS |
+| Released replay idempotency | Unit test verifies one source-key reservation identity and reactivation without duplicate consumption | PASS |
+| Multiple-lot isolation | Unit and PostgreSQL tests verify eligible FIFO allocation and untouched unrelated lot state | PASS |
+| Aggregate conservation | Unit plus PostgreSQL lot/counter assertions across reserve, commit, release, withdrawal, reactivation, and completion; provider settlement remains ADMIN-003's contract | PASS |
+| All eight required real-PostgreSQL scenarios | PostgreSQL suite covers scenarios 1 through 8; scenarios 7 and 8 are asserted together in the reactivation/isolation test | PASS |
+| Non-goals and ownership boundaries | Diff limited to reservation service and tests; no endpoint, UI, valuation, provider settlement, schema, or shared-contract changes | PASS |
+
+### Audit Correction
+
+The audit found one concrete production gap: final consumption of a `WITHDRAWN` lot previously wrote an invalid intermediate `WITHDRAWN/currentAmount=0` state, violating the `RecoveryCreditPurchase_lifecycle_amounts` check constraint. The final lot CAS now sets `COMPLETED` atomically when balances reach zero. Focused PostgreSQL validation caught and then passed this correction.
+
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-022`
-- Implementation branch/commit: `task/ARCH-010-BACKGROUND-022` at `992638f` (`Conform purchased credit reservations to lifecycle`), pushed to `origin/task/ARCH-010-BACKGROUND-022`; worktree clean after validation.
-- Parent report branch: `task/ARCH-010-BACKGROUND-022`; this report-only change is committed and pushed below.
+- Implementation branch/commit: `task/ARCH-010-BACKGROUND-022` at `2f08bd7` (`Strengthen purchased credit lifecycle concurrency evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-022`; worktree clean after validation.
+- Implementation base: `992638f0e7be8c40249adfece485fb4f65439c53`.
+- Parent report branch: `task/ARCH-010-BACKGROUND-022`; report status commit `f94ad48` is pushed, with this matrix update pending as the next report-only commit.
 
 ### Architect Review
 Pending.
