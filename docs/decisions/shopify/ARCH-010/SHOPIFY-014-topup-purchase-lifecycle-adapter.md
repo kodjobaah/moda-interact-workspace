@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 54
-executor: copilot
-claimed_at: 2026-09-14T06:43:22Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-SHOPIFY-013
@@ -301,17 +301,16 @@ Ready for Architect Review.
 - `tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
-- Applied Attempt 2 review corrections: shared local executable eligibility gates now require an ACTIVE shop, executable subscription/plan/period configuration, and complete provider lifecycle evidence.
-- Top-up read and mutation now use one `getSubscriptionLifecycleSnapshot` provider authority, fail closed when unavailable, and reject effective FROZEN lifecycle evidence even when an active subscription is temporarily present.
-- Restored `/app/billing/options` ownership boundary for SHOPIFY-012 while preserving the approved production child-panel integration and the existing `PENDING_BILLING` to `REQUESTED` correction.
-- Exposed bounded `RETRYABLE` and `NEEDS_ATTENTION` provider-report copy without adding lifecycle states, and localized all six task-visible keys across all 20 supported catalogues.
-- Preserved REQUESTED creation, immutable before snapshots, zero initial balances, idempotent replay, unresolved-purchase concurrency protection, no HTTP activation, and no direct App Event publication.
+- Applied the Attempt 3 correction requested by Architect Review: restored `app/routes/app/billing/options/route.tsx` exactly from `64b535798ed03ca08045fbfa96ff364f7be26f77`, returning final billing-options composition ownership to SHOPIFY-012.
+- Preserved the accepted Attempt 2 implementation unchanged across the billing service, production top-up panel, locale catalogues, and `/app/billing` `PENDING_BILLING -> REQUESTED` correction.
+- Preserved the single lifecycle snapshot authority, full local/provider eligibility gates, effective FROZEN precedence, fail-closed behavior, REQUESTED-only writes, immutable before snapshots, idempotency/concurrency protection, provider report attention states, and all canonical purchase lifecycle statuses.
 
 ### Validation Results
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts`: passed, 2 files and 198 tests.
-- `git diff --check`: passed.
+- `git diff 64b535798ed03ca08045fbfa96ff364f7be26f77 -- app/routes/app/billing/options/route.tsx`: passed with empty output.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts tests/unit/merchant-i18n.test.ts tests/unit/billing-i18n.test.ts`: passed, 4 files and 214 tests.
 - `npm run prisma:generate`: passed.
-- `npm run build`: passed with the repository's documented baseline diagnostics only; no Attempt 2 changed-line diagnostic was introduced.
+- `npm run build`: passed.
+- `git diff --check`: passed.
 
 ### Git / VCS
 - Launcher-provided isolated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-014`.
@@ -321,10 +320,11 @@ Ready for Architect Review.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-014`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-014`.
 - Both branches: `task/ARCH-010-SHOPIFY-014`; no other task worktree was reused. Parent origin/main was incorporated; implementation origin/main was already current.
 - Recursive submodule sync/update passed; `database` is pinned at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
-- Implementation commit `c139dc4` (`fix(shopify): apply top-up lifecycle review corrections`) pushed to `origin/task/ARCH-010-SHOPIFY-014`.
+- Implementation commits `c139dc4` (`fix(shopify): apply top-up lifecycle review corrections`) and `e0cd7da` (`fix(shopify): restore billing options route ownership`) pushed to `origin/task/ARCH-010-SHOPIFY-014`; Attempt 3 correction is `e0cd7da`.
+- Attempt 3 used the launcher-provided prepared claim and exact isolated worktrees without rerouting, dependency discovery, worktree recreation, startup synchronization, submodule initialization, or a second claim.
 
 ### Architect Review
-Pending moda_architect review.
+Pending moda_architect review. Attempt 3 correction is ready for final review handoff.
 
 
 ## Architect Review — Attempt 2
