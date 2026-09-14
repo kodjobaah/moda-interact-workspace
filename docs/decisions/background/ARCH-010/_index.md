@@ -18,7 +18,7 @@ Coordinator:
 
 > Synchronized 2026-09-13 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 15, `ready` 2, `pending` 3, `superseded` 2
+Current counts: `complete` 16, `ready` 1, `pending` 3, `superseded` 2
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -39,7 +39,7 @@ Current counts: `complete` 15, `ready` 2, `pending` 3, `superseded` 2
 | `BACKGROUND-015` | Read Shopify live subscription plus latest lifecycle event for reconciliation | Complete | — |
 | `BACKGROUND-016` | Reconcile Shopify subscription freeze and unfreeze without losing entitlement history | Superseded | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-010, ARCH-010-BACKGROUND-015, ARCH-010-SHARED-008 |
 | `BACKGROUND-017` | Gate all shop business execution while the Shopify subscription is frozen | Superseded | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005, ARCH-010-BACKGROUND-013, ARCH-010-BACKGROUND-016 |
-| `BACKGROUND-018` | Stop Shopify checkout/cart event processing early for frozen subscriptions | **Ready** | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-012 |
+| `BACKGROUND-018` | Stop Shopify checkout/cart event processing early for frozen subscriptions | Complete | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-012 |
 | `BACKGROUND-019` | Reserve selected promotional campaign credits before every other capacity source | Complete | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-011, ARCH-010-BACKGROUND-014 |
 | `BACKGROUND-020` | Remove pre-publication Background consumers of retired Shared billing contracts | Complete | ARCH-010-SHARED-006 |
 | `BACKGROUND-021` | Confirm purchase commercial value and activate REQUESTED recovery-credit purchases | Pending | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-015, ARCH-010-SHOPIFY-014 |
