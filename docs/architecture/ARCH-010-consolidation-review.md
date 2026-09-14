@@ -111,10 +111,10 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ## Current Ready frontier
 
 ```text
-ARCH-010-ADMIN-010
-ARCH-010-BACKGROUND-008
-ARCH-010-BACKGROUND-009
-ARCH-010-DATABASE-014
+ARCH-010-BACKGROUND-012
+ARCH-010-SHOPIFY-003
+ARCH-010-SHOPIFY-006
+ARCH-010-SHOPIFY-015
 ```
 
 
@@ -317,5 +317,42 @@ Current Ready frontier from authoritative ARCH-010 task YAML remains:
 ARCH-010-BACKGROUND-006
 ARCH-010-BACKGROUND-010
 ARCH-010-SHOPIFY-003
+```
+
+## Post-review update — BACKGROUND-010 Attempt 6 accepted
+
+`ARCH-010-BACKGROUND-010` Attempt 6 is architect-accepted Complete.
+
+Accepted implementation/evidence:
+
+```text
+implementation: 48f1b40bea8093b5e5a1b99ed9ca4d67ffbbac7d
+focused:        198/198 passed
+integration:    3/3 passed
+Prisma:         validate/generate passed
+diff:           passed
+```
+
+Attempt 6 was evidence-only: the actual Attempt-5 -> Attempt-6 implementation delta
+is limited to the two scoped reconciliation test files. The accepted production
+implementation from Attempt 4/5 therefore remains unchanged.
+
+Newly dependency-eligible tasks:
+
+```text
+ARCH-010-BACKGROUND-012
+ARCH-010-SHOPIFY-015
+```
+
+`ARCH-010-SYSTEM-TEST-001` remains Pending/manual-gated because its remaining
+dependencies are incomplete.
+
+Current Ready frontier from authoritative task YAML after this acceptance:
+
+```text
+ARCH-010-BACKGROUND-012
+ARCH-010-SHOPIFY-003
+ARCH-010-SHOPIFY-006
+ARCH-010-SHOPIFY-015
 ```
 
