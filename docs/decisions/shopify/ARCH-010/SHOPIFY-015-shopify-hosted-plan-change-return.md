@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 56
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-010-SHOPIFY-012
 created: 2026-09-11
-updated: 2026-09-12
+updated: 2026-09-14
 ---
 
 # ARCH-010-SHOPIFY-015: Implement Shopify-hosted plan management flow and production panel
