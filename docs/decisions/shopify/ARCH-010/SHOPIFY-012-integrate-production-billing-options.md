@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-14T07:09:48Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-SHOPIFY-009
@@ -308,19 +308,35 @@ STOP if `requestRecoveryCreditPack` cannot be reused without changing its accept
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `app/routes/app/billing/options/route.tsx`
+- `app/components/dashboard/BillingPurchaseHub.jsx`
+- `tests/unit/billing-ui.test.ts`
+- `app/i18n/locales/*.json` (promotional balance catalogue key)
 
 ### Work Completed
-Populate during implementation.
+- Composed SHOPIFY-013 commercial subscription verification, SHOPIFY-009 capacity, SHOPIFY-018 lifecycle/FROZEN state, SHOPIFY-007 billing phase, and SHOPIFY-014 billing state through `billingService` abstractions.
+- Preserved no-active, unmapped, verification-unavailable, FROZEN, DRAINING, and RECONCILING states without using local `BillingPlan` as Shopify commercial truth; billing mutations are disabled unless the provider contract is active, mapped, and executable.
+- Integrated real `TopUpPurchasePanel` and `SubscriptionChangePanel`, removed mock/default plan dependencies, kept one page wrapper, and routed plan management to `/app/billing/select`.
+- Rendered provider current/pending plan facts and separate paid-included, lifetime-Free, promotional, and purchased balances without fabricated pricing or Free monthly allowance.
+- Added focused source-contract coverage for authoritative reads and production component constraints.
 
 ### Validation Results
-Populate during implementation.
+- Focused billing route/component/service tests: `npm test -- --run tests/unit/billing-ui.test.ts tests/unit/services/billing.service.test.ts tests/unit/subscription-change-panel.test.tsx` -> 3 files passed, 204 tests passed.
+- Final focused billing UI contract test: `npm test -- --run tests/unit/billing-ui.test.ts` -> 15 tests passed.
+- Full tests: `npm test` -> 39 files passed, 2 skipped; 489 tests passed, 3 skipped.
+- Typecheck: `npm run typecheck` exits nonzero on pre-existing JSX baseline diagnostics in unrelated dashboard/home/support/usage files; no diagnostics were reported for `app/routes/app/billing/options/route.tsx` or `app/components/dashboard/BillingPurchaseHub.jsx`.
+- Production build: `npm run build` passed; only existing bundler warnings were emitted.
+- Whitespace: `git diff --check` passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-012`
+- Implementation branch: `task/ARCH-010-SHOPIFY-012`
+- Implementation commit: `ee310ac` (`feat(shopify): integrate production billing options`), pushed to `origin/task/ARCH-010-SHOPIFY-012`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-012`
+- Parent branch/report commit and push: this report update is committed and published on `task/ARCH-010-SHOPIFY-012`.
 
 ### Architect Review
 Pending.
