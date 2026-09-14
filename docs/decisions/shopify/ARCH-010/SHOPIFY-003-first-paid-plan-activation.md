@@ -9,7 +9,9 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
+executor: null
+claimed_at: null
 priority: 44
 attempt: 2
 depends_on:
@@ -871,6 +873,500 @@ The next authorized claim must increment it to **Attempt 2 exactly once**.
 After implementing only the corrections above, run validation, update the Completion
 Report, set the task back to `status: review`, clear `executor`/`claimed_at`,
 commit/push both mirrored task branches, then STOP and return to `moda_architect`.
+
+Do not start `ARCH-010-SHOPIFY-004`, `ARCH-010-SHOPIFY-007`, or any system-test task.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+**Changes Requested**
+
+Attempt 2 correctly removes the second mutating Paid-activation step and moves the
+verified first-Paid commit into `syncSubscription(...)` using the immutable Partner
+observation. Unsupported Paid trials also now persist a non-retrying
+`SYNC_ERROR / UNSUPPORTED_PAID_TRIAL` state. Preserve that work.
+
+Attempt 2 is not yet architect-acceptable. Two production race/failure-classification
+defects remain, the explicit Attempt-2 regression matrix is materially incomplete,
+and the implementation commit contains RecoveryCreditPurchase changes outside this
+task's authorised scope.
+
+The corrections below are the complete Attempt-3 contract. Do not redesign plan
+changes, purchase/refund lifecycle, rollover, promotions, or Shared/Database contracts.
+
+### Finding 1 — the initial-Paid transaction re-reads `Shop.status` without locking the Shop row
+
+`syncSubscription(...)` calls `lockInitialFreeActivationState(...)`, which locks only:
+
+```text
+shopify.ShopSettings
+billing.Subscription
+```
+
+The initial-Paid branch then performs:
+
+```ts
+transaction.shop.findUnique(... status ...)
+```
+
+but does not acquire a row lock on `shopify.Shop`.
+
+Under the normal Prisma transaction isolation this leaves a race:
+
+```text
+T1 locks ShopSettings + Subscription
+T1 reads Shop.status = ACTIVE
+T2 processes uninstall/suspension and commits Shop.status != ACTIVE
+T1 creates Paid period/counter and sets onboardingCompleted = true
+```
+
+That can complete first-Paid onboarding after the merchant has ceased to be ACTIVE.
+The pre-commit `findUnique` test added in Attempt 2 proves only a value that was already
+changed before the transaction; it does not close the concurrent state-change race.
+
+#### Required correction
+
+File:
+
+```text
+app/services/billing/billing.service.ts
+```
+
+For the **initial Paid activation branch only**, acquire a database row lock on the
+Shop before accepting `Shop.status === ACTIVE`.
+
+Preserve the existing ShopSettings/Subscription lock ordering. After the existing
+initial-activation lock helper has run, acquire:
+
+```sql
+SELECT "id"
+FROM "shopify"."Shop"
+WHERE "id" = <shopId>
+FOR UPDATE
+```
+
+Then re-read `Shop.status` and require exactly `ACTIVE` before any Paid-period,
+period-counter, lifetime-counter, Subscription-activation, or onboarding mutation.
+
+Equivalent code using a small dedicated helper is acceptable. Do not introduce an
+application-local mutex. The database row lock is the authority.
+
+If the Shop row does not exist or is no longer ACTIVE:
+
+```text
+no BillingPeriod mutation
+no BillingPeriodEntitlementCounter mutation
+no lifetime-counter grant
+no onboarding completion
+no successful Paid Subscription activation
+```
+
+Persist the existing safe non-retrying initial-Paid configuration failure state; do
+not reactivate the Shop from this task.
+
+### Finding 2 — local billing-state conflicts are still converted into Partner transport retries
+
+The initial-Paid branch still throws for durable local-state conflicts such as:
+
+```text
+exact BillingPeriod is CLOSED
+exact BillingPeriod ownership/snapshot conflict
+existing INCLUDED_RECOVERY_CREDITS counter grant/ownership conflict
+invalid missing lifetime-Free policy when the lifetime counter must be created
+```
+
+The callback wraps **all** `syncSubscription(...)` exceptions in the same catch block:
+
+```text
+partnerErrorAt = new Date()
+-> scheduleInitialFreeReconciliationIfCurrent(...)
+-> PARTNER_API_ERROR / ordinary one-minute retry
+```
+
+These are not Partner propagation failures. Attempt 1 explicitly prohibited converting
+such durable configuration/state incompatibilities into the normal one-minute initial
+retry loop.
+
+#### Required correction
+
+Files:
+
+```text
+app/services/billing/billing.service.ts
+app/routes/app/billing/callback/route.tsx
+```
+
+Keep true Partner transport exceptions on the existing bounded Partner-error path.
+For deterministic local/provider configuration incompatibilities discovered after a
+successful Partner observation, `syncSubscription(...)` must **return a durable
+fail-closed Subscription projection rather than throw into the callback's Partner
+catch**.
+
+Use the already-established generic code for this task:
+
+```text
+status = SYNC_ERROR
+planId = null
+billingPeriodId = null
+currentPeriodStart = null
+currentPeriodEnd = null
+lastSyncErrorCode = INVALID_PAID_PLAN_CONFIGURATION
+lastSyncErrorAt = now
+nextReconcileAt = null
+pendingPlanId = existing durable pendingPlanId       # preserve
+pendingShopifyPlanHandle = existing durable handle   # preserve
+pendingEffectiveAt = existing durable value          # preserve
+ShopSettings.onboardingCompleted = false             # unchanged
+```
+
+Continue using the more specific existing codes where already defined:
+
+```text
+MISSING_USAGE_METER
+UNSUPPORTED_PAID_TRIAL
+```
+
+Do not invent another retry queue or retry code.
+
+To guarantee no partial entitlement on these branches, perform all read-only
+validation that can fail deterministically **before** creating/updating entitlement
+objects. In particular:
+
+1. validate the existing exact period (including OPEN + ownership/snapshots);
+2. validate an existing included counter if the exact period already exists;
+3. if the lifetime-Free counter is absent, read and validate
+   `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance` before creating the Paid
+   period/counter;
+4. only after those checks succeed may the transaction create the period, included
+   counter and missing lifetime counter;
+5. set `onboardingCompleted = true` last, as Attempt 2 already does.
+
+A CLOSED/conflicting period or counter must therefore result in:
+
+```text
+SYNC_ERROR / INVALID_PAID_PLAN_CONFIGURATION
+nextReconcileAt = null
+pending initial intent preserved
+no period/counter/lifetime mutation
+no one-minute callback retry
+```
+
+Database/transport failures that are genuinely transient may still throw. The
+callback must not classify a returned durable `SYNC_ERROR` as Partner failure.
+
+### Finding 3 — the Attempt-2 first-Paid regression matrix is incomplete
+
+The 120 focused tests are green, but the explicit Attempt-2 contract was not fully
+implemented. Several important cases are absent, and one named replay test does not
+execute the new initial-Paid branch at all.
+
+In:
+
+```text
+tests/unit/services/billing.service.test.ts
+```
+
+`preserves replayed period and lifetime quantities` calls `syncSubscription(...)`
+without:
+
+```text
+planKind: PAID_METERED
+```
+
+so `initialPaidActivation` is false and the test falls through to the generic
+projection path. It is not valid evidence for replay of the new first-Paid
+transaction.
+
+Attempt 3 must add/strengthen the following exact executable cases.
+
+#### 3.1 Transactional BillingPlan revalidation table
+
+Use a valid initial-Paid token and a provider observation whose current handle matches
+the token. Make the **transactional BillingPlan re-read** invalid one row at a time:
+
+```text
+active = false
+kind = FREE
+shopifyPlanHandle changed from the durable/token/provider handle
+shopifyUsageEventHandle = null/blank
+shopifyUsageEventHandle changed to a handle absent from provider usageEventHandles
+includedRecoveryConversationAllowance = null
+includedRecoveryConversationAllowance = -1
+includedRecoveryConversationAllowance = 1.5
+includedRecoveryConversationAllowance = Number.MAX_SAFE_INTEGER + 1
+```
+
+Every row must assert:
+
+```text
+status = SYNC_ERROR
+onboardingCompleted remains false
+no BillingPeriod create/update
+no included-counter create/update
+no lifetime-counter create/update
+pending id/handle/effective time remain unchanged
+nextReconcileAt = null
+```
+
+Use `MISSING_USAGE_METER` for meter failures and
+`INVALID_PAID_PLAN_CONFIGURATION` for the other configuration failures.
+
+#### 3.2 True stale transactional pending-plan identity
+
+Do not satisfy this with a provider handle that already differs from the token.
+Start with:
+
+```text
+token handle == durable pending handle == provider current handle
+```
+
+then make the transactionally re-read pending BillingPlan disagree by id/handle or
+make the durable pending identity fail the locked token check. Prove no entitlement
+mutation and no onboarding completion.
+
+#### 3.3 Shop-row locking evidence
+
+Instrument the transaction mocks so the test proves:
+
+```text
+ShopSettings/Subscription locks occur
+Shop FOR UPDATE lock occurs before accepting the Shop status
+Shop status is re-read after the lock
+```
+
+Keep the existing UNINSTALLED/SUSPENDED rows and prove no entitlement mutation.
+
+#### 3.4 Exact successful period + drain-window schedule
+
+Keep the successful period snapshot assertions and additionally freeze time and assert
+exactly:
+
+```text
+nextReconcileAt = max(
+  now,
+  provider.currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+)
+```
+
+Also assert the provider's `getActiveSubscription(...)` is called exactly once for the
+activation.
+
+#### 3.5 Replay really uses the initial-Paid transaction
+
+Fix the replay test token to include:
+
+```text
+planKind: PAID_METERED
+```
+
+Use observable mutation spies and assert existing values remain exactly unchanged:
+
+```text
+period counter committedQuantity
+period counter reservedQuantity
+period counter forfeitedQuantity
+lifetime grantedQuantity
+lifetime committedQuantity
+lifetime reservedQuantity
+lifetime refundingQuantity
+```
+
+No update/upsert may reset those objects.
+
+#### 3.6 CLOSED and conflicting exact period
+
+Add one test for `status = CLOSED` and a table covering at least:
+
+```text
+subscriptionId mismatch
+planId mismatch
+shopifyPlanHandleSnapshot mismatch
+planNameSnapshot mismatch
+planKindSnapshot mismatch
+includedRecoveryCreditsGranted mismatch
+```
+
+Each must produce the durable non-retrying `SYNC_ERROR` described in Finding 2 and
+must not mutate the period/counters/onboarding state.
+
+#### 3.7 Conflicting included-credit counter
+
+Existing exact OPEN period + existing INCLUDED_RECOVERY_CREDITS counter with a wrong
+`grantedQuantity` (and one ownership mismatch if practical) must fail closed without
+rewriting the counter and without callback propagation retry.
+
+#### 3.8 Lifetime/purchased/promotional preservation
+
+Extend the first-Paid test harness with observable write methods for:
+
+```text
+recoveryCreditPurchase
+promotionalCreditGrant
+merchantPromotionSelection
+```
+
+At minimum expose and assert not-called for every available mutator used elsewhere in
+the repository:
+
+```text
+create
+update
+updateMany
+upsert
+delete
+deleteMany
+```
+
+A successful direct-to-Paid activation and replay must prove no purchase/promotion
+mutation. Existing lifetime quantities must remain unchanged on replay.
+
+#### 3.9 Callback durable-error classification
+
+In `tests/unit/routes/billing-callback.test.ts`, add a Paid callback case where
+`syncSubscription(...)` returns:
+
+```text
+status = SYNC_ERROR
+lastSyncErrorCode = INVALID_PAID_PLAN_CONFIGURATION
+nextReconcileAt = null
+pending Paid token preserved
+```
+
+Assert:
+
+```text
+scheduleInitialFreeReconciliationIfCurrent is NOT called
+enqueueBillingSubscriptionReconcileBestEffort is NOT called
+no second Paid activation mutator exists
+redirect("/app")
+```
+
+Keep the existing provider-null and true Partner-exception bounded-retry tests.
+
+The existing `billing-reconciliation.service.test.ts` queue-add failure test may remain
+the evidence that the best-effort producer swallows queue failure. Do not duplicate a
+second queue implementation.
+
+### Finding 4 — Attempt 2 contains RecoveryCreditPurchase implementation changes outside SHOPIFY-003 scope
+
+Implementation commit `53e07302c6be761939268b80cca70959913be73b` also changes the
+RecoveryCreditPurchase create payload in:
+
+```text
+app/services/billing/billing.service.ts
+```
+
+by adding purchase-period/provider-provenance fields. That code is not part of first
+Paid activation and the Attempt-2 scope explicitly prohibited recovery-credit purchase
+implementation changes.
+
+Attempt 3 must restore that RecoveryCreditPurchase block to the exact state owned by
+the pre-Attempt-2 SHOPIFY-003 branch (`8c3f15beafc659a875caf38d60544a63c90c71ae`)
+unless those exact lines are independently present in the synchronized branch base
+outside this task's commits.
+
+Do not implement DATABASE-014 / SHOPIFY-014 / SHOPIFY-025 purchase lifecycle semantics
+inside SHOPIFY-003.
+
+If the synchronized DATABASE-014 generated client now makes the pre-Attempt-2 purchase
+block uncompilable and the only way to make SHOPIFY-003 build is to change purchase
+lifecycle/provenance behaviour, **STOP** and return:
+
+```text
+Blocked: the synchronized DATABASE-014 purchase schema now requires purchase-path
+conformance owned by the purchase tasks; SHOPIFY-003 may not implement it.
+```
+
+Do not opportunistically patch the purchase path merely to reduce the typecheck
+baseline.
+
+### Required Attempt-3 validation
+
+From `moda-interact` run exactly the repository-declared commands:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+npm run test -- \
+  tests/unit/routes/billing-callback.test.ts \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/services/shopify-billing.provider.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts
+
+npm run typecheck
+npm run build
+
+git diff --check
+rg -n "moda-interact-admin" app/routes
+```
+
+Report exact focused pass/fail/skip counts and the repository-wide typecheck count.
+The route safety scan must return no matches.
+
+For typecheck, do not claim a diagnostic on a line introduced by SHOPIFY-003 Attempt 2
+or Attempt 3 is "pre-existing" merely because the repository has a wider baseline.
+Map every diagnostic in these changed files to whether the exact line existed before
+Attempt 2:
+
+```text
+app/routes/app/billing/callback/route.tsx
+app/services/billing/billing.service.ts
+tests/unit/routes/billing-callback.test.ts
+tests/unit/services/billing.service.test.ts
+```
+
+Do not edit unrelated files to reduce the global baseline.
+
+### Allowed Attempt-3 scope
+
+Production/test changes are limited to:
+
+```text
+moda-interact/app/routes/app/billing/callback/route.tsx
+moda-interact/app/services/billing/billing.service.ts
+moda-interact/tests/unit/routes/billing-callback.test.ts
+moda-interact/tests/unit/services/billing.service.test.ts
+```
+
+`tests/unit/services/billing-reconciliation.service.test.ts` may remain unchanged and
+may be run as queue-failure evidence.
+
+Do not modify:
+
+```text
+database/prisma/**
+Shared contracts/package version
+Background
+Admin
+Messaging
+Gateway
+purchase/refund lifecycle implementation
+promotion implementation
+plan-change/upgrade/downgrade flows
+rollover implementation
+```
+
+If the Shop row cannot be safely locked or deterministic first-Paid configuration
+errors cannot be persisted without changing schema/Shared/Background contracts, STOP
+and return the exact dependency gap to `moda_architect`.
+
+### Workflow / reclaim
+
+Return this SAME task through the normal `/moda-task` path.
+
+The authoritative counter remains:
+
+```text
+attempt: 2
+```
+
+The next authorized claim must increment it to **Attempt 3 exactly once**.
+
+After implementing only this contract, run validation, update the Completion Report,
+set the task to `status: review`, clear `executor` / `claimed_at`, commit/push both
+mirrored task branches, then STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-004`, `ARCH-010-SHOPIFY-007`, or any system-test task.
 
