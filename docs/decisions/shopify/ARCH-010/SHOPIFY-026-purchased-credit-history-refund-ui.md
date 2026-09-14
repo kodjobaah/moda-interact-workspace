@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-14T20:58:47Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-SHOPIFY-025
@@ -381,6 +381,72 @@ Ready for Review.
 
 ### Architect Review
 Pending. The task is returned for architect review; this agent made no architect acceptance decision.
+
+## Completion Report — Attempt 3 Final Audit
+
+### Initially Missing Findings and Applied Fixes
+
+- The mandatory server lifecycle filter was absent: `listPurchaseHistory` used only `{ shopId }`, the route did not resolve a canonical filter, and the manager re-filtered rows in the browser. Added the typed shared `where` predicate, `ACTIVE` default/invalid-filter handling, status mapping, server-filtered totals/rows, and server-owned `visible = purchases` behavior.
+- The accepted SHOPIFY-012 UNMAPPED safeguards were absent. Restored MAPPED-gated top-up configuration fields while preserving independent capacity balances, current/pending provider facts, requested selection, action guards, top-up CTA, navigation link, and FROZEN/cancellation precedence including the genuine UNMAPPED warning.
+- Locale source parity was being hidden by a global English mutation, and the source locale files lacked the required namespace. Removed the mutation and populated all 20 locale JSON files from the exact prescribed 58-key blocks, preserving unrelated keys.
+- Added focused tests for server predicates, route filter ownership, manager server-row ownership, UNMAPPED behavior, and raw locale key/value/placeholder parity.
+
+### Second Reread Feedback
+
+- Re-read the complete Objective, inspect-before-edit list, latest Attempt-2 Architect Review, exact Attempt-3 contract, required tests, non-goals, and stop conditions after the final edits.
+- Confirmed accepted Attempt-2 refund behavior remains intact: server-authoritative purchase IDs/requestId only, unique bounded batch requests, stale quantity/money exclusion, independent outcomes, locale-formatted returned quantities, reactivation gating, terminal controls, no provider/internal identifiers, and no speculative `expectedProviderAmount` settlement display.
+- The second validation pass caught and fixed an actual JSX runtime issue caused by removing the existing `React` import from `BillingPurchaseHub`; focused tests are green after restoring it. The corresponding lint error is an existing repository JSX baseline.
+- No SHOPIFY-025, schema, migration, provider, Admin, background, top-up creation, CAS, accounting, or Architect Review file was changed.
+
+### Complete Requirement Checklist
+
+1. Canonical authenticated route and read/manage capability checks: satisfied.
+2. Production billing link preserves the top-up CTA: satisfied.
+3. Active, Refund pending, Completed, Refunded, and All views: satisfied.
+4. REQUESTED is visible in All and is non-selectable: satisfied.
+5. ACTIVE with available amount greater than zero is selectable: satisfied.
+6. ACTIVE with zero availability is explanatory and non-selectable: satisfied.
+7. No credit quantity, money, slider, or provider-action input: satisfied.
+8. One selected purchase submits one bounded purchase ID: satisfied.
+9. Multiple selections submit unique bounded IDs only: satisfied.
+10. Stale displayed quantities/money are never submitted as authority: satisfied.
+11. Partial batch outcomes render independently: satisfied.
+12. Refund-not-available race copy and refresh behavior: satisfied.
+13. Reduced-availability race uses returned server numbers and locale formatting: satisfied.
+14. WITHDRAWN plus REQUESTED refund shows Reactivate: satisfied.
+15. Provider-action-started state blocks reactivation with explanatory copy: satisfied.
+16. Reactivation refreshes server state without changing purchase identity/date: satisfied.
+17. COMPLETED and REFUNDED have no refund/reactivation controls: satisfied.
+18. REFUNDED display omits unavailable confirmed settlement money and shows only safe persisted data: satisfied.
+19. Original purchase money uses immutable provenance and is not recalculated: satisfied.
+20. Shop scoping and internal/provider data omission: satisfied.
+21. Pagination is bounded server-side; filter state is canonical and page-local data is not re-filtered in the browser: satisfied.
+22. All 20 source locales have exact 58-key and ICU-placeholder parity with English: satisfied.
+23. Focused tests, full tests, build, changed-file diagnostics, lint assessment, and diff check completed: satisfied subject to documented repository baseline diagnostics.
+
+### Validation
+
+- Focused final suite: 7 files, 47 tests passed.
+- Full `npm test`: 44 files passed, 2 skipped; 524 tests passed, 3 skipped.
+- `npm run build`: passed, including Prisma generation and client/SSR builds.
+- Changed production files: editor diagnostics reported no errors.
+- `git diff --check`: passed.
+- `npm run typecheck`: exit 2 with 141 existing diagnostics outside task-owned files; no task-owned production diagnostics remained after restoring the manager's existing `@ts-nocheck` directive. This is the known repository typecheck baseline, not a task regression.
+- `npm run lint`: exit 1 with existing unrelated repository errors/warnings. Task-owned production files have no new actionable lint diagnostics; `BillingPurchaseHub` retains its pre-existing JSX `React` import lint error because the current test/runtime transform requires it.
+
+### Contract Limitations
+
+- SHOPIFY-025 still does not expose provider-confirmed final refund amount/currency. The UI intentionally omits final settlement money and does not present `expectedProviderAmount` or `expectedProviderCurrency` as confirmed settlement.
+
+### Git / Worktree Evidence
+
+- Claim evidence: launcher claim commit `45fcf8ff3f84164ecbe7695c4fc446900a6bb2ad`; attempt 3; executor `copilot` at claim time.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-026`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-026`.
+- Mirrored branch: `task/ARCH-010-SHOPIFY-026`.
+- Implementation commit and push: `7e4a0b0` to `origin/task/ARCH-010-SHOPIFY-026`.
+- Parent report commit/push: pending until this report update is committed.
+- Final task status: `review`; executor and claimed_at cleared for architect handoff.
 
 ## Architect Review — Attempt 2 (Revised v4, deterministic handoff)
 
