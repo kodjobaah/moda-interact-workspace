@@ -111,8 +111,8 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ## Current Ready frontier
 
 ```text
-ARCH-010-BACKGROUND-013
-ARCH-010-BACKGROUND-018
+ARCH-010-SHOPIFY-012
+ARCH-010-BACKGROUND-021
 ```
 
 
@@ -515,4 +515,41 @@ ARCH-010-BACKGROUND-013
 `ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated until its remaining
 implementation dependencies, including `BACKGROUND-013` and `SHOPIFY-016`, are
 Complete.
+
+## Post-review update — BACKGROUND-013 Attempt 3 accepted
+
+`ARCH-010-BACKGROUND-013` Attempt 3 is architect-accepted Complete on functional
+behaviour.
+
+Accepted execution rule:
+
+```text
+ACTIVE/TRIALING
+  -> existing plan/capacity policy
+
+NO_CONTRACT
+  -> CONTRACT_REQUIRED terminal business no-op
+
+FROZEN
+  -> SUBSCRIPTION_FROZEN terminal business no-op
+
+UNMAPPED / SYNC_ERROR / inactive Shop
+  -> existing fail-closed behaviour
+```
+
+The canonical gate is now enforced across the relevant recovery, candidate,
+capacity-resume, conversation-turn, billing and outbound-provider boundaries, with
+rechecks at owned asynchronous lock/send boundaries.
+
+No new HTTP-ingress lifecycle lookup, Partner API gate, queue purge, lifecycle Redis
+cache or global serialization was introduced.
+
+`SHOPIFY-016` remains Pending because `SHOPIFY-012` is still incomplete.
+
+Current implementation-ready frontier:
+
+```text
+ARCH-010-SHOPIFY-012
+ARCH-010-BACKGROUND-021
+```
 
