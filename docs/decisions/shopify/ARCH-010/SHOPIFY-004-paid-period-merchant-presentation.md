@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 45
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-14T01:25:03Z
+attempt: 1
 depends_on:
 - ARCH-010-SHOPIFY-003
 - ARCH-010-DATABASE-013
@@ -21,7 +21,7 @@ enables:
 - ARCH-010-SHOPIFY-007
 - ARCH-010-SHOPIFY-009
 created: 2026-09-11
-updated: '2026-09-12'
+updated: 2026-09-14
 ---
 
 # ARCH-010-SHOPIFY-004: Present current paid-period entitlement to merchants
