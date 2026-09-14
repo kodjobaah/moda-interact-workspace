@@ -445,7 +445,7 @@ Pending. The task is returned for architect review; this agent made no architect
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-026`.
 - Mirrored branch: `task/ARCH-010-SHOPIFY-026`.
 - Implementation commit and push: `7e4a0b0` to `origin/task/ARCH-010-SHOPIFY-026`.
-- Parent report commit/push: pending until this report update is committed.
+- Parent report commits/pushes: prior report history is published; this final Attempt-3 report update is being published on the review branch.
 - Final task status: `review`; executor and claimed_at cleared for architect handoff.
 
 ## Architect Review — Attempt 2 (Revised v4, deterministic handoff)
