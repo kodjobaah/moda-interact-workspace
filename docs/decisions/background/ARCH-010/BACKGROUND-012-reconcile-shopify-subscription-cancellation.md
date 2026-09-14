@@ -1422,7 +1422,7 @@ reconstruction identity. Those requirements are therefore not marked Proven.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-012`, branch `task/ARCH-010-BACKGROUND-012`.
 - Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / unchanged.
 - Prepared worktrees and recursive submodule materialisation were reused; no launcher rerun, worktree recreation, claim increment, main merge or implementation gitlink staging occurred.
-- Parent report publication SHA: recorded after this report commit.
+- Parent report publication SHA: `51972728481dc46ff9080a7c444b1134485abdf7`.
 
 ### Architect Handoff
 
