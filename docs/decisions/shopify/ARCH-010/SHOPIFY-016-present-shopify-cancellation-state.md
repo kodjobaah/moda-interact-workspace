@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -648,4 +648,194 @@ Then STOP and return to `moda_architect`.
 
 `ARCH-010-SYSTEM-TEST-002` remains terminal/manual-gated until this task is
 architect-accepted Complete.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted**
+
+This review intentionally prioritises merchant-facing functionality and server-side
+behavior over exhaustive test coverage.
+
+Attempt 3 closes the two remaining functional defects identified in Attempt 2.
+
+### Accepted scheduled-cancellation billing behavior
+
+`/app/billing` now derives scheduled full cancellation using the same binding rule as
+the server action:
+
+```text
+cancelAtPeriodEnd = true
+AND no pending plan
+```
+
+When that state is present:
+
+```text
+legacy recovery-credit top-up control -> hidden
+direct recovery-credit top-up action  -> denied
+Shopify-hosted plan management        -> remains available
+```
+
+This preserves the important distinction between:
+
+```text
+scheduled full cancellation
+```
+
+and:
+
+```text
+pending plan change
+```
+
+A provider pending plan change is therefore not accidentally treated as a full
+cancellation merely because the outgoing provider state also carries
+`cancelAtPeriodEnd`.
+
+### Accepted FROZEN/restoring billing behavior
+
+`/app/billing` consumes the existing durable recovery-capacity projection and uses:
+
+```text
+CONTRACT_FROZEN
+```
+
+as the merchant action restriction.
+
+When FROZEN/restoring:
+
+```text
+legacy recovery-credit top-up control -> hidden
+/app/billing/select plan CTA          -> hidden
+direct top-up action                  -> denied
+direct billing/select invocation      -> denied
+informational billing balances        -> remain readable where already supported
+```
+
+No new Partner API call or duplicate lifecycle vocabulary was introduced.
+
+### Accepted effective NO_CONTRACT behavior
+
+Effective post-onboarding `NO_CONTRACT` / `CONTRACT_REQUIRED` remains distinct from
+FROZEN.
+
+The merchant can still reach Shopify-hosted plan selection/management in order to
+establish a new provider contract, while recovery-credit purchase remains unavailable.
+
+Fresh onboarding behavior remains owned by the existing onboarding flow.
+
+### Accepted lifecycle precedence and presentation
+
+The previously accepted merchant lifecycle precedence remains intact:
+
+```text
+1. FROZEN/restoration-pending
+2. pending plan change
+3. scheduled full cancellation
+4. effective post-onboarding NO_CONTRACT
+5. fresh onboarding NO_CONTRACT
+6. ordinary ACTIVE/TRIALING
+7. provider verification uncertainty remains uncertainty
+```
+
+The Attempt-3 change does not alter:
+
+```text
+/app dashboard lifecycle banner behavior
+billing/options purchase hub behavior
+Shopify-hosted plan-management flow
+translated lifecycle labels
+provider lifecycle read model
+server-side action guards
+```
+
+### Functional acceptance
+
+The UI and action layers now agree on the merchant action matrix:
+
+```text
+scheduled full cancellation:
+  top-up UI             -> unavailable
+  direct top-up         -> denied
+  Shopify plan manager  -> available
+
+FROZEN/restoring:
+  top-up UI             -> unavailable
+  direct top-up         -> denied
+  plan-change CTA       -> unavailable
+  direct plan select    -> denied
+
+effective NO_CONTRACT:
+  top-up                -> unavailable
+  Shopify plan select   -> available
+```
+
+That is the functional objective of this correction.
+
+### Validation accepted
+
+```text
+Focused billing UI:
+  20 passed
+
+git diff --check:
+  passed
+
+Touched-file diagnostics:
+  clear
+
+Typecheck:
+  existing repository-wide implicit-any baseline remains
+  no Attempt-3 touched-file regression reported
+```
+
+Acceptance is based on the runtime behavior above, not on exhaustive lifecycle-test
+enumeration.
+
+### Accepted implementation evidence
+
+Developer handoff:
+
+```text
+Implementation:
+3de1f33fd321e72919cb26f7f1dca56c2abdad16
+
+Parent report:
+08587a9
+```
+
+Attempt-3 parent claim recorded in the task report:
+
+```text
+e6e282648b16d9bfa76014170e2bb84bcfff228c
+```
+
+Both implementation and parent branches were reported clean and pushed.
+
+### Dependency reconciliation
+
+`ARCH-010-SHOPIFY-016` is Complete.
+
+`ARCH-010-SYSTEM-TEST-002` now has all implementation prerequisites Complete, but it
+remains:
+
+```text
+status: pending
+completion_mode: manual
+```
+
+because ARCH-010 system tests are terminal/manual-gated and are not auto-started.
+
+The individual `ARCH-010-SHOPIFY-012` task in this snapshot is already Complete; the
+Shopify `_index.md` still listed it as Ready and is corrected by this acceptance.
+
+The current automatic implementation-ready frontier is:
+
+```text
+ARCH-010-SHOPIFY-025
+```
+
+No Attempt 4 is required for `ARCH-010-SHOPIFY-016`.
 
