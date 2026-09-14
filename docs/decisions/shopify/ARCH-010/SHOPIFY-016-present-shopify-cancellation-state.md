@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: copilot
 claimed_at: 2026-09-14T16:57:39Z
@@ -216,22 +216,37 @@ STOP and return to `moda_architect` if:
 2. direct billing actions cannot consume current lifecycle restriction state without duplicating a second Partner API implementation;
 3. the implementation would need Admin exposure or local Shopify cancellation mutation.
 
-## Completion Report
+### Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- Implementation commit `4f9ff46` changed 28 task-owned files in `moda-interact`: the home route, billing options/select routes, BillingPurchaseHub, SubscriptionChangePanel, all 20 merchant locale catalogues, and focused home/billing/subscription tests.
+- Parent repository change: this task report only.
 
 ### Work Completed
-Populate during implementation.
+- Preserved the ordinary merchant dashboard for completed shops in effective `NO_CONTRACT`, while keeping fresh incomplete onboarding on the existing onboarding surface and retaining readable history/support data.
+- Composed SHOPIFY-009 capacity projections with lifecycle state so `CONTRACT_REQUIRED` and `CONTRACT_FROZEN` remain visible without fabricating or zeroing preserved balances.
+- Added localized FROZEN/restoring, effective NO_CONTRACT, and scheduled cancellation messaging with exact provider cycle-end presentation where available.
+- Disabled top-up purchases for scheduled cancellation and restricted lifecycle states; disabled Shopify-hosted plan selection while FROZEN while keeping it available for scheduled cancellation and effective NO_CONTRACT.
+- Added direct server-side billing action guards, preserved pending plan-update precedence over cancellation, and kept provider verification uncertainty distinct from local mapping/cancellation truth.
+- Added locale-parity copy and focused regression coverage; no Admin exposure or local Shopify cancellation mutation was introduced.
 
 ### Validation Results
-Populate during implementation.
+- Focused validation: `npm exec vitest run tests/unit/home-route.test.ts tests/unit/billing-ui.test.ts tests/unit/subscription-change-panel.test.tsx tests/unit/billing-i18n.test.ts` -> 4 files passed, 28 tests passed, 0 failed.
+- Full tests: 40 files passed, 2 skipped; 495 tests passed, 3 skipped.
+- Prisma generation completed successfully as part of the build.
+- Production build: `npm run build` passed; existing Zod annotation, unresolved Prisma browser import, empty-route-chunk, unused-import, and chunk-size warnings remain.
+- Typecheck: exits nonzero on the repository's existing JSX implicit-any/session and unrelated service/test diagnostics; no new diagnostic was reported by the editor for the touched implementation files.
+- Whitespace: `git diff --check` passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Launcher claim commit: `c3e5a63011b6531ee6c7e8ed90fa4316b26ce099`; attempt 1, executor `copilot`, dependency gate passed.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-016`.
+- Implementation branch: `task/ARCH-010-SHOPIFY-016`, commit `4f9ff4674eb2afd70262cf469cba6acc08c27bd8`, pushed to `origin/task/ARCH-010-SHOPIFY-016`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-016`.
+- Database submodule remained at the launcher-recorded commit `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`; no submodule gitlink was changed.
 
 ### Architect Review
 Pending.
