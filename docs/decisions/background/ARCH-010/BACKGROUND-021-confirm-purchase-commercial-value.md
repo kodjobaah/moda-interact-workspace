@@ -250,14 +250,15 @@ Ready for Architect Review.
 - Atomically CAS-updated the exact purchase's after snapshots, immutable purchase amount/currency/valuation timestamp, `currentAmount = creditsGranted`, `REQUESTED -> ACTIVE`, and purchased-credit aggregate grant under Serializable retry behavior.
 - Preserved post-commit best-effort capacity-resume scheduling and replay idempotency.
 - Updated purchased recovery reservation accounting and its test harness to use the current Prisma purchase balance fields, `currentAmount` and `reservedAmount`, while retaining aggregate counter quantity accounting.
+- Added explicit focused coverage that REQUESTED purchases provide no capacity, provider plan price snapshots do not determine the stored purchase amount, and a later plan handle cannot alter an activated purchase's immutable provider amount/currency.
 
 Correction mapping: no Architect Review corrections were present; the latest review section remained `Pending`.
 
 ### Validation Results
-- Focused purchased reservation tests: passed, 10/10 tests after replacing stale removed-field fixtures and assertions.
+- Focused purchase, reconciliation, resume-hint, and reservation tests: passed, 68/68 tests.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- `npm run test:unit`: 57 files passed and 907 tests passed; 2 unchanged baseline failures in `tests/unit/runtime/observability-startup.test.ts` (worker close-resource source assertion and expected shared runtime `0.9.0` versus package `0.11.0`).
+- `npm run test:unit`: 57 files passed and 910 tests passed; 2 unchanged baseline failures in `tests/unit/runtime/observability-startup.test.ts` (worker close-resource source assertion and expected shared runtime `0.9.0` versus package `0.11.0`).
 - `npm run build`: passed, including Prisma generation and TypeScript compilation.
 - `git diff --check`: passed.
 
