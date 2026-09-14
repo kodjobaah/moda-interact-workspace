@@ -262,7 +262,7 @@ Ready for Review.
 - Launcher-provided canonical worktrees were used without recreation or resynchronization: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-013`, parent/report `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-013`.
 - Implementation branch `task/ARCH-010-BACKGROUND-013` is clean, remote-matching, and points to pushed commit `40fedb029a2b3ae53ed7a8083cd5d0122e3b1695`.
 - Launcher synchronization evidence: parent branch started at launcher claim `68a61af9e36bc42c4d01ff87dc05f66432f4d831`, remote matched; implementation branch was synchronized with its task branch and initialized submodules were at recorded commits. No submodule gitlink was staged or changed.
-- Parent report publication SHA: to be recorded in the publication commit after this report update.
+- Parent report publication SHA: `c2a99c3ec791b7a3ca863889e191439b2b55c6e4`.
 - Status metadata for return to review: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`.
 
 ### Architect Review
