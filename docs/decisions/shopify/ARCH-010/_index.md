@@ -18,7 +18,7 @@ Coordinator:
 
 > Synchronized 2026-09-14 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 15, `ready` 1, `pending` 5, `superseded` 5
+Current counts: `complete` 15, `ready` 2, `pending` 4, `superseded` 5
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -46,7 +46,7 @@ Current counts: `complete` 15, `ready` 1, `pending` 5, `superseded` 5
 | `SHOPIFY-022` | Show merchant promotion selection and usage history | **Complete** | ARCH-010-SHOPIFY-021, ARCH-010-DATABASE-013 |
 | `SHOPIFY-023` | Conform Shopify billing runtime to the clean first-production baseline | Complete | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-002 |
 | `SHOPIFY-024` | Remove pre-publication Shopify consumers of retired Shared billing contracts | Complete | ARCH-010-SHARED-006, ARCH-010-SHOPIFY-002 |
-| `SHOPIFY-025` | Add merchant recovery-credit purchase history read model and refund lifecycle actions | Pending | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-014, ARCH-010-SHARED-008 |
+| `SHOPIFY-025` | Add merchant recovery-credit purchase history read model and refund lifecycle actions | **Ready** | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-014, ARCH-010-SHARED-008 |
 | `SHOPIFY-026` | Build dedicated purchased-credit history and refund-management UI | Pending | ARCH-010-SHOPIFY-025, ARCH-010-SHOPIFY-012 |
 
 ## Execution note
