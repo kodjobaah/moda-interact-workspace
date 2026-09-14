@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 56
-executor: copilot
-claimed_at: 2026-09-14T03:07:03Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-010-SHOPIFY-013
@@ -305,6 +305,51 @@ Ready for Review.
 - Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 - Parent report publication SHA: `7fa80f3c3428ad36540ee51f2946e67f0c60bbf0` (initial Attempt 4 report publication; this metadata-only SHA update follows it); no implementation submodule gitlink is staged or changed.
 - Baseline evidence: implementation worktree is clean and remote-matching before this report edit; parent branch remains the dedicated mirrored task branch.
+
+### Attempt 5 Completion Addendum
+
+#### Status
+
+Ready for Review.
+
+#### Work Completed
+
+- Corrected `getHostedPlanVerificationFence` to return the actual nullable Subscription projection rather than manufacturing an all-null fence object.
+- Updated hosted-return success and provider-failure persistence contracts to accept `HostedPlanVerificationFence | null`; unchanged absent rows now classify `NO_ACTIVE_SUBSCRIPTION` as `{ result: "no_active", subscriptionId: null, nextReconcileAt: null }` without mapping lookup or writes, and provider failure returns `null` without manufacturing retry metadata.
+- Preserved the present-row field-by-field durable fence comparison and all accepted CURRENT/PENDING/MISMATCH, protected-model no-write, activation, panel, options, provider, and background boundaries.
+
+#### Changed Files
+
+- Implementation: `app/services/billing/billing.service.ts`.
+- Tests: `tests/unit/services/billing.service.test.ts`, `tests/unit/routes/billing-callback.test.ts`.
+- No other implementation files, schemas, shared contracts, background services, or parent files were changed.
+
+#### Attempt 5 Correction Mapping
+
+- Null fence reader: `returns null hosted verification fence when no durable Subscription exists` in `tests/unit/services/billing.service.test.ts`; asserts the reader returns `null` for an absent row.
+- Absent-row NO_ACTIVE: `classifies unchanged absent durable Subscription as no_active` in `tests/unit/services/billing.service.test.ts`; asserts the exact result, no BillingPlan lookup, no Subscription mutation, and no protected-model writes.
+- Absent-row provider failure: `does not manufacture retry metadata when durable Subscription is absent` in `tests/unit/services/billing.service.test.ts`; asserts `null` and zero Subscription/protected-model writes.
+- Nullable callback propagation: `passes an absent durable verification fence unchanged through hosted NO_ACTIVE verification` and `passes an absent durable verification fence unchanged to failure recording` in `tests/unit/routes/billing-callback.test.ts`; assert ordering, one Partner read, exact `null` propagation, no stale enqueue for NO_ACTIVE, and the merchant-safe redirect/error path.
+
+#### Validation Results
+
+- Focused command passed: 6 files, 196 tests passed, 0 failed, 0 skipped.
+- `npm test` passed: 39 files passed, 2 skipped; 438 tests passed, 3 skipped, 0 failed.
+- `npm run prisma:validate` passed; `npm run prisma:generate` passed.
+- `npm run build` passed; existing Zod/Rollup, unresolved Prisma browser import, empty chunk, chunk-size, and unused React import warnings remain.
+- `npm run typecheck` reports 151 errors in 23 files, matching `TYPECHECK-001`; changed-file baseline diagnostics remain at `app/services/billing/billing.service.ts:1253` and `tests/unit/services/billing.service.test.ts:1290`, with no new Attempt 5 diagnostic in the changed callback route or null-fence lines.
+- Callback skip scan exited 1 with zero matches for `describe.skip`, `it.skip`, or `test.skip`.
+- Prohibited production scan exited 1 with zero matches for `verificationStartedAt`, local rank/upgrade inference, Billing API mutation, or Admin references.
+- `git diff --check` passed.
+
+#### Git / VCS
+
+- Implementation commit and remote task branch: `0fad89ce76d59d954a0bd8894d527eaadda478b1` on `task/ARCH-010-SHOPIFY-015`.
+- Parent preparation/previous report handoff: `db6574f1afaef0089c99f98f9804bfe6ef66d903`; Attempt 4 final report publication: `4f2abd4d138e1882b9da560e6d27615e9d4c6a50`.
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-015`; canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-015`; both use `task/ARCH-010-SHOPIFY-015`.
+- Launcher claim commit: `bf32268f965829470459d28512222962e3faedb5`; preparation synchronization merge: `1ca0cb0b95e2bbeca37d33d27037521f2eb6b67c`.
+- Database submodule before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Implementation branch is pushed and clean; no implementation submodule gitlink was staged or changed. Parent report publication SHA is recorded after the parent commit below.
 
 ### Architect Review — Attempt 1
 
