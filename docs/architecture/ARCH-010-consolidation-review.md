@@ -112,7 +112,7 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 
 ```text
 ARCH-010-SHOPIFY-026
-ARCH-010-ADMIN-002
+ARCH-010-ADMIN-003
 ```
 
 
@@ -704,5 +704,46 @@ Current automatic implementation-ready frontier:
 ```text
 ARCH-010-SHOPIFY-026
 ARCH-010-ADMIN-002
+```
+
+## Post-review update — ADMIN-002 Attempt 3 accepted
+
+`ARCH-010-ADMIN-002` is architect-accepted Complete on functional queue/read-model
+behavior.
+
+Accepted attention semantics:
+
+```text
+persisted NEEDS_ATTENTION
+OR invalid REQUESTED purchase lifecycle
+OR zero-credit REQUESTED/WITHDRAWN anomaly
+  -> Needs attention queue
+```
+
+Valid withdrawn lifecycle states remain separate:
+
+```text
+reservedAmount > 0
+  -> WAITING_FOR_RESERVATIONS
+
+reservedAmount = 0 + currentAmount > 0
+  -> READY_FOR_PROVIDER_ACTION
+```
+
+The filter remains database-scoped and read-only.
+
+This acceptance promotes:
+
+```text
+ARCH-010-ADMIN-003
+```
+
+to Ready.
+
+Current automatic implementation-ready frontier:
+
+```text
+ARCH-010-SHOPIFY-026
+ARCH-010-ADMIN-003
 ```
 
