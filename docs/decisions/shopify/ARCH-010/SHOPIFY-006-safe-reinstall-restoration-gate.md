@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-14T00:43:45Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-DATABASE-013
@@ -320,6 +320,53 @@ Ready for Review. Attempt 2 completed; returned for architect review.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-006`
 - Implementation submodule revision: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 - Parent branch/report commit and push: recorded after this Attempt 2 report update on `origin/task/ARCH-010-SHOPIFY-006`.
+
+### Attempt 3 Completion Report
+
+#### Status
+Ready for Review. Attempt 3 corrections implemented; returned for architect review.
+
+#### Correction Mapping
+
+- Architect Review Attempt 2 Finding 1: moved `/app/reinstalling` out of the normal `app` layout and declared it as a standalone exact route in `app/routes.ts`; the route now owns its minimal `AppProvider` shell, API key, Shopify boundary and headers without normal app-shell reads. Focused route/config tests passed, including the standalone topology and no app-shell/Admin-link source assertions.
+- Architect Review Attempt 2 Finding 2: added the standard `authenticate.admin` -> `resolveShopifyShop` -> `assertActiveShop` gate to `app/routes/app/additional/route.jsx`; the additional-route test proves pending reinstall redirects and ACTIVE is allowed.
+- Architect Review Attempt 2 Finding 3: added executable evidence for the previously incomplete matrix: pending home redirect before product reads, pending billing selection blocking before hosted pricing, authenticated pending support tenant scope, duplicate uninstall single-write behavior, successful stopped Retry, standalone route states, and exact route topology.
+
+#### Files Changed in Attempt 3
+
+- `app/routes.ts`
+- `app/routes/app/reinstalling/route.jsx`
+- `app/routes/app/additional/route.jsx`
+- `tests/unit/services/shop.service.test.ts`
+- `tests/unit/home-route.test.ts`
+- `tests/unit/billing-ui.test.ts`
+- `tests/unit/merchant-support-route.test.ts`
+- `tests/unit/routes/reinstalling-route.test.ts`
+- `tests/unit/routes/explicit-route-config.test.ts`
+- `tests/unit/routes/additional-route.test.ts`
+
+#### Validation Results
+
+- Focused Attempt-3 matrix: 10 files passed, 74 tests passed.
+- Final route slice after the last lint/type annotation adjustment: 3 files passed, 17 tests passed.
+- Full tests: `npm test` passed with 37 files passed, 2 skipped; 342 tests passed, 3 skipped.
+- Production build: `npm run build` passed, including Prisma generation and client/server bundles; existing Zod/Rollup and chunk-size warnings remained.
+- Typecheck: `npm run typecheck` exited 2 on the existing repository baseline; final filtered output contained no diagnostics in `app/routes.ts`, `app/routes/app/reinstalling/route.jsx`, `app/routes/app/additional/route.jsx`, or `tests/unit/routes/additional-route.test.ts`.
+- Lint: `npm run lint` exited 1 on 11 existing unrelated errors; no Attempt-3 changed file was reported.
+- `git diff --check` passed.
+
+#### Launcher / Git Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-006`.
+- Task branch: `task/ARCH-010-SHOPIFY-006` in both repositories.
+- Claim commit: `df7c717a0f1e5985b2b1856156ba13ab02e7161a`.
+- Parent preparation HEAD: `6cd643b56b90a6858bda625dbbc2cc91e8327819`.
+- Implementation preparation HEAD: `9d55513f59f09170a3b521ab34acb6c58ce44381`.
+- Start synchronization: parent and implementation task branches fast-forwarded not-needed; both `origin/main` refs already-current.
+- Recursive submodule sync/update passed; database revision `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Implementation commit: `c15265e` (`fix(shopify): isolate reinstall restoration route`), pushed to `origin/task/ARCH-010-SHOPIFY-006`.
 
 ### Architect Review
 Pending.
