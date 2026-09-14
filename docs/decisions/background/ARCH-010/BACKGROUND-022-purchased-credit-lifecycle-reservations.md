@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 69
-executor: copilot
-claimed_at: 2026-09-14T16:40:27Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-014
@@ -361,3 +361,374 @@ The audit found one concrete production gap: final consumption of a `WITHDRAWN` 
 
 ### Architect Review
 Pending.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — one functional CAS correction only**
+
+This review intentionally prioritises production behaviour over exhaustive test
+coverage.
+
+The audit correction for final withdrawn-credit consumption is accepted:
+
+```text
+WITHDRAWN purchase
+currentAmount = quantity
+reservedAmount = quantity
+existing RESERVED reservation commits
+  -> decrement currentAmount/reservedAmount
+  -> transition purchase to COMPLETED in the same transaction
+  -> cancel live refund as NO_CREDITS_REMAINING
+  -> no provider refund movement
+```
+
+The ACTIVE/WITHDRAWN commit/release semantics, refunding conservation, FIFO/status
+filtering, Serializable transaction convention, whole-transaction retry, exact
+purchase-lot ownership, and multiple-lot isolation are also accepted.
+
+One production allocation defect remains.
+
+---
+
+### Finding — valid second reservation from the same ACTIVE lot fails its CAS
+
+Both the new-reservation path and released-reservation replay path currently update
+the selected purchase lot with a predicate equivalent to:
+
+```ts
+reservedAmount: {
+  lte: lot.currentAmount - lot.reservedAmount - quantity
+}
+```
+
+This does **not** express the required invariant:
+
+```text
+currentAmount - reservedAmount >= quantity
+```
+
+It effectively compares the durable `reservedAmount` against a value that has already
+subtracted that same `reservedAmount`.
+
+Concrete example:
+
+```text
+purchase:
+  currentAmount  = 2
+  reservedAmount = 1
+  status         = ACTIVE
+
+requested quantity = 1
+
+spendable:
+  2 - 1 = 1
+```
+
+The reservation is valid.
+
+But the current CAS becomes:
+
+```text
+reservedAmount <= 2 - 1 - 1
+1 <= 0
+```
+
+which is false.
+
+Therefore:
+
+```text
+first conversation reserves credit 1
+second conversation arrives before the first commits/releases
+one purchased credit is still genuinely available
+```
+
+but the second reservation loses the lot CAS.
+
+Because the lot has not actually changed, whole-transaction retry selects the same lot
+and encounters the same invalid predicate again. It can exhaust the retry budget even
+though spendable purchased capacity exists.
+
+This violates the task's core rule that many reservations may safely consume a
+purchase lot up to:
+
+```text
+currentAmount - reservedAmount
+```
+
+and unnecessarily serialises usage of a multi-credit lot behind completion/release of
+earlier conversations.
+
+This is a production functionality defect; it is not a request for broader test
+coverage.
+
+---
+
+### Required production correction
+
+Modify only:
+
+```text
+src/services/purchased-recovery-reservation.service.ts
+```
+
+Correct the purchase-lot reservation CAS in **both** locations:
+
+```text
+1. released-reservation replay reactivation;
+2. new purchased reservation.
+```
+
+The transaction has already:
+
+```text
+freshly selected the lot
+verified spendableLotQuantity(lot) >= quantity
+captured lot.id
+captured lot.version
+captured lot.status = ACTIVE
+captured lot.currentAmount
+captured lot.reservedAmount
+```
+
+Use those exact freshly-read values as the CAS authority.
+
+Required shape:
+
+```ts
+const updatedLot =
+  await transaction.recoveryCreditPurchase.updateMany({
+    where: {
+      id: lot.id,
+      version: lot.version,
+      status: RecoveryCreditPurchaseStatus.ACTIVE,
+      currentAmount: lot.currentAmount,
+      reservedAmount: lot.reservedAmount,
+    },
+    data: {
+      reservedAmount: { increment: quantity },
+      version: { increment: 1 },
+    },
+  });
+```
+
+Then retain:
+
+```ts
+if (updatedLot.count !== 1) {
+  throw new ReservationConcurrencyConflict();
+}
+```
+
+Why this is the required shape:
+
+```text
+spendability is proven from the fresh snapshot before CAS;
+exact version + exact currentAmount + exact reservedAmount + ACTIVE status prove that
+the same snapshot still owns the mutation;
+any competing reservation/refund/commit/release changes version and/or balances;
+CAS loss restarts the whole Serializable transaction and selection from fresh state.
+```
+
+Do not replace this with:
+
+```text
+raw SELECT FOR UPDATE
+Redis/process locks
+shop-wide purchase locks
+unversioned update
+blind retry of the same lot
+```
+
+Do not alter FIFO ordering or the aggregate counter CAS.
+
+---
+
+### Functional regression evidence required
+
+This does **not** require another broad concurrency matrix.
+
+Add the smallest permanent regression proving the actual defect.
+
+In:
+
+```text
+tests/unit/services/purchased-recovery-reservation.service.test.ts
+```
+
+add:
+
+```text
+allows multiple live reservations from one ACTIVE multi-credit purchase lot
+```
+
+Exact scenario:
+
+```text
+purchase:
+  status         = ACTIVE
+  currentAmount  = 2
+  reservedAmount = 0
+
+aggregate:
+  two spendable purchased credits
+```
+
+Execute sequentially without committing/releasing the first reservation:
+
+```text
+reserve(sourceKey A, quantity 1)
+reserve(sourceKey B, quantity 1)
+```
+
+Require:
+
+```text
+A -> reserved
+B -> reserved
+
+both reservations:
+  status = RESERVED
+  same purchasedCreditPurchaseId
+
+purchase:
+  currentAmount  = 2
+  reservedAmount = 2
+
+aggregate:
+  reservedQuantity increased by 2
+```
+
+Then a third independent source-key reservation must return:
+
+```text
+credits-exhausted
+```
+
+This proves the lot supports concurrent/live ownership up to its actual balance.
+
+Also ensure the existing released-reservation replay test still passes. If convenient,
+strengthen that existing test so replay can reserve the final available credit while a
+different reservation already holds another credit from the same multi-credit lot.
+Do not add a separate large test matrix solely for this review.
+
+---
+
+### Accepted Attempt-2 work — do not churn
+
+Do not redesign or reopen:
+
+```text
+ACTIVE-only new allocation
+REQUESTED/WITHDRAWN/COMPLETED/REFUNDED exclusion
+original FIFO age after reactivation
+aggregate purchased-credit accounting
+reservation/refund version race
+ACTIVE/WITHDRAWN commit
+ACTIVE/WITHDRAWN release
+WITHDRAWN release -> aggregate refunding
+AMBIGUOUS hold semantics
+final WITHDRAWN commit -> COMPLETED
+refund cancellation with NO_CREDITS_REMAINING
+Serializable isolation
+bounded whole-transaction retry
+exact purchasedCreditPurchaseId ownership
+provider-refund ownership boundaries
+```
+
+Do not modify Shopify/Admin endpoints, valuation, provider settlement, schema, Shared
+contracts, or other repositories.
+
+---
+
+### Attempt-3 allowed scope
+
+Production:
+
+```text
+src/services/purchased-recovery-reservation.service.ts
+```
+
+Tests:
+
+```text
+tests/unit/services/purchased-recovery-reservation.service.test.ts
+```
+
+plus this task/Completion Report.
+
+The existing PostgreSQL race suite need only be rerun for regression confidence; no
+new PostgreSQL scenario is required specifically for this deterministic CAS bug unless
+the implementation agent discovers a real database-only discrepancy.
+
+---
+
+### Attempt-3 validation
+
+Run:
+
+```bash
+npx vitest run \
+  tests/unit/services/purchased-recovery-reservation.service.test.ts
+
+npm run test:integration
+npm run prisma:validate
+npm run build
+git diff --check
+```
+
+Run the full unit suite only for regression awareness:
+
+```bash
+npm run test:unit
+```
+
+The existing unrelated observability baseline remains non-blocking only if unchanged.
+
+Do not spend Attempt 3 fixing unrelated baseline diagnostics.
+
+---
+
+### Workflow / Completion Report
+
+Preserve immutable Attempt-2 evidence, including:
+
+```text
+Attempt-2 implementation:
+2f08bd70
+
+Attempt-2 parent report:
+96b414ab
+```
+
+Record the full SHAs in the Completion Report if repository history provides them.
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 2
+```
+
+The next authorized claim must increment to **Attempt 3 exactly once**.
+
+Attempt 3 may return to `review` when:
+
+```text
+1. both reservation lot CAS sites use the exact fresh lot snapshot;
+2. a 2-credit ACTIVE lot accepts two live 1-credit reservations before either commits;
+3. a third reservation is exhausted;
+4. focused/integration/build/Prisma/diff validation has no new regression;
+5. status = review, executor = null, claimed_at = null;
+6. both worktrees are clean and pushed.
+```
+
+Then STOP and return to `moda_architect`.
+
+`ARCH-010-SHOPIFY-025`, `ARCH-010-ADMIN-002`, `ARCH-010-ADMIN-003`,
+`ARCH-010-SYSTEM-TEST-001`, and `ARCH-010-SYSTEM-TEST-003` remain gated until
+`BACKGROUND-022` is architect-accepted Complete.
+
