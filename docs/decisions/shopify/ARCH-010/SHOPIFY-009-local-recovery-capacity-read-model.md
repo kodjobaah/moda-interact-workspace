@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
-executor: copilot
-claimed_at: 2026-09-14T02:48:09Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -294,25 +294,54 @@ Ready for Review.
 ### Files Changed
 
 - `app/services/billing/billing.service.ts`
-- `app/services/billing/billing.types.ts`
 - `tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
 
-- Added `getMerchantRecoveryCapacityState(shopId)`, a PostgreSQL-only local projection that never calls the configured `BillingProvider`.
-- Reads the integrated lifetime Free, current paid-period, purchased, and selected campaign grant counters using DATABASE-013 fields only; no legacy plan allowance, signed adjustment, aggregate promotional counter, or usage-event capacity fallback is used.
-- Implements exact promotional, paid included, purchased, and lifetime Free ordering with committed/reserved/forfeited/refunding arithmetic and explicit `CONTRACT_REQUIRED`, `CONTRACT_FROZEN`, `CONFIGURATION_UNAVAILABLE`, and `EXHAUSTED` outcomes.
-- Returns the local `BillingPlan` row only as `reconciledPlanMapping`, preserves observed Shopify handle separately, returns informational balances for lifecycle-blocked states, and exposes `canStartRecovery` without changing routes, components, or admission.
-- Added focused coverage for Free/Paid ordering, promotional targeting/window/selection usability, reserved grant quantities, missing paid state, lifecycle blocking, no legacy reads, and provider-call isolation.
+- Preserved `getMerchantRecoveryCapacityState(shopId)` as a PostgreSQL-only local projection that never calls the configured `BillingProvider`.
+- Correction 1 implemented: structurally valid current Paid period/counter state is returned for `ACTIVE`, `TRIALING`, and `FROZEN`; `FROZEN` still returns `CONTRACT_FROZEN`, `capacitySource=null`, and `canStartRecovery=false` while retaining informational balances.
+- Correction 2 implemented: after higher-priority promotion, Paid included, and purchased sources are exhausted, a missing lifetime-Free counter returns `CONFIGURATION_UNAVAILABLE`; a deterministic higher-priority source still remains usable.
+- Correction 3 implemented: the focused suite uses a fixed `2026-09-14T00:00:00.000Z` clock and now permanently covers lifecycle blocking, missing fallback state, full exhaustion, exact refund/period arithmetic, no-selected-promotion query isolation, and provider isolation.
+- No route, component, provider, Background, Shared, Admin, schema, purchase mutation, reservation mutation, or `billing.types.ts` changes were made.
 
 ### Validation Results
 
 - `npm run prisma:generate` — passed against the integrated DATABASE-013 schema.
-- `npm test -- tests/unit/services/billing.service.test.ts` — passed, 133 tests.
+- `npm test -- tests/unit/services/billing.service.test.ts` — passed, 1 file; 141 passed.
 - `npm run build` — passed.
-- `npm test` — passed, 38 files; 416 passed, 3 skipped; 2 files skipped.
+- `npm test` — passed, 38 files; 426 passed, 3 skipped; 2 files skipped.
+- `npm run typecheck` — non-zero with 119 diagnostics. Diagnostics referencing touched files were pre-existing from `9e4ef65`/earlier history and are outside the Attempt 2 diff; no Attempt 2 diagnostic was introduced. This remains the documented `TYPECHECK-001` baseline.
 - `git diff --check` — passed.
-- `npm run typecheck` — non-zero only for existing `TYPECHECK-001` baseline diagnostics; no new diagnostics were reported in the changed projection/type/test additions.
+- Static scan command: `projection=$(sed -n '/async getMerchantRecoveryCapacityState/,/^  private async mapMerchantShopifySubscription/p' app/services/billing/billing.service.ts) && if printf '%s\\n' "$projection" | rg -n 'getActiveSubscription|usageEvent\\.aggregate|PROMOTIONAL_RECOVERY_CREDITS|includedRecoveryConversationAllowance'; then exit 1; else printf '%s\\n' 'static scan passed: no provider call, aggregate promotional/lifetime compatibility source, or legacy plan allowance in projection'; fi` — passed; no forbidden source was found.
+
+### Attempt 2 Correction-to-Validation Mapping
+
+| Review requirement | Permanent test evidence | Focused result |
+| --- | --- | --- |
+| 1. Preserve FROZEN Paid period balance | `preserves the Paid informational balance while FROZEN blocks admission` | `CONTRACT_FROZEN`, exact period/promotional/purchased/lifetime balances, provider uncalled |
+| 2. Missing lifetime fallback fails closed only after higher sources | `returns configuration unavailable when the lifetime Free fallback is missing`; `keeps a deterministic purchased source when the lifetime Free fallback is missing` | Configuration unavailable without higher source; Purchased remains available with missing fallback |
+| 3. Deterministic promotional tests | Suite `beforeEach`/`afterEach` fake-clock hooks | Fixed `2026-09-14T00:00:00.000Z`; 141 focused tests pass |
+| 4. Free promotion outranks purchased/lifetime | `uses promotional capacity first and reduces it by reserved quantity` | `PROMOTIONAL`, remaining 6 |
+| 5. Free zero promotion falls to purchased | `falls from a zero promotional grant to purchased capacity` | `PURCHASED` |
+| 6. Free purchased exhausted falls to lifetime | `falls back to lifetime Free capacity when purchased capacity is exhausted` | `FREE_LIFETIME` |
+| 7. Free fully exhausted | `accounts for reserved lifetime Free credits and reports exhaustion` | `EXHAUSTED` |
+| 8. Paid promotion outranks included | `lets usable promotion outrank paid included capacity` | `PROMOTIONAL` |
+| 9. Paid included outranks purchased | `uses paid included capacity before purchased capacity` | `PAID_INCLUDED` |
+| 10. Paid included exhausted falls to purchased | `falls back from exhausted paid included capacity to purchased capacity` | `PURCHASED` |
+| 11. Paid included plus purchased exhausted falls to lifetime | `falls back from unavailable promotion and exhausted paid capacity to lifetime Free` | `FREE_LIFETIME` |
+| 12. Paid fully exhausted | `returns exhausted when Paid included, purchased, and lifetime Free capacity are zero` | `EXHAUSTED` |
+| 13. Paid reserved/forfeited arithmetic | `uses paid included capacity before purchased capacity` | 30 granted, 4 committed, 3 reserved, 2 forfeited, 21 remaining |
+| 14. Purchased refund hold arithmetic | `reports purchased refund holds in the returned arithmetic` | 20 granted, 5 committed, 2 reserved, 3 refunding, 10 available |
+| 15. Missing Paid period | `returns configuration unavailable for a paid projection with missing period` | `CONFIGURATION_UNAVAILABLE` |
+| 16. Missing Paid counter | `returns configuration unavailable for a paid projection with missing period counter` | `CONFIGURATION_UNAVAILABLE` |
+| 17. FROZEN informational balances | `preserves the Paid informational balance while FROZEN blocks admission` | Exact non-zero informational balances retained |
+| 18. NO_CONTRACT preserved balances | `blocks capacity for NO_CONTRACT even when balances remain` | `CONTRACT_REQUIRED`, source null |
+| 19. NO_CONTRACT zero balances | `keeps NO_CONTRACT blocked with zero balances rather than reporting exhaustion` | `CONTRACT_REQUIRED`, not `EXHAUSTED` |
+| 20. NO_CONTRACT usable promotion | `keeps NO_CONTRACT blocked when a selected promotion is usable` | Promotion visible, source null, admission blocked |
+| 21. No selected usable promotion/query isolation | `queries no aggregate promotional source when no promotion is selected` | Exactly lifetime and purchased counter queries; no aggregate |
+| 22. Local reconciled mapping | `uses paid included capacity before purchased capacity` | Exact local mapping and separate observed handle; no commercial fields |
+| 23. Provider isolation | Representative capacity tests including `preserves the Paid informational balance while FROZEN blocks admission` and NO_CONTRACT cases | `getActiveSubscription` never called |
+| 24. No legacy lifetime authority | `queries no aggregate promotional source when no promotion is selected` plus static scan | No signed/plan-owned/aggregate/usage-event authority |
 
 ### Launcher Worktree / Synchronization / Submodule Evidence
 
@@ -325,9 +354,9 @@ Ready for Review.
 
 ### Git / VCS
 
-- Implementation commits: `9e4ef65` and `d73153d`, pushed to `origin/task/ARCH-010-SHOPIFY-009`.
-- Parent claim commit supplied by launcher: `00143ecb67400a1ba5e495a5cce33595b80edbd4`.
-- Parent report commit: to be recorded after this report update and pushed to the mirrored parent task branch.
+- Implementation commits: `9e4ef65`, `d73153d`, and Attempt 2 correction `66f25bc`, pushed to `origin/task/ARCH-010-SHOPIFY-009`.
+- Parent claim commit supplied by launcher: `532bd9911c9c022ba559179197a4e9859e9f5310`.
+- Parent report commit: to be recorded after this report update and pushed to `origin/task/ARCH-010-SHOPIFY-009`.
 
 
 ## Final frozen capacity projection
