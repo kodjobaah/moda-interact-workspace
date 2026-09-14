@@ -2608,8 +2608,9 @@ Ready for Review.
 - Database gitlink before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 - Attempt 5 implementation full SHA: `a5dc1a168b396d1629d565f00cea58d9f4d30228`.
 - Attempt 5 final parent full SHA: `7c5327207e8c38004069a64ec84fffca6e225283`.
-- Attempt 6 implementation full SHA: `48f1b40` (full SHA recorded after the parent publication below).
-- Attempt 6 parent report publication commit: recorded after this report update; parent HEAD before publication was `7979fe9a9f338236dcb5d849aef7ab84bfc29087`.
+- Attempt 6 implementation full SHA: `48f1b40c8d90f8b373e6f5a40cce1fc0351e4e3a`.
+- Attempt 6 parent Completion Report publication commit: `63ab878cdc4527e86c02a786b796215663a6c83a`.
+- Parent HEAD before the final report-evidence correction: `7979fe9a9f338236dcb5d849aef7ab84bfc29087`.
 - Both task branches track their `origin/task/ARCH-010-BACKGROUND-010` upstream; no merge to `main` or force-push was performed.
 
 ### Unresolved Baseline
