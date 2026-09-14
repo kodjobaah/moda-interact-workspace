@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 68
-executor: copilot
-claimed_at: 2026-09-14T15:16:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-014
@@ -285,3 +285,269 @@ Correction mapping: no Architect Review corrections were present; the latest rev
 
 ### Architect Review
 Pending.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Accepted**
+
+This review intentionally prioritises production functionality and commercial
+correctness over exhaustive test-count coverage.
+
+`ARCH-010-BACKGROUND-021` now satisfies the first-production authority boundary for
+turning a non-spendable `REQUESTED` top-up into spendable purchased recovery capacity.
+
+### Accepted provider-confirmed valuation
+
+A purchase activates only from one exact provider-confirmed commercial context.
+
+The accepted authority chain is:
+
+```text
+immutable purchase before snapshot
+  -> exact linked one-pack UsageEvent is REPORTED
+  -> exact current provider subscription / plan / billing period / pack meter
+  -> exactly one unresolved REQUESTED purchase in that scope
+  -> provider quantity proves Q1 = Q0 + 1
+  -> provider cost proves C1 > C0
+  -> provider currency proves K1 = K0
+  -> immutable purchase amount = C1 - C0
+```
+
+The implementation does not derive historical purchase value from:
+
+```text
+current BillingPlan price
+later plan price
+local pack configuration
+provider tier arithmetic
+client input
+later BillingEconomicsSnapshot
+```
+
+This is the required commercial provenance rule.
+
+### Accepted scope and fail-closed behaviour
+
+The purchase candidate scope requires the durable purchase snapshots and linked
+UsageEvent to agree on:
+
+```text
+shop
+BillingPeriod
+Shopify plan handle
+pack meter handle
+RECOVERY_CREDIT_PACK_PURCHASE metric
+one provider unit
+REPORTED state
+```
+
+Provider subscription identity is then checked against the purchase's immutable
+`providerSubscriptionIdSnapshot`.
+
+The reconciliation fails closed when:
+
+```text
+provider subscription is absent/mismatched
+billing-period scope does not match
+plan handle does not match
+meter handle does not match
+linked UsageEvent is not REPORTED
+provider quantity is invalid or not Q0 + 1
+provider cost is absent/invalid/non-positive delta
+provider currency differs
+more than one unresolved REQUESTED purchase is attributable to the same scope
+```
+
+No ambiguous case becomes spendable capacity.
+
+### Accepted cumulative provider-quantity semantics
+
+Provider pack quantity is cumulative for the provider meter, while individual local
+purchase lots may later move through:
+
+```text
+ACTIVE
+COMPLETED
+WITHDRAWN
+REFUNDED
+```
+
+Architect review confirms that this does not create a re-grant or misattribution path.
+
+`alreadyMatchedUnits` is reconciliation/discrepancy context; it is not the authority
+that activates a new purchase.
+
+A new activation still requires the exact candidate's immutable:
+
+```text
+providerUsageQuantityBeforeSnapshot = Q0
+```
+
+and exact provider:
+
+```text
+providerUnits = Q0 + 1
+```
+
+plus unique unresolved REQUESTED ownership and the monetary/currency proof above.
+
+Therefore an earlier purchase becoming COMPLETED/WITHDRAWN/REFUNDED cannot cause the
+new purchase to inherit or fabricate that earlier purchase's provider delta.
+
+### Accepted atomic activation
+
+The accepted mutation occurs inside one Serializable transaction with bounded retry.
+
+The exact purchase is CAS-rechecked as:
+
+```text
+status = REQUESTED
+currentAmount = 0
+reservedAmount = 0
+version = expected
+valuation not previously committed
+```
+
+and atomically becomes:
+
+```text
+providerUsageQuantityAfterSnapshot = Q1
+providerUsageCostAfterSnapshot = C1
+providerUsageCostCurrencyAfterSnapshot = K1
+providerPurchaseAmount = C1 - C0
+providerPurchaseCurrency = K1
+providerValuationConfirmedAt = now
+currentAmount = creditsGranted
+status = ACTIVE
+activatedAt = now
+version += 1
+```
+
+In the same transaction:
+
+```text
+ShopEntitlementCounter(PURCHASED_RECOVERY_CREDITS).grantedQuantity
+  += creditsGranted
+```
+
+If the purchase CAS loses, no aggregate grant commits.
+
+Replay cannot grant twice because the purchase is no longer REQUESTED after the first
+successful transaction.
+
+### Accepted reservation safety
+
+Purchased-credit reservation reads only `ACTIVE` purchase lots.
+
+Therefore these purchase states provide no new spendable reservation capacity:
+
+```text
+REQUESTED
+WITHDRAWN
+REFUNDED
+COMPLETED
+```
+
+The lot arithmetic continues to use:
+
+```text
+spendable = currentAmount - reservedAmount
+```
+
+while the shop aggregate continues to respect committed, reserved and refund-held
+quantity.
+
+This preserves the existing reservation model until the explicit lifecycle/refund
+concurrency correction owned by `ARCH-010-BACKGROUND-022`.
+
+### Accepted post-commit resume behaviour
+
+Capacity resume is emitted only after the Serializable activation transaction returns
+successfully.
+
+A queue/scheduling failure does not roll back or duplicate the provider-confirmed
+purchase activation.
+
+This preserves the accepted BACKGROUND-009 recovery-capacity-resume architecture.
+
+### Validation accepted
+
+```text
+Focused functional suite:
+  70 / 70 passed
+
+Full unit suite:
+  912 passed
+  2 unchanged observability baseline failures
+
+Build:
+  passed
+
+Prisma validate:
+  passed
+
+Prisma generate:
+  passed
+
+git diff --check:
+  passed
+```
+
+The strengthened focused tests now verify actual mutation semantics, including:
+
+```text
+exact provider after quantity/cost/currency
+exact provider monetary delta
+valuation and activation timestamps
+ACTIVE/currentAmount/reservedAmount/version write set
+aggregate grant
+Serializable transaction option
+plan/cycle/meter/subscription mismatch rejection
+ACTIVE-only purchase-lot selection
+REQUESTED/WITHDRAWN/REFUNDED exclusion
+```
+
+No further test-matrix expansion is required for this task.
+
+### Accepted implementation evidence
+
+Developer handoff:
+
+```text
+Implementation:
+b10c5d1
+
+Parent report:
+21086dd
+```
+
+The review archive contains the complete source snapshot but no nested Git metadata,
+so the architect review validates the supplied implementation state and source
+behaviour rather than independently reconstructing commit ancestry inside the archive.
+
+### Dependency reconciliation
+
+`ARCH-010-BACKGROUND-021` is Complete.
+
+All declared prerequisites of:
+
+```text
+ARCH-010-BACKGROUND-022
+```
+
+are now Complete, so `BACKGROUND-022` is promoted to `ready`.
+
+`ARCH-010-SHOPIFY-025` remains Pending because it still depends on
+`ARCH-010-BACKGROUND-022`.
+
+The current implementation-ready ARCH-010 frontier is:
+
+```text
+ARCH-010-SHOPIFY-012
+ARCH-010-BACKGROUND-022
+```
+
+No additional BACKGROUND-021 implementation attempt is required.
+
