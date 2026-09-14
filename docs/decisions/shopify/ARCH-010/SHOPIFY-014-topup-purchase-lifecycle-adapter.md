@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 54
 executor: null
 claimed_at: null
@@ -917,3 +917,25 @@ Return to `moda_architect` only when:
 
 Do not start `ARCH-010-SHOPIFY-012` or `ARCH-010-BACKGROUND-021` from this task.
 
+
+
+## Architect Review — Attempt 3
+
+### Decision
+
+**Accepted — Complete.**
+
+Implementation reviewed: `e0cd7da8754db421494e2b48aa8e0bda274b7a6e`.
+
+Parent/report reviewed: `22bda1e67a2854fc2f63723ab587372dba93cfd6`.
+
+Attempt 3 is accepted because the sole remaining functional blocker from Attempt 2 is closed: `app/routes/app/billing/options/route.tsx` is restored to the required pre-task `64b535798ed03ca08045fbfa96ff364f7be26f77` baseline, returning final route composition to `ARCH-010-SHOPIFY-012`. The Attempt-2 top-up service, `TopUpPurchasePanel`, locale catalogue, lifecycle authority, executable eligibility, REQUESTED-only creation, immutable BEFORE provenance, idempotency/concurrency protection and provider-report presentation remain unchanged.
+
+Validation evidence accepted: 214 focused tests passed; Prisma generation passed; production build passed; `git diff --check` passed; the route-to-baseline diff is empty.
+
+Direct dependency release after completion:
+
+- `ARCH-010-SHOPIFY-012` -> `ready` because every declared dependency is Complete.
+- `ARCH-010-BACKGROUND-021` -> `ready` because every declared dependency is Complete.
+
+No dependent is started automatically.
