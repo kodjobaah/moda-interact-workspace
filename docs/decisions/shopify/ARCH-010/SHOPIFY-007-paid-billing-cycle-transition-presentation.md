@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 48
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ enables:
 - ARCH-010-SHOPIFY-012
 - ARCH-010-SHOPIFY-014
 created: 2026-09-11
-updated: '2026-09-13'
+updated: 2026-09-14
 ---
 
 # ARCH-010-SHOPIFY-007: Present App Pricing billing-cycle transition and guard late-cycle top-up purchase

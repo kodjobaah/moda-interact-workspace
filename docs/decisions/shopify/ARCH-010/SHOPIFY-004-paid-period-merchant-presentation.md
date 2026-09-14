@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
 executor: null
 claimed_at: null
@@ -748,3 +748,77 @@ both are clean, STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-007`, `ARCH-010-SHOPIFY-009` or any system-test task.
 
+
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Accepted**
+
+Attempt 2 satisfies the complete correction contract from Attempt 1. The accepted
+implementation is `e224dabd2c391551cde416df7725f3c2e3204be9`.
+
+### Acceptance findings
+
+- Purchased-credit availability now subtracts `refundingQuantity` and exposes the
+  exact five-field merchant projection without changing refund lifecycle mutations.
+- `billing.purchasedRecoveryCredits` uses the exact
+  `{granted}/{committed}/{reserved}/{refunding}/{available}` placeholder contract in
+  all 20 supported merchant locale catalogues.
+- Paid included-capacity presentation is fail-closed unless the current mapped Paid
+  plan, Subscription, BillingPeriod, provider-handle snapshot, period boundaries and
+  exact INCLUDED_RECOVERY_CREDITS counter are mutually consistent.
+- Invalid grants/counter quantities and `committed + reserved + forfeited > granted`
+  are treated as configuration unavailable rather than ordinary exhaustion.
+- Paid included remaining remains period-counter authority and is never substituted
+  from shop-wide recovery UsageEvent aggregation.
+- Lifetime Free and purchased balances remain independent merchant balances.
+- Exact durable period start/end remain the merchant-visible Paid billing period.
+- Existing ARCH-008 pack-purchase eligibility and the Shopify-hosted plan-selection
+  route are preserved.
+- No merchant/Admin coupling, schema, Background, Shared, pricing, purchase/refund
+  mutation or plan-transition scope was introduced.
+
+### Validation reviewed
+
+Implementation Completion Report evidence is accepted:
+
+```text
+focused billing tests: 134 passed
+full suite: 404 passed, 3 skipped
+Prisma validate/generate: passed
+build: passed
+i18n contract: passed
+Admin coupling scan: no matches
+git diff --check: passed
+typecheck: TYPECHECK-001 baseline only; no Attempt-2 diff diagnostic
+```
+
+The review snapshot does not contain `node_modules`, so the architect did not rerun
+Node validation locally. Source, test and published-diff inspection support the
+reported results.
+
+### Dependency release
+
+`ARCH-010-SHOPIFY-007` is Ready because every dependency is Complete after this
+acceptance:
+
+```text
+ARCH-010-BACKGROUND-007
+ARCH-010-DATABASE-013
+ARCH-010-SHARED-008
+ARCH-010-SHOPIFY-003
+ARCH-010-SHOPIFY-004
+```
+
+`ARCH-010-SHOPIFY-009` is Ready because every dependency is Complete after this
+acceptance:
+
+```text
+ARCH-010-DATABASE-013
+ARCH-010-SHOPIFY-004
+ARCH-010-SHOPIFY-023
+```
+
+Neither dependent task is started by this review.
