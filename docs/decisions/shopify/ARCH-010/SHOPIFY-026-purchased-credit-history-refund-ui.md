@@ -306,6 +306,7 @@ Ready for Review.
 - `moda-interact/app/components/dashboard/BillingPurchaseHub.jsx`
 - `moda-interact/app/i18n/catalogues.js`
 - `moda-interact/app/i18n/locales/en.json`
+- `moda-interact/tests/unit/recovery-credit-purchase-manager.test.tsx`
 
 ### Work Completed
 - Added the authenticated canonical `/app/billing/recovery-credit-purchases` route using the SHOPIFY-025 loader/action contract, bounded to the server page/pageSize limits and the server-owned purchase IDs, amounts and outcomes.
@@ -376,7 +377,7 @@ Ready for Review.
 - Claim commit: `f6318efcad3d527296e1860c6581f1b2eebc5dad`.
 - Implementation commit/push: `2134bdb` pushed to `origin/task/ARCH-010-SHOPIFY-026` (prior implementation baseline `e37f9a7`).
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-026`.
-- Parent report commit/push: `392789d` pushed to `origin/task/ARCH-010-SHOPIFY-026`.
+- Parent report commit/push: `cf0cff0` pushed to `origin/task/ARCH-010-SHOPIFY-026`.
 
 ### Architect Review
 Pending. The task is returned for architect review; this agent made no architect acceptance decision.
