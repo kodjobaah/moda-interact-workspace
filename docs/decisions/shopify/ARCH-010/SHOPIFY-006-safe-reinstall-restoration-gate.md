@@ -741,9 +741,10 @@ Ready for Review. Attempt 4 correction implemented; returned for architect revie
 - Parent preparation HEAD: `ed0673699928e5fb4e97498a2898511f56604664`.
 - Implementation preparation HEAD: `d1d14a24876081462148afac270d38c3a7b67872`.
 - Attempt-4 implementation full SHA: `5aa1a1898ffbdd4191354a4f62d0cbc0f4ab7ddf` (`fix(shopify): gate app layout during reinstall`), pushed to `origin/task/ARCH-010-SHOPIFY-006`.
+- Attempt-4 parent/report publication full SHA: `204657e8a6db6d3b5e05e38fa56c5cf0becd1931` (`docs(shopify): submit reinstall gate attempt 4`), pushed to `origin/task/ARCH-010-SHOPIFY-006`.
 - Database gitlink before/after: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` / `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` (unchanged; not staged).
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-006`; task branch clean and pushed.
-- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-006`; task branch publication pending this report commit, then will be clean and pushed.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-006`; task branch clean and pushed.
 
 `ARCH-010-SYSTEM-TEST-002` remains Pending/manual-gated and MUST NOT be started.
 
