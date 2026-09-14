@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 54
-executor: copilot
-claimed_at: 2026-09-14T05:04:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-SHOPIFY-013
@@ -291,19 +291,33 @@ STOP if Shopify App Pricing/App Events is no longer the actual mechanism, exact 
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `app/components/dashboard/TopUpPurchasePanel.jsx`
+- `app/i18n/locales/en.json`
+- `app/routes/app/billing/options/route.tsx`
+- `app/routes/app/billing/route.tsx`
+- `app/services/billing/billing.service.ts`
+- `tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
-Populate during implementation.
+- Implemented the merchant-safe top-up read model and action using the canonical `REQUESTED` lifecycle.
+- Added coherent provider subscription/cycle/meter verification, required provider BEFORE usage/cost/currency evidence, immutable purchase snapshots, zero initial balances, and unresolved-purchase concurrency protection.
+- Preserved idempotent replay and prevented HTTP-side activation or direct App Event publication.
+- Replaced mock pricing/purchase UI with the explicit server-state `TopUpPurchasePanel`, canonical status rendering, pending-state duplicate prevention, provider-derived pricing, and localized copy.
+- Added focused service coverage for evidence gates, REQUESTED initialization, and unresolved-purchase prevention.
 
 ### Validation Results
-Populate during implementation.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts`: passed, 2 files and 196 tests.
+- `git diff --check`: passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Launcher-provided isolated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-014`.
+- Launcher-provided isolated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-014`.
+- Mirrored task branch: `task/ARCH-010-SHOPIFY-014` in both repositories.
+- Implementation commit `bfc7af3` (`feat(shopify): finalize recovery credit top-up lifecycle`) pushed to `origin/task/ARCH-010-SHOPIFY-014`.
+- Parent report changes are being committed and pushed on the matching parent task branch.
 
 ### Architect Review
-Pending.
+Pending moda_architect review.
