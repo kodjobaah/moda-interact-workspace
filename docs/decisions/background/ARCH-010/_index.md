@@ -18,7 +18,7 @@ Coordinator:
 
 > Synchronized 2026-09-14 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 18, `ready` 1, `pending` 1, `superseded` 2
+Current counts: `complete` 19, `ready` 1, `pending` 0, `superseded` 2
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -42,8 +42,8 @@ Current counts: `complete` 18, `ready` 1, `pending` 1, `superseded` 2
 | `BACKGROUND-018` | Stop Shopify checkout/cart event processing early for frozen subscriptions | Complete | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-012 |
 | `BACKGROUND-019` | Reserve selected promotional campaign credits before every other capacity source | Complete | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-011, ARCH-010-BACKGROUND-014 |
 | `BACKGROUND-020` | Remove pre-publication Background consumers of retired Shared billing contracts | Complete | ARCH-010-SHARED-006 |
-| `BACKGROUND-021` | Confirm purchase commercial value and activate REQUESTED recovery-credit purchases | **Ready** | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-015, ARCH-010-SHOPIFY-014 |
-| `BACKGROUND-022` | Conform purchased-credit reservations to purchase lifecycle and refund concurrency | Pending | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-014, ARCH-010-BACKGROUND-019, ARCH-010-BACKGROUND-021 |
+| `BACKGROUND-021` | Confirm purchase commercial value and activate REQUESTED recovery-credit purchases | Complete | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-015, ARCH-010-SHOPIFY-014 |
+| `BACKGROUND-022` | Conform purchased-credit reservations to purchase lifecycle and refund concurrency | **Ready** | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-014, ARCH-010-BACKGROUND-019, ARCH-010-BACKGROUND-021 |
 
 ## Execution note
 

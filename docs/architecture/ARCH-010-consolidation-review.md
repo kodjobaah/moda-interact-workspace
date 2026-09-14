@@ -112,7 +112,7 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 
 ```text
 ARCH-010-SHOPIFY-012
-ARCH-010-BACKGROUND-021
+ARCH-010-BACKGROUND-022
 ```
 
 
@@ -551,5 +551,48 @@ Current implementation-ready frontier:
 ```text
 ARCH-010-SHOPIFY-012
 ARCH-010-BACKGROUND-021
+```
+
+## Post-review update — BACKGROUND-021 Attempt 1 accepted
+
+`ARCH-010-BACKGROUND-021` is architect-accepted Complete on functional and commercial
+correctness.
+
+Accepted purchase activation authority:
+
+```text
+REQUESTED non-spendable purchase
+  + exact immutable before snapshot
+  + exact linked REPORTED one-pack UsageEvent
+  + exact provider subscription / plan / cycle / pack meter
+  + unique unresolved purchase
+  + Q1 = Q0 + 1
+  + positive C1 - C0
+  + K1 = K0
+  -> one Serializable REQUESTED -> ACTIVE activation
+  -> immutable provider amount/currency
+  -> currentAmount = creditsGranted
+  -> aggregate purchased grant exactly once
+```
+
+Ambiguous or incomplete provider evidence remains non-spendable.
+
+Capacity resume remains post-commit/best-effort.
+
+This acceptance promotes:
+
+```text
+ARCH-010-BACKGROUND-022
+```
+
+to Ready.
+
+`ARCH-010-SHOPIFY-025` remains Pending until `BACKGROUND-022` is Complete.
+
+Current implementation-ready frontier:
+
+```text
+ARCH-010-SHOPIFY-012
+ARCH-010-BACKGROUND-022
 ```
 
