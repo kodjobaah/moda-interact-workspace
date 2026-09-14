@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 81
 executor: copilot
 claimed_at: 2026-09-14T19:43:49Z
@@ -209,19 +209,43 @@ STOP if SHOPIFY-025 does not create durable merchant refund requests, if DATABAS
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-Populate during implementation.
+- `moda-interact-admin/src/lib/admin/recovery-credit-refunds.ts`
+- `moda-interact-admin/src/lib/admin/types.ts`
+- `moda-interact-admin/src/components/admin/recovery-credit-refunds.tsx`
+- `moda-interact-admin/src/components/admin/billing-tabs.tsx`
+- `moda-interact-admin/src/app/(protected)/billing/page.tsx`
+- `moda-interact-admin/src/i18n/locales/en.json`
+- `moda-interact-admin/src/i18n/required-keys.ts`
+- `moda-interact-admin/tests/security/admin-recovery-credit-refunds.test.mjs`
+- `moda-interact-admin/tests/security/admin-billing-progressive-disclosure.test.mjs`
 
 ### Work Completed
-Populate during implementation.
+- Added an authorized, read-only, database-paginated recovery-credit refund queue with default page size 20 and maximum page size 50.
+- Added derived `READY_FOR_PROVIDER_ACTION` and `WAITING_FOR_RESERVATIONS` labels from the exact withdrawn purchase state; invalid active/non-terminal combinations surface integrity attention.
+- Added bounded refund detail data for request-time snapshots, current purchase amounts, billing-period/provider/plan provenance, provider valuation evidence, support context identity, reservation history and refund history.
+- Added the billing Refund requests tab and detail drawer. The UI has no quantity, percentage, money-entry, approval or provider-settlement control and explicitly treats plan/top-up price as non-authoritative evidence.
+- Preserved merchant-created request identity; no support-message prerequisite, NLP creation path, Shopify call, purchase mutation or provider action was added.
+- Updated the directly affected billing-view and i18n contract tests and added focused refund triage security coverage.
 
 ### Validation Results
-Populate during implementation.
+- `node --test tests/security/admin-recovery-credit-refunds.test.mjs`: passed, 2 tests.
+- `node --test tests/security/admin-billing-progressive-disclosure.test.mjs tests/security/admin-internationalization.test.mjs tests/security/admin-recovery-credit-refunds.test.mjs`: passed, 18 tests.
+- `npm exec tsc -- --noEmit`: passed after `npm run prisma:generate`.
+- `npm run test:unit`: passed, 42 tests.
+- `npm test`: passed, 170 tests; 3 skipped; 0 failures.
+- `npm run lint`: passed with 2 existing warnings in `src/components/admin/queue-monitor.tsx` for missing `refresh` hook dependencies; no errors.
+- `npm run build`: passed. Existing non-blocking BullMQ webpack warnings remain for an expression dependency and optional `@valkey/valkey-glide` resolution.
+- `git diff --check`: passed.
 
 ### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-002`.
+- Implementation branch: `task/ARCH-010-ADMIN-002`.
+- Implementation commit: `cd0eda5` (`feat(admin): triage recovery credit refund requests`).
+- Implementation branch pushed to `origin/task/ARCH-010-ADMIN-002`.
+- Parent report is being published from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-002` on the mirrored `task/ARCH-010-ADMIN-002` branch.
 
 ### Architect Review
-Pending.
+Pending architect review. No unresolved task-scope blocker identified.
