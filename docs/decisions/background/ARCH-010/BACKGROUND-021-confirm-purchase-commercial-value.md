@@ -237,9 +237,11 @@ Ready for Architect Review.
 ### Files Changed
 - `src/services/recovery-credit-purchase.service.ts`
 - `src/services/billing-reconciliation.service.ts`
+- `src/services/purchased-recovery-reservation.service.ts`
 - `tests/unit/services/recovery-credit-purchase.service.test.ts`
 - `tests/unit/services/recovery-credit-purchase.resume-hint.test.ts`
 - `tests/unit/services/billing-reconciliation.service.test.ts`
+- `tests/unit/services/purchased-recovery-reservation.service.test.ts`
 
 ### Work Completed
 - Replaced legacy quantity-only activation and removed obsolete `PENDING_BILLING`/`NEEDS_ATTENTION` purchase activation paths.
@@ -247,22 +249,22 @@ Ready for Architect Review.
 - Ambiguous attribution, missing/unchanged cost, subscription/currency/quantity mismatch, non-REPORTED evidence, and multiple unresolved purchases remain `REQUESTED` with zero capacity and no aggregate grant.
 - Atomically CAS-updated the exact purchase's after snapshots, immutable purchase amount/currency/valuation timestamp, `currentAmount = creditsGranted`, `REQUESTED -> ACTIVE`, and purchased-credit aggregate grant under Serializable retry behavior.
 - Preserved post-commit best-effort capacity-resume scheduling and replay idempotency.
+- Updated purchased recovery reservation accounting and its test harness to use the current Prisma purchase balance fields, `currentAmount` and `reservedAmount`, while retaining aggregate counter quantity accounting.
 
 Correction mapping: no Architect Review corrections were present; the latest review section remained `Pending`.
 
 ### Validation Results
-- Focused purchase/reconciliation/resume tests: passed, 3 files and 55 tests.
+- Focused purchased reservation tests: passed, 10/10 tests after replacing stale removed-field fixtures and assertions.
 - `npm run prisma:validate`: passed.
-- `npm run prisma:generate`: passed with database submodule revision `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
-- `npm run test:unit`: 57 files passed, 907 tests passed; 2 unchanged baseline failures in `tests/unit/runtime/observability-startup.test.ts` (worker close-resource source assertion and expected shared runtime `0.9.0` versus package `0.11.0`).
-- `npm run build`: blocked by 10 pre-existing Prisma/client errors in `src/services/purchased-recovery-reservation.service.ts` for removed `committedQuantity`, `refundingQuantity`, and `refundedQuantity` fields; no changed-file TypeScript errors remain.
+- `npm run prisma:generate`: passed.
+- `npm run test:unit`: 57 files passed and 907 tests passed; 2 unchanged baseline failures in `tests/unit/runtime/observability-startup.test.ts` (worker close-resource source assertion and expected shared runtime `0.9.0` versus package `0.11.0`).
+- `npm run build`: passed, including Prisma generation and TypeScript compilation.
 - `git diff --check`: passed.
-- Initial focused validation was blocked by absent installed dependencies; `npm ci` restored the lockfile environment before successful focused validation. It reported 3 high-severity audit findings; no dependency files changed.
 
 ### Git / VCS
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-021`
 - Implementation branch: `task/ARCH-010-BACKGROUND-021`
-- Implementation commit: `229fd5f` (`Confirm recovery credit purchase commercial value`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
+- Implementation commits: `229fd5f` (`Confirm recovery credit purchase commercial value`) and `cbdd18e` (`fix background purchase reservation balances`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
 - Database gitlink was not changed or staged.
 - Parent report is being committed separately on the mirrored parent task branch.
 
