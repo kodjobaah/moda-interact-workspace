@@ -376,7 +376,7 @@ Ready for Review.
 - Claim commit: `f6318efcad3d527296e1860c6581f1b2eebc5dad`.
 - Implementation commit/push: `2134bdb` pushed to `origin/task/ARCH-010-SHOPIFY-026` (prior implementation baseline `e37f9a7`).
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-026`.
-- Parent report commit/push: pending until this report update is committed and pushed.
+- Parent report commit/push: `392789d` pushed to `origin/task/ARCH-010-SHOPIFY-026`.
 
 ### Architect Review
 Pending. The task is returned for architect review; this agent made no architect acceptance decision.
