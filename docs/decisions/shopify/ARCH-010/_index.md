@@ -18,7 +18,7 @@ Coordinator:
 
 > Synchronized 2026-09-14 from individual task YAML. Individual task files are authoritative. Superseded tasks are retained as history and must not be executed. System-test tasks are terminal/manual-gated.
 
-Current counts: `complete` 11, `ready` 3, `pending` 7, `superseded` 5
+Current counts: `complete` 12, `ready` 2, `pending` 7, `superseded` 5
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -36,7 +36,7 @@ Current counts: `complete` 11, `ready` 3, `pending` 7, `superseded` 5
 | `SHOPIFY-012` | Integrate real billing options route and purchase hub | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-SHOPIFY-014, ARCH-010-SHOPIFY-015, ARCH-010-SHOPIFY-007, ARCH-008-SHOPIFY-001 |
 | `SHOPIFY-013` | Expose authoritative Shopify commercial subscription read model | Complete | ARCH-008-SHOPIFY-001 |
 | `SHOPIFY-014` | Implement merchant recovery top-up lifecycle adapter and production panel | Pending | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-007, ARCH-007-SHOPIFY-004, ARCH-010-SHOPIFY-018, ARCH-010-DATABASE-014 |
-| `SHOPIFY-015` | Implement Shopify-hosted plan management flow and production panel | **Ready** | ARCH-010-SHOPIFY-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-010, ARCH-010-SHOPIFY-018 |
+| `SHOPIFY-015` | Implement Shopify-hosted plan management flow and production panel | Complete | ARCH-010-SHOPIFY-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-010, ARCH-010-SHOPIFY-018 |
 | `SHOPIFY-016` | Present cancellation, NO_CONTRACT and FROZEN merchant restriction states | Pending | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013 |
 | `SHOPIFY-017` | Present unused purchased-credit refundability and support CTA | Superseded | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-012 |
 | `SHOPIFY-018` | Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze | Complete | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023 |

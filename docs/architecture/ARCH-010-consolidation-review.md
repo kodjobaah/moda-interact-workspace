@@ -112,8 +112,8 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 
 ```text
 ARCH-010-BACKGROUND-012
-ARCH-010-SHOPIFY-004
-ARCH-010-SHOPIFY-015
+ARCH-010-SHOPIFY-007
+ARCH-010-SHOPIFY-009
 ```
 
 
@@ -390,5 +390,57 @@ Current Ready frontier from authoritative ARCH-010 task YAML:
 ARCH-010-BACKGROUND-012
 ARCH-010-SHOPIFY-004
 ARCH-010-SHOPIFY-015
+```
+
+## Post-review update — SHOPIFY-015 Attempt 5 accepted
+
+`ARCH-010-SHOPIFY-015` Attempt 5 is architect-accepted Complete.
+
+Accepted hosted-return concurrency model:
+
+```text
+durable pre-provider Subscription fence
+  -> one Partner read
+  -> ShopSettings/Subscription lock
+  -> full durable projection equality check
+  -> unchanged projection only may persist provider observation
+```
+
+Absence is now represented canonically:
+
+```text
+no durable Subscription before Partner read -> null
+no durable Subscription after lock          -> null
+```
+
+so unchanged `NO_ACTIVE_SUBSCRIPTION` is classified `no_active` without inventing a
+Subscription or retry state.
+
+Accepted implementation:
+
+```text
+0fad89ce76d59d954a0bd8894d527eaadda478b1
+```
+
+Validation:
+
+```text
+focused: 196 passed
+full:    438 passed, 3 skipped
+Prisma:  passed
+build:   passed
+static:  passed
+diff:    passed
+```
+
+`ARCH-010-SHOPIFY-012` remains Pending because `SHOPIFY-007`, `SHOPIFY-009` and
+`SHOPIFY-014` remain incomplete.
+
+Current Ready frontier from authoritative ARCH-010 task YAML:
+
+```text
+ARCH-010-BACKGROUND-012
+ARCH-010-SHOPIFY-007
+ARCH-010-SHOPIFY-009
 ```
 
