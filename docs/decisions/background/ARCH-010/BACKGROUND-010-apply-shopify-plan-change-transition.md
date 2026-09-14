@@ -10,7 +10,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -2543,6 +2543,355 @@ validation, replacing the inaccurate evidence map, recording full immutable work
 SHAs, setting the task back to `status: review`, clearing `executor`/`claimed_at`,
 committing/pushing both mirrored task branches and verifying they are clean, STOP and
 return to `moda_architect`.
+
+Do not start `ARCH-010-BACKGROUND-012`, `ARCH-010-SHOPIFY-015` or
+`ARCH-010-SYSTEM-TEST-001`.
+
+## Architect Review — Attempt 5
+
+### Status
+
+**Changes Requested**
+
+Attempt 5 closes the large permanent-test matrix requested in Attempt 4. The
+transaction-service replay/reservation/precondition/SYNC_ERROR coverage is now
+present, and the queued/rotating prerequisite matrices are materially implemented.
+
+No production source correction is requested by this review.
+
+The remaining blockers are **evidence-only**:
+
+1. several exact assertions from the Attempt-4 contract are still weaker than
+   required;
+2. the Attempt-5 `Evidence Map` is misnumbered/misaligned and omits the final two
+   transaction-service requirements from the table;
+3. the Completion Report's parent publication SHA conflicts with the final handoff
+   evidence.
+
+Attempt 6 must therefore be test/report-only unless one of the exact assertions below
+fails against the current production implementation.
+
+### Accepted Attempt-5 evidence to preserve
+
+The following evidence is accepted and must not be rewritten merely to manufacture
+another implementation commit:
+
+- queued pending refresh and withdrawal paths exist;
+- Partner-error and provider-null current/pending preservation assertions exist;
+- retryable queued `SYNC_ERROR` rows execute while unrelated `SYNC_ERROR` does not;
+- the complete queued missing-cycle / allowance / meter prerequisite matrix exists;
+- queued Paid capacity-resume success/failure tests exist;
+- rotating unexpected-plan, cycle, allowance and meter fail-closed matrices exist;
+- Free rotating transition suppresses Paid capacity resume;
+- expected-target `not-applicable` is converted to typed fail-closed retry;
+- successor replay proves no second BillingPeriod and no successor usage reset;
+- Paid close uses `RESERVED | AMBIGUOUS` reservation selection and the expected
+  release/forfeiture arithmetic;
+- Paid -> Free creates a Free successor with
+  `includedRecoveryCreditsGranted = null` and no successor included-credit counter;
+- lifetime/purchased/promotion state no-write coverage exists for Paid -> Paid,
+  Paid -> Free and Free -> Paid;
+- the full transaction-level prerequisite-before-mutation matrix exists;
+- retryable and unrelated transaction-service `SYNC_ERROR` cases exist;
+- all three required Free transition tests remain green;
+- focused suites report 198/198 passed;
+- integration reports 3/3 passed;
+- full-unit and build failures remain the documented unrelated baseline.
+
+### Finding 1 — withdrawn pending update does not prove the deterministic replacement job payload
+
+Test:
+
+```text
+clears a withdrawn established pending update atomically
+```
+
+already proves the single guarded state mutation and calculated next schedule, but the
+Attempt-4 contract also required the replacement job to be proven against that exact
+timestamp and deterministic job id.
+
+#### Required correction
+
+In:
+
+```text
+tests/unit/services/billing-subscription-reconciliation.service.test.ts
+```
+
+keep the existing assertions and add:
+
+```ts
+expect(test.queue.add).toHaveBeenCalledOnce();
+expect(test.queue.add).toHaveBeenCalledWith(
+  expect.any(String),
+  expect.objectContaining({
+    expectedNextReconcileAt: "2026-09-30T23:55:00.000Z",
+  }),
+  expect.objectContaining({
+    jobId: expect.any(String),
+  }),
+);
+```
+
+If the queue helper's exact timestamp differs because `nextPlanReconcileAt(...)`
+calculates another canonical value in the current fixture, use the **same exact
+timestamp already asserted in the durable `nextReconcileAt` write**. Do not weaken it
+to `expect.any(String)` for `expectedNextReconcileAt`.
+
+### Finding 2 — queued capacity-resume failure does not prove no retry/failure classification is written
+
+Test:
+
+```text
+swallows queued plan-change capacity-resume enqueue failure after transition
+```
+
+currently proves the call resolves and a structured warning is logged, but the
+Attempt-4 contract also required proof that the already-committed transition is not
+reclassified as failed/retryable.
+
+#### Required correction
+
+After the existing assertions, add an assertion over all
+`subscription.updateMany` calls proving that none writes:
+
+```text
+status = SYNC_ERROR
+lastSyncErrorCode
+nextReconcileAt = now + ROLLOVER_RETRY_MS
+```
+
+A deterministic form is:
+
+```ts
+expect(
+  test.database.subscription.updateMany.mock.calls.some(([call]: any[]) =>
+    call.data?.status === "SYNC_ERROR"
+    || call.data?.lastSyncErrorCode != null
+  ),
+).toBe(false);
+```
+
+If this test legitimately performs an unrelated guarded projection write, preserve
+that write and assert specifically that **no failure classification/retry metadata**
+is introduced by the capacity-resume enqueue exception.
+
+Do not modify production source to satisfy this assertion unless it actually fails.
+If it fails, STOP and return the observed call payload to `moda_architect`.
+
+### Finding 3 — rotating fail-closed tests do not explicitly prove transition is not invoked
+
+The Attempt-4 contract required the mapped-unexpected, missing/invalid-cycle and
+meter/allowance fail-closed cases to prove that
+`ShopifyPlanChangeTransitionService.transition(...)` is not called.
+
+The current tests prove typed durable error state and that purchased-credit
+reconciliation is not invoked, but they do not observe the transition service.
+
+#### Required correction
+
+In:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+for each of these tests/tables:
+
+```text
+fails closed for a mapped unexpected provider-current plan without exposing a pack meter
+fails closed for rotating provider-current target with %s
+fails closed for rotating target prerequisite: %s
+```
+
+install:
+
+```ts
+const transition = vi.spyOn(
+  ShopifyPlanChangeTransitionService.prototype,
+  "transition",
+);
+```
+
+before `reconcileOnce()` and assert:
+
+```ts
+expect(transition).not.toHaveBeenCalled();
+```
+
+Restore the spy at the end of each test/table row.
+
+Keep the existing assertion that
+`purchases.reconcileProviderConfirmed` is not called; that is the observable proof
+that no stale/target `packMeterHandle` is propagated into purchased-credit
+reconciliation on these fail-closed paths.
+
+### Finding 4 — Attempt-5 Evidence Map is still not the required 1–20 map
+
+The current table is shifted after requirement 4 and therefore does not correspond to
+the Attempt-4 numbered contract. It also ends before explicitly mapping:
+
+```text
+retryable versus unrelated transaction-service SYNC_ERROR eligibility
+the three preserved Free transition cases
+```
+
+Replace the `### Evidence Map` table with the following exact requirement mapping.
+Use the exact final test titles present after Attempt 6:
+
+| Requirement | Exact test title(s) | Test file |
+|---|---|---|
+| 1 | `refreshes pending provider state in one guarded update` | `billing-subscription-reconciliation.service.test.ts` |
+| 2 | `clears a withdrawn established pending update atomically` | `billing-subscription-reconciliation.service.test.ts` |
+| 3 | `keeps established entitlement on Partner failure and publishes one bounded retry` | `billing-subscription-reconciliation.service.test.ts` |
+| 4 | `keeps established entitlement unresolved when Partner reports no active subscription` | `billing-subscription-reconciliation.service.test.ts` |
+| 5 | `retries established plan changes from retryable SYNC_ERROR: %s`; `does not execute an unrelated SYNC_ERROR as an established plan change` | `billing-subscription-reconciliation.service.test.ts` |
+| 6 | `fails established queued plan change closed for invalid target prerequisite: %s` | `billing-subscription-reconciliation.service.test.ts` |
+| 7 | `schedules plan-change capacity resume after a successful queued Paid transition` | `billing-subscription-reconciliation.service.test.ts` |
+| 8 | `swallows queued plan-change capacity-resume enqueue failure after transition` | `billing-subscription-reconciliation.service.test.ts` |
+| 9 | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter` | `billing-reconciliation.service.test.ts` |
+| 10 | `fails closed for rotating provider-current target with %s` | `billing-reconciliation.service.test.ts` |
+| 11 | `fails closed for rotating target prerequisite: %s` | `billing-reconciliation.service.test.ts` |
+| 12 | `does not schedule plan-change capacity resume after a successful Free transition` | `billing-reconciliation.service.test.ts` |
+| 13 | `fails closed when the expected effective target transition returns not-applicable` | `billing-reconciliation.service.test.ts` |
+| 14 | `reuses a matching successor without resetting its included usage` | `shopify-plan-change-transition.service.test.ts` |
+| 15 | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once` | `shopify-plan-change-transition.service.test.ts` |
+| 16 | `creates a Free successor without a monthly counter` | `shopify-plan-change-transition.service.test.ts` |
+| 17 | `preserves lifetime purchased and promotion state for transition direction: %s` | `shopify-plan-change-transition.service.test.ts` |
+| 18 | `does not mutate periods before target prerequisite validation: %s` | `shopify-plan-change-transition.service.test.ts` |
+| 19 | `allows retryable plan-change SYNC_ERROR transition: %s`; `rejects unrelated SYNC_ERROR as not-applicable` | `shopify-plan-change-transition.service.test.ts` |
+| 20 | `supports Free -> Paid without an outgoing Free billing period`; `closes an existing outgoing Free period exactly once before Free -> Paid`; `returns a null billing period for a pack-disabled Free transition without a provider cycle` | `shopify-plan-change-transition.service.test.ts` |
+
+Do not add unrelated tests to the table merely to make each row look larger.
+
+### Finding 5 — parent publication SHA is contradictory
+
+The user-facing Attempt-5 handoff reports:
+
+```text
+Parent report commit: 6cf62e1
+```
+
+while the uploaded Completion Report records:
+
+```text
+Attempt-5 parent Completion Report publication commit:
+7c0fe4d5bb98b04b7788c645f1fc55b79c485c60
+```
+
+The task cannot be architect-accepted with contradictory immutable publication
+evidence.
+
+#### Required correction
+
+From the **dedicated parent task worktree** after the Attempt-6 report is committed,
+run:
+
+```bash
+git rev-parse HEAD
+git status --short --branch
+git rev-parse --abbrev-ref --symbolic-full-name @{u}
+```
+
+Record the actual full current parent HEAD SHA.
+
+If `7c0fe4d5...` was an intermediate Attempt-5 report commit and `6cf62e1...` was a
+later/final Attempt-5 parent commit, say so explicitly and record the full SHA of both
+when available.
+
+For Attempt 6 record:
+
+```text
+Attempt-5 implementation full SHA
+Attempt-5 final parent full SHA
+Attempt-6 implementation full SHA
+Attempt-6 parent Completion Report full SHA
+launcher Attempt-6 claim full SHA
+database gitlink before/after
+parent branch clean/pushed
+implementation branch clean/pushed
+```
+
+Do not write abbreviated SHAs or "recorded after this update".
+
+### Required validation for Attempt 6
+
+Attempt 6 is expected to change only tests/report evidence.
+
+Run:
+
+```bash
+npx vitest run \
+  tests/unit/services/shopify-plan-change-transition.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts
+
+npm run test:unit
+npm run test:integration
+npm run prisma:validate
+npm run prisma:generate
+npm run build
+git diff --check
+
+rg -n "tierRank|prorat" \
+  src/services/shopify-plan-change-transition.service.ts \
+  src/services/billing-subscription-reconciliation.service.ts \
+  src/services/billing-reconciliation.service.ts
+```
+
+Record exact pass/fail/skip counts.
+
+The documented 10 full-unit failures and 15 generated-client build diagnostics remain
+non-blocking only if they are unchanged and no Attempt-6 changed file introduces a
+new failure/diagnostic.
+
+### Allowed Attempt-6 scope
+
+Allowed implementation/test files:
+
+```text
+moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
+moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+`shopify-plan-change-transition.service.test.ts` should remain unchanged unless an
+exact test title in the corrected Evidence Map differs from the current file and the
+report needs to reflect that exact title. Do not add more transition-service test
+logic merely for another attempt.
+
+Normal task/Completion Report updates are allowed through the coordination exception.
+
+Do **not** modify production source:
+
+```text
+src/services/shopify-plan-change-transition.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+```
+
+Do not modify schema, Shared contracts, purchased-credit services,
+SamePlanBillingPeriodRolloverService, Shopify, Admin, Messaging or Gateway.
+
+If one of the three exact assertion corrections above fails against current
+production behaviour, STOP and return the failing test name plus observed calls/state
+to `moda_architect`. Do not alter production source on your own.
+
+### Reclaim / stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 5
+```
+
+The next authorized claim must increment to **Attempt 6 exactly once**.
+
+After adding only the required assertions, correcting the Evidence Map and immutable
+SHA evidence, running validation, setting the task back to `status: review`, clearing
+the claim, committing/pushing both mirrored task branches and verifying both are
+clean, STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-BACKGROUND-012`, `ARCH-010-SHOPIFY-015` or
 `ARCH-010-SYSTEM-TEST-001`.
