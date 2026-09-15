@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-15T10:38:53Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-DATABASE-013
@@ -526,6 +526,53 @@ Implementation commits: `a2ff25c196d372add65658705c496254878ee89e` and `d8998f7`
 
 Remaining limitation: repository quality scripts are unavailable; no separate repository test suite exists. No cross-repository dependency or additive-boundary stop condition was encountered.
 
+
+## Attempt 2 Audit and Completion Report
+
+Status: Ready for Review
+
+Verdict: the Attempt 1 Architect Review correction is implemented. Deferred child-row validation now covers both OLD and NEW owners for translation and usage-event reparenting, and resolves both OLD and NEW usage-event owners for tier reparenting. No model, enum, CHECK expression, catalogue-position rule, operational billing object, or pre-existing migration was changed.
+
+Implementation commits, pushed to `origin/task/ARCH-014-DATABASE-001`:
+
+- `a2ff25c196d372add65658705c496254878ee89e` initial ARCH-014 catalogue implementation
+- `d8998f7` strengthened static additive-boundary validation
+- `134cf61` corrected deferred OLD/NEW parent validation on reparenting
+
+Changed implementation file in Attempt 2:
+
+- `prisma/migrations/20260915090000_arch014_merchant_pricing_catalogue/migration.sql`
+
+Requirement-to-evidence gap audit:
+
+| Requirement or review correction | Evidence and result |
+| --- | --- |
+| Translation INSERT/DELETE validate the affected parent; UPDATE validates OLD and changed NEW parents | `validate_arch014_merchant_pricing_translation_trigger()` branches on `TG_OP` and uses `IS DISTINCT FROM`; static validator passed; source-plan reparent with 19 translations failed at commit with `ARCH014_MERCHANT_PRICING_INVALID:translations`. |
+| Usage-event INSERT/DELETE validate the affected parent; UPDATE validates OLD and changed NEW parents | `validate_arch014_merchant_pricing_usage_trigger()` implements both-owner coverage; a changed-parent transaction reached deferred validation and failed with `ARCH014_MERCHANT_PRICING_INVALID:usage_currency` for the invalid destination state. |
+| Tier INSERT/DELETE resolve the affected event owner; UPDATE resolves and validates both OLD and NEW event owners | `validate_arch014_merchant_pricing_tier_trigger()` resolves both event IDs and validates the old owner before the new owner; cross-event tier reparent failed with `ARCH014_MERCHANT_PRICING_INVALID:tier_shape` for the invalid source state. |
+| Deleted old event/plan does not cause a false failure | Owner lookups may yield NULL and `validate_arch014_merchant_pricing_plan()` returns when the plan no longer exists; no relation key was made immutable. |
+| Additive-only boundary and exact approved schema | Static validator passed against `origin/main`; committed scope is the four approved implementation files from the initial work plus the one migration correction; no operational billing relation or pre-existing migration changed. |
+| Existing catalogue, locale, tier-shape, zero-cost, and global-position requirements | Prior focused SQL evidence remains valid; the rework reran the source-parent and changed-parent cases above. Prisma validation and generation passed. |
+
+Validation completed in the implementation worktree:
+
+- `node scripts/validate-arch014-merchant-pricing-catalogue.mjs`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run erd:puml`: passed; generated whitespace was normalized and `git diff --check` passed.
+- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run migrate:deploy`: passed; no pending migrations.
+- Focused PostgreSQL checks on `localhost:5432/moda_interact`: source translation reparent failed at commit as required; usage-event and tier reparent paths reached the corrected deferred triggers and failed with bounded ARCH-014 errors; temporary fixtures were removed.
+- `git diff --name-only` and final `git diff --check`: passed; only the authorized migration was changed in Attempt 2.
+- `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build`: unavailable because those scripts are not defined in `package.json`; no separate repository test suite exists.
+
+Launcher and worktree evidence:
+
+- Prepared parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-DATABASE-001`.
+- Prepared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-DATABASE-001`.
+- Both use `task/ARCH-014-DATABASE-001`; implementation worktree is clean at `134cf61`, pushed to origin.
+- Launcher claim commit: `a466ce0d`; dependency gate `ARCH-010-DATABASE-013` was complete. Recursive submodule preparation was completed by the launcher; the database implementation repository has no recursive submodules.
+
+Claim cleared and task returned to `moda_architect` for review. No unresolved implementation blocker or cross-repository dependency was found.
 
 ## Architect Review
 
