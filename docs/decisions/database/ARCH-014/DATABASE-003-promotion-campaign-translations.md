@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 42
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-014-DATABASE-002
 enables:
@@ -30,7 +30,7 @@ updated: 2026-09-15
 Add localized merchant-facing title/description persistence for `PromotionCampaign` without changing the existing campaign table or operational promotion semantics.
 
 `PromotionCampaign.name` remains the **internal Admin campaign name**. Merchant-facing text moves to a new additive child table.
-
+## Binding GPT-5.6 Luna rule
 ## Binding GPT-5.6 Luna rule
 
 Implement exactly one new Prisma model/table and its new-table constraints/indexes. Do not alter, rename, drop, backfill, add a column/index/constraint/trigger to, or otherwise modify an existing table/enum. Do not change campaign targeting, grant, selection, reservation or lifecycle semantics.
@@ -159,3 +159,89 @@ The final scan MUST return no forbidden parent-table alteration.
 ## Stop conditions
 
 STOP if implementation appears to require changing an existing campaign column, campaign status enum, `BillingPlan`, grant/selection tables, or adding a trigger to `PromotionCampaign`. Return that requirement to `moda_architect` rather than broadening the migration.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation branch: `task/ARCH-014-DATABASE-003`
+
+Implementation commit: `3a6daae284dc311c3aefc7dfab8ee9f476cb954b`
+
+Changed files:
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20260915210000_arch014_promotion_campaign_translations/migration.sql`
+- `scripts/validate-arch014-promotion-campaign-translations.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
+- `docs/generated/erd.png`
+
+Implemented exactly one additive `PromotionCampaignTranslation` model/table and
+the virtual `PromotionCampaign.translations` relation. The model uses the exact
+requested fields and types, the `(promotionCampaignId, locale)` unique constraint,
+the campaign foreign-key index, and the `billing` schema. The migration creates
+only the new table, its primary key, cascading foreign key, unique constraint,
+index, and the exact 20-locale, title-length, and description-length CHECK
+constraints. It contains no trigger, function, enum change, parent-table ALTER,
+legacy-column operation, or campaign semantic change.
+
+Validator evidence:
+
+- Focused `npm run test:arch014-promotion-campaign-translations`: passed.
+- `npm run validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run test:first-production-baseline`: passed.
+- `npm run test:arch015-fractional-provider-usage`: passed.
+- `npm run erd`: passed; PlantUML ERD source and PNG updated.
+- `git diff --check`: passed.
+- Required `rg -n 'PromotionCampaignTranslation' prisma docs scripts`: passed.
+- Required forbidden-alteration scan returned no matches.
+- The focused validator compares normalized `PromotionCampaign` plus exact
+  promotion lifecycle, `BillingPlan`, related operational billing models, and
+  relevant enums against baseline `f202931c58dba7f9fcc53c74333736e978e8b6de`;
+  all preservation checks passed.
+
+Migration/environment limitation:
+
+- Local `npm run status` reached PostgreSQL at `localhost:5432` and reported the
+  expected pending migrations.
+- Local `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact
+  npm run migrate:deploy` was blocked by the pre-existing failed migration
+  `20260915140000_arch015_fractional_provider_usage_snapshots` (`P3009`). No
+  migration resolution, reset, baseline edit, or unrelated repair was performed.
+- The repository has no declared `test` script; `npm test` returned “Missing
+  script: test”.
+- `npm ci` installed dependencies and reported three high-severity audit findings;
+  dependency versions were not changed.
+
+Isolation evidence: the prepared launcher packet was used as authoritative; no
+launcher rerun, new claim, worktree inference, startup resynchronization, parent
+gitlink change, or other repository modification was performed. The implementation
+branch was pushed to `origin/task/ARCH-014-DATABASE-003`. Only this task file is
+changed in the parent report worktree. Architect Review remains untouched.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Functional review
+
+`ARCH-014-DATABASE-003` is accepted on the implemented database/runtime contract at implementation commit `3a6daae284dc311c3aefc7dfab8ee9f476cb954b`.
+
+The review confirmed:
+
+- exactly one additive `PromotionCampaignTranslation` Prisma model/table plus the virtual `PromotionCampaign.translations` inverse relation;
+- the existing `PromotionCampaign` table, nullable legacy `merchantDescription` column, campaign enums and operational promotion semantics remain unchanged;
+- the migration creates only the new translation table and its own PK, FK, unique/index and CHECK constraints;
+- the FK references `billing.PromotionCampaign(id)` with delete cascade;
+- the locale CHECK is the exact canonical 20-locale set and title/description content constraints match the task;
+- DRAFT campaigns are allowed to remain incomplete because no 20/20 database trigger is introduced;
+- there is no parent-table ALTER, enum mutation, trigger, function, backfill or BillingPlan/promotion-lifecycle change in this migration; and
+- the generated ERD and focused validator align with the implemented schema.
+
+The reported `P3009` on migration deploy is caused by the pre-existing failed `ARCH-015` migration and is not a functional defect in DATABASE-003. No ARCH-015 repair is authorized from this task.
+
+Because this task uses `completion_mode: automatic`, architect acceptance completes DATABASE-003. `ARCH-014-SHOPIFY-003` is now Ready because its sole dependency is Complete. `ARCH-014-ADMIN-008` remains Pending until `ARCH-014-ADMIN-006` is also Complete. `ARCH-014-SYSTEM-TEST-002` remains Pending until DATABASE-003, ADMIN-008 and SHOPIFY-003 are all Complete.
