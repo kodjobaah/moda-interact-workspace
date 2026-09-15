@@ -480,12 +480,13 @@ ARCH-014-DATABASE-002 + ARCH-014-SHOPIFY-001
 
 ARCH-014-ADMIN-004
     -> ARCH-014-ADMIN-005
+    -> ARCH-014-ADMIN-006
 
-ARCH-014-DATABASE-002 + ARCH-014-ADMIN-004 + ARCH-014-ADMIN-005 + ARCH-014-SHOPIFY-002
+ARCH-014-DATABASE-002 + ARCH-014-ADMIN-004 + ARCH-014-ADMIN-005 + ARCH-014-ADMIN-006 + ARCH-014-SHOPIFY-002
     -> ARCH-014-SYSTEM-TEST-001
 ```
 
-`DATABASE-002`, `ADMIN-004`, `ADMIN-005` and `SHOPIFY-002` are Complete. The only remaining ARCH-014 task is the terminal/developer-gated `SYSTEM-TEST-001`, which is now Ready and must be invoked explicitly by the developer.
+`DATABASE-002`, `ADMIN-004`, `ADMIN-005`, `ADMIN-006` and `SHOPIFY-002` are Complete. The pricing-catalogue prerequisites are satisfied and terminal/developer-gated `SYSTEM-TEST-001` is Ready for explicit developer invocation.
 
 System test is terminal/manual-gated and enables no implementation task.
 
@@ -502,6 +503,7 @@ System test is terminal/manual-gated and enables no implementation task.
 | `ARCH-014-ADMIN-004` | Complete | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-003` |
 | `ARCH-014-SHOPIFY-002` | Complete | `ARCH-014-DATABASE-002`, `ARCH-014-SHOPIFY-001` |
 | `ARCH-014-ADMIN-005` | Complete | `ARCH-014-ADMIN-004` |
-| `ARCH-014-SYSTEM-TEST-001` | Ready | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-004`, `ARCH-014-ADMIN-005`, `ARCH-014-SHOPIFY-002` |
+| `ARCH-014-ADMIN-006` | Complete | `ARCH-014-ADMIN-005` |
+| `ARCH-014-SYSTEM-TEST-001` | Ready (developer-gated) | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-004`, `ARCH-014-ADMIN-005`, `ARCH-014-ADMIN-006`, `ARCH-014-SHOPIFY-002` |
 
-No automatic implementation task remains. `ARCH-014-SYSTEM-TEST-001` is Ready but terminal/developer-gated and must not auto-start; the developer explicitly invokes it. DATABASE-002, ADMIN-004, ADMIN-005 and SHOPIFY-002 are Complete. Architecture status remains In Progress until the terminal system-test gate is accepted.
+The pricing-catalogue implementation chain is Complete through `ARCH-014-ADMIN-006`; `ARCH-014-SYSTEM-TEST-001` is now Ready and remains terminal/developer-gated, so it must not auto-start. DATABASE-002, ADMIN-004, ADMIN-005, ADMIN-006 and SHOPIFY-002 are Complete. Architecture status remains In Progress until the terminal system-test gate is accepted.

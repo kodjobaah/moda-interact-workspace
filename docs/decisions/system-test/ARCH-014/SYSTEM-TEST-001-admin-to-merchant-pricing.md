@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: pending
+status: ready
 priority: 90
 executor: null
 claimed_at: null
