@@ -81,3 +81,22 @@ This delta defines tasks against the supplied 2026-09-15 current snapshot in whi
 ## Non-blocking tooling note
 
 DATABASE-002 is accepted on the implemented runtime/database contract. Broader SQL-spelling mutation coverage in `validate-arch014-plan-highlights.mjs` is optional tooling hardening and does not gate ADMIN-004, SHOPIFY-002 or SYSTEM-TEST-001.
+
+
+## Post-ADMIN-005 queued work (15 Sep 2026)
+
+The following tasks supersede any previously generated but unapplied standalone ADMIN-006 overlay:
+
+```text
+ARCH-014-ADMIN-006       READY
+ARCH-014-ADMIN-007       READY
+ARCH-014-DATABASE-003    READY
+ARCH-014-ADMIN-008       PENDING on ADMIN-006 + DATABASE-003
+ARCH-014-SHOPIFY-003     PENDING on DATABASE-003
+ARCH-014-SYSTEM-TEST-001 PENDING on ADMIN-006 + existing pricing prerequisites
+ARCH-014-SYSTEM-TEST-002 PENDING on ADMIN-008 + SHOPIFY-003 + DATABASE-003
+```
+
+Spreadsheet standard: exactly `exceljs@4.4.0`, established in ADMIN-006 and reused by ADMIN-008. No alternate spreadsheet package is authorized.
+
+See `ARCH-014-post-ADMIN-005-addendum.md` for the binding dependency graph and invariants.
