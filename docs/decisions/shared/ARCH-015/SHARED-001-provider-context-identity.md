@@ -522,3 +522,19 @@ parent task is at `status: review`, `attempt: 1`, with its claim cleared.
 
 No new ARCH-015 task is created. No dependant is promoted from Pending while
 `ARCH-015-SHARED-001` remains unaccepted.
+
+## Attempt 2 External Publication Blocker
+
+The Attempt-2 correction is implemented and published from commit `8fd9fb3`.
+Local validation passed, and npm accepted publication of
+`@modainteract/moda-interact-shared@0.11.2` with shasum
+`50927cf0c2f7fb0b553cc77086fbb318f3d2f73a`.
+
+However, exact registry verification is not currently possible: repeated
+`npm view @modainteract/moda-interact-shared@0.11.2` calls and a direct npm
+registry document query return no `0.11.2` version, while the `latest` tag
+remains `0.11.1`. Therefore the required exact-version consumer import,
+runtime export smoke, and blank-context fail-closed registry smoke have not
+been claimed as complete, and this task is not marked review-ready.
+
+Return to `moda_architect` for the external npm propagation/publication retry.
