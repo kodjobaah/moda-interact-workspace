@@ -1,7 +1,7 @@
 ---
 id: ARCH-013
 title: Merchant application routing, navigation and lifecycle coherence
-status: implemented
+status: in_progress
 coordinator: moda_architect
 created: 2026-09-15
 updated: 2026-09-15
@@ -11,7 +11,7 @@ updated: 2026-09-15
 
 ## Status
 
-**Implemented — SHOPIFY-001 Attempt 2 Accepted.**
+**In progress — SHOPIFY-001 Attempt 2 remains Accepted/Complete; SHOPIFY-002 is Ready for bounded residual corrections.**
 
 ARCH-013 is a bounded pre-billing-refactor initiative for `moda-interact` only. It fixes the merchant application's current route graph, access/navigation mismatch, breadcrumb hierarchy and stale route artefacts **before** implementation work begins from `Moda_Recovery_Credits_Shopify_App_Pricing_Design_v1.1`.
 
@@ -44,6 +44,19 @@ Observed defects include:
 10. `app/routes/app/billing/recovery-credits/route.ts` contains an obsolete unregistered implementation beside the canonical purchased-credit route.
 
 The server-side guards prevent many actual unauthorized actions, but navigation routinely advertises destinations that immediately redirect or fail. That is a product-flow and authorization-presentation defect even where no security bypass exists.
+
+## Residual correction task — ARCH-013-SHOPIFY-002
+
+`ARCH-013-SHOPIFY-001` remains **Complete** and its accepted route graph, lifecycle matrix, pending-recovery boundary, navigation, breadcrumbs and support-CTA behaviour are not reopened.
+
+A later architect audit found exactly two residual defects outside the accepted SHOPIFY-001 correction surface:
+
+1. `/app/billing/options` is intentionally available during `ONBOARDING`, but `BillingPurchaseHub` unconditionally advertises `/app/billing/recovery-credit-purchases`, even though the canonical matrix denies `BILLING_PURCHASE_HISTORY` during `ONBOARDING`. This recreates a UI-to-denied-route mismatch.
+2. `tests/unit/billing-ui.test.ts` at the accepted implementation baseline contains two concatenated top-level import blocks with duplicate bindings (`readFile`, `describe`, `expect`, `it`), so its previously recorded validation evidence is not reproducible from that file as written.
+
+`ARCH-013-SHOPIFY-002` fixes only those two residual defects. It MUST NOT change the canonical merchant experience states or surface matrix. In particular, `ONBOARDING` continues to allow `BILLING_OPTIONS` and deny `BILLING_PURCHASE_HISTORY`. The UI must suppress the purchase-history link rather than weakening route authorization.
+
+Billing-v1.1 implementation remains sequenced after SHOPIFY-002 architect acceptance.
 
 ## Relationship to ARCH-010
 

@@ -6,10 +6,11 @@ Architecture: [`ARCH-013-merchant-application-routing-navigation.md`](ARCH-013-m
 
 ## Binding execution order
 
-ARCH-013-SHOPIFY-001 is the only implementation task currently defined for ARCH-013.
+`ARCH-013-SHOPIFY-001` is architect-accepted **Complete**. `ARCH-013-SHOPIFY-002` is the only current Ready task and is a bounded residual-correction task.
 
 ```text
-ARCH-013-SHOPIFY-001
+ARCH-013-SHOPIFY-001  Complete / Attempt 2 Accepted
+    -> ARCH-013-SHOPIFY-002
     -> architect review/acceptance
     -> only then define/start implementation work derived from
        Moda_Recovery_Credits_Shopify_App_Pricing_Design_v1.1
@@ -68,8 +69,18 @@ change Background/Gateway/Messaging
 
 If the current code contradicts a named route/file assumption materially, or satisfying the task requires a billing/product decision not specified here, STOP and report the exact evidence to `moda_architect`.
 
+## SHOPIFY-002 correction execution rule
+
+`ARCH-013-SHOPIFY-002` is deliberately narrower than SHOPIFY-001. The `moda_app` agent MUST implement only the task file `docs/decisions/shopify/ARCH-013/SHOPIFY-002-residual-routing-coherence-corrections.md`.
+
+It MUST NOT reopen or rewrite the accepted SHOPIFY-001 route topology, lifecycle matrix, pending-recovery policy, navigation ordering, breadcrumbs, support-message actions, stale-route deletions or callback semantics.
+
+The only production correction is to stop `/app/billing/options` from advertising purchased-credit history when `canAccessMerchantSurface(merchantExperienceState, "BILLING_PURCHASE_HISTORY")` is false. The other correction is the malformed `tests/unit/billing-ui.test.ts` import structure and its associated validation evidence.
+
+After SHOPIFY-002 returns to `review`, STOP. Do not begin billing v1.1 or another ARCH-013 task automatically.
+
 ## Current review state
 
-`ARCH-013-SHOPIFY-001` Attempt 2 is **architect-accepted Complete**. The home loader now applies the canonical `PENDING_RECOVERIES` surface policy before reading pending-recovery business data, so denied historical states receive the bounded unavailable payload without losing dashboard/history access.
+`ARCH-013-SHOPIFY-001` Attempt 2 remains **architect-accepted Complete**. Its accepted implementation is the dependency baseline for SHOPIFY-002.
 
-ARCH-013 is **Implemented** and has no remaining Ready task. The pre-billing routing gate is complete. Subsequent billing-v1.1 or ARCH-011 task definitions may now be reviewed/defined separately, but they are not implicitly started by this acceptance and must use the canonical ARCH-013 route graph.
+`ARCH-013-SHOPIFY-002` is **Ready**. ARCH-013 therefore remains in progress until this bounded correction task is architect-accepted. Billing-v1.1 implementation is not yet started and remains sequenced after SHOPIFY-002 acceptance.
