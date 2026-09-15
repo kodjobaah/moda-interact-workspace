@@ -429,11 +429,12 @@ ARCH-010-ADMIN-009   -> ARCH-014-ADMIN-001
 
 ARCH-014-DATABASE-001 + ARCH-014-ADMIN-001
     -> ARCH-014-ADMIN-002
+    -> ARCH-014-ADMIN-003
 
 ARCH-014-DATABASE-001
     -> ARCH-014-SHOPIFY-001
 
-ARCH-014-ADMIN-002 + ARCH-014-SHOPIFY-001
+ARCH-014-ADMIN-003 + ARCH-014-SHOPIFY-001
     -> ARCH-014-SYSTEM-TEST-001
 ```
 
@@ -445,13 +446,15 @@ System test is terminal/manual-gated and enables no implementation task.
 |---|---|---|
 | `ARCH-014-DATABASE-001` | Complete | `ARCH-010-DATABASE-013` |
 | `ARCH-014-ADMIN-001` | Complete | `ARCH-010-ADMIN-009` |
-| `ARCH-014-ADMIN-002` | Ready | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
-| `ARCH-014-SHOPIFY-001` | Ready | `ARCH-014-DATABASE-001` |
-| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-002`, `ARCH-014-SHOPIFY-001` |
+| `ARCH-014-ADMIN-002` | Complete | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
+| `ARCH-014-ADMIN-003` | Ready | `ARCH-014-ADMIN-002` |
+| `ARCH-014-SHOPIFY-001` | Review | `ARCH-014-DATABASE-001` |
+| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-003`, `ARCH-014-SHOPIFY-001` |
 
-`ARCH-014-DATABASE-001` and `ARCH-014-ADMIN-001` are Complete. ADMIN-002 Attempt 3 requires one bounded projected-order correction and has been returned to Ready; SHOPIFY-001 is independently Ready. The ARCH-014 automatic Ready frontier is therefore:
+`ARCH-014-ADMIN-003` Attempt 1 is functionally correct except for one bounded zero-live-reference i18n cleanup gap and has been returned to Ready for Attempt 2. The uploaded sibling state still records `ARCH-014-SHOPIFY-001` at Review; its previously accepted Architect Review must be reconciled separately before terminal system testing can become Ready.
+
+The branch-local ARCH-014 automatic Ready frontier is therefore:
 
 ```text
-ARCH-014-ADMIN-002
-ARCH-014-SHOPIFY-001
+ARCH-014-ADMIN-003
 ```

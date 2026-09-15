@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -423,3 +423,76 @@ runtime, recovery-credit handling, or billing-event handling was changed.
 Parent report commit: `cd90331` (`docs(admin): record ARCH-014-ADMIN-003 audit`),
 pushed on `task/ARCH-014-ADMIN-003`. This hash-recording follow-up is the final
 report publication commit.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Attempt 1 satisfies the runtime/source cleanup boundary. Architect review confirmed that all nine mandatory legacy BillingPlan Admin files are absent; `BillingPlanDrawer`/`PlanForm` legacy imports and drawer code are removed; the accepted MerchantPricing plans surface remains live; the recovery-credit purchase, billing-event and controls surfaces remain present; the operational billing-economics/guardrail files remain present; and comparison against the accepted ADMIN-002 snapshot shows no Prisma/schema/migration/database change.
+
+Independent focused validation in the uploaded review snapshot passed:
+
+- `admin-billing-progressive-disclosure.test.mjs`, `admin-billing-economics.test.mjs`, `admin-billing-visibility.test.mjs` and `admin-merchant-pricing-plan.test.mjs`: 29/29;
+- `upgrade-economics-guardrail.test.ts`: 42/42;
+- `billing-economics-validation.test.ts`: 3/3.
+
+One bounded task-contract gap remains in the required zero-live-reference i18n cleanup. The following candidate legacy keys are still present in both `src/i18n/locales/en.json` and `src/i18n/required-keys.ts`, but an exact-key scan of all remaining `src` and `tests` (excluding those two catalogue/registry files) finds zero references:
+
+```text
+billing.active
+billing.inactive
+billing.activate
+billing.deactivate
+billing.reason
+billing.reasonPlaceholder
+billing.pass
+billing.fail
+billing.unverified
+```
+
+This violates the task's explicit rule that each candidate key with zero remaining `src`/`tests` references must be removed from both the English catalogue and required-key registry. Do not retain a candidate merely because it is generic or might be useful in future work.
+
+`billing.hardLimit` must remain because `src/components/admin/tenant-billing.tsx` still references it. `billing.tab.plans` must remain because `src/components/admin/billing-tabs.tsx` still references it. `billing.plansDescription` must remain under the current task contract because `tests/security/admin-billing-progressive-disclosure.test.mjs` still references it.
+
+No runtime cleanup redesign is required.
+
+### Required Corrections
+
+1. Remove exactly these nine zero-live-reference keys from both:
+   - `src/i18n/locales/en.json`
+   - `src/i18n/required-keys.ts`
+
+   ```text
+   billing.active
+   billing.inactive
+   billing.activate
+   billing.deactivate
+   billing.reason
+   billing.reasonPlaceholder
+   billing.pass
+   billing.fail
+   billing.unverified
+   ```
+
+2. Do not remove `billing.hardLimit`, `billing.tab.plans` or `billing.plansDescription`; they still have references under the task's binding search rule.
+
+3. Re-run an exact-key zero-reference scan over remaining `src` and `tests`, excluding `src/i18n/locales/en.json` and `src/i18n/required-keys.ts`, and record the result in the Completion Report.
+
+4. Re-run the focused i18n/catalogue validation and the already passing ARCH-014 Admin cleanup/security tests. No exhaustive new test matrix, schema change, operational billing change or additional dead-code cleanup is required.
+
+### Rework State
+
+Return the same task to the normal reclaimable state:
+
+```text
+status: ready
+executor: null
+claimed_at: null
+attempt: 1
+```
+
+The next authorised claim is Attempt 2. `ARCH-014-SYSTEM-TEST-001` remains gated until this task is Complete and the accepted SHOPIFY task state is reconciled into the canonical parent.
