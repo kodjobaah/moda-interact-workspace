@@ -355,11 +355,13 @@ Record exact migration path, Prisma model diff, migration-isolation validator ou
 - `npm run prisma:generate`: passed.
 - `node scripts/validate-arch014-plan-highlights.mjs`: passed.
 - `npm run erd:puml`: passed.
-- `git diff --check`: passed after normalizing generator-introduced trailing whitespace.
+- `git diff --check`: passed after normalizing generator-introduced trailing whitespace; the implementation worktree is clean.
 - Existing catalogue validator was run; its pre-existing changed-file allowlist rejects the new task migration and validator paths, so it is not a valid ARCH-014-DATABASE-002 check and was left unchanged.
-- The exposed `DATABASE_URL` points to an external Render PostgreSQL instance, not a local task fixture. Optional migration application and live deferred-integrity fixture evidence were not run to avoid altering external infrastructure.
+- Local PostgreSQL integration evidence was run against `postgresql://postgres:postgres@localhost:5432/moda_interact` only. The migration applied successfully; both highlight constraint triggers are `DEFERRABLE INITIALLY DEFERRED`; the parent and child cascade FKs are present; and the deferred position uniqueness constraint is `DEFERRABLE INITIALLY DEFERRED`.
+- Focused local fixtures passed: zero highlights; one highlight with all 20 locales; two highlights at positions 0..1; cascade deletion of both highlight and translation rows. Expected failures were observed for 19 translations at commit (`ARCH014_PLAN_HIGHLIGHT_INVALID:translation_count`), a position gap at commit (`ARCH014_PLAN_HIGHLIGHT_INVALID:positions`), unknown locale, blank title, blank description, title over 120 characters, description over 500 characters, and duplicate contentKey.
+- A first migration command expanded the pre-existing external `DATABASE_URL`; the newly created ARCH-014 highlight tables/functions were immediately removed from that external database, and all subsequent migration/fixture validation used the explicit localhost URL. No existing table or historical migration was modified.
 - Implementation commit: `cef04dc`.
 
 ### Architect Review
 
-The additive plan-card highlight persistence and localization integrity implementation is complete. Review `cef04dc` and promote the task according to the coordinator lifecycle.
+Re-audit found no implementation gap. The exact Prisma models, virtual inverse relation, additive migration isolation, UUID/locale/content/position constraints, deferred completeness and contiguous-position validation, validator, and ERD all match the task contract. Review implementation commit `cef04dc` and promote the task according to the coordinator lifecycle.
