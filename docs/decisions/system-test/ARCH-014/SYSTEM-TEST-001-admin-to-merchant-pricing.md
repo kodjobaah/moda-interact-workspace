@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: ready
+status: pending
 priority: 90
 executor: null
 claimed_at: null
@@ -18,6 +18,7 @@ depends_on:
 - ARCH-014-DATABASE-002
 - ARCH-014-ADMIN-004
 - ARCH-014-ADMIN-005
+- ARCH-014-ADMIN-006
 - ARCH-014-SHOPIFY-002
 enables: []
 created: 2026-09-15
@@ -28,7 +29,7 @@ updated: 2026-09-15
 
 ## Terminal/manual gate
 
-Do **not** auto-start. The developer explicitly invokes this task only after DATABASE-002, ADMIN-004, ADMIN-005 and SHOPIFY-002 are architect-accepted/integrated and the completed earlier ARCH-014 tasks remain integrated. No implementation task depends on this task.
+Do **not** auto-start. The developer explicitly invokes this task only after DATABASE-002, ADMIN-004, ADMIN-005, ADMIN-006 and SHOPIFY-002 are architect-accepted/integrated and the completed earlier ARCH-014 tasks remain integrated. No implementation task depends on this task.
 
 ## Objective
 
@@ -38,7 +39,7 @@ Prove the integrated ARCH-014 contract from Admin MerchantPricing plan creation/
 
 Inspect existing `moda-interact-system-test` conventions first. Add only ARCH-014-specific test/fixture/helper files inside existing `test/`, `src/` and `scripts/` structure. Do not create a second orchestration framework and do not modify production implementation to make tests pass.
 
-## Required scenario A — complete create + schema-v2 translation/highlight import + merchant render
+## Required scenario A — complete create + pre-populated XLSX translation/highlight import + merchant render
 
 Build a four-plan ARCH-014 catalogue in this exact order:
 
@@ -61,8 +62,8 @@ Requirements:
 
 Prove:
 
-1. generated Admin template is schemaVersion 2, contains exact meta + 20 locales, and contains the exact highlight contentKey set; English description/highlights are populated and the other 19 locale values are initially empty for new content;
-2. completed paste/import validates 20/20;
+1. generated Admin XLSX contains exactly `Instructions`, `Translations`, `_meta`; `Translations` contains all 20 human language labels + exact locale codes, current English description/highlights, and blanks only the non-English translations genuinely missing for new content; `_meta` preserves the exact stable highlight contentKey mapping without exposing UUIDs in the visible translation table;
+2. completed XLSX import converts to canonical schema-v2 translation JSON and the existing canonical parser validates 20/20;
 3. final create transaction persists only one MerchantPricing plan + exact 20 plan translations + usage events/tiers + ordered highlights + exactly 20 translations per highlight, plus ARCH-014 position shifts where required;
 4. no `BillingPlan`, `BillingEconomicsSnapshot` or `BillingUpgradeEconomicsEdge` row is required/created/updated by the ARCH-014 create;
 5. merchant onboarding in at least `en`, `fr`, `ja`, `pt-BR`, `pt-PT`, `zh-Hans`, `zh-Hant` displays exact corresponding DB plan description and ordered DB highlight title/descriptions;
@@ -75,6 +76,11 @@ Prove:
 Try at least:
 
 ```text
+invalid XLSX envelope
+renamed/missing worksheet
+altered Language/Locale row
+formula/non-string translation cell
+stale workbook plan/source metadata
 missing locale
 blank locale description
 unexpected pt_BR alias
