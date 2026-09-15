@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -390,3 +390,34 @@ Ready for Architect Review
 
 - No Prisma, Next integration, operational App Events, top-up runtime, or existing single-pack guardrail changes were required.
 - Architect Review remains untouched. Return to `moda_architect` for review.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+The implementation now satisfies the previously identified functional gaps around unbounded-free VOLUME tiers, padded event handles, locale-independent ordering/tie-breaking, and required oversized VOLUME candidates. The focused ARCH-014 suite passes 24/24, the existing operational economics coverage remains passing, and no operational single-pack semantics were changed.
+
+One functional requirement remains incomplete in the full-portfolio entry point. `evaluateMerchantPricingPortfolio()` validates commercial plan/event evidence only indirectly while generating lower->higher pairs. A projected portfolio containing exactly one plan generates zero pairs, so the plan is never validated. Consequently an invalid first catalogue plan can produce `[]`, and `assertMerchantPricingPortfolioPass([])` does not block it.
+
+Verified reproducer against Attempt 1: a one-plan portfolio containing a VOLUME event with paid early tiers, an open-ended zero-cost final tier, and `maximumUnitsPerBillingPeriod: null` returns an empty result array and the portfolio assertion passes. That contradicts this task's input-validation contract and the requirement that an unbounded zero-cost usage event returns `UNVERIFIED / UNBOUNDED_ZERO_COST_USAGE_EVENT`.
+
+### Required Corrections
+
+1. In `src/lib/admin/merchant-pricing-economics.ts`, add one pure plan-level validation path and invoke it from `evaluateMerchantPricingPortfolio()` for **every** plan in `orderedPlanIds` before generating any pair results. Do not rely on `evaluateMerchantPricingPair()` being called to validate a plan.
+2. The portfolio pre-validation must enforce the existing ADMIN-001 contract for each plan: non-negative safe-integer recurring amount and included credits; normalized uppercase 3-letter plan currency; 0..5 usage events; exact trimmed/unique event handles; bounded integer fields; pricing-shape/tier validation; usage-pricing currency equal to the owning plan currency; and `UNBOUNDED_ZERO_COST_USAGE_EVENT` detection. Reuse the existing validation helpers rather than creating a second interpretation.
+3. Preserve the existing pair algorithm, candidate generation, pricing semantics, premium comparison and deterministic tie-breaking. This correction is only about ensuring portfolio-level input validation is not skipped when there are fewer than two plans.
+4. A valid one-plan portfolio may still have zero lower->higher pair evaluations. An **invalid** one-plan portfolio must instead return at least one bounded `UNVERIFIED` result carrying the appropriate existing ARCH-014 result code so `assertMerchantPricingPortfolioPass()` blocks it. Do not introduce a new result code for this correction.
+5. Also verify the map identity while performing the portfolio pre-validation: for each `orderedPlanId`, the resolved plan's `id` must equal that key. A mismatch is `UNVERIFIED / INVALID_PORTFOLIO_ORDER`. This keeps the caller-supplied catalogue identity deterministic even for a one-plan portfolio.
+6. Add only focused regression coverage needed to prove the functional correction:
+   - valid one-plan portfolio remains valid with zero pair results;
+   - one-plan portfolio with the paid-early/open-ended-free VOLUME event is blocked with `UNBOUNDED_ZERO_COST_USAGE_EVENT`;
+   - one-plan key/`plan.id` mismatch is blocked with `INVALID_PORTFOLIO_ORDER`.
+7. Re-run the existing focused ARCH-014 suite, the existing economics unit coverage that is runnable in the prepared worktree, and `git diff --check`. No exhaustive new test matrix is required.
+
+### Rework State
+
+Return this same task through the normal `/moda-task ARCH-014-ADMIN-001` path. Preserve `attempt: 1`; the next authorized claim increments it to Attempt 2. `ARCH-014-ADMIN-002` remains gated because this task is not Complete.
