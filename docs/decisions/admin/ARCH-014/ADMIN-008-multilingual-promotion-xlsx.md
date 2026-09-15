@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 58
-executor: copilot
-claimed_at: 2026-09-15T22:32:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-003
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-014-SYSTEM-TEST-002
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-15T23:55:00Z
 ---
 
 # ARCH-014-ADMIN-008
@@ -375,3 +375,41 @@ Expected: only `exceljs@4.4.0` is the spreadsheet library; no new spreadsheet/dr
 ## Stop conditions
 
 STOP if DATABASE-003 is absent, ADMIN-006 shared spreadsheet helper is absent, implementing this requires another XLSX library, or activation integrity would require changing the database schema. Do not infer an alternative architecture.
+
+## Completion Report
+
+Status: Ready for Review
+
+### Implementation
+
+- Implementation commit: `50e9d5e` (`feat(admin): add multilingual promotion translations`), pushed to `origin/task/ARCH-014-ADMIN-008`.
+- Added the canonical promotion translation package/validator, promotion-specific XLSX adapter, client upload/download workflow, atomic draft/import persistence, exact 20-locale activation gate, translation completeness state, and focused workbook tests.
+- Legacy `PromotionCampaign.merchantDescription` remains unchanged and is not read as localized source. No database, Shopify, or dependency files changed.
+
+### Validation
+
+- Focused promotion validation/workbook tests: `9/9` passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run test:unit`: `42/42` passed.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed; existing BullMQ optional-dependency warnings remain.
+- Touched-file Prettier check and `git diff --check`: passed.
+- `npm test`: existing unrelated baseline failures remain in shared-package version assertions (`^0.11.2` installed, tests expect `^0.7.3`); no ADMIN-008 failure was reported.
+- Repository-wide `npm run format:check`: existing baseline reports 99 files; all ADMIN-008 files pass the focused check.
+
+### Contract evidence
+
+- Generated workbook sheets are exactly `Instructions`, `Translations`, `_meta`; `_meta` is `veryHidden`.
+- Workbook uses shared `translation-workbook-common.ts`, exact `exceljs@4.4.0`, exact 20 locale labels/order, English source protection, blank missing cells, 2 MiB limit, and no drop dependency.
+- XLSX parsing validates metadata/rows/plain strings, rejects formulas as `UNSUPPORTED_CELL_VALUE`, converts to canonical JSON, and server-reparses before atomic 20-row replacement with version CAS.
+- New drafts persist only internal campaign terms plus one English translation row; changed English source deletes non-English rows; unchanged source preserves translations; active translations remain immutable.
+- Activation re-reads translations and rejects incomplete campaigns with `Complete all 20 merchant translations before activating this campaign.`
+- Admin history/report headings continue to use the internal campaign name; merchant-facing title/description are translation-backed.
+
+### Isolation
+
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-008`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-008`.
+- Implementation and report changes remain on dedicated task branches; neither branch was merged to `main`.
+- Task lifecycle is returned to `review` with executor and claim cleared for architect handoff.
