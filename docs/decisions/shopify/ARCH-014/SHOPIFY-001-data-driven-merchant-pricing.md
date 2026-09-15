@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor:
 claimed_at:
@@ -531,3 +531,82 @@ Status: Ready for Review; implementation commit pushed and claim cleared.
   pushed to `origin/task/ARCH-014-SHOPIFY-001`.
 - Parent report commit: `f5e43a0538fb97b10acc7d9ee4a439e5cb3e04b0`.
 - Claim cleared; task status set to `review`.
+
+
+## Architect Review — Attempt 3
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Functional review of implementation commit `1148769` confirms the generic lifetime-allowance correction is valid and the previously implemented ARCH-014 catalogue reader/rendering architecture remains in scope. However, the uploaded Attempt 3 snapshot does not contain the three corrections required by the preceding Architect Review. These remain production-contract gaps and must be corrected on the same task.
+
+#### Required correction 1 — Portuguese generic pricing labels must be natural translations
+
+In both:
+
+```text
+app/i18n/locales/pt-BR.json
+app/i18n/locales/pt-PT.json
+```
+
+the ARCH-014 generic pricing values remain English placeholders for keys including:
+
+```text
+onboarding.pricing.fixed
+onboarding.pricing.graduated
+onboarding.pricing.volume
+onboarding.pricing.unavailable
+onboarding.pricing.option
+onboarding.pricing.creditsPerUnit
+onboarding.pricing.maximumUnits
+onboarding.pricing.tierRange
+onboarding.pricing.amountPerUnit
+onboarding.pricing.flatAmount
+```
+
+Replace those values with natural Brazilian Portuguese and European Portuguese respectively. Do not change the key names and do not copy English placeholder values. Keep all 20 locale catalogues present.
+
+#### Required correction 2 — omit the Free proof item when no active Free plan exists
+
+Current onboarding renders:
+
+```jsx
+<strong>{firstFreePlan?.includedRecoveryCredits ?? "-"}</strong>
+```
+
+This violates the task contract. Render the Free recovery-credit proof list item only when `firstFreePlan` exists. If the active catalogue has no `planKind === "FREE"` row, omit that proof item entirely; do not render `-`, `0`, or another constant. Preserve the other hero proof items unchanged.
+
+#### Required correction 3 — fail closed on tiered events with FIXED-only amount populated
+
+In:
+
+```text
+app/services/merchant-pricing/merchant-pricing.server.js
+```
+
+for `pricingMode === "GRADUATED"` or `pricingMode === "VOLUME"`, require:
+
+```text
+fixedUnitAmountMinor === null
+```
+
+before accepting the event. A non-null value is an invalid persisted pricing shape and must throw with the existing `MERCHANT_PRICING_CATALOGUE_INVALID:` prefix. Preserve the existing 1..6 tier, contiguous position, strictly increasing non-final `upTo`, final-open-ended, amount, currency, credits and maximum-unit validation.
+
+#### Focused validation required
+
+Do not broaden into exhaustive catalogue testing. Add/retain only enough regression evidence to prove:
+
+1. `pt-BR` and `pt-PT` ARCH-014 generic pricing labels are not the English placeholder values and remain distinct locale catalogues;
+2. a catalogue with no active Free plan renders no Free proof item;
+3. GRADUATED and VOLUME events with non-null `fixedUnitAmountMinor` fail closed.
+
+Rerun the task's existing focused reader/renderer/locale validation, required source searches, changed-path lint/build/Prisma validation where available, and `git diff --check`. Existing documented unrelated baseline failures do not require correction unless the task changes the affected code.
+
+#### Scope boundary
+
+Do not revisit subscription creation/selection semantics, `/app/billing/select`, database schema, operational `BillingPlan` topology, ADMIN-001/ADMIN-002, or the already-correct generic lifetime-allowance change.
+
+The task returns to `status: ready`; `attempt` remains `3`, with `executor` and `claimed_at` clear. The next authorized claim increments to Attempt 4. `ARCH-014-SYSTEM-TEST-001` remains gated until this task and `ARCH-014-ADMIN-002` are Complete.
