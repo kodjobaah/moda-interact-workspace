@@ -9,10 +9,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 90
-executor: copilot
-claimed_at: 2026-09-15T10:22:16Z
 attempt: 1
 depends_on:
 - ARCH-013-SHOPIFY-001
@@ -522,20 +520,36 @@ Do not start billing v1.1, ARCH-011, or another task automatically.
 
 ## Completion Report
 
-Status: Not started
+Status: Complete; returned to Architect Review.
 
 ### Implementation
 
-Pending.
+- Implementation commit: `20a6034` (`fix billing purchase history route coherence`), pushed to `task/ARCH-013-SHOPIFY-002`.
+- Changed implementation files:
+  - `app/routes/app/billing/options/route.tsx`
+  - `app/components/dashboard/BillingPurchaseHub.jsx`
+  - `tests/unit/billing-purchase-hub.test.tsx`
+  - `tests/unit/billing-ui.test.ts`
+- No unauthorized implementation file changed. Read-only policy, route-graph, and direct purchase-history route files were unchanged.
+- `purchaseHistoryAvailable` is derived from the canonical merchant surface policy and returned from both loader branches.
+- ONBOARDING keeps billing options available while hiding purchase history; ACTIVE, NO_CONTRACT, FROZEN, and BILLING_ATTENTION keep purchase history visible.
+- `billing-ui.test.ts` retains both original describe suites in one valid import section.
 
 ### Validation
 
-Pending.
+- Focused Vitest: PASS, 4 files and 67 tests passed.
+  - `npx vitest run tests/unit/merchant-route-access-policy.test.ts tests/unit/billing-ui.test.ts tests/unit/billing-purchase-hub.test.tsx tests/unit/routes/explicit-route-config.test.ts`
+- Full `npm test`: PASS, 44 files passed, 2 skipped; 555 tests passed, 3 skipped.
+- `npm run typecheck`: non-zero due documented `TYPECHECK-001` repository baseline debt; no diagnostics originated in the four changed files.
+- `npm run build`: PASS.
+- Focused ESLint: PASS for all four changed files. The command emitted only the repository's existing unsupported-TypeScript-version warning.
+- `git diff --check`: PASS.
+- Locked dependencies were installed with `npm ci`; the generated build and full test run completed successfully.
 
 ### Deviations
 
-None expected. Any required deviation must be returned to `moda_architect` before implementation scope is broadened.
+The first full test invocation raced Prisma client generation during parallel validation and reported unrelated initialization failures; after the build generated the client, the required full `npm test` rerun passed. No implementation scope was broadened.
 
 ### Architect Review
 
-Pending.
+Ready for `moda_architect` review. Parent Completion Report commit SHA will be recorded by the report commit.
