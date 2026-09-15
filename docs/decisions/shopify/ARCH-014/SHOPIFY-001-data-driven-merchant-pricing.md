@@ -1,4 +1,3 @@
----
 id: ARCH-014-SHOPIFY-001
 architecture_id: ARCH-014
 title: Consume active merchant pricing catalogue and remove hard-coded onboarding pricing
@@ -439,3 +438,43 @@ Status: Review; implementation complete and returned to `moda_architect`.
 ### Architect Review
 
 Implementation is complete. Review `2bfb6de`; the task claim is cleared and the task is ready for `moda_architect`.
+
+## Attempt 2 Audit Closure
+
+Status: Review; implementation gaps identified in the current implementation
+were fixed and returned to `moda_architect`.
+
+### Gap Fixes
+
+- Corrected onboarding rendering to consume the DTO's `displayName`,
+  `shopifyPlanHandle`, and `localizedDescription` fields.
+- Added structured FIXED, GRADUATED, and VOLUME usage pricing output, including
+  credits, maximum units, tier bounds, unit amounts, and flat amounts.
+- Removed technical `eventHandle` output and the obsolete cross-plan fixed-price
+  matrix and stale commercial copy.
+- Replaced English placeholder pricing labels in all 20 locale catalogues with
+  locale-specific translations and removed obsolete plan-specific keys.
+- Strengthened reader validation to require strictly increasing non-final tier
+  bounds and added regression coverage.
+- Added server-rendered DTO-driven onboarding coverage for pricing modes, tiers,
+  empty state, and Shopify CTA behavior.
+
+### Final Validation Evidence
+
+- Focused reader/renderer/home suite: 14 passed.
+- Full test suite: 563 passed, 3 skipped across 48 files.
+- Changed-file ESLint: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed; only existing dependency/chunk warnings emitted.
+- Locale JSON/invariant audit: all 20 locales passed.
+- Forbidden billing references, stale pricing literals/keys, and `git diff --check`: passed.
+- `npm run typecheck`: remains non-zero on the repository's existing checked-
+  JavaScript and billing baseline diagnostics; no new merchant-pricing reader
+  diagnostics were introduced.
+
+### Architect Review
+
+The authoritative task definition was compared against the implementation. The
+identified gaps are closed; review the corrective commit and promote the task
+from `ready`/`Review` according to the coordinator lifecycle.
