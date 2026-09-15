@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T21:55:27Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-015-SHARED-001
@@ -167,3 +167,42 @@ STOP if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `6c3e92779b537ccfd073ed2a7c32ff674c2921c9` on `task/ARCH-015-BACKGROUND-001`, pushed to `origin`.
+
+### Implementation Summary
+
+- Shopify Partner parsing retains tiered usage items when `price.active` is false and preserves provider quantities as exact decimal-compatible values.
+- Billing reconciliation forwards the complete provider usage snapshot and current cycle evidence.
+- Recovery-credit activation discovers reported `REQUESTED` candidates from durable purchase/event data, proves each candidate against its immutable provider plan, event handle, subscription, cycle, quantity, currency, and cost baseline, and activates only proven candidates in one Serializable transaction.
+- Distinct event handles are processed independently; duplicate unresolved candidates for one handle remain ambiguous. Missing exact meters, mismatched context, quantity, currency, cycle, or cost leave candidates `REQUESTED`. Aggregate grants and capacity-resume scheduling remain transactional/best-effort respectively.
+
+### Acceptance Mapping
+
+- Provider parser rule: implemented and covered by inactive tiered-item test.
+- Durable candidate discovery and reported UsageEvent filtering: preserved and covered by focused purchase-service tests.
+- Exact candidate proof and Decimal quantity arithmetic: implemented, including fractional baseline and missing-handle fail-closed tests.
+- Zero-cost activation, quantity/currency/context mismatch handling, duplicate same-handle ambiguity, distinct-handle activation, aggregate idempotency, and resume scheduling: implemented and covered by focused tests.
+- No schema changes, synchronous provider correction, or new purchase status introduced.
+
+### Validation
+
+- `npm test -- tests/unit/services/recovery-credit-purchase.service.test.ts tests/unit/services/recovery-credit-purchase.resume-hint.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/providers/shopify-partner-billing.provider.test.ts tests/unit/services/shopify-usage-event-publisher.service.test.ts`: passed, 5 files / 101 tests.
+- `npm run build`: passed; Prisma client generation and TypeScript compilation completed successfully.
+- `npm run test:unit`: 57 files, 918 passed / 2 failed / 920 total. The two failures are pre-existing observability baseline mismatches in `tests/unit/runtime/observability-startup.test.ts`: expected worker close-resource source text differs from current implementation, and the test expects shared runtime `0.9.0` while the repository declares `0.11.0`. No task-owned test failed.
+- `git diff --check`: passed. Editor diagnostics for all seven changed files: no errors.
+
+### Worktree and Submodule Evidence
+
+- Prepared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-BACKGROUND-001`.
+- Implementation branch: `task/ARCH-015-BACKGROUND-001`; clean after commit and pushed at `6c3e92779b537ccfd073ed2a7c32ff674c2921c9`.
+- Prepared parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-BACKGROUND-001`.
+- Prepared execution verified recursive submodules were initialized and matched their recorded commits; no submodule gitlink was staged or changed by this task.
+
+### Limitations
+
+The repository-wide unit suite remains blocked only by the two documented/pre-existing observability startup expectation mismatches listed above. Focused task validation and production build are green.
