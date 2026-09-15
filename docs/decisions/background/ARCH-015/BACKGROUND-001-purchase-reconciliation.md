@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T23:24:03Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-015-SHARED-001
@@ -23,7 +23,7 @@ enables:
 - ARCH-015-SHOPIFY-003
 - ARCH-015-BACKGROUND-003
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015-BACKGROUND-001
@@ -34,57 +34,67 @@ Replace current-plan/aggregate-count purchase activation assumptions with candid
 
 ## Authorized implementation surface
 
-```text
-src/providers/shopify-partner-billing.provider.ts
-src/services/recovery-credit-purchase.service.ts
-src/services/billing-reconciliation.service.ts
-src/services/shopify-usage-event-publisher.service.ts      # only if Decimal handling needs alignment
-tests/unit/services/recovery-credit-purchase*.test.ts
-tests/unit/services/billing-reconciliation.service.test.ts
-tests/unit/services/shopify-usage-event-publisher.service.test.ts
-# directly affected integration tests
-```
+## Completion Report
 
-No schema changes.
+Status: Ready for Review
 
-## Provider parser rule
+Implementation commit: `37d1a82` on `task/ARCH-015-BACKGROUND-001`, pushed to `origin`.
 
-Do not discard live subscription items solely because `price.active === false`.
+### Architect Review Corrections
 
-Provider usage quantity must be represented without integer coercion. Use `Prisma.Decimal` or exact decimal-string conversion at database boundaries.
+- Finding 1 implemented: dependency is exactly `@modainteract/moda-interact-shared` `0.11.2`; installed billing entrypoint exports both `deriveShopifyProviderContextIdentity` and `isSameShopifyPurchaseProviderContext`. Fresh provider period start/end and raw nullable provider id are converted to the canonical context identity. Candidate proof compares that identity with the immutable purchase snapshot, plan handle, and local billing period. Raw `Subscription.providerSubscriptionId` persistence is unchanged.
+- Finding 1 coverage implemented: legacy provider identity still activates; native App Pricing identity activates only for the exact derived plan/period context; period mismatch, plan mismatch, blank identity, and malformed context fail closed without grant.
+- Finding 2 implemented: current and pending flat-rate provider items are retained by nonblank handle and `FlatRatePrice` type regardless of `price.active`; existing tiered retention and cardinality behavior remain intact.
+- Finding 2 coverage implemented: current and pending `FlatRatePrice active=false` items are retained, while the existing multiple-item fail-closed behavior remains unchanged.
 
-## Reconciliation candidate discovery
+### Complete Audit Checklist
 
-For each scanned shop, discover unresolved purchase candidates from durable data, not solely from the current BillingPlan singular pack meter.
+- Candidate discovery: implemented. Candidates are `REQUESTED`, linked to `RECOVERY_CREDIT_PACK_PURCHASE`, quantity `1`, and linked usage state `REPORTED`.
+- Deterministic ordering and event-handle ambiguity: implemented. Candidates order by `createdAt`, `id`; multiple unresolved rows for one event handle return `ambiguous` and grant nothing.
+- Immutable provider-before proof: implemented. No baseline rewrite or current-plan/count-derived quantity is used; exact event-handle provider readback is required.
+- Exact Decimal quantities: implemented. Quantity arithmetic uses `Prisma.Decimal`, including fractional baselines.
+- Inactive provider item retention: implemented for current flat-rate, pending flat-rate, and tiered items.
+- Zero-cost activation: implemented and tested when exact quantity proof succeeds with unchanged cost.
+- Mismatch fail-closed behavior: implemented and tested for quantity, currency, provider context, plan, cycle, missing meter, negative cost delta, blank identity, and malformed context.
+- Atomic activation and aggregate idempotency: implemented with Serializable transaction, optimistic row guard, and aggregate increment in the same transaction; replay does not regrant.
+- Sequential same-handle progression: tested for `0 -> 1` and `1 -> 2`.
+- Fractional baseline: tested for `1.75 -> 2.75`.
+- Best-effort resume scheduling: tested after commit, including enqueue failure preserving activation.
+- No schema changes: confirmed; database submodule remains at supplied `d44b621cdcc3635127b91601be648b61c0eff1e2`.
+- Required tests: focused provider, purchase, resume-hint, billing-reconciliation, and usage-publisher coverage passes; all listed regression cases are covered.
 
-Candidate:
+### Changed Files
 
-```text
-RecoveryCreditPurchase.status = REQUESTED
-linked UsageEvent metric = RECOVERY_CREDIT_PACK_PURCHASE
-linked UsageEvent submission state is REPORTED (provider accepted submission)
-```
+- `package.json`
+- `package-lock.json`
+- `src/providers/shopify-partner-billing.provider.ts`
+- `src/services/billing-reconciliation.service.ts`
+- `src/services/recovery-credit-purchase.service.ts`
+- `tests/unit/providers/shopify-partner-billing.provider.test.ts`
+- `tests/unit/services/billing-reconciliation.service.test.ts`
+- `tests/unit/services/recovery-credit-purchase.resume-hint.test.ts`
+- `tests/unit/services/recovery-credit-purchase.service.test.ts`
 
-Process by deterministic creation/id order and event handle.
+### Validation
 
-The architecture invariant permits at most one unresolved purchase per shop+eventHandle. If multiple are observed, do not guess; emit `ambiguous` discrepancy and leave all unactivated.
+- `npm install`: passed; installed shared package is exactly `0.11.2` and both required billing helpers are functions.
+- Focused required command: passed, 5 files / 104 tests.
+- `npm run build`: passed; Prisma client generation and TypeScript compilation completed successfully.
+- `npm run test:unit`: 58 files, 921 passed / 2 failed / 923 total. The only failures are the documented pre-existing observability baseline mismatches in `tests/unit/runtime/observability-startup.test.ts`: stale worker close-resource source-text expectation and stale exact shared runtime expectation of `0.9.0` (the task-required dependency is now `0.11.2`). No task-owned test failed.
+- `git diff --check`: passed.
 
-## Candidate proof
+### Worktree and Publication Evidence
 
-For candidate P:
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-BACKGROUND-001`.
+- Implementation branch: `task/ARCH-015-BACKGROUND-001`, pushed at `37d1a82`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-BACKGROUND-001`.
+- Attempt 3 claim commit: `04f5937d67999dddf2905990e4e8846a79a73ec6`.
+- Dependencies passed: `ARCH-015-SHARED-001`, `ARCH-015-DATABASE-001`, `ARCH-015-SHOPIFY-002`.
+- No submodule gitlink, schema, Architect Review section, or other task file was modified.
 
-```text
-expectedQuantityAfter = P.providerUsageQuantityBeforeSnapshot + 1
-```
+### Limitations
 
-Read current Shopify provider state for P's exact `shopifyEventHandleSnapshot`.
-
-Require:
-
-- current provider context identity matches P snapshot;
-- current provider plan handle matches P plan snapshot;
-- current local/provider cycle remains provably the candidate's context;
-- provider meter exists;
+The full unit suite retains only the two documented observability startup baseline failures above. Focused task validation, build, dependency export proof, and all task-owned tests are green.
 - provider quantity equals expected quantity-after exactly;
 - provider currency equals before currency;
 - provider cost-after is non-negative;
