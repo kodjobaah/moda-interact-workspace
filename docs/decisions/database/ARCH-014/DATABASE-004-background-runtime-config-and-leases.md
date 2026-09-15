@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
-executor: copilot
-claimed_at: 2026-09-15T23:43:33Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-003
@@ -20,7 +20,7 @@ enables:
 - ARCH-014-BACKGROUND-001
 - ARCH-014-ADMIN-009
 created: 2026-09-16
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-014-DATABASE-004
@@ -318,4 +318,36 @@ STOP and return to architect review rather than improvising if:
 - implementing this requires altering an existing table;
 - Prisma generation requires unrelated schema repair;
 - a requested runtime field conflicts with an existing authoritative persisted setting;
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `0247a27` (`feat(database): add background runtime config and leases`), pushed to `task/ARCH-014-DATABASE-004` in the `moda-interact-database` repository.
+
+### Acceptance Mapping
+
+- Added the exact `BackgroundRuntimeConfigSection` and `BackgroundRuntimeLeaseName` enums in `public`.
+- Added additive `BackgroundRuntimeConfig`, `BackgroundRuntimeConfigAuditEvent`, and `BackgroundRuntimeLease` models with the specified fields, defaults, relations, and indexes. `platformAdminId` remains an actor-id string with no `PlatformAdmin` relation.
+- Added migration `20260916000000_arch014_background_runtime_config_and_leases` with 55 named bounds, cross-field, and version CHECK constraints, no `ALTER TABLE`, no lease seed, and one idempotent default config seed using `ON CONFLICT ("id") DO NOTHING`.
+- Added `scripts/validate-arch014-background-runtime-config.mjs` covering models, exact defaults/enums, checks, seed, preserved existing schema objects, queue fields, distinct translation retry/poll fields, lease fields, and ERD models.
+- Regenerated `docs/generated/prisma-erd.puml` and `docs/generated/erd.png` with all three new models.
+
+### Validation
+
+- `npm run prisma:format`: repository script is absent; exact command reported `Missing script: "prisma:format"`. Equivalent declared `npm run format` passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed with Prisma 6.19.3.
+- `node scripts/validate-arch014-background-runtime-config.mjs`: passed.
+- `npm test --if-present`: no test script declared; skipped by npm.
+- `git diff --check`: passed.
+- `npm run erd:puml` and `npm run erd:png`: passed.
+- Local migration deploy was attempted with `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact"`; PostgreSQL was reachable, but Prisma returned `P3009` because pre-existing migration `20260915140000_arch015_fractional_provider_usage_snapshots` is already failed. No reset or migration resolution was performed.
+
+### Evidence and Limitations
+
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-DATABASE-004`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-DATABASE-004`.
+- Dependency `ARCH-014-DATABASE-003` was present at implementation base `d44b621cdcc3635127b91601be648b61c0eff1e2`.
+- The implementation is ready for architect review; the local database blocker is limited to the pre-existing failed migration state.
 - the migration cannot enforce the specified bounds.
