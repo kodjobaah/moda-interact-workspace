@@ -1,3 +1,4 @@
+---
 id: ARCH-014-SHOPIFY-001
 architecture_id: ARCH-014
 title: Consume active merchant pricing catalogue and remove hard-coded onboarding pricing
