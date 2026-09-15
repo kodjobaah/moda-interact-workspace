@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
-executor: copilot
-claimed_at: 2026-09-15T22:53:57Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
 - ARCH-014-DATABASE-003
 enables:
 - ARCH-014-SYSTEM-TEST-002
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-014-SHOPIFY-003
@@ -183,10 +183,30 @@ STOP if exact locale cannot be derived from the existing merchant i18n runtime, 
 
 ## Completion Report
 
-Status: Blocked.
+Status: Ready for Review.
 
-The prepared implementation worktree is at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-SHOPIFY-003` with database submodule commit `f202931c58dba7f9fcc53c74333736e978e8b6de`. That submodule checkout contains no `PromotionCampaignTranslation` model, relation, migration, or generated Prisma client model. The required DATABASE-003 integration is therefore absent despite the dependency gate, and the task stop condition prohibits implementing a local schema or changing another repository.
+Implementation completed in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-SHOPIFY-003` and pushed to `task/ARCH-014-SHOPIFY-003` at commit `596ac5d`. The integrated DATABASE-003 submodule is `d44b621cdcc3635127b91601be648b61c0eff1e2` and contains the `PromotionCampaignTranslation` model, relation, migration, and generated-client schema required by this task.
 
-No implementation source or test files were changed. The implementation branch remains at `597b6f238fe7741ab4e6b3377119400b52569b76`; no implementation commit was created or pushed. Required application validation was not run because the task is blocked before a safe source edit. The environment also lacks `rg`; the required scans could not be executed with that command.
+Implemented:
 
-Required follow-up: integrate the DATABASE-003 schema/client into the implementation worktree, then retry this same task branch and attempt without creating a competing local contract. Architect review is required to resolve the dependency mismatch.
+- Resolved `promotionLocale` from `merchantUiContext(settings, session)` through `createMerchantI18n(merchantUi).catalogueLocale` and passed it explicitly to both promotion readers.
+- Updated eligible offers to select exact-locale `merchantTitle` and `merchantDescription`, omit campaigns without exactly one requested translation, and stop exposing internal campaign names or legacy scalar descriptions.
+- Updated history to project exact-locale `campaignTitle: string | null`; the route uses `promotions.history.titleUnavailable` when the exact row is missing.
+- Added localized `promotions.history.titleUnavailable` to all 20 merchant catalogues, including distinct `pt-BR`/`pt-PT` and `zh-Hans`/`zh-Hant` entries.
+- Preserved promotion eligibility, billing-plan targeting, route access, selection transaction/concurrency, grant and reservation accounting, lifecycle status projection, and read-route no-write behavior.
+- Added focused exact-locale, leakage, fail-closed offer, nullable history, and route-locale tests while retaining the existing selection and accounting coverage.
+
+Changed files: `app/services/promotions/promotion.service.ts`, `app/routes/app/promotions/route.tsx`, `tests/unit/services/promotion.service.test.ts`, `tests/unit/routes/promotion-route.test.ts`, and the 20 files under `app/i18n/locales/`.
+
+Validation:
+
+- Focused promotion tests: passed, 41 tests.
+- Full `npm test`: passed, 593 tests passed and 3 skipped across 49 files.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- Required leakage scan: passed for production code; only negative assertions in the route test mention forbidden legacy field strings.
+- Required `titleUnavailable` scan: passed; all 20 catalogues contain the key.
+- `npm run typecheck`: repository command reports existing baseline diagnostics across unrelated JSX/routes and billing tests; after the local fix, no diagnostics reference changed promotion files.
+- `npm run lint`: repository command reports existing baseline errors in unrelated dashboard, billing, privacy, webhook, and telemetry files; no changed promotion file is reported.
+
+No architectural concerns or unresolved implementation dependencies remain. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-SHOPIFY-003`. Implementation HEAD: `596ac5d`.
