@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-15T14:44:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-SHOPIFY-001
@@ -161,3 +161,54 @@ STOP if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation summary:
+
+- Added the server-only ARCH-014 to Shopify live subscription intersection resolver, scoped by the current Shopify `planHandle`, ordered by usage-event position, bounded unknown-meter diagnostics, and live provider price/usage data.
+- Preserved contracted access to inactive ARCH-014 catalogue plans and retained Shopify subscription items whose returned price has `active: false`.
+- Updated the billing read projection and route/UI state to distinguish verified empty offers from verification-unavailable states, always render the top-up panel, and derive configuration from live offers rather than singular `BillingPlan` pack fields.
+- Preserved purchase mutation semantics and Shopify-hosted subscription management.
+
+Changed files:
+
+- `app/components/dashboard/BillingPurchaseHub.jsx`
+- `app/components/dashboard/TopUpPurchasePanel.jsx`
+- `app/i18n/locales/en.json`
+- `app/routes/app/billing/options/route.tsx`
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/billing.types.ts`
+- `app/services/billing/providers/shopify-billing.provider.ts`
+- `app/services/merchant-pricing/merchant-pricing.server.js`
+- `tests/unit/billing-purchase-hub.test.tsx`
+- `tests/unit/merchant-pricing-reader.test.js`
+- `tests/unit/services/shopify-billing.provider.test.ts`
+
+Validation:
+
+- Focused provider, resolver, and UI suite: 3 files passed, 40 tests passed.
+- Expanded focused suite: 4 files passed; two existing exact-active-cycle billing service tests still fail because their fixtures provide only retired singular `BillingPlan` pack metadata and no ARCH-014 `MerchantPricingPlan`.
+- `npm run prisma:generate`: passed.
+- Focused ESLint for the final corrected service and panel files: passed, with the repository TypeScript-version compatibility warning.
+- `npm run typecheck`: repository baseline remains failing in unrelated dashboard/Polaris JavaScript files; no remaining diagnostics were reported for the touched billing service, provider, resolver, route, or top-up panel files.
+- Both generic top-up empty/verification keys are present in all 20 supported locale files; English text matches the task contract exactly.
+- `git diff --check`: passed.
+
+Baseline limitations:
+
+- The two existing exact-active-cycle billing service tests still encode the retired singular `BillingPlan` top-up contract and fail until their fixtures are migrated to ARCH-014 usage events. No legacy fallback was added because that would violate this task's source-of-truth requirement.
+- Full repository typecheck/lint remains affected by pre-existing unrelated diagnostics; the touched-slice checks above are clean.
+
+Launcher and isolation evidence:
+
+- Continued the prepared attempt in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-001` and parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-001`.
+- Preserved parent claim commit `68b0ccd8e6e776790920056a12836cbb21ec8638` and did not rerun the launcher or create another claim.
+- Implementation worktree contained only the 11 authorized ARCH-015 files; the database submodule was not changed.
+
+Commits:
+
+- Implementation: `374f16f` (`feat(billing): resolve live recovery credit top-up offers`)
+- Parent report: pending publication on the mirrored `task/ARCH-015-SHOPIFY-001` branch.
