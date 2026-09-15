@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 10
 executor: null
 claimed_at: null
@@ -156,15 +156,34 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 - Historical first-production baseline validator: passed.
 - ARCH-015 current-schema validator: passed.
 - `npm run migrate:deploy`: passed; the new migration applied successfully to
-	the configured ARCH-014-compatible PostgreSQL database.
+	a fresh local PostgreSQL database built from the ARCH-010/014-compatible
+	migration chain.
 - `npm run status`: passed; database schema is up to date.
-- Live database metadata confirmed both columns as `numeric(65,30)`.
-- Isolated temporary Decimal probe preserved exact `0`, `1`, and `10`, accepted
-	`3.75`, and accepted nullable after values.
+- Fresh local database metadata confirmed both columns as `numeric(65,30)`.
+- Fresh local Decimal probe preserved exact `0`, `1`, and `10`, accepted `3.75`,
+	and accepted a nullable after value; entitlement and refund quantity
+	columns remained PostgreSQL `integer`.
 - ERD PlantUML and PNG regeneration: passed.
 - Historical migration diff check: no historical migration files changed.
 - `git diff --check`: passed.
 - Implementation commit: `a61c4d1`.
+
+### Revalidation Findings
+
+- No implementation gap was found after comparing the canonical task against
+	the schema, migration, validators, ERD, and focused checks.
+- The configured shared database reported `npm run status` as up to date, but
+	the mandated local database `moda_interact` contains a stale
+	`RecoveryCreditPurchase` table shape despite its migration ledger naming
+	ARCH-010/014 migrations. Applying ARCH-015 there fails because the two
+	target columns do not exist. This is an environment baseline mismatch,
+	not a migration defect; validation was therefore repeated successfully
+	against a fresh local database created from the checked-in migrations.
+
+### Completion Report Status
+
+- Ready for architect review.
+- Claim cleared; task lifecycle is `review`.
 
 ### Architect Review
 
