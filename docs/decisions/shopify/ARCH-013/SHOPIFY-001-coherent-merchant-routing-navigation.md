@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 90
 executor: null
 claimed_at: null
@@ -741,26 +741,26 @@ If repository-wide validation hits a documented unchanged baseline, record the e
 
 ## Acceptance Criteria
 
-- [ ] one pure merchant route-access policy implements all 8 experience states and the complete surface matrix;
-- [ ] `/app/billing/options` is nested under the App layout without changing its public URL;
-- [ ] `/app/billing/select`, callback, reinstalling and pending-recoveries remain standalone;
-- [ ] `/app/billing` registration/module is removed with no compatibility alias;
-- [ ] `/app/additional` registration/module/test is removed;
-- [ ] obsolete unregistered `billing/recovery-credits/route.ts` is removed;
-- [ ] all onboarding Choose plan CTAs use `/app/billing/select`;
-- [ ] all billing-status/capacity UI destinations use `/app/billing/options` unless the intent is direct plan selection;
-- [ ] App nav is state-derived and never advertises a denied surface;
-- [ ] onboarded NO_CONTRACT and FROZEN retain `/app/usage` historical reads;
-- [ ] fresh ONBOARDING cannot access usage, promotions, purchase history, detail or pending-recovery business data;
-- [ ] NO_CONTRACT/FROZEN/BILLING_ATTENTION cannot access Promotions;
-- [ ] FROZEN cannot access `/app/billing/select`;
-- [ ] support-only states show Messages only and suppress inaccessible system CTAs;
-- [ ] Breadcrumbs has no implicit `/app == Usage overview` rule;
-- [ ] purchased-credit history has `/app/billing/options` as breadcrumb parent;
-- [ ] billing-options page heading is corrected;
-- [ ] billing callback destination semantics remain unchanged;
-- [ ] no billing v1.1/proration/schema/cross-repository behaviour was added;
-- [ ] focused tests, full repository validation and diff check satisfy the task contract.
+- [x] one pure merchant route-access policy implements all 8 experience states and the complete surface matrix;
+- [x] `/app/billing/options` is nested under the App layout without changing its public URL;
+- [x] `/app/billing/select`, callback, reinstalling and pending-recoveries remain standalone;
+- [x] `/app/billing` registration/module is removed with no compatibility alias;
+- [x] `/app/additional` registration/module/test is removed;
+- [x] obsolete unregistered `billing/recovery-credits/route.ts` is removed;
+- [x] all onboarding Choose plan CTAs use `/app/billing/select`;
+- [x] all billing-status/capacity UI destinations use `/app/billing/options` unless the intent is direct plan selection;
+- [x] App nav is state-derived and never advertises a denied surface;
+- [x] onboarded NO_CONTRACT and FROZEN retain `/app/usage` historical reads;
+- [x] fresh ONBOARDING cannot access usage, promotions, purchase history, detail or pending-recovery business data;
+- [x] NO_CONTRACT/FROZEN/BILLING_ATTENTION cannot access Promotions;
+- [x] FROZEN cannot access `/app/billing/select`;
+- [x] support-only states show Messages only and suppress inaccessible system CTAs;
+- [x] Breadcrumbs has no implicit `/app == Usage overview` rule;
+- [x] purchased-credit history has `/app/billing/options` as breadcrumb parent;
+- [x] billing-options page heading is corrected;
+- [x] billing callback destination semantics remain unchanged;
+- [x] no billing v1.1/proration/schema/cross-repository behaviour was added;
+- [x] focused tests, full repository validation and diff check satisfy the task contract.
 
 ## Non-goals
 
@@ -808,8 +808,26 @@ After all Work Items, Acceptance Criteria and Validation pass:
 ## Completion Report
 
 ### Status
-Review-ready. Implementation published in `moda-interact` commit
-`b3442f7d4a648055036e818d0ccf7e8cad88905d`.
+Review-ready after implementation audit. Initial implementation was published
+in `moda-interact` commit `b3442f7d4a648055036e818d0ccf7e8cad88905d`; audit
+fixes were published in `f2398641328291fc0915df867f67bf257da11943`.
+
+### Audit Findings and Corrections
+
+1. The home route relied on the settings boolean and did not return the shared
+  lifecycle state or explicitly guard detail rendering through that state. It
+  now returns `merchantExperienceState`, keeps onboarding detail requests on
+  the onboarding surface before dashboard reads, and applies the explicit
+  `ONBOARDING` guard.
+2. Policy tests checked only selected navigation states and did not prove the
+  exact ordered href list and surface capability for every state. Coverage now
+  asserts all eight states and their navigation invariants.
+3. Retired billing-route coverage left unused source and loader declarations in
+  `tests/unit/billing-ui.test.ts`, causing task-local lint errors. The stale
+  declarations were removed; no retired-route coverage was restored.
+
+No additional route, CTA, breadcrumb, lifecycle matrix, or deletion gaps were
+found in the audit.
 
 ### Changed Files
 
@@ -820,6 +838,7 @@ app/components/dashboard/TopUpPurchasePanel.jsx
 app/components/dashboard/UsageOverview.jsx
 app/components/onboarding/Onboarding.jsx
 app/routes.ts
+app/routes/app/home/route.jsx
 app/routes/app/billing/options/route.tsx
 app/routes/app/billing/recovery-credit-purchases/route.tsx
 app/routes/app/billing/select/route.jsx
@@ -832,6 +851,7 @@ app/services/merchant-support/system-message-actions.ts
 app/services/shop/merchant-route-access-policy.ts
 tests/unit/billing-i18n.test.ts
 tests/unit/billing-ui.test.ts
+tests/unit/home-route.test.ts
 tests/unit/merchant-support-route.test.ts
 tests/unit/merchant-route-access-policy.test.ts
 tests/unit/routes/app-layout-access.test.ts
@@ -851,8 +871,8 @@ tests/unit/routes/additional-route.test.ts
 
 ### Acceptance and Validation Results
 
-- Exact ARCH-013 focused test list: 10 files passed, 87 tests passed.
-- Full `npm test`: 44 files passed, 538 tests passed, 2 files skipped, 3 tests skipped.
+- Exact ARCH-013 focused test list: 10 files passed, 96 tests passed.
+- Full `npm test`: 44 files passed, 547 tests passed, 2 files skipped, 3 tests skipped.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `git diff --check`: passed.
@@ -863,5 +883,6 @@ tests/unit/routes/additional-route.test.ts
 ### Review Handoff
 
 Implementation branch: `task/ARCH-013-SHOPIFY-001`.
-Implementation commit: `b3442f7d4a648055036e818d0ccf7e8cad88905d`.
+Implementation commits: `b3442f7d4a648055036e818d0ccf7e8cad88905d`,
+`f2398641328291fc0915df867f67bf257da11943`.
 Task claim cleared; status returned to `review` for `moda_architect`.
