@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T11:26:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-001
@@ -373,3 +373,33 @@ STOP and return evidence if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Blocked; returned to `moda_architect` for prerequisite correction.
+
+### Preparation Evidence
+
+- Dependency gate passed for `ARCH-014-DATABASE-001` according to the deterministic launcher.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-SHOPIFY-001` on `task/ARCH-014-SHOPIFY-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-SHOPIFY-001` on `task/ARCH-014-SHOPIFY-001`.
+- Launcher claim commit: `418eb996a28ea14861275de4436552539a9bedfd`.
+- Recursive submodule synchronization and initialization passed; database submodule is pinned at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+
+### Blocking Evidence
+
+- `database/prisma/schema.prisma` at the prepared submodule revision contains no `MerchantPricingPlan`, `MerchantPricingPlanTranslation`, `MerchantPricingUsageEvent`, or `MerchantPricingUsageTier` models.
+- `database/prisma/migrations` at the prepared revision contains no ARCH-014 MerchantPricing migration.
+- `node_modules` was not present in the fresh implementation worktree, but dependency installation was not started because the missing Prisma contract is an explicit task stop condition.
+- The task cannot implement the required reader or exact DTO without inventing unavailable Prisma fields or expanding into the database task's owned surface. No application implementation files were changed and no implementation commit was created.
+
+### Audit Result
+
+- `PlanSelector.jsx` is currently unreferenced by `app` or `tests`, but its deletion and the remaining onboarding work are deferred because the required database contract is absent.
+- No billing, Shopify subscription, route, shared, or database changes were attempted.
+- Architect action required: materialize and synchronize the completed ARCH-014-DATABASE-001 schema/models into the task's prepared database submodule, then rerun `/moda-task ARCH-014-SHOPIFY-001` for a fresh implementation attempt.
+
+### Architect Review
+
+Changes blocked by prerequisite schema absence. Ready for `moda_architect` decision; stop here.
