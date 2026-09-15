@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T22:36:01Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
 - ARCH-015-SHARED-001
@@ -172,37 +172,50 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 Status: Ready for Review
 
-Implementation commit: `6c3e92779b537ccfd073ed2a7c32ff674c2921c9` on `task/ARCH-015-BACKGROUND-001`, pushed to `origin`.
+Implementation commit: `337b1a7` on `task/ARCH-015-BACKGROUND-001`, pushed to `origin`. This commit follows the packet baseline `6c3e92779b537ccfd073ed2a7c32ff674c2921c9`.
 
-### Implementation Summary
+### Audit Checklist
 
-- Shopify Partner parsing retains tiered usage items when `price.active` is false and preserves provider quantities as exact decimal-compatible values.
-- Billing reconciliation forwards the complete provider usage snapshot and current cycle evidence.
-- Recovery-credit activation discovers reported `REQUESTED` candidates from durable purchase/event data, proves each candidate against its immutable provider plan, event handle, subscription, cycle, quantity, currency, and cost baseline, and activates only proven candidates in one Serializable transaction.
-- Distinct event handles are processed independently; duplicate unresolved candidates for one handle remain ambiguous. Missing exact meters, mismatched context, quantity, currency, cycle, or cost leave candidates `REQUESTED`. Aggregate grants and capacity-resume scheduling remain transactional/best-effort respectively.
+- Objective: implemented. Activation is candidate-centric and uses each REQUESTED purchase's immutable provider-before evidence.
+- Authorized implementation surface: only the provider parser and authorized unit tests changed; no schema or other repository changes.
+- Provider parser rule: implemented. Tiered live items are retained regardless of `price.active`; provider quantities accept number or exact decimal-string representations and are normalized to strings.
+- Durable candidate discovery: implemented. Candidates require `RecoveryCreditPurchase.status = REQUESTED`, linked `RECOVERY_CREDIT_PACK_PURCHASE` usage, quantity `1`, and `shopifyReportState = REPORTED`.
+- Deterministic ordering and event-handle ambiguity: implemented. Candidates order by `createdAt`, `id`; multiple REQUESTED rows for one event handle produce `ambiguous` with no activation. Distinct handles activate independently.
+- Candidate proof: implemented. Proof checks immutable subscription, plan, event handle, billing cycle, exact expected quantity, currency, non-negative cost, and non-negative cost delta. Missing exact meters fail closed.
+- Context changes: implemented. Candidates remain REQUESTED and are not re-baselined or attributed to a new cycle when proof fails.
+- Sequential same-handle behavior: implemented and now explicitly tested for `0 -> 1`, `1 -> 2`; fractional `1.75 -> 2.75` coverage remains green.
+- Zero-cost activation: implemented and covered; unchanged cost with exact quantity proof activates.
+- Negative, currency, quantity, and context mismatch: implemented fail-closed behavior and covered by focused tests.
+- Atomic activation and aggregate increment idempotency: implemented with Serializable transaction, optimistic row guard, and aggregate update in the same transaction; replay remains idempotent.
+- Best-effort resume scheduling: implemented and covered; scheduling occurs after commit and failures are logged without changing the activation result.
+- Stop conditions: no provider grant on HTTP 202, no count-derived expected quantity, no schema change, and no new status introduced.
 
-### Acceptance Mapping
+### Findings and Fixes
 
-- Provider parser rule: implemented and covered by inactive tiered-item test.
-- Durable candidate discovery and reported UsageEvent filtering: preserved and covered by focused purchase-service tests.
-- Exact candidate proof and Decimal quantity arithmetic: implemented, including fractional baseline and missing-handle fail-closed tests.
-- Zero-cost activation, quantity/currency/context mismatch handling, duplicate same-handle ambiguity, distinct-handle activation, aggregate idempotency, and resume scheduling: implemented and covered by focused tests.
-- No schema changes, synchronous provider correction, or new purchase status introduced.
+One real implementation gap was found: `parseActiveSubscription` filtered inactive tiered items when they had no usage object, which discarded a live provider item solely because `price.active` was false. The parser now retains all tiered subscription items. The audit also added explicit regression coverage for string-decimal provider quantities and sequential same-handle baselines. No other implementation gaps were found.
+
+### Changed Files
+
+- `src/providers/shopify-partner-billing.provider.ts`
+- `tests/unit/providers/shopify-partner-billing.provider.test.ts`
+- `tests/unit/services/recovery-credit-purchase.service.test.ts`
 
 ### Validation
 
-- `npm test -- tests/unit/services/recovery-credit-purchase.service.test.ts tests/unit/services/recovery-credit-purchase.resume-hint.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/providers/shopify-partner-billing.provider.test.ts tests/unit/services/shopify-usage-event-publisher.service.test.ts`: passed, 5 files / 101 tests.
+- `npm test -- tests/unit/providers/shopify-partner-billing.provider.test.ts tests/unit/services/recovery-credit-purchase.service.test.ts tests/unit/services/recovery-credit-purchase.resume-hint.test.ts`: passed, 3 files / 49 tests.
+- `npm test -- tests/unit/services/recovery-credit-purchase.service.test.ts tests/unit/services/recovery-credit-purchase.resume-hint.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/providers/shopify-partner-billing.provider.test.ts tests/unit/services/shopify-usage-event-publisher.service.test.ts`: passed, 5 files / 102 tests.
 - `npm run build`: passed; Prisma client generation and TypeScript compilation completed successfully.
-- `npm run test:unit`: 57 files, 918 passed / 2 failed / 920 total. The two failures are pre-existing observability baseline mismatches in `tests/unit/runtime/observability-startup.test.ts`: expected worker close-resource source text differs from current implementation, and the test expects shared runtime `0.9.0` while the repository declares `0.11.0`. No task-owned test failed.
-- `git diff --check`: passed. Editor diagnostics for all seven changed files: no errors.
+- `npm run test:unit`: 57 files, 919 passed / 2 failed / 921 total. Both failures are pre-existing observability baseline mismatches in `tests/unit/runtime/observability-startup.test.ts`: worker close-resource source text and expected shared runtime `0.9.0` versus declared `0.11.0`. No task-owned test failed.
+- `git diff --check`: passed.
 
 ### Worktree and Submodule Evidence
 
 - Prepared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-BACKGROUND-001`.
-- Implementation branch: `task/ARCH-015-BACKGROUND-001`; clean after commit and pushed at `6c3e92779b537ccfd073ed2a7c32ff674c2921c9`.
+- Implementation branch: `task/ARCH-015-BACKGROUND-001`; pushed at `337b1a7`; database submodule was `d44b621cdcc3635127b91601be648b61c0eff1e2` as supplied by the packet.
 - Prepared parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-BACKGROUND-001`.
-- Prepared execution verified recursive submodules were initialized and matched their recorded commits; no submodule gitlink was staged or changed by this task.
+- Packet claim commit: `d729cb9ad2e871c92ddebdcaf840aba29992c039`; dependencies passed: `ARCH-015-SHARED-001`, `ARCH-015-DATABASE-001`, `ARCH-015-SHOPIFY-002`.
+- No submodule gitlink, schema, Architect Review section, or other task file was modified.
 
 ### Limitations
 
-The repository-wide unit suite remains blocked only by the two documented/pre-existing observability startup expectation mismatches listed above. Focused task validation and production build are green.
+The full unit suite remains blocked only by the two pre-existing observability startup expectation mismatches listed above. Focused task validation, build, and all task-owned tests are green.
