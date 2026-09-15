@@ -17,14 +17,14 @@ exceljs@4.4.0
 ```text
 ADMIN-005 COMPLETE                    DATABASE-002 COMPLETE
       │                                      │
-      ├────────► ADMIN-006 READY              └────────► DATABASE-003 READY
+      ├────────► ADMIN-006 READY              └────────► DATABASE-003 COMPLETE
       │                │                                      │
       └────────► ADMIN-007 READY              ┌───────────────┴──────────────┐
                                                │                              │
                                 ADMIN-006 + DATABASE-003               DATABASE-003
                                                │                              │
                                                ▼                              ▼
-                                      ADMIN-008 PENDING             SHOPIFY-003 PENDING
+                                      ADMIN-008 PENDING              SHOPIFY-003 READY
                                                │                              │
                                                └───────────────┬──────────────┘
                                                                ▼
@@ -34,9 +34,9 @@ ADMIN-006 + existing MerchantPricing prerequisites
       └────────► SYSTEM-TEST-001 PENDING (developer-gated)
 ```
 
-`ADMIN-006`, `ADMIN-007`, and `DATABASE-003` may be executed in parallel from the current accepted baseline.
+`DATABASE-003` is now architect-accepted Complete. `ADMIN-006`, `ADMIN-007`, and `SHOPIFY-003` are the current Ready automatic tasks.
 
-After `DATABASE-003` completes, `SHOPIFY-003` may start immediately. `ADMIN-008` starts only when both `DATABASE-003` and `ADMIN-006` are complete so it reuses the established XLSX implementation.
+`SHOPIFY-003` may start immediately. `ADMIN-008` stays Pending until `ADMIN-006` is also Complete so it reuses the established XLSX implementation.
 
 ## Promotion localization invariant
 
