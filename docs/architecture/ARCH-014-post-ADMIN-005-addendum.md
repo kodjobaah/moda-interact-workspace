@@ -24,7 +24,7 @@ ADMIN-005 COMPLETE                    DATABASE-002 COMPLETE
                                 ADMIN-006 + DATABASE-003               DATABASE-003
                                                │                              │
                                                ▼                              ▼
-                                      ADMIN-008 READY                SHOPIFY-003 READY
+                                      ADMIN-008 READY                SHOPIFY-003 COMPLETE
                                                │                              │
                                                └───────────────┬──────────────┘
                                                                ▼
@@ -34,9 +34,9 @@ ADMIN-006 + existing MerchantPricing prerequisites
       └────────► SYSTEM-TEST-001 READY (developer-gated)
 ```
 
-`DATABASE-003` and `ADMIN-006` are architect-accepted Complete. `ADMIN-008`, `ADMIN-007`, and `SHOPIFY-003` are the current Ready automatic tasks in this branch-local coordination view; `SYSTEM-TEST-001` is separately Ready but developer-gated.
+`DATABASE-003`, `ADMIN-006`, and `SHOPIFY-003` are architect-accepted Complete. `ADMIN-008` and `ADMIN-007` are the current Ready automatic tasks in this branch-local coordination view; `SYSTEM-TEST-001` is separately Ready but developer-gated. `SYSTEM-TEST-002` remains Pending until `ADMIN-008` is Complete.
 
-`SHOPIFY-003` and `ADMIN-008` may start immediately and independently. `ADMIN-008` must reuse the XLSX implementation established by accepted `ADMIN-006`.
+`SHOPIFY-003` is Complete. `ADMIN-008` may start immediately and must reuse the XLSX implementation established by accepted `ADMIN-006`.
 
 ## Promotion localization invariant
 

@@ -9,15 +9,35 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 52
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-014-DATABASE-003
 enables:
 - ARCH-014-SYSTEM-TEST-002
+created: 2026-09-15
+updated: 2026-09-16
+---
+
+# ARCH-014-SHOPIFY-003
+
+## Objective
+
+Stop exposing the internal promotion campaign name/single legacy description to merchants. Promotion offers and promotion history must use the exact `PromotionCampaignTranslation` for the merchant application's resolved supported locale.
+
+## Binding GPT-5.6 Luna rule
+
+Implement only localization of promotion merchant copy. Do not change campaign eligibility, selection, grant/reservation accounting, concurrency, lifecycle, billing-plan targeting or route-access policy.
+
+## Current defect
+
+Current merchant code returns/renders:
+
+```text
+campaign.name
 campaign.merchantDescription
 ```
 
@@ -207,3 +227,17 @@ Checklist:
 Audit change: `tests/unit/services/promotion.service.test.ts` only, committed and pushed as `46622fa76049893a36afc9f26f4cd9d2aa8e3ea1` on `task/ARCH-014-SHOPIFY-003`. The implementation worktree was clean after publication.
 
 Validation limitations: `npm run typecheck` reports existing unrelated JSX, dashboard, support, usage, billing, and route diagnostics; no changed promotion file appears. `npm run lint` reports 16 existing errors and 2 warnings outside the changed promotion files. `npm run build` and `git diff --check` passed.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Summary
+
+Attempt 3 is accepted. Implementation commit `46622fa` satisfies the exact-locale promotion presentation contract without changing promotion eligibility, selection, accounting, lifecycle, BillingPlan targeting, or route-access semantics. Mixed-locale regression coverage now proves exact requested-row selection for ordinary, regional, and script-specific locales and prevents neighboring-locale fallback.
+
+The architect review also restores the canonical task preamble/frontmatter that was truncated in the uploaded parent report. This documentation repair does not alter implementation scope or require another repository-agent attempt.
+
+`ARCH-014-SHOPIFY-003` is Complete. `ARCH-014-SYSTEM-TEST-002` remains Pending until `ARCH-014-ADMIN-008` is also architect-accepted and integrated.
