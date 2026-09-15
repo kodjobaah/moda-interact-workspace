@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 56
 executor:
 claimed_at:
@@ -1050,3 +1050,19 @@ database submodule commit: f202931c58dba7f9fcc53c74333736e978e8b6de
 ```
 
 The implementation branch is pushed and this parent report is being returned to `review` for `moda_architect`. No branch was merged to `main`.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted
+
+### Acceptance finding
+
+Attempt 2 fixes the only blocking client-state defect from the prior review. Invalid or unreadable XLSX bytes are not retained in the `uploadedBytes` state used by stale-draft revalidation, so selecting an invalid workbook cannot clear a previously accepted canonical translation state. Structurally valid but canonically incomplete workbooks still retain their bytes and replace the parent with their canonical JSON plus invalid translation result, preserving Save/Create gating.
+
+The existing stale-draft contract also remains intact: a previously accepted valid workbook is still reparsed when the current plan handle, plan name, English description or highlight source changes, and stale canonical state is invalidated when it no longer matches the draft.
+
+The remaining ADMIN-006 workbook contract is preserved: exact `exceljs@4.4.0`, shared lazy loader, exact 20-locale workbook, canonical schema-v2 delegation, formula/non-string rejection, translation retention, non-destructive envelope failures, and no database/Shopify/economics changes.
+
+Implementation commit `e2a36a2` is accepted. No Attempt 3 is required.

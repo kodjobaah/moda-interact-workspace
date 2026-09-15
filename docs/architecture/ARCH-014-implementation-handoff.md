@@ -69,13 +69,13 @@ ARCH-014-SHOPIFY-002                        COMPLETE
 ARCH-014-ADMIN-005                          COMPLETE
         |
         v
-ARCH-014-ADMIN-006                          READY
+ARCH-014-ADMIN-006                          COMPLETE
         |
         v
-ARCH-014-SYSTEM-TEST-001                    PENDING (DEVELOPER-GATED)
+ARCH-014-SYSTEM-TEST-001                    READY (DEVELOPER-GATED)
 ```
 
-DATABASE-002, ADMIN-004, ADMIN-005 and SHOPIFY-002 are architect-accepted/integrated. ADMIN-006 remains **Ready** after Architect Review. SYSTEM-TEST-001 remains **Pending** and terminal/developer-gated until ADMIN-006 is architect-accepted/integrated.
+DATABASE-002, ADMIN-004, ADMIN-005, ADMIN-006 and SHOPIFY-002 are architect-accepted/integrated. SYSTEM-TEST-001 is now **Ready** but remains terminal/developer-gated and must be invoked explicitly.
 
 ## Materialisation state
 
@@ -91,12 +91,12 @@ DATABASE-002 is accepted on the implemented runtime/database contract. Broader S
 The following tasks supersede any previously generated but unapplied standalone ADMIN-006 overlay:
 
 ```text
-ARCH-014-ADMIN-006       READY
+ARCH-014-ADMIN-006       COMPLETE
 ARCH-014-ADMIN-007       READY
 ARCH-014-DATABASE-003    COMPLETE
-ARCH-014-ADMIN-008       PENDING on ADMIN-006
+ARCH-014-ADMIN-008       READY
 ARCH-014-SHOPIFY-003     READY
-ARCH-014-SYSTEM-TEST-001 PENDING on ADMIN-006 + existing pricing prerequisites
+ARCH-014-SYSTEM-TEST-001 READY (DEVELOPER-GATED)
 ARCH-014-SYSTEM-TEST-002 PENDING on ADMIN-008 + SHOPIFY-003 + DATABASE-003
 ```
 
