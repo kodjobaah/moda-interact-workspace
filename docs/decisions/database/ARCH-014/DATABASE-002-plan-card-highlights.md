@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T16:11:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-001
@@ -319,3 +319,47 @@ Do not solve a stop condition by relaxing the architecture.
 ## Completion protocol
 
 Record exact migration path, Prisma model diff, migration-isolation validator output, Prisma validation/generation and ERD evidence in the Completion Report. Set `status: review`, clear the claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-DATABASE-002` on `task/ARCH-014-DATABASE-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-DATABASE-002` on `task/ARCH-014-DATABASE-002`.
+- Shared/default checkout switched or mutated: no.
+- Another task worktree reused: no.
+
+### Start-of-Attempt Synchronization
+
+- Parent remote task branch fast-forwarded: not-needed.
+- Parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed.
+- Implementation `origin/main` incorporated: already-current.
+- Recursive implementation submodule synchronization: passed.
+- Recursive implementation submodule initialization: passed; no recursive submodules were present.
+- Launcher claim commit: `1bfbd105af9d9537fb0ca0ee1bae492afe40549b`.
+
+### Implementation
+
+- Added only the virtual `MerchantPricingPlan.highlights` inverse relation and the exact `MerchantPricingPlanHighlight` and `MerchantPricingPlanHighlightTranslation` models in `prisma/schema.prisma`.
+- Added `prisma/migrations/20260915170000_arch014_merchant_pricing_plan_highlights/migration.sql`.
+- The migration creates only the two new highlight tables, child-owned cascading foreign keys, indexes, exact content checks, exact locale validation, deferred position uniqueness, and ARCH-014 highlight-specific deferred validation functions/triggers.
+- Added `scripts/validate-arch014-plan-highlights.mjs` to enforce migration isolation and required highlight invariants.
+- Regenerated `docs/generated/prisma-erd.puml`; it shows both highlight tables and their relationships to `MerchantPricingPlan`.
+- No existing table, enum, operational billing model, or existing ARCH-014 catalogue validation function was changed.
+
+### Validation Evidence
+
+- `npm run validate`: passed.
+- `npm run prisma:generate`: passed.
+- `node scripts/validate-arch014-plan-highlights.mjs`: passed.
+- `npm run erd:puml`: passed.
+- `git diff --check`: passed after normalizing generator-introduced trailing whitespace.
+- Existing catalogue validator was run; its pre-existing changed-file allowlist rejects the new task migration and validator paths, so it is not a valid ARCH-014-DATABASE-002 check and was left unchanged.
+- The exposed `DATABASE_URL` points to an external Render PostgreSQL instance, not a local task fixture. Optional migration application and live deferred-integrity fixture evidence were not run to avoid altering external infrastructure.
+- Implementation commit: `cef04dc`.
+
+### Architect Review
+
+The additive plan-card highlight persistence and localization integrity implementation is complete. Review `cef04dc` and promote the task according to the coordinator lifecycle.
