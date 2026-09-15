@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-15T10:32:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-ADMIN-009
@@ -421,3 +421,41 @@ Verified reproducer against Attempt 1: a one-plan portfolio containing a VOLUME 
 ### Rework State
 
 Return this same task through the normal `/moda-task ARCH-014-ADMIN-001` path. Preserve `attempt: 1`; the next authorized claim increments it to Attempt 2. `ARCH-014-ADMIN-002` remains gated because this task is not Complete.
+
+## Completion Report (Attempt 2)
+
+### Status
+
+Ready for Architect Review
+
+### Correction Evidence
+
+- Added one pure `validatePlanEvidence()` path that reuses the existing offer, pricing-shape, tier, bounded-integer, handle, and unbounded-zero-cost helpers.
+- `evaluateMerchantPricingPortfolio()` invokes plan-level validation for every ordered plan before pair generation, including one-plan portfolios.
+- Portfolio pre-validation enforces recurring amount, included credits, uppercase three-letter plan currency, usage-event bounds and identity rules, pricing bounds/shapes, usage currency equality, and unbounded zero-cost detection.
+- Verified each resolved `plansById` entry has `plan.id === orderedPlanIds` key; mismatches return `UNVERIFIED / INVALID_PORTFOLIO_ORDER`.
+- Preserved the existing pair loop, candidate generation, pricing semantics, premium comparison, tie-breaking, and operational single-pack guardrail behavior.
+- Added only the three required regressions: valid one-plan portfolio with zero pairs, invalid one-plan paid-early/open-ended-free VOLUME blocked with `UNBOUNDED_ZERO_COST_USAGE_EVENT`, and one-plan key/id mismatch blocked with `INVALID_PORTFOLIO_ORDER`.
+
+### Validation Results
+
+- Focused ARCH-014 suite: 27/27 pass.
+- Existing admin economics unit suite: 42/42 pass.
+- `git diff --check`: pass.
+- `npm test`: blocked by the existing missing `bullmq` dependency in queue-monitor/security tests; no changed economics test failure.
+- `npx tsc --noEmit --pretty false`: unavailable because the worktree has no installed TypeScript compiler.
+- `npm run lint`: unavailable because `eslint` is not installed in the worktree.
+- `npm run format:check`: unavailable because `prettier` is not installed in the worktree.
+- Direct Node test runs retain the repository's existing module-type warning.
+
+### Implementation Evidence
+
+- Previous implementation commit: `af1b933`.
+- Attempt 2 implementation commit: `3f9023e` (`fix(admin): validate single-plan pricing portfolios`).
+- Implementation branch `task/ARCH-014-ADMIN-001` is pushed and clean after the implementation commit.
+- Parent claim commit: `5826e4b`; prepared launcher startup, dependency gate, worktree synchronization, submodule preparation, and claim evidence were supplied by the launcher and not repeated.
+
+### Handoff
+
+- Parent task status is `review`; claim is cleared (`executor: null`, `claimed_at: null`).
+- Architect Review remains untouched. `ARCH-014-ADMIN-002` remains gated until Architect acceptance.
