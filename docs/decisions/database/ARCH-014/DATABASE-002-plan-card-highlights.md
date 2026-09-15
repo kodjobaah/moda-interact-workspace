@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-014-DATABASE-001
 enables:
@@ -319,3 +319,72 @@ Do not solve a stop condition by relaxing the architecture.
 ## Completion protocol
 
 Record exact migration path, Prisma model diff, migration-isolation validator output, Prisma validation/generation and ERD evidence in the Completion Report. Set `status: review`, clear the claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-DATABASE-002` on `task/ARCH-014-DATABASE-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-DATABASE-002` on `task/ARCH-014-DATABASE-002`.
+- Shared/default checkout switched or mutated: no.
+- Another task worktree reused: no.
+
+### Start-of-Attempt Synchronization
+
+- Parent remote task branch fast-forwarded: not-needed.
+- Parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed.
+- Implementation `origin/main` incorporated: already-current.
+- Recursive implementation submodule synchronization: passed.
+- Recursive implementation submodule initialization: passed; no recursive submodules were present.
+- Launcher claim commit: `1bfbd105af9d9537fb0ca0ee1bae492afe40549b`.
+
+### Implementation
+
+- Added only the virtual `MerchantPricingPlan.highlights` inverse relation and the exact `MerchantPricingPlanHighlight` and `MerchantPricingPlanHighlightTranslation` models in `prisma/schema.prisma`.
+- Added `prisma/migrations/20260915170000_arch014_merchant_pricing_plan_highlights/migration.sql`.
+- The migration creates only the two new highlight tables, child-owned cascading foreign keys, indexes, exact content checks, exact locale validation, deferred position uniqueness, and ARCH-014 highlight-specific deferred validation functions/triggers.
+- Added `scripts/validate-arch014-plan-highlights.mjs` to enforce migration isolation and required highlight invariants.
+- Regenerated `docs/generated/prisma-erd.puml`; it shows both highlight tables and their relationships to `MerchantPricingPlan`.
+- No existing table, enum, operational billing model, or existing ARCH-014 catalogue validation function was changed.
+
+### Validation Evidence
+
+- `npm run validate`: passed.
+- `npm run prisma:generate`: passed.
+- `node scripts/validate-arch014-plan-highlights.mjs`: passed.
+- `npm run erd:puml`: passed.
+- `git diff --check`: passed after normalizing generator-introduced trailing whitespace; the implementation worktree is clean.
+- Existing catalogue validator was run; its pre-existing changed-file allowlist rejects the new task migration and validator paths, so it is not a valid ARCH-014-DATABASE-002 check and was left unchanged.
+- Local PostgreSQL integration evidence was run against `postgresql://postgres:postgres@localhost:5432/moda_interact` only. The migration applied successfully; both highlight constraint triggers are `DEFERRABLE INITIALLY DEFERRED`; the parent and child cascade FKs are present; and the deferred position uniqueness constraint is `DEFERRABLE INITIALLY DEFERRED`.
+- Focused local fixtures passed: zero highlights; one highlight with all 20 locales; two highlights at positions 0..1; cascade deletion of both highlight and translation rows. Expected failures were observed for 19 translations at commit (`ARCH014_PLAN_HIGHLIGHT_INVALID:translation_count`), a position gap at commit (`ARCH014_PLAN_HIGHLIGHT_INVALID:positions`), unknown locale, blank title, blank description, title over 120 characters, description over 500 characters, and duplicate contentKey.
+- A first migration command expanded the pre-existing external `DATABASE_URL`; the newly created ARCH-014 highlight tables/functions were immediately removed from that external database, and all subsequent migration/fixture validation used the explicit localhost URL. No existing table or historical migration was modified.
+- Implementation commit: `cef04dc`.
+
+### Architect Review
+
+Re-audit found no implementation gap. The exact Prisma models, virtual inverse relation, additive migration isolation, UUID/locale/content/position constraints, deferred completeness and contiguous-position validation, validator, and ERD all match the task contract. Review implementation commit `cef04dc` and promote the task according to the coordinator lifecycle.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Accepted on functional architecture grounds after inspection of implementation commit `cef04dc` and the returned Completion Report (`82d814e`). The runtime/database contract is complete: exact Prisma models and inverse relation, additive-only migration, cascading child-owned foreign keys, exact 20-locale/content constraints, deferred translation completeness, contiguous/deferred positions, reparenting-safe deferred validation, ERD alignment and focused live PostgreSQL fixtures all conform to ARCH-014.
+
+The previously identified migration-isolation-validator syntax-coverage limitation is explicitly treated as **non-blocking tooling hardening**, not a defect in the current migration or runtime persistence contract. It does not gate `ARCH-014-ADMIN-004`, `ARCH-014-SHOPIFY-002`, or the terminal system test. No Attempt 2 is required for DATABASE-002.
+
+### Dependency Promotion
+
+`ARCH-014-DATABASE-002` is Complete. Its independently executable dependants are promoted:
+
+```text
+ARCH-014-ADMIN-004: ready
+ARCH-014-SHOPIFY-002: ready
+```
+
+`ARCH-014-SYSTEM-TEST-001` remains Pending until DATABASE-002, ADMIN-004 and SHOPIFY-002 are all Complete; it remains terminal/developer-gated and must not auto-start.
