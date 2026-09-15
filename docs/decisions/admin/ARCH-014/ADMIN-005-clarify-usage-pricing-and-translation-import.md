@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-15T18:57:30Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-014-ADMIN-004
@@ -814,12 +814,19 @@ STOP and return to `moda_architect` without broadening scope if any of the follo
 
 Status: Ready for Review
 
-Audit disposition: the prior implementation satisfied the specified schema, economics, pricing-mode, currency, translation-parser, upload, disclosure, and regression requirements. One confirmed presentation gap was found and corrected: portfolio economics diagnostics could identify an unbounded candidate event from builder state but always displayed the generic message instead of the deterministic Admin label. The correction now displays, for example, `Bronze Top Up gives recovery credits for free with no usage limit.` and keeps the required human guidance and collapsed technical details.
+Audit disposition: Attempt 3 addressed every mandatory Architect Review correction. Empty canonical translation text now invalidates the parent builder state immediately; successful uploaded-file feedback is rendered as three distinct lines; and FIXED final-review summaries now use the exact required shape without the extra `fixed price` token. The prior Admin-label zero-cost economics correction remains intact.
+
+Attempt 3 correction mapping:
+
+- Clearing translation JSON: implemented in `src/components/admin/merchant-pricing-translation-import.tsx` and the parent callback in `src/components/admin/merchant-pricing-plan-builder.tsx`. The synchronization effect always calls `onChange(rawJson, result)`, including `("", null)`, so `translationJson` becomes empty and `translationResult` becomes null. Non-empty content still uses the canonical schema-v2 parser; no synthetic error JSON was introduced.
+- Distinct upload success feedback: implemented in `src/components/admin/merchant-pricing-translation-import.tsx` as separate lines for `✓ <filename>`, `20 / 20 languages complete`, and `Translation file is ready to save.`
+- Exact FIXED final-review summary: implemented in `src/components/admin/merchant-pricing-plan-builder.tsx`; FIXED events render `<Admin label>: <credits> credits per event · <formatted price> per event · <maximum or Unlimited>`, while tiered modes retain their human-readable model and tier count.
 
 Implementation commits (pushed to `task/ARCH-014-ADMIN-005`):
 
 - `cdea0aaf2d62e43f066f18b1930f491319066c09` — initial ADMIN-005 implementation.
 - `5717514` — corrective pure presentation helper and focused test.
+- `a80d44c` — Attempt 3 review corrections and focused source regressions.
 
 Exact cumulative implementation files changed:
 
@@ -835,17 +842,17 @@ Requirement audit and evidence:
 - Usage-event labels/order, human pricing modes, ISO currency labels, no currency conversion, tier labels, `Unlimited`, inactive-pricing serialization, stale inactive economics exclusion, inline zero-cost warning, disabled Usage-events `Next`, human portfolio guidance, collapsed exact technical disclosure, and final review summaries are present.
 - Translation instructions/example, one canonical `rawJson` parser path, hidden accessible input, explicit button/drop zone, drag prevention, active state, exact size/type/multiple-file/read-error handling, non-destructive state preservation, filename/edit feedback, all required issue-summary categories, collapsed raw issue details, and exact count wording are present.
 - Stable schema-v2 UUID-keyed templates reject translated-title keys; server parsing/validation and operational billing controls are unchanged.
-- The 35 mandatory-test checklist was audited against the focused unit/security suites and source scans. The new direct pure-unit coverage proves deterministic labeled zero-cost diagnostics; existing tests prove capped zero-cost acceptance, malicious unbounded rejection, zero-cost one-plan validity, fixed money parsing, inactive pricing serialization contract, schema-v2/content-key retention, translation issue codes, upload contract, security, catalogue placement, highlights, portfolio economics, and billing disclosure regressions.
+- The 35 mandatory-test checklist was audited against the focused unit/security suites and source scans. The focused security suite now explicitly checks empty-state propagation wiring, distinct upload feedback, and the exact FIXED review shape. Existing tests prove capped zero-cost acceptance, malicious unbounded rejection, zero-cost one-plan validity, fixed money parsing, inactive pricing serialization contract, schema-v2/content-key retention, translation issue codes, upload contract, security, catalogue placement, highlights, portfolio economics, and billing disclosure regressions.
 
 Validation results:
 
-- Focused before/after correction: 42 `test:unit` tests passed; Admin economics/payload/translation tests passed 39 before the correction and 40 after it; both required security suites passed 16 before the correction; the focused Admin security suite passed 7 after the correction.
+- Focused validation after Attempt 3: Admin pricing economics/payload/translation unit tests passed 40/40; `tests/security/admin-merchant-pricing-plan.test.mjs` passed 8/8; `git diff --check` passed.
 - Required source scans passed: labels/messages and `UNBOUNDED_ZERO_COST_USAGE_EVENT` are present; synthetic `{"error":"Translation package..."}` replacement is absent; no `react-dropzone` or `dropzone` dependency is present.
 - `git diff --check`: passed.
-- `npm test`: blocked in unrelated repository suites by missing prepared-worktree dependencies `@prisma/client` and `bullmq`; focused security suites passed independently.
+- `npm test`: blocked in unrelated repository suites by missing prepared-worktree dependencies `@prisma/client` and `bullmq`; focused security/unit suites passed independently.
 - `npm run prisma:validate`: blocked because `prisma` is not installed.
 - `npm run prisma:generate`: blocked because `prisma` is not installed.
-- `npx tsc --noEmit`: blocked because TypeScript is not installed; editor diagnostics had reported no errors for the changed TSX files before this corrective helper was added, and the helper is exercised by the passing strip-types unit suite.
+- `npx tsc --noEmit`: blocked because the TypeScript compiler is not installed in the prepared worktree.
 - `npm run build`: blocked at its required Prisma generation step because `prisma` is not installed.
 - `npm run format:check`: blocked because Prettier is not installed.
 
@@ -855,6 +862,8 @@ Isolation and boundaries:
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-005`.
 - Mirrored branch: `task/ARCH-014-ADMIN-005`.
 - Prepared claim commit: `d0a53fc069d4c6ac6ab0a31232c7e282ad0bdb9a`.
+- Attempt 3 implementation commit: `a80d44c` (full commit `a80d44c`), pushed to `origin/task/ARCH-014-ADMIN-005`.
+- Parent task/report commit: to be recorded after this report update and pushed to the mirrored parent `task/ARCH-014-ADMIN-005` branch.
 - Database submodule remained at `f202931c58dba7f9fcc53c74333736e978e8b6de`; no database/Shopify/schema/runtime/economics-policy files changed.
 - No Architect Review section was edited. Executor and claim were cleared, and task status is `review`.
 
