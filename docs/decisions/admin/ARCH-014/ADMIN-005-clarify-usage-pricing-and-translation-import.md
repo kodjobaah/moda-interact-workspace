@@ -863,7 +863,7 @@ Isolation and boundaries:
 - Mirrored branch: `task/ARCH-014-ADMIN-005`.
 - Prepared claim commit: `d0a53fc069d4c6ac6ab0a31232c7e282ad0bdb9a`.
 - Attempt 3 implementation commit: `a80d44c` (full commit `a80d44c`), pushed to `origin/task/ARCH-014-ADMIN-005`.
-- Parent task/report commit: to be recorded after this report update and pushed to the mirrored parent `task/ARCH-014-ADMIN-005` branch.
+- Parent task/report commit: `66c3b4c5280c9e44bda3598c1a694f363409dc3e`, pushed to the mirrored parent `task/ARCH-014-ADMIN-005` branch.
 - Database submodule remained at `f202931c58dba7f9fcc53c74333736e978e8b6de`; no database/Shopify/schema/runtime/economics-policy files changed.
 - No Architect Review section was edited. Executor and claim were cleared, and task status is `review`.
 
