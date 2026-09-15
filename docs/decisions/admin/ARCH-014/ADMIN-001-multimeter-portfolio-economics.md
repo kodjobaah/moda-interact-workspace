@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-15T10:00:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-ADMIN-009
@@ -322,3 +322,44 @@ STOP if the implementation would require:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Status
+
+Ready for Architect Review
+
+### Files Changed
+
+- `moda-interact-admin/src/lib/admin/merchant-pricing-economics.ts` — pure bounded multi-meter pricing, dynamic-programming combination, pair, portfolio, validation and blocking assertion APIs.
+- `moda-interact-admin/tests/unit/merchant-pricing-economics.test.ts` — 20 focused ARCH-014 cases covering pricing modes, limits, validation, deterministic tie-breaking, portfolio ordering, failures and legacy behavior.
+
+### Work Completed
+
+- Added deterministic FIXED, VOLUME and GRADUATED usage pricing semantics with the required candidate quantity bounds.
+- Added validation for usage events, tiers, currencies, plan prices, allowances and unbounded zero-cost paths.
+- Added lexicographically ordered multi-meter dynamic programming with the specified cost, unit, overshoot and summary tie-break rules.
+- Added full ordered lower-to-higher portfolio evaluation and an assertion that blocks FAIL and UNVERIFIED results.
+- Left the existing `validateSinglePackShopifyEconomics` implementation and behavior unchanged.
+
+### Validation Results
+
+- Focused ARCH-014 tests: 20/20 pass.
+- Existing admin economics unit suite: 42/42 pass.
+- `git diff --check`: pass.
+- `npm test`: baseline blocked by missing `bullmq` dependency in existing queue-monitor/security tests; no ARCH-014 test failure was reported before those unrelated imports failed.
+- `npx tsc --noEmit --pretty false`: unavailable because `typescript` is not installed in the worktree.
+- `npm run lint`: unavailable because `eslint` is not installed in the worktree.
+- `npm run format:check`: unavailable because `prettier` is not installed in the worktree.
+- Direct Node test runs emit the repository's existing module-type warning; tests pass despite it.
+
+### Implementation Evidence
+
+- Implementation commit: `a6cfc60` (`feat(admin): add portfolio pricing economics evaluator`).
+- Published branch: `task/ARCH-014-ADMIN-001`.
+- Parent claim commit: `da79985`.
+
+### Deviations
+
+- No Prisma, Next integration, operational App Events, top-up runtime, or existing single-pack guardrail changes were required.
+- Architect Review remains untouched. Return to `moda_architect` for review.
