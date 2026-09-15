@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-15T18:28:17Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
 - ARCH-014-ADMIN-004
@@ -809,3 +809,44 @@ STOP and return to `moda_architect` without broadening scope if any of the follo
 7. adding a third-party drag/drop dependency;
 8. modifying operational BillingPlan/runtime billing behaviour;
 9. changing portfolio economics policy rather than its Admin presentation.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `cdea0aaf2d62e43f066f18b1930f491319066c09` (pushed to `task/ARCH-014-ADMIN-005`).
+
+Exact files changed:
+
+- `src/components/admin/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant-pricing-translation-import.tsx`
+- `tests/security/admin-merchant-pricing-plan.test.mjs`
+
+Implementation evidence:
+
+- Usage events now use visible labels in the required order, human pricing-mode labels, ISO currency labels, tier labels, and explicit `Unlimited` open-tier text.
+- Builder payload serialization omits inactive fixed or tier pricing fields, while the existing economics engine remains authoritative.
+- `FIXED` zero-cost, unlimited events show the inline fail-closed guidance and disable step-4 `Next`; `UNBOUNDED_ZERO_COST_USAGE_EVENT` remains present in and returned by the economics engine.
+- Fixed usage pricing remains decimal major-unit input and final review uses existing ISO-currency `Intl.NumberFormat`; no FX conversion was added.
+- Portfolio diagnostics show human guidance first and keep raw code/status behind collapsed `Show technical details`.
+- Translation import keeps schemaVersion 2 and stable UUID content keys, shows the required translated-title-as-key guidance, and uses one `processSelectedTranslationFile` path for picker and drag/drop before the existing canonical parser runs from shared `rawJson` state.
+- Upload size/type/multiple-file/read failures preserve existing JSON and filename state; successful uploads expose filename and edited-after-upload feedback. Synthetic upload-error JSON is absent.
+- No database schema/migration, Shopify app, operational BillingPlan/runtime, economics policy, or third-party drag/drop dependency changed.
+
+Focused validation:
+
+- `npm run test:unit`: 42 passed.
+- `node --test tests/security/admin-merchant-pricing-plan.test.mjs tests/security/admin-billing-progressive-disclosure.test.mjs`: 16 passed.
+- `node --experimental-strip-types --test tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-translations.test.ts`: 39 passed.
+- Editor diagnostics for both changed TSX files: no errors.
+- Required source scans passed: required labels/messages present, synthetic upload-error JSON absent, and no `react-dropzone`/`dropzone` dependency found.
+- `git diff --check`: passed.
+
+Required validation limitations:
+
+- `npm test` could not complete because the prepared worktree has missing installed dependencies including `@prisma/client` and `bullmq`; the focused security suites passed independently.
+- `npm run prisma:validate`, `npm run prisma:generate`, and `npm run build` are unavailable because `prisma` is not installed in the prepared worktree; build stopped at its required Prisma generation step.
+- `npx tsc --noEmit` is unavailable because TypeScript is not installed in the prepared worktree; editor diagnostics reported no errors for the changed files.
+- `npm run lint -- --no-warn-ignored ...` and `npm run format:check` are unavailable because `eslint` and `prettier` are not installed. No formatting changes were made, and `git diff --check` passed.
+
+The prepared isolation packet was used as supplied: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-005`, parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-005`, mirrored branch `task/ARCH-014-ADMIN-005`, claim commit `5f706e14074b1476c199601ac2e26771cd3472e1`, and dependency gate `ARCH-014-ADMIN-004` complete. No Architect Review section was edited.
