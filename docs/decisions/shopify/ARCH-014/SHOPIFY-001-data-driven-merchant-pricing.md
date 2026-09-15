@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T11:41:12Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-014-DATABASE-001
@@ -403,3 +403,39 @@ Status: Blocked; returned to `moda_architect` for prerequisite correction.
 ### Architect Review
 
 Changes blocked by prerequisite schema absence. Ready for `moda_architect` decision; stop here.
+
+## Attempt 2 Completion Report
+
+Status: Review; implementation complete and returned to `moda_architect`.
+
+### Preparation and Implementation Evidence
+
+- Attempt 2 was claimed by `copilot` through the deterministic launcher after the dependency gate passed for `ARCH-014-DATABASE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-SHOPIFY-001` on `task/ARCH-014-SHOPIFY-001`.
+- Database submodule is pinned at `c6a8fb5b1debb309bb8aaea9d1168a3758f09201`, including the ARCH-014 MerchantPricing models and migration.
+- Prerequisite pointer commit: `6b727b4ff56bf471b57e1fa249c24703bd6ae162`.
+- Implementation commit: `2bfb6de` (`feat: use merchant pricing catalogue in onboarding`), pushed to `origin/task/ARCH-014-SHOPIFY-001`.
+
+### Implemented Surface
+
+- Added the fail-closed `MerchantPricing*` reader with exact resolved-locale translations, catalogue-position ordering, usage pricing validation, and merchant-safe DTO projection.
+- Loaded the catalogue before onboarding's early return and passed it to onboarding without changing Shopify plan-selection semantics.
+- Replaced hard-coded onboarding plans, prices, allowances, hero quantity, and top-up values with database DTO rendering for FIXED, GRADUATED, and VOLUME pricing.
+- Removed obsolete plan-specific locale keys from all 20 catalogues and added generic pricing labels; deleted unreferenced `PlanSelector.jsx`.
+- Added reader, locale, and home-loader coverage. The reader does not query or expose operational billing models or `adminLabel`.
+
+### Validation Evidence
+
+- `npm test`: 560 passed, 3 skipped.
+- Focused reader/home/i18n tests: 24 passed; final reader/home rerun: 11 passed.
+- Changed-file ESLint: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed.
+- Locale JSON parse and generic-key audit: all 20 files passed.
+- Stale pricing literals/keys, forbidden billing references, and `git diff --check`: passed.
+- `npm run typecheck`: remains blocked by the repository's pre-existing checked-JavaScript and billing baseline diagnostics; no new reader diagnostics remain after the local JS baseline annotations.
+
+### Architect Review
+
+Implementation is complete. Review `2bfb6de`; the task claim is cleared and the task is ready for `moda_architect`.
