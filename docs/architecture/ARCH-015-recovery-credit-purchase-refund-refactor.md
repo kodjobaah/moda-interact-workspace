@@ -448,3 +448,57 @@ ARCH-015-SHOPIFY-001  Complete
 
 Downstream Background/refund tasks remain Pending until their declared prerequisites
 are complete.
+
+## Post-review update — SHOPIFY-002 Attempt 2 Changes Requested
+
+Architect review accepts the substantive purchase-admission rework in `fdb72fc`: selected `eventHandle` admission, exact ARCH-014 credits mapping, live Shopify meter proof, second pre-write provider snapshot, fail-closed provider-evidence comparison, Shared native-App-Pricing fallback identity, fractional provider-before evidence, exact same-handle unresolved scope, different-handle independence, and atomic PENDING UsageEvent + REQUESTED purchase creation.
+
+One concurrency-contract requirement remains unresolved. The current purchase write opens Prisma `$transaction(async (...) => ...)` without explicitly selecting Serializable isolation. ARCH-015 requires both:
+
+```text
+PostgreSQL SERIALIZABLE transaction
++
+Subscription row SELECT ... FOR UPDATE
+```
+
+The row lock is present and must remain. Attempt 3 must add Prisma Serializable isolation to this purchase transaction only and regression-test the transaction option while retaining the row-lock behavior. No schema/index/lock-table change is authorized.
+
+Therefore `ARCH-015-SHOPIFY-002` remains **Ready** on the same task after Attempt-2 review. `ARCH-015-BACKGROUND-001` and `ARCH-015-SHOPIFY-003` remain Pending until SHOPIFY-002 is architect-accepted Complete.
+
+
+## Post-review update — SHOPIFY-002 Attempt 3 Accepted
+
+`ARCH-015-SHOPIFY-002` Attempt 3 is architect-accepted and **Complete**.
+
+The final purchase-admission path now satisfies the full ARCH-015 request-time concurrency contract:
+
+```text
+fresh selected Shopify/ARCH-014 evidence
+  -> second provider snapshot immediately before write
+  -> Prisma SERIALIZABLE transaction
+  -> Subscription row SELECT ... FOR UPDATE
+  -> replay + exact same-handle single-flight checks
+  -> re-read/revalidate local subscription/period/plan state
+  -> create PENDING UsageEvent
+  -> create REQUESTED RecoveryCreditPurchase
+```
+
+The accepted implementation preserves immutable provider-before quantity/cost/currency/price from the revalidated provider snapshot, including fractional quantities and native App Pricing contexts with no legacy subscription id. Different event handles remain independently purchasable; the unresolved invariant remains per `(shopId, shopifyEventHandleSnapshot)` rather than per billing period/provider identity.
+
+No direct Shopify App Events HTTP submission is added to the web path, and no retired singular BillingPlan top-up field is purchase authority.
+
+Attempt 3 adds Serializable isolation only to this purchase transaction and retains the existing `Subscription ... FOR UPDATE` lock. Regression coverage proves the runtime transaction option and ordering.
+
+The ARCH-015 frontier is now:
+
+```text
+ARCH-015-SHARED-001      Complete
+ARCH-015-DATABASE-001    Complete
+ARCH-015-SHOPIFY-002     Complete
+           |
+           +--> ARCH-015-BACKGROUND-001 Ready
+                    |
+                    +--> later BACKGROUND-002 / SHOPIFY-003 / BACKGROUND-003
+```
+
+`ARCH-015-SHOPIFY-003` remains Pending because `ARCH-015-BACKGROUND-001` is still an unsatisfied declared prerequisite.
