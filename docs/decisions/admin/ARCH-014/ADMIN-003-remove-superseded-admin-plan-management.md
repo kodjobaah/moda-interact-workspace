@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 35
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-014-ADMIN-002
 enables:
@@ -307,3 +307,221 @@ STOP and return evidence to `moda_architect` without widening the task if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Attempt 2 Audit Disposition
+
+Attempt 2 completed the exact correction requested by Architect Review. The
+accepted ADMIN-002 MerchantPricing plans flow remains the active
+`view=plans` implementation: the page uses `getMerchantPricingPlans`,
+`getMerchantPricingPlanById`, `MerchantPricingPlanCatalog`, and
+`MerchantPricingPlanDrawer`, with no live BillingPlan catalogue/editor
+dependency. The exact nine-file legacy deletion boundary remains satisfied,
+the only remaining legacy-symbol matches are intentional negative assertions
+in the migrated security tests, and the preserved billing drawers,
+operational economics/controls files, and controls mutation path remain
+present.
+
+The architect-requested zero-live-reference correction removed exactly these
+nine keys from both `src/i18n/locales/en.json` and
+`src/i18n/required-keys.ts`:
+
+```text
+billing.active
+billing.inactive
+billing.activate
+billing.deactivate
+billing.reason
+billing.reasonPlaceholder
+billing.pass
+billing.fail
+billing.unverified
+```
+
+The exact-key scan over remaining `src` and `tests`, excluding the two
+catalogue/registry files, reports zero references for all nine keys.
+`billing.hardLimit`, `billing.tab.plans`, and `billing.plansDescription` were
+retained because they remain referenced. No unrelated source, test, database,
+schema, migration, operational billing, subscription, recovery-credit, or
+billing-event code was changed in Attempt 2.
+
+### Attempt 2 Status
+
+Ready for Architect Review. The implementation branch is pushed at
+`396eb0c`; the parent task claim is cleared and this task is set to `review`.
+
+### Attempt 2 Validation
+
+Passed:
+
+- focused security, visibility, MerchantPricing, progressive-disclosure, and
+   preserved economics/guardrail tests: 74/74;
+- JSON parse and exact nine-key absence validation;
+- exact nine-file absence check;
+- MerchantPricing ownership and legacy-reference scans, with only intentional
+   negative assertions remaining;
+- preserved drawer/control surface checks;
+- `git diff --check`.
+
+The database/schema proof from the current implementation baseline `3d186a5`
+has no changed `prisma`, `migrations`, or `database` path, and the verified
+database submodule remains `c6a8fb5b1debb309bb8aaea9d1168a3758f09201`.
+
+Environment-blocked validation:
+
+- `npm test` still fails during unrelated test module loading because local
+   dependencies including `bullmq` and `react` are not installed;
+- `npm run lint` is unavailable because `eslint` is not installed;
+- `npm run format:check` is unavailable because `prettier` is not installed;
+- `npm run build` is unavailable because `prisma` is not installed;
+- no `typecheck` script is declared in `package.json`, so no replacement was
+   invented.
+
+No task-caused focused-test failure was observed.
+
+### Attempt 1 Audit Disposition (historical)
+
+Audit completed against the complete current task definition and implementation
+commit `ae1b771`. No implementation gap was found, so no source or test fix was
+required. The cheap discriminating checks confirmed the accepted ADMIN-002
+MerchantPricing ownership before deletion, exactly nine required legacy files
+absent, no unexpected runtime consumer, no changed database/schema path, and
+zero live references for every removed candidate translation key. The only
+retained candidate key, `billing.hardLimit`, remains live in
+`src/components/admin/tenant-billing.tsx`.
+
+### Attempt 1 Status (historical)
+
+Ready for Architect Review. The implementation branch is pushed; this parent
+task report is being submitted with the claim cleared.
+
+### Preflight gate
+
+The accepted ADMIN-002 baseline was present at `7665c1a` in the implementation
+worktree. Before deletion, `src/app/(protected)/billing/page.tsx` was verified
+to import and use `getMerchantPricingPlans`, `MerchantPricingPlanCatalog`, and
+`MerchantPricingPlanDrawer`, including the MerchantPricing selected-plan reader
+`getMerchantPricingPlanById`. It contained no `getBillingPlans`,
+`getBillingPlanById`, `getBillingPlanEconomics`, `BillingPlanCatalog`, or
+`BillingPlanDrawer` dependency.
+
+The required pre-deletion `rg` scan found no unexpected runtime-source
+consumer. The only additional stale reference was the invalidated
+`tests/security/admin-billing-visibility.test.mjs` assertion; it was migrated
+from `BillingPlanCatalog` to `MerchantPricingPlanCatalog`. The progressive
+disclosure test was migrated as required.
+
+### Implementation
+
+Implementation commit: `ae1b771` (`chore(admin): remove superseded billing plan surface`),
+pushed to `origin/task/ARCH-014-ADMIN-003`.
+
+Deleted exactly these nine files:
+
+- `src/app/actions/billing-plan.ts`
+- `src/components/admin/billing-plan-catalog.tsx`
+- `src/components/admin/billing-plan-economics-presentation.ts`
+- `src/lib/admin/billing-plan.ts`
+- `src/lib/admin/billing-plan-audit.ts`
+- `src/lib/admin/billing-plan-mutation.ts`
+- `src/lib/admin/billing-plan-validation.ts`
+- `tests/security/admin-billing-plan.test.mjs`
+- `tests/unit/billing-plan-economics-presentation.test.mjs`
+
+Changed `src/components/admin/billing-drawers.tsx` only to remove the legacy
+`BillingPlanRow` import, `PlanForm` import, and `BillingPlanDrawer`. The
+`DetailList`, `MerchantPricingPlanDrawer`, `RecoveryCreditPurchaseDrawer`, and
+`BillingEventDrawer` surfaces and their filter/diagnostic behavior remain.
+
+Migrated `tests/security/admin-billing-progressive-disclosure.test.mjs` to
+assert MerchantPricing list/detail/catalogue/drawer behavior and to use
+`tests/security/admin-merchant-pricing-plan.test.mjs` for plan mutation and
+authentication coverage. Preserved overview, packs, events, controls, and
+diagnostic assertions. Updated the one equivalent stale
+`admin-billing-visibility.test.mjs` assertion.
+
+### Attempt 1 i18n decisions (historical)
+
+Applied the zero-live-reference rule after the nine files were absent. Removed
+the dead candidate keys from both `src/i18n/locales/en.json` and
+`src/i18n/required-keys.ts`: all listed candidate keys except
+`billing.hardLimit`, plus all four `billing.feature.*` keys. Retained
+`billing.hardLimit` because `src/components/admin/tenant-billing.tsx` still
+references it. Retained generic keys such as `billing.pass`, `billing.fail`,
+`billing.unverified`, `billing.reason`, and `billing.reasonPlaceholder`.
+`en.json` parsed successfully and no removed candidate key has a remaining
+source/test reference.
+
+### Validation
+
+Passed:
+
+- MerchantPricing ownership and legacy-reference scans; no active runtime
+   legacy consumer remains.
+- `node --test tests/security/admin-billing-progressive-disclosure.test.mjs`
+   (9/9).
+- Focused progressive-disclosure and economics security tests (13/13).
+- Focused visibility, MerchantPricing security, preserved economics-validation,
+  and upgrade-guardrail tests (61/61); combined focused run passed 74/74.
+- `git diff --check`.
+- JSON parse validation for `src/i18n/locales/en.json`.
+- MerchantPricing integration scan for page/catalogue/reader/drawer symbols.
+- Exact nine-file absence check.
+- Database/schema proof from supplied baseline `7665c1a`: no changed path matched
+   `(^|/)(prisma|migrations|database)/`.
+
+Environment-blocked or unavailable:
+
+- `npm test` was attempted; unrelated existing repository tests fail during
+   module loading because local dependencies including `bullmq` and `react` are
+   not installed (`ERR_MODULE_NOT_FOUND`).
+- `npm run lint` could not start because `eslint` is not installed.
+- `npm run format:check` could not start because `prettier` is not installed.
+- `npm run build` could not start because `prisma` is not installed.
+- No `typecheck` script is declared in `package.json`; no replacement command
+   was invented.
+- The workspace doctor was attempted for the dependency condition but could not
+   resolve the supplied workspace root (`FAIL workspace root not found`).
+
+No task-caused failure was observed in the focused tests. No Prisma schema,
+migration, database script, operational economics/control file, subscription
+runtime, recovery-credit handling, or billing-event handling was changed.
+
+### Parent report publication
+
+Parent report commit: `cd90331` (`docs(admin): record ARCH-014-ADMIN-003 audit`),
+pushed on `task/ARCH-014-ADMIN-003`. This hash-recording follow-up is the final
+report publication commit.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 2 closes the sole correction requested in the prior Architect Review. Architect review compared the uploaded Attempt 2 implementation against the Attempt 1 snapshot and confirmed that the only implementation changes are the required removals from `src/i18n/locales/en.json` and `src/i18n/required-keys.ts`.
+
+The following nine candidate legacy keys are absent from both files and exact-key scans over remaining `src` and `tests` (excluding the catalogue/registry files) return zero live references:
+
+```text
+billing.active
+billing.inactive
+billing.activate
+billing.deactivate
+billing.reason
+billing.reasonPlaceholder
+billing.pass
+billing.fail
+billing.unverified
+```
+
+The three keys explicitly required to remain are still present and live: `billing.hardLimit` in `tenant-billing.tsx`, `billing.tab.plans` in `billing-tabs.tsx`, and `billing.plansDescription` in the progressive-disclosure security test. `en.json` parses successfully.
+
+The previously accepted ADMIN-003 functional cleanup remains intact: all nine mandated legacy BillingPlan Admin files are absent; the MerchantPricing plans surface remains active; recovery-credit purchase, billing-event and operational controls surfaces remain preserved; and no schema/database change is introduced by Attempt 2.
+
+The reported focused validation is 74/74 passing. Environment-blocked package-wide validation remains documented in the Completion Report and does not indicate a task-caused regression.
+
+Implementation commit `396eb0c` is accepted for `ARCH-014-ADMIN-003`. No Attempt 3 is required.
