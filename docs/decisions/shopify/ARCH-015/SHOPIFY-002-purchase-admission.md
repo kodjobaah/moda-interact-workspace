@@ -342,7 +342,7 @@ The requested Serializable transaction correction is implemented and pushed. Ret
 ### VCS and Isolation Evidence
 
 - Launcher claim commit: `9ffa1a52e2eda454680faac402012a4446795449`, attempt `3`, executor `copilot`, dependency gate passed, claim pushed.
-- Implementation commit: `81bd963` (`fix(shopify): use serializable purchase admission`), pushed to `origin/task/ARCH-015-SHOPIFY-002`.
+- Implementation commits: `81bd963` (`fix(shopify): use serializable purchase admission`) and `4b109c5` (`fix(shopify): scope serializable option to purchase transaction`), pushed to `origin/task/ARCH-015-SHOPIFY-002`.
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-002` on `task/ARCH-015-SHOPIFY-002`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-002` on `task/ARCH-015-SHOPIFY-002`.
