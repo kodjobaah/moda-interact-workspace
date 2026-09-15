@@ -533,3 +533,31 @@ resume behavior remain accepted and must not be churned.
 The same `ARCH-015-BACKGROUND-001` task returns to **Ready** at Attempt 2. The next valid
 claim is Attempt 3. Its downstream tasks remain Pending until BACKGROUND-001 is accepted
 Complete.
+
+## Post-review update — BACKGROUND-001 Attempt 3 Changes Requested
+
+Architect review accepts the Attempt-3 corrections for canonical Shared provider-context
+identity and complete inactive-price parser alignment.
+
+The production reconciliation now correctly consumes exact Shared `0.11.2`, supports
+native App Pricing contexts with no legacy subscription id, compares identity + plan +
+billing period through the canonical Shared comparator, keeps event-handle proof
+operation-specific, and retains current/pending flat-rate plus tiered subscription items
+without filtering solely on `price.active`.
+
+One original BACKGROUND-001 invariant remains unresolved: the Background orchestration
+still requires `projection.packMeterHandle`, which is sourced from the retired singular
+`BillingPlan.shopifyRecoveryCreditPackEventHandle`, before it will invoke durable purchase
+reconciliation.
+
+ARCH-015 requires durable REQUESTED+REPORTED purchases to be discovered and proved from
+their own immutable `shopifyEventHandleSnapshot` against the complete live Shopify
+`providerUsageSnapshot`. A missing/disabled singular BillingPlan pack configuration must
+not prevent that reconciliation.
+
+Therefore the same `ARCH-015-BACKGROUND-001` task returns to **Ready** for Attempt 4.
+Attempt 4 is limited to removing the singular pack-meter prerequisite/scope from the
+normal Background purchase-reconciliation path while preserving all accepted provider-
+identity, Decimal, transaction, idempotency and parser behavior.
+
+Downstream tasks remain Pending until BACKGROUND-001 is architect-accepted Complete.
