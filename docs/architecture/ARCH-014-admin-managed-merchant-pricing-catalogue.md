@@ -434,7 +434,7 @@ ARCH-014-DATABASE-001 + ARCH-014-ADMIN-001
 ARCH-014-DATABASE-001
     -> ARCH-014-SHOPIFY-001
 
-ARCH-014-ADMIN-003 + ARCH-014-SHOPIFY-001
+ARCH-014-ADMIN-002 + ARCH-014-ADMIN-003 + ARCH-014-SHOPIFY-001
     -> ARCH-014-SYSTEM-TEST-001
 ```
 
@@ -447,10 +447,13 @@ System test is terminal/manual-gated and enables no implementation task.
 | `ARCH-014-DATABASE-001` | Complete | `ARCH-010-DATABASE-013` |
 | `ARCH-014-ADMIN-001` | Complete | `ARCH-010-ADMIN-009` |
 | `ARCH-014-ADMIN-002` | Complete | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
-| `ARCH-014-ADMIN-003` | Complete | `ARCH-014-ADMIN-002` |
-| `ARCH-014-SHOPIFY-001` | Review | `ARCH-014-DATABASE-001` |
-| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-003`, `ARCH-014-SHOPIFY-001` |
+| `ARCH-014-ADMIN-003` | Ready | `ARCH-014-ADMIN-002` |
+| `ARCH-014-SHOPIFY-001` | Ready | `ARCH-014-DATABASE-001` |
+| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-002`, `ARCH-014-ADMIN-003`, `ARCH-014-SHOPIFY-001` |
 
-`ARCH-014-ADMIN-003` Attempt 2 is Accepted and Complete. The uploaded sibling state still records `ARCH-014-SHOPIFY-001` at Review, so this branch cannot yet promote the terminal system test. The previously accepted SHOPIFY Architect Review must be reconciled separately into canonical parent state.
+`ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` and `ARCH-014-ADMIN-002` are Complete. Accepting ADMIN-002 Attempt 4 promotes the post-refactor cleanup task `ARCH-014-ADMIN-003` to Ready. `ARCH-014-SHOPIFY-001` remains independently Ready. `ARCH-014-SYSTEM-TEST-001` remains Pending until ADMIN-003 and SHOPIFY-001 are Complete. The ARCH-014 automatic Ready frontier is therefore:
 
-The branch-local ARCH-014 automatic Ready frontier is therefore empty. After the accepted `ARCH-014-SHOPIFY-001` reconciliation is integrated, `ARCH-014-SYSTEM-TEST-001` becomes Ready but remains terminal/developer-gated and must not auto-start.
+```text
+ARCH-014-ADMIN-003
+ARCH-014-SHOPIFY-001
+```

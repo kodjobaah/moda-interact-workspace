@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-014-ADMIN-002
 - ARCH-014-ADMIN-003
 - ARCH-014-SHOPIFY-001
 enables: []
