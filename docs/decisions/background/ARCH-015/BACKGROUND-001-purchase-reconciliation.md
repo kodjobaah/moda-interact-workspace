@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-015-SHARED-001
@@ -219,3 +219,270 @@ One real implementation gap was found: `parseActiveSubscription` filtered inacti
 ### Limitations
 
 The full unit suite remains blocked only by the two pre-existing observability startup expectation mismatches listed above. Focused task validation, build, and all task-owned tests are green.
+
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — canonical provider-context identity + complete inactive-price parser alignment**
+
+The candidate-centric reconciliation implementation is otherwise accepted. Preserve the
+existing behavior for:
+
+```text
+REQUESTED + REPORTED durable candidate discovery
+exact event-handle provider readback
+Decimal before + 1 quantity proof
+zero-cost purchase activation
+non-negative provider cost delta
+currency equality
+cycle proof
+same-handle ambiguity fail-closed behavior
+different-handle independence
+Serializable activation transaction
+optimistic purchase row guard
+atomic PURCHASED_RECOVERY_CREDITS increment
+idempotent replay
+best-effort capacity resume after commit
+no grant from HTTP 202 alone
+```
+
+Attempt 3 is limited to the two corrections below. Do not redesign the reconciliation
+flow, schema, queues, purchase statuses, or refund behavior.
+
+### Finding 1 — native App Pricing purchases cannot reconcile
+
+`ARCH-015-SHOPIFY-002` stores the canonical provider-context identity in
+`RecoveryCreditPurchase.providerSubscriptionIdSnapshot`.
+
+For a legacy Shopify subscription id this identity is the trimmed provider id. For
+native App Pricing, where `legacySubscriptionId == null`, the accepted Shared contract
+derives:
+
+```text
+app-pricing:v1:<encodedPlanHandle>:<periodStartIso>:<periodEndIso>
+```
+
+The Background provider currently exposes the raw nullable
+`PartnerSubscription.providerSubscriptionId`, and `BillingReconciliationService` passes
+that raw value into `reconcileProviderConfirmed(...)`. The purchase service then requires:
+
+```text
+input.providerSubscriptionId !== null
+candidate.providerSubscriptionIdSnapshot === input.providerSubscriptionId
+```
+
+Therefore a valid native App Pricing purchase has:
+
+```text
+purchase snapshot = app-pricing:v1:...
+current raw legacy id = null
+```
+
+and can never activate even when plan, billing period, meter, quantity, currency and cost
+all prove the purchase.
+
+#### Required correction
+
+Consume the architect-accepted Shared provider-context API from:
+
+```text
+@modainteract/moda-interact-shared/billing
+```
+
+The Background repository in this snapshot is pinned to `0.11.0`; the accepted ARCH-015
+Shared correction is `0.11.2`. Update exactly:
+
+```text
+package.json
+package-lock.json
+
+@modainteract/moda-interact-shared: 0.11.0 -> 0.11.2
+```
+
+Do not use `0.11.1`. Do not choose another version. If exact `0.11.2` cannot be installed
+or does not export both required helpers, STOP and return the blocker to `moda_architect`.
+
+Use:
+
+```ts
+deriveShopifyProviderContextIdentity(...)
+isSameShopifyPurchaseProviderContext(...)
+```
+
+The deterministic flow must be:
+
+```text
+BillingReconciliationService has fresh Partner subscription
+  -> require exact current period start/end as today
+  -> derive current providerContextIdentity from:
+       providerSubscriptionId
+       planHandle
+       currentPeriodStart
+       currentPeriodEnd
+  -> pass the derived identity into purchase reconciliation
+
+RecoveryCreditPurchaseService candidate proof
+  -> compare candidate.providerSubscriptionIdSnapshot
+     + candidate.shopifyPlanHandleSnapshot
+     + candidate.billingPeriodId
+     against current providerContextIdentity
+     + current provider plan handle
+     + current local billingPeriodId
+     using isSameShopifyPurchaseProviderContext(...)
+  -> separately prove exact candidate eventHandle/meter evidence
+```
+
+Do not overwrite or reinterpret `Subscription.providerSubscriptionId`; it remains the raw
+nullable provider value. Do not derive identity from wall-clock time.
+
+Rename the reconciliation input field from raw-provider semantics where practical, for
+example:
+
+```text
+providerSubscriptionId -> providerContextIdentity
+```
+
+so callers cannot accidentally pass the raw nullable legacy id in the future.
+
+Required regression coverage:
+
+```text
+legacy provider id -> valid matching candidate still activates
+legacy provider id mismatch -> remains REQUESTED
+native legacy id null -> derived app-pricing:v1 identity matches purchase and activates
+native period/plan mismatch -> remains REQUESTED
+blank/malformed required context -> fail closed; no credit grant
+```
+
+### Finding 2 — flat-rate live items are still filtered by `price.active`
+
+The Attempt-2 correction fixed tiered usage items, but
+`src/providers/shopify-partner-billing.provider.ts` still selects current and pending
+flat-rate items with:
+
+```text
+item.price.__typename === "FlatRatePrice" && item.price.active
+```
+
+ARCH-015's provider parser rule is broader: membership comes from the returned Shopify
+subscription items. A returned item must not be discarded solely because
+`price.active === false`.
+
+This is already the accepted behavior in the Shopify app-side provider parser and must be
+consistent in Background.
+
+Required parser behavior:
+
+```text
+current flat-rate plan candidates:
+  handle is nonblank
+  price.__typename == FlatRatePrice
+  DO NOT filter on price.active
+
+current tiered usage candidates:
+  handle is nonblank
+  price.__typename == TieredPrice
+  DO NOT filter on price.active
+
+pending flat-rate plan candidates:
+  handle is nonblank
+  price.__typename == FlatRatePrice
+  DO NOT filter on price.active
+```
+
+Retain the existing cardinality checks: exactly one current flat-rate plan item and at
+most one pending flat-rate plan item. Updating error text from "active flat-rate" to
+"flat-rate" is allowed if needed for accuracy.
+
+Required regression coverage:
+
+```text
+current FlatRatePrice active=false returned in activeSubscription.items -> planHandle retained
+current TieredPrice active=false -> usage handle retained (existing coverage preserved)
+pending FlatRatePrice active=false -> pendingPlanHandle retained
+multiple current flat-rate items -> still fail closed
+multiple pending flat-rate items -> still fail closed
+```
+
+### Attempt-3 authorized corrective surface
+
+In addition to the original task surface, this review explicitly authorizes only these
+extra dependency files because the task already depends on `ARCH-015-SHARED-001`:
+
+```text
+package.json
+package-lock.json
+```
+
+Expected production/test surface is limited to:
+
+```text
+src/providers/shopify-partner-billing.provider.ts
+src/services/billing-reconciliation.service.ts
+src/services/recovery-credit-purchase.service.ts
+package.json
+package-lock.json
+tests/unit/providers/shopify-partner-billing.provider.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+tests/unit/services/recovery-credit-purchase.service.test.ts
+# directly affected existing focused tests only
+```
+
+No database/schema migration, Shared source change, new status, new queue, or Shopify web
+purchase change is authorized.
+
+### Validation
+
+Run at minimum:
+
+```bash
+npm install
+npm test -- \
+  tests/unit/providers/shopify-partner-billing.provider.test.ts \
+  tests/unit/services/recovery-credit-purchase.service.test.ts \
+  tests/unit/services/recovery-credit-purchase.resume-hint.test.ts \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/services/shopify-usage-event-publisher.service.test.ts
+npm run build
+npm run test:unit
+git diff --check
+```
+
+The two already-documented unrelated observability startup failures may remain baseline
+failures if unchanged. No task-owned failure is acceptable.
+
+Also prove the installed package is exactly `0.11.2` and the billing entrypoint exports:
+
+```text
+deriveShopifyProviderContextIdentity
+isSameShopifyPurchaseProviderContext
+```
+
+### Stop conditions
+
+STOP and return to `moda_architect` if:
+
+```text
+exact Shared 0.11.2 cannot be consumed;
+provider-context proof would require changing the canonical Shared identity format;
+a schema change is required;
+provider proof would need to activate from HTTP 202 without readback;
+fixing inactive-price membership would require guessing among multiple flat-rate items.
+```
+
+### Workflow
+
+Keep this same task:
+
+```text
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+Reclaim with `/moda-task ARCH-015-BACKGROUND-001`; the next valid claim increments to
+Attempt 3 exactly once. `ARCH-015-BACKGROUND-002`, `ARCH-015-SHOPIFY-003`, and
+`ARCH-015-BACKGROUND-003` remain Pending until this task is architect-accepted Complete.

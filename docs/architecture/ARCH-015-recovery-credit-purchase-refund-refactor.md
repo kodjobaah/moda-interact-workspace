@@ -502,3 +502,34 @@ ARCH-015-SHOPIFY-002     Complete
 ```
 
 `ARCH-015-SHOPIFY-003` remains Pending because `ARCH-015-BACKGROUND-001` is still an unsatisfied declared prerequisite.
+
+
+## Post-review update — BACKGROUND-001 Attempt 2 Changes Requested
+
+Architect review accepts the candidate-centric purchase reconciliation core and the
+Attempt-2 fixes for inactive tiered meters, Decimal provider quantities and sequential
+same-handle baselines.
+
+Two integration defects remain before `ARCH-015-BACKGROUND-001` can become Complete:
+
+```text
+1. Background still compares the raw nullable Shopify legacySubscriptionId against
+   RecoveryCreditPurchase.providerSubscriptionIdSnapshot. Native App Pricing purchases
+   store the canonical Shared app-pricing:v1 provider-context identity, so a null legacy
+   id can never match. Attempt 3 must consume Shared 0.11.2, derive the current context
+   identity, and use the canonical three-field context comparator.
+
+2. The Background Shopify Partner parser still filters current/pending FlatRatePrice
+   items on price.active. ARCH-015 requires returned subscription membership, not the
+   price.active flag, to decide plan/meter membership. Tiered handling is already fixed;
+   current and pending flat-rate handling must be aligned.
+```
+
+No schema, status, queue or reconciliation redesign is requested. Existing Decimal
+candidate proof, zero-cost activation, same-handle ambiguity, different-handle
+independence, Serializable activation, atomic entitlement increment and post-commit
+resume behavior remain accepted and must not be churned.
+
+The same `ARCH-015-BACKGROUND-001` task returns to **Ready** at Attempt 2. The next valid
+claim is Attempt 3. Its downstream tasks remain Pending until BACKGROUND-001 is accepted
+Complete.
