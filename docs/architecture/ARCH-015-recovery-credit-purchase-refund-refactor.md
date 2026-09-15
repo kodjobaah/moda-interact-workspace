@@ -374,3 +374,77 @@ registry smoke passes
 Do not create Attempt 3, republish `0.11.2`, or bump another Shared version solely to
 work around propagation. No downstream dependency is unblocked until SHARED-001 is
 Complete.
+
+## Post-review update — SHOPIFY-001 Attempt 1 Changes Requested
+
+Architect review accepts the core live Shopify × ARCH-014 top-up offer resolver from `374f16f`, including plan-scoped usage-event intersection, live provider price/usage authority, inactive returned provider-price eligibility, bounded unknown-meter diagnostics, and separate verified-empty versus verification-unavailable merchant states.
+
+Two Attempt-2 conditions remain before `ARCH-015-SHOPIFY-001` can become Complete:
+
+```text
+1. resolved multi-offer cards are display-only until SHOPIFY-002 supplies
+   intent + purchaseId + selected eventHandle and revalidates server-side;
+2. the ARCH-015 provider reader/resolver is merged onto the latest accepted
+   ARCH-014 merchant-pricing reader without regressing highlights, exact-locale
+   presentation integrity, usage-event semantics, or catalogue behavior.
+```
+
+ARCH-014 highlight rows are merchant presentation only and do not participate in top-up economic/provider resolution. `MerchantPricingUsageEvent` remains the ARCH-014 entitlement source; Shopify remains live monetary/provider authority.
+
+Do not reintroduce `BillingPlan.recoveryCreditsPerPack` or `BillingPlan.shopifyRecoveryCreditPackEventHandle` as operative offer authority. Do not implement SHOPIFY-002 purchase admission early.
+
+The same `ARCH-015-SHOPIFY-001` task returns to Ready for Attempt 2. `ARCH-015-SHOPIFY-002` remains Pending until SHOPIFY-001 is architect-accepted.
+
+## Post-review update — SHOPIFY-001 Attempt 2 Accepted
+
+`ARCH-015-SHOPIFY-001` Attempt 2 is architect-accepted.
+
+The live Shopify × ARCH-014 offer resolver remains the canonical read model, and the
+interim multi-offer UI is now safely display-only until `ARCH-015-SHOPIFY-002`
+implements selected-offer purchase admission.
+
+The accepted state is:
+
+```text
+Shopify active subscription planHandle
+  -> exact MerchantPricingPlan.shopifyPlanHandle
+
+MerchantPricingUsageEvent.eventHandle
+  intersect
+Shopify activeSubscription.usageItems[].handle
+
+matched offer
+  -> creditsGranted from ARCH-014 creditsGrantedPerUnit
+  -> price/currency/usage from live Shopify
+  -> display-only in SHOPIFY-001
+```
+
+The extended ARCH-014 catalogue reader introduced by accepted
+`ARCH-014-SHOPIFY-002` remains intact. Pricing-card highlights and their exact-locale
+translations are presentation data only and are not top-up economic/provider
+authority.
+
+No enabled Buy action, callback, fetcher submission, or selected-event purchase path
+is exposed by SHOPIFY-001. The pre-existing legacy mutation surface is intentionally
+left for `ARCH-015-SHOPIFY-002` to replace with strict:
+
+```text
+intent
+purchaseId
+eventHandle
+```
+
+admission and fresh provider/ARCH-014 revalidation.
+
+The ARCH-015 frontier is now:
+
+```text
+ARCH-015-SHARED-001   Complete
+ARCH-015-DATABASE-001 Complete
+ARCH-015-SHOPIFY-001  Complete
+        |
+        +--> ARCH-015-SHOPIFY-002 Ready
+```
+
+Downstream Background/refund tasks remain Pending until their declared prerequisites
+are complete.
