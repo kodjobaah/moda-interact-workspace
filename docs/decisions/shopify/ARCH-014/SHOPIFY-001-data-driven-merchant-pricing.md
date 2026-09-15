@@ -529,5 +529,5 @@ Status: Ready for Review; implementation commit pushed and claim cleared.
 
 - Implementation commit: `1148769` (`fix: use generic lifetime allowance label`),
   pushed to `origin/task/ARCH-014-SHOPIFY-001`.
-- Parent report commit: `f78be50de7487742779afc2d535c3cf8ee236bb8`.
+- Parent report commit: `f5e43a0538fb97b10acc7d9ee4a439e5cb3e04b0`.
 - Claim cleared; task status set to `review`.
