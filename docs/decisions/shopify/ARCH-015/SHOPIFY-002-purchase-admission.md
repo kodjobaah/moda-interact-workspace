@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -349,3 +349,68 @@ The requested Serializable transaction correction is implemented and pushed. Ret
 - Shared/default checkout switched or mutated: no. Another task worktree reused: no.
 - Recursive submodule synchronization and initialization: passed. Database submodule remains `f202931c58dba7f9fcc53c74333736e978e8b6de`.
 - No database schema or submodule gitlink changes; no merge to `main` and no push to `main`.
+
+
+## Architect Review — Attempt 3 Accepted
+
+### Verdict
+
+**Accepted — Complete.** Attempt 3 closes the only remaining concurrency-contract gap from Attempt 2.
+
+The recovery-credit purchase admission now executes its existing atomic write inside Prisma Serializable isolation while retaining the existing `Subscription` row `FOR UPDATE` lock. The focused regression proves the transaction option and runtime operation ordering rather than relying on source-text inspection.
+
+Accepted behavior preserved from the earlier review:
+
+- merchant input remains limited to `intent`, valid `purchaseId`, and selected `eventHandle`;
+- credits are resolved from the exact current ARCH-014 plan/event;
+- Shopify remains live provider/price/usage authority;
+- the second provider snapshot is taken immediately before the database transaction and only revalidated provider evidence is persisted;
+- null legacy subscription identity uses the Shared provider-context fallback;
+- fractional provider-before quantities are preserved;
+- unresolved single-flight scope remains exactly `(shopId, REQUESTED, shopifyEventHandleSnapshot)`;
+- different event handles remain independent;
+- one PENDING `UsageEvent` and one REQUESTED `RecoveryCreditPurchase` are created atomically;
+- no direct Shopify App Events submission occurs in the web request;
+- retired singular BillingPlan top-up fields are not used for purchase admission.
+
+Attempt-3 correction evidence:
+
+```text
+recovery-credit purchase $transaction
+  isolationLevel = Prisma.TransactionIsolationLevel.Serializable
+
+inside that transaction
+  Subscription SELECT ... FOR UPDATE
+    -> replay/single-flight checks
+    -> re-read/revalidate local subscription state
+    -> PENDING UsageEvent write
+    -> REQUESTED RecoveryCreditPurchase write
+```
+
+`81bd963` added the Serializable option and runtime regression coverage. `4b109c5` then removed an accidental option from the unresolved lookup so Serializable isolation is scoped to the purchase transaction only. The final snapshot contains one production `TransactionIsolationLevel.Serializable` use on this purchase transaction.
+
+Validation accepted from the Completion Report:
+
+```text
+focused tests: 214 / 214 passed
+production build: passed
+git diff --check: passed
+touched service/test slice: no new typecheck diagnostics
+database submodule: unchanged
+```
+
+Repository-wide lint/typecheck diagnostics remain documented pre-existing baseline issues and do not block this acceptance.
+
+### Dependency promotion
+
+At this acceptance point the declared prerequisites for `ARCH-015-BACKGROUND-001` are complete:
+
+```text
+ARCH-015-SHARED-001    Complete
+ARCH-015-DATABASE-001  Complete
+ARCH-015-SHOPIFY-002   Complete
+```
+
+Therefore `ARCH-015-BACKGROUND-001` is promoted from `pending` to `ready`.
+
+`ARCH-015-SHOPIFY-003` remains `pending` because it additionally depends on completion of `ARCH-015-BACKGROUND-001`.
