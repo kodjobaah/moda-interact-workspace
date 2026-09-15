@@ -19,7 +19,7 @@ ADMIN-005 COMPLETE                    DATABASE-002 COMPLETE
       │                                      │
       ├────────► ADMIN-006 READY              └────────► DATABASE-003 READY
       │                │                                      │
-      └────────► ADMIN-007 READY              ┌───────────────┴──────────────┐
+      └────────► ADMIN-007 COMPLETE           ┌───────────────┴──────────────┐
                                                │                              │
                                 ADMIN-006 + DATABASE-003               DATABASE-003
                                                │                              │
@@ -34,7 +34,7 @@ ADMIN-006 + existing MerchantPricing prerequisites
       └────────► SYSTEM-TEST-001 PENDING (developer-gated)
 ```
 
-`ADMIN-006`, `ADMIN-007`, and `DATABASE-003` may be executed in parallel from the current accepted baseline.
+`ADMIN-007` is architect-accepted Complete. `ADMIN-006` and `DATABASE-003` remain independent of this cleanup and may continue in parallel from the accepted baseline.
 
 After `DATABASE-003` completes, `SHOPIFY-003` may start immediately. `ADMIN-008` starts only when both `DATABASE-003` and `ADMIN-006` are complete so it reuses the established XLSX implementation.
 

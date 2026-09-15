@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 57
 executor:
 claimed_at:
@@ -249,3 +249,21 @@ Limitations: repository-wide typecheck, build completion, full test pass, and fo
 ## Stop conditions
 
 STOP and return to `moda_architect` if removal would require changing a Prisma/database object, if any deleted-candidate function has a live non-legacy production consumer, or if MerchantPricing economics depends on a candidate legacy module rather than the explicitly preserved generic guardrail. Do not broaden scope.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Accepted Attempt 2. Functional review confirms implementation commit `559b555` completes the narrow Admin cleanup without broadening scope.
+
+The four obsolete BillingPlan economics application modules are absent and the retained Controls surfaces no longer load or render `BillingEconomicsControls`, `Upgrade ladder`, `Verified Shopify App Pricing economics`, `mutateUpgradeEdgeAction`, or `recordEconomicsSnapshotAction`. The retained `PlatformBillingControls`, `TenantBillingControls`, `billing-control-validation.ts`, `billing-controls.ts`, `upgrade-economics-guardrail.ts`, `merchant-pricing-economics.ts`, and `PlatformBillingPolicy.minimumUpgradePremiumBps` remain live. MerchantPricing continues to use `validateSinglePackShopifyEconomics`.
+
+`AdminShell` now has the required `{ active, header?, children }` contract, contains no tenant-specific search wiring, and renders no empty header strip when `header` is absent. Only the tenant directory imports and supplies `SearchInput`; billing, billing controls, promotions, merchant support, observability, and queues do not wire the tenant search.
+
+The Attempt 2 correction adds a genuinely recursive scan of `src` proving the deleted economics symbols have zero production references. Independent architect validation reproduced the focused evidence available in the uploaded snapshot: `admin-billing-economics.test.mjs` passed 8/8 and the retained MerchantPricing/upgrade-economics unit suites passed 69/69. The reported repository-wide shared-package, translation-import type/build, and formatting baselines are unrelated to this cleanup and do not constitute an ADMIN-007 functional regression.
+
+No Prisma schema, migration, database object, Shopify merchant-app behavior, or operational billing model is changed. `ARCH-014-ADMIN-007` has no downstream dependency edge, so acceptance does not promote another task. No further ADMIN-007 implementation attempt is required.
