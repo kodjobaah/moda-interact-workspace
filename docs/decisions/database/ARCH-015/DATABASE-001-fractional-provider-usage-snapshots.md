@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -190,3 +190,57 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 The bounded evidence-type migration is complete and contains no database,
 consumer, pricing, entitlement, refund, or enum expansion. Review commit
 `a61c4d1` and promote the task according to the coordinator lifecycle.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Accepted**
+
+Architect review verified implementation commit
+`a61c4d11ad06eded6eaf4097c593b46245332b76` against the ARCH-015 v1.1
+database contract and the workflow-owned Completion Report at
+`9ac512838f7651f513f70f22397329433afaa3d8`.
+
+The implementation satisfies the functional contract:
+
+```text
+RecoveryCreditPurchase.providerUsageQuantityBeforeSnapshot: Int -> Decimal
+RecoveryCreditPurchase.providerUsageQuantityAfterSnapshot:  Int? -> Decimal?
+existing integer evidence is cast losslessly to DECIMAL(65,30)
+UsageEvent.quantity remains Decimal
+entitlement / owned-credit / refund-credit quantities remain Int
+no new model, enum, lock, refund or pricing schema is introduced
+existing purchase valuation/state constraints remain in force
+```
+
+The migration is additive to the accepted migration chain and does not rewrite
+historical migration SQL. The historical first-production validator continues to
+assert the immutable historical `INTEGER` baseline, while the ARCH-015 validator
+asserts the current Decimal schema and migration. The generated ERD reflects only
+the two authorised provider-evidence type changes.
+
+The executor's revalidation correctly distinguishes the stale local `moda_interact`
+fixture from migration correctness. The mandated migration applies successfully to a
+fresh database created from the checked-in ARCH-010/014-compatible migration chain,
+with exact integer preservation, fractional `3.75` support, nullable after-snapshot
+support, and integer entitlement/refund quantities. The stale local fixture is an
+environment-baseline limitation and is not a production implementation defect.
+
+No further implementation attempt is required.
+
+### Dependency reconciliation
+
+`ARCH-015-DATABASE-001` is now **Complete**.
+
+Do not promote an enabled dependant solely from this acceptance. In the reviewed
+workspace snapshot, `ARCH-015-SHOPIFY-002` still also depends on
+`ARCH-015-SHOPIFY-001`; `ARCH-015-BACKGROUND-001` additionally depends on
+`ARCH-015-SHOPIFY-002`; and `ARCH-015-BACKGROUND-003` additionally depends on the
+later purchase/reconciliation/refund path.
+
+The user has separately stated that `ARCH-015-SHARED-001` has been marked Complete.
+That newer Shared lifecycle edit is intentionally not rewritten by this DATABASE
+review patch because it is outside this task's workflow-owned files and is not present
+in the uploaded DATABASE-001 snapshot. Reconcile the combined frontier after those
+branches/states are brought together.
