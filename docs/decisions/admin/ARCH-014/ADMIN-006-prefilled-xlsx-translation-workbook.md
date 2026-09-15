@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 56
 executor: null
 claimed_at: null
@@ -931,6 +931,31 @@ STOP and return to `moda_architect` without broadening scope if implementation a
 12. changing operational BillingPlan/runtime billing behavior.
 
 Return the task to `moda_architect` in `review` and STOP when all authorized work is complete.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Functional finding
+
+The workbook generation/parsing architecture, exact `exceljs@4.4.0` dependency, canonical schema-v2 adapter boundary, locale/highlight structure, stale-draft revalidation, human-facing XLSX flow and existing ADMIN-005 behavior are acceptable. One non-destructive-upload defect remains in the client state transition.
+
+`processSelectedTranslationWorkbook(...)` currently stores `uploadedBytes` for every file that passes the outer file envelope, including bytes for which `parseMerchantPricingTranslationWorkbook(...)` returns `workbookValid: false` / `INVALID_XLSX`. The `uploadedBytes` revalidation effect then parses those bytes again and executes `onChangeRef.current("", null)` because there is no canonical result. Therefore this sequence can clear a previously accepted parent translation state merely because the administrator selected unreadable XLSX bytes.
+
+That contradicts the binding ADMIN-006 rule that file read/XLSX decode failure is non-destructive and the mandatory proof that invalid XLSX bytes do not replace current accepted canonical state.
+
+### Exact Attempt 2 correction
+
+1. In `src/components/admin/merchant-pricing-translation-workbook.tsx`, preserve the existing parent canonical translation state when the newly selected file cannot be decoded/validated as a workbook (`workbookValid === false`). In particular, an `INVALID_XLSX` result MUST NOT cause the `uploadedBytes` revalidation effect to call the parent with `("", null)`.
+2. Only retain bytes in the state used for future stale-draft revalidation when the uploaded workbook is structurally valid (`workbookValid === true`). A structurally valid but canonically incomplete workbook is still allowed to replace the parent with its canonical JSON plus invalid `translationResult`; that is how missing translations continue to gate Save/Create.
+3. Preserve the existing required exact error text for unreadable XLSX and preserve the previously accepted canonical parent state. Do not change stale-workbook behavior for an already accepted workbook when the current draft later changes; that revalidation must continue to invalidate stale canonical state.
+4. Add one focused regression that proves the state transition, not only the parser return value: starting from an accepted canonical translation state, selecting invalid/unreadable XLSX bytes shows the read error and does not invoke a parent-clearing `onChange("", null)` transition. Existing oversized, multi-file and wrong-type non-destructive behavior must remain unchanged.
+
+### Scope boundary
+
+Do not redesign the workbook/parser, change ExcelJS, touch Prisma/database/Shopify code, change schemaVersion 2, change retention logic, change the 20-locale contract, or broaden this into general workbook hardening. The implementation commit `222ce51` is otherwise acceptable; Attempt 2 is limited to the client state transition above and its focused regression evidence.
 
 ## Completion Report
 
