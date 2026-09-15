@@ -1,7 +1,7 @@
 ---
 id: ARCH-015
 title: Recovery-credit purchase, reconciliation, cross-subscription consumption and refund refactor
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-09-15
 updated: 2026-09-15
@@ -313,3 +313,64 @@ migration chain applies ARCH-015 successfully. It does not block this acceptance
 
 `ARCH-015-DATABASE-001` is therefore **Complete**. Enabled dependants remain subject
 to their other declared prerequisites; this acceptance does not bypass the task graph.
+## Post-review update — SHARED-001 Attempt 1 Changes Requested
+
+Architect review of `ARCH-015-SHARED-001` accepted the provider-context identity
+format and legacy/native derivation rules, but found one fail-open defect in the
+generic comparison helper.
+
+The current implementation can treat two blank required values as matching because
+it trims and compares them without requiring non-empty evidence. ARCH-015 requires a
+purchase to be classified as current provider context only when provider identity,
+plan handle and billing period are all positively present and equal.
+
+Therefore ARCH-015 remains **In Progress** and the same SHARED-001 task must be
+corrected so:
+
+```text
+valid non-empty identity + plan + billingPeriod, all equal
+  -> current provider context = true
+
+any missing/blank identity, plan or billingPeriod
+  -> current provider context = false
+```
+
+Event-handle membership remains an operation-specific caller check and is not added to
+the generic Shared comparator.
+
+Attempt 1 published `@modainteract/moda-interact-shared@0.11.1`; that immutable release
+must not be overwritten. The corrected task must publish and exact-version smoke-test
+`0.11.2` before architect acceptance.
+
+No downstream dependency is unblocked until `ARCH-015-SHARED-001` is Complete.
+
+
+## Post-review update — SHARED-001 Attempt 2 External Publication Blocker
+
+`ARCH-015-SHARED-001` Attempt 2 closes the only production defect identified in
+Attempt 1. The canonical Shared comparator now fails closed when provider identity,
+plan handle or billing period evidence is blank, and the corrected package is versioned
+as `0.11.2`. No further Shared source correction is requested.
+
+npm accepted publication of `@modainteract/moda-interact-shared@0.11.2`, but the
+registry had not yet made that exact version resolvable for the mandatory clean
+consumer smoke. The task is therefore **Blocked on external npm registry visibility**
+rather than returned for another implementation attempt.
+
+Required sequencing remains:
+
+```text
+ARCH-015-SHARED-001 Attempt 2
+  functionally accepted
+  + exact 0.11.2 registry artifact/consumer smoke pending
+  -> Blocked
+
+registry smoke passes
+  -> same Attempt 2 returns to Architect Review
+  -> architect acceptance
+  -> dependent ARCH-015 tasks may be promoted
+```
+
+Do not create Attempt 3, republish `0.11.2`, or bump another Shared version solely to
+work around propagation. No downstream dependency is unblocked until SHARED-001 is
+Complete.
