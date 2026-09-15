@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-15T18:40:22Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
 - ARCH-014-ADMIN-004
@@ -814,39 +814,46 @@ STOP and return to `moda_architect` without broadening scope if any of the follo
 
 Status: Ready for Review
 
-Implementation commit: `cdea0aaf2d62e43f066f18b1930f491319066c09` (pushed to `task/ARCH-014-ADMIN-005`).
+Audit disposition: the prior implementation satisfied the specified schema, economics, pricing-mode, currency, translation-parser, upload, disclosure, and regression requirements. One confirmed presentation gap was found and corrected: portfolio economics diagnostics could identify an unbounded candidate event from builder state but always displayed the generic message instead of the deterministic Admin label. The correction now displays, for example, `Bronze Top Up gives recovery credits for free with no usage limit.` and keeps the required human guidance and collapsed technical details.
 
-Exact files changed:
+Implementation commits (pushed to `task/ARCH-014-ADMIN-005`):
+
+- `cdea0aaf2d62e43f066f18b1930f491319066c09` — initial ADMIN-005 implementation.
+- `5717514` — corrective pure presentation helper and focused test.
+
+Exact cumulative implementation files changed:
 
 - `src/components/admin/merchant-pricing-plan-builder.tsx`
 - `src/components/admin/merchant-pricing-translation-import.tsx`
+- `src/lib/admin/merchant-pricing-builder-presentation.ts`
 - `tests/security/admin-merchant-pricing-plan.test.mjs`
+- `tests/unit/merchant-pricing-builder-payload.test.ts`
 
-Implementation evidence:
+Requirement audit and evidence:
 
-- Usage events now use visible labels in the required order, human pricing-mode labels, ISO currency labels, tier labels, and explicit `Unlimited` open-tier text.
-- Builder payload serialization omits inactive fixed or tier pricing fields, while the existing economics engine remains authoritative.
-- `FIXED` zero-cost, unlimited events show the inline fail-closed guidance and disable step-4 `Next`; `UNBOUNDED_ZERO_COST_USAGE_EVENT` remains present in and returned by the economics engine.
-- Fixed usage pricing remains decimal major-unit input and final review uses existing ISO-currency `Intl.NumberFormat`; no FX conversion was added.
-- Portfolio diagnostics show human guidance first and keep raw code/status behind collapsed `Show technical details`.
-- Translation import keeps schemaVersion 2 and stable UUID content keys, shows the required translated-title-as-key guidance, and uses one `processSelectedTranslationFile` path for picker and drag/drop before the existing canonical parser runs from shared `rawJson` state.
-- Upload size/type/multiple-file/read failures preserve existing JSON and filename state; successful uploads expose filename and edited-after-upload feedback. Synthetic upload-error JSON is absent.
-- No database schema/migration, Shopify app, operational BillingPlan/runtime, economics policy, or third-party drag/drop dependency changed.
+- ADMIN-004 prerequisites are present: builder, importer, schemaVersion 2 parser/template, stable UUID `contentKey` highlights, unchanged portfolio economics, and fail-closed `UNBOUNDED_ZERO_COST_USAGE_EVENT`.
+- Usage-event labels/order, human pricing modes, ISO currency labels, no currency conversion, tier labels, `Unlimited`, inactive-pricing serialization, stale inactive economics exclusion, inline zero-cost warning, disabled Usage-events `Next`, human portfolio guidance, collapsed exact technical disclosure, and final review summaries are present.
+- Translation instructions/example, one canonical `rawJson` parser path, hidden accessible input, explicit button/drop zone, drag prevention, active state, exact size/type/multiple-file/read-error handling, non-destructive state preservation, filename/edit feedback, all required issue-summary categories, collapsed raw issue details, and exact count wording are present.
+- Stable schema-v2 UUID-keyed templates reject translated-title keys; server parsing/validation and operational billing controls are unchanged.
+- The 35 mandatory-test checklist was audited against the focused unit/security suites and source scans. The new direct pure-unit coverage proves deterministic labeled zero-cost diagnostics; existing tests prove capped zero-cost acceptance, malicious unbounded rejection, zero-cost one-plan validity, fixed money parsing, inactive pricing serialization contract, schema-v2/content-key retention, translation issue codes, upload contract, security, catalogue placement, highlights, portfolio economics, and billing disclosure regressions.
 
-Focused validation:
+Validation results:
 
-- `npm run test:unit`: 42 passed.
-- `node --test tests/security/admin-merchant-pricing-plan.test.mjs tests/security/admin-billing-progressive-disclosure.test.mjs`: 16 passed.
-- `node --experimental-strip-types --test tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-translations.test.ts`: 39 passed.
-- Editor diagnostics for both changed TSX files: no errors.
-- Required source scans passed: required labels/messages present, synthetic upload-error JSON absent, and no `react-dropzone`/`dropzone` dependency found.
+- Focused before/after correction: 42 `test:unit` tests passed; Admin economics/payload/translation tests passed 39 before the correction and 40 after it; both required security suites passed 16 before the correction; the focused Admin security suite passed 7 after the correction.
+- Required source scans passed: labels/messages and `UNBOUNDED_ZERO_COST_USAGE_EVENT` are present; synthetic `{"error":"Translation package..."}` replacement is absent; no `react-dropzone` or `dropzone` dependency is present.
 - `git diff --check`: passed.
+- `npm test`: blocked in unrelated repository suites by missing prepared-worktree dependencies `@prisma/client` and `bullmq`; focused security suites passed independently.
+- `npm run prisma:validate`: blocked because `prisma` is not installed.
+- `npm run prisma:generate`: blocked because `prisma` is not installed.
+- `npx tsc --noEmit`: blocked because TypeScript is not installed; editor diagnostics had reported no errors for the changed TSX files before this corrective helper was added, and the helper is exercised by the passing strip-types unit suite.
+- `npm run build`: blocked at its required Prisma generation step because `prisma` is not installed.
+- `npm run format:check`: blocked because Prettier is not installed.
 
-Required validation limitations:
+Isolation and boundaries:
 
-- `npm test` could not complete because the prepared worktree has missing installed dependencies including `@prisma/client` and `bullmq`; the focused security suites passed independently.
-- `npm run prisma:validate`, `npm run prisma:generate`, and `npm run build` are unavailable because `prisma` is not installed in the prepared worktree; build stopped at its required Prisma generation step.
-- `npx tsc --noEmit` is unavailable because TypeScript is not installed in the prepared worktree; editor diagnostics reported no errors for the changed files.
-- `npm run lint -- --no-warn-ignored ...` and `npm run format:check` are unavailable because `eslint` and `prettier` are not installed. No formatting changes were made, and `git diff --check` passed.
-
-The prepared isolation packet was used as supplied: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-005`, parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-005`, mirrored branch `task/ARCH-014-ADMIN-005`, claim commit `5f706e14074b1476c199601ac2e26771cd3472e1`, and dependency gate `ARCH-014-ADMIN-004` complete. No Architect Review section was edited.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-005`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-005`.
+- Mirrored branch: `task/ARCH-014-ADMIN-005`.
+- Prepared claim commit: `d0a53fc069d4c6ac6ab0a31232c7e282ad0bdb9a`.
+- Database submodule remained at `f202931c58dba7f9fcc53c74333736e978e8b6de`; no database/Shopify/schema/runtime/economics-policy files changed.
+- No Architect Review section was edited. Executor and claim were cleared, and task status is `review`.
