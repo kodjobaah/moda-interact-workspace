@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 90
 executor: null
 claimed_at: null
@@ -1165,3 +1165,136 @@ not the reason for Changes Requested; the blocking issue is the functional pendi
 recovery read above.
 
 No new ARCH-013 task is created. No dependent billing-v1.1 work is unblocked.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Accepted**
+
+This review prioritises functional merchant-route behaviour and lifecycle data boundaries
+over test-count exhaustiveness.
+
+Attempt 2 closes the only production defect identified in Attempt 1. No Attempt 3 is
+required.
+
+### Accepted pending-recovery boundary
+
+`app/routes/app/home/route.jsx` now resolves the merchant experience state and calls
+`readPendingRecoveries(...)` only when the canonical policy permits:
+
+```text
+canAccessMerchantSurface(state, "PENDING_RECOVERIES") == true
+```
+
+The resulting functional behaviour is now:
+
+```text
+ONBOARDING
+  -> onboarding early return
+  -> no pending-recovery read
+  -> no dashboard/history business reads
+
+ACTIVE / TRIALING
+  -> merchant experience state ACTIVE
+  -> real pending-recovery read remains available
+
+NO_CONTRACT
+FROZEN
+BILLING_ATTENTION
+  -> historical dashboard / billing-period / usage / recovery reads remain available
+  -> readPendingRecoveries is not called
+  -> pendingRecoveries is the bounded unavailable payload
+  -> pendingRecoveriesUpdatedAt remains null
+```
+
+This restores agreement between the `/app` home loader and the same `PENDING_RECOVERIES`
+surface policy already used by the standalone JSON resource.
+
+### Attempt-1 functionality preserved
+
+Architect inspection and the published Attempt-2 diff show that the correction changed
+only the home-loader pending-recovery gate and its focused regression coverage. The
+previously accepted ARCH-013 behaviour remains intact:
+
+```text
+all 8 MerchantExperienceState values and exact surface matrix
+/app/billing/options nested under the App shell
+standalone /app/billing/select
+standalone /app/billing/callback
+standalone /app/reinstalling
+standalone /app/pending-recoveries
+removed /app/billing with no compatibility alias
+removed /app/additional
+removed stale billing/recovery-credits module
+onboarding Choose plan -> /app/billing/select
+billing/status/capacity destinations -> /app/billing/options
+state-derived App navigation
+NO_CONTRACT/FROZEN historical usage and dashboard reads
+ACTIVE-only Promotions
+FROZEN plan-selection denial
+support-only Messages navigation
+lifecycle-aware merchant-support CTAs
+explicit Breadcrumbs hierarchy
+billing-options heading correction
+purchased-credit-history parent -> /app/billing/options
+unchanged billing callback destination semantics
+```
+
+No billing v1.1, ARCH-011 proration, schema, Shared, Background, Messaging, Gateway or
+Admin behaviour was introduced.
+
+### Validation accepted
+
+Developer-reported validation is consistent with the supplied snapshot and the bounded
+Attempt-2 diff:
+
+```text
+Focused ARCH-013 suite: 10 files / 96 tests passed
+Full suite:             547 tests passed / 3 skipped
+Prisma validation:      passed
+Build:                  passed
+Route/source/deletion:  passed
+git diff --check:       passed
+```
+
+Repository-wide typecheck and lint retain the documented unchanged baseline failures.
+They do not alter the functional acceptance decision because the Attempt-2 production
+change is bounded and no new touched-file failure is reported.
+
+### Accepted implementation evidence
+
+The connected repositories independently resolve the developer-reported commits:
+
+```text
+moda-interact implementation correction
+5e444e061d38a4302a32c9b01382fc6fe1d7669e
+fix(shopify): gate home pending recovery reads
+
+parent Completion Report
+ab3c876ae5d850f2bd3910448b5313918ec3b361
+docs: record SHOPIFY-001 attempt 2 correction
+```
+
+The implementation commit changes only:
+
+```text
+app/routes/app/home/route.jsx
+tests/unit/home-route.test.ts
+```
+
+which is exactly the authorized Attempt-2 correction surface.
+
+### Architecture reconciliation
+
+`ARCH-013-SHOPIFY-001` is now **Complete**. It is the only implementation task defined
+for ARCH-013, so ARCH-013 is now **Implemented**.
+
+There is no remaining automatic ARCH-013 Ready frontier.
+
+Acceptance removes the ARCH-013 sequencing gate that prevented subsequent billing-v1.1
+architecture/task definition. It does **not** implicitly start, create or mark Ready any
+ARCH-011 or billing-v1.1 implementation task. Any later task that still names
+`/app/billing` must first be reconciled to the canonical ARCH-013 route graph.
+
+No Attempt 3 is required for `ARCH-013-SHOPIFY-001`.

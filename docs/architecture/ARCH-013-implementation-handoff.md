@@ -70,6 +70,6 @@ If the current code contradicts a named route/file assumption materially, or sat
 
 ## Current review state
 
-`ARCH-013-SHOPIFY-001` has been executed and returned to architect review. Attempt 1 received **Changes Requested** for one remaining functional issue: the `/app` home loader must not read pending-recovery business data for NO_CONTRACT, FROZEN or BILLING_ATTENTION.
+`ARCH-013-SHOPIFY-001` Attempt 2 is **architect-accepted Complete**. The home loader now applies the canonical `PENDING_RECOVERIES` surface policy before reading pending-recovery business data, so denied historical states receive the bounded unavailable payload without losing dashboard/history access.
 
-Re-run the **same** task through `/moda-task ARCH-013-SHOPIFY-001`; the next claim becomes Attempt 2. Do not start billing v1.1 or ARCH-011 Shopify implementation until SHOPIFY-001 is architect-accepted Complete.
+ARCH-013 is **Implemented** and has no remaining Ready task. The pre-billing routing gate is complete. Subsequent billing-v1.1 or ARCH-011 task definitions may now be reviewed/defined separately, but they are not implicitly started by this acceptance and must use the canonical ARCH-013 route graph.
