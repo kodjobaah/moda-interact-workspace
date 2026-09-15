@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T12:38:27Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-014-DATABASE-001
@@ -610,3 +610,47 @@ Rerun the task's existing focused reader/renderer/locale validation, required so
 Do not revisit subscription creation/selection semantics, `/app/billing/select`, database schema, operational `BillingPlan` topology, ADMIN-001/ADMIN-002, or the already-correct generic lifetime-allowance change.
 
 The task returns to `status: ready`; `attempt` remains `3`, with `executor` and `claimed_at` clear. The next authorized claim increments to Attempt 4. `ARCH-014-SYSTEM-TEST-001` remains gated until this task and `ARCH-014-ADMIN-002` are Complete.
+
+## Attempt 4 Completion Report
+
+Status: Ready for Review; implementation corrections are complete and the claim is cleared.
+
+### Audit and Corrections
+
+- Re-audited every Work Item and Acceptance Criterion in the current implementation, including active catalogue reader isolation, exact locale resolution and translation requirements, cataloguePosition-only ordering, onboarding DTO rendering, removal of hard-coded plan/top-up presentation, stale `PlanSelector` removal, Shopify subscription CTA preservation, and focused regression coverage.
+- Corrected `pt-BR` and `pt-PT` generic pricing labels for all ten ARCH-014 keys with natural regional Portuguese translations. The exact 20-locale registry remains intact, and the two regional catalogue objects remain distinct.
+- Changed onboarding to omit the Free recovery-credit proof item when no active `planKind === "FREE"` row exists. The existing DB-derived quantity remains unchanged when a Free plan exists.
+- Changed the ARCH-014 reader to fail closed when `GRADUATED` or `VOLUME` usage events contain a non-null `fixedUnitAmountMinor`, preserving the existing tier-shape validation and `MERCHANT_PRICING_CATALOGUE_INVALID:` prefix.
+- Added focused regression coverage for both tiered pricing modes, no-Free-plan rendering, and all Portuguese generic pricing placeholders.
+- Confirmed no changes to Shopify subscription selection/creation semantics or `/app/billing/select`; no operational `BillingPlan` topology is used by the catalogue reader. `PlanSelector` remains deleted and unreferenced.
+- Preserved database dependency `c6a8fb5b1debb309bb8aaea9d1168a3758f09201d` and all prior implementation commits.
+
+### Changed Files
+
+- `app/components/onboarding/Onboarding.jsx`
+- `app/i18n/locales/pt-BR.json`
+- `app/i18n/locales/pt-PT.json`
+- `app/services/merchant-pricing/merchant-pricing.server.js`
+- `tests/unit/merchant-pricing-reader.test.js`
+- `tests/unit/merchant-pricing-renderer.test.jsx`
+
+### Validation
+
+- Focused reader, renderer, locale, and home-loader suite: 30 passed across 4 files.
+- Full `npm test`: 566 passed, 3 skipped across 48 files.
+- Changed-path ESLint: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed; only existing Zod/Rollup and chunk-size warnings emitted.
+- Locale audit: all 20 catalogues contain all 10 generic pricing keys; Portuguese English placeholders are absent.
+- Required source/isolation scans: no runtime hard-coded commercial arrays/prices or removed plan-specific keys; no ARCH-014 reader dependency on operational billing models; no `PlanSelector` references.
+- `git diff --check`: passed.
+- `npm run typecheck`: non-zero on the documented pre-existing checked-JavaScript and billing baseline diagnostics; no new merchant-pricing reader diagnostic was introduced.
+- Repository-wide `npm run lint`: non-zero on existing unrelated dashboard, billing, privacy, merchant-support, and webhook diagnostics; changed-path lint passed.
+- No standalone format script is declared in `package.json`; `git diff --check` was the available format/whitespace check and passed.
+
+### Publication
+
+- Implementation commit: `d2d80fb` (`fix: close merchant pricing review gaps`), pushed to `origin/task/ARCH-014-SHOPIFY-001`.
+- Parent report branch: `task/ARCH-014-SHOPIFY-001`; claim cleared and status set to `review`.
+- Parent report commit: pending this report commit and push.
