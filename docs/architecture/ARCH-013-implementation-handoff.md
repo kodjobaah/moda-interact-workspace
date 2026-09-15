@@ -6,7 +6,7 @@ Architecture: [`ARCH-013-merchant-application-routing-navigation.md`](ARCH-013-m
 
 ## Binding execution order
 
-`ARCH-013-SHOPIFY-001` is architect-accepted **Complete**. `ARCH-013-SHOPIFY-002` is the only current Ready task and is a bounded residual-correction task.
+`ARCH-013-SHOPIFY-001` is architect-accepted **Complete** at Attempt 2. `ARCH-013-SHOPIFY-002` is architect-accepted **Complete** at Attempt 1. ARCH-013 has no remaining Ready task.
 
 ```text
 ARCH-013-SHOPIFY-001  Complete / Attempt 2 Accepted
@@ -83,4 +83,6 @@ After SHOPIFY-002 returns to `review`, STOP. Do not begin billing v1.1 or anothe
 
 `ARCH-013-SHOPIFY-001` Attempt 2 remains **architect-accepted Complete**. Its accepted implementation is the dependency baseline for SHOPIFY-002.
 
-`ARCH-013-SHOPIFY-002` is **Ready**. ARCH-013 therefore remains in progress until this bounded correction task is architect-accepted. Billing-v1.1 implementation is not yet started and remains sequenced after SHOPIFY-002 acceptance.
+`ARCH-013-SHOPIFY-002` Attempt 1 is **architect-accepted Complete**. Its correction derives purchase-history presentation from the canonical surface policy, hides the denied onboarding link, preserves direct route authorization, and repairs the billing UI test module without reopening SHOPIFY-001.
+
+ARCH-013 is **Implemented** and has no remaining Ready task. The SHOPIFY-002 sequencing gate on later billing-v1.1 work is satisfied; no later billing task is implicitly started or promoted by this acceptance.

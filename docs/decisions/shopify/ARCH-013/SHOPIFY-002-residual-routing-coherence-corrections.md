@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 90
 attempt: 1
 depends_on:
@@ -561,3 +561,122 @@ Ready for `moda_architect` review. Final metadata closure follows the published 
 - Reconfirmed the four-file implementation boundary and all accepted read-only routing files remain unchanged.
 - Re-ran the exact `npm test` command: PASS, 44 files passed, 2 skipped; 555 tests passed, 3 skipped.
 - The canonical task-definition copy outside this parent task worktree still shows stale `ready` metadata; the workflow-owned parent report remains the authoritative `review` record and is updated here.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Accepted**
+
+The review prioritised the functional ARCH-013 correction contract over additional test
+exhaustiveness. The implementation satisfies the two residual requirements without
+reopening the accepted SHOPIFY-001 route architecture. No Attempt 2 is required.
+
+### Functional acceptance
+
+Architect inspection confirms that `/app/billing/options` now derives exactly one
+presentation capability from the canonical route-access policy:
+
+```text
+purchaseHistoryAvailable = canAccessMerchantSurface(
+  merchantExperienceState,
+  "BILLING_PURCHASE_HISTORY"
+)
+```
+
+The value is returned by both loader result paths and is passed directly to
+`BillingPurchaseHub`. The component does not reinterpret merchant lifecycle state.
+
+The resulting merchant behaviour is:
+
+```text
+ONBOARDING
+  BILLING_OPTIONS          allowed
+  BILLING_PURCHASE_HISTORY denied
+  purchased-credit-history link hidden
+
+ACTIVE
+NO_CONTRACT
+FROZEN
+BILLING_ATTENTION
+  BILLING_OPTIONS          allowed
+  BILLING_PURCHASE_HISTORY allowed
+  purchased-credit-history link shown
+```
+
+Direct `/app/billing/recovery-credit-purchases` authorization remains unchanged and
+continues to guard `BILLING_PURCHASE_HISTORY` independently.
+
+### Test-module correction accepted
+
+`tests/unit/billing-ui.test.ts` now has one top-level import section. Both pre-existing
+suites remain present:
+
+```text
+canonical merchant billing UI
+merchant billing UI
+```
+
+The billing-options loader tests cover ONBOARDING, ACTIVE, NO_CONTRACT, FROZEN and
+BILLING_ATTENTION, and the component tests cover both visible and suppressed
+purchased-credit-history presentation.
+
+### Scope boundary
+
+The published implementation commit changes exactly the four authorized files:
+
+```text
+app/routes/app/billing/options/route.tsx
+app/components/dashboard/BillingPurchaseHub.jsx
+tests/unit/billing-purchase-hub.test.tsx
+tests/unit/billing-ui.test.ts
+```
+
+The canonical policy, route graph and direct purchase-history route were not changed.
+No billing v1.1, Prisma/database, Shared, Background, Messaging, Gateway or Admin
+behaviour was introduced.
+
+### Validation accepted
+
+The Completion Report and follow-up audit record:
+
+```text
+Focused Vitest:  4 files / 67 tests passed
+Full npm test:   555 tests passed / 3 skipped
+Build:           passed
+Focused ESLint:  passed
+git diff --check: passed
+Typecheck:       TYPECHECK-001 baseline only; no changed-file diagnostics
+```
+
+The supplied snapshot contains no `node_modules`, so the architect did not reconstruct a
+new dependency environment solely to rerun the suite. Source inspection and the published
+commit agree with the recorded functional and scope evidence.
+
+### Accepted implementation evidence
+
+The connected repositories resolve:
+
+```text
+moda-interact implementation
+20a60344ec2e8957a55bc245f1c880f7bf58cc1c
+fix billing purchase history route coherence
+
+parent audit update
+7aeb83ccf894faedced51e7945b0b79c88f11ce8
+
+parent final audit-record update
+a95b94b725282a64da446b6ab0e8d884e916d5a6
+```
+
+### Architecture reconciliation
+
+`ARCH-013-SHOPIFY-002` is now **Complete** at Attempt 1. `SHOPIFY-001` remains
+Complete / Attempt 2 Accepted. ARCH-013 is therefore **Implemented** with no remaining
+ARCH-013 Ready task.
+
+Acceptance removes the explicit SHOPIFY-002 sequencing gate on later billing-v1.1 work.
+It does not automatically start, create or promote an ARCH-011/billing-v1.1 task; that
+work remains a separate architecture/task-definition decision.
+
+No Attempt 2 is required for `ARCH-013-SHOPIFY-002`.
