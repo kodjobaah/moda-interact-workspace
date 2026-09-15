@@ -9,35 +9,15 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
-executor: copilot
-claimed_at: 2026-09-15T23:07:11Z
+executor:
+claimed_at:
 attempt: 3
 depends_on:
 - ARCH-014-DATABASE-003
 enables:
 - ARCH-014-SYSTEM-TEST-002
-created: 2026-09-15
-updated: 2026-09-15
----
-
-# ARCH-014-SHOPIFY-003
-
-## Objective
-
-Stop exposing the internal promotion campaign name/single legacy description to merchants. Promotion offers and promotion history must use the exact `PromotionCampaignTranslation` for the merchant application's resolved supported locale.
-
-## Binding GPT-5.6 Luna rule
-
-Implement only localization of promotion merchant copy. Do not change campaign eligibility, selection, grant/reservation accounting, concurrency, lifecycle, billing-plan targeting or route-access policy.
-
-## Current defect
-
-Current merchant code returns/renders:
-
-```text
-campaign.name
 campaign.merchantDescription
 ```
 
@@ -84,10 +64,6 @@ merchantDescription
 and MUST NOT expose/use `campaign.name` as the merchant title.
 
 Because ADMIN-008 activation requires 20/20, an ACTIVE campaign missing the exact requested translation is an integrity defect. Fail closed for the affected offer: do not substitute English, internal campaign name, legacy scalar description or a neighboring locale. Omit that campaign from the eligible offer list and make the condition observable in deterministic test evidence (existing logger convention if one exists; do not add a logging framework solely for this task).
-
-## Promotion history query
-
-Update history projection to select the exact requested campaign translation and expose:
 
 ```text
 campaignTitle
@@ -209,4 +185,25 @@ Validation:
 - `npm run typecheck`: repository command reports existing baseline diagnostics across unrelated JSX/routes and billing tests; after the local fix, no diagnostics reference changed promotion files.
 - `npm run lint`: repository command reports existing baseline errors in unrelated dashboard, billing, privacy, webhook, and telemetry files; no changed promotion file is reported.
 
-No architectural concerns or unresolved implementation dependencies remain. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-SHOPIFY-003`. Implementation HEAD: `596ac5d`.
+No architectural concerns or unresolved implementation dependencies remain. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-SHOPIFY-003`. Implementation HEAD: `46622fa`.
+
+## Attempt 3 Audit
+
+Status: Ready for Review.
+
+Audit conclusion: no production gap was found. The audit added focused regression coverage because the prior locale fixtures supplied only one row and could not prove that a requested locale was selected over another row.
+
+Checklist:
+
+- Objective and exact locale derivation: satisfied. The route derives `createMerchantI18n(merchantUi).catalogueLocale` from the existing `merchantUiContext(settings, session)` and passes the explicit locale to both readers; no service fallback exists.
+- Exact translation queries and presentation: satisfied. Offers project only the exact `merchantTitle` and `merchantDescription`; history projects exact `campaignTitle`; internal `campaign.name` and legacy scalar description do not reach merchant presentation.
+- Fail-closed and history fallback: satisfied. Missing exact ACTIVE translations omit the offer; missing history translations return `campaignTitle: null` and the route uses localized `promotions.history.titleUnavailable`.
+- Locale coverage: satisfied and now genuinely tested with mixed rows for `fr`, `ja`, `pt-BR`, `pt-PT`, `zh-Hans`, and `zh-Hant`, including distinct regional and script variants.
+- Catalogues: satisfied. All 20 catalogues contain `titleUnavailable`, and the existing canonical catalogue validation passed.
+- Unchanged semantics: verified. Eligibility, BillingPlan targeting, selection accounting, grant quantity, remaining calculation, lifecycle status, concurrency, and read-route no-write behavior remain covered and unchanged.
+- Mandatory tests and scans: satisfied. Focused promotion tests passed 41/41; the full suite passed 593 tests with 3 existing environment-skipped tests. The forbidden-string scan has no production matches, and the title key scan finds all 20 catalogues plus the route fallback.
+- Stop conditions: none. DATABASE-003 is integrated at `d44b621cdcc3635127b91601be648b61c0eff1e2`; no architecture or dependency conflict was encountered.
+
+Audit change: `tests/unit/services/promotion.service.test.ts` only, committed and pushed as `46622fa76049893a36afc9f26f4cd9d2aa8e3ea1` on `task/ARCH-014-SHOPIFY-003`. The implementation worktree was clean after publication.
+
+Validation limitations: `npm run typecheck` reports existing unrelated JSX, dashboard, support, usage, billing, and route diagnostics; no changed promotion file appears. `npm run lint` reports 16 existing errors and 2 warnings outside the changed promotion files. `npm run build` and `git diff --check` passed.
