@@ -420,5 +420,6 @@ runtime, recovery-credit handling, or billing-event handling was changed.
 
 ### Parent report publication
 
-Parent report commit: to be recorded after this report-only change is committed
-and pushed on `task/ARCH-014-ADMIN-003`.
+Parent report commit: `cd90331` (`docs(admin): record ARCH-014-ADMIN-003 audit`),
+pushed on `task/ARCH-014-ADMIN-003`. This hash-recording follow-up is the final
+report publication commit.
