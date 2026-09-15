@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 30
 executor: null
 claimed_at: null
@@ -203,6 +203,7 @@ Implementation complete for attempt 2. Return to `moda_architect` for review.
 - Database submodule: `f202931c58dba7f9fcc53c74333736e978e8b6de`.
 - Shared package: `@modainteract/moda-interact-shared` `^0.11.2`, lockfile `0.11.2`.
 - Implementation commit: `91717c0`.
+- Corrective implementation commit: `fdb72fc`.
 - Implementation pushed to `origin/task/ARCH-015-SHOPIFY-002`.
 
 ### Implementation Summary
@@ -211,14 +212,16 @@ Implementation complete for attempt 2. Return to `moda_architect` for review.
 - Verifies the selected live Shopify usage meter, provider cycle, and provider-before quantity/cost/currency.
 - Uses the Shared provider context identity helper, including the valid null legacy subscription fallback.
 - Revalidates provider and MerchantPricing configuration before the serializable transaction write.
+- Revalidates the complete selected live provider meter evidence immediately before the transaction and persists only that final evidence.
 - Uses exact shop/status/event-handle single-flight scope and preserves atomic PENDING UsageEvent plus REQUESTED purchase creation.
 - Adds per-offer POST forms and focused service/UI coverage; no direct App Events HTTP call was added.
 
 ### Validation Evidence
 
-- `npm test -- --run tests/unit/billing-purchase-hub.test.tsx tests/unit/billing-ui.test.ts tests/unit/services/billing.service.test.ts`: passed, 3 files / 210 tests.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-purchase-hub.test.tsx tests/unit/billing-ui.test.ts`: passed, 3 files / 213 tests.
 - `npm run build`: passed, including Prisma client generation and client/SSR bundles.
 - `git diff --check`: passed.
+- Added coverage for null legacy subscription identity, fractional provider-before quantity, previous-period/provider unresolved rows, independent event handles, provider evidence changes before the write, and ignored legacy singular top-up fields.
 - `npm run lint`: not clean because of 16 pre-existing errors in unrelated dashboard/routes/provider/test files; the touched test file has only existing duplicate-import warnings.
 - `npm run typecheck`: not clean because of existing broad JavaScript implicit-any and unrelated route errors; no task-specific validation was isolated by the repository command.
 
