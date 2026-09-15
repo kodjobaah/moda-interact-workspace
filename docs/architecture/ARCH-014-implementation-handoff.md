@@ -4,65 +4,77 @@ Date: 2026-09-15
 Coordinator: `moda_architect`
 Architecture: `ARCH-014-admin-managed-merchant-pricing-catalogue.md`
 
+## Current accepted baseline
+
+Already Complete before this delta:
+
+```text
+ARCH-014-DATABASE-001
+ARCH-014-ADMIN-001
+ARCH-014-ADMIN-002
+ARCH-014-ADMIN-003
+ARCH-014-SHOPIFY-001
+```
+
+Do not reopen those tasks for the new work.
+
 ## Binding execution rule for GPT-5.6 Luna
 
-Every task is deliberately explicit. The exact task file is the implementation contract. Do not infer another data model, route, locale policy, catalogue-order rule, pricing algorithm or save workflow.
+Each remaining task is deliberately explicit. The exact task file is the implementation contract. Do not infer another schema, translation format, card-content model, route, placement rule or save workflow.
 
 For every task:
 
-1. use the launcher-prepared isolated parent + implementation worktrees;
-2. record physical worktree/synchronization evidence in the Completion Report;
+1. use launcher-prepared isolated parent + implementation worktrees;
+2. record physical isolation/start synchronization evidence in the Completion Report;
 3. edit only the authorized repository/surface;
-4. run the exact focused validations plus repository-declared validation in the task;
-5. do not silently widen scope to solve unrelated baseline problems;
-6. if a named prerequisite capability differs materially from the inspected snapshot/task assumption, STOP and return exact evidence to `moda_architect`;
-7. when implementation is complete, set task to `review`, clear the claim, return to `moda_architect`, and STOP.
+4. use actual repository-declared scripts;
+5. do not silently widen scope to unrelated baseline cleanup;
+6. stop on any stated stop condition rather than improvising another architecture;
+7. return completed implementation to `moda_architect` in `review` and STOP.
 
-## Architecture invariants agents must not reinterpret
-
-```text
-Shopify remains subscription/billing authority.
-ARCH-014 MerchantPricing catalogue is self-contained.
-ARCH-014 database migration is additive-only.
-No existing table/model block/enum literal is schema-modified by DATABASE-001.
-No BillingPlan/BillingEconomicsSnapshot/BillingUpgradeEconomicsEdge row is needed to
-  create, validate, order, activate, deactivate or render ARCH-014 catalogue plans.
-No ARCH-014 Shared package task exists.
-Canonical 20 locales are explicitly fixed by architecture.
-No supported locale gets an English plan-description fallback.
-Plan order comes only from MerchantPricingPlan.cataloguePosition.
-No ordering by price/name/allowance/creation time/operational topology.
-0..5 Shopify pricing usage events per catalogue plan.
-1..6 tiers for GRADUATED/VOLUME.
-Pasted/uploaded translation JSON uses one parser.
-Every persisted plan has all 20 descriptions; no incomplete DB draft exists.
-No hard-coded merchant commercial plan matrix remains after SHOPIFY-001.
-Every lower->higher projected portfolio pair must PASS before economics-affecting save/activation.
-Existing operational billing runtime is untouched.
-```
-
-## Task graph
+## New binding architecture invariants
 
 ```text
-ARCH-014-DATABASE-001   additive self-contained MerchantPricing* persistence/integrity
-ARCH-014-ADMIN-001      pure multi-meter full-portfolio economics engine
-
-DATABASE-001 + ADMIN-001
-    -> ARCH-014-ADMIN-002
-       MerchantPricing plans view/builder + explicit catalogue ordering
-       + translations + atomic save/activation
-
-DATABASE-001
-    -> ARCH-014-SHOPIFY-001
-       active catalogue reader + onboarding rendering + hard-code removal
-
-ADMIN-002 + SHOPIFY-001
-    -> ARCH-014-SYSTEM-TEST-001
-       terminal/manual integrated acceptance
+Highlights are merchant presentation content, not Shopify usage events.
+DATABASE-002 creates only new highlight tables/validation; it does not ALTER any existing table.
+Every persisted highlight has exact 20 locale title+description translations.
+Plan name remains non-localized in ARCH-014 v1.
+Translation package schemaVersion is 2 after ADMIN-004.
+Translation v2 covers plan description + exact current highlight contentKey set for every locale.
+Highlight contentKey is stable UUID; reorder changes position only.
+Reorder-only edit does not invalidate translations.
+Changed/new/removed English highlight content requires a new completed translation package.
+Admin placement is shown in normal language; raw BEFORE/AFTER ids are hidden.
+Create compares the current DB catalogue order to the builder's captured order snapshot before placement/write.
+Final Admin Create/Save exists only on Translations & review step.
+Portfolio FAIL/UNVERIFIED cannot reach final review.
+One reusable MerchantPricingCatalogue renders onboarding and completed NO_CONTRACT pricing.
+NO_CONTRACT + zero active plans => pricing unavailable and no plan-selection/manage-capacity pricing CTA.
+Primary pricing cards render DB/localized highlights; raw FIXED/VOLUME/GRADUATED tier mechanics are not primary card content.
+Shopify remains subscription authority.
+Operational BillingPlan/topology remains outside ARCH-014 catalogue behavior.
 ```
 
-There are intentionally **no** `ARCH-014-SHARED-*`, `ARCH-014-DATABASE-002` or `ARCH-014-SHOPIFY-002` tasks, and `ARCH-014-ADMIN-002` has no ARCH-011 topology dependency.
+## Remaining task graph
+
+```text
+ARCH-014-DATABASE-002                       READY
+    |
+    +-------------------------------+
+    |                               |
+    v                               v
+ARCH-014-ADMIN-004                 ARCH-014-SHOPIFY-002
+PENDING until DB-002               PENDING until DB-002
+(depends also on ADMIN-003)        (depends also on SHOPIFY-001)
+    |                               |
+    +---------------+---------------+
+                    v
+          ARCH-014-SYSTEM-TEST-001
+                    PENDING
+```
+
+Once DATABASE-002 is architect-accepted/integrated, ADMIN-004 and SHOPIFY-002 are intentionally independent and **may execute at the same time**. Do not make either depend on the other.
 
 ## Materialisation state
 
-These definitions were authored against the supplied 2026-09-15 workspace snapshot and are **defined but not materialised**. No branch, worktree, claim, commit or push is asserted by this overlay. Normal `/moda-task` launcher preparation remains authoritative at execution time.
+This delta defines tasks against the supplied 2026-09-15 current snapshot in which ADMIN-003 is Complete. Applying the overlay materialises documentation only; it does not claim implementation worktrees/branches. Normal `/moda-task` launcher preparation remains authoritative.
