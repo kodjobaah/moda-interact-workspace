@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-15T13:45:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-014-ADMIN-002
@@ -310,7 +310,77 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ## Completion Report
 
-### Audit disposition
+### Attempt 2 Audit Disposition
+
+Attempt 2 completed the exact correction requested by Architect Review. The
+accepted ADMIN-002 MerchantPricing plans flow remains the active
+`view=plans` implementation: the page uses `getMerchantPricingPlans`,
+`getMerchantPricingPlanById`, `MerchantPricingPlanCatalog`, and
+`MerchantPricingPlanDrawer`, with no live BillingPlan catalogue/editor
+dependency. The exact nine-file legacy deletion boundary remains satisfied,
+the only remaining legacy-symbol matches are intentional negative assertions
+in the migrated security tests, and the preserved billing drawers,
+operational economics/controls files, and controls mutation path remain
+present.
+
+The architect-requested zero-live-reference correction removed exactly these
+nine keys from both `src/i18n/locales/en.json` and
+`src/i18n/required-keys.ts`:
+
+```text
+billing.active
+billing.inactive
+billing.activate
+billing.deactivate
+billing.reason
+billing.reasonPlaceholder
+billing.pass
+billing.fail
+billing.unverified
+```
+
+The exact-key scan over remaining `src` and `tests`, excluding the two
+catalogue/registry files, reports zero references for all nine keys.
+`billing.hardLimit`, `billing.tab.plans`, and `billing.plansDescription` were
+retained because they remain referenced. No unrelated source, test, database,
+schema, migration, operational billing, subscription, recovery-credit, or
+billing-event code was changed in Attempt 2.
+
+### Attempt 2 Status
+
+Ready for Architect Review. The implementation branch is pushed at
+`396eb0c`; the parent task claim is cleared and this task is set to `review`.
+
+### Attempt 2 Validation
+
+Passed:
+
+- focused security, visibility, MerchantPricing, progressive-disclosure, and
+   preserved economics/guardrail tests: 74/74;
+- JSON parse and exact nine-key absence validation;
+- exact nine-file absence check;
+- MerchantPricing ownership and legacy-reference scans, with only intentional
+   negative assertions remaining;
+- preserved drawer/control surface checks;
+- `git diff --check`.
+
+The database/schema proof from the current implementation baseline `3d186a5`
+has no changed `prisma`, `migrations`, or `database` path, and the verified
+database submodule remains `c6a8fb5b1debb309bb8aaea9d1168a3758f09201`.
+
+Environment-blocked validation:
+
+- `npm test` still fails during unrelated test module loading because local
+   dependencies including `bullmq` and `react` are not installed;
+- `npm run lint` is unavailable because `eslint` is not installed;
+- `npm run format:check` is unavailable because `prettier` is not installed;
+- `npm run build` is unavailable because `prisma` is not installed;
+- no `typecheck` script is declared in `package.json`, so no replacement was
+   invented.
+
+No task-caused focused-test failure was observed.
+
+### Attempt 1 Audit Disposition (historical)
 
 Audit completed against the complete current task definition and implementation
 commit `ae1b771`. No implementation gap was found, so no source or test fix was
@@ -321,7 +391,7 @@ zero live references for every removed candidate translation key. The only
 retained candidate key, `billing.hardLimit`, remains live in
 `src/components/admin/tenant-billing.tsx`.
 
-### Status
+### Attempt 1 Status (historical)
 
 Ready for Architect Review. The implementation branch is pushed; this parent
 task report is being submitted with the claim cleared.
@@ -371,7 +441,7 @@ authentication coverage. Preserved overview, packs, events, controls, and
 diagnostic assertions. Updated the one equivalent stale
 `admin-billing-visibility.test.mjs` assertion.
 
-### i18n decisions
+### Attempt 1 i18n decisions (historical)
 
 Applied the zero-live-reference rule after the nine files were absent. Removed
 the dead candidate keys from both `src/i18n/locales/en.json` and
