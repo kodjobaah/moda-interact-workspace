@@ -307,7 +307,7 @@ STOP if a provider refund cannot be tied to exact immutable purchase value, if a
 ## Completion Report
 
 ### Status
-Ready for Review. Attempt 3 completed the bounded settlement implementation after the shared package dependency gate was resolved. The stale Attempt 2 shared-package blocker is superseded by the observed `@modainteract/moda-interact-shared` refund message exports.
+Ready for Review. Attempt 4 completed all three mandatory Architect Review corrections on the existing implementation branch. The stale Attempt 2 shared-package blocker remains superseded by the observed `@modainteract/moda-interact-shared` refund message exports.
 
 ### Files Changed
 - Implementation repository:
@@ -374,6 +374,35 @@ Authoritative implementation worktree: `/Users/kwadwoadomafriyie/project/moda-in
 Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`.
 Implementation commit: `341d710` (`feat(admin): settle withdrawn recovery credit refunds`), followed by the audit correction commit recorded in the final task response and pushed to `origin/task/ARCH-010-ADMIN-003`.
 The parent report correction is being published on the mirrored parent branch after this update; its exact publication commit is recorded in the final task response and parent branch history.
+
+### Attempt 4 Correction Checklist and Requirement Audit
+
+1. **Zero-current completion is lot-independent: PASS.** Removed the shop-wide `aggregate.refundingQuantity === 0` precondition and removed the aggregate dependency from `completeZeroCurrent(...)`. Both lock and reject zero-current callers now close only the exact purchase/refund; they do not mutate aggregate quantities. Focused regression assertions prove a separate purchase hold cannot block this path and no aggregate update is present.
+2. **Currency precision is provider-currency derived: PASS.** Added ISO currency validation through `Intl.supportedValuesOf("currency")` and `Intl.NumberFormat(...).resolvedOptions().maximumFractionDigits`, preserving Prisma Decimal arithmetic and `ROUND_HALF_UP`. The fixed `toDecimalPlaces(2, ...)` path is absent; provider lock passes the immutable purchase currency. Focused assertions cover USD/JPY/KWD precision metadata paths and fail-closed validation.
+3. **Settlement controls are SUPER_ADMIN-only in the UI: PASS.** Billing now retains the page principal and passes `canSettle={principal.role === "SUPER_ADMIN"}`. The drawer renders `SettlementActions` only when `canSettle` is true while retaining evidence/read visibility for all authorized admins. Server mutation checks remain unchanged and independently enforce `SUPER_ADMIN`.
+
+Accepted behavior audit: exact live `currentAmount` remains the final quantity; historical purchase amount/currency remain the sole expected-money authority; provider-action CAS, reservation blocking, aggregate parity, evidence mismatch attention state, atomic completion, pre-provider rejection, idempotent messages/audit, no provider API, no negative App Event, and independent purchase-lot scope remain unchanged. No schema, shared package, background, Shopify app, or reactivation changes were made.
+
+### Attempt 4 Validation
+
+- Focused settlement/UI suites: 7 passed, 0 failed.
+- Required focused security suites (`admin-recovery-credit-refund-settlement`, `admin-recovery-credit-refunds`, `admin-security-boundary`, `admin-billing-controls`): 25 passed, 0 failed.
+- `npm run prisma:validate`: passed.
+- `npx tsc --noEmit`: passed after narrowing `Intl` precision and the persisted nullable currency field.
+- `npm run lint`: passed with two pre-existing `queue-monitor.tsx` `react-hooks/exhaustive-deps` warnings; no errors.
+- `npm run build`: passed. Existing BullMQ expression-dependency and optional `@valkey/valkey-glide` warnings remain.
+- `npm test`: 178 total, 176 passed, 2 unchanged baseline failures: `admin-internationalization.test.mjs` and `admin-merchant-support.test.mjs` still expect `@modainteract/moda-interact-shared` `^0.7.3` while the repository declares `^0.11.0`.
+- `git diff --check`: passed.
+
+### Attempt 4 Git / VCS Evidence
+
+- Launcher claim commit: `19eccd5`.
+- Authoritative implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`; prepared previous head `c2c7ccb`; implementation commit `4b8bd8d` pushed to `origin/task/ARCH-010-ADMIN-003`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`; launcher physical worktree isolation was preserved.
+- Launcher reported recursive submodules synchronized and at recorded commits; no submodule gitlink was staged or changed by this task.
+- Parent report publication commit is the final commit recorded in this task branch and in the final response.
+
+No unresolved implementation limitation remains within the bounded Admin scope. The two shared-package version assertions, lint warnings, build warnings, and Node module-type warnings are unrelated baseline conditions.
 
 ### Architect Review
 Ready for Architect Review. The independently identified reachability/evidence gap is fixed and validated. No unresolved implementation limitation remains within the bounded Admin scope. The two full-suite baseline failures and existing lint/build warnings are recorded above and are unrelated to this task.
