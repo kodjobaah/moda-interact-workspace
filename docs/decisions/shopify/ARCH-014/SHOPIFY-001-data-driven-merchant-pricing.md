@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T12:23:52Z
+executor:
+claimed_at:
 attempt: 3
 depends_on:
 - ARCH-014-DATABASE-001
@@ -479,3 +479,55 @@ were fixed and returned to `moda_architect`.
 The authoritative task definition was compared against the implementation. The
 identified gaps are closed; review the corrective commit and promote the task
 from `ready`/`Review` according to the coordinator lifecycle.
+
+## Attempt 3 Completion Report
+
+Status: Ready for Review; implementation commit pushed and claim cleared.
+
+### Findings and Correction
+
+- Re-audited the existing reader, loader, onboarding renderer, locale registry,
+  static keys, stale component references, Shopify subscription CTA boundary,
+  operational-billing isolation, and database dependency.
+- Found one confirmed gap: lifetime allowance rendering still used the
+  plan-specific `onboarding.pricing.free.allowance` key, while the task requires
+  a generic allowance label.
+- Changed onboarding to use `onboarding.pricing.lifetimeAllowance` and renamed
+  that translated key in all 20 locale catalogues. No commercial values,
+  subscription semantics, or database schema were changed.
+- Confirmed `PlanSelector.jsx` is deleted and unreferenced; no ARCH-014 reader
+  dependency on BillingPlan, BillingEconomicsSnapshot, or
+  BillingUpgradeEconomicsEdge exists; CTA remains `/app/billing/select`.
+- Confirmed the active reader uses MerchantPricingPlan visibility,
+  cataloguePosition ordering, exact resolved-locale translations, bounded
+  validation, and merchant-safe DTO projection. Database dependency remains
+  pinned at `c6a8fb5b1debb309bb8aaea9d1168a3758f09201`.
+
+### Changed Files
+
+- `app/components/onboarding/Onboarding.jsx`
+- `app/i18n/locales/{cs,da,de,en,es,fi,fr,it,ja,ko,nb,nl,pl,pt-BR,pt-PT,sv,th,tr,zh-Hans,zh-Hant}.json`
+
+### Validation
+
+- Focused reader, renderer, locale, and home-loader suite: 27 passed.
+- Full `npm test`: 562 passed, 3 skipped; one unrelated existing timing failure
+  in `tests/unit/health/health-check.server.test.ts` measured 1499 ms against
+  a 1500 ms lower-bound assertion.
+- Changed-path ESLint: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed; only existing dependency/chunk warnings emitted.
+- `npm run typecheck`: non-zero on the documented checked-JavaScript and billing
+  baseline diagnostics; no new merchant-pricing reader diagnostic was found.
+- All 20 locale JSON files passed the generic-key/removal audit, required source
+  searches returned no stale commercial arrays/prices, removed plan-specific
+  pricing keys, operational-billing reader references, or `PlanSelector`
+  references, and `git diff --check` passed.
+
+### Publication
+
+- Implementation commit: `1148769` (`fix: use generic lifetime allowance label`),
+  pushed to `origin/task/ARCH-014-SHOPIFY-001`.
+- Parent report commit: `f78be50de7487742779afc2d535c3cf8ee236bb8`.
+- Claim cleared; task status set to `review`.
