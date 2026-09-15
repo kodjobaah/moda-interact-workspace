@@ -429,11 +429,12 @@ ARCH-010-ADMIN-009   -> ARCH-014-ADMIN-001
 
 ARCH-014-DATABASE-001 + ARCH-014-ADMIN-001
     -> ARCH-014-ADMIN-002
+    -> ARCH-014-ADMIN-003
 
 ARCH-014-DATABASE-001
     -> ARCH-014-SHOPIFY-001
 
-ARCH-014-ADMIN-002 + ARCH-014-SHOPIFY-001
+ARCH-014-ADMIN-003 + ARCH-014-SHOPIFY-001
     -> ARCH-014-SYSTEM-TEST-001
 ```
 
@@ -445,14 +446,15 @@ System test is terminal/manual-gated and enables no implementation task.
 |---|---|---|
 | `ARCH-014-DATABASE-001` | Complete | `ARCH-010-DATABASE-013` |
 | `ARCH-014-ADMIN-001` | Complete | `ARCH-010-ADMIN-009` |
-| `ARCH-014-ADMIN-002` | Ready | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
+| `ARCH-014-ADMIN-002` | Complete | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
+| `ARCH-014-ADMIN-003` | Complete | `ARCH-014-ADMIN-002` |
 | `ARCH-014-SHOPIFY-001` | Complete | `ARCH-014-DATABASE-001` |
-| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-002`, `ARCH-014-SHOPIFY-001` |
+| `ARCH-014-SYSTEM-TEST-001` | Ready | `ARCH-014-ADMIN-002`, `ARCH-014-ADMIN-003`, `ARCH-014-SHOPIFY-001` |
 
-`ARCH-014-DATABASE-001` and `ARCH-014-ADMIN-001` are Complete. ADMIN-002 Attempt 3 requires one bounded projected-order correction and has been returned to Ready; SHOPIFY-001 is independently Ready. The ARCH-014 automatic Ready frontier is therefore:
+All ARCH-014 implementation prerequisites are Complete. The only Ready task is the terminal/developer-gated integrated validation task:
 
 ```text
-ARCH-014-ADMIN-002
+ARCH-014-SYSTEM-TEST-001
 ```
 
-The accepted `ARCH-014-ADMIN-002` sibling reconciliation is integrated separately; once both accepted branches are reconciled into the canonical parent state, `ARCH-014-ADMIN-003` is the remaining implementation Ready frontier and `ARCH-014-SYSTEM-TEST-001` stays gated until `ARCH-014-ADMIN-003` is Complete.
+Do not auto-start it. The developer may manually smoke-test the integrated implementation first and explicitly invoke the Ready system-test task when satisfied. Architecture status remains In Progress until the required system-test review/completion gate is satisfied.

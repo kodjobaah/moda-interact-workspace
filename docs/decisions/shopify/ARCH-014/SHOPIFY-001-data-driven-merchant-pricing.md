@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -707,3 +707,19 @@ Status: Ready for Review; complete audit found no implementation gap and no impl
 - No implementation commit was created because the audit found no confirmed gap; implementation remains at accepted commit `d2d80fb`.
 - Parent report commit: `ee81852` (`docs: audit SHOPIFY-001 attempt 5`), pushed to `origin/task/ARCH-014-SHOPIFY-001`.
 - Attempt 5 claim cleared; task status set to `review` for `moda_architect`.
+
+## Architect Review — Attempt 5
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 5 is a no-code re-audit of the already accepted implementation commit `d2d80fb`. The uploaded implementation tree is unchanged from the Attempt 4 review snapshot, and the complete live task contract was rechecked without identifying a functional gap.
+
+The previously accepted requirements remain satisfied: MerchantPricing-only catalogue isolation, `cataloguePosition` ordering, exact resolved-locale translation with no English commercial fallback, bounded fail-closed pricing validation, DTO-driven FIXED/GRADUATED/VOLUME rendering, natural 20-locale generic pricing copy, omission of the Free proof when no active Free plan exists, removal of hard-coded commercial catalogues and `PlanSelector`, and preservation of the `/app/billing/select` Shopify subscription boundary.
+
+The Attempt 5 Completion Report records successful focused/full tests, Prisma validation/generation, production build, changed-path lint, locale/source isolation scans and `git diff --check`. Documented repository-wide typecheck/lint diagnostics remain unrelated baseline conditions. No implementation change was required.
+
+`completion_mode: automatic`, therefore architect acceptance completes `ARCH-014-SHOPIFY-001` at Attempt 5.
