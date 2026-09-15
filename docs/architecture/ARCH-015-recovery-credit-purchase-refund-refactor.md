@@ -448,3 +448,19 @@ ARCH-015-SHOPIFY-001  Complete
 
 Downstream Background/refund tasks remain Pending until their declared prerequisites
 are complete.
+
+## Post-review update — SHOPIFY-002 Attempt 2 Changes Requested
+
+Architect review accepts the substantive purchase-admission rework in `fdb72fc`: selected `eventHandle` admission, exact ARCH-014 credits mapping, live Shopify meter proof, second pre-write provider snapshot, fail-closed provider-evidence comparison, Shared native-App-Pricing fallback identity, fractional provider-before evidence, exact same-handle unresolved scope, different-handle independence, and atomic PENDING UsageEvent + REQUESTED purchase creation.
+
+One concurrency-contract requirement remains unresolved. The current purchase write opens Prisma `$transaction(async (...) => ...)` without explicitly selecting Serializable isolation. ARCH-015 requires both:
+
+```text
+PostgreSQL SERIALIZABLE transaction
++
+Subscription row SELECT ... FOR UPDATE
+```
+
+The row lock is present and must remain. Attempt 3 must add Prisma Serializable isolation to this purchase transaction only and regression-test the transaction option while retaining the row-lock behavior. No schema/index/lock-table change is authorized.
+
+Therefore `ARCH-015-SHOPIFY-002` remains **Ready** on the same task after Attempt-2 review. `ARCH-015-BACKGROUND-001` and `ARCH-015-SHOPIFY-003` remain Pending until SHOPIFY-002 is architect-accepted Complete.

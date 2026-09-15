@@ -8,14 +8,10 @@
 
 ## Current architect review state
 
-`ARCH-015-SHOPIFY-001` Attempt 2 is **Accepted — Complete**.
+`ARCH-015-SHOPIFY-002` Attempt 2 is **Changes Requested**.
 
-Implementation `6706491` closes the interim multi-offer purchase-action defect without
-pulling `ARCH-015-SHOPIFY-002` purchase admission forward. Resolved offers remain
-visible and ordered, but are display-only; the extended ARCH-014 merchant-pricing
-reader from accepted/integrated `ARCH-014-SHOPIFY-002` remains intact.
+The selected-offer request contract, fresh Shopify/ARCH-014 proof, second provider snapshot, persisted revalidated provider evidence, exact same-handle single-flight scope, fractional quantity support, null legacy-id fallback, and independent event-handle behavior are accepted.
 
-Because `ARCH-015-SHARED-001`, `ARCH-015-DATABASE-001`, and
-`ARCH-015-SHOPIFY-001` are now Complete, `ARCH-015-SHOPIFY-002` is **Ready**.
+One correction remains: the purchase write uses Prisma `$transaction(...)` without explicitly requesting Serializable isolation even though the canonical task requires a Serializable transaction in addition to the existing `Subscription ... FOR UPDATE` lock. The same task remains **Ready** for Attempt 3; no downstream task is promoted.
 
 `ARCH-015-SHOPIFY-003` remains Pending until its declared prerequisites are complete.

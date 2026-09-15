@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -227,3 +227,93 @@ Implementation complete for attempt 2. Return to `moda_architect` for review.
 ### Completion Report Status
 
 Review requested; claim cleared. Return to `moda_architect` and stop. No merge to `main` was performed.
+
+## Architect Review — Attempt 2 Changes Requested
+
+### Verdict
+
+**Changes Requested.** The selected-offer admission and provider-evidence corrections are functionally sound, but the write transaction does not satisfy the task's explicit Serializable isolation contract.
+
+Accepted Attempt-2 behavior that MUST be preserved unchanged:
+
+- merchant input is limited to `intent`, valid `purchaseId`, and selected `eventHandle`;
+- credits are resolved from the exact current ARCH-014 plan/event, never from browser values;
+- the selected Shopify meter must exist in the live provider subscription;
+- a second Shopify lifecycle/provider snapshot is taken before the write transaction;
+- provider plan, cycle, identity, selected meter, meter price, quantity, cost and currency evidence are compared and the revalidated evidence is what gets persisted;
+- null Shopify legacy subscription identity remains valid through the Shared fallback identity;
+- fractional provider-before quantities remain accepted and persisted exactly;
+- unresolved single-flight scope remains exactly `(shopId, status=REQUESTED, shopifyEventHandleSnapshot)` and excludes billing period/provider identity/plan id;
+- different event handles remain independent;
+- one PENDING `UsageEvent` and one REQUESTED `RecoveryCreditPurchase` are created atomically;
+- no direct App Events HTTP submission occurs in the web request;
+- retired singular `BillingPlan.recoveryCreditsPerPack` and `BillingPlan.shopifyRecoveryCreditPackEventHandle` are not used for purchase admission.
+
+### Required correction
+
+In `app/services/billing/billing.service.ts`, the purchase write currently opens:
+
+```ts
+this.database.$transaction(async (transaction) => { ... })
+```
+
+with no isolation option. The canonical task requires step 14 to **start a Serializable transaction**. The Subscription `FOR UPDATE` lock remains required; Serializable isolation does not replace it.
+
+Change only the recovery-credit purchase transaction so it executes with Prisma Serializable isolation, using the repository-supported Prisma form, for example:
+
+```ts
+await this.database.$transaction(
+  async (transaction) => {
+    // existing Subscription FOR UPDATE lock and transaction body unchanged
+  },
+  { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+);
+```
+
+If this Prisma version exposes the enum/string differently, use the compile-valid equivalent that definitively requests PostgreSQL `SERIALIZABLE`. Do not change unrelated transactions.
+
+### Required regression test
+
+Add a focused test in `tests/unit/services/billing.service.test.ts` that captures the second argument supplied to the recovery-credit purchase `$transaction` call and proves:
+
+```text
+isolationLevel == Serializable
+```
+
+The test must also preserve/prove that the Subscription `FOR UPDATE` lock still executes before unresolved-purchase lookup/write work. Do not satisfy this only by asserting source text.
+
+Retain the existing concurrency/replay/provider-revalidation tests. No additional schema/index/lock table is authorized.
+
+### Validation
+
+Run at minimum:
+
+```bash
+npm test -- --run \
+  tests/unit/services/billing.service.test.ts \
+  tests/unit/billing-purchase-hub.test.tsx \
+  tests/unit/billing-ui.test.ts
+
+npm run build
+git diff --check
+```
+
+Also run repository typecheck/lint as currently required and report only genuine new diagnostics separately from documented baseline failures.
+
+### Scope boundaries
+
+Do NOT:
+
+- change the request contract;
+- move the second provider snapshot inside the database transaction;
+- remove the Subscription `FOR UPDATE` lock;
+- add a database uniqueness constraint or new lock table;
+- change single-flight scope;
+- reintroduce singular BillingPlan top-up fields;
+- change provider-context derivation;
+- call Shopify App Events from the route/service;
+- modify Background, Database, Shared or Admin repositories.
+
+### Lifecycle
+
+This is the **same `ARCH-015-SHOPIFY-002` task**. Keep `attempt: 2`, `executor: null`, and `claimed_at: null` while Ready. The next `/moda-task ARCH-015-SHOPIFY-002` claim must increment to Attempt 3 exactly once. After correction and validation, set `status: review`, clear the claim, update the Completion Report, and return to `moda_architect`.
