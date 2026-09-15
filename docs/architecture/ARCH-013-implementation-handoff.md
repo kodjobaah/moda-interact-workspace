@@ -68,6 +68,8 @@ change Background/Gateway/Messaging
 
 If the current code contradicts a named route/file assumption materially, or satisfying the task requires a billing/product decision not specified here, STOP and report the exact evidence to `moda_architect`.
 
-## Materialisation note
+## Current review state
 
-This definition was produced from the supplied 2026-09-15 workspace snapshot. It is a **portable canonical definition** and is `defined but not materialised` in the developer's canonical Git workspace until the normal `/moda-task ARCH-013-SHOPIFY-001` preparation/materialisation path creates/reuses the authoritative task branch/worktree.
+`ARCH-013-SHOPIFY-001` Attempt 2 is **architect-accepted Complete**. The home loader now applies the canonical `PENDING_RECOVERIES` surface policy before reading pending-recovery business data, so denied historical states receive the bounded unavailable payload without losing dashboard/history access.
+
+ARCH-013 is **Implemented** and has no remaining Ready task. The pre-billing routing gate is complete. Subsequent billing-v1.1 or ARCH-011 task definitions may now be reviewed/defined separately, but they are not implicitly started by this acceptance and must use the canonical ARCH-013 route graph.

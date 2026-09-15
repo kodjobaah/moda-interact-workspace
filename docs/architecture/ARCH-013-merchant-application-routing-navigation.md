@@ -1,7 +1,7 @@
 ---
 id: ARCH-013
 title: Merchant application routing, navigation and lifecycle coherence
-status: agreed
+status: implemented
 coordinator: moda_architect
 created: 2026-09-15
 updated: 2026-09-15
@@ -11,7 +11,7 @@ updated: 2026-09-15
 
 ## Status
 
-**Agreed for implementation.**
+**Implemented — SHOPIFY-001 Attempt 2 Accepted.**
 
 ARCH-013 is a bounded pre-billing-refactor initiative for `moda-interact` only. It fixes the merchant application's current route graph, access/navigation mismatch, breadcrumb hierarchy and stale route artefacts **before** implementation work begins from `Moda_Recovery_Credits_Shopify_App_Pricing_Design_v1.1`.
 
@@ -548,3 +548,61 @@ ARCH-013 routing work is complete only when:
 9. suspended/restoring support pages do not show Home/Billing/Promotions links;
 10. breadcrumbs contain no inaccessible or semantically false parent link;
 11. focused route/access/navigation tests and repository validation pass with no task regression.
+
+
+## Post-review update — SHOPIFY-001 Attempt 1 Changes Requested
+
+Architect review of the supplied Attempt-1 implementation found one remaining
+functional mismatch.
+
+The canonical merchant policy correctly denies `PENDING_RECOVERIES` to
+NO_CONTRACT/FROZEN/BILLING_ATTENTION, and the standalone `/app/pending-recoveries`
+resource respects that denial. However, the `/app` home loader still invokes the same
+pending-recovery reader for every onboarded merchant.
+
+Therefore ARCH-013 remains **In Progress** until the same `ARCH-013-SHOPIFY-001` task
+is corrected so:
+
+```text
+ACTIVE
+  -> /app may read real pending recoveries
+
+NO_CONTRACT / FROZEN / BILLING_ATTENTION
+  -> /app retains historical dashboard/usage reads
+  -> /app does not call readPendingRecoveries
+  -> pending-recovery presentation is bounded unavailable/empty
+```
+
+All other Attempt-1 routing/navigation/breadcrumb/CTA behaviour is retained. Billing
+v1.1 and ARCH-011 implementation remain gated until SHOPIFY-001 is architect-accepted
+Complete.
+
+## Post-review update — SHOPIFY-001 Attempt 2 Accepted
+
+Architect review confirms the Attempt-2 correction closes the final ARCH-013 functional
+gap.
+
+The `/app` home loader now uses the canonical merchant surface policy before reading
+pending-recovery business data:
+
+```text
+ACTIVE
+  -> may call readPendingRecoveries
+  -> receives real bounded pending-recovery data
+
+NO_CONTRACT / FROZEN / BILLING_ATTENTION
+  -> retain historical dashboard / billing-period / usage / recovery reads
+  -> do not call readPendingRecoveries
+  -> receive the bounded unavailable pending-recovery payload
+```
+
+The onboarding early return remains before all dashboard/history reads. The Attempt-2
+implementation did not reopen any previously accepted route, navigation, breadcrumb, CTA
+or billing-callback behaviour.
+
+`ARCH-013-SHOPIFY-001` is therefore **Complete** and ARCH-013 is **Implemented**.
+
+The ARCH-013 Ready frontier is empty. The sequencing gate on later billing-v1.1 design
+and task definition is removed, but no later task is automatically created or promoted by
+this acceptance. Any future implementation definition must use `/app/billing/options` and
+`/app/billing/select` according to the canonical route responsibilities established here.
