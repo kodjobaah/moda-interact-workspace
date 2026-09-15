@@ -1,7 +1,7 @@
 ---
 id: ARCH-013
 title: Merchant application routing, navigation and lifecycle coherence
-status: in_progress
+status: implemented
 coordinator: moda_architect
 created: 2026-09-15
 updated: 2026-09-15
@@ -11,7 +11,7 @@ updated: 2026-09-15
 
 ## Status
 
-**In progress — SHOPIFY-001 Attempt 2 remains Accepted/Complete; SHOPIFY-002 is Ready for bounded residual corrections.**
+**Implemented — SHOPIFY-001 Attempt 2 and SHOPIFY-002 Attempt 1 are Accepted/Complete.**
 
 ARCH-013 is a bounded pre-billing-refactor initiative for `moda-interact` only. It fixes the merchant application's current route graph, access/navigation mismatch, breadcrumb hierarchy and stale route artefacts **before** implementation work begins from `Moda_Recovery_Credits_Shopify_App_Pricing_Design_v1.1`.
 
@@ -619,3 +619,25 @@ The ARCH-013 Ready frontier is empty. The sequencing gate on later billing-v1.1 
 and task definition is removed, but no later task is automatically created or promoted by
 this acceptance. Any future implementation definition must use `/app/billing/options` and
 `/app/billing/select` according to the canonical route responsibilities established here.
+
+## Post-review update — SHOPIFY-002 Attempt 1 Accepted
+
+Architect review confirms the bounded residual correction is complete without changing
+the accepted ARCH-013 route topology or surface matrix.
+
+`/app/billing/options` now uses the canonical `BILLING_PURCHASE_HISTORY` surface solely
+to decide whether to advertise the purchased-credit-history link. Onboarding retains
+access to billing options but does not receive a link to a route its state cannot access.
+ACTIVE, NO_CONTRACT, FROZEN and BILLING_ATTENTION continue to receive that link.
+
+The direct purchase-history route remains independently guarded by the canonical policy,
+and the malformed billing UI test module has been restored to one valid import section
+while retaining both existing suites.
+
+`ARCH-013-SHOPIFY-001` remains **Complete / Attempt 2 Accepted**.
+`ARCH-013-SHOPIFY-002` is **Complete / Attempt 1 Accepted**. ARCH-013 is therefore
+**Implemented** and its Ready frontier is empty.
+
+The explicit routing-coherence gate before later billing-v1.1 work is satisfied. No
+billing-v1.1 or ARCH-011 task is automatically created, started or promoted by this
+acceptance.
