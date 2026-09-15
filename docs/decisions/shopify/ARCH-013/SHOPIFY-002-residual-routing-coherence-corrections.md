@@ -525,6 +525,7 @@ Status: Complete; returned to Architect Review.
 ### Implementation
 
 - Implementation commit: `20a6034` (`fix billing purchase history route coherence`), pushed to `task/ARCH-013-SHOPIFY-002`.
+- Parent Completion Report commit: `b474814`.
 - Changed implementation files:
   - `app/routes/app/billing/options/route.tsx`
   - `app/components/dashboard/BillingPurchaseHub.jsx`
@@ -552,4 +553,4 @@ The first full test invocation raced Prisma client generation during parallel va
 
 ### Architect Review
 
-Ready for `moda_architect` review. Parent Completion Report commit SHA will be recorded by the report commit.
+Ready for `moda_architect` review. Final metadata closure follows the published report commit above.
