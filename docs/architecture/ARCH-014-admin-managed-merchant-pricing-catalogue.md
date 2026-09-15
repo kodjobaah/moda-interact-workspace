@@ -485,7 +485,7 @@ ARCH-014-DATABASE-002 + ARCH-014-ADMIN-004 + ARCH-014-ADMIN-005 + ARCH-014-SHOPI
     -> ARCH-014-SYSTEM-TEST-001
 ```
 
-`DATABASE-002`, `ADMIN-004` and `SHOPIFY-002` are Complete. `ADMIN-005` is Ready after architect review and is the only remaining implementation task before the terminal system-test gate.
+`DATABASE-002`, `ADMIN-004`, `ADMIN-005` and `SHOPIFY-002` are Complete. The only remaining ARCH-014 task is the terminal/developer-gated `SYSTEM-TEST-001`, which is now Ready and must be invoked explicitly by the developer.
 
 System test is terminal/manual-gated and enables no implementation task.
 
@@ -501,7 +501,7 @@ System test is terminal/manual-gated and enables no implementation task.
 | `ARCH-014-DATABASE-002` | Complete | `ARCH-014-DATABASE-001` |
 | `ARCH-014-ADMIN-004` | Complete | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-003` |
 | `ARCH-014-SHOPIFY-002` | Complete | `ARCH-014-DATABASE-002`, `ARCH-014-SHOPIFY-001` |
-| `ARCH-014-ADMIN-005` | Ready | `ARCH-014-ADMIN-004` |
-| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-004`, `ARCH-014-ADMIN-005`, `ARCH-014-SHOPIFY-002` |
+| `ARCH-014-ADMIN-005` | Complete | `ARCH-014-ADMIN-004` |
+| `ARCH-014-SYSTEM-TEST-001` | Ready | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-004`, `ARCH-014-ADMIN-005`, `ARCH-014-SHOPIFY-002` |
 
-The current automatic Ready frontier is `ARCH-014-ADMIN-005`. `ARCH-014-SYSTEM-TEST-001` remains Pending and terminal/developer-gated until ADMIN-005 is Complete; DATABASE-002, ADMIN-004 and SHOPIFY-002 are already Complete. Architecture status remains In Progress until the terminal system-test gate is accepted.
+No automatic implementation task remains. `ARCH-014-SYSTEM-TEST-001` is Ready but terminal/developer-gated and must not auto-start; the developer explicitly invokes it. DATABASE-002, ADMIN-004, ADMIN-005 and SHOPIFY-002 are Complete. Architecture status remains In Progress until the terminal system-test gate is accepted.

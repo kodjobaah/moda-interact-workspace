@@ -66,13 +66,13 @@ ARCH-014-ADMIN-004                          COMPLETE
 ARCH-014-SHOPIFY-002                        COMPLETE
         |
         v
-ARCH-014-ADMIN-005                          READY
+ARCH-014-ADMIN-005                          COMPLETE
         |
         v
-ARCH-014-SYSTEM-TEST-001                    PENDING
+ARCH-014-SYSTEM-TEST-001                    READY (DEVELOPER-GATED)
 ```
 
-DATABASE-002, ADMIN-004 and SHOPIFY-002 are architect-accepted/integrated. ADMIN-005 is **Ready** and is the only remaining implementation task. SYSTEM-TEST-001 remains Pending and terminal/developer-gated until ADMIN-005 is Complete.
+DATABASE-002, ADMIN-004, ADMIN-005 and SHOPIFY-002 are architect-accepted/integrated. No automatic implementation task remains. SYSTEM-TEST-001 is **Ready** but terminal/developer-gated and must be invoked explicitly by the developer.
 
 ## Materialisation state
 
