@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-15T16:53:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-002
@@ -675,3 +675,90 @@ Do not weaken translation completeness, economics gating or server revalidation 
 ## Completion protocol
 
 Completion Report must list exact changed files, v2 JSON example, placement concurrency evidence, translation-retention evidence, focused test counts and full validation results. Set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-004` on `task/ARCH-014-ADMIN-004`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-004` on `task/ARCH-014-ADMIN-004`.
+- Shared/default checkout switched or mutated: no.
+- Another task worktree reused: no.
+- DATABASE-002 submodule materialized at `f202931c58dba7f9fcc53c74333736e978e8b6de`.
+
+### Start-of-Attempt Synchronization
+
+- Parent remote task branch fast-forwarded: not-needed.
+- Parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed.
+- Implementation `origin/main` incorporated: already-current.
+- Recursive submodule synchronization and initialization: passed; database submodule initialized at the recorded commit.
+- Launcher claim commit: `4fc095b8ee450068a5bb72112eb477a53b86cc43`.
+
+### Changed Files
+
+- `src/components/admin/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant-pricing-translation-import.tsx`
+- `src/app/actions/merchant-pricing-plan.ts`
+- `src/lib/admin/merchant-pricing-builder-payload.ts`
+- `src/lib/admin/merchant-pricing-translations.ts`
+- `src/lib/admin/merchant-pricing-plan.ts`
+- `tests/unit/merchant-pricing-builder-payload.test.ts`
+- `tests/unit/merchant-pricing-translations.test.ts`
+
+### Implemented Contract
+
+- Exactly seven builder steps; `Merchant content` is step 5 and the only Create/Save control is in step 7.
+- Human-readable catalogue placement with exact create `catalogueOrderSnapshot`; fresh-order mismatch rejects before writes with: `The pricing list changed while you were editing. Review where this plan should appear and try again.`
+- Stable canonical UUID highlight keys, add/move/remove controls, bounded content validation, and atomic highlight plus 20-locale translation rebuilds.
+- Server-authoritative payload, fresh-read, economics, translation, and final-submit gating. Highlights remain independent of portfolio economics.
+
+### Translation v2 Example
+
+```json
+{
+  "_meta": {
+    "schemaVersion": 2,
+    "planHandle": "starter",
+    "planName": "Starter",
+    "sourceLocale": "en"
+  },
+  "translations": {
+    "en": {
+      "description": "English plan description",
+      "highlights": {
+        "550e8400-e29b-41d4-a716-446655440000": {
+          "title": "Included capacity",
+          "description": "100 monthly recovery conversations."
+        }
+      }
+    }
+  }
+}
+```
+
+Generated packages contain all exact 20 locales. Validation requires schema v2, exact locale/highlight-key sets, bounded content, and exact English source equality; paste and upload use the same parser.
+
+### Translation Retention Evidence
+
+- New plans populate English and blank the other 19 locales.
+- Unchanged edit content retains all stored translations; changed descriptions/highlights invalidate stale translations and require a current schema-v2 package.
+- Reorder-only edits retain translations because equality uses stable content keys and normalized content, excluding order.
+
+### Validation Evidence
+
+- `npm test`: 167 passed, 2 failed out of 169; both are unchanged baseline assertions expecting shared package version `^0.7.3` while the current package declares `^0.11.2`.
+- `npm run test:unit`: 42 passed.
+- Focused payload/translation tests: 11 passed.
+- Focused security/progressive-disclosure/boundary tests: 24 passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed with existing BullMQ optional dependency/critical-dependency warnings.
+- `npm run lint -- --no-cache`: passed with 0 errors and 2 pre-existing hook warnings in `queue-monitor.tsx`.
+- `npm run format:check`: repository baseline reports 115 existing files with formatting issues; all eight task files pass targeted Prettier checks.
+- `git diff --check`: passed.
+
+### Architect Review
+
+Implementation commit: `4f575f6`. The complete builder/content/translation/gating flow is ready for `moda_architect` review. No operational `BillingPlan` dependency or database-table change was introduced.
