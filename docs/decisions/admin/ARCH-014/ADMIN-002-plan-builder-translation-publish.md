@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -695,3 +695,68 @@ Ready for Architect Review.
 - Implementation commit `00c8aa5` is published on `origin/task/ARCH-014-ADMIN-002`.
 - Parent report commit: `6523239` (published on `origin/task/ARCH-014-ADMIN-002`).
 - Claim cleared: `executor: null`, `claimed_at: null`.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Attempt 2 materially improves the ARCH-014 builder: the server action recomputes and asserts the authoritative portfolio before create/edit/activation writes; the client invokes the accepted ADMIN-001 evaluator with the configured premium threshold; save is blocked for returned FAIL/UNVERIFIED results; toggle reasons are bounded server-side; the ARCH-014 isolation scan is clean; and the focused parser/translation/security validation passes.
+
+The implementation is not yet functionally conformant with the live ADMIN-002 contract in three bounded areas. These are builder/runtime-contract defects, not requests for exhaustive additional test coverage.
+
+1. **Create preview uses the wrong catalogue position.** In `src/components/admin/merchant-pricing-plan-builder.tsx`, the create candidate is currently assigned `cataloguePlans.length` for portfolio preview regardless of the selected `placement` token. A `BEFORE:<firstId>` or middle `AFTER:<id>` proposal is therefore previewed as the final plan even though the server transaction evaluates it at the authoritative insertion index. Because catalogue order defines every lower->higher pair, the preview can display a different portfolio result from the one the server will enforce.
+2. **Usage-event/tier prices are collected as minor-unit integers instead of decimal money inputs.** The UI currently exposes `fixedUnitAmountMinor`, `amountPerUnitMinor`, and `flatAmountMinor` directly. ADMIN-002 requires normal decimal money inputs which are converted exactly to integer minor units, with the submitted money representation independently parsed/validated server-side under the same no-negative/no-exponent/no-thousands/>2-decimal rules as recurring price.
+3. **The economics preview omits required decision evidence.** The task requires, at minimum, chosen usage-event quantities, stay+top-up total, higher recurring price, and premium/result code in addition to lower/higher plan and additional credits. The current preview renders IDs, status/message, additional credits and code only.
+
+The server-side transaction remains fail-closed and no evidence was found of ARCH-014 operational `BillingPlan`/economics/topology writes. Do not redesign the transaction, translation parser, catalogue persistence, ADMIN-001 algorithm, or unrelated billing views as part of this rework.
+
+### Required Corrections
+
+1. **Make create preview placement-aware in `src/components/admin/merchant-pricing-plan-builder.tsx`.**
+   - For edit, continue to use the immutable persisted `plan.cataloguePosition`.
+   - For create, derive the candidate preview insertion index from the currently selected placement token and the `cataloguePlans` array supplied in canonical `cataloguePosition ASC` order:
+     - `ONLY` is preview-valid only when `cataloguePlans.length === 0`, with index `0`.
+     - `BEFORE:<id>` is preview-valid only when `<id> === cataloguePlans[0]?.id`, with index `0`.
+     - `AFTER:<id>` is preview-valid only when `<id>` resolves to an existing catalogue row, with index `resolvedIndex + 1`.
+   - Do not use `cataloguePlans.length` as the create position except when that is the actual result of `AFTER:<current-last-id>`.
+   - If the selected token cannot be resolved against the current client catalogue snapshot, fail the preview closed and disable save; do not silently substitute another position.
+   - Preserve the existing server-side fresh-read `placementIndex()` as final authority. The client logic is preview-only and MUST NOT weaken the server stale-token rejection.
+
+2. **Use decimal money draft fields for every usage price and reparse them server-side.**
+   - Keep normalized persisted/economics values as integer minor units.
+   - In the client draft, collect FIXED `unit amount`, tier `amount per unit`, and tier `flat amount` as decimal money text, just like recurring price. Do not label or expose these inputs as “minor” values.
+   - The serialized builder wire payload must carry the canonical decimal money text needed for independent server validation. Do not trust browser-computed minor integers as the only submitted authority.
+   - In `src/lib/admin/merchant-pricing-builder-payload.ts`, parse the recurring amount and all FIXED/tier money strings through the one existing exact money parser (or one shared pure helper with identical rules) and return the existing normalized `recurringAmountMinor` / `fixedUnitAmountMinor` / tier minor-unit values used by the action and ADMIN-001.
+   - Apply the task's exact money rules to every money field: trim; `.` decimal separator only; 0, 1 or 2 fractional digits; reject negative values, exponent notation, thousands separators, more than two decimals and unsafe integer minor-unit results.
+   - For edit initialization, convert stored minor units to deterministic decimal text without floating-point rounding ambiguity.
+   - Do not create a second economics calculator. Preview and server action must continue consuming ADMIN-001 after the same money normalization.
+
+3. **Render the complete minimum economics evidence already returned by ADMIN-001.**
+   For every deterministic lower->higher result, show:
+   - lower plan and higher plan;
+   - `additionalCreditsNeeded`;
+   - chosen usage-event quantities from `result.summary` (including event handle and quantity; displaying granted credits/cost as additional detail is allowed);
+   - `stayAndTopUpCostMinor` formatted using the portfolio currency when present;
+   - higher recurring price from `upgradeCostMinor` when present;
+   - `premiumBps` when finite, with an explicit representation for infinity/not-applicable;
+   - result `code`;
+   - result `status` (`PASS | FAIL | UNVERIFIED`).
+   Preserve deterministic result order from `evaluateMerchantPricingPortfolio()`.
+
+4. Keep the save gate fail-closed. A placement-resolution error, money-parse error, `FAIL`, or `UNVERIFIED` must prevent submission from the client. The existing server parse + authoritative projected-portfolio assertion remains mandatory regardless of client state.
+
+5. Add only focused regression evidence for these functional corrections:
+   - a create preview for `BEFORE:<first>` and one middle `AFTER:<id>` proves the candidate is evaluated at the selected catalogue position rather than last;
+   - decimal FIXED and tier money values normalize to expected minor units server-side, while one invalid decimal form is rejected;
+   - the preview rendering path exposes the required combination/cost/premium fields.
+   Existing accepted translation/security/economics coverage may be reused; no broad snapshot or combinatorial matrix is required.
+
+6. Re-run the task's focused parser/translation/security tests, relevant unit/typecheck/build/isolation validation, and `git diff --check`. Any unrelated repository-wide baseline failures may remain documented under the normal baseline policy.
+
+### Rework State
+
+Return this same task through `/moda-task ARCH-014-ADMIN-002`. Preserve `attempt: 2`; the next authorized claim increments it to Attempt 3. `ARCH-014-SYSTEM-TEST-001` remains gated until ADMIN-002 and SHOPIFY-001 are both Complete.

@@ -443,14 +443,15 @@ System test is terminal/manual-gated and enables no implementation task.
 
 | Task | Status | Depends On |
 |---|---|---|
-| `ARCH-014-DATABASE-001` | Ready | `ARCH-010-DATABASE-013` |
+| `ARCH-014-DATABASE-001` | Complete | `ARCH-010-DATABASE-013` |
 | `ARCH-014-ADMIN-001` | Complete | `ARCH-010-ADMIN-009` |
-| `ARCH-014-ADMIN-002` | Pending | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
-| `ARCH-014-SHOPIFY-001` | Pending | `ARCH-014-DATABASE-001` |
+| `ARCH-014-ADMIN-002` | Ready | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
+| `ARCH-014-SHOPIFY-001` | Ready | `ARCH-014-DATABASE-001` |
 | `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-002`, `ARCH-014-SHOPIFY-001` |
 
-After acceptance of `ARCH-014-ADMIN-001`, no dependent task is newly executable because `ARCH-014-DATABASE-001` remains incomplete. The ARCH-014 automatic Ready frontier is therefore:
+`ARCH-014-DATABASE-001` and `ARCH-014-ADMIN-001` are Complete. ADMIN-002 Attempt 2 requires bounded functional corrections and has been returned to Ready; SHOPIFY-001 is independently Ready. The ARCH-014 automatic Ready frontier is therefore:
 
 ```text
-ARCH-014-DATABASE-001
+ARCH-014-ADMIN-002
+ARCH-014-SHOPIFY-001
 ```
