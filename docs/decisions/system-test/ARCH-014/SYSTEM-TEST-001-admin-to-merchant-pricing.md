@@ -8,7 +8,7 @@ repository: moda-interact-system-test
 assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
-completion_mode: manual
+completion_mode: developer
 status: pending
 priority: 90
 executor: null
@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-014-ADMIN-002
+- ARCH-014-ADMIN-003
 - ARCH-014-SHOPIFY-001
 enables: []
 created: 2026-09-15
@@ -26,7 +27,7 @@ updated: 2026-09-15
 
 ## Terminal/manual gate
 
-Do **not** auto-start. The developer explicitly invokes this task after DATABASE-001, ADMIN-001/002 and SHOPIFY-001 are integrated and manually smoke-checked. No implementation task depends on this task.
+Do **not** auto-start. The developer explicitly invokes this task after DATABASE-001, ADMIN-001/002/003 and SHOPIFY-001 are integrated and manually smoke-checked. No implementation task depends on this task.
 
 ## Objective
 
