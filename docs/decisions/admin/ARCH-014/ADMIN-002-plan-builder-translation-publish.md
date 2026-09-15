@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -705,59 +705,53 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 2 materially improves the ARCH-014 builder: the server action recomputes and asserts the authoritative portfolio before create/edit/activation writes; the client invokes the accepted ADMIN-001 evaluator with the configured premium threshold; save is blocked for returned FAIL/UNVERIFIED results; toggle reasons are bounded server-side; the ARCH-014 isolation scan is clean; and the focused parser/translation/security validation passes.
+Attempt 3 correctly closes two of the three prior correction areas and materially improves the third:
 
-The implementation is not yet functionally conformant with the live ADMIN-002 contract in three bounded areas. These are builder/runtime-contract defects, not requests for exhaustive additional test coverage.
+- recurring/FIXED/tier money is now submitted as decimal text and independently normalized server-side to integer minor units using the exact shared money parser;
+- the economics preview now renders the required combination/cost/premium/status evidence returned by ADMIN-001;
+- placement tokens are now resolved to the intended insertion index and stale/unresolvable client tokens fail closed.
 
-1. **Create preview uses the wrong catalogue position.** In `src/components/admin/merchant-pricing-plan-builder.tsx`, the create candidate is currently assigned `cataloguePlans.length` for portfolio preview regardless of the selected `placement` token. A `BEFORE:<firstId>` or middle `AFTER:<id>` proposal is therefore previewed as the final plan even though the server transaction evaluates it at the authoritative insertion index. Because catalogue order defines every lower->higher pair, the preview can display a different portfolio result from the one the server will enforce.
-2. **Usage-event/tier prices are collected as minor-unit integers instead of decimal money inputs.** The UI currently exposes `fixedUnitAmountMinor`, `amountPerUnitMinor`, and `flatAmountMinor` directly. ADMIN-002 requires normal decimal money inputs which are converted exactly to integer minor units, with the submitted money representation independently parsed/validated server-side under the same no-negative/no-exponent/no-thousands/>2-decimal rules as recurring price.
-3. **The economics preview omits required decision evidence.** The task requires, at minimum, chosen usage-event quantities, stay+top-up total, higher recurring price, and premium/result code in addition to lower/higher plan and additional credits. The current preview renders IDs, status/message, additional credits and code only.
+One functional placement defect remains in the actual projected-portfolio assembly. Both the client preview in `src/components/admin/merchant-pricing-plan-builder.tsx` and the authoritative server helper `projectedPortfolio()` in `src/app/actions/merchant-pricing-plan.ts` append the proposed create candidate with `position = insertionIndex` while leaving existing rows at their current positions, then sort numerically. For `BEFORE:<first>` and any non-terminal `AFTER:<id>`, this creates a duplicate numeric position with the existing row currently occupying the insertion slot. JavaScript's stable sort leaves that existing row before the candidate, so the evaluated lower->higher order can still differ from the catalogue that will exist after the transaction shifts rows and inserts the candidate.
 
-The server-side transaction remains fail-closed and no evidence was found of ARCH-014 operational `BillingPlan`/economics/topology writes. Do not redesign the transaction, translation parser, catalogue persistence, ADMIN-001 algorithm, or unrelated billing views as part of this rework.
+Example with current catalogue `A@0, B@1, C@2`:
+
+```text
+BEFORE:A preview/server projection today -> A@0, NEW@0, B@1, C@2
+required projected catalogue           -> NEW@0, A@1, B@2, C@3
+
+AFTER:A preview/server projection today -> A@0, B@1, NEW@1, C@2
+required projected catalogue            -> A@0, NEW@1, B@2, C@3
+```
+
+This is an economics-enforcement defect, not merely presentation drift: create-time `projectedPortfolio()` performs the same duplicate-position sort before the real descending position shift. A create can therefore be approved/rejected against the wrong ordered pairs.
+
+No redesign of ADMIN-001, the translation subsystem, money parser, transaction boundary, or unrelated billing views is required.
 
 ### Required Corrections
 
-1. **Make create preview placement-aware in `src/components/admin/merchant-pricing-plan-builder.tsx`.**
-   - For edit, continue to use the immutable persisted `plan.cataloguePosition`.
-   - For create, derive the candidate preview insertion index from the currently selected placement token and the `cataloguePlans` array supplied in canonical `cataloguePosition ASC` order:
-     - `ONLY` is preview-valid only when `cataloguePlans.length === 0`, with index `0`.
-     - `BEFORE:<id>` is preview-valid only when `<id> === cataloguePlans[0]?.id`, with index `0`.
-     - `AFTER:<id>` is preview-valid only when `<id>` resolves to an existing catalogue row, with index `resolvedIndex + 1`.
-   - Do not use `cataloguePlans.length` as the create position except when that is the actual result of `AFTER:<current-last-id>`.
-   - If the selected token cannot be resolved against the current client catalogue snapshot, fail the preview closed and disable save; do not silently substitute another position.
-   - Preserve the existing server-side fresh-read `placementIndex()` as final authority. The client logic is preview-only and MUST NOT weaken the server stale-token rejection.
+1. **Make create projected order reflect the post-insert catalogue in both client and server paths.**
+   - Continue deriving create insertion index `k` from the explicit `ONLY` / `BEFORE:<first>` / `AFTER:<id>` token.
+   - Before calling `evaluateMerchantPricingPortfolio`, represent every existing row with `cataloguePosition >= k` as effective projected position `cataloguePosition + 1`, then place the proposed candidate at `k`; or construct the full projected catalogue by inserting/splicing the candidate at index `k` and only then derive the active economics portfolio.
+   - The resulting projected positions/order must be unique and identical to the catalogue order that will exist after the create transaction's descending shift + insert.
+   - Apply this to the create preview in `src/components/admin/merchant-pricing-plan-builder.tsx` **and** authoritative create evaluation in `src/app/actions/merchant-pricing-plan.ts`.
+   - Preserve edit behavior: replace the edited plan at its immutable persisted position without shifting unrelated plans.
+   - Preserve activation behavior: activation is not a catalogue insertion and must not shift positions.
+   - Preserve the rule that the proposed candidate participates in economics even when proposed `isActive=false`; existing rows participate only when active.
 
-2. **Use decimal money draft fields for every usage price and reparse them server-side.**
-   - Keep normalized persisted/economics values as integer minor units.
-   - In the client draft, collect FIXED `unit amount`, tier `amount per unit`, and tier `flat amount` as decimal money text, just like recurring price. Do not label or expose these inputs as “minor” values.
-   - The serialized builder wire payload must carry the canonical decimal money text needed for independent server validation. Do not trust browser-computed minor integers as the only submitted authority.
-   - In `src/lib/admin/merchant-pricing-builder-payload.ts`, parse the recurring amount and all FIXED/tier money strings through the one existing exact money parser (or one shared pure helper with identical rules) and return the existing normalized `recurringAmountMinor` / `fixedUnitAmountMinor` / tier minor-unit values used by the action and ADMIN-001.
-   - Apply the task's exact money rules to every money field: trim; `.` decimal separator only; 0, 1 or 2 fractional digits; reject negative values, exponent notation, thousands separators, more than two decimals and unsafe integer minor-unit results.
-   - For edit initialization, convert stored minor units to deterministic decimal text without floating-point rounding ambiguity.
-   - Do not create a second economics calculator. Preview and server action must continue consuming ADMIN-001 after the same money normalization.
+2. **Keep all Attempt-3 accepted corrections unchanged.**
+   - Decimal recurring/FIXED/tier draft money remains server-reparsed into integer minor units.
+   - Invalid decimal forms remain fail-closed.
+   - Economics preview continues rendering lower/higher, additional credits, chosen event quantities, stay+top-up cost, higher recurring cost, premium/result code and status.
+   - Client and authoritative server save gates continue rejecting `FAIL` and `UNVERIFIED`.
 
-3. **Render the complete minimum economics evidence already returned by ADMIN-001.**
-   For every deterministic lower->higher result, show:
-   - lower plan and higher plan;
-   - `additionalCreditsNeeded`;
-   - chosen usage-event quantities from `result.summary` (including event handle and quantity; displaying granted credits/cost as additional detail is allowed);
-   - `stayAndTopUpCostMinor` formatted using the portfolio currency when present;
-   - higher recurring price from `upgradeCostMinor` when present;
-   - `premiumBps` when finite, with an explicit representation for infinity/not-applicable;
-   - result `code`;
-   - result `status` (`PASS | FAIL | UNVERIFIED`).
-   Preserve deterministic result order from `evaluateMerchantPricingPortfolio()`.
+3. **Add only focused regression evidence for the order actually submitted to ADMIN-001.**
+   - With active `A@0, B@1, C@2`, `BEFORE:A` must call/equivalently construct ADMIN-001 order `NEW, A, B, C`.
+   - With active `A@0, B@1, C@2`, `AFTER:A` must call/equivalently construct order `A, NEW, B, C`.
+   - Verify the authoritative server create projection follows the same order, not just `resolveMerchantPricingPreviewPosition()` returning `0`/`1`.
+   - `AFTER:<current-last>` remains `A, B, C, NEW` and edit/activation ordering remains unchanged.
 
-4. Keep the save gate fail-closed. A placement-resolution error, money-parse error, `FAIL`, or `UNVERIFIED` must prevent submission from the client. The existing server parse + authoritative projected-portfolio assertion remains mandatory regardless of client state.
-
-5. Add only focused regression evidence for these functional corrections:
-   - a create preview for `BEFORE:<first>` and one middle `AFTER:<id>` proves the candidate is evaluated at the selected catalogue position rather than last;
-   - decimal FIXED and tier money values normalize to expected minor units server-side, while one invalid decimal form is rejected;
-   - the preview rendering path exposes the required combination/cost/premium fields.
-   Existing accepted translation/security/economics coverage may be reused; no broad snapshot or combinatorial matrix is required.
-
-6. Re-run the task's focused parser/translation/security tests, relevant unit/typecheck/build/isolation validation, and `git diff --check`. Any unrelated repository-wide baseline failures may remain documented under the normal baseline policy.
+4. Re-run the existing focused parser/translation/security validation, the relevant ADMIN-001/economics tests, TypeScript/build/isolation validation available in the repository, and `git diff --check`. No broader combinatorial test expansion is required.
 
 ### Rework State
 
-Return this same task through `/moda-task ARCH-014-ADMIN-002`. Preserve `attempt: 2`; the next authorized claim increments it to Attempt 3. `ARCH-014-SYSTEM-TEST-001` remains gated until ADMIN-002 and SHOPIFY-001 are both Complete.
+Return this same task through `/moda-task ARCH-014-ADMIN-002`. Preserve `attempt: 3`; the next authorized claim increments it to Attempt 4. `ARCH-014-SYSTEM-TEST-001` remains gated until ADMIN-002 and SHOPIFY-001 are both Complete.
