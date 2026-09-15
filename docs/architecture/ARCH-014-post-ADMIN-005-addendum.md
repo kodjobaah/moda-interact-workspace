@@ -17,26 +17,26 @@ exceljs@4.4.0
 ```text
 ADMIN-005 COMPLETE                    DATABASE-002 COMPLETE
       │                                      │
-      ├────────► ADMIN-006 READY              └────────► DATABASE-003 COMPLETE
+      ├────────► ADMIN-006 COMPLETE           └────────► DATABASE-003 COMPLETE
       │                │                                      │
       └────────► ADMIN-007 READY              ┌───────────────┴──────────────┐
                                                │                              │
                                 ADMIN-006 + DATABASE-003               DATABASE-003
                                                │                              │
                                                ▼                              ▼
-                                      ADMIN-008 PENDING              SHOPIFY-003 READY
+                                      ADMIN-008 READY                SHOPIFY-003 READY
                                                │                              │
                                                └───────────────┬──────────────┘
                                                                ▼
                                                     SYSTEM-TEST-002 PENDING
 
 ADMIN-006 + existing MerchantPricing prerequisites
-      └────────► SYSTEM-TEST-001 PENDING (developer-gated)
+      └────────► SYSTEM-TEST-001 READY (developer-gated)
 ```
 
-`DATABASE-003` is now architect-accepted Complete. `ADMIN-006`, `ADMIN-007`, and `SHOPIFY-003` are the current Ready automatic tasks.
+`DATABASE-003` and `ADMIN-006` are architect-accepted Complete. `ADMIN-008`, `ADMIN-007`, and `SHOPIFY-003` are the current Ready automatic tasks in this branch-local coordination view; `SYSTEM-TEST-001` is separately Ready but developer-gated.
 
-`SHOPIFY-003` may start immediately. `ADMIN-008` stays Pending until `ADMIN-006` is also Complete so it reuses the established XLSX implementation.
+`SHOPIFY-003` and `ADMIN-008` may start immediately and independently. `ADMIN-008` must reuse the XLSX implementation established by accepted `ADMIN-006`.
 
 ## Promotion localization invariant
 
