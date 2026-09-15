@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-010-ADMIN-009
 enables:
@@ -322,3 +322,168 @@ STOP if the implementation would require:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Status
+
+Ready for Architect Review
+
+### Review Findings Addressed
+
+- Detects unbounded zero-cost VOLUME paths when only the final open-ended tier is free.
+- Rejects padded event handles instead of silently trimming commercial identifiers.
+- Uses one locale-independent lexicographic comparator for event ordering and tie-breaking.
+- Returns `ECONOMICS_SEARCH_LIMIT_EXCEEDED` for required unbounded VOLUME tier entries above the candidate limit.
+
+### Validation Results
+
+- Focused ARCH-014 tests: 24/24 pass, including four regression cases for the review findings.
+- Existing admin economics unit suite: 42/42 pass.
+- `git diff --check`: pass.
+- Implementation commit: `af1b933` (`fix(admin): close portfolio economics validation gaps`).
+- Full repository tests and toolchain checks remain subject to the previously recorded missing dependency/tool binaries (`bullmq`, `typescript`, `eslint`, `prettier`).
+
+### Handoff
+
+- Implementation branch: `task/ARCH-014-ADMIN-001`, published and clean.
+- Existing single-pack operational economics semantics remain unchanged.
+- Return to `moda_architect`; do not begin ARCH-014-ADMIN-002.
+
+## Completion Report
+
+### Status
+
+Ready for Architect Review
+
+### Files Changed
+
+- `moda-interact-admin/src/lib/admin/merchant-pricing-economics.ts` — pure bounded multi-meter pricing, dynamic-programming combination, pair, portfolio, validation and blocking assertion APIs.
+- `moda-interact-admin/tests/unit/merchant-pricing-economics.test.ts` — 20 focused ARCH-014 cases covering pricing modes, limits, validation, deterministic tie-breaking, portfolio ordering, failures and legacy behavior.
+
+### Work Completed
+
+- Added deterministic FIXED, VOLUME and GRADUATED usage pricing semantics with the required candidate quantity bounds.
+- Added validation for usage events, tiers, currencies, plan prices, allowances and unbounded zero-cost paths.
+- Added lexicographically ordered multi-meter dynamic programming with the specified cost, unit, overshoot and summary tie-break rules.
+- Added full ordered lower-to-higher portfolio evaluation and an assertion that blocks FAIL and UNVERIFIED results.
+- Left the existing `validateSinglePackShopifyEconomics` implementation and behavior unchanged.
+
+### Validation Results
+
+- Focused ARCH-014 tests: 20/20 pass.
+- Existing admin economics unit suite: 42/42 pass.
+- `git diff --check`: pass.
+- `npm test`: baseline blocked by missing `bullmq` dependency in existing queue-monitor/security tests; no ARCH-014 test failure was reported before those unrelated imports failed.
+- `npx tsc --noEmit --pretty false`: unavailable because `typescript` is not installed in the worktree.
+- `npm run lint`: unavailable because `eslint` is not installed in the worktree.
+- `npm run format:check`: unavailable because `prettier` is not installed in the worktree.
+- Direct Node test runs emit the repository's existing module-type warning; tests pass despite it.
+
+### Implementation Evidence
+
+- Implementation commit: `a6cfc60` (`feat(admin): add portfolio pricing economics evaluator`).
+- Published branch: `task/ARCH-014-ADMIN-001`.
+- Parent claim commit: `da79985`.
+
+### Deviations
+
+- No Prisma, Next integration, operational App Events, top-up runtime, or existing single-pack guardrail changes were required.
+- Architect Review remains untouched. Return to `moda_architect` for review.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+The implementation now satisfies the previously identified functional gaps around unbounded-free VOLUME tiers, padded event handles, locale-independent ordering/tie-breaking, and required oversized VOLUME candidates. The focused ARCH-014 suite passes 24/24, the existing operational economics coverage remains passing, and no operational single-pack semantics were changed.
+
+One functional requirement remains incomplete in the full-portfolio entry point. `evaluateMerchantPricingPortfolio()` validates commercial plan/event evidence only indirectly while generating lower->higher pairs. A projected portfolio containing exactly one plan generates zero pairs, so the plan is never validated. Consequently an invalid first catalogue plan can produce `[]`, and `assertMerchantPricingPortfolioPass([])` does not block it.
+
+Verified reproducer against Attempt 1: a one-plan portfolio containing a VOLUME event with paid early tiers, an open-ended zero-cost final tier, and `maximumUnitsPerBillingPeriod: null` returns an empty result array and the portfolio assertion passes. That contradicts this task's input-validation contract and the requirement that an unbounded zero-cost usage event returns `UNVERIFIED / UNBOUNDED_ZERO_COST_USAGE_EVENT`.
+
+### Required Corrections
+
+1. In `src/lib/admin/merchant-pricing-economics.ts`, add one pure plan-level validation path and invoke it from `evaluateMerchantPricingPortfolio()` for **every** plan in `orderedPlanIds` before generating any pair results. Do not rely on `evaluateMerchantPricingPair()` being called to validate a plan.
+2. The portfolio pre-validation must enforce the existing ADMIN-001 contract for each plan: non-negative safe-integer recurring amount and included credits; normalized uppercase 3-letter plan currency; 0..5 usage events; exact trimmed/unique event handles; bounded integer fields; pricing-shape/tier validation; usage-pricing currency equal to the owning plan currency; and `UNBOUNDED_ZERO_COST_USAGE_EVENT` detection. Reuse the existing validation helpers rather than creating a second interpretation.
+3. Preserve the existing pair algorithm, candidate generation, pricing semantics, premium comparison and deterministic tie-breaking. This correction is only about ensuring portfolio-level input validation is not skipped when there are fewer than two plans.
+4. A valid one-plan portfolio may still have zero lower->higher pair evaluations. An **invalid** one-plan portfolio must instead return at least one bounded `UNVERIFIED` result carrying the appropriate existing ARCH-014 result code so `assertMerchantPricingPortfolioPass()` blocks it. Do not introduce a new result code for this correction.
+5. Also verify the map identity while performing the portfolio pre-validation: for each `orderedPlanId`, the resolved plan's `id` must equal that key. A mismatch is `UNVERIFIED / INVALID_PORTFOLIO_ORDER`. This keeps the caller-supplied catalogue identity deterministic even for a one-plan portfolio.
+6. Add only focused regression coverage needed to prove the functional correction:
+   - valid one-plan portfolio remains valid with zero pair results;
+   - one-plan portfolio with the paid-early/open-ended-free VOLUME event is blocked with `UNBOUNDED_ZERO_COST_USAGE_EVENT`;
+   - one-plan key/`plan.id` mismatch is blocked with `INVALID_PORTFOLIO_ORDER`.
+7. Re-run the existing focused ARCH-014 suite, the existing economics unit coverage that is runnable in the prepared worktree, and `git diff --check`. No exhaustive new test matrix is required.
+
+### Rework State
+
+Return this same task through the normal `/moda-task ARCH-014-ADMIN-001` path. Preserve `attempt: 1`; the next authorized claim increments it to Attempt 2. `ARCH-014-ADMIN-002` remains gated because this task is not Complete.
+
+## Completion Report (Attempt 2)
+
+### Status
+
+Ready for Architect Review
+
+### Correction Evidence
+
+- Added one pure `validatePlanEvidence()` path that reuses the existing offer, pricing-shape, tier, bounded-integer, handle, and unbounded-zero-cost helpers.
+- `evaluateMerchantPricingPortfolio()` invokes plan-level validation for every ordered plan before pair generation, including one-plan portfolios.
+- Portfolio pre-validation enforces recurring amount, included credits, uppercase three-letter plan currency, usage-event bounds and identity rules, pricing bounds/shapes, usage currency equality, and unbounded zero-cost detection.
+- Verified each resolved `plansById` entry has `plan.id === orderedPlanIds` key; mismatches return `UNVERIFIED / INVALID_PORTFOLIO_ORDER`.
+- Preserved the existing pair loop, candidate generation, pricing semantics, premium comparison, tie-breaking, and operational single-pack guardrail behavior.
+- Added only the three required regressions: valid one-plan portfolio with zero pairs, invalid one-plan paid-early/open-ended-free VOLUME blocked with `UNBOUNDED_ZERO_COST_USAGE_EVENT`, and one-plan key/id mismatch blocked with `INVALID_PORTFOLIO_ORDER`.
+
+### Validation Results
+
+- Focused ARCH-014 suite: 27/27 pass.
+- Existing admin economics unit suite: 42/42 pass.
+- `git diff --check`: pass.
+- `npm test`: blocked by the existing missing `bullmq` dependency in queue-monitor/security tests; no changed economics test failure.
+- `npx tsc --noEmit --pretty false`: unavailable because the worktree has no installed TypeScript compiler.
+- `npm run lint`: unavailable because `eslint` is not installed in the worktree.
+- `npm run format:check`: unavailable because `prettier` is not installed in the worktree.
+- Direct Node test runs retain the repository's existing module-type warning.
+
+### Implementation Evidence
+
+- Previous implementation commit: `af1b933`.
+- Attempt 2 implementation commit: `3f9023e` (`fix(admin): validate single-plan pricing portfolios`).
+- Implementation branch `task/ARCH-014-ADMIN-001` is pushed and clean after the implementation commit.
+- Parent claim commit: `5826e4b`; prepared launcher startup, dependency gate, worktree synchronization, submodule preparation, and claim evidence were supplied by the launcher and not repeated.
+
+### Handoff
+
+- Parent task status is `review`; claim is cleared (`executor: null`, `claimed_at: null`).
+- Architect Review remains untouched. `ARCH-014-ADMIN-002` remains gated until Architect acceptance.
+
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 2 satisfies the bounded Changes Requested contract from Attempt 1. `evaluateMerchantPricingPortfolio()` now validates every resolved plan before pair generation, including a one-plan portfolio, and verifies that each `plansById` key equals the resolved `plan.id`. Invalid one-plan commercial evidence therefore returns a bounded `UNVERIFIED` result instead of escaping through an empty pair set, while a valid one-plan portfolio still correctly returns zero pair evaluations.
+
+The review also confirmed that the correction reuses the existing offer/pricing validation helpers and does not reinterpret the accepted pair algorithm, candidate generation, FIXED/GRADUATED/VOLUME pricing semantics, premium comparison, deterministic event ordering/tie-breaking, or the operational `validateSinglePackShopifyEconomics` path.
+
+Independent review validation against the uploaded Attempt 2 snapshot:
+
+- focused ARCH-014 economics suite: 27/27 passed;
+- existing operational single-pack economics suite: 42/42 passed;
+- the three requested one-plan regressions are present and exercise the required behavior;
+- implementation changes for Attempt 2 are confined to portfolio pre-validation plus the focused regression cases.
+
+The recorded missing `bullmq`, TypeScript, ESLint and Prettier installations are environment/tooling limitations already documented by the task and do not invalidate the functional acceptance evidence for this pure module.
+
+### Acceptance State
+
+- `ARCH-014-ADMIN-001`: Complete.
+- `ARCH-014-ADMIN-002`: remains Pending because `ARCH-014-DATABASE-001` is not Complete.
+- No further ADMIN-001 attempt is required.

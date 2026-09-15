@@ -1,7 +1,7 @@
 ---
 id: ARCH-014
 title: Admin-managed merchant pricing catalogue and portfolio economics
-status: agreed
+status: in_progress
 coordinator: moda_architect
 created: 2026-09-15
 updated: 2026-09-15
@@ -11,7 +11,7 @@ updated: 2026-09-15
 
 ## Status
 
-**Agreed for implementation.**
+**In Progress.**
 
 ARCH-014 replaces hard-coded merchant-facing pricing data with a self-contained Admin-authored database catalogue and replaces the Admin calculator's single-usage-meter assumption with deterministic portfolio economics across all active catalogue plans.
 
@@ -438,3 +438,19 @@ ARCH-014-ADMIN-002 + ARCH-014-SHOPIFY-001
 ```
 
 System test is terminal/manual-gated and enables no implementation task.
+
+## Current implementation state
+
+| Task | Status | Depends On |
+|---|---|---|
+| `ARCH-014-DATABASE-001` | Ready | `ARCH-010-DATABASE-013` |
+| `ARCH-014-ADMIN-001` | Complete | `ARCH-010-ADMIN-009` |
+| `ARCH-014-ADMIN-002` | Pending | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
+| `ARCH-014-SHOPIFY-001` | Pending | `ARCH-014-DATABASE-001` |
+| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-002`, `ARCH-014-SHOPIFY-001` |
+
+After acceptance of `ARCH-014-ADMIN-001`, no dependent task is newly executable because `ARCH-014-DATABASE-001` remains incomplete. The ARCH-014 automatic Ready frontier is therefore:
+
+```text
+ARCH-014-DATABASE-001
+```
