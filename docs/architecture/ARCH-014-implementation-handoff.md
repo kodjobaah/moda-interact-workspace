@@ -14,6 +14,7 @@ ARCH-014-ADMIN-001
 ARCH-014-ADMIN-002
 ARCH-014-ADMIN-003
 ARCH-014-SHOPIFY-001
+ARCH-014-DATABASE-002
 ```
 
 Do not reopen those tasks for the new work.
@@ -58,13 +59,13 @@ Operational BillingPlan/topology remains outside ARCH-014 catalogue behavior.
 ## Remaining task graph
 
 ```text
-ARCH-014-DATABASE-002                       READY
+ARCH-014-DATABASE-002                       COMPLETE
     |
     +-------------------------------+
     |                               |
     v                               v
 ARCH-014-ADMIN-004                 ARCH-014-SHOPIFY-002
-PENDING until DB-002               PENDING until DB-002
+READY                              READY
 (depends also on ADMIN-003)        (depends also on SHOPIFY-001)
     |                               |
     +---------------+---------------+
@@ -73,8 +74,12 @@ PENDING until DB-002               PENDING until DB-002
                     PENDING
 ```
 
-Once DATABASE-002 is architect-accepted/integrated, ADMIN-004 and SHOPIFY-002 are intentionally independent and **may execute at the same time**. Do not make either depend on the other.
+DATABASE-002 is architect-accepted/integrated. ADMIN-004 and SHOPIFY-002 are intentionally independent, are both **Ready**, and may execute at the same time. Do not make either depend on the other.
 
 ## Materialisation state
 
 This delta defines tasks against the supplied 2026-09-15 current snapshot in which ADMIN-003 is Complete. Applying the overlay materialises documentation only; it does not claim implementation worktrees/branches. Normal `/moda-task` launcher preparation remains authoritative.
+
+## Non-blocking tooling note
+
+DATABASE-002 is accepted on the implemented runtime/database contract. Broader SQL-spelling mutation coverage in `validate-arch014-plan-highlights.mjs` is optional tooling hardening and does not gate ADMIN-004, SHOPIFY-002 or SYSTEM-TEST-001.

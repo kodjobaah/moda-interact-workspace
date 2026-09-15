@@ -478,11 +478,11 @@ ARCH-014-DATABASE-002 + ARCH-014-ADMIN-003
 ARCH-014-DATABASE-002 + ARCH-014-SHOPIFY-001
     -> ARCH-014-SHOPIFY-002
 
-ARCH-014-ADMIN-004 + ARCH-014-SHOPIFY-002
+ARCH-014-DATABASE-002 + ARCH-014-ADMIN-004 + ARCH-014-SHOPIFY-002
     -> ARCH-014-SYSTEM-TEST-001
 ```
 
-`ADMIN-004` and `SHOPIFY-002` intentionally do **not** depend on each other. Once DATABASE-002 is accepted/integrated, they may execute at the same time in separate repository worktrees.
+`DATABASE-002` is architect-accepted Complete. `ADMIN-004` and `SHOPIFY-002` intentionally do **not** depend on each other and are now Ready to execute at the same time in separate repository worktrees.
 
 System test is terminal/manual-gated and enables no implementation task.
 
@@ -495,9 +495,9 @@ System test is terminal/manual-gated and enables no implementation task.
 | `ARCH-014-ADMIN-002` | Complete | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
 | `ARCH-014-ADMIN-003` | Complete | `ARCH-014-ADMIN-002` |
 | `ARCH-014-SHOPIFY-001` | Complete | `ARCH-014-DATABASE-001` |
-| `ARCH-014-DATABASE-002` | Ready | `ARCH-014-DATABASE-001` |
-| `ARCH-014-ADMIN-004` | Pending | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-003` |
-| `ARCH-014-SHOPIFY-002` | Pending | `ARCH-014-DATABASE-002`, `ARCH-014-SHOPIFY-001` |
-| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-004`, `ARCH-014-SHOPIFY-002` |
+| `ARCH-014-DATABASE-002` | Complete | `ARCH-014-DATABASE-001` |
+| `ARCH-014-ADMIN-004` | Ready | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-003` |
+| `ARCH-014-SHOPIFY-002` | Ready | `ARCH-014-DATABASE-002`, `ARCH-014-SHOPIFY-001` |
+| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-004`, `ARCH-014-SHOPIFY-002` |
 
-The next task is `ARCH-014-DATABASE-002`. After it is accepted/integrated, `ARCH-014-ADMIN-004` and `ARCH-014-SHOPIFY-002` become independently Ready and may execute in parallel. Architecture status remains In Progress until the terminal system-test gate is accepted.
+The current automatic Ready frontier is `ARCH-014-ADMIN-004` and `ARCH-014-SHOPIFY-002`; they are independent and may execute in parallel. `ARCH-014-SYSTEM-TEST-001` remains Pending and terminal/developer-gated until DATABASE-002, ADMIN-004 and SHOPIFY-002 are all Complete. Architecture status remains In Progress until the terminal system-test gate is accepted.
