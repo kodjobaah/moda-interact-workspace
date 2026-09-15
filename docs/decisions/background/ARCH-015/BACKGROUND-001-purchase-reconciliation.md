@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T23:36:28Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-015-SHARED-001
@@ -23,7 +23,7 @@ enables:
 - ARCH-015-SHOPIFY-003
 - ARCH-015-BACKGROUND-003
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015-BACKGROUND-001
@@ -766,3 +766,91 @@ Attempt 4 exactly once.
 `ARCH-015-BACKGROUND-002`, `ARCH-015-SHOPIFY-003`, and
 `ARCH-015-BACKGROUND-003` remain Pending until BACKGROUND-001 is architect-accepted
 Complete.
+
+## Completion Report — Attempt 4
+
+Status: Ready for Review
+
+Implementation commit: `476b1d4f7560043e5916fb6709ae481cdb917cab`, pushed to
+`origin/task/ARCH-015-BACKGROUND-001`.
+
+### Architect Review Correction Mapping
+
+- Retired singular `BillingPlan` pack-meter gate: implemented. Normal purchase
+  reconciliation now requires only a valid local billing period and exact provider
+  cycle, then passes the complete `providerUsageSnapshot`; it runs when the legacy
+  pack handle is null, disabled, or different from a candidate's event handle.
+- Candidate-specific provider authority: implemented and preserved. The service no
+  longer selects quantity/cost/currency from the singular projection handle; the
+  existing candidate service resolves each immutable purchase event handle from the
+  supplied snapshot and fails closed when it is absent.
+- Exact-cycle fail closed: implemented. Missing or non-forward provider cycles do not
+  enter purchase reconciliation; missing local billing-period identity remains a
+  bounded invalid-scope result.
+- Existing Attempt-3 corrections: preserved. Shared dependency remains exactly
+  `0.11.2`; canonical provider-context identity helpers, inactive-price parser
+  behavior, Decimal quantity proof, reported-event candidate discovery, ambiguity
+  handling, zero-cost activation, cost/currency/context/plan/cycle proof, atomic
+  idempotent activation, sequential/fractional handling, and best-effort resume
+  scheduling remain unchanged and green under focused validation.
+
+### Audit Checklist
+
+- Durable candidate discovery remains `REQUESTED` plus linked
+  `RECOVERY_CREDIT_PACK_PURCHASE` UsageEvent in `REPORTED` state.
+- Candidate ordering remains deterministic by creation time and id; multiple
+  unresolved candidates sharing an event handle remain ambiguous with no grant.
+- Candidate provider-before quantity/cost/currency snapshots remain immutable; no
+  active-purchase count or current singular plan meter derives expected quantity.
+- Exact Decimal arithmetic, zero-cost deltas, negative-delta rejection, currency
+  equality, provider context identity, plan, cycle, and exact event-handle proof remain
+  enforced.
+- Activation remains Serializable, guarded by optimistic purchase state, and atomically
+  increments `PURCHASED_RECOVERY_CREDITS`; replay remains idempotent.
+- Resume scheduling remains after commit and best effort.
+- No schema, database submodule, shared source, queue, status, refund, or other
+  repository changes were made.
+
+### Changed Files
+
+- `src/services/billing-reconciliation.service.ts`
+- `tests/unit/services/billing-reconciliation.service.test.ts`
+
+### Validation
+
+- `npm install`: completed; package scripts reported the repository's existing script
+  approval output without a dependency error.
+- Shared dependency proof: `npm ls` reports
+  `@modainteract/moda-interact-shared@0.11.2`; the public billing entrypoint exports
+  `deriveShopifyProviderContextIdentity` and
+  `isSameShopifyPurchaseProviderContext`.
+- Focused required suite: passed, 5 files / 105 tests.
+- Billing reconciliation focused suite: passed, 1 file / 40 tests.
+- `npm run build`: passed, including Prisma client generation and TypeScript compile.
+- `npm run test:unit`: 57 files passed; 922 passed / 2 failed / 924 total. The only
+  failures are the documented observability baseline mismatches in
+  `tests/unit/runtime/observability-startup.test.ts`: stale worker close-resource
+  source-text expectation and stale exact shared-runtime expectation of `0.9.0`,
+  conflicting with the required `0.11.2`. No task-owned test failed.
+- `git diff --check`: passed.
+
+### Worktree and Publication Evidence
+
+- Implementation worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-BACKGROUND-001`.
+- Implementation branch: `task/ARCH-015-BACKGROUND-001`, pushed at
+  `476b1d4f7560043e5916fb6709ae481cdb917cab`.
+- Database submodule: `d44b621cdcc3635127b91601be648b61c0eff1e2`.
+- Parent report worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-BACKGROUND-001`.
+- Attempt-4 claim commit: `1dc17745a43ead86701dd73cf852db9183bd3482`.
+- Dependencies passed: `ARCH-015-SHARED-001`, `ARCH-015-DATABASE-001`,
+  `ARCH-015-SHOPIFY-002`.
+- Architect Review was preserved unchanged; no submodule gitlink, schema, or other
+  task file was modified.
+
+### Limitations
+
+The full unit suite retains only the two documented observability baseline failures
+listed above. Focused task validation, build, dependency export proof, and all
+task-owned tests are green.
