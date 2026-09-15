@@ -9,11 +9,9 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-014-DATABASE-002
 - ARCH-014-SHOPIFY-001
@@ -21,6 +19,8 @@ enables:
 - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
+executor: null
+claimed_at: null
 ---
 
 # ARCH-014-SHOPIFY-002
@@ -457,3 +457,83 @@ Do not weaken ARCH-014 authority/isolation to continue.
 ## Completion protocol
 
 Completion Report must include reader DTO example with highlights, screenshots/source evidence for non-empty/empty/NO_CONTRACT states, focused test counts, hard-code scans and full validation results. Set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Implementation
+
+Audit result: the existing implementation satisfied the reader, catalogue, localized highlight, onboarding, NO_CONTRACT, operational-billing isolation, and database-pointer requirements. The corrective pass found one runtime defect in the authorized surface: `UsageOverview.jsx` used classic JSX without importing `React`, so direct rendering threw `ReferenceError: React is not defined`. This was fixed, and focused rendering tests now exercise the state branches.
+
+Audit additions: exact include/locale assertions and blank/duplicate plan-translation cases in `tests/unit/merchant-pricing-reader.test.js`; direct reusable-renderer order/CTA coverage in `tests/unit/merchant-pricing-renderer.test.jsx`; and new `tests/unit/merchant-pricing-usage-overview.test.jsx` covering non-empty/empty `NO_CONTRACT` and `ACTIVE`/`FROZEN`. Runtime correction: `app/components/dashboard/UsageOverview.jsx` imports and references `React`.
+
+Representative reader DTO:
+
+```js
+{
+  shopifyPlanHandle: "database-plan",
+  displayName: "Database Plan",
+  planKind: "PAID_METERED",
+  featured: true,
+  localizedDescription: "Description from the pricing database.",
+  includedRecoveryCredits: 42,
+  allowancePeriod: "EVERY_30_DAYS",
+  billingPeriod: "EVERY_30_DAYS",
+  recurringAmountMinor: 3500,
+  currency: "GBP",
+  highlights: [
+    { contentKey: "highlight-1", position: 0, title: "Localized highlight", description: "Admin-authored detail." },
+    { contentKey: "highlight-2", position: 1, title: "Second highlight", description: "Second ordered detail." }
+  ]
+}
+```
+
+The DTO preserves highlight database `position` order and omits `adminLabel`, highlight IDs, and highlight-translation IDs.
+
+### State and source evidence
+
+- Reader/schema: the implementation submodule exposes `MerchantPricingPlan.highlights`, `MerchantPricingPlanHighlight`, and `MerchantPricingPlanHighlightTranslation` at `f202931c58dba7f9fcc53c74333736e978e8b6de`. The reader queries only active plans in `cataloguePosition` order, includes exact resolved locale translations for plans/highlights, preserves highlight `position`, rejects missing/blank/duplicate exact-locale text, and returns no highlight IDs or `adminLabel`.
+- Non-empty onboarding: tests assert DB-supplied display name, description, amount, allowance, featured state, ordered highlight output, and retained `/app/billing/select` CTA. Onboarding has exactly one `MerchantPricingCatalogue` renderer and no raw meter card markup.
+- Empty onboarding and NO_CONTRACT: tests assert localized pricing unavailable output and absence of both `/app/billing/select` and `/app/billing/options` when the catalogue is empty.
+- Completed `NO_CONTRACT`: home-loader tests assert `pricingCatalogue` in the completed result; direct `UsageOverview` render tests assert the shared catalogue and `/app/billing/select`, with no `/app/billing/options` action.
+- `ACTIVE`/`FROZEN`: direct render tests assert existing `/app/billing/options` presentation remains and the catalogue is not injected.
+- Raw meter mechanics and copy: renderer tests assert `FIXED`, `GRADUATED`, `VOLUME`, tier amounts, and internal event handles are absent from card markup. Required legacy feature-key and operational `BillingPlan` scans are empty in the authorized pricing surfaces. No database pointer changed.
+- Screenshots: no browser capture was performed; visual evidence is unavailable. Source and server-rendered markup tests are the available presentation evidence.
+
+### Validation
+
+Focused validation after corrective edits:
+
+- `npm test -- tests/unit/merchant-pricing-reader.test.js tests/unit/merchant-pricing-renderer.test.jsx tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/home-route.test.ts`: **4 files passed, 25 tests passed**.
+- `npx eslint` over all changed JS/JSX/TS source and focused tests: **passed** with the repository warning that TypeScript 5.9.3 is outside the parser's supported `<5.4.0` range.
+- `git diff --check`: **passed**.
+
+Required full validation:
+
+- `npm test`: **passed**, 47 test files passed, 2 skipped; 574 tests passed, 3 skipped (577 total).
+- `npm run build`: **passed**. Existing environment output included npm `shamefully-hoist` warnings, Rollup annotation warnings, unresolved `.prisma/client/index-browser` external warning, empty route chunks, and large-chunk warnings.
+- `npm run typecheck`: **failed**, exit 2, with 118 diagnostics observed, including existing implicit-`any` diagnostics in `app/routes/app/home/route.jsx`. This remains a repository-wide baseline limitation; no unrelated typecheck cleanup was performed.
+- `npm run lint`: **failed**, 15 errors and 2 warnings, all outside the changed pricing/runtime test slice after the local lint correction. The TypeScript parser compatibility warning is also present. Changed-file lint passed.
+
+### Static scans
+
+- `rg -n 'const plans|const topUps|£35|£75|£149|\$35|\$75|\$149' app tests`: no production hard-coded catalogue/price definitions; remaining matches are test fixtures/assertions and the runtime `plans` collection/query.
+- `rg -n 'billingCommerce\.feature\.(ai|multilingual|analytics|noWhatsappBill)' app --glob '!app/i18n/locales/*.json'`: **no matches**.
+- `rg -n 'BillingPlan|BillingEconomicsSnapshot|BillingUpgradeEconomicsEdge' app/services/merchant-pricing app/components/merchant-pricing`: **no matches**.
+
+### Isolation and commits
+
+Launcher packet physical isolation evidence: parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-SHOPIFY-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-SHOPIFY-002` are separate physical worktrees on mirrored branch `task/ARCH-014-SHOPIFY-002`. Prepared packet baseline was `360ab8823f5382457a0db679bc6af0cffccecd3d`; claim commit was `770d0636caf95c7a37c5a98f414475651370fdd0`; database submodule remained `f202931c58dba7f9fcc53c74333736e978e8b6de`.
+
+Implementation commits: `1babb83` (localized merchant pricing catalogue implementation), `360ab88` (merchant pricing presentation prop typing/fix), and `e730799` (audit coverage plus UsageOverview classic-JSX runtime fix). The implementation branch was pushed before returning this task to review. This Completion Report is published on the parent task branch.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Accepted Attempt 2. Functional review confirmed that the implementation satisfies the SHOPIFY-002 merchant presentation contract: active MerchantPricing plans are read in catalogue order without operational BillingPlan joins; exact resolved-locale plan/highlight translations fail closed when missing, blank or duplicated; one reusable `MerchantPricingCatalogue` renders onboarding and completed `NO_CONTRACT`; empty catalogues render pricing unavailable without pricing CTAs; `ACTIVE`/`FROZEN` retain existing plan-management behavior; primary cards render DB-driven plan/allowance/featured/highlight content rather than raw FIXED/GRADUATED/VOLUME mechanics; and Shopify selection authority remains `/app/billing/select`.
+
+The audit correction in implementation commit `e730799` fixes the classic-JSX `UsageOverview.jsx` runtime failure and adds focused state/reader/renderer regression evidence. Reported implementation-wide tests/build and changed-path lint passed; repository-wide typecheck/lint diagnostics are documented unchanged baseline conditions and are not task-owned functional regressions. No further implementation attempt is required.

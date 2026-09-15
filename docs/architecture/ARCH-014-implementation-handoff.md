@@ -15,6 +15,7 @@ ARCH-014-ADMIN-002
 ARCH-014-ADMIN-003
 ARCH-014-SHOPIFY-001
 ARCH-014-DATABASE-002
+ARCH-014-SHOPIFY-002
 ```
 
 Do not reopen those tasks for the new work.
@@ -65,7 +66,7 @@ ARCH-014-DATABASE-002                       COMPLETE
     |                               |
     v                               v
 ARCH-014-ADMIN-004                 ARCH-014-SHOPIFY-002
-READY                              READY
+READY                              COMPLETE
 (depends also on ADMIN-003)        (depends also on SHOPIFY-001)
     |                               |
     +---------------+---------------+
@@ -74,7 +75,7 @@ READY                              READY
                     PENDING
 ```
 
-DATABASE-002 is architect-accepted/integrated. ADMIN-004 and SHOPIFY-002 are intentionally independent, are both **Ready**, and may execute at the same time. Do not make either depend on the other.
+DATABASE-002 and SHOPIFY-002 are architect-accepted/integrated. ADMIN-004 remains **Ready** and is the only remaining implementation task. SYSTEM-TEST-001 remains Pending until ADMIN-004 is Complete.
 
 ## Materialisation state
 
