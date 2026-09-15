@@ -684,5 +684,5 @@ Ready for Architect Review.
 ### Publication
 
 - Implementation commit `077c943cd97a139905da6a274691c635cd2eb8b7` is published on `origin/task/ARCH-014-ADMIN-002`.
-- Parent report commit: recorded in the parent task branch after this report update and pushed with the same branch name.
+- Parent report commit: `e741de7c65be9dcfc1d54cf32dfbe4cacd22c76b` (published on `origin/task/ARCH-014-ADMIN-002`).
 - Claim cleared: `executor: null`, `claimed_at: null`.
