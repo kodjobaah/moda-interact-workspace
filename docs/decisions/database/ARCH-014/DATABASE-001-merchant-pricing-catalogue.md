@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -615,3 +615,31 @@ The same old-parent omission exists when `MerchantPricingUsageEvent.merchantPric
 6. Rerun the task's existing static validator, Prisma validate/generate, migration deployment/focused SQL checks that remain applicable, and `git diff --check`.
 
 No changes are requested to the four Prisma models/enums, existing CHECK expressions, catalogue-position implementation, zero-cost rules, or the protected-model baseline comparison unless the correction itself reveals a directly related defect.
+
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Attempt Reviewed
+
+Attempt 2 — implementation commit `134cf61` and parent report commit `6dd6e18`.
+
+### Review Notes
+
+Attempt 2 satisfies the bounded reparenting correction contract from Attempt 1. The deferred translation and usage-event triggers now validate the OLD owning plan and, when ownership changes, the NEW owning plan. The deferred tier trigger resolves the OLD and NEW usage-event owners and validates the affected owning plans, while preserving the existing no-op behavior when an old plan/event has been deleted as part of the same transaction.
+
+The implementation therefore restores the required commit-time invariant that every surviving `MerchantPricingPlan` is validated in its final state after child-row reparenting. The reviewed migration keeps the approved ARCH-014 catalogue model unchanged: no pre-ARCH-014 model/table/enum or migration is modified, and the existing locale, tier-shape, zero-cost, catalogue-position and bounded-error semantics remain intact.
+
+Review evidence from the uploaded Attempt 2 snapshot confirms that the correction is confined to `prisma/migrations/20260915090000_arch014_merchant_pricing_catalogue/migration.sql`; the translation trigger branches by `TG_OP` and validates both distinct OLD/NEW `merchantPricingPlanId` values; the usage-event trigger applies the same rule; and the tier trigger resolves both relation sides before validation. The Completion Report records focused PostgreSQL failures for the source-translation, usage-event and tier reparenting cases, plus successful static migration validation, Prisma validation/generation, ERD generation, migration deployment and `git diff --check`.
+
+The repository does not define separate `test`, `typecheck`, `lint` or `build` scripts. That documented repository limitation does not block acceptance because the task's required database/static validation evidence is present and the remaining functional correction is directly verifiable in the migration.
+
+### Acceptance State
+
+- `ARCH-014-DATABASE-001`: Complete.
+- `ARCH-014-SHOPIFY-001`: Ready; its sole prerequisite is now Complete.
+- `ARCH-014-ADMIN-002`: remains Pending in this uploaded branch snapshot because its other prerequisite, `ARCH-014-ADMIN-001`, is not recorded Complete on this sibling branch.
+- No further DATABASE-001 attempt is required.
