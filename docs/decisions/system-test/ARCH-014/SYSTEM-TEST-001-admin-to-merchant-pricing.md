@@ -9,15 +9,15 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: ready
+status: pending
 priority: 90
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-014-ADMIN-002
-- ARCH-014-ADMIN-003
-- ARCH-014-SHOPIFY-001
+- ARCH-014-DATABASE-002
+- ARCH-014-ADMIN-004
+- ARCH-014-SHOPIFY-002
 enables: []
 created: 2026-09-15
 updated: 2026-09-15
@@ -27,7 +27,7 @@ updated: 2026-09-15
 
 ## Terminal/manual gate
 
-Do **not** auto-start. The developer explicitly invokes this task after DATABASE-001, ADMIN-001/002/003 and SHOPIFY-001 are integrated and manually smoke-checked. No implementation task depends on this task.
+Do **not** auto-start. The developer explicitly invokes this task only after DATABASE-002, ADMIN-004 and SHOPIFY-002 are architect-accepted/integrated and the completed earlier ARCH-014 tasks remain integrated. No implementation task depends on this task.
 
 ## Objective
 
@@ -37,7 +37,7 @@ Prove the integrated ARCH-014 contract from Admin MerchantPricing plan creation/
 
 Inspect existing `moda-interact-system-test` conventions first. Add only ARCH-014-specific test/fixture/helper files inside existing `test/`, `src/` and `scripts/` structure. Do not create a second orchestration framework and do not modify production implementation to make tests pass.
 
-## Required scenario A — complete create + translation template/import + merchant render
+## Required scenario A — complete create + schema-v2 translation/highlight import + merchant render
 
 Build a four-plan ARCH-014 catalogue in this exact order:
 
@@ -54,17 +54,20 @@ Requirements:
 - full portfolio includes at least one FIXED, one GRADUATED and one VOLUME event;
 - at least one zero-cost usage event has an explicit finite maximum;
 - every persisted plan has exact completed 20-locale descriptions;
+- every plan has at least 3 ordered highlights; at least one plan has 4;
+- every highlight has exact 20-locale title+description translations;
 - at least one plan is marked featured.
 
 Prove:
 
-1. generated Admin template contains exact schema/meta and 20 locales, English populated + 19 empty;
+1. generated Admin template is schemaVersion 2, contains exact meta + 20 locales, and contains the exact highlight contentKey set; English description/highlights are populated and the other 19 locale values are initially empty for new content;
 2. completed paste/import validates 20/20;
-3. final create transaction persists only one MerchantPricing plan + exact 20 translations/events/tiers plus ARCH-014 position shifts where required;
+3. final create transaction persists only one MerchantPricing plan + exact 20 plan translations + usage events/tiers + ordered highlights + exactly 20 translations per highlight, plus ARCH-014 position shifts where required;
 4. no `BillingPlan`, `BillingEconomicsSnapshot` or `BillingUpgradeEconomicsEdge` row is required/created/updated by the ARCH-014 create;
-5. merchant onboarding in at least `en`, `fr`, `ja`, `pt-BR`, `pt-PT`, `zh-Hans`, `zh-Hant` displays exact corresponding DB description;
+5. merchant onboarding in at least `en`, `fr`, `ja`, `pt-BR`, `pt-PT`, `zh-Hans`, `zh-Hant` displays exact corresponding DB plan description and ordered DB highlight title/descriptions;
 6. plan name, recurring price, allowance, featured state and usage pricing are DB-driven;
-7. merchant plan order follows `cataloguePosition`, not price/name/allowance.
+7. merchant plan order follows `cataloguePosition`, not price/name/allowance;
+8. primary merchant pricing cards render structured allowance + localized highlight blocks and do not render raw FIXED/VOLUME/GRADUATED tier mechanics.
 
 ## Scenario B — translation failure is fail-closed
 
@@ -75,6 +78,10 @@ missing locale
 blank locale description
 unexpected pt_BR alias
 English source mismatch
+missing highlight translation
+blank highlight title
+unknown highlight contentKey
+English highlight source mismatch
 ```
 
 Prove no partial `MerchantPricingPlan` exists after failure and merchant app never falls back to English plan description for a supported resolved locale.
@@ -176,6 +183,50 @@ merchant reader order/visibility comes from MerchantPricingPlan only
 ```
 
 This scenario must not mutate production operational billing semantics; use existing system-test fixture mechanisms.
+
+
+## Scenario K — Admin step gating, placement concurrency and translation retention
+
+Prove all of the following through integrated Admin behavior/state evidence:
+
+```text
+Create/Save control does not exist on steps 1..6
+human placement labels are Before <name>/After <name>, never raw ids
+create uses a captured ordered-id snapshot
+fresh catalogue order change before submit -> exact stale-list rejection and zero writes
+portfolio FAIL/UNVERIFIED cannot advance to step 7
+schema-v2 create requires completed 20/20 plan + highlight translations
+edit with unchanged English description/highlight source retains existing 20/20 translations without re-import
+highlight reorder only retains translations
+adding/removing/changing a highlight requires a new completed schema-v2 package
+```
+
+## Scenario L — completed NO_CONTRACT and empty-catalogue merchant behavior
+
+For `onboardingCompleted=true` and merchant experience state `NO_CONTRACT`:
+
+1. with a non-empty active catalogue, prove the loader returns the catalogue and the reusable MerchantPricing catalogue renders in the completed merchant UI;
+2. prove the visible plan card contains DB-driven price, structured allowance and at least 3 ordered localized highlight cards;
+3. prove the action routes to `/app/billing/select` and the `/app/billing/options` manage-capacity CTA is absent in NO_CONTRACT;
+4. with zero active MerchantPricing plans, prove pricing-unavailable is rendered and there is no `/app/billing/select` or `/app/billing/options` pricing CTA;
+5. prove ACTIVE/FROZEN existing merchant plan-management behavior is not replaced by this NO_CONTRACT catalogue.
+
+## Scenario M — highlight database isolation and localization integrity
+
+Prove DATABASE-002 specifically:
+
+```text
+creates only MerchantPricingPlanHighlight and MerchantPricingPlanHighlightTranslation persistence + ARCH-014 highlight validation objects
+contains no ALTER TABLE on MerchantPricingPlan or any other pre-existing table
+allows a virtual Prisma inverse relation without physical parent-table mutation
+requires exact 20 translations per highlight at commit
+requires exact locale set
+requires title 1..120 and description 1..500
+requires contiguous 0..N-1 highlight positions
+plan delete cascades highlight children
+```
+
+Also prove merchant reader has no English fallback for highlight content.
 
 ## Required evidence table
 

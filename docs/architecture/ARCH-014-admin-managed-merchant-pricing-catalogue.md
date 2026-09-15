@@ -73,7 +73,8 @@ ARCH-014 must:
 - evaluate a proposed create/edit against the **entire projected active catalogue portfolio**;
 - evaluate every lower->higher pair in catalogue order, not only adjacent plans;
 - require every comparison to PASS before an economics-affecting create/edit/activation is committed;
-- require exactly the canonical 20 merchant locales for every persisted plan description;
+- support ordered Admin-authored merchant pricing-card highlights, distinct from Shopify usage events;
+- require exactly the canonical 20 merchant locales for every persisted plan description and every highlight title/description;
 - generate a JSON translation template from the English source description so an administrator does not need to know the schema or locale codes;
 - accept pasted JSON or uploaded `.json` through the same parser/validator;
 - never persist an incomplete translation set;
@@ -93,7 +94,7 @@ ARCH-014 does not:
 - modify any pre-existing database table or enum literal;
 - auto-translate content or assess linguistic quality;
 - localize plan names in v1;
-- require merchant-facing usage-event names/descriptions in v1; the merchant UI may use translated generic labels plus price/credit data;
+- require merchant-facing usage-event names/descriptions in v1; usage-event economics remain structured provider data rather than plan-card marketing content;
 - create Gateway/infrastructure work.
 
 ## Canonical locale contract
@@ -199,6 +200,38 @@ flatAmountMinor                 non-negative Int
 
 Tiered modes require 1..6 rows, strictly increasing finite `upTo` values and final `upTo=null`.
 
+
+### `MerchantPricingPlanHighlight` (DATABASE-002)
+
+```text
+id
+merchantPricingPlanId             FK owned by new child table -> MerchantPricingPlan
+contentKey                        stable UUID generated before persistence
+position                          contiguous 0..N-1 within plan
+createdAt
+updatedAt
+```
+
+Unique `(merchantPricingPlanId, contentKey)` and `(merchantPricingPlanId, position)`.
+
+A highlight is **merchant presentation content**, not a Shopify usage event. Its identity remains stable across reorder so translations can remain attached to the same semantic content.
+
+Adding the Prisma inverse `MerchantPricingPlan.highlights[]` relation is allowed only as non-column schema metadata. DATABASE-002 migration SQL MUST NOT ALTER the existing `MerchantPricingPlan` table or another existing table.
+
+### `MerchantPricingPlanHighlightTranslation` (DATABASE-002)
+
+```text
+id
+merchantPricingPlanHighlightId
+locale
+merchantTitle                     trim-non-empty <=120
+merchantDescription               trim-non-empty <=500
+createdAt
+updatedAt
+```
+
+Every highlight requires exact 20-locale translation rows at transaction commit. No supported locale falls back to English.
+
 ## Persisted catalogue completeness invariant
 
 Every persisted `MerchantPricingPlan` must be complete at transaction commit. There is no persisted incomplete-draft exception.
@@ -221,60 +254,56 @@ tier positions exactly 0..n-1
 final tier open-ended
 all money/credit quantities non-negative or positive as specified
 zero-cost positive-quantity paths are bounded by maximumUnitsPerBillingPeriod
+for every highlight: stable UUID contentKey and positions exactly 0..N-1
+for every highlight: exactly 20 title+description translations in the canonical locale set
+highlight title trim-non-empty <=120
+highlight description trim-non-empty <=500
 ```
 
 Deferred constraints/triggers must validate only the new ARCH-014 tables so an atomic transaction can insert the parent and children before final commit.
 
-## Translation package v1
+## Translation package v2
 
-The Admin generates this exact format from current builder data:
+After DATABASE-002/ADMIN-004, generated/imported translation packages use `schemaVersion: 2` and contain the plan description plus every current highlight keyed by stable `contentKey` for all 20 locales.
+
+Canonical shape:
 
 ```json
 {
   "_meta": {
-    "schemaVersion": 1,
+    "schemaVersion": 2,
     "planHandle": "starter",
     "planName": "Starter",
     "sourceLocale": "en"
   },
   "translations": {
-    "cs": { "description": "" },
-    "da": { "description": "" },
-    "de": { "description": "" },
-    "en": { "description": "English source description" },
-    "es": { "description": "" },
-    "fi": { "description": "" },
-    "fr": { "description": "" },
-    "it": { "description": "" },
-    "ja": { "description": "" },
-    "ko": { "description": "" },
-    "nb": { "description": "" },
-    "nl": { "description": "" },
-    "pl": { "description": "" },
-    "pt-BR": { "description": "" },
-    "pt-PT": { "description": "" },
-    "sv": { "description": "" },
-    "th": { "description": "" },
-    "tr": { "description": "" },
-    "zh-Hans": { "description": "" },
-    "zh-Hant": { "description": "" }
+    "en": {
+      "description": "English source description",
+      "highlights": {
+        "550e8400-e29b-41d4-a716-446655440000": {
+          "title": "Included capacity",
+          "description": "100 monthly recovery conversations."
+        }
+      }
+    },
+    "fr": {
+      "description": "",
+      "highlights": {
+        "550e8400-e29b-41d4-a716-446655440000": {
+          "title": "",
+          "description": ""
+        }
+      }
+    }
   }
 }
 ```
 
-Template generation pre-populates English and leaves the other 19 values empty. A template is not itself a valid completed import.
+The real package contains the exact canonical 20 locale keys. Every locale contains the exact same current highlight `contentKey` set; highlight order is not encoded in translations.
 
-Completed-import rules:
+Create templates populate all current English source fields and leave the other 19 locales empty. Edit templates preserve already translated values for English source elements that are unchanged, blank only the 19 translations whose English source changed/new, and omit removed highlights. Reordering a highlight alone preserves translations.
 
-- strict root and `_meta` shape;
-- `schemaVersion === 1`;
-- `sourceLocale === "en"`;
-- imported handle/name match the builder's normalized current values;
-- exact locale set; no missing/unknown keys;
-- every description is trim-non-empty and <=2000 characters;
-- imported English description exactly matches current English source after normalization;
-- paste and file upload run the same parser;
-- no fallback/auto-translation is generated.
+Completed-import rules are strict: schema version 2, exact meta, exact locale set, exact highlight-key set per locale, non-empty bounded description/title fields, and exact English-source match against the current builder draft. Paste and upload use one parser. No auto-translation or fallback is generated.
 
 ## Catalogue ordering
 
@@ -282,13 +311,9 @@ Completed-import rules:
 
 For all persisted catalogue rows, positions are globally unique and contiguous `0..N-1`.
 
-Create placement is explicit:
+Create placement is explicit but presented to the administrator in plain language. The field asks **“Where should this plan appear?”** and shows `Before <first plan name>` plus `After <each existing plan name>`; an empty catalogue shows `This will be the first plan.` Internal `ONLY`/`BEFORE:<id>`/`AFTER:<id>` values are never user-facing.
 
-```text
-ONLY                            valid only when catalogue is empty
-BEFORE:<currentFirstPlanId>     insert as new first plan
-AFTER:<existingPlanId>          insert immediately after the named catalogue plan
-```
+The create payload carries the ordered catalogue-id snapshot used to build those choices. Final Save re-reads the catalogue inside the transaction and rejects with “The pricing list changed while you were editing. Review where this plan should appear and try again.” if the ordered ids differ.
 
 The Admin must not infer placement from plan economics. When inserting at position `k`, existing catalogue rows at `k..N-1` are shifted upward by one in descending position order before the new row is inserted at `k`.
 
@@ -347,12 +372,16 @@ Use a wide coherent builder:
 ```text
 1 Plan
 2 Catalogue placement
-3 Shopify recurring pricing
-4 Shopify pricing usage events
-5 English merchant description
+3 Shopify pricing
+4 Usage events
+5 Merchant content
 6 Portfolio economics
-7 Translation import + final review
+7 Translations & review
 ```
+
+Merchant content contains the English plan description plus 0..N ordered highlights (`contentKey`, English title, English description). Add/remove/reorder are explicit Admin actions. Highlight identity is stable across reorder.
+
+The final Create/Save control exists only on step 7. Portfolio FAIL/UNVERIFIED cannot advance from step 6. Create or changed English merchant content requires a completed schema-v2 package; unchanged edit content retains existing 20/20 translations without re-import.
 
 The user may download the generated JSON template, populate it externally, then either paste the completed JSON or upload the `.json` file.
 
@@ -383,13 +412,19 @@ ORDER BY MerchantPricingPlan.cataloguePosition ASC
 
 For the resolved supported merchant locale, require the exact matching translation row. Missing data is an invalid catalogue condition; do not substitute hard-coded values or an English plan-description fallback.
 
-The merchant DTO contains plan name, localized description, recurring pricing, allowance data, featured flag, catalogue position and ordered usage-event pricing/credit data. `adminLabel` is not merchant-facing.
+The merchant DTO contains plan name, localized description, recurring pricing, allowance data, featured flag, catalogue position, ordered usage-event pricing/credit data, and ordered localized highlights (`contentKey`, `position`, `title`, `description`). `adminLabel` and highlight database ids are not merchant-facing.
 
 No operational billing-plan join/topology query is permitted.
 
+## Merchant pricing-card presentation
+
+After `ARCH-014-SHOPIFY-002`, one reusable `MerchantPricingCatalogue` component renders both onboarding pricing and completed-onboarding `NO_CONTRACT` pricing. Cards use DB-driven plan name/price/description/allowance/featured state plus ordered localized highlights. The large allowance block is derived from `includedRecoveryCredits` + `allowancePeriod`; raw FIXED/VOLUME/GRADUATED tier mechanics are not the primary card UI.
+
+A completed-onboarding merchant in `NO_CONTRACT` sees the catalogue. Zero active plans shows pricing unavailable and no `/app/billing/select` or `/app/billing/options` pricing CTA. ACTIVE/FROZEN existing plan-management behavior remains unchanged.
+
 ## Hard-coded data removal
 
-After `ARCH-014-SHOPIFY-001`:
+After `ARCH-014-SHOPIFY-001` and `SHOPIFY-002`:
 
 - `Onboarding.jsx` has no `const plans` or `const topUps` commercial catalogue;
 - the hard-coded hero Free quantity is removed/derived from active catalogue data;
@@ -402,17 +437,20 @@ After `ARCH-014-SHOPIFY-001`:
 ```text
 moda-interact-database
   new additive MerchantPricing* schema/order/completeness integrity only
+  additive plan-card highlight + highlight-translation persistence/integrity
 
 moda-interact-admin
   pure multi-meter/full-portfolio economics engine
   MerchantPricing catalogue list/builder/actions
   explicit catalogue placement
   translation template/import
+  merchant description + ordered plan-card highlight editor
   activation/economics orchestration
 
 moda-interact
   active localized catalogue query ordered by cataloguePosition
-  data-driven onboarding rendering
+  exact-locale ordered highlight read model
+  reusable pricing-card rendering for onboarding + NO_CONTRACT
   hard-coded commercial catalogue removal
 
 moda-interact-system-test
@@ -424,7 +462,7 @@ No Shared or Gateway implementation task is required.
 ## Task graph
 
 ```text
-ARCH-010-DATABASE-013 -> ARCH-014-DATABASE-001
+ARCH-010-DATABASE-013 -> ARCH-014-DATABASE-001 -> ARCH-014-DATABASE-002
 ARCH-010-ADMIN-009   -> ARCH-014-ADMIN-001
 
 ARCH-014-DATABASE-001 + ARCH-014-ADMIN-001
@@ -434,9 +472,17 @@ ARCH-014-DATABASE-001 + ARCH-014-ADMIN-001
 ARCH-014-DATABASE-001
     -> ARCH-014-SHOPIFY-001
 
-ARCH-014-ADMIN-003 + ARCH-014-SHOPIFY-001
+ARCH-014-DATABASE-002 + ARCH-014-ADMIN-003
+    -> ARCH-014-ADMIN-004
+
+ARCH-014-DATABASE-002 + ARCH-014-SHOPIFY-001
+    -> ARCH-014-SHOPIFY-002
+
+ARCH-014-DATABASE-002 + ARCH-014-ADMIN-004 + ARCH-014-SHOPIFY-002
     -> ARCH-014-SYSTEM-TEST-001
 ```
+
+`DATABASE-002` and `SHOPIFY-002` are architect-accepted Complete. `ADMIN-004` remains Ready and is the only remaining implementation task before the terminal system-test gate.
 
 System test is terminal/manual-gated and enables no implementation task.
 
@@ -449,12 +495,9 @@ System test is terminal/manual-gated and enables no implementation task.
 | `ARCH-014-ADMIN-002` | Complete | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
 | `ARCH-014-ADMIN-003` | Complete | `ARCH-014-ADMIN-002` |
 | `ARCH-014-SHOPIFY-001` | Complete | `ARCH-014-DATABASE-001` |
-| `ARCH-014-SYSTEM-TEST-001` | Ready | `ARCH-014-ADMIN-002`, `ARCH-014-ADMIN-003`, `ARCH-014-SHOPIFY-001` |
+| `ARCH-014-DATABASE-002` | Complete | `ARCH-014-DATABASE-001` |
+| `ARCH-014-ADMIN-004` | Ready | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-003` |
+| `ARCH-014-SHOPIFY-002` | Complete | `ARCH-014-DATABASE-002`, `ARCH-014-SHOPIFY-001` |
+| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-004`, `ARCH-014-SHOPIFY-002` |
 
-All ARCH-014 implementation prerequisites are Complete. The only Ready task is the terminal/developer-gated integrated validation task:
-
-```text
-ARCH-014-SYSTEM-TEST-001
-```
-
-Do not auto-start it. The developer may manually smoke-test the integrated implementation first and explicitly invoke the Ready system-test task when satisfied. Architecture status remains In Progress until the required system-test review/completion gate is satisfied.
+The current automatic Ready frontier is `ARCH-014-ADMIN-004`. `ARCH-014-SYSTEM-TEST-001` remains Pending and terminal/developer-gated until ADMIN-004 is Complete; DATABASE-002 and SHOPIFY-002 are already Complete. Architecture status remains In Progress until the terminal system-test gate is accepted.
