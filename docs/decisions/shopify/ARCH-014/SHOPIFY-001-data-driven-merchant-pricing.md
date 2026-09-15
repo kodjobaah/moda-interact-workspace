@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -654,3 +654,23 @@ Status: Ready for Review; implementation corrections are complete and the claim 
 - Implementation commit: `d2d80fb` (`fix: close merchant pricing review gaps`), pushed to `origin/task/ARCH-014-SHOPIFY-001`.
 - Parent report branch: `task/ARCH-014-SHOPIFY-001`; claim cleared and status set to `review`.
 - Parent report content commit: `3c38451409ac2f9d24ab5b8cf73084b352b9956a`.
+
+## Architect Review — Attempt 4
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Functional review of implementation commit `d2d80fb` confirms that Attempt 4 closes all three outstanding corrections from the preceding Architect Review without widening scope:
+
+- `pt-BR` and `pt-PT` now provide natural regional Portuguese values for all ARCH-014 generic pricing labels rather than English placeholders; the exact 20-locale registry remains intact.
+- onboarding now renders the Free recovery-credit proof item only when the active catalogue contains a `planKind === "FREE"` row, and uses that row's database `includedRecoveryCredits`; no dash/zero fallback is fabricated.
+- the server reader now rejects `GRADUATED` and `VOLUME` usage events when `fixedUnitAmountMinor !== null` using the existing `MERCHANT_PRICING_CATALOGUE_INVALID:` fail-closed path while preserving tier validation.
+
+The previously reviewed architecture also remains conformant: active catalogue visibility and ordering come only from `MerchantPricingPlan.isActive` / `cataloguePosition`; exact resolved-locale translations are required; hard-coded commercial plan/top-up data and stale `PlanSelector` remain absent; merchant pricing rendering is DTO-driven for FIXED/GRADUATED/VOLUME modes; technical `eventHandle` is not presented as merchant copy; and subscription CTAs remain `/app/billing/select` with no local subscription mutation introduced.
+
+Validation evidence in the Completion Report records 30 focused tests, 566 full-suite passes with 3 skips, Prisma validation/generation, production build, changed-path lint, locale/source scans and `git diff --check`. The remaining typecheck/repository-wide lint diagnostics are documented unrelated baseline conditions and do not block this bounded implementation.
+
+`completion_mode: automatic`, therefore architect acceptance completes `ARCH-014-SHOPIFY-001`. No Attempt 5 is required.

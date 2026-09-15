@@ -446,12 +446,13 @@ System test is terminal/manual-gated and enables no implementation task.
 | `ARCH-014-DATABASE-001` | Complete | `ARCH-010-DATABASE-013` |
 | `ARCH-014-ADMIN-001` | Complete | `ARCH-010-ADMIN-009` |
 | `ARCH-014-ADMIN-002` | Ready | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
-| `ARCH-014-SHOPIFY-001` | Ready | `ARCH-014-DATABASE-001` |
+| `ARCH-014-SHOPIFY-001` | Complete | `ARCH-014-DATABASE-001` |
 | `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-002`, `ARCH-014-SHOPIFY-001` |
 
-`ARCH-014-DATABASE-001` and `ARCH-014-ADMIN-001` are Complete. `ARCH-014-ADMIN-002` and `ARCH-014-SHOPIFY-001` are both in architect-requested rework and remain independently executable. The ARCH-014 automatic Ready frontier is therefore:
+`ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001`, and `ARCH-014-SHOPIFY-001` are Complete in this task branch. This sibling snapshot still records `ARCH-014-ADMIN-002` as Ready, so the branch-local automatic Ready frontier is:
 
 ```text
 ARCH-014-ADMIN-002
-ARCH-014-SHOPIFY-001
 ```
+
+The accepted `ARCH-014-ADMIN-002` sibling reconciliation is integrated separately; once both accepted branches are reconciled into the canonical parent state, `ARCH-014-ADMIN-003` is the remaining implementation Ready frontier and `ARCH-014-SYSTEM-TEST-001` stays gated until `ARCH-014-ADMIN-003` is Complete.
