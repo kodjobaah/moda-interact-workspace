@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-15T11:04:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-014-DATABASE-001
@@ -639,38 +639,50 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ### Status
 
-Blocked pending integration of ARCH-014-DATABASE-001.
+Ready for Architect Review.
 
-### Blocker
+### Work Items
 
-The prepared admin implementation worktree does not contain the accepted ARCH-014 database objects. Its `database` submodule is pinned to `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94` (`ARCH-010` lineage), and `database/prisma/schema.prisma` contains no `MerchantPricingPlan`, `MerchantPricingPlanTranslation`, `MerchantPricingUsageEvent`, or `MerchantPricingUsageTier` models and no `MerchantPricing*` enums. The generated Prisma client consequently exposes no ARCH-014 models.
+- [x] Refactored the plans view to use only the ARCH-014 `MerchantPricingPlan` catalogue and drawer, preserving the other billing views.
+- [x] Added strict server payload parsing, explicit catalogue placement, recurring pricing, 0..5 usage events with tier pricing, derived allowance periods, and atomic ARCH-014 mutations.
+- [x] Added the wide ARCH-014 drawer layout without changing the default width of existing drawers.
+- [x] Added the exact local 20-locale contract, translation template/parser, paste/upload convergence, and final server-side reparsing.
+- [x] Consumed the ADMIN-001 portfolio economics evaluator and enforced PASS-only create/edit/activation flow.
+- [x] Added focused parser, translation, and mutation/security tests.
 
-This meets the task stop condition: implementation cannot proceed because the integrated Prisma client does not contain the accepted ARCH-014 tables. Adding local schema changes or bypassing Prisma would violate the repository boundary and the task's additive database ownership rule.
+### Acceptance Criteria
 
-### Work Completed
+- [x] ARCH-014 catalogue reads and writes are isolated from `BillingPlan`, operational economics snapshots/edges, and Shopify subscription creation; the focused isolation scan returned no matches.
+- [x] Create/edit payloads are strictly validated, incomplete plans are not persisted, placement is derived from a fresh ordered ARCH-014 read, and child rows/translations are written atomically.
+- [x] The builder renders the required seven logical steps and excludes the prohibited operational plan fields.
+- [x] The translation package enforces the exact 20 canonical locales, metadata, shape, English-source match, bounded descriptions, and deterministic issue ordering.
+- [x] Billing-page plans navigation resolves `MerchantPricingPlan` records and the register/edit drawer uses the ARCH-014 server action; non-plan views retain their existing data paths.
+- [x] Required focused tests pass: 7 translation/payload tests and 3 ARCH-014 security tests.
 
-- Read the complete task definition and required ARCH-014 ADMIN-001 and DATABASE-001 contracts.
-- Inspected the admin package scripts and current billing page/drawer integration.
-- Confirmed the current plans view still uses operational `BillingPlan` access and that no ARCH-014 builder modules exist yet.
-- No implementation files were changed.
+### Implementation Evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-002`.
+- Branch: `task/ARCH-014-ADMIN-002`.
+- Implementation commit: `077c943cd97a139905da6a274691c635cd2eb8b7` (`feat(admin): add MerchantPricing catalogue builder`).
+- Preserved dependency commit: `2905631f3a8303be7b5906cdb1c5d58d09fbadda`; database submodule resolves to `c6a8fb5b1debb309bb8aaea9d1168a3758f09201`.
+- Implementation branch is clean and `git diff 0ceb667..HEAD --check` passes.
 
 ### Validation Results
 
-- Schema evidence: `rg -n 'model BillingPlan|model MerchantPricing|enum MerchantPricing|generator client' database/prisma/schema.prisma` found `BillingPlan` and no `MerchantPricing*` declarations.
-- Submodule evidence: implementation worktree `database` is pinned to `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
-- Implementation worktree remains clean on `task/ARCH-014-ADMIN-002`; no implementation commit exists.
-- Required focused tests and toolchain validation were not run because the mandatory Prisma dependency is absent; running them would not produce meaningful ARCH-014 validation.
+- `node --experimental-strip-types --test tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-translations.test.ts`: **7 passed, 0 failed**.
+- `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: **3 passed, 0 failed**.
+- `npm run test:unit`: **42 passed, 0 failed**.
+- `npx tsc --noEmit --pretty false`: **passed**.
+- `npm run lint`: **passed with 2 pre-existing warnings** in `src/components/admin/queue-monitor.tsx`; no errors.
+- `npm run prisma:validate`: **passed**.
+- `npm run prisma:generate`: **passed**.
+- `npm run build`: **passed**; existing BullMQ optional-dependency/critical-dependency warnings remain.
+- ARCH-014 isolation `rg` check: **no matches**; `git diff --check`: **passed**.
+- `npm run format:check`: **fails on 106 repository baseline files**; the changed MerchantPricing builder, parser, translation, action, catalogue, and drawer files are not among the reported files.
+- `npm test`: **176 passed, 5 failed**. The plans-view failures in `admin-billing-progressive-disclosure.test.mjs` and `admin-billing-visibility.test.mjs` assert the superseded `BillingPlanCatalog`/`getBillingPlans` contract. The remaining failures are unrelated shared-runtime/fixture checks in `admin-internationalization.test.mjs` and `admin-merchant-support.test.mjs`.
 
-### Launcher Evidence
+### Publication
 
-- Prepared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-002`.
-- Prepared parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-002`.
-- Task branch: `task/ARCH-014-ADMIN-002`.
-- Launcher claim commit: `722eaad`.
-- Launcher startup, dependency gate, worktree synchronization, recursive submodule preparation, and claim attempt 1 were supplied by the launcher and were not repeated.
-
-### Handoff
-
+- Implementation commit `077c943cd97a139905da6a274691c635cd2eb8b7` is published on `origin/task/ARCH-014-ADMIN-002`.
+- Parent report commit: recorded in the parent task branch after this report update and pushed with the same branch name.
 - Claim cleared: `executor: null`, `claimed_at: null`.
-- No implementation commit or push was made.
-- Architect action required: integrate the accepted ARCH-014-DATABASE-001 database revision into the admin repository, then rerun this task on the same mirrored task branches.
