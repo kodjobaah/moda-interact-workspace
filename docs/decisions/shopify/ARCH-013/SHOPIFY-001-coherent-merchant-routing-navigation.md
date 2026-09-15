@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 90
-executor: copilot
-claimed_at: 2026-09-15T09:19:04Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-010-SHOPIFY-012
@@ -808,9 +808,10 @@ After all Work Items, Acceptance Criteria and Validation pass:
 ## Completion Report
 
 ### Status
-Review-ready after implementation audit. Initial implementation was published
+Review-ready after Attempt 2 correction. Initial implementation was published
 in `moda-interact` commit `b3442f7d4a648055036e818d0ccf7e8cad88905d`; audit
-fixes were published in `f2398641328291fc0915df867f67bf257da11943`.
+fixes were published in `f2398641328291fc0915df867f67bf257da11943`; the
+Architect Review correction was published in `5e444e061d38a4302a32c9b01382fc6fe1d7669e`.
 
 ### Audit Findings and Corrections
 
@@ -828,6 +829,16 @@ fixes were published in `f2398641328291fc0915df867f67bf257da11943`.
 
 No additional route, CTA, breadcrumb, lifecycle matrix, or deletion gaps were
 found in the audit.
+
+### Attempt 2 Correction
+
+The home loader no longer reads pending-recovery business data for onboarded
+`NO_CONTRACT`, `FROZEN`, or `BILLING_ATTENTION` states. It now gates
+`readPendingRecoveries` through `canAccessMerchantSurface(state,
+"PENDING_RECOVERIES")`, returns the bounded unavailable payload for denied
+states, preserves historical dashboard reads, and leaves `ACTIVE` behavior
+unchanged. The home-route regression verifies the reader is not called and the
+unavailable payload is returned.
 
 ### Changed Files
 
@@ -873,18 +884,41 @@ tests/unit/routes/additional-route.test.ts
 
 - Exact ARCH-013 focused test list: 10 files passed, 96 tests passed.
 - Full `npm test`: 44 files passed, 547 tests passed, 2 files skipped, 3 tests skipped.
-- `npm run lint`: passed.
+- `npm run lint`: unchanged repository baseline failure with 18 errors and 6
+  warnings in unrelated legacy files; neither Attempt 2 touched file has a
+  lint error.
 - `npm run build`: passed.
 - `git diff --check`: passed.
 - Route registration/source checks: passed; no stale billing/additional registrations, no exact `/app/billing` destinations, and all required retired files are absent.
 - Prisma client generation completed before test execution.
 - `npm run typecheck`: unchanged repository baseline failure (exit 2) from existing implicit-any and related JSX diagnostics across legacy dashboard/home/support files; no diagnostic was introduced in the new TypeScript route policy. This baseline did not block focused behavior, lint, build, or test validation.
 
+### Attempt 2 Validation
+
+- Focused home-route regression: 1 file passed, 6 tests passed.
+- Exact ARCH-013 focused test list: 10 files passed, 96 tests passed.
+- Full `npm test`: 44 files passed, 547 tests passed, 2 files skipped, 3 tests skipped.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- Route registration, exact destination, deleted-file, and `git diff --check` invariants: passed.
+
+### Attempt 2 Launcher and VCS Evidence
+
+- Launcher claim commit: `3e3c76704a1b0574fae32cd0eac57fd04d964974`;
+  attempt 2 was claimed and pushed by the deterministic launcher.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-013-SHOPIFY-001` on `task/ARCH-013-SHOPIFY-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-013-SHOPIFY-001` on `task/ARCH-013-SHOPIFY-001`.
+- Parent and implementation branches were already synchronized with `origin/main` at preparation; no shared checkout or unrelated task worktree was reused.
+- Recursive submodule sync/update passed; recorded `database` submodule commit: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
+- Implementation correction commit: `5e444e061d38a4302a32c9b01382fc6fe1d7669e`, pushed to `origin/task/ARCH-013-SHOPIFY-001`.
+
 ### Review Handoff
 
 Implementation branch: `task/ARCH-013-SHOPIFY-001`.
 Implementation commits: `b3442f7d4a648055036e818d0ccf7e8cad88905d`,
-`f2398641328291fc0915df867f67bf257da11943`.
+`f2398641328291fc0915df867f67bf257da11943`,
+`5e444e061d38a4302a32c9b01382fc6fe1d7669e`.
 Task claim cleared; status returned to `review` for `moda_architect`.
 
 
