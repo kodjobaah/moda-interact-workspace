@@ -68,6 +68,8 @@ change Background/Gateway/Messaging
 
 If the current code contradicts a named route/file assumption materially, or satisfying the task requires a billing/product decision not specified here, STOP and report the exact evidence to `moda_architect`.
 
-## Materialisation note
+## Current review state
 
-This definition was produced from the supplied 2026-09-15 workspace snapshot. It is a **portable canonical definition** and is `defined but not materialised` in the developer's canonical Git workspace until the normal `/moda-task ARCH-013-SHOPIFY-001` preparation/materialisation path creates/reuses the authoritative task branch/worktree.
+`ARCH-013-SHOPIFY-001` has been executed and returned to architect review. Attempt 1 received **Changes Requested** for one remaining functional issue: the `/app` home loader must not read pending-recovery business data for NO_CONTRACT, FROZEN or BILLING_ATTENTION.
+
+Re-run the **same** task through `/moda-task ARCH-013-SHOPIFY-001`; the next claim becomes Attempt 2. Do not start billing v1.1 or ARCH-011 Shopify implementation until SHOPIFY-001 is architect-accepted Complete.

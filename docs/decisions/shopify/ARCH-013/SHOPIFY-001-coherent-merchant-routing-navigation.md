@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -886,3 +886,248 @@ Implementation branch: `task/ARCH-013-SHOPIFY-001`.
 Implementation commits: `b3442f7d4a648055036e818d0ccf7e8cad88905d`,
 `f2398641328291fc0915df867f67bf257da11943`.
 Task claim cleared; status returned to `review` for `moda_architect`.
+
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested — one functional pending-recovery data-access correction only**
+
+This review intentionally prioritises merchant-visible/runtime functionality over
+exhaustive test coverage.
+
+Attempt 1 is otherwise accepted. The route graph, canonical billing destinations,
+state-derived navigation, direct child-route guards, stale-route removal,
+breadcrumb hierarchy, support-message CTA policy and onboarding/detail guard conform
+to the ARCH-013 contract.
+
+One production data-access defect remains in the `/app` home loader.
+
+### Finding — `/app` reads pending-recovery business data for states that deny `PENDING_RECOVERIES`
+
+`app/routes/app/home/route.jsx` resolves `merchantExperienceState`, but then calls:
+
+```text
+readPendingRecoveries(...)
+```
+
+for every onboarded merchant before rendering either Usage overview or billing-period
+detail.
+
+That contradicts the binding ARCH-013 surface matrix:
+
+```text
+ACTIVE             -> PENDING_RECOVERIES allowed
+NO_CONTRACT        -> PENDING_RECOVERIES denied
+FROZEN             -> PENDING_RECOVERIES denied
+BILLING_ATTENTION  -> PENDING_RECOVERIES denied
+```
+
+and the read-only lifecycle rule that NO_CONTRACT/FROZEN must not expose
+pending-recovery business data.
+
+The current focused home-route test also encodes the wrong production behaviour:
+
+```text
+"keeps effective no-contract and frozen merchants on the dashboard data path"
+  -> expect(readPendingRecoveries).toHaveBeenCalled()
+```
+
+Historical dashboard/usage/recovery reads are allowed for these onboarded states;
+pending recoveries are different because they are an execution-only surface.
+
+This is a functional data-boundary defect, not a request for broader test coverage.
+
+### Required Attempt-2 correction
+
+Modify only:
+
+```text
+moda-interact/app/routes/app/home/route.jsx
+moda-interact/tests/unit/home-route.test.ts
+```
+
+plus this task Completion Report/review metadata.
+
+In `app/routes/app/home/route.jsx`:
+
+1. Import `canAccessMerchantSurface` from the existing
+   `merchant-route-access-policy` module. Do not create another policy/helper.
+2. Preserve the existing onboarding early return exactly: ONBOARDING must not call
+   `readPendingRecoveries` or any dashboard/history readers.
+3. After resolving the completed merchant's `merchantExperienceState`, call
+   `readPendingRecoveries(...)` **only** when:
+
+```text
+canAccessMerchantSurface(merchantExperienceState, "PENDING_RECOVERIES") === true
+```
+
+4. For denied onboarded states (`NO_CONTRACT`, `FROZEN`, `BILLING_ATTENTION`), do
+   not call the pending-recovery reader. Supply a bounded unavailable value to the
+   existing `UsageOverview` contract:
+
+```ts
+{
+  available: false,
+  page: 1,
+  pageSize: 10,
+  total: 0,
+  totalPages: 0,
+  items: [],
+}
+```
+
+and keep `pendingRecoveriesUpdatedAt` as `null`.
+5. Preserve the existing historical/read path for NO_CONTRACT/FROZEN/
+   BILLING_ATTENTION: checkout-recovery history, billing periods, usage events,
+   dashboard statistics and lifecycle banners remain readable.
+6. Preserve `/app?view=detail` access for those onboarded historical states, but the
+   loader must still not execute `readPendingRecoveries` merely because detail is
+   requested.
+7. ACTIVE behaviour remains unchanged: ACTIVE may call `readPendingRecoveries` and
+   return its real bounded data.
+
+Do not modify:
+
+```text
+merchant-route-access-policy.ts
+/app/pending-recoveries loader semantics
+billing/provider/refund logic
+route registrations
+navigation
+breadcrumbs
+support CTA mapping
+database schema
+Shared / Background / Messaging / Gateway / Admin
+```
+
+### Focused regression evidence required
+
+Update `tests/unit/home-route.test.ts` only as needed to prove the corrected runtime
+boundary.
+
+At minimum prove:
+
+```text
+ONBOARDING
+  -> readPendingRecoveries not called
+
+ACTIVE
+  -> readPendingRecoveries called
+
+NO_CONTRACT
+  -> readPendingRecoveries not called
+  -> returned pendingRecoveries.available == false
+  -> returned pendingRecoveries.items == []
+
+FROZEN
+  -> readPendingRecoveries not called
+  -> returned pendingRecoveries.available == false
+
+BILLING_ATTENTION (missing subscription or UNMAPPED/SYNC_ERROR)
+  -> readPendingRecoveries not called
+  -> returned pendingRecoveries.available == false
+```
+
+Delete/replace the existing assertion that expects the pending reader to run for a
+NO_CONTRACT merchant.
+
+Do not add a broad new test matrix outside this functional correction.
+
+### Accepted Attempt-1 work — do not churn
+
+Preserve the already-correct implementation for:
+
+```text
+all 8 MerchantExperienceState values and surface matrix
+/app/billing/options nested under App shell
+standalone /app/billing/select
+standalone /app/billing/callback
+standalone /app/reinstalling
+standalone /app/pending-recoveries
+removed /app/billing with no alias
+removed /app/additional
+removed stale billing/recovery-credits module
+onboarding Choose plan -> /app/billing/select
+billing/status/capacity destinations -> /app/billing/options
+state-derived App navigation
+NO_CONTRACT/FROZEN historical /app/usage reads
+ACTIVE-only Promotions
+FROZEN plan-selection denial
+support-only Messages navigation
+lifecycle-aware system-message CTAs
+explicit Breadcrumbs hierarchy
+billing-options heading
+purchased-credit-history billing parent
+unchanged billing callback destination semantics
+```
+
+No billing v1.1, ARCH-011, schema or cross-repository work is authorised in Attempt 2.
+
+### Attempt-2 validation
+
+Prioritise the corrected functional slice:
+
+```bash
+cd moda-interact
+
+npx vitest run \\
+  tests/unit/home-route.test.ts \\
+  tests/unit/merchant-route-access-policy.test.ts \\
+  tests/unit/pending-recoveries-route.test.ts
+
+npm test
+npm run lint
+npm run build
+git diff --check
+```
+
+`npm run typecheck` may continue to report the unchanged repository baseline already
+recorded by Attempt 1. If it is rerun, record the same baseline rather than expanding
+Attempt 2 into unrelated TypeScript cleanup.
+
+### Workflow / Completion Report
+
+Return the **same** task through `/moda-task ARCH-013-SHOPIFY-001`.
+
+Preserve:
+
+```text
+attempt: 1
+status: ready
+executor: null
+claimed_at: null
+```
+
+The next authorised claim increments this to Attempt 2 exactly once.
+
+The Attempt-2 Completion Report must identify the production correction and focused
+regression evidence. If the launcher-prepared execution packet is available, record
+its parent/implementation task-worktree and synchronization evidence; do not create
+code churn solely to manufacture new workflow evidence.
+
+### Review evidence
+
+Developer-reported implementation audit commit:
+
+```text
+f2398641328291fc0915df867f67bf257da11943
+```
+
+was independently resolved in the connected `kodjobaah/moda-interact` repository as
+`fix(shopify): close routing audit gaps` and contains the reported home-route audit
+changes.
+
+Developer-reported parent audit-report commit:
+
+```text
+433707c54cc7dbe88b86cac15de5148f695aa63c
+```
+
+The supplied ZIP contains no `.git` metadata, so parent-branch ancestry/cleanliness
+cannot be independently reconstructed from the archive. That evidence limitation is
+not the reason for Changes Requested; the blocking issue is the functional pending-
+recovery read above.
+
+No new ARCH-013 task is created. No dependent billing-v1.1 work is unblocked.
