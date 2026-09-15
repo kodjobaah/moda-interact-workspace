@@ -1,7 +1,7 @@
 ---
 id: ARCH-015
 title: Recovery-credit purchase, reconciliation, cross-subscription consumption and refund refactor
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-09-15
 updated: 2026-09-15
@@ -291,3 +291,34 @@ ARCH-015 MUST NOT:
 - hide the top-up section merely because no offers are currently available;
 - add another background queue solely to invoke refund processing;
 - allow implementation agents to invent additional Prisma models/enum states without architect review.
+
+## Post-review update — SHARED-001 Attempt 1 Changes Requested
+
+Architect review of `ARCH-015-SHARED-001` accepted the provider-context identity
+format and legacy/native derivation rules, but found one fail-open defect in the
+generic comparison helper.
+
+The current implementation can treat two blank required values as matching because
+it trims and compares them without requiring non-empty evidence. ARCH-015 requires a
+purchase to be classified as current provider context only when provider identity,
+plan handle and billing period are all positively present and equal.
+
+Therefore ARCH-015 remains **In Progress** and the same SHARED-001 task must be
+corrected so:
+
+```text
+valid non-empty identity + plan + billingPeriod, all equal
+  -> current provider context = true
+
+any missing/blank identity, plan or billingPeriod
+  -> current provider context = false
+```
+
+Event-handle membership remains an operation-specific caller check and is not added to
+the generic Shared comparator.
+
+Attempt 1 published `@modainteract/moda-interact-shared@0.11.1`; that immutable release
+must not be overwritten. The corrected task must publish and exact-version smoke-test
+`0.11.2` before architect acceptance.
+
+No downstream dependency is unblocked until `ARCH-015-SHARED-001` is Complete.
