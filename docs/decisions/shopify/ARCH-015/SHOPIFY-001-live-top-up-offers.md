@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -694,3 +694,100 @@ Worktree evidence:
 - Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-001` was clean after commit/push.
 - Parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-001` contains only this task-file lifecycle/report update and is ready for its mirrored commit/push.
 - No database schema, Shared, Background, Admin, or ARCH-015-SHOPIFY-002 changes were made.
+
+## Architect Review — Attempt 2 Final Acceptance
+
+### Status
+
+**Accepted — Complete**
+
+Architect review verified Attempt 2 implementation commit
+`67064915dbfd721945567b1e877ea53a9af4f2bf` against the revised
+`ARCH-015-SHOPIFY-001` contract and the integrated ARCH-014 pricing-catalogue
+baseline.
+
+The Attempt-1 safety defect is closed:
+
+```text
+resolved top-up offers remain visible
+resolved top-up offers remain ordered
+resolved top-up offers remain priced from live Shopify evidence
+no Buy control is rendered
+no onPurchaseTopUp callback is accepted or forwarded
+no useFetcher/fetcher.submit purchase path is wired from the offer UI
+no selected eventHandle purchase admission is implemented early
+```
+
+The existing `/app/billing/options` action remains the pre-existing legacy mutation
+surface, but Attempt 2 exposes no multi-offer UI path into it. Replacing that mutation
+with strict `intent + purchaseId + eventHandle` admission remains owned by
+`ARCH-015-SHOPIFY-002`.
+
+The ARCH-014 extension is preserved. The accepted/integrated
+`ARCH-014-SHOPIFY-002` baseline at `549266f7977f526ce3582956c89932eba2ad061c`
+remains present, including:
+
+```text
+readActiveMerchantPricingCatalogue(...)
+ordered highlights
+exact-locale highlight translation validation
+contentKey / position / title / description presentation fields
+usageEvents alongside highlights
+fail-closed catalogue validation
+```
+
+ARCH-014 highlights remain presentation-only. They are not used as top-up economic,
+provider-price, entitlement, or event-handle authority.
+
+The ARCH-015 live-offer resolver remains accepted:
+
+```text
+current Shopify planHandle scopes the ARCH-014 plan lookup
+MerchantPricingPlan.isActive is not required for an existing live contract
+usage events are resolved in position order
+provider meter membership is matched by exact eventHandle
+creditsGranted comes from creditsGrantedPerUnit
+price/currency/usage come from the live Shopify item
+returned price.active=false items remain eligible
+unknown provider meters are bounded diagnostics only
+zero intersections and provider verification failure remain distinct states
+```
+
+The two retired singular BillingPlan fields are not used as operative offer authority.
+No legacy production fallback was reintroduced.
+
+### Validation evidence
+
+Executor evidence is accepted:
+
+```text
+focused resolver/provider/UI suite: 45 passed
+direct billing UI suite: 17 passed
+Prisma generation: passed
+build: passed
+git diff --check: passed
+touched-file typecheck diagnostics: none
+repository-wide typecheck: unchanged baseline failures only
+```
+
+The supplied Attempt-2 snapshot additionally confirms that the offer UI contains no
+`onPurchaseTopUp`, `useFetcher`, `fetcher.submit`, or Buy-button wiring, and that the
+extended ARCH-014 highlight reader symbols remain present.
+
+No Attempt 3 is required.
+
+### Dependency promotion
+
+At this acceptance point the declared prerequisites for `ARCH-015-SHOPIFY-002` are
+all Complete:
+
+```text
+ARCH-015-SHARED-001   complete
+ARCH-015-DATABASE-001 complete
+ARCH-015-SHOPIFY-001  complete
+```
+
+Therefore `ARCH-015-SHOPIFY-002` is promoted from `pending` to `ready`.
+
+Do not promote `ARCH-015-BACKGROUND-001` or `ARCH-015-SHOPIFY-003`; both still depend
+on completion of `ARCH-015-SHOPIFY-002` and later declared prerequisites.
