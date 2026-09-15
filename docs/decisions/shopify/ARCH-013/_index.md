@@ -17,9 +17,10 @@ Coordinator:
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | `SHOPIFY-001` | Make merchant routing, navigation and breadcrumbs lifecycle-coherent; remove redundant/stale routes | Complete | ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-016, ARCH-010-SHOPIFY-021, ARCH-010-SHOPIFY-026 |
+| `SHOPIFY-002` | Close residual billing-options navigation and validation gaps without reopening accepted routing architecture | Ready | ARCH-013-SHOPIFY-001 |
 
 ## Execution note
 
-Run only `ARCH-013-SHOPIFY-001`. Do not start billing v1.1 implementation in the same task/attempt.
+`SHOPIFY-001` remains Complete / Attempt 2 Accepted. Run `ARCH-013-SHOPIFY-002` as the current Ready correction task. Do not reopen SHOPIFY-001 and do not start billing v1.1 implementation in the same task.
 
-Architect review state: **Attempt 2 Accepted**. `SHOPIFY-001` is Complete and ARCH-013 has no remaining Ready implementation task. Billing-v1.1/ARCH-011 work is not implicitly started; future task definitions must use the canonical ARCH-013 route graph.
+Current Ready frontier: `ARCH-013-SHOPIFY-002`. Billing-v1.1 implementation remains sequenced after SHOPIFY-002 architect acceptance.
