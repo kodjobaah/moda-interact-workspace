@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -854,3 +854,84 @@ Implementation commit: `476b1d4f7560043e5916fb6709ae481cdb917cab`, pushed to
 The full unit suite retains only the two documented observability baseline failures
 listed above. Focused task validation, build, dependency export proof, and all
 task-owned tests are green.
+
+## Architect Review — Attempt 4
+
+### Status
+
+**Accepted — Complete**
+
+Architect review verifies implementation commit
+`476b1d4f7560043e5916fb6709ae481cdb917cab` against the complete original
+`ARCH-015-BACKGROUND-001` contract and the Attempt-3 correction contract.
+
+The final normal Background purchase-reconciliation path no longer requires the retired
+singular `BillingPlan.shopifyRecoveryCreditPackEventHandle` before durable purchase
+reconciliation can run. It now requires only a valid current provider cycle and local
+billing-period identity, derives the canonical provider-context identity, and passes the
+complete live `providerUsageSnapshot` to `RecoveryCreditPurchaseService`.
+
+Durable `REQUESTED` + `REPORTED` candidates are then discovered independently of the
+current singular pack configuration. Each candidate proves its own immutable
+`shopifyEventHandleSnapshot` against the exact matching live provider usage item.
+
+Accepted behavior includes:
+
+```text
+legacy singular pack handle null/disabled -> does not block candidate reconciliation
+legacy singular pack handle differs -> candidate eventHandle remains provider authority
+full providerUsageSnapshot -> candidate-specific quantity/cost/currency proof
+missing exact candidate meter -> fail closed / no grant
+missing local billingPeriodId -> fail closed
+missing/non-forward provider cycle -> fail closed
+canonical Shared 0.11.2 provider-context identity
+native App Pricing with null legacy subscription id
+inactive current/pending flat-rate and tiered provider membership
+Decimal before + 1 quantity proof
+zero-cost activation when exact provider proof succeeds
+same-handle ambiguity fail closed
+different event handles reconcile independently
+Serializable activation transaction
+optimistic purchase-row guard
+atomic PURCHASED_RECOVERY_CREDITS increment
+idempotent replay
+best-effort capacity resume after commit
+HTTP 202 remains submission receipt only
+```
+
+The remaining reads of legacy BillingPlan pack fields inside subscription plan-change /
+rollover compatibility logic are outside this correction's purchase-reconciliation
+authority and were explicitly not redesigned by Attempt 4. They do not gate the normal
+durable purchase reconciliation call.
+
+### Validation accepted
+
+```text
+Focused required suite: 105 passed
+Billing reconciliation suite: 40 passed
+Production build: passed
+Full unit suite: 922 passed; 2 unchanged observability baseline failures
+git diff --check: passed
+Shared dependency: exact 0.11.2
+Database submodule: d44b621cdcc3635127b91601be648b61c0eff1e2
+```
+
+The two repository-wide observability failures are pre-existing and unrelated to
+ARCH-015-BACKGROUND-001. No task-owned validation failure remains.
+
+### Dependency reconciliation
+
+`ARCH-015-BACKGROUND-001` is Complete.
+
+The following tasks now have every declared prerequisite Complete and are promoted in
+parallel:
+
+```text
+ARCH-015-BACKGROUND-002 -> ready
+ARCH-015-SHOPIFY-003    -> ready
+```
+
+`ARCH-015-BACKGROUND-003` remains Pending because it still depends on
+`ARCH-015-SHOPIFY-003`, which is not yet Complete.
+
+No Attempt 5 is required for `ARCH-015-BACKGROUND-001`.

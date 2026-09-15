@@ -561,3 +561,45 @@ normal Background purchase-reconciliation path while preserving all accepted pro
 identity, Decimal, transaction, idempotency and parser behavior.
 
 Downstream tasks remain Pending until BACKGROUND-001 is architect-accepted Complete.
+
+## Post-review update — BACKGROUND-001 Attempt 4 Accepted
+
+`ARCH-015-BACKGROUND-001` Attempt 4 is architect-accepted and **Complete**.
+
+The final purchase-reconciliation flow is candidate-centric end to end:
+
+```text
+valid current local/provider billing context
+  -> derive canonical providerContextIdentity
+  -> pass complete live providerUsageSnapshot
+  -> discover durable REQUESTED + REPORTED purchases
+  -> group by each stored shopifyEventHandleSnapshot
+  -> prove each candidate against its own exact live meter
+  -> Decimal before + 1 quantity proof + cost/currency/context/cycle proof
+  -> Serializable ACTIVE transition + atomic purchased-credit grant
+```
+
+The retired singular `BillingPlan.shopifyRecoveryCreditPackEventHandle` and
+`recoveryCreditPackEnabled` no longer gate or select the normal Background purchase
+reconciliation path. Remaining references inside existing subscription plan-change /
+rollover compatibility logic are not purchase-reconciliation authority and were outside
+Attempt 4's bounded correction.
+
+The previously accepted Shared 0.11.2 provider-context identity, native App Pricing
+fallback identity, inactive-price provider membership, Decimal evidence, same-handle
+ambiguity, different-handle independence, idempotency and post-commit resume behavior
+remain intact.
+
+The execution frontier is now:
+
+```text
+ARCH-015-BACKGROUND-001  Complete
+        |
+        +--> ARCH-015-BACKGROUND-002  Ready
+        |
+        +--> ARCH-015-SHOPIFY-003     Ready
+                    |
+                    +--> ARCH-015-BACKGROUND-003 Pending
+```
+
+BACKGROUND-003 remains Pending because SHOPIFY-003 is not yet Complete.

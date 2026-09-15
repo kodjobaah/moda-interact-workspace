@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-015-SYSTEM-TEST-001
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015-BACKGROUND-002
