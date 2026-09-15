@@ -9,10 +9,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-15T16:53:10Z
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-002
@@ -457,3 +455,71 @@ Do not weaken ARCH-014 authority/isolation to continue.
 ## Completion protocol
 
 Completion Report must include reader DTO example with highlights, screenshots/source evidence for non-empty/empty/NO_CONTRACT states, focused test counts, hard-code scans and full validation results. Set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Implementation
+
+Implemented the database-backed merchant pricing catalogue reader and one reusable `MerchantPricingCatalogue` renderer. The reader queries active `MerchantPricingPlan` rows in `cataloguePosition` order, resolves one exact supported locale without English fallback, validates translations/highlights, and returns ordered highlights without `adminLabel` or database IDs. Onboarding and completed-onboarding `NO_CONTRACT` now share the renderer; empty catalogues fail closed with the localized unavailable message and no pricing CTA. `ACTIVE` and `FROZEN` continue through the existing UsageOverview presentation because catalogue rendering is conditional on `merchantExperienceState === "NO_CONTRACT"`.
+
+Changed-file surface: `app/services/merchant-pricing/merchant-pricing.server.js`; `app/routes/app/home/route.jsx`; `app/components/onboarding/Onboarding.jsx` and `.css`; `app/components/dashboard/UsageOverview.jsx`; new `app/components/merchant-pricing/MerchantPricingCatalogue.jsx` and `.css`; 20 locale JSON files removing unused legacy feature keys; `tests/unit/merchant-pricing-reader.test.js`, `tests/unit/home-route.test.ts`, and `tests/unit/merchant-pricing-renderer.test.jsx`.
+
+Representative reader DTO:
+
+```js
+{
+  shopifyPlanHandle: "database-plan",
+  displayName: "Database Plan",
+  planKind: "PAID_METERED",
+  featured: true,
+  localizedDescription: "Description from the pricing database.",
+  includedRecoveryCredits: 42,
+  allowancePeriod: "EVERY_30_DAYS",
+  billingPeriod: "EVERY_30_DAYS",
+  recurringAmountMinor: 3500,
+  currency: "GBP",
+  highlights: [
+    { contentKey: "highlight-1", position: 0, title: "Localized highlight", description: "Admin-authored detail." },
+    { contentKey: "highlight-2", position: 1, title: "Second highlight", description: "Second ordered detail." }
+  ]
+}
+```
+
+The DTO preserves highlight database `position` order and omits `adminLabel`, highlight IDs, and highlight-translation IDs.
+
+### State and source evidence
+
+- Non-empty onboarding: renderer tests assert DB-supplied display name, description, amount, allowance, featured state, and localized highlight output; onboarding source renders the shared component and `/app/billing/select` only when the catalogue is non-empty.
+- Empty onboarding: renderer test asserts the localized unavailable message, zero plan content, and no pricing amount/plan CTA.
+- Onboarding loader: home-route test asserts `pricingCatalogue` is returned for the onboarding state.
+- Completed `NO_CONTRACT`: home-route test asserts the loader returns `pricingCatalogue`; `UsageOverview.jsx` renders the shared component with `showChoosePlanAction` and uses no `/app/billing/options` action in that branch.
+- `ACTIVE`/`FROZEN`: source evidence shows the catalogue branch is restricted to `NO_CONTRACT`; the existing non-NO_CONTRACT current-plan branch remains. Home-route tests cover active subscription precedence and frozen capacity behavior.
+- Raw meter mechanics: renderer test asserts `FIXED`, `GRADUATED`, `VOLUME`, tier amounts, and internal event handles are absent from card markup.
+- Screenshots: no browser capture was performed; visual evidence is unavailable. Source and server-rendered markup tests are the available presentation evidence.
+
+### Validation
+
+Focused validation:
+
+- `npm test -- tests/unit/merchant-pricing-reader.test.js tests/unit/home-route.test.ts tests/unit/merchant-pricing-renderer.test.jsx`: **3 files passed, 18 tests passed**.
+- Corrected changed-source lint (`npx eslint` over changed JS/JSX/TS source and focused tests, excluding CSS): **passed**. CSS files were not passed to ESLint because ESLint is not a CSS parser.
+- `git diff --check 1babb83^..360ab88`: **passed**.
+
+Required full validation:
+
+- `npm test`: **passed**, 46 test files passed, 2 skipped; 567 tests passed, 3 skipped (570 total).
+- `npm run build`: **passed**. Environment output included npm `shamefully-hoist` deprecation warnings, Rollup removal of two Zod annotations, an unresolved `.prisma/client/index-browser` external warning, empty route chunks, and large-chunk warnings.
+- `npm run typecheck`: **failed**, exit 2, with 118 TypeScript diagnostics in this run. `docs/development-baseline.md` documents `TYPECHECK-001` as a known 48-error repository-wide baseline, so the observed count is above the documented baseline and is reported rather than treated as clean; no unrelated typecheck cleanup was performed. The changed `route.jsx` also appears in the existing implicit-any diagnostics.
+- `npm run lint`: **failed**, 15 errors and 2 warnings in repository-wide lint output, in unrelated existing files; changed-source lint passed as recorded above. The environment also warned that installed TypeScript 5.9.3 is outside the supported range for `@typescript-eslint/typescript-estree` (`<5.4.0`).
+
+### Static scans
+
+- `rg -n 'const plans|const topUps|£35|£75|£149|\$35|\$75|\$149' app tests`: no production catalogue hard-coded catalogue/price definitions; matches were the renderer test fixture/assertion for `£35`, the subscription-change test fixture/assertion for `£75.00`, and the runtime `plans` collection plus reader query.
+- `rg -n 'billingCommerce\.feature\.(ai|multilingual|analytics|noWhatsappBill)' app --glob '!app/i18n/locales/*.json'`: no matches.
+- `rg -n 'BillingPlan|BillingEconomicsSnapshot|BillingUpgradeEconomicsEdge' app/services/merchant-pricing app/components/merchant-pricing`: no matches.
+
+### Isolation and commits
+
+Launcher packet physical isolation evidence: parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-SHOPIFY-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-SHOPIFY-002` are separate physical worktrees on the mirrored branch `task/ARCH-014-SHOPIFY-002`. The implementation worktree was clean at final inspection. The database submodule was at `f202931c58dba7f9fcc53c74333736e978e8b6de` (`heads/main`). The launcher claim commit was `0dae6ae2d9034fafe60dc64f1c03782fe6e3db9c`.
+
+Implementation commits: `1babb83` (localized merchant pricing catalogue implementation) and `360ab88` (merchant pricing presentation prop typing/fix). This Completion Report is published on the parent task branch.
