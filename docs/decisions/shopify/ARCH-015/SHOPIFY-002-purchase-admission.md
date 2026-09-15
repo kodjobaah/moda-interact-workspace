@@ -211,7 +211,6 @@ Implementation complete for attempt 2. Return to `moda_architect` for review.
 - Accepts only the selected `eventHandle` from the merchant form and resolves credits from the current ARCH-014 MerchantPricing plan/event.
 - Verifies the selected live Shopify usage meter, provider cycle, and provider-before quantity/cost/currency.
 - Uses the Shared provider context identity helper, including the valid null legacy subscription fallback.
-- Revalidates provider and MerchantPricing configuration before the serializable transaction write.
 - Revalidates the complete selected live provider meter evidence immediately before the transaction and persists only that final evidence.
 - Uses exact shop/status/event-handle single-flight scope and preserves atomic PENDING UsageEvent plus REQUESTED purchase creation.
 - Adds per-offer POST forms and focused service/UI coverage; no direct App Events HTTP call was added.
