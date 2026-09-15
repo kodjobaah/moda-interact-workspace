@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 90
-executor: copilot
-claimed_at: 2026-09-15T07:52:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-SHOPIFY-012
@@ -808,4 +808,60 @@ After all Work Items, Acceptance Criteria and Validation pass:
 ## Completion Report
 
 ### Status
-Not started.
+Review-ready. Implementation published in `moda-interact` commit
+`b3442f7d4a648055036e818d0ccf7e8cad88905d`.
+
+### Changed Files
+
+```text
+app/components/dashboard/Breadcrumbs.jsx
+app/components/dashboard/Dashboard.jsx
+app/components/dashboard/TopUpPurchasePanel.jsx
+app/components/dashboard/UsageOverview.jsx
+app/components/onboarding/Onboarding.jsx
+app/routes.ts
+app/routes/app/billing/options/route.tsx
+app/routes/app/billing/recovery-credit-purchases/route.tsx
+app/routes/app/billing/select/route.jsx
+app/routes/app/merchant-support/route.jsx
+app/routes/app/pending-recoveries/route.jsx
+app/routes/app/promotions/route.tsx
+app/routes/app/route.jsx
+app/routes/app/usage/route.jsx
+app/services/merchant-support/system-message-actions.ts
+app/services/shop/merchant-route-access-policy.ts
+tests/unit/billing-i18n.test.ts
+tests/unit/billing-ui.test.ts
+tests/unit/merchant-support-route.test.ts
+tests/unit/merchant-route-access-policy.test.ts
+tests/unit/routes/app-layout-access.test.ts
+tests/unit/routes/explicit-route-config.test.ts
+tests/unit/services/billing.service.test.ts
+tests/unit/usage-route.test.ts
+```
+
+### Deleted Files
+
+```text
+app/routes/app/additional/route.jsx
+app/routes/app/billing/recovery-credits/route.ts
+app/routes/app/billing/route.tsx
+tests/unit/routes/additional-route.test.ts
+```
+
+### Acceptance and Validation Results
+
+- Exact ARCH-013 focused test list: 10 files passed, 87 tests passed.
+- Full `npm test`: 44 files passed, 538 tests passed, 2 files skipped, 3 tests skipped.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- Route registration/source checks: passed; no stale billing/additional registrations, no exact `/app/billing` destinations, and all required retired files are absent.
+- Prisma client generation completed before test execution.
+- `npm run typecheck`: unchanged repository baseline failure (exit 2) from existing implicit-any and related JSX diagnostics across legacy dashboard/home/support files; no diagnostic was introduced in the new TypeScript route policy. This baseline did not block focused behavior, lint, build, or test validation.
+
+### Review Handoff
+
+Implementation branch: `task/ARCH-013-SHOPIFY-001`.
+Implementation commit: `b3442f7d4a648055036e818d0ccf7e8cad88905d`.
+Task claim cleared; status returned to `review` for `moda_architect`.
