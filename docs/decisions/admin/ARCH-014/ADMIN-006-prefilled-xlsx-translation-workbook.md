@@ -9,17 +9,17 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 56
-executor: copilot
-claimed_at: 2026-09-15T21:41:34Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
 - ARCH-014-ADMIN-005
 enables:
 - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-15T22:15:00Z
 ---
 
 # ARCH-014-ADMIN-006
@@ -959,8 +959,54 @@ Do not redesign the workbook/parser, change ExcelJS, touch Prisma/database/Shopi
 
 ## Completion Report
 
-Implementation commit: `222ce51` (`feat(admin): replace translation JSON with XLSX workbook`).
-Parent/docs commit: `e4690d6` (`docs(admin): hand off ARCH-014-ADMIN-006 for review`).
+Status: Ready for Review
+
+### Attempt 2 correction mapping
+
+- Correction 1 implemented: `processSelectedTranslationWorkbook(...)` now retains uploaded bytes only when `workbookValid === true`; invalid/unreadable XLSX bytes cannot enter the `uploadedBytes` revalidation effect and cannot invoke `onChange("", null)`.
+- Correction 2 implemented: structurally valid but canonically incomplete workbooks still retain bytes and replace parent canonical JSON/parser state, preserving Save/Create gating for missing translations.
+- Correction 3 implemented: the exact unreadable-workbook error remains unchanged, while an already accepted parent state is preserved; stale-draft revalidation for accepted workbooks remains unchanged.
+- Correction 4 implemented: focused regression covers the invalid-selection state decision and existing parser regression proves `INVALID_XLSX` returns no canonical state.
+
+### Implementation
+
+- Implementation commit: `e2a36a2` (`fix(admin): preserve translations on invalid workbook upload`), pushed to `origin/task/ARCH-014-ADMIN-006`.
+- Baseline implementation preserved: `222ce51`.
+- Changed files in attempt 2: `src/components/admin/merchant-pricing-translation-workbook.tsx`, `src/lib/admin/merchant-pricing-translation-workbook.ts`, `tests/unit/merchant-pricing-translation-workbook.test.ts`.
+- No database/schema, Shopify, shared-contract, runtime billing, or portfolio-economics files changed.
+
+### Validation
+
+- Focused workbook suite: `7/7` passed, including invalid XLSX parsing and the new non-destructive uploaded-byte guard.
+- Focused workbook, canonical translation, and builder payload suites: `20/20` passed.
+- `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: `8/8` passed.
+- `node --test tests/security/admin-billing-progressive-disclosure.test.mjs`: `9/9` passed.
+- `npm run test:unit`: `42/42` passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed; Next.js TypeScript checking and production page generation passed. Existing BullMQ optional-dependency warnings remain.
+- Touched-file Prettier check: passed.
+- `git diff --check`: passed.
+- `npm run format:check`: reports the existing repository-wide formatting baseline (108 files outside this correction).
+- `npm test`: existing unrelated baseline failures remain in observability Moda-owned telemetry scanning and shared-package version assertions; no failure implicates the workbook correction. Focused security suites pass as listed above.
+
+### Workbook and boundary evidence
+
+- Generated workbook remains exactly `Instructions`, `Translations`, `_meta`; `_meta` is `veryHidden`.
+- The workbook still pre-populates all 20 canonical language labels/locales in registry order, English source content, and 19 blank non-English translation sets for a new plan; existing retention and targeted blanking remain owned by `buildMerchantPricingTranslationTemplate`.
+- XLSX parsing still converts through canonical `schemaVersion: 2` JSON and delegates to `parseCompletedMerchantPricingTranslationPackage(...)`; formulas/rich/non-string values remain rejected as `UNSUPPORTED_CELL_VALUE` without evaluation.
+- Invalid XLSX bytes return `INVALID_XLSX` with null canonical state, and attempt-2 component state no longer retains those bytes for parent-clearing revalidation. Oversized, multiple-file, and wrong-type envelope rejection remains non-destructive.
+- `exceljs` remains the only spreadsheet dependency at exact version `4.4.0`; no drag/drop package was added.
+- Required XLSX UI wording is present and old human-facing JSON controls are absent from production components. No production reference to the deleted translation-import component remains.
+- Database submodule remains at `f202931c58dba7f9fcc53c74333736e978e8b6de`; no database or Shopify files changed.
+
+### Isolation
+
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-006`.
+- Both use `task/ARCH-014-ADMIN-006`; implementation correction is pushed and neither branch was merged to `main`.
+- Architect Review was preserved unchanged; task lifecycle is returned to `review` with executor/claim cleared.
 
 ### Changed surface
 
