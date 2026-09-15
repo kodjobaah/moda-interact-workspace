@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
-executor: copilot
-claimed_at: 2026-09-15T23:53:05Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-014-DATABASE-003
@@ -20,7 +20,7 @@ enables:
 - ARCH-014-BACKGROUND-001
 - ARCH-014-ADMIN-009
 created: 2026-09-16
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-014-DATABASE-004
@@ -323,31 +323,44 @@ STOP and return to architect review rather than improvising if:
 
 Status: Ready for Review
 
-Implementation commit: `0247a27` (`feat(database): add background runtime config and leases`), pushed to `task/ARCH-014-DATABASE-004` in the `moda-interact-database` repository.
+### Audit Result
 
-### Acceptance Mapping
+No schema, migration, ERD, or implementation-scope gaps were found. The audit strengthened the static validator so it now checks every required SQL bound and cross-field expression, the complete default seed tuple, and the absence of lease seed rows.
 
-- Added the exact `BackgroundRuntimeConfigSection` and `BackgroundRuntimeLeaseName` enums in `public`.
-- Added additive `BackgroundRuntimeConfig`, `BackgroundRuntimeConfigAuditEvent`, and `BackgroundRuntimeLease` models with the specified fields, defaults, relations, and indexes. `platformAdminId` remains an actor-id string with no `PlatformAdmin` relation.
-- Added migration `20260916000000_arch014_background_runtime_config_and_leases` with 55 named bounds, cross-field, and version CHECK constraints, no `ALTER TABLE`, no lease seed, and one idempotent default config seed using `ON CONFLICT ("id") DO NOTHING`.
-- Added `scripts/validate-arch014-background-runtime-config.mjs` covering models, exact defaults/enums, checks, seed, preserved existing schema objects, queue fields, distinct translation retry/poll fields, lease fields, and ERD models.
-- Regenerated `docs/generated/prisma-erd.puml` and `docs/generated/erd.png` with all three new models.
+### Acceptance Checklist
+
+- [x] `BackgroundRuntimeConfigSection` and `BackgroundRuntimeLeaseName` have the exact values in `public`.
+- [x] `BackgroundRuntimeConfig` is the exact singleton shape with `id = "default"`, every required field/name/default, audit relation, timestamps, and no JSON/key-value replacement.
+- [x] Audit fields, `onDelete: Restrict`, both indexes, and actor-only `platformAdminId` are present; `PlatformAdmin` was not altered or related.
+- [x] Lease fields include owner token, generation, acquired/heartbeat/expiry timestamps, `updatedAt`, and the expiry index; no lease rows are seeded.
+- [x] Migration `20260916000000_arch014_background_runtime_config_and_leases` follows accepted DATABASE-003 migration `20260915210000_arch014_promotion_campaign_translations` chronologically and is additive-only.
+- [x] Migration has all 55 named per-field, queue, version, and cross-field CHECK constraints with the exact required expressions.
+- [x] Migration seeds exactly the `id = "default"`, `version = 0` model-default row with `INSERT ... ON CONFLICT ("id") DO NOTHING`.
+- [x] All seven queue concurrency fields are present and bounded; `translationResultRetrySeconds` and `translationPollIntervalSeconds` are distinct.
+- [x] Static validator asserts the models, exact fields/defaults/enums, SQL expressions, seed, no pre-existing-table alteration, no lease seed, queue fields, lease fields, translation distinction, and all three ERD entities.
+- [x] ERD contains `BackgroundRuntimeConfig`, `BackgroundRuntimeConfigAuditEvent`, and `BackgroundRuntimeLease`.
+
+### Changed Files and Commits
+
+- Original implementation: `0247a2779d6e1755c34ebe4b9cc32abea09b1836` (`feat(database): add background runtime config and leases`).
+- Audit follow-up: `11d8fa1` (`test(database): strengthen background runtime audit validation`), pushed to `task/ARCH-014-DATABASE-004` in `moda-interact-database`.
+- Audit follow-up files: `scripts/validate-arch014-background-runtime-config.mjs`, `docs/generated/prisma-erd.puml`, and `docs/generated/erd.png`.
 
 ### Validation
 
-- `npm run prisma:format`: repository script is absent; exact command reported `Missing script: "prisma:format"`. Equivalent declared `npm run format` passed.
+- `npm run prisma:format`: unavailable because the repository declares no `prisma:format` script; exact command returned `Missing script: "prisma:format"`.
+- Equivalent declared `npm run format`: passed.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed with Prisma 6.19.3.
-- `node scripts/validate-arch014-background-runtime-config.mjs`: passed.
-- `npm test --if-present`: no test script declared; skipped by npm.
+- `node scripts/validate-arch014-background-runtime-config.mjs`: passed before and after validator strengthening.
+- `npm test --if-present`: no test script declared; npm skipped it successfully.
 - `git diff --check`: passed.
 - `npm run erd:puml` and `npm run erd:png`: passed.
-- Local migration deploy was attempted with `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact"`; PostgreSQL was reachable, but Prisma returned `P3009` because pre-existing migration `20260915140000_arch015_fractional_provider_usage_snapshots` is already failed. No reset or migration resolution was performed.
+- `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run migrate:deploy`: PostgreSQL was reachable, but Prisma returned `P3009`; pre-existing migration `20260915140000_arch015_fractional_provider_usage_snapshots` is failed, so new migrations were not applied. No reset or migration resolution was performed.
 
-### Evidence and Limitations
+### Worktree and Limitation Evidence
 
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-DATABASE-004`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-DATABASE-004`.
 - Dependency `ARCH-014-DATABASE-003` was present at implementation base `d44b621cdcc3635127b91601be648b61c0eff1e2`.
-- The implementation is ready for architect review; the local database blocker is limited to the pre-existing failed migration state.
-- the migration cannot enforce the specified bounds.
+- The database blocker is limited to the pre-existing failed migration state; schema validation, generation, static migration validation, and ERD generation passed.
