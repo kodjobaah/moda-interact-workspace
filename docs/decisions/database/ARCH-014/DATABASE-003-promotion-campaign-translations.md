@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 42
 executor: null
 claimed_at: null
@@ -220,3 +220,28 @@ launcher rerun, new claim, worktree inference, startup resynchronization, parent
 gitlink change, or other repository modification was performed. The implementation
 branch was pushed to `origin/task/ARCH-014-DATABASE-003`. Only this task file is
 changed in the parent report worktree. Architect Review remains untouched.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Functional review
+
+`ARCH-014-DATABASE-003` is accepted on the implemented database/runtime contract at implementation commit `3a6daae284dc311c3aefc7dfab8ee9f476cb954b`.
+
+The review confirmed:
+
+- exactly one additive `PromotionCampaignTranslation` Prisma model/table plus the virtual `PromotionCampaign.translations` inverse relation;
+- the existing `PromotionCampaign` table, nullable legacy `merchantDescription` column, campaign enums and operational promotion semantics remain unchanged;
+- the migration creates only the new translation table and its own PK, FK, unique/index and CHECK constraints;
+- the FK references `billing.PromotionCampaign(id)` with delete cascade;
+- the locale CHECK is the exact canonical 20-locale set and title/description content constraints match the task;
+- DRAFT campaigns are allowed to remain incomplete because no 20/20 database trigger is introduced;
+- there is no parent-table ALTER, enum mutation, trigger, function, backfill or BillingPlan/promotion-lifecycle change in this migration; and
+- the generated ERD and focused validator align with the implemented schema.
+
+The reported `P3009` on migration deploy is caused by the pre-existing failed `ARCH-015` migration and is not a functional defect in DATABASE-003. No ARCH-015 repair is authorized from this task.
+
+Because this task uses `completion_mode: automatic`, architect acceptance completes DATABASE-003. `ARCH-014-SHOPIFY-003` is now Ready because its sole dependency is Complete. `ARCH-014-ADMIN-008` remains Pending until `ARCH-014-ADMIN-006` is also Complete. `ARCH-014-SYSTEM-TEST-002` remains Pending until DATABASE-003, ADMIN-008 and SHOPIFY-003 are all Complete.
