@@ -935,7 +935,7 @@ Return the task to `moda_architect` in `review` and STOP when all authorized wor
 ## Completion Report
 
 Implementation commit: `222ce51` (`feat(admin): replace translation JSON with XLSX workbook`).
-Parent/docs commit: pending for this report update.
+Parent/docs commit: `e4690d6` (`docs(admin): hand off ARCH-014-ADMIN-006 for review`).
 
 ### Changed surface
 
