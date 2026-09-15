@@ -9,8 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-013
@@ -523,3 +525,46 @@ Validation:
 Implementation commits: `a2ff25c196d372add65658705c496254878ee89e` and `d8998f7`, pushed on `task/ARCH-014-DATABASE-001`.
 
 Remaining limitation: repository quality scripts are unavailable; no separate repository test suite exists. No cross-repository dependency or additive-boundary stop condition was encountered.
+
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Attempt Reviewed
+
+Attempt 1 — implementation commits `a2ff25c196d372add65658705c496254878ee89e` and `d8998f7`.
+
+### Review Notes
+
+The additive-only implementation boundary is satisfied in the reviewed snapshot: the ARCH-014 schema additions are isolated to the four new enums/models, the protected pre-ARCH-014 model blocks remain unchanged, no pre-existing migration is modified, the exact named CHECK constraints are present, and the static validator now compares protected models against `origin/main` with `HEAD^` fallback rather than comparing the committed implementation to itself. The tier-shape, zero-cost, global-position and locale rules otherwise match the task contract.
+
+One functional commit-time integrity gap remains in the deferred child-row trigger design. The translation, usage-event and tier trigger functions validate only the parent reached from the `NEW` relationship value on UPDATE because they use `COALESCE(NEW.<parentId>, OLD.<parentId>)`. When a child is reparented across plans, the destination plan is validated but the source plan can be left invalid without any deferred validation of its final state.
+
+A concrete translation example demonstrates the violation:
+
+1. Start with valid plans A and B, each with all 20 translations.
+2. In one transaction delete B's `en` translation.
+3. Update A's `en` translation so `merchantPricingPlanId = B`.
+4. B finishes with 20 translations and A finishes with 19.
+5. The deferred DELETE and UPDATE trigger executions both validate B under the current trigger implementation; A is not validated after losing its row.
+6. The transaction can therefore commit even though the required invariant is that every existing `MerchantPricingPlan` has exactly 20 translations at commit.
+
+The same old-parent omission exists when `MerchantPricingUsageEvent.merchantPricingPlanId` changes and when `MerchantPricingUsageTier.merchantPricingUsageEventId` changes across plans. Prisma exposes these scalar relation keys and the database does not otherwise make them immutable, so the database invariant cannot rely on callers never performing such updates.
+
+### Required Corrections
+
+1. Correct the ARCH-014 deferred child trigger functions so every affected plan is validated after INSERT/UPDATE/DELETE:
+   - INSERT: validate the NEW parent plan.
+   - DELETE: validate the OLD parent plan.
+   - UPDATE with the same parent: validate that parent once.
+   - UPDATE with a changed parent: validate both the OLD and NEW parent plans.
+2. Apply the rule to `MerchantPricingPlanTranslation` and `MerchantPricingUsageEvent` using their OLD/NEW `merchantPricingPlanId` values directly.
+3. Apply the same rule to `MerchantPricingUsageTier`: resolve the plan owning the OLD usage event and the plan owning the NEW usage event and validate both distinct affected plans. Preserve correct behaviour when an old event/plan has itself been deleted in the same transaction; the existing validation function may continue to return without error for a plan that no longer exists.
+4. Do not widen scope, make relation keys immutable, alter a pre-ARCH-014 object, or change the approved catalogue model. This is a correction to deferred final-state coverage only.
+5. Add focused PostgreSQL evidence for the source-parent case. At minimum demonstrate that a translation reparent which leaves the source plan at 19 translations fails at commit. Also exercise the changed-parent path for usage-event/tier validation sufficiently to prove the corrected trigger logic covers both OLD and NEW plan ownership; exhaustive combinatorial testing is not required.
+6. Rerun the task's existing static validator, Prisma validate/generate, migration deployment/focused SQL checks that remain applicable, and `git diff --check`.
+
+No changes are requested to the four Prisma models/enums, existing CHECK expressions, catalogue-position implementation, zero-cost rules, or the protected-model baseline comparison unless the correction itself reveals a directly related defect.
