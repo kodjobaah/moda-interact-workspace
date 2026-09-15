@@ -762,3 +762,16 @@ Generated packages contain all exact 20 locales. Validation requires schema v2, 
 ### Architect Review
 
 Implementation commit: `4f575f6`. The complete builder/content/translation/gating flow is ready for `moda_architect` review. No operational `BillingPlan` dependency or database-table change was introduced.
+
+### Follow-up Audit and Fixes
+
+The post-implementation comparison against this task definition identified and fixed these gaps:
+
+- Unchanged edits no longer require a translation import; the client accepts retained `20/20` state and the server skips translation JSON validation while retaining stored rows.
+- Source-content equality now trims description and highlight source values, matching the translation parser normalization rule.
+- Edit template fallback includes the current highlight set and preserves translations by stable `contentKey`; changed sources blank the affected non-English values.
+- Step 2 uses the exact required helper copy, and final review renders human-readable placement instead of internal `BEFORE:<id>`/`AFTER:<id>` values.
+- Final review now includes usage-event pricing summaries and distinguishes retained from newly validated translation state.
+- Added a regression test for unchanged/reordered translation retention and changed-source invalidation.
+
+Follow-up focused payload/translation tests: 12 passed. Follow-up build, lint, targeted Prettier, and `git diff --check` all passed; lint remains at 0 errors with the two existing `queue-monitor.tsx` hook warnings. Follow-up implementation commit: `d608f2a`.
