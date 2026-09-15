@@ -693,5 +693,5 @@ Ready for Architect Review.
 ### Publication
 
 - Implementation commit `00c8aa5` is published on `origin/task/ARCH-014-ADMIN-002`.
-- Parent report commit: pending publication after this report update.
+- Parent report commit: `6523239` (published on `origin/task/ARCH-014-ADMIN-002`).
 - Claim cleared: `executor: null`, `claimed_at: null`.
