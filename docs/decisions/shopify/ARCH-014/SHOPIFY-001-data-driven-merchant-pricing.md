@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-15T14:05:42Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
 - ARCH-014-DATABASE-001
@@ -674,3 +674,36 @@ The previously reviewed architecture also remains conformant: active catalogue v
 Validation evidence in the Completion Report records 30 focused tests, 566 full-suite passes with 3 skips, Prisma validation/generation, production build, changed-path lint, locale/source scans and `git diff --check`. The remaining typecheck/repository-wide lint diagnostics are documented unrelated baseline conditions and do not block this bounded implementation.
 
 `completion_mode: automatic`, therefore architect acceptance completes `ARCH-014-SHOPIFY-001`. No Attempt 5 is required.
+
+## Attempt 5 Completion Report
+
+Status: Ready for Review; complete audit found no implementation gap and no implementation changes were required.
+
+### Audit Findings
+
+- Audited the complete current task definition against the implementation at accepted commit `d2d80fb` and the merged main result at `204171d`.
+- Confirmed the reader uses only active `MerchantPricingPlan` rows, orders only by `cataloguePosition`, requires the exact resolved locale translation, validates the bounded DTO shape fail-closed, supports empty catalogues, and excludes operational billing topology and `adminLabel`/secrets.
+- Confirmed onboarding renders database DTO values for names, descriptions, recurring prices, allowances, featured state, FIXED pricing, GRADUATED tiers, and VOLUME tiers; an empty catalogue renders the generic unavailable state; and the Free hero proof is omitted when no active Free plan exists.
+- Confirmed all 20 locale catalogues retain the exact registry and all 14 generic pricing keys; the stale plan-specific description/top-up keys, hard-coded commercial arrays/prices, and `PlanSelector` references remain absent. The initial locale probe used nested-key assumptions and was discarded; the corrected flat-key audit passed.
+- Confirmed the Shopify subscription boundary remains `/app/billing/select`; no local subscription mutation, database schema change, dependency change, or operational billing behavior was introduced.
+- Confirmed the focused regression tests cover exact locale resolution/no English fallback, Portuguese catalogue distinction, active/inactive and ordering behavior, empty catalogue behavior, DTO isolation, pricing-mode rendering, no fabricated offer, no-Free proof omission, and invalid tiered fixed amounts.
+
+### Validation Evidence
+
+- Focused reader/renderer suite: 11 passed across 2 files.
+- Full `npm test`: 566 passed, 3 skipped across 48 files.
+- Changed-path ESLint: passed for the reader, onboarding, home route, and pricing tests.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed; only existing Zod/Rollup and chunk-size warnings were emitted.
+- Exact locale audit: passed for 20 catalogues and 14 generic pricing keys; removed plan-specific keys are absent.
+- Required hard-coded commercial, stale-key, reader-isolation, CTA, and `PlanSelector` source scans: passed, with unrelated operational `BillingPlan` references confined to existing billing services/tests.
+- `git diff --check`: passed.
+- `npm run typecheck`: non-zero on the repository's documented pre-existing checked-JavaScript baseline diagnostics, including existing home-route implicit-`any` diagnostics; no new merchant-pricing diagnostic was identified.
+- Repository-wide `npm run lint`: non-zero on the documented unrelated dashboard, billing, privacy, merchant-support, and webhook diagnostics; changed-path lint passed.
+
+### Publication
+
+- No implementation commit was created because the audit found no confirmed gap; implementation remains at accepted commit `d2d80fb`.
+- Parent report commit: pending this report update.
+- Attempt 5 claim cleared; task status set to `review` for `moda_architect`.
