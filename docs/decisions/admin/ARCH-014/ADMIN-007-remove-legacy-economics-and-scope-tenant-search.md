@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 57
-executor: copilot
-claimed_at: 2026-09-15T20:05:46Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-ADMIN-005
@@ -204,6 +204,58 @@ rg -n 'minimumUpgradePremiumBps|validateSinglePackShopifyEconomics' src tests
 ```
 
 Expected outcome: first scan has no production references to deleted legacy economics surface; tenant SearchInput appears only in its component and tenant-directory wiring/tests; retained policy/generic economics symbols remain.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `95e8b5e` (`refactor(admin): remove superseded billing economics controls`), pushed to `origin/task/ARCH-014-ADMIN-007`.
+
+Changed files:
+
+- `src/app/(protected)/billing/controls/page.tsx`
+- `src/app/(protected)/billing/page.tsx`
+- `src/app/(protected)/page.tsx`
+- `src/components/admin/admin-shell.tsx`
+- `src/components/admin/billing-controls.tsx`
+- `tests/security/admin-billing-economics.test.mjs`
+
+Deleted files:
+
+- `src/app/actions/billing-economics.ts`
+- `src/lib/admin/billing-economics-validation.ts`
+- `src/lib/admin/billing-economics.ts`
+- `src/lib/admin/billing-plan-guardrail.ts`
+- `tests/unit/billing-economics-behavior.test.ts`
+- `tests/unit/billing-economics-validation.test.ts`
+
+Implementation evidence:
+
+- Removed the legacy upgrade-ladder and verified-App-Pricing economics controls and their data loads/actions.
+- Preserved `PlatformBillingControls`, `TenantBillingControls`, `billing-control-validation.ts`, `billing-controls.ts`, `upgrade-economics-guardrail.ts`, `merchant-pricing-economics.ts`, and `minimumUpgradePremiumBps` persistence/editing.
+- `AdminShell` now renders a header only when supplied; tenant `SearchInput` is wired only by the tenant directory and retains its `/` GET/query behavior.
+- No Prisma, schema, migration, or database files changed; `git diff --check` passed.
+
+Scans:
+
+- Legacy symbol scan: no production references; matches remain only in intentional negative assertions in `tests/security/admin-billing-economics.test.mjs`.
+- Tenant search scan: `SearchInput` appears only in `src/components/admin/search-input.tsx`, tenant-directory wiring, and focused assertions.
+- Retained-symbol scan: `minimumUpgradePremiumBps` and `validateSinglePackShopifyEconomics` remain live in the retained policy and generic guardrail paths.
+
+Validation:
+
+- `npm run test:unit`: passed, 42/42.
+- `node --test tests/security/admin-billing-economics.test.mjs`: passed, 7/7.
+- Changed-file Prettier check: passed after formatting `admin-shell.tsx` and the focused security test.
+- `git diff --check`: passed.
+- `npm test`: blocked by nine unrelated merchant-support/auth/queue failures caused by the generated Prisma client/runtime export mismatch; no ADMIN-007 focused test failed.
+- `npx tsc --noEmit`: unavailable before dependency installation; local `./node_modules/.bin/tsc --noEmit` then reported existing generated-Prisma export/type errors and an unrelated translation-import error.
+- `npm run build`: compiled successfully but failed at the existing typecheck errors above; it also emitted existing optional BullMQ/Valkey warnings.
+- `npm run format:check`: repository-wide check reports 108 pre-existing files; all ADMIN-007 changed files pass the targeted check.
+
+Isolation evidence: continued the prepared attempt in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-007` and parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-007`; no launcher rerun or new claim was created. Parent task claim commit was `ae76be80d1aaf13f0d5e5d4f2f777c94753ba1f1`.
+
+Limitations: repository-wide validation remains limited by the pre-existing dependency/generated-Prisma and formatting baseline described above. No database/schema/migration remediation was attempted because it is outside ADMIN-007 scope.
 
 ## Stop conditions
 
