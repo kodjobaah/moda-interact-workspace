@@ -653,4 +653,4 @@ Status: Ready for Review; implementation corrections are complete and the claim 
 
 - Implementation commit: `d2d80fb` (`fix: close merchant pricing review gaps`), pushed to `origin/task/ARCH-014-SHOPIFY-001`.
 - Parent report branch: `task/ARCH-014-SHOPIFY-001`; claim cleared and status set to `review`.
-- Parent report commit: pending this report commit and push.
+- Parent report content commit: `3c38451409ac2f9d24ab5b8cf73084b352b9956a`.
