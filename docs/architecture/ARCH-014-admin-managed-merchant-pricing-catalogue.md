@@ -434,7 +434,7 @@ ARCH-014-DATABASE-001 + ARCH-014-ADMIN-001
 ARCH-014-DATABASE-001
     -> ARCH-014-SHOPIFY-001
 
-ARCH-014-ADMIN-002 + ARCH-014-ADMIN-003 + ARCH-014-SHOPIFY-001
+ARCH-014-ADMIN-003 + ARCH-014-SHOPIFY-001
     -> ARCH-014-SYSTEM-TEST-001
 ```
 
@@ -447,13 +447,14 @@ System test is terminal/manual-gated and enables no implementation task.
 | `ARCH-014-DATABASE-001` | Complete | `ARCH-010-DATABASE-013` |
 | `ARCH-014-ADMIN-001` | Complete | `ARCH-010-ADMIN-009` |
 | `ARCH-014-ADMIN-002` | Complete | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
-| `ARCH-014-ADMIN-003` | Ready | `ARCH-014-ADMIN-002` |
-| `ARCH-014-SHOPIFY-001` | Ready | `ARCH-014-DATABASE-001` |
-| `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-002`, `ARCH-014-ADMIN-003`, `ARCH-014-SHOPIFY-001` |
+| `ARCH-014-ADMIN-003` | Complete | `ARCH-014-ADMIN-002` |
+| `ARCH-014-SHOPIFY-001` | Complete | `ARCH-014-DATABASE-001` |
+| `ARCH-014-SYSTEM-TEST-001` | Ready | `ARCH-014-ADMIN-002`, `ARCH-014-ADMIN-003`, `ARCH-014-SHOPIFY-001` |
 
-`ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` and `ARCH-014-ADMIN-002` are Complete. Accepting ADMIN-002 Attempt 4 promotes the post-refactor cleanup task `ARCH-014-ADMIN-003` to Ready. `ARCH-014-SHOPIFY-001` remains independently Ready. `ARCH-014-SYSTEM-TEST-001` remains Pending until ADMIN-003 and SHOPIFY-001 are Complete. The ARCH-014 automatic Ready frontier is therefore:
+All ARCH-014 implementation prerequisites are Complete. The only Ready task is the terminal/developer-gated integrated validation task:
 
 ```text
-ARCH-014-ADMIN-003
-ARCH-014-SHOPIFY-001
+ARCH-014-SYSTEM-TEST-001
 ```
+
+Do not auto-start it. The developer may manually smoke-test the integrated implementation first and explicitly invoke the Ready system-test task when satisfied. Architecture status remains In Progress until the required system-test review/completion gate is satisfied.
