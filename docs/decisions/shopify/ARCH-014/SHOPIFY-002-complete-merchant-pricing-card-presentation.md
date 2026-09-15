@@ -9,9 +9,9 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 50
-attempt: 1
+attempt: 2
 depends_on:
 - ARCH-014-DATABASE-002
 - ARCH-014-SHOPIFY-001
@@ -19,6 +19,8 @@ enables:
 - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
+executor: copilot
+claimed_at: 2026-09-15T17:28:18Z
 ---
 
 # ARCH-014-SHOPIFY-002
