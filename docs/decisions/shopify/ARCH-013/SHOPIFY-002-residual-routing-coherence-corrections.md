@@ -525,7 +525,7 @@ Status: Complete; returned to Architect Review.
 ### Implementation
 
 - Implementation commit: `20a6034` (`fix billing purchase history route coherence`), pushed to `task/ARCH-013-SHOPIFY-002`.
-- Parent Completion Report commit: `b474814`.
+- Parent Completion Report commits: `b474814` (report) and `0f8ccd5` (final metadata closure).
 - Changed implementation files:
   - `app/routes/app/billing/options/route.tsx`
   - `app/components/dashboard/BillingPurchaseHub.jsx`
@@ -554,3 +554,10 @@ The first full test invocation raced Prisma client generation during parallel va
 ### Architect Review
 
 Ready for `moda_architect` review. Final metadata closure follows the published report commit above.
+
+### Follow-up Audit
+
+- Re-read the task definition against commit `20a6034`; no implementation gaps were found.
+- Reconfirmed the four-file implementation boundary and all accepted read-only routing files remain unchanged.
+- Re-ran the exact `npm test` command: PASS, 44 files passed, 2 skipped; 555 tests passed, 3 skipped.
+- The canonical task-definition copy outside this parent task worktree still shows stale `ready` metadata; the workflow-owned parent report remains the authoritative `review` record and is updated here.
