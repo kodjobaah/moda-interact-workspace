@@ -89,7 +89,7 @@ The following tasks supersede any previously generated but unapplied standalone 
 
 ```text
 ARCH-014-ADMIN-006       READY
-ARCH-014-ADMIN-007       READY
+ARCH-014-ADMIN-007       COMPLETE
 ARCH-014-DATABASE-003    COMPLETE
 ARCH-014-ADMIN-008       PENDING on ADMIN-006
 ARCH-014-SHOPIFY-003     READY
