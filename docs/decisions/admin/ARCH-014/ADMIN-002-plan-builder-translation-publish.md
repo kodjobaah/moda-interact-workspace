@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-15T12:31:46Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-014-DATABASE-001
@@ -639,11 +639,11 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ### Audit Findings
 
-- Confirmed gap 1 implemented: create economics preview now resolves `ONLY`, `BEFORE:<first>`, and `AFTER:<id>` against the canonical catalogue snapshot; stale or missing client targets fail closed instead of appending the candidate.
-- Confirmed gap 2 implemented: recurring, fixed usage, and tier money controls now submit decimal text; the strict server parser independently normalizes all money to safe integer minor units using the shared exact rules. Edit initialization is deterministic.
-- Confirmed gap 3 implemented: every ordered pair now renders lower/higher plans, additional credits, event quantities, stay + top-up currency, higher recurring currency, premium including infinity/not-applicable, code, and status.
-- Save remains fail-closed for placement/money errors and all non-PASS economics results; the authoritative server transaction and ADMIN-001 evaluator remain unchanged.
-- No operational `BillingPlan`/economics reads or writes, Shopify subscription path, unrelated billing-view change, or schema change was introduced.
+- Implemented Architect Review correction 1: create projections now splice the proposed candidate into the exact post-insert catalogue order in both the client preview and authoritative server economics evaluation. Existing positions are no longer left duplicated during `BEFORE` or non-terminal `AFTER` placement.
+- Implemented correction 2 unchanged: decimal recurring, fixed usage, and tier money remains server-reparsed into safe integer minor units; invalid forms and non-PASS economics remain fail-closed.
+- Implemented correction 3: focused regression evidence covers `NEW,A,B,C`, `A,NEW,B,C`, `A,B,C,NEW`, and edit replacement order for the submitted ADMIN-001 sequence.
+- Activation remains a non-inserting replacement at the persisted position; inactive existing rows remain excluded while the proposed candidate participates in economics.
+- No operational plan/economics reads or writes, Shopify subscription path, unrelated billing-view change, or schema change was introduced.
 
 ### Status
 
@@ -651,34 +651,30 @@ Ready for Architect Review.
 
 ### Work Items
 
-- [x] Refactored the plans view to use only the ARCH-014 `MerchantPricingPlan` catalogue and drawer, preserving the other billing views.
-- [x] Added strict server payload parsing, explicit catalogue placement, recurring pricing, 0..5 usage events with tier pricing, derived allowance periods, and atomic ARCH-014 mutations.
-- [x] Added the wide ARCH-014 drawer layout without changing the default width of existing drawers.
-- [x] Added the exact local 20-locale contract, translation template/parser, paste/upload convergence, and final server-side reparsing.
-- [x] Consumed the ADMIN-001 portfolio economics evaluator and enforced PASS-only create/edit/activation flow.
-- [x] Added focused parser, translation, and mutation/security tests, including decimal fixed/tier normalization and BEFORE/middle-AFTER preview placement regressions.
+- [x] Completed all prior ARCH-014 catalogue, strict payload, transaction, translation, economics, billing-page, and security work items.
+- [x] Corrected create projected ordering in client and server paths without changing edit or activation semantics.
+- [x] Added focused placement-order regression coverage.
 
 ### Acceptance Criteria
 
-- [x] ARCH-014 catalogue reads and writes are isolated from `BillingPlan`, operational economics snapshots/edges, and Shopify subscription creation; the focused isolation scan returned no matches.
-- [x] Create/edit payloads are strictly validated, incomplete plans are not persisted, placement is derived from a fresh ordered ARCH-014 read, and child rows/translations are written atomically.
-- [x] The builder renders the required seven logical steps and excludes the prohibited operational plan fields.
-- [x] The translation package enforces the exact 20 canonical locales, metadata, shape, English-source match, bounded descriptions, and deterministic issue ordering.
-- [x] Billing-page plans navigation resolves `MerchantPricingPlan` records and the register/edit drawer uses the ARCH-014 server action; non-plan views retain their existing data paths.
-- [x] Required focused tests pass: 8 translation/payload tests and 4 ARCH-014 security tests.
+- [x] ARCH-014 catalogue reads and writes remain isolated from operational billing plan/economics sources and Shopify subscription creation.
+- [x] Create/edit payloads remain strictly validated and atomically persisted through the ARCH-014 transaction boundary.
+- [x] The seven-step builder, exact 20-locale translation contract, decimal money normalization, and PASS-only economics gates remain intact.
+- [x] Create preview and authoritative create evaluation now submit the exact post-insert catalogue order to ADMIN-001.
 
 ### Implementation Evidence
 
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-002`.
 - Branch: `task/ARCH-014-ADMIN-002`.
-- Implementation commit: `a4382f5` (`fix(admin): complete ARCH-014 builder rework`), based on `00c8aa5`.
 - Preserved dependency commit: `2905631f3a8303be7b5906cdb1c5d58d09fbadda`; database submodule resolves to `c6a8fb5b1debb309bb8aaea9d1168a3758f09201`.
-- Implementation branch is clean after attempt-3 publication and `git diff --check` passes.
+- Attempt-4 implementation commit: `b54c1b4` (`fix(admin): preserve projected catalogue insertion order`), based on `a4382f5`.
+- Implementation commit is published on `origin/task/ARCH-014-ADMIN-002`.
 
 ### Validation Results
 
-- `node --experimental-strip-types --test tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-translations.test.ts`: **8 passed, 0 failed**.
-- `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: **4 passed, 0 failed**.
+- Focused payload + translation tests: **9 passed, 0 failed**.
+- Focused ADMIN-001 economics tests: **27 passed, 0 failed**.
+- Focused ARCH-014 security tests: **4 passed, 0 failed**.
 - `npm run test:unit`: **42 passed, 0 failed**.
 - `npx tsc --noEmit --pretty false`: **passed**.
 - `npm run lint`: **passed with 2 pre-existing warnings** in `src/components/admin/queue-monitor.tsx`; no errors.
@@ -686,16 +682,15 @@ Ready for Architect Review.
 - `npm run prisma:generate`: **passed**.
 - `npm run build`: **passed**; existing BullMQ optional-dependency/critical-dependency warnings remain.
 - ARCH-014 isolation `rg` check: **no matches**; `git diff --check`: **passed**.
-- `npm run format:check`: **fails on 105 repository baseline files**; all four attempt-3 changed files pass the focused `npx prettier --check`.
-- `npm test`: **177 passed, 5 failed**. Three plans-view failures in `admin-billing-progressive-disclosure.test.mjs` and `admin-billing-visibility.test.mjs` assert the superseded `BillingPlanCatalog`/`getBillingPlans` contract after the authoritative ARCH-014 replacement. Two failures are unrelated shared-runtime/fixture checks in `admin-internationalization.test.mjs` and `admin-merchant-support.test.mjs`.
-- `npx prettier --check` over attempt-3 changed files: **passed**. Existing lint warnings remain only in `src/components/admin/queue-monitor.tsx`; the build retains existing BullMQ optional-dependency/critical-dependency warnings.
-- Attempt-3 focused regression evidence proves decimal fixed/tier normalization, invalid decimal rejection, and BEFORE/middle-AFTER placement resolution. Preview source includes the required evidence fields.
+- Changed-file Prettier check: **passed**.
+- Repository `npm run format:check`: **fails on the documented 105-file formatting baseline**.
+- Repository `npm test`: **177 passed, 5 failed**, matching the prior baseline: three stale plans-view assertions expecting superseded `BillingPlanCatalog`/`getBillingPlans` wiring and two unrelated internationalization/merchant-support fixture failures. No changed-path failure was observed.
 
 ### Publication
 
-- Implementation commit `a4382f5` is published on `origin/task/ARCH-014-ADMIN-002`.
-- Parent report commit: pending attempt-3 publication on `origin/task/ARCH-014-ADMIN-002`.
+- Implementation commit `b54c1b4` is published on `origin/task/ARCH-014-ADMIN-002`.
 - Claim cleared: `executor: null`, `claimed_at: null`.
+- Parent report commit: pending.
 
 ## Architect Review
 
