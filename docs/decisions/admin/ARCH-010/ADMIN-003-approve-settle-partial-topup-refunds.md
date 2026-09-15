@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 82
 executor: copilot
 claimed_at: 2026-09-14T23:15:44Z
@@ -313,7 +313,9 @@ Ready for Review. Attempt 3 completed the bounded settlement implementation afte
 - Implementation repository:
 	- `src/app/actions/recovery-credit-refunds.ts`
 	- `src/lib/admin/recovery-credit-refund-settlement.ts`
+	- `src/components/admin/recovery-credit-refunds.tsx`
 	- `tests/security/admin-recovery-credit-refund-settlement.test.mjs`
+	- `tests/security/admin-recovery-credit-refunds.test.mjs`
 - Parent repository: this task report only.
 
 ### Work Completed
@@ -326,16 +328,24 @@ Ready for Review. Attempt 3 completed the bounded settlement implementation afte
 - Implemented atomic completion of purchase `REFUNDED`/`currentAmount=0`, aggregate grant and hold removal, refund completion, bounded evidence fields, and existing billing audit/system-message infrastructure. Message identity is refund-scoped through the unique `sourceKey`; audit writes are transition-gated and replay-safe.
 - Implemented pre-provider rejection that reactivates only the exact purchase and releases only its current unreserved hold. Rejection is unavailable once provider action may have started.
 - Added the focused security test and an explicit 19-item acceptance checklist, plus runtime provider action-kind validation for the browser-supplied enum value.
+- Independent audit found one gap in the published commit: the server actions were not reachable from the admin refund drawer, and the drawer did not display frozen expected settlement evidence. Added SUPER_ADMIN-gated lock/reject/provider-evidence forms and the final quantity, expected amount/currency, and recorded provider evidence fields. Updated the stale read-only UI test to assert this workflow.
+
+### Independent Audit Gap Table
+| Requirement | Exact evidence inspected | Result | Risk |
+| --- | --- | --- | --- |
+| Admin can lock/reject/record provider settlement through the admin surface | `src/components/admin/recovery-credit-refunds.tsx:56-104` invokes all three server actions; server authorization remains in `src/lib/admin/recovery-credit-refund-settlement.ts:54-113` | PASS after fix | Previously unreachable controls could leave provider settlement operationally incomplete. |
+| Durable provider evidence is displayed before/manual settlement | `src/components/admin/recovery-credit-refunds.tsx` frozen evidence block and provider form; `src/lib/admin/recovery-credit-refunds.ts:12-59` selects persisted fields | PASS after fix | Previously operators could not see or record the frozen provider boundary from the drawer. |
+| Transactional authorization, provenance, hold parity, CAS/idempotency, and no provider API | `src/lib/admin/recovery-credit-refund-settlement.ts:45-142`; Prisma fields in `database/prisma/schema.prisma:714-805` and `1250-1290`; focused security tests | PASS | Remaining risk is limited to the repository's static-test coverage of runtime transaction behavior. |
+| Full-suite validation | `npm test` result: 176 total, 174 passed, 2 baseline failures in internationalization/merchant-support shared-version assertions | PASS with documented baseline | Baseline failures are unrelated to settlement; they remain a release validation caveat. |
 
 ### Validation Results
-- `node --test tests/security/admin-recovery-credit-refund-settlement.test.mjs tests/security/admin-security-boundary.test.mjs tests/security/admin-billing-controls.test.mjs`: 21 passed, 0 failed.
+- `node --test tests/security/admin-recovery-credit-refund-settlement.test.mjs tests/security/admin-recovery-credit-refunds.test.mjs tests/security/admin-security-boundary.test.mjs tests/security/admin-billing-controls.test.mjs`: 23 passed, 0 failed.
 - `npm run prisma:validate`: passed.
 - `npx tsc --noEmit`: passed.
 - `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx` for missing `refresh` hook dependencies; no errors.
 - `npm run build`: passed. Existing BullMQ warnings remain for an expression dependency and optional `@valkey/valkey-glide` resolution.
-- `get_errors` diagnostics for all three changed files: no errors.
 - `npm test`: 176 total, 174 passed, 2 unrelated baseline failures. Both failures are existing shared-package version assertions in `tests/security/admin-internationalization.test.mjs` and `tests/security/admin-merchant-support.test.mjs` expecting `^0.7.3` while the repository declares `^0.11.0`; neither touches the settlement implementation.
-- `git diff --check`: passed before implementation commit.
+- `git diff --check`: passed after implementation and report changes.
 
 ### 19-Item Acceptance Checklist
 1. SUPER_ADMIN-only mutation: satisfied by active resolver plus role gates.
@@ -356,14 +366,14 @@ Ready for Review. Attempt 3 completed the bounded settlement implementation afte
 16. Rejection after possible provider action never releases the hold: satisfied by `REQUESTED`-only rejection.
 17. Other purchase lots remain untouched: satisfied by exact purchase/refund IDs and shared aggregate CAS.
 18. No negative App Event or automatic refund API: satisfied; source has no provider API, `UsageEvent.create`, or negative-event path.
-19. Focused tests, concurrency transaction coverage, build, static checks, full suite, and diff check: satisfied except the two documented unrelated baseline failures.
+19. Focused tests, concurrency transaction coverage, build, static checks, full suite, and diff check: satisfied except the two documented unrelated baseline failures; focused validation now includes the repaired admin UI surface.
 
 ### Git / VCS
 Launcher claim commit: `1d0d2246b6703c56b14ee802b2d1a5569d0f2bf5`.
 Authoritative implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`.
 Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`.
-Implementation commit: `341d710` (`feat(admin): settle withdrawn recovery credit refunds`), pushed to `origin/task/ARCH-010-ADMIN-003`.
-The parent report is being published on the mirrored parent branch after this update; its exact publication commit is recorded in the final task response and parent branch history.
+Implementation commit: `341d710` (`feat(admin): settle withdrawn recovery credit refunds`), followed by the audit correction commit recorded in the final task response and pushed to `origin/task/ARCH-010-ADMIN-003`.
+The parent report correction is being published on the mirrored parent branch after this update; its exact publication commit is recorded in the final task response and parent branch history.
 
 ### Architect Review
-Ready for Architect Review. No unresolved implementation limitation remains within the bounded Admin scope. The two full-suite baseline failures and existing lint/build warnings are recorded above and are unrelated to this task.
+Ready for Architect Review. The independently identified reachability/evidence gap is fixed and validated. No unresolved implementation limitation remains within the bounded Admin scope. The two full-suite baseline failures and existing lint/build warnings are recorded above and are unrelated to this task.
