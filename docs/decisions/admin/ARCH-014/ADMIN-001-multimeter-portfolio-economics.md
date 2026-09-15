@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -459,3 +459,31 @@ Ready for Architect Review
 
 - Parent task status is `review`; claim is cleared (`executor: null`, `claimed_at: null`).
 - Architect Review remains untouched. `ARCH-014-ADMIN-002` remains gated until Architect acceptance.
+
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 2 satisfies the bounded Changes Requested contract from Attempt 1. `evaluateMerchantPricingPortfolio()` now validates every resolved plan before pair generation, including a one-plan portfolio, and verifies that each `plansById` key equals the resolved `plan.id`. Invalid one-plan commercial evidence therefore returns a bounded `UNVERIFIED` result instead of escaping through an empty pair set, while a valid one-plan portfolio still correctly returns zero pair evaluations.
+
+The review also confirmed that the correction reuses the existing offer/pricing validation helpers and does not reinterpret the accepted pair algorithm, candidate generation, FIXED/GRADUATED/VOLUME pricing semantics, premium comparison, deterministic event ordering/tie-breaking, or the operational `validateSinglePackShopifyEconomics` path.
+
+Independent review validation against the uploaded Attempt 2 snapshot:
+
+- focused ARCH-014 economics suite: 27/27 passed;
+- existing operational single-pack economics suite: 42/42 passed;
+- the three requested one-plan regressions are present and exercise the required behavior;
+- implementation changes for Attempt 2 are confined to portfolio pre-validation plus the focused regression cases.
+
+The recorded missing `bullmq`, TypeScript, ESLint and Prettier installations are environment/tooling limitations already documented by the task and do not invalidate the functional acceptance evidence for this pure module.
+
+### Acceptance State
+
+- `ARCH-014-ADMIN-001`: Complete.
+- `ARCH-014-ADMIN-002`: remains Pending because `ARCH-014-DATABASE-001` is not Complete.
+- No further ADMIN-001 attempt is required.
