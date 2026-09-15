@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 57
-executor: copilot
-claimed_at: 2026-09-15T21:09:58Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
 - ARCH-014-ADMIN-005
@@ -209,53 +209,42 @@ Expected outcome: first scan has no production references to deleted legacy econ
 
 Status: Ready for Review
 
-Implementation commit: `95e8b5e` (`refactor(admin): remove superseded billing economics controls`), pushed to `origin/task/ARCH-014-ADMIN-007`.
+Audit outcome: the implementation at `95e8b5e` satisfied the requested cleanup. The corrective audit added a recursive source-reference assertion and published implementation commit `559b555` (`test(admin): prove legacy economics refs are absent`) to `origin/task/ARCH-014-ADMIN-007`.
 
-Changed files:
+Confirmed fixes and preservation:
 
-- `src/app/(protected)/billing/controls/page.tsx`
-- `src/app/(protected)/billing/page.tsx`
-- `src/app/(protected)/page.tsx`
-- `src/components/admin/admin-shell.tsx`
-- `src/components/admin/billing-controls.tsx`
-- `tests/security/admin-billing-economics.test.mjs`
+- Deleted only the four obsolete economics modules after source inspection showed no live consumers; removed the legacy controls and page loads while retaining `PlatformBillingControls`, `TenantBillingControls`, `OverrideSelect`, shared helpers, `billing-control-validation.ts`, `billing-controls.ts`, `upgrade-economics-guardrail.ts`, `merchant-pricing-economics.ts`, and `minimumUpgradePremiumBps` editing/persistence.
+- Preserved the generic guardrail and its unit tests; MerchantPricing still uses `validateSinglePackShopifyEconomics`.
+- `AdminShell` has the exact `{active, header?, children}` contract, no `search` prop or unconditional `SearchInput`, and renders no header strip when `header` is absent. Only the tenant directory imports/wires `SearchInput`; its `/` GET form and `q` query behavior remain intact. Billing, controls, promotions, merchant support, observability, and queues do not wire tenant search.
+- Added a deterministic recursive `src` assertion proving deleted legacy action/read-model/control symbols have zero source references. Negative assertions also prove the retained Controls UI lacks `Upgrade ladder`, `Verified Shopify App Pricing economics`, `mutateUpgradeEdgeAction`, and `recordEconomicsSnapshotAction`.
+- No Prisma models/tables, schema, migrations, or database files changed. The implementation commit diff contains only the named Admin source/test changes and the two obsolete economics unit-test deletions.
 
-Deleted files:
+Changed files in implementation commits:
 
-- `src/app/actions/billing-economics.ts`
-- `src/lib/admin/billing-economics-validation.ts`
-- `src/lib/admin/billing-economics.ts`
-- `src/lib/admin/billing-plan-guardrail.ts`
-- `tests/unit/billing-economics-behavior.test.ts`
-- `tests/unit/billing-economics-validation.test.ts`
+- Modified: `src/app/(protected)/billing/controls/page.tsx`, `src/app/(protected)/billing/page.tsx`, `src/app/(protected)/page.tsx`, `src/components/admin/admin-shell.tsx`, `src/components/admin/billing-controls.tsx`, `tests/security/admin-billing-economics.test.mjs`.
+- Deleted: `src/app/actions/billing-economics.ts`, `src/lib/admin/billing-economics-validation.ts`, `src/lib/admin/billing-economics.ts`, `src/lib/admin/billing-plan-guardrail.ts`, `tests/unit/billing-economics-behavior.test.ts`, `tests/unit/billing-economics-validation.test.ts`.
 
-Implementation evidence:
+Scans and focused validation:
 
-- Removed the legacy upgrade-ladder and verified-App-Pricing economics controls and their data loads/actions.
-- Preserved `PlatformBillingControls`, `TenantBillingControls`, `billing-control-validation.ts`, `billing-controls.ts`, `upgrade-economics-guardrail.ts`, `merchant-pricing-economics.ts`, and `minimumUpgradePremiumBps` persistence/editing.
-- `AdminShell` now renders a header only when supplied; tenant `SearchInput` is wired only by the tenant directory and retains its `/` GET/query behavior.
-- No Prisma, schema, migration, or database files changed; `git diff --check` passed.
-
-Scans:
-
-- Legacy symbol scan: no production references; matches remain only in intentional negative assertions in `tests/security/admin-billing-economics.test.mjs`.
-- Tenant search scan: `SearchInput` appears only in `src/components/admin/search-input.tsx`, tenant-directory wiring, and focused assertions.
-- Retained-symbol scan: `minimumUpgradePremiumBps` and `validateSinglePackShopifyEconomics` remain live in the retained policy and generic guardrail paths.
-
-Validation:
-
+- Required legacy scan: no production matches; only intentional negative assertions remain in `tests/security/admin-billing-economics.test.mjs`.
+- Required tenant-search scan: `SearchInput` appears only in `src/components/admin/search-input.tsx` and tenant-directory wiring.
+- Required retained-symbol scan: `minimumUpgradePremiumBps` and `validateSinglePackShopifyEconomics` remain live.
+- `node --test tests/security/admin-billing-economics.test.mjs`: passed, 8/8.
 - `npm run test:unit`: passed, 42/42.
-- `node --test tests/security/admin-billing-economics.test.mjs`: passed, 7/7.
-- Changed-file Prettier check: passed after formatting `admin-shell.tsx` and the focused security test.
-- `git diff --check`: passed.
-- `npm test`: blocked by nine unrelated merchant-support/auth/queue failures caused by the generated Prisma client/runtime export mismatch; no ADMIN-007 focused test failed.
-- `npx tsc --noEmit`: unavailable before dependency installation; local `./node_modules/.bin/tsc --noEmit` then reported existing generated-Prisma export/type errors and an unrelated translation-import error.
-- `npm run build`: compiled successfully but failed at the existing typecheck errors above; it also emitted existing optional BullMQ/Valkey warnings.
-- `npm run format:check`: repository-wide check reports 108 pre-existing files; all ADMIN-007 changed files pass the targeted check.
+- Combined focused security plus guardrail tests: passed, 49/49.
+- Changed-file Prettier check and `git diff --check`: passed.
 
-Isolation evidence: continued the prepared attempt in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-007` and parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-007`; no launcher rerun or new claim was created. Parent task claim commit was `ae76be80d1aaf13f0d5e5d4f2f777c94753ba1f1`.
+Required repository validation:
 
-Limitations: repository-wide validation remains limited by the pre-existing dependency/generated-Prisma and formatting baseline described above. No database/schema/migration remediation was attempted because it is outside ADMIN-007 scope.
+- `npm test`: 176 total, 171 passed, 2 failed, with 3 skipped observability tests. The two failures are unrelated baseline assertions expecting `@modainteract/moda-interact-shared` `^0.7.3` while the repository declares `^0.11.2`: `Admin validates and consumes the published Shared ICU runtime` and `consumes the published shared release without a local declaration shim`. No ADMIN-007 focused test failed.
+- `npx tsc --noEmit`: failed on the unrelated existing `src/components/admin/merchant-pricing-translation-import.tsx:56` type mismatch (`string` versus the translation issue-code union).
+- `npm run build`: production compilation succeeded, then failed on the same existing translation-import type error. It emitted existing optional BullMQ/Valkey warnings for `@valkey/valkey-glide` and dynamic BullMQ dependencies.
+- `npm run format:check`: failed on 106 existing files; every ADMIN-007-touched file passes the focused Prettier check.
+- The requested `rg` scans were executed with recursive `grep` because `rg` is unavailable in the prepared environment; results are recorded above.
+
+Isolation and publication evidence: continued the prepared attempt without rerunning the launcher, creating a claim, inferring worktrees, or repeating startup synchronization. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-007`. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-007`. Implementation commits pushed: `95e8b5e`, `559b555`. Parent claim commit: `aed9994add4def479bbd0bf530888d9340f920e7`.
+
+Limitations: repository-wide typecheck, build completion, full test pass, and format check remain limited by the unrelated baseline failures documented above. No out-of-scope database or dependency remediation was attempted.
 
 ## Stop conditions
 
