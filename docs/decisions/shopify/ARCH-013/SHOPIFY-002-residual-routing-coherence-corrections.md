@@ -525,7 +525,7 @@ Status: Complete; returned to Architect Review.
 ### Implementation
 
 - Implementation commit: `20a6034` (`fix billing purchase history route coherence`), pushed to `task/ARCH-013-SHOPIFY-002`.
-- Parent Completion Report commits: `b474814` (report) and `0f8ccd5` (final metadata closure).
+- Parent Completion Report commits: `b474814` (report), `0f8ccd5` (final metadata closure), and `7aeb83c` (audit update).
 - Changed implementation files:
   - `app/routes/app/billing/options/route.tsx`
   - `app/components/dashboard/BillingPurchaseHub.jsx`
