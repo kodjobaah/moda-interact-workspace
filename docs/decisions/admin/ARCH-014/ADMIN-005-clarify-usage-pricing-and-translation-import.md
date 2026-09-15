@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-014-ADMIN-004
@@ -857,3 +857,71 @@ Isolation and boundaries:
 - Prepared claim commit: `d0a53fc069d4c6ac6ab0a31232c7e282ad0bdb9a`.
 - Database submodule remained at `f202931c58dba7f9fcc53c74333736e978e8b6de`; no database/Shopify/schema/runtime/economics-policy files changed.
 - No Architect Review section was edited. Executor and claim were cleared, and task status is `review`.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Functional review
+
+The implementation satisfies the main ADMIN-005 usage-pricing and translation-import UX contract, including active pricing-mode isolation, step-4 blocking of unbounded zero-cost FIXED events, human portfolio guidance with a deterministic Admin label, schema-v2/stable-contentKey translation handling, one canonical file-processing path, non-destructive upload errors, and server-authoritative validation. Focused unit/security validation also passes in this review environment.
+
+One functional state-propagation defect remains and must be corrected before acceptance. Two small presentation mismatches from the exact task contract must be corrected in the same narrow attempt.
+
+### Required Attempt 3 corrections
+
+1. **Clearing translation JSON must invalidate the parent builder state.**
+
+   Current behavior in `src/components/admin/merchant-pricing-translation-import.tsx` returns early from the synchronization effect when `rawJson` is empty. After a previously valid package, clearing the textarea or successfully reading an empty `.json` file therefore leaves the parent `translationJson` and `translationResult` at their previous valid values. The final Save/Create gate can remain enabled and `validTranslationJson()` can submit the stale previous package even though the importer visibly contains no JSON.
+
+   Correct this deterministically:
+
+   - keep `rawJson` as the single canonical importer text state;
+   - when `rawJson` becomes `""`, notify the parent immediately and clear/invalidate the parent translation result;
+   - it is acceptable to change the `onChange` callback result type to `MerchantPricingTranslationParseResult | null`;
+   - the parent builder must end with `translationJson === ""` and `translationResult === null` (or an equivalently invalid result) after the textarea is cleared or an empty JSON file is read;
+   - unless `translationsRetained === true` for an unchanged edit, `canSubmit` must therefore be false;
+   - do not introduce a second parser or synthetic JSON error object; non-empty paste/upload content must continue through `parseCompletedMerchantPricingTranslationPackage(...)`.
+
+2. **Render successful uploaded-file feedback as three distinct human-readable lines.**
+
+   The current JSX places `✓ <filename>` directly adjacent to `20 / 20 languages complete`, producing concatenated text such as `✓ file.json20 / 20 languages complete`. Render the required success feedback distinctly:
+
+   ```text
+   ✓ <filename>
+   20 / 20 languages complete
+   Translation file is ready to save.
+   ```
+
+   Preserve the existing paste-only success state when no filename exists.
+
+3. **Use the exact FIXED final-review summary shape.**
+
+   For a FIXED event render:
+
+   ```text
+   <Admin label>: <credits> credits per event · <formatted price> per event · <maximum or Unlimited>
+   ```
+
+   Do not insert the additional `fixed price` token between credits and the formatted price. GRADUATED/VOLUME must continue to identify the human-readable pricing model and tier count.
+
+### Scope boundary
+
+Do not change Prisma/database files, Shopify merchant-app files, translation schemaVersion 2, portfolio-economics policy/calculation, operational BillingPlan behavior, or the seven-step builder architecture. Do not broaden this attempt into general field-level validation.
+
+### Required focused proof
+
+At minimum prove:
+
+- valid translation package -> parent result valid -> Save can be eligible;
+- clearing the textarea after that valid package clears/invalidates parent translation state and disables Save for a new/changed plan;
+- an empty successfully-read `.json` file produces the same cleared/invalid parent state;
+- malformed non-empty JSON remains parser-invalid through the canonical parser;
+- successful file feedback is rendered on distinct lines;
+- FIXED final review uses the exact required human-readable summary;
+- existing zero-cost Admin-label guidance remains intact;
+- focused ADMIN-005 unit/security tests and `git diff --check` pass.
+
+Attempt remains `2`; the next repository-agent claim becomes Attempt 3.

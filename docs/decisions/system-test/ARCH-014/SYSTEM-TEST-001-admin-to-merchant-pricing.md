@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
 - ARCH-014-DATABASE-002
 - ARCH-014-ADMIN-004
+- ARCH-014-ADMIN-005
 - ARCH-014-SHOPIFY-002
 enables: []
 created: 2026-09-15
@@ -27,7 +28,7 @@ updated: 2026-09-15
 
 ## Terminal/manual gate
 
-Do **not** auto-start. The developer explicitly invokes this task only after DATABASE-002, ADMIN-004 and SHOPIFY-002 are architect-accepted/integrated and the completed earlier ARCH-014 tasks remain integrated. No implementation task depends on this task.
+Do **not** auto-start. The developer explicitly invokes this task only after DATABASE-002, ADMIN-004, ADMIN-005 and SHOPIFY-002 are architect-accepted/integrated and the completed earlier ARCH-014 tasks remain integrated. No implementation task depends on this task.
 
 ## Objective
 
