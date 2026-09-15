@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 attempt: 2
 depends_on:
@@ -525,3 +525,15 @@ Required full validation:
 Launcher packet physical isolation evidence: parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-SHOPIFY-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-SHOPIFY-002` are separate physical worktrees on mirrored branch `task/ARCH-014-SHOPIFY-002`. Prepared packet baseline was `360ab8823f5382457a0db679bc6af0cffccecd3d`; claim commit was `770d0636caf95c7a37c5a98f414475651370fdd0`; database submodule remained `f202931c58dba7f9fcc53c74333736e978e8b6de`.
 
 Implementation commits: `1babb83` (localized merchant pricing catalogue implementation), `360ab88` (merchant pricing presentation prop typing/fix), and `e730799` (audit coverage plus UsageOverview classic-JSX runtime fix). The implementation branch was pushed before returning this task to review. This Completion Report is published on the parent task branch.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Accepted Attempt 2. Functional review confirmed that the implementation satisfies the SHOPIFY-002 merchant presentation contract: active MerchantPricing plans are read in catalogue order without operational BillingPlan joins; exact resolved-locale plan/highlight translations fail closed when missing, blank or duplicated; one reusable `MerchantPricingCatalogue` renders onboarding and completed `NO_CONTRACT`; empty catalogues render pricing unavailable without pricing CTAs; `ACTIVE`/`FROZEN` retain existing plan-management behavior; primary cards render DB-driven plan/allowance/featured/highlight content rather than raw FIXED/GRADUATED/VOLUME mechanics; and Shopify selection authority remains `/app/billing/select`.
+
+The audit correction in implementation commit `e730799` fixes the classic-JSX `UsageOverview.jsx` runtime failure and adds focused state/reader/renderer regression evidence. Reported implementation-wide tests/build and changed-path lint passed; repository-wide typecheck/lint diagnostics are documented unchanged baseline conditions and are not task-owned functional regressions. No further implementation attempt is required.
