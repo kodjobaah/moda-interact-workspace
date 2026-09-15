@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 82
-executor: copilot
-claimed_at: 2026-09-14T23:15:44Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-010-ADMIN-002
@@ -377,3 +377,642 @@ The parent report correction is being published on the mirrored parent branch af
 
 ### Architect Review
 Ready for Architect Review. The independently identified reachability/evidence gap is fixed and validated. No unresolved implementation limitation remains within the bounded Admin scope. The two full-suite baseline failures and existing lint/build warnings are recorded above and are unrelated to this task.
+## Architect Review — Attempt 3
+
+### Decision
+
+**Changes Requested — narrow functional correction.**
+
+The UI re-audit correction is accepted:
+
+```text
+- lock/reject/provider-evidence actions are now reachable from the Admin refund drawer;
+- frozen final quantity and expected provider amount/currency are displayed;
+- recorded provider action/reference/amount are displayed;
+- provider evidence remains manual Shopify Partner Dashboard/Support evidence;
+- the server mutation functions remain SUPER_ADMIN-authorized.
+```
+
+Implementation correction commit reviewed:
+
+```text
+c2c7ccbada3f1099a9d48fe6616e0efa6acddbb3
+```
+
+Parent report commit reviewed:
+
+```text
+b368fc67e965b9a556d3bd81fcaf38be1f760ce8
+```
+
+The task is **not** being returned for exhaustive test coverage. Two production
+functional defects remain in the settlement implementation, plus one bounded UI
+authorization/presentation correction.
+
+---
+
+# Attempt 4 — exact implementation contract
+
+## Correction 1 — zero-current completion MUST NOT impose a shop-wide refund lock
+
+### Problem
+
+Current `completeZeroCurrent(...)` contains:
+
+```ts
+if (
+  purchase.reservedAmount !== 0
+  || aggregate.refundingQuantity !== 0
+) {
+  throw new Error("Aggregate hold parity is inconsistent.");
+}
+```
+
+`aggregate.refundingQuantity` is the **shop-wide purchased-credit aggregate**.
+It may legitimately contain refund holds belonging to other withdrawn purchases.
+
+Therefore this condition makes independent purchase lots interfere with each
+other.
+
+Example that MUST succeed:
+
+```text
+Purchase A
+  status = WITHDRAWN
+  currentAmount = 0
+  reservedAmount = 0
+  refund = REQUESTED
+
+Purchase B
+  status = WITHDRAWN
+  currentAmount = 7
+  reservedAmount = 0
+  contributes 7 to shop aggregate.refundingQuantity
+
+shop aggregate.refundingQuantity = 7
+```
+
+Closing Purchase A must not require Purchase B's hold to disappear.
+
+### Required code change
+
+Modify exactly:
+
+```text
+src/lib/admin/recovery-credit-refund-settlement.ts
+```
+
+Change `completeZeroCurrent(...)` so it does **not** require:
+
+```text
+aggregate.refundingQuantity === 0
+```
+
+and does **not** mutate any aggregate quantity.
+
+The zero-current path owns zero refundable credits for that purchase, so the
+correct invariant is only:
+
+```text
+purchase.status = WITHDRAWN
+purchase.currentAmount = 0
+purchase.reservedAmount = 0
+refund.status = REQUESTED
+```
+
+`loadSettlementState(...)` has already proved the shop aggregate exists.
+
+Implement the helper with no aggregate dependency. Preferred exact shape:
+
+```ts
+async function completeZeroCurrent(
+  transaction: Transaction,
+  adminId: string,
+  refund: Awaited<ReturnType<typeof loadSettlementState>>["refund"],
+  purchase: Awaited<ReturnType<typeof loadSettlementState>>["purchase"],
+  reason: string,
+) {
+  if (purchase.reservedAmount !== 0) {
+    throw new Error("Purchase reservation parity is inconsistent.");
+  }
+
+  const purchaseUpdate =
+    await transaction.recoveryCreditPurchase.updateMany({
+      where: {
+        id: purchase.id,
+        status: RecoveryCreditPurchaseStatus.WITHDRAWN,
+        version: purchase.version,
+        currentAmount: 0,
+        reservedAmount: 0,
+      },
+      data: {
+        status: RecoveryCreditPurchaseStatus.COMPLETED,
+        version: { increment: 1 },
+      },
+    });
+
+  const refundUpdate =
+    await transaction.recoveryCreditRefund.updateMany({
+      where: {
+        id: refund.id,
+        status: RecoveryCreditRefundStatus.REQUESTED,
+        version: refund.version,
+      },
+      data: {
+        status: RecoveryCreditRefundStatus.COMPLETED,
+        completedAt: new Date(),
+        reason,
+        version: { increment: 1 },
+      },
+    });
+
+  if (purchaseUpdate.count !== 1 || refundUpdate.count !== 1) {
+    throw new Error("Refund changed while closing zero-current purchase.");
+  }
+
+  // preserve the existing audit and one refund-completed system message
+}
+```
+
+Update both callers:
+
+```ts
+lockRecoveryCreditRefund(...)
+rejectRecoveryCreditRefund(...)
+```
+
+from:
+
+```ts
+completeZeroCurrent(
+  transaction,
+  principal.id,
+  refund,
+  purchase,
+  aggregate,
+  boundedReason,
+)
+```
+
+to:
+
+```ts
+completeZeroCurrent(
+  transaction,
+  principal.id,
+  refund,
+  purchase,
+  boundedReason,
+)
+```
+
+Do **not** decrement:
+
+```text
+aggregate.refundingQuantity
+aggregate.grantedQuantity
+aggregate.committedQuantity
+aggregate.reservedQuantity
+```
+
+in this zero-current path.
+
+Do not add any shop-wide lock.
+
+### Required functional regression
+
+Prove:
+
+```text
+Purchase A current=0/reserved=0/REQUESTED
+Purchase B owns a non-zero shop refund hold
+aggregate.refundingQuantity > 0
+```
+
+then closing Purchase A:
+
+```text
+succeeds
+A purchase -> COMPLETED
+A refund -> COMPLETED
+aggregate quantities are unchanged
+Purchase B is untouched
+exactly one audit/message is produced
+```
+
+This may be one focused transaction test. No combinatorial matrix is required.
+
+---
+
+## Correction 2 — remove the fixed two-decimal refund calculation
+
+### Problem
+
+Current code calculates:
+
+```ts
+amount
+  .mul(quantity)
+  .div(granted)
+  .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP)
+```
+
+The accepted DATABASE-014 contract explicitly forbids assuming every provider
+currency has two fractional digits.
+
+### Required code change
+
+Modify exactly:
+
+```text
+src/lib/admin/recovery-credit-refund-settlement.ts
+```
+
+Add one deterministic ISO-currency precision helper.
+
+Use this exact implementation contract:
+
+```ts
+const SUPPORTED_CURRENCIES =
+  new Set(Intl.supportedValuesOf("currency"));
+
+function currencyFractionDigits(currency: string): number {
+  if (
+    !CURRENCY.test(currency)
+    || !SUPPORTED_CURRENCIES.has(currency)
+  ) {
+    throw new Error("Provider currency is unsupported.");
+  }
+
+  const fractionDigits =
+    new Intl.NumberFormat("en", {
+      style: "currency",
+      currency,
+    }).resolvedOptions().maximumFractionDigits;
+
+  if (
+    !Number.isInteger(fractionDigits)
+    || fractionDigits < 0
+    || fractionDigits > 4
+  ) {
+    throw new Error("Provider currency precision is unsupported.");
+  }
+
+  return fractionDigits;
+}
+```
+
+Change:
+
+```ts
+function expectedAmount(
+  amount: Prisma.Decimal,
+  quantity: number,
+  granted: number,
+): Prisma.Decimal
+```
+
+to:
+
+```ts
+function expectedAmount(
+  amount: Prisma.Decimal,
+  quantity: number,
+  granted: number,
+  currency: string,
+): Prisma.Decimal {
+  const fractionDigits = currencyFractionDigits(currency);
+
+  return amount
+    .mul(quantity)
+    .div(granted)
+    .toDecimalPlaces(
+      fractionDigits,
+      Prisma.Decimal.ROUND_HALF_UP,
+    );
+}
+```
+
+Change the provider-lock call from:
+
+```ts
+expectedAmount(
+  purchase.providerPurchaseAmount!,
+  finalCreditQuantity,
+  purchase.creditsGranted,
+)
+```
+
+to:
+
+```ts
+expectedAmount(
+  purchase.providerPurchaseAmount!,
+  finalCreditQuantity,
+  purchase.creditsGranted,
+  purchase.providerPurchaseCurrency,
+)
+```
+
+Do not:
+
+```text
+use JavaScript Number for monetary arithmetic
+use floating-point Math.round
+use current plan/top-up pricing
+change expected amount to operator-entered provider evidence
+default an unknown currency to two decimal places
+```
+
+If the provider currency is not a supported ISO currency, fail closed before
+`PROVIDER_ACTION_REQUIRED`.
+
+### Required functional proof
+
+Prove at minimum:
+
+```text
+USD -> 2 fraction digits
+JPY -> 0 fraction digits
+KWD -> 3 fraction digits
+```
+
+and proportional rounding remains `ROUND_HALF_UP`.
+
+Representative examples:
+
+```text
+USD: M=10.00, R=1, G=3 -> 3.33
+JPY: M=1000,  R=1, G=3 -> 333
+KWD: M=1.000, R=1, G=3 -> 0.333
+```
+
+Also assert the production source no longer contains:
+
+```text
+toDecimalPlaces(2
+```
+
+No broad currency test matrix is required.
+
+---
+
+## Correction 3 — make the Admin controls genuinely SUPER_ADMIN-only in the UI
+
+The server-side authorization is already correct and MUST remain the primary
+security boundary:
+
+```ts
+const principal = await requirePlatformAdminMutation();
+
+if (principal.role !== "SUPER_ADMIN") {
+  throw new Error("SUPER_ADMIN access is required.");
+}
+```
+
+Do not weaken or remove those checks.
+
+The current billing page, however, uses:
+
+```ts
+await requirePlatformAdminPage();
+```
+
+and discards the returned principal, so ordinary active platform admins can see
+settlement controls that they are not allowed to use.
+
+Use the existing Admin UI convention and hide mutation controls from non-SUPER_ADMIN
+users.
+
+### Billing page
+
+Modify:
+
+```text
+src/app/(protected)/billing/page.tsx
+```
+
+Change:
+
+```ts
+await requirePlatformAdminPage();
+```
+
+to:
+
+```ts
+const principal = await requirePlatformAdminPage();
+```
+
+When rendering the refund drawer, pass:
+
+```tsx
+<RecoveryCreditRefundDrawer
+  refund={selectedRefund}
+  params={params}
+  canSettle={principal.role === "SUPER_ADMIN"}
+/>
+```
+
+### Refund drawer
+
+Modify:
+
+```text
+src/components/admin/recovery-credit-refunds.tsx
+```
+
+Change the drawer props to:
+
+```ts
+{
+  refund: RecoveryCreditRefundDetail;
+  params: Record<string, string>;
+  canSettle: boolean;
+}
+```
+
+and render:
+
+```tsx
+{canSettle ? <SettlementActions refund={refund} /> : null}
+```
+
+instead of unconditionally rendering `SettlementActions`.
+
+All active platform admins may continue to read:
+
+```text
+refund status
+purchase provenance
+frozen final quantity
+expected provider amount/currency
+recorded provider evidence
+history
+```
+
+Only `SUPER_ADMIN` sees the mutation forms.
+
+Server role enforcement remains mandatory even though the UI is hidden.
+
+### Required functional proof
+
+Prove:
+
+```text
+SUPER_ADMIN -> settlement controls rendered
+non-SUPER_ADMIN active admin -> evidence rendered, settlement controls absent
+server settlement methods still independently reject non-SUPER_ADMIN mutation
+```
+
+---
+
+# Accepted behavior that MUST remain unchanged
+
+Do not modify the following accepted ADMIN-003 behavior:
+
+```text
+REQUESTED + reservedAmount>0 -> WAITING_FOR_RESERVATIONS
+finalCreditQuantity = exact live purchase.currentAmount
+historical provider purchase value is refund authority
+REQUESTED -> PROVIDER_ACTION_REQUIRED freezes quantity and expected money
+merchant/Admin never enters finalCreditQuantity
+provider action kind = REFUND | CREDIT only
+provider reference bounded to existing limit
+explicit provider confirmation required
+provider amount/currency mismatch -> NEEDS_ATTENTION
+mismatch preserves purchase WITHDRAWN and aggregate hold
+successful completion atomically:
+  purchase -> REFUNDED/currentAmount=0
+  aggregate refundingQuantity -= finalCreditQuantity
+  aggregate grantedQuantity -= finalCreditQuantity
+  refund -> COMPLETED
+pre-provider reject only while refund = REQUESTED
+pre-provider reject releases exact current unreserved hold
+provider action boundary prevents merchant reactivation
+exact refund/purchase versioned CAS
+one refund-scoped merchant system message
+transition-gated audit/idempotency
+no Shopify refund API
+no negative/fractional App Event correction
+other purchase lots remain independent
+```
+
+The new `c2c7ccb` drawer controls and frozen evidence display are accepted and
+must remain.
+
+---
+
+# Allowed files for Attempt 4
+
+Production files:
+
+```text
+src/lib/admin/recovery-credit-refund-settlement.ts
+src/app/(protected)/billing/page.tsx
+src/components/admin/recovery-credit-refunds.tsx
+```
+
+Focused test files:
+
+```text
+tests/security/admin-recovery-credit-refund-settlement.test.mjs
+tests/security/admin-recovery-credit-refunds.test.mjs
+```
+
+A new narrowly scoped settlement utility test is allowed if runtime testing the
+currency helper cleanly requires it.
+
+Do not modify:
+
+```text
+database schema/migrations
+shared package
+background service
+Shopify app
+RecoveryCreditPurchase/Refund enums
+refund request creation
+merchant reactivation semantics
+provider APIs
+unrelated Admin pages/components
+```
+
+---
+
+# Required validation
+
+Run the existing focused security suites covering:
+
+```text
+admin recovery-credit refund settlement
+admin recovery-credit refund UI
+admin security boundary
+admin billing controls
+```
+
+and the two new functional regressions above.
+
+Then run:
+
+```bash
+npm run prisma:validate
+npx tsc --noEmit
+npm run lint
+npm run build
+npm test
+git diff --check
+```
+
+The two already-documented repository-wide shared-version baseline test failures
+remain non-blocking if unchanged.
+
+Any new error in an Attempt-4 touched production file is blocking.
+
+---
+
+# Metadata / stop conditions
+
+Return this task to:
+
+```text
+status: ready
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+The next `/moda-task ARCH-010-ADMIN-003` claim MUST become:
+
+```text
+attempt: 4
+```
+
+exactly once.
+
+STOP and return to `moda_architect` rather than inventing a new design if:
+
+```text
+currency precision cannot be represented deterministically without floating point
+the zero-current correction would require changing aggregate ownership semantics
+a schema/migration change appears necessary
+refund/CAS/provider settlement semantics would need redesign
+```
+
+Attempt 4 may return to Architect Review only when:
+
+```text
+zero-current closure is independent of other purchase holds
+shop aggregate remains untouched in zero-current closure
+currency-aware proportional refund precision replaces fixed 2 decimals
+USD/JPY/KWD precision proof passes
+non-SUPER_ADMIN users cannot see settlement mutation controls
+server SUPER_ADMIN enforcement remains intact
+accepted c2c7ccb drawer reachability/evidence behavior remains intact
+focused validation passes
+status = review
+executor = null
+claimed_at = null
+both worktrees are clean and pushed
+```
+
+`ARCH-010-SYSTEM-TEST-003` remains gated.
