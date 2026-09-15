@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-014-SYSTEM-TEST-002
 created: 2026-09-15
-updated: 2026-09-15T23:55:00Z
+updated: 2026-09-16T00:20:00Z
 ---
 
 # ARCH-014-ADMIN-008
@@ -383,15 +383,17 @@ Status: Ready for Review
 ### Implementation
 
 - Implementation commit: `50e9d5e` (`feat(admin): add multilingual promotion translations`), pushed to `origin/task/ARCH-014-ADMIN-008`.
+- Audit-fix commit: `76d3131` (`fix(admin): close promotion translation audit gaps`), pushed to `origin/task/ARCH-014-ADMIN-008`.
 - Added the canonical promotion translation package/validator, promotion-specific XLSX adapter, client upload/download workflow, atomic draft/import persistence, exact 20-locale activation gate, translation completeness state, and focused workbook tests.
 - Legacy `PromotionCampaign.merchantDescription` remains unchanged and is not read as localized source. No database, Shopify, or dependency files changed.
 
 ### Validation
 
-- Focused promotion validation/workbook tests: `9/9` passed.
+- Focused promotion validation/workbook tests: `10/10` passed.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
-- `npm run test:unit`: `42/42` passed.
+- `npm run test:unit`: `118/118` passed after widening discovery to all TypeScript unit tests.
+- `node --test tests/security/admin-promotions.test.mjs`: `13/13` passed.
 - `npx tsc --noEmit`: passed.
 - `npm run build`: passed; existing BullMQ optional-dependency warnings remain.
 - Touched-file Prettier check and `git diff --check`: passed.
@@ -406,6 +408,13 @@ Status: Ready for Review
 - New drafts persist only internal campaign terms plus one English translation row; changed English source deletes non-English rows; unchanged source preserves translations; active translations remain immutable.
 - Activation re-reads translations and rejects incomplete campaigns with `Complete all 20 merchant translations before activating this campaign.`
 - Admin history/report headings continue to use the internal campaign name; merchant-facing title/description are translation-backed.
+
+### Audit findings resolved
+
+- Workbook parsing now rejects non-exact worksheet sets/order before metadata or translation processing, and requires exactly eight ordered `_meta` key/value rows.
+- Import replacement now deletes and creates the complete validated 20-row set before the optimistic campaign-version CAS, so any CAS failure rolls the replacement back atomically.
+- The configured unit command now discovers all TypeScript unit tests instead of only the unrelated economics guardrail file.
+- The promotion security assertion for `expiresAt` is whitespace-tolerant after formatting, with no behavior change to the lifecycle form.
 
 ### Isolation
 
