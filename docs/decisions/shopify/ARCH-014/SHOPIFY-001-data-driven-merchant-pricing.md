@@ -705,5 +705,5 @@ Status: Ready for Review; complete audit found no implementation gap and no impl
 ### Publication
 
 - No implementation commit was created because the audit found no confirmed gap; implementation remains at accepted commit `d2d80fb`.
-- Parent report commit: pending this report update.
+- Parent report commit: `ee81852` (`docs: audit SHOPIFY-001 attempt 5`), pushed to `origin/task/ARCH-014-SHOPIFY-001`.
 - Attempt 5 claim cleared; task status set to `review` for `moda_architect`.
