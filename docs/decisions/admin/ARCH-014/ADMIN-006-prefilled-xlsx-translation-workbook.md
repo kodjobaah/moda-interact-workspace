@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 56
-executor: copilot
-claimed_at: 2026-09-15T19:56:49Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-ADMIN-005
@@ -931,3 +931,51 @@ STOP and return to `moda_architect` without broadening scope if implementation a
 12. changing operational BillingPlan/runtime billing behavior.
 
 Return the task to `moda_architect` in `review` and STOP when all authorized work is complete.
+
+## Completion Report
+
+Implementation commit: `222ce51` (`feat(admin): replace translation JSON with XLSX workbook`).
+Parent/docs commit: pending for this report update.
+
+### Changed surface
+
+- Added `exceljs` `4.4.0` as the only new direct spreadsheet dependency and updated `package-lock.json` with npm.
+- Added `src/lib/admin/translation-workbook-common.ts` with the shared XLSX MIME, 2 MiB limit, canonical locale metadata derived from `MERCHANT_PRICING_LOCALES`, and lazy ExcelJS loader.
+- Added `src/lib/admin/merchant-pricing-translation-workbook.ts` for deterministic workbook generation/parsing and canonical schema-v2 delegation.
+- Added `src/components/admin/merchant-pricing-translation-workbook.tsx` and wired it into `merchant-pricing-plan-builder.tsx`.
+- Deleted `src/components/admin/merchant-pricing-translation-import.tsx`.
+- Added `tests/unit/merchant-pricing-translation-workbook.test.ts` and updated `tests/security/admin-merchant-pricing-plan.test.mjs`.
+- No Prisma/database, Shopify merchant-app, operational billing, or portfolio-economics files changed.
+
+### Evidence
+
+- Focused workbook, canonical translation, and builder payload tests: `19/19` passed.
+- Security suites `admin-merchant-pricing-plan.test.mjs` and `admin-billing-progressive-disclosure.test.mjs`: `17/17` passed.
+- Declared `npm run test:unit`: `42/42` passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed, including Next.js TypeScript checking and production page generation; existing BullMQ optional-dependency warnings remain.
+- `git diff --check`: passed.
+- Task-owned files were formatted with Prettier. Repository `npm run format:check` still reports 114 pre-existing files outside this task.
+- Standalone `npx tsc --noEmit` and broad `npm test` remain affected by the existing generated-Prisma-client baseline: missing unrelated Prisma enum/runtime exports in merchant-support, auth, billing, and promotion modules. The production build type-check passes.
+- Generated workbook sheets are exactly `Instructions`, `Translations`, `_meta`; `_meta` is `veryHidden`.
+- Generated `Translations` contains all 20 canonical language labels/locales in registry order, with English source values populated and 19 non-English values blank for a new plan; missing cells receive pale-yellow fill.
+- Existing edit retention and targeted blanking remain owned by `buildMerchantPricingTranslationTemplate`, including reorder-by-contentKey, changed description, changed highlight, new highlight, and removed highlight behavior.
+- XLSX parsing validates workbook structure, then builds canonical `schemaVersion: 2` JSON and calls `parseCompletedMerchantPricingTranslationPackage(...)`; formulas/rich/non-string translation cells are rejected as `UNSUPPORTED_CELL_VALUE` without evaluation.
+- Invalid XLSX bytes return `INVALID_XLSX` and do not call the parent change callback; oversized, multiple-file, and wrong-file envelopes preserve the current accepted canonical state.
+- Source scans confirm the XLSX controls are present, the old human-facing JSON controls are absent from `src/components/admin`, `exceljs@4.4.0` is the only spreadsheet dependency, and no `react-dropzone`/`dropzone` dependency exists.
+- Database submodule pointer and database files are unchanged.
+
+Physical worktree isolation:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-006
+parent branch: task/ARCH-014-ADMIN-006
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-006
+implementation branch: task/ARCH-014-ADMIN-006
+shared workspace checkout switched/mutated for task work: no
+database submodule commit: f202931c58dba7f9fcc53c74333736e978e8b6de
+```
+
+The implementation branch is pushed and this parent report is being returned to `review` for `moda_architect`. No branch was merged to `main`.
