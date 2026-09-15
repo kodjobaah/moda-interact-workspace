@@ -449,7 +449,7 @@ System test is terminal/manual-gated and enables no implementation task.
 | `ARCH-014-SHOPIFY-001` | Ready | `ARCH-014-DATABASE-001` |
 | `ARCH-014-SYSTEM-TEST-001` | Pending | `ARCH-014-ADMIN-002`, `ARCH-014-SHOPIFY-001` |
 
-`ARCH-014-DATABASE-001` and `ARCH-014-ADMIN-001` are Complete. `ARCH-014-ADMIN-002` and `ARCH-014-SHOPIFY-001` are both in architect-requested rework and remain independently executable. The ARCH-014 automatic Ready frontier is therefore:
+`ARCH-014-DATABASE-001` and `ARCH-014-ADMIN-001` are Complete. ADMIN-002 Attempt 3 requires one bounded projected-order correction and has been returned to Ready; SHOPIFY-001 is independently Ready. The ARCH-014 automatic Ready frontier is therefore:
 
 ```text
 ARCH-014-ADMIN-002
