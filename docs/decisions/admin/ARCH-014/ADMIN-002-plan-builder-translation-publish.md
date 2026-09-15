@@ -18,6 +18,7 @@ depends_on:
 - ARCH-014-DATABASE-001
 - ARCH-014-ADMIN-001
 enables:
+- ARCH-014-ADMIN-003
 - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
@@ -690,63 +691,32 @@ Ready for Architect Review.
 
 - Implementation commit `b54c1b4` is published on `origin/task/ARCH-014-ADMIN-002`.
 - Claim cleared: `executor: null`, `claimed_at: null`.
-- Parent report commit: pending.
+- Parent report commit: `061ca95`.
 
 ## Architect Review
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 3 correctly closes two of the three prior correction areas and materially improves the third:
+Attempt 4 is accepted.
 
-- recurring/FIXED/tier money is now submitted as decimal text and independently normalized server-side to integer minor units using the exact shared money parser;
-- the economics preview now renders the required combination/cost/premium/status evidence returned by ADMIN-001;
-- placement tokens are now resolved to the intended insertion index and stale/unresolvable client tokens fail closed.
+The remaining Attempt-3 placement defect is closed in both the client preview and authoritative server evaluation. Create projection now derives insertion index `k` from the explicit placement token and constructs the projected catalogue by splicing the candidate into the full persisted catalogue order before active-row filtering. Therefore `BEFORE:A`, middle `AFTER:A`, terminal `AFTER:C`, and `ONLY` evaluate the same lower-to-higher order that will exist after the transaction's descending position shift and insert.
 
-One functional placement defect remains in the actual projected-portfolio assembly. Both the client preview in `src/components/admin/merchant-pricing-plan-builder.tsx` and the authoritative server helper `projectedPortfolio()` in `src/app/actions/merchant-pricing-plan.ts` append the proposed create candidate with `position = insertionIndex` while leaving existing rows at their current positions, then sort numerically. For `BEFORE:<first>` and any non-terminal `AFTER:<id>`, this creates a duplicate numeric position with the existing row currently occupying the insertion slot. JavaScript's stable sort leaves that existing row before the candidate, so the evaluated lower->higher order can still differ from the catalogue that will exist after the transaction shifts rows and inserts the candidate.
+Edit and activation retain replacement-at-persisted-position semantics and do not perform catalogue insertion or position shifts. The proposed candidate continues to participate in economics even when proposed `isActive=false`, while existing inactive plans remain excluded.
 
-Example with current catalogue `A@0, B@1, C@2`:
+The previously accepted Attempt-3 corrections remain intact: decimal recurring/FIXED/tier values are independently reparsed server-side to minor units; the Admin preview renders the required ADMIN-001 economics evidence; and both client and authoritative server gates fail closed on `FAIL` or `UNVERIFIED`.
 
-```text
-BEFORE:A preview/server projection today -> A@0, NEW@0, B@1, C@2
-required projected catalogue           -> NEW@0, A@1, B@2, C@3
+Architect review independently confirmed the implementation path and reran the focused uploaded-snapshot validation:
 
-AFTER:A preview/server projection today -> A@0, B@1, NEW@1, C@2
-required projected catalogue            -> A@0, NEW@1, B@2, C@3
-```
+- payload + translation suite: **9/9 passed**;
+- ARCH-014 security suite: **4/4 passed**;
+- ADMIN-001 economics suite: **27/27 passed**;
+- ARCH-014 operational-plan/economics isolation scan: **no matches**;
+- reviewed changed files contain no trailing-whitespace defect.
 
-This is an economics-enforcement defect, not merely presentation drift: create-time `projectedPortfolio()` performs the same duplicate-position sort before the real descending position shift. A create can therefore be approved/rejected against the wrong ordered pairs.
+The reported repository-wide formatting and unrelated full-suite baseline failures do not alter this task's accepted functional result.
 
-No redesign of ADMIN-001, the translation subsystem, money parser, transaction boundary, or unrelated billing views is required.
-
-### Required Corrections
-
-1. **Make create projected order reflect the post-insert catalogue in both client and server paths.**
-   - Continue deriving create insertion index `k` from the explicit `ONLY` / `BEFORE:<first>` / `AFTER:<id>` token.
-   - Before calling `evaluateMerchantPricingPortfolio`, represent every existing row with `cataloguePosition >= k` as effective projected position `cataloguePosition + 1`, then place the proposed candidate at `k`; or construct the full projected catalogue by inserting/splicing the candidate at index `k` and only then derive the active economics portfolio.
-   - The resulting projected positions/order must be unique and identical to the catalogue order that will exist after the create transaction's descending shift + insert.
-   - Apply this to the create preview in `src/components/admin/merchant-pricing-plan-builder.tsx` **and** authoritative create evaluation in `src/app/actions/merchant-pricing-plan.ts`.
-   - Preserve edit behavior: replace the edited plan at its immutable persisted position without shifting unrelated plans.
-   - Preserve activation behavior: activation is not a catalogue insertion and must not shift positions.
-   - Preserve the rule that the proposed candidate participates in economics even when proposed `isActive=false`; existing rows participate only when active.
-
-2. **Keep all Attempt-3 accepted corrections unchanged.**
-   - Decimal recurring/FIXED/tier draft money remains server-reparsed into integer minor units.
-   - Invalid decimal forms remain fail-closed.
-   - Economics preview continues rendering lower/higher, additional credits, chosen event quantities, stay+top-up cost, higher recurring cost, premium/result code and status.
-   - Client and authoritative server save gates continue rejecting `FAIL` and `UNVERIFIED`.
-
-3. **Add only focused regression evidence for the order actually submitted to ADMIN-001.**
-   - With active `A@0, B@1, C@2`, `BEFORE:A` must call/equivalently construct ADMIN-001 order `NEW, A, B, C`.
-   - With active `A@0, B@1, C@2`, `AFTER:A` must call/equivalently construct order `A, NEW, B, C`.
-   - Verify the authoritative server create projection follows the same order, not just `resolveMerchantPricingPreviewPosition()` returning `0`/`1`.
-   - `AFTER:<current-last>` remains `A, B, C, NEW` and edit/activation ordering remains unchanged.
-
-4. Re-run the existing focused parser/translation/security validation, the relevant ADMIN-001/economics tests, TypeScript/build/isolation validation available in the repository, and `git diff --check`. No broader combinatorial test expansion is required.
-
-### Rework State
-
-Return this same task through `/moda-task ARCH-014-ADMIN-002`. Preserve `attempt: 3`; the next authorized claim increments it to Attempt 4. `ARCH-014-SYSTEM-TEST-001` remains gated until ADMIN-002 and SHOPIFY-001 are both Complete.
+`ARCH-014-ADMIN-002` uses `completion_mode: automatic`, so architect acceptance completes the task. `ARCH-014-ADMIN-003` is newly Ready because its sole dependency is now Complete. `ARCH-014-SYSTEM-TEST-001` remains Pending and must not run until `ADMIN-003` and `SHOPIFY-001` are both Complete.
