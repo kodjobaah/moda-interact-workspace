@@ -292,6 +292,27 @@ ARCH-015 MUST NOT:
 - add another background queue solely to invoke refund processing;
 - allow implementation agents to invent additional Prisma models/enum states without architect review.
 
+## Post-review update — DATABASE-001 Accepted
+
+`ARCH-015-DATABASE-001` Attempt 1 is architect-accepted. The only ARCH-015 schema
+amendment is now implemented as designed:
+
+```text
+RecoveryCreditPurchase.providerUsageQuantityBeforeSnapshot -> Decimal
+RecoveryCreditPurchase.providerUsageQuantityAfterSnapshot  -> Decimal?
+```
+
+The migration preserves existing integer evidence exactly, permits fractional provider
+usage baselines required by later negative/fractional App Event corrections, and does
+not widen Moda credit-entitlement/refund quantities away from integers. Historical
+migration SQL remains immutable and the current-schema validator/ERD are aligned.
+
+The stale local `moda_interact` fixture recorded during validation is an environment
+baseline mismatch; a fresh database built from the checked-in ARCH-010/014-compatible
+migration chain applies ARCH-015 successfully. It does not block this acceptance.
+
+`ARCH-015-DATABASE-001` is therefore **Complete**. Enabled dependants remain subject
+to their other declared prerequisites; this acceptance does not bypass the task graph.
 ## Post-review update — SHARED-001 Attempt 1 Changes Requested
 
 Architect review of `ARCH-015-SHARED-001` accepted the provider-context identity
