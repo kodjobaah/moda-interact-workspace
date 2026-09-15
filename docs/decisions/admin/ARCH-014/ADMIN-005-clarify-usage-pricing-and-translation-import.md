@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 55
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
 - ARCH-014-ADMIN-004
 enables:
@@ -809,3 +809,78 @@ STOP and return to `moda_architect` without broadening scope if any of the follo
 7. adding a third-party drag/drop dependency;
 8. modifying operational BillingPlan/runtime billing behaviour;
 9. changing portfolio economics policy rather than its Admin presentation.
+
+## Completion Report
+
+Status: Ready for Review
+
+Audit disposition: Attempt 3 addressed every mandatory Architect Review correction. Empty canonical translation text now invalidates the parent builder state immediately; successful uploaded-file feedback is rendered as three distinct lines; and FIXED final-review summaries now use the exact required shape without the extra `fixed price` token. The prior Admin-label zero-cost economics correction remains intact.
+
+Attempt 3 correction mapping:
+
+- Clearing translation JSON: implemented in `src/components/admin/merchant-pricing-translation-import.tsx` and the parent callback in `src/components/admin/merchant-pricing-plan-builder.tsx`. The synchronization effect always calls `onChange(rawJson, result)`, including `("", null)`, so `translationJson` becomes empty and `translationResult` becomes null. Non-empty content still uses the canonical schema-v2 parser; no synthetic error JSON was introduced.
+- Distinct upload success feedback: implemented in `src/components/admin/merchant-pricing-translation-import.tsx` as separate lines for `✓ <filename>`, `20 / 20 languages complete`, and `Translation file is ready to save.`
+- Exact FIXED final-review summary: implemented in `src/components/admin/merchant-pricing-plan-builder.tsx`; FIXED events render `<Admin label>: <credits> credits per event · <formatted price> per event · <maximum or Unlimited>`, while tiered modes retain their human-readable model and tier count.
+
+Implementation commits (pushed to `task/ARCH-014-ADMIN-005`):
+
+- `cdea0aaf2d62e43f066f18b1930f491319066c09` — initial ADMIN-005 implementation.
+- `5717514` — corrective pure presentation helper and focused test.
+- `a80d44c65bfab7566fc1352fe3cc12a373dd80f7` — Attempt 3 review corrections and focused source regressions.
+
+Exact cumulative implementation files changed:
+
+- `src/components/admin/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant-pricing-translation-import.tsx`
+- `src/lib/admin/merchant-pricing-builder-presentation.ts`
+- `tests/security/admin-merchant-pricing-plan.test.mjs`
+- `tests/unit/merchant-pricing-builder-payload.test.ts`
+
+Requirement audit and evidence:
+
+- ADMIN-004 prerequisites are present: builder, importer, schemaVersion 2 parser/template, stable UUID `contentKey` highlights, unchanged portfolio economics, and fail-closed `UNBOUNDED_ZERO_COST_USAGE_EVENT`.
+- Usage-event labels/order, human pricing modes, ISO currency labels, no currency conversion, tier labels, `Unlimited`, inactive-pricing serialization, stale inactive economics exclusion, inline zero-cost warning, disabled Usage-events `Next`, human portfolio guidance, collapsed exact technical disclosure, and final review summaries are present.
+- Translation instructions/example, one canonical `rawJson` parser path, hidden accessible input, explicit button/drop zone, drag prevention, active state, exact size/type/multiple-file/read-error handling, non-destructive state preservation, filename/edit feedback, all required issue-summary categories, collapsed raw issue details, and exact count wording are present.
+- Stable schema-v2 UUID-keyed templates reject translated-title keys; server parsing/validation and operational billing controls are unchanged.
+- The 35 mandatory-test checklist was audited against the focused unit/security suites and source scans. The focused security suite now explicitly checks empty-state propagation wiring, distinct upload feedback, and the exact FIXED review shape. Existing tests prove capped zero-cost acceptance, malicious unbounded rejection, zero-cost one-plan validity, fixed money parsing, inactive pricing serialization contract, schema-v2/content-key retention, translation issue codes, upload contract, security, catalogue placement, highlights, portfolio economics, and billing disclosure regressions.
+
+Validation results:
+
+- Focused validation after Attempt 3: Admin pricing economics/payload/translation unit tests passed 40/40; `tests/security/admin-merchant-pricing-plan.test.mjs` passed 8/8; `git diff --check` passed.
+- Required source scans passed: labels/messages and `UNBOUNDED_ZERO_COST_USAGE_EVENT` are present; synthetic `{"error":"Translation package..."}` replacement is absent; no `react-dropzone` or `dropzone` dependency is present.
+- `git diff --check`: passed.
+- `npm test`: blocked in unrelated repository suites by missing prepared-worktree dependencies `@prisma/client` and `bullmq`; focused security/unit suites passed independently.
+- `npm run prisma:validate`: blocked because `prisma` is not installed.
+- `npm run prisma:generate`: blocked because `prisma` is not installed.
+- `npx tsc --noEmit`: blocked because the TypeScript compiler is not installed in the prepared worktree.
+- `npm run build`: blocked at its required Prisma generation step because `prisma` is not installed.
+- `npm run format:check`: blocked because Prettier is not installed.
+
+Isolation and boundaries:
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-005`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-005`.
+- Mirrored branch: `task/ARCH-014-ADMIN-005`.
+- Prepared claim commit: `d0a53fc069d4c6ac6ab0a31232c7e282ad0bdb9a`.
+- Attempt 3 implementation commit: `a80d44c65bfab7566fc1352fe3cc12a373dd80f7`, pushed to `origin/task/ARCH-014-ADMIN-005`.
+- Parent task/report commits preceding this final report correction: `66c3b4c5280c9e44bda3598c1a694f363409dc3e`, `a56e58394c361708e60170c4dc2179febe0f360a`; both were pushed to the mirrored parent `task/ARCH-014-ADMIN-005` branch. The final correction commit is reported in the completion response.
+- Database submodule remained at `f202931c58dba7f9fcc53c74333736e978e8b6de`; no database/Shopify/schema/runtime/economics-policy files changed.
+- No Architect Review section was edited. Executor and claim were cleared, and task status is `review`.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Accepted Attempt 3. Functional review confirms that implementation commit `a80d44c65bfab7566fc1352fe3cc12a373dd80f7` closes every correction requested after Attempt 2 without broadening scope.
+
+The translation importer now propagates `("", null)` to the parent whenever canonical raw JSON becomes empty, so a previously valid package cannot remain silently eligible after the textarea is cleared or an empty JSON file is loaded. Non-empty content still uses the canonical schema-v2 parser; no synthetic error JSON or second parser was introduced.
+
+Successful uploaded-file feedback renders as three distinct human-readable lines, and FIXED final-review summaries use the exact required `<Admin label>: <credits> credits per event · <formatted price> per event · <maximum or Unlimited>` shape. The existing deterministic Admin-label guidance for unbounded zero-cost usage events remains fail-closed.
+
+Independent architect validation reproduced the focused executable evidence available in this snapshot: 40/40 MerchantPricing unit tests and 8/8 `admin-merchant-pricing-plan` security tests passed. The reported Prisma/TypeScript/build/format/full-suite blockers are missing prepared-worktree dependencies/tools rather than observed ADMIN-005 functional regressions. No database, Shopify merchant-app, translation-schema, operational-billing or portfolio-economics-policy change is required.
+
+No further ADMIN-005 implementation attempt is required.

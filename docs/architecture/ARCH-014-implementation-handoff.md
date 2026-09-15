@@ -13,6 +13,7 @@ ARCH-014-DATABASE-001
 ARCH-014-ADMIN-001
 ARCH-014-ADMIN-002
 ARCH-014-ADMIN-003
+ARCH-014-ADMIN-004
 ARCH-014-SHOPIFY-001
 ARCH-014-DATABASE-002
 ARCH-014-SHOPIFY-002
@@ -61,21 +62,17 @@ Operational BillingPlan/topology remains outside ARCH-014 catalogue behavior.
 
 ```text
 ARCH-014-DATABASE-002                       COMPLETE
-    |
-    +-------------------------------+
-    |                               |
-    v                               v
-ARCH-014-ADMIN-004                 ARCH-014-SHOPIFY-002
-READY                              COMPLETE
-(depends also on ADMIN-003)        (depends also on SHOPIFY-001)
-    |                               |
-    +---------------+---------------+
-                    v
-          ARCH-014-SYSTEM-TEST-001
-                    PENDING
+ARCH-014-ADMIN-004                          COMPLETE
+ARCH-014-SHOPIFY-002                        COMPLETE
+        |
+        v
+ARCH-014-ADMIN-005                          COMPLETE
+        |
+        v
+ARCH-014-SYSTEM-TEST-001                    READY (DEVELOPER-GATED)
 ```
 
-DATABASE-002 and SHOPIFY-002 are architect-accepted/integrated. ADMIN-004 remains **Ready** and is the only remaining implementation task. SYSTEM-TEST-001 remains Pending until ADMIN-004 is Complete.
+DATABASE-002, ADMIN-004, ADMIN-005 and SHOPIFY-002 are architect-accepted/integrated. No automatic implementation task remains. SYSTEM-TEST-001 is **Ready** but terminal/developer-gated and must be invoked explicitly by the developer.
 
 ## Materialisation state
 
