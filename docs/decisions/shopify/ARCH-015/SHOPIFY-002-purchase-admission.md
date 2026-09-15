@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-15T21:11:48Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-015-SHARED-001
@@ -317,3 +317,35 @@ Do NOT:
 ### Lifecycle
 
 This is the **same `ARCH-015-SHOPIFY-002` task**. Keep `attempt: 2`, `executor: null`, and `claimed_at: null` while Ready. The next `/moda-task ARCH-015-SHOPIFY-002` claim must increment to Attempt 3 exactly once. After correction and validation, set `status: review`, clear the claim, update the Completion Report, and return to `moda_architect`.
+
+## Attempt 3 Completion Report
+
+### Status
+
+The requested Serializable transaction correction is implemented and pushed. Return to `moda_architect` for review; no acceptance decision has been made by this agent.
+
+### Correction Evidence
+
+- `app/services/billing/billing.service.ts` now passes `{ isolationLevel: Prisma.TransactionIsolationLevel.Serializable }` only to the recovery-credit purchase `$transaction` call.
+- The existing `Subscription` `FOR UPDATE` query and transaction body remain in place.
+- `tests/unit/services/billing.service.test.ts` captures the `$transaction` second argument and records transaction operation order. The focused regression proves `Serializable`, then `subscription-lock`, `unresolved-lookup`, and writes in that order.
+- No request-contract, provider revalidation, provider-context, single-flight-scope, schema, lock-table, Shared, Database, Background, Admin, or direct App Events behavior changed.
+
+### Validation Evidence
+
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-purchase-hub.test.tsx tests/unit/billing-ui.test.ts`: passed, 3 files / 214 tests.
+- `npm run build`: passed, including Prisma client generation and client/SSR bundles. Existing Zod/Rollup annotation and large-chunk warnings remain.
+- `git diff --check`: passed.
+- `npm run lint`: not clean because of the documented 16 pre-existing errors in unrelated dashboard/routes/provider/test files; the changed test file retains only existing duplicate-import warnings.
+- `npm run typecheck`: not clean because of the documented broad JavaScript implicit-any and unrelated route diagnostics; no new diagnostics were reported in the changed service/test slice.
+
+### VCS and Isolation Evidence
+
+- Launcher claim commit: `9ffa1a52e2eda454680faac402012a4446795449`, attempt `3`, executor `copilot`, dependency gate passed, claim pushed.
+- Implementation commit: `81bd963` (`fix(shopify): use serializable purchase admission`), pushed to `origin/task/ARCH-015-SHOPIFY-002`.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-002` on `task/ARCH-015-SHOPIFY-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-002` on `task/ARCH-015-SHOPIFY-002`.
+- Shared/default checkout switched or mutated: no. Another task worktree reused: no.
+- Recursive submodule synchronization and initialization: passed. Database submodule remains `f202931c58dba7f9fcc53c74333736e978e8b6de`.
+- No database schema or submodule gitlink changes; no merge to `main` and no push to `main`.
