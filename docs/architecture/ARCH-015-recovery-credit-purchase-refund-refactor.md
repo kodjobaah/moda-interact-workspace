@@ -322,3 +322,34 @@ must not be overwritten. The corrected task must publish and exact-version smoke
 `0.11.2` before architect acceptance.
 
 No downstream dependency is unblocked until `ARCH-015-SHARED-001` is Complete.
+
+
+## Post-review update — SHARED-001 Attempt 2 External Publication Blocker
+
+`ARCH-015-SHARED-001` Attempt 2 closes the only production defect identified in
+Attempt 1. The canonical Shared comparator now fails closed when provider identity,
+plan handle or billing period evidence is blank, and the corrected package is versioned
+as `0.11.2`. No further Shared source correction is requested.
+
+npm accepted publication of `@modainteract/moda-interact-shared@0.11.2`, but the
+registry had not yet made that exact version resolvable for the mandatory clean
+consumer smoke. The task is therefore **Blocked on external npm registry visibility**
+rather than returned for another implementation attempt.
+
+Required sequencing remains:
+
+```text
+ARCH-015-SHARED-001 Attempt 2
+  functionally accepted
+  + exact 0.11.2 registry artifact/consumer smoke pending
+  -> Blocked
+
+registry smoke passes
+  -> same Attempt 2 returns to Architect Review
+  -> architect acceptance
+  -> dependent ARCH-015 tasks may be promoted
+```
+
+Do not create Attempt 3, republish `0.11.2`, or bump another Shared version solely to
+work around propagation. No downstream dependency is unblocked until SHARED-001 is
+Complete.

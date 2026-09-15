@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 10
-executor: copilot
-claimed_at: 2026-09-15T12:44:02Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -538,3 +538,105 @@ runtime export smoke, and blank-context fail-closed registry smoke have not
 been claimed as complete, and this task is not marked review-ready.
 
 Return to `moda_architect` for the external npm propagation/publication retry.
+
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Functionally Accepted — Blocked only on external npm registry visibility**
+
+Architect review verified implementation commit
+`8fd9fb3a45bdb7b2122d9059dc20d2c00d92b363` against the ARCH-015 v1.1
+Shared contract and the Attempt-1 correction contract.
+
+The production correction is accepted:
+
+```text
+providerContextIdentity must be non-empty on both sides
+shopifyPlanHandleSnapshot/shopifyPlanHandle must be non-empty on both sides
+billingPeriodId must be non-empty on both sides
+all three trimmed values must match exactly
+eventHandle remains outside the generic comparator
+```
+
+`isSameShopifyPurchaseProviderContext(...)` now fails closed when a required
+comparison fact is blank and still returns `true` for a valid matching three-field
+provider context. No further source correction is requested.
+
+The implementation commit is confined to the authorised four-file Shared surface:
+
+```text
+src/billing.ts
+src/billing.test.ts
+package.json
+package-lock.json
+```
+
+and the package metadata is consistently `0.11.2`. The local validation recorded by
+the executor is sufficient for the implementation portion of the task. The focused
+regression suite does not enumerate every single left/right blank permutation
+separately, but the production predicate enforces non-empty values symmetrically for
+every pair; no additional implementation attempt is required solely for test
+exhaustiveness.
+
+### External blocker
+
+npm accepted publication of:
+
+```text
+@modainteract/moda-interact-shared@0.11.2
+shasum 50927cf0c2f7fb0b553cc77086fbb318f3d2f73a
+```
+
+but the executor's direct registry checks still did not expose version `0.11.2`, and
+`latest` still resolved to `0.11.1`. Therefore the exact-version registry consumer
+smoke required by this task cannot yet be truthfully recorded as complete.
+
+This is an external publication/propagation blocker, not a code defect.
+
+### Required continuation — same Attempt 2, no republish
+
+Do **not** run `/moda-task ARCH-015-SHARED-001` while this task is blocked. Do not
+create Attempt 3. Do not bump another package version and do not run `npm publish`
+again.
+
+When npm exposes `0.11.2`, continue the existing Attempt-2 verification only. Run:
+
+```bash
+npm view @modainteract/moda-interact-shared@0.11.2 version dist.tarball dist.shasum
+npm view @modainteract/moda-interact-shared dist-tags.latest
+```
+
+Required evidence:
+
+```text
+version = 0.11.2
+dist.shasum = 50927cf0c2f7fb0b553cc77086fbb318f3d2f73a
+latest = 0.11.2
+```
+
+Then create a clean temporary consumer, install exactly
+`@modainteract/moda-interact-shared@0.11.2`, import
+`@modainteract/moda-interact-shared/billing`, and prove:
+
+```text
+deriveShopifyProviderContextIdentity is exported at runtime
+isSameShopifyPurchaseProviderContext is exported at runtime
+valid matching three-field provider context -> true
+blank required comparison fact -> false
+```
+
+After that smoke passes, update only workflow-owned completion evidence, set:
+
+```text
+status: review
+executor: null
+claimed_at: null
+attempt: 2
+```
+
+and return to `moda_architect`. No source-code change is expected.
+
+Until that external evidence exists, no task enabled by `ARCH-015-SHARED-001` is
+unblocked.
