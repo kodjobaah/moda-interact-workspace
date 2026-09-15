@@ -637,6 +637,13 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ## Completion Report
 
+### Audit Findings
+
+- Confirmed gap: the Portfolio economics step only described server-side evaluation and did not render the ordered pair results or block submission on non-PASS outcomes. Fixed by wiring the existing `evaluateMerchantPricingPortfolio` evaluator into the builder preview, passing the configured `minimumUpgradePremiumBps` threshold, rendering each result, and disabling save for FAIL/UNVERIFIED.
+- Confirmed gap: active-toggle reasons were only checked for non-empty input. Fixed by applying the existing 2000-character bounded-reason rule server-side.
+- Confirmed coverage gap: the focused security suite did not assert the bounded toggle reason. Added the focused assertion; the existing parser/translation tests remain green.
+- No operational `BillingPlan`/economics reads or writes, Shopify subscription path, unrelated billing-view change, or schema change was introduced.
+
 ### Status
 
 Ready for Architect Review.
@@ -648,7 +655,7 @@ Ready for Architect Review.
 - [x] Added the wide ARCH-014 drawer layout without changing the default width of existing drawers.
 - [x] Added the exact local 20-locale contract, translation template/parser, paste/upload convergence, and final server-side reparsing.
 - [x] Consumed the ADMIN-001 portfolio economics evaluator and enforced PASS-only create/edit/activation flow.
-- [x] Added focused parser, translation, and mutation/security tests.
+- [x] Added focused parser, translation, and mutation/security tests, including the toggle-reason bound.
 
 ### Acceptance Criteria
 
@@ -657,20 +664,20 @@ Ready for Architect Review.
 - [x] The builder renders the required seven logical steps and excludes the prohibited operational plan fields.
 - [x] The translation package enforces the exact 20 canonical locales, metadata, shape, English-source match, bounded descriptions, and deterministic issue ordering.
 - [x] Billing-page plans navigation resolves `MerchantPricingPlan` records and the register/edit drawer uses the ARCH-014 server action; non-plan views retain their existing data paths.
-- [x] Required focused tests pass: 7 translation/payload tests and 3 ARCH-014 security tests.
+- [x] Required focused tests pass: 7 translation/payload tests and 4 ARCH-014 security tests.
 
 ### Implementation Evidence
 
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-002`.
 - Branch: `task/ARCH-014-ADMIN-002`.
-- Implementation commit: `077c943cd97a139905da6a274691c635cd2eb8b7` (`feat(admin): add MerchantPricing catalogue builder`).
+- Implementation commit: `00c8aa5` (`fix(admin): complete merchant pricing builder audit gaps`), based on `077c943`.
 - Preserved dependency commit: `2905631f3a8303be7b5906cdb1c5d58d09fbadda`; database submodule resolves to `c6a8fb5b1debb309bb8aaea9d1168a3758f09201`.
-- Implementation branch is clean and `git diff 0ceb667..HEAD --check` passes.
+- Implementation branch is clean after publication and `git diff --check` passes.
 
 ### Validation Results
 
 - `node --experimental-strip-types --test tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-translations.test.ts`: **7 passed, 0 failed**.
-- `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: **3 passed, 0 failed**.
+- `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: **4 passed, 0 failed**.
 - `npm run test:unit`: **42 passed, 0 failed**.
 - `npx tsc --noEmit --pretty false`: **passed**.
 - `npm run lint`: **passed with 2 pre-existing warnings** in `src/components/admin/queue-monitor.tsx`; no errors.
@@ -679,10 +686,12 @@ Ready for Architect Review.
 - `npm run build`: **passed**; existing BullMQ optional-dependency/critical-dependency warnings remain.
 - ARCH-014 isolation `rg` check: **no matches**; `git diff --check`: **passed**.
 - `npm run format:check`: **fails on 106 repository baseline files**; the changed MerchantPricing builder, parser, translation, action, catalogue, and drawer files are not among the reported files.
-- `npm test`: **176 passed, 5 failed**. The plans-view failures in `admin-billing-progressive-disclosure.test.mjs` and `admin-billing-visibility.test.mjs` assert the superseded `BillingPlanCatalog`/`getBillingPlans` contract. The remaining failures are unrelated shared-runtime/fixture checks in `admin-internationalization.test.mjs` and `admin-merchant-support.test.mjs`.
+- `npm test`: **177 passed, 5 failed**. Three plans-view failures in `admin-billing-progressive-disclosure.test.mjs` and `admin-billing-visibility.test.mjs` assert the superseded `BillingPlanCatalog`/`getBillingPlans` contract after the authoritative ARCH-014 replacement. Two failures are unrelated shared-runtime/fixture checks in `admin-internationalization.test.mjs` and `admin-merchant-support.test.mjs`.
+- `npx prettier --check` over the authorized implementation surface: **passed** after formatting the changed page, builder, and authorized economics module. `npm run format:check` is unavailable because `package.json` declares no `format:check` script.
+- The full build and typecheck passed after the audit fixes. Existing lint warnings remain only in `src/lib/admin/queue-monitor.tsx`; the build retains existing BullMQ optional-dependency/critical-dependency warnings.
 
 ### Publication
 
-- Implementation commit `077c943cd97a139905da6a274691c635cd2eb8b7` is published on `origin/task/ARCH-014-ADMIN-002`.
-- Parent report commit: `e741de7c65be9dcfc1d54cf32dfbe4cacd22c76b` (published on `origin/task/ARCH-014-ADMIN-002`).
+- Implementation commit `00c8aa5` is published on `origin/task/ARCH-014-ADMIN-002`.
+- Parent report commit: pending publication after this report update.
 - Claim cleared: `executor: null`, `claimed_at: null`.
