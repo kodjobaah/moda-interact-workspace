@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-15T13:01:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-ADMIN-002
@@ -307,3 +307,105 @@ STOP and return evidence to `moda_architect` without widening the task if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Status
+
+Ready for Architect Review. The implementation branch is pushed; this parent
+task report is being submitted with the claim cleared.
+
+### Preflight gate
+
+The accepted ADMIN-002 baseline was present at `7665c1a` in the implementation
+worktree. Before deletion, `src/app/(protected)/billing/page.tsx` was verified
+to import and use `getMerchantPricingPlans`, `MerchantPricingPlanCatalog`, and
+`MerchantPricingPlanDrawer`, including the MerchantPricing selected-plan reader
+`getMerchantPricingPlanById`. It contained no `getBillingPlans`,
+`getBillingPlanById`, `getBillingPlanEconomics`, `BillingPlanCatalog`, or
+`BillingPlanDrawer` dependency.
+
+The required pre-deletion `rg` scan found no unexpected runtime-source
+consumer. The only additional stale reference was the invalidated
+`tests/security/admin-billing-visibility.test.mjs` assertion; it was migrated
+from `BillingPlanCatalog` to `MerchantPricingPlanCatalog`. The progressive
+disclosure test was migrated as required.
+
+### Implementation
+
+Implementation commit: `ae1b771` (`chore(admin): remove superseded billing plan surface`),
+pushed to `origin/task/ARCH-014-ADMIN-003`.
+
+Deleted exactly these nine files:
+
+- `src/app/actions/billing-plan.ts`
+- `src/components/admin/billing-plan-catalog.tsx`
+- `src/components/admin/billing-plan-economics-presentation.ts`
+- `src/lib/admin/billing-plan.ts`
+- `src/lib/admin/billing-plan-audit.ts`
+- `src/lib/admin/billing-plan-mutation.ts`
+- `src/lib/admin/billing-plan-validation.ts`
+- `tests/security/admin-billing-plan.test.mjs`
+- `tests/unit/billing-plan-economics-presentation.test.mjs`
+
+Changed `src/components/admin/billing-drawers.tsx` only to remove the legacy
+`BillingPlanRow` import, `PlanForm` import, and `BillingPlanDrawer`. The
+`DetailList`, `MerchantPricingPlanDrawer`, `RecoveryCreditPurchaseDrawer`, and
+`BillingEventDrawer` surfaces and their filter/diagnostic behavior remain.
+
+Migrated `tests/security/admin-billing-progressive-disclosure.test.mjs` to
+assert MerchantPricing list/detail/catalogue/drawer behavior and to use
+`tests/security/admin-merchant-pricing-plan.test.mjs` for plan mutation and
+authentication coverage. Preserved overview, packs, events, controls, and
+diagnostic assertions. Updated the one equivalent stale
+`admin-billing-visibility.test.mjs` assertion.
+
+### i18n decisions
+
+Applied the zero-live-reference rule after the nine files were absent. Removed
+the dead candidate keys from both `src/i18n/locales/en.json` and
+`src/i18n/required-keys.ts`: all listed candidate keys except
+`billing.hardLimit`, plus all four `billing.feature.*` keys. Retained
+`billing.hardLimit` because `src/components/admin/tenant-billing.tsx` still
+references it. Retained generic keys such as `billing.pass`, `billing.fail`,
+`billing.unverified`, `billing.reason`, and `billing.reasonPlaceholder`.
+`en.json` parsed successfully and no removed candidate key has a remaining
+source/test reference.
+
+### Validation
+
+Passed:
+
+- MerchantPricing ownership and legacy-reference scans; no active runtime
+   legacy consumer remains.
+- `node --test tests/security/admin-billing-progressive-disclosure.test.mjs`
+   (9/9).
+- Focused economics, MerchantPricing security, visibility, and preserved
+   economics/guardrail unit tests (65/65).
+- `git diff --check`.
+- JSON parse validation for `src/i18n/locales/en.json`.
+- MerchantPricing integration scan for page/catalogue/reader/drawer symbols.
+- Exact nine-file absence check.
+- Database/schema proof from supplied baseline `7665c1a`: no changed path matched
+   `(^|/)(prisma|migrations|database)/`.
+
+Environment-blocked or unavailable:
+
+- `npm test` was attempted; unrelated existing repository tests fail during
+   module loading because `bullmq` is not installed (`ERR_MODULE_NOT_FOUND`).
+- `npm run lint` could not start because `eslint` is not installed.
+- `npm run format:check` could not start because `prettier` is not installed.
+- `npm run build` could not start because `prisma` is not installed.
+- No `typecheck` script is declared in `package.json`; no replacement command
+   was invented.
+- The workspace doctor was attempted for the dependency condition but could not
+   resolve the supplied workspace root (`FAIL workspace root not found`).
+
+No task-caused failure was observed in the focused tests. No Prisma schema,
+migration, database script, operational economics/control file, subscription
+runtime, recovery-credit handling, or billing-event handling was changed.
+
+### Parent report publication
+
+Parent report commit: this task-file commit on `task/ARCH-014-ADMIN-003`; push
+is required after committing the report.
