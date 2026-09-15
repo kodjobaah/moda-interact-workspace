@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-15T18:48:25Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-014-SHOPIFY-001
@@ -649,3 +649,48 @@ implementation and parent worktrees clean
 ```
 
 Do not mark `ARCH-015-SHOPIFY-002` Ready yourself. Return to `moda_architect`; dependency promotion belongs to architect acceptance.
+
+## Completion Report — Attempt 2
+
+Status: Ready for Review
+
+Implementation summary:
+
+- Continued from the accepted/integrated ARCH-014-SHOPIFY-002 baseline at `549266f`; the extended merchant-pricing reader was preserved without edits.
+- Preserved the ARCH-015 live offer resolver and provider parser behavior from Attempt 1.
+- Removed the unsafe legacy purchase callback/fetcher wiring. Resolved top-up cards are display-only until ARCH-015-SHOPIFY-002 owns selected-event purchase admission.
+
+Implementation commit:
+
+- `6706491` (`fix(billing): make live top-up offers display-only`), pushed on `task/ARCH-015-SHOPIFY-001`.
+
+Changed files:
+
+- `app/components/dashboard/BillingPurchaseHub.jsx`
+- `app/components/dashboard/TopUpPurchasePanel.jsx`
+- `app/routes/app/billing/options/route.tsx`
+- `tests/unit/billing-purchase-hub.test.tsx`
+
+Evidence:
+
+- ARCH-014 reader preservation: `readActiveMerchantPricingCatalogue`, ordered highlights, exact-locale translations, `contentKey`, and fail-closed validation remain present; the existing merchant-pricing reader tests pass.
+- ARCH-015 resolver preservation: exact plan-handle scoping, inactive catalogue-plan compatibility, position ordering, live provider price/usage, inactive provider-price eligibility, missing-meter omission, unknown-meter diagnostics, and `creditsGrantedPerUnit` behavior pass in the focused resolver/provider suite.
+- Display-only safety: one- and multi-offer UI tests prove offers remain visible and ordered with credits/prices, while no Buy action, callback, fetcher submission, or event handle purchase path is rendered.
+- Legacy singular-field search: no `recoveryCreditsPerPack` or `shopifyRecoveryCreditPackEventHandle` use appears in the operative live offer read/UI path; remaining matches are confined to preserved legacy purchase mutation/projection code.
+- No legacy billing-service fixture migrations were needed for this correction; no production fallback was restored.
+
+Validation:
+
+- Focused resolver/provider/UI suite: 3 files passed, 45 tests passed.
+- Direct billing UI suite: 1 file passed, 17 tests passed.
+- `npm run prisma:generate`: passed.
+- `npm run build`: passed; only existing chunk-size warnings were emitted.
+- Touched-file typecheck diagnostics: none for the route, hub, panel, or merchant-pricing reader.
+- `npm run typecheck`: exits 2 on unchanged repository baseline diagnostics, including existing implicit-any dashboard/route errors and billing-service test mocks missing `getActiveSubscription`; no touched-file diagnostics remain.
+- `git diff --check`: passed.
+
+Worktree evidence:
+
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-001` was clean after commit/push.
+- Parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-001` contains only this task-file lifecycle/report update and is ready for its mirrored commit/push.
+- No database schema, Shared, Background, Admin, or ARCH-015-SHOPIFY-002 changes were made.
