@@ -826,7 +826,7 @@ Implementation commits (pushed to `task/ARCH-014-ADMIN-005`):
 
 - `cdea0aaf2d62e43f066f18b1930f491319066c09` — initial ADMIN-005 implementation.
 - `5717514` — corrective pure presentation helper and focused test.
-- `a80d44c` — Attempt 3 review corrections and focused source regressions.
+- `a80d44c65bfab7566fc1352fe3cc12a373dd80f7` — Attempt 3 review corrections and focused source regressions.
 
 Exact cumulative implementation files changed:
 
@@ -862,8 +862,8 @@ Isolation and boundaries:
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-005`.
 - Mirrored branch: `task/ARCH-014-ADMIN-005`.
 - Prepared claim commit: `d0a53fc069d4c6ac6ab0a31232c7e282ad0bdb9a`.
-- Attempt 3 implementation commit: `a80d44c` (full commit `a80d44c`), pushed to `origin/task/ARCH-014-ADMIN-005`.
-- Parent task/report commit: `66c3b4c5280c9e44bda3598c1a694f363409dc3e`, pushed to the mirrored parent `task/ARCH-014-ADMIN-005` branch.
+- Attempt 3 implementation commit: `a80d44c65bfab7566fc1352fe3cc12a373dd80f7`, pushed to `origin/task/ARCH-014-ADMIN-005`.
+- Parent task/report commits preceding this final report correction: `66c3b4c5280c9e44bda3598c1a694f363409dc3e`, `a56e58394c361708e60170c4dc2179febe0f360a`; both were pushed to the mirrored parent `task/ARCH-014-ADMIN-005` branch. The final correction commit is reported in the completion response.
 - Database submodule remained at `f202931c58dba7f9fcc53c74333736e978e8b6de`; no database/Shopify/schema/runtime/economics-policy files changed.
 - No Architect Review section was edited. Executor and claim were cleared, and task status is `review`.
 
