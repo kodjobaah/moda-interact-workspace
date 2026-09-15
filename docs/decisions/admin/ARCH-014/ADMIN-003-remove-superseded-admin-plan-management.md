@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 35
 executor: null
 claimed_at: null
@@ -310,6 +310,17 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ## Completion Report
 
+### Audit disposition
+
+Audit completed against the complete current task definition and implementation
+commit `ae1b771`. No implementation gap was found, so no source or test fix was
+required. The cheap discriminating checks confirmed the accepted ADMIN-002
+MerchantPricing ownership before deletion, exactly nine required legacy files
+absent, no unexpected runtime consumer, no changed database/schema path, and
+zero live references for every removed candidate translation key. The only
+retained candidate key, `billing.hardLimit`, remains live in
+`src/components/admin/tenant-billing.tsx`.
+
 ### Status
 
 Ready for Architect Review. The implementation branch is pushed; this parent
@@ -380,8 +391,9 @@ Passed:
    legacy consumer remains.
 - `node --test tests/security/admin-billing-progressive-disclosure.test.mjs`
    (9/9).
-- Focused economics, MerchantPricing security, visibility, and preserved
-   economics/guardrail unit tests (65/65).
+- Focused progressive-disclosure and economics security tests (13/13).
+- Focused visibility, MerchantPricing security, preserved economics-validation,
+  and upgrade-guardrail tests (61/61); combined focused run passed 74/74.
 - `git diff --check`.
 - JSON parse validation for `src/i18n/locales/en.json`.
 - MerchantPricing integration scan for page/catalogue/reader/drawer symbols.
@@ -392,7 +404,8 @@ Passed:
 Environment-blocked or unavailable:
 
 - `npm test` was attempted; unrelated existing repository tests fail during
-   module loading because `bullmq` is not installed (`ERR_MODULE_NOT_FOUND`).
+   module loading because local dependencies including `bullmq` and `react` are
+   not installed (`ERR_MODULE_NOT_FOUND`).
 - `npm run lint` could not start because `eslint` is not installed.
 - `npm run format:check` could not start because `prettier` is not installed.
 - `npm run build` could not start because `prisma` is not installed.
@@ -407,5 +420,5 @@ runtime, recovery-credit handling, or billing-event handling was changed.
 
 ### Parent report publication
 
-Parent report commit: this task-file commit on `task/ARCH-014-ADMIN-003`; push
-is required after committing the report.
+Parent report commit: to be recorded after this report-only change is committed
+and pushed on `task/ARCH-014-ADMIN-003`.
