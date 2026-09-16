@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 86
-executor: copilot
-claimed_at: 2026-09-16T14:27:14Z
 attempt: 2
 depends_on:
 - ARCH-015-BACKGROUND-003
@@ -418,26 +416,28 @@ STOP and return to `moda_architect` if:
 
 Status: Ready for Review
 
-Implementation commit: `1f7cd30` on `task/ARCH-015-BACKGROUND-004`, pushed to `origin`.
+Implementation commit: `d270d92` on `task/ARCH-015-BACKGROUND-004`, pushed to `origin`.
 
-Changed files:
+Prior accepted implementation retained: `1f7cd30`.
 
-- `src/services/recovery-credit-refund-correction.service.ts`
+Changed files in attempt 2:
+
 - `tests/unit/services/recovery-credit-refund-correction.service.test.ts`
 
-Implemented the per-invocation collision-safe provider-meter visitation rule, deterministic oldest-live refund and unresolved-purchase gate, `createdAt` selection, and exact frozen BEFORE/EXPECTED AFTER/provider-conflict classification. Existing PREPARE transaction/CAS, idempotency keys, immutable evidence, linked-refund reconciliation, and generic publisher behavior remain unchanged. No schema or cross-repository files were modified.
+Attempt 2 added deterministic regression coverage for unresolved purchases on a different handle, terminal older-refund unblocking with a fresh provider baseline, explicit 4.00 / -0.25 / 3.75 versus 3.50 fractional conflict classification, staged correction rollback when the refund-link CAS loses, linked reconciliation without PREPARE or UsageEvent recreation, and immutable fractional PREPARE evidence across retries. No production source, schema, queue/status/lock model, generic publisher, or cross-repository files were modified.
 
-Focused validation: `npm test -- --run tests/unit/services/recovery-credit-refund-correction.service.test.ts` passed, 19 tests.
+Validation:
 
-Schema validation: `npm run prisma:validate` passed.
+- `npm run test -- tests/unit/services/recovery-credit-refund-correction.service.test.ts`: passed, 24 tests.
+- `npm run test -- tests/unit/services/shopify-usage-event-publisher.service.test.ts`: passed, 15 tests.
+- `npm run test -- tests/unit/providers/shopify-app-events.provider.test.ts`: passed, 20 tests.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- `npm run test:unit`: passed, 66 files and 1,019 tests.
+- `git diff --check`: passed.
+- `npm test`: 67 files passed, 10 skipped, and 1 failed file with 4 failures. The unchanged unrelated failures are the four tests in `tests/integration/translation-enum-bindings.integration.test.ts`, each failing with `Background runtime configuration has not started` before its translation database assertion. No refund-correction tests failed.
 
-Build: `npm run build` passed.
-
-Diff hygiene: `git diff --check` passed.
-
-Full suite: `npm test` ran 78 files, with 67 passed, 10 skipped, and 1 failed file containing 4 failed tests. The unchanged unrelated failures are the four tests in `tests/integration/translation-enum-bindings.integration.test.ts`; each fails because `Background runtime configuration has not started` before its database assertion in the translation services. No refund-correction tests failed.
-
-Limitations: no blockers identified for this task. The full-suite translation runtime baseline remains unresolved and is outside this task's authorized implementation surface.
+Limitations: no task blocker identified. The full-suite translation runtime baseline remains unresolved and is outside this task's authorized implementation surface. SYSTEM-TEST-001 was not started. The parent report commit will be recorded after publication.
 
 ## Architect Review — Attempt 1 — Changes Requested
 
