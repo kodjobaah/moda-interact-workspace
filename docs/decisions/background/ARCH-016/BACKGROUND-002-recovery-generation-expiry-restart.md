@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -601,3 +601,73 @@ claimed_at: null
 
 The deterministic launcher owns the increment to Attempt 2 when the task is reclaimed.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically.
+
+## Architect Review — Attempt 2 — Accepted
+
+### Status
+
+**Accepted — Complete**
+
+Architect re-review verified Attempt 2 implementation commit `ad1f858` and parent
+Completion Report commit `7f6b97d5` against the exact returned ARCH-016 snapshot.
+No further implementation attempt is required.
+
+The four Attempt-1 runtime findings are corrected at the intended boundaries:
+
+```text
+inbound customer activity:
+  resolved WhatsApp events advance recovery activity from event.occurredAt
+  before text/audio/unsupported branching
+  the guarded write applies only to DETECTED/MESSAGE_SENT/ENGAGED
+
+checkout activity:
+  active recovery activity advances before authoritative Shopify lookup
+  so not-found/ambiguous/provider-error outcomes do not erase the event clock
+
+send-vs-expiry race:
+  markRecoveryMessageSent mutates only status = DETECTED
+  EXPIRED/COMPLETED/CANCELLED/MESSAGE_SENT/ENGAGED cannot be reopened
+
+expiry history race:
+  terminal expiry matches candidate.id + candidate.status + cutoff
+  history fromStatus is therefore the exact status replaced by that update
+```
+
+The wider Attempt-1 design remains conformant and is accepted unchanged:
+
+```text
+latest recovery lookup is generation-descending
+materialisation occurs under the existing checkout-scoped lock
+EXPIRED restarts only through PendingRecoveryCandidate and normal delay
+matured restart creates generation N+1 rather than reopening history
+COMPLETED/CANCELLED remain permanently terminal
+lastExternalActivityAt is monotonic and never driven by outbound/background noise
+expiry scans active recoveries in bounded 100-row pages
+current checkoutRecoveryLifetimeDays determines each sweep cutoff
+pending/unsent outreach is cancelled transactionally on expiry
+CHECKOUT_RECOVERY_EXPIRY runs hourly in the existing moda-recovery-worker
+Conversation uniqueness is unchanged and no new Render service is introduced
+```
+
+The Attempt-2 Completion Report supplies the required prepared-execution evidence:
+canonical primary workspace, dedicated parent and implementation worktrees, matching
+`task/ARCH-016-BACKGROUND-002` branches, origin/main synchronization, recursive
+implementation-submodule preparation and launcher claim commit `3e75ac6a`.
+
+Focused expiry/recovery/worker/checkout/audio/matured-candidate validation is reported
+at `83 passed`; Prisma validation and `git diff --check` passed. The production build
+remains blocked by the unchanged accepted-schema/generated-Prisma-client mismatch
+(`transcriptionStatus`/`contentType`), and the full test run was interrupted during the
+existing translation concurrency integration test. Neither observation identifies a
+BACKGROUND-002 regression, so no unrelated workaround is required in this task.
+
+### Dependency reconciliation
+
+`ARCH-016-BACKGROUND-002` is now **Complete**.
+
+Its only enabled task is `ARCH-016-SYSTEM-TEST-001`. That terminal integrated task
+remains **Pending** because other ARCH-016 implementation dependencies are not all
+Complete and the existing developer manual-testing checkpoint remains before system
+test execution. It MUST NOT start automatically from this acceptance.
+
+There is **no Attempt 3**.
