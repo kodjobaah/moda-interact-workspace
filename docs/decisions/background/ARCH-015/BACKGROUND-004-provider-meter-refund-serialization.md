@@ -9,14 +9,13 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 86
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-015-BACKGROUND-003
-- ARCH-015-SHOPIFY-004
 enables:
 - ARCH-015-SYSTEM-TEST-001
 created: 2026-09-16
