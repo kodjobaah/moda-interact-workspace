@@ -9,8 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-016-DATABASE-001
@@ -393,3 +395,470 @@ Ready for Review.
 Implementation branch: `task/ARCH-016-BACKGROUND-003` at `256127f536001c00210bef7392723b8dc01c4795`.
 
 The task is returned to `moda_architect` for review. The documented build and full-suite failures are pre-existing generated-schema/runtime baseline conditions and were not broadened or changed by this task.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — fixed-offer eligibility, provider-send retry reconciliation, and inbound engagement correctness**
+
+This review is functionality-first. The following Attempt-2 architecture is accepted and
+MUST be preserved:
+
+```text
+RecoveryOutreachAttempt is created/reused before billing
+sequence 1 = INITIAL
+sequence 2 = NO_RESPONSE_FOLLOW_UP
+no sequence > 2
+billing source identity is derived from outreachAttemptId
+attempts #1/#2 reuse the same recovery Conversation
+follow-up queue/job identity is deterministic
+follow-up capacity block does not auto-borrow another entitlement
+ordinary customer/agent continuation messages do not create outreach attempts
+AI_BEST_APPLICABLE performs no AI/CommerceAgent selection
+Shared remains pinned to 0.12.1
+```
+
+The reported generated-Prisma/build baseline and unrelated translation/runtime failures do
+not drive this decision. Attempt 3 is a bounded correction of the runtime defects below;
+do not redesign the accepted queue, Conversation identity or entitlement-allocation
+architecture.
+
+### Finding 1 — a valid ACTIVE Shopify fixed discount is never treated as usable
+
+`src/services/recovery-policy.service.ts` currently evaluates:
+
+```ts
+discount.providerStatus === "CURRENT"
+```
+
+`providerStatus` is Shopify provider state. ARCH-016 defines a currently-running provider
+discount as:
+
+```text
+catalogue.status = CURRENT
+isAvailable = true
+providerStatus = ACTIVE
+fixedSelectable = true
+startsAt <= now when present
+endsAt > now when present
+```
+
+`CURRENT` belongs to `ShopifyDiscountCatalogue.status`; it is not the required provider
+discount status. The current predicate therefore causes a valid `ACTIVE` fixed discount to
+produce `offerSnapshot = null`.
+
+#### Required Attempt-3 correction
+
+In:
+
+```text
+src/services/recovery-policy.service.ts
+```
+
+change only the provider-state predicate to require exactly:
+
+```text
+discount.providerStatus === "ACTIVE"
+```
+
+Retain the independent:
+
+```text
+discount.catalogue.status === "CURRENT"
+discount.fixedSelectable === true
+discount.isAvailable === true
+start/end window checks
+same configured fixedShopifyDiscountId
+```
+
+Do not invent provider-status normalization in this task.
+
+Required focused proof:
+
+```text
+ACTIVE + CURRENT catalogue + selectable + available + in-window
+  -> FIXED policy keeps configured ID and has non-null offerSnapshot
+
+non-ACTIVE provider status
+  -> configured FIXED ID remains historical configuration
+  -> offerSnapshot = null
+  -> normal recovery send is still allowed
+
+ACTIVE provider status + non-CURRENT catalogue
+  -> offerSnapshot = null
+```
+
+### Finding 2 — inbound engagement uses worker processing time and audio does not mark engagement
+
+The canonical WhatsApp inbound contract already supplies:
+
+```text
+event.occurredAt
+```
+
+but `ConversationService.receiveMessage()` calls
+`markEngagedForConversation(..., now)`, where `now` is local processing time. Delayed
+queue processing can therefore move `customerRespondedAt` forward and can classify a
+provider event that actually occurred before an outreach as a response after it.
+
+Audio is worse: `InboundWhatsAppAudioService` creates the inbound
+`ConversationMessage` directly and never calls the outreach engagement service.
+Successful, rejected and terminally-failed voice messages therefore do not immediately
+mark the recovery outreach engaged.
+
+This also makes the follow-up fallback query unreliable because it compares
+`ConversationMessage.createdAt` with `attempt1.sentAt`, while inbound `createdAt` is
+currently local persistence time rather than the authenticated provider occurrence time.
+
+#### Required Attempt-3 correction
+
+Use the authenticated provider timestamp as the one engagement timestamp.
+
+In:
+
+```text
+src/services/conversation.service.ts
+src/workers/whatsapp.worker.ts
+```
+
+make the inbound message contract carry a parsed `occurredAt: Date`.
+
+Every `conversationService.receiveMessage(...)` call from `whatsapp.worker.ts` MUST pass:
+
+```ts
+occurredAt: new Date(event.occurredAt)
+```
+
+`ConversationService.receiveMessage()` MUST:
+
+1. persist a new inbound `ConversationMessage.createdAt` using that `occurredAt`;
+2. call `markEngagedForConversation(conversationId, occurredAt)`;
+3. on duplicate provider delivery, still call the same engagement method using the same
+   `occurredAt` before returning the duplicate result.
+
+For audio, a minimal additional edit to:
+
+```text
+src/services/inbound-whatsapp-audio.service.ts
+```
+
+is authorised for this correction only. After the durable inbound message reservation
+exists, including the duplicate-existing case:
+
+1. parse `new Date(event.occurredAt)`;
+2. persist that value as `ConversationMessage.createdAt` when creating the reservation;
+3. call `markEngagedForConversation(conversationId, occurredAt)` before transcription
+   success/rejection/failure branching.
+
+A rejected or terminally-failed voice note is still a customer inbound message and must
+suppress no-response outreach.
+
+Do not use transcription completion time, queue processing time or `new Date()` as the
+customer response timestamp.
+
+Required focused proof:
+
+```text
+text inbound uses event.occurredAt
+unsupported inbound uses event.occurredAt
+audio completed uses event.occurredAt
+audio rejected/terminal failure still marks engagement
+duplicate inbound can repair a missed engagement mark without creating another message
+inbound occurredAt < attempt.sentAt does not engage that attempt
+older/later duplicate processing does not overwrite the first qualifying customerRespondedAt
+```
+
+### Finding 3 — retry after a successful provider send is treated as a failed duplicate and can release the recovery credit
+
+Both initial and follow-up send paths use the correct stable idempotency key:
+
+```text
+recovery-outreach:<attempt.id>
+```
+
+but the orchestration does not reconcile the durable outbound message on retry.
+
+`OutboundWhatsAppAdmissionService.reserve()` returns:
+
+```text
+{ kind: "suppressed", reason: "duplicate" }
+```
+
+when the idempotency key already has a `UsageEvent`.
+
+The recovery paths currently treat every suppressed result as a failed send:
+
+```text
+releaseBeforeProvider(...)
+attempt -> FAILED
+```
+
+Therefore this valid crash/retry sequence is unsafe:
+
+```text
+provider send succeeds
+ConversationMessage is persisted SENT
+process crashes before billing/attempt finalisation
+job is retried
+same outreach idempotency key -> "duplicate"
+billing reservation is released
+attempt -> FAILED
+```
+
+A message that was actually sent can therefore be recorded as failed and its recovery
+credit can be released. A later retry may then block or fall through another entitlement
+path. This violates the required one-attempt/one-credit retry contract.
+
+The implementation also sets outreach `sentAt` with a later `new Date()` instead of the
+already-persisted outbound `ConversationMessage.sentAt`. That creates an avoidable window
+where a real customer reply can have a timestamp earlier than the artificial attempt
+`sentAt`.
+
+#### Required Attempt-3 correction
+
+A narrow edit to:
+
+```text
+src/services/outbound-whatsapp-admission.service.ts
+```
+
+is authorised. Add a read-only helper that resolves an existing outbound admission by
+the exact idempotency key and returns bounded durable message state:
+
+```text
+messageId
+conversationId
+status
+sentAt
+```
+
+Do not resend from this helper and do not create another UsageEvent.
+
+In both proactive send paths in:
+
+```text
+src/services/checkout-recovery.service.ts
+```
+
+handle `reason === "duplicate"` separately from genuine suppression.
+
+Required behavior:
+
+```text
+existing message status SENT | DELIVERED | READ, sentAt != null
+  -> provider send is already successful
+  -> DO NOT call provider again
+  -> DO NOT release billing
+  -> commit/reconcile the same attempt-keyed billing admission idempotently
+  -> link the same outboundMessageId
+  -> use the persisted ConversationMessage.sentAt as attempt.sentAt
+  -> continue normal successful-attempt finalisation
+
+existing message status PENDING
+  -> outcome is not durably known
+  -> DO NOT call provider again
+  -> DO NOT release the billing reservation merely because the idempotency key exists
+  -> leave/retry fail-closed; do not fabricate a successful send
+
+existing message status FAILED
+  -> normal failed-send release/failure handling is allowed
+
+duplicate idempotency key with no resolvable message
+  -> invariant/retryable failure
+  -> do not silently release and do not send another provider message
+```
+
+Fresh successful sends MUST also use the persisted outbound
+`ConversationMessage.sentAt` rather than a second later `new Date()`.
+
+Create one private/reusable success-finalisation path so initial and follow-up behavior
+cannot drift.
+
+Required focused proof for BOTH sequence 1 and sequence 2:
+
+```text
+fresh provider success -> one provider send, one billing credit, WAITING_FOR_RESPONSE
+crash after persisted provider success but before attempt finalisation
+  -> retry sends zero additional provider messages
+  -> retry does not release the original billing reservation
+  -> retry converges to the same outboundMessageId/sentAt
+  -> exactly one recovery credit remains attributable to the attempt
+PENDING duplicate -> no resend and no release
+FAILED duplicate -> failure/release path only
+```
+
+### Finding 4 — lifecycle updates can regress ENGAGED state and a follow-up queue publication failure is not repairable
+
+`RecoveryOutreachAttemptService.markStatus()` is an unconditional row update. The
+follow-up path currently does:
+
+```text
+query for inbound message
+mark initial NO_RESPONSE
+```
+
+with separate operations.
+
+This race is possible:
+
+```text
+follow-up reconciliation sees no inbound row
+customer processing marks attempt1 ENGAGED
+follow-up then unconditionally writes attempt1 NO_RESPONSE
+attempt2 is created/sent
+```
+
+An already-engaged attempt must never be moved backwards to `NO_RESPONSE` or
+`WAITING_FOR_RESPONSE`.
+
+There is a second crash-recovery gap in the initial success path. `followUpDueAt` is
+durable, but if BullMQ `schedule(...)` fails after the recovery has become
+`MESSAGE_SENT`, a retry of `handleCheckoutCreated()` returns immediately because the
+recovery is no longer `DETECTED`. The durable due time therefore does not currently
+repair the missing wake-up job.
+
+#### Required Attempt-3 correction
+
+In:
+
+```text
+src/services/recovery-outreach-attempt.service.ts
+```
+
+do not use the generic unconditional status writer for lifecycle claims that can race.
+
+Add bounded conditional operations and use them from
+`checkout-recovery.service.ts`:
+
+```text
+markNoResponseIfWaiting(attemptId)
+  WHERE id = attemptId
+    AND status = WAITING_FOR_RESPONSE
+    AND customerRespondedAt IS NULL
+
+markWaitingAfterConfirmedSend(...)
+  MUST NOT overwrite ENGAGED, NO_RESPONSE or CANCELLED
+  MUST be idempotent for an already-WAITING attempt with the same outbound message
+```
+
+After the durable inbound check, `processRecoveryOutreachFollowUp()` must claim
+`WAITING_FOR_RESPONSE -> NO_RESPONSE` conditionally. If the claim count is zero, reload
+the attempt. If it is already `ENGAGED` or has `customerRespondedAt`, suppress and do not
+create/send attempt #2.
+
+Do not create a global lock or poll repeatedly; keep the architecture's one reconciliation
+wake-up.
+
+For initial follow-up scheduling, retain deterministic job identity and durable
+`followUpDueAt`, but make retry able to repair a failed queue publication. At minimum:
+
+```text
+recovery MESSAGE_SENT
+attempt1 WAITING_FOR_RESPONSE
+attempt1.followUpDueAt != null
+attempt2 does not exist
+```
+
+must be an idempotent "ensure sequence-2 wake-up is scheduled" path on retry. The existing
+job ID:
+
+```text
+recovery-outreach-follow-up:<checkoutRecoveryId>:2
+```
+
+must remain the duplicate fence.
+
+Do not schedule when attempt1 is `ENGAGED`, recovery is terminal, or follow-up was not
+snapshotted/scheduled.
+
+Required focused proof:
+
+```text
+ENGAGED cannot be overwritten by NO_RESPONSE
+NO_RESPONSE cannot be overwritten back to WAITING on a normal retry
+queue add failure after successful initial send -> retry re-adds the same deterministic job
+repair scheduling does not create another outreach attempt or consume a credit
+already-existing follow-up job remains idempotent
+```
+
+### Completion Report / workflow evidence
+
+The returned Completion Report records the implementation branch/hash but does not record
+the launcher-prepared physical-isolation/synchronisation evidence required by the
+architect workflow.
+
+Attempt 3 MUST record the actual prepared packet evidence:
+
+```text
+canonical workspace_root
+dedicated parent worktree + task branch
+dedicated implementation worktree + task branch
+start-of-attempt parent/implementation synchronisation
+recursive implementation-submodule materialisation/synchronisation
+database submodule pointer used for validation
+shared/default checkout not reused
+```
+
+Do not create code churn solely for this evidence. Record the real Attempt-3 preparation
+packet.
+
+### Attempt-3 scope boundaries
+
+Preserve all accepted Attempt-2 work.
+
+Do NOT:
+
+```text
+change Conversation uniqueness/identity
+create a second Conversation for follow-up
+change entitlement allocation priority
+make <24h follow-up free
+create sequence 3+
+perform AI discount selection
+invent Meta template parameters
+change database schema or migrations
+create a new Render service
+start SYSTEM-TEST-001
+```
+
+Authorized correction surface:
+
+```text
+src/services/recovery-policy.service.ts
+src/services/recovery-outreach-attempt.service.ts
+src/services/checkout-recovery.service.ts
+src/services/outbound-whatsapp-admission.service.ts
+src/services/conversation.service.ts
+src/services/inbound-whatsapp-audio.service.ts   # occurredAt + engagement only
+src/workers/whatsapp.worker.ts
+focused tests for the corrected behavior
+```
+
+If the correction appears to require schema/migration changes or a new queue/service,
+STOP and return to `moda_architect`; do not infer a broader design.
+
+### Attempt-3 validation
+
+Run the repository-declared equivalents of:
+
+```text
+focused recovery-policy tests
+focused outreach-attempt/follow-up tests
+focused checkout-recovery tests
+focused outbound WhatsApp admission tests
+focused Conversation/WhatsApp worker/audio tests
+focused recovery-billing/reservation tests
+
+npm run prisma:validate
+npm test
+npm run build
+git diff --check
+```
+
+Known baseline failures may be referenced by their existing baseline evidence only when
+unchanged. Any new failure in the files above is task-owned.
+
+Return the task to `review`, clear `executor`/`claimed_at`, record the exact implementation
+and parent report commits, and STOP for `moda_architect` re-review. Do not start
+`ARCH-016-SYSTEM-TEST-001`.

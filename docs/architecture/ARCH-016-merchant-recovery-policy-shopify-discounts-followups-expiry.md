@@ -779,3 +779,33 @@ ARCH-016-SYSTEM-TEST-001 Pending
 ```
 
 The Ready promotions are dependency-state reconciliation only: each promoted task remains `attempt: 0`, `executor: null` and `claimed_at: null` until launched through the normal task workflow. `ARCH-016-SYSTEM-TEST-001` is not started automatically and remains behind completion of all implementation tasks plus the developer manual-testing checkpoint.
+
+## Post-review update — BACKGROUND-003 Attempt 2 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 2 implementation commit `256127f` correctly establishes
+the intended durable outreach-attempt identity, attempt-keyed recovery billing, one
+Conversation across initial/follow-up outreach, deterministic sequence-2 wake-up identity
+and the no-sequence-3 boundary. Those architectural choices are retained.
+
+The task returns to **Ready** for a bounded Attempt-3 correction because:
+
+```text
+1. FIXED offer resolution tests providerStatus == CURRENT instead of providerStatus == ACTIVE;
+2. customer engagement uses local processing time and the audio path does not mark outreach
+   engagement from the canonical WhatsApp event occurredAt;
+3. a retry after WhatsApp already persisted a successful outbound message is treated as a
+   duplicate failure, which can release billing and mark the sent attempt FAILED;
+4. unconditional attempt status changes can regress ENGAGED -> NO_RESPONSE, and a failed
+   follow-up queue publication cannot currently be repaired from durable followUpDueAt.
+```
+
+Attempt 3 must preserve the accepted queue, billing-allocation, Conversation and
+sequence-cap architecture and make only the explicit runtime corrections recorded in the
+task review. No schema/migration, AI-discount selection, new deployable service or
+sequence-3 behavior is authorised.
+
+`attempt` remains `2`, with `executor: null` and `claimed_at: null`; the deterministic
+launcher owns the increment when the task is reclaimed. No ARCH-016 dependency is
+promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
+automatically; the developer manual-testing checkpoint remains before terminal integrated
+testing.
