@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 64
 executor: null
 claimed_at: null
@@ -212,3 +212,131 @@ Implementation commit: `f575ed5` on `task/ARCH-014-BACKGROUND-003`, pushed to `o
 - Launcher reported the initialized database submodule at `47232f6876469f209c7efde4cefbb8a47d864e6a`; no database files or parent submodule gitlink were changed.
 - Implementation worktree is clean after publication. Parent worktree contains only this task report change before its report commit.
 - The full unit suite retains the two unrelated observability baseline failures listed above; integration infrastructure was available and passed.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Functional finding
+
+The runtime mappings are present, but initial and recurring provider-poll scheduling can use two different `BackgroundRuntimeConfig` versions inside one job.
+
+`TranslationBatchSubmitService` currently reads `translationInitialPollSeconds` once while persisting `MerchantTranslationBatch.nextPollAt`, then reads the runtime config again after the database await when enqueuing the BullMQ poll job. `TranslationBatchPollService` has the same split for `translationPollIntervalSeconds`: the database `nextPollAt` is persisted first, then the queue delay is calculated from another `current()` call.
+
+`BackgroundRuntimeConfigService` refreshes asynchronously every five seconds. Therefore a config version change can occur while either service is awaiting the database. Example: the database can persist `nextPollAt = now + 300 seconds`, the process refreshes to `60 seconds`, and the BullMQ job is then enqueued with a 60-second delay. The poll worker does not reject a job merely because persisted `nextPollAt` is still in the future, so provider polling can run materially earlier than the database schedule. The inverse change produces a materially late poll.
+
+This violates the task's paired mappings:
+
+```text
+translationInitialPollSeconds
+  -> first provider batch poll nextPollAt + BullMQ delay
+
+translationPollIntervalSeconds
+  -> subsequent provider batch polling and poll-read retry
+```
+
+The issue is runtime consistency, not test breadth.
+
+### Required Attempt 2 correction
+
+Keep the correction limited to the translation submit/poll scheduling paths. Do not redesign translation batching, provider safety rules, environment configuration, retryability classification, leases, database schema, or queue topology.
+
+#### 1. `src/services/translation-batch-submit.service.ts`
+
+For one `submit(...)` job, capture one runtime-config snapshot before making runtime-policy decisions:
+
+```ts
+const runtimeConfig = currentTranslationRuntimeConfig(this.runtimeConfig);
+```
+
+Use that same object for all task-owned submit policy in that job, including:
+
+```text
+translationSubmitMaxAttempts
+translationSubmitRetrySeconds
+translationInitialPollSeconds
+```
+
+Change helper signatures as necessary so the same snapshot/value is passed into:
+
+```text
+persistFailure(...)
+persistSubmitted(...)
+enqueuePoll(...)
+```
+
+The successful provider-create path MUST use the exact same `runtimeConfig.translationInitialPollSeconds` value for both:
+
+```text
+MerchantTranslationBatch.nextPollAt
+BullMQ TRANSLATION_BATCH_POLL delay
+```
+
+Do not call `currentTranslationRuntimeConfig(...)` independently in those two helpers for the same submit job.
+
+#### 2. `src/services/translation-batch-poll.service.ts`
+
+For one valid `poll(...)` job, capture one runtime-config snapshot and pass it through the job's runtime-policy helpers.
+
+For both provider-read failure and provider `nonterminal` outcomes, the exact same `runtimeConfig.translationPollIntervalSeconds` value MUST drive:
+
+```text
+persisted MerchantTranslationBatch.nextPollAt
+BullMQ replacement poll-job delay
+```
+
+Thread the snapshot/value into:
+
+```text
+rescheduleAfterReadFailure(...)
+advanceNonterminal(...)
+enqueuePoll(...)
+```
+
+Do not independently re-read `current()` between persisting the schedule and enqueuing the replacement poll job.
+
+The existing terminal provider/item behavior must remain unchanged apart from using the captured job snapshot where runtime retry values are needed. Preserve:
+
+```text
+failureIsRetryable(...)
+translationMaxAutoRetries
+translationResultRetrySeconds
+message failure-state semantics
+```
+
+#### 3. Preserve exact scope boundaries
+
+Do not change:
+
+```text
+TRANSLATION_PROVIDER
+TRANSLATION_MODEL
+OPENAI_API_KEY / provider credentials
+MAX_CORRELATION_PAGES
+provider MAX_PAGE_SIZE
+MAX_OUTPUT_BYTES
+MAX_OUTPUT_LINES
+provider endpoint/completion window
+failure retryability classification
+FOR UPDATE SKIP LOCKED batch assembly
+translation reconciliation lease/scheduler
+```
+
+Do not reintroduce any retired translation environment-variable read.
+
+### Focused regression evidence
+
+Add focused tests using a runtime-config reader whose `current()` would return different values on successive calls. Prove at minimum:
+
+1. successful batch submission persists and enqueues the first poll with one identical `translationInitialPollSeconds` value;
+2. nonterminal provider polling persists and enqueues the next poll with one identical `translationPollIntervalSeconds` value;
+3. provider-read-failure polling uses the same one-snapshot recurring poll interval;
+4. the correction does not merge `translationResultRetrySeconds` into the provider poll interval.
+
+The tests should verify functional timing consistency; no broad expansion of translation coverage is required.
+
+### Stop condition
+
+Return the same task as Attempt 2 after this correction. Do not start `ARCH-014-BACKGROUND-004` or `ARCH-014-BACKGROUND-005` until BACKGROUND-003 is architect-accepted.
