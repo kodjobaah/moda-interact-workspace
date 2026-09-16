@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -1210,3 +1210,44 @@ Ready for Review
 - no merge to `main` performed.
 
 Task status is `review`; return control to `moda_architect` for re-review. No architect acceptance decision has been made by this agent.
+
+
+## Architect Review — Attempt 4
+
+### Status
+
+**Accepted — Complete**
+
+Implementation commit `b7e7958ab739a023773ff5d74e72c4bfa84bd2cd` closes the
+remaining Attempt-3 lock-order defect without reopening the accepted lifecycle design.
+
+`APP_SCOPES_UPDATE` now uses the required shop-scoped order inside the existing Prisma
+transaction:
+
+```text
+resolve Shop identity by authenticated domain
+  -> acquire lockShopLifecycleRow(... commerce.Shop FOR UPDATE ...)
+  -> persist authenticated Session.scope when present
+  -> re-read authoritative Shop/settings/subscription
+  -> re-read durable offline Session
+  -> evaluate eligibility from persisted offline scope only
+  -> mutate catalogue
+  -> commit
+  -> publish SCOPES_UPDATED after commit when eligible
+```
+
+The pre-lock Shop lookup is identity resolution only. Scope removal still marks the
+catalogue unavailable without publication, and a payload containing `read_discounts`
+cannot authorize sync when the persisted offline Session lacks that scope.
+
+The previously accepted Attempt-3 lifecycle behavior remains intact: subscription
+activation and uninstall use the same Shop-row serialization fence, activation re-reads
+authoritative eligibility after locking, duplicate uninstall retains the first durable
+`Shop.uninstalledAt`, and per-discount existing `unavailableAt` values remain preserved.
+
+The reported merchant-i18n baseline failures do not affect this acceptance. Focused
+validation, full implementation tests, production build, Shopify config validation, lint
+and diff checks passed. There is no Attempt 5.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the existing
+developer/manual-testing checkpoint remains before terminal integrated testing.
