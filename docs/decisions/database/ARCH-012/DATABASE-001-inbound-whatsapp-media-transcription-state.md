@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 12
-executor: copilot
-claimed_at: 2026-09-16T10:41:16Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-007-DATABASE-006
@@ -114,11 +114,11 @@ The new schema validator must prove:
 
 ## Acceptance Criteria
 
-- [ ] one inbound provider message can be durably reserved before transcription through existing unique `providerMessageId` semantics;
-- [ ] voice provenance/transcription lifecycle can be represented without fake empty-text semantics;
-- [ ] raw audio is not stored in PostgreSQL;
-- [ ] existing text conversations remain backward-compatible through defaults;
-- [ ] migration and ERD are generated normally.
+- [x] one inbound provider message can be durably reserved before transcription through existing unique `providerMessageId` semantics;
+- [x] voice provenance/transcription lifecycle can be represented without fake empty-text semantics;
+- [x] raw audio is not stored in PostgreSQL;
+- [x] existing text conversations remain backward-compatible through defaults;
+- [x] migration and ERD are generated normally.
 
 ## Validation
 From `moda-interact-database/`:
@@ -157,8 +157,8 @@ Ready for architect review.
 
 ### Launcher evidence
 
-- Claim commit: `495d4fd7231141346244afeb13e1622ac3027f9b`
-- Attempt: `1`
+- Claim commit: `ec2bec60bb18ae7a2019fa09343d498d817de6bb`
+- Attempt: `2`
 - Dependency gate: passed (`ARCH-007-DATABASE-006` complete)
 - Parent origin/main incorporated: already-current
 - Implementation origin/main incorporated: already-current
@@ -190,6 +190,16 @@ Ready for architect review.
 - `git diff --check`: passed.
 - Implementation commit: `655ff35` (pushed).
 - No application repositories, recovery/billing schema, raw audio bytes, provider URLs, or merchant account models were changed.
+
+### Rework Attempt 2
+
+- The latest Architect Review section contains `Not reviewed`/`TBD` and no
+  `Changes Requested` items; no source correction was identified for this
+  attempt.
+- Revalidated the existing implementation from the prepared implementation
+  worktree; all task-required validation passed.
+- The task remains bounded to DATABASE-001 and is returned to `review` without
+  starting dependent Background work.
 
 ## Architect Review
 
