@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-16T11:30:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-007-SHARED-004
@@ -235,16 +235,33 @@ After implementation, validation, publication and clean-consumer verification al
 ## Completion Report
 
 ### Status
-Not started.
+Implemented, validated, published, and independently verified. Awaiting `moda_architect` review.
 
 ### Published Version
-TBD.
+`@modainteract/moda-interact-shared@0.12.0`
+
+npm verification:
+
+- `npm view @modainteract/moda-interact-shared@0.12.0 version` returned `0.12.0`.
+- `dist.tarball` is `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.12.0.tgz`.
+- `dist.shasum` is `5d75b831cc6bdd0d631d6e08065c6ae12c130a59`.
+- `npm view @modainteract/moda-interact-shared dist-tags.latest` returned `0.12.0`.
 
 ### Files Changed
-TBD.
+- `src/whatsapp.ts`
+- `src/whatsapp.test.ts`
+- `tsup.config.ts`
+- `package.json`
+- `package-lock.json`
 
 ### Validation Results
-TBD.
+- `npm test`: 118 passed, 1 skipped, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; emitted `dist/whatsapp.js` and `dist/whatsapp.d.ts`.
+- `npm pack --dry-run --json`: passed; manifest retained all pre-existing public entrypoints and included the WhatsApp runtime/declaration files.
+- `git diff --check`: passed.
+- Isolated consumer installed exact `@modainteract/moda-interact-shared@0.12.0`, imported `@modainteract/moda-interact-shared/whatsapp`, parsed a text message, and verified `dist/whatsapp.d.ts`.
+- No Messaging or Background task was started.
 
 ## Architect Review
 
