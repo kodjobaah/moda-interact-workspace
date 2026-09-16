@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-012-SHARED-002
+- ARCH-012-SHARED-001
 - ARCH-007-MESSAGING-001
 enables:
 - ARCH-012-SYSTEM-TEST-001
@@ -30,7 +30,7 @@ updated: 2026-09-16
 Make `moda-interact-messaging` a strict provider-normalization boundary for customer messages. It must preserve enough Meta evidence for Background to resolve either an explicit reply to a specific Moda message or an ordinary contextless WhatsApp message, and it must preserve voice media identity without downloading/transcribing media in the webhook request.
 
 ## Required dependency
-Adopt the **exact architect-accepted package version published by ARCH-012-SHARED-002**. This task deliberately does not hard-code a version in the 2026-09-16 compatibility baseline. If SHARED-002 is not Complete with an exact published version recorded in its Completion Report, STOP; the repository agent must not guess or install a range.
+Adopt the **exact architect-accepted package version published by ARCH-012-SHARED-001**. SHARED-001 now owns implementation and publication in one task. Read the exact published version from its Completion Report and install that exact version; do not guess, use a range, or derive a newer version.
 
 ## Authorized implementation surface
 Expected files:

@@ -250,7 +250,7 @@ Meta status webhook
 
 ## Canonical inbound message contract
 
-`ARCH-012-SHARED-001` owns one strict Shared v1 event under:
+`ARCH-012-SHARED-001` owns implementation **and publication** of one strict Shared v1 event under:
 
 ```text
 @modainteract/moda-interact-shared/whatsapp
@@ -630,58 +630,55 @@ on the existing test/production messaging worker deployables while preserving le
 
 ## Shared package publication ordering
 
-The 2026-09-16 snapshot changes the Shared publication frontier but does **not** change the ARCH-012 contract design:
+The 2026-09-16 snapshot changes the Shared publication frontier but does **not** change the ARCH-012 contract design. ARCH-015 has advanced the accepted Shared patch line while ARCH-011 still owns the preceding public contract publication.
+
+ARCH-012 therefore uses one consolidated Shared task:
 
 ```text
-ARCH-015-SHARED-001 has already advanced the published Shared line through patch publication evidence (0.11.1/0.11.2 lifecycle).
-ARCH-011-SHARED-002 is still Pending and its original 0.11.0 -> 0.12.0 precondition is therefore stale until moda_architect reconciles that task.
+ARCH-011-SHARED-002 accepted Complete
+        -> ARCH-012-SHARED-001
+             implement ./whatsapp
+             validate source/package
+             choose deterministic next-minor target
+             publish exactly once
+             verify registry + isolated consumer
 ```
 
-ARCH-012 must not race either initiative or guess a new npm version. Therefore:
+The deterministic version rule is defined in `ARCH-012-SHARED-001`: take the coherent architect-accepted npm/local baseline after ARCH-011 and increment the **minor** version, resetting patch to zero. If the Shared source checkout is behind previously accepted/published source, or local/npm/ARCH-011 evidence disagree, STOP for architect reconciliation.
 
-```text
-ARCH-012-SHARED-001
-  -> implement additive ./whatsapp source contract only
-  -> do not publish
-
-ARCH-012-SHARED-002
-  -> remains Pending behind ARCH-011-SHARED-002
-  -> after ARCH-011 publication is architect-accepted, moda_architect must write the exact ARCH-012 target version into SHARED-002 before execution
-  -> repository/developer executor must never derive, increment or substitute a version independently
-```
-
-If canonical Shared `origin/main` does not contain previously architect-accepted/published Shared source that downstream repositories already consume, stop before ARCH-012 source work and reconcile the Shared integration frontier; do not rebuild another architecture's source from npm artifacts.
+There is no executable ARCH-012 publication-only task. `ARCH-012-SHARED-002` is retained only as Superseded history.
 
 ## Task graph
 
 ```text
-ARCH-012-SHARED-001 (Ready)
-    -> ARCH-012-SHARED-002
-        -> ARCH-012-MESSAGING-001
+ARCH-011-SHARED-002
+        -> ARCH-012-SHARED-001 (implement + validate + publish)
+            -> ARCH-012-MESSAGING-001
+            -> ARCH-012-BACKGROUND-001
+
+ARCH-012-DATABASE-001
         -> ARCH-012-BACKGROUND-001
 
-ARCH-012-DATABASE-001 (Ready)
+ARCH-012-BACKGROUND-003
         -> ARCH-012-BACKGROUND-001
-            -> ARCH-012-BACKGROUND-002
-
-ARCH-012-BACKGROUND-003 (Ready)
-        -> ARCH-012-BACKGROUND-002
         -> ARCH-012-GATEWAY-001
 
 MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
         -> SYSTEM-TEST-001
-
-MESSAGING-001 + BACKGROUND-002 + BACKGROUND-003 + GATEWAY-001
         -> SYSTEM-TEST-002
 ```
 
-Initial Ready frontier:
+`ARCH-012-SHARED-002` and `ARCH-012-BACKGROUND-002` are Superseded and must never be prepared/executed.
+
+Current execution frontier after this consolidation:
 
 ```text
-ARCH-012-SHARED-001
-ARCH-012-DATABASE-001
-ARCH-012-BACKGROUND-003
+ARCH-012-DATABASE-001      preserve live workspace status; this patch does not rewrite it
+ARCH-012-BACKGROUND-003    Ready unless the live workspace has already advanced it
+ARCH-012-SHARED-001        Pending until ARCH-011-SHARED-002 is architect-accepted Complete
 ```
+
+Do not downgrade a task that has already advanced in the live developer workspace. Merged `ARCH-012-BACKGROUND-001` remains Pending until SHARED-001, DATABASE-001 and BACKGROUND-003 are accepted Complete.
 
 System tests are terminal integrated validation tasks. No implementation task depends on a system-test task.
 

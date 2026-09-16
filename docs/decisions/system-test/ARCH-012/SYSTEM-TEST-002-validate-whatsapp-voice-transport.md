@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-012-MESSAGING-001
-- ARCH-012-BACKGROUND-002
+- ARCH-012-BACKGROUND-001
 - ARCH-012-BACKGROUND-003
 - ARCH-012-GATEWAY-001
 enables: []
@@ -34,8 +34,8 @@ Extend existing test infrastructure with deterministic fakes/emulators rather th
 
 - WhatsApp emulator must provide Meta-style inbound `audio` webhook payloads and media lookup/download endpoints;
 - provide fixture OGG/Opus audio with known durations/content properties sufficient to validate <=120s and >120s policy;
-- provide a deterministic transcription fake at the same adapter boundary used by BACKGROUND-002, returning controlled multilingual transcripts/failures;
-- if BACKGROUND-002 exposes an optional provider base URL for testability, use that; do not patch production code from system tests.
+- provide a deterministic transcription fake at the same adapter boundary used by BACKGROUND-001, returning controlled multilingual transcripts/failures;
+- if BACKGROUND-001 exposes an optional provider base URL for testability, use that; do not patch production code from system tests.
 
 ## Required scenarios
 
