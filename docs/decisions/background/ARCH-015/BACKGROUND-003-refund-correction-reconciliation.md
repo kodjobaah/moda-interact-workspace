@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
-executor: copilot
-claimed_at: 2026-09-16T09:37:44Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-015-SHARED-001
@@ -427,32 +427,37 @@ Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspa
 
 Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-BACKGROUND-003`
 
-Claim commit: `6626d55eaa9c608b3cdb1b4046c30d3c19862df9`
+Claim commit: `d2d32247f997357bc083e6385a3a90821895e2ff`
 
-Implementation commit: `d313ab2`
+Implementation synchronization commit: `75d7507`
+
+Implementation commit: `2bafde9`
 
 Implementation branch: `task/ARCH-015-BACKGROUND-003` (pushed)
 
 Database submodule commit used: `47232f6876469f209c7efde4cefbb8a47d864e6a`
 
-Implemented:
+Attempt-3 corrections:
 
-- Extended the existing billing cycle with bounded deterministic REQUESTED refund processing.
-- Added exact Decimal PREPARE/RECONCILE processing using typed `RecoveryCreditRefund` evidence and the unique linked `UsageEvent` relation.
-- Added live provider context, usage, pricing, currency, and post-correction economics proof.
-- Added deterministic idempotency, atomic event/evidence preparation, concurrent CAS convergence, immutable reconciliation, and exact completion CAS.
-- Added negative/fractional App Events support without changing positive purchase behavior.
-- Preserved publisher retry/202 semantics; no separate queue, schema, metadata, or automatic Admin fallback was introduced.
+- Provider context derivation now supports native App Pricing with a null legacy provider id and fails closed on derivation errors.
+- PREPARE requires live pricing, while RECONCILE uses only fresh context, quantity, cost, currency, and frozen expected-after evidence.
+- Unsafe partial-pack fallback freezes the proportional business refund amount using exact Decimal ratio and currency rounding.
+- Refund-link CAS loss raises a transaction race signal so a newly prepared correction event rolls back before reload/reconcile.
+- Automatic completion writes one deterministic `BILLING_REFUND_COMPLETED` SYSTEM/AVAILABLE merchant-support message in the same transaction.
+- Added focused regressions for all five architect findings, including completion-message idempotency evidence.
 
 Validation:
 
-- Focused correction/provider/publisher/scheduler tests: 45 passed.
-- `npm run test:unit`: 953 passed; 2 existing unrelated observability-startup assertions remain failing (recovery entrypoint source-shape expectation and stale Shared `0.9.0` expectation; repository dependency is `0.11.2`).
+- Correction service: 10 passed.
+- Usage-event publisher: 15 passed.
+- App Events provider: 20 passed.
+- Billing runtime/scheduler: 8 passed.
+- `npm run test:unit`: 979 passed across 63 files.
 - `npm run build`: passed, including Prisma generation and TypeScript compilation.
 - `git diff --check`: passed.
 - No `typecheck` script is declared; the build runs `tsc` directly.
 
-The prior blocked report was superseded because the integrated database submodule now exposes all required typed refund fields and the automatic correction relation. No `UsageEvent.metadata`, process-local settlement evidence, new queue, Prisma schema change, or Admin monetary fallback was used.
+No `UsageEvent.metadata`, process-local settlement evidence, new queue, Prisma schema change, or Admin monetary fallback was introduced. Both implementation and parent branches are pushed; the database submodule remains at the exact recorded commit.
 
 
 ## Architect Review — Attempt 2
