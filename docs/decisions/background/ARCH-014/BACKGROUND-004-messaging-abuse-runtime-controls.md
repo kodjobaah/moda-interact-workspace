@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 65
 executor:
 claimed_at:
@@ -173,3 +173,14 @@ Validation evidence:
 - Editor diagnostics for all five changed files: no errors.
 
 Limitations: npm install reported pre-existing audit warnings for three high-severity vulnerabilities and install-script approval notices; no dependency files were changed. No database, queue, schema, Redis key namespace, or Admin-editable window changes were made.
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Summary
+
+Attempt 1 is accepted on functionality. The messaging entrypoint starts the shared runtime-config service before loading the WhatsApp worker; conversation settling uses one current runtime snapshot per settle calculation, re-evaluates pending work on processing, preserves the fixed 120-second processing lease and fails closed on an invalid max/quiet ordering. WhatsApp abuse admission reads one last-known-good in-memory runtime snapshot per admission, maps all twelve approved numeric limits, preserves the fixed 60-second/600-second windows, Redis namespace and duplicate semantics, and remains fail-closed on limiter errors. No per-message database query or Admin-editable abuse window was introduced.
+
+Implementation commit `b3b65f8` is accepted. No further BACKGROUND-004 attempt is required.
