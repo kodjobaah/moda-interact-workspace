@@ -19,7 +19,7 @@ depends_on:
 enables:
 - ARCH-012-SHARED-002
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-SHARED-001
@@ -32,6 +32,13 @@ This contract represents **provider-normalized communications data only**. It MU
 
 Producer after publication: `moda_messaging`.
 Consumer after publication: `moda_background`.
+
+## 2026-09-16 Shared integration preflight
+Before editing, inspect canonical task-worktree `origin/main`, local `package.json`, and the accepted Shared task history. The supplied 2026-09-16 snapshot shows downstream consumers on `0.11.2` while the included Shared source checkout still reports `0.11.0` and does not visibly contain the accepted ARCH-015 provider-context helpers.
+
+If launcher-synchronised canonical `origin/main` still has that mismatch, **STOP before editing** and return the exact Shared integration gap to `moda_architect`. Do not reconstruct ARCH-015 source from installed npm packages and do not publish from a source tree that omits previously accepted Shared behaviour.
+
+If canonical `origin/main` is already reconciled, continue normally and preserve all accepted Shared exports. This preflight does not change the ARCH-012 v1 WhatsApp schema below.
 
 ## Authorized implementation surface
 Prefer a dedicated package entrypoint rather than placing the new contract in billing code:

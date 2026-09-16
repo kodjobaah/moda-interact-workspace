@@ -19,11 +19,14 @@ depends_on:
 - ARCH-012-DATABASE-001
 - ARCH-007-BACKGROUND-010
 - ARCH-007-BACKGROUND-011
+- ARCH-010-BACKGROUND-013
+- ARCH-014-BACKGROUND-004
+- ARCH-014-BACKGROUND-005
 enables:
 - ARCH-012-BACKGROUND-002
 - ARCH-012-SYSTEM-TEST-001
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-BACKGROUND-001
@@ -39,7 +42,7 @@ B. ordinary contextless message   -> active-conversation resolution using durabl
 This task is primarily a contract/routing correction. Do not redesign accepted ARCH-007 coalescing, abuse admission or CommerceAgent semantics.
 
 ## Required dependency
-Adopt exact Shared release from SHARED-002 (`0.13.0` under the current publication plan). Do not duplicate the schema locally.
+Adopt the **exact architect-accepted Shared release recorded by SHARED-002**. Do not duplicate the schema locally and do not infer a package version from npm `latest`.
 
 ## Authorized implementation surface
 Expected files only:
@@ -55,6 +58,16 @@ focused unit/integration tests for worker/routing/conversation persistence
 ```
 
 Database submodule pointer may be updated only to the accepted DATABASE-001 commit according to normal submodule workflow. Do not edit database schema here.
+
+## Current runtime controls that must survive this task
+The 2026-09-16 Background baseline has accepted controls that post-date the original ARCH-012 overlay:
+
+- `src/entrypoints/messaging.ts` starts `backgroundRuntimeConfigService` before creating the WhatsApp worker;
+- `src/workers/whatsapp.worker.ts` exposes `createWhatsappWorker()` and binds dynamic concurrency through `bindWorkerConcurrency(worker, backgroundRuntimeConfigService, "whatsappQueueGlobalConcurrency")`;
+- raw/settled abuse admission reads ARCH-014 runtime-configured limits rather than static constants;
+- shop execution eligibility from ARCH-010 remains authoritative.
+
+Do not revert, bypass, statically replace or duplicate those controls while changing inbound event typing/routing. `src/entrypoints/messaging.ts`, runtime-config services and queue-concurrency controller are **not** authorized implementation surfaces for this task.
 
 ## Exact routing behaviour
 
@@ -111,7 +124,10 @@ Audio is reserved for BACKGROUND-002. BACKGROUND-001 must recognize the union an
 7. unsupported event is persisted/observed but does not increment a CommerceAgent turn as empty content;
 8. audio event is not processed as empty text and is handed to the voice path contract expected by BACKGROUND-002;
 9. existing ARCH-007 raw and settled abuse admission remains in place;
-10. existing turn coalescing/order semantics remain unchanged for text.
+10. existing turn coalescing/order semantics remain unchanged for text;
+11. `createWhatsappWorker()` plus dynamic `whatsappQueueGlobalConcurrency` binding remain intact;
+12. ARCH-014 runtime-configured abuse limits remain intact (no restored static limits);
+13. ARCH-010 `contract-required` / `subscription-frozen` shop execution gates remain effective.
 
 ## Non-goals
 

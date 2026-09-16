@@ -4,7 +4,7 @@ title: Moda-managed WhatsApp communications
 status: agreed
 coordinator: moda_architect
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012: Moda-managed WhatsApp communications
@@ -630,19 +630,27 @@ on the existing test/production messaging worker deployables while preserving le
 
 ## Shared package publication ordering
 
-The snapshot has Shared `0.11.0`, while `ARCH-011-SHARED-002` owns the next Shared publication in its current definition.
+The 2026-09-16 snapshot changes the Shared publication frontier but does **not** change the ARCH-012 contract design:
 
-Therefore:
+```text
+ARCH-015-SHARED-001 has already advanced the published Shared line through patch publication evidence (0.11.1/0.11.2 lifecycle).
+ARCH-011-SHARED-002 is still Pending and its original 0.11.0 -> 0.12.0 precondition is therefore stale until moda_architect reconciles that task.
+```
+
+ARCH-012 must not race either initiative or guess a new npm version. Therefore:
 
 ```text
 ARCH-012-SHARED-001
-  -> waits for ARCH-011-SHARED-002 before publication
-  -> ARCH-012-SHARED-002 re-verifies local/npm latest
-  -> if both are 0.12.0, publish ARCH-012 contract as 0.13.0
-  -> otherwise STOP for architect version reconciliation
+  -> implement additive ./whatsapp source contract only
+  -> do not publish
+
+ARCH-012-SHARED-002
+  -> remains Pending behind ARCH-011-SHARED-002
+  -> after ARCH-011 publication is architect-accepted, moda_architect must write the exact ARCH-012 target version into SHARED-002 before execution
+  -> repository/developer executor must never derive, increment or substitute a version independently
 ```
 
-Repository agents must never independently choose a substitute version.
+If canonical Shared `origin/main` does not contain previously architect-accepted/published Shared source that downstream repositories already consume, stop before ARCH-012 source work and reconcile the Shared integration frontier; do not rebuild another architecture's source from npm artifacts.
 
 ## Task graph
 

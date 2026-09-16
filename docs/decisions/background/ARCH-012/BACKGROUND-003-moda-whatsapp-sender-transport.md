@@ -17,12 +17,13 @@ attempt: 0
 depends_on:
 - ARCH-005-BACKGROUND-003
 - ARCH-007-BACKGROUND-004
+- ARCH-010-BACKGROUND-013
 enables:
 - ARCH-012-BACKGROUND-002
 - ARCH-012-GATEWAY-001
 - ARCH-012-SYSTEM-TEST-001
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-BACKGROUND-003
@@ -50,6 +51,19 @@ focused WhatsApp/outbound/template tests
 ```
 
 No database schema changes.
+
+## 2026-09-16 outbound-admission compatibility requirement
+`src/services/outbound-whatsapp-admission.service.ts` now contains accepted ARCH-010 execution gates that were not present in the original ARCH-012 snapshot. Preserve them exactly while extending the transport:
+
+```text
+admitted result retains shopId
+executionEligibility.evaluate(shopId) is re-run immediately before provider send
+NO_CONTRACT -> contract-required
+SUBSCRIPTION_FROZEN -> subscription-frozen
+denied prepared messages are cleaned up through existing failPrepared behaviour
+```
+
+Do not simplify the service back to the older admission-only implementation, and do not bypass eligibility for text, template, link-preview, image-header or URL-button sends. New outbound capabilities must pass through the same accepted admission/provider lifecycle.
 
 ## Sender configuration abstraction
 Create a bounded resolver/config type equivalent to:
@@ -131,6 +145,9 @@ All sends:
 - template dynamic URL button parameter serializes exact index/value;
 - static-template URL case requires no invented runtime component;
 - existing provider message ID/status lifecycle remains intact;
+- prepared text/template sends still re-check shop execution eligibility immediately before provider invocation;
+- `contract-required` and `subscription-frozen` suppression reasons remain distinct;
+- admitted results continue to retain `shopId`;
 - no merchant-specific WhatsApp credential input is introduced.
 
 ## Non-goals

@@ -1,6 +1,6 @@
 # ARCH-012 Implementation Handoff — deterministic communications contracts
 
-Date: 2026-09-14
+Date: 2026-09-16
 Coordinator: `moda_architect`
 Architecture: [`ARCH-012-moda-managed-whatsapp-communications.md`](ARCH-012-moda-managed-whatsapp-communications.md)
 
@@ -83,6 +83,26 @@ start a dependent task after returning current task to review
 
 If a required named file/symbol/capability is absent, or implementation requires a product/architecture decision not written in the task, **STOP and return evidence to `moda_architect`**. Do not infer an alternative design.
 
+
+## 2026-09-16 compatibility baseline
+
+The current snapshot preserves the ARCH-012 communication boundaries, but later accepted work introduced runtime controls that every Background implementation must retain:
+
+```text
+ARCH-010-BACKGROUND-013
+  -> canonical shop execution eligibility and outbound suppression (`contract-required`, `subscription-frozen`)
+
+ARCH-014-BACKGROUND-004
+  -> runtime-configured WhatsApp abuse-admission limits
+
+ARCH-014-BACKGROUND-005
+  -> runtime-configured fleet-wide BullMQ concurrency, including `whatsappQueueGlobalConcurrency`
+```
+
+ARCH-012 tasks must extend these implementations rather than restoring the older static behaviour. In particular, do not replace `createWhatsappWorker()`, remove `bindWorkerConcurrency(...)`, bypass `shopExecutionEligibilityService`, or reintroduce static abuse/concurrency constants while implementing WhatsApp contract/voice/outbound changes.
+
+The Shared publication frontier also advanced after the original overlay. No ARCH-012 executor may assume `0.13.0`; follow the revised SHARED-002 contract.
+
 ## Task graph
 
 ```text
@@ -142,7 +162,7 @@ No tenant/business fields. No publication in this task.
 
 Owner: `moda_shared`, developer execution mode.
 
-Publication metadata only. Serializes after `ARCH-011-SHARED-002`; expected `0.13.0` only if local/npm premise is exactly as written in the task. Otherwise STOP for architect reconciliation.
+Publication metadata only. Serializes after `ARCH-011-SHARED-002`. The exact ARCH-012 publication version is intentionally **not preselected** in this 2026-09-16 compatibility revision because ARCH-015 has advanced the Shared patch line and ARCH-011-SHARED-002 still requires architect version reconciliation. `moda_architect` must write the exact target version after ARCH-011 publication is accepted; the executor must not choose it.
 
 ### `ARCH-012-DATABASE-001`
 

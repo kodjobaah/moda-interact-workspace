@@ -21,7 +21,7 @@ enables:
 - ARCH-012-SYSTEM-TEST-001
 - ARCH-012-SYSTEM-TEST-002
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-MESSAGING-001
@@ -30,7 +30,7 @@ updated: 2026-09-14
 Make `moda-interact-messaging` a strict provider-normalization boundary for customer messages. It must preserve enough Meta evidence for Background to resolve either an explicit reply to a specific Moda message or an ordinary contextless WhatsApp message, and it must preserve voice media identity without downloading/transcribing media in the webhook request.
 
 ## Required dependency
-Adopt exact `@modainteract/moda-interact-shared@0.13.0` **only if** SHARED-002 published that version as defined. If SHARED-002 published another architect-approved version, the task definition must be reconciled before execution; the repository agent must not guess.
+Adopt the **exact architect-accepted package version published by ARCH-012-SHARED-002**. This task deliberately does not hard-code a version in the 2026-09-16 compatibility baseline. If SHARED-002 is not Complete with an exact published version recorded in its Completion Report, STOP; the repository agent must not guess or install a range.
 
 ## Authorized implementation surface
 Expected files:
