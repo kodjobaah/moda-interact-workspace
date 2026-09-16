@@ -779,3 +779,32 @@ ARCH-016-SYSTEM-TEST-001 Pending
 ```
 
 The Ready promotions are dependency-state reconciliation only: each promoted task remains `attempt: 0`, `executor: null` and `claimed_at: null` until launched through the normal task workflow. `ARCH-016-SYSTEM-TEST-001` is not started automatically and remains behind completion of all implementation tasks plus the developer manual-testing checkpoint.
+
+
+## Post-review update — SHOPIFY-001 Attempt 2 Changes Requested
+
+`ARCH-016-SHOPIFY-001` Attempt 2 implementation commit `454f882` correctly narrows
+eligibility to the durable offline Session, removes scope-payload authority and makes
+catalogue/discount invalidation durable without overwriting existing per-discount
+`unavailableAt` values. Those corrections are retained.
+
+The task returns to **Ready** for one bounded lifecycle correction because the interactive
+Prisma transactions still use plain reads at the default isolation boundary. They do not
+serialize activation against concurrent uninstall/scope removal, so a stale activation
+can still write `SYNC_REQUIRED` after a disabling lifecycle event committed.
+
+Attempt 3 must establish one common Shop-row `FOR UPDATE` lifecycle fence across:
+
+```text
+subscription activation bootstrap
+APP_SCOPES_UPDATE persistence/eligibility
+APP_UNINSTALLED invalidation
+```
+
+and duplicate uninstall must use the persisted first `Shop.uninstalledAt` as the effective
+catalogue invalidation timestamp rather than moving that boundary on webhook retries.
+
+The task remains `attempt: 2`, `executor: null`, `claimed_at: null`; the launcher owns the
+increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.

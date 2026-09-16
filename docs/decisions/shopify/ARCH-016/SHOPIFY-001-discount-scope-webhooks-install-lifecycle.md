@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -724,3 +724,240 @@ Ready for Review
 - executor and claimed timestamp cleared; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for re-review.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — the offline-session reads are corrected, but the lifecycle transaction is not yet a concurrency fence**
+
+Implementation commit reviewed: `454f882`.
+Parent Completion Report commit reported: `153425cb`.
+
+Attempt 2 correctly fixes the three literal data-shape/state issues requested after
+Attempt 1:
+
+```text
+activation reads only isOnline = false Session scope
+scope-update payload is no longer final eligibility authority
+catalogue UNAVAILABLE is established with upsert
+discount rows preserve existing non-null unavailableAt values
+newly unavailable discount rows receive the lifecycle timestamp
+publication remains after transaction completion
+```
+
+Those corrections are retained. Do not redesign the accepted webhook ingress, Shared
+queue contract, billing-provider verification, or catalogue projection.
+
+One concurrency defect from Attempt 1 remains, and duplicate uninstall currently makes
+the uninstall lifecycle timestamp unstable.
+
+### Finding 1 — a normal Prisma transaction does not serialize activation against uninstall/scope removal
+
+`enqueueSubscriptionActivatedDiscountSyncBestEffort()` now reads the shop and durable
+offline Session and writes `ShopifyDiscountCatalogue.status = SYNC_REQUIRED` inside one
+interactive Prisma transaction. `app/scopes-update` similarly performs its persistence,
+reads and catalogue mutation inside one transaction.
+
+That is necessary, but under PostgreSQL's normal `READ COMMITTED` isolation it is not a
+lifecycle fence. Plain `SELECT` statements do not prevent another transaction from
+committing a lifecycle change between the eligibility read and catalogue write.
+
+The remaining race is:
+
+```text
+T1 activation: read Shop ACTIVE + eligible offline scope
+T2 uninstall:  set Shop UNINSTALLED + catalogue UNAVAILABLE; commit
+T1 activation: upsert catalogue SYNC_REQUIRED; commit
+T1 activation: publish SUBSCRIPTION_ACTIVATED
+```
+
+A corresponding race exists between activation and a concurrent scope-removal update.
+The result violates the required precedence of uninstall/scope loss and can resurrect an
+unavailable catalogue as `SYNC_REQUIRED` after the disabling lifecycle event already
+committed.
+
+#### Required Attempt-3 correction
+
+Use one **shop-scoped database row lock** as the common lifecycle serialization boundary
+for all three app-side paths that can change discount catalogue eligibility:
+
+```text
+subscription activation bootstrap
+APP_SCOPES_UPDATE persistence/eligibility
+APP_UNINSTALLED invalidation
+```
+
+Implement this in the smallest repository-local form in:
+
+```text
+app/services/discounts/shopify-discount-lifecycle.service.ts
+```
+
+Add a helper that, inside the caller's existing Prisma transaction, acquires a PostgreSQL
+`FOR UPDATE` lock on the durable `Shop` row before eligibility state is read or changed.
+Follow the repository's existing `Prisma.sql` / transaction `$queryRaw` row-lock pattern;
+do not add advisory locks or a new locking service.
+
+The physical model in the task's pinned database schema is `Shop` in schema `commerce`.
+The lock must therefore target the current schema/model mapping from the checked-out
+Prisma schema rather than copying an unrelated raw-SQL table path from another service.
+
+Required ordering for every participating transaction:
+
+```text
+resolve shop identity if necessary
+  -> acquire Shop row FOR UPDATE
+  -> re-read authoritative shop/settings/subscription/offline-session state
+  -> make catalogue mutation
+  -> commit
+  -> publish after commit when applicable
+```
+
+Do not make the pre-lock lookup authoritative. If a route needs an initial lookup only to
+obtain the shop ID, it MUST re-read all eligibility facts after the row lock is held.
+
+Apply the same lock helper/boundary in:
+
+```text
+app/services/discounts/shopify-discount-lifecycle.service.ts
+  enqueueSubscriptionActivatedDiscountSyncBestEffort(...)
+
+app/routes/webhooks/app/scopes-update/route.jsx
+  transaction handling Session scope + catalogue state
+
+app/services/shop/shop.service.ts
+  markUninstalled(...)
+```
+
+All three paths must acquire the same Shop-row lock before mutating Session/catalogue
+lifecycle state. Keep one consistent lock ordering; do not lock Session first in one path
+and Shop first in another.
+
+Required concurrency outcomes:
+
+```text
+activation obtains Shop lock first
+  -> eligible state + SYNC_REQUIRED commit
+  -> later uninstall/scope removal obtains lock
+  -> disabling lifecycle event writes UNAVAILABLE last
+
+uninstall/scope removal obtains Shop lock first
+  -> disabling lifecycle event commits
+  -> later activation obtains lock and re-reads state
+  -> activation is ineligible
+  -> no SYNC_REQUIRED rewrite
+  -> no publish
+```
+
+Queue publication remains outside the transaction and only follows a committed eligible
+state. Do not hold the row lock while publishing to BullMQ.
+
+### Finding 2 — duplicate uninstall changes the effective uninstall timestamp used by catalogue invalidation
+
+`ShopService.markUninstalled()` conditionally writes `Shop.uninstalledAt` only when that
+column is null, which is correct. However it then always calls:
+
+```text
+markDiscountCatalogueUnavailable(transaction, shop.id, uninstalledAt)
+```
+
+using the timestamp from the current webhook delivery.
+
+On a duplicate/retried uninstall webhook, `Shop.uninstalledAt` therefore remains the
+original first-uninstall time while `ShopifyDiscountCatalogue.unavailableAt` is rewritten
+to the later retry time. This makes two durable records describe different effective
+uninstall boundaries and means a duplicate delivery is not state-idempotent.
+
+#### Required Attempt-3 correction
+
+While holding the Shop lifecycle row lock from Finding 1, read the existing
+`Shop.uninstalledAt` and derive exactly one effective timestamp:
+
+```text
+effectiveUninstalledAt = persisted Shop.uninstalledAt ?? incoming event time
+```
+
+Then:
+
+1. when persisted `Shop.uninstalledAt` is null, set Shop status/uninstalledAt using the
+   incoming event time as today;
+2. when it is already non-null, preserve the persisted value;
+3. call `markDiscountCatalogueUnavailable(...)` with `effectiveUninstalledAt`;
+4. keep Session deletion outside/after the existing uninstall service transaction;
+5. do not enqueue a discount sync from uninstall.
+
+The existing discount-row behavior remains correct: all rows become unavailable and an
+already non-null per-discount `unavailableAt` is preserved.
+
+### Accepted Attempt-2 behavior that MUST remain unchanged
+
+```text
+Shared pinned exactly to 0.12.1
+canonical read_discounts scope and five webhook topics unchanged
+discount webhook payload remains trigger-only, never catalogue truth
+no synchronous Shopify Admin API call in webhook ingress
+o write_discounts scope
+activation uses durable offline Session only
+scope payload cannot authorize sync independently
+catalogue UNAVAILABLE row is created when absent
+existing discount unavailableAt values are preserved
+Free/Paid activation publication remains after DB commit and best-effort
+scope-update publication remains after DB commit
+uninstall invalidates before Session deletion
+no catalogue/discount/history deletion
+no reinstall CURRENT mutation in moda-interact
+no CommerceAgent/AI discount-selection implementation
+```
+
+### Attempt-3 authorised implementation surface
+
+Modify only what is required for the two remaining lifecycle corrections:
+
+```text
+app/services/discounts/shopify-discount-lifecycle.service.ts
+app/routes/webhooks/app/scopes-update/route.jsx
+app/services/shop/shop.service.ts
+focused tests for lifecycle serialization and duplicate uninstall stability
+this task Completion Report / review metadata
+```
+
+Do not modify already-conformant webhook ingress/configuration, billing callback,
+Shared dependency files, queue names/job schema, or unrelated merchant i18n code.
+
+### Required focused validation for Attempt 3
+
+Add/adjust only focused regression cases that prove functional behavior:
+
+```text
+1. activation acquires the common Shop lifecycle lock before authoritative eligibility reads
+2. scope update acquires the same Shop lifecycle lock before Session/catalogue lifecycle mutation
+3. uninstall acquires the same Shop lifecycle lock before Shop/catalogue invalidation
+4. all three paths use the same lock ordering
+5. an uninstall-wins interleaving cannot be followed by activation SYNC_REQUIRED/publish
+6. a scope-removal-wins interleaving cannot be followed by activation SYNC_REQUIRED/publish
+7. activation-wins ordering is followed by later disabling lifecycle UNAVAILABLE state
+8. duplicate uninstall reuses persisted Shop.uninstalledAt for catalogue invalidation
+```
+
+These may use focused transaction/lock-order mocks if the repository test harness does
+not provide a live concurrency database. The purpose is to prove the row-lock boundary,
+not to expand into exhaustive integration testing.
+
+Rerun the same task validation. The unchanged merchant-i18n baseline failures do not
+require correction here if they remain unrelated to these files.
+
+### Reclaim state
+
+`ARCH-016-SHOPIFY-001` returns to:
+
+```text
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+The deterministic launcher owns the increment to Attempt 3 when the task is reclaimed.
+No dependent task is promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending
+and MUST NOT start automatically.
