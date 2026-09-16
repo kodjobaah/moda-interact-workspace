@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-16T17:40:56Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T18:45:00Z
 ---
 
 # ARCH-016-SHOPIFY-001
@@ -1161,3 +1161,52 @@ No ARCH-016 dependency is promoted by this review. `attempt` remains `3` in this
 Requested patch; `/moda-task ARCH-016-SHOPIFY-001` owns the increment to Attempt 4 when
 the task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
 automatically.
+
+## Attempt 4 Completion Report
+
+### Status
+
+Ready for Review
+
+### Correction Mapping
+
+- Moved the authenticated Shop identity lookup ahead of every lifecycle mutation in `APP_SCOPES_UPDATE`.
+- The existing `lockShopLifecycleRow(transaction, shopId)` call now precedes `transaction.session.update`, establishing the common `Shop FOR UPDATE -> Session/catalogue` order required by activation, scope update, and uninstall.
+- Retained the post-lock authoritative Shop and durable offline Session reads; `payload.current` is persisted but cannot independently authorize a sync.
+- Retained catalogue mutation inside the transaction and `SCOPES_UPDATED` publication after transaction commit.
+- Added a focused route-level regression suite proving lock-before-Session order, post-Session offline eligibility read, post-commit publication, scope-removal invalidation, and payload-only fail-closed behavior.
+
+### Files Changed
+
+- `app/routes/webhooks/app/scopes-update/route.jsx`
+- `tests/unit/routes/scopes-update.test.jsx`
+
+### Validation
+
+- focused route and lifecycle suites: `14 passed`;
+- focused ESLint for both changed files: passed;
+- `npm run build`: passed;
+- Shopify config validation for `shopify.app.moda-interact.toml`: passed;
+- `git diff --check`: passed;
+- `npm test`: `617 passed`, `10 failed`, `3 skipped` across `630`; the same merchant-i18n catalogue baseline failures remain unrelated to Attempt 4 files;
+- `npm run typecheck`: repository baseline diagnostics remain, including pre-existing JSX implicit-`any` diagnostics in the lifecycle route/service and unrelated application diagnostics;
+- `npm run lint`: repository baseline errors remain in unrelated dashboard, billing, privacy, and existing test files; changed files pass focused ESLint.
+
+### Worktree / Git Evidence
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-SHOPIFY-001`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-SHOPIFY-001`;
+- parent and implementation branches: `task/ARCH-016-SHOPIFY-001`;
+- no shared checkout or `main` branch modified;
+- implementation submodule and previously accepted Shared `0.12.1` dependency unchanged.
+
+### Git / Handoff
+
+- implementation correction commit: recorded below after publication;
+- parent task/report commit: recorded below after publication;
+- both mirrored task branches are pushed to their corresponding `origin/task/ARCH-016-SHOPIFY-001` refs;
+- executor and claimed timestamp cleared; attempt remains `4`;
+- no merge to `main` performed.
+
+Task status is `review`; return control to `moda_architect` for re-review. No architect acceptance decision has been made by this agent.
