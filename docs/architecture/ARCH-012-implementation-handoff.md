@@ -143,8 +143,11 @@ MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
 
 ```text
 ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
-ARCH-012-BACKGROUND-003    Ready unless live workspace has advanced it
-ARCH-012-SHARED-001        Pending until ARCH-011-SHARED-002 is accepted Complete
+ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
+ARCH-012-MESSAGING-001     Ready — promoted by accepted SHARED-001 review
+ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
+ARCH-012-BACKGROUND-001    Ready — SHARED-001, DATABASE-001 and BACKGROUND-003 are accepted Complete
+ARCH-012-GATEWAY-001       Ready — BACKGROUND-003 is accepted Complete
 ```
 
 Never downgrade a task that has already advanced in the live workspace merely because this handoff shows the snapshot-era state.
@@ -169,7 +172,7 @@ Owner: `moda_background`. Complete inbound pipeline: consume Shared event, both 
 
 ### `ARCH-012-BACKGROUND-003`
 
-Owner: `moda_background`. Separate WABA and sender phone identity, one Moda sender v1, outbound text/link preview plus approved template image/URL-button transport while preserving ARCH-010 outbound execution gates.
+Owner: `moda_background`. Accepted Attempt 1 (`bb01a66`). WABA and sender phone identity are separated; one Moda sender v1 supports outbound text/link preview plus approved template image/URL-button transport while preserving ARCH-010 outbound execution gates.
 
 ### `ARCH-012-GATEWAY-001`
 

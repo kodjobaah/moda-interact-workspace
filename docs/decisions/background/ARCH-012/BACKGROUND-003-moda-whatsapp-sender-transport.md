@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 13
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-005-BACKGROUND-003
@@ -161,11 +161,11 @@ All sends:
 
 ## Acceptance Criteria
 
-- [ ] WABA identity and sender phone identity are separate in code;
-- [ ] one Moda sender remains simple to operate;
-- [ ] outbound text can carry normal hyperlinks/link previews;
-- [ ] outbound approved templates can carry image headers and URL-button parameters;
-- [ ] accepted outbound admission/provider-status behaviour is preserved.
+- [x] WABA identity and sender phone identity are separate in code;
+- [x] one Moda sender remains simple to operate;
+- [x] outbound text can carry normal hyperlinks/link previews;
+- [x] outbound approved templates can carry image headers and URL-button parameters;
+- [x] accepted outbound admission/provider-status behaviour is preserved.
 
 ## Validation
 Run focused transport/admission/template tests plus repository-declared full tests/build/typecheck/Prisma validation and:
@@ -217,7 +217,22 @@ Implementation commit: `bb01a66` (`feat(background): harden WhatsApp sender tran
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 1.
 
 ### Review Notes
-TBD.
+Functionality-first review accepted implementation commit `bb01a66`.
+
+Verified functional behaviour:
+
+- WABA/account identity is resolved from `WHATSAPP_BUSINESS_ACCOUNT_ID` while the Cloud API `/messages` path uses the distinct `WHATSAPP_PHONE_NUMBER_ID` sender identity;
+- `getProviderAccountId()` now supplies the true WABA identity to template selection without introducing a sender pool, merchant-owned credentials or database state;
+- text transport preserves ordinary HTTPS bodies and supports optional `preview_url` plus optional native reply `context.message_id`;
+- approved template transport preserves existing body parameters and adds the required image-header and dynamic URL-button component shapes, while static template URLs do not gain invented runtime components;
+- provider `wamid` handling, bounded provider timeout/error classification and existing SENT/FAILED accounting remain on the existing transport path;
+- reservation still retains `shopId`, and `executionEligibility.evaluate(shopId)` is re-run immediately before provider invocation for both text and template sends;
+- `contract-required` and `subscription-frozen` suppression remain distinct and denied prepared messages still use the existing cleanup path;
+- no database schema, recovery timing, merchant WhatsApp onboarding or multi-sender balancing was introduced.
+
+Validation evidence in the Completion Report is sufficient for the functional change: 38 focused tests passed, build and Prisma validation passed, and `git diff --check` passed. The four full-suite translation-runtime failures are documented as unrelated existing runtime-configuration failures and are not an ARCH-012-BACKGROUND-003 acceptance blocker.
+
+Non-blocking hardening note: the transport currently relies on trusted internal callers/provider rejection for malformed image links or URL-button values rather than adding additional local HTTPS/index/string bounds. The required valid ARCH-012 transport flows are implemented correctly, so this does not warrant another implementation attempt.
