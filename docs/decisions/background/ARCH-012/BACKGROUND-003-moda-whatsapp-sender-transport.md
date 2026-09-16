@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 13
-executor: copilot
-claimed_at: 2026-09-16T11:46:29Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
 - ARCH-005-BACKGROUND-003
@@ -183,13 +183,36 @@ Return BACKGROUND-003 to `review`; STOP.
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-TBD.
+- `moda-interact-background/src/integration/whatsapp/types.ts`
+- `moda-interact-background/src/services/whatsapp.service.ts`
+- `moda-interact-background/src/services/outbound-whatsapp-admission.service.ts`
+- `moda-interact-background/tests/unit/services/whatsapp.service.test.ts`
+- `moda-interact-background/tests/unit/services/outbound-whatsapp-admission.service.test.ts`
+
+Implementation commit: `bb01a66` (`feat(background): harden WhatsApp sender transport`).
+
+### Correction Mapping
+- WABA identity is resolved from `WHATSAPP_BUSINESS_ACCOUNT_ID`; the Cloud API path uses the distinct `WHATSAPP_PHONE_NUMBER_ID`, with access token validation retained inside the transport.
+- Template selection continues through `getProviderAccountId()` and now receives the WABA ID; no sender pool, schema, migration, or merchant credential surface was added.
+- Text sends support optional `preview_url` and reply `context.message_id`; ordinary HTTPS bodies remain unchanged.
+- Approved template sends preserve body parameters and support exact dynamic image-header and URL-button components; static template URLs receive no invented runtime component.
+- All text and template sends retain reservation, immediate `executionEligibility.evaluate(shopId)`, distinct `contract-required`/`subscription-frozen` suppression, `failPrepared` cleanup, provider `wamid`, and existing message status/accounting behavior.
+- Focused regressions cover missing WABA/phone/token configuration, identity separation, selector compatibility, text options, template components, static URLs, shopId retention, and eligibility ordering.
 
 ### Validation Results
-TBD.
+- `npm test -- --run tests/unit/services/whatsapp.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/whatsapp-template-selector.service.test.ts`: passed, 3 files / 38 tests.
+- `npm test`: 65 files passed, 10 skipped, 993 tests passed; 4 unrelated translation integration tests failed because `Background runtime configuration has not started` in the existing translation runtime path.
+- `npm run build`: passed (`prisma:generate` and `tsc`).
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm ci`: completed from the repository lockfile; npm reported 3 high-severity audit findings in the existing dependency tree.
+
+### Limitations and Unresolved Issues
+- Full-suite failures are outside the changed WhatsApp transport/admission/template files and reproduce the existing translation runtime configuration baseline. No unrelated fixes were made.
+- The implementation branch is clean after commit and pushed as `task/ARCH-012-BACKGROUND-003`.
 
 ## Architect Review
 
