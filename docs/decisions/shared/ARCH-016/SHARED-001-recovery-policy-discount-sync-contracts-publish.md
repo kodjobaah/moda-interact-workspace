@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 10
 executor: copilot
 claimed_at: 2026-09-16T15:29:44Z
@@ -247,3 +247,26 @@ If publication cannot occur, return `blocked` rather than falsely completing the
 ## Completion protocol
 
 Record implementation commit and publication evidence, update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Blocked
+
+### Blocker evidence
+
+- Implementation and validation completed in the dedicated worktree at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-SHARED-001`.
+- `npm test && npm run typecheck && npm run build && node scripts/validate-recovery-policy-entrypoint.mjs && npm pack --dry-run && git diff --check` passed with 129 passing tests, 0 failing tests, successful TypeScript build, successful tsup build, successful export validation, and a dry-run tarball containing the new `recovery-policy` and updated Shopify entrypoints.
+- Publication was not permitted because the registry already contains `@modainteract/moda-interact-shared@0.12.0` (`npm view @modainteract/moda-interact-shared versions --json` returned `0.12.0` in the published list), and task stop conditions explicitly require blocking rather than publishing a version that already exists.
+- `npm whoami` returned a valid authenticated npm user (`kwadwoafriyie`), so the blocker is not credential absence; it is the existing registry version state.
+
+### Implementation evidence
+
+- Canonical recovery policy runtime contract added at `src/recovery-policy.ts` with `RECOVERY_OFFER_MODES`, `RecoveryOfferModeSchema`, `EffectiveRecoveryPolicySchema`, and `parseEffectiveRecoveryPolicy` / `safeParseEffectiveRecoveryPolicy`.
+- Shopify discount sync contract added at `src/shopify/queue-contracts.ts` with `SHOPIFY_DISCOUNT_SYNC`, strict payload validation, and exported parser/type.
+- Deterministic job identity helper added at `src/shopify/node.ts` via `createShopifyDiscountSyncJobId(event)` for both webhook and non-webhook reconciliation reasons.
+- Package export and build config updated to include the `./recovery-policy` entrypoint and ensure `npm pack --dry-run` includes the new declarations/runtime files.
+- Regression tests were added in `src/recovery-policy.test.ts` and `src/shopify/node.test.ts` covering the required contract and dedupe rules.
+
+### Architectural status
+
+The task is not falsely marked complete. The implementation is ready, but publication is blocked by the registry version gate and the stop condition in the task definition. This is routed back to `moda_architect` as a blocked handoff rather than a false success.
