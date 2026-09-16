@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor:
 claimed_at:
@@ -283,3 +283,308 @@ Validation:
 Files changed: `app/routes.ts`, `app/routes/app/route.jsx`, `app/routes/app/recovery-settings/route.tsx`, `app/services/shop/merchant-route-access-policy.ts`, `app/services/recovery-policy/recovery-policy.server.ts`, all supported merchant locale files, focused tests, and the exact `@modainteract/moda-interact-shared` `0.12.1` pin.
 
 Unresolved issues: repository baseline failures above remain outside this bounded task. No cross-repository implementation or schema changes were required.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested — make Recovery Settings renderable and enforce the merchant UI/server policy contract**
+
+This review is functionality-first. The route/access integration, merchant-only `ShopSettings`
+write boundary, active unexpired admin-override precedence, exact Shared `0.12.1` pin,
+AI-as-configuration-only boundary and transactional FIXED-discount revalidation are otherwise
+sound and MUST be preserved. Attempt 2 is a bounded correction; do not redesign the page or
+introduce Shopify API/CommerceAgent work.
+
+The reported repository-wide typecheck/lint baselines do not drive this decision. The
+Attempt-2 decision is based on the runtime defects below.
+
+### Finding 1 — the page calls missing i18n keys and can fail during render
+
+`app/routes/app/recovery-settings/route.tsx` calls:
+
+```text
+recoverySettings.effectiveOffer
+recoverySettings.effectiveFollowUp
+```
+
+but neither key exists in `app/i18n/locales/en.json` or the other supported merchant
+catalogues. The Shared internationalization runtime throws for a missing catalogue key, so
+this is a functional render failure, not a cosmetic translation omission.
+
+#### Required Attempt-2 correction
+
+The architect provides the complete deterministic Recovery Settings translation handoff at:
+
+```text
+docs/decisions/shopify/ARCH-016/recovery-settings-attempt2-translations.json
+```
+
+That file contains the **complete 33-key `recoverySettings.*` namespace for all 20 supported
+merchant locales**, including the previously missing effective-policy labels and the
+discount summary/method/status/date/code labels required by Finding 3.
+
+Luna MUST NOT translate or invent Recovery Settings copy in Attempt 2. For every locale in
+the handoff file:
+
+1. open `app/i18n/locales/<locale>.json`;
+2. copy the handoff locale's complete `recoverySettings.*` key/value map exactly;
+3. preserve every non-`recoverySettings.*` key in that locale unchanged;
+4. preserve ICU placeholder names exactly as supplied;
+5. do not rename, paraphrase, shorten or machine-translate the architect-provided strings.
+
+The route must use the supplied keys. In particular, replace the old non-existent
+`recoverySettings.effectiveFollowUp` usage with the supplied pair:
+
+```text
+recoverySettings.effectiveFollowUpEnabled
+recoverySettings.effectiveFollowUpDisabled
+```
+
+and use the supplied method/status labels rather than hard-coded English:
+
+```text
+recoverySettings.discount.method.AUTOMATIC
+recoverySettings.discount.method.CODE
+recoverySettings.discount.status.ACTIVE
+```
+
+Use merchant i18n date formatting for `startsAt` / `endsAt`, then pass the formatted result
+as `{value}` to the supplied date-label keys. Do not hard-code English UI words such as
+`minutes`, `disabled`, `Automatic`, `Code`, `Starts`, `Ends` or `Status` in JSX.
+
+Add a focused recovery-settings i18n regression test that reads or mirrors the complete key
+set from the architect handoff and proves every supported locale contains the same 33 keys
+with matching ICU placeholder names. A test that only checks the older
+`billingPurchases.*` namespace is not sufficient.
+
+### Finding 2 — disabling an existing follow-up posts its old delay and is rejected
+
+The form always submits `followUpDelayMinutes` when the input contains a value. If a merchant
+currently has follow-up enabled with (for example) `60` minutes and then only unchecks the
+checkbox, the action currently sends:
+
+```text
+followUpEnabled = null/false
+followUpDelayMinutes = "60"
+```
+
+The canonical Shared policy correctly rejects that cross-field combination. The merchant
+therefore cannot perform the normal UI action "turn follow-up off" unless they also manually
+clear the delay field. ARCH-016 requires disabled follow-up to persist a NULL delay.
+
+There is a related fail-open parse issue: `form.get("recoveryDelayMinutes")` returns `null`
+when omitted, and `Number(null)` becomes `0`. A malformed/forged request can therefore turn a
+missing required field into a valid zero-minute recovery delay.
+
+#### Required Attempt-2 correction
+
+In:
+
+```text
+app/routes/app/recovery-settings/route.tsx
+app/services/recovery-policy/recovery-policy.server.ts
+```
+
+normalize and validate the form deterministically:
+
+```text
+followUpEnabled = checkbox is present/true
+followUpDelayMinutes = followUpEnabled ? submitted required whole minutes : null
+
+recoveryDelayMinutes:
+  required
+  non-blank
+  base-10 whole integer
+  0..10080
+
+followUpDelayMinutes when enabled:
+  required
+  non-blank
+  base-10 whole integer
+  1..10080
+
+followUpDelayMinutes when disabled:
+  null regardless of any stale browser field value
+```
+
+Continue using the canonical Shared recovery-policy parser for cross-field validation. Do
+not create a second competing policy schema. Missing/blank `recoveryDelayMinutes` MUST be a
+validation error, not implicit `0`.
+
+Required behavior:
+
+```text
+existing enabled 60 -> uncheck -> save
+  => followUpEnabled false
+  => followUpDelayMinutes null
+  => save succeeds
+
+missing recoveryDelayMinutes
+  => reject; no ShopSettings write
+```
+
+### Finding 3 — the catalogue UI exposes non-running rows as selectable and omits required discount facts
+
+When catalogue status is `CURRENT`, the route renders every stored discount and disables a
+row only when `fixedSelectable === false`.
+
+That means rows can appear enabled even when they are:
+
+```text
+isAvailable = false
+providerStatus != ACTIVE
+startsAt > now
+endsAt <= now
+```
+
+The server save correctly rejects those rows, but the merchant UI still offers them as valid
+radio choices. ARCH-016 requires the page to show **currently running** rows and allow FIXED
+selection only for the running + fixed-selectable subset.
+
+The current JSX also displays only title, method and optional single code. The task contract
+requires the catalogue presentation to include:
+
+```text
+title
+summary
+method
+single redeem code when provable
+startsAt / endsAt when present
+provider status
+```
+
+#### Required Attempt-2 correction
+
+In:
+
+```text
+app/services/recovery-policy/recovery-policy.server.ts
+app/routes/app/recovery-settings/route.tsx
+```
+
+split the concepts explicitly:
+
+```text
+isCurrentlyRunning(discount, now) =
+  isAvailable == true
+  AND providerStatus == ACTIVE
+  AND (startsAt absent OR startsAt <= now)
+  AND (endsAt absent OR endsAt > now)
+
+isFixedSelectable(discount, now) =
+  isCurrentlyRunning(discount, now)
+  AND fixedSelectable == true
+```
+
+The loader/UI must:
+
+1. only offer catalogue rows as the CURRENT catalogue's currently-running rows;
+2. render every currently-running row, including `fixedSelectable = false` rows;
+3. disable the non-fixed-selectable rows and show the translated
+   `Not available for fixed recovery selection` explanation;
+4. never render future/expired/inactive/unavailable rows as enabled radio choices;
+5. display the required normalized fields listed above;
+6. when catalogue status is not `CURRENT`, show the bounded unavailable/synchronizing state
+   and do not present stale rows as selectable.
+
+The save transaction must continue to re-read the authenticated shop's catalogue and prove
+`CURRENT + currently running + fixedSelectable` before writing a FIXED ID. Do not trust any
+loader result or hidden form ID as authority.
+
+When merchant or effective policy is FIXED, present the configured/effective fixed discount
+identity clearly (prefer the same-shop normalized title when available) so an active admin
+override using a different fixed discount is not reduced to merely the word `FIXED`.
+
+### Finding 4 — the loader serializes internal override/provider rows that the merchant page does not need
+
+The loader currently spreads the complete `loadRecoveryPolicySnapshot(...)` return object
+into the merchant response. That serializes the raw `ShopRecoveryPolicyOverride` row and the
+full `ShopifyDiscountCatalogue`/discount records even though the UI only needs a bounded
+presentation. This unnecessarily exposes fields such as internal override actor/reason data
+and `providerSnapshot` to the browser.
+
+#### Required Attempt-2 correction
+
+Keep `loadRecoveryPolicySnapshot(...)` server-only, but project an explicit merchant DTO in
+the route loader. Return only what the page needs, for example:
+
+```text
+merchant effective policy snapshot
+effective source / overrideActive boolean
+catalogue status
+bounded currently-running discount presentation:
+  id
+  title
+  summary
+  method
+  providerStatus
+  startsAt
+  endsAt
+  singleRedeemCode
+  fixedSelectable
+merchantUi
+```
+
+Do NOT serialize to the merchant browser:
+
+```text
+ShopRecoveryPolicyOverride.updatedByPlatformAdminId
+internal override reason solely for admin use
+ShopifyDiscount.providerSnapshot
+unneeded raw relation/internal fields
+```
+
+The merchant still needs a clear override banner and effective values; it does not need the
+internal durable row itself.
+
+### Required focused validation
+
+At minimum add/adjust focused tests proving:
+
+```text
+1. /app/recovery-settings renders without a missing ICU-key exception in every supported locale
+2. every recoverySettings.* key used by the route exists in all 20 locale files with matching placeholders
+3. enabled follow-up 60 -> unchecked save persists false/null without requiring the delay input to be cleared
+4. missing/blank recoveryDelayMinutes is rejected and cannot become zero implicitly
+5. CURRENT catalogue: ACTIVE/in-window/available fixedSelectable=true row is enabled
+6. CURRENT catalogue: ACTIVE/in-window/available fixedSelectable=false row is visible but disabled
+7. future, expired, inactive and unavailable rows are not presented as selectable
+8. non-CURRENT catalogue presents no stale selectable rows
+9. FIXED save still re-reads and rejects cross-shop/stale/non-running/non-selectable IDs
+10. discount presentation includes summary/method/code/date/status fields where present
+11. active admin override shows effective policy (including effective FIXED identity) while merchant save still writes only ShopSettings
+12. merchant loader response does not contain providerSnapshot or updatedByPlatformAdminId
+```
+
+Run the same bounded validation commands from the task contract and document unchanged
+baseline diagnostics by their existing IDs. There is no requirement to make unrelated
+repository-wide lint/typecheck baselines green.
+
+### Stop conditions / non-goals
+
+Attempt 2 MUST NOT:
+
+```text
+change /app/promotions semantics
+call Shopify GraphQL/Admin API to render Recovery Settings
+implement AI/CommerceAgent discount selection
+invent Meta template variable positions
+change ARCH-016 database schema/migrations
+modify admin override rows from merchant save
+create a second local recovery-policy schema
+```
+
+Preserve exact Shared package `@modainteract/moda-interact-shared@0.12.1`.
+
+### Workflow / handoff evidence
+
+The current Completion Report records code/test results but does not record the launcher-resolved
+physical parent/implementation worktree and start-of-attempt synchronization evidence required
+by the architect workflow. Attempt 2 Completion Report MUST add that evidence from the prepared
+execution packet. Do not create code churn merely to manufacture evidence; record the actual
+launcher/worktree facts.
+
+Return Attempt 2 to `moda_architect` with `status: review`, clear `executor`/`claimed_at`, and
+STOP. The launcher owns the increment from Attempt 1 to Attempt 2 when the task is reclaimed.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically.

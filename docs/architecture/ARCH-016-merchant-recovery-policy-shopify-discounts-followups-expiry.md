@@ -795,3 +795,28 @@ discount-selection or provider-secret presentation was introduced.
 This acceptance does not independently make the terminal system-test task eligible.
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every implementation dependency is
 Complete and the developer has completed the existing manual-testing checkpoint.
+
+## Post-review update — SHOPIFY-002 Attempt 1 Changes Requested
+
+`ARCH-016-SHOPIFY-002` Attempt 1 implementation commit `83f8e1e` establishes the intended
+merchant Recovery Settings route/access boundary, merchant-only ShopSettings writes,
+active-unexpired admin-override precedence, transactional shop-scoped FIXED-discount
+revalidation and AI-as-configuration-only behavior. Those architectural choices are retained.
+
+The task returns to **Ready** for one bounded UI/server-policy correction because the current
+page references missing `recoverySettings.effectiveOffer` and
+`recoverySettings.effectiveFollowUp` catalogue keys (which makes the Shared i18n runtime fail
+at render time), disabling a previously-enabled follow-up retains the stale submitted delay
+instead of persisting NULL, and the CURRENT-catalogue UI can present non-running discounts as
+enabled choices while omitting required normalized discount facts. The merchant loader must
+also project a bounded DTO instead of serializing raw admin-override/provider snapshot rows.
+
+Attempt 2 must preserve the accepted route/access, Shared `0.12.1`, no-AI, no-Shopify-API,
+merchant-only write and transaction-time fixed-discount authority boundaries. The architect
+translation handoff at
+`docs/decisions/shopify/ARCH-016/recovery-settings-attempt2-translations.json`
+is authoritative for all 20 locale `recoverySettings.*` values; the implementation agent
+must copy those values exactly rather than infer translations. No ARCH-016 dependency is
+promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
+automatically; the developer manual-testing checkpoint remains before terminal integrated
+testing.
