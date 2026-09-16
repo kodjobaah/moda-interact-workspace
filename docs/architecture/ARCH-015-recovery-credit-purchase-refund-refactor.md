@@ -799,3 +799,56 @@ UsageEvent
 `ARCH-015-BACKGROUND-003` therefore returns from Ready to **Pending** until DATABASE-002 is architect-accepted Complete. Its corrected task contract forbids `UsageEvent.metadata`, freezes typed correction evidence atomically with the linked UsageEvent, and treats all later scheduler runs as reconciliation-only against those immutable values.
 
 `ARCH-015-ADMIN-001` is also corrected to use `refund.automaticCorrectionUsageEventId` as the double-settlement authority instead of a loose `UsageEvent sourceType/sourceId` search. The source fields remain consistency evidence only.
+
+
+## Post-review update — DATABASE-002 Attempt 1 Accepted
+
+`ARCH-015-DATABASE-002` Attempt 1 is architect-accepted and **Complete**.
+
+The automatic refund correction path now has a typed durable settlement boundary:
+
+```text
+RecoveryCreditRefund
+  -> immutable existing refund provenance/economic fields
+  -> provider quantity/cost before correction
+  -> expected provider quantity/cost after correction
+  -> unique automaticCorrectionUsageEventId
+
+UsageEvent
+  -> exact correction quantity
+  -> correction relation / source / event handle
+  -> Shopify idempotency and submission state
+```
+
+The database enforces that automatic correction evidence is either absent or complete,
+requires non-negative provider quantity/cost and expected refund amount evidence, requires
+positive final Moda credit quantity, and restricts deletion of the linked correction
+UsageEvent. Manual `PROVIDER_ACTION_REQUIRED` rows remain valid without an automatic
+correction link and may retain their existing final/expected refund fields.
+
+No generic `UsageEvent.metadata` field, new model, queue, enum or entitlement type was
+introduced.
+
+The submitted environment could not execute this migration because Prisma reports P3009
+on the earlier `20260915140000_arch015_fractional_provider_usage_snapshots` migration.
+That database-history failure predates DATABASE-002 and remains an environment/deployment
+recovery requirement; it does not alter the accepted schema contract.
+
+The execution frontier is now:
+
+```text
+ARCH-015-DATABASE-002   Complete
+ARCH-015-SHOPIFY-003    Complete
+ARCH-015-BACKGROUND-001 Complete
+ARCH-015-SHARED-001     Complete
+ARCH-015-DATABASE-001   Complete
+        |
+        +--> ARCH-015-BACKGROUND-003 Ready
+                  |
+                  +--> ARCH-015-ADMIN-001 Pending
+                              |
+                              +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+SYSTEM-TEST-001 remains Pending until BACKGROUND-003 and ADMIN-001 are Complete and the
+target database migration history is healthy enough to apply the accepted migrations.
