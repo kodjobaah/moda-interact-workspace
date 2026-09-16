@@ -3,7 +3,7 @@
 | Task | Status | Summary |
 |---|---|---|
 | [ARCH-015-BACKGROUND-001](BACKGROUND-001-purchase-reconciliation.md) | complete | Candidate-centric provider reconciliation is complete; durable purchase event handles drive exact provider proof without singular BillingPlan pack-meter authority. |
-| [ARCH-015-BACKGROUND-002](BACKGROUND-002-cross-plan-consumption.md) | ready | Spend historical purchased lots before current refundable lots. |
+| [ARCH-015-BACKGROUND-002](BACKGROUND-002-cross-plan-consumption.md) | complete | Historical/non-current ACTIVE lots are consumed before current-context lots with fail-closed local context classification. |
 | [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | ready | Existing billing scheduler processes durable refunds, submits safe negative/fractional corrections and reconciles completion. |
 
 ## Current architect review state
@@ -36,3 +36,18 @@ satisfies every declared prerequisite of `ARCH-015-BACKGROUND-003`.
 
 `ARCH-015-BACKGROUND-002` remains independently Ready / in its own review workflow and
 does not gate BACKGROUND-003.
+
+## BACKGROUND-002 Attempt 3 acceptance
+
+`ARCH-015-BACKGROUND-002` Attempt 3 is **Accepted — Complete**. The local Subscription
+projection is now a fail-closed ordering hint only: valid ACTIVE contexts derive canonical
+Shared provider identity (including native App Pricing with a null legacy provider id),
+while malformed, ambiguous, TRIALING or otherwise unusable projections classify every
+spendable ACTIVE lot as historical rather than throwing.
+
+Historical-first FIFO, replay affinity, refund-held exclusion, Serializable/CAS behavior
+and local `NOT_APPLICABLE` consumption evidence remain intact.
+
+`ARCH-015-SYSTEM-TEST-001` remains Pending because `ARCH-015-BACKGROUND-003` and the
+downstream `ARCH-015-ADMIN-001` are not yet Complete. `ARCH-015-BACKGROUND-003` remains
+Ready and is the current Background implementation frontier.

@@ -667,3 +667,49 @@ ARCH-015-DATABASE-001    Complete
 ```
 
 `ARCH-015-BACKGROUND-002` continues independently through its own review lifecycle.
+
+## Post-review update — BACKGROUND-002 Attempt 3 Accepted
+
+`ARCH-015-BACKGROUND-002` Attempt 3 is architect-accepted and **Complete**.
+
+Purchased-credit consumption now uses the local Subscription projection only as a
+fail-closed ordering hint:
+
+```text
+valid ACTIVE mapped subscription
++ nonblank observed plan handle
++ nonblank billing-period id
++ finite forward period
+  -> derive canonical Shared providerContextIdentity
+  -> partition ACTIVE lots into historical/non-current and current-context
+  -> spend historical/non-current first
+  -> FIFO within each partition
+
+missing / malformed / ambiguous / TRIALING projection
+  -> no current context hint
+  -> every ACTIVE lot remains spendable as historical FIFO
+```
+
+Native App Pricing remains supported when the raw provider subscription id is null; the
+canonical `app-pricing:v1:...` identity is derived from validated plan/period evidence.
+Any Shared derivation failure is contained as `currentContext = null` and cannot make
+purchased credits unavailable.
+
+Replay affinity, refund-held exclusion, Serializable/CAS reservation behavior and local
+`RECOVERY_CONVERSATION` / `NOT_APPLICABLE` usage evidence remain unchanged.
+
+The ARCH-015 execution frontier is now:
+
+```text
+ARCH-015-BACKGROUND-002  Complete
+ARCH-015-SHOPIFY-003     Complete
+        |
+        +--> ARCH-015-BACKGROUND-003  Ready
+                  |
+                  +--> ARCH-015-ADMIN-001 Pending
+                              |
+                              +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+SYSTEM-TEST-001 is not promoted by BACKGROUND-002 acceptance alone because BACKGROUND-003
+and ADMIN-001 are still unsatisfied declared prerequisites.
