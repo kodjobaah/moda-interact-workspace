@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 12
 executor: null
 claimed_at: null
@@ -204,7 +204,21 @@ Ready for architect review.
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 2.
 
 ### Review Notes
-TBD.
+
+Accepted on functional and architectural review. The implementation at `655ff35` delivers the required durable inbound WhatsApp media/transcription state without changing application repositories or persisting raw audio/provider download URLs.
+
+Verified acceptance points:
+
+- `ConversationMessage` can reserve/deduplicate an inbound provider message before transcription using the existing unique `providerMessageId`;
+- text, audio and unsupported content state is represented explicitly with backward-compatible defaults for existing text rows;
+- transcription lifecycle/provenance and bounded failure state are durably representable;
+- negative `mediaDurationMs` is rejected by the migration-level check constraint;
+- existing conversation ordering/coalescing fields and the canonical `content` field remain intact;
+- Prisma validation/generation, first-production-baseline validation, ARCH-012 validator, ERD generation and `git diff --check` were reported passing from the isolated task worktree.
+
+The validator could be hardened further to prove exact negative mutation cases, but that is non-blocking because no functional schema, migration, compatibility, persistence or architectural defect was found. Do not create a further DATABASE-001 attempt for validator-only hardening.
+
+`ARCH-012-BACKGROUND-001` is **not** promoted by this acceptance alone because its other ARCH-012 prerequisites are not all Complete.

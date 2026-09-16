@@ -4,4 +4,4 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| [DATABASE-001](DATABASE-001-inbound-whatsapp-media-transcription-state.md) | Ready | Durable inbound content/media/transcription lifecycle |
+| [DATABASE-001](DATABASE-001-inbound-whatsapp-media-transcription-state.md) | Complete | Durable inbound content/media/transcription lifecycle |

@@ -673,7 +673,7 @@ MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
 Current execution frontier after this consolidation:
 
 ```text
-ARCH-012-DATABASE-001      preserve live workspace status; this patch does not rewrite it
+ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
 ARCH-012-BACKGROUND-003    Ready unless the live workspace has already advanced it
 ARCH-012-SHARED-001        Pending until ARCH-011-SHARED-002 is architect-accepted Complete
 ```
