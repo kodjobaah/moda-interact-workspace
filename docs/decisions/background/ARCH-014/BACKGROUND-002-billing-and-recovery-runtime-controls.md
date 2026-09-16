@@ -1,3 +1,4 @@
+---
 id: ARCH-014-BACKGROUND-002
 architecture_id: ARCH-014
 title: Apply runtime controls to billing and recovery background processing
@@ -8,15 +9,19 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 64
 executor: null
 claimed_at: null
 attempt: 2
 depends_on:
+- ARCH-014-BACKGROUND-001
 enables:
+- ARCH-014-BACKGROUND-004
+- ARCH-014-BACKGROUND-005
 created: 2026-09-16
 updated: 2026-09-16
+---
 
 # ARCH-014-BACKGROUND-002
 
@@ -380,3 +385,21 @@ Do not broaden Attempt 2 into exhaustive test expansion. Stop once the productio
 ### Architecture Conformance
 
 Not yet accepted. The implementation is otherwise aligned with ARCH-014-BACKGROUND-002, including dynamic leased billing/recovery scheduling, per-cycle billing scan config, recovery repair/runtime batch controls, last-known-good resume batch sizing, and preservation of merchant recovery delay and fixed billing retry policies.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted
+
+### Acceptance finding
+
+Attempt 2 closes the queued billing runtime-config bypasses identified in the prior review. `BillingSubscriptionReconciliationService.reconcileJob(...)` now captures exactly one `BackgroundRuntimeConfigSnapshot` through its injected `current()` reader and reuses that immutable snapshot for the entire queued reconciliation job.
+
+The same snapshot is now passed into `ShopifySubscriptionLifecycleReconciliationService`, both queued pre-close `shopifyUsageEventPublisherService.publishDue(...)` calls, and the frozen-provider failure path. Consequently, `billingFrozenRecheckSeconds`, `billingProviderRetrySeconds`, `shopifyUsagePublishBatchSize`, `shopifyUsageRetryBaseSeconds`, and `shopifyUsageRetryMaxSeconds` are authoritative across the queued billing paths as well as the global billing scan.
+
+The correction preserves the task's explicit correctness-policy boundary: `RETRY_WINDOW_MS`, `FREE_CYCLE_DISCOVERY_RETRY_MS`, `ROLLOVER_RETRY_MS`, `RETRY_TIERS`, `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`, queue retry/backoff, provider retryability classification, and per-merchant `ShopSettings.recoveryDelayMinutes` remain unchanged.
+
+Focused evidence also proves a queued reconciliation job calls the runtime reader once and passes that exact snapshot into usage publishing, while frozen-provider failures use the configured recheck interval. The reported unit, integration, build and diff validation is consistent with the reviewed production paths.
+
+Implementation commit `a210715` is accepted. No Attempt 3 is required.
