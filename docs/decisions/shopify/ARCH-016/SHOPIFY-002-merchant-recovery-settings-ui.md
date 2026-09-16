@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -618,3 +618,206 @@ STOP. The launcher owns the increment from Attempt 1 to Attempt 2 when the task 
 - implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for re-review.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — finish the Recovery Settings presentation contract without reopening the accepted policy/write boundaries**
+
+Attempt 2 correctly preserves the accepted `/app/recovery-settings` route/access boundary,
+merchant-only `ShopSettings` writes, active-unexpired complete admin-override precedence,
+transaction-time shop-scoped FIXED revalidation, CURRENT/ACTIVE/in-window catalogue filtering,
+AI-as-configuration-only behavior and exact Shared `0.12.1` pin. The 20 locale files also
+match the architect-provided 33-key translation handoff exactly. Those boundaries are
+accepted and MUST be preserved.
+
+The task returns to **Ready** for a narrow Attempt 3 because the route still does not consume
+that translation/presentation contract correctly and the required configured/effective FIXED
+discount identity is still absent.
+
+### Finding 1 — the route still calls two non-existent translation keys
+
+`app/routes/app/recovery-settings/route.tsx` currently calls:
+
+```text
+recoverySettings.discount.starts
+recoverySettings.discount.ends
+```
+
+The architect handoff and all 20 locale files define only:
+
+```text
+recoverySettings.discount.startsAt
+recoverySettings.discount.endsAt
+```
+
+The Shared i18n runtime treats missing catalogue keys as an error, so any running discount
+with `startsAt` or `endsAt` can still fail the page at render time.
+
+The same JSX also bypasses four supplied translated fact-label keys. It currently renders
+summary/code as bare values and method/status as only their localized enum values. Attempt 1
+explicitly required the merchant presentation to consume:
+
+```text
+recoverySettings.discount.summary
+recoverySettings.discount.method
+recoverySettings.discount.status
+recoverySettings.discount.code
+```
+
+#### Required Attempt-3 correction
+
+In `app/routes/app/recovery-settings/route.tsx`, use the existing architect-provided keys
+exactly. For each currently-running discount, render only facts that are present:
+
+```text
+title
+summary       -> recoverySettings.discount.summary { value }
+method        -> recoverySettings.discount.method {
+                   value: recoverySettings.discount.method.AUTOMATIC|CODE
+                 }
+single code   -> recoverySettings.discount.code { value }
+startsAt      -> recoverySettings.discount.startsAt {
+                   value: i18n.formatDateTime(startsAt)
+                 }
+endsAt        -> recoverySettings.discount.endsAt {
+                   value: i18n.formatDateTime(endsAt)
+                 }
+providerStatus -> recoverySettings.discount.status {
+                    value: recoverySettings.discount.status.ACTIVE
+                  }
+```
+
+Do not add replacement locale strings, rename the 33-key namespace, or hard-code English
+labels in JSX. The locale files are already correct and normally need no further edit.
+
+### Finding 2 — configured/effective FIXED discount identity is still not presented
+
+Attempt 1 explicitly required that when merchant or effective policy is `FIXED`, the page
+show the actual configured/effective fixed discount identity so an active admin override
+using a different fixed discount is not reduced to the word `FIXED`.
+
+Attempt 2 still renders only:
+
+```text
+effective offer: FIXED
+```
+
+and the merchant identity is visible only incidentally when its discount happens to be in
+the CURRENT/running choice list. If the configured row is no longer running, or an active
+admin override selects a different row, the page does not clearly identify that policy.
+
+#### Required Attempt-3 correction
+
+Keep `loadRecoveryPolicySnapshot(...)` server-only and extend its **bounded** DTO only with
+same-shop identity projections required for presentation. Do not return raw discount rows.
+For each non-null configured/effective `fixedShopifyDiscountId`, resolve from the already
+loaded same-shop catalogue relation when available and return at most:
+
+```text
+merchantFixedDiscount:
+  id
+  title|null
+
+effectiveFixedDiscount:
+  id
+  title|null
+```
+
+Identity lookup is presentation-only and MUST NOT make a stale/non-running row selectable.
+It may resolve the title from an unavailable/non-running retained catalogue row because the
+purpose is to tell the merchant what is configured, not to authorize it. If the row cannot
+be resolved, fall back to the stored fixed discount ID for display.
+
+In the route:
+
+1. when the merchant policy is `FIXED`, show the merchant-configured identity adjacent to the
+   merchant FIXED choice without inventing a new English label; using the existing translated
+   FIXED option text plus the normalized title/ID is sufficient;
+2. when the **effective** policy is `FIXED`, render
+   `recoverySettings.effectiveFixedDiscount` with the effective normalized title/ID;
+3. when an active admin override uses a different fixed discount, both underlying merchant
+   configuration and effective identity must be distinguishable;
+4. do not expose `providerSnapshot`, override actor/reason fields, or another raw provider row.
+
+Do not weaken save-time authority: FIXED save must still re-read inside the transaction and
+require authenticated-shop `CURRENT + ACTIVE + available + in-window + fixedSelectable`.
+
+### Finding 3 — the claimed Recovery Settings i18n regression coverage is absent
+
+The Attempt-2 report says the 33-key namespace was applied and the focused suite passed, but
+there is no focused test in the returned implementation that validates the
+`recoverySettings.*` namespace or the route's translation-key consumption. The existing
+`billing-purchases-i18n.test.ts` validates only `billingPurchases.*`. This is why the stale
+`discount.starts`/`discount.ends` route keys escaped the reported 43 passing tests.
+
+This is not a request for exhaustive UI testing. Add one focused static/i18n regression test,
+for example `tests/unit/recovery-settings-i18n.test.ts`, that deterministically proves:
+
+```text
+all 20 supported locale files contain exactly the architect handoff's 33 recoverySettings.* keys
+all locale values are non-empty strings
+ICU placeholder names match English for every recoverySettings.* key
+route source uses startsAt/endsAt rather than starts/ends
+route consumes summary/method/status/code and effectiveFixedDiscount presentation keys
+```
+
+The test may mirror the 33-key list from the architect handoff; it MUST NOT depend on the
+parent workspace docs being available at application-test runtime.
+
+### Required focused functional validation
+
+At minimum preserve the existing focused policy/access tests and add/adjust focused coverage
+for:
+
+```text
+1. every supported locale has the exact 33-key recoverySettings namespace with matching ICU placeholders
+2. a running discount with startsAt/endsAt renders through startsAt/endsAt translation keys
+3. summary/method/code/status facts use the supplied translated wrapper labels
+4. merchant FIXED policy exposes its configured title/ID even when that row is not in the running selectable list
+5. effective FIXED admin override exposes its own title/ID distinctly from merchant configuration
+6. identity projection remains bounded and does not expose providerSnapshot or override actor/reason
+7. stale/non-running identity display does not make the row selectable or weaken transactional save validation
+```
+
+Run the same task validation commands. Repository-wide baseline diagnostics may remain
+recorded when unchanged; do not modify unrelated files merely to make global lint/typecheck
+baselines green.
+
+### Authorized Attempt-3 implementation surface
+
+Attempt 3 is bounded to:
+
+```text
+app/routes/app/recovery-settings/route.tsx
+app/services/recovery-policy/recovery-policy.server.ts
+focused Recovery Settings tests
+Completion Report in this task file
+```
+
+The 20 locale files and architect translation handoff are already correct and MUST NOT be
+changed unless a concrete mismatch is discovered against the handoff.
+
+### Stop conditions / preserved decisions
+
+Attempt 3 MUST NOT:
+
+```text
+change /app/promotions semantics
+change merchant route/access policy
+change ARCH-016 database schema/migrations
+modify admin override rows from merchant save
+call Shopify GraphQL/Admin API to render this page
+implement AI/CommerceAgent discount selection
+invent Meta template parameter positions
+serialize providerSnapshot or internal override actor/reason data
+change @modainteract/moda-interact-shared from exact 0.12.1
+make retained stale/non-running fixed identities selectable
+```
+
+Return Attempt 3 to `moda_architect` with `status: review`, clear
+`executor`/`claimed_at`, and STOP. The deterministic launcher owns the increment from Attempt
+2 to Attempt 3 when the task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and
+MUST NOT start automatically; the developer manual-testing checkpoint remains before terminal
+integrated testing.

@@ -906,3 +906,27 @@ billing behavior is changed by this acceptance.
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation
 dependency is Complete and the developer has completed the existing manual-testing
 checkpoint. It is not started automatically by this acceptance.
+
+## Post-review update — SHOPIFY-002 Attempt 2 Changes Requested
+
+`ARCH-016-SHOPIFY-002` Attempt 2 implementation commit `73d3bb3` correctly preserves the
+merchant route/access boundary, merchant-only `ShopSettings` writes, active-unexpired
+admin-override precedence, transactional authenticated-shop FIXED validation and
+CURRENT/ACTIVE/running catalogue filtering. All 20 locale files also exactly match the
+architect-provided 33-key Recovery Settings handoff. Those decisions are retained.
+
+The task returns to **Ready** for one narrow presentation correction. The route still calls
+non-existent `recoverySettings.discount.starts` / `discount.ends` keys instead of the
+handoff's `startsAt` / `endsAt`, bypasses the supplied translated summary/method/status/code
+fact labels, and does not present the configured/effective FIXED discount identity required
+to distinguish merchant configuration from an active admin override. The claimed focused
+Recovery Settings locale guard is also absent, allowing the stale route keys to escape the
+reported focused suite.
+
+Attempt 3 is limited to the Recovery Settings route, bounded server DTO identity projection
+and focused regression tests. It must not change the already-correct 20 locale handoff,
+merchant access policy, database schema, Shared `0.12.1`, AI boundary or transaction-time
+FIXED authority. The task remains `attempt: 2`, `executor: null`, `claimed_at: null`; the
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.
