@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 67
 executor: null
 claimed_at: null
@@ -210,3 +210,20 @@ Validation limitations:
 - `npm run migrate:deploy`: blocked by pre-existing Prisma `P3009`; migration `20260915140000_arch015_fractional_provider_usage_snapshots` previously failed in the local database. No migration repair or resolve action was performed.
 
 Changed implementation files are limited to the requested schema, migration, validator, and generated ERD artifacts. Parent task metadata is set to `review`; `executor` and `claimed_at` are cleared. No Architect Review section was modified.
+
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review decision
+
+`ARCH-014-DATABASE-005` Attempt 1 is accepted on the implemented database/runtime contract.
+
+The implementation adds exactly one nullable `lastFinishedAt DateTime?` field to `BackgroundRuntimeLease`; the migration changes only `public.BackgroundRuntimeLease` by adding nullable `lastFinishedAt TIMESTAMP(3)` with no default, `NOT NULL`, seed, backfill or index; and the generated ERD contains the field. No pre-ARCH-014 business table or unrelated ARCH-014 runtime-config table is altered.
+
+The existing `P3009` on `20260915140000_arch015_fractional_provider_usage_snapshots` is an unrelated migration-history blocker and does not block DATABASE-005 acceptance. The broader DATABASE-004 validator mismatches are also pre-existing. The DATABASE-005-specific assertions are present and the runtime schema/migration contract is exact.
+
+No further DATABASE-005 implementation attempt is required. `ARCH-014-BACKGROUND-006` is promoted to Ready.
