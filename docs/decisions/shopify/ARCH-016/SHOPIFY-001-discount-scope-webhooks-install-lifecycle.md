@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-16T16:29:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T17:41:00Z
 ---
 
 # ARCH-016-SHOPIFY-001
@@ -234,4 +234,76 @@ STOP if:
 
 ## Completion protocol
 
-Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+## Completion Report
+
+### Status
+
+Ready for Review
+
+### Work Completed
+
+- Pinned `@modainteract/moda-interact-shared` to the exact published `0.12.1` release in `package.json` and `package-lock.json`.
+- Added `read_discounts` to the existing required Shopify scope list.
+- Added exactly the five required discount topics to the existing `/webhooks` subscription.
+- Routed authenticated discount webhooks through the Shared `DISCOUNT_WEBHOOK` payload and `shopify-discount-sync` queue, using Shopify delivery IDs for deterministic duplicate handling and no synchronous Admin API call.
+- Added one repository-local eligibility helper requiring ACTIVE shop, completed onboarding, ACTIVE/TRIALING subscription, and durable `read_discounts` session scope.
+- Added post-commit best-effort `SUBSCRIPTION_ACTIVATED` publication for verified Free and Paid activation paths. Catalogue state is marked `SYNC_REQUIRED` before publication; queue failures are logged without invalidating the committed activation.
+- Added scope-update state transitions and `SCOPES_UPDATED` publication for eligible shops; removed scope marks the catalogue and discount rows unavailable without deleting rows.
+- Extended the existing uninstall transaction to mark catalogue and discount rows unavailable before session cleanup; no discount or recovery history is deleted.
+- No catalogue reconciliation, Shopify Admin API discovery, reinstall `CURRENT` transition, write scope, or CommerceAgent selection contract was added.
+
+### Files Changed
+
+- `shopify.app.moda-interact.toml`
+- `package.json`, `package-lock.json`
+- `app/services/discounts/shopify-discount-lifecycle.service.ts`
+- `app/services/webhooks/shopify-webhook-ingress.service.ts`
+- `app/services/webhooks/shopify-webhook-queue.server.ts`
+- `app/routes/webhooks/app/scopes-update/route.jsx`
+- `app/routes/app/billing/callback/route.tsx`
+- `app/services/shop/shop.service.ts`
+- Focused webhook, billing callback, ShopService, and discount lifecycle tests
+
+### Validation
+
+- focused lifecycle suites: `66 passed`;
+- discount lifecycle helper suite: `8 passed`;
+- Shopify app config validation: passed for `shopify.app.moda-interact.toml`;
+- `npm run lint`: passed;
+- `npm run build`: passed;
+- `npm run typecheck`: completed with no diagnostics from the changed implementation; repository baseline test/type diagnostics remain outside this task surface;
+- `git diff --check`: passed;
+- `npm test`: `610 passed`, `10 failed`, `3 skipped` out of `623`. The failures are existing merchant-i18n catalogue expectations exposed by the mandated Shared `0.12.1` pin, whose stricter ICU catalogue requires keys absent from those pre-existing fixtures. No discount lifecycle test failed.
+
+### Physical Worktree Isolation
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-SHOPIFY-001`;
+- parent branch: `task/ARCH-016-SHOPIFY-001`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-SHOPIFY-001`;
+- implementation branch: `task/ARCH-016-SHOPIFY-001`;
+- shared workspace checkout switched or mutated for task work: no;
+- shared implementation checkout switched or mutated for task work: no;
+- another task worktree reused: no;
+- implementation submodule `database`: `c59f2eb6953642f1c850d38b09ed03096d672547`;
+- recursive submodule sync: passed;
+- recursive submodule update/init: passed.
+
+### Synchronization Evidence
+
+- parent remote task branch fast-forwarded: not-needed;
+- parent origin/main incorporated: already-current;
+- implementation remote task branch fast-forwarded: not-needed;
+- implementation origin/main incorporated: already-current.
+
+### Git / Handoff
+
+- implementation commit: `9aa4c57` (`feat(shopify): wire discount sync lifecycle triggers`);
+- implementation branch pushed: `origin/task/ARCH-016-SHOPIFY-001`;
+- task status set to `review`;
+- executor and claimed timestamp cleared;
+- returned to `moda_architect` for review; no merge to `main` performed.
+
+## Completion protocol
+
+The implementation and report are complete. The task is returned to `moda_architect` at `status: review`; stop here pending architect review.
