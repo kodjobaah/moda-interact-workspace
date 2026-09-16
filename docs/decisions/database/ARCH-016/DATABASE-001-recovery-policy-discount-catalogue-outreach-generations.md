@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -829,3 +829,89 @@ return to `moda_architect`.
 No dependent ARCH-016 task is promoted by this review. `attempt` remains `1` in this
 Changes Requested patch; the deterministic launcher owns the increment to Attempt 2
 when the task is reclaimed.
+
+## Architect Review — Attempt 2 — Accepted
+
+### Status
+
+**Accepted — Complete**
+
+Architect review verified Attempt 2 implementation commit `9eb25ad` and the
+workflow-owned Completion Report commit `1ec846fe` against the exact returned
+ARCH-016 snapshot. No further implementation attempt is required.
+
+The three Attempt-1 migration-integrity findings are corrected exactly at the
+database boundary:
+
+```text
+legacy CheckoutRecovery uniqueness:
+  standalone unique index is removed with schema-qualified DROP INDEX
+
+follow-up policy integrity:
+  enabled follow-up requires followUpDelayMinutes IS NOT NULL
+  and the value remains bounded to 1..10080
+
+Shopify CODE catalogue integrity:
+  a claimed singleRedeemCode requires a known codeCount = 1
+  fixedSelectable CODE rows require known codeCount = 1 plus a non-null code
+```
+
+The focused ARCH-016 validator now rejects regression to `DROP CONSTRAINT` for the
+legacy recovery index and explicitly checks the non-null guards added to both
+follow-up policy constraints and both CODE discount constraints.
+
+The wider DATABASE-001 contract remains architecturally conformant and unchanged:
+
+```text
+merchant ShopSettings recovery policy remains merchant-owned
+complete ShopRecoveryPolicyOverride snapshot + independent durable audit history
+one ShopifyDiscountCatalogue per shop + retained ShopifyDiscount projections
+CheckoutRecovery generation identity + one-active-generation partial unique index
+existing CheckoutRecovery rows backfilled to generation 1 with external activity
+RecoveryOutreachAttempt sequence identity + outbound-message provenance
+Conversation @@unique([checkoutRecoveryId]) preserved
+BackgroundRuntimeConfig.checkoutRecoveryLifetimeDays + CHECKOUT_RECOVERY_EXPIRY lease
+ARCH-010 promotions and unrelated billing models preserved
+```
+
+The Attempt-2 Completion Report also supplies the required prepared-execution
+evidence: canonical primary workspace, dedicated parent and implementation
+worktrees, matching `task/ARCH-016-DATABASE-001` branches, no shared/other-task
+worktree reuse, synchronization evidence, recursive submodule preparation, and
+launcher claim commit `ae4f1e52`.
+
+Required schema/Prisma/ERD/static validations are reported passing. Migration
+deployment still stops before ARCH-016 because the selected validation database has
+the unchanged pre-existing Prisma `P3009` on
+`20260915140000_arch015_fractional_provider_usage_snapshots`. DATABASE-001 neither
+caused nor modified/resolved that failed migration. This environment-history blocker
+must be cleared before deployment, but it does not require another ARCH-016
+implementation attempt.
+
+### Dependency reconciliation
+
+`ARCH-016-DATABASE-001` is now **Complete**.
+
+Exactly two implementation siblings had DATABASE-001 as their only prerequisite and
+are promoted to **Ready**:
+
+```text
+ARCH-016-ADMIN-001       Ready
+ARCH-016-BACKGROUND-002  Ready
+```
+
+`ARCH-016-SHARED-001` remains independently **Ready**. The following tasks still
+require SHARED-001 as well as DATABASE-001 and therefore remain **Pending**:
+
+```text
+ARCH-016-SHOPIFY-001
+ARCH-016-BACKGROUND-001
+ARCH-016-SHOPIFY-002
+ARCH-016-ADMIN-002
+ARCH-016-BACKGROUND-003
+```
+
+`ARCH-016-SYSTEM-TEST-001` remains **Pending** until every implementation dependency
+is architect-accepted Complete. It is not started automatically; the existing
+developer manual-testing checkpoint remains before the terminal integrated system
+test phase.

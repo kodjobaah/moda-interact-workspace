@@ -1,7 +1,7 @@
 ---
 id: ARCH-016
 title: Merchant recovery policy, Shopify discount catalogue, follow-up outreach and recovery expiry
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-09-16
 updated: 2026-09-16
@@ -674,3 +674,43 @@ Do not delete/recreate durable PostgreSQL state merely because the environment i
 `ARCH-016-SYSTEM-TEST-001` is defined now but remains Pending until every implementation dependency is Complete.
 
 The developer may manually validate the integrated feature before invoking the Ready system-test task. No implementation task depends on the system-test task.
+
+## Post-review update — DATABASE-001 Attempt 2 Accepted
+
+`ARCH-016-DATABASE-001` Attempt 2 is architect-accepted and **Complete**. The durable
+schema boundary now provides the complete recovery policy/override state, authoritative
+Shopify discount catalogue projection, generation-aware recovery identity, proactive
+outreach-attempt identity and the admin-controlled inactivity lifetime/expiry lease.
+
+Attempt 2 corrected the three PostgreSQL integrity defects found during Attempt-1
+review: the historical recovery uniqueness object is dropped as an index, enabled
+follow-up policies cannot carry a NULL delay, and deterministic single-code claims
+cannot carry an unknown NULL `codeCount`. No Conversation identity, ARCH-010
+promotion data or unrelated billing schema was changed.
+
+The current ARCH-016 implementation frontier is:
+
+```text
+ARCH-016-DATABASE-001    Complete
+ARCH-016-SHARED-001      Ready
+
+DATABASE-only frontier:
+  ARCH-016-ADMIN-001       Ready
+  ARCH-016-BACKGROUND-002  Ready
+
+DATABASE + SHARED frontier (still waiting for SHARED-001):
+  ARCH-016-SHOPIFY-001     Pending
+  ARCH-016-BACKGROUND-001  Pending
+  ARCH-016-SHOPIFY-002     Pending
+  ARCH-016-ADMIN-002       Pending
+  ARCH-016-BACKGROUND-003  Pending
+
+ARCH-016-SYSTEM-TEST-001 Pending
+```
+
+The selected validation database still has the pre-existing ARCH-015 Prisma P3009,
+so ARCH-016 migration deployment was not executed there. That history condition must
+be resolved before deployment; it does not reopen DATABASE-001.
+
+The terminal system-test task remains gated on all implementation prerequisites and
+continues to sit after the developer manual-testing checkpoint.
