@@ -9,10 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-16T09:53:45Z
 attempt: 1
 depends_on:
 - ARCH-015-BACKGROUND-003
@@ -653,3 +651,29 @@ Do not invent compatibility paths, translations or settlement bypasses.
 # Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `0c1f978` (`feat(admin): replace refund workflow with ARCH-015 settlement`), pushed to `task/ARCH-015-ADMIN-001` in `moda-interact-admin`.
+
+Implemented:
+
+- Removed superseded REQUESTED lock/reject mutations, actions, imports, and legacy queue literal.
+- Added bounded automatic-correction evidence projection with canonical decimal strings and App Event drill-through.
+- Restricted manual provider evidence to `PROVIDER_ACTION_REQUIRED` with frozen evidence, withdrawn purchase, zero reservations, no automatic correction link, explicit confirmation, and exact amount/currency matching.
+- Preserved exactly-once purchase, entitlement, audit, and system-message completion semantics; mismatches transition to `NEEDS_ATTENTION` and cannot be resubmitted normally.
+- Adapted the existing Billing Refund Requests queue/drawer with read-only REQUESTED handling, progressive disclosure, safety warnings, completed automatic/manual presentation, and no Admin App Event submission.
+- Added the supplied English refund catalogue values and used architect-supplied keys for touched refund-specific UI copy. No new locale runtime or translation implementation was introduced.
+- Updated focused security/UI assertions for legacy removal, queue derivation, correction evidence, settlement blocking, progressive disclosure, drill-through, and completion routes.
+
+Validation:
+
+- PASS: `node --test tests/security/admin-recovery-credit-refunds.test.mjs tests/security/admin-recovery-credit-refund-settlement.test.mjs` — 4 passed, 0 failed.
+- PASS: required legacy grep returned zero matches; mark-complete grep returned zero matches; `git diff --check` passed.
+- PASS: localization matrix JSON validation — 20 locales, identical 31-key sets, and English runtime values exactly matching `matrix.locales.en`.
+- BLOCKED baseline: `npm test` could not complete because the prepared worktree has no installed `@prisma/client` and `bullmq`; failures were in existing security/queue tests that import those dependencies. The focused source tests pass without those runtime dependencies.
+- BLOCKED repository tooling: `npm run typecheck` is not declared; `npx tsc --noEmit` could not run because TypeScript is not installed. `npm run lint` could not run because `eslint` is not installed. `npm run build` stopped at `prisma generate` because `prisma` is not installed.
+
+No unresolved implementation concerns remain within the bounded Admin task. The implementation and parent report branches are pushed and ready for architect review; no branch was merged and no Architect Review section was edited.
