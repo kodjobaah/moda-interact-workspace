@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
-executor: copilot
-claimed_at: 2026-09-16T08:29:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-015-SHARED-001
@@ -421,20 +421,35 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ## Completion Report
 
-Status: Blocked
+Status: Ready for architect review
 
-Implementation files changed: none. The implementation worktree remains clean at the claimed task branch; no implementation commit was created because the bounded task cannot be completed without violating its explicit no-schema-change requirement.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-BACKGROUND-003`
 
-Blocking evidence:
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-BACKGROUND-003`
 
-- The pinned database submodule is `d44b621cdcc3635127b91601be648b61c0eff1e2`.
-- Its `billing.UsageEvent` model has no `metadata` field. It provides `providerResponseSummary`, but that field is mutable publisher state and is limited to 2,000 characters; it cannot store the required frozen immutable correction baseline and expected evidence.
-- The task requires the correction event metadata to contain `schemaVersion`, `refundId`, provider context, plan/period/event identity, exact quantity/cost baseline, correction value, expected after-state, and expected refund amount/currency.
-- Adding the required field would be a Prisma schema/database change, which is outside this task and explicitly prohibited.
+Claim commit: `6626d55eaa9c608b3cdb1b4046c30d3c19862df9`
+
+Implementation commit: `d313ab2`
+
+Implementation branch: `task/ARCH-015-BACKGROUND-003` (pushed)
+
+Database submodule commit used: `47232f6876469f209c7efde4cefbb8a47d864e6a`
+
+Implemented:
+
+- Extended the existing billing cycle with bounded deterministic REQUESTED refund processing.
+- Added exact Decimal PREPARE/RECONCILE processing using typed `RecoveryCreditRefund` evidence and the unique linked `UsageEvent` relation.
+- Added live provider context, usage, pricing, currency, and post-correction economics proof.
+- Added deterministic idempotency, atomic event/evidence preparation, concurrent CAS convergence, immutable reconciliation, and exact completion CAS.
+- Added negative/fractional App Events support without changing positive purchase behavior.
+- Preserved publisher retry/202 semantics; no separate queue, schema, metadata, or automatic Admin fallback was introduced.
 
 Validation:
 
-- Inspected `database/prisma/schema.prisma` at the pinned submodule revision and confirmed `UsageEvent` has no metadata field.
-- Inspected the declared `package.json` scripts; no implementation validation was run because the required persistence contract is unavailable and no source change was made.
+- Focused correction/provider/publisher/scheduler tests: 45 passed.
+- `npm run test:unit`: 953 passed; 2 existing unrelated observability-startup assertions remain failing (recovery entrypoint source-shape expectation and stale Shared `0.9.0` expectation; repository dependency is `0.11.2`).
+- `npm run build`: passed, including Prisma generation and TypeScript compilation.
+- `git diff --check`: passed.
+- No `typecheck` script is declared; the build runs `tsc` directly.
 
-Required follow-up: coordinate a database/shared-contract task to provide an immutable UsageEvent correction-evidence field, then re-run this task on the same bounded workflow. Do not substitute `providerResponseSummary` or submit a correction without frozen evidence.
+The prior blocked report was superseded because the integrated database submodule now exposes all required typed refund fields and the automatic correction relation. No `UsageEvent.metadata`, process-local settlement evidence, new queue, Prisma schema change, or Admin monetary fallback was used.
