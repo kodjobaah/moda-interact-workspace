@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 40
-executor: copilot
-claimed_at: 2026-09-16T16:49:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-016-DATABASE-001
@@ -360,3 +360,31 @@ STOP if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Status
+
+Blocked: the prepared implementation worktree does not contain the accepted ARCH-016 database dependency.
+
+### Evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-003`, branch `task/ARCH-016-BACKGROUND-003`, clean and based on `origin/main`.
+- Database submodule: detached at `655ff35` (`feat(database): persist inbound media transcription state`), clean.
+- Dependency task `ARCH-016-DATABASE-001` is marked complete and records accepted implementation commit `9eb25ad`, but that commit is not the checked-out database pointer in this prepared implementation worktree.
+- The checked-out `database/prisma/schema.prisma` has no `RecoveryOutreachAttempt`, `RecoveryOfferMode`, `ShopRecoveryPolicyOverride`, discount catalogue, recovery generation, or follow-up fields required by this task.
+- The generated Prisma client is therefore unable to provide the models and enums required by the bounded implementation.
+
+### Work Completed
+
+No implementation or test files were changed. No database schema or submodule gitlink was modified. This preserves the task stop conditions and avoids inventing a local replacement for the accepted database contract.
+
+### Validation
+
+- Package scripts inspected: `npm test`, `npm run build`, and `npm run prisma:validate` are declared, but cannot be meaningfully run for this task while the required Prisma models are absent from the prepared pointer.
+- Focused implementation tests were not run because the required database contract is unavailable.
+- Git status verified both the implementation worktree and database submodule were clean before handoff.
+
+### Required Handoff
+
+`moda_architect` must materialize the accepted `ARCH-016-DATABASE-001` pointer, or otherwise re-prepare this task against it, before this task can safely proceed. The Shared dependency is documented as published at `@modainteract/moda-interact-shared@0.12.1`; no package change was made because the database prerequisite is the blocking dependency.
