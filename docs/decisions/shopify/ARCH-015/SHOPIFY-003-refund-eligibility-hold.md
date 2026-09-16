@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -198,3 +198,181 @@ Recursive implementation submodules:
 	recorded submodule commit: `database` at `d44b621cdcc3635127b91601be648b61c0eff1e2`
 
 Returned to `moda_architect` for review.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested — mandatory provider proof at the service boundary and TRIALING current-context parity**
+
+The durable hold mechanics and historical-purchase behavior are otherwise accepted.
+Preserve the existing behavior for:
+
+```text
+authenticated route resolves the exact shop
+cross-shop/missing purchase fails closed
+purchase must be ACTIVE
+availableAmount = max(currentAmount - reservedAmount, 0)
+provider monetary amount must be strictly positive
+historical/context mismatch remains ACTIVE and returns REFUND_NOT_CURRENT_PROVIDER_CONTEXT
+zero-cost purchase returns REFUND_NOT_AVAILABLE
+one idempotent REQUESTED RecoveryCreditRefund
+ACTIVE -> WITHDRAWN
+aggregate refundingQuantity increments by availableAmount only
+reserved credits are not included in the hold
+no provider-complete evidence is fabricated
+no direct Background/Redis/App Events invocation
+historical credits remain visible/spendable
+```
+
+Attempt 2 is limited to the two corrections below. Do not redesign refund
+correction, Background scheduling, refund statuses, database schema, purchase
+provenance, reservation semantics or the merchant-history surface.
+
+### Finding 1 — refund mutation can bypass all fresh-provider eligibility
+
+`shopifyShopId` is optional on the service refund methods and the current implementation
+guards provider-value/context checks with:
+
+```ts
+if (input.shopifyShopId && ...)
+```
+
+Therefore a direct service call that omits `shopifyShopId` can still create a
+`REQUESTED` refund, transition the purchase to `WITHDRAWN`, and increment
+`refundingQuantity` without any fresh Shopify proof. The retained success/idempotency
+unit tests currently exercise this bypass.
+
+This violates the task invariant that fresh provider eligibility is required **before
+changing purchase/refund state**.
+
+#### Required correction
+
+Make the exact Shopify shop identity mandatory for refund admission.
+
+Use the existing route-resolved Shopify shop id; do not rediscover merchant identity
+from browser input.
+
+Required service contract:
+
+```text
+requestRefund / requestRefundBatch
+  -> require a nonblank exact shopifyShopId for any refund mutation path
+  -> load exact purchase and reject missing/cross-shop
+  -> require ACTIVE
+  -> require providerPurchaseAmount is non-null and strictly > 0
+  -> require availableAmount >= 1
+  -> obtain fresh Shopify active subscription
+  -> prove current provider context / plan / billing period / event handle
+  -> only then create hold/refund state
+```
+
+`providerPurchaseAmount > 0` must be enforced unconditionally for refund eligibility;
+it must not depend on whether a Shopify shop id happened to be supplied.
+
+A missing/blank Shopify shop id must fail closed with **no** refund row, purchase
+transition or aggregate hold. Prefer making `shopifyShopId` required in the internal
+refund request types so new callers cannot accidentally omit it, while retaining a
+runtime nonblank guard.
+
+Non-mutating terminal cases that are already knowable from local durable state
+(missing/cross-shop, non-ACTIVE, no available credits, zero/non-positive provider
+amount) may return their existing bounded outcomes without making a Shopify request.
+No potentially successful monetary-refund path may skip fresh provider proof.
+
+Required regressions:
+
+```text
+direct service request with missing/blank shopifyShopId -> no mutation
+current positive-value request with exact shopifyShopId -> REQUESTED
+zero/non-positive provider amount -> REFUND_NOT_AVAILABLE even before provider proof
+batch/idempotent success tests use the exact shopifyShopId and provider fixture
+replay remains one durable refund row
+```
+
+Do not weaken the route authentication/access checks.
+
+### Finding 2 — valid TRIALING current contracts are misclassified as historical
+
+`ProviderSubscription.status` supports both:
+
+```text
+TRIALING
+ACTIVE
+```
+
+and ARCH-015-SHOPIFY-002 explicitly permits purchase admission under an
+`ACTIVE/TRIALING` executable contract.
+
+`isCurrentProviderContext(...)` currently requires:
+
+```ts
+providerSubscription.status === "ACTIVE"
+```
+
+so a valid positive-value purchase made under a current `TRIALING` Shopify contract
+returns `REFUND_NOT_CURRENT_PROVIDER_CONTEXT` even when provider identity, plan,
+billing period and event handle all match.
+
+SHOPIFY-003 defines current-provider-context refundability; it does not introduce a
+new policy that trial contracts are historically ineligible.
+
+#### Required correction
+
+Treat both executable live statuses as current-context candidates:
+
+```text
+providerSubscription.status in { ACTIVE, TRIALING }
+```
+
+All other existing context checks remain mandatory:
+
+```text
+exact Shopify shop identity
+canonical providerContextIdentity
+plan handle
+local billingPeriodId
+provider/local period start/end
+purchase event handle present live
+```
+
+Required regressions:
+
+```text
+matching TRIALING provider context -> refund may become REQUESTED
+TRIALING provider with plan/period/event mismatch -> REFUND_NOT_CURRENT_PROVIDER_CONTEXT
+ACTIVE behavior remains unchanged
+```
+
+### Validation
+
+Run at minimum:
+
+```bash
+npm test -- \
+  tests/unit/services/recovery-credit-purchase-management.service.test.ts \
+  tests/unit/recovery-credit-purchase-manager.test.tsx
+
+npm run lint -- \
+  app/services/billing/recovery-credit-purchase-management.service.ts \
+  app/routes/app/billing/recovery-credit-purchases/route.tsx \
+  tests/unit/services/recovery-credit-purchase-management.service.test.ts \
+  tests/unit/recovery-credit-purchase-manager.test.tsx
+
+npm run prisma:validate
+npm run build
+git diff --check
+```
+
+If repository-wide typecheck remains blocked only by the already documented unrelated
+JSX/Polaris baseline, record that evidence; do not broaden this task to fix it.
+
+### Stop condition
+
+When both findings are corrected and focused tests prove that every potentially
+successful refund mutation has fresh provider proof while ACTIVE and TRIALING current
+contexts behave consistently, update the Completion Report, set `status: review`,
+clear the claim and return to `moda_architect`.
+
+Do not mark `ARCH-015-BACKGROUND-003` Ready. Dependency promotion belongs to architect
+acceptance of SHOPIFY-003.
