@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-16T15:28:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -457,3 +457,35 @@ STOP and return to `moda_architect` if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `c7a31a1` on `task/ARCH-016-DATABASE-001`, pushed to `origin/task/ARCH-016-DATABASE-001`.
+
+Authorized files changed:
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20260916150000_arch016_recovery_policy_discounts_outreach_generations/migration.sql`
+- `docs/generated/prisma-erd.puml`
+- `docs/generated/erd.png`
+- `scripts/validate-arch016-recovery-schema.mjs`
+- `package.json`
+
+Implemented the complete ARCH-016 database contract: merchant and platform-admin recovery policy snapshots with audit history; Shopify discount catalogue and selectable-discount constraints; recovery generations with data-preserving backfill and partial active-generation uniqueness; outreach attempts and inverse message relation/checks; runtime lifetime and expiry lease; required tenant/admin inverses; and the focused static validator/ERD updates. Conversation identity uniqueness and ARCH-010 promotion models were preserved.
+
+Validation:
+
+- `npm run validate` passed.
+- `npm run prisma:generate` passed.
+- `npx prisma validate --schema prisma/schema.prisma` passed.
+- `npx prisma generate --schema prisma/schema.prisma` passed.
+- `npm run erd` passed, including PlantUML PNG generation.
+- `npm run test:arch016-recovery-schema` passed.
+- `git diff --check` passed.
+- `npm test` was not run successfully because this repository declares no `test` script (`npm error Missing script: "test"`).
+
+Database validation limitation: the verified local database is reachable at `localhost:5432/moda_interact`, but `npx prisma migrate deploy` could not apply pending migrations because the database already contains the failed migration `20260915140000_arch015_fractional_provider_usage_snapshots` (Prisma error P3009). No migration was applied or marked resolved, and the unrelated baseline migration was not changed. The repository-configured remote database was not used for migration execution.
+
+Implementation worktree is clean after commit. Awaiting `moda_architect` review; this agent did not mark the task complete or start dependent tasks.
