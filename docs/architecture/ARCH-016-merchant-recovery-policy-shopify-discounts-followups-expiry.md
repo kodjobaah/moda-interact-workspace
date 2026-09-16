@@ -754,3 +754,23 @@ be resolved before deployment; it does not reopen DATABASE-001.
 
 The terminal system-test task remains gated on all implementation prerequisites and
 continues to sit after the developer manual-testing checkpoint.
+
+## Post-review update — BACKGROUND-002 Attempt 1 Changes Requested
+
+`ARCH-016-BACKGROUND-002` Attempt 1 implementation commit `da4ccbb` is returned to
+**Ready** for bounded correction. The generation/restart and scheduler architecture is
+retained; no redesign is requested.
+
+Attempt 2 must correct four runtime issues discovered during functional review:
+
+```text
+inbound WhatsApp lifetime activity must use canonical event.occurredAt and count all routed inbound content, including rejected/failed audio
+active checkout-update activity must advance independently of Shopify basket-refresh outcome
+an expiry race must never allow markRecoveryMessageSent to reopen EXPIRED as MESSAGE_SENT
+expiry history fromStatus must be the exact status replaced by the terminal update
+```
+
+The task remains at `attempt: 1`, `executor: null`, `claimed_at: null`; the launcher will
+increment it on the next claim. No dependent task is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the
+existing developer manual-testing checkpoint remains before terminal integrated testing.

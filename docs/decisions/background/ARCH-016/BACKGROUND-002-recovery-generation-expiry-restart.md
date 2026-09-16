@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -331,3 +331,240 @@ accepted ARCH-016-DATABASE-001 commit
 no schema files were changed by this task. The implementation branch is clean
 after push. No SYSTEM-TEST-001 work was started and no architect acceptance
 decision was made.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested — preserve the implemented generation/expiry design; correct four bounded lifecycle/activity defects**
+
+Implementation commit reviewed: `da4ccbb`.
+Parent Completion Report commit reported: `31eabe3f`.
+
+This review prioritises runtime correctness over exhaustive test count. The following
+Attempt-1 implementation is accepted in principle and MUST NOT be redesigned in
+Attempt 2:
+
+```text
+generation-aware latest-recovery lookup
+EXPIRED -> PendingRecoveryCandidate -> generation N+1 restart flow
+COMPLETED/CANCELLED permanent terminal behavior
+bounded 100-row expiry scanning
+current runtime checkoutRecoveryLifetimeDays cutoff
+CHECKOUT_RECOVERY_EXPIRY hourly leased scheduler in moda-recovery-worker
+conditional lastExternalActivityAt monotonic writes
+pending/unsent outreach cancellation on expiry
+no Conversation uniqueness change
+no new Render service
+```
+
+Four corrections remain.
+
+### Finding 1 — inbound WhatsApp activity uses processing/transcription time instead of the provider event time
+
+The canonical WhatsApp event already provides `event.occurredAt`. Attempt 1 instead
+advances recovery lifetime with `new Date()` inside `ConversationService.receiveMessage`
+and with transcription-completion `new Date()` inside
+`InboundWhatsAppAudioService.complete`.
+
+That is functionally wrong for the ARCH-016 inactivity clock: queue lag or audio
+transcription latency can extend a recovery beyond the customer's actual activity time.
+It also means an inbound audio message that is rejected or terminally fails transcription
+never advances recovery activity at all, even though the customer did send an inbound
+message.
+
+#### Required Attempt-2 correction
+
+Keep the external-activity mutation in the task-authorised recovery/WhatsApp boundary.
+Implement exactly this behavior:
+
+1. In `src/services/checkout-recovery.service.ts`, add/reuse one repository-local method
+   that records an external activity timestamp for a known recovery ID with one guarded
+   monotonic update:
+
+   ```text
+   WHERE id = recoveryId
+     AND status IN (DETECTED, MESSAGE_SENT, ENGAGED)
+     AND lastExternalActivityAt < activityAt
+   SET lastExternalActivityAt = activityAt
+   ```
+
+   The method MUST NOT change recovery status and MUST no-op for
+   `EXPIRED`, `COMPLETED`, and `CANCELLED`.
+
+2. In `src/workers/whatsapp.worker.ts`, immediately after routing has resolved the
+   inbound event, when `route.kind === "resolved"`, call that method with:
+
+   ```text
+   recoveryId = route.checkoutRecoveryId
+   activityAt = new Date(event.occurredAt)
+   ```
+
+   Do this before branching on text/audio/unsupported content so every successfully
+   routed inbound customer message counts as activity even when audio transcription is
+   rejected/fails or content is unsupported. Duplicate delivery is safe because the
+   write is monotonic.
+
+3. Remove the ARCH-016-specific `checkoutRecovery.lastExternalActivityAt` writes added
+   by Attempt 1 to:
+
+   ```text
+   src/services/conversation.service.ts
+   src/services/inbound-whatsapp-audio.service.ts
+   ```
+
+   Do not otherwise redesign those services or revert unrelated pre-existing behavior.
+   These files were outside the authorised ARCH-016-BACKGROUND-002 write surface; the
+   recovery activity clock belongs in the authorised worker/recovery-service path above.
+
+### Finding 2 — a qualifying checkout update can be lost from the inactivity clock when Shopify refresh does not succeed
+
+For an active recovery, Attempt 1 advances `lastExternalActivityAt` only after the
+Shopify abandoned-checkout lookup returns `found` and the basket refresh update succeeds.
+But ARCH-016 defines the checkout update's `activityAt` itself as qualifying external
+activity. A `not-found`, `ambiguous`, bounded lookup outcome, or provider failure must not
+silently erase the fact that a valid checkout-update event occurred.
+
+#### Required Attempt-2 correction
+
+In `handleCheckoutUpdatedContract`, after the latest recovery is known to be active and
+before the provider lookup, call the same monotonic activity method with:
+
+```text
+recovery.id
+event.activityAt
+```
+
+Then perform the existing provider lookup/content refresh independently. Required
+semantics:
+
+```text
+newer checkout activity + provider found       -> activity advances; basket refreshes
+newer checkout activity + provider not-found   -> activity advances; existing discard result remains
+newer checkout activity + provider ambiguous   -> activity advances; existing discard result remains
+newer checkout activity + provider error       -> activity advances; provider error remains retryable
+older checkout activity                         -> activity does not move backwards
+expiry wins before activity update              -> guarded activity update count 0; EXPIRED remains immutable
+activity update wins before expiry              -> expiry cutoff predicate no longer matches
+```
+
+Do not use `updatedAt`, `detectedAt`, or provider-processing time as the replacement
+activity clock.
+
+### Finding 3 — expiry can be followed by an unconditional MESSAGE_SENT write, reopening an EXPIRED generation
+
+`markRecoveryMessageSent()` still uses an unconditional Prisma `update` by ID. After
+ARCH-016 introduces asynchronous expiry, this race is possible:
+
+```text
+recovery is DETECTED and a provider send is in flight
+expiry sweep conditionally transitions DETECTED -> EXPIRED
+provider flow returns
+markRecoveryMessageSent(id)
+current Attempt-1 code writes EXPIRED -> MESSAGE_SENT
+```
+
+That violates the architecture rule that an `EXPIRED` generation is immutable history
+and only a later Shopify checkout update may create generation N+1.
+
+#### Required Attempt-2 correction
+
+Change `markRecoveryMessageSent()` to a guarded transition using `updateMany` (or an
+equivalent conditional mutation) with:
+
+```text
+WHERE id = recoveryId
+  AND status = DETECTED
+```
+
+Only a successful `DETECTED -> MESSAGE_SENT` transition may set:
+
+```text
+messageSentAt
+admissionBlockedAt = null
+admissionBlockReason = null
+```
+
+If the row is already `EXPIRED`, `COMPLETED`, `CANCELLED`, `MESSAGE_SENT`, or `ENGAGED`,
+the method must not rewrite status. Do not reopen an expired row merely because a
+provider call completed after the expiry race.
+
+### Finding 4 — expiry history can record a stale fromStatus
+
+`CheckoutRecoveryExpiryService` reads `candidate.status`, but its conditional update
+currently allows *any* active status. If the row changes from (for example) `DETECTED`
+to `MESSAGE_SENT` between the read and update, expiry can succeed while history is still
+written as `DETECTED -> EXPIRED`.
+
+#### Required Attempt-2 correction
+
+Make the terminal update prove the same status that supplies the history row. The
+smallest correction is:
+
+```text
+WHERE id = candidate.id
+  AND status = candidate.status
+  AND lastExternalActivityAt <= cutoff
+```
+
+where `candidate.status` was selected from the active-status query. If the status
+changed, `count = 0`; write no history/outreach cancellation in that transaction and
+allow a later sweep to reconsider the row. An equivalent transaction-local re-read is
+acceptable only if it guarantees the history `fromStatus` is the actual status replaced
+by that exact terminal update.
+
+### Required focused validation for Attempt 2
+
+Add/update only the tests needed to prove these functional corrections:
+
+```text
+1. routed text inbound uses event.occurredAt, not worker processing time
+2. routed audio inbound advances activity even when transcription is rejected/terminally fails
+3. older inbound occurredAt cannot move lastExternalActivityAt backwards
+4. active checkout update advances activity even when provider lookup returns not-found
+5. active checkout update advances activity before a retryable provider error is rethrown
+6. expiry/activity race still leaves an activity-winner recovery active
+7. markRecoveryMessageSent cannot change EXPIRED back to MESSAGE_SENT
+8. expiry status race cannot write history with a stale fromStatus
+```
+
+Preserve the already-passing restart/generation/scheduler behavior. Do not expand this
+into exhaustive unrelated test work.
+
+Run the task's existing validation commands and focused suites. The pre-existing Prisma
+schema/generated-client build mismatch may remain documented if observation is unchanged;
+do not workaround an unrelated baseline inside this task.
+
+### Completion Report / execution evidence
+
+Attempt 1 states that both branches are clean/pushed and the user supplied dedicated
+worktree execution. The task record, however, does not contain the mandatory prepared
+launcher packet evidence required by the architect contract.
+
+On Attempt 2, add the existing launcher-resolved evidence to the Completion Report:
+
+```text
+canonical primary workspace_root
+dedicated parent task worktree + task/ARCH-016-BACKGROUND-002 branch
+dedicated implementation worktree + task/ARCH-016-BACKGROUND-002 branch
+start-of-attempt parent/implementation synchronization evidence
+recursive implementation-submodule preparation evidence
+Attempt-2 launcher claim commit
+```
+
+Do not manufacture a code change solely for execution evidence; source changes are
+already required by Findings 1-4.
+
+### Reclaim state
+
+`ARCH-016-BACKGROUND-002` returns to:
+
+```text
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The deterministic launcher owns the increment to Attempt 2 when the task is reclaimed.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically.
