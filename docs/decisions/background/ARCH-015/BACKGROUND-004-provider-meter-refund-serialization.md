@@ -9,8 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 86
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-015-BACKGROUND-003
@@ -479,3 +481,56 @@ ARCH-015-SHOPIFY-004      Ready / may execute independently
 ARCH-015-BACKGROUND-004   Ready at Attempt 1 -> next claim becomes Attempt 2
 ARCH-015-SYSTEM-TEST-001  Pending until both correction tasks are Complete and manual-test authorization is given
 ```
+
+## Architect Review — Attempt 2 — Accepted
+
+Verdict: **Accepted — Complete**.
+
+Attempt 2 is the bounded test-only correction requested after Attempt 1. The published
+implementation commit `d270d92` changes only
+`tests/unit/services/recovery-credit-refund-correction.service.test.ts`; the accepted
+Attempt-1 production implementation in
+`src/services/recovery-credit-refund-correction.service.ts` remains unchanged.
+
+The focused regression suite now proves the previously missing cases:
+
+```text
+- unresolved REQUESTED purchase on another event handle does not block PREPARE;
+- once the older same-handle refund becomes terminal, the next scheduler invocation may
+  PREPARE the next refund and performs a fresh provider read;
+- BEFORE 4.00 / correction -0.25 / EXPECTED AFTER 3.75 / actual 3.50 is classified
+  NEEDS_ATTENTION with automatic-correction-provider-state-conflict;
+- refund-link CAS loss rolls back the staged correction event in a rollback-aware
+  transaction harness, leaving no committed/publishable orphan;
+- an already-linked correction follows reconciliation and does not recreate the
+  correction UsageEvent;
+- safe fractional PREPARE freezes exact Decimal before/expected-after evidence and a
+  linked retry does not recreate the event or rewrite the frozen evidence.
+```
+
+The already-accepted provider-meter visitation, oldest-live-refund gate, unresolved
+same-meter purchase gate, exact BEFORE / EXPECTED AFTER / conflict classifier, PREPARE
+atomicity/CAS, idempotency, typed evidence ownership and generic publisher boundary remain
+unchanged.
+
+Validation recorded for Attempt 2:
+
+```text
+focused refund-correction tests:                    PASS (24)
+adjacent publisher/provider tests:                  PASS
+unit suite:                                         PASS (1,019)
+Prisma validation:                                  PASS
+build:                                              PASS
+git diff --check:                                   PASS
+full suite: 67 files passed, 10 skipped; one
+translation-runtime file has 4 unchanged failures
+```
+
+The four translation-runtime failures remain unrelated baseline failures and are not an
+ARCH-015-BACKGROUND-004 blocker.
+
+`ARCH-015-BACKGROUND-004` is therefore Complete at Attempt 2. This acceptance does not
+authorize or start `ARCH-015-SYSTEM-TEST-001`. SHOPIFY-004 and BACKGROUND-004 are parallel
+correction tasks; terminal system testing remains Pending until all declared correction
+dependencies are Complete and the architect explicitly authorizes the manual/integrated
+test phase.
