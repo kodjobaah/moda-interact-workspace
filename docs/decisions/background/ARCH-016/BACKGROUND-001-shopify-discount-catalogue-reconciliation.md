@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 attempt: 2
 depends_on:
@@ -774,3 +774,245 @@ Then push both mirrored task branches, set this same task back to `status: revie
 No ARCH-016 dependency is promoted by this review. `attempt` remains `1` in this Changes
 Requested patch; `/moda-task ARCH-016-BACKGROUND-001` owns the increment to Attempt 2 when the
 task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically.
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — preserve the latest request clock on ineligible claims and resolve Shop identity before catalogue creation**
+
+Implementation commit reviewed: `8665b93`.
+Parent Completion Report commit reviewed: `006ad5a2`.
+
+Attempt 2 correctly fixes the substantive Attempt-1 provider, fencing and lifecycle defects. The following work is accepted and MUST be preserved:
+
+```text
+@modainteract/moda-interact-shared remains exactly 0.12.1
+Shopify Admin GraphQL remains 2026-07
+all eight documented discount union members remain queried
+codesCount + bounded codes connection evidence is used for CODE normalization
+singleRedeemCode is proven only for exact one-code native CODE discounts
+app/function-backed discounts remain stored but fixedSelectable false
+discountNodes pagination remains outside database transactions
+one ShopifyDiscountCatalogue FOR UPDATE fence protects generation/token request, claim, failure and finalize paths
+finalize checks activeSyncToken before row mutation
+finalize revalidates current install/subscription/offline-scope eligibility before CURRENT
+provider failure writes ERROR only for the owning token and clears syncStartedAt/token
+Background lifecycle publication establishes SYNC_REQUIRED before BullMQ enqueue
+Background-produced jobs retain attempts=3, exponential 1000ms backoff, removeOnComplete=true, removeOnFail=false
+same-cycle Paid reinstall now emits REINSTALL_RECONCILED
+NO_CONTRACT reinstall leaves the catalogue/rows UNAVAILABLE and emits no discount-sync job
+periodic Paid activation receives the canonical discount queue
+no new service, credential store, write_discounts scope or AI/CommerceAgent selection
+```
+
+The current implementation is not accepted because one remaining state-ordering defect can lose the latest durable request timestamp, and the claim helper still attempts catalogue creation before proving the Shop exists.
+
+### Finding 1 — an ineligible valid worker job does not advance `syncRequestedAt`
+
+Current claim flow in:
+
+```text
+src/services/shopify-discount-catalogue.service.ts
+```
+
+does this:
+
+```text
+lock/create catalogue
+resolve Shop
+evaluate eligibility
+
+if ineligible:
+  mark catalogue UNAVAILABLE
+  return
+
+only if eligible:
+  update syncRequestedAt = max(existing, payload.requestedAt)
+  claim generation/token
+```
+
+This does not satisfy the Attempt-1 correction contract. `syncRequestedAt` is the durable timestamp of the **latest valid synchronization request**, not merely the latest request that happened to find the shop eligible.
+
+A valid job for an existing shop can therefore be newer than the persisted request clock but disappear from durable ordering when the shop is currently:
+
+```text
+UNINSTALLED
+onboarding incomplete
+subscription not ACTIVE/TRIALING
+missing read_discounts on the durable offline Session
+```
+
+That produces a real ordering defect:
+
+```text
+persisted syncRequestedAt = T1
+
+job T3 arrives while shop is temporarily ineligible
+  -> catalogue UNAVAILABLE
+  -> T3 is not recorded
+
+older/retried job T2 runs later after eligibility is restored
+  -> syncRequestedAt becomes T2
+
+durable state now says T2 was the latest request even though T3 existed
+```
+
+#### Required Attempt-3 correction
+
+In the locked claim transaction, for an **existing Shop**, compute and persist:
+
+```text
+syncRequestedAt = max(catalogue.syncRequestedAt, requestedAt)
+```
+
+**before** branching on eligibility.
+
+Use this exact order:
+
+```text
+1. resolve Shop identity/domain by shopId
+2. if Shop does not exist:
+     return unavailable
+     do not create a catalogue
+     do not call Shopify
+3. ensure the catalogue row exists
+4. acquire ShopifyDiscountCatalogue FOR UPDATE
+5. reload the catalogue after the lock
+6. compute latestRequestedAt = max(catalogue.syncRequestedAt, requestedAt)
+7. persist latestRequestedAt in the same locked transaction
+8. re-read current Shop/settings/subscription/durable offline Session eligibility
+9. if ineligible:
+     catalogue -> UNAVAILABLE
+     preserve latestRequestedAt
+     clear activeSyncToken/syncStartedAt
+     mark current discount rows unavailable while preserving existing unavailableAt
+     return unavailable
+10. if eligible:
+     generation = locked.syncGeneration + 1
+     create new opaque activeSyncToken
+     catalogue -> SYNCING
+     retain latestRequestedAt
+     clear prior error
+11. commit
+12. only then perform provider pagination
+```
+
+It is acceptable to combine steps 7 and 9/10 into one `update` per branch, provided both branches persist the same `latestRequestedAt` and the value never regresses.
+
+Do not use processing time as a substitute for the canonical job `requestedAt`.
+
+### Finding 2 — the claim creates/locks the catalogue before proving the Shop exists
+
+`lockCatalogue(...)` currently performs:
+
+```ts
+shopifyDiscountCatalogue.upsert({
+  where: { shopId },
+  create: { shopId },
+  update: {},
+})
+```
+
+before `reconcile(...)` checks whether the referenced Shop row exists.
+
+Because `ShopifyDiscountCatalogue.shopId` is a foreign key, a stale/invalid queued job for a Shop that has been hard-deleted can fail at catalogue creation and enter BullMQ retry/error handling instead of terminating without provider work.
+
+This also differs from the exact Attempt-1 claim order, which required Shop identity/domain resolution before catalogue creation.
+
+Attempt 3 MUST therefore resolve the Shop first, as described in Finding 1. A missing Shop is a bounded terminal `unavailable` outcome for this worker invocation:
+
+```text
+no catalogue upsert
+no generation/token claim
+no provider request
+```
+
+Apply the same defensive ordering to `requestSync(shopId, requestedAt)` because it uses the same catalogue-creation helper:
+
+```text
+resolve Shop first
+missing Shop -> return "unavailable"
+existing Shop -> lock/create catalogue -> evaluate eligibility -> request/unavailable transition
+```
+
+For `requestSync`, no BullMQ job exists yet, so an ineligible request does not need a new durable request timestamp beyond the existing task contract; the important requirement is that it must not attempt to create a catalogue for a missing Shop.
+
+### Attempt-3 authorised implementation surface
+
+Attempt 3 is intentionally narrow. Modify only:
+
+```text
+src/services/shopify-discount-catalogue.service.ts
+focused catalogue service tests
+this task Completion Report / review metadata
+```
+
+Do NOT modify:
+
+```text
+src/providers/shopify-discount.provider.ts
+src/workers/shopify-discount-sync.worker.ts
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
+src/entrypoints/billing.ts
+src/entrypoints/billing-resources.ts
+src/entrypoints/recovery.ts
+Shared package/version
+database schema/migrations
+unrelated workers/services
+```
+
+unless a compile-only import adjustment is strictly necessary.
+
+### Required focused validation
+
+Do not expand into exhaustive test work. Add only focused regression coverage that proves:
+
+```text
+existing eligible Shop:
+  newer requestedAt advances syncRequestedAt and normal claim still reaches SYNCING
+
+existing ineligible Shop:
+  newer requestedAt advances syncRequestedAt
+  catalogue ends UNAVAILABLE
+  provider is not called
+
+existing ineligible Shop + older out-of-order job:
+  syncRequestedAt does not regress
+
+missing Shop:
+  reconcile returns unavailable
+  no catalogue upsert/create is attempted
+  provider is not called
+
+requestSync missing Shop:
+  returns unavailable
+  no catalogue upsert/create is attempted
+```
+
+Retain the previously reported provider/lifecycle validation. Run the repository-declared equivalents of:
+
+```text
+focused catalogue regression tests
+npm run prisma:validate
+npm run build
+git diff --check
+```
+
+The existing generated-Prisma-client and unrelated baseline suite failures remain non-blocking if unchanged.
+
+### Completion / stop condition
+
+Return for architect review only when:
+
+```text
+every valid worker request for an existing Shop monotonically records canonical payload.requestedAt even when eligibility is lost
+no older job can regress syncRequestedAt
+missing Shop cannot reach catalogue creation or Shopify provider access
+all accepted Attempt-2 provider/fencing/lifecycle behavior remains unchanged
+```
+
+Then push both mirrored task branches, set this same task back to `status: review`, clear `executor` / `claimed_at`, update the Completion Report with Attempt-3 evidence, and return to `moda_architect`.
+
+No ARCH-016 dependency is promoted by this review. `attempt` remains `2` in this Changes Requested patch; `/moda-task ARCH-016-BACKGROUND-001` owns the increment to Attempt 3 when the task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically.

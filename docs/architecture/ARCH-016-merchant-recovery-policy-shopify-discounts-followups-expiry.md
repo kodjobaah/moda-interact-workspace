@@ -900,3 +900,28 @@ billing behavior is changed by this acceptance.
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation
 dependency is Complete and the developer has completed the existing manual-testing
 checkpoint. It is not started automatically by this acceptance.
+
+## Post-review update — BACKGROUND-001 Attempt 2 Changes Requested
+
+`ARCH-016-BACKGROUND-001` Attempt 2 implementation commit `8665b93` correctly fixes the
+provider code-discount projection, catalogue generation/token locking, finalize-time
+eligibility fence, durable Background `SYNC_REQUIRED` publication and the missing
+activation/reinstall trigger branches identified in Attempt 1. Those corrections are retained.
+
+One narrow catalogue-state correction remains before acceptance. A valid worker job for an
+existing but currently ineligible Shop reaches `UNAVAILABLE` before persisting the canonical
+job `requestedAt`, so a newer request can disappear from the monotonic `syncRequestedAt`
+clock and an older retry can later appear to be the latest request. The claim path also
+attempts catalogue creation before proving the referenced Shop exists, allowing a stale
+hard-deleted-Shop job to fail on the catalogue foreign key rather than terminate without
+provider access.
+
+Attempt 3 is limited to `shopify-discount-catalogue.service.ts` plus focused catalogue
+regression tests: resolve Shop identity first, persist `max(existing, requestedAt)` under
+the catalogue lock before the eligibility branch for every existing-Shop worker claim,
+and return bounded `unavailable` without catalogue/provider work for a missing Shop.
+
+The task returns to `status: ready`, remains `attempt: 2`, `executor: null` and
+`claimed_at: null`; the launcher owns the Attempt-3 increment on reclaim. No dependency is
+promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the
+developer manual-testing checkpoint remains before terminal integrated testing.
