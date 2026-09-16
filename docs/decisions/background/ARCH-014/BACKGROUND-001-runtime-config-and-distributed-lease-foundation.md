@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 63
-executor: copilot
-claimed_at: 2026-09-16T07:11:57Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-004
@@ -258,6 +258,37 @@ npm run test:unit -- --runInBand
 npm run build
 git diff --check
 ```
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `430394f` on `task/ARCH-014-BACKGROUND-001`, pushed to `origin`.
+
+Implemented:
+
+- Added injectable `BackgroundRuntimeConfigService` and production singleton in `src/runtime/background-runtime-config.ts`. It validates the complete DATABASE-004 row, loads the default singleton before startup returns, keeps monotonic immutable snapshots, retains last-known-good state on refresh failure, isolates listener failures, uses recursive 5-second `setTimeout`, and closes after timer cancellation and in-flight refresh completion.
+- Added process-lifetime `hostname:pid:UUID` ownership and `BackgroundRuntimeLeaseService` in `src/runtime/background-runtime-lease.ts`. Acquisition is one PostgreSQL `NOW()`-based atomic upsert, takeover increments generation, heartbeat/release are owner-plus-generation fenced, and `runWithLease` uses non-overlapping heartbeats with lease-loss cleanup semantics. Lease duration and heartbeat constants remain fixed at 120 seconds and 30 seconds.
+- Added `startDynamicLeasedScheduler` in `src/runtime/dynamic-leased-scheduler.ts`. It supports explicit `runImmediately`, acquires before fresh config reads, passes the immutable snapshot to work, reschedules from config notifications without `setInterval` or overlap, and provides idempotent stop behavior that waits for local work.
+- Added required focused coverage in `tests/unit/runtime/background-runtime-config.test.ts`, `tests/unit/runtime/background-runtime-lease.test.ts`, and `tests/unit/runtime/dynamic-leased-scheduler.test.ts`, including refresh/version behavior, listener isolation, lease race/fencing/takeover, heartbeat/work cleanup, scheduler overlap, shared lease, interval rescheduling, fresh reads, and stop idempotence.
+
+Validation:
+
+- `npx vitest run tests/unit/runtime/background-runtime-config.test.ts tests/unit/runtime/background-runtime-lease.test.ts tests/unit/runtime/dynamic-leased-scheduler.test.ts`: passed, 3 files and 11 tests.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed with Prisma Client 6.19.3.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm run test:unit`: 941 passed, 2 failed in the pre-existing `tests/unit/runtime/observability-startup.test.ts` baseline. The failures assert an older shared runtime version (`0.9.0` versus repository `0.11.2`) and an unrelated recovery-entrypoint source shape; no task-owned files are involved.
+
+Launcher evidence:
+
+- Prepared canonical parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-BACKGROUND-001`.
+- Prepared canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-BACKGROUND-001`.
+- Database submodule was initialized by the launcher at `89dca92325cefc96fe2dff5021d1e5ee0e8f7fe1`.
+- Implementation worktree is clean after commit and push. Parent report changes are limited to this task file and will be committed and pushed next.
+
+Unresolved issues: none within task scope. The unrelated full-unit baseline failures remain documented above.
 
 Use the repository's actual Vitest invocation if `--runInBand` is unsupported; do not change test semantics.
 
