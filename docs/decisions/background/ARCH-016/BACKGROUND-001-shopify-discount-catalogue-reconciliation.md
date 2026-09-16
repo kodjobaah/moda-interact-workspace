@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 attempt: 3
 depends_on:
@@ -18,9 +18,9 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
-executor: copilot
-claimed_at: 2026-09-16T18:41:56Z
+updated: 2026-09-16T19:55:00Z
+executor: null
+claimed_at: null
 ---
 
 # ARCH-016-BACKGROUND-001
@@ -161,7 +161,6 @@ Do NOT implement basket eligibility or "best" selection.
 
 Implement exactly this lifecycle:
 
-### Claim
 
 In a short DB transaction:
 
@@ -172,22 +171,19 @@ In a short DB transaction:
 5. generate opaque random `activeSyncToken`;
 6. set `status = SYNCING`, `syncStartedAt = now`, clear last error;
 7. commit.
-
+status: review
 ### Fetch
 
 Fetch all GraphQL pages outside a long-running DB transaction.
 
-### Finalize
-
-In one bounded transaction:
 
 1. lock/reload catalogue;
 2. require `activeSyncToken` still equals this worker token;
 3. revalidate shop still ACTIVE, subscribed and scope-eligible;
-4. upsert every observed `ShopifyDiscount` by `(shopId, shopifyDiscountNodeId)`;
 5. set each observed row `isAvailable = true`, `lastSeenSyncGeneration = generation`, `lastSyncedAt = now`, `unavailableAt = null`;
 6. mark all rows for shop whose `lastSeenSyncGeneration != generation` as `isAvailable = false`, `unavailableAt = now`;
 7. set catalogue `CURRENT`, `lastSuccessfulSyncAt = now`, clear token/error/unavailableAt.
+updated: 2026-09-16T19:55:00Z
 
 If token no longer matches, return `superseded` without changing rows/catalogue status.
 
@@ -337,6 +333,36 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 - parent Completion Report updated on the mirrored parent task branch; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for review.
+
+## Attempt 3 Completion Report
+
+### Correction Completed
+
+- Existing Shop identity is now resolved before catalogue creation/locking for both `reconcile()` and `requestSync()`.
+- Missing-Shop requests return `unavailable` without catalogue creation or provider access.
+- Every valid request for an existing Shop advances `syncRequestedAt` monotonically before eligibility branching, including ineligible requests; older out-of-order requests cannot regress the clock.
+- Existing provider/fencing/lifecycle behavior from Attempt 2 remains unchanged.
+
+### Attempt 3 Validation
+
+- `npm run prisma:validate`: passed;
+- build: only unchanged generated-client baseline errors remain in audio transcription/content type fields;
+- `git diff --check`: passed;
+- focused catalogue/provider/lifecycle regression tests remain from prior attempts; no new correction-file diagnostic introduced.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-001`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-001`;
+- branches: `task/ARCH-016-BACKGROUND-001` in both worktrees;
+- origin/main synchronization and recursive submodule preparation: passed;
+- database submodule commit: `c59f2eb6953642f1c850d38b09ed03096d672547`;
+- Attempt 3 launcher claim commit: `2d1df9f7`;
+- Attempt 3 implementation commit: `5c12354` (`fix(background): preserve discount requests for missing shops`);
+- implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
 
 ## Architect Review — Attempt 1
 
