@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: manual
-status: ready
+status: pending
 priority: 90
 executor: null
 claimed_at: null
@@ -25,6 +25,8 @@ depends_on:
 - ARCH-015-SHOPIFY-003
 - ARCH-015-BACKGROUND-003
 - ARCH-015-ADMIN-001
+- ARCH-015-SHOPIFY-004
+- ARCH-015-BACKGROUND-004
 enables: []
 created: 2026-09-15
 updated: 2026-09-16
@@ -86,6 +88,18 @@ At minimum automate/document deterministic scenarios for:
 43. if additional accepted Admin locale catalogues exist at implementation time, implemented refund-specific values match the architect matrix exactly for each locale;
 44. no ADMIN-002 implementation task or temporary Admin compatibility path is required.
 
+45. same-handle purchase is blocked while any live refund mutation exists on that meter;
+46. refund admission is blocked with `METER_BUSY` while a same-handle REQUESTED purchase exists;
+47. two same-handle purchases selected for refund in one batch produce first REQUESTED / second METER_BUSY;
+48. different event handles remain independently purchasable/refundable;
+49. merchant reactivation becomes unavailable immediately once `automaticCorrectionUsageEventId` is linked, including CAS race coverage;
+50. one busy top-up handle does not disable another available handle;
+51. top-up price presentation uses exact next Shopify meter-unit cost where deterministically derivable and never labels it per conversation;
+52. only one same-handle automatic refund is prepared per scheduler pass and later same-handle refunds wait oldest-first;
+53. REPORTED provider state equal to frozen BEFORE remains REQUESTED;
+54. REPORTED provider state equal to EXPECTED AFTER completes;
+55. REPORTED provider third-state quantity/cost/currency becomes NEEDS_ATTENTION.
+
 ## Evidence
 
 Capture:
@@ -111,3 +125,8 @@ STOP and return evidence rather than weakening assertions if any accepted task c
 ## Completion protocol
 
 Publish terminal acceptance report, set task `status: review`, return to `moda_architect`, STOP.
+
+
+## Architect execution gate — manual testing first
+
+System testing is intentionally deferred. Even after SHOPIFY-004 and BACKGROUND-004 are accepted, do **not** launch this task until `moda_architect` explicitly confirms that the manual ARCH-015 billing/refund test pass has completed and authorizes terminal automated system testing. The absence of SYSTEM-TEST-001 implementation before that authorization is not an implementation gap.

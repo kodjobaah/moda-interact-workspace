@@ -5,6 +5,7 @@
 | [ARCH-015-SHOPIFY-001](SHOPIFY-001-live-top-up-offers.md) | complete | Resolve live top-up offers by Shopify current plan/meter intersected with ARCH-014 entitlement rows and render valid empty states. |
 | [ARCH-015-SHOPIFY-002](SHOPIFY-002-purchase-admission.md) | complete | Create selected top-up purchase with fresh provider/ARCH-014 proof and same-handle single-flight. |
 | [ARCH-015-SHOPIFY-003](SHOPIFY-003-refund-eligibility-hold.md) | complete | Permit normal refund hold only for current-provider-context positive-value purchases. |
+| [ARCH-015-SHOPIFY-004](SHOPIFY-004-provider-meter-mutation-serialization.md) | ready | Serialize purchase/refund admission per `(shopId,eventHandle)`, close automatic-correction reactivation races, make offer eligibility per meter and correct provider price presentation. |
 
 ## Current architect review state
 
@@ -41,3 +42,10 @@ current-context requests create only the durable REQUESTED refund/hold. Backgrou
 provider correction and completion.
 
 `ARCH-015-BACKGROUND-003` is now Ready because every declared prerequisite is Complete.
+
+
+## Post-implementation integration audit — 2026-09-16
+
+A meticulous cross-repository ARCH-015 audit found that individually accepted tasks did not yet provide one common provider-meter mutation boundary. `ARCH-015-SHOPIFY-004` is therefore **Ready**. It is a bounded correction task: no schema change, no new queue and no new lock model. It reuses the existing per-shop `Subscription ... FOR UPDATE` lock so purchase and refund admission share the same `(shopId,eventHandle)` busy predicate.
+
+`ARCH-015-BACKGROUND-004` remains Pending until SHOPIFY-004 is architect-accepted Complete. Terminal system testing is intentionally deferred until after manual testing and must not be launched from this task.

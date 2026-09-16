@@ -5,6 +5,7 @@
 | [ARCH-015-BACKGROUND-001](BACKGROUND-001-purchase-reconciliation.md) | complete | Candidate-centric provider reconciliation is complete; durable purchase event handles drive exact provider proof without singular BillingPlan pack-meter authority. |
 | [ARCH-015-BACKGROUND-002](BACKGROUND-002-cross-plan-consumption.md) | complete | Historical/non-current ACTIVE lots are consumed before current-context lots with fail-closed local context classification. |
 | [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | complete | Existing billing scheduler processes durable refunds using typed RecoveryCreditRefund correction evidence, submits safe negative/fractional corrections and reconciles completion. |
+| [ARCH-015-BACKGROUND-004](BACKGROUND-004-provider-meter-refund-serialization.md) | pending | Defensively serialize automatic refund preparation per provider meter and classify exact-before / expected-after / conflicting provider evidence. |
 
 ## Current architect review state
 
@@ -91,3 +92,10 @@ of unlinked correction events on a lost PREPARE link CAS, and the existing
 `ARCH-015-BACKGROUND-003` Attempt 3 is **Accepted — Complete**. The five bounded Attempt-2 findings are closed: native App Pricing uses Shared fallback identity, RECONCILE no longer requires live pricing, manual fallback freezes proportional economics, a lost PREPARE link CAS rolls back the unlinked correction event, and automatic completion writes the deterministic `REFUND_COMPLETED` system message atomically.
 
 `ARCH-015-ADMIN-001` is therefore **Ready**. `ARCH-015-SYSTEM-TEST-001` remains Pending until ADMIN-001 is Complete. The pre-existing database P3009 remains an external deployed-environment prerequisite.
+
+
+## Post-implementation integration audit — 2026-09-16
+
+`ARCH-015-BACKGROUND-004` is added as a bounded correction after cross-task audit found that multiple same-handle refunds could otherwise freeze the same provider baseline and that a REPORTED correction with a third provider state remained silently REQUESTED.
+
+BACKGROUND-004 depends on accepted BACKGROUND-003 plus SHOPIFY-004. It remains **Pending** until SHOPIFY-004 is architect-accepted Complete. Different event handles remain independent. No schema, queue or generic-publisher redesign is authorized.

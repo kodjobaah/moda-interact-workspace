@@ -303,41 +303,33 @@ expected...AfterCorrection  provider state required for later completion proof
 
 ## Task graph
 
-```text
-ARCH-014-DATABASE-001
-      |
-      +--> ARCH-015-DATABASE-001 (Complete)
-                    |
-                    +--> ARCH-015-DATABASE-002 (Ready)
-                              |
-                              +------------------------------+
-                                                             |
-ARCH-015-SHARED-001  (Complete)                              |
-                                                             |
-ARCH-014-SHOPIFY-001                                         |
-      |                                                      |
-      +--> ARCH-015-SHOPIFY-001                              |
-                 |                                           |
-ARCH-015-SHARED-001 + ARCH-015-DATABASE-001                 |
-                 |                                           |
-                 +--> ARCH-015-SHOPIFY-002                  |
-                              |                              |
-                              +--> ARCH-015-BACKGROUND-001   |
-                                      |                      |
-                                      +--> ARCH-015-BACKGROUND-002
-                                      |                      |
-                                      +--> ARCH-015-SHOPIFY-003
-                                                |            |
-                                                +------------+
-                                                             |
-                                                             v
-                                                ARCH-015-BACKGROUND-003
-                                                          |
-                                                          +--> ARCH-015-ADMIN-001
+Original implementation tasks are Complete. The current correction frontier is:
 
-All accepted implementation tasks, including DATABASE-002
-      -> ARCH-015-SYSTEM-TEST-001
+```text
+ARCH-015-SHARED-001        Complete
+ARCH-015-DATABASE-001      Complete
+ARCH-015-DATABASE-002      Complete
+ARCH-015-SHOPIFY-001       Complete
+ARCH-015-SHOPIFY-002       Complete
+ARCH-015-BACKGROUND-001    Complete
+ARCH-015-BACKGROUND-002    Complete
+ARCH-015-SHOPIFY-003       Complete
+ARCH-015-BACKGROUND-003    Complete
+ARCH-015-ADMIN-001         Complete
+
+ARCH-015-SHOPIFY-004       Ready
+        |
+        v
+ARCH-015-BACKGROUND-004    Pending
+        |
+        v
+manual ARCH-015 billing/refund test pass
+        |
+        v
+ARCH-015-SYSTEM-TEST-001   Pending; explicit architect authorization required
 ```
+
+SHOPIFY-004 and BACKGROUND-004 are bounded post-implementation integration corrections. They do not reopen accepted Database, Shared or Admin architecture and they do not authorize a new schema/queue/lock model.
 
 ## Explicit non-goals
 
@@ -990,3 +982,49 @@ ARCH-015-ADMIN-001       Complete
 
 The existing database P3009 remains an external deployment/integration prerequisite and should be
 resolved before terminal deployed acceptance can apply the complete migration chain.
+
+
+## Post-implementation integration correction — provider-meter mutation serialization (2026-09-16)
+
+A cross-repository audit after the original ARCH-015 implementation tasks completed identified one missing global invariant: purchase `+1` and refund negative/fractional App Events mutate the same Shopify usage meter and therefore must share a single-flight boundary.
+
+Canonical invariant:
+
+```text
+provider-meter key = (shopId,eventHandle)
+
+at most one unresolved monetary mutation per key
+
+different event handles remain independent
+```
+
+Web admission uses the existing per-shop `billing.Subscription ... FOR UPDATE` row lock and re-checks both REQUESTED purchases and live refunds under that lock. No new lock model/schema is introduced.
+
+Background additionally processes same-handle refunds oldest-first and never freezes two automatic corrections from the same provider baseline.
+
+For a REPORTED automatic correction, provider state is classified exactly:
+
+```text
+actual == frozen BEFORE          -> propagation pending; remain REQUESTED
+actual == frozen EXPECTED AFTER  -> complete refund
+actual == neither                -> NEEDS_ATTENTION
+```
+
+Merchant refund reactivation is permanently unavailable once `automaticCorrectionUsageEventId` is linked.
+
+Top-up offer busy state is per meter rather than global, and displayed provider price represents the deterministically derived next Shopify meter-unit charge, never a per-conversation price.
+
+Correction sequence:
+
+```text
+ARCH-015-SHOPIFY-004 (Ready)
+        |
+        v
+ARCH-015-BACKGROUND-004 (Pending)
+        |
+        v
+manual ARCH-015 test pass
+        |
+        v
+ARCH-015-SYSTEM-TEST-001 (explicit architect authorization only)
+```
