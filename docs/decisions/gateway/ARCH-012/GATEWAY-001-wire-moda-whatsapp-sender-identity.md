@@ -9,18 +9,18 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 31
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-16T12:04:02Z
+attempt: 1
 depends_on:
 - ARCH-012-BACKGROUND-003
 enables:
 - ARCH-012-SYSTEM-TEST-001
 - ARCH-012-SYSTEM-TEST-002
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-GATEWAY-001
