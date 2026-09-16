@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 63
-executor: copilot
-claimed_at: 2026-09-16T07:40:54Z
 attempt: 3
 depends_on:
 - ARCH-014-DATABASE-004
@@ -263,30 +261,35 @@ git diff --check
 
 Status: Ready for Review
 
-Implementation commit: `461f218` on `task/ARCH-014-BACKGROUND-001`, pushed to `origin`.
+Implementation commit: `bd27cd0` on `task/ARCH-014-BACKGROUND-001`, pushed to `origin`.
 
-Implemented correction attempt 2:
+Attempt 3 correction:
 
-- Corrected `runWithLease` so the completed result is constructed only after awaited heartbeat cleanup. A failed heartbeat discovered during cleanup now sets `leaseLost: true`; cleanup closes the recursive loop before waiting, and release is skipped after loss.
-- Published config snapshots now clone and freeze both `createdAt` and `updatedAt` as immutable `Date` instances whose mutators throw, while preserving the public `Date` contract. Scheduler coverage verifies the post-acquisition fresh snapshot is passed to work.
-- Strengthened mandatory tests for startup/current behavior, immutable dates, heartbeat server-time and owner/generation predicates, work-error release cleanup, no release after lease loss, scheduler startup enforcement, and fresh snapshot delivery. Existing tests continue to cover expiry takeover, owner/generation fencing, mocked acquisition race, interval rescheduling, non-overlap, shared-lease scheduling, in-flight updates, and idempotent stop.
+- Updated `startDynamicLeasedScheduler()` to execute every cycle through `BackgroundRuntimeLeaseService.runWithLease()`. The common lifecycle now owns guarded heartbeat, lease-loss fencing, and release; the scheduler no longer leaves successful leases valid until expiry or allows long work to outlive the heartbeat path.
+- Preserved post-acquisition `config.getFresh()` ordering, immutable snapshot delivery, skipped-cycle behavior, non-overlap, interval-change rescheduling, in-flight update behavior, and idempotent stop.
+- Added focused scheduler regression evidence for lifecycle ordering and completion release delegation. Existing lease tests cover the recursive heartbeat path, failed-heartbeat lease loss, cleanup, and fencing; the long-running scheduler case now runs inside the delegated lifecycle rather than raw acquisition.
+
+Requirement mapping:
+
+- Runtime-config startup, validation, monotonic refresh, last-known-good retention, listener isolation, recursive refresh timing, close behavior, immutable dates, and process owner token remain implemented in `src/runtime/background-runtime-config.ts` and its focused tests.
+- PostgreSQL `NOW()` atomic acquisition, fixed lease constants, generation takeover, owner/generation heartbeat and release fencing, recursive heartbeat cleanup, and work-error propagation remain implemented in `src/runtime/background-runtime-lease.ts` and its focused tests.
+- Dynamic scheduler lease lifecycle correction is implemented in `src/runtime/dynamic-leased-scheduler.ts`; focused tests verify acquisition-to-fresh-read-to-run-to-release ordering, unavailable-lease skipping, shared-lease exclusion, local non-overlap, interval rescheduling, in-flight updates, startup enforcement, and idempotent stop.
+- No business wiring, queues, Redis/advisory locks, configurable lease constants, schema changes, or environment-based migrated runtime values were added.
 
 Validation:
 
-- Focused runtime tests: `npm run test -- --run tests/unit/runtime/background-runtime-config.test.ts tests/unit/runtime/background-runtime-lease.test.ts tests/unit/runtime/dynamic-leased-scheduler.test.ts`: passed, 3 files and 13 tests.
+- Focused runtime tests: `npm run test -- --run tests/unit/runtime/background-runtime-config.test.ts tests/unit/runtime/background-runtime-lease.test.ts tests/unit/runtime/dynamic-leased-scheduler.test.ts`: passed, 3 files and 14 tests.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed with Prisma Client 6.19.3.
-- `npm run test:unit -- --runInBand`: rejected because Vitest 4.1.11 does not support `--runInBand`; repository-supported `npm run test:unit` then ran 945 tests, with 943 passed and the same 2 unrelated baseline failures in `tests/unit/runtime/observability-startup.test.ts`.
+- `npm run test:unit -- --runInBand`: rejected because Vitest 4.1.11 does not support `--runInBand`.
+- Repository-supported `npm run test:unit`: 60 files passed, 1 file failed; 944 tests passed and 2 unrelated baseline failures remained in `tests/unit/runtime/observability-startup.test.ts`.
 - `npm run build`: passed.
 - `git diff --check`: passed.
 
-Concurrency limitation:
+Evidence limitations and baseline:
 
-- The repository-supported unit tests use controlled database mocks. They verify SQL shape, fencing decisions, takeover generations, and caller behavior, but do not claim to prove PostgreSQL's physical concurrent execution semantics. No task-scoped integration harness was available; the implementation retains the single atomic `INSERT ... ON CONFLICT ... WHERE` statement and PostgreSQL `NOW()` predicates required by the task.
-
-Baseline failures:
-
-- `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while the repository uses `0.11.2`, and expects an outdated recovery-entrypoint source shape. No task-owned files are involved.
+- Lease unit tests use controlled database mocks. They verify SQL shape, PostgreSQL `NOW()` predicates, fencing decisions, takeover generations, and caller behavior, but do not claim to prove physical concurrent PostgreSQL execution. No task-scoped integration harness was available; no real PostgreSQL concurrency result is asserted.
+- The two unrelated baseline failures are the observability startup test's outdated shared runtime expectation (`0.9.0` versus repository `0.11.2`) and outdated recovery-entrypoint source-shape expectation. No task-owned files are involved.
 
 Worktree evidence:
 
