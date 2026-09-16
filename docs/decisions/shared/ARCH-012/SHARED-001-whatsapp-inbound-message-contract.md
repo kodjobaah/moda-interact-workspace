@@ -9,14 +9,13 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-007-SHARED-004
-- ARCH-011-SHARED-002
 enables:
 - ARCH-012-MESSAGING-001
 - ARCH-012-BACKGROUND-001
@@ -25,6 +24,8 @@ updated: 2026-09-16
 ---
 
 # ARCH-012-SHARED-001
+
+> **Architect release-line reconciliation — 2026-09-16:** the dependency/release-order prose below records the original execution contract. During review, the architect confirmed that ARCH-011-SHARED-002 had been advanced to Complete without its prerequisite implementation. The Accepted Attempt 1 review at the end of this file supersedes that ordering: ARCH-012 `0.12.0` is accepted, and ARCH-011 Shared work follows it on the `0.13.0` publication line.
 
 ## Objective
 Implement **and publish** one strict, versioned cross-repository contract for inbound WhatsApp customer messages. This single task replaces the previous split between SHARED-001 implementation and SHARED-002 publication.
@@ -206,15 +207,15 @@ Do not expose npm credentials/tokens in logs or the Completion Report.
 
 ## Acceptance Criteria
 
-- [ ] one canonical strict inbound contract exists at `@modainteract/moda-interact-shared/whatsapp`;
-- [ ] explicit reply context is preserved but optional;
-- [ ] audio uses provider media identity, not raw bytes;
-- [ ] unsupported inputs are explicit, not empty text;
-- [ ] no tenant/business decision is moved into Shared;
-- [ ] all pre-existing Shared exports remain compatible;
-- [ ] the exact validated source is published once using the deterministic version rule;
-- [ ] npm `latest` points at the published ARCH-012 target;
-- [ ] an isolated consumer can import the runtime/declarations.
+- [x] one canonical strict inbound contract exists at `@modainteract/moda-interact-shared/whatsapp`;
+- [x] explicit reply context is preserved but optional;
+- [x] audio uses provider media identity, not raw bytes;
+- [x] unsupported inputs are explicit, not empty text;
+- [x] no tenant/business decision is moved into Shared;
+- [x] all pre-existing Shared exports remain compatible;
+- [x] the exact validated source is published once using the deterministic version rule;
+- [x] npm `latest` points at the published ARCH-012 target;
+- [x] an isolated consumer can import the runtime/declarations.
 
 ## Stop conditions
 STOP and return to `moda_architect` if:
@@ -266,7 +267,20 @@ npm verification:
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 1.
 
 ### Review Notes
-TBD.
+Functionality-first review accepted. Implementation commit `147955b` implements the required strict Shared v1 WhatsApp inbound contract and publishes it as `@modainteract/moda-interact-shared@0.12.0`.
+
+Verified functional properties:
+
+- `providerAccountId` and `providerPhoneNumberId` remain distinct provider identities;
+- contextual and contextless customer messages are represented without tenant inference;
+- text, audio and unsupported inputs are explicit strict union members;
+- audio carries provider media identity/metadata only, not raw bytes;
+- unknown tenant/business/raw-payload fields are rejected by the Shared boundary;
+- `./whatsapp` is an additive package/build entry and existing public exports are preserved;
+- the implementation parent used Shared `0.11.2`, and `0.12.0` is the required next-minor target;
+- the Completion Report records successful source/package validation, publication evidence and an isolated consumer import.
+
+Architectural release-line reconciliation: review found that `ARCH-011-SHARED-002` had been manually advanced from `pending` to `complete` immediately before this task was claimed even though `ARCH-011-SHARED-001` remains unimplemented and its required billing primitives are absent from the Shared source. That coordination error is not a defect in the accepted WhatsApp implementation. The architect reconciliation restores `ARCH-011-SHARED-002` to `pending`, sequences ARCH-011 Shared implementation after this accepted `0.12.0` baseline, and reserves `0.13.0` for the subsequent ARCH-011 publication. Do not rerun `ARCH-012-SHARED-001`.

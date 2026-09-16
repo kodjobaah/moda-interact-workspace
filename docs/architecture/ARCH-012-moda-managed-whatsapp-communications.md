@@ -630,31 +630,28 @@ on the existing test/production messaging worker deployables while preserving le
 
 ## Shared package publication ordering
 
-The 2026-09-16 snapshot changes the Shared publication frontier but does **not** change the ARCH-012 contract design. ARCH-015 has advanced the accepted Shared patch line while ARCH-011 still owns the preceding public contract publication.
+The 2026-09-16 implementation review established that the live Shared baseline was `0.11.2` and ARCH-012-SHARED-001 published the additive WhatsApp contract as the next minor `0.12.0`.
 
-ARCH-012 therefore uses one consolidated Shared task:
+A coordination error had manually marked `ARCH-011-SHARED-002` Complete before its prerequisite `ARCH-011-SHARED-001` was implemented. Because `0.12.0` is already correctly published and consumable, the architect does not churn the WhatsApp implementation. The release line is reconciled as:
 
 ```text
-ARCH-011-SHARED-002 accepted Complete
-        -> ARCH-012-SHARED-001
-             implement ./whatsapp
-             validate source/package
-             choose deterministic next-minor target
-             publish exactly once
-             verify registry + isolated consumer
+ARCH-012-SHARED-001 accepted Complete (`0.12.0`)
+        -> ARCH-011-SHARED-001
+        -> ARCH-011-SHARED-002 publication (`0.13.0`)
 ```
 
-The deterministic version rule is defined in `ARCH-012-SHARED-001`: take the coherent architect-accepted npm/local baseline after ARCH-011 and increment the **minor** version, resetting patch to zero. If the Shared source checkout is behind previously accepted/published source, or local/npm/ARCH-011 evidence disagree, STOP for architect reconciliation.
+ARCH-011 Shared implementation must preserve the accepted `./whatsapp` entrypoint and all `0.12.0` public capability when it advances the package to `0.13.0`.
 
 There is no executable ARCH-012 publication-only task. `ARCH-012-SHARED-002` is retained only as Superseded history.
 
 ## Task graph
 
 ```text
-ARCH-011-SHARED-002
-        -> ARCH-012-SHARED-001 (implement + validate + publish)
+ARCH-012-SHARED-001 (accepted + published `0.12.0`)
             -> ARCH-012-MESSAGING-001
             -> ARCH-012-BACKGROUND-001
+
+ARCH-012-SHARED-001 -> ARCH-011-SHARED-001 -> ARCH-011-SHARED-002 (`0.13.0`)
 
 ARCH-012-DATABASE-001
         -> ARCH-012-BACKGROUND-001
@@ -674,8 +671,10 @@ Current execution frontier after this consolidation:
 
 ```text
 ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
+ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
+ARCH-012-MESSAGING-001     Ready — SHARED-001 and ARCH-007-MESSAGING-001 are Complete
 ARCH-012-BACKGROUND-003    Ready unless the live workspace has already advanced it
-ARCH-012-SHARED-001        Pending until ARCH-011-SHARED-002 is architect-accepted Complete
+ARCH-012-BACKGROUND-001    Pending until BACKGROUND-003 is architect-accepted Complete
 ```
 
 Do not downgrade a task that has already advanced in the live developer workspace. Merged `ARCH-012-BACKGROUND-001` remains Pending until SHARED-001, DATABASE-001 and BACKGROUND-003 are accepted Complete.
