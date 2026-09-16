@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 67
-executor: copilot
-claimed_at: 2026-09-16T10:50:39Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-ADMIN-008
@@ -165,3 +165,46 @@ STOP and return to architect if either correction would require:
 - changing DATABASE-004 bounds;
 - changing runtime-control persistence/audit/CAS semantics;
 - changing promotion activation/localization rules.
+
+## Completion Report
+
+### Status
+
+Ready for architect review.
+
+### Launcher evidence
+
+- Claim commit: `5021fd11e245087d55ac58c2db4825e5adacef74`
+- Attempt: `1`
+- Dependency gate: passed (`ARCH-014-ADMIN-008` and `ARCH-014-ADMIN-009` complete)
+- Parent and implementation worktrees were created at the canonical paths.
+- Recursive database submodule sync/update passed; recorded commit was `47232f6876469f209c7efde4cefbb8a47d864e6a`.
+
+### Files changed
+
+- `src/lib/admin/promotion-translation-workbook.ts`
+- `src/lib/admin/background-runtime-control-validation.ts`
+- `tests/unit/promotion-translation-workbook.test.ts`
+- `tests/unit/background-runtime-control-validation.test.ts`
+
+### Implementation
+
+- Rejected oversized workbook bytes before lazy-loading ExcelJS, workbook construction, or XLSX parsing.
+- Added the exact 2 MiB boundary regression assertion using a non-XLSX buffer.
+- Formatted all runtime range errors through display metadata so millisecond-backed fields report seconds and UI values.
+- Added exact quiet-window and maximum-settle-window error assertions.
+- No workbook schema, runtime bounds, persistence, authorization, concurrency, worker, or merchant-rendering behavior was changed.
+
+### Validation Results
+
+- `node --test tests/unit/promotion-translation-workbook.test.ts tests/unit/background-runtime-control-validation.test.ts`: passed, 11/11.
+- `npm test`: 173 passed, 4 unrelated baseline failures in existing observability/internationalization contracts (`shared-runtime-ownership`, shared ICU version, catalogue alignment, and merchant translation coverage).
+- `npm run build`: passed; emitted existing BullMQ optional-dependency and critical-dependency warnings.
+- `npm run lint --if-present`: passed.
+- `git diff --check`: passed.
+- Dependencies were installed with `npm ci` from the existing lockfile because the fresh implementation worktree had no `node_modules`; no dependency files changed.
+
+### Completion Protocol
+
+- Returned only ADMIN-010 to `review`.
+- Dependent system-test work was not started.
