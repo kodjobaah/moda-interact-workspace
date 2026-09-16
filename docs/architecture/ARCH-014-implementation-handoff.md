@@ -115,8 +115,8 @@ ARCH-014-BACKGROUND-002  READY
 ARCH-014-BACKGROUND-003  READY
 ARCH-014-BACKGROUND-004  PENDING
 ARCH-014-BACKGROUND-005  PENDING
-ARCH-014-ADMIN-009       READY
+ARCH-014-ADMIN-009       COMPLETE
 ARCH-014-SYSTEM-TEST-003 PENDING
 ```
 
-`BACKGROUND-002` and `BACKGROUND-003` are the automatic Ready tasks unlocked by BACKGROUND-001 and may execute independently. `ADMIN-009` is already Ready in this branch because DATABASE-004 and ADMIN-007 are Complete. BACKGROUND-004 remains gated by BACKGROUND-002 + BACKGROUND-003; BACKGROUND-005 remains gated by BACKGROUND-002 + BACKGROUND-003 + BACKGROUND-004; SYSTEM-TEST-003 remains terminal/developer-gated behind the complete background chain and ADMIN-009.
+`BACKGROUND-002` and `BACKGROUND-003` remain the automatic Ready tasks and may execute independently. `ADMIN-009` is now architect-accepted Complete. BACKGROUND-004 remains gated by BACKGROUND-002 + BACKGROUND-003; BACKGROUND-005 remains gated by BACKGROUND-002 + BACKGROUND-003 + BACKGROUND-004; SYSTEM-TEST-003 remains terminal/developer-gated behind the complete Background chain even though its Admin dependency is now Complete.
