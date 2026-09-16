@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 67
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-014-ADMIN-008
 - ARCH-014-ADMIN-009
@@ -165,3 +165,69 @@ STOP and return to architect if either correction would require:
 - changing DATABASE-004 bounds;
 - changing runtime-control persistence/audit/CAS semantics;
 - changing promotion activation/localization rules.
+
+## Completion Report
+
+### Status
+
+Ready for architect review.
+
+### Launcher evidence
+
+- Claim commit: `5021fd11e245087d55ac58c2db4825e5adacef74`
+- Attempt: `1`
+- Dependency gate: passed (`ARCH-014-ADMIN-008` and `ARCH-014-ADMIN-009` complete)
+- Parent and implementation worktrees were created at the canonical paths.
+- Recursive database submodule sync/update passed; recorded commit was `47232f6876469f209c7efde4cefbb8a47d864e6a`.
+
+### Files changed
+
+- `src/lib/admin/promotion-translation-workbook.ts`
+- `src/lib/admin/background-runtime-control-validation.ts`
+- `tests/unit/promotion-translation-workbook.test.ts`
+- `tests/unit/background-runtime-control-validation.test.ts`
+
+### Implementation
+
+- Rejected oversized workbook bytes before lazy-loading ExcelJS, workbook construction, or XLSX parsing.
+- Added the exact 2 MiB boundary regression assertion using a non-XLSX buffer.
+- Formatted all runtime range errors through display metadata so millisecond-backed fields report seconds and UI values.
+- Added exact quiet-window and maximum-settle-window error assertions.
+- No workbook schema, runtime bounds, persistence, authorization, concurrency, worker, or merchant-rendering behavior was changed.
+
+### Validation Results
+
+- `node --test tests/unit/promotion-translation-workbook.test.ts tests/unit/background-runtime-control-validation.test.ts`: passed, 11/11.
+- `npm test`: 173 passed, 4 unrelated baseline failures in existing observability/internationalization contracts (`shared-runtime-ownership`, shared ICU version, catalogue alignment, and merchant translation coverage).
+- `npm run build`: passed; emitted existing BullMQ optional-dependency and critical-dependency warnings.
+- `npm run lint --if-present`: passed.
+- `git diff --check`: passed.
+- Dependencies were installed with `npm ci` from the existing lockfile because the fresh implementation worktree had no `node_modules`; no dependency files changed.
+
+### Completion Protocol
+
+- Returned only ADMIN-010 to `review`.
+- Dependent system-test work was not started.
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Attempt Reviewed
+
+Attempt 1 — implementation `6995200`, Completion Report `28740ba`.
+
+### Functional assessment
+
+ADMIN-010 satisfies both narrow corrective contracts. `parsePromotionTranslationWorkbook(...)` now rejects `bytes.byteLength > PROMOTION_TRANSLATION_WORKBOOK_MAX_BYTES` before lazy-loading ExcelJS, constructing a workbook, or calling `workbook.xlsx.load(...)`, so direct lower-level callers cannot force an oversized XLSX parse. The returned primary issue remains exactly `INVALID_XLSX` / `The workbook exceeds the 2 MiB limit.`
+
+Runtime range errors now derive minimum, maximum and unit from the same display metadata used by the Admin controls. Millisecond-backed settle fields therefore report `0.25–10 seconds` and `1–30 seconds` rather than persisted millisecond bounds labelled as seconds. Integer/ordinary-second fields retain equivalent existing behavior, and cross-field rules are unchanged.
+
+The implementation commit changes only the two authorized production files plus their focused unit tests. No workbook schema/sheets, `exceljs@4.4.0`, DATABASE-004 bounds, authorization, persistence/audit/CAS behavior, Background workers, promotion lifecycle/localization rules or Shopify merchant rendering were changed. The reported repository-wide baseline failures are unrelated and do not block this functionality-first review.
+
+No further ADMIN-010 implementation attempt is required.
+
+### Dependency result
+
+`ARCH-014-ADMIN-010` is Complete. `ARCH-014-SYSTEM-TEST-002` has all four prerequisites Complete in this branch and is promoted to Ready; it remains developer-gated and must not auto-start. `ARCH-014-SYSTEM-TEST-003` remains Pending because corrective Background tasks `ARCH-014-BACKGROUND-006` and `ARCH-014-BACKGROUND-007` are not yet Complete.
