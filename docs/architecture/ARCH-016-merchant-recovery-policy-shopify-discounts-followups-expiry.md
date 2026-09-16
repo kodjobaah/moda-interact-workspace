@@ -755,6 +755,25 @@ be resolved before deployment; it does not reopen DATABASE-001.
 The terminal system-test task remains gated on all implementation prerequisites and
 continues to sit after the developer manual-testing checkpoint.
 
+## Post-review update — BACKGROUND-002 Attempt 1 Changes Requested
+
+`ARCH-016-BACKGROUND-002` Attempt 1 implementation commit `da4ccbb` is returned to
+**Ready** for bounded correction. The generation/restart and scheduler architecture is
+retained; no redesign is requested.
+
+Attempt 2 must correct four runtime issues discovered during functional review:
+
+```text
+inbound WhatsApp lifetime activity must use canonical event.occurredAt and count all routed inbound content, including rejected/failed audio
+active checkout-update activity must advance independently of Shopify basket-refresh outcome
+an expiry race must never allow markRecoveryMessageSent to reopen EXPIRED as MESSAGE_SENT
+expiry history fromStatus must be the exact status replaced by the terminal update
+```
+
+The task remains at `attempt: 1`, `executor: null`, `claimed_at: null`; the launcher will
+increment it on the next claim. No dependent task is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the
+existing developer manual-testing checkpoint remains before terminal integrated testing.
 
 ## Post-review update — ADMIN-001 Attempt 1 Accepted
 
@@ -780,6 +799,54 @@ ARCH-016-SYSTEM-TEST-001 Pending
 
 The Ready promotions are dependency-state reconciliation only: each promoted task remains `attempt: 0`, `executor: null` and `claimed_at: null` until launched through the normal task workflow. `ARCH-016-SYSTEM-TEST-001` is not started automatically and remains behind completion of all implementation tasks plus the developer manual-testing checkpoint.
 
+## Post-review update — SHOPIFY-001 Attempt 2 Changes Requested
+
+`ARCH-016-SHOPIFY-001` Attempt 2 implementation commit `454f882` correctly narrows
+eligibility to the durable offline Session, removes scope-payload authority and makes
+catalogue/discount invalidation durable without overwriting existing per-discount
+`unavailableAt` values. Those corrections are retained.
+
+The task returns to **Ready** for one bounded lifecycle correction because the interactive
+Prisma transactions still use plain reads at the default isolation boundary. They do not
+serialize activation against concurrent uninstall/scope removal, so a stale activation
+can still write `SYNC_REQUIRED` after a disabling lifecycle event committed.
+
+Attempt 3 must establish one common Shop-row `FOR UPDATE` lifecycle fence across:
+
+```text
+subscription activation bootstrap
+APP_SCOPES_UPDATE persistence/eligibility
+APP_UNINSTALLED invalidation
+```
+
+and duplicate uninstall must use the persisted first `Shop.uninstalledAt` as the effective
+catalogue invalidation timestamp rather than moving that boundary on webhook retries.
+
+The task remains `attempt: 2`, `executor: null`, `claimed_at: null`; the launcher owns the
+increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.
+
+
+## Post-review update — SHOPIFY-001 Attempt 3 Changes Requested
+
+`ARCH-016-SHOPIFY-001` Attempt 3 implementation commit `2ffbd20` correctly adds the
+shared `commerce.Shop ... FOR UPDATE` lifecycle fence to subscription activation and
+uninstall, and duplicate uninstall now reuses the persisted first `Shop.uninstalledAt`
+for catalogue invalidation.
+
+One bounded correction remains: `APP_SCOPES_UPDATE` currently persists `Session.scope`
+before acquiring that same Shop-row lock. The task contract requires one consistent
+lifecycle lock order across activation, scope update and uninstall, with the Shop lock
+held before Session/catalogue lifecycle mutation. Attempt 4 must therefore move only the
+scope Session persistence behind the existing Shop lock, then re-read the durable offline
+Session and retain post-commit publication.
+
+The task returns to `status: ready`, remains `attempt: 3`, `executor: null` and
+`claimed_at: null`; the deterministic launcher owns the increment on reclaim. No
+ARCH-016 dependency is promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending and is not
+started automatically; the developer manual-testing checkpoint remains before terminal
+integrated testing.
 ## Post-review update — ADMIN-002 Attempt 2 Accepted
 
 `ARCH-016-ADMIN-002` Attempt 2 is architect-accepted **Complete** at implementation
@@ -814,3 +881,22 @@ The task returns to `status: ready`, remains `attempt: 1`, `executor: null` and
 `claimed_at: null`; `/moda-task ARCH-016-BACKGROUND-001` owns the Attempt-2 increment on reclaim.
 No dependency is promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending behind all implementation
 work and the developer manual-testing checkpoint.
+## Post-review update — BACKGROUND-002 Attempt 2 Accepted
+
+`ARCH-016-BACKGROUND-002` Attempt 2 is architect-accepted **Complete** at implementation
+commit `ad1f858`.
+
+The accepted Background boundary now provides generation-aware recovery restart after
+`EXPIRED`, monotonic checkout/inbound-customer activity using authoritative event time,
+bounded inactivity expiry driven by the current runtime lifetime, and an hourly leased
+expiry sweep in the existing recovery worker. Attempt 2 also closes the two terminal
+race paths identified during Attempt-1 review: an in-flight send cannot reopen an
+expired generation, and expiry history records the exact active status replaced by its
+conditional terminal update.
+
+No Conversation uniqueness, Render topology, merchant policy ownership or unrelated
+billing behavior is changed by this acceptance.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation
+dependency is Complete and the developer has completed the existing manual-testing
+checkpoint. It is not started automatically by this acceptance.
