@@ -94,10 +94,10 @@ The following tasks supersede any previously generated but unapplied standalone 
 ARCH-014-ADMIN-006       COMPLETE
 ARCH-014-ADMIN-007       READY
 ARCH-014-DATABASE-003    COMPLETE
-ARCH-014-ADMIN-008       READY
+ARCH-014-ADMIN-008       COMPLETE
 ARCH-014-SHOPIFY-003     READY
 ARCH-014-SYSTEM-TEST-001 READY (DEVELOPER-GATED)
-ARCH-014-SYSTEM-TEST-002 PENDING on ADMIN-008 + SHOPIFY-003 + DATABASE-003
+ARCH-014-SYSTEM-TEST-002 PENDING on SHOPIFY-003 in this branch-local snapshot; DATABASE-003 + ADMIN-008 are COMPLETE
 ```
 
 Spreadsheet standard: exactly `exceljs@4.4.0`, established in ADMIN-006 and reused by ADMIN-008. No alternate spreadsheet package is authorized.

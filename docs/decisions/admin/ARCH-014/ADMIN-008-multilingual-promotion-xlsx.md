@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 58
 executor: null
 claimed_at: null
@@ -422,3 +422,24 @@ Status: Ready for Review
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-008`.
 - Implementation and report changes remain on dedicated task branches; neither branch was merged to `main`.
 - Task lifecycle is returned to `review` with executor and claim cleared for architect handoff.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Architect findings
+
+- Accepted implementation audit fix `76d3131` on top of implementation `50e9d5e`.
+- The promotion workbook reuses the ADMIN-006 `exceljs@4.4.0`/`translation-workbook-common.ts` foundation and preserves the exact three-sheet, 20-locale, internal-name/English-source identity contract.
+- Draft create/edit behavior is correct: create persists one English translation; unchanged normalized English preserves translations; changed English resets the campaign to the new English row only; ACTIVE campaigns remain immutable.
+- Workbook parsing now fails closed on non-exact worksheet set/order, non-exact eight-row metadata, source/campaign mismatch, locale/header/label mismatch, formula/non-string cells and incomplete canonical packages.
+- Import reparses the canonical package against fresh database state, replaces exactly 20 translations inside one transaction, then performs the version compare-and-set; a failed CAS throws and rolls back the replacement atomically.
+- Activation independently re-reads persisted translations and requires all 20 canonical locales with non-empty merchant title/description before the existing lifecycle transition can succeed.
+- No Prisma/schema/migration/Shopify or alternate spreadsheet-package change is introduced.
+- The uploaded review archive intentionally omits `node_modules`, so ExcelJS-backed tests cannot be independently rerun here; the available promotion security suite reproduced 13/13 passing and source inspection confirms the required runtime behavior. This archive limitation is not a functional blocker.
+
+### Dependency result
+
+`ARCH-014-ADMIN-008` is Complete. In this branch-local snapshot `ARCH-014-SHOPIFY-003` is still recorded as Ready, so `ARCH-014-SYSTEM-TEST-002` remains Pending here. Once the separately architect-accepted SHOPIFY-003 reconciliation is present in the same canonical parent state, SYSTEM-TEST-002 is eligible to become Ready and remains developer-gated.
