@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 21
-executor: copilot
-claimed_at: 2026-09-16T12:04:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-012-SHARED-001
@@ -352,13 +352,31 @@ Return `ARCH-012-BACKGROUND-001` to `review` and STOP. Do not create or execute 
 ## Completion Report
 
 ### Status
-Not started.
+Ready for architect review.
 
 ### Files Changed
-TBD.
+- Implementation branch commit: `aca37f9` on `task/ARCH-012-BACKGROUND-001`.
+- Accepted database submodule pointer: `655ff35` (`ARCH-012-DATABASE-001`).
+- Consumes `@modainteract/moda-interact-shared@0.12.0` and its strict canonical WhatsApp union.
+- `src/integration/whatsapp/types.ts`, `src/workers/whatsapp.worker.ts`.
+- `src/services/inbound-whatsapp-audio.service.ts`, `src/services/whatsapp-media.service.ts`, `src/services/speech-transcription.service.ts`.
+- Focused audio lifecycle tests and Shared-version compatibility assertion.
 
 ### Validation Results
-TBD.
+- Focused inbound/routing/admission tests: 38 passed.
+- Focused audio lifecycle tests: 4 passed.
+- Touched compatibility/worker/audio tests: 17 passed.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed, including Prisma generation.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm test`: 996 passed, 19 skipped; 5 failures remain outside this task's inbound slice. Four translation integration tests fail because `backgroundRuntimeConfigService` is not started in the existing integration harness. The fifth was an obsolete `0.11.2` Shared-version assertion and was updated to accepted `0.12.0`; the affected compatibility test now passes.
+- No live Groq call was made. Raw media bytes and signed Meta URLs are transient and are not logged or persisted.
+
+### Scope and Limitations
+- Existing routing, abuse admission, execution eligibility, worker factory, dynamic concurrency binding, and ordered turn processor were preserved.
+- Audio retryable provider failures remain `PENDING` for BullMQ retry; terminal duration/media/blank outcomes use bounded failure state and the admitted fallback path.
+- Full integration validation is limited by the unrelated runtime-config startup baseline described above.
 
 ## Architect Review
 
