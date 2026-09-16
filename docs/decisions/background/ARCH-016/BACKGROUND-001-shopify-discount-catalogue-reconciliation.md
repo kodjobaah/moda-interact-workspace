@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-16T17:48:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T18:55:00Z
 ---
 
 # ARCH-016-BACKGROUND-001
@@ -302,3 +302,36 @@ STOP if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+### Work Completed
+
+- Added the Shopify Admin GraphQL discount provider using the existing offline token refresh service, API version `2026-07`, bounded pagination, all eight documented union types, code-count/single-code normalization, and bounded provider snapshots without secrets.
+- Added generation/token-fenced catalogue claim, fetch, finalize, supersession, eligibility-loss, unavailable, and provider-error handling.
+- Added the canonical Shared discount-sync worker to the existing recovery worker with bounded concurrency.
+- Added deferred Background billing activation and reinstall sync publication after successful lifecycle transactions, with best-effort queue failure handling.
+- Pinned `@modainteract/moda-interact-shared` to exact `0.12.1`.
+
+### Validation
+
+- `npm run prisma:validate`: passed;
+- catalogue/provider implementation has no new TypeScript diagnostics;
+- `npm run build`: blocked by pre-existing unrelated generated-client mismatches in checkout generation and WhatsApp transcription/content-type fields;
+- `git diff --check`: passed;
+- focused provider/catalogue/worker tests were not present in the supplied snapshot; implementation was validated through Prisma/schema compilation and existing worker/billing integration surfaces.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-001`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-001`;
+- task branches: `task/ARCH-016-BACKGROUND-001` in both worktrees;
+- start synchronization: parent/implementation origin/main already current; recursive submodule preparation passed;
+- database submodule commit: `655ff35ea04f4d2cdb4bef4313b3b977320999cd`;
+- launcher claim commit: `512ca126`;
+- implementation commit: `70770d6` (`feat(background): reconcile Shopify discount catalogue`);
+- implementation branch pushed to `origin/task/ARCH-016-BACKGROUND-001`;
+- executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for review.
