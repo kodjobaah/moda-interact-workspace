@@ -4,7 +4,7 @@
 |---|---|---|
 | [ARCH-015-BACKGROUND-001](BACKGROUND-001-purchase-reconciliation.md) | complete | Candidate-centric provider reconciliation is complete; durable purchase event handles drive exact provider proof without singular BillingPlan pack-meter authority. |
 | [ARCH-015-BACKGROUND-002](BACKGROUND-002-cross-plan-consumption.md) | complete | Historical/non-current ACTIVE lots are consumed before current-context lots with fail-closed local context classification. |
-| [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | ready | Existing billing scheduler processes durable refunds using typed RecoveryCreditRefund correction evidence, submits safe negative/fractional corrections and reconciles completion. |
+| [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | complete | Existing billing scheduler processes durable refunds using typed RecoveryCreditRefund correction evidence, submits safe negative/fractional corrections and reconciles completion. |
 
 ## Current architect review state
 
@@ -72,3 +72,22 @@ process-local settlement evidence.
 
 The pre-existing database P3009 must be recovered before deployed migration/integration
 validation, but no additional DATABASE-002 implementation attempt is required.
+
+
+## BACKGROUND-003 Attempt 2 architect review
+
+`ARCH-015-BACKGROUND-003` remains **Ready** for Attempt 3. Attempt 2 established the typed
+negative/fractional correction workflow, but architect review found five bounded production
+corrections still required: native App Pricing context derivation, RECONCILE state proof
+without a live-pricing dependency, proportional manual-fallback refund evidence, rollback
+of unlinked correction events on a lost PREPARE link CAS, and the existing
+`REFUND_COMPLETED` billing system message on atomic completion.
+
+`ARCH-015-ADMIN-001` remains Pending until BACKGROUND-003 is architect-accepted Complete.
+
+
+## BACKGROUND-003 Attempt 3 acceptance
+
+`ARCH-015-BACKGROUND-003` Attempt 3 is **Accepted — Complete**. The five bounded Attempt-2 findings are closed: native App Pricing uses Shared fallback identity, RECONCILE no longer requires live pricing, manual fallback freezes proportional economics, a lost PREPARE link CAS rolls back the unlinked correction event, and automatic completion writes the deterministic `REFUND_COMPLETED` system message atomically.
+
+`ARCH-015-ADMIN-001` is therefore **Ready**. `ARCH-015-SYSTEM-TEST-001` remains Pending until ADMIN-001 is Complete. The pre-existing database P3009 remains an external deployed-environment prerequisite.
