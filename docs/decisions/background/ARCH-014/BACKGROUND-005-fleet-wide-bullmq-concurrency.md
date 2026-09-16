@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 66
-executor: copilot
-claimed_at: 2026-09-16T09:17:54Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
 - ARCH-014-BACKGROUND-002
@@ -184,3 +184,21 @@ git diff --check
 ## Stop conditions
 
 STOP if installed BullMQ types do not expose `worker.concurrency`, `Queue.setGlobalConcurrency` or `Queue.getGlobalConcurrency`. Do not replace them with a home-grown Redis lock; return to architect review with exact installed API evidence.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `5cb00bb` (`feat(background): enforce fleet-wide queue concurrency`), pushed to `task/ARCH-014-BACKGROUND-005`.
+
+Implemented the shared BullMQ global-concurrency controller with the required lease, fresh configuration read, ordered seven-queue mapping, Redis verification, version-gated local Worker concurrency updates, startup reconciliation, config-version reconciliation, and recursive 30-second healing. All affected worker entrypoints now initialize runtime configuration before constructing controlled Workers and starting the controller. The development entrypoint follows the same ordering. The reported trailing blank line in `src/workers/whatsapp.worker.ts` was removed.
+
+Validation:
+
+- `npm run test:unit -- tests/unit/runtime/queue-concurrency-controller.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts`: passed, 63 test files and 970 tests.
+- `npm run test:integration --if-present`: passed, 2 test files and 3 tests.
+- `npm run build`: passed, including Prisma client generation and TypeScript compilation.
+- `git diff --check`: passed.
+- Implementation worktree is clean after commit and push.
+
+Limitations: the repository integration runner does not currently include a live two-Worker BullMQ Redis-cap test or an active-job cap-decrease test. The controller unit suite covers mocked lease contention, fresh post-lease reads, ordered mapping, Redis verification, healing retry, and strict config-version updates; the two live BullMQ scenarios remain explicit review coverage gaps.
