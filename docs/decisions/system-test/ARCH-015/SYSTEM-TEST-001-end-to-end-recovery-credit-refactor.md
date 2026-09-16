@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
 - ARCH-015-SHARED-001
 - ARCH-015-DATABASE-001
+- ARCH-015-DATABASE-002
 - ARCH-015-SHOPIFY-001
 - ARCH-015-SHOPIFY-002
 - ARCH-015-BACKGROUND-001
@@ -26,7 +27,7 @@ depends_on:
 - ARCH-015-ADMIN-001
 enables: []
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015-SYSTEM-TEST-001
@@ -68,10 +69,12 @@ At minimum automate/document deterministic scenarios for:
 27. transient provider delay does not duplicate correction;
 28. unsafe correction routes PROVIDER_ACTION_REQUIRED before any automatic event;
 29. Admin exact REFUND/CREDIT evidence completes manual fallback;
-30. Admin cannot issue manual monetary action when an automatic correction event exists;
-31. mismatched provider evidence becomes NEEDS_ATTENTION;
-32. no historical purchased lot is rewritten during plan/cycle transition;
-33. no runtime top-up decision falls back to singular BillingPlan pack fields.
+30. Admin cannot issue manual monetary action when `automaticCorrectionUsageEventId` exists;
+31. automatic correction baseline/expected-after evidence is stored as typed RecoveryCreditRefund columns and remains immutable across scheduler retries;
+32. no UsageEvent metadata JSON is required for settlement proof;
+33. mismatched provider evidence becomes NEEDS_ATTENTION;
+34. no historical purchased lot is rewritten during plan/cycle transition;
+35. no runtime top-up decision falls back to singular BillingPlan pack fields.
 
 ## Evidence
 
@@ -81,6 +84,7 @@ Capture:
 provider activeSubscription snapshots
 ARCH-014 plan/event records used
 purchase/refund rows before/after
+RecoveryCreditRefund automaticCorrectionUsageEventId and typed correction evidence
 UsageEvent ids, quantities and idempotency keys
 provider quantity/cost before/after
 entitlement aggregate before/after

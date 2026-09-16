@@ -1,5 +1,5 @@
 ---
-id: ARCH-014-ADMIN-008
+id: 
 architecture_id: ARCH-014
 title: Author multilingual promotion campaigns with the shared pre-populated XLSX workflow
 task_kind: implementation
