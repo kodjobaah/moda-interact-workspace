@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 85
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-015-SHARED-001
 - ARCH-015-DATABASE-002
@@ -905,3 +905,80 @@ STOP and return to `moda_architect` without inventing architecture if:
 4. Clear `executor`/`claimed_at`.
 5. Return to `moda_architect`.
 6. STOP. Do not start BACKGROUND-004.
+
+# Completion Report
+
+## Status
+
+Ready for `moda_architect` review. Implementation and validation are complete; `ARCH-015-BACKGROUND-004` was not started.
+
+## Physical worktree and preparation evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-004`
+- Parent branch: `task/ARCH-015-SHOPIFY-004`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-004`
+- Implementation branch: `task/ARCH-015-SHOPIFY-004`
+- Shared/default checkouts were not switched or mutated; no other task worktree was reused.
+- Parent and implementation branches were already current with `origin/main`; remote task branches were not fast-forwarded.
+- Recursive submodule sync and update passed. Database submodule was initialized at `4af14a30b11d8bd4ddc95ba92ae294348eff4e01`.
+
+## Files and commits
+
+Implementation commit `b088631` (`fix(shopify): serialize recovery credit meter mutations`) updated the authorized billing services/types, merchant pricing resolver, purchase/refund UI, locale catalogues, and focused tests.
+
+Follow-up commit `8cfae52` (`fix(shopify): restore purchase locale parity`) restored the existing `billingPurchases.historicalNotRefundable` key in the 19 non-English catalogues so the authorized locale-parity and merchant-pricing tests pass.
+
+No Prisma schema or cross-repository files were changed.
+
+## Validation results
+
+- Focused ARCH-015 suite: 6 test files, 251 passed, 0 failed.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- Full `npm test`: 47 files passed, 2 skipped; 613 tests passed, 3 skipped.
+- `git diff --check`: passed.
+- Direct ESLint on touched JS/TS/TSX/JSX files: one existing classic-JSX warning/error remains for the required `React` runtime import in `TopUpPurchasePanel.jsx` (`no-unused-vars`).
+- `npm run typecheck`: blocked by existing repository-wide JSX/typing baseline errors outside this task; the output also includes pre-existing errors in unrelated generated/type surfaces. No task-specific typecheck failure was identified.
+- The repository contains `tests/unit/billing-purchases-i18n.test.ts` rather than the task text's `tests/unit/billing-i18n.test.ts`; the existing parity test passed.
+
+## Architect Review — Attempt 1 — Accepted
+
+Verdict: **Accepted — Complete**.
+
+Accepted implementation commits:
+
+```text
+b0886310bec0ba8099fedfce90288ba3c16f153a
+8cfae529e54dcb0e9d31472b2820ab54558c9ae2
+```
+
+The production implementation satisfies the ARCH-015 provider-meter correction contract:
+
+- purchase and refund admission share the existing per-shop `Subscription ... FOR UPDATE` serialization boundary;
+- same `(shopId,eventHandle)` REQUESTED purchases/live refunds block a second monetary mutation while different handles remain independent;
+- refund reactivation is blocked both by the initial read and CAS once `automaticCorrectionUsageEventId` exists;
+- top-up availability is derived per event handle rather than from one global pending purchase;
+- displayed provider price is the deterministic next Shopify meter-unit charge and is not labelled per conversation;
+- no schema, queue, Redis/advisory lock or direct App Event submission was introduced.
+
+Validation accepted for this task:
+
+```text
+focused suite: 251 passed
+full suite:    613 passed, 3 skipped
+Prisma:        passed
+build:         passed
+git diff:      passed
+```
+
+The repository-wide typecheck baseline and the existing classic-JSX `React` import lint warning are non-task-owned and do not block acceptance.
+
+Two review observations are explicitly **non-blocking** and are deferred to later/manual/integrated validation rather than another SHOPIFY-004 implementation attempt:
+
+1. the Dutch `billingCommerce.topup.meterBusy` runtime string contains a small wording difference from the architect matrix (`er nog`);
+2. several architect-listed regression scenarios are not represented as one-for-one focused unit cases even though the reviewed production paths and broader focused/full suites are green.
+
+These observations do not justify holding the accepted provider-meter correction. They remain suitable targets for upstream/manual/system validation. Do not reopen SHOPIFY-004 solely for them.
+
+`ARCH-015-SYSTEM-TEST-001` is **not** started by this acceptance. The architecture retains the developer/manual-test checkpoint before explicit architect authorization of terminal system testing.
