@@ -911,3 +911,29 @@ billing behavior is changed by this acceptance.
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation
 dependency is Complete and the developer has completed the existing manual-testing
 checkpoint. It is not started automatically by this acceptance.
+
+
+## Post-review update — BACKGROUND-003 Attempt 3 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 3 implementation commit `f2abbbc` correctly fixes the
+ACTIVE provider-status eligibility predicate, adopts canonical WhatsApp provider event time
+for inbound engagement, and adds the first guarded outreach-transition/duplicate-message
+reconciliation primitives. Those corrections are retained.
+
+The task returns to **Ready** for a bounded Attempt-4 correction because the successful-send
+state machine still does not converge after crash/retry. In particular, durable
+`followUpDueAt` is not used to repair a failed BullMQ publication once the recovery is
+`MESSAGE_SENT`; duplicate successful initial sends return before normal recovery/follow-up
+finalisation; `PENDING`/broken duplicate provenance is treated as successful or releasable
+instead of fail-closed; and guarded attempt updates are still followed by unconditional
+lifecycle writes that can regress `ENGAGED` state. Provider-time engagement must also
+converge on the earliest qualifying inbound timestamp under out-of-order delivery.
+
+Attempt 4 is restricted to the existing outreach/reconciliation services and focused tests.
+No schema/migration, entitlement-priority, Conversation-identity, queue-topology, AI discount
+selection or sequence-3 change is authorised.
+
+The task remains `attempt: 3`, `executor: null`, `claimed_at: null`; the deterministic
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.

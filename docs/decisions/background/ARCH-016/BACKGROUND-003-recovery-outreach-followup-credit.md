@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -892,3 +892,440 @@ unchanged. Any new failure in the files above is task-owned.
 Return the task to `review`, clear `executor`/`claimed_at`, record the exact implementation
 and parent report commits, and STOP for `moda_architect` re-review. Do not start
 `ARCH-016-SYSTEM-TEST-001`.
+
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Changes Requested — successful-send reconciliation and durable follow-up repair are still incomplete**
+
+Implementation commit reviewed: `f2abbbc`.
+Parent Completion Report commit reported: `0923608d`.
+
+Attempt 3 correctly fixes the provider-status predicate for FIXED offers, propagates the
+canonical WhatsApp `event.occurredAt` through the text/unsupported/audio inbound paths,
+adds a read-only outbound-admission lookup, and introduces conditional
+`WAITING_FOR_RESPONSE -> NO_RESPONSE` and confirmed-send transitions. Those corrections
+MUST be preserved.
+
+The task is not yet functionally complete. Several parts of the Attempt-2 correction
+contract remain unimplemented or only partially implemented. Attempt 4 is a narrow
+reconciliation/finalisation correction; do not redesign the accepted billing, queue,
+Conversation or sequence architecture.
+
+### Finding 1 — failed follow-up queue publication is still not repairable from durable `followUpDueAt`
+
+Current file:
+
+```text
+src/services/checkout-recovery.service.ts
+```
+
+`handleCheckoutCreated()` still returns immediately whenever the recovery is no longer
+`DETECTED`:
+
+```ts
+if (recovery.status !== "DETECTED") {
+  return recovery;
+}
+```
+
+The only call to `recoveryOutreachFollowUpService.schedule(...)` remains on the fresh-send
+path. Therefore this required crash/retry sequence is still broken:
+
+```text
+provider send succeeds
+billing/attempt/recovery finalisation succeeds
+attempt1.followUpDueAt is durably persisted
+BullMQ queue.add(...) throws or the process dies before/while publishing
+recovery is already MESSAGE_SENT
+checkout job/event retries
+  -> handleCheckoutCreated returns immediately
+  -> deterministic sequence-2 wake-up is never re-added
+```
+
+#### Required Attempt-4 correction
+
+Add one bounded idempotent repair helper in `checkout-recovery.service.ts`, for example:
+
+```text
+ensureScheduledInitialFollowUp(recoveryId)
+```
+
+It MUST read durable state and schedule only when all of the following are true:
+
+```text
+CheckoutRecovery.status == MESSAGE_SENT | ENGAGED
+attempt #1 exists
+attempt #1.status == WAITING_FOR_RESPONSE
+attempt #1.sentAt != null
+attempt #1.followUpDueAt != null
+attempt #1.customerRespondedAt == null
+no sequence-2 attempt is already successfully sent/ENGAGED
+recovery is not COMPLETED | EXPIRED | CANCELLED
+```
+
+Then call that repair path before returning from the existing non-`DETECTED`
+`MESSAGE_SENT`/`ENGAGED` branch.
+
+Scheduling MUST continue to use exactly:
+
+```text
+jobId = recovery-outreach-follow-up:<checkoutRecoveryId>:2
+```
+
+and the already-persisted `attempt1.followUpDueAt`. Do not recompute a new due time from
+current merchant settings during repair.
+
+If the job already exists, the deterministic BullMQ ID remains the duplicate fence. Do not
+create attempt #2 and do not consume another recovery credit merely to repair scheduling.
+
+Required focused proof:
+
+```text
+queue add failure after durable attempt1.followUpDueAt -> retry re-adds sequence-2 wake-up
+MESSAGE_SENT + ENGAGED attempt1 -> no wake-up repair
+terminal recovery -> no wake-up repair
+existing deterministic job -> repair remains idempotent
+repair consumes zero recovery credits and creates zero outreach attempts
+```
+
+### Finding 2 — duplicate successful initial send does not converge through normal success finalisation
+
+Current initial duplicate branch:
+
+```text
+existing outbound status SENT | DELIVERED | READ
+  -> commit billing
+  -> mark attempt WAITING_FOR_RESPONSE
+  -> return recovery
+```
+
+It does **not**:
+
+```text
+mark DETECTED recovery MESSAGE_SENT
+persist/retain followUpDueAt
+schedule the deterministic follow-up wake-up when enabled
+```
+
+A crash after provider success but before normal finalisation can therefore leave a real
+sent message attached to a recovery that remains `DETECTED`, with the follow-up state
+incomplete. This does not satisfy the prior requirement that a successful duplicate
+reconciliation "continue normal successful-attempt finalisation".
+
+#### Required Attempt-4 correction
+
+Create one private/reusable confirmed-send finalisation path in
+`checkout-recovery.service.ts` and use it for:
+
+```text
+initial fresh provider success
+initial duplicate reconciliation of durable success
+follow-up fresh provider success
+follow-up duplicate reconciliation of durable success
+```
+
+The helper may branch on sequence 1 versus sequence 2, but the durable message evidence,
+billing commit and attempt transition MUST be shared so the paths cannot drift again.
+
+For a confirmed successful outbound message, require all of:
+
+```text
+message.id exists
+message.status in SENT | DELIVERED | READ
+message.sentAt != null
+message.conversationId is the expected recovery Conversation
+```
+
+Use the persisted `ConversationMessage.sentAt` as the authoritative send time. Do **not**
+substitute `new Date()`.
+
+For sequence 1, after idempotently committing billing:
+
+```text
+1. conditionally finalise attempt #1 with the durable outboundMessageId/sentAt;
+2. derive followUpDueAt from that exact persisted sentAt when the already-resolved policy
+   for this attempt enables follow-up;
+3. conditionally transition recovery DETECTED -> MESSAGE_SENT without reopening a terminal
+   recovery;
+4. persist the due time using a guarded attempt transition;
+5. only after durable state is complete, schedule the deterministic sequence-2 wake-up.
+```
+
+If the recovery is already `MESSAGE_SENT`/`ENGAGED`, treat that recovery transition as an
+idempotent replay. If it became `COMPLETED`, `EXPIRED` or `CANCELLED`, do not reopen it and
+do not schedule a follow-up. A provider message that is durably proven sent must still not
+cause the billing reservation to be released merely because recovery state changed later.
+
+For sequence 2, finalise only attempt #2; never schedule sequence 3.
+
+Required focused proof:
+
+```text
+initial fresh success -> MESSAGE_SENT + one committed credit + attempt1 WAITING
+initial duplicate durable success -> same final state, zero provider resend
+initial duplicate durable success + follow-up enabled -> same persisted dueAt/scheduled job behavior as fresh success
+follow-up fresh success -> one committed second credit + attempt2 WAITING
+follow-up duplicate durable success -> same attempt2/message/credit, zero provider resend
+terminal recovery is never reopened by success reconciliation
+```
+
+### Finding 3 — duplicate `PENDING` and broken duplicate provenance do not fail closed
+
+The prior correction contract required:
+
+```text
+existing outbound PENDING
+  -> no resend
+  -> no billing release
+  -> retry/fail closed
+
+idempotency UsageEvent exists but its message cannot be resolved
+  -> invariant/retryable failure
+  -> no resend
+  -> no billing release
+```
+
+Current behavior instead does:
+
+```text
+initial PENDING duplicate -> return recovery successfully
+follow-up PENDING duplicate -> return { suppressed: send-pending } successfully
+missing/unresolvable duplicate message -> fall through to releaseBeforeProvider + FAILED
+```
+
+A successful return allows the queue/event to complete and can strand a `PENDING`
+outbound admission forever after a crash. Releasing billing when the outbound idempotency
+record exists but its source message cannot be resolved is also unsafe because provider
+outcome is not disproven.
+
+The successful-message branch also accepts `SENT|DELIVERED|READ` with `sentAt == null` and
+fabricates a local timestamp using `new Date()`.
+
+#### Required Attempt-4 correction
+
+For BOTH sequence 1 and sequence 2 duplicate reconciliation, use this exact matrix:
+
+```text
+SENT | DELIVERED | READ AND sentAt != null
+  -> confirmed success
+  -> zero resend
+  -> no billing release
+  -> run the common success-finalisation path
+
+PENDING
+  -> zero resend
+  -> no billing release
+  -> throw/return through a retryable fail-closed path so the owning job is not treated as
+     successfully reconciled
+
+FAILED
+  -> definitive failed-send handling may release billing and mark attempt FAILED
+
+UsageEvent/idempotency exists but message is missing
+successful-looking message with sentAt == null
+message belongs to another Conversation
+  -> invariant/retryable failure
+  -> zero resend
+  -> zero billing release
+  -> do not mark the attempt FAILED merely to hide missing durable evidence
+```
+
+Do not delete or recreate the existing outbound UsageEvent from the reconciliation helper.
+
+Fresh `sendTemplate()` success MUST also resolve and require the persisted successful
+message before finalisation. Remove every outreach-path fallback of the form:
+
+```ts
+existing.sentAt ?? new Date()
+persistedMessage?.sentAt ?? new Date()
+```
+
+The recovery credit occurrence/finalisation time and attempt `sentAt` must use the durable
+provider-send message time.
+
+### Finding 4 — guarded attempt transitions are still followed by unconditional lifecycle writes
+
+Attempt 3 added `markWaitingAfterConfirmedSend(...)`, but the fresh initial path then calls:
+
+```ts
+markStatus(attempt.id, "WAITING_FOR_RESPONSE", { followUpDueAt })
+```
+
+immediately afterwards. That second call is unconditional. A customer inbound can race
+between the two calls:
+
+```text
+markWaitingAfterConfirmedSend -> WAITING_FOR_RESPONSE
+customer inbound              -> ENGAGED
+unconditional markStatus      -> WAITING_FOR_RESPONSE   # regression
+```
+
+Likewise, the follow-up's durable inbound fallback currently calls the generic
+`markStatus(initial.id, "ENGAGED", ...)`, which can overwrite a concurrent `CANCELLED` or
+other terminal attempt state.
+
+#### Required Attempt-4 correction
+
+In:
+
+```text
+src/services/recovery-outreach-attempt.service.ts
+src/services/checkout-recovery.service.ts
+```
+
+make the confirmed-send operation carry all send-finalisation fields in one guarded update:
+
+```text
+sentAt
+outboundMessageId
+followUpDueAt                 # sequence 1; null for disabled/no follow-up
+status = WAITING_FOR_RESPONSE
+```
+
+The guard MUST NOT overwrite:
+
+```text
+ENGAGED
+NO_RESPONSE
+CANCELLED
+FAILED
+```
+
+For initial capacity-resume compatibility, a genuinely confirmed initial send may move the
+same attempt from `CAPACITY_BLOCKED` to `WAITING_FOR_RESPONSE`; do not create another
+attempt. For an already-`WAITING_FOR_RESPONSE` replay, only accept the same durable outbound
+message identity; do not replace provenance with a different message ID.
+
+If the guarded update count is zero, reload the attempt and handle its actual state. Do not
+follow it with a generic unconditional WAITING write.
+
+For the durable inbound fallback in `processRecoveryOutreachFollowUp()`, use a guarded
+engagement operation. Do not use generic `markStatus(..., ENGAGED)`.
+
+Required focused proof:
+
+```text
+ENGAGED cannot regress to WAITING_FOR_RESPONSE
+ENGAGED cannot regress to NO_RESPONSE
+CANCELLED/FAILED cannot be overwritten by a late success/engagement helper
+CAPACITY_BLOCKED initial attempt can finalise after the existing initial capacity-resume path succeeds
+WAITING replay with the same outbound message is idempotent
+WAITING replay with a different outbound message is rejected/fails closed
+```
+
+### Finding 5 — first qualifying provider response time is not monotonic under out-of-order inbound processing
+
+`markEngagedFromInbound()` only searches attempts currently in `WAITING_FOR_RESPONSE`.
+After one inbound moves the attempt to `ENGAGED`, a later-processed provider event with an
+earlier valid `occurredAt` can no longer correct `customerRespondedAt` to the first
+qualifying provider timestamp.
+
+ARCH-016 requires:
+
+```text
+customerRespondedAt = first qualifying inbound provider timestamp
+```
+
+and Attempt 3 already established `event.occurredAt` as the authoritative clock.
+
+#### Required Attempt-4 correction
+
+Make engagement monotonic by provider event time:
+
+```text
+for the latest applicable attempt with sentAt <= occurredAt:
+  WAITING_FOR_RESPONSE
+    -> ENGAGED and customerRespondedAt = occurredAt
+
+  already ENGAGED
+    -> keep ENGAGED
+    -> customerRespondedAt = min(existing customerRespondedAt, occurredAt)
+
+  NO_RESPONSE | CANCELLED | FAILED
+    -> do not blindly reopen via this generic inbound helper
+```
+
+Use conditional writes so concurrent newer/older inbound deliveries converge on the
+earliest qualifying timestamp rather than processing order.
+
+For audio duplicate replay, use the Conversation identity on the already-reserved durable
+`ConversationMessage` when available rather than trusting a newly resolved route to be the
+same Conversation. This keeps duplicate engagement repair attached to the message's actual
+recovery Conversation.
+
+Required focused proof:
+
+```text
+later provider event processed first, earlier qualifying event processed second
+  -> customerRespondedAt becomes the earlier provider occurredAt
+later event processed after earlier event
+  -> timestamp does not move forward
+pre-send occurredAt
+  -> does not engage that attempt
+duplicate audio/text delivery
+  -> no new ConversationMessage and engagement repairs the original Conversation only
+```
+
+### Attempt-4 authorized correction surface
+
+Preserve all accepted Attempt-3 work. Attempt 4 may modify only:
+
+```text
+src/services/checkout-recovery.service.ts
+src/services/recovery-outreach-attempt.service.ts
+src/services/outbound-whatsapp-admission.service.ts
+src/services/conversation.service.ts               # only if needed for monotonic duplicate engagement
+src/services/inbound-whatsapp-audio.service.ts     # duplicate Conversation identity/occurredAt only
+focused tests for the corrections above
+Completion Report
+```
+
+Do NOT:
+
+```text
+change database schema or migrations
+change Conversation identity/uniqueness
+create another Conversation for follow-up
+change entitlement allocation priority
+make a <24h follow-up free
+create sequence 3+
+perform AI/CommerceAgent discount selection
+invent Meta template variables
+create a new queue or Render service
+change Shared away from exactly 0.12.1
+start ARCH-016-SYSTEM-TEST-001
+```
+
+If completing the correction appears to require a schema/migration change, STOP and return
+to `moda_architect` rather than broadening scope.
+
+### Attempt-4 validation
+
+Run the repository-declared equivalents of:
+
+```text
+focused checkout-recovery initial success/retry tests
+focused recovery-outreach-attempt lifecycle tests
+focused follow-up worker/reconciliation tests
+focused outbound WhatsApp admission duplicate tests
+focused Conversation/WhatsApp/audio provider-time engagement tests
+focused recovery billing/reservation replay tests
+
+npm run prisma:validate
+npm test
+npm run build
+git diff --check
+```
+
+Tests MUST explicitly exercise the crash/retry state boundaries described above; do not
+replace production fixes with mocks that skip the durable state transition being reviewed.
+
+Known generated-Prisma/build or unrelated baseline failures may be referenced only when
+unchanged. Any new failure in the authorised correction files is task-owned.
+
+Return the task to `review`, clear `executor`/`claimed_at`, record the exact Attempt-4
+implementation and parent Completion Report commits, and STOP for `moda_architect`
+re-review. Do not start `ARCH-016-SYSTEM-TEST-001`.
