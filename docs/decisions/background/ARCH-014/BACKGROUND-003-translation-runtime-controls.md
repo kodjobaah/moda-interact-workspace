@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 64
-executor: copilot
-claimed_at: 2026-09-16T08:34:22Z
 attempt: 2
 depends_on:
 - ARCH-014-BACKGROUND-001
@@ -187,7 +185,7 @@ STOP rather than creating another settings source or weakening provider-output s
 
 Status: Ready for Review
 
-Implementation commit: `f575ed5` on `task/ARCH-014-BACKGROUND-003`, pushed to `origin`.
+Implementation commits: `f575ed5`, `44590e2` on `task/ARCH-014-BACKGROUND-003`, pushed to `origin`.
 
 ### Requirements
 
@@ -196,11 +194,13 @@ Implementation commit: `f575ed5` on `task/ARCH-014-BACKGROUND-003`, pushed to `o
 - Preserved decimal seconds via `seconds * 1000`, `FOR UPDATE SKIP LOCKED`, concurrent batch assembly semantics, provider retry classification, and provider output safety/provider correlation bounds.
 - Kept `TRANSLATION_PROVIDER`, `TRANSLATION_MODEL`, and provider credentials deployment-configured; no retired translation environment-variable names are read from `src/`.
 - Kept `translationResultRetrySeconds` distinct from `translationPollIntervalSeconds` for result/item retry scheduling.
+- Attempt 2 correction: captured one last-known-good runtime snapshot per valid submit or poll job and threaded it through failure, persistence, and enqueue helpers; initial and recurring poll database schedules now use the exact same seconds value as their BullMQ delays.
+- Attempt 2 regression tests prove one `current()` call and identical persisted/enqueued timing for successful submission, nonterminal polling, and provider-read-failure polling; terminal item retry continues to use `translationResultRetrySeconds` separately from the poll interval.
 
 ### Validation
 
-- Focused translation/scheduler tests: PASS, 6 files / 53 tests.
-- `npm run test:unit`: 945 passed; 2 pre-existing failures in `tests/unit/runtime/observability-startup.test.ts` (recovery entrypoint source-text expectation and shared dependency version expectation `0.9.0` versus repository `0.11.2`). No failures were in task-owned translation files.
+- Focused submit/poll regression tests: PASS, 2 files / 24 tests.
+- `npm run test:unit`: 949 passed; 2 pre-existing failures in `tests/unit/runtime/observability-startup.test.ts` (recovery entrypoint source-text expectation and shared dependency version expectation `0.9.0` versus repository `0.11.2`). No failures were in task-owned translation files.
 - `npm run test:integration --if-present`: PASS, 2 files / 3 tests, including PostgreSQL concurrent `SKIP LOCKED` batch assembly.
 - `npm run build`: PASS (`prisma:generate` and `tsc`).
 - `git diff --check`: PASS.
@@ -210,7 +210,7 @@ Implementation commit: `f575ed5` on `task/ARCH-014-BACKGROUND-003`, pushed to `o
 
 - Launcher supplied and used the canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-BACKGROUND-003` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-BACKGROUND-003`.
 - Launcher reported the initialized database submodule at `47232f6876469f209c7efde4cefbb8a47d864e6a`; no database files or parent submodule gitlink were changed.
-- Implementation worktree is clean after publication. Parent worktree contains only this task report change before its report commit.
+- Implementation worktree is clean after publication at `44590e2`. Parent worktree contains only this task report change before its report commit.
 - The full unit suite retains the two unrelated observability baseline failures listed above; integration infrastructure was available and passed.
 
 ## Architect Review
