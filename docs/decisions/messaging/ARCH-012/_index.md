@@ -4,4 +4,4 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| [MESSAGING-001](MESSAGING-001-normalize-whatsapp-text-audio-replies.md) | Ready | Normalize Meta text/audio/reply context to canonical Shared v1 |
+| [MESSAGING-001](MESSAGING-001-normalize-whatsapp-text-audio-replies.md) | Complete | Accepted Attempt 1; normalize Meta text/audio/reply context to canonical Shared v1 |
