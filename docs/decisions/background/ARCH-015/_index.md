@@ -16,3 +16,12 @@ their own stored event handles against the complete live Shopify provider snapsh
 
 `ARCH-015-BACKGROUND-002` is now Ready. `ARCH-015-BACKGROUND-003` remains Pending until
 `ARCH-015-SHOPIFY-003` is Complete.
+
+
+## BACKGROUND-002 Attempt 2 review
+
+`ARCH-015-BACKGROUND-002` remains **Ready** for Attempt 3. Attempt 2 correctly added
+period-aware Shared provider-context derivation and ACTIVE-only current classification,
+but malformed native-App-Pricing local projection evidence can still throw from the
+ordering hint instead of failing closed to historical FIFO. Attempt 3 is limited to that
+fail-closed classification correction and focused regressions.
