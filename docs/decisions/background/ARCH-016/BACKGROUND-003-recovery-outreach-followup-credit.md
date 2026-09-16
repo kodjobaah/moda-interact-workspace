@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-16T19:15:09Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T20:20:00Z
 ---
 
 # ARCH-016-BACKGROUND-003
@@ -422,6 +422,35 @@ The task is returned to `moda_architect` for review. The documented build and fu
 - database submodule commit: `c59f2eb6953642f1c850d38b09ed03096d672547`;
 - Attempt 3 launcher claim commit: `8dc667aa`;
 - Attempt 3 implementation commit: `f2abbbc` (`fix(background): reconcile outreach engagement and retries`);
+- implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
+
+## Attempt 6 Completion Report
+
+### Corrections Completed
+
+- Duplicate initial durable-success reconciliation now passes the already-resolved policy into common finalization, preserving follow-up due-time computation and repair scheduling.
+- Sequence-1 finalization now delegates wake-up publication to durable-state `ensureScheduledInitialFollowUp()` rather than scheduling from stale in-memory recovery state.
+- Duplicate audio completion now uses the reserved durable message's `conversationId`, preventing a rerouted duplicate from mutating another Conversation.
+
+### Attempt 6 Validation
+
+- focused conversation/worker/audio/outreach/policy tests: `18 passed`;
+- `npm run prisma:validate`: passed;
+- `git diff --check`: passed;
+- unchanged generated-Prisma/build and unrelated full-suite baseline conditions remain documented from prior attempts.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-003`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-003`;
+- branches: `task/ARCH-016-BACKGROUND-003` in both worktrees;
+- origin/main synchronization and recursive submodule preparation: passed;
+- database submodule commit: `c59f2eb6953642f1c850d38b09ed03096d672547`;
+- Attempt 6 launcher claim commit: `8dc667aa`;
+- Attempt 6 implementation commit: `d985548` (`fix(background): reconcile outreach finalization state`);
 - implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for re-review.
