@@ -674,11 +674,11 @@ ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementa
 ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
 ARCH-012-MESSAGING-001     Ready — promoted by accepted SHARED-001 review
 ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
-ARCH-012-BACKGROUND-001    Ready — SHARED-001, DATABASE-001 and BACKGROUND-003 are accepted Complete
+ARCH-012-BACKGROUND-001    Ready — Attempt 1 changes requested; canonical ingress, explicit-context direction and audio retry semantics require correction
 ARCH-012-GATEWAY-001       Ready — BACKGROUND-003 is accepted Complete
 ```
 
-Do not downgrade a task that has already advanced in the live developer workspace. `ARCH-012-BACKGROUND-001` is now Ready because SHARED-001, DATABASE-001 and BACKGROUND-003 are architect-accepted Complete. System-test tasks remain Pending until all of their implementation dependencies are Complete.
+Do not downgrade tasks from stale snapshot state. `ARCH-012-BACKGROUND-001` is Ready for Attempt 2 rework after architect Changes Requested on Attempt 1. Its dependencies remain Complete, but it is not Complete and therefore continues to gate both system-test tasks. `ARCH-012-GATEWAY-001` remains independently Ready.
 
 System tests are terminal integrated validation tasks. No implementation task depends on a system-test task.
 

@@ -148,7 +148,7 @@ ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementa
 ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
 ARCH-012-MESSAGING-001     Ready — promoted by accepted SHARED-001 review
 ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
-ARCH-012-BACKGROUND-001    Ready — SHARED-001, DATABASE-001 and BACKGROUND-003 are accepted Complete
+ARCH-012-BACKGROUND-001    Ready — Attempt 1 changes requested; reclaim as Attempt 2
 ARCH-012-GATEWAY-001       Ready — BACKGROUND-003 is accepted Complete
 ARCH-012-MESSAGING-001     Ready — SHARED-001 and ARCH-007-MESSAGING-001 are Complete
 ```
@@ -171,7 +171,7 @@ Owner: `moda_messaging`. Maps realistic Meta webhook payloads into the published
 
 ### `ARCH-012-BACKGROUND-001`
 
-Owner: `moda_background`. Complete inbound pipeline: consume Shared event, both reply modes, text/unsupported persistence, audio reservation, Meta media retrieval, <=120-second validation, provider-neutral STT + Groq adapter, multilingual transcript preservation and exactly-once turn completion.
+Owner: `moda_background`. Attempt 1 returned Changes Requested. Reclaim as Attempt 2 and correct the canonical-only worker boundary, outbound-only explicit-context resolution, and typed terminal/retryable audio failure semantics while preserving the accepted database, runtime controls and BACKGROUND-003 fallback transport.
 
 ### `ARCH-012-BACKGROUND-003`
 
