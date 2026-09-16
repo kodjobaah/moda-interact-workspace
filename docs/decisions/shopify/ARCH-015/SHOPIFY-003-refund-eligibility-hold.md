@@ -9,10 +9,8 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-09-16T00:27:41Z
 attempt: 2
 depends_on:
 - ARCH-015-SHARED-001
@@ -154,26 +152,30 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ## Completion Report
 
-Implemented and pushed on `task/ARCH-015-SHOPIFY-003` at commit `784de75`.
+Reworked and pushed on `task/ARCH-015-SHOPIFY-003` at commit `8c5a953`.
 
 ### Changes
 
 - Added fresh Shopify active-subscription eligibility checks before refund mutation.
+- Made the exact nonblank `shopifyShopId` mandatory at the refund service boundary and rejected missing/blank identities without mutation.
+- Enforced strictly positive provider purchase value for every refund admission path, including direct service callers.
+- Allowed both live Shopify subscription statuses, `ACTIVE` and `TRIALING`, when the provider context matches.
 - Matched Shared provider context, plan handle, local billing-period identity and dates, and live event handle.
 - Returned `REFUND_NOT_CURRENT_PROVIDER_CONTEXT` for historical purchases without changing purchase or aggregate state.
 - Returned `REFUND_NOT_AVAILABLE` for zero-cost or fully reserved purchases.
 - Preserved idempotent `REQUESTED` refund creation, available-balance-only aggregate holds, and `ACTIVE -> WITHDRAWN` transition.
 - Passed the exact Shopify shop identity from the authenticated route.
 - Kept historical credits visible and spendable in the merchant UI while hiding the normal refund action with generic copy.
-- Added regression coverage for current context, prior plan, prior billing cycle, missing event, native App Pricing identity, zero-cost purchases, and UI visibility.
+- Added regression coverage for current context, `ACTIVE`/`TRIALING` parity, mismatched trial context, prior plan, prior billing cycle, missing event, native App Pricing identity, zero/non-positive purchases, missing/blank identity, and UI visibility.
 
 ### Validation
 
-- Focused Vitest: `23/23` passed across the refund service and purchase manager suites.
+- Focused Vitest: `31/31` passed across the refund service and purchase manager suites.
 - Focused ESLint: passed for touched TypeScript/test files.
 - Prisma schema validation: passed.
+- Application build: passed.
 - `git diff --check`: passed.
-- Repository `tsc --noEmit`: existing baseline JSX/Polaris declaration errors remain outside this task; no touched-file error was reported.
+- Repository lint: existing unrelated errors remain outside this task; direct lint of touched files passed.
 
 ### Preparation evidence
 
@@ -197,7 +199,7 @@ Recursive implementation submodules:
 	`git submodule update --init --recursive`: passed
 	recorded submodule commit: `database` at `d44b621cdcc3635127b91601be648b61c0eff1e2`
 
-Returned to `moda_architect` for review.
+Returned to `moda_architect` for review after attempt-2 rework.
 
 ## Architect Review — Attempt 1
 
