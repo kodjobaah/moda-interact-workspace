@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 67
-executor: copilot
-claimed_at: 2026-09-16T10:49:44Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-004
@@ -186,3 +186,27 @@ STOP and return to `moda_architect` if:
 - the current schema no longer contains the exact lease model this task extends;
 - another migration has already introduced an equivalent cadence column under a different name;
 - implementation appears to require changing any table other than `BackgroundRuntimeLease`.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `4aaa0ea` (`feat(database): persist background lease finish cadence`), pushed to `task/ARCH-014-DATABASE-005`.
+
+Proof:
+
+- Prisma model has nullable `lastFinishedAt`: `prisma/schema.prisma` adds exactly `lastFinishedAt DateTime?` to `BackgroundRuntimeLease`.
+- Migration is additive and lease-only: `prisma/migrations/20260916110000_arch014_background_runtime_lease_cadence/migration.sql` contains only `ALTER TABLE "public"."BackgroundRuntimeLease" ADD COLUMN "lastFinishedAt" TIMESTAMP(3);`, with no default, backfill, seed, `NOT NULL`, or index.
+- `npm run format`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- ERD regenerated with `npm run erd:puml` and `npm run erd:png`; generated output contains `BackgroundRuntimeLease.lastFinishedAt`.
+- `git diff --check`: passed.
+- `npm run status` against `postgresql://postgres:postgres@localhost:5432/moda_interact`: passed; the new migration is detected as pending.
+
+Validation limitations:
+
+- `node scripts/validate-arch014-background-runtime-config.mjs`: the new lease cadence assertions execute, but the overall validator remains blocked by pre-existing DATABASE-004 CHECK-name/expression mismatches already present at `HEAD` (for example, validator expects `ck_arch014_background_runtime_config_billing_reconciliation_interval`, while the existing migration contains `ck_arch014_bg_billing_reconcile_interval`). Existing DATABASE-004 assertions were preserved and not weakened.
+- `npm run migrate:deploy`: blocked by pre-existing Prisma `P3009`; migration `20260915140000_arch015_fractional_provider_usage_snapshots` previously failed in the local database. No migration repair or resolve action was performed.
+
+Changed implementation files are limited to the requested schema, migration, validator, and generated ERD artifacts. Parent task metadata is set to `review`; `executor` and `claimed_at` are cleared. No Architect Review section was modified.
