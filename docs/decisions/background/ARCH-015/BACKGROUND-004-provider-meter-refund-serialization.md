@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 86
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-015-BACKGROUND-003
 enables:
@@ -39,7 +39,7 @@ provider == neither BEFORE nor EXPECTED AFTER
     => conflicting provider evidence; NEEDS_ATTENTION
 ```
 
-This task assumes `ARCH-015-SHOPIFY-004` has already made new merchant purchase/refund admissions single-flight on the same provider meter. Background still MUST defend against pre-existing/inconsistent rows and scheduler concurrency; it may not merely trust the web invariant.
+This task is coordinated with `ARCH-015-SHOPIFY-004`, but the two implementation tasks may execute concurrently. SHOPIFY-004 hardens merchant admission while BACKGROUND-004 independently defends against pre-existing/inconsistent rows and scheduler concurrency. Neither task is an execution prerequisite of the other; terminal integrated acceptance requires both to be architect-accepted Complete.
 
 No Prisma schema change is authorized.
 
@@ -257,7 +257,7 @@ Do not treat a currency mismatch as "provider has not caught up". A safe provide
 
 Do not modify Shopify code here.
 
-The accepted SHOPIFY-004 invariant is:
+The cross-task SHOPIFY-004 invariant, to be verified again during integrated/manual testing, is:
 
 ```text
 automaticCorrectionUsageEventId != null
@@ -413,3 +413,124 @@ STOP and return to `moda_architect` if:
 3. Clear claim metadata.
 4. Return to `moda_architect`.
 5. STOP. Do not start SYSTEM-TEST-001.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `d270d92` on `task/ARCH-015-BACKGROUND-004`, pushed to `origin`.
+
+Prior accepted implementation retained: `1f7cd30`.
+
+Changed files in attempt 2:
+
+- `tests/unit/services/recovery-credit-refund-correction.service.test.ts`
+
+Attempt 2 added deterministic regression coverage for unresolved purchases on a different handle, terminal older-refund unblocking with a fresh provider baseline, explicit 4.00 / -0.25 / 3.75 versus 3.50 fractional conflict classification, staged correction rollback when the refund-link CAS loses, linked reconciliation without PREPARE or UsageEvent recreation, and immutable fractional PREPARE evidence across retries. No production source, schema, queue/status/lock model, generic publisher, or cross-repository files were modified.
+
+Validation:
+
+- `npm run test -- tests/unit/services/recovery-credit-refund-correction.service.test.ts`: passed, 24 tests.
+- `npm run test -- tests/unit/services/shopify-usage-event-publisher.service.test.ts`: passed, 15 tests.
+- `npm run test -- tests/unit/providers/shopify-app-events.provider.test.ts`: passed, 20 tests.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- `npm run test:unit`: passed, 66 files and 1,019 tests.
+- `git diff --check`: passed.
+- `npm test`: 67 files passed, 10 skipped, and 1 failed file with 4 failures. The unchanged unrelated failures are the four tests in `tests/integration/translation-enum-bindings.integration.test.ts`, each failing with `Background runtime configuration has not started` before its translation database assertion. No refund-correction tests failed.
+
+Limitations: no task blocker identified. The full-suite translation runtime baseline remains unresolved and is outside this task's authorized implementation surface. SYSTEM-TEST-001 was not started. Parent report publication commit: `a3c22986b2d6e95c6441b128f9b98ba96905c320`.
+
+## Architect Review — Attempt 1 — Changes Requested
+
+Verdict: **Changes Requested — test-only correction; production implementation accepted in substance.**
+
+The implementation commit `1f7cd30` correctly adds the bounded Background protections required by this task: per-invocation collision-safe `(shopId,eventHandle)` visitation, deterministic earlier-live-refund and unresolved-purchase gating, exact frozen BEFORE / EXPECTED AFTER / conflict classification, and no schema / queue / publisher redesign. Do not redesign `recovery-credit-refund-correction.service.ts` unless one of the required regressions below proves a production defect.
+
+`ARCH-015-SHOPIFY-004` and `ARCH-015-BACKGROUND-004` are **parallel correction tasks**. BACKGROUND-004 does not wait for SHOPIFY-004 to execute. The Background tests can prove PREPARE rollback/link behavior from the Background side independently; the cross-repository interaction is verified later by manual/integrated testing once both tasks are Complete.
+
+Attempt 2 is limited to `tests/unit/services/recovery-credit-refund-correction.service.test.ts` unless a new test demonstrates a real production defect. Add deterministic coverage for the required scenarios that Attempt 1 did not yet prove:
+
+```text
+1. unresolved REQUESTED purchase on a different event handle does not block PREPARE;
+2. after an older same-handle refund becomes terminal, the next scheduler invocation prepares the next refund using a fresh provider baseline;
+3. explicit fractional conflict: BEFORE 4.00, correction -0.25, EXPECTED AFTER 3.75, actual 3.50 => NEEDS_ATTENTION with automatic-correction-provider-state-conflict;
+4. PREPARE refund-link CAS loss proves transactional rollback of the staged correction event (no committed/publishable orphan);
+5. an already-linked correction routes through reconciliation and does not call PREPARE / UsageEvent upsert again;
+6. safe fractional PREPARE freezes exact Decimal evidence and a subsequent linked retry does not recreate the event or rewrite frozen evidence.
+```
+
+Preserve the already-green scenarios for same-meter oldest-first processing, different-handle independence, earlier `PROVIDER_ACTION_REQUIRED` / `NEEDS_ATTENTION` deferral, same-handle unresolved-purchase deferral, exact BEFORE propagation, exact EXPECTED AFTER completion, third quantity/cost/currency conflicts, full -1 correction, 202-not-complete semantics, provider-action fallback-before-event, REFUND_COMPLETED system message, immutable evidence, and PREPARE race behavior.
+
+Re-run exactly:
+
+```bash
+npm test -- --run tests/unit/services/recovery-credit-refund-correction.service.test.ts
+npm run prisma:validate
+npm run build
+git diff --check
+npm test
+```
+
+The four existing translation-runtime failures may remain documented as unrelated baseline failures if unchanged. Do not modify translation runtime, schema, generic publisher, Shopify/Admin UI, or another repository to make this task green.
+
+Lifecycle after this review:
+
+```text
+ARCH-015-SHOPIFY-004      Ready / may execute independently
+ARCH-015-BACKGROUND-004   Ready at Attempt 1 -> next claim becomes Attempt 2
+ARCH-015-SYSTEM-TEST-001  Pending until both correction tasks are Complete and manual-test authorization is given
+```
+
+## Architect Review — Attempt 2 — Accepted
+
+Verdict: **Accepted — Complete**.
+
+Attempt 2 is the bounded test-only correction requested after Attempt 1. The published
+implementation commit `d270d92` changes only
+`tests/unit/services/recovery-credit-refund-correction.service.test.ts`; the accepted
+Attempt-1 production implementation in
+`src/services/recovery-credit-refund-correction.service.ts` remains unchanged.
+
+The focused regression suite now proves the previously missing cases:
+
+```text
+- unresolved REQUESTED purchase on another event handle does not block PREPARE;
+- once the older same-handle refund becomes terminal, the next scheduler invocation may
+  PREPARE the next refund and performs a fresh provider read;
+- BEFORE 4.00 / correction -0.25 / EXPECTED AFTER 3.75 / actual 3.50 is classified
+  NEEDS_ATTENTION with automatic-correction-provider-state-conflict;
+- refund-link CAS loss rolls back the staged correction event in a rollback-aware
+  transaction harness, leaving no committed/publishable orphan;
+- an already-linked correction follows reconciliation and does not recreate the
+  correction UsageEvent;
+- safe fractional PREPARE freezes exact Decimal before/expected-after evidence and a
+  linked retry does not recreate the event or rewrite the frozen evidence.
+```
+
+The already-accepted provider-meter visitation, oldest-live-refund gate, unresolved
+same-meter purchase gate, exact BEFORE / EXPECTED AFTER / conflict classifier, PREPARE
+atomicity/CAS, idempotency, typed evidence ownership and generic publisher boundary remain
+unchanged.
+
+Validation recorded for Attempt 2:
+
+```text
+focused refund-correction tests:                    PASS (24)
+adjacent publisher/provider tests:                  PASS
+unit suite:                                         PASS (1,019)
+Prisma validation:                                  PASS
+build:                                              PASS
+git diff --check:                                   PASS
+full suite: 67 files passed, 10 skipped; one
+translation-runtime file has 4 unchanged failures
+```
+
+The four translation-runtime failures remain unrelated baseline failures and are not an
+ARCH-015-BACKGROUND-004 blocker.
+
+`ARCH-015-BACKGROUND-004` is therefore Complete at Attempt 2. This acceptance does not
+authorize or start `ARCH-015-SYSTEM-TEST-001`. SHOPIFY-004 and BACKGROUND-004 are parallel
+correction tasks; terminal system testing remains Pending until all declared correction
+dependencies are Complete and the architect explicitly authorizes the manual/integrated
+test phase.

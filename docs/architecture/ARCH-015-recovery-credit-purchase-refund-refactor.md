@@ -1032,3 +1032,62 @@ ARCH-015-BACKGROUND-004   parallel correction task
 ```
 
 SHOPIFY-004 is accepted on the production implementation and validation evidence. The Dutch matrix wording difference and several missing one-for-one focused regression cases are non-blocking observations to be exercised during later/manual/integrated validation. This SHOPIFY-004 task snapshot predates the separately accepted BACKGROUND-004 branch, so Background task metadata is intentionally not rewritten from this branch.
+Correction execution model:
+
+```text
+ARCH-015-SHOPIFY-004 (Ready) --------\
+                                      +--> both Complete --> manual ARCH-015 test pass
+ARCH-015-BACKGROUND-004 (Ready) -----/                         |
+                                                                v
+                                      ARCH-015-SYSTEM-TEST-001
+                                      (explicit architect authorization only)
+```
+
+SHOPIFY-004 and BACKGROUND-004 are coordinated implementations of the same provider-meter invariant but are not execution prerequisites of one another. They may run concurrently. The terminal manual/integrated proof must verify their interaction after both are Complete.
+
+## Post-review update — BACKGROUND-004 Attempt 2 Accepted
+
+`ARCH-015-BACKGROUND-004` Attempt 2 is architect-accepted and **Complete**.
+
+Attempt 1's production implementation remains the final Background provider-meter
+serialization behavior:
+
+```text
+per scheduler pass:
+  at most one REQUESTED refund per (shopId,eventHandle)
+
+before PREPARE:
+  older live same-meter refund -> defer
+  unresolved REQUESTED same-meter purchase -> defer
+  different event handle -> independent
+
+after a REPORTED automatic correction:
+  provider == frozen BEFORE         -> remain REQUESTED
+  provider == frozen EXPECTED AFTER -> complete atomically
+  provider == neither               -> NEEDS_ATTENTION
+```
+
+Attempt 2 changed tests only and closes the six missing regression proofs: different-handle
+purchase independence, next-pass unblocking after an older refund becomes terminal, the
+explicit 4.00 / -0.25 / 3.75 / 3.50 fractional conflict case, rollback of a staged event on
+lost PREPARE link CAS, linked-refund reconciliation without correction-event recreation,
+and immutable fractional evidence across retries.
+
+No schema, queue, status, lock model, generic publisher, Shopify/Admin UI or production
+Background source change was introduced in Attempt 2.
+
+Execution state:
+
+```text
+ARCH-015-BACKGROUND-004  Complete
+
+ARCH-015-SHOPIFY-004     parallel correction task
+           \             /
+            \           /
+             both Complete
+                  |
+                  v
+ARCH-015-SYSTEM-TEST-001 Pending until explicit architect authorization
+```
+
+This acceptance does not start or promote terminal system testing by itself.
