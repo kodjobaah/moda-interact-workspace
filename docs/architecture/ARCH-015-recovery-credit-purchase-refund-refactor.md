@@ -852,3 +852,36 @@ ARCH-015-DATABASE-001   Complete
 
 SYSTEM-TEST-001 remains Pending until BACKGROUND-003 and ADMIN-001 are Complete and the
 target database migration history is healthy enough to apply the accepted migrations.
+
+
+## Post-review update — BACKGROUND-003 Attempt 2 Changes Requested
+
+`ARCH-015-BACKGROUND-003` Attempt 2 is not yet architect-accepted. The typed automatic
+correction structure, exact Decimal correction event, deterministic idempotency,
+202-as-receipt semantics and atomic financial completion CAS are retained, but five bounded
+corrections are required before the automatic path is safe:
+
+```text
+1. derive Shared provider context for native App Pricing even when legacy provider id is null;
+2. RECONCILE compares frozen expected-after evidence to live quantity/cost/currency/context
+   without requiring live pricing or recalculating economics;
+3. unsafe PREPARE freezes proportional expectedProviderAmount for the final unused credits;
+4. a lost refund-link CAS must roll back any unlinked PENDING correction before publisher visibility;
+5. successful automatic completion writes the existing deterministic REFUND_COMPLETED billing system message.
+```
+
+The safe-vs-manual PREPARE race is especially important: the generic UsageEvent publisher
+selects due PENDING/RETRYABLE events independently of the refund FK, so an unlinked event
+must never be committed after `PROVIDER_ACTION_REQUIRED` wins the refund-state race.
+
+The frontier remains:
+
+```text
+ARCH-015-BACKGROUND-003  Ready (Attempt 3 correction)
+          |
+          +--> ARCH-015-ADMIN-001       Pending
+                      |
+                      +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+The pre-existing database P3009 remains an external deployment/integration prerequisite.

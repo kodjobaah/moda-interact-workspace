@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -453,3 +453,394 @@ Validation:
 - No `typecheck` script is declared; the build runs `tsc` directly.
 
 The prior blocked report was superseded because the integrated database submodule now exposes all required typed refund fields and the automatic correction relation. No `UsageEvent.metadata`, process-local settlement evidence, new queue, Prisma schema change, or Admin monetary fallback was used.
+
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Changes Requested — bounded Attempt 3 rework**
+
+The overall automatic-refund workflow is directionally correct and the following Attempt-2
+work is accepted and MUST NOT be redesigned:
+
+```text
+bounded deterministic REQUESTED scan on the existing billing cycle
+PREPARE versus RECONCILE split by automaticCorrectionUsageEventId
+negative/fractional UsageEvent support
+exact Prisma.Decimal arithmetic for provider quantity/cost comparisons
+typed RecoveryCreditRefund baseline / expected-after evidence
+unique explicit automaticCorrectionUsageEventId relation
+no UsageEvent.metadata / refund JSON settlement evidence
+deterministic refund and Shopify idempotency keys
+HTTP 202 / UsageEvent REPORTED is submission receipt only
+exact provider quantity/cost/currency required before completion
+WITHDRAWN purchase + zero reservations completion precondition
+atomic purchase REFUNDED + counter decrement + refund COMPLETED CAS
+providerConfirmedByPlatformAdminId = null on automatic completion
+providerActionKind = null on automatic completion
+no new queue / schema / Admin automatic provider action
+```
+
+Attempt 3 is limited to the five corrections below plus directly required focused tests.
+
+---
+
+### Finding 1 — native App Pricing provider context is incorrectly rejected
+
+`readProvider()` currently derives provider context only when all of these are truthy:
+
+```text
+provider.providerSubscriptionId
+provider.currentPeriodStart
+provider.currentPeriodEnd
+```
+
+That reintroduces the legacy-id dependency removed elsewhere in ARCH-015. A valid native
+App Pricing subscription may have:
+
+```text
+provider.providerSubscriptionId = null
+planHandle = current provider plan
+currentPeriodStart / currentPeriodEnd = valid provider cycle
+```
+
+while the frozen refund owns the Shared-derived:
+
+```text
+app-pricing:v1:<encoded planHandle>:<startIso>:<endIso>
+```
+
+Required correction:
+
+1. Require valid provider period start/end for the cycle proof.
+2. Call `deriveShopifyProviderContextIdentity(...)` with
+   `providerSubscriptionId: provider.providerSubscriptionId` **even when it is null**.
+3. Catch Shared derivation failure and return an unsafe/fail-closed provider proof; do not
+   throw from the scheduler.
+4. Compare the derived identity, plan, local BillingPeriod dates and exact event handle to
+   the frozen refund provenance exactly as today.
+
+Do not fabricate the derived identity into local `Subscription.providerSubscriptionId`.
+
+Required regression:
+
+```text
+native App Pricing + null legacy provider id + matching plan/period/event
+  -> PREPARE remains eligible
+  -> correction can be prepared
+```
+
+---
+
+### Finding 2 — RECONCILE incorrectly depends on live pricing after evidence is frozen
+
+`readProviderState()` currently calls `readProvider()`, and `readProvider()` requires a
+matching `providerUsagePricingSnapshot` entry. That requirement is correct for PREPARE,
+because PREPARE must calculate expected post-correction economics from live Shopify
+pricing. It is not correct for RECONCILE.
+
+After `automaticCorrectionUsageEventId` and the typed expected-after fields are frozen,
+RECONCILE must use only:
+
+```text
+fresh canonical provider context
+frozen plan / period / event identity
+exact live provider quantity
+exact live provider cost
+exact live provider currency
+```
+
+It must compare those values to:
+
+```text
+expectedProviderUsageQuantityAfterCorrection
+expectedProviderUsageCostAfterCorrection
+expectedProviderCurrency
+```
+
+It MUST NOT require current pricing to still be present or unchanged, and MUST NOT
+recalculate the frozen expected-after economics.
+
+Required implementation shape:
+
+```text
+readProviderState(refund)
+  -> context + quantity + cost + currency only
+  -> no providerUsagePricingSnapshot requirement
+
+readProviderForPrepare(refund)
+  -> call/read the same state proof
+  -> additionally require the exact live pricing entry/currency
+  -> expose pricing only to PREPARE calculation
+```
+
+Equivalent names are acceptable, but PREPARE and RECONCILE authority must be separated in
+this way.
+
+Required regression:
+
+```text
+linked REPORTED correction
++ exact matching live quantity/cost/currency/context
++ providerUsagePricingSnapshot absent/changed after submission
+  -> refund can still complete from frozen evidence
+```
+
+---
+
+### Finding 3 — unsafe PREPARE freezes the wrong expected monetary amount for partial packs
+
+`markProviderActionRequired()` currently writes:
+
+```text
+expectedProviderAmount = purchaseProviderAmountSnapshot
+```
+
+for every manual fallback. This is incorrect when only part of the purchased credit pack
+remains.
+
+Example:
+
+```text
+creditsGranted = 4
+finalCreditQuantity/currentAmount = 1
+purchaseProviderAmountSnapshot = 20.00
+ratio = 1 / 4
+```
+
+The frozen business refund evidence must be:
+
+```text
+expectedProviderAmount = 5.00
+```
+
+not `20.00`.
+
+Required correction:
+
+- derive the local business refund evidence before provider-dependent automatic proof;
+- use the same exact Decimal ratio/value calculation for both the automatic and unsafe
+  PREPARE paths;
+- freeze:
+
+```text
+finalCreditQuantity = purchase.currentAmount
+ratio = finalCreditQuantity / purchase.creditsGranted
+expectedProviderAmount = purchaseProviderAmountSnapshot * ratio
+expectedProviderCurrency = purchaseProviderCurrencySnapshot
+```
+
+using the same currency-rounding rule as the automatic path;
+- do not use current Shopify pricing to derive the manual fallback amount;
+- keep all four automatic correction baseline/expected-after fields null;
+- keep `automaticCorrectionUsageEventId = null`.
+
+Required regressions:
+
+```text
+partial pack + unsafe/ambiguous provider pricing
+  -> PROVIDER_ACTION_REQUIRED
+  -> no UsageEvent
+  -> proportional expectedProviderAmount frozen
+
+full unused pack + unsafe proof
+  -> expectedProviderAmount equals original purchase amount
+```
+
+---
+
+### Finding 4 — losing the refund-link CAS can commit a publishable orphan correction event
+
+PREPARE currently performs:
+
+```text
+UsageEvent upsert
+-> RecoveryCreditRefund updateMany(link event)
+-> return linked: linked.count === 1
+```
+
+without rolling back when `linked.count !== 1`.
+
+This is safe only for the narrow two-safe-worker race where another worker already linked
+the same deterministic event. It is unsafe for a safe-versus-unsafe race:
+
+```text
+worker A proves safe automatic correction
+worker B proves unsafe provider state
+worker B first moves refund -> PROVIDER_ACTION_REQUIRED with no link
+worker A upserts PENDING correction UsageEvent
+worker A link CAS returns 0 because refund is no longer REQUESTED
+worker A transaction currently commits the unlinked PENDING UsageEvent
+existing publisher selects all due PENDING/RETRYABLE UsageEvents
+-> Shopify correction may be submitted after manual fallback was selected
+```
+
+This violates the ARCH-015 no-double-settlement boundary.
+
+Required correction:
+
+- a PREPARE transaction that cannot establish the refund->UsageEvent link MUST NOT commit
+  a newly prepared unlinked correction event;
+- use the existing transaction/CAS pattern so a lost link CAS causes the transaction to
+  roll back before reloading the current refund state;
+- one acceptable deterministic implementation is:
+
+```text
+inside transaction:
+  upsert deterministic correction event
+  conditional refund link update
+  if link count != 1:
+    throw a dedicated internal prepare-race signal
+    -> transaction rolls back this worker's event creation
+
+outside transaction:
+  catch only that dedicated race signal
+  reload refund
+  if automaticCorrectionUsageEventId is now non-null:
+    enter RECONCILE
+  else if refund is no longer REQUESTED:
+    stop without creating/submitting an event
+  else:
+    leave for a later bounded retry / existing retry convention
+```
+
+A row-lock/re-read implementation is also acceptable if it proves the same invariant.
+Do not merely delete an orphan after commit: the publisher may race that cleanup.
+
+Required regressions:
+
+```text
+two safe PREPARE processors
+  -> converge on one linked logical correction
+
+safe PREPARE loses to concurrent PROVIDER_ACTION_REQUIRED transition
+  -> no committed unlinked PENDING/RETRYABLE correction can remain publishable
+  -> refund remains manual fallback
+```
+
+---
+
+### Finding 5 — automatic completion omits the required billing system message/audit evidence
+
+The task contract requires automatic completion to write the existing billing audit/system
+message using current conventions. `complete()` currently updates the purchase, aggregate
+counter and refund only.
+
+Background already has the merchant billing system-message convention using:
+
+```text
+ARCH007_BILLING_CONTRACT_SCHEMA_VERSION
+BILLING_SYSTEM_MESSAGE_CODES
+createMerchantBillingSystemSourceKey(...)
+MerchantSupportMessageKind.SYSTEM
+MerchantSupportMessageState.AVAILABLE
+merchantSupportThread upsert
+merchantSupportMessage upsert
+```
+
+Attempt 3 must use that existing convention for automatic refund completion.
+
+Required behavior:
+
+- use `BILLING_SYSTEM_MESSAGE_CODES.REFUND_COMPLETED`;
+- deterministic event identity must include the refund id (using `refund.id` directly is
+  sufficient);
+- create the bounded source key with `createMerchantBillingSystemSourceKey(...)`;
+- upsert the merchant support thread for `refund.shopId`;
+- upsert exactly one SYSTEM/AVAILABLE merchant support message with:
+
+```text
+systemCode = BILLING_REFUND_COMPLETED
+systemVersion = current billing contract schema version
+sourceLanguageTag = en-GB
+sourceKey = deterministic refund-completion source key
+```
+
+- use a stable generic body such as:
+
+```text
+Your recovery-credit refund has completed. The refundable purchased credits have been removed and Shopify provider reconciliation is complete.
+```
+
+- update `merchantSupportThread.lastMessageAt` using the same completion timestamp;
+- perform these writes in the successful completion transaction so a message failure does
+  not leave financial state completed without the corresponding system evidence;
+- replay/CAS must not create duplicate messages because the source key is deterministic.
+
+Do not introduce a new audit table, queue or schema field.
+
+Required regression:
+
+```text
+exact automatic completion
+  -> one REFUND_COMPLETED system message
+  -> replay does not duplicate it
+  -> failed financial CAS does not publish completion message
+```
+
+---
+
+### Attempt-3 authorized implementation surface
+
+Keep changes within the existing BACKGROUND-003 surface:
+
+```text
+src/services/recovery-credit-refund-correction.service.ts
+src/providers/shopify-partner-billing.provider.ts        # only if type/read separation requires it
+src/services/shopify-usage-event-publisher.service.ts    # tests/compatibility only unless required
+src/providers/shopify-app-events.provider.ts             # preserve accepted decimal behavior
+tests/unit/services/recovery-credit-refund-correction.service.test.ts
+# directly required provider/publisher/scheduler focused tests
+```
+
+The existing `src/entrypoints/billing.ts` invocation is accepted and should not be churned
+unless a mechanical import/test adjustment is required.
+
+No Prisma schema change. No new queue. No new refund status. No `UsageEvent.metadata`.
+No Admin implementation in this attempt.
+
+---
+
+### Validation required for Attempt 3
+
+Run the current repository commands and record exact results:
+
+```bash
+npm run test -- tests/unit/services/recovery-credit-refund-correction.service.test.ts
+npm run test -- tests/unit/services/shopify-usage-event-publisher.service.test.ts
+npm run test -- tests/unit/providers/shopify-app-events.provider.test.ts
+npm run build
+npm run test:unit
+git diff --check
+```
+
+If the repository exposes additional focused billing scheduler/provider suites used in
+Attempt 2, rerun those too.
+
+The two documented unrelated observability baseline failures remain non-blocking only if
+unchanged.
+
+The pre-existing database P3009 remains a deployment/integration prerequisite and must not
+be repaired inside this Background task.
+
+### Stop condition
+
+Return this SAME task through `/moda-task`.
+
+Preserve:
+
+```text
+attempt: 2
+status: ready
+executor: null
+claimed_at: null
+```
+
+The next authorized claim must increment to **Attempt 3 exactly once**.
+
+Attempt 3 may return to review only when all five corrections above are implemented,
+focused regression evidence passes, the task claim is cleared, and both worktrees are
+clean and pushed.
+
+`ARCH-015-ADMIN-001` remains Pending until BACKGROUND-003 is architect-accepted Complete.

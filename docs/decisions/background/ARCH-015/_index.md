@@ -72,3 +72,15 @@ process-local settlement evidence.
 
 The pre-existing database P3009 must be recovered before deployed migration/integration
 validation, but no additional DATABASE-002 implementation attempt is required.
+
+
+## BACKGROUND-003 Attempt 2 architect review
+
+`ARCH-015-BACKGROUND-003` remains **Ready** for Attempt 3. Attempt 2 established the typed
+negative/fractional correction workflow, but architect review found five bounded production
+corrections still required: native App Pricing context derivation, RECONCILE state proof
+without a live-pricing dependency, proportional manual-fallback refund evidence, rollback
+of unlinked correction events on a lost PREPARE link CAS, and the existing
+`REFUND_COMPLETED` billing system message on atomic completion.
+
+`ARCH-015-ADMIN-001` remains Pending until BACKGROUND-003 is architect-accepted Complete.
