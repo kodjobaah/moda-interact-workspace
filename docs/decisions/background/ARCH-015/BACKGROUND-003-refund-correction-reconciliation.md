@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 70
-executor: copilot
-claimed_at: 2026-09-16T07:03:49Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
 - ARCH-015-SHARED-001
@@ -231,3 +231,23 @@ STOP if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Blocked
+
+Implementation files changed: none. The implementation worktree remains clean at the claimed task branch; no implementation commit was created because the bounded task cannot be completed without violating its explicit no-schema-change requirement.
+
+Blocking evidence:
+
+- The pinned database submodule is `d44b621cdcc3635127b91601be648b61c0eff1e2`.
+- Its `billing.UsageEvent` model has no `metadata` field. It provides `providerResponseSummary`, but that field is mutable publisher state and is limited to 2,000 characters; it cannot store the required frozen immutable correction baseline and expected evidence.
+- The task requires the correction event metadata to contain `schemaVersion`, `refundId`, provider context, plan/period/event identity, exact quantity/cost baseline, correction value, expected after-state, and expected refund amount/currency.
+- Adding the required field would be a Prisma schema/database change, which is outside this task and explicitly prohibited.
+
+Validation:
+
+- Inspected `database/prisma/schema.prisma` at the pinned submodule revision and confirmed `UsageEvent` has no metadata field.
+- Inspected the declared `package.json` scripts; no implementation validation was run because the required persistence contract is unavailable and no source change was made.
+
+Required follow-up: coordinate a database/shared-contract task to provide an immutable UsageEvent correction-evidence field, then re-run this task on the same bounded workflow. Do not substitute `providerResponseSummary` or submit a correction without frozen evidence.
