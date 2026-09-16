@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 86
-executor: copilot
-claimed_at: 2026-09-16T13:59:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-015-BACKGROUND-003
@@ -413,3 +413,28 @@ STOP and return to `moda_architect` if:
 3. Clear claim metadata.
 4. Return to `moda_architect`.
 5. STOP. Do not start SYSTEM-TEST-001.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `1f7cd30` on `task/ARCH-015-BACKGROUND-004`, pushed to `origin`.
+
+Changed files:
+
+- `src/services/recovery-credit-refund-correction.service.ts`
+- `tests/unit/services/recovery-credit-refund-correction.service.test.ts`
+
+Implemented the per-invocation collision-safe provider-meter visitation rule, deterministic oldest-live refund and unresolved-purchase gate, `createdAt` selection, and exact frozen BEFORE/EXPECTED AFTER/provider-conflict classification. Existing PREPARE transaction/CAS, idempotency keys, immutable evidence, linked-refund reconciliation, and generic publisher behavior remain unchanged. No schema or cross-repository files were modified.
+
+Focused validation: `npm test -- --run tests/unit/services/recovery-credit-refund-correction.service.test.ts` passed, 19 tests.
+
+Schema validation: `npm run prisma:validate` passed.
+
+Build: `npm run build` passed.
+
+Diff hygiene: `git diff --check` passed.
+
+Full suite: `npm test` ran 78 files, with 67 passed, 10 skipped, and 1 failed file containing 4 failed tests. The unchanged unrelated failures are the four tests in `tests/integration/translation-enum-bindings.integration.test.ts`; each fails because `Background runtime configuration has not started` before its database assertion in the translation services. No refund-correction tests failed.
+
+Limitations: no blockers identified for this task. The full-suite translation runtime baseline remains unresolved and is outside this task's authorized implementation surface.
