@@ -676,6 +676,8 @@ ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementa
 ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
 ARCH-012-BACKGROUND-001    Ready — Changes Requested at Attempt 1; reclaim as Attempt 2 before system tests
 ARCH-012-GATEWAY-001       Complete — architect accepted Attempt 1; implementation `64cb326`; integration 58 passed / 0 failed
+ARCH-012-SYSTEM-TEST-001   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
+ARCH-012-SYSTEM-TEST-002   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
 ```
 
 Do not downgrade a task that has already advanced in the live developer workspace. `ARCH-012-BACKGROUND-001` remains Ready for Attempt 2 rework after Changes Requested at Attempt 1. System-test tasks remain Pending until BACKGROUND-001 is accepted Complete; Gateway acceptance does not independently promote them.

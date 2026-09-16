@@ -9,11 +9,11 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-012-SHARED-001
 - ARCH-007-MESSAGING-001
@@ -122,11 +122,11 @@ Use realistic Meta-shaped fixtures and prove:
 
 ## Acceptance Criteria
 
-- [ ] repository-local inbound event interface is removed or no longer authoritative;
-- [ ] producer output is exactly Shared v1;
-- [ ] both reply modes are faithfully represented;
-- [ ] webhook acknowledgement path remains lightweight;
-- [ ] voice payload is transported by media identity only.
+- [x] repository-local inbound event interface is removed or no longer authoritative;
+- [x] producer output is exactly Shared v1;
+- [x] both reply modes are faithfully represented;
+- [x] webhook acknowledgement path remains lightweight;
+- [x] voice payload is transported by media identity only.
 
 ## Validation
 Inspect `package.json`, then run repository-declared commands:
@@ -149,18 +149,50 @@ Set to `review`, clear claim, return to `moda_architect`, STOP.
 ## Completion Report
 
 ### Status
-Not started.
+Implemented, validated, and published on the implementation task branch. Awaiting `moda_architect` review.
 
 ### Files Changed
-TBD.
+- `app/routes/whatsapp.tsx`
+- `app/lib/observability/whatsapp-ingress-telemetry.ts`
+- `app/lib/types/whatsapp.ts` (removed)
+- `package.json`
+- `package-lock.json`
+- `tests/whatsapp-inbound-normalization.test.mjs`
+- `tests/whatsapp-queue-telemetry.test.mjs`
+- `tests/whatsapp-ingress-telemetry.test.mjs`
+- `tests/startup-contract.test.mjs`
 
 ### Validation Results
-TBD.
+- Implementation commits: `2267f26`, `424e09d`, pushed to `task/ARCH-012-MESSAGING-001`.
+- Exact dependency installed: `@modainteract/moda-interact-shared@0.12.0`, the ARCH-012-SHARED-001 accepted publication.
+- Correction mapping: producer now uses `@modainteract/moda-interact-shared/whatsapp`, constructs strict Shared v1 events, preserves `entry.id` separately from `metadata.phone_number_id`, preserves explicit/contextless replies, transports audio media identity only, maps unsupported content explicitly, and rejects malformed payloads before queueing.
+- Correction mapping: existing `whatsapp-events` / `message-received` queue, deterministic `providerMessageId` job ID, three attempts, exponential backoff, signature verification, and acknowledgement-after-queue-acceptance ordering remain intact.
+- Correction mapping: removed the repository-local `WhatsAppInboundEvent` producer type; no database, media download, transcription, Shopify, tenant routing, or AI work was added.
+- Focused normalization tests: 13 passed, 0 failed, covering text, audio, context, unsupported image/document/video/sticker/location, provider identity separation, malformed validation, deterministic job IDs, and no raw-body/audio logging.
+- `npm test`: 34 passed, 1 skipped, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed. Build emitted existing Vite warnings about browser externalization of Node/Redis modules; no build failure.
+- `git diff --check`: passed.
+- Implementation worktree is clean after push.
 
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 1.
 
 ### Review Notes
-TBD.
+Functionality-first review accepted implementation commits `2267f26` and `424e09d`.
+
+Verified functional behaviour:
+
+- Messaging consumes the exact architect-accepted `@modainteract/moda-interact-shared@0.12.0` package and uses `@modainteract/moda-interact-shared/whatsapp` as the authoritative inbound contract;
+- `entry.id` is preserved as `providerAccountId` and `change.value.metadata.phone_number_id` is preserved separately as `providerPhoneNumberId`;
+- explicit native WhatsApp reply context is preserved unchanged as `contextMessageId`, while ordinary contextless messages emit `contextMessageId: null` for Background-owned resolution;
+- text is represented as canonical text content; audio carries provider media ID/MIME/SHA/voice evidence only; unsupported provider types are represented explicitly and are never converted into fake empty text;
+- Shared validation occurs before queue publication, so malformed identities/content/context/timestamps are rejected without enqueueing the malformed message;
+- the existing `whatsapp-events` / `message-received` queue boundary, provider-message-derived deterministic job ID, three attempts and exponential backoff are preserved;
+- the webhook awaits durable queue acceptance before returning the accepted 200 response, while signature verification and existing provider-status normalization remain in Messaging;
+- the repository-local `WhatsAppInboundEvent` producer type was removed, leaving no competing authoritative inbound contract;
+- no tenant/shop routing, database access, Meta media download, transcription, Shopify API or CommerceAgent work was introduced into the webhook lifecycle.
+
+Validation evidence is sufficient for the functional change: 13 focused normalization tests passed; the repository suite passed 34 with 1 skipped; typecheck, production build and `git diff --check` passed. No blocking functional, architectural, security, data-integrity or cross-service compatibility defect was found.
