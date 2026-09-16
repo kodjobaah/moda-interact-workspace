@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 66
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-014-SYSTEM-TEST-003
 created: 2026-09-16
-updated: 2026-09-16T08:05:00Z
+updated: 2026-09-16T09:00:00Z
 ---
 
 # ARCH-014-ADMIN-009
@@ -471,3 +471,58 @@ submodules: recursive sync/update passed; database initialized at 89dca92325cefc
 ```
 
 The implementation branch and parent task report remain separate and were not merged to `main`. Executor and claim fields are cleared for `moda_architect` review.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Attempt Reviewed
+
+Attempt 1 — implementation `6852e01`, Completion Report `92c2cc3`.
+
+### Functional assessment
+
+The runtime-control persistence path is accepted in principle: SUPER_ADMIN authorization, full prospective DATABASE-004 validation, optimistic version fencing, same-transaction audit creation, read-only non-SUPER_ADMIN rendering, human unit conversion and the retained Controls route are implemented coherently.
+
+Two UI communication requirements remain incomplete:
+
+1. The exact fleet-wide queue-limit introduction is rendered at the top of the entire `Advanced` tab. That visually describes the Billing retries and Translation recovery/retries controls as queue limits even though only the `Worker throughput` fields are fleet-wide queue concurrency limits. The task requires this copy as the `Worker throughput` section introduction.
+2. A successful save that changes one or more of the seven queue-concurrency fields never renders the required sentence:
+   `Fleet-wide queue limits converge without redeploying workers.`
+
+These are functional information-architecture corrections for an operational control surface, not requests for broader test coverage.
+
+### Required Attempt 2 correction
+
+Make only the following changes in `moda-interact-admin`:
+
+1. In `src/components/admin/background-runtime-controls.tsx`, remove the fleet-wide queue-limit paragraph from the top-level `ADVANCED` tab.
+2. Render this exact two-sentence introduction immediately with the `Worker throughput` group, and nowhere else:
+   `These values are fleet-wide queue limits across all worker replicas. Adding replicas does not multiply the configured cap.`
+3. Preserve all seven Worker throughput rows and their existing per-row `across the fleet` guidance.
+4. On successful save, determine whether at least one changed field belongs to this exact set:
+   - `checkoutQueueGlobalConcurrency`
+   - `orderQueueGlobalConcurrency`
+   - `pendingRecoveryQueueGlobalConcurrency`
+   - `recoveryResumeQueueGlobalConcurrency`
+   - `whatsappQueueGlobalConcurrency`
+   - `merchantCommunicationsQueueGlobalConcurrency`
+   - `billingSubscriptionQueueGlobalConcurrency`
+5. If and only if that save changed at least one of those fields, include this exact additional success sentence:
+   `Fleet-wide queue limits converge without redeploying workers.`
+6. Preserve the existing generic success copy:
+   `Runtime controls updated. The committed values are shared by all worker replicas. Running work is not interrupted; workers adopt the new configuration automatically.`
+7. Do not change DATABASE-004 schema/migrations, authorization, version/CAS behavior, audit-event semantics, runtime bounds, cross-field rules, route placement, or any Background implementation.
+
+### Focused validation required
+
+Add/update focused assertions proving:
+
+- the fleet-wide introduction is scoped to `Worker throughput`, not the whole Advanced tab;
+- a queue-concurrency save includes the exact convergence sentence;
+- a non-queue Advanced save does not falsely present that queue-specific sentence;
+- the existing ADMIN-009 unit/security suite still passes.
+
+Run the existing focused ADMIN-009 tests, build/lint where available, and `git diff --check`. Do not expand this retry into unrelated repository-wide cleanup.
