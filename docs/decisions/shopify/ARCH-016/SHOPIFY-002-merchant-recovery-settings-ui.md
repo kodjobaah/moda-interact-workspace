@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-16T18:32:49Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T19:42:00Z
 ---
 
 # ARCH-016-SHOPIFY-002
@@ -588,3 +588,33 @@ launcher/worktree facts.
 Return Attempt 2 to `moda_architect` with `status: review`, clear `executor`/`claimed_at`, and
 STOP. The launcher owns the increment from Attempt 1 to Attempt 2 when the task is reclaimed.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically.
+
+## Attempt 2 Completion Report
+
+### Corrections Completed
+
+- Applied the architect-provided complete 33-key Recovery Settings translation namespace to all 20 supported locales and replaced missing effective-policy keys with the supplied names.
+- Disabled follow-up submissions now normalize stale browser delay values to null; missing/blank recovery delay is rejected instead of becoming zero.
+- Loader discount DTOs now exclude raw override/provider rows and expose only bounded presentation fields. Catalogue rows are filtered to CURRENT, ACTIVE, available, in-window discounts; non-selectable rows remain visible but disabled.
+- Recovery Settings now displays summary, method, redeem code, dates, and provider status using supplied translated labels.
+
+### Attempt 2 Validation
+
+- focused Recovery Settings/access/locale tests: `43 passed`;
+- `git diff --check`: passed;
+- typecheck: repository-wide baseline errors remain outside changed Recovery Settings files;
+- build: started but was interrupted by the existing environment/process baseline; no Recovery Settings compiler diagnostic was reported.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-SHOPIFY-002`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-SHOPIFY-002`;
+- branches: `task/ARCH-016-SHOPIFY-002` in both worktrees;
+- origin/main synchronization and recursive submodule preparation: passed;
+- database submodule commit: `c59f2eb6953642f1c850d38b09ed03096d672547`;
+- Attempt 2 launcher claim commit: `5be72e1e`;
+- Attempt 2 implementation commit: `73d3bb3` (`fix(shopify): harden recovery settings presentation`);
+- implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
