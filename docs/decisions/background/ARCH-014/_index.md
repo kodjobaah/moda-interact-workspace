@@ -2,7 +2,7 @@
 
 | Task | Status | Summary |
 |---|---|---|
-| [ARCH-014-BACKGROUND-001](BACKGROUND-001-runtime-config-and-distributed-lease-foundation.md) | pending | Establish monotonic runtime-config observation, fenced DB leases, and dynamic non-overlapping leased scheduling. |
+| [ARCH-014-BACKGROUND-001](BACKGROUND-001-runtime-config-and-distributed-lease-foundation.md) | ready | Establish monotonic runtime-config observation, fenced DB leases, and dynamic non-overlapping leased scheduling. |
 | [ARCH-014-BACKGROUND-002](BACKGROUND-002-billing-and-recovery-runtime-controls.md) | pending | Apply runtime intervals/batches/retries to billing and recovery while preserving billing and merchant recovery invariants. |
 | [ARCH-014-BACKGROUND-003](BACKGROUND-003-translation-runtime-controls.md) | pending | Move translation scheduling/batching/retry tuning from environment variables to the shared runtime configuration. |
 | [ARCH-014-BACKGROUND-004](BACKGROUND-004-messaging-abuse-runtime-controls.md) | pending | Apply runtime messaging settle timing and approved WhatsApp abuse-limit controls using last-known-good configuration. |

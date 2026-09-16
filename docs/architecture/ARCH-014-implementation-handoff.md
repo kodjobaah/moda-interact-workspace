@@ -103,3 +103,16 @@ ARCH-014-SYSTEM-TEST-002 PENDING on ADMIN-008 (DATABASE-003 + SHOPIFY-003 COMPLE
 Spreadsheet standard: exactly `exceljs@4.4.0`, established in ADMIN-006 and reused by ADMIN-008. No alternate spreadsheet package is authorized.
 
 See `ARCH-014-post-ADMIN-005-addendum.md` for the binding dependency graph and invariants.
+
+## Background runtime controls frontier (16 Sep 2026)
+
+DATABASE-004 Attempt 3 is architect-accepted Complete after the singleton seed was made executable without changing the Prisma `@updatedAt` contract.
+
+```text
+ARCH-014-DATABASE-004    COMPLETE
+ARCH-014-BACKGROUND-001  READY
+ARCH-014-ADMIN-009       PENDING (branch-local: ADMIN-007 still shown Ready)
+ARCH-014-SYSTEM-TEST-003 PENDING
+```
+
+`BACKGROUND-001` is the automatic Ready task unlocked by this branch-local acceptance. `ADMIN-009` additionally depends on `ADMIN-007`; when the separately accepted ADMIN-007 reconciliation is integrated into the same canonical parent state, ADMIN-009 becomes eligible. SYSTEM-TEST-003 remains terminal and pending behind the full background/admin runtime-control chain.
