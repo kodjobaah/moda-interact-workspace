@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 64
-executor: copilot
-claimed_at: 2026-09-16T08:08:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-BACKGROUND-001
@@ -182,3 +182,33 @@ git diff --check
 ## Stop conditions
 
 STOP rather than creating another settings source or weakening provider-output safety bounds.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `f575ed5` on `task/ARCH-014-BACKGROUND-003`, pushed to `origin`.
+
+### Requirements
+
+- Replaced merchant-communications reconciliation `setInterval` with `startDynamicLeasedScheduler`, using `TRANSLATION_RECONCILIATION` and `translationReconciliationIntervalSeconds`; startup also runs through lease acquisition.
+- Migrated reconciliation page size, claim timeout, batch assembly limit, submission retry/attempt policy, initial poll, recurring poll/read retry, result retry, and automatic retry limits to the process last-known-good runtime-config snapshot at decision points.
+- Preserved decimal seconds via `seconds * 1000`, `FOR UPDATE SKIP LOCKED`, concurrent batch assembly semantics, provider retry classification, and provider output safety/provider correlation bounds.
+- Kept `TRANSLATION_PROVIDER`, `TRANSLATION_MODEL`, and provider credentials deployment-configured; no retired translation environment-variable names are read from `src/`.
+- Kept `translationResultRetrySeconds` distinct from `translationPollIntervalSeconds` for result/item retry scheduling.
+
+### Validation
+
+- Focused translation/scheduler tests: PASS, 6 files / 53 tests.
+- `npm run test:unit`: 945 passed; 2 pre-existing failures in `tests/unit/runtime/observability-startup.test.ts` (recovery entrypoint source-text expectation and shared dependency version expectation `0.9.0` versus repository `0.11.2`). No failures were in task-owned translation files.
+- `npm run test:integration --if-present`: PASS, 2 files / 3 tests, including PostgreSQL concurrent `SKIP LOCKED` batch assembly.
+- `npm run build`: PASS (`prisma:generate` and `tsc`).
+- `git diff --check`: PASS.
+- Retired environment-name scan under `src/`: PASS, no matches. Provider/model/credential scan confirms retained reads.
+
+### Evidence and limitations
+
+- Launcher supplied and used the canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-BACKGROUND-003` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-BACKGROUND-003`.
+- Launcher reported the initialized database submodule at `47232f6876469f209c7efde4cefbb8a47d864e6a`; no database files or parent submodule gitlink were changed.
+- Implementation worktree is clean after publication. Parent worktree contains only this task report change before its report commit.
+- The full unit suite retains the two unrelated observability baseline failures listed above; integration infrastructure was available and passed.
