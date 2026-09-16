@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-16T18:16:37Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T19:25:00Z
 ---
 
 # ARCH-016-BACKGROUND-003
@@ -395,6 +395,36 @@ Ready for Review.
 Implementation branch: `task/ARCH-016-BACKGROUND-003` at `256127f536001c00210bef7392723b8dc01c4795`.
 
 The task is returned to `moda_architect` for review. The documented build and full-suite failures are pre-existing generated-schema/runtime baseline conditions and were not broadened or changed by this task.
+
+## Attempt 3 Completion Report
+
+### Corrections Completed
+
+- Fixed usable FIXED-offer eligibility to require provider status `ACTIVE` alongside CURRENT catalogue, availability, selectability, and time-window checks.
+- Propagated provider `event.occurredAt` through text, unsupported, and audio inbound paths; duplicate deliveries repair engagement without creating messages, and audio engagement occurs before transcription outcomes.
+- Added read-only outbound admission lookup and reconciled duplicate idempotency results without resend or billing release; persisted outbound `sentAt` is used for attempt finalization.
+- Added conditional outreach lifecycle claims preventing ENGAGED regression and guarded message-sent transitions from reopening expired attempts.
+
+### Attempt 3 Validation
+
+- focused Attempt 3 policy/outreach/conversation/worker/audio suites: `18 passed`;
+- `npm run prisma:validate`: passed;
+- `git diff --check`: passed;
+- build/full-suite baseline status remains documented from prior attempts; generated Prisma transcription/content-type mismatches remain unrelated to the correction files.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-003`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-003`;
+- branches: `task/ARCH-016-BACKGROUND-003` in both worktrees;
+- origin/main synchronization and recursive submodule preparation: passed;
+- database submodule commit: `c59f2eb6953642f1c850d38b09ed03096d672547`;
+- Attempt 3 launcher claim commit: `8dc667aa`;
+- Attempt 3 implementation commit: `f2abbbc` (`fix(background): reconcile outreach engagement and retries`);
+- implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
 
 ## Architect Review — Attempt 2
 
