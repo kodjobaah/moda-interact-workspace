@@ -90,16 +90,14 @@ The existing billing lifecycle retry-tier structure remains intentionally system
 ARCH-014-DATABASE-005 COMPLETE
         |
         v
-ARCH-014-BACKGROUND-006 READY
+ARCH-014-BACKGROUND-006 COMPLETE
+
+ARCH-014-BACKGROUND-007 SUPERSEDED
+    scope merged into BACKGROUND-006
+
+ARCH-014-ADMIN-010 READY ---------> ARCH-014-SYSTEM-TEST-002 PENDING
         |
-        v
-ARCH-014-BACKGROUND-007 PENDING
-        |
-        +--------------------------+
-                                   |
-ARCH-014-ADMIN-010 READY ----------+----> ARCH-014-SYSTEM-TEST-003 PENDING
-        |
-        +------------------------------> ARCH-014-SYSTEM-TEST-002 PENDING
+        +--------------------------> ARCH-014-SYSTEM-TEST-003 PENDING
 ```
 
-`DATABASE-005` is architect-accepted Complete. `BACKGROUND-006` is now Ready. `ADMIN-010` remains independently Ready and can run in parallel with `BACKGROUND-006`.
+`DATABASE-005` and `BACKGROUND-006` are architect-accepted Complete. BACKGROUND-006 includes the former BACKGROUND-007 runtime-authority scope, so BACKGROUND-007 must not be executed separately. On this branch `ADMIN-010` remains independently Ready; terminal system tests stay developer-gated until every declared dependency is accepted/integrated.

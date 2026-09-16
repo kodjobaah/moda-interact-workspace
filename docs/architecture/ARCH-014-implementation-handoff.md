@@ -124,26 +124,24 @@ ARCH-014-SYSTEM-TEST-003 READY
 
 ## Corrective runtime-control frontier (16 Sep 2026 snapshot audit)
 
-The post-implementation source audit found a distinction not covered by the original runtime-control contracts: an exclusive lease prevents overlap but, when normal release deletes the row, skewed replica timers can still execute sequential duplicate global cycles inside one configured cadence window and fencing generation can reset.
+The post-implementation source audit found that exclusive lease ownership alone did not enforce one shared cadence window, and that several runtime-policy authority gaps remained in the Background service. DATABASE-005 persisted cadence history and BACKGROUND-006 now closes the complete Background correction as one implementation task.
 
-The corrective graph is:
+The branch-local corrective graph is:
 
 ```text
 ARCH-014-DATABASE-005    COMPLETE
         |
         v
-ARCH-014-BACKGROUND-006  READY
-        |
-        v
-ARCH-014-BACKGROUND-007  PENDING
-        |
-        +---------------------------+
-                                    |
-ARCH-014-ADMIN-010       READY -----+----> ARCH-014-SYSTEM-TEST-003 PENDING
+ARCH-014-BACKGROUND-006  COMPLETE
+
+ARCH-014-BACKGROUND-007  SUPERSEDED (scope merged into BACKGROUND-006)
+
+ARCH-014-ADMIN-010       READY
         |
         +--------------------------------> ARCH-014-SYSTEM-TEST-002 PENDING
+        +--------------------------------> ARCH-014-SYSTEM-TEST-003 PENDING
 ```
 
-`DATABASE-005` is architect-accepted Complete. `BACKGROUND-006` is now Ready and is the next automatic corrective Background task. `ADMIN-010` remains independently Ready. `BACKGROUND-007` is deliberately sequenced after BACKGROUND-006 because both edit the runtime foundation in `moda-interact-background`. Terminal system tests remain developer-gated.
+`BACKGROUND-006` is architect-accepted Complete. There is no separate BACKGROUND-007 implementation step. On this branch, `ADMIN-010` remains the only automatic corrective implementation task; terminal system tests remain developer-gated and pending until their declared dependencies are architect-accepted/integrated.
 
-See `ARCH-014-runtime-controls-corrective-addendum.md` for binding cadence/fencing/runtime-authority invariants.
+See `ARCH-014-runtime-controls-corrective-addendum.md` for the binding cadence/fencing/runtime-authority invariants.

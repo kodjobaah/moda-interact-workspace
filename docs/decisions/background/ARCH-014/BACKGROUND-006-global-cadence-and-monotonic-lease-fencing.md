@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 68
 executor:
 claimed_at:
@@ -578,3 +578,17 @@ Behavioural evidence:
 - Translation, conversation, and abuse readers now fail with `Background runtime configuration has not started.` when not started; isolated tests inject explicit valid readers.
 - Billing reconciliation tests verify non-default `billingFrozenRecheckSeconds` and `billingProviderRetrySeconds` are used consistently from one immutable cycle snapshot, including the existing-subscription/no-provider path.
 - No Prisma schema or migration files were changed by this task.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Summary
+
+Attempt 1 is accepted on functionality. The implementation now makes PostgreSQL authoritative for both lease ownership and shared global cadence, retains lease rows on normal release, stamps `lastFinishedAt` with PostgreSQL `NOW()`, and preserves monotonic fencing generations across release/reacquire cycles. The real PostgreSQL integration test proves generation `1 -> 2`, retained-row cadence blocking, and stale-handle fencing.
+
+The combined runtime-authority scope is also complete: Background validates the DATABASE-004 min/max and cross-field contract before adopting newer snapshots; invalid newer rows retain last-known-good state without listener notification; production translation, conversation-settling and abuse-admission readers no longer fall back to compiled defaults; and the periodic billing scanner uses the supplied cycle snapshot for configurable frozen/provider retry timing. The remaining literal fallback values in `BillingReconciliationService` are confined to the explicitly preserved direct-test seam because the production periodic entrypoint always supplies the runtime snapshot.
+
+`ARCH-014-BACKGROUND-007` remains superseded because its full scope was merged into this task. Implementation commit `602cfed` is accepted. No further BACKGROUND-006 attempt is required.
