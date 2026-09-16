@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -335,3 +335,442 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 - executor and claimed timestamp cleared; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for review.
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested — provider normalization, catalogue fencing, durable sync-request state and lifecycle trigger coverage are incomplete**
+
+Implementation commit reviewed: `70770d6`.
+Parent Completion Report commit reported: `f4de682c`.
+
+Attempt 1 establishes the correct high-level ownership boundary: Shopify is read through the
+existing offline-token mechanism, the canonical Shared `0.12.1` queue contract is consumed,
+pagination is outside the database transaction, the worker is registered in the existing
+`moda-recovery-worker`, and no CommerceAgent/LLM discount-selection logic was introduced.
+Those choices MUST be preserved.
+
+The implementation is not yet functionally safe enough to accept. The following corrections
+are required for Attempt 2.
+
+### Finding 1 — Shopify code-discount normalization currently treats the GraphQL connection as an array
+
+Current file:
+
+```text
+src/providers/shopify-discount.provider.ts
+```
+
+The GraphQL query returns `codes` as a `DiscountRedeemCodeConnection`, but the normalizer does:
+
+```ts
+const codes = Array.isArray(discount.codes) ? discount.codes : null;
+```
+
+Therefore a normal Shopify response produces `codeNodes = []`, `codeCount = 0`,
+`singleRedeemCode = null`, and every native CODE discount becomes non-selectable even when it
+has exactly one redeem code.
+
+The query also omits `codesCount` and does not request code evidence for `DiscountCodeApp`.
+ARCH-016 requires all four CODE union members to preserve provider count information and to
+prove a single code only when exactly one code exists.
+
+#### Required provider correction
+
+For **all four** code types:
+
+```text
+DiscountCodeApp
+DiscountCodeBasic
+DiscountCodeBxgy
+DiscountCodeFreeShipping
+```
+
+request:
+
+```graphql
+codesCount { count precision }
+codes(first: 2) {
+  nodes { code }
+  pageInfo { hasNextPage }
+}
+```
+
+Normalize deterministically:
+
+```text
+AUTOMATIC type
+  codeCount = null
+  singleRedeemCode = null
+
+CODE type
+  exact provider count is known only when codesCount.precision == EXACT
+  codeCount = exact count when precision == EXACT; otherwise null
+
+singleRedeemCode
+  set only when:
+    codesCount.precision == EXACT
+    codesCount.count == 1
+    exactly one non-empty code node was returned
+    codes.pageInfo.hasNextPage == false
+  otherwise null
+
+fixedSelectable
+  native AUTOMATIC -> true
+  DiscountAutomaticApp -> false
+  native CODE -> true only when singleRedeemCode is proven as above
+  DiscountCodeApp -> false regardless of code count
+```
+
+Keep the bounded provider snapshot; include the returned count/precision and bounded code
+connection evidence, but never credentials/tokens.
+
+Do not infer a code from `title`.
+
+### Finding 2 — catalogue generation/token fencing is not atomic and finalization does not revalidate eligibility
+
+Current file:
+
+```text
+src/services/shopify-discount-catalogue.service.ts
+```
+
+The current finalize path performs a normal `findUnique()` token read, then writes rows and
+finally writes `CURRENT`. It does not lock the catalogue row. A newer claim can therefore
+change `activeSyncToken` after the old worker's read but before the old worker's writes, allowing
+the stale worker to overwrite newer state.
+
+The current finalize path also does **not** recheck:
+
+```text
+Shop.status == ACTIVE
+ShopSettings.onboardingCompleted == true
+Subscription.status == ACTIVE | TRIALING
+durable offline Session still has read_discounts
+```
+
+before making the catalogue `CURRENT`.
+
+Attempt 2 MUST use one shared catalogue-row lock helper in both claim and finalize:
+
+```sql
+SELECT "id"
+FROM "shopify"."ShopifyDiscountCatalogue"
+WHERE "shopId" = $shopId
+FOR UPDATE
+```
+
+#### Claim order
+
+Use this exact order in one short transaction:
+
+```text
+1. resolve Shop identity/domain
+2. ensure catalogue row exists (upsert if absent)
+3. acquire ShopifyDiscountCatalogue FOR UPDATE
+4. reload catalogue after lock
+5. re-read current Shop/settings/subscription/offline Session eligibility
+6. monotonically record syncRequestedAt from the job requestedAt (Finding 3)
+7. if ineligible:
+     catalogue -> UNAVAILABLE
+     clear activeSyncToken/syncStartedAt
+     mark current discount rows unavailable
+     preserve an existing non-null row unavailableAt; set it only where null
+     return unavailable without provider request
+8. if eligible:
+     generation = locked.syncGeneration + 1
+     generate a new opaque token
+     set SYNCING + generation + token + syncStartedAt
+9. commit
+```
+
+Two concurrent claims must not both derive the same next generation from the same unlocked
+value.
+
+#### Finalize order
+
+Use this exact order in one bounded transaction:
+
+```text
+1. acquire the same catalogue FOR UPDATE lock
+2. reload catalogue
+3. if activeSyncToken != this worker token -> return superseded immediately
+4. re-read current Shop/settings/subscription/offline Session eligibility
+5. if eligibility is lost:
+     catalogue -> UNAVAILABLE
+     clear this token/syncStartedAt
+     mark rows unavailable (preserve existing unavailableAt; set only where null)
+     return unavailable
+     DO NOT upsert fetched provider rows as current
+6. upsert all observed rows with this generation
+7. observed rows -> isAvailable true, unavailableAt null, lastSeenSyncGeneration = generation
+8. rows not seen in generation -> isAvailable false; set unavailableAt only where null
+9. catalogue -> CURRENT, clear token/error, set lastSuccessfulSyncAt
+10. commit
+```
+
+No network request may occur while this transaction/row lock is held.
+
+Provider failure may conditionally set `ERROR` only while the failing worker still owns its
+token. Also clear `syncStartedAt` when clearing the token. Preserve historical rows.
+
+### Finding 3 — `syncRequestedAt` does not represent the latest request and can regress semantically
+
+Current worker:
+
+```text
+src/workers/shopify-discount-sync.worker.ts
+```
+
+parses `payload.requestedAt` but discards it. `reconcile()` then writes a fresh processing-time
+`new Date()`.
+
+Attempt 2 MUST pass the parsed job request timestamp into the catalogue service and record:
+
+```text
+syncRequestedAt = max(existing syncRequestedAt, payload.requestedAt)
+```
+
+inside the locked claim transaction.
+
+Do not replace a newer persisted request timestamp with an older out-of-order job timestamp.
+Validate the parsed ISO value as a real Date before use; the Shared parser remains the schema
+authority.
+
+### Finding 4 — Background lifecycle publication does not durably establish `SYNC_REQUIRED`
+
+Current helper:
+
+```text
+BillingSubscriptionReconciliationService.publishDiscountSync(...)
+```
+
+only calls BullMQ. If queue publication fails, it logs the failure but leaves no durable
+`SYNC_REQUIRED` state, contrary to the task contract.
+
+Attempt 2 MUST make the Background request path durable before queue publication:
+
+```text
+authoritative billing/reinstall transaction commits
+  -> short discount-request transaction
+       -> re-read current Shop/settings/subscription/offline Session eligibility
+       -> if no longer eligible: set/leave catalogue UNAVAILABLE; do not enqueue
+       -> if eligible: upsert/update catalogue SYNC_REQUIRED
+            syncRequestedAt = max(existing, requestedAt)
+            activeSyncToken = null
+            syncStartedAt = null
+  -> commit
+  -> enqueue canonical job
+```
+
+If queue publication fails:
+
+```text
+log bounded error
+leave catalogue SYNC_REQUIRED
+DO NOT roll back the already-correct billing/reinstall transition
+```
+
+For Background-produced jobs use the repository's existing BullMQ transient convention:
+
+```text
+attempts: 3
+backoff: { type: "exponential", delay: 1000 }
+removeOnComplete: true
+removeOnFail: false
+```
+
+Do not introduce a second queue contract or another credential store.
+
+### Finding 5 — successful same-cycle Paid reinstall does not request discount reconciliation
+
+Current path:
+
+```text
+completeReinstallPaid(...)
+  -> same provider/current period
+  -> activateReinstallPaid(...)
+```
+
+`activateReinstallPaid()` commits the restored ACTIVE/TRIALING state and only calls
+`publishNext(...)`; it never requests `REINSTALL_RECONCILED`.
+
+After `activateReinstallPaid()` successfully commits (`true`), request the canonical discount
+sync with reason:
+
+```text
+REINSTALL_RECONCILED
+```
+
+before/independently of the existing billing schedule publication. Do not publish when the
+result is `false` or `"invalid"`.
+
+Preserve the already-correct Free reinstall and paid rollover trigger paths.
+
+### Finding 6 — reinstall resolving to NO_CONTRACT does not force the catalogue UNAVAILABLE
+
+Current:
+
+```text
+completeReinstallWithoutContract(...)
+```
+
+correctly restores the shop installation lifecycle but does not touch the discount catalogue.
+The task contract explicitly requires:
+
+```text
+reinstall -> NO_CONTRACT
+  catalogue UNAVAILABLE
+  provider rows unavailable
+  no discount-sync job
+```
+
+Inside the same authoritative reinstall transaction, set/upsert the catalogue `UNAVAILABLE`,
+clear `activeSyncToken` / `syncStartedAt`, and mark rows unavailable while preserving existing
+non-null `unavailableAt` values. Do not enqueue a discount job for this path.
+
+### Finding 7 — one reachable Paid activation path constructs reconciliation without the discount queue
+
+Current file:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+contains a direct initial-Paid activation path which constructs:
+
+```text
+new BillingSubscriptionReconciliationService(...).activateInitialPaid(...)
+```
+
+without a `discountQueue`. Because `publishDiscountSync()` returns immediately when the queue is
+absent, a successful activation through the periodic billing reconciliation path can complete
+without `SUBSCRIPTION_ACTIVATED` discount reconciliation.
+
+Attempt 2 is explicitly authorised to modify:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+only for dependency injection of the existing canonical discount-sync queue.
+
+Make the queue flow explicit:
+
+```text
+billing entrypoint creates/reuses shopifyDiscountSyncQueue
+  -> createBillingReconciliationService(..., shopifyDiscountSyncQueue)
+  -> BillingReconciliationService retains that queue dependency
+  -> nested BillingSubscriptionReconciliationService receives the same queue
+  -> successful direct activateInitialPaid path establishes SYNC_REQUIRED then publishes SUBSCRIPTION_ACTIVATED
+```
+
+Do not alter unrelated billing reconciliation rules.
+
+### Accepted Attempt-1 work that MUST remain unchanged
+
+Preserve:
+
+```text
+@modainteract/moda-interact-shared pinned exactly to 0.12.1
+Admin GraphQL API version 2026-07
+all provider pagination outside long DB transactions
+all eight documented discount union members represented
+existing offline Shopify token/session refresh mechanism
+canonical shopify-discount-sync / reconcile-shopify-discounts contract
+worker registered in existing moda-recovery-worker
+bounded worker concurrency (no global platform serialization)
+no new Render service
+no write_discounts scope
+no CommerceAgent / AI ranking / basket-applicability implementation
+```
+
+### Attempt-2 authorised implementation surface
+
+Attempt 2 may modify only:
+
+```text
+src/providers/shopify-discount.provider.ts
+src/services/shopify-discount-catalogue.service.ts
+src/workers/shopify-discount-sync.worker.ts
+src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts          # newly authorised only for queue injection
+src/entrypoints/billing.ts
+src/entrypoints/billing-resources.ts
+focused provider/catalogue/billing lifecycle tests
+this task Completion Report / review metadata
+```
+
+`src/entrypoints/recovery.ts`, Shared package/version, database schema/migration and unrelated
+workers must not change unless a compile-only import adjustment is strictly necessary.
+
+### Required focused functional validation
+
+Tests should be narrowly targeted to these corrections rather than expanded into exhaustive
+coverage. At minimum prove:
+
+```text
+provider:
+  >1 discountNodes page is still traversed
+  code connection object is parsed correctly
+  exact one-code native CODE -> codeCount 1 + exact code + fixedSelectable true
+  multiple-code native CODE -> not fixed-selectable
+  unknown/non-exact count -> no singleRedeemCode and not fixed-selectable
+  DiscountCodeApp remains not fixed-selectable
+
+catalogue:
+  two concurrent/newer claims cannot share the same next generation
+  newer token supersedes older finalization before any row mutation
+  uninstall/scope/subscription eligibility loss before finalize cannot become CURRENT
+  out-of-order older requestedAt does not regress syncRequestedAt
+  missing rows become unavailable without deleting history
+  provider failure sets ERROR only for token owner; retry can return CURRENT
+
+background lifecycle:
+  queue failure leaves catalogue SYNC_REQUIRED and billing state committed
+  Background-produced jobs have 3 exponential retries and retain final failures
+  Free activation publishes SUBSCRIPTION_ACTIVATED after commit
+  Paid activation through both subscription worker and periodic billing reconciliation publishes after commit
+  Free reinstall publishes REINSTALL_RECONCILED
+  same-cycle Paid reinstall publishes REINSTALL_RECONCILED
+  rollover Paid reinstall publishes REINSTALL_RECONCILED
+  reinstall NO_CONTRACT leaves catalogue UNAVAILABLE and publishes nothing
+```
+
+Run the repository-declared equivalents of:
+
+```text
+focused ARCH-016 provider/catalogue/lifecycle tests
+npm run prisma:validate
+npm run build
+git diff --check
+```
+
+The known generated-Prisma-client mismatch may remain documented if it is unchanged and no
+Attempt-2 file introduces a new diagnostic. Do not perform unrelated generated-client cleanup.
+
+### Completion / stop condition
+
+Attempt 2 is ready for architect re-review only when:
+
+```text
+code-discount provider normalization uses the actual Shopify connection/count shape
+claim/finalize share an atomic catalogue-row token/generation fence
+finalization revalidates current eligibility before CURRENT
+syncRequestedAt is monotonic from canonical job requestedAt
+Background lifecycle triggers durably establish SYNC_REQUIRED before queue publication
+queue publication failure preserves SYNC_REQUIRED
+all successful initial activation/reinstall branches emit the correct canonical reason
+NO_CONTRACT reinstall forces UNAVAILABLE and emits no job
+Shared remains exactly 0.12.1
+no provider network call is held inside the catalogue DB transaction
+```
+
+Then push both mirrored task branches, set this same task back to `status: review`, clear
+`executor` / `claimed_at`, update the Completion Report with focused evidence, and return to
+`moda_architect`.
+
+No ARCH-016 dependency is promoted by this review. `attempt` remains `1` in this Changes
+Requested patch; `/moda-task ARCH-016-BACKGROUND-001` owns the increment to Attempt 2 when the
+task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically.

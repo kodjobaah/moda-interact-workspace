@@ -795,3 +795,22 @@ discount-selection or provider-secret presentation was introduced.
 This acceptance does not independently make the terminal system-test task eligible.
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every implementation dependency is
 Complete and the developer has completed the existing manual-testing checkpoint.
+
+## Post-review update — BACKGROUND-001 Attempt 1 Changes Requested
+
+`ARCH-016-BACKGROUND-001` Attempt 1 implementation commit `70770d6` establishes the intended
+Background provider/worker boundary but is not accepted. Review found functional gaps in
+Shopify code-discount normalization, atomic generation/token fencing, finalize-time eligibility
+revalidation, monotonic `syncRequestedAt`, durable `SYNC_REQUIRED` handling, and several
+background activation/reinstall trigger branches.
+
+Attempt 2 is narrowly authorised to correct those paths, including queue injection through the
+existing periodic `BillingReconciliationService` paid-activation route. The accepted boundaries
+remain unchanged: Shared stays at `0.12.1`, Shopify is read-only through API `2026-07`, the
+existing offline token mechanism is reused, the worker stays in `moda-recovery-worker`, and no
+CommerceAgent/AI selection or new Render service is introduced.
+
+The task returns to `status: ready`, remains `attempt: 1`, `executor: null` and
+`claimed_at: null`; `/moda-task ARCH-016-BACKGROUND-001` owns the Attempt-2 increment on reclaim.
+No dependency is promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending behind all implementation
+work and the developer manual-testing checkpoint.
