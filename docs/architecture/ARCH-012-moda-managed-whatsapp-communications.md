@@ -672,7 +672,7 @@ Current execution frontier after this consolidation:
 ```text
 ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
 ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
-ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementation `2267f26` + `424e09d`
+ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementation `424e09d`
 ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
 ARCH-012-BACKGROUND-001    Complete — architect accepted Attempt 2; implementation `5851670`
 ARCH-012-GATEWAY-001       Complete — architect accepted Attempt 1; implementation `64cb326`; integration 58 passed / 0 failed
@@ -680,7 +680,7 @@ ARCH-012-SYSTEM-TEST-001   Ready — all implementation dependencies are Complet
 ARCH-012-SYSTEM-TEST-002   Ready — all implementation dependencies are Complete
 ```
 
-Do not downgrade tasks from stale snapshot state. `ARCH-012-BACKGROUND-001` is architect-accepted Complete at Attempt 2 and the already-accepted `ARCH-012-GATEWAY-001` live state is reconciled here. All implementation dependencies for both ARCH-012 system-test tasks are now Complete, so both terminal system-test tasks are Ready.
+Do not downgrade a task that has already advanced in the live developer workspace. `ARCH-012-BACKGROUND-001` remains Ready for Attempt 2 rework after Changes Requested at Attempt 1. System-test tasks remain Pending until BACKGROUND-001 is accepted Complete; Gateway acceptance does not independently promote them.
 
 System tests are terminal integrated validation tasks. No implementation task depends on a system-test task.
 
