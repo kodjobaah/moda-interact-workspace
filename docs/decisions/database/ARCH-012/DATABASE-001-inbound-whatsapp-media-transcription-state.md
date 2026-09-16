@@ -20,7 +20,7 @@ enables:
 - ARCH-012-BACKGROUND-001
 - ARCH-012-BACKGROUND-002
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-DATABASE-001
@@ -42,6 +42,11 @@ package.json                                 # only if adding validator script i
 ```
 
 Do not edit application repositories.
+
+## 2026-09-16 migration baseline
+The current database snapshot contains later ARCH-014/015 migrations through `20260916083000_arch015_refund_correction_evidence`. Create the ARCH-012 migration **after the current canonical latest migration** using the repository's normal timestamp naming; do not backdate it to the original 2026-09-14 overlay date and do not edit/reorder existing migrations.
+
+The existing `ConversationMessage` model itself is unchanged on the fields ARCH-012 extends, so the schema design below remains valid.
 
 ## Exact schema additions
 Add enums in the `whatsapp` schema:
