@@ -1,7 +1,7 @@
 ---
 id: ARCH-014-BACKGROUND-006
 architecture_id: ARCH-014
-title: Enforce one global cadence window and monotonic lease fencing across replicas
+title: Correct distributed runtime scheduling and configuration authority under horizontal scaling
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 68
 executor: null
 claimed_at: null
@@ -19,8 +19,9 @@ depends_on:
 - ARCH-014-BACKGROUND-001
 - ARCH-014-BACKGROUND-002
 - ARCH-014-BACKGROUND-003
+- ARCH-014-BACKGROUND-004
+- ARCH-014-BACKGROUND-005
 enables:
-- ARCH-014-BACKGROUND-007
 - ARCH-014-SYSTEM-TEST-003
 created: 2026-09-16
 updated: 2026-09-16
@@ -30,16 +31,21 @@ updated: 2026-09-16
 
 ## Objective
 
-Correct two horizontal-scaling defects in the accepted runtime-lease foundation:
+Close the remaining Background runtime-control gaps as **one coherent horizontal-scaling correction**.
 
-1. **exclusive execution is not the same as global cadence** — skewed replica timers can acquire the lease one after another and execute two global cycles inside one configured interval;
-2. normal release currently `DELETE`s the lease row, so a later acquisition can restart `generation` at `1`, which means fencing generation is not monotonic across ordinary release/reacquire cycles.
+This task combines the former BACKGROUND-006 and BACKGROUND-007 scopes. After it is accepted:
 
-After this task, PostgreSQL is authoritative for both current ownership **and** whether a global periodic job is due.
+1. PostgreSQL is authoritative for both distributed lease ownership and whether a global periodic cycle is due;
+2. normal release preserves monotonic fencing generations across release/reacquire cycles;
+3. `BackgroundRuntimeConfigService` validates the exact persisted DATABASE-004 contract before replacing last-known-good state;
+4. production services never silently fall back to process-local test defaults when runtime configuration has not started;
+5. the periodic billing scanner uses the committed runtime snapshot for the remaining configurable retry timings.
 
-## Binding invariants
+Do not split these corrections into another Background task. Implement and validate them together.
 
-For these three leases:
+## Binding horizontal-scaling invariants
+
+For these global periodic leases:
 
 ```text
 BILLING_RECONCILIATION
@@ -47,7 +53,7 @@ RECOVERY_CAPACITY_REPAIR
 TRANSLATION_RECONCILIATION
 ```
 
-all replicas share one cadence history. Local JavaScript timers are wake-up hints only.
+all replicas share one cadence history. Local JavaScript timers are **wake-up hints only**.
 
 For:
 
@@ -57,11 +63,21 @@ QUEUE_CONCURRENCY_RECONCILIATION
 
 there is no periodic cadence gate; its due interval is zero. Existing queue-concurrency convergence remains event/config driven.
 
-The database clock (`NOW()`) is authoritative. Do not use `Date.now()` to decide cross-replica lease/cadence eligibility.
+The PostgreSQL clock (`NOW()`) is authoritative for cross-replica lease/cadence decisions. Never use `Date.now()` to decide whether another replica may execute global work.
 
-## Files in scope
+A running Background process has exactly one runtime-policy authority:
 
-Required production files:
+```text
+last-known-good PostgreSQL BackgroundRuntimeConfig snapshot
+```
+
+Do not introduce Redis policy state, environment fallbacks, module-global defaults or another coordination store.
+
+## Part A — global cadence and monotonic lease fencing
+
+### Production files
+
+Required primary files:
 
 ```text
 src/runtime/background-runtime-lease.ts
@@ -77,13 +93,11 @@ tests/integration/background-runtime-lease-cadence.concurrency.integration.test.
 scripts/test-integration.mjs
 ```
 
-Do not redesign billing/recovery/translation business services in this task.
+### Acquisition semantics
 
-## Required acquisition semantics
+Keep the public `tryAcquire(name)` call shape unless the current accepted code already exposes an equivalent typed API. Do not redesign unrelated queue-concurrency call sites.
 
-Keep the public `tryAcquire(name)` call shape so the queue-concurrency controller does not need an unrelated API redesign.
-
-Change its SQL so a conflicting lease row can be taken only when **both** conditions are true:
+For an existing lease row, acquisition succeeds only when both are true:
 
 ```text
 leaseUntil <= PostgreSQL NOW()
@@ -91,7 +105,7 @@ AND
 (lastFinishedAt IS NULL OR lastFinishedAt + authoritative cadence <= PostgreSQL NOW())
 ```
 
-The authoritative cadence must be read by the acquisition SQL from:
+The authoritative cadence MUST be read in the acquisition transaction/SQL from:
 
 ```text
 public.BackgroundRuntimeConfig(id = 'default')
@@ -113,19 +127,26 @@ QUEUE_CONCURRENCY_RECONCILIATION
     -> 0 seconds
 ```
 
-Do not trust a process-local interval argument for the cross-replica due decision. A stale process must not be able to run early after a newer Admin change increased the interval.
+Use fixed SQL/Prisma branches for that mapping. Do not dynamically construct a database column identifier from runtime text.
 
-Use fixed SQL/Prisma fragments for this mapping; do not construct a database column name from untrusted/runtime text.
+Do **not** use a process-local interval as the cross-replica due decision. This is required so a stale process cannot run early after a newer Admin change increases an interval.
 
-The first acquisition of a name with no lease row remains immediately eligible and inserts generation `1` with `lastFinishedAt = NULL`.
+The first acquisition for a name with no row is immediately eligible and inserts:
 
-If `BackgroundRuntimeConfig(id='default')` is unexpectedly missing, a scheduled periodic acquisition must not silently invent a cadence. Runtime-config readiness already treats that singleton as mandatory; preserve fail-closed behaviour rather than adding defaults here.
+```text
+generation = 1
+lastFinishedAt = NULL
+```
 
-## Required release semantics
+If `BackgroundRuntimeConfig(id='default')` is unexpectedly missing, scheduled periodic acquisition fails closed. Do not invent defaults in the lease service.
 
-`release(handle)` MUST stop deleting the row.
+### Release semantics
 
-Replace the `DELETE` with one guarded `UPDATE` matching:
+Normal release MUST retain the lease row.
+
+Do not `DELETE` it.
+
+Perform one guarded `UPDATE` matching all of:
 
 ```text
 name
@@ -133,7 +154,7 @@ ownerToken
 generation
 ```
 
-On a successful normal release set, using PostgreSQL time:
+On successful normal release set using PostgreSQL time:
 
 ```text
 leaseUntil     = NOW()
@@ -142,42 +163,42 @@ lastFinishedAt = NOW()
 updatedAt      = NOW()
 ```
 
-Do not reset `generation`. Do not clear/recycle the owner token in a way that makes an old handle match a future generation.
+Do not reset `generation`.
 
-Because the row remains, every later successful acquisition executes the existing conflict-update path and increments:
+Because the row remains, every later successful acquisition increments:
 
 ```text
 generation = previous generation + 1
 ```
 
-A stale older-generation heartbeat or release must affect zero rows.
+A stale older-generation heartbeat/release must affect zero rows.
 
-A cycle that acquired the lease and then throws is still a completed scheduler attempt for cadence purposes, matching the existing scheduler behaviour that waits before retrying. Therefore `runWithLease` must perform the guarded normal release from its `finally` path when the lease has not already been lost.
+A cycle that acquired the lease and then throws still counts as a completed scheduler attempt for cadence purposes, matching the existing non-overlapping scheduler behaviour. `runWithLease` therefore performs the guarded release in `finally` when the lease has not already been lost.
 
-If `leaseLost === true`, do not stamp `lastFinishedAt` from the stale owner.
+If `leaseLost === true`, the stale owner MUST NOT stamp `lastFinishedAt`.
 
-## Dynamic scheduler semantics
+### Dynamic scheduler semantics
 
 Keep recursive non-overlapping `setTimeout`; do not introduce `setInterval`.
 
-`startDynamicLeasedScheduler` must continue to:
+The scheduler must continue to:
 
-1. require the runtime-config service to be started;
-2. react to newer interval configuration by rescheduling a waiting local timer;
+1. require runtime config to be started;
+2. react to a newer interval by rescheduling a waiting local timer;
 3. never interrupt an in-flight local run;
 4. acquire the distributed lease before business work;
-5. fresh-read runtime config after successful acquisition and pass one immutable snapshot to the cycle;
+5. fresh-read runtime config after successful acquisition and pass one immutable snapshot to that cycle;
 6. schedule another local wake after skip/completion/error.
 
 New binding rule:
 
-> A local timer firing does **not** mean work is due. Only a successful cadence-aware database lease acquisition means the global cycle is due.
+> A local timer firing does not mean the global job is due. Only a successful cadence-aware PostgreSQL lease acquisition means the global job is due.
 
-Do not add process-local `lastRunAt`, module globals, Redis timestamps or per-replica cadence memory.
+Never add process-local `lastRunAt` or per-replica cadence memory.
 
-## Required integration test
+### Required PostgreSQL concurrency integration test
 
-Add:
+Add/update:
 
 ```text
 tests/integration/background-runtime-lease-cadence.concurrency.integration.test.ts
@@ -185,43 +206,28 @@ tests/integration/background-runtime-lease-cadence.concurrency.integration.test.
 
 Use the repository disposable PostgreSQL integration harness. Do not sleep for production intervals.
 
-The test must:
+The test MUST:
 
-1. capture/restore the current `BackgroundRuntimeConfig` values it changes;
-2. set `billingReconciliationIntervalSeconds = 10` (database minimum) using direct test setup;
-3. delete only the test lease row for `BILLING_RECONCILIATION` before starting;
-4. create two `BackgroundRuntimeLeaseService` instances with distinct explicit owner tokens;
-5. race `tryAcquire(BILLING_RECONCILIATION)` and prove exactly one obtains generation `1`;
-6. release the winner and prove the row still exists with non-null `lastFinishedAt`;
-7. immediately race the two services again and prove **neither** can acquire inside the same cadence window;
-8. move only that test row's `lastFinishedAt` far enough into the past using PostgreSQL test setup (for example `NOW() - INTERVAL '11 seconds'`); do not wait 10 seconds;
-9. race again and prove exactly one owner acquires generation `2`;
-10. prove the old generation-1 handle can neither heartbeat nor release generation 2;
-11. clean up the lease row and restore modified runtime configuration in `finally`.
+1. capture and restore the runtime-config fields it changes;
+2. set `billingReconciliationIntervalSeconds = 10` using direct test setup;
+3. delete only the test `BILLING_RECONCILIATION` lease row;
+4. construct two lease services with distinct explicit owner tokens;
+5. race acquisition and prove exactly one obtains generation `1`;
+6. release the winner;
+7. prove the persisted lease row still exists with non-null `lastFinishedAt`;
+8. immediately race both owners again and prove neither acquires inside the cadence window;
+9. move only that row's `lastFinishedAt` into the past with PostgreSQL test setup, e.g. `NOW() - INTERVAL '11 seconds'`;
+10. race again and prove exactly one owner acquires generation `2`;
+11. prove the old generation-1 handle cannot heartbeat or release generation 2;
+12. clean up and restore config in `finally`.
 
-Add this integration test to the `defaultTests` list in `scripts/test-integration.mjs`.
+Add the integration test to the default integration test list in `scripts/test-integration.mjs`.
 
-## Required unit regression tests
+### Required scheduler skew regression
 
-### Lease tests
+Use two scheduler instances with deliberately skewed local wake times and a shared fake cadence-aware lease.
 
-Prove SQL/behaviour includes:
-
-```text
-lastFinishedAt cadence eligibility
-BackgroundRuntimeConfig authoritative cadence mapping
-normal release uses UPDATE, not DELETE
-normal release stamps lastFinishedAt with NOW()
-release -> reacquire generation increases
-stale generation cannot heartbeat/release
-QUEUE_CONCURRENCY_RECONCILIATION has zero cadence gate
-```
-
-### Scheduler skew test
-
-Add a deterministic fake-lease test with two scheduler instances whose local timers are intentionally offset.
-
-Run multiple local wake periods. The fake lease must model shared `lastFinishedAt` cadence, not merely a boolean `acquired` flag.
+Run multiple cadence periods. Business work should be deliberately short.
 
 Required assertion:
 
@@ -230,40 +236,299 @@ within each shared cadence window there is at most one completed global run,
 even though both replica timers fire at different times
 ```
 
-A one-time simultaneous race is insufficient evidence.
+A one-time simultaneous acquisition race is insufficient.
 
-## Required validation
+## Part B — exact runtime-config validation parity
+
+Primary file:
+
+```text
+src/runtime/background-runtime-config.ts
+```
+
+`BackgroundRuntimeConfigService` MUST validate the same persisted contract as DATABASE-004 before replacing last-known-good state.
+
+Keep existing structural checks:
+
+```text
+id === "default"
+version is a safe integer >= 0
+all required fields are present
+createdAt/updatedAt are valid Dates
+returned snapshots/dates remain immutable
+```
+
+Replace generic non-negative validation with these exact bounds:
+
+```text
+billingReconciliationIntervalSeconds          10..3600
+billingReconciliationShopBatchSize            1..200
+shopifyUsagePublishBatchSize                  1..200
+recoveryRepairIntervalSeconds                 30..3600
+recoveryRepairShopBatchSize                   1..500
+recoveryResumeBatchSize                       1..100
+translationReconciliationIntervalSeconds      30..3600
+translationBatchMaxRequests                   1..500
+conversationQuietWindowMs                     250..10000
+conversationMaxSettleWindowMs                 1000..30000
+billingFrozenRecheckSeconds                   300..86400
+billingProviderRetrySeconds                   30..3600
+shopifyUsageRetryBaseSeconds                  10..3600
+shopifyUsageRetryMaxSeconds                   60..86400
+translationReconciliationPageSize             1..500
+translationClaimTimeoutSeconds                60..86400
+translationSubmitRetrySeconds                 30..86400
+translationInitialPollSeconds                 30..86400
+translationPollIntervalSeconds                30..86400
+translationResultRetrySeconds                 30..86400
+translationSubmitMaxAttempts                  1..10
+translationMaxAutoRetries                     0..10
+checkoutQueueGlobalConcurrency                1..100
+orderQueueGlobalConcurrency                   1..100
+pendingRecoveryQueueGlobalConcurrency         1..100
+recoveryResumeQueueGlobalConcurrency          1..100
+whatsappQueueGlobalConcurrency                1..100
+merchantCommunicationsQueueGlobalConcurrency  1..100
+billingSubscriptionQueueGlobalConcurrency     1..100
+rawSenderLimitPerMinute                       1..10000
+rawGlobalLimitPerMinute                       1..1000000
+turnSenderLimitPerMinute                      1..10000
+turnSenderLimitPerTenMinutes                  1..100000
+turnConversationLimitPerMinute                1..10000
+turnConversationLimitPerTenMinutes            1..100000
+turnShopLimitPerMinute                        1..100000
+turnGlobalLimitPerMinute                      1..1000000
+discoverySenderLimitPerMinute                 1..10000
+discoverySenderLimitPerTenMinutes             1..100000
+discoveryConversationLimitPerMinute           1..10000
+discoveryConversationLimitPerTenMinutes       1..100000
+```
+
+Mirror every cross-field rule exactly:
+
+```text
+conversationMaxSettleWindowMs >= conversationQuietWindowMs
+shopifyUsageRetryMaxSeconds >= shopifyUsageRetryBaseSeconds
+rawGlobalLimitPerMinute >= rawSenderLimitPerMinute
+turnSenderLimitPerTenMinutes >= turnSenderLimitPerMinute
+turnConversationLimitPerTenMinutes >= turnConversationLimitPerMinute
+turnGlobalLimitPerMinute >= turnShopLimitPerMinute
+turnShopLimitPerMinute >= turnSenderLimitPerMinute
+discoverySenderLimitPerTenMinutes >= discoverySenderLimitPerMinute
+discoveryConversationLimitPerTenMinutes >= discoveryConversationLimitPerMinute
+discoverySenderLimitPerMinute <= turnSenderLimitPerMinute
+discoverySenderLimitPerTenMinutes <= turnSenderLimitPerTenMinutes
+discoveryConversationLimitPerMinute <= turnConversationLimitPerMinute
+discoveryConversationLimitPerTenMinutes <= turnConversationLimitPerTenMinutes
+```
+
+Never silently clamp an invalid DB row.
+
+Required behaviour:
+
+```text
+startup + invalid row
+    -> start() rejects; readiness fails
+
+running + newer invalid row
+    -> log background.runtime_config.refresh_failed
+    -> retain previous last-known-good snapshot/version
+    -> do not notify listeners
+
+newer valid row after invalid read
+    -> adopt normally
+```
+
+Update normal runtime-config test fixtures to use valid DATABASE-004 defaults instead of assigning `1` to all numeric fields.
+
+Focused tests must cover at least:
+
+```text
+below minimum
+above maximum
+settle < quiet
+usage retry max < base
+raw global < raw sender
+10-minute < 1-minute
+turn global < shop
+discovery limit > normal turn limit
+```
+
+## Part C — remove production fallback authorities
+
+Primary files:
+
+```text
+src/services/translation-runtime-config.ts
+src/services/conversation-turn-processor.service.ts
+src/services/inbound-whatsapp-abuse-admission.service.ts
+```
+
+### Translation
+
+Remove production `testDefaults` and any catch that translates:
+
+```text
+Background runtime configuration has not started.
+```
+
+into hard-coded settings.
+
+`currentTranslationRuntimeConfig(reader)` returns the supplied/default reader's current snapshot. If startup wiring is wrong, the error surfaces.
+
+### Conversation settling
+
+Keep dependency injection of a runtime-config reader for tests, with production default `backgroundRuntimeConfigService`, but remove the production fallback-to-test-default path.
+
+### WhatsApp abuse admission
+
+Keep dependency injection, but runtime abuse limits must come from `reader.current()` only. Remove production hard-coded fallback limits.
+
+Do not replace any removed fallback with environment variables or duplicate constants.
+
+### Test helper
+
+Tests that instantiate these services without starting the global config MUST inject an explicit valid fake reader.
+
+Create/reuse one test-only helper such as:
+
+```text
+tests/helpers/background-runtime-config.ts
+```
+
+It must build a full valid snapshot from the DATABASE-004 defaults, permit explicit overrides and expose `current()`.
+
+Never import the test helper from production code.
+
+Required focused assertions:
+
+1. not-started translation reader throws;
+2. not-started conversation reader throws;
+3. not-started abuse reader throws;
+4. explicit fake readers keep isolated tests deterministic.
+
+## Part D — periodic billing retry authority
+
+Primary file:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+`BillingReconciliationService.reconcileOnce(...)` already receives one immutable runtime snapshot in production. Use that exact cycle snapshot consistently.
+
+### Scanner catch path
+
+Change `markSyncError(...)` so it receives the current cycle runtime snapshot or the already-resolved two retry values.
+
+Replace literals:
+
+```text
+FROZEN -> 60 * 60 * 1000
+other  -> 5 * 60 * 1000
+```
+
+with:
+
+```text
+FROZEN -> billingFrozenRecheckSeconds * 1000
+other  -> billingProviderRetrySeconds * 1000
+```
+
+Queued `nextReconcileAt` and BullMQ delay must therefore use the same committed cycle snapshot.
+
+### Existing-subscription/no-provider path
+
+Replace the existing literal:
+
+```text
+now + 5 * 60 * 1000
+```
+
+with:
+
+```text
+now + billingProviderRetrySeconds * 1000
+```
+
+when invoked by the production periodic scanner.
+
+If direct unit-level overloads intentionally omit a snapshot, preserve only the minimum backward-compatible test seam needed by existing isolated tests; production entrypoints MUST always provide the snapshot.
+
+Do not alter system-managed billing lifecycle tier policy such as `RETRY_TIERS`, free-cycle retry policy or rollover policy.
+
+Required tests:
+
+1. frozen scanner error uses a non-default configured frozen interval;
+2. ordinary provider error uses a non-default configured provider retry interval;
+3. existing-subscription/no-provider path uses configured provider retry interval;
+4. one reconciliation call keeps one supplied immutable snapshot even if an external fake config source changes during the call.
+
+## Part E — required validation
 
 Run from `moda-interact-background`:
 
 ```bash
-npm run test:unit -- tests/unit/runtime/background-runtime-lease.test.ts tests/unit/runtime/dynamic-leased-scheduler.test.ts
+npm run test:unit -- tests/unit/runtime/background-runtime-lease.test.ts tests/unit/runtime/dynamic-leased-scheduler.test.ts tests/unit/runtime/background-runtime-config.test.ts
+npm run test:unit -- tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts
 npm run test:integration -- tests/integration/background-runtime-lease-cadence.concurrency.integration.test.ts
 npm run test:unit
 npm run build
 git diff --check
 ```
 
-If the disposable integration harness cannot apply the current database migration chain, record the exact migration blocker. Do not replace the required integration test with a mock and do not repair unrelated migration history in this task.
+Also run every focused translation-service test affected by the runtime-reader/test-helper changes.
+
+If the disposable PostgreSQL harness cannot apply the current migration chain, record the exact migration blocker. Do not replace the required PostgreSQL concurrency integration test with a mock and do not repair unrelated migration history in this task.
 
 ## Non-goals
 
 Do not change:
 
 ```text
+Prisma schema or migrations
+Admin UI/actions
 lease TTL = 120 seconds
 heartbeat interval = 30 seconds
 runtime-config refresh interval = 5 seconds
-BullMQ queue-global-concurrency policy
-business reconciliation algorithms
-Admin forms
+BullMQ fleet-wide concurrency architecture
+Redis abuse key/window formats
+fixed abuse window lengths
+provider/model/credential configuration
+billing lifecycle RETRY_TIERS
+merchant recoveryDelayMinutes
+business reconciliation algorithms other than the exact retry scheduling paths above
 ```
+
+## Completion report requirements
+
+The completion report MUST include:
+
+```text
+implementation commit
+parent report commit
+changed production files
+changed/additional tests
+exact focused/unit/integration/build commands and outcomes
+lease generation evidence (1 -> 2 after normal release/reacquire)
+retained-row + lastFinishedAt evidence
+skewed-replica multi-window cadence evidence
+invalid-newer-config last-known-good evidence
+not-started runtime-reader failure evidence
+non-default billing retry interval evidence
+confirmation that Prisma schema/migrations were not changed by this task
+```
+
+Set the task to `status: review`, clear `executor`/`claimed_at`, publish the completion report, return to `moda_architect`, and STOP.
 
 ## Stop conditions
 
 STOP and return to architect if:
 
-- `DATABASE-005`/`lastFinishedAt` is absent;
-- fixing cadence appears to require a second coordination store;
-- an implementation would make local clocks authoritative;
-- the queue-concurrency reconciler would become cadence-delayed instead of zero-cadence.
+- `DATABASE-005` / `BackgroundRuntimeLease.lastFinishedAt` is absent;
+- implementing global cadence appears to require a second coordination store;
+- an implementation would make local clocks authoritative for cross-replica eligibility;
+- `QUEUE_CONCURRENCY_RECONCILIATION` would become cadence-delayed instead of zero-cadence;
+- any new runtime-config column appears necessary;
+- production startup intentionally invokes one of the affected services before `BackgroundRuntimeConfigService.start()` and correcting the order requires an architectural change;
+- closing a fallback appears to require copying executable validation logic from another repository instead of implementing the explicit contract above.
