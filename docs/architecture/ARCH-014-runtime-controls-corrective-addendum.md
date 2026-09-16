@@ -87,10 +87,10 @@ The existing billing lifecycle retry-tier structure remains intentionally system
 ## Current corrective execution graph
 
 ```text
-ARCH-014-DATABASE-005 READY
+ARCH-014-DATABASE-005 COMPLETE
         |
         v
-ARCH-014-BACKGROUND-006 PENDING
+ARCH-014-BACKGROUND-006 READY
         |
         v
 ARCH-014-BACKGROUND-007 PENDING
@@ -102,4 +102,4 @@ ARCH-014-ADMIN-010 READY ----------+----> ARCH-014-SYSTEM-TEST-003 PENDING
         +------------------------------> ARCH-014-SYSTEM-TEST-002 PENDING
 ```
 
-`ADMIN-010` can run in parallel with `DATABASE-005`.
+`DATABASE-005` is architect-accepted Complete. `BACKGROUND-006` is now Ready. `ADMIN-010` remains independently Ready and can run in parallel with `BACKGROUND-006`.

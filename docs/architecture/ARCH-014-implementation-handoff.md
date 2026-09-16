@@ -129,10 +129,10 @@ The post-implementation source audit found a distinction not covered by the orig
 The corrective graph is:
 
 ```text
-ARCH-014-DATABASE-005    READY
+ARCH-014-DATABASE-005    COMPLETE
         |
         v
-ARCH-014-BACKGROUND-006  PENDING
+ARCH-014-BACKGROUND-006  READY
         |
         v
 ARCH-014-BACKGROUND-007  PENDING
@@ -144,6 +144,6 @@ ARCH-014-ADMIN-010       READY -----+----> ARCH-014-SYSTEM-TEST-003 PENDING
         +--------------------------------> ARCH-014-SYSTEM-TEST-002 PENDING
 ```
 
-`DATABASE-005` and `ADMIN-010` may start independently. `BACKGROUND-006` waits for DATABASE-005. `BACKGROUND-007` is deliberately sequenced after BACKGROUND-006 because both edit the runtime foundation in `moda-interact-background`. Terminal system tests remain developer-gated.
+`DATABASE-005` is architect-accepted Complete. `BACKGROUND-006` is now Ready and is the next automatic corrective Background task. `ADMIN-010` remains independently Ready. `BACKGROUND-007` is deliberately sequenced after BACKGROUND-006 because both edit the runtime foundation in `moda-interact-background`. Terminal system tests remain developer-gated.
 
 See `ARCH-014-runtime-controls-corrective-addendum.md` for binding cadence/fencing/runtime-authority invariants.
