@@ -1,7 +1,7 @@
 ---
 id: ARCH-014-SYSTEM-TEST-003
 architecture_id: ARCH-014
-title: Validate runtime controls and horizontal-scaling convergence end to end
+title: Validate runtime controls, global cadence and horizontal-scaling convergence end to end
 task_kind: validation
 domain: system-test
 repository: moda-interact-system-test
@@ -9,19 +9,23 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: manual
-status: ready
+status: pending
 priority: 90
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-014-DATABASE-004
+- ARCH-014-DATABASE-005
 - ARCH-014-BACKGROUND-001
 - ARCH-014-BACKGROUND-002
 - ARCH-014-BACKGROUND-003
 - ARCH-014-BACKGROUND-004
 - ARCH-014-BACKGROUND-005
+- ARCH-014-BACKGROUND-006
+- ARCH-014-BACKGROUND-007
 - ARCH-014-ADMIN-009
+- ARCH-014-ADMIN-010
 enables: []
 created: 2026-09-16
 updated: 2026-09-16
@@ -29,31 +33,29 @@ updated: 2026-09-16
 
 # ARCH-014-SYSTEM-TEST-003
 
+## Terminal/manual gate
+
+Do not auto-start. Developer invokes this only after every dependency above is architect-accepted/integrated. Do not modify production code from this task.
+
 ## Objective
 
-Prove that Admin runtime-control changes are durable, audited and safe under horizontally scaled Background/Admin execution.
+Prove that Admin runtime-control changes are durable, audited and safe under horizontal scaling, including the corrective distinction between **exclusive lease ownership** and **one shared global cadence window**.
 
-This is a terminal developer-gated test. Do not run automatically from an implementation agent.
+A test that proves only "two replicas cannot hold the lease simultaneously" is insufficient.
 
 ## Environment
 
 Use one PostgreSQL database and one Redis instance shared by all test processes.
 
-Run at least two independently constructed Background process/service instances for concurrency scenarios. Prefer separate Node processes where the existing system-test harness supports it; separate service instances are acceptable only for deterministic lease unit/integration portions.
+Run at least two independently constructed Background process/service instances for concurrency scenarios. Use separate Node processes for terminal multi-replica scheduler/queue scenarios where the harness supports it.
 
-Do not fake horizontal scaling by invoking the same singleton twice in one call stack for the terminal queue-global-concurrency scenario.
+Do not fake horizontal scaling by invoking one singleton twice in one call stack for the terminal global-cadence or BullMQ global-concurrency scenarios.
 
 ## Scenario A — optimistic Admin mutation
 
 Start with config version `N`.
 
-Issue two concurrent mutations carrying:
-
-```text
-expectedVersion = N
-```
-
-from independent request contexts.
+Issue two concurrent mutations carrying `expectedVersion = N` from independent request contexts.
 
 Required:
 
@@ -67,38 +69,104 @@ winner values remain authoritative
 
 Repeat using two different tabs to prove there is still no silent field merge.
 
-## Scenario B — global billing scheduler
+## Scenario B — retained lease row and monotonic fencing
 
-Run at least two billing scheduler instances against the same lease table.
+For a controlled lease name:
+
+1. remove only the test lease row;
+2. race two distinct owners; exactly one obtains generation 1;
+3. complete/release that cycle;
+4. prove the row still exists and `lastFinishedAt` is non-null;
+5. after making the cadence due in controlled test setup, reacquire;
+6. prove generation is now 2, not reset to 1;
+7. prove the generation-1 handle fails heartbeat and release against generation 2.
+
+Evidence must include the persisted row after normal release.
+
+## Scenario C — skewed multi-replica global cadence
+
+This scenario is mandatory and is the regression test for the audit finding.
+
+Run at least two scheduler replicas for `BILLING_RECONCILIATION` with intentionally skewed local wake times. Business work should be deliberately short so the lease is released well before the configured interval.
+
+Observe multiple cadence windows, not a one-time start race.
 
 Required:
 
 ```text
-only one BILLING_RECONCILIATION lease winner performs a cycle
-other replica skips
-heartbeat keeps ownership during a cycle > initial heartbeat period
+at most one completed BILLING_RECONCILIATION cycle in each shared cadence window
 ```
 
-Kill/stop the lease owner without release; after expiry another instance must acquire with higher generation.
+Specifically prove the old failure pattern cannot occur:
 
-A stale old handle must fail heartbeat/release.
+```text
+replica B completes at ~T
+replica A's independently skewed timer fires shortly afterward
+replica A must NOT execute another cycle before T + configured interval
+```
 
-## Scenario C — live interval change
+Repeat equivalent controlled evidence for recovery-capacity repair and translation reconciliation, using test-friendly setup rather than waiting production durations.
 
-Start billing interval at 60s, then Admin-save 15s.
+The assertion must be based on shared PostgreSQL cadence state (`lastFinishedAt` / DB time), not a process-local counter.
+
+## Scenario D — live interval changes across replicas
+
+Start with a known interval, complete one global cycle, then Admin-save a shorter interval without redeploying workers.
 
 Required:
 
-- no worker redeploy;
 - config version propagates;
-- waiting scheduler reschedules;
-- no overlapping global cycle;
-- cycle begun on old version completes without mid-cycle mutation;
-- next cycle uses new version.
+- waiting local schedulers may reschedule;
+- database cadence uses the latest committed interval;
+- at most one replica executes when the new cadence becomes due;
+- an in-flight cycle is not interrupted.
 
-Repeat conceptually for recovery repair and translation reconciliation with shorter test-friendly injected clocks/timers rather than waiting production durations.
+Repeat with an **increased** interval and prove a stale replica that has not yet refreshed cannot run early using the old shorter process-local interval. The cadence-aware acquisition must follow current PostgreSQL configuration.
 
-## Scenario D — batch/throughput controls
+## Scenario E — runtime-config validation / last-known-good
+
+After valid initialization, inject or simulate a newer invalid persisted row in a controlled test transaction (or use a repository-supported fixture that bypasses DB CHECK only for the service boundary test).
+
+Required:
+
+```text
+invalid newer snapshot is rejected
+current in-memory version/value remains the previous valid snapshot
+listeners are not notified
+refresh failure is logged
+subsequent valid higher version is adopted
+```
+
+Initial startup with missing/unreadable/invalid singleton must fail readiness.
+
+## Scenario F — no production fallback authority
+
+Prove that translation batching, conversation settling and abuse-admission code do not fall back to compiled defaults when runtime config is not started.
+
+In production-style wiring the not-started error must surface. In isolated tests, explicit injected readers remain supported.
+
+## Scenario G — billing retry controls reach all periodic scanner paths
+
+Configure non-default values for:
+
+```text
+billingProviderRetrySeconds
+billingFrozenRecheckSeconds
+```
+
+Prove the periodic scanner uses them for:
+
+```text
+ordinary provider/API sync-error retry
+frozen subscription retry
+existing subscription with no current provider contract
+```
+
+The queued `nextReconcileAt`/delay must reflect the same immutable cycle snapshot.
+
+Do not confuse this with the intentionally fixed billing lifecycle retry-tier structure.
+
+## Scenario H — batch/throughput controls
 
 Change and prove:
 
@@ -111,9 +179,9 @@ translation reconciliation page size
 translations per provider batch
 ```
 
-The exact configured bound must reach the service query/processing boundary.
+The exact committed bound must reach the service query/processing boundary.
 
-## Scenario E — translation retry separation
+## Scenario I — translation retry separation
 
 Set:
 
@@ -126,65 +194,44 @@ Prove provider polling uses 120 and failed result application uses 30.
 
 No migrated translation tuning environment variable may override DB state.
 
-## Scenario F — messaging settle controls
+## Scenario J — messaging settle controls
 
 With two messaging replicas:
 
-1. set quiet window 3000 / max settle 10000;
+1. commit quiet window 3000 / max settle 10000;
 2. save quiet window 1000;
-3. wait for runtime-config convergence (maximum normal refresh window plus test tolerance);
-4. send subsequent turn.
+3. wait for normal config convergence;
+4. send a subsequent turn.
 
-Prove later turns use 1000 without restart.
+Prove later turns use 1000 without restart. Existing in-flight/finished work is not retroactively mutated.
 
-Existing in-flight/finished turn is not retroactively changed.
-
-## Scenario G — abuse protection
+## Scenario K — abuse protection
 
 Lower one sender limit using Admin.
 
-After config convergence, prove requests through more than one messaging replica share Redis counters and enforce the committed limit.
-
-Redis outage remains fail-closed.
+After config convergence, prove requests through more than one messaging replica share Redis counters and enforce the committed limit. Redis outage remains fail-closed.
 
 Prove fixed one-minute/ten-minute windows did not become editable/change.
 
-## Scenario H — fleet-wide BullMQ concurrency
+## Scenario L — fleet-wide BullMQ concurrency
 
 For a controlled queue, run at least two Worker instances sharing Redis.
 
-Configure global concurrency `4`.
-
-Queue enough blocking jobs to exceed four.
+Configure global concurrency `4`; queue enough blocking jobs to exceed four.
 
 Required:
 
 ```text
-aggregate active jobs across both workers <= 4
+aggregate active jobs across all replicas <= 4
 ```
 
-Admin-save `2`.
-
-Allow already active jobs to finish; prove subsequent aggregate active work converges to <=2 without worker restart.
+Admin-save `2`; allow already-active work to finish; prove subsequent aggregate active work converges to <=2 without worker restart.
 
 Admin-save `6`; prove aggregate may rise to <=6.
 
 A stale config replica must not revert Redis to an older cap after the newer DB version exists.
 
-## Scenario I — runtime-config read outage
-
-After successful initialization, make config refresh reads fail temporarily.
-
-Required:
-
-- workers continue with last-known-good;
-- no default reset;
-- no version regression;
-- after DB recovery, latest higher version is adopted.
-
-Initial startup with no readable/missing singleton must fail readiness.
-
-## Scenario J — UI usability
+## Scenario M — Admin UI usability/hardening
 
 Verify Admin Controls contains:
 
@@ -198,8 +245,9 @@ and grouped Setting / Value / Purpose-Guidance tables.
 
 Verify:
 
-- fleet-wide wording is present for queue concurrency;
+- fleet-wide wording is scoped to Worker throughput;
 - every row shows default/range;
+- millisecond-backed invalid inputs report human seconds (`0.25..10`, `1..30`), not stored milliseconds;
 - system-managed settings are not editable;
 - merchant recovery delay is not duplicated as a global control;
 - raw technical env names are not primary labels;
@@ -207,21 +255,36 @@ Verify:
 
 ## Evidence required
 
-Completion report must include:
+Completion evidence must include:
 
 ```text
-database migration/config version evidence
-audit-event evidence
-lease generation/owner evidence
-multi-process or multi-worker evidence
-BullMQ global concurrency evidence
-Admin screenshots or DOM assertions for each tab
+migration/config version evidence
+retained lease row with lastFinishedAt
+monotonic generation evidence
+skewed multi-replica cadence evidence across multiple periods
+Admin concurrent-save evidence
+runtime last-known-good validation evidence
+billing retry-path evidence
+multi-process BullMQ global-concurrency evidence
+Admin DOM/screenshots for each tab
 commands/tests executed
 any environment limitations
 ```
 
 ## Pass condition
 
-All scenarios A-J pass.
+All scenarios A-M pass.
 
-Any lost update, duplicate global reconciliation run while a valid lease is held, stale global-concurrency reversion, or Admin-editable system-managed invariant is a task failure.
+Any of the following is a failure:
+
+```text
+lost Admin update
+duplicate global periodic cycle inside one cadence window
+generation reset after normal release/reacquire
+stale owner can heartbeat/release newer generation
+invalid runtime snapshot replaces last-known-good
+production fallback to compiled runtime defaults
+periodic billing retry ignores committed runtime values
+stale global-concurrency reversion
+Admin-editable system-managed invariant
+```

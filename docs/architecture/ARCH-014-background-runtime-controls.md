@@ -51,7 +51,7 @@ Rules:
 
 ## Global periodic jobs
 
-These jobs are globally singleton *per cycle* across worker replicas:
+These jobs are globally singleton **and globally cadence-limited** across worker replicas:
 
 ```text
 BILLING_RECONCILIATION
@@ -59,28 +59,52 @@ RECOVERY_CAPACITY_REPAIR
 TRANSLATION_RECONCILIATION
 ```
 
-Every replica may own a scheduler timer, but work executes only after acquiring `BackgroundRuntimeLease`.
+Every replica may own a local scheduler timer, but a local timer is only a wake-up hint. Work executes only after PostgreSQL proves both that the lease is free and that the shared cadence is due.
 
-Lease correctness:
+`BackgroundRuntimeLease` retains one row per lease name and records:
 
 ```text
-lease TTL:       120 seconds (internal invariant)
-heartbeat:        30 seconds (internal invariant)
-clock:            PostgreSQL server time
-owner:            process-lifetime random owner token
-fencing:          monotonically increasing lease generation
-release:          owner + generation guarded
+ownerToken
+generation
+acquiredAt
+heartbeatAt
+leaseUntil
+lastFinishedAt
 ```
 
-The winner MUST re-read a fresh `BackgroundRuntimeConfig` **after acquiring the lease** and use one immutable snapshot for that cycle.
+Lease/cadence correctness:
 
-A process crash is recovered after lease expiry. A transient heartbeat failure must never allow that process to release a lease subsequently acquired by another replica.
+```text
+lease TTL:        120 seconds (internal invariant)
+heartbeat:         30 seconds (internal invariant)
+clock:             PostgreSQL server time
+owner:             process-lifetime random owner token
+fencing:           monotonically increasing generation across every acquisition
+normal release:    guarded UPDATE; row is retained, not deleted
+cadence history:   lastFinishedAt = PostgreSQL NOW() when a valid owner finishes/releases
+```
 
-These lease constants are correctness internals and are not Admin controls.
+For the three periodic lease names, acquisition is eligible only when:
+
+```text
+leaseUntil <= PostgreSQL NOW()
+AND
+(lastFinishedAt IS NULL OR lastFinishedAt + latest configured interval <= PostgreSQL NOW())
+```
+
+The cadence interval is read from the authoritative `BackgroundRuntimeConfig(id="default")` row as part of the database acquisition decision. A stale replica cannot authorize an early run using an older process-local interval.
+
+`QUEUE_CONCURRENCY_RECONCILIATION` is convergence/event driven and uses a zero-second cadence gate; it still uses lease ownership/fencing.
+
+The winner fresh-reads `BackgroundRuntimeConfig` after acquisition and uses one immutable snapshot for the business cycle.
+
+A process crash is recoverable after lease expiry. A stale/lost owner cannot heartbeat, release, or stamp `lastFinishedAt` on a newer generation.
+
+These lease constants and cadence-history mechanics are correctness internals and are not Admin controls.
 
 ## Dynamic interval changes
 
-Schedulers use recursive `setTimeout`, never `setInterval`.
+Schedulers use recursive `setTimeout`, never `setInterval`. The local timeout controls only when a replica asks PostgreSQL whether work is due; it is never the cross-replica cadence authority.
 
 When the config service observes a newer interval while a scheduler is waiting:
 

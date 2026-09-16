@@ -92,12 +92,12 @@ The following tasks supersede any previously generated but unapplied standalone 
 
 ```text
 ARCH-014-ADMIN-006       COMPLETE
-ARCH-014-ADMIN-007       READY
+ARCH-014-ADMIN-007       COMPLETE
 ARCH-014-DATABASE-003    COMPLETE
 ARCH-014-ADMIN-008       COMPLETE
 ARCH-014-SHOPIFY-003     COMPLETE
 ARCH-014-SYSTEM-TEST-001 READY (DEVELOPER-GATED)
-ARCH-014-SYSTEM-TEST-002 PENDING on ADMIN-008 (DATABASE-003 + SHOPIFY-003 COMPLETE)
+ARCH-014-SYSTEM-TEST-002 PENDING on corrective ADMIN-010 (DATABASE-003 + ADMIN-008 + SHOPIFY-003 COMPLETE)
 ```
 
 Spreadsheet standard: exactly `exceljs@4.4.0`, established in ADMIN-006 and reused by ADMIN-008. No alternate spreadsheet package is authorized.
@@ -120,3 +120,30 @@ ARCH-014-SYSTEM-TEST-003 READY
 ```
 
 `BACKGROUND-005` is architect-accepted Complete. The automatic Background implementation frontier is now empty. `SYSTEM-TEST-003` is Ready and remains terminal/developer-gated; it must be invoked explicitly to validate live multi-replica lease/concurrency convergence, including shared-Redis fleet caps and active-job cap decreases.
+
+
+## Corrective runtime-control frontier (16 Sep 2026 snapshot audit)
+
+The post-implementation source audit found a distinction not covered by the original runtime-control contracts: an exclusive lease prevents overlap but, when normal release deletes the row, skewed replica timers can still execute sequential duplicate global cycles inside one configured cadence window and fencing generation can reset.
+
+The corrective graph is:
+
+```text
+ARCH-014-DATABASE-005    READY
+        |
+        v
+ARCH-014-BACKGROUND-006  PENDING
+        |
+        v
+ARCH-014-BACKGROUND-007  PENDING
+        |
+        +---------------------------+
+                                    |
+ARCH-014-ADMIN-010       READY -----+----> ARCH-014-SYSTEM-TEST-003 PENDING
+        |
+        +--------------------------------> ARCH-014-SYSTEM-TEST-002 PENDING
+```
+
+`DATABASE-005` and `ADMIN-010` may start independently. `BACKGROUND-006` waits for DATABASE-005. `BACKGROUND-007` is deliberately sequenced after BACKGROUND-006 because both edit the runtime foundation in `moda-interact-background`. Terminal system tests remain developer-gated.
+
+See `ARCH-014-runtime-controls-corrective-addendum.md` for binding cadence/fencing/runtime-authority invariants.

@@ -19,7 +19,7 @@ ADMIN-005 COMPLETE                    DATABASE-002 COMPLETE
       │                                      │
       ├────────► ADMIN-006 COMPLETE           └────────► DATABASE-003 COMPLETE
       │                │                                      │
-      └────────► ADMIN-007 READY              ┌───────────────┴──────────────┐
+      └────────► ADMIN-007 COMPLETE              ┌───────────────┴──────────────┐
                                                │                              │
                                 ADMIN-006 + DATABASE-003               DATABASE-003
                                                │                              │
@@ -34,9 +34,9 @@ ADMIN-006 + existing MerchantPricing prerequisites
       └────────► SYSTEM-TEST-001 READY (developer-gated)
 ```
 
-`DATABASE-003`, `ADMIN-006`, and `ADMIN-008` are architect-accepted Complete. `ADMIN-007` and `SHOPIFY-003` remain Ready in this branch-local coordination view; `SYSTEM-TEST-001` is separately Ready but developer-gated. `SYSTEM-TEST-002` remains Pending here only because this snapshot has not yet incorporated the separate SHOPIFY-003 acceptance reconciliation.
+`DATABASE-003`, `ADMIN-006`, `ADMIN-007`, `ADMIN-008`, and `SHOPIFY-003` are architect-accepted Complete. `SYSTEM-TEST-001` is Ready and developer-gated. `SYSTEM-TEST-002` now remains Pending only on the corrective `ARCH-014-ADMIN-010` hardening task before terminal execution.
 
-`ADMIN-008` is Complete and reuses the XLSX implementation established by accepted `ADMIN-006`. `SHOPIFY-003` remains the only branch-local prerequisite still shown as incomplete for `SYSTEM-TEST-002`.
+`ADMIN-008` is Complete and reuses the XLSX implementation established by accepted `ADMIN-006`. `SHOPIFY-003` is Complete. The task metadata defect where ADMIN-008 had a blank front-matter `id` is corrected by the current overlay.
 
 ## Promotion localization invariant
 
@@ -45,3 +45,7 @@ ADMIN-006 + existing MerchantPricing prerequisites
 ## Admin cleanup invariant
 
 The manual `BillingUpgradeEconomicsEdge` / `BillingEconomicsSnapshot` Admin forms are superseded by ARCH-014 MerchantPricing catalogue position/full-portfolio economics and are removed from Admin code only. Existing operational database objects remain untouched. Tenant search is a tenant-directory tool, not global Admin chrome.
+
+## Corrective post-implementation audit
+
+The 16 Sep snapshot audit added `ARCH-014-ADMIN-010`; `SYSTEM-TEST-002` must wait for that hardening before developer execution. Runtime-control cadence corrections are documented separately in `ARCH-014-runtime-controls-corrective-addendum.md`.

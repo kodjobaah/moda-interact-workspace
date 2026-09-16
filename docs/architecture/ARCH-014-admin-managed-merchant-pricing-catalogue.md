@@ -75,8 +75,8 @@ ARCH-014 must:
 - require every comparison to PASS before an economics-affecting create/edit/activation is committed;
 - support ordered Admin-authored merchant pricing-card highlights, distinct from Shopify usage events;
 - require exactly the canonical 20 merchant locales for every persisted plan description and every highlight title/description;
-- generate a JSON translation template from the English source description so an administrator does not need to know the schema or locale codes;
-- accept pasted JSON or uploaded `.json` through the same parser/validator;
+- generate a pre-populated `.xlsx` translation workbook containing all supported language labels/locale codes, English source content, and any still-valid existing translations so an administrator fills only missing translation cells;
+- accept the completed `.xlsx` workbook through the shared `exceljs@4.4.0` adapter, convert it internally to the canonical schema-v2 translation package, and validate that package server-side; normal Admin UI does not expose a JSON editor;
 - never persist an incomplete translation set;
 - remove merchant-facing plan prices, allowances, top-up quantities and plan-specific descriptions from source code;
 - preserve generic UI copy in the existing static i18n catalogues;
@@ -383,7 +383,7 @@ Merchant content contains the English plan description plus 0..N ordered highlig
 
 The final Create/Save control exists only on step 7. Portfolio FAIL/UNVERIFIED cannot advance from step 6. Create or changed English merchant content requires a completed schema-v2 package; unchanged edit content retains existing 20/20 translations without re-import.
 
-The user may download the generated JSON template, populate it externally, then either paste the completed JSON or upload the `.json` file.
+The user downloads a pre-populated `.xlsx` workbook, fills only missing translated cells, and uploads the completed workbook. XLSX is the human exchange format; schema-v2 JSON remains an internal normalized validation/persistence representation and is not the normal editing UI.
 
 No database write occurs merely because the administrator reaches the translation step or validates a file.
 
@@ -443,7 +443,7 @@ moda-interact-admin
   pure multi-meter/full-portfolio economics engine
   MerchantPricing catalogue list/builder/actions
   explicit catalogue placement
-  translation template/import
+  pre-populated XLSX translation workbook/import
   merchant description + ordered plan-card highlight editor
   activation/economics orchestration
 

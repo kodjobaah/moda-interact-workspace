@@ -18,9 +18,10 @@ depends_on:
 - ARCH-014-DATABASE-003
 - ARCH-014-ADMIN-008
 - ARCH-014-SHOPIFY-003
+- ARCH-014-ADMIN-010
 enables: []
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-014-SYSTEM-TEST-002
@@ -67,6 +68,7 @@ formula cell
 wrong campaign workbook
 stale English source workbook
 renamed/missing sheet
+oversized workbook (> 2 MiB), rejected at the byte-size boundary before ExcelJS parsing
 ```
 
 After changing the English source in a draft, prove all non-English persisted translations are invalidated/deleted and a fresh download pre-populates only the new English source plus blanks.
