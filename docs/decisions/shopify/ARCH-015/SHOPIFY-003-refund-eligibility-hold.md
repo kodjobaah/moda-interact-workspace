@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-09-15T23:57:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-015-SHARED-001
@@ -21,7 +21,7 @@ depends_on:
 enables:
 - ARCH-015-BACKGROUND-003
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015-SHOPIFY-003
@@ -151,3 +151,50 @@ STOP if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Implemented and pushed on `task/ARCH-015-SHOPIFY-003` at commit `784de75`.
+
+### Changes
+
+- Added fresh Shopify active-subscription eligibility checks before refund mutation.
+- Matched Shared provider context, plan handle, local billing-period identity and dates, and live event handle.
+- Returned `REFUND_NOT_CURRENT_PROVIDER_CONTEXT` for historical purchases without changing purchase or aggregate state.
+- Returned `REFUND_NOT_AVAILABLE` for zero-cost or fully reserved purchases.
+- Preserved idempotent `REQUESTED` refund creation, available-balance-only aggregate holds, and `ACTIVE -> WITHDRAWN` transition.
+- Passed the exact Shopify shop identity from the authenticated route.
+- Kept historical credits visible and spendable in the merchant UI while hiding the normal refund action with generic copy.
+- Added regression coverage for current context, prior plan, prior billing cycle, missing event, native App Pricing identity, zero-cost purchases, and UI visibility.
+
+### Validation
+
+- Focused Vitest: `23/23` passed across the refund service and purchase manager suites.
+- Focused ESLint: passed for touched TypeScript/test files.
+- Prisma schema validation: passed.
+- `git diff --check`: passed.
+- Repository `tsc --noEmit`: existing baseline JSX/Polaris declaration errors remain outside this task; no touched-file error was reported.
+
+### Preparation evidence
+
+Physical worktree isolation:
+	canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+	parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-003`
+	parent branch: `task/ARCH-015-SHOPIFY-003`
+	implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-003`
+	implementation branch: `task/ARCH-015-SHOPIFY-003`
+	shared workspace checkout switched/mutated for task work: no
+	another task worktree reused: no
+
+Start-of-attempt synchronization:
+	parent remote task branch fast-forwarded: not-needed
+	parent origin/main incorporated: already-current
+	implementation remote task branch fast-forwarded: not-needed
+	implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+	`git submodule sync --recursive`: passed
+	`git submodule update --init --recursive`: passed
+	recorded submodule commit: `database` at `d44b621cdcc3635127b91601be648b61c0eff1e2`
+
+Returned to `moda_architect` for review.
