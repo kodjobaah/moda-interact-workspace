@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor:
 claimed_at:
@@ -1362,3 +1362,250 @@ unchanged. Any new failure in the authorised correction files is task-owned.
 Return the task to `review`, clear `executor`/`claimed_at`, record the exact Attempt-4
 implementation and parent Completion Report commits, and STOP for `moda_architect`
 re-review. Do not start `ARCH-016-SYSTEM-TEST-001`.
+
+
+## Architect Review — Attempt 4
+
+### Status
+
+**Changes Requested — duplicate initial success still loses follow-up finalisation context, final scheduling still trusts stale state, and audio duplicate completion can mutate the wrong Conversation**
+
+Implementation commit reviewed: `4bb8e21`.
+Parent Completion Report commit reported: `4a95f01d`.
+
+Attempt 4 correctly adds the durable follow-up repair helper, a common confirmed-send
+finaliser, fail-closed handling for `PENDING`/missing/invalid duplicate outbound evidence,
+guarded attempt lifecycle transitions, and monotonic provider-time engagement. Those
+corrections MUST be preserved.
+
+The task is not yet functionally complete. Attempt 5 is deliberately narrow and remains
+inside the existing BACKGROUND-003 repository boundary. No schema, queue, Conversation,
+entitlement or Shared-package redesign is authorised.
+
+### Finding 1 — duplicate successful initial reconciliation omits the already-resolved policy
+
+Current file:
+
+```text
+src/services/checkout-recovery.service.ts
+```
+
+The fresh initial success path correctly calls:
+
+```ts
+finalizeConfirmedOutreach({ ..., policy })
+```
+
+but the duplicate-success branch calls the same finaliser without `policy`:
+
+```ts
+finalizeConfirmedOutreach({ recovery, attempt, admission, message: existing })
+```
+
+When the provider message is already durably `SENT|DELIVERED|READ` but the process crashed
+before `attempt1.followUpDueAt` was persisted, the retry therefore computes:
+
+```text
+followUpDueAt = null
+```
+
+even when the recovery policy resolved for this attempt has follow-up enabled. The real
+initial outreach remains sent and charged, but its configured follow-up is silently lost.
+This is exactly the crash/retry convergence case Attempt 4 was required to repair.
+
+#### Required Attempt-5 correction
+
+In the initial `reason === "duplicate"` confirmed-success branch, pass the same already
+resolved `policy` object used by the fresh initial-send path into
+`finalizeConfirmedOutreach(...)`.
+
+Do not re-resolve policy inside the finaliser and do not alter attempt identity, billing
+identity or queue identity.
+
+Required focused proof:
+
+```text
+initial duplicate durable success
++ attempt1.followUpDueAt == null
++ resolved policy followUpEnabled == true
+  -> uses durable message.sentAt
+  -> persists dueAt = sentAt + configured delay
+  -> commits the same attempt-keyed credit idempotently
+  -> schedules the deterministic sequence-2 job
+  -> sends zero additional provider messages
+```
+
+### Finding 2 — sequence-1 finalisation still schedules from stale in-memory recovery state
+
+`finalizeConfirmedOutreach()` currently performs a guarded `DETECTED -> MESSAGE_SENT`
+update and then directly calls:
+
+```ts
+recoveryOutreachFollowUpService.schedule(...)
+```
+
+based only on the earlier `input.recovery` snapshot and locally computed `followUpDueAt`.
+It does not inspect whether the recovery or attempt changed while provider send/finalisation
+was in progress.
+
+A terminal or engagement transition can therefore win after the original recovery read but
+before queue publication. The guarded recovery update correctly refuses to reopen a
+terminal recovery, but the code can still enqueue a no-response follow-up afterwards.
+That violates the Attempt-4 contract:
+
+```text
+terminal recovery -> do not reopen and do not schedule
+ENGAGED/responded attempt -> do not schedule/repair a no-response wake-up
+```
+
+#### Required Attempt-5 correction
+
+For sequence 1:
+
+1. retain the guarded attempt finalisation;
+2. retain the guarded `DETECTED -> MESSAGE_SENT` recovery transition;
+3. REMOVE the direct schedule call from `finalizeConfirmedOutreach()`;
+4. after durable writes, call the existing `ensureScheduledInitialFollowUp(recovery.id)`;
+5. let that helper re-read current durable recovery/attempt state and schedule only from the
+   already-persisted `followUpDueAt`.
+
+Do not pass a freshly recomputed due time into the repair helper. The persisted attempt row
+is authoritative after finalisation.
+
+`ensureScheduledInitialFollowUp()` MUST continue to require at least:
+
+```text
+recovery currently MESSAGE_SENT or ENGAGED and not terminal
+attempt1 currently WAITING_FOR_RESPONSE
+attempt1.sentAt != null
+attempt1.followUpDueAt != null
+attempt1.customerRespondedAt == null
+no successfully-sent/ENGAGED sequence-2 attempt
+```
+
+If current durable state fails those conditions, return without scheduling. The existing
+deterministic job ID remains the duplicate fence.
+
+Required focused proof:
+
+```text
+fresh initial success -> durable state then one deterministic schedule
+queue add failure -> retry repairs from persisted dueAt
+terminal transition wins before scheduling -> no queue publication and no recovery reopen
+ENGAGED/customerRespondedAt wins before scheduling -> no queue publication
+existing deterministic job -> idempotent repair
+```
+
+### Finding 3 — duplicate audio completion still uses the newly routed Conversation instead of the durable message Conversation
+
+Current file:
+
+```text
+src/services/inbound-whatsapp-audio.service.ts
+```
+
+Attempt 4 correctly changed engagement repair to use:
+
+```ts
+reservation.conversationId
+```
+
+but a duplicate existing audio reservation with `transcriptionStatus = PENDING` continues
+through transcription and calls:
+
+```ts
+this.complete(reservation.id, conversationId, ...)
+```
+
+where `conversationId` is the newly resolved route passed into `process()`, not the
+Conversation that owns the durable `ConversationMessage`.
+
+If duplicate routing resolves differently, the message can belong to Conversation A while
+completion increments inbound state on Conversation B. This defeats the durable-message
+Conversation provenance that Attempt 4 was specifically required to preserve.
+
+#### Required Attempt-5 correction
+
+After `reserve(...)`, treat `reservation.conversationId` as authoritative for the remainder
+of processing that is tied to that durable message.
+
+At minimum:
+
+```text
+engagement repair -> reservation.conversationId
+transcription completion Conversation update -> reservation.conversationId
+```
+
+Do not move or recreate the existing ConversationMessage and do not create another
+Conversation.
+
+Required focused proof:
+
+```text
+existing duplicate audio message belongs to conversation-A
+new route supplies conversation-B
+reservation remains the existing message
+engagement uses conversation-A
+successful PENDING transcription completion updates conversation-A only
+conversation-B inbound version/timestamps remain untouched
+no second ConversationMessage is created
+```
+
+### Validation / evidence requirement
+
+Run the repository-declared equivalents of:
+
+```text
+focused checkout-recovery confirmed-send/retry tests
+focused follow-up scheduling/repair tests
+focused outreach-attempt lifecycle tests
+focused inbound audio duplicate tests
+focused billing/admission compatibility tests
+npm run prisma:validate
+npm test
+npm run build
+git diff --check
+```
+
+Functionality is the acceptance criterion; do not add unrelated coverage or refactor
+accepted code merely to increase test counts.
+
+The Attempt-5 Completion Report MUST also record the launcher-prepared execution packet for
+that attempt, including canonical workspace, dedicated parent/implementation worktrees,
+matching task branches, start-of-attempt synchronisation, recursive submodule preparation
+and database submodule pointer. The Attempt-4 report in this returned snapshot does not
+record a fresh Attempt-4 launcher packet. Do not create code churn solely for workflow
+evidence; record the real Attempt-5 preparation evidence.
+
+### Attempt-5 scope boundaries
+
+Preserve all accepted Attempt-4 work. Attempt 5 may modify only:
+
+```text
+src/services/checkout-recovery.service.ts
+src/services/inbound-whatsapp-audio.service.ts
+focused tests for the exact corrections above
+Completion Report
+```
+
+Do NOT:
+
+```text
+change database schema or migrations
+change Conversation identity/uniqueness
+create another Conversation for follow-up
+change entitlement allocation priority
+make a <24h follow-up free
+create sequence 3+
+perform AI/CommerceAgent discount selection
+invent Meta template variables
+create a new queue or Render service
+change Shared away from exactly 0.12.1
+start ARCH-016-SYSTEM-TEST-001
+```
+
+If those bounded edits cannot satisfy the behavior above, STOP and return to
+`moda_architect` instead of broadening scope.
+
+Return the task to `review`, clear `executor`/`claimed_at`, record the exact Attempt-5
+implementation and parent report commits, and STOP for `moda_architect` re-review.

@@ -937,3 +937,35 @@ The task remains `attempt: 3`, `executor: null`, `claimed_at: null`; the determi
 launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by this review.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
 manual-testing checkpoint remains before terminal integrated testing.
+
+
+## Post-review update — BACKGROUND-003 Attempt 4 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 4 implementation commit `4bb8e21` correctly adds the
+common confirmed-send finaliser, durable `followUpDueAt` repair helper, fail-closed duplicate
+outbound reconciliation and monotonic provider-time engagement required by the previous
+review. Those corrections are retained.
+
+The task returns to **Ready** for a narrow Attempt-5 correction because three convergence
+edges remain:
+
+```text
+1. duplicate successful initial-send reconciliation omits the already-resolved recovery
+   policy, so a crash before followUpDueAt persistence can silently lose an enabled follow-up;
+2. sequence-1 finalisation still publishes the follow-up job directly from stale in-memory
+   state instead of reusing the durable-state repair helper, so a terminal/engagement race can
+   still enqueue a no-response wake-up;
+3. duplicate PENDING audio completion repairs engagement against the durable message
+   Conversation but still updates transcription Conversation state using the newly routed
+   Conversation ID.
+```
+
+Attempt 5 is restricted to `checkout-recovery.service.ts`,
+`inbound-whatsapp-audio.service.ts`, focused tests and the Completion Report. No schema,
+queue topology, Conversation identity, entitlement priority, Shared version, AI selection or
+sequence-cap change is authorised.
+
+The task remains `attempt: 4`, `executor: null`, `claimed_at: null`; the deterministic
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.
