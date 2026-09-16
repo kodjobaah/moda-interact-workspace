@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-16T10:28:35Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-015-BACKGROUND-003
@@ -658,27 +658,30 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 Status: Ready for Review
 
-Implementation commit: `0c1f978` (`feat(admin): replace refund workflow with ARCH-015 settlement`), pushed to `task/ARCH-015-ADMIN-001` in `moda-interact-admin`.
+Implementation commit: `ec62204` (`fix(admin): correct refund presentation routes`), pushed to `task/ARCH-015-ADMIN-001` in `moda-interact-admin`.
 
-Implemented:
+Attempt 2 correction mapping:
 
-- Removed superseded REQUESTED lock/reject mutations, actions, imports, and legacy queue literal.
-- Added bounded automatic-correction evidence projection with canonical decimal strings and App Event drill-through.
-- Restricted manual provider evidence to `PROVIDER_ACTION_REQUIRED` with frozen evidence, withdrawn purchase, zero reservations, no automatic correction link, explicit confirmation, and exact amount/currency matching.
-- Preserved exactly-once purchase, entitlement, audit, and system-message completion semantics; mismatches transition to `NEEDS_ATTENTION` and cannot be resubmitted normally.
-- Adapted the existing Billing Refund Requests queue/drawer with read-only REQUESTED handling, progressive disclosure, safety warnings, completed automatic/manual presentation, and no Admin App Event submission.
-- Added the supplied English refund catalogue values and used architect-supplied keys for touched refund-specific UI copy. No new locale runtime or translation implementation was introduced.
-- Updated focused security/UI assertions for legacy removal, queue derivation, correction evidence, settlement blocking, progressive disclosure, drill-through, and completion routes.
+- Finding 1 implemented: added exact automatic/manual completed predicates requiring `COMPLETED`, the authoritative automatic-correction FK, and the correct provider action evidence; malformed completed rows remain route-pending and unlabelled.
+- Finding 2 implemented: `NEEDS_ATTENTION`, exact completed states, linked automatic corrections, manual fallback, and only then derived REQUESTED queue notices are evaluated in that order. Linked `REPORTED` corrections use `awaitingReconciliation`.
+- Finding 3 implemented: Purchase provenance now retains billing/provider snapshots, valuation confirmation, request-time credit snapshots, source, requester, and source-message evidence under the existing secondary disclosure.
+- Finding 4 implemented: the normal form remains limited to `PROVIDER_ACTION_REQUIRED` with no automatic link and `canSettle`; recorded evidence is shown only for exact manual completion or investigative `NEEDS_ATTENTION` rows with submitted evidence.
+- Finding 5 implemented: automatic correction drill-through is exactly `/billing?view=events&eventId=<id>` and does not carry refund query state.
+- Finding 6 implemented: the queue description, manual fallback, and reconciliation notices use the supplied `billing.refund` keys. No locale runtime or translation catalogue was added.
+- Strengthened `admin-recovery-credit-refunds.test.mjs` to assert the exact predicates, precedence, conditional evidence, provenance fields, i18n usage, and canonical URL.
 
 Validation:
 
-- PASS: `node --test tests/security/admin-recovery-credit-refunds.test.mjs tests/security/admin-recovery-credit-refund-settlement.test.mjs` — 4 passed, 0 failed.
-- PASS: required legacy grep returned zero matches; mark-complete grep returned zero matches; `git diff --check` passed.
-- PASS: localization matrix JSON validation — 20 locales, identical 31-key sets, and English runtime values exactly matching `matrix.locales.en`.
-- BLOCKED baseline: `npm test` could not complete because the prepared worktree has no installed `@prisma/client` and `bullmq`; failures were in existing security/queue tests that import those dependencies. The focused source tests pass without those runtime dependencies.
-- BLOCKED repository tooling: `npm run typecheck` is not declared; `npx tsc --noEmit` could not run because TypeScript is not installed. `npm run lint` could not run because `eslint` is not installed. `npm run build` stopped at `prisma generate` because `prisma` is not installed.
+- PASS: `npm ci` completed with declared dependencies; manifests and lockfiles were not changed.
+- PASS: focused refund and settlement tests — 4 passed, 0 failed.
+- PASS: `npm run build` completed successfully; existing BullMQ optional-dependency and critical-dependency warnings remain.
+- PASS: `npm run lint` completed with 0 errors and 5 pre-existing warnings in `merchant-pricing-plan-builder.tsx`, `queue-monitor.tsx`, and `recovery-credit-refund-settlement.ts`.
+- PASS: forbidden legacy grep returned zero matches; generic mark-complete grep returned zero matches; `git diff --check` passed.
+- PASS: localization matrix validation — JSON parses, exactly 20 locales, identical 31-key sets, and English runtime values exactly match `matrix.locales.en`.
+- BLOCKED baseline: `npm test` fails in existing merchant-support tests because the generated `@prisma/client` does not export `PlatformAdminRole`.
+- BLOCKED baseline: `npx tsc --noEmit` reports existing errors in promotions and merchant-support, including implicit transaction types and Prisma raw-query typing; no errors were introduced in the focused refund component by the correction.
 
-No unresolved implementation concerns remain within the bounded Admin task. The implementation and parent report branches are pushed and ready for architect review; no branch was merged and no Architect Review section was edited.
+No unresolved implementation concerns remain within the bounded Admin task. No branch was merged, no force-push was used, and the Architect Review section was not edited. Parent and implementation branches are pushed and ready for moda_architect review.
 
 ## Architect Review — Attempt 1 — Changes Requested
 
