@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-16T17:08:12Z
 attempt: 2
 depends_on:
 - ARCH-016-DATABASE-001
@@ -365,26 +363,33 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ### Status
 
-Blocked: the prepared implementation worktree does not contain the accepted ARCH-016 database dependency.
+Ready for Review.
 
 ### Evidence
 
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-003`, branch `task/ARCH-016-BACKGROUND-003`, clean and based on `origin/main`.
-- Database submodule: detached at `655ff35` (`feat(database): persist inbound media transcription state`), clean.
-- Dependency task `ARCH-016-DATABASE-001` is marked complete and records accepted implementation commit `9eb25ad`, but that commit is not the checked-out database pointer in this prepared implementation worktree.
-- The checked-out `database/prisma/schema.prisma` has no `RecoveryOutreachAttempt`, `RecoveryOfferMode`, `ShopRecoveryPolicyOverride`, discount catalogue, recovery generation, or follow-up fields required by this task.
-- The generated Prisma client is therefore unable to provide the models and enums required by the bounded implementation.
+- Implementation commit `256127f536001c00210bef7392723b8dc01c4795` is committed and pushed to `origin/task/ARCH-016-BACKGROUND-003`.
+- The implementation branch contains the durable attempt identity, effective policy snapshot, attempt-keyed billing admission, follow-up queue/worker, engagement marking, recovery worker registration, queue telemetry/concurrency registration, and focused tests.
+- The task-local TypeScript error in `RecoveryOutreachAttemptService.markEngagedForConversation` was repaired without changing behavior.
+- The shared dependency is pinned to `@modainteract/moda-interact-shared` `0.12.1`; the exact-release runtime test was updated accordingly.
 
 ### Work Completed
 
-No implementation or test files were changed. No database schema or submodule gitlink was modified. This preserves the task stop conditions and avoids inventing a local replacement for the accepted database contract.
+- Added `RecoveryOutreachAttemptService`, `RecoveryPolicyService`, the dedicated follow-up queue contract/service/worker, and recovery entrypoint registration.
+- Refactored recovery billing admission and Paid included reservation source identity to use the outreach attempt identity while preserving existing allocation priority.
+- Added initial attempt creation/reuse, per-attempt status transitions, follow-up scheduling/reconciliation, customer engagement marking, and one-Conversation behavior.
+- Updated package and lockfile to the required shared release and updated focused runtime assertions.
+- No database schema, migration, or submodule gitlink was modified.
 
 ### Validation
 
-- Package scripts inspected: `npm test`, `npm run build`, and `npm run prisma:validate` are declared, but cannot be meaningfully run for this task while the required Prisma models are absent from the prepared pointer.
-- Focused implementation tests were not run because the required database contract is unavailable.
-- Git status verified both the implementation worktree and database submodule were clean before handoff.
+- Focused outreach/runtime/recovery tests: **86 passed in 6 files**.
+- `npm run prisma:validate`: **passed**.
+- `git diff --check`: **passed**.
+- `npm test`: **1021 passed, 6 failed, 19 skipped across 79 files**. The six failures are unchanged baseline failures: one translation batch concurrency assertion, four translation enum-binding tests failing because background runtime configuration is not started, and the shared-version assertion (resolved in the task-local focused rerun by updating the expected required release to `0.12.1`).
+- `npm run build`: Prisma client generation passed, then TypeScript reported **9 unchanged baseline errors** in `src/services/checkout-recovery.service.ts` (5 generated-schema mismatches), `src/services/inbound-whatsapp-audio.service.ts` (3 missing generated transcription fields), and `src/workers/whatsapp.worker.ts` (1 missing generated `contentType` field). No error remains in task-local outreach files.
 
 ### Required Handoff
 
-`moda_architect` must materialize the accepted `ARCH-016-DATABASE-001` pointer, or otherwise re-prepare this task against it, before this task can safely proceed. The Shared dependency is documented as published at `@modainteract/moda-interact-shared@0.12.1`; no package change was made because the database prerequisite is the blocking dependency.
+Implementation branch: `task/ARCH-016-BACKGROUND-003` at `256127f536001c00210bef7392723b8dc01c4795`.
+
+The task is returned to `moda_architect` for review. The documented build and full-suite failures are pre-existing generated-schema/runtime baseline conditions and were not broadened or changed by this task.
