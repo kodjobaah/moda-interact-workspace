@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 66
 attempt: 2
 depends_on:
@@ -522,3 +522,21 @@ Add/update focused assertions proving:
 - the existing ADMIN-009 unit/security suite still passes.
 
 Run the existing focused ADMIN-009 tests, build/lint where available, and `git diff --check`. Do not expand this retry into unrelated repository-wide cleanup.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted
+
+### Attempt Reviewed
+
+Attempt 2 — implementation `fa2f49f`, Completion Report `c76142a`.
+
+### Functional assessment
+
+The two corrections requested after Attempt 1 are complete. The fleet-wide queue-limit introduction now appears only with the `Worker throughput` group, so Billing retries and Translation recovery/retries are no longer described as queue-concurrency settings. Successful saves add `Fleet-wide queue limits converge without redeploying workers.` if and only if at least one of the seven queue-concurrency fields changed; non-queue saves retain only the generic runtime-controls success copy.
+
+The accepted persistence behavior remains unchanged: SUPER_ADMIN mutation authorization, full prospective DATABASE-004 validation, version-fenced compare-and-swap, same-transaction audit creation, deterministic unit conversion, read-only rendering for non-SUPER_ADMIN users and no legacy ADMIN-007 economics surface.
+
+No further ADMIN-009 implementation attempt is required. `ARCH-014-SYSTEM-TEST-003` remains Pending because the Background dependency chain is not yet Complete.
