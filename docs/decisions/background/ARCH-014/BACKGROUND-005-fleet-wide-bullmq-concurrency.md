@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 66
 executor:
 claimed_at:
@@ -202,3 +202,16 @@ Validation:
 - Implementation worktree is clean after commit and push.
 
 Limitations: the repository integration runner does not currently include a live two-Worker BullMQ Redis-cap test or an active-job cap-decrease test. The controller unit suite covers mocked lease contention, fresh post-lease reads, ordered mapping, Redis verification, healing retry, and strict config-version updates; the two live BullMQ scenarios remain explicit review coverage gaps.
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Summary
+
+Attempt 1 is accepted on functionality. The implementation uses BullMQ 6.3.6 native `Queue.setGlobalConcurrency()` / `Queue.getGlobalConcurrency()` as the fleet-wide aggregate cap, with lease-protected fresh-config reconciliation, Redis verification, startup/version-triggered reconciliation and recursive 30-second healing. All seven controlled Workers bind their local `worker.concurrency` to the matching runtime-config field and only apply strictly newer versions; no numeric Worker concurrency remains as production authority.
+
+The two documented live-Redis scenarios (multi-worker aggregate-cap proof and active-job cap decrease) remain terminal system-test evidence rather than implementation blockers. `ARCH-014-SYSTEM-TEST-003` is the developer-gated environment that must prove those horizontal-scaling behaviours against shared Redis.
+
+Implementation commit `5cb00bb` is accepted. No further BACKGROUND-005 attempt is required.
