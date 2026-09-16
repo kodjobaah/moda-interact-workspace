@@ -1014,6 +1014,24 @@ Merchant refund reactivation is permanently unavailable once `automaticCorrectio
 
 Top-up offer busy state is per meter rather than global, and displayed provider price represents the deterministically derived next Shopify meter-unit charge, never a per-conversation price.
 
+Correction execution model after architect review:
+
+```text
+ARCH-015-SHOPIFY-004      Complete
+ARCH-015-BACKGROUND-004   parallel correction task
+             \          /
+              \        /
+             correction implementation complete
+                        |
+                        v
+              developer/manual ARCH-015 test pass
+                        |
+                        v
+              ARCH-015-SYSTEM-TEST-001
+              explicit architect authorization only
+```
+
+SHOPIFY-004 is accepted on the production implementation and validation evidence. The Dutch matrix wording difference and several missing one-for-one focused regression cases are non-blocking observations to be exercised during later/manual/integrated validation. This SHOPIFY-004 task snapshot predates the separately accepted BACKGROUND-004 branch, so Background task metadata is intentionally not rewritten from this branch.
 Correction execution model:
 
 ```text

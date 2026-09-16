@@ -5,7 +5,7 @@
 | [ARCH-015-SHOPIFY-001](SHOPIFY-001-live-top-up-offers.md) | complete | Resolve live top-up offers by Shopify current plan/meter intersected with ARCH-014 entitlement rows and render valid empty states. |
 | [ARCH-015-SHOPIFY-002](SHOPIFY-002-purchase-admission.md) | complete | Create selected top-up purchase with fresh provider/ARCH-014 proof and same-handle single-flight. |
 | [ARCH-015-SHOPIFY-003](SHOPIFY-003-refund-eligibility-hold.md) | complete | Permit normal refund hold only for current-provider-context positive-value purchases. |
-| [ARCH-015-SHOPIFY-004](SHOPIFY-004-provider-meter-mutation-serialization.md) | ready | Serialize purchase/refund admission per `(shopId,eventHandle)`, close automatic-correction reactivation races, make offer eligibility per meter and correct provider price presentation. |
+| [ARCH-015-SHOPIFY-004](SHOPIFY-004-provider-meter-mutation-serialization.md) | complete | Serialize purchase/refund admission per `(shopId,eventHandle)`, close automatic-correction reactivation races, make offer eligibility per meter and correct provider price presentation. |
 
 ## Current architect review state
 
@@ -46,6 +46,10 @@ provider correction and completion.
 
 ## Post-implementation integration audit — 2026-09-16
 
-A meticulous cross-repository ARCH-015 audit found that individually accepted tasks did not yet provide one common provider-meter mutation boundary. `ARCH-015-SHOPIFY-004` is therefore **Ready**. It is a bounded correction task: no schema change, no new queue and no new lock model. It reuses the existing per-shop `Subscription ... FOR UPDATE` lock so purchase and refund admission share the same `(shopId,eventHandle)` busy predicate.
+A meticulous cross-repository ARCH-015 audit found that individually accepted tasks did not yet provide one common provider-meter mutation boundary. `ARCH-015-SHOPIFY-004` was therefore introduced as a bounded correction task and is now **Accepted — Complete**. It is a bounded correction task: no schema change, no new queue and no new lock model. It reuses the existing per-shop `Subscription ... FOR UPDATE` lock so purchase and refund admission share the same `(shopId,eventHandle)` busy predicate.
 
-`ARCH-015-BACKGROUND-004` is a coordinated parallel correction and does not wait for SHOPIFY-004 to execute. Both tasks may be implemented/reviewed independently; terminal system testing remains Pending until both are architect-accepted Complete and manual testing has been authorized/completed.
+`ARCH-015-BACKGROUND-004` is an independent parallel correction task; it is not a blocking implementation dependency of SHOPIFY-004. This SHOPIFY-004 branch snapshot predates its later architect acceptance, so Background task metadata is not rewritten here. Terminal system testing remains intentionally deferred until after manual testing and must not be launched from this task.
+
+## Post-review update — SHOPIFY-004 Attempt 1 Accepted
+
+`ARCH-015-SHOPIFY-004` Attempt 1 is **Accepted — Complete**. The common provider-meter admission boundary, automatic-correction reactivation CAS, per-handle offer eligibility and deterministic next-unit provider price are accepted. The small Dutch matrix wording difference and missing one-for-one unit scenarios are recorded as non-blocking follow-up validation observations. No further SHOPIFY-004 implementation attempt is required.
