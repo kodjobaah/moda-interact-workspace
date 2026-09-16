@@ -113,11 +113,10 @@ ARCH-014-DATABASE-004    COMPLETE
 ARCH-014-BACKGROUND-001  COMPLETE
 ARCH-014-BACKGROUND-002  COMPLETE
 ARCH-014-BACKGROUND-003  COMPLETE
-ARCH-014-BACKGROUND-003  COMPLETE
-ARCH-014-BACKGROUND-004  READY
-ARCH-014-BACKGROUND-005  PENDING
+ARCH-014-BACKGROUND-004  COMPLETE
+ARCH-014-BACKGROUND-005  READY
 ARCH-014-ADMIN-009       COMPLETE
 ARCH-014-SYSTEM-TEST-003 PENDING
 ```
 
-`BACKGROUND-003` is architect-accepted Complete. In this branch-local snapshot `BACKGROUND-002` remains Ready, so it is the only automatic Ready task and `BACKGROUND-004` remains Pending. Once the separately accepted BACKGROUND-002 reconciliation is present in the same canonical parent state, BACKGROUND-004 becomes Ready. BACKGROUND-005 remains gated by BACKGROUND-002 + BACKGROUND-003 + BACKGROUND-004; SYSTEM-TEST-003 remains terminal/developer-gated behind the complete Background chain even though its Admin dependency is already Complete.
+`BACKGROUND-004` is architect-accepted Complete. `BACKGROUND-005` is now the only automatic Ready Background task and is responsible for fleet-wide BullMQ concurrency reconciliation. `SYSTEM-TEST-003` remains Pending and terminal/developer-gated until BACKGROUND-005 is architect-accepted Complete; its DATABASE-004, BACKGROUND-001/002/003/004 and ADMIN-009 prerequisites are already Complete.

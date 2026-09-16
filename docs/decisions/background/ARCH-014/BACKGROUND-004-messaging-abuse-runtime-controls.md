@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 65
-executor: null
-claimed_at: null
-attempt: 0
+executor:
+claimed_at:
+attempt: 1
 depends_on:
 - ARCH-014-BACKGROUND-002
 - ARCH-014-BACKGROUND-003
@@ -150,3 +150,37 @@ git diff --check
 ## Stop conditions
 
 STOP if implementation requires making abuse windows editable, querying PostgreSQL per WhatsApp message, or weakening fail-closed limiter behaviour.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `b3b65f8` on `task/ARCH-014-BACKGROUND-004`
+
+Implementation mapping:
+
+- `src/entrypoints/messaging.ts`: starts the singleton `backgroundRuntimeConfigService` before the dynamic WhatsApp worker import and closes it with worker resources.
+- `src/services/conversation-turn-processor.service.ts`: reads one current runtime snapshot for each enqueue/process settle calculation, applies runtime quiet/max windows, rejects injected `max < quiet` snapshots before claiming work, and leaves `PROCESSING_LEASE_MS` unchanged.
+- `src/services/inbound-whatsapp-abuse-admission.service.ts`: reads one last-known-good runtime snapshot per admission, maps all raw/settled/discovery numeric limits, and preserves fixed 60-second/600-second windows, Redis namespace, and fail-closed error handling.
+- Focused tests cover runtime settle changes, invalid ordering, every abuse limit field, discovery/general separation, fixed windows, shared Redis enforcement, Redis suppression, version-forward config behavior, and the unchanged processing lease.
+
+Validation evidence:
+
+- `npx vitest run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts`: passed, 2 files / 61 tests.
+- `npm run test:unit`: passed, 62 files / 966 tests.
+- `npm run build`: passed, Prisma generation and TypeScript compilation completed.
+- `git diff --check`: passed.
+- Editor diagnostics for all five changed files: no errors.
+
+Limitations: npm install reported pre-existing audit warnings for three high-severity vulnerabilities and install-script approval notices; no dependency files were changed. No database, queue, schema, Redis key namespace, or Admin-editable window changes were made.
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Summary
+
+Attempt 1 is accepted on functionality. The messaging entrypoint starts the shared runtime-config service before loading the WhatsApp worker; conversation settling uses one current runtime snapshot per settle calculation, re-evaluates pending work on processing, preserves the fixed 120-second processing lease and fails closed on an invalid max/quiet ordering. WhatsApp abuse admission reads one last-known-good in-memory runtime snapshot per admission, maps all twelve approved numeric limits, preserves the fixed 60-second/600-second windows, Redis namespace and duplicate semantics, and remains fail-closed on limiter errors. No per-message database query or Admin-editable abuse window was introduced.
+
+Implementation commit `b3b65f8` is accepted. No further BACKGROUND-004 attempt is required.
