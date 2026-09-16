@@ -8,18 +8,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 64
-executor: copilot
-claimed_at: 2026-09-16T08:26:16Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 enables:
 created: 2026-09-16
 updated: 2026-09-16
-status: review
-executor: null
-claimed_at: null
 
 # ARCH-014-BACKGROUND-002
 
