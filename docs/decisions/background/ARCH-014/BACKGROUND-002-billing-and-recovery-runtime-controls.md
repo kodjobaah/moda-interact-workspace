@@ -1,4 +1,3 @@
----
 id: ARCH-014-BACKGROUND-002
 architecture_id: ARCH-014
 title: Apply runtime controls to billing and recovery background processing
@@ -15,13 +14,12 @@ executor: copilot
 claimed_at: 2026-09-16T08:26:16Z
 attempt: 2
 depends_on:
-- ARCH-014-BACKGROUND-001
 enables:
-- ARCH-014-BACKGROUND-004
-- ARCH-014-BACKGROUND-005
 created: 2026-09-16
 updated: 2026-09-16
----
+status: review
+executor: null
+claimed_at: null
 
 # ARCH-014-BACKGROUND-002
 
@@ -231,21 +229,34 @@ STOP if applying runtime values would change billing retry-tier semantics, merch
 
 ## Completion Report
 
+Status: Ready for Review
+
+### Attempt 2 correction mapping
+
+- Captured exactly one `backgroundRuntimeConfigService.current()` snapshot at the start of each queued reconciliation job through an injectable reader; unit tests inject a minimal reader.
+- Passed that snapshot into queued `ShopifySubscriptionLifecycleReconciliationService` construction, both queued pre-close usage flushes, and frozen provider-failure scheduling.
+- Removed the queued frozen provider-failure hard-coded one-hour delay; it now uses `billingFrozenRecheckSeconds * 1000`.
+- Added focused coverage for one snapshot read/reuse, configured lifecycle frozen timing, usage publisher runtime values, and configured frozen provider retry timing. Existing fixed retry-tier, merchant-delay, and queue-policy coverage remains unchanged.
+
 - Implementation branch: `task/ARCH-014-BACKGROUND-002`
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-BACKGROUND-002`
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-BACKGROUND-002`
 - Claim commit: `6d7f5db5d105bf277547c24031ff214cb4a0f15a`
 - Background submodule commit: `89dca92325cefc96fe2dff5021d1e5ee0e8f7fe1`
-- Implementation commits: `c11c387a678dfb7509adae93e607bf64cb568050`, `1977de5`, `4bfffc513fab987fc037f259c42d9a55f28e570b`
-- Published branch head: `4bfffc513fab987fc037f259c42d9a55f28e570b`
+- Implementation commits: `c11c387a678dfb7509adae93e607bf64cb568050`, `1977de5`, `4bfffc513fab987fc037f259c42d9a55f28e570b`, `a210715`
+- Published branch head: `a210715`
 
 Validation completed in `moda-interact-background`:
 
-- `npm run test:unit`: passed, 62 files and 950 tests.
+- Focused queued billing test: passed, 62 files and 952 tests.
+- `npm run test:unit`: passed, 62 files and 952 tests.
+- `npm run test:integration`: passed, 2 files and 3 tests.
 - `npm run build`: passed, including Prisma client generation and TypeScript compilation.
 - `git diff --check`: passed.
 
-The billing retry tiers, merchant recovery delay settings, and queue retry/backoff policies remain system-managed and unchanged. Runtime configuration is used for the requested billing/recovery intervals, batch sizes, usage retry bounds, frozen/provider retry intervals, and resume worker batch size; malformed injected batch values fail closed.
+Launcher evidence preserved: prepared attempt 2, executor `copilot`, dependency `ARCH-014-BACKGROUND-001` complete, database submodule initialized at `47232f6876469f209c7efde4cefbb8a47d864e6a`, and canonical parent/implementation worktrees supplied by the launcher. No additional preparation or claim was performed.
+
+The billing retry tiers, merchant recovery delay settings, and queue retry/backoff policies remain system-managed and unchanged. No queues, schema/models/statuses, or alternate settings sources were added. No unresolved validation blockers or infrastructure limitations remain.
 
 ## Architect Review
 
