@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 66
-executor: copilot
-claimed_at: 2026-09-16T07:32:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-DATABASE-004
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-014-SYSTEM-TEST-003
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T08:05:00Z
 ---
 
 # ARCH-014-ADMIN-009
@@ -434,3 +434,40 @@ git diff --check
 ## Stop conditions
 
 STOP if ADMIN-007 is not accepted, DATABASE-004 is absent, or implementation would require a generic JSON/key-value editor instead of the defined human UI.
+
+## Completion Report
+
+Status: Ready for Review
+
+### Implementation
+
+- Implementation commit: `6852e01` (`feat(admin): add background runtime controls`), pushed to `origin/task/ARCH-014-ADMIN-009`.
+- Added the human-readable three-tab Runtime Controls UI on the retained Billing/Controls route, with responsive tabs/select, grouped settings, defaults/ranges/guidance, technical details disclosure, read-only non-SUPER_ADMIN access, client-only reset/default controls, reason-gated saves, and system-managed information.
+- Added server validation for all DATABASE-004 fields, integer/decimal unit conversion, every bound and cross-field relationship, exact expected-version concurrency fencing, singleton-missing failure, SUPER_ADMIN authorization, atomic versioned update, and same-transaction before/after audit events.
+- Added focused unit/security coverage and aligned the retained Controls security assertions with the ADMIN-009 runtime-controls surface. No schema, environment-variable, alternate spreadsheet, or legacy economics implementation was added.
+
+### Validation
+
+- Focused runtime unit tests: `4/4` passed.
+- Focused ADMIN-009 security tests: `3/3` passed.
+- Affected billing/security regression tests: `20/20` passed.
+- `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
+- `npm run lint -- --quiet`: passed.
+- `git diff --check`: passed.
+- Full `npm test`: after the ADMIN-009-related assertions were updated, the remaining failures are pre-existing baseline failures in shared telemetry ownership and published Shared ICU runtime/version expectations; no ADMIN-009 failure remains.
+
+### Isolation
+
+Physical worktree isolation:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-009
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-009
+implementation branch: task/ARCH-014-ADMIN-009
+implementation head: 6852e01
+parent claim commit: 4edb9e0
+submodules: recursive sync/update passed; database initialized at 89dca92325cefc96fe2dff5021d1e5ee0e8f7fe1
+```
+
+The implementation branch and parent task report remain separate and were not merged to `main`. Executor and claim fields are cleared for `moda_architect` review.
