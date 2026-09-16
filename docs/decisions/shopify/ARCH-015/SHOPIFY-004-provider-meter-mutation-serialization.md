@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 85
-executor: copilot
-claimed_at: 2026-09-16T14:07:53Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-015-SHARED-001
@@ -905,3 +905,39 @@ STOP and return to `moda_architect` without inventing architecture if:
 4. Clear `executor`/`claimed_at`.
 5. Return to `moda_architect`.
 6. STOP. Do not start BACKGROUND-004.
+
+# Completion Report
+
+## Status
+
+Ready for `moda_architect` review. Implementation and validation are complete; `ARCH-015-BACKGROUND-004` was not started.
+
+## Physical worktree and preparation evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-004`
+- Parent branch: `task/ARCH-015-SHOPIFY-004`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-004`
+- Implementation branch: `task/ARCH-015-SHOPIFY-004`
+- Shared/default checkouts were not switched or mutated; no other task worktree was reused.
+- Parent and implementation branches were already current with `origin/main`; remote task branches were not fast-forwarded.
+- Recursive submodule sync and update passed. Database submodule was initialized at `4af14a30b11d8bd4ddc95ba92ae294348eff4e01`.
+
+## Files and commits
+
+Implementation commit `b088631` (`fix(shopify): serialize recovery credit meter mutations`) updated the authorized billing services/types, merchant pricing resolver, purchase/refund UI, locale catalogues, and focused tests.
+
+Follow-up commit `8cfae52` (`fix(shopify): restore purchase locale parity`) restored the existing `billingPurchases.historicalNotRefundable` key in the 19 non-English catalogues so the authorized locale-parity and merchant-pricing tests pass.
+
+No Prisma schema or cross-repository files were changed.
+
+## Validation results
+
+- Focused ARCH-015 suite: 6 test files, 251 passed, 0 failed.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- Full `npm test`: 47 files passed, 2 skipped; 613 tests passed, 3 skipped.
+- `git diff --check`: passed.
+- Direct ESLint on touched JS/TS/TSX/JSX files: one existing classic-JSX warning/error remains for the required `React` runtime import in `TopUpPurchasePanel.jsx` (`no-unused-vars`).
+- `npm run typecheck`: blocked by existing repository-wide JSX/typing baseline errors outside this task; the output also includes pre-existing errors in unrelated generated/type surfaces. No task-specific typecheck failure was identified.
+- The repository contains `tests/unit/billing-purchases-i18n.test.ts` rather than the task text's `tests/unit/billing-i18n.test.ts`; the existing parity test passed.
