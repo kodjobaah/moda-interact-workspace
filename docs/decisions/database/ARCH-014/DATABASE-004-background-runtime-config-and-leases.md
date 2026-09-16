@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
-executor: copilot
-claimed_at: 2026-09-16T00:29:50Z
+executor:
+claimed_at:
 attempt: 3
 depends_on:
 - ARCH-014-DATABASE-003
@@ -325,7 +325,7 @@ Status: Ready for Review
 
 ### Audit Result
 
-No schema, migration, ERD, or implementation-scope gaps were found. The audit strengthened the static validator so it now checks every required SQL bound and cross-field expression, the complete default seed tuple, and the absence of lease seed rows.
+Attempt 3 implemented both Architect Review corrections. The singleton seed now supplies the required non-null `updatedAt` value with `CURRENT_TIMESTAMP`, while the Prisma model remains exactly `DateTime @updatedAt`. The static validator now explicitly checks the seed column list includes `updatedAt` and that the corresponding value is `CURRENT_TIMESTAMP`; all prior DATABASE-004 assertions remain in place.
 
 ### Acceptance Checklist
 
@@ -336,6 +336,7 @@ No schema, migration, ERD, or implementation-scope gaps were found. The audit st
 - [x] Migration `20260916000000_arch014_background_runtime_config_and_leases` follows accepted DATABASE-003 migration `20260915210000_arch014_promotion_campaign_translations` chronologically and is additive-only.
 - [x] Migration has all 55 named per-field, queue, version, and cross-field CHECK constraints with the exact required expressions.
 - [x] Migration seeds exactly the `id = "default"`, `version = 0` model-default row with `INSERT ... ON CONFLICT ("id") DO NOTHING`.
+- [x] The singleton seed supplies `updatedAt` explicitly with `CURRENT_TIMESTAMP`, making the direct insert executable on a clean database without adding a Prisma database default.
 - [x] All seven queue concurrency fields are present and bounded; `translationResultRetrySeconds` and `translationPollIntervalSeconds` are distinct.
 - [x] Static validator asserts the models, exact fields/defaults/enums, SQL expressions, seed, no pre-existing-table alteration, no lease seed, queue fields, lease fields, translation distinction, and all three ERD entities.
 - [x] ERD contains `BackgroundRuntimeConfig`, `BackgroundRuntimeConfigAuditEvent`, and `BackgroundRuntimeLease`.
@@ -344,6 +345,8 @@ No schema, migration, ERD, or implementation-scope gaps were found. The audit st
 
 - Original implementation: `0247a2779d6e1755c34ebe4b9cc32abea09b1836` (`feat(database): add background runtime config and leases`).
 - Audit follow-up: `11d8fa1` (`test(database): strengthen background runtime audit validation`), pushed to `task/ARCH-014-DATABASE-004` in `moda-interact-database`.
+- Attempt 3 correction: `68fe571` (`fix(database): make background runtime config seed executable`), pushed to `task/ARCH-014-DATABASE-004` in `moda-interact-database`.
+- Attempt 3 changed files: `prisma/migrations/20260916000000_arch014_background_runtime_config_and_leases/migration.sql` and `scripts/validate-arch014-background-runtime-config.mjs`.
 - Audit follow-up files: `scripts/validate-arch014-background-runtime-config.mjs`, `docs/generated/prisma-erd.puml`, and `docs/generated/erd.png`.
 
 ### Validation
@@ -352,18 +355,19 @@ No schema, migration, ERD, or implementation-scope gaps were found. The audit st
 - Equivalent declared `npm run format`: passed.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed with Prisma 6.19.3.
-- `node scripts/validate-arch014-background-runtime-config.mjs`: passed before and after validator strengthening.
+- `node scripts/validate-arch014-background-runtime-config.mjs`: passed after the Attempt 3 seed and validator correction.
 - `npm test --if-present`: no test script declared; npm skipped it successfully.
 - `git diff --check`: passed.
 - `npm run erd:puml` and `npm run erd:png`: passed.
-- `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run migrate:deploy`: PostgreSQL was reachable, but Prisma returned `P3009`; pre-existing migration `20260915140000_arch015_fractional_provider_usage_snapshots` is failed, so new migrations were not applied. No reset or migration resolution was performed.
+- `npm run prisma:format`: unavailable because the repository declares no `prisma:format` script; the declared equivalent `npm run format` passed.
+- `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run migrate:deploy`: remains limited by the previously documented Prisma `P3009` state for failed migration `20260915140000_arch015_fractional_provider_usage_snapshots`; no reset or migration resolution was performed.
 
 ### Worktree and Limitation Evidence
 
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-DATABASE-004`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-DATABASE-004`.
 - Dependency `ARCH-014-DATABASE-003` was present at implementation base `d44b621cdcc3635127b91601be648b61c0eff1e2`.
-- The database blocker is limited to the pre-existing failed migration state; schema validation, generation, static migration validation, and ERD generation passed.
+- The only unresolved gap is the pre-existing failed migration state; schema validation, generation, static migration validation, and ERD generation passed. No unrelated migration repair was attempted.
 
 ## Architect Review
 
