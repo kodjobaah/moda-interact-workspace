@@ -13,7 +13,7 @@ status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
 - ARCH-016-SHOPIFY-001
@@ -286,3 +286,114 @@ Awaiting `moda_architect` acceptance review for the published `0.12.1` package r
 ## Completion protocol
 
 This task is complete from the repository-agent publication perspective. The task has been updated to `status: review`, the claim has been cleared, and the work is returned to `moda_architect` for final acceptance.
+Record implementation commit and publication evidence, update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Review; implementation, validation and package publication completed and returned to `moda_architect`.
+
+### Physical worktree and preparation evidence
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-SHARED-001` on `task/ARCH-016-SHARED-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-SHARED-001` on `task/ARCH-016-SHARED-001`.
+- Launcher/task claim commit: `7c414de2`.
+- Workspace ARCH-016 documentation baseline commit supplied for review: `ebe24412`.
+- Implementation commit supplied after the review archive was created: `202082e`.
+
+### Implementation
+
+The Shared package now provides the bounded ARCH-016 cross-repository contracts required by the task:
+
+```text
+@modainteract/moda-interact-shared/recovery-policy
+  RECOVERY_OFFER_MODES
+  RecoveryOfferModeSchema
+  EffectiveRecoveryPolicySchema
+  parseEffectiveRecoveryPolicy
+  safeParseEffectiveRecoveryPolicy
+
+@modainteract/moda-interact-shared/shopify
+  SHOPIFY_WEBHOOK_QUEUE_CONTRACTS.SHOPIFY_DISCOUNT_SYNC
+  SHOPIFY_DISCOUNT_SYNC_REASONS
+  SHOPIFY_DISCOUNT_SYNC_WEBHOOK_TOPICS
+  ShopifyDiscountSyncJobSchema
+  parseShopifyDiscountSyncJob
+  safeParseShopifyDiscountSyncJob
+
+@modainteract/moda-interact-shared/shopify/node
+  createShopifyDiscountSyncJobId
+```
+
+The implementation remains provider/database neutral. It does not add Prisma types, CommerceAgent discount-selection contracts, LLM schemas, ranking semantics or Shopify Admin GraphQL response models.
+
+### Validation and publication
+
+Executor evidence supplied for Attempt 1 records:
+
+```text
+npm test:                                      129 passed, 0 failed, 1 skipped
+npm run typecheck:                             PASS
+npm run build:                                 PASS
+node scripts/validate-recovery-policy-entrypoint.mjs: PASS
+npm pack --dry-run:                            PASS
+git diff --check:                              PASS
+```
+
+Package versioning/publication evidence supplied after the initial blocked handoff:
+
+```text
+package.json:      0.12.0 -> 0.12.1
+package-lock.json: 0.12.0 -> 0.12.1
+
+npm view @modainteract/moda-interact-shared version --json
+  -> "0.12.1"
+
+npm view @modainteract/moda-interact-shared@0.12.1 version --json
+  -> "0.12.1"
+```
+
+The executor also reported that the exact `0.12.1` package metadata exposes the expected published tarball and publication timestamp. The review archive predates that successful publication and therefore still contained the earlier temporary `Blocked` Completion Report. No republish or additional patch bump is required.
+
+The exact `dist.shasum` / `dist.integrity` values were not included in the supplied review archive or later handoff text, so this architect review does not invent them. Exact-version registry resolution plus the reported published tarball metadata is sufficient for the functional publication gate in this review; do not reopen SHARED-001 solely to reproduce checksum text in the parent report.
+
+## Architect Review — Attempt 1 — Accepted
+
+Verdict: **Accepted — Complete**.
+
+Accepted implementation commit:
+
+```text
+202082e
+```
+
+The implementation satisfies the ARCH-016 Shared contract:
+
+- `EffectiveRecoveryPolicySchema` is strict and enforces the required `NONE` / `FIXED` / `AI_BEST_APPLICABLE` offer modes;
+- `FIXED` requires a non-empty Shopify discount ID and non-`FIXED` modes require `null`;
+- enabled follow-up requires a bounded delay and disabled follow-up requires `null`;
+- the discount-sync payload is schema-versioned, strict, requires delivery/topic evidence for `DISCOUNT_WEBHOOK`, and rejects webhook topics for non-webhook reasons;
+- the canonical queue/job names are `shopify-discount-sync` / `reconcile-shopify-discounts`;
+- webhook job identity is derived from `shopId + deliveryId`, so duplicate provider delivery dedupes without treating a discount node as catalogue authority;
+- subscription/reinstall/scope-trigger identity is derived from `shopId + reason + requestedAt` and remains bounded through the existing SHA-256 helper;
+- the new recovery-policy entrypoint and the changed Shopify entrypoints are included in package export/build validation;
+- no database/client-specific or AI discount-ranking contract was introduced.
+
+The helper accepts the minimal fields required to derive identity rather than the entire queue payload. That does not weaken the queue contract: producers/consumers still have the exported runtime parser as the authority for the full payload, while the Node helper deterministically derives only the queue identity fields required by the architecture.
+
+No Attempt 2 is required.
+
+Dependency promotion after this acceptance is intentionally limited:
+
+```text
+ARCH-016-SHARED-001      Complete
+ARCH-016-DATABASE-001    Ready
+
+SHOPIFY-001              Pending on DATABASE-001
+BACKGROUND-001           Pending on DATABASE-001
+SHOPIFY-002              Pending on DATABASE-001
+ADMIN-002                Pending on DATABASE-001
+BACKGROUND-003           Pending on DATABASE-001
+SYSTEM-TEST-001          Pending on all implementation dependencies + manual-test checkpoint
+```
+
+`ARCH-016-SYSTEM-TEST-001` is **not** started by this acceptance.
