@@ -605,6 +605,29 @@ ARCH-015-BACKGROUND-001  Complete
 BACKGROUND-003 remains Pending because SHOPIFY-003 is not yet Complete.
 
 
+## Post-review update — BACKGROUND-002 Attempt 2 Changes Requested
+
+Architect review accepts the substantive Attempt-2 correction: reservation ordering now
+reads local period bounds, derives provider-context identity through the canonical Shared
+helper (including native App Pricing with nullable legacy provider ids), and applies this
+task's ACTIVE-only current-context rule. Reversed/non-forward periods and TRIALING
+projections are historical ordering hints, while existing cross-plan spendability, replay,
+refund-hold, CAS and local NOT_APPLICABLE evidence remain intact.
+
+One fail-closed defect remains. The selector uses truthiness for observed plan/billing
+period strings and invokes Shared derivation directly. Malformed native-App-Pricing local
+projection evidence (for example null legacy id plus whitespace-only observed plan handle)
+can therefore throw `SHOPIFY_PROVIDER_CONTEXT_INVALID` out of reservation selection.
+
+The local Subscription projection is only an ordering hint. Attempt 3 must validate
+nonblank plan/billing-period evidence and convert any unusable Shared derivation to
+`currentContext = null`, leaving every ACTIVE lot spendable under historical FIFO. No
+schema, Shopify I/O, Shared change, reservation transaction redesign or refund change is
+authorized.
+
+`ARCH-015-BACKGROUND-002` therefore remains Ready. `ARCH-015-SYSTEM-TEST-001` remains
+gated until all of its implementation prerequisites are architect-accepted Complete.
+
 ## Post-review update — SHOPIFY-003 Attempt 2 Accepted
 
 `ARCH-015-SHOPIFY-003` Attempt 2 is architect-accepted and **Complete**.
@@ -644,3 +667,49 @@ ARCH-015-DATABASE-001    Complete
 ```
 
 `ARCH-015-BACKGROUND-002` continues independently through its own review lifecycle.
+
+## Post-review update — BACKGROUND-002 Attempt 3 Accepted
+
+`ARCH-015-BACKGROUND-002` Attempt 3 is architect-accepted and **Complete**.
+
+Purchased-credit consumption now uses the local Subscription projection only as a
+fail-closed ordering hint:
+
+```text
+valid ACTIVE mapped subscription
++ nonblank observed plan handle
++ nonblank billing-period id
++ finite forward period
+  -> derive canonical Shared providerContextIdentity
+  -> partition ACTIVE lots into historical/non-current and current-context
+  -> spend historical/non-current first
+  -> FIFO within each partition
+
+missing / malformed / ambiguous / TRIALING projection
+  -> no current context hint
+  -> every ACTIVE lot remains spendable as historical FIFO
+```
+
+Native App Pricing remains supported when the raw provider subscription id is null; the
+canonical `app-pricing:v1:...` identity is derived from validated plan/period evidence.
+Any Shared derivation failure is contained as `currentContext = null` and cannot make
+purchased credits unavailable.
+
+Replay affinity, refund-held exclusion, Serializable/CAS reservation behavior and local
+`RECOVERY_CONVERSATION` / `NOT_APPLICABLE` usage evidence remain unchanged.
+
+The ARCH-015 execution frontier is now:
+
+```text
+ARCH-015-BACKGROUND-002  Complete
+ARCH-015-SHOPIFY-003     Complete
+        |
+        +--> ARCH-015-BACKGROUND-003  Ready
+                  |
+                  +--> ARCH-015-ADMIN-001 Pending
+                              |
+                              +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+SYSTEM-TEST-001 is not promoted by BACKGROUND-002 acceptance alone because BACKGROUND-003
+and ADMIN-001 are still unsatisfied declared prerequisites.
