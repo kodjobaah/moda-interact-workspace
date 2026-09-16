@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 12
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-007-DATABASE-006
 enables:
@@ -114,11 +114,11 @@ The new schema validator must prove:
 
 ## Acceptance Criteria
 
-- [ ] one inbound provider message can be durably reserved before transcription through existing unique `providerMessageId` semantics;
-- [ ] voice provenance/transcription lifecycle can be represented without fake empty-text semantics;
-- [ ] raw audio is not stored in PostgreSQL;
-- [ ] existing text conversations remain backward-compatible through defaults;
-- [ ] migration and ERD are generated normally.
+- [x] one inbound provider message can be durably reserved before transcription through existing unique `providerMessageId` semantics;
+- [x] voice provenance/transcription lifecycle can be represented without fake empty-text semantics;
+- [x] raw audio is not stored in PostgreSQL;
+- [x] existing text conversations remain backward-compatible through defaults;
+- [x] migration and ERD are generated normally.
 
 ## Validation
 From `moda-interact-database/`:
@@ -143,18 +143,82 @@ Return only DATABASE-001 to `review`; do not start dependent Background work.
 ## Completion Report
 
 ### Status
-Not started.
+Ready for architect review.
 
-### Files Changed
-TBD.
+### Physical worktree isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-012-DATABASE-001`
+- Parent branch: `task/ARCH-012-DATABASE-001`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-012-DATABASE-001`
+- Implementation branch: `task/ARCH-012-DATABASE-001`
+- Shared implementation checkout switched or mutated: no
+- Another task worktree reused: no
+
+### Launcher evidence
+
+- Claim commit: `ec2bec60bb18ae7a2019fa09343d498d817de6bb`
+- Attempt: `2`
+- Dependency gate: passed (`ARCH-007-DATABASE-006` complete)
+- Parent origin/main incorporated: already-current
+- Implementation origin/main incorporated: already-current
+- Recursive submodule sync/update: passed; no submodule entries
+
+### Files changed
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20260916100000_arch012_inbound_whatsapp_media_transcription_state/migration.sql`
+- `scripts/validate-arch012-whatsapp-media-schema.mjs`
+- `docs/generated/prisma-erd.puml`
+
+### Implementation
+
+- Added `MessageContentType` and `MessageTranscriptionStatus` in the `whatsapp` schema.
+- Added durable media provenance and transcription lifecycle fields with backward-compatible defaults for existing text messages.
+- Added a PostgreSQL check constraint preventing negative media duration.
+- Preserved unique `providerMessageId` deduplication and existing conversation ordering/coalescing fields.
+- Added structural validation proving exact enum members, field types/defaults, no raw audio or URL persistence fields, and append-only migration safety.
+- Regenerated the PlantUML ERD.
 
 ### Validation Results
-TBD.
+
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run test:first-production-baseline`: passed.
+- `node scripts/validate-arch012-whatsapp-media-schema.mjs`: passed.
+- `npm run erd:puml`: passed.
+- `git diff --check`: passed.
+- Implementation commit: `655ff35` (pushed).
+- No application repositories, recovery/billing schema, raw audio bytes, provider URLs, or merchant account models were changed.
+
+### Rework Attempt 2
+
+- The latest Architect Review section contains `Not reviewed`/`TBD` and no
+  `Changes Requested` items; no source correction was identified for this
+  attempt.
+- Revalidated the existing implementation from the prepared implementation
+  worktree; all task-required validation passed.
+- The task remains bounded to DATABASE-001 and is returned to `review` without
+  starting dependent Background work.
 
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 2.
 
 ### Review Notes
-TBD.
+
+Accepted on functional and architectural review. The implementation at `655ff35` delivers the required durable inbound WhatsApp media/transcription state without changing application repositories or persisting raw audio/provider download URLs.
+
+Verified acceptance points:
+
+- `ConversationMessage` can reserve/deduplicate an inbound provider message before transcription using the existing unique `providerMessageId`;
+- text, audio and unsupported content state is represented explicitly with backward-compatible defaults for existing text rows;
+- transcription lifecycle/provenance and bounded failure state are durably representable;
+- negative `mediaDurationMs` is rejected by the migration-level check constraint;
+- existing conversation ordering/coalescing fields and the canonical `content` field remain intact;
+- Prisma validation/generation, first-production-baseline validation, ARCH-012 validator, ERD generation and `git diff --check` were reported passing from the isolated task worktree.
+
+The validator could be hardened further to prove exact negative mutation cases, but that is non-blocking because no functional schema, migration, compatibility, persistence or architectural defect was found. Do not create a further DATABASE-001 attempt for validator-only hardening.
+
+`ARCH-012-BACKGROUND-001` is **not** promoted by this acceptance alone because its other ARCH-012 prerequisites are not all Complete.

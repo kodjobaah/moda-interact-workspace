@@ -142,7 +142,7 @@ MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
 ## Current execution frontier after consolidation
 
 ```text
-ARCH-012-DATABASE-001      preserve live status; already started
+ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
 ARCH-012-BACKGROUND-003    Ready unless live workspace has advanced it
 ARCH-012-SHARED-001        Pending until ARCH-011-SHARED-002 is accepted Complete
 ```
