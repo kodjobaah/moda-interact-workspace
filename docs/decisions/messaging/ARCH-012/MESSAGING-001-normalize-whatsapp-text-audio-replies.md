@@ -9,10 +9,10 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-16T11:54:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-012-SHARED-001
@@ -149,13 +149,31 @@ Set to `review`, clear claim, return to `moda_architect`, STOP.
 ## Completion Report
 
 ### Status
-Not started.
+Implemented, validated, and published on the implementation task branch. Awaiting `moda_architect` review.
 
 ### Files Changed
-TBD.
+- `app/routes/whatsapp.tsx`
+- `app/lib/observability/whatsapp-ingress-telemetry.ts`
+- `app/lib/types/whatsapp.ts` (removed)
+- `package.json`
+- `package-lock.json`
+- `tests/whatsapp-inbound-normalization.test.mjs`
+- `tests/whatsapp-queue-telemetry.test.mjs`
+- `tests/whatsapp-ingress-telemetry.test.mjs`
+- `tests/startup-contract.test.mjs`
 
 ### Validation Results
-TBD.
+- Implementation commits: `2267f26`, `424e09d`, pushed to `task/ARCH-012-MESSAGING-001`.
+- Exact dependency installed: `@modainteract/moda-interact-shared@0.12.0`, the ARCH-012-SHARED-001 accepted publication.
+- Correction mapping: producer now uses `@modainteract/moda-interact-shared/whatsapp`, constructs strict Shared v1 events, preserves `entry.id` separately from `metadata.phone_number_id`, preserves explicit/contextless replies, transports audio media identity only, maps unsupported content explicitly, and rejects malformed payloads before queueing.
+- Correction mapping: existing `whatsapp-events` / `message-received` queue, deterministic `providerMessageId` job ID, three attempts, exponential backoff, signature verification, and acknowledgement-after-queue-acceptance ordering remain intact.
+- Correction mapping: removed the repository-local `WhatsAppInboundEvent` producer type; no database, media download, transcription, Shopify, tenant routing, or AI work was added.
+- Focused normalization tests: 13 passed, 0 failed, covering text, audio, context, unsupported image/document/video/sticker/location, provider identity separation, malformed validation, deterministic job IDs, and no raw-body/audio logging.
+- `npm test`: 34 passed, 1 skipped, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed. Build emitted existing Vite warnings about browser externalization of Node/Redis modules; no build failure.
+- `git diff --check`: passed.
+- Implementation worktree is clean after push.
 
 ## Architect Review
 
