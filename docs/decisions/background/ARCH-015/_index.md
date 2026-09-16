@@ -5,7 +5,7 @@
 | [ARCH-015-BACKGROUND-001](BACKGROUND-001-purchase-reconciliation.md) | complete | Candidate-centric provider reconciliation is complete; durable purchase event handles drive exact provider proof without singular BillingPlan pack-meter authority. |
 | [ARCH-015-BACKGROUND-002](BACKGROUND-002-cross-plan-consumption.md) | complete | Historical/non-current ACTIVE lots are consumed before current-context lots with fail-closed local context classification. |
 | [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | complete | Existing billing scheduler processes durable refunds using typed RecoveryCreditRefund correction evidence, submits safe negative/fractional corrections and reconciles completion. |
-| [ARCH-015-BACKGROUND-004](BACKGROUND-004-provider-meter-refund-serialization.md) | pending | Defensively serialize automatic refund preparation per provider meter and classify exact-before / expected-after / conflicting provider evidence. |
+| [ARCH-015-BACKGROUND-004](BACKGROUND-004-provider-meter-refund-serialization.md) | complete | Defensively serialize automatic refund preparation per provider meter and classify exact-before / expected-after / conflicting provider evidence. |
 
 ## Current architect review state
 
@@ -98,4 +98,18 @@ of unlinked correction events on a lost PREPARE link CAS, and the existing
 
 `ARCH-015-BACKGROUND-004` is added as a bounded correction after cross-task audit found that multiple same-handle refunds could otherwise freeze the same provider baseline and that a REPORTED correction with a third provider state remained silently REQUESTED.
 
-BACKGROUND-004 depends on accepted BACKGROUND-003 plus SHOPIFY-004. It remains **Pending** until SHOPIFY-004 is architect-accepted Complete. Different event handles remain independent. No schema, queue or generic-publisher redesign is authorized.
+BACKGROUND-004 depends formally on accepted BACKGROUND-003 only. SHOPIFY-004 and BACKGROUND-004 are coordinated but may execute concurrently: Shopify hardens merchant admission while Background independently serializes/defends provider-meter correction processing. BACKGROUND-004 is **Ready** for its bounded Attempt-2 test completion. Different event handles remain independent. No schema, queue or generic-publisher redesign is authorized. SYSTEM-TEST-001 remains Pending until both correction tasks are Complete and manual-test authorization is given.
+
+## BACKGROUND-004 Attempt 2 acceptance
+
+`ARCH-015-BACKGROUND-004` Attempt 2 is **Accepted — Complete**. Attempt 2 was test-only and
+did not alter the accepted production service. The focused regression suite now proves
+different-handle purchase independence, terminal older-refund unblocking with a fresh
+provider read, explicit fractional third-state conflict handling, transactional rollback
+on PREPARE link-CAS loss, linked-refund reconciliation without event recreation, and
+fractional frozen-evidence immutability across retries.
+
+`ARCH-015-SYSTEM-TEST-001` remains Pending. SHOPIFY-004 and BACKGROUND-004 are parallel
+correction tasks; terminal manual/integrated testing is not auto-launched by this
+acceptance and still requires every declared correction dependency to be Complete plus
+explicit architect authorization.
