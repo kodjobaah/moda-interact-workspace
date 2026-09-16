@@ -754,3 +754,28 @@ be resolved before deployment; it does not reopen DATABASE-001.
 
 The terminal system-test task remains gated on all implementation prerequisites and
 continues to sit after the developer manual-testing checkpoint.
+
+
+## Post-review update — ADMIN-001 Attempt 1 Accepted
+
+`ARCH-016-ADMIN-001` Attempt 1 is architect-accepted **Complete** at implementation commit `44dd7a5`. The existing audited platform runtime-controls path now exposes `checkoutRecoveryLifetimeDays` as an `OPERATIONAL` whole-day control with default `21` and range `1..90`; no tenant-specific lifetime state, direct recovery-row rewrite or scheduler-cadence control was introduced.
+
+This review also reconciles the ARCH-016 frontier after the independently accepted DATABASE-001 and SHARED-001 branches. Both prerequisites are now Complete, so every untouched task whose declared dependencies are exactly those accepted prerequisites is promoted without being claimed:
+
+```text
+ARCH-016-DATABASE-001    Complete
+ARCH-016-SHARED-001      Complete
+ARCH-016-ADMIN-001       Complete
+
+Ready:
+  ARCH-016-SHOPIFY-001
+  ARCH-016-SHOPIFY-002
+  ARCH-016-BACKGROUND-001
+  ARCH-016-BACKGROUND-002
+  ARCH-016-BACKGROUND-003
+  ARCH-016-ADMIN-002
+
+ARCH-016-SYSTEM-TEST-001 Pending
+```
+
+The Ready promotions are dependency-state reconciliation only: each promoted task remains `attempt: 0`, `executor: null` and `claimed_at: null` until launched through the normal task workflow. `ARCH-016-SYSTEM-TEST-001` is not started automatically and remains behind completion of all implementation tasks plus the developer manual-testing checkpoint.
