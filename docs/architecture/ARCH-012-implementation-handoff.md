@@ -146,9 +146,12 @@ MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
 ```text
 ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
 ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
-ARCH-012-MESSAGING-001     Ready — SHARED-001 and ARCH-007-MESSAGING-001 are Complete
-ARCH-012-BACKGROUND-003    Ready unless live workspace has advanced it
-ARCH-012-BACKGROUND-001    Pending until BACKGROUND-003 is architect-accepted Complete
+ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementation `2267f26` + `424e09d`
+ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
+ARCH-012-BACKGROUND-001    Ready — SHARED-001, DATABASE-001 and BACKGROUND-003 are accepted Complete
+ARCH-012-GATEWAY-001       Ready — BACKGROUND-003 is accepted Complete
+ARCH-012-SYSTEM-TEST-001   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
+ARCH-012-SYSTEM-TEST-002   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
 ```
 
 Never downgrade a task that has already advanced in the live workspace merely because this handoff shows the snapshot-era state.
@@ -165,7 +168,7 @@ Owner: `moda_database`. **Live task; untouched by this consolidation patch.** Ad
 
 ### `ARCH-012-MESSAGING-001`
 
-Owner: `moda_messaging`. Maps realistic Meta webhook payloads into the published Shared event, including `message.context.id` and audio media identity. No DB/media/STT/business work before ACK.
+Owner: `moda_messaging`. Accepted Attempt 1 (`2267f26`, `424e09d`). Maps realistic Meta webhook payloads into the published Shared event, including `message.context.id` and audio media identity, validates before queue publication and keeps DB/media/STT/business work out of the ACK path.
 
 ### `ARCH-012-BACKGROUND-001`
 
