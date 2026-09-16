@@ -106,13 +106,17 @@ See `ARCH-014-post-ADMIN-005-addendum.md` for the binding dependency graph and i
 
 ## Background runtime controls frontier (16 Sep 2026)
 
-DATABASE-004 Attempt 3 is architect-accepted Complete after the singleton seed was made executable without changing the Prisma `@updatedAt` contract.
+DATABASE-004 and BACKGROUND-001 are architect-accepted Complete. BACKGROUND-001 now supplies the shared monotonic runtime-config observer, fenced PostgreSQL lease lifecycle and dynamic leased scheduler foundation.
 
 ```text
 ARCH-014-DATABASE-004    COMPLETE
-ARCH-014-BACKGROUND-001  READY
-ARCH-014-ADMIN-009       PENDING (branch-local: ADMIN-007 still shown Ready)
+ARCH-014-BACKGROUND-001  COMPLETE
+ARCH-014-BACKGROUND-002  READY
+ARCH-014-BACKGROUND-003  READY
+ARCH-014-BACKGROUND-004  PENDING
+ARCH-014-BACKGROUND-005  PENDING
+ARCH-014-ADMIN-009       COMPLETE
 ARCH-014-SYSTEM-TEST-003 PENDING
 ```
 
-`BACKGROUND-001` is the automatic Ready task unlocked by this branch-local acceptance. `ADMIN-009` additionally depends on `ADMIN-007`; when the separately accepted ADMIN-007 reconciliation is integrated into the same canonical parent state, ADMIN-009 becomes eligible. SYSTEM-TEST-003 remains terminal and pending behind the full background/admin runtime-control chain.
+`BACKGROUND-002` and `BACKGROUND-003` remain the automatic Ready tasks and may execute independently. `ADMIN-009` is now architect-accepted Complete. BACKGROUND-004 remains gated by BACKGROUND-002 + BACKGROUND-003; BACKGROUND-005 remains gated by BACKGROUND-002 + BACKGROUND-003 + BACKGROUND-004; SYSTEM-TEST-003 remains terminal/developer-gated behind the complete Background chain even though its Admin dependency is now Complete.
