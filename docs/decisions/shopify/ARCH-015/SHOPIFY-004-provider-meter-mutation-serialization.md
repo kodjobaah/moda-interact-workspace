@@ -755,7 +755,7 @@ If exact next-unit cost cannot be deterministically derived, show no numeric top
 Add the two architect-supplied keys from:
 
 ```text
-docs/decisions/shopify/ARCH-015/SHOPIFY-004-localization-matrix.json
+docs/decisions/shopify/ARCH-015/SHOPIFY-localization-matrix-004.json
 ```
 
 to all 20 existing merchant locale files.
