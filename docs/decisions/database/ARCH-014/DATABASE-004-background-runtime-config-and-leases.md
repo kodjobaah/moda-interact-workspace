@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 62
 executor: null
 claimed_at: null
@@ -364,3 +364,39 @@ No schema, migration, ERD, or implementation-scope gaps were found. The audit st
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-DATABASE-004`.
 - Dependency `ARCH-014-DATABASE-003` was present at implementation base `d44b621cdcc3635127b91601be648b61c0eff1e2`.
 - The database blocker is limited to the pre-existing failed migration state; schema validation, generation, static migration validation, and ERD generation passed.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Attempt reviewed
+
+Attempt 2
+
+### Functional finding
+
+The typed config/audit/lease schema and bounds are otherwise aligned with the task, but the required singleton seed is not executable on a clean database.
+
+The migration creates `BackgroundRuntimeConfig.updatedAt` as:
+
+```sql
+"updatedAt" TIMESTAMP(3) NOT NULL
+```
+
+with no database default. The mandatory direct `INSERT INTO "public"."BackgroundRuntimeConfig" (...) VALUES (...)` omits `updatedAt`. PostgreSQL therefore rejects the seed row for the NOT NULL column before DATABASE-004 can establish the required `id = "default"` singleton. Prisma `@updatedAt` does not supply a value to raw migration SQL.
+
+### Required correction contract
+
+Keep Attempt 3 narrow. Do not redesign the models, enums, bounds, leases, audit model or downstream runtime-control architecture.
+
+1. In `prisma/migrations/20260916000000_arch014_background_runtime_config_and_leases/migration.sql`, make the mandatory singleton seed executable while preserving the exact Prisma model. The preferred correction is to add `"updatedAt"` to the seed column list and `CURRENT_TIMESTAMP` to the corresponding values list. Do **not** add a database default to the column or change the Prisma field from `DateTime @updatedAt`.
+2. Preserve `INSERT ... ON CONFLICT ("id") DO NOTHING`, `id = 'default'`, `version = 0`, and every required numeric default exactly as currently defined.
+3. Strengthen `scripts/validate-arch014-background-runtime-config.mjs` so it explicitly fails if the direct default-config seed does not supply a value for the required `updatedAt` column. The validator must continue to prove all existing DATABASE-004 schema/migration requirements.
+4. Re-run the required static/Prisma/ERD validation. The known ARCH-015 `P3009` may remain documented if it still prevents `migrate:deploy`; do not resolve/reset unrelated migration history as part of this task.
+5. Add no database objects beyond the already-authorized DATABASE-004 enums/tables/indexes/checks/default row, and do not alter any pre-existing application table.
+
+### Stop condition
+
+Return the same task to Architect Review after the seed and validator correction. Do not start `ARCH-014-BACKGROUND-001` or `ARCH-014-ADMIN-009`; both remain Pending until DATABASE-004 is architect-accepted Complete.
