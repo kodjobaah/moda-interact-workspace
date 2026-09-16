@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
-executor: copilot
-claimed_at: 2026-09-16T07:47:09Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-015-DATABASE-001
@@ -257,6 +257,51 @@ git diff --check
 ```
 
 Inspect `package.json` first and use exact available script names rather than inventing aliases.
+
+## Completion Report
+
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-DATABASE-002` on `task/ARCH-015-DATABASE-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-DATABASE-002` on `task/ARCH-015-DATABASE-002`.
+- Launcher preparation and claim were already complete for attempt 1; preparation, worktree creation, routing and re-claim were not rerun.
+- Dependency `ARCH-015-DATABASE-001` was complete before execution.
+
+### Implementation
+
+- Added the five nullable `RecoveryCreditRefund` fields with exact Prisma types, including the unique `automaticCorrectionUsageEventId`.
+- Added the named one-to-one `RecoveryCreditRefundAutomaticCorrection` relation with `ON DELETE RESTRICT` and the required `UsageEvent` inverse relation.
+- Preserved `UsageEvent.quantity` as `Decimal`, Moda recovery-credit quantities as `Int`, existing refund provenance/final fields, and all existing models/enums/statuses/catalogue types.
+- Added migration `20260916083000_arch015_refund_correction_evidence` with five nullable columns, unique FK/index, named restrict FK, all-null/all-present evidence-group CHECK, and conditional nonnegative/positive integrity CHECK.
+- The evidence group permits existing manual `PROVIDER_ACTION_REQUIRED` rows to retain final/expected refund fields without an automatic correction link.
+- Added `scripts/validate-arch015-refund-correction-evidence.mjs` and the matching package script. It covers schema types/nullability, uniqueness, relation actions, inverse relation, preserved fields, forbidden `UsageEvent` duplicates/metadata, truth-table cases, numeric failures, integer/Decimal preservation, and no fabricated backfill DML.
+- Regenerated `docs/generated/prisma-erd.puml` and `docs/generated/erd.png`.
+- No historical migration, application repository, queue, enum, entitlement type, or `scripts/generate-erd.mjs` was changed.
+
+### Validation Evidence
+
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed with Prisma 6.19.3.
+- `node scripts/validate-arch015-fractional-provider-usage-snapshots.mjs`: passed.
+- `npm run test:arch015-refund-correction-evidence`: passed.
+- `npm run erd`: passed; PlantUML and PNG artifacts regenerated.
+- `git diff --check`: passed.
+- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run migrate:deploy`: blocked by the known pre-existing P3009 failure for `20260915140000_arch015_fractional_provider_usage_snapshots`, which started at `2026-09-15 13:16:50.597229 UTC`; no unrelated migration was repaired or marked resolved.
+- The migration contains no standalone `UPDATE` or `INSERT`, and all added columns are nullable, so no historical evidence or automatic correction link is fabricated.
+
+### Publication
+
+- Implementation commit: `e54cd3fe5a21bab31037826c56fd3f62717d9cfd`.
+- Implementation branch pushed: `origin/task/ARCH-015-DATABASE-002`.
+- Implementation worktree is clean after commit. Its inherited upstream still names `origin/main`, so publication used the explicit matching task ref; no main branch was changed.
+- Parent report branch is ready for its report commit and push.
+
+### Completion Report Status
+
+- Ready for architect review.
+- Claim cleared; task lifecycle is `review`.
+- No Architect Review section was added or modified.
 
 ## Stop conditions
 
