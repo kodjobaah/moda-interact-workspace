@@ -774,3 +774,43 @@ The task remains at `attempt: 1`, `executor: null`, `claimed_at: null`; the laun
 increment it on the next claim. No dependent task is promoted by this review.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the
 existing developer manual-testing checkpoint remains before terminal integrated testing.
+
+## Post-review update — ADMIN-001 Attempt 1 Accepted
+
+`ARCH-016-ADMIN-001` Attempt 1 is architect-accepted **Complete** at implementation commit `44dd7a5`. The existing audited platform runtime-controls path now exposes `checkoutRecoveryLifetimeDays` as an `OPERATIONAL` whole-day control with default `21` and range `1..90`; no tenant-specific lifetime state, direct recovery-row rewrite or scheduler-cadence control was introduced.
+
+This review also reconciles the ARCH-016 frontier after the independently accepted DATABASE-001 and SHARED-001 branches. Both prerequisites are now Complete, so every untouched task whose declared dependencies are exactly those accepted prerequisites is promoted without being claimed:
+
+```text
+ARCH-016-DATABASE-001    Complete
+ARCH-016-SHARED-001      Complete
+ARCH-016-ADMIN-001       Complete
+
+Ready:
+  ARCH-016-SHOPIFY-001
+  ARCH-016-SHOPIFY-002
+  ARCH-016-BACKGROUND-001
+  ARCH-016-BACKGROUND-002
+  ARCH-016-BACKGROUND-003
+  ARCH-016-ADMIN-002
+
+ARCH-016-SYSTEM-TEST-001 Pending
+```
+
+The Ready promotions are dependency-state reconciliation only: each promoted task remains `attempt: 0`, `executor: null` and `claimed_at: null` until launched through the normal task workflow. `ARCH-016-SYSTEM-TEST-001` is not started automatically and remains behind completion of all implementation tasks plus the developer manual-testing checkpoint.
+
+## Post-review update — ADMIN-002 Attempt 2 Accepted
+
+`ARCH-016-ADMIN-002` Attempt 2 is architect-accepted **Complete** at implementation
+commit `215cb7f`.
+
+The accepted Admin boundary now provides tenant-scoped merchant/override/effective
+recovery-policy visibility, CURRENT/ACTIVE/running Shopify discount eligibility,
+complete durable override UPSERT/CLEAR semantics, transactional active-SUPER_ADMIN
+rechecks and dedicated before/after audit history including override expiry. Merchant
+`ShopSettings` remains merchant-owned, Shared remains pinned to `0.12.1`, and no AI
+discount-selection or provider-secret presentation was introduced.
+
+This acceptance does not independently make the terminal system-test task eligible.
+`ARCH-016-SYSTEM-TEST-001` remains Pending until every implementation dependency is
+Complete and the developer has completed the existing manual-testing checkpoint.
