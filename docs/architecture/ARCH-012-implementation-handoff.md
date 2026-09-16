@@ -176,7 +176,7 @@ Owner: `moda_background`. Complete inbound pipeline: consume Shared event, both 
 
 ### `ARCH-012-BACKGROUND-003`
 
-Owner: `moda_background`. Separate WABA and sender phone identity, one Moda sender v1, outbound text/link preview plus approved template image/URL-button transport while preserving ARCH-010 outbound execution gates.
+Owner: `moda_background`. Accepted Attempt 1 (`bb01a66`). WABA and sender phone identity are separated; one Moda sender v1 supports outbound text/link preview plus approved template image/URL-button transport while preserving ARCH-010 outbound execution gates.
 
 ### `ARCH-012-GATEWAY-001`
 

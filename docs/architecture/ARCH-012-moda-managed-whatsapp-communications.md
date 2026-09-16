@@ -680,7 +680,7 @@ ARCH-012-SYSTEM-TEST-001   Pending — BACKGROUND-001 and GATEWAY-001 are not Co
 ARCH-012-SYSTEM-TEST-002   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
 ```
 
-Do not downgrade a task that has already advanced in the live developer workspace. `ARCH-012-MESSAGING-001` and `ARCH-012-BACKGROUND-003` are now architect-accepted Complete; `ARCH-012-BACKGROUND-001` and `ARCH-012-GATEWAY-001` are Ready. System-test tasks remain Pending until all of their implementation dependencies are Complete.
+Do not downgrade a task that has already advanced in the live developer workspace. `ARCH-012-BACKGROUND-001` is now Ready because SHARED-001, DATABASE-001 and BACKGROUND-003 are architect-accepted Complete. System-test tasks remain Pending until all of their implementation dependencies are Complete.
 
 System tests are terminal integrated validation tasks. No implementation task depends on a system-test task.
 
