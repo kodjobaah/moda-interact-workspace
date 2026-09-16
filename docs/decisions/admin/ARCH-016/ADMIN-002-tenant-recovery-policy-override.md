@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -563,3 +563,42 @@ The implementation and report are complete. The task is returned to `moda_archit
 - executor and claimed timestamp cleared; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for re-review.
+
+## Architect Review — Attempt 2 — Accepted
+
+Verdict: **Accepted — Complete**.
+
+Implementation commit `215cb7f` satisfies the bounded Attempt-2 correction contract without
+redesigning the accepted ADMIN-002 architecture.
+
+Architect re-review verified:
+
+- complete policy parsing rejects a missing recovery delay and resolves duplicate
+  `followUpEnabled` values independently of DOM ordering;
+- Clear Override is a separate sibling client form with a required reason and explicit
+  confirmation before the CLEAR server action is submitted;
+- tenant catalogue presentation returns no running/fixed-selectable options unless the
+  catalogue is `CURRENT`, and running eligibility requires `isAvailable = true`,
+  `providerStatus = ACTIVE`, and the configured start/end time window;
+- FIXED override mutation revalidates the same shop-scoped CURRENT/ACTIVE/running/
+  fixed-selectable predicates inside the write transaction;
+- UPSERT and CLEAR both provision the reserved development identity when required,
+  re-read the durable `PlatformAdmin` inside the transaction, and fail closed unless
+  that row remains active `SUPER_ADMIN`;
+- audit before/after snapshots now include `expiresAt` as ISO-8601 or null, so
+  expiry-only changes remain visible in durable audit history;
+- Admin continues to write only `ShopRecoveryPolicyOverride` and its dedicated audit
+  events; merchant-owned `ShopSettings` is not mutated;
+- the published Shared recovery-policy contract remains pinned to exact version
+  `0.12.1`, and no AI-selection/provider-secret behavior was introduced.
+
+Validation evidence recorded by the implementation agent is sufficient for this bounded
+functional review: unit, focused security, TypeScript, lint, production build and
+`git diff --check` passed. The documented aggregate-suite failures/cancellations are
+unrelated repository baseline behavior and do not reopen this task.
+
+There is **no Attempt 3**.
+
+`ARCH-016-SYSTEM-TEST-001` is not started or promoted by this acceptance alone. It
+remains behind completion of every implementation dependency and the developer
+manual-testing checkpoint.

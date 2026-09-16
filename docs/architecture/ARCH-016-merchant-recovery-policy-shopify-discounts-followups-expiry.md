@@ -779,3 +779,19 @@ ARCH-016-SYSTEM-TEST-001 Pending
 ```
 
 The Ready promotions are dependency-state reconciliation only: each promoted task remains `attempt: 0`, `executor: null` and `claimed_at: null` until launched through the normal task workflow. `ARCH-016-SYSTEM-TEST-001` is not started automatically and remains behind completion of all implementation tasks plus the developer manual-testing checkpoint.
+
+## Post-review update — ADMIN-002 Attempt 2 Accepted
+
+`ARCH-016-ADMIN-002` Attempt 2 is architect-accepted **Complete** at implementation
+commit `215cb7f`.
+
+The accepted Admin boundary now provides tenant-scoped merchant/override/effective
+recovery-policy visibility, CURRENT/ACTIVE/running Shopify discount eligibility,
+complete durable override UPSERT/CLEAR semantics, transactional active-SUPER_ADMIN
+rechecks and dedicated before/after audit history including override expiry. Merchant
+`ShopSettings` remains merchant-owned, Shared remains pinned to `0.12.1`, and no AI
+discount-selection or provider-secret presentation was introduced.
+
+This acceptance does not independently make the terminal system-test task eligible.
+`ARCH-016-SYSTEM-TEST-001` remains Pending until every implementation dependency is
+Complete and the developer has completed the existing manual-testing checkpoint.
