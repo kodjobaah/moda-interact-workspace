@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
 executor: null
 claimed_at: null
@@ -895,3 +895,39 @@ STOP and return evidence to `moda_architect` if the corrections would require a 
 refund mutation, Admin Shopify App Event submission, a Prisma/schema change, translation
 invention, or a new Admin-wide locale runtime. Otherwise return this same task with
 `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 2` after the next claim.
+
+
+## Architect Review — Attempt 2 — Accepted
+
+Verdict: **Accepted — Complete**.
+
+Architect review was performed against the published GitHub hashes rather than an uploaded
+workspace snapshot:
+
+```text
+moda-interact-admin implementation: ec62204490e73cac0cf0dd57dcc1b343a6728010
+workspace Completion Report:         530e119a5ffad248a28b541929d00da0d44fd123
+```
+
+Attempt 2 closes every presentation/drill-through defect from Attempt 1 while preserving the
+already-accepted server settlement boundary. The accepted implementation now proves exact
+automatic/manual completion predicates, gives the automatic correction FK precedence over
+derived REQUESTED queue status, preserves the required secondary purchase provenance, bounds
+read-only manual evidence to exact manual/investigative states, and uses the canonical App Event
+URL without leaking Refund Requests query state.
+
+The Refund Requests description, manual-fallback notice and reported-correction reconciliation
+notice consume the architect-supplied `billing.refund` catalogue keys. No new Admin-wide locale
+runtime or translation catalogue was introduced.
+
+Validation evidence is sufficient for this bounded Admin task: focused refund/security tests,
+build, lint, forbidden-legacy checks, localization-matrix validation and `git diff --check` pass.
+The broad `npm test` and standalone `npx tsc --noEmit` failures are documented pre-existing
+Prisma/merchant-support baseline failures and the Attempt-2 commit is confined to the refund UI
+component and its focused source test. GitHub also reports the Vercel status for the implementation
+commit as successful.
+
+`ARCH-015-ADMIN-001` is therefore Complete. All declared implementation prerequisites of
+`ARCH-015-SYSTEM-TEST-001` are now architect-accepted Complete, so SYSTEM-TEST-001 is promoted
+from Pending to Ready. The previously documented database P3009 remains a deployed-environment
+prerequisite/stop condition for terminal system acceptance; it does not reopen ADMIN-001.
