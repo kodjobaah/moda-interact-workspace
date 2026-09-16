@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 31
 executor: null
 claimed_at: null
@@ -116,7 +116,11 @@ Implementation commit: `64cb326` (`feat(gateway): wire WhatsApp business account
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 1.
 
 ### Review Notes
-TBD.
+Functionally accepted. `render.test.yaml` and `render.production.yaml` now carry `WHATSAPP_BUSINESS_ACCOUNT_ID` as a distinct member of the existing WhatsApp credential group while preserving `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN` and the existing worker topology. No public service, route or merchant-owned Meta credential surface was introduced.
+
+The Blueprint validators prove that WABA and sender-phone identities remain distinct and that WhatsApp credentials are not introduced as direct per-service literals. The architect independently reran the positive and negative Blueprint validators against the returned snapshot; both passed. The returned validation evidence records `bash tests/run-tests.sh` at 58 passed / 0 failed. The architect review environment does not provide Docker, so that Docker-backed suite was not independently rerun here.
+
+Non-blocking documentation note: `docs/deployment-prerequisites.md` still omits the WABA variable from some older credential inventory prose; the Render Blueprints themselves are authoritative and correctly expose the required configuration.

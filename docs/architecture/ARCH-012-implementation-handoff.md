@@ -146,11 +146,10 @@ MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
 ```text
 ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
 ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
-ARCH-012-MESSAGING-001     Ready — promoted by accepted SHARED-001 review
+ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementation `424e09d`
 ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
-ARCH-012-BACKGROUND-001    Ready — SHARED-001, DATABASE-001 and BACKGROUND-003 are accepted Complete
-ARCH-012-GATEWAY-001       Ready — BACKGROUND-003 is accepted Complete
-ARCH-012-MESSAGING-001     Ready — SHARED-001 and ARCH-007-MESSAGING-001 are Complete
+ARCH-012-BACKGROUND-001    Ready — Changes Requested at Attempt 1; reclaim as Attempt 2 before system tests
+ARCH-012-GATEWAY-001       Complete — architect accepted Attempt 1; implementation `64cb326`; integration 58 passed / 0 failed
 ```
 
 Never downgrade a task that has already advanced in the live workspace merely because this handoff shows the snapshot-era state.
@@ -167,11 +166,11 @@ Owner: `moda_database`. **Live task; untouched by this consolidation patch.** Ad
 
 ### `ARCH-012-MESSAGING-001`
 
-Owner: `moda_messaging`. Maps realistic Meta webhook payloads into the published Shared event, including `message.context.id` and audio media identity. No DB/media/STT/business work before ACK.
+Owner: `moda_messaging`. Accepted Attempt 1 (`424e09d`). Maps realistic Meta webhook payloads into the published Shared event, including `message.context.id` and audio media identity. No DB/media/STT/business work before ACK.
 
 ### `ARCH-012-BACKGROUND-001`
 
-Owner: `moda_background`. Complete inbound pipeline: consume Shared event, both reply modes, text/unsupported persistence, audio reservation, Meta media retrieval, <=120-second validation, provider-neutral STT + Groq adapter, multilingual transcript preservation and exactly-once turn completion.
+Owner: `moda_background`. Changes Requested at Attempt 1. Reclaim as Attempt 2 to remove the legacy empty-text compatibility path, require outbound-only explicit reply correlation, and make audio terminal/retry classification deterministic before system tests.
 
 ### `ARCH-012-BACKGROUND-003`
 
@@ -179,7 +178,7 @@ Owner: `moda_background`. Accepted Attempt 1 (`bb01a66`). WABA and sender phone 
 
 ### `ARCH-012-GATEWAY-001`
 
-Owner: `moda_gateway`. Adds WABA identity to existing worker configuration. No new service/topology.
+Owner: `moda_gateway`. Accepted Attempt 1 (`64cb326`). Wires WABA identity separately from sender phone identity in the existing test/production WhatsApp configuration; no new service/topology.
 
 ### `ARCH-012-SYSTEM-TEST-001`
 
