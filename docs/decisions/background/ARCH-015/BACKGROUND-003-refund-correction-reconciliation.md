@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: reay
+status: ready
 priority: 70
 executor:
 claimed_at:
