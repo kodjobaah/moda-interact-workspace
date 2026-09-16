@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-16T18:39:56Z
+executor:
+claimed_at:
 attempt: 4
 depends_on:
 - ARCH-016-DATABASE-001
@@ -893,6 +893,39 @@ Return the task to `review`, clear `executor`/`claimed_at`, record the exact imp
 and parent report commits, and STOP for `moda_architect` re-review. Do not start
 `ARCH-016-SYSTEM-TEST-001`.
 
+
+## Attempt 4 Completion Report
+
+### Status
+
+Ready for Review.
+
+### Correction-to-file mapping
+
+- Durable follow-up repair after queue publication failure: `src/services/checkout-recovery.service.ts` adds `ensureScheduledInitialFollowUp`, reusing persisted `followUpDueAt` and the deterministic sequence-two job ID without creating attempts or credits.
+- Shared successful-send finalisation and duplicate convergence: `src/services/checkout-recovery.service.ts` adds `finalizeConfirmedOutreach`, requiring a durable `SENT`/`DELIVERED`/`READ` message with non-null persisted `sentAt` and the expected recovery Conversation before idempotent billing commit and lifecycle finalisation.
+- Fail-closed duplicate provenance: `src/services/checkout-recovery.service.ts` rejects pending, missing, null-`sentAt`, and wrong-Conversation duplicate evidence without resend or billing release; existing definitive failures retain release behavior.
+- Guarded lifecycle transitions: `src/services/recovery-outreach-attempt.service.ts` carries send fields in one guarded transition and permits only the same message identity for waiting replays; `src/services/checkout-recovery.service.ts` no longer follows confirmed-send guards with unconditional waiting writes.
+- Monotonic provider-time engagement and duplicate audio Conversation identity: `src/services/recovery-outreach-attempt.service.ts` conditionally converges engagement to the earliest qualifying `occurredAt`; `src/services/inbound-whatsapp-audio.service.ts` uses the durable reserved message Conversation for duplicate engagement.
+- Focused compatibility coverage: `tests/unit/recovery-outreach-follow-up.test.ts` and `tests/unit/services/matured-candidate.materialization.test.ts` cover the guarded query and durable successful-message contract.
+
+### Evidence
+
+- Implementation commit `4bb8e21` (`fix(background): harden recovery outreach finalisation`) is committed and pushed to `origin/task/ARCH-016-BACKGROUND-003`.
+- No database schema, migration, Conversation identity, entitlement allocation priority, queue identity, sequence limit, AI discount selection, or Shared version was changed.
+
+### Validation
+
+- Focused recovery/outreach/billing/admission/conversation/worker/audio suites: **120 passed in 7 files**.
+- Matured-candidate compatibility suite: **25 passed**.
+- `npm run prisma:validate`: **passed**.
+- `git diff --check`: **passed**.
+- `npm test`: **1029 passed, 5 failed, 19 skipped across 80 files**. The five failures are unchanged translation runtime baseline failures because background runtime configuration is not started in those integration tests.
+- `npm run build`: Prisma generation passed; TypeScript reported only the known generated-schema baseline diagnostics: three missing generated transcription fields in `src/services/inbound-whatsapp-audio.service.ts` and one missing generated `contentType` field in `src/workers/whatsapp.worker.ts`. No new diagnostic remains in `checkout-recovery.service.ts` or `recovery-outreach-attempt.service.ts`.
+
+### Required Handoff
+
+Task status is `review`; executor and claim timestamp are cleared; attempt 4 is preserved. Implementation is ready for `moda_architect` re-review. No architect acceptance decision has been made by this agent.
 
 ## Architect Review — Attempt 3
 
