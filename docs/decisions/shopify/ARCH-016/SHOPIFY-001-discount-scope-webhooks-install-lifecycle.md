@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-16T17:22:32Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T18:30:00Z
 ---
 
 # ARCH-016-SHOPIFY-001
@@ -721,6 +721,34 @@ Ready for Review
 - Attempt 2 implementation commit: `454f882` (`fix(shopify): fence discount lifecycle by offline session`);
 - implementation branch pushed: `origin/task/ARCH-016-SHOPIFY-001`;
 - task branch synchronization and recursive submodule preparation: passed;
+- executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
+
+## Attempt 3 Completion Report
+
+### Corrections Completed
+
+- Added one shared PostgreSQL `Shop` row `FOR UPDATE` lifecycle lock helper and applied it before authoritative eligibility/state reads in activation, scope-update, and uninstall transactions.
+- Activation, scope removal, and uninstall now serialize on the same Shop-row boundary, preventing stale activation from resurrecting `SYNC_REQUIRED` after a disabling lifecycle event commits.
+- Duplicate uninstall deliveries now reuse persisted `Shop.uninstalledAt` for catalogue invalidation timestamps while preserving per-discount non-null `unavailableAt` values.
+- Added focused lock-order, activation fencing, and duplicate-uninstall regression coverage.
+
+### Attempt 3 Validation
+
+- focused lifecycle suites: `27 passed` for lock/timestamp tests and `77 passed` across accepted-path plus correction suites;
+- `npm run build`: passed;
+- typecheck: no diagnostics from the Attempt 3 correction files; unrelated repository baseline diagnostics remain;
+- lint: unchanged unrelated baseline errors in existing test files;
+- `git diff --check`: passed;
+- full `npm test` baseline remains unchanged and is not required for these focused lifecycle corrections.
+
+### Attempt 3 Git / Handoff
+
+- launcher claim commit: `8863cb06`;
+- implementation correction commit: `2ffbd20` (`fix(shopify): serialize discount lifecycle transitions`);
+- implementation branch pushed: `origin/task/ARCH-016-SHOPIFY-001`;
+- canonical worktree/submodule preparation remained ready;
 - executor and claimed timestamp cleared; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for re-review.
