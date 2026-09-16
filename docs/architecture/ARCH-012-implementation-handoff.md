@@ -121,11 +121,13 @@ If a named file/symbol/capability is absent or an architectural decision is miss
 ## Task graph
 
 ```text
-ARCH-011-SHARED-002
-        -> ARCH-012-SHARED-001
-             (implement + validate + publish)
+ARCH-012-SHARED-001
+        (accepted Attempt 1; published `0.12.0`)
             -> ARCH-012-MESSAGING-001
             -> ARCH-012-BACKGROUND-001
+
+# Shared release-line reconciliation:
+ARCH-012-SHARED-001 -> ARCH-011-SHARED-001 -> ARCH-011-SHARED-002 (`0.13.0`)
 
 ARCH-012-DATABASE-001
         -> ARCH-012-BACKGROUND-001
@@ -143,8 +145,10 @@ MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
 
 ```text
 ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
+ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
+ARCH-012-MESSAGING-001     Ready — SHARED-001 and ARCH-007-MESSAGING-001 are Complete
 ARCH-012-BACKGROUND-003    Ready unless live workspace has advanced it
-ARCH-012-SHARED-001        Pending until ARCH-011-SHARED-002 is accepted Complete
+ARCH-012-BACKGROUND-001    Pending until BACKGROUND-003 is architect-accepted Complete
 ```
 
 Never downgrade a task that has already advanced in the live workspace merely because this handoff shows the snapshot-era state.
@@ -153,7 +157,7 @@ Never downgrade a task that has already advanced in the live workspace merely be
 
 ### `ARCH-012-SHARED-001`
 
-Owner: `moda_shared`. Implements, validates **and publishes** the strict Shared v1 inbound text/audio/unsupported contract. Publication is the final phase of the same task. It uses the deterministic next-minor version rule after accepted ARCH-011 Shared publication.
+Owner: `moda_shared`. Accepted Attempt 1. The strict Shared v1 inbound text/audio/unsupported contract is published as `@modainteract/moda-interact-shared@0.12.0`. The post-review release-line reconciliation makes this accepted release the baseline that ARCH-011 Shared work must preserve.
 
 ### `ARCH-012-DATABASE-001`
 
