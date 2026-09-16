@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 66
-executor: null
-claimed_at: null
-attempt: 0
+executor:
+claimed_at:
+attempt: 1
 depends_on:
 - ARCH-014-BACKGROUND-002
 - ARCH-014-BACKGROUND-003
@@ -184,3 +184,34 @@ git diff --check
 ## Stop conditions
 
 STOP if installed BullMQ types do not expose `worker.concurrency`, `Queue.setGlobalConcurrency` or `Queue.getGlobalConcurrency`. Do not replace them with a home-grown Redis lock; return to architect review with exact installed API evidence.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `5cb00bb` (`feat(background): enforce fleet-wide queue concurrency`), pushed to `task/ARCH-014-BACKGROUND-005`.
+
+Implemented the shared BullMQ global-concurrency controller with the required lease, fresh configuration read, ordered seven-queue mapping, Redis verification, version-gated local Worker concurrency updates, startup reconciliation, config-version reconciliation, and recursive 30-second healing. All affected worker entrypoints now initialize runtime configuration before constructing controlled Workers and starting the controller. The development entrypoint follows the same ordering. The reported trailing blank line in `src/workers/whatsapp.worker.ts` was removed.
+
+Validation:
+
+- `npm run test:unit -- tests/unit/runtime/queue-concurrency-controller.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts`: passed, 63 test files and 970 tests.
+- `npm run test:integration --if-present`: passed, 2 test files and 3 tests.
+- `npm run build`: passed, including Prisma client generation and TypeScript compilation.
+- `git diff --check`: passed.
+- Implementation worktree is clean after commit and push.
+
+Limitations: the repository integration runner does not currently include a live two-Worker BullMQ Redis-cap test or an active-job cap-decrease test. The controller unit suite covers mocked lease contention, fresh post-lease reads, ordered mapping, Redis verification, healing retry, and strict config-version updates; the two live BullMQ scenarios remain explicit review coverage gaps.
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Summary
+
+Attempt 1 is accepted on functionality. The implementation uses BullMQ 6.3.6 native `Queue.setGlobalConcurrency()` / `Queue.getGlobalConcurrency()` as the fleet-wide aggregate cap, with lease-protected fresh-config reconciliation, Redis verification, startup/version-triggered reconciliation and recursive 30-second healing. All seven controlled Workers bind their local `worker.concurrency` to the matching runtime-config field and only apply strictly newer versions; no numeric Worker concurrency remains as production authority.
+
+The two documented live-Redis scenarios (multi-worker aggregate-cap proof and active-job cap decrease) remain terminal system-test evidence rather than implementation blockers. `ARCH-014-SYSTEM-TEST-003` is the developer-gated environment that must prove those horizontal-scaling behaviours against shared Redis.
+
+Implementation commit `5cb00bb` is accepted. No further BACKGROUND-005 attempt is required.

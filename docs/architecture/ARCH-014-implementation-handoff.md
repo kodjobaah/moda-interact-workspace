@@ -114,9 +114,9 @@ ARCH-014-BACKGROUND-001  COMPLETE
 ARCH-014-BACKGROUND-002  COMPLETE
 ARCH-014-BACKGROUND-003  COMPLETE
 ARCH-014-BACKGROUND-004  COMPLETE
-ARCH-014-BACKGROUND-005  READY
+ARCH-014-BACKGROUND-005  COMPLETE
 ARCH-014-ADMIN-009       COMPLETE
-ARCH-014-SYSTEM-TEST-003 PENDING
+ARCH-014-SYSTEM-TEST-003 READY
 ```
 
-`BACKGROUND-004` is architect-accepted Complete. `BACKGROUND-005` is now the only automatic Ready Background task and is responsible for fleet-wide BullMQ concurrency reconciliation. `SYSTEM-TEST-003` remains Pending and terminal/developer-gated until BACKGROUND-005 is architect-accepted Complete; its DATABASE-004, BACKGROUND-001/002/003/004 and ADMIN-009 prerequisites are already Complete.
+`BACKGROUND-005` is architect-accepted Complete. The automatic Background implementation frontier is now empty. `SYSTEM-TEST-003` is Ready and remains terminal/developer-gated; it must be invoked explicitly to validate live multi-replica lease/concurrency convergence, including shared-Redis fleet caps and active-job cap decreases.
