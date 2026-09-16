@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -183,3 +183,35 @@ The existing `expectedVersion`, required reason, `BackgroundRuntimeConfigAuditEv
 ## Completion protocol
 
 The implementation and report are complete. The task is returned to `moda_architect` at `status: review`; stop here pending architect acceptance.
+
+
+## Architect Review — Attempt 1 Accepted
+
+ARCH-016-ADMIN-001 Attempt 1 is accepted.
+
+Implementation evidence:
+
+```text
+implementation commit: 44dd7a5
+parent Completion Report commit: c17256d2
+```
+
+Functional review confirmed that `checkoutRecoveryLifetimeDays` is implemented as one additional field in the existing singleton `BackgroundRuntimeConfig` control path rather than as a parallel settings mechanism. The field is classified under `OPERATIONAL`, defaults to `21`, accepts only whole integer days in the inclusive range `1..90`, and is presented as a platform-wide control.
+
+The mutation path continues to use the existing `expectedVersion` optimistic-concurrency guard, mandatory admin reason and `BackgroundRuntimeConfigAuditEvent`. Because the canonical before/after snapshots are built from `ALL_RUNTIME_FIELDS`, the new lifetime value is included in both audit snapshots. The action writes only `BackgroundRuntimeConfig`; it does not rewrite, delete or directly mutate `CheckoutRecovery`, `Conversation` or message rows.
+
+The Admin presentation correctly states that expiry retains recovery/conversation/message history, later checkout activity may start a new generation, and a lifetime change affects subsequent expiry scans through the current cutoff. No expiry-scheduler cadence control was exposed.
+
+Validation evidence recorded by the implementation agent:
+
+```text
+npm run test:unit: 125 passed
+focused security tests: 5 passed
+npm run lint: PASS
+npm run build: PASS
+git diff --check: PASS
+```
+
+The broader `npm test` baseline remains non-clean for unrelated internationalization expectations and existing async security/observability harness cancellations. The focused changed-path validation, unit suite, lint and production build pass, and review found no functional regression attributable to ADMIN-001. Those baseline failures do not require another ADMIN-001 attempt.
+
+There is **no Attempt 2**.
