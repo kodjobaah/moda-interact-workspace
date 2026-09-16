@@ -852,3 +852,30 @@ ARCH-015-DATABASE-001   Complete
 
 SYSTEM-TEST-001 remains Pending until BACKGROUND-003 and ADMIN-001 are Complete and the
 target database migration history is healthy enough to apply the accepted migrations.
+
+
+## Admin implementation consolidation — 16 September 2026
+
+The Admin server/read-model changes and Refund Requests UI adaptation are one atomic implementation task:
+
+```text
+ARCH-015-BACKGROUND-003
+        |
+        v
+ARCH-015-ADMIN-001
+        |
+        v
+ARCH-015-SYSTEM-TEST-001
+```
+
+`ARCH-015-ADMIN-002` is superseded and MUST NOT be executed.
+
+Rationale: ADMIN-001 deletes server actions/types/status semantics that the current Refund Requests component imports and renders. A separate UI task would either require a temporary compatibility layer or leave `moda-interact-admin` internally inconsistent between tasks. Because Moda Interact is pre-production, ARCH-015 removes superseded Admin refund paths rather than preserving legacy behavior.
+
+ADMIN-001 also owns deterministic refund-specific localization wording. The authoritative 20-locale values are stored in:
+
+```text
+docs/decisions/admin/ARCH-015/ADMIN-001-localization-matrix.json
+```
+
+The matrix provides wording only; it does not authorize ADMIN-001 to invent an Admin-wide multilingual runtime when the current Admin runtime remains English-only.

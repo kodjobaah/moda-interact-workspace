@@ -76,6 +76,16 @@ At minimum automate/document deterministic scenarios for:
 34. no historical purchased lot is rewritten during plan/cycle transition;
 35. no runtime top-up decision falls back to singular BillingPlan pack fields.
 
+36. Admin REQUESTED refund is read-only and exposes no lock/reject/manual-settlement controls;
+37. REQUESTED withdrawn zero-reservation refund is presented as READY_FOR_REFUND_PROCESSING, never READY_FOR_PROVIDER_ACTION;
+38. NEEDS_ATTENTION never exposes or accepts the normal manual REFUND/CREDIT evidence path;
+39. automatic correction blocks manual monetary action even when its UsageEvent is NEEDS_ATTENTION;
+40. automatic correction refund links to the existing Billing App Event drawer using `view=events&eventId=<id>`;
+41. completed refund presentation distinguishes automatic App Event correction from manual REFUND/CREDIT settlement;
+42. refund-specific English Admin copy matches the architect localization matrix exactly;
+43. if additional accepted Admin locale catalogues exist at implementation time, implemented refund-specific values match the architect matrix exactly for each locale;
+44. no ADMIN-002 implementation task or temporary Admin compatibility path is required.
+
 ## Evidence
 
 Capture:
