@@ -9,18 +9,18 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 58
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-014-DATABASE-003
 - ARCH-014-ADMIN-006
 enables:
 - ARCH-014-SYSTEM-TEST-002
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16T00:20:00Z
 ---
 
 # ARCH-014-ADMIN-008
@@ -375,3 +375,71 @@ Expected: only `exceljs@4.4.0` is the spreadsheet library; no new spreadsheet/dr
 ## Stop conditions
 
 STOP if DATABASE-003 is absent, ADMIN-006 shared spreadsheet helper is absent, implementing this requires another XLSX library, or activation integrity would require changing the database schema. Do not infer an alternative architecture.
+
+## Completion Report
+
+Status: Ready for Review
+
+### Implementation
+
+- Implementation commit: `50e9d5e` (`feat(admin): add multilingual promotion translations`), pushed to `origin/task/ARCH-014-ADMIN-008`.
+- Audit-fix commit: `76d3131` (`fix(admin): close promotion translation audit gaps`), pushed to `origin/task/ARCH-014-ADMIN-008`.
+- Added the canonical promotion translation package/validator, promotion-specific XLSX adapter, client upload/download workflow, atomic draft/import persistence, exact 20-locale activation gate, translation completeness state, and focused workbook tests.
+- Legacy `PromotionCampaign.merchantDescription` remains unchanged and is not read as localized source. No database, Shopify, or dependency files changed.
+
+### Validation
+
+- Focused promotion validation/workbook tests: `10/10` passed.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run test:unit`: `118/118` passed after widening discovery to all TypeScript unit tests.
+- `node --test tests/security/admin-promotions.test.mjs`: `13/13` passed.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed; existing BullMQ optional-dependency warnings remain.
+- Touched-file Prettier check and `git diff --check`: passed.
+- `npm test`: existing unrelated baseline failures remain in shared-package version assertions (`^0.11.2` installed, tests expect `^0.7.3`); no ADMIN-008 failure was reported.
+- Repository-wide `npm run format:check`: existing baseline reports 99 files; all ADMIN-008 files pass the focused check.
+
+### Contract evidence
+
+- Generated workbook sheets are exactly `Instructions`, `Translations`, `_meta`; `_meta` is `veryHidden`.
+- Workbook uses shared `translation-workbook-common.ts`, exact `exceljs@4.4.0`, exact 20 locale labels/order, English source protection, blank missing cells, 2 MiB limit, and no drop dependency.
+- XLSX parsing validates metadata/rows/plain strings, rejects formulas as `UNSUPPORTED_CELL_VALUE`, converts to canonical JSON, and server-reparses before atomic 20-row replacement with version CAS.
+- New drafts persist only internal campaign terms plus one English translation row; changed English source deletes non-English rows; unchanged source preserves translations; active translations remain immutable.
+- Activation re-reads translations and rejects incomplete campaigns with `Complete all 20 merchant translations before activating this campaign.`
+- Admin history/report headings continue to use the internal campaign name; merchant-facing title/description are translation-backed.
+
+### Audit findings resolved
+
+- Workbook parsing now rejects non-exact worksheet sets/order before metadata or translation processing, and requires exactly eight ordered `_meta` key/value rows.
+- Import replacement now deletes and creates the complete validated 20-row set before the optimistic campaign-version CAS, so any CAS failure rolls the replacement back atomically.
+- The configured unit command now discovers all TypeScript unit tests instead of only the unrelated economics guardrail file.
+- The promotion security assertion for `expiresAt` is whitespace-tolerant after formatting, with no behavior change to the lifecycle form.
+
+### Isolation
+
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-008`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-008`.
+- Implementation and report changes remain on dedicated task branches; neither branch was merged to `main`.
+- Task lifecycle is returned to `review` with executor and claim cleared for architect handoff.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Architect findings
+
+- Accepted implementation audit fix `76d3131` on top of implementation `50e9d5e`.
+- The promotion workbook reuses the ADMIN-006 `exceljs@4.4.0`/`translation-workbook-common.ts` foundation and preserves the exact three-sheet, 20-locale, internal-name/English-source identity contract.
+- Draft create/edit behavior is correct: create persists one English translation; unchanged normalized English preserves translations; changed English resets the campaign to the new English row only; ACTIVE campaigns remain immutable.
+- Workbook parsing now fails closed on non-exact worksheet set/order, non-exact eight-row metadata, source/campaign mismatch, locale/header/label mismatch, formula/non-string cells and incomplete canonical packages.
+- Import reparses the canonical package against fresh database state, replaces exactly 20 translations inside one transaction, then performs the version compare-and-set; a failed CAS throws and rolls back the replacement atomically.
+- Activation independently re-reads persisted translations and requires all 20 canonical locales with non-empty merchant title/description before the existing lifecycle transition can succeed.
+- No Prisma/schema/migration/Shopify or alternate spreadsheet-package change is introduced.
+- The uploaded review archive intentionally omits `node_modules`, so ExcelJS-backed tests cannot be independently rerun here; the available promotion security suite reproduced 13/13 passing and source inspection confirms the required runtime behavior. This archive limitation is not a functional blocker.
+
+### Dependency result
+
+`ARCH-014-ADMIN-008` is Complete. In this branch-local snapshot `ARCH-014-SHOPIFY-003` is still recorded as Ready, so `ARCH-014-SYSTEM-TEST-002` remains Pending here. Once the separately architect-accepted SHOPIFY-003 reconciliation is present in the same canonical parent state, SYSTEM-TEST-002 is eligible to become Ready and remains developer-gated.
