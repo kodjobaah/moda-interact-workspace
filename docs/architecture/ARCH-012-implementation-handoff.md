@@ -148,10 +148,10 @@ ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementa
 ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
 ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementation `2267f26` + `424e09d`
 ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
-ARCH-012-BACKGROUND-001    Ready — Attempt 1 changes requested; reclaim as Attempt 2
-ARCH-012-GATEWAY-001       Ready — BACKGROUND-003 is accepted Complete
-ARCH-012-SYSTEM-TEST-001   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
-ARCH-012-SYSTEM-TEST-002   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
+ARCH-012-BACKGROUND-001    Complete — architect accepted Attempt 2; implementation `5851670`
+ARCH-012-GATEWAY-001       Complete — architect accepted Attempt 1; implementation `64cb326`; integration 58 passed / 0 failed
+ARCH-012-SYSTEM-TEST-001   Ready — all implementation dependencies are Complete
+ARCH-012-SYSTEM-TEST-002   Ready — all implementation dependencies are Complete
 ```
 
 Never downgrade a task that has already advanced in the live workspace merely because this handoff shows the snapshot-era state.
@@ -172,7 +172,7 @@ Owner: `moda_messaging`. Accepted Attempt 1 (`2267f26`, `424e09d`). Maps realist
 
 ### `ARCH-012-BACKGROUND-001`
 
-Owner: `moda_background`. Attempt 1 returned Changes Requested. Reclaim as Attempt 2 and correct the canonical-only worker boundary, outbound-only explicit-context resolution, and typed terminal/retryable audio failure semantics while preserving the accepted database, runtime controls and BACKGROUND-003 fallback transport.
+Owner: `moda_background`. Accepted Attempt 2 (`5851670`). Consumes only canonical Shared v1 inbound jobs, requires outbound-only explicit reply correlation, preserves contextless tenant resolution, and implements deterministic typed terminal/retryable audio handling with <=120-second pre-STT enforcement and exactly-once completed-turn semantics.
 
 ### `ARCH-012-BACKGROUND-003`
 
@@ -180,11 +180,11 @@ Owner: `moda_background`. Accepted Attempt 1 (`bb01a66`). WABA and sender phone 
 
 ### `ARCH-012-GATEWAY-001`
 
-Owner: `moda_gateway`. Adds WABA identity to existing worker configuration. No new service/topology.
+Owner: `moda_gateway`. Accepted Attempt 1 (`64cb326`; integration 58 passed / 0 failed). Wires WABA identity separately from sender phone identity in the existing test/production WhatsApp configuration; no new service/topology.
 
 ### `ARCH-012-SYSTEM-TEST-001`
 
-Owner: `moda_system_test`. Integrated deterministic text/reply/contextless/link/template-media/status/idempotency validation.
+Owner: `moda_system_test`. Ready. Integrated deterministic text/reply/contextless/link/template-media/status/idempotency validation.
 
 ### `ARCH-012-SYSTEM-TEST-002`
 

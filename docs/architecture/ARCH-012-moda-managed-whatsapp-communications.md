@@ -674,13 +674,13 @@ ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementa
 ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
 ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementation `2267f26` + `424e09d`
 ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
-ARCH-012-BACKGROUND-001    Ready — Attempt 1 changes requested; canonical ingress, explicit-context direction and audio retry semantics require correction
-ARCH-012-GATEWAY-001       Ready — BACKGROUND-003 is accepted Complete
-ARCH-012-SYSTEM-TEST-001   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
-ARCH-012-SYSTEM-TEST-002   Pending — BACKGROUND-001 and GATEWAY-001 are not Complete
+ARCH-012-BACKGROUND-001    Complete — architect accepted Attempt 2; implementation `5851670`
+ARCH-012-GATEWAY-001       Complete — architect accepted Attempt 1; implementation `64cb326`; integration 58 passed / 0 failed
+ARCH-012-SYSTEM-TEST-001   Ready — all implementation dependencies are Complete
+ARCH-012-SYSTEM-TEST-002   Ready — all implementation dependencies are Complete
 ```
 
-Do not downgrade tasks from stale snapshot state. `ARCH-012-BACKGROUND-001` is Ready for Attempt 2 rework after architect Changes Requested on Attempt 1. Its dependencies remain Complete, but it is not Complete and therefore continues to gate both system-test tasks. `ARCH-012-GATEWAY-001` remains independently Ready.
+Do not downgrade tasks from stale snapshot state. `ARCH-012-BACKGROUND-001` is architect-accepted Complete at Attempt 2 and the already-accepted `ARCH-012-GATEWAY-001` live state is reconciled here. All implementation dependencies for both ARCH-012 system-test tasks are now Complete, so both terminal system-test tasks are Ready.
 
 System tests are terminal integrated validation tasks. No implementation task depends on a system-test task.
 

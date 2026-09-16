@@ -4,5 +4,5 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| [SYSTEM-TEST-001](SYSTEM-TEST-001-validate-whatsapp-text-reply-transport.md) | Pending / developer-gated | Text, both reply modes, links, template media and status transport |
-| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-whatsapp-voice-transport.md) | Pending / developer-gated | Voice media, <=120s transcription, retry and privacy lifecycle |
+| [SYSTEM-TEST-001](SYSTEM-TEST-001-validate-whatsapp-text-reply-transport.md) | Ready | Text, both reply modes, links, template media and status transport |
+| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-whatsapp-voice-transport.md) | Ready | Voice media, <=120s transcription, retry and privacy lifecycle |

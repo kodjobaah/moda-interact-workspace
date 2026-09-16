@@ -4,6 +4,6 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-consume-canonical-whatsapp-inbound.md) | Ready — Changes Requested (Attempt 1) | Complete inbound pipeline: Shared event, both reply modes, text/unsupported handling, <=120s voice retrieval/transcription and exactly-once turn completion |
+| [BACKGROUND-001](BACKGROUND-001-consume-canonical-whatsapp-inbound.md) | Complete — Accepted (Attempt 2) | Complete inbound pipeline: Shared event, both reply modes, text/unsupported handling, <=120s voice retrieval/transcription and exactly-once turn completion |
 | [BACKGROUND-002](BACKGROUND-002-process-whatsapp-voice-notes.md) | Superseded | Voice work folded into BACKGROUND-001 |
 | [BACKGROUND-003](BACKGROUND-003-moda-whatsapp-sender-transport.md) | Complete | Accepted Attempt 1; Moda sender identity + outbound text/link/template media transport |

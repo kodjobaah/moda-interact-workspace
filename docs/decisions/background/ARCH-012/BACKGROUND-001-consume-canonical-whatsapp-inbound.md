@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 21
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-012-SHARED-001
@@ -382,99 +382,17 @@ Ready for architect review.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1.
+Accepted — Attempt 2.
 
 ### Review Notes
-The core ARCH-012 inbound architecture is present: the accepted database pointer `655ff35` and Shared `0.12.0` are consumed; routing happens before audio download/transcription; audio is reserved before STT; the 120-second boundary is enforced before paid transcription; completion uses a guarded `PENDING -> COMPLETED` transaction before incrementing the conversation version; raw media remains transient; and the accepted worker factory, runtime-config startup, dynamic queue concurrency and outbound execution gates remain in place.
+Functionally accepted. Implementation `5851670` resolves the three Attempt-1 production blockers without redesigning the accepted ARCH-012 pipeline:
 
-Attempt 2 is required for three **functional** corrections. Do not redesign the accepted database schema, outbound transport, queue topology, conversation-turn processor, runtime-config service or Shopify/recovery timing.
+- `message-received` jobs are validated with the published `@modainteract/moda-interact-shared/whatsapp` parser before abuse admission, routing, persistence or agent execution; the legacy/fake-empty-text compatibility path and local message-type union are removed;
+- explicit `contextMessageId` routing is authoritative only when the referenced durable provider message is `OUTBOUND`; absent or inbound references fall through to the existing contextless tenant-resolution path;
+- WhatsApp media and Groq transcription failures now use explicit typed retryability rather than free-form message substring matching. Transient network / 408 / 429 / 5xx failures remain `PENDING` and rethrow for BullMQ retry, while unsupported/corrupt/oversized/invalid media and invalid terminal STT outcomes enter bounded failure/rejection state and use the existing deterministic customer fallback.
 
-#### 1. Remove the legacy/fake-empty-text inbound path
+The architect also confirmed that exactly 120 seconds remains accepted, >120 seconds is rejected before STT, completed audio replay does not repeat media/STT work or the logical turn increment, raw media/signed URLs remain transient, and the accepted `createWhatsappWorker()`, abuse admission, `shopExecutionEligibilityService`, runtime-config startup and `whatsappQueueGlobalConcurrency` binding remain intact.
 
-Affected files:
+The returned validation evidence records 41 focused tests passing, `npx tsc --noEmit`, build, Prisma validation and `git diff --check` passing, and 1006 full-suite tests passing with 19 skipped. The four remaining translation-runtime failures are the documented unrelated baseline and are not an ARCH-012 functional blocker. The repository has no `npm run typecheck` script; the successful direct TypeScript check is the equivalent validation.
 
-```text
-src/workers/whatsapp.worker.ts
-src/integration/whatsapp/types.ts
-tests/unit/workers/whatsapp.worker.test.ts
-```
-
-Required behaviour:
-
-- Background must consume only the published `@modainteract/moda-interact-shared/whatsapp` v1 event for `message-received` jobs.
-- Delete the `inboundContent()` compatibility branch that checks for missing `content` and returns `{ type: "text", text: legacy.text ?? "" }`.
-- Delete the obsolete local `WhatsAppMessageType` union. A direct type alias to `NormalizedWhatsAppInboundMessage` is acceptable, but there must be no second local payload schema or legacy field interpretation.
-- At the worker job boundary, validate `message-received` `job.data` with the published Shared parser/safe parser before calling the inbound pipeline. A non-canonical/stale payload must fail closed without persistence, CommerceAgent execution, media download or transcription. Do not reinterpret an old audio/unsupported event as text.
-- Update worker tests to use canonical v1 events (`schemaVersion`, both provider identities, `occurredAt`, and `content`).
-
-#### 2. Make explicit reply routing require a prior outbound provider message
-
-Affected file:
-
-```text
-src/services/recovery-routing.service.ts
-```
-
-Required behaviour:
-
-- `contextMessageId` is authoritative only when it identifies a durable prior **OUTBOUND** `ConversationMessage`.
-- Extend the existing provider-message lookup to read `direction`; resolve the exact conversation only when `direction === "OUTBOUND"`.
-- If the referenced message is absent or is not outbound, fall through to the existing contextless resolution path. Do not use an inbound provider message to bypass contextless tenant/ownership ambiguity.
-- Preserve all current shop execution eligibility checks after an outbound context match.
-
-#### 3. Replace substring-based audio terminal/retry classification
-
-Affected files:
-
-```text
-src/services/inbound-whatsapp-audio.service.ts
-src/services/whatsapp-media.service.ts
-src/services/speech-transcription.service.ts   # only if needed for explicit retryability
-focused audio/media tests
-```
-
-Current `isTerminalAudioError()` classifies errors from message text (`includes("metadata")`, `includes("too-large")`, etc.). This produces incorrect behaviour: a transient Meta metadata HTTP failure such as `whatsapp-media-metadata-rejected` is treated as terminal, while a corrupt `music-metadata` parse error whose message does not contain those substrings can remain `PENDING` after queue retries without the deterministic unreadable fallback.
-
-Required behaviour:
-
-- Use explicit error codes/classes or an equivalent typed result. Do not infer terminal/retryable semantics from free-form error-message substrings.
-- Media type unsupported, download-size overflow, malformed/missing provider media metadata that cannot be processed, and local audio parse/duration corruption are terminal media outcomes: persist bounded `REJECTED`/`FAILED`, do not call STT where applicable, and return `VOICE_UNREADABLE` (or `VOICE_TOO_LONG` for duration >120s) through the existing admitted fallback path.
-- Transient provider/network conditions (timeouts, HTTP 408/429/5xx, and equivalent transient fetch failures) remain `PENDING` and throw so BullMQ retry occurs; do not send the customer fallback yet.
-- A successful STT response with blank transcript remains terminal and must not invoke CommerceAgent.
-- Log retryable failures as `whatsapp.inbound.transcription-retryable-failure` and terminal failures as the corresponding bounded terminal/rejected outcome. Do not label retryable failures as terminal.
-- Preserve the existing guarded completion transaction so only one logical conversation-version increment occurs. Do not add a second audio pipeline or durable media store.
-
-#### Required focused validation for Attempt 2
-
-Prove functional behaviour, not exhaustive assertion coverage:
-
-1. canonical text/audio/unsupported jobs still enter the correct branch;
-2. a legacy/non-canonical audio or unsupported job cannot become empty text or invoke the agent;
-3. explicit context resolves an outbound referenced message, while an inbound referenced message falls through to contextless resolution;
-4. a transient Meta media 5xx/429 remains `PENDING` and is rethrown for BullMQ retry with no fallback;
-5. corrupt/unsupported/oversized media reaches a terminal bounded state and deterministic fallback without CommerceAgent;
-6. exactly 120 seconds remains accepted and >120 seconds remains rejected before STT;
-7. replay after `COMPLETED` still performs no second media/STT call and no second logical turn.
-
-Run the repository-declared focused tests plus:
-
-```text
-npx tsc --noEmit
-npm run build
-npm run prisma:validate
-git diff --check
-```
-
-Run `npm test` as regression evidence. The documented unrelated translation-runtime baseline does not need to be fixed in this task.
-
-#### Stop conditions
-
-STOP and return to `moda_architect` if any correction requires:
-
-- another DATABASE-001 migration or schema change;
-- a new durable media store;
-- changes to Shopify recovery timing/business policy;
-- replacement of `createWhatsappWorker()`, dynamic `whatsappQueueGlobalConcurrency`, ARCH-014 abuse controls, or ARCH-010 execution eligibility;
-- changes to the accepted BACKGROUND-003 outbound transport contract beyond using its existing fallback path.
-
-Return this same task to `review` as Attempt 2 with the claim cleared. Do not start GATEWAY or system-test work from this task.
+This acceptance supersedes the Attempt-1 Changes Requested review. No further BACKGROUND-001 implementation attempt is required.
