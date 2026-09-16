@@ -945,3 +945,48 @@ ARCH-015-BACKGROUND-003  Complete
 ```
 
 SYSTEM-TEST-001 remains Pending until ADMIN-001 is Complete. The pre-existing database P3009 remains an external deployment/integration prerequisite before deployed end-to-end acceptance can apply the accepted migration chain.
+
+
+## Post-review update — ADMIN-001 Attempt 2 Accepted
+
+`ARCH-015-ADMIN-001` Attempt 2 is architect-accepted and **Complete**.
+
+The final Admin refund surface preserves the ARCH-015 authority boundary:
+
+```text
+REQUESTED
+  -> read-only in Admin; Background owns settlement-route selection
+
+PROVIDER_ACTION_REQUIRED + no automatic correction link
+  -> explicit SUPER_ADMIN REFUND/CREDIT evidence only
+
+automaticCorrectionUsageEventId != null
+  -> no normal Admin monetary action
+
+NEEDS_ATTENTION
+  -> investigation/reconciliation only; no normal monetary resubmission
+```
+
+The accepted UI distinguishes exact automatic and manual completion evidence, lets the automatic
+correction route override derived queue labels, preserves typed correction and purchase provenance
+under progressive disclosure, and links to the canonical App Event drawer URL without carrying
+Refund Requests query parameters. Architect-owned refund copy is consumed through the existing
+English Admin catalogue; the 20-locale matrix remains normative without introducing new locale
+runtime architecture.
+
+Attempt-2 validation passes focused refund/security tests, build, lint, forbidden legacy checks,
+localization-matrix equality and `git diff --check`. Remaining broad test/typecheck failures are
+documented pre-existing Prisma/merchant-support baseline issues, not changes introduced by the
+bounded correction commit.
+
+All declared ARCH-015 implementation tasks are now architect-accepted Complete. The execution
+frontier becomes:
+
+```text
+ARCH-015-ADMIN-001       Complete
+          |
+          +--> ARCH-015-SYSTEM-TEST-001 Ready
+```
+
+The existing database P3009 remains an external deployment/integration prerequisite and should be
+resolved before terminal deployed acceptance can apply the complete migration chain.

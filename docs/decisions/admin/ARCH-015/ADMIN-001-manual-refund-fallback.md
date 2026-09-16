@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 80
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-015-BACKGROUND-003
 enables:
@@ -653,3 +653,281 @@ Do not invent compatibility paths, translations or settlement bypasses.
 # Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `ec62204` (`fix(admin): correct refund presentation routes`), pushed to `task/ARCH-015-ADMIN-001` in `moda-interact-admin`.
+
+Attempt 2 correction mapping:
+
+- Finding 1 implemented: added exact automatic/manual completed predicates requiring `COMPLETED`, the authoritative automatic-correction FK, and the correct provider action evidence; malformed completed rows remain route-pending and unlabelled.
+- Finding 2 implemented: `NEEDS_ATTENTION`, exact completed states, linked automatic corrections, manual fallback, and only then derived REQUESTED queue notices are evaluated in that order. Linked `REPORTED` corrections use `awaitingReconciliation`.
+- Finding 3 implemented: Purchase provenance now retains billing/provider snapshots, valuation confirmation, request-time credit snapshots, source, requester, and source-message evidence under the existing secondary disclosure.
+- Finding 4 implemented: the normal form remains limited to `PROVIDER_ACTION_REQUIRED` with no automatic link and `canSettle`; recorded evidence is shown only for exact manual completion or investigative `NEEDS_ATTENTION` rows with submitted evidence.
+- Finding 5 implemented: automatic correction drill-through is exactly `/billing?view=events&eventId=<id>` and does not carry refund query state.
+- Finding 6 implemented: the queue description, manual fallback, and reconciliation notices use the supplied `billing.refund` keys. No locale runtime or translation catalogue was added.
+- Strengthened `admin-recovery-credit-refunds.test.mjs` to assert the exact predicates, precedence, conditional evidence, provenance fields, i18n usage, and canonical URL.
+
+Validation:
+
+- PASS: `npm ci` completed with declared dependencies; manifests and lockfiles were not changed.
+- PASS: focused refund and settlement tests — 4 passed, 0 failed.
+- PASS: `npm run build` completed successfully; existing BullMQ optional-dependency and critical-dependency warnings remain.
+- PASS: `npm run lint` completed with 0 errors and 5 pre-existing warnings in `merchant-pricing-plan-builder.tsx`, `queue-monitor.tsx`, and `recovery-credit-refund-settlement.ts`.
+- PASS: forbidden legacy grep returned zero matches; generic mark-complete grep returned zero matches; `git diff --check` passed.
+- PASS: localization matrix validation — JSON parses, exactly 20 locales, identical 31-key sets, and English runtime values exactly match `matrix.locales.en`.
+- BLOCKED baseline: `npm test` fails in existing merchant-support tests because the generated `@prisma/client` does not export `PlatformAdminRole`.
+- BLOCKED baseline: `npx tsc --noEmit` reports existing errors in promotions and merchant-support, including implicit transaction types and Prisma raw-query typing; no errors were introduced in the focused refund component by the correction.
+
+No unresolved implementation concerns remain within the bounded Admin task. No branch was merged, no force-push was used, and the Architect Review section was not edited. Parent and implementation branches are pushed and ready for moda_architect review.
+
+## Architect Review — Attempt 1 — Changes Requested
+
+Verdict: **Changes Requested**.
+
+The server-side manual-settlement boundary is accepted for this attempt. Do not redesign
+`recordRecoveryCreditProviderEvidence(...)`, reintroduce REQUESTED mutations, add Admin App
+Event submission, or weaken the non-null automatic-correction guard. The remaining defects
+are confined to the required Refund Requests presentation/drill-through contract and its
+focused tests.
+
+### Finding 1 — completed settlement route predicates are not the ARCH-015 predicates
+
+`RecoveryCreditRefundDrawer` currently derives `manual` only from
+`status == PROVIDER_ACTION_REQUIRED && automaticCorrectionUsageEventId == null`. A manually
+completed refund therefore renders `routePending` even when `providerActionKind` is `REFUND`
+or `CREDIT`. `stateNotice()` also labels every COMPLETED refund with a null automatic link as
+manual without requiring recorded `REFUND | CREDIT` evidence.
+
+Attempt 2 MUST use the exact completion predicates:
+
+```text
+automatic completion:
+  status == COMPLETED
+  automaticCorrectionUsageEventId != null
+  providerActionKind == null
+
+manual completion:
+  status == COMPLETED
+  automaticCorrectionUsageEventId == null
+  providerActionKind == REFUND | CREDIT
+```
+
+Do not label a malformed COMPLETED row as manual or automatic merely from the absence/presence
+of one field. The settlement-route section must show the manual route for both an eligible
+`PROVIDER_ACTION_REQUIRED` manual fallback and an exact manual COMPLETED row.
+
+### Finding 2 — automatic REQUESTED state is shadowed by READY_FOR_REFUND_PROCESSING
+
+`stateNotice()` evaluates `queueStatus == READY_FOR_REFUND_PROCESSING` before the authoritative
+automatic-correction FK. A REQUESTED refund with an already-linked correction UsageEvent can
+therefore display "Ready for Background refund processing" instead of the automatic provider
+submission/reconciliation state required by Phase 5.
+
+Attempt 2 MUST make the authoritative route/evidence win over the derived queue label:
+
+```text
+refund.status == NEEDS_ATTENTION
+  -> billing.refund.needsAttention
+
+exact completed automatic/manual predicates
+  -> completedAutomatic / completedManual
+
+automaticCorrectionUsageEventId != null
+  + linked shopifyReportState == REPORTED
+    -> billing.refund.awaitingReconciliation
+  + otherwise
+    -> billing.refund.automaticInProgress
+
+status == PROVIDER_ACTION_REQUIRED
+automaticCorrectionUsageEventId == null
+  -> billing.refund.manualRequired
+
+then use WAITING_FOR_RESERVATIONS / READY_FOR_REFUND_PROCESSING / awaitingAssessment for
+unprepared REQUESTED rows.
+```
+
+Do not infer settlement route from `reason` text.
+
+### Finding 3 — progressive disclosure dropped required purchase provenance evidence
+
+Phase 6 required existing purchase evidence to remain accessible under the secondary purchase
+provenance disclosure. The current drawer no longer renders all of the required evidence that
+the pre-ARCH-015 drawer exposed.
+
+Attempt 2 MUST keep these values accessible under the Purchase provenance `<details>` section:
+
+```text
+billingPeriodIdSnapshot
+providerSubscriptionIdSnapshot
+planHandleSnapshot
+eventHandleSnapshot
+purchaseProviderAmountSnapshot / purchaseProviderCurrencySnapshot
+purchase.providerUsageQuantityBeforeSnapshot
+purchase.providerUsageCostBeforeSnapshot / currency
+purchase.providerUsageQuantityAfterSnapshot
+purchase.providerUsageCostAfterSnapshot / currency
+purchase.providerValuationConfirmedAt
+purchase.providerPriceSnapshot
+purchaseCreditsGrantedSnapshot
+currentAmountAtRequestSnapshot
+reservedAmountAtRequestSnapshot
+availableAmountAtRequestSnapshot
+source
+requestedByShopifyUserId
+sourceMessage.id when present
+```
+
+Move/preserve this evidence; do not return to one giant always-visible DetailList.
+
+### Finding 4 — manual evidence is rendered as an always-visible section
+
+The drawer currently renders the `manualEvidence` heading and recorded provider fields for every
+refund, including ordinary REQUESTED and automatic-correction rows. This defeats the bounded
+settlement-route presentation.
+
+Attempt 2 MUST keep the monetary form exactly where it already belongs:
+
+```text
+status == PROVIDER_ACTION_REQUIRED
+automaticCorrectionUsageEventId == null
+canSettle == true
+```
+
+Read-only recorded manual evidence may be shown for an exact manual COMPLETED row and for a
+NEEDS_ATTENTION row that already contains submitted provider evidence for investigation, but
+do not render an empty manual-settlement section on unrelated REQUESTED/automatic rows. Never
+render the normal form for NEEDS_ATTENTION.
+
+### Finding 5 — App Event drill-through is not the canonical ARCH-015 URL
+
+The current link builds from `{ ...params, view: "events", eventId: ... }`. When opened from the
+Refund Requests drawer, this carries stale `refundId`, `refundStatus`, `refundPage`, or other
+refund query state into the App Events view.
+
+The required drill-through is exactly:
+
+```text
+/billing?view=events&eventId=<automaticCorrectionUsageEventId>
+```
+
+Use the existing URL helper but do not spread Refund Requests query state into this link.
+
+### Finding 6 — supplied refund i18n copy is present but bypassed
+
+The architect matrix already supplies `billing.refund.description`, `manualRequired` and
+`awaitingReconciliation`. The touched component still renders a raw refund-specific queue
+description and the state logic never uses the latter two supplied values.
+
+Attempt 2 MUST:
+
+```text
+use billing.refund.description for the Refund Requests description;
+use billing.refund.manualRequired for the manual-fallback state;
+use billing.refund.awaitingReconciliation when the linked correction event is REPORTED;
+preserve all matrix values verbatim;
+add no new locale runtime/catalogues.
+```
+
+Generic field labels may continue to use existing generic Admin copy where the matrix supplies
+no refund-specific key. Do not invent translations.
+
+### Authorized Attempt-2 production surface
+
+```text
+src/components/admin/recovery-credit-refunds.tsx
+tests/security/admin-recovery-credit-refunds.test.mjs
+src/lib/admin/recovery-credit-refund-settlement.ts   # cleanup only if lint proves dead code
+```
+
+`src/i18n/locales/en.json` should not need semantic changes because the required architect-owned
+keys already exist and match the matrix. Do not change settlement/database semantics unless a
+compile error directly requires a narrow type-safe adjustment.
+
+### Required Attempt-2 regression assertions
+
+At minimum prove:
+
+```text
+manual COMPLETED (link null + REFUND/CREDIT) => completedManual + routeManual
+automatic COMPLETED (link non-null + action null) => completedAutomatic + routeAutomatic
+malformed COMPLETED evidence is not silently labelled manual
+REQUESTED + automatic link + REPORTED => awaitingReconciliation, not readyForProcessing
+PROVIDER_ACTION_REQUIRED + no link => manualRequired
+NEEDS_ATTENTION never renders the normal settlement form
+plain REQUESTED/automatic rows do not render an empty manual-evidence section
+purchase secondary disclosure contains every Phase-6-D evidence field listed above
+App Event href is exactly /billing?view=events&eventId=<id> with no refund query parameters
+Refund Requests description uses billing.refund.description
+```
+
+Strengthen the existing focused source tests so they assert predicates/URL construction and the
+required evidence fields, not merely the presence of the strings `completedAutomatic`,
+`completedManual`, `purchaseProvenance`, `view: "events"`, and `eventId` somewhere in the file.
+
+### Validation
+
+From the Admin task worktree, first install the declared repository dependencies without editing
+package manifests/lockfiles, then run the repository-supported checks:
+
+```bash
+npm ci
+node --test tests/security/admin-recovery-credit-refunds.test.mjs tests/security/admin-recovery-credit-refund-settlement.test.mjs
+npm test
+npx tsc --noEmit
+npm run lint
+npm run build
+rg -n "READY_FOR_PROVIDER_ACTION|Lock provider action|lockRecoveryCreditRefund|rejectRecoveryCreditRefund" src tests
+rg -n "mark complete|Mark complete" src/components/admin/recovery-credit-refunds.tsx tests || true
+git diff --check
+```
+
+Re-run the deterministic 20-locale/31-key matrix check and require English runtime equality with
+`matrix.locales.en`. If dependency installation or an unrelated baseline still prevents a broad
+check, record the exact external failure; do not weaken the focused ARCH-015 assertions or change
+production code to work around missing tools.
+
+### Stop conditions
+
+STOP and return evidence to `moda_architect` if the corrections would require a new route, new
+refund mutation, Admin Shopify App Event submission, a Prisma/schema change, translation
+invention, or a new Admin-wide locale runtime. Otherwise return this same task with
+`status: review`, `executor: null`, `claimed_at: null`, and `attempt: 2` after the next claim.
+
+
+## Architect Review — Attempt 2 — Accepted
+
+Verdict: **Accepted — Complete**.
+
+Architect review was performed against the published GitHub hashes rather than an uploaded
+workspace snapshot:
+
+```text
+moda-interact-admin implementation: ec62204490e73cac0cf0dd57dcc1b343a6728010
+workspace Completion Report:         530e119a5ffad248a28b541929d00da0d44fd123
+```
+
+Attempt 2 closes every presentation/drill-through defect from Attempt 1 while preserving the
+already-accepted server settlement boundary. The accepted implementation now proves exact
+automatic/manual completion predicates, gives the automatic correction FK precedence over
+derived REQUESTED queue status, preserves the required secondary purchase provenance, bounds
+read-only manual evidence to exact manual/investigative states, and uses the canonical App Event
+URL without leaking Refund Requests query state.
+
+The Refund Requests description, manual-fallback notice and reported-correction reconciliation
+notice consume the architect-supplied `billing.refund` catalogue keys. No new Admin-wide locale
+runtime or translation catalogue was introduced.
+
+Validation evidence is sufficient for this bounded Admin task: focused refund/security tests,
+build, lint, forbidden-legacy checks, localization-matrix validation and `git diff --check` pass.
+The broad `npm test` and standalone `npx tsc --noEmit` failures are documented pre-existing
+Prisma/merchant-support baseline failures and the Attempt-2 commit is confined to the refund UI
+component and its focused source test. GitHub also reports the Vercel status for the implementation
+commit as successful.
+
+`ARCH-015-ADMIN-001` is therefore Complete. All declared implementation prerequisites of
+`ARCH-015-SYSTEM-TEST-001` are now architect-accepted Complete, so SYSTEM-TEST-001 is promoted
+from Pending to Ready. The previously documented database P3009 remains a deployed-environment
+prerequisite/stop condition for terminal system acceptance; it does not reopen ADMIN-001.
