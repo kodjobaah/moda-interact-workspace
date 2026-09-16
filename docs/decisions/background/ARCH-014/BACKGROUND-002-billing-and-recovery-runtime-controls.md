@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 64
 executor: null
 claimed_at: null
@@ -246,3 +246,129 @@ Validation completed in `moda-interact-background`:
 - `git diff --check`: passed.
 
 The billing retry tiers, merchant recovery delay settings, and queue retry/backoff policies remain system-managed and unchanged. Runtime configuration is used for the requested billing/recovery intervals, batch sizes, usage retry bounds, frozen/provider retry intervals, and resume worker batch size; malformed injected batch values fail closed.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Functional finding
+
+The global billing/recovery scheduler work is functionally sound, but the Admin-controlled billing publisher/lifecycle retry values are not yet authoritative across all production billing execution paths.
+
+`src/services/billing-subscription-reconciliation.service.ts` still contains queued-job paths that bypass the runtime snapshot:
+
+1. both pre-close usage flushes call `shopifyUsageEventPublisherService.publishDue({ billingPeriodId })` without `runtimeConfig`, so those production publishes still fall back to the publisher defaults (`50`, `60s`, `3600s`) instead of `shopifyUsagePublishBatchSize`, `shopifyUsageRetryBaseSeconds`, and `shopifyUsageRetryMaxSeconds`;
+2. queued lifecycle reconciliation constructs `new ShopifySubscriptionLifecycleReconciliationService(this.database)` without the runtime snapshot, so its `billingFrozenRecheckSeconds` / `billingProviderRetrySeconds` decisions fall back to defaults;
+3. `recordFrozenProviderFailure(...)` still schedules `now + 60 * 60 * 1000`, so a queued frozen-subscription provider failure ignores the configured frozen recheck interval.
+
+As a result, changing these values in Runtime Controls affects the periodic global billing scan but not every production billing path that performs the same operational decisions.
+
+### Required Attempt 2 correction
+
+Keep this correction narrowly scoped to queued billing-subscription reconciliation. Do not redesign the scheduler, lease implementation, billing lifecycle, or recovery flow.
+
+#### 1. Capture one runtime snapshot per queued reconciliation job
+
+File:
+
+`moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+
+Add an injectable runtime-config reader whose production default is `backgroundRuntimeConfigService`. The injected contract only needs `current()`.
+
+At the start of `reconcileJob(...)`, after parsing the job and before any runtime-controlled decision, capture exactly one snapshot:
+
+```ts
+const runtimeConfig = this.runtimeConfig.current();
+```
+
+Use this same immutable snapshot for the entire job. Do not call `current()` repeatedly during the same job and do not query PostgreSQL directly from this service.
+
+The billing entrypoint already starts `backgroundRuntimeConfigService` before constructing/importing the billing worker, so the production default is valid. Unit tests may inject a minimal `{ current: () => snapshot }` reader.
+
+#### 2. Pass that snapshot into lifecycle reconciliation
+
+Replace the queued-job construction:
+
+```ts
+new ShopifySubscriptionLifecycleReconciliationService(this.database)
+```
+
+with construction that receives the same captured `runtimeConfig` in the existing runtime-config constructor slot.
+
+Do not change `ShopifySubscriptionLifecycleReconciliationService` policy semantics. Its existing mapping remains:
+
+- `billingFrozenRecheckSeconds` -> frozen recheck timing;
+- `billingProviderRetrySeconds` -> provider retry timing.
+
+#### 3. Pass that snapshot into both queued pre-close usage flushes
+
+Every production `publishDue(...)` call in `billing-subscription-reconciliation.service.ts` must pass:
+
+```ts
+{
+  billingPeriodId,
+  runtimeConfig,
+}
+```
+
+This applies to both pre-close usage-flush paths in the file.
+
+After the correction, a source scan of production `src/` must not find a billing-subscription reconciliation `publishDue({ billingPeriodId ... })` call that omits `runtimeConfig`.
+
+Do not remove the publisher's constructor/test defaults if existing unit tests still need them; the requirement is that all production billing paths pass runtime configuration explicitly.
+
+#### 4. Remove the remaining hard-coded frozen recheck delay
+
+Change `recordFrozenProviderFailure(...)` to receive the same captured runtime snapshot (or the exact required `billingFrozenRecheckSeconds` value) and replace:
+
+```ts
+60 * 60 * 1000
+```
+
+with:
+
+```ts
+runtimeConfig.billingFrozenRecheckSeconds * 1000
+```
+
+This preserves the existing semantic: a provider failure while reconciling a FROZEN subscription schedules the next frozen recheck using the Admin-controlled frozen interval.
+
+#### 5. Preserve fixed billing correctness policy
+
+Do NOT migrate, rename, or change:
+
+```text
+RETRY_WINDOW_MS
+FREE_CYCLE_DISCOVERY_RETRY_MS
+ROLLOVER_RETRY_MS
+RETRY_TIERS
+APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+```
+
+Do not change plan-transition retry behavior, recovery-delay semantics, queue retry/backoff, provider retryability classification, or billing-period correctness logic.
+
+### Required focused validation
+
+Add/adjust only enough focused tests to prove the corrected production behavior:
+
+1. one queued reconciliation job captures one runtime snapshot and reuses it;
+2. queued lifecycle reconciliation receives that snapshot and a frozen lifecycle/recheck outcome uses `billingFrozenRecheckSeconds`;
+3. queued pre-close usage publishing receives `shopifyUsagePublishBatchSize`, `shopifyUsageRetryBaseSeconds`, and `shopifyUsageRetryMaxSeconds` through the same snapshot;
+4. the frozen provider-failure path schedules with `billingFrozenRecheckSeconds`, not a hard-coded hour;
+5. existing `RETRY_TIERS`, `FREE_CYCLE_DISCOVERY_RETRY_MS`, and `ROLLOVER_RETRY_MS` behavior remains unchanged.
+
+Then run the task's existing validation commands:
+
+```bash
+npm run test:unit
+npm run build
+git diff --check
+```
+
+Do not broaden Attempt 2 into exhaustive test expansion. Stop once the production runtime-control bypasses above are removed and focused regressions pass.
+
+### Architecture Conformance
+
+Not yet accepted. The implementation is otherwise aligned with ARCH-014-BACKGROUND-002, including dynamic leased billing/recovery scheduling, per-cycle billing scan config, recovery repair/runtime batch controls, last-known-good resume batch sizing, and preservation of merchant recovery delay and fixed billing retry policies.
