@@ -4,7 +4,7 @@ title: Recovery-credit purchase, reconciliation, cross-subscription consumption 
 status: in_progress
 coordinator: moda_architect
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015: Recovery-credit purchase, reconciliation, cross-subscription consumption and refund refactor
@@ -246,34 +246,96 @@ REQUESTED
 
 Ambiguous/mismatching evidence -> `NEEDS_ATTENTION`, never speculative completion.
 
+
+## Typed automatic-refund correction evidence
+
+Automatic correction settlement evidence is owned by `RecoveryCreditRefund`; provider submission state is owned by `UsageEvent`.
+
+Do not use `UsageEvent.metadata` or another untyped JSON blob as the authoritative refund reconciliation record.
+
+Existing refund provenance/economic fields remain authoritative:
+
+```text
+providerSubscriptionIdSnapshot
+planHandleSnapshot
+billingPeriodIdSnapshot
+eventHandleSnapshot
+purchaseProviderAmountSnapshot
+purchaseProviderCurrencySnapshot
+finalCreditQuantity
+expectedProviderAmount
+expectedProviderCurrency
+```
+
+ARCH-015-DATABASE-002 adds only:
+
+```text
+automaticCorrectionUsageEventId
+providerUsageQuantityBeforeCorrection
+providerUsageCostBeforeCorrection
+expectedProviderUsageQuantityAfterCorrection
+expectedProviderUsageCostAfterCorrection
+```
+
+`automaticCorrectionUsageEventId` is a unique one-to-one FK to the exact automatic correction `UsageEvent`.
+
+The correction `UsageEvent` owns:
+
+```text
+quantity                         # exact negative/fractional correction
+correctionOfUsageEventId
+sourceType / sourceId
+shopifyEventHandle
+shopifyIdempotencyKey
+shopifyReportState
+provider submission/error evidence
+```
+
+The four typed provider correction values and existing final/expected refund values are frozen atomically when the automatic correction event is prepared. Later scheduler cycles never recompute them; they only compare fresh Shopify provider state with the frozen expected-after evidence.
+
+Naming contract:
+
+```text
+...Snapshot                 existing original provenance
+...BeforeCorrection         provider state actually observed before correction
+expected...AfterCorrection  provider state required for later completion proof
+```
+
 ## Task graph
 
 ```text
 ARCH-014-DATABASE-001
       |
-      +--> ARCH-015-DATABASE-001
-
-ARCH-015-SHARED-001  (independent/parallel)
-
-ARCH-014-SHOPIFY-001
-      |
-      +--> ARCH-015-SHOPIFY-001
-                 |
-ARCH-015-SHARED-001 + ARCH-015-DATABASE-001
-                 |
-                 +--> ARCH-015-SHOPIFY-002
+      +--> ARCH-015-DATABASE-001 (Complete)
+                    |
+                    +--> ARCH-015-DATABASE-002 (Ready)
                               |
-                              +--> ARCH-015-BACKGROUND-001
-                                      |
+                              +------------------------------+
+                                                             |
+ARCH-015-SHARED-001  (Complete)                              |
+                                                             |
+ARCH-014-SHOPIFY-001                                         |
+      |                                                      |
+      +--> ARCH-015-SHOPIFY-001                              |
+                 |                                           |
+ARCH-015-SHARED-001 + ARCH-015-DATABASE-001                 |
+                 |                                           |
+                 +--> ARCH-015-SHOPIFY-002                  |
+                              |                              |
+                              +--> ARCH-015-BACKGROUND-001   |
+                                      |                      |
                                       +--> ARCH-015-BACKGROUND-002
-                                      |
+                                      |                      |
                                       +--> ARCH-015-SHOPIFY-003
-                                                |
-                                                +--> ARCH-015-BACKGROUND-003
+                                                |            |
+                                                +------------+
+                                                             |
+                                                             v
+                                                ARCH-015-BACKGROUND-003
                                                           |
                                                           +--> ARCH-015-ADMIN-001
 
-All accepted implementation tasks
+All accepted implementation tasks, including DATABASE-002
       -> ARCH-015-SYSTEM-TEST-001
 ```
 
@@ -294,8 +356,8 @@ ARCH-015 MUST NOT:
 
 ## Post-review update — DATABASE-001 Accepted
 
-`ARCH-015-DATABASE-001` Attempt 1 is architect-accepted. The only ARCH-015 schema
-amendment is now implemented as designed:
+`ARCH-015-DATABASE-001` Attempt 1 is architect-accepted. The first ARCH-015 schema
+amendment is implemented as designed:
 
 ```text
 RecoveryCreditPurchase.providerUsageQuantityBeforeSnapshot -> Decimal
@@ -713,3 +775,27 @@ ARCH-015-SHOPIFY-003     Complete
 
 SYSTEM-TEST-001 is not promoted by BACKGROUND-002 acceptance alone because BACKGROUND-003
 and ADMIN-001 are still unsatisfied declared prerequisites.
+
+
+## Pre-implementation correction — BACKGROUND-003 typed refund evidence (2026-09-16)
+
+Architect review before executing `ARCH-015-BACKGROUND-003` found that the original task contract instructed Background to store correction baseline/expected evidence in `UsageEvent.metadata`.
+
+The current schema has no `UsageEvent.metadata` field, and adding one would be the wrong ownership boundary for settlement-critical financial evidence. Most proposed metadata keys also duplicate already-typed `RecoveryCreditRefund` provenance/economic fields.
+
+Decision:
+
+```text
+RecoveryCreditRefund
+  = authoritative refund workflow, provenance, baseline and expected settlement evidence
+
+UsageEvent
+  = exact Shopify App Event submission identity, quantity, correction relation,
+    idempotency and provider reporting state
+```
+
+`ARCH-015-DATABASE-002` is inserted as the bounded schema prerequisite for the automatic correction path. It adds four typed Decimal correction-evidence fields plus a unique one-to-one FK from the refund to its correction UsageEvent. Existing plan/provider-context/period/meter/refund-amount fields are reused rather than duplicated.
+
+`ARCH-015-BACKGROUND-003` therefore returns from Ready to **Pending** until DATABASE-002 is architect-accepted Complete. Its corrected task contract forbids `UsageEvent.metadata`, freezes typed correction evidence atomically with the linked UsageEvent, and treats all later scheduler runs as reconciliation-only against those immutable values.
+
+`ARCH-015-ADMIN-001` is also corrected to use `refund.automaticCorrectionUsageEventId` as the double-settlement authority instead of a loose `UsageEvent sourceType/sourceId` search. The source fields remain consistency evidence only.

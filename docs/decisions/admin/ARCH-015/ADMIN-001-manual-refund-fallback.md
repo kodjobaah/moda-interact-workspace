@@ -19,7 +19,7 @@ depends_on:
 enables:
 - ARCH-015-SYSTEM-TEST-001
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015-ADMIN-001
@@ -53,14 +53,18 @@ purchase.reservedAmount == 0
 frozen finalCreditQuantity/expectedProviderAmount/currency exist
 ```
 
-Before allowing action, query for any correction UsageEvent:
+Before allowing action, inspect the explicit ARCH-015-DATABASE-002 relation:
 
 ```text
-sourceType = RECOVERY_CREDIT_REFUND
-sourceId = refund.id
+refund.automaticCorrectionUsageEventId
+refund.automaticCorrectionUsageEvent
 ```
 
-If such event exists in PENDING/IN_FLIGHT/RETRYABLE/REPORTED/NEEDS_ATTENTION, do not permit a new manual monetary action. Surface bounded "automatic provider correction already exists; reconcile first" state.
+Normal manual provider action requires `automaticCorrectionUsageEventId == null`.
+
+If the link is non-null, do not issue a new manual monetary action regardless of whether the linked UsageEvent is PENDING, IN_FLIGHT, RETRYABLE, REPORTED or NEEDS_ATTENTION. Surface bounded "automatic provider correction already exists; reconcile first" state.
+
+The `sourceType/sourceId` pair on UsageEvent remains useful consistency evidence, but Admin MUST NOT use a loose source query as the authority for whether an automatic correction exists; the typed refund FK is authoritative.
 
 ## Evidence
 
@@ -86,7 +90,7 @@ Mismatch => NEEDS_ATTENTION.
 
 If the old workflow has a `lockRecoveryCreditRefund` step from REQUESTED, normal ARCH-015 flow should no longer require an administrator to promote a newly REQUESTED refund manually; Background decides automatic vs manual.
 
-Retain backward-compatible lock behavior only if current supported operations require it, and it MUST refuse when an automatic correction UsageEvent exists.
+Retain backward-compatible lock behavior only if current supported operations require it, and it MUST refuse when `automaticCorrectionUsageEventId` is non-null.
 
 Do not let Admin change historical purchase provenance or recalculate from current plan prices.
 
@@ -108,7 +112,7 @@ Display:
 
 - PROVIDER_ACTION_REQUIRED permits exact evidence submission;
 - REQUESTED automatic-in-progress refund cannot be manually settled;
-- correction UsageEvent existence blocks manual provider action;
+- non-null automaticCorrectionUsageEventId blocks manual provider action;
 - exact evidence completes;
 - mismatch becomes NEEDS_ATTENTION;
 - no generic mark-complete path;
@@ -118,7 +122,7 @@ Display:
 
 ## Stop conditions
 
-STOP if existing Admin task must become provider monetary authority or if double-settlement prevention cannot be achieved with current UsageEvent/refund evidence.
+STOP if existing Admin task must become provider monetary authority, if ARCH-015-DATABASE-002 relation fields are unavailable, or if double-settlement prevention cannot be achieved through the explicit refund->automatic-correction UsageEvent relation.
 
 ## Completion protocol
 
