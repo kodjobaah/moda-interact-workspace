@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -449,7 +449,7 @@ Task status is `review`; return control to `moda_architect` for re-review.
 - branches: `task/ARCH-016-BACKGROUND-003` in both worktrees;
 - origin/main synchronization and recursive submodule preparation: passed;
 - database submodule commit: `c59f2eb6953642f1c850d38b09ed03096d672547`;
-- Attempt 6 launcher claim commit: `8dc667aa`;
+- Attempt 6 launcher claim evidence: the Completion Report originally cited `8dc667aa`, but that hash is the historical Attempt 3 claim commit and is not relied on as Attempt 6 claim evidence;
 - Attempt 6 implementation commit: `d985548` (`fix(background): reconcile outreach finalization state`);
 - implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
 
@@ -1638,3 +1638,82 @@ If those bounded edits cannot satisfy the behavior above, STOP and return to
 
 Return the task to `review`, clear `executor`/`claimed_at`, record the exact Attempt-5
 implementation and parent report commits, and STOP for `moda_architect` re-review.
+
+## Architect Review — Attempt 6
+
+### Status
+
+**Accepted — Complete**
+
+Implementation commit reviewed: `d985548`.
+Parent Completion Report commit reviewed: `fa785444`.
+
+Attempt 6 closes the three bounded convergence defects from the latest architect review.
+
+Accepted behavior:
+
+```text
+duplicate initial durable provider success
+  -> reuses the already-resolved effective policy
+  -> derives missing followUpDueAt from durable message.sentAt + configured delay
+  -> commits the same attempt-keyed recovery credit idempotently
+  -> does not resend the provider message
+
+sequence-1 confirmed-send finalization
+  -> persists attempt/recovery state first
+  -> does not publish from the stale in-memory recovery snapshot
+  -> calls ensureScheduledInitialFollowUp(recovery.id)
+  -> helper re-reads durable recovery + attempt state
+  -> terminal/engaged/responded state suppresses publication
+  -> persisted followUpDueAt is the scheduling authority
+  -> deterministic sequence-2 job remains the duplicate fence
+
+duplicate audio delivery
+  -> durable ConversationMessage reservation owns Conversation identity
+  -> engagement repair uses reservation.conversationId
+  -> successful pending transcription completion also uses reservation.conversationId
+  -> rerouted duplicate cannot mutate another Conversation
+```
+
+The previously accepted BACKGROUND-003 boundaries remain unchanged:
+
+```text
+sequence 1 = INITIAL
+sequence 2 = NO_RESPONSE_FOLLOW_UP
+no sequence 3+
+one Conversation per CheckoutRecovery generation
+one recovery credit per successfully admitted/sent proactive outreach
+customer replies / ordinary continuation do not consume another recovery credit
+follow-up capacity blocked => no send and no automatic capacity resume in v1
+provider duplicate success reconciles from durable ConversationMessage state
+PENDING / missing / invalid duplicate evidence fails closed
+provider event occurredAt is authoritative for inbound engagement
+earliest qualifying customerRespondedAt wins monotonically
+FIXED offer snapshots require CURRENT catalogue + ACTIVE/running/selectable discount
+AI_BEST_APPLICABLE remains configuration-only
+Shared remains exactly 0.12.1
+```
+
+The focused Attempt-6 validation reported 18 passing tests, Prisma validation and
+`git diff --check`. The unchanged generated-Prisma/build and unrelated repository-wide
+baseline diagnostics do not reopen this task.
+
+### Workflow-evidence note
+
+The Attempt-6 Completion Report originally labelled `8dc667aa` as the Attempt-6 launcher
+claim commit. That hash is actually the historical launcher claim that changed this task
+from Attempt 2 to Attempt 3. The architect therefore does not rely on that hash as fresh
+Attempt-6 claim evidence.
+
+This discrepancy does not justify another implementation attempt: the returned handoff
+records the canonical dedicated parent and implementation worktrees, matching
+`task/ARCH-016-BACKGROUND-003` branches, origin/main synchronization, recursive submodule
+preparation, database pointer `c59f2eb...`, the exact implementation commit `d985548`,
+cleared claim metadata, and pushed branches. No implementation churn is required solely
+to manufacture a new claim commit after the work is complete.
+
+`ARCH-016-BACKGROUND-003` is Complete at Attempt 6. There is no Attempt 7.
+
+No system-test task is started by this acceptance. `ARCH-016-SYSTEM-TEST-001` remains
+Pending until the parent workspace has reconciled every independently accepted
+implementation task and the developer has completed the existing manual-testing checkpoint.

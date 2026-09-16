@@ -1031,3 +1031,34 @@ No implementation dependency is promoted by this acceptance.
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation dependency is
 Complete and the developer has completed the existing manual-testing checkpoint. It is not
 started automatically.
+
+## Post-review update — BACKGROUND-003 Attempt 6 Accepted
+
+`ARCH-016-BACKGROUND-003` Attempt 6 is architect-accepted **Complete** at implementation
+commit `d985548`.
+
+The accepted outreach boundary now converges correctly across confirmed provider-send
+crash/retry windows: duplicate initial success reuses the already-resolved recovery policy,
+sequence-1 finalisation persists state before invoking the durable
+`ensureScheduledInitialFollowUp()` repair path, and the persisted attempt `followUpDueAt`
+rather than stale in-memory state controls deterministic sequence-2 wake-up publication.
+
+Inbound audio duplicate processing also preserves durable message provenance: both
+engagement repair and successful pending transcription completion use the
+`ConversationMessage` reservation's `conversationId`, so a rerouted duplicate cannot mutate
+a different Conversation.
+
+All prior accepted BACKGROUND-003 invariants remain: at most two proactive attempts, one
+Conversation per recovery generation, one recovery credit per successfully sent proactive
+outreach, no extra credit for customer/ordinary continuation messages, fail-closed duplicate
+provider reconciliation, monotonic provider-time engagement, and no AI discount selection.
+
+The Attempt-6 Completion Report cited historical claim commit `8dc667aa` as if it were the
+Attempt-6 claim. That hash is the Attempt-3 launcher claim. This is recorded as handoff
+evidence drift and is not used as fresh Attempt-6 claim proof; it does not require
+implementation churn or an additional attempt.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending. This task-specific parent branch may not yet
+contain every independently accepted sibling task, and the developer manual-testing
+checkpoint remains mandatory before terminal integrated testing. The system-test task is
+not started automatically by this acceptance.
