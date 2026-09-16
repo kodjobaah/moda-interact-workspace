@@ -11,4 +11,4 @@
 | [ARCH-014-ADMIN-007](ADMIN-007-remove-legacy-economics-and-scope-tenant-search.md) | complete | Remove superseded manual BillingPlan economics controls and render tenant search only on the tenant directory. |
 | [ARCH-014-ADMIN-008](ADMIN-008-multilingual-promotion-xlsx.md) | complete | Reuse the ADMIN-006 XLSX standard to author exact 20-locale promotion merchant title/description and gate activation on 20/20. |
 | [ARCH-014-ADMIN-009](ADMIN-009-intuitive-background-runtime-controls.md) | complete | Add intuitive Operational/Advanced/Abuse Protection runtime controls with guidance, auditing and optimistic concurrency. |
-| [ARCH-014-ADMIN-010](ADMIN-010-harden-runtime-controls-and-promotion-xlsx.md) | ready | Reject oversized promotion workbooks before ExcelJS parsing and make runtime range errors use the same human display units as the controls table. |
+| [ARCH-014-ADMIN-010](ADMIN-010-harden-runtime-controls-and-promotion-xlsx.md) | complete | Reject oversized promotion workbooks before ExcelJS parsing and make runtime range errors use the same human display units as the controls table. |
