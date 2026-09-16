@@ -603,3 +603,44 @@ ARCH-015-BACKGROUND-001  Complete
 ```
 
 BACKGROUND-003 remains Pending because SHOPIFY-003 is not yet Complete.
+
+
+## Post-review update — SHOPIFY-003 Attempt 2 Accepted
+
+`ARCH-015-SHOPIFY-003` Attempt 2 is architect-accepted and **Complete**.
+
+The merchant refund-admission boundary now enforces the full current-provider-context
+contract before any new monetary refund hold is created:
+
+```text
+authenticated exact shop + nonblank shopifyShopId
+  -> ACTIVE purchase
+  -> providerPurchaseAmount > 0
+  -> availableAmount >= 1
+  -> fresh Shopify ACTIVE/TRIALING subscription
+  -> canonical providerContextIdentity
+  -> exact plan + local billingPeriod + provider/local cycle match
+  -> purchase eventHandle present live
+  -> Serializable durable REQUESTED refund hold
+  -> ACTIVE purchase becomes WITHDRAWN
+  -> refundingQuantity += availableAmount only
+```
+
+Historical/non-current purchases remain ACTIVE and spendable and do not enter the normal
+monetary refund path. Zero/non-positive-value purchases likewise remain spendable and
+return `REFUND_NOT_AVAILABLE`. No direct web-to-Background invocation or provider
+completion evidence is introduced; `ARCH-015-BACKGROUND-003` remains responsible for
+asynchronous correction and provider reconciliation.
+
+The frontier is now:
+
+```text
+ARCH-015-SHOPIFY-003     Complete
+ARCH-015-BACKGROUND-001  Complete
+ARCH-015-SHARED-001      Complete
+ARCH-015-DATABASE-001    Complete
+        |
+        +--> ARCH-015-BACKGROUND-003 Ready
+```
+
+`ARCH-015-BACKGROUND-002` continues independently through its own review lifecycle.
