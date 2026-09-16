@@ -4,7 +4,7 @@
 |---|---|---|
 | [ARCH-015-BACKGROUND-001](BACKGROUND-001-purchase-reconciliation.md) | complete | Candidate-centric provider reconciliation is complete; durable purchase event handles drive exact provider proof without singular BillingPlan pack-meter authority. |
 | [ARCH-015-BACKGROUND-002](BACKGROUND-002-cross-plan-consumption.md) | ready | Spend historical purchased lots before current refundable lots. |
-| [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | pending | Existing billing scheduler processes durable refunds, submits safe negative/fractional corrections and reconciles completion. |
+| [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | ready | Existing billing scheduler processes durable refunds, submits safe negative/fractional corrections and reconciles completion. |
 
 ## Current architect review state
 
@@ -25,3 +25,14 @@ period-aware Shared provider-context derivation and ACTIVE-only current classifi
 but malformed native-App-Pricing local projection evidence can still throw from the
 ordering hint instead of failing closed to historical FIFO. Attempt 3 is limited to that
 fail-closed classification correction and focused regressions.
+
+## Post SHOPIFY-003 Attempt 2 acceptance
+
+`ARCH-015-SHOPIFY-003` is now Complete. Together with already-complete
+`ARCH-015-SHARED-001`, `ARCH-015-DATABASE-001` and `ARCH-015-BACKGROUND-001`, this
+satisfies every declared prerequisite of `ARCH-015-BACKGROUND-003`.
+
+`ARCH-015-BACKGROUND-003` is therefore **Ready**.
+
+`ARCH-015-BACKGROUND-002` remains independently Ready / in its own review workflow and
+does not gate BACKGROUND-003.
