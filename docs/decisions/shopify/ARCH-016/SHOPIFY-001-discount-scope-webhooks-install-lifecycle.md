@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-16T16:59:33Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T18:04:00Z
 ---
 
 # ARCH-016-SHOPIFY-001
@@ -686,3 +686,41 @@ Then push both mirrored task branches, set this same task back to `status: revie
 No ARCH-016 dependency is promoted by this review. `attempt` remains `1` in this Changes
 Requested patch; `/moda-task ARCH-016-SHOPIFY-001` owns the transition to Attempt 2 and
 the attempt increment when the task is reclaimed.
+
+## Attempt 2 Completion Report
+
+### Status
+
+Ready for Review
+
+### Corrections Completed
+
+- Subscription activation eligibility and `SYNC_REQUIRED` mutation now share one Prisma transaction.
+- Activation eligibility now reads only the durable offline Shopify Session (`isOnline: false`), deterministically ordered by expiry; online scope alone cannot authorize a sync.
+- Scope-update persistence remains in the transaction, but sync eligibility now uses the persisted offline Session scope. Missing offline scope fails closed and invalidates without publishing.
+- Catalogue invalidation now establishes an `UNAVAILABLE` row with upsert, marks all discounts unavailable, and stamps only rows whose `unavailableAt` is still null.
+- Queue publication remains strictly after transaction completion and best-effort.
+
+### Focused Validation
+
+- corrected lifecycle and uninstall suites: `27 passed`;
+- all focused accepted-path and correction suites: `77 passed`;
+- `npm run build`: passed;
+- Shopify TOML validation from Attempt 1 remains passed;
+- `git diff --check`: passed;
+- `npm test`: `613 passed`, `10 failed`, `3 skipped`; the same merchant-i18n fixture failures remain and do not involve Attempt 2 files;
+- typecheck/lint still report unrelated repository baseline diagnostics outside the correction files.
+
+### Worktree / Git Evidence
+
+- launcher canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-SHOPIFY-001`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-SHOPIFY-001`;
+- implementation submodule `database`: `c59f2eb6953642f1c850d38b09ed03096d672547`;
+- Attempt 2 parent claim commit: `f4f19b5`;
+- Attempt 2 implementation commit: `454f882` (`fix(shopify): fence discount lifecycle by offline session`);
+- implementation branch pushed: `origin/task/ARCH-016-SHOPIFY-001`;
+- task branch synchronization and recursive submodule preparation: passed;
+- executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
