@@ -111,10 +111,7 @@ Implementation commit: `64cb326` (`feat(gateway): wire WhatsApp business account
 - `bash tests/validate-render-blueprints-negative.sh`: passed; all negative cases rejected, including WABA-for-phone-number substitution.
 - `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`: passed.
 - `git diff --check`: passed.
-- `bash tests/run-tests.sh`: explicitly run once; gateway integration checks passed through the final visible sensitive-query upstream-failure section, but the terminal command timed out at 120 seconds before returning an exit summary. No retry was performed. Developer validation remains required at the implementation revision.
-
-Developer validation required:
-- `bash tests/run-tests.sh` from `moda-interact-gateway/`; expected success is exit code 0 with the final suite summary reporting zero failures.
+- `bash tests/run-tests.sh`: passed; gateway integration suite reported `58 passed, 0 failed`.
 
 ## Architect Review
 
