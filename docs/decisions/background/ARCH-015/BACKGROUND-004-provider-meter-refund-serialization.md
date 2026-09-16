@@ -437,7 +437,7 @@ Validation:
 - `git diff --check`: passed.
 - `npm test`: 67 files passed, 10 skipped, and 1 failed file with 4 failures. The unchanged unrelated failures are the four tests in `tests/integration/translation-enum-bindings.integration.test.ts`, each failing with `Background runtime configuration has not started` before its translation database assertion. No refund-correction tests failed.
 
-Limitations: no task blocker identified. The full-suite translation runtime baseline remains unresolved and is outside this task's authorized implementation surface. SYSTEM-TEST-001 was not started. The parent report commit will be recorded after publication.
+Limitations: no task blocker identified. The full-suite translation runtime baseline remains unresolved and is outside this task's authorized implementation surface. SYSTEM-TEST-001 was not started. Parent report publication commit: `a3c22986b2d6e95c6441b128f9b98ba96905c320`.
 
 ## Architect Review — Attempt 1 — Changes Requested
 
