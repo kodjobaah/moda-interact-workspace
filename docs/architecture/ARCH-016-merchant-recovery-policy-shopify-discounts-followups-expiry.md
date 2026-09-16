@@ -1,7 +1,7 @@
 ---
 id: ARCH-016
 title: Merchant recovery policy, Shopify discount catalogue, follow-up outreach and recovery expiry
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-09-16
 updated: 2026-09-16
@@ -646,6 +646,46 @@ Parallelism is allowed where dependencies permit. Do not serialize tasks merely 
 | ARCH-016-BACKGROUND-002 | moda-interact-background | Expire stale recovery generations and restart after later checkout activity. |
 | ARCH-016-BACKGROUND-003 | moda-interact-background | Implement chargeable recovery outreach attempts and one no-response follow-up. |
 | ARCH-016-SYSTEM-TEST-001 | moda-interact-system-test | Integrated validation after implementation and developer manual testing. |
+
+## Post-review update — SHARED-001 Attempt 1 Accepted
+
+`ARCH-016-SHARED-001` is architect-accepted **Complete** at implementation commit `202082e`.
+
+The published Shared release is:
+
+```text
+@modainteract/moda-interact-shared@0.12.1
+```
+
+It supplies the architecture-owned runtime boundary for:
+
+```text
+merchant effective recovery policy
+Shopify discount-sync queue payload
+Shopify discount-sync queue/job names
+bounded deterministic discount-sync job identity
+```
+
+The accepted Shared implementation remains intentionally free of Prisma/database types, provider GraphQL response models and CommerceAgent/LLM discount-selection semantics.
+
+Current ARCH-016 frontier after this acceptance:
+
+```text
+SHARED-001       Complete
+DATABASE-001     Ready
+
+SHOPIFY-001      Pending; requires DATABASE-001 + SHARED-001
+BACKGROUND-001   Pending; requires DATABASE-001 + SHARED-001
+SHOPIFY-002      Pending; requires DATABASE-001 + SHARED-001
+ADMIN-002        Pending; requires DATABASE-001 + SHARED-001
+BACKGROUND-003   Pending; requires DATABASE-001 + SHARED-001
+
+ADMIN-001        Pending on DATABASE-001
+BACKGROUND-002   Pending on DATABASE-001
+SYSTEM-TEST-001  Pending; terminal integrated phase after all implementation tasks and developer manual testing
+```
+
+No implementation consumer is promoted merely because Shared is now Complete; `DATABASE-001` remains the unsatisfied common hard prerequisite.
 
 ## Development migration/rollout
 
