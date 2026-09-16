@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -849,3 +849,57 @@ Return Attempt 3 to `moda_architect` with `status: review`, clear
 2 to Attempt 3 when the task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and
 MUST NOT start automatically; the developer manual-testing checkpoint remains before terminal
 integrated testing.
+
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted — Complete**
+
+Implementation commit reviewed: `711e984` (`fix(shopify): complete recovery settings presentation`).
+Parent Completion Report commit reported: `ed5544b6`.
+
+Attempt 3 closes the bounded presentation defects from Attempt 2 without reopening the
+already-accepted merchant policy/write boundaries. The implementation is architect-accepted
+Complete.
+
+Accepted behavior:
+
+```text
+/app/recovery-settings remains the canonical subscribed-merchant surface
+merchant save mutates ShopSettings only
+active, unexpired complete admin override remains effective-policy authority
+FIXED save still revalidates authenticated-shop CURRENT + ACTIVE + available + in-window + fixedSelectable state
+AI_BEST_APPLICABLE remains configuration only
+Shared remains pinned exactly to 0.12.1
+no Shopify Admin API call is used to render the page
+```
+
+The Recovery Settings route now consumes the architect-provided translation contract
+correctly. `startsAt`/`endsAt` use the existing supplied keys, and summary, method, redeem
+code and provider status use their translated wrapper labels rather than hard-coded English
+fragments. The returned snapshot was also checked directly against
+`recovery-settings-attempt2-translations.json`: all 20 supported locale catalogues match the
+supplied 33-key Recovery Settings namespace exactly, including ICU placeholder names.
+
+Configured/effective FIXED identity presentation is bounded correctly. The server projection
+returns only same-shop `{ id, title }` identity data from retained catalogue rows. This allows
+a stale/non-running configured discount to remain visible as policy identity without making it
+selectable. When an active admin override chooses a different FIXED discount, merchant and
+effective identities remain distinguishable. No `providerSnapshot`, override actor/reason, or
+raw provider/admin row is serialized to the merchant page.
+
+The focused Recovery Settings i18n guard now protects the exact 20-locale/33-key namespace
+and route usage of the corrected date/presentation keys. Its placeholder-parity assertion is
+not itself exhaustive, but the returned locale files were independently compared with the
+authoritative handoff and have zero value or placeholder mismatches; no additional attempt is
+required merely to add redundant test coverage.
+
+Validation evidence recorded by the implementation agent: 45 focused tests passed and
+`git diff --check` passed. The reported repository-wide typecheck/build diagnostics remain
+unchanged baseline issues and do not reopen SHOPIFY-002.
+
+There is **no Attempt 4**. `ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining
+implementation dependency is Complete and the developer manual-testing checkpoint has been
+completed. It MUST NOT start automatically as a result of this acceptance.

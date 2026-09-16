@@ -930,3 +930,24 @@ FIXED authority. The task remains `attempt: 2`, `executor: null`, `claimed_at: n
 launcher owns the increment on reclaim. No ARCH-016 dependency is promoted.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
 manual-testing checkpoint remains before terminal integrated testing.
+
+
+## Post-review update — SHOPIFY-002 Attempt 3 Accepted
+
+`ARCH-016-SHOPIFY-002` Attempt 3 is architect-accepted **Complete** at implementation
+commit `711e984`.
+
+The accepted merchant Recovery Settings boundary now consumes the complete architect-provided
+20-locale / 33-key translation namespace, renders normalized currently-running Shopify
+discount facts with translated labels, and exposes only bounded same-shop `{ id, title }`
+identity projections for merchant/effective FIXED policy presentation. Retained stale identity
+may be displayed for policy transparency but remains non-selectable; transaction-time FIXED
+save authority still requires CURRENT + ACTIVE + available + in-window + fixedSelectable state.
+
+Merchant `ShopSettings` ownership, complete admin-override precedence, `/app/promotions`,
+Shared `0.12.1`, the no-Shopify-render-call boundary and the ARCH-016 AI/CommerceAgent
+non-goal are unchanged.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending because other implementation dependencies are
+still outstanding and the developer manual-testing checkpoint remains mandatory before
+terminal integrated testing. It is not started automatically by this acceptance.
