@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 64
 attempt: 2
 depends_on:
@@ -340,3 +340,21 @@ The tests should verify functional timing consistency; no broad expansion of tra
 ### Stop condition
 
 Return the same task as Attempt 2 after this correction. Do not start `ARCH-014-BACKGROUND-004` or `ARCH-014-BACKGROUND-005` until BACKGROUND-003 is architect-accepted.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted
+
+### Functional acceptance
+
+Attempt 2 closes the runtime-consistency defect identified in the previous review. `TranslationBatchSubmitService.submit(...)` now captures one last-known-good runtime-config snapshot after successfully claiming a batch and threads that same snapshot through submission failure policy, persisted first-poll scheduling, and BullMQ poll enqueueing. Therefore `translationInitialPollSeconds` is identical for persisted `nextPollAt` and the queued first-poll delay.
+
+`TranslationBatchPollService.poll(...)` likewise captures one snapshot for each valid poll job and threads it through provider-read failure, nonterminal rescheduling, terminal retry policy, and poll enqueueing. Therefore `translationPollIntervalSeconds` is identical for persisted recurring `nextPollAt` and the replacement BullMQ delay. `translationResultRetrySeconds` remains a separate terminal item retry policy.
+
+The correction preserves provider/model environment configuration, provider safety limits, retryability classification, `FOR UPDATE SKIP LOCKED` batch assembly, reconciliation lease/scheduler behavior, and the removal of retired translation environment-variable reads. No database-schema or queue-topology change is introduced.
+
+Focused regression tests use a runtime reader whose `current()` changes between calls and prove one `current()` call per submit/poll job plus identical persisted/enqueued timing for initial polling, nonterminal polling, and provider-read-failure polling. The reported focused tests, integration tests, build and diff checks pass; the two full-suite observability failures are unrelated baselines.
+
+Implementation commit `44590e2` is accepted. No Attempt 3 is required.

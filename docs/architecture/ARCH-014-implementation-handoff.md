@@ -112,11 +112,11 @@ DATABASE-004 and BACKGROUND-001 are architect-accepted Complete. BACKGROUND-001 
 ARCH-014-DATABASE-004    COMPLETE
 ARCH-014-BACKGROUND-001  COMPLETE
 ARCH-014-BACKGROUND-002  READY
-ARCH-014-BACKGROUND-003  READY
+ARCH-014-BACKGROUND-003  COMPLETE
 ARCH-014-BACKGROUND-004  PENDING
 ARCH-014-BACKGROUND-005  PENDING
 ARCH-014-ADMIN-009       COMPLETE
 ARCH-014-SYSTEM-TEST-003 PENDING
 ```
 
-`BACKGROUND-002` and `BACKGROUND-003` remain the automatic Ready tasks and may execute independently. `ADMIN-009` is now architect-accepted Complete. BACKGROUND-004 remains gated by BACKGROUND-002 + BACKGROUND-003; BACKGROUND-005 remains gated by BACKGROUND-002 + BACKGROUND-003 + BACKGROUND-004; SYSTEM-TEST-003 remains terminal/developer-gated behind the complete Background chain even though its Admin dependency is now Complete.
+`BACKGROUND-003` is architect-accepted Complete. In this branch-local snapshot `BACKGROUND-002` remains Ready, so it is the only automatic Ready task and `BACKGROUND-004` remains Pending. Once the separately accepted BACKGROUND-002 reconciliation is present in the same canonical parent state, BACKGROUND-004 becomes Ready. BACKGROUND-005 remains gated by BACKGROUND-002 + BACKGROUND-003 + BACKGROUND-004; SYSTEM-TEST-003 remains terminal/developer-gated behind the complete Background chain even though its Admin dependency is already Complete.
