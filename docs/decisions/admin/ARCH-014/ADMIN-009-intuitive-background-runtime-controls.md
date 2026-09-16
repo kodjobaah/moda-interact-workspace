@@ -9,10 +9,8 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 66
-executor: copilot
-claimed_at: 2026-09-16T08:00:00Z
 attempt: 2
 depends_on:
 - ARCH-014-DATABASE-004
@@ -441,20 +439,18 @@ Status: Ready for Review
 
 ### Implementation
 
-- Implementation commit: `6852e01` (`feat(admin): add background runtime controls`), pushed to `origin/task/ARCH-014-ADMIN-009`.
-- Added the human-readable three-tab Runtime Controls UI on the retained Billing/Controls route, with responsive tabs/select, grouped settings, defaults/ranges/guidance, technical details disclosure, read-only non-SUPER_ADMIN access, client-only reset/default controls, reason-gated saves, and system-managed information.
-- Added server validation for all DATABASE-004 fields, integer/decimal unit conversion, every bound and cross-field relationship, exact expected-version concurrency fencing, singleton-missing failure, SUPER_ADMIN authorization, atomic versioned update, and same-transaction before/after audit events.
-- Added focused unit/security coverage and aligned the retained Controls security assertions with the ADMIN-009 runtime-controls surface. No schema, environment-variable, alternate spreadsheet, or legacy economics implementation was added.
+- Implementation commits: `6852e01` (initial implementation) and `fa2f49f` (`fix(admin): scope fleet-wide runtime control messaging`), pushed to `origin/task/ARCH-014-ADMIN-009`.
+- Reworked the retained Billing/Controls Runtime Controls UI so the exact fleet-wide introduction appears only with Worker throughput, while all seven queue rows retain their across-the-fleet guidance.
+- Added the exact queue-specific convergence sentence only when a successful save changes one of the seven queue-concurrency fields; non-queue saves retain only the generic success copy.
+- Added focused assertions for scoped introduction, queue/non-queue success messaging, and the existing security/runtime validation contract. No schema, environment-variable, alternate spreadsheet, legacy economics, or Background implementation was changed.
 
 ### Validation
 
-- Focused runtime unit tests: `4/4` passed.
-- Focused ADMIN-009 security tests: `3/3` passed.
-- Affected billing/security regression tests: `20/20` passed.
+- Focused ADMIN-009 security and runtime unit tests: `9/9` passed.
+- `npm test`: `177` passed, `3` failed. The failures are existing baseline failures: shared telemetry ownership flags an unrelated `sanitize` match in `src/components/admin/merchant-pricing-translation-workbook.tsx`; Shared ICU tests expect `^0.7.3` while the declared shared dependency is `^0.11.2` in `package.json`.
 - `npm run build`: passed; existing BullMQ optional-dependency/critical-dependency warnings remain.
-- `npm run lint -- --quiet`: passed.
+- `npm run lint --if-present`: passed with four existing warnings in `src/components/admin/merchant-pricing-plan-builder.tsx` and `src/components/admin/queue-monitor.tsx`; no errors.
 - `git diff --check`: passed.
-- Full `npm test`: after the ADMIN-009-related assertions were updated, the remaining failures are pre-existing baseline failures in shared telemetry ownership and published Shared ICU runtime/version expectations; no ADMIN-009 failure remains.
 
 ### Isolation
 
@@ -465,12 +461,12 @@ canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspa
 parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-ADMIN-009
 implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-ADMIN-009
 implementation branch: task/ARCH-014-ADMIN-009
-implementation head: 6852e01
+implementation head: fa2f49f
 parent claim commit: 4edb9e0
 submodules: recursive sync/update passed; database initialized at 89dca92325cefc96fe2dff5021d1e5ee0e8f7fe1
 ```
 
-The implementation branch and parent task report remain separate and were not merged to `main`. Executor and claim fields are cleared for `moda_architect` review.
+The implementation branch and parent task report remain separate and were not merged to `main`. The implementation worktree and parent report worktree are clean after their respective commits and pushes. Executor and claim fields are cleared for `moda_architect` review.
 
 ## Architect Review
 
