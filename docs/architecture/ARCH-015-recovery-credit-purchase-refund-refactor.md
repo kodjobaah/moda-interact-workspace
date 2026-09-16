@@ -1014,17 +1014,15 @@ Merchant refund reactivation is permanently unavailable once `automaticCorrectio
 
 Top-up offer busy state is per meter rather than global, and displayed provider price represents the deterministically derived next Shopify meter-unit charge, never a per-conversation price.
 
-Correction sequence:
+Correction execution model:
 
 ```text
-ARCH-015-SHOPIFY-004 (Ready)
-        |
-        v
-ARCH-015-BACKGROUND-004 (Pending)
-        |
-        v
-manual ARCH-015 test pass
-        |
-        v
-ARCH-015-SYSTEM-TEST-001 (explicit architect authorization only)
+ARCH-015-SHOPIFY-004 (Ready) --------\
+                                      +--> both Complete --> manual ARCH-015 test pass
+ARCH-015-BACKGROUND-004 (Ready) -----/                         |
+                                                                v
+                                      ARCH-015-SYSTEM-TEST-001
+                                      (explicit architect authorization only)
 ```
+
+SHOPIFY-004 and BACKGROUND-004 are coordinated implementations of the same provider-meter invariant but are not execution prerequisites of one another. They may run concurrently. The terminal manual/integrated proof must verify their interaction after both are Complete.

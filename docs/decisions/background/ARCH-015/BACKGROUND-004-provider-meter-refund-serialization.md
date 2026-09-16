@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 86
 executor: null
 claimed_at: null
@@ -39,7 +39,7 @@ provider == neither BEFORE nor EXPECTED AFTER
     => conflicting provider evidence; NEEDS_ATTENTION
 ```
 
-This task assumes `ARCH-015-SHOPIFY-004` has already made new merchant purchase/refund admissions single-flight on the same provider meter. Background still MUST defend against pre-existing/inconsistent rows and scheduler concurrency; it may not merely trust the web invariant.
+This task is coordinated with `ARCH-015-SHOPIFY-004`, but the two implementation tasks may execute concurrently. SHOPIFY-004 hardens merchant admission while BACKGROUND-004 independently defends against pre-existing/inconsistent rows and scheduler concurrency. Neither task is an execution prerequisite of the other; terminal integrated acceptance requires both to be architect-accepted Complete.
 
 No Prisma schema change is authorized.
 
@@ -257,7 +257,7 @@ Do not treat a currency mismatch as "provider has not caught up". A safe provide
 
 Do not modify Shopify code here.
 
-The accepted SHOPIFY-004 invariant is:
+The cross-task SHOPIFY-004 invariant, to be verified again during integrated/manual testing, is:
 
 ```text
 automaticCorrectionUsageEventId != null
@@ -438,3 +438,44 @@ Diff hygiene: `git diff --check` passed.
 Full suite: `npm test` ran 78 files, with 67 passed, 10 skipped, and 1 failed file containing 4 failed tests. The unchanged unrelated failures are the four tests in `tests/integration/translation-enum-bindings.integration.test.ts`; each fails because `Background runtime configuration has not started` before its database assertion in the translation services. No refund-correction tests failed.
 
 Limitations: no blockers identified for this task. The full-suite translation runtime baseline remains unresolved and is outside this task's authorized implementation surface.
+
+## Architect Review — Attempt 1 — Changes Requested
+
+Verdict: **Changes Requested — test-only correction; production implementation accepted in substance.**
+
+The implementation commit `1f7cd30` correctly adds the bounded Background protections required by this task: per-invocation collision-safe `(shopId,eventHandle)` visitation, deterministic earlier-live-refund and unresolved-purchase gating, exact frozen BEFORE / EXPECTED AFTER / conflict classification, and no schema / queue / publisher redesign. Do not redesign `recovery-credit-refund-correction.service.ts` unless one of the required regressions below proves a production defect.
+
+`ARCH-015-SHOPIFY-004` and `ARCH-015-BACKGROUND-004` are **parallel correction tasks**. BACKGROUND-004 does not wait for SHOPIFY-004 to execute. The Background tests can prove PREPARE rollback/link behavior from the Background side independently; the cross-repository interaction is verified later by manual/integrated testing once both tasks are Complete.
+
+Attempt 2 is limited to `tests/unit/services/recovery-credit-refund-correction.service.test.ts` unless a new test demonstrates a real production defect. Add deterministic coverage for the required scenarios that Attempt 1 did not yet prove:
+
+```text
+1. unresolved REQUESTED purchase on a different event handle does not block PREPARE;
+2. after an older same-handle refund becomes terminal, the next scheduler invocation prepares the next refund using a fresh provider baseline;
+3. explicit fractional conflict: BEFORE 4.00, correction -0.25, EXPECTED AFTER 3.75, actual 3.50 => NEEDS_ATTENTION with automatic-correction-provider-state-conflict;
+4. PREPARE refund-link CAS loss proves transactional rollback of the staged correction event (no committed/publishable orphan);
+5. an already-linked correction routes through reconciliation and does not call PREPARE / UsageEvent upsert again;
+6. safe fractional PREPARE freezes exact Decimal evidence and a subsequent linked retry does not recreate the event or rewrite frozen evidence.
+```
+
+Preserve the already-green scenarios for same-meter oldest-first processing, different-handle independence, earlier `PROVIDER_ACTION_REQUIRED` / `NEEDS_ATTENTION` deferral, same-handle unresolved-purchase deferral, exact BEFORE propagation, exact EXPECTED AFTER completion, third quantity/cost/currency conflicts, full -1 correction, 202-not-complete semantics, provider-action fallback-before-event, REFUND_COMPLETED system message, immutable evidence, and PREPARE race behavior.
+
+Re-run exactly:
+
+```bash
+npm test -- --run tests/unit/services/recovery-credit-refund-correction.service.test.ts
+npm run prisma:validate
+npm run build
+git diff --check
+npm test
+```
+
+The four existing translation-runtime failures may remain documented as unrelated baseline failures if unchanged. Do not modify translation runtime, schema, generic publisher, Shopify/Admin UI, or another repository to make this task green.
+
+Lifecycle after this review:
+
+```text
+ARCH-015-SHOPIFY-004      Ready / may execute independently
+ARCH-015-BACKGROUND-004   Ready at Attempt 1 -> next claim becomes Attempt 2
+ARCH-015-SYSTEM-TEST-001  Pending until both correction tasks are Complete and manual-test authorization is given
+```

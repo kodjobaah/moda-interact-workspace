@@ -48,4 +48,4 @@ provider correction and completion.
 
 A meticulous cross-repository ARCH-015 audit found that individually accepted tasks did not yet provide one common provider-meter mutation boundary. `ARCH-015-SHOPIFY-004` is therefore **Ready**. It is a bounded correction task: no schema change, no new queue and no new lock model. It reuses the existing per-shop `Subscription ... FOR UPDATE` lock so purchase and refund admission share the same `(shopId,eventHandle)` busy predicate.
 
-`ARCH-015-BACKGROUND-004` remains Pending until SHOPIFY-004 is architect-accepted Complete. Terminal system testing is intentionally deferred until after manual testing and must not be launched from this task.
+`ARCH-015-BACKGROUND-004` is a coordinated parallel correction and does not wait for SHOPIFY-004 to execute. Both tasks may be implemented/reviewed independently; terminal system testing remains Pending until both are architect-accepted Complete and manual testing has been authorized/completed.
