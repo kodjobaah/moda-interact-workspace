@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-16T18:50:32Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T19:55:00Z
 ---
 
 # ARCH-016-SHOPIFY-002
@@ -615,6 +615,34 @@ STOP. The launcher owns the increment from Attempt 1 to Attempt 2 when the task 
 - database submodule commit: `c59f2eb6953642f1c850d38b09ed03096d672547`;
 - Attempt 2 launcher claim commit: `5be72e1e`;
 - Attempt 2 implementation commit: `73d3bb3` (`fix(shopify): harden recovery settings presentation`);
+- implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
+
+## Attempt 3 Completion Report
+
+### Corrections Completed
+
+- Recovery Settings now consumes the supplied `startsAt`/`endsAt`, summary, method, code, status, and effective-fixed-discount translation keys without hard-coded labels.
+- Added bounded merchant/effective fixed-discount identity projections using only same-shop ID/title, without exposing provider snapshots or admin internals.
+- Added a focused 20-locale, 33-key Recovery Settings namespace and route-key regression test independent of parent documentation at runtime.
+
+### Attempt 3 Validation
+
+- focused Recovery Settings/policy/access/i18n tests: `45 passed`;
+- `git diff --check`: passed;
+- unchanged repository-wide typecheck/build baseline remains documented from prior attempts; no new focused Recovery Settings diagnostic reported.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-SHOPIFY-002`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-SHOPIFY-002`;
+- branches: `task/ARCH-016-SHOPIFY-002` in both worktrees;
+- origin/main synchronization and recursive submodule preparation: passed;
+- database submodule commit: `c59f2eb6953642f1c850d38b09ed03096d672547`;
+- Attempt 3 launcher claim commit: `f1bb3dea`;
+- Attempt 3 implementation commit: `711e984` (`fix(shopify): complete recovery settings presentation`);
 - implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for re-review.
