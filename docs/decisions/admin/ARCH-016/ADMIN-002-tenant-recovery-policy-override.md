@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -247,6 +247,285 @@ Ready for Review
 - task status set to `review`;
 - executor and claimed timestamp cleared;
 - returned to `moda_architect` for review; no merge to `main` performed.
+
+## Architect Review — Attempt 1 — Changes Requested
+
+Verdict: **Changes Requested**.
+
+The overall ARCH-016 Admin boundary is correct: merchant `ShopSettings` is no longer mutated by
+Admin; the published Shared `0.12.1` recovery-policy contract is consumed; complete override rows
+and dedicated audit events are used; expiry falls back to merchant policy; recovery generation /
+last-external-activity presentation is present; and raw provider snapshots/tokens are not exposed.
+Do not redesign those accepted parts in Attempt 2.
+
+Attempt 1 nevertheless has functional defects in form submission, Shopify discount eligibility,
+transactional authorization/audit identity, and audit-state capture. These defects can change the
+persisted override or prevent the intended action from working, so they require correction before
+acceptance.
+
+### Finding 1 — checked follow-up submissions are parsed as `false`, and a missing recovery delay becomes `0`
+
+`tenant-administration.tsx` renders the hidden `followUpEnabled=false` input before the checked
+`followUpEnabled=true` checkbox. `parsePolicySnapshot()` then uses `formData.get(...)`, which
+returns the first value. Therefore a checked checkbox submits both values but the server reads
+`false`; an Admin cannot persist `followUpEnabled=true` through this form.
+
+The numeric parser also executes:
+
+```text
+Number(formData.get("recoveryDelayMinutes"))
+```
+
+so an omitted field becomes `0`, even though ARCH-016 requires a complete submitted policy
+snapshot. Missing required policy input must be rejected rather than silently converted.
+
+Attempt 2 MUST make server parsing independent of DOM input order:
+
+```text
+followUpEnabled values:
+  ["false"]          -> false
+  ["false", "true"] -> true
+  ["true", "false"] -> true
+  missing/other value -> reject
+```
+
+Using `FormData.getAll("followUpEnabled")` is the preferred bounded fix. Do not trust only the
+first duplicate field value. `recoveryDelayMinutes` must first be present as a non-empty string,
+then be converted to a number and passed through the canonical Shared schema. Do not add local
+cross-field validation that duplicates `EffectiveRecoveryPolicySchema`.
+
+### Finding 2 — Clear Override is an invalid nested form and has no confirmation
+
+`ClearOverrideForm` currently renders a `<form>` from inside the UPSERT `<form>`. Nested HTML
+forms are invalid and can cause the clear submit to be associated with the outer UPSERT form
+instead of the CLEAR action. The task also explicitly requires a Clear Override action with
+confirmation and reason; the reason exists, but confirmation does not.
+
+Attempt 2 MUST:
+
+```text
+UPSERT form
+  -> contains only UPSERT fields + Save override submit
+
+CLEAR form
+  -> separate sibling form, never a descendant of the UPSERT form
+  -> hidden shopId + returnTo
+  -> required reason 1..1000 chars
+  -> explicit user confirmation before submission
+  -> invokes clearTenantRecoveryPolicyOverrideAction only after confirmation
+```
+
+If browser confirmation is implemented with `window.confirm`, create one small client component,
+for example:
+
+```text
+src/components/admin/tenant-recovery-policy-clear-form.tsx
+```
+
+and keep the surrounding tenant administration page/server component server-rendered. Do not
+convert the whole tenant administration component to a client component merely to obtain a
+confirmation dialog.
+
+### Finding 3 — Admin discount eligibility does not implement the ARCH-016 "currently running" rule
+
+ARCH-016 defines currently running as all of:
+
+```text
+catalogue status == CURRENT
+isAvailable == true
+providerStatus == ACTIVE
+startsAt <= now when present
+endsAt > now when present
+```
+
+and FIXED additionally requires `fixedSelectable == true`.
+
+The current Admin read path and UPSERT validation omit `providerStatus == ACTIVE`. The read path
+also returns counts/options even when the catalogue status is not `CURRENT`. Consequently a
+provider-inactive or stale catalogue row can be presented as running/selectable, and the UPSERT
+validator can accept a provider-inactive row when the other predicates happen to match.
+
+Attempt 2 MUST use one captured `now` value for the relevant operation and enforce:
+
+```text
+if catalogue.status != CURRENT:
+  runningDiscountCount = 0
+  fixedSelectableCount = 0
+  selectableDiscounts = []
+
+if catalogue.status == CURRENT:
+  running discount predicate =
+    shopId == target shop
+    isAvailable == true
+    providerStatus == "ACTIVE"
+    startsAt is null OR startsAt <= now
+    endsAt is null OR endsAt > now
+
+  fixed-selectable predicate = running predicate + fixedSelectable == true
+```
+
+For a submitted `FIXED` override, inside the write transaction:
+
+```text
+catalogue for target shop must exist and status == CURRENT
+selected discount must:
+  belong to target shop
+  be isAvailable == true
+  have providerStatus == "ACTIVE"
+  be fixedSelectable == true
+  satisfy the same start/end time window
+otherwise reject and write neither override nor audit event
+```
+
+Do not read `providerSnapshot`, infer redeem codes, or implement AI selection.
+
+### Finding 4 — SUPER_ADMIN is not rechecked transactionally, and development bypass can violate the new audit FKs
+
+The task requires one transaction for authorization recheck + database-backed validation + write.
+Attempt 1 performs `requireSuperAdmin()` before the transaction, then obtains an Admin ID outside
+the transaction and writes that ID into the FK-backed override/audit rows.
+
+In development bypass, `requirePlatformAdminMutation()` returns the reserved synthetic principal
+ID `development-platform-admin`; unlike existing audited Admin mutations, this action does not
+call `ensureDevelopmentPlatformAdmin(...)`. If that backing row has not already been provisioned,
+`updatedByPlatformAdminId` / `platformAdminId` can fail their `PlatformAdmin` foreign keys.
+
+Attempt 2 MUST reuse the existing Admin identity convention; do not invent another development
+identity mechanism:
+
+```text
+resolve + require SUPER_ADMIN principal at the action boundary
+enter the existing Prisma transaction
+  if principal.developmentBypass:
+    call ensureDevelopmentPlatformAdmin(transaction, principal)
+
+  re-read PlatformAdmin by principal.id inside the transaction
+  require durable row exists
+  require active == true
+  require role == SUPER_ADMIN
+
+  use that durable row id for:
+    ShopRecoveryPolicyOverride.updatedByPlatformAdminId
+    ShopRecoveryPolicyOverrideAuditEvent.platformAdminId
+
+  perform shop/catalogue/discount validation
+  write audit + UPSERT/CLEAR in this same transaction
+```
+
+Apply this to both UPSERT and CLEAR. A role deactivation/downgrade discovered by the in-transaction
+recheck must fail closed before the audit/override mutation. Keep `runProtectedTenantAction` and
+the existing global Admin authorization boundary unless a narrow compile-safe adjustment is
+required; do not redesign platform authentication.
+
+### Finding 5 — audit before/after snapshots lose override expiry changes
+
+`policySnapshot()` serializes only the five recovery-policy fields. `expiresAt` controls whether an
+override is effective, but it is omitted from both audit snapshots. An update that changes only
+expiry therefore records identical `beforeValue` and `afterValue`, so the durable audit event does
+not describe the actual state transition.
+
+Attempt 2 MUST make the bounded override audit snapshot exactly:
+
+```text
+recoveryDelayMinutes
+recoveryOfferMode
+fixedShopifyDiscountId
+followUpEnabled
+followUpDelayMinutes
+expiresAt    # ISO-8601 string when set, otherwise null
+```
+
+The audit event's existing top-level `reason` and `platformAdminId` remain authoritative for the
+mutation justification and actor; do not duplicate secrets or provider payloads into the JSON.
+For CLEAR, `afterValue` may remain JSON null. For UPSERT create, `beforeValue` may remain database
+NULL when no prior override exists.
+
+### Authorized Attempt-2 production surface
+
+```text
+src/app/actions/tenant.ts
+src/lib/admin/recovery-policy.ts
+src/lib/admin/data.ts
+src/components/admin/tenant-administration.tsx
+src/components/admin/tenant-recovery-policy-clear-form.tsx   # optional/new, only for clear confirmation
+```
+
+Focused tests may change under:
+
+```text
+tests/unit/recovery-policy.test.ts
+tests/security/admin-tenant-recovery-policy.test.mjs
+```
+
+Do NOT modify:
+
+```text
+database/prisma/schema.prisma
+any Prisma migration
+@modainteract/moda-interact-shared version (keep exact 0.12.1)
+ShopSettings recovery-policy values from Admin
+CommerceAgent/LLM behavior
+Shopify providerSnapshot presentation
+ARCH-010 Promotions behavior
+```
+
+### Required Attempt-2 functional regression assertions
+
+At minimum prove the following bounded behaviors; do not expand into exhaustive UI coverage:
+
+```text
+checked follow-up submission resolves to true despite hidden false fallback
+unchecked follow-up resolves to false
+missing recoveryDelayMinutes is rejected rather than becoming 0
+
+CLEAR form is not nested inside UPSERT form
+CLEAR requires reason and confirmation before invoking the CLEAR action
+
+catalogue != CURRENT => zero running/fixed-selectable metrics and no selectable options
+providerStatus != ACTIVE => row is not counted, offered, or accepted for FIXED override
+ACTIVE/current/running/fixedSelectable same-shop row => accepted for FIXED override
+
+production principal is re-read inside the mutation transaction and must remain active SUPER_ADMIN
+development bypass provisions/uses the reserved durable PlatformAdmin row before FK-backed audit/write
+submitted platformAdminId remains ignored
+
+expiry-only UPSERT produces different before/after audit snapshots because expiresAt is captured
+CLEAR audit remains durable and the live override is deleted only in the same successful transaction
+```
+
+Source-structure assertions are acceptable for the nested-form/no-secret boundaries, but the
+pure policy/parser behavior should be exercised as behavior where the existing test harness makes
+that practical. Do not build a new test framework for this correction.
+
+### Validation
+
+From the canonical Admin implementation task worktree, use the scripts the repository actually
+declares:
+
+```bash
+npm run test:unit
+node --test tests/security/admin-tenant-recovery-policy.test.mjs
+npx tsc --noEmit
+npm run lint
+npm run build
+git diff --check
+```
+
+`npm test` may also be run to compare the documented repository baseline, but unrelated existing
+async security/observability failures are not an ARCH-016 acceptance condition. If `npm run build`
+is again interrupted with exit 130 and no compiler diagnostic, record the exact command/output;
+do not alter production behavior merely to hide an environment interruption.
+
+### Stop conditions
+
+STOP and return to `moda_architect` if the corrections would require a Prisma/schema migration, a
+new Shared package/version, direct Admin mutation of merchant `ShopSettings`, new AI discount
+selection semantics, or provider-secret/raw-snapshot exposure. Otherwise return this same task
+with `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 2` after the next normal
+launcher claim.
+
+There is **no acceptance or dependency promotion from Attempt 1**. `ARCH-016-SYSTEM-TEST-001`
+remains pending behind all implementation dependencies and the developer manual-testing checkpoint.
 
 ## Completion protocol
 
