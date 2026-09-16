@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-16T00:51:19Z
 attempt: 3
 depends_on:
 - ARCH-015-SHARED-001
@@ -114,41 +112,39 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ## Completion Report
 
-Status: Ready for Review
+Status: Returned for Review
 
-Implementation commit: `56f95e3` (`Validate purchased credit provider context projection`), pushed to `task/ARCH-015-BACKGROUND-002`.
+Implementation commit: `7a1ae9f` (`fix(background): fail closed on malformed context hints`), pushed to `task/ARCH-015-BACKGROUND-002`.
 
 ### Implementation Summary
 
-- Updated `src/services/purchased-recovery-reservation.service.ts` to select `currentPeriodStart` and `currentPeriodEnd`, require a valid ordered period projection, and derive provider context through Shared `deriveShopifyProviderContextIdentity` using the provider subscription ID, observed plan handle, period bounds, and billing period ID.
-- Current-context classification now requires `status == ACTIVE`; `TRIALING`, missing projections, and invalid period projections classify every lot as historical for ordering without making any ACTIVE lot unspendable.
-- Existing historical-before-current ordering, within-group FIFO, cross-plan/cycle preservation, replay affinity, WITHDRAWN refund holds, atomic CAS behavior, local `RECOVERY_CONVERSATION` / `NOT_APPLICABLE` evidence, and no-Shopify-I/O behavior remain intact.
+- Added bounded fail-closed current-context classification in `src/services/purchased-recovery-reservation.service.ts`.
+- Requires an existing ACTIVE subscription, active mapped plan, nonblank trimmed observed plan handle, nonblank trimmed billing period, and a finite forward period before deriving provider identity.
+- Preserves nullable provider subscription IDs for valid native App Pricing derivation and converts any malformed Shared derivation failure to historical ordering rather than propagating from reservation.
+- Preserved historical-first and within-group FIFO, replay affinity, WITHDRAWN refund exclusion, atomic CAS behavior, `NOT_APPLICABLE` usage evidence, and no Shopify I/O.
 
 ### Rework Correction Mapping
 
-- Shared provider-context derivation with period identity: implemented in `src/services/purchased-recovery-reservation.service.ts`; focused tests retain current-group ordering with valid period data and cover invalid period projection as historical.
-- ACTIVE-only current-context classification: implemented by removing `TRIALING` from the current-context gate; focused regression verifies a TRIALING lot follows historical FIFO rather than current-group ordering.
-- Existing required behavior: preserved by the unchanged reservation/CAS/replay/refund/commit paths and the focused suite passing 19/19.
+- Whitespace-only native-App-Pricing plan handles now fail closed without throwing.
+- Blank billing-period evidence and invalid/non-forward periods classify all lots as historical while keeping them spendable.
+- Valid native App Pricing with a nullable legacy provider ID still derives current context and leaves historical lots first.
 
 ### Tests and Validation
 
-- `npm run test -- tests/unit/services/purchased-recovery-reservation.service.test.ts`: passed, 19/19.
-- `npm run test -- tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts`: skipped, 7 tests, because `TEST_DATABASE_URL` and `MODA_DISPOSABLE_INTEGRATION=1` were not enabled in the environment.
+- Focused reservation suite: `22/22` passed.
 - `npm run build`: passed, including Prisma client generation and TypeScript compilation.
-- `npm run test:unit`: 927/929 passed; 2 existing unrelated observability-startup baseline failures remain for worker close-resource source text and Shared version `0.9.0` versus package version `0.11.2`.
+- `npm run test:unit`: `930/932` passed; 2 existing unrelated observability-startup baseline failures remain for worker close-resource source text and Shared version `0.9.0` versus package version `0.11.2`.
+- Disposable PostgreSQL concurrency suite skipped because `TEST_DATABASE_URL` and `MODA_DISPOSABLE_INTEGRATION=1` were not enabled.
 - `git diff --check`: passed.
 
-### Worktree and Dependency Evidence
+### Isolation and Limitations
 
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-BACKGROUND-002`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-BACKGROUND-002`.
-- Database submodule observed at: `d44b621cdcc3635127b91601be648b61c0eff1e2`.
-- Implementation branch is clean after push; parent report has only this Completion Report/frontmatter update pending publication.
+- Database submodule remains at `d44b621cdcc3635127b91601be648b61c0eff1e2`.
+- Broader baseline failures were not modified because they are outside this task's authorized implementation surface.
 
-### Limitations
-
-- Disposable PostgreSQL concurrency tests were not executable without the required integration environment gate; no source or schema workaround was applied.
-- Broader unit-test failures were not modified because they are outside this task's authorized implementation surface.
+Returned to `moda_architect` for review after Attempt 3 correction.
 
 
 ## Architect Review — Attempt 2
