@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 63
 attempt: 3
 depends_on:
@@ -358,3 +358,18 @@ Keep the correction strictly inside the common scheduler/lease foundation.
 ### Acceptance boundary
 
 Attempt 3 is acceptable when the dynamic scheduler cannot hold an idle lease until expiry after normal completion and cannot silently outlive the 120-second lease without the common heartbeat lifecycle. Existing unrelated baseline test failures do not block acceptance.
+## Architect Review — Attempt 3
+
+### Review Status
+
+Accepted
+
+### Acceptance finding
+
+Attempt 3 closes the only remaining scheduler-lifecycle defect from the prior review. `startDynamicLeasedScheduler()` now executes each cycle through `BackgroundRuntimeLeaseService.runWithLease(...)`; the leased callback performs `config.getFresh()` only after successful acquisition and passes the exact lease handle plus immutable fresh snapshot to the scheduled work.
+
+This reuses the already-reviewed recursive heartbeat, owner+generation fencing, lease-loss handling, normal release and cleanup behavior. Short scheduled runs therefore release promptly instead of waiting for the 120-second lease expiry, while long-running scheduled work remains protected by the heartbeat lifecycle.
+
+The existing scheduler behavior is preserved: no local overlap, no `setInterval`, `runImmediately` behavior, unavailable-lease skipping, interval-change rescheduling, no interruption of in-flight work, latest-config scheduling after completion and idempotent stop.
+
+Implementation commit `bd27cd0` is accepted. No Attempt 4 is required.
