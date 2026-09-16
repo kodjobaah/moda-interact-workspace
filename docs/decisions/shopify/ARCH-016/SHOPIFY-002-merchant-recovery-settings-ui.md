@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-16T17:49:09Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
 - ARCH-016-DATABASE-001
@@ -258,3 +258,28 @@ STOP if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implemented the bounded merchant Recovery Settings experience at `/app/recovery-settings`.
+
+- Added ACTIVE/TRIALING merchant route access and navigation without changing `/app/promotions`.
+- Added server-side effective-policy resolution with active admin-override precedence, merchant-only saves, shop-scoped CURRENT/selectable fixed-discount validation, follow-up validation, and transaction-scoped catalogue re-read.
+- Added NONE, FIXED, and AI_BEST_APPLICABLE persistence without AI or CommerceAgent execution.
+- Added recovery-settings translations to all 20 supported merchant locale files and focused route/policy/locale coverage.
+- Preserved the repository's existing 59-key billing locale baseline assertion instead of hard-coding the stale count of 58.
+
+Validation:
+
+- Focused tests: `npm test -- --run tests/unit/recovery-policy.test.ts tests/unit/merchant-route-access-policy.test.ts tests/unit/billing-purchases-i18n.test.ts` — 3 files passed, 43 tests passed.
+- `npm test` — 48 files passed, 2 skipped; 612 tests passed, 3 skipped.
+- `npm run build` — passed; Prisma client generation and client/SSR bundles completed.
+- `git diff --check` — passed.
+- `npm run typecheck` — non-zero due unchanged repository-wide `TYPECHECK-001` baseline; no diagnostics were reported for the changed recovery-settings files.
+- `npm run lint` — non-zero due 16 existing errors and 2 warnings in unrelated dashboard, billing, privacy, and webhook files; no recovery-settings diagnostics were reported.
+
+Files changed: `app/routes.ts`, `app/routes/app/route.jsx`, `app/routes/app/recovery-settings/route.tsx`, `app/services/shop/merchant-route-access-policy.ts`, `app/services/recovery-policy/recovery-policy.server.ts`, all supported merchant locale files, focused tests, and the exact `@modainteract/moda-interact-shared` `0.12.1` pin.
+
+Unresolved issues: repository baseline failures above remain outside this bounded task. No cross-repository implementation or schema changes were required.
