@@ -9,11 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 64
-executor: null
-claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-014-BACKGROUND-001
 enables:
@@ -182,3 +180,181 @@ git diff --check
 ## Stop conditions
 
 STOP rather than creating another settings source or weakening provider-output safety bounds.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commits: `f575ed5`, `44590e2` on `task/ARCH-014-BACKGROUND-003`, pushed to `origin`.
+
+### Requirements
+
+- Replaced merchant-communications reconciliation `setInterval` with `startDynamicLeasedScheduler`, using `TRANSLATION_RECONCILIATION` and `translationReconciliationIntervalSeconds`; startup also runs through lease acquisition.
+- Migrated reconciliation page size, claim timeout, batch assembly limit, submission retry/attempt policy, initial poll, recurring poll/read retry, result retry, and automatic retry limits to the process last-known-good runtime-config snapshot at decision points.
+- Preserved decimal seconds via `seconds * 1000`, `FOR UPDATE SKIP LOCKED`, concurrent batch assembly semantics, provider retry classification, and provider output safety/provider correlation bounds.
+- Kept `TRANSLATION_PROVIDER`, `TRANSLATION_MODEL`, and provider credentials deployment-configured; no retired translation environment-variable names are read from `src/`.
+- Kept `translationResultRetrySeconds` distinct from `translationPollIntervalSeconds` for result/item retry scheduling.
+- Attempt 2 correction: captured one last-known-good runtime snapshot per valid submit or poll job and threaded it through failure, persistence, and enqueue helpers; initial and recurring poll database schedules now use the exact same seconds value as their BullMQ delays.
+- Attempt 2 regression tests prove one `current()` call and identical persisted/enqueued timing for successful submission, nonterminal polling, and provider-read-failure polling; terminal item retry continues to use `translationResultRetrySeconds` separately from the poll interval.
+
+### Validation
+
+- Focused submit/poll regression tests: PASS, 2 files / 24 tests.
+- `npm run test:unit`: 949 passed; 2 pre-existing failures in `tests/unit/runtime/observability-startup.test.ts` (recovery entrypoint source-text expectation and shared dependency version expectation `0.9.0` versus repository `0.11.2`). No failures were in task-owned translation files.
+- `npm run test:integration --if-present`: PASS, 2 files / 3 tests, including PostgreSQL concurrent `SKIP LOCKED` batch assembly.
+- `npm run build`: PASS (`prisma:generate` and `tsc`).
+- `git diff --check`: PASS.
+- Retired environment-name scan under `src/`: PASS, no matches. Provider/model/credential scan confirms retained reads.
+
+### Evidence and limitations
+
+- Launcher supplied and used the canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-014-BACKGROUND-003` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-014-BACKGROUND-003`.
+- Launcher reported the initialized database submodule at `47232f6876469f209c7efde4cefbb8a47d864e6a`; no database files or parent submodule gitlink were changed.
+- Implementation worktree is clean after publication at `44590e2`. Parent worktree contains only this task report change before its report commit.
+- The full unit suite retains the two unrelated observability baseline failures listed above; integration infrastructure was available and passed.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Functional finding
+
+The runtime mappings are present, but initial and recurring provider-poll scheduling can use two different `BackgroundRuntimeConfig` versions inside one job.
+
+`TranslationBatchSubmitService` currently reads `translationInitialPollSeconds` once while persisting `MerchantTranslationBatch.nextPollAt`, then reads the runtime config again after the database await when enqueuing the BullMQ poll job. `TranslationBatchPollService` has the same split for `translationPollIntervalSeconds`: the database `nextPollAt` is persisted first, then the queue delay is calculated from another `current()` call.
+
+`BackgroundRuntimeConfigService` refreshes asynchronously every five seconds. Therefore a config version change can occur while either service is awaiting the database. Example: the database can persist `nextPollAt = now + 300 seconds`, the process refreshes to `60 seconds`, and the BullMQ job is then enqueued with a 60-second delay. The poll worker does not reject a job merely because persisted `nextPollAt` is still in the future, so provider polling can run materially earlier than the database schedule. The inverse change produces a materially late poll.
+
+This violates the task's paired mappings:
+
+```text
+translationInitialPollSeconds
+  -> first provider batch poll nextPollAt + BullMQ delay
+
+translationPollIntervalSeconds
+  -> subsequent provider batch polling and poll-read retry
+```
+
+The issue is runtime consistency, not test breadth.
+
+### Required Attempt 2 correction
+
+Keep the correction limited to the translation submit/poll scheduling paths. Do not redesign translation batching, provider safety rules, environment configuration, retryability classification, leases, database schema, or queue topology.
+
+#### 1. `src/services/translation-batch-submit.service.ts`
+
+For one `submit(...)` job, capture one runtime-config snapshot before making runtime-policy decisions:
+
+```ts
+const runtimeConfig = currentTranslationRuntimeConfig(this.runtimeConfig);
+```
+
+Use that same object for all task-owned submit policy in that job, including:
+
+```text
+translationSubmitMaxAttempts
+translationSubmitRetrySeconds
+translationInitialPollSeconds
+```
+
+Change helper signatures as necessary so the same snapshot/value is passed into:
+
+```text
+persistFailure(...)
+persistSubmitted(...)
+enqueuePoll(...)
+```
+
+The successful provider-create path MUST use the exact same `runtimeConfig.translationInitialPollSeconds` value for both:
+
+```text
+MerchantTranslationBatch.nextPollAt
+BullMQ TRANSLATION_BATCH_POLL delay
+```
+
+Do not call `currentTranslationRuntimeConfig(...)` independently in those two helpers for the same submit job.
+
+#### 2. `src/services/translation-batch-poll.service.ts`
+
+For one valid `poll(...)` job, capture one runtime-config snapshot and pass it through the job's runtime-policy helpers.
+
+For both provider-read failure and provider `nonterminal` outcomes, the exact same `runtimeConfig.translationPollIntervalSeconds` value MUST drive:
+
+```text
+persisted MerchantTranslationBatch.nextPollAt
+BullMQ replacement poll-job delay
+```
+
+Thread the snapshot/value into:
+
+```text
+rescheduleAfterReadFailure(...)
+advanceNonterminal(...)
+enqueuePoll(...)
+```
+
+Do not independently re-read `current()` between persisting the schedule and enqueuing the replacement poll job.
+
+The existing terminal provider/item behavior must remain unchanged apart from using the captured job snapshot where runtime retry values are needed. Preserve:
+
+```text
+failureIsRetryable(...)
+translationMaxAutoRetries
+translationResultRetrySeconds
+message failure-state semantics
+```
+
+#### 3. Preserve exact scope boundaries
+
+Do not change:
+
+```text
+TRANSLATION_PROVIDER
+TRANSLATION_MODEL
+OPENAI_API_KEY / provider credentials
+MAX_CORRELATION_PAGES
+provider MAX_PAGE_SIZE
+MAX_OUTPUT_BYTES
+MAX_OUTPUT_LINES
+provider endpoint/completion window
+failure retryability classification
+FOR UPDATE SKIP LOCKED batch assembly
+translation reconciliation lease/scheduler
+```
+
+Do not reintroduce any retired translation environment-variable read.
+
+### Focused regression evidence
+
+Add focused tests using a runtime-config reader whose `current()` would return different values on successive calls. Prove at minimum:
+
+1. successful batch submission persists and enqueues the first poll with one identical `translationInitialPollSeconds` value;
+2. nonterminal provider polling persists and enqueues the next poll with one identical `translationPollIntervalSeconds` value;
+3. provider-read-failure polling uses the same one-snapshot recurring poll interval;
+4. the correction does not merge `translationResultRetrySeconds` into the provider poll interval.
+
+The tests should verify functional timing consistency; no broad expansion of translation coverage is required.
+
+### Stop condition
+
+Return the same task as Attempt 2 after this correction. Do not start `ARCH-014-BACKGROUND-004` or `ARCH-014-BACKGROUND-005` until BACKGROUND-003 is architect-accepted.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted
+
+### Functional acceptance
+
+Attempt 2 closes the runtime-consistency defect identified in the previous review. `TranslationBatchSubmitService.submit(...)` now captures one last-known-good runtime-config snapshot after successfully claiming a batch and threads that same snapshot through submission failure policy, persisted first-poll scheduling, and BullMQ poll enqueueing. Therefore `translationInitialPollSeconds` is identical for persisted `nextPollAt` and the queued first-poll delay.
+
+`TranslationBatchPollService.poll(...)` likewise captures one snapshot for each valid poll job and threads it through provider-read failure, nonterminal rescheduling, terminal retry policy, and poll enqueueing. Therefore `translationPollIntervalSeconds` is identical for persisted recurring `nextPollAt` and the replacement BullMQ delay. `translationResultRetrySeconds` remains a separate terminal item retry policy.
+
+The correction preserves provider/model environment configuration, provider safety limits, retryability classification, `FOR UPDATE SKIP LOCKED` batch assembly, reconciliation lease/scheduler behavior, and the removal of retired translation environment-variable reads. No database-schema or queue-topology change is introduced.
+
+Focused regression tests use a runtime reader whose `current()` changes between calls and prove one `current()` call per submit/poll job plus identical persisted/enqueued timing for initial polling, nonterminal polling, and provider-read-failure polling. The reported focused tests, integration tests, build and diff checks pass; the two full-suite observability failures are unrelated baselines.
+
+Implementation commit `44590e2` is accepted. No Attempt 3 is required.
