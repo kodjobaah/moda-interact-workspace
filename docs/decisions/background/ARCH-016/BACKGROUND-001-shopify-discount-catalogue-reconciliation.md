@@ -9,9 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-attempt: 2
+attempt: 3
 depends_on:
 - ARCH-016-DATABASE-001
 - ARCH-016-SHARED-001
@@ -19,6 +19,8 @@ enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16
+executor: copilot
+claimed_at: 2026-09-16T18:41:56Z
 ---
 
 # ARCH-016-BACKGROUND-001
