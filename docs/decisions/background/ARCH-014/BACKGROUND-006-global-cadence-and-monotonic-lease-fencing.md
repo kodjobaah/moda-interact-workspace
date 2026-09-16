@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 68
-executor: null
-claimed_at: null
-attempt: 0
+executor:
+claimed_at:
+attempt: 1
 depends_on:
 - ARCH-014-DATABASE-005
 - ARCH-014-BACKGROUND-001
@@ -532,3 +532,63 @@ STOP and return to architect if:
 - any new runtime-config column appears necessary;
 - production startup intentionally invokes one of the affected services before `BackgroundRuntimeConfigService.start()` and correcting the order requires an architectural change;
 - closing a fallback appears to require copying executable validation logic from another repository instead of implementing the explicit contract above.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `602cfed` (`fix(background): enforce global cadence and runtime config authority`)
+Parent report commit: `c380e70` (superseded locally by the final amended report commit below).
+
+Changed production files:
+
+- `scripts/test-integration.mjs`
+- `src/runtime/background-runtime-config.ts`
+- `src/runtime/background-runtime-lease.ts`
+- `src/services/billing-reconciliation.service.ts`
+- `src/services/conversation-turn-processor.service.ts`
+- `src/services/inbound-whatsapp-abuse-admission.service.ts`
+- `src/services/translation-runtime-config.ts`
+
+Changed and additional tests:
+
+- `tests/helpers/background-runtime-config.ts`
+- `tests/integration/background-runtime-lease-cadence.concurrency.integration.test.ts`
+- `tests/unit/runtime/background-runtime-config.test.ts`
+- `tests/unit/runtime/dynamic-leased-scheduler.test.ts`
+- `tests/unit/services/conversation-turn-processor.service.test.ts`
+- `tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts`
+- affected translation assembly, poll, submit, and reconciliation tests
+
+Validation:
+
+- `npm run test:unit -- tests/unit/runtime/background-runtime-lease.test.ts tests/unit/runtime/dynamic-leased-scheduler.test.ts tests/unit/runtime/background-runtime-config.test.ts` passed: 64 files, 984 tests.
+- `npm run test:unit -- tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts` passed: 64 files, 984 tests.
+- `npm run test:unit -- tests/unit/services/translation-batch-assembly.service.test.ts tests/unit/services/translation-batch-poll.service.test.ts tests/unit/services/translation-batch-submit.service.test.ts tests/unit/services/translation-reconciliation.service.test.ts` passed: 64 files, 984 tests.
+- `npm run test:integration -- tests/integration/background-runtime-lease-cadence.concurrency.integration.test.ts` passed: 1 file, 1 test, using the disposable PostgreSQL harness.
+- `npm run test:unit` passed: 64 files, 984 tests.
+- `npm run build` passed, including `prisma generate` and TypeScript compilation.
+- `git diff --check` passed.
+
+Behavioural evidence:
+
+- PostgreSQL cadence-aware acquisition raced two explicit owners, produced exactly one generation `1`, retained the lease row after release with non-null `lastFinishedAt`, rejected both immediate reacquisitions inside the cadence window, then produced exactly one generation `2` after moving only `lastFinishedAt` behind the cadence boundary. The generation-1 handle could not heartbeat or release generation 2.
+- The dynamic scheduler regression uses deliberately skewed replica wake times across multiple cadence windows and asserts at most one completed global run per shared window.
+- Runtime-config tests cover invalid below-minimum and above-maximum values, cross-field limit violations, startup rejection, and invalid newer rows retaining the prior last-known-good snapshot/version without listener notification.
+- Translation, conversation, and abuse readers now fail with `Background runtime configuration has not started.` when not started; isolated tests inject explicit valid readers.
+- Billing reconciliation tests verify non-default `billingFrozenRecheckSeconds` and `billingProviderRetrySeconds` are used consistently from one immutable cycle snapshot, including the existing-subscription/no-provider path.
+- No Prisma schema or migration files were changed by this task.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Summary
+
+Attempt 1 is accepted on functionality. The implementation now makes PostgreSQL authoritative for both lease ownership and shared global cadence, retains lease rows on normal release, stamps `lastFinishedAt` with PostgreSQL `NOW()`, and preserves monotonic fencing generations across release/reacquire cycles. The real PostgreSQL integration test proves generation `1 -> 2`, retained-row cadence blocking, and stale-handle fencing.
+
+The combined runtime-authority scope is also complete: Background validates the DATABASE-004 min/max and cross-field contract before adopting newer snapshots; invalid newer rows retain last-known-good state without listener notification; production translation, conversation-settling and abuse-admission readers no longer fall back to compiled defaults; and the periodic billing scanner uses the supplied cycle snapshot for configurable frozen/provider retry timing. The remaining literal fallback values in `BillingReconciliationService` are confined to the explicitly preserved direct-test seam because the production periodic entrypoint always supplies the runtime snapshot.
+
+`ARCH-014-BACKGROUND-007` remains superseded because its full scope was merged into this task. Implementation commit `602cfed` is accepted. No further BACKGROUND-006 attempt is required.
