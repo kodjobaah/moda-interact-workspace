@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-16T16:18:27Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-016-DATABASE-001
@@ -293,3 +293,41 @@ STOP if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `da4ccbb9c91d64ba1e9aa4c1e045569600116483` on
+`task/ARCH-016-BACKGROUND-002`, pushed to
+`origin/task/ARCH-016-BACKGROUND-002`.
+
+Implemented the expiry service and hourly leased scheduler, bounded conditional
+expiry/status-history writes, pending restart from EXPIRED checkout activity,
+generation-aware materialisation, monotonic checkout and inbound customer
+activity timestamps, runtime lifetime validation, and focused restart/expiry
+coverage. The direct checkout-refresh test proves an EXPIRED recovery schedules a
+pending restart without Shopify refresh or mutation of the expired row.
+
+Validation:
+
+- Focused expiry/restart/generation/runtime/activity suites: 6 files, 69 passed.
+- Post-repair task-local compatibility suites: 3 files, 51 passed.
+- `npm test`: 67 files passed, 10 skipped; 1,025 passed, 19 skipped, 5 failed.
+  The remaining failures are unrelated translation integration/runtime setup
+  failures: four translation enum tests require runtime configuration startup,
+  and the translation batch concurrency assertion does not produce the expected
+  batch assignment in the current local database state.
+- `npm run build`: blocked by the pre-existing accepted-schema/client mismatch;
+  existing background code references `transcriptionStatus` and `contentType`,
+  neither of which exists in the accepted generated Prisma client. No unrelated
+  source or schema workaround was made.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+
+Database evidence: the implementation worktree database gitlink resolves to the
+accepted ARCH-016-DATABASE-001 commit
+`9eb25ade30c878f0bb7376c90f0396eb3e66df3c`; the database submodule is clean and
+no schema files were changed by this task. The implementation branch is clean
+after push. No SYSTEM-TEST-001 work was started and no architect acceptance
+decision was made.
