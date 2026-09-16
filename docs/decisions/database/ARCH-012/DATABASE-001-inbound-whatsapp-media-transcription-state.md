@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 12
-executor: copilot
-claimed_at: 2026-09-16T09:59:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-007-DATABASE-006
@@ -143,13 +143,53 @@ Return only DATABASE-001 to `review`; do not start dependent Background work.
 ## Completion Report
 
 ### Status
-Not started.
+Ready for architect review.
 
-### Files Changed
-TBD.
+### Physical worktree isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-012-DATABASE-001`
+- Parent branch: `task/ARCH-012-DATABASE-001`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-012-DATABASE-001`
+- Implementation branch: `task/ARCH-012-DATABASE-001`
+- Shared implementation checkout switched or mutated: no
+- Another task worktree reused: no
+
+### Launcher evidence
+
+- Claim commit: `495d4fd7231141346244afeb13e1622ac3027f9b`
+- Attempt: `1`
+- Dependency gate: passed (`ARCH-007-DATABASE-006` complete)
+- Parent origin/main incorporated: already-current
+- Implementation origin/main incorporated: already-current
+- Recursive submodule sync/update: passed; no submodule entries
+
+### Files changed
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20260916100000_arch012_inbound_whatsapp_media_transcription_state/migration.sql`
+- `scripts/validate-arch012-whatsapp-media-schema.mjs`
+- `docs/generated/prisma-erd.puml`
+
+### Implementation
+
+- Added `MessageContentType` and `MessageTranscriptionStatus` in the `whatsapp` schema.
+- Added durable media provenance and transcription lifecycle fields with backward-compatible defaults for existing text messages.
+- Added a PostgreSQL check constraint preventing negative media duration.
+- Preserved unique `providerMessageId` deduplication and existing conversation ordering/coalescing fields.
+- Added structural validation proving exact enum members, field types/defaults, no raw audio or URL persistence fields, and append-only migration safety.
+- Regenerated the PlantUML ERD.
 
 ### Validation Results
-TBD.
+
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run test:first-production-baseline`: passed.
+- `node scripts/validate-arch012-whatsapp-media-schema.mjs`: passed.
+- `npm run erd:puml`: passed.
+- `git diff --check`: passed.
+- Implementation commit: `655ff35` (pushed).
+- No application repositories, recovery/billing schema, raw audio bytes, provider URLs, or merchant account models were changed.
 
 ## Architect Review
 
