@@ -9,17 +9,17 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-16T17:34:55Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-016-DATABASE-001
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T18:42:00Z
 ---
 
 # ARCH-016-BACKGROUND-002
@@ -554,6 +554,39 @@ Attempt-2 launcher claim commit
 
 Do not manufacture a code change solely for execution evidence; source changes are
 already required by Findings 1-4.
+
+## Attempt 2 Completion Report
+
+### Corrections Completed
+
+- Added one guarded monotonic recovery activity method using the provider event timestamp.
+- Routed all resolved inbound WhatsApp content, including audio and unsupported content, through that activity update before content-specific processing.
+- Active checkout updates now advance activity before Shopify lookup, including not-found, ambiguous, and retryable provider-error outcomes.
+- Removed processing/transcription-time ARCH-016 activity writes from conversation and audio services.
+- Guarded `markRecoveryMessageSent()` with `status = DETECTED`, preventing an in-flight send from reopening an EXPIRED generation.
+- Expiry conditional updates now require the candidate’s exact selected status, preventing stale `fromStatus` history.
+
+### Attempt 2 Validation
+
+- focused expiry/recovery/worker/checkout/audio/matured-candidate suites: `83 passed`;
+- `npm run prisma:validate`: passed;
+- `git diff --check`: passed;
+- `npm run build`: remains blocked by the unchanged accepted-schema/generated-client mismatch: existing `transcriptionStatus` and `contentType` references are absent from the generated Prisma client;
+- `npm test`: interrupted with exit 130 during the existing translation concurrency integration test; no Attempt 2 correction failure was reported before interruption.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-002`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-002`;
+- parent and implementation branches: `task/ARCH-016-BACKGROUND-002`;
+- origin/main synchronization: already-current;
+- recursive implementation submodule preparation: passed; database gitlink `9eb25ade30c878f0bb7376c90f0396eb3e66df3c`;
+- Attempt 2 launcher claim commit: `3e75ac6a`;
+- Attempt 2 implementation commit: `ad1f858` (`fix(background): preserve provider activity and expiry races`);
+- implementation branch pushed; executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
 
 ### Reclaim state
 
