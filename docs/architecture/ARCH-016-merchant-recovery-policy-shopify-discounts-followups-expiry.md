@@ -808,3 +808,24 @@ The task remains `attempt: 2`, `executor: null`, `claimed_at: null`; the launche
 increment on reclaim. No ARCH-016 dependency is promoted by this review.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the developer
 manual-testing checkpoint remains before terminal integrated testing.
+
+
+## Post-review update — SHOPIFY-001 Attempt 3 Changes Requested
+
+`ARCH-016-SHOPIFY-001` Attempt 3 implementation commit `2ffbd20` correctly adds the
+shared `commerce.Shop ... FOR UPDATE` lifecycle fence to subscription activation and
+uninstall, and duplicate uninstall now reuses the persisted first `Shop.uninstalledAt`
+for catalogue invalidation.
+
+One bounded correction remains: `APP_SCOPES_UPDATE` currently persists `Session.scope`
+before acquiring that same Shop-row lock. The task contract requires one consistent
+lifecycle lock order across activation, scope update and uninstall, with the Shop lock
+held before Session/catalogue lifecycle mutation. Attempt 4 must therefore move only the
+scope Session persistence behind the existing Shop lock, then re-read the durable offline
+Session and retain post-commit publication.
+
+The task returns to `status: ready`, remains `attempt: 3`, `executor: null` and
+`claimed_at: null`; the deterministic launcher owns the increment on reclaim. No
+ARCH-016 dependency is promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending and is not
+started automatically; the developer manual-testing checkpoint remains before terminal
+integrated testing.

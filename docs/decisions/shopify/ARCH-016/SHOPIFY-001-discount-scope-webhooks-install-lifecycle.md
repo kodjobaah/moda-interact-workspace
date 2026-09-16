@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -989,3 +989,175 @@ claimed_at: null
 The deterministic launcher owns the increment to Attempt 3 when the task is reclaimed.
 No dependent task is promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending
 and MUST NOT start automatically.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Changes Requested — scope-update must acquire the common Shop lifecycle lock before mutating Session state**
+
+Implementation commit reviewed: `2ffbd20`.
+Parent Completion Report commit reported: `0df88e46`.
+
+Attempt 3 correctly implements the common PostgreSQL Shop-row lock helper and fixes the
+remaining activation/uninstall race from Attempt 2. The following Attempt-3 behavior is
+accepted and MUST be preserved:
+
+```text
+lockShopLifecycleRow(...) uses commerce.Shop FOR UPDATE
+activation resolves identity, acquires the Shop lock, then re-reads authoritative eligibility
+activation publishes only after its transaction commits
+uninstall resolves identity, acquires the same Shop lock, then re-reads durable uninstall state
+duplicate uninstall reuses persisted Shop.uninstalledAt for catalogue invalidation
+existing per-discount non-null unavailableAt values remain preserved
+Shared remains pinned exactly to 0.12.1
+```
+
+One lifecycle-lock ordering defect remains in `APP_SCOPES_UPDATE`.
+
+### Finding — scope-update writes Session.scope before acquiring the common Shop lock
+
+Current code in:
+
+```text
+app/routes/webhooks/app/scopes-update/route.jsx
+```
+
+executes the transaction in this order:
+
+```text
+transaction.session.update(... scope ...)
+  -> resolve Shop id
+  -> lockShopLifecycleRow(... FOR UPDATE ...)
+  -> re-read Shop/offline Session
+  -> mutate catalogue
+```
+
+That does not satisfy the Attempt-3 contract. Attempt 3 explicitly required every
+participating lifecycle transaction to acquire the **same Shop row lock before any
+Session/catalogue lifecycle mutation**, with one consistent lock order across activation,
+scope update and uninstall.
+
+Although the Session write is not externally visible until transaction commit, it already
+acquires/mutates the Session row before the common lifecycle serialization boundary. This
+creates a mixed lock order (`Session -> Shop`) while the canonical lifecycle order is
+`Shop -> Session/catalogue`. The purpose of the shared fence is not merely that the Shop
+row is locked at some point in the transaction; it is to establish one deterministic
+shop-scoped ordering boundary before lifecycle state is mutated.
+
+### Required Attempt-4 correction
+
+Make one narrow correction in:
+
+```text
+app/routes/webhooks/app/scopes-update/route.jsx
+```
+
+Inside the existing `db.$transaction(...)`, use this exact order:
+
+```text
+1. resolve Shop identity by authenticated shop domain (ID lookup only)
+2. if no Shop row exists, return null without catalogue mutation/publish
+3. acquire lockShopLifecycleRow(transaction, shopId)
+4. only after the Shop lock is held, persist session.scope = payload.current when session exists
+5. re-read authoritative Shop status/settings/subscription after the lock
+6. re-read the durable offline Session (`shop = domain`, `isOnline = false`) after the Session persistence
+7. evaluate eligibility from the persisted offline Session scope only
+8. missing/no-read_discounts offline scope -> mark catalogue UNAVAILABLE; no publish
+9. eligible state -> mark catalogue SYNC_REQUIRED
+10. commit transaction
+11. publish SCOPES_UPDATED only after commit
+```
+
+The pre-lock Shop lookup is identity resolution only. Do not use any pre-lock Shop,
+Subscription, ShopSettings or Session values as authoritative eligibility state.
+
+Do **not** move BullMQ publication inside the transaction.
+
+Do **not** add another lock. The existing `lockShopLifecycleRow(...)` helper is the one
+canonical lifecycle lock for this task.
+
+### Required lock-order invariant after correction
+
+All three participating lifecycle paths must now be:
+
+```text
+subscription activation:
+  resolve Shop id -> Shop FOR UPDATE -> authoritative reads -> catalogue mutation -> commit -> publish
+
+APP_SCOPES_UPDATE:
+  resolve Shop id -> Shop FOR UPDATE -> Session scope persistence -> authoritative reads -> catalogue mutation -> commit -> publish if eligible
+
+APP_UNINSTALLED:
+  resolve Shop id -> Shop FOR UPDATE -> authoritative uninstall read/write -> catalogue invalidation -> commit -> Session deletion
+```
+
+There must be no `Session` write before the Shop lock in `APP_SCOPES_UPDATE`.
+
+### Attempt-4 authorised implementation surface
+
+Modify only:
+
+```text
+app/routes/webhooks/app/scopes-update/route.jsx
+focused scope-update lifecycle test(s)
+this task Completion Report / review metadata
+```
+
+Do not change:
+
+```text
+app/services/discounts/shopify-discount-lifecycle.service.ts
+app/services/shop/shop.service.ts
+shopify.app.moda-interact.toml
+webhook ingress/queue implementation
+billing callback/provider verification
+package.json or package-lock.json
+Shared queue contract/version
+```
+
+unless a compile-only import adjustment is strictly required by the route correction.
+
+### Required focused regression validation
+
+Add a focused route-level regression test under the existing `tests/unit/routes/`
+boundary that proves call order, not only that the lock helper is eventually invoked.
+The test must fail against Attempt 3 and pass after the correction.
+
+At minimum prove:
+
+```text
+1. Shop identity lookup occurs before the lifecycle lock only as ID resolution
+2. lockShopLifecycleRow / transaction.$queryRaw occurs before transaction.session.update
+3. transaction.session.update occurs before the post-lock offline Session eligibility read
+4. catalogue mutation occurs after the Shop lock
+5. SCOPES_UPDATED publication occurs after the transaction resolves
+6. scope removal still marks UNAVAILABLE and does not publish
+7. payload read_discounts without persisted offline read_discounts still cannot publish
+```
+
+Do not broaden Attempt 4 into unrelated test cleanup. Rerun the focused ARCH-016
+lifecycle tests, build, relevant type/lint validation and `git diff --check`. Existing
+unrelated repository baseline diagnostics do not require correction in this task.
+
+### Completion / stop condition
+
+Attempt 4 is ready for architect re-review only when:
+
+```text
+APP_SCOPES_UPDATE acquires the Shop FOR UPDATE lock before Session.scope mutation
+all authoritative scope eligibility is still based on the post-lock persisted offline Session
+activation and uninstall retain the accepted Attempt-3 locking behavior
+duplicate uninstall retains the persisted first Shop.uninstalledAt
+publication remains after transaction commit
+Shared remains pinned exactly to 0.12.1
+focused lock-order regression validation passes
+```
+
+Then push both mirrored task branches, set this same task back to `status: review`, clear
+`executor` / `claimed_at`, and return it to `moda_architect`.
+
+No ARCH-016 dependency is promoted by this review. `attempt` remains `3` in this Changes
+Requested patch; `/moda-task ARCH-016-SHOPIFY-001` owns the increment to Attempt 4 when
+the task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
+automatically.
