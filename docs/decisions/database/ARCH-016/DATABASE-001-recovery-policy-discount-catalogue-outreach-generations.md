@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-16T15:56:04Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -462,18 +462,41 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 Status: Ready for Review
 
-Implementation commit: `c7a31a1` on `task/ARCH-016-DATABASE-001`, pushed to `origin/task/ARCH-016-DATABASE-001`.
+Attempt 2 implementation commit: `9eb25ad` on `task/ARCH-016-DATABASE-001`, pushed to `origin/task/ARCH-016-DATABASE-001`.
 
-Authorized files changed:
+Attempt 2 corrections:
 
-- `prisma/schema.prisma`
-- `prisma/migrations/20260916150000_arch016_recovery_policy_discounts_outreach_generations/migration.sql`
-- `docs/generated/prisma-erd.puml`
-- `docs/generated/erd.png`
-- `scripts/validate-arch016-recovery-schema.mjs`
-- `package.json`
+- Replaced the invalid `DROP CONSTRAINT` with schema-qualified `DROP INDEX` for the historical CheckoutRecovery uniqueness index.
+- Added explicit non-null guards for enabled follow-up delays in both policy CHECK constraints.
+- Added explicit non-null `codeCount` guards to single-redeem-code and fixed-selectable CODE CHECK constraints.
+- Strengthened the ARCH-016 validator to prove those SQL semantics and reject regression to the invalid index drop.
 
-Implemented the complete ARCH-016 database contract: merchant and platform-admin recovery policy snapshots with audit history; Shopify discount catalogue and selectable-discount constraints; recovery generations with data-preserving backfill and partial active-generation uniqueness; outreach attempts and inverse message relation/checks; runtime lifetime and expiry lease; required tenant/admin inverses; and the focused static validator/ERD updates. Conversation identity uniqueness and ARCH-010 promotion models were preserved.
+Authorized files changed in Attempt 2:
+
+- `moda-interact-database/prisma/migrations/20260916150000_arch016_recovery_policy_discounts_outreach_generations/migration.sql`
+- `moda-interact-database/scripts/validate-arch016-recovery-schema.mjs`
+
+The prior accepted implementation commit `c7a31a1` remains the base of this correction. No schema, unrelated migration, application, background, admin, package, or ERD source changes were made in Attempt 2. Conversation identity uniqueness, ARCH-010 promotion data, and unrelated billing models remain preserved.
+
+Physical worktree isolation:
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-DATABASE-001`
+- parent branch: `task/ARCH-016-DATABASE-001`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-DATABASE-001`
+- implementation branch: `task/ARCH-016-DATABASE-001`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+
+- parent remote task branch fast-forwarded: not-needed; prepared claim was already at `ae4f1e52`
+- parent `origin/main` incorporated: already-current in prepared task branch
+- implementation remote task branch fast-forwarded: not-needed; prepared branch was already at `c7a31a1`
+- implementation `origin/main` incorporated: already-current in prepared task branch
+- recursive implementation submodule preparation: passed; no recursive submodules present
+- launcher claim commit: `ae4f1e52`
 
 Validation:
 
@@ -481,14 +504,14 @@ Validation:
 - `npm run prisma:generate` passed.
 - `npx prisma validate --schema prisma/schema.prisma` passed.
 - `npx prisma generate --schema prisma/schema.prisma` passed.
-- `npm run erd` passed, including PlantUML PNG generation.
-- `npm run test:arch016-recovery-schema` passed.
-- `git diff --check` passed.
-- `npm test` was not run successfully because this repository declares no `test` script (`npm error Missing script: "test"`).
+- `npm run erd` passed, including PlantUML PNG generation; generated churn was discarded because the ERD source/schema was unchanged in Attempt 2.
+- `npm run test:arch016-recovery-schema` passed after the correction and final cleanup.
+- `git diff --check` passed on the final implementation diff.
+- `npm test` was not run because this repository declares no generic `test` script.
 
-Database validation limitation: the verified local database is reachable at `localhost:5432/moda_interact`, but `npx prisma migrate deploy` could not apply pending migrations because the database already contains the failed migration `20260915140000_arch015_fractional_provider_usage_snapshots` (Prisma error P3009). No migration was applied or marked resolved, and the unrelated baseline migration was not changed. The repository-configured remote database was not used for migration execution.
+Migration deployment limitation: `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npx prisma migrate deploy --schema prisma/schema.prisma` reached the intended local database but stopped before applying ARCH-016 with the unchanged pre-existing Prisma `P3009`: failed migration `20260915140000_arch015_fractional_provider_usage_snapshots` (started `2026-09-15 13:16:50.597229 UTC`). No migration was applied or marked resolved, and the unrelated ARCH-015 migration was not modified.
 
-Implementation worktree is clean after commit. Awaiting `moda_architect` review; this agent did not mark the task complete or start dependent tasks.
+Implementation worktree is clean after commit and push. Parent report is ready for `moda_architect` review; this agent did not mark the task complete, merge either branch, or start dependent ARCH-016 tasks.
 
 ## Architect Review — Attempt 1
 
