@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 attempt: 3
 depends_on:
@@ -161,6 +161,7 @@ Do NOT implement basket eligibility or "best" selection.
 
 Implement exactly this lifecycle:
 
+### Claim
 
 In a short DB transaction:
 
@@ -171,19 +172,22 @@ In a short DB transaction:
 5. generate opaque random `activeSyncToken`;
 6. set `status = SYNCING`, `syncStartedAt = now`, clear last error;
 7. commit.
-status: review
+
 ### Fetch
 
 Fetch all GraphQL pages outside a long-running DB transaction.
 
+### Finalize
+
+In one bounded transaction:
 
 1. lock/reload catalogue;
 2. require `activeSyncToken` still equals this worker token;
 3. revalidate shop still ACTIVE, subscribed and scope-eligible;
+4. upsert every observed `ShopifyDiscount` by `(shopId, shopifyDiscountNodeId)`;
 5. set each observed row `isAvailable = true`, `lastSeenSyncGeneration = generation`, `lastSyncedAt = now`, `unavailableAt = null`;
 6. mark all rows for shop whose `lastSeenSyncGeneration != generation` as `isAvailable = false`, `unavailableAt = now`;
 7. set catalogue `CURRENT`, `lastSuccessfulSyncAt = now`, clear token/error/unavailableAt.
-updated: 2026-09-16T19:55:00Z
 
 If token no longer matches, return `superseded` without changing rows/catalogue status.
 
@@ -1044,3 +1048,43 @@ all accepted Attempt-2 provider/fencing/lifecycle behavior remains unchanged
 Then push both mirrored task branches, set this same task back to `status: review`, clear `executor` / `claimed_at`, update the Completion Report with Attempt-3 evidence, and return to `moda_architect`.
 
 No ARCH-016 dependency is promoted by this review. `attempt` remains `2` in this Changes Requested patch; `/moda-task ARCH-016-BACKGROUND-001` owns the increment to Attempt 3 when the task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically.
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted — Complete**
+
+Implementation commit reviewed: `5c12354`.
+Parent Completion Report commit reviewed: `5a284a81`.
+
+Attempt 3 closes the two bounded catalogue-ordering defects from Attempt 2 without reopening
+the accepted provider, worker or billing-lifecycle design. For an existing Shop, both
+`requestSync()` and worker `reconcile()` now resolve Shop identity before catalogue creation.
+A missing Shop therefore returns `unavailable` without catalogue upsert, generation/token claim
+or Shopify provider access.
+
+For every existing-Shop worker request, the locked catalogue path preserves the canonical job
+request clock as:
+
+```text
+syncRequestedAt = max(existing syncRequestedAt, payload.requestedAt)
+```
+
+including when current install/subscription/scope eligibility fails. An older out-of-order
+request therefore cannot regress the durable request clock, and the ineligible path remains
+`UNAVAILABLE` with provider access suppressed.
+
+The previously accepted Attempt-2 behavior remains intact: Shopify 2026-07 full pagination and
+normalization, exact one-code proof, generation/token fencing, finalize-time eligibility
+revalidation, durable `SYNC_REQUIRED` before lifecycle enqueue, reinstall/activation triggers,
+Shared `0.12.1`, existing offline-token authority and the existing `moda-recovery-worker`.
+
+The Attempt-3 parent report commit accidentally removed the `### Claim` / `### Finalize`
+headings, finalize step 4, and inserted task-frontmatter fragments into the middle of this task
+contract. This architect acceptance patch restores that documentation only; it is not an
+implementation defect and does not require Attempt 4.
+
+The documented generated-Prisma-client build diagnostics remain baseline-only and do not reopen
+this task. `ARCH-016-SYSTEM-TEST-001` remains Pending because other implementation dependencies
+are still incomplete and the developer manual-testing checkpoint remains in force.

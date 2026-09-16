@@ -925,3 +925,23 @@ The task returns to `status: ready`, remains `attempt: 2`, `executor: null` and
 `claimed_at: null`; the launcher owns the Attempt-3 increment on reclaim. No dependency is
 promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the
 developer manual-testing checkpoint remains before terminal integrated testing.
+
+## Post-review update — BACKGROUND-001 Attempt 3 Accepted
+
+`ARCH-016-BACKGROUND-001` Attempt 3 is architect-accepted **Complete** at implementation
+commit `5c12354`.
+
+The accepted Background catalogue boundary now resolves Shop identity before catalogue creation,
+terminates stale missing-Shop requests without provider access, and monotonically preserves the
+canonical queue `requestedAt` even when an existing Shop is temporarily ineligible. Older
+out-of-order jobs cannot regress `syncRequestedAt`.
+
+All previously accepted Attempt-2 provider, generation/token fencing, eligibility recheck,
+activation/reinstall publication and Shared `0.12.1` boundaries remain unchanged. The parent
+Attempt-3 report contained accidental task-contract formatting damage; the architect acceptance
+repairs that documentation without requiring another implementation attempt.
+
+No implementation dependency is promoted by this acceptance.
+`ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation dependency is
+Complete and the developer has completed the existing manual-testing checkpoint. It is not
+started automatically.
