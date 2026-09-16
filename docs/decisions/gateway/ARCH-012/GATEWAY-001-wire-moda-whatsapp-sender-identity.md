@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
-executor: copilot
-claimed_at: 2026-09-16T12:04:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-012-BACKGROUND-003
@@ -96,13 +96,25 @@ Return GATEWAY-001 to `review`; STOP.
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-TBD.
+- `moda-interact-gateway/render.test.yaml`
+- `moda-interact-gateway/render.production.yaml`
+- `moda-interact-gateway/tests/validate-render-blueprints.sh`
+- `moda-interact-gateway/tests/validate-render-blueprints-negative.sh`
+
+Implementation commit: `64cb326` (`feat(gateway): wire WhatsApp business account identity`), pushed to `task/ARCH-012-GATEWAY-001`.
 
 ### Validation Results
-TBD.
+- `bash tests/validate-render-blueprints.sh`: passed for test and production Blueprints.
+- `bash tests/validate-render-blueprints-negative.sh`: passed; all negative cases rejected, including WABA-for-phone-number substitution.
+- `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`: passed.
+- `git diff --check`: passed.
+- `bash tests/run-tests.sh`: explicitly run once; gateway integration checks passed through the final visible sensitive-query upstream-failure section, but the terminal command timed out at 120 seconds before returning an exit summary. No retry was performed. Developer validation remains required at the implementation revision.
+
+Developer validation required:
+- `bash tests/run-tests.sh` from `moda-interact-gateway/`; expected success is exit code 0 with the final suite summary reporting zero failures.
 
 ## Architect Review
 
