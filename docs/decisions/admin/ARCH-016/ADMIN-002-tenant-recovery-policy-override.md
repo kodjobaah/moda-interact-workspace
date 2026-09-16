@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-16T17:11:06Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-016-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-16T17:18:00Z
 ---
 
 # ARCH-016-ADMIN-002
@@ -530,3 +530,36 @@ remains pending behind all implementation dependencies and the developer manual-
 ## Completion protocol
 
 The implementation and report are complete. The task is returned to `moda_architect` at `status: review`; stop here pending architect review.
+
+## Attempt 2 Completion Report
+
+### Corrections Completed
+
+- Complete policy parsing now rejects missing recovery delay and uses `FormData.getAll()` so checked follow-up submissions resolve to `true` regardless of hidden-input order.
+- Clear Override is now a separate sibling client form with required reason and explicit `window.confirm` confirmation; nested forms were removed.
+- Tenant catalogue metrics/options require `CURRENT`, `isAvailable`, `providerStatus: ACTIVE`, and the start/end window. Non-current catalogues expose zero running/selectable options.
+- FIXED override writes enforce the same CURRENT/ACTIVE/running/selectable predicates inside the write transaction using one captured timestamp.
+- UPSERT and CLEAR recheck a durable active SUPER_ADMIN inside their transaction and provision the reserved development admin identity through the existing helper when bypassed.
+- Audit snapshots now include `expiresAt` as an ISO timestamp or null, preserving expiry-only changes in before/after state.
+
+### Attempt 2 Validation
+
+- `npm run test:unit`: `128 passed`, `0 failed`;
+- focused recovery-policy tests: `3 passed`;
+- focused tenant security tests: `2 passed`;
+- `npx tsc --noEmit`: passed;
+- `npm run lint`: passed with no output/errors;
+- `npm run build`: passed;
+- `git diff --check`: passed;
+- aggregate `npm test`: `144 passed`, `3 failed`, `4 cancelled`, `0 skipped`; remaining failures/cancellations are unrelated repository baseline security/observability or i18n tests.
+
+### Attempt 2 Git / Handoff
+
+- launcher claim commit: `9ad7fd6`;
+- implementation correction commit: `215cb7f` (`fix(admin): harden tenant policy override actions`);
+- implementation branch pushed: `origin/task/ARCH-016-ADMIN-002`;
+- canonical workspace and prepared worktrees unchanged from launcher packet;
+- recursive submodule state remained ready at `c59f2eb6953642f1c850d38b09ed03096d672547`;
+- executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for re-review.
