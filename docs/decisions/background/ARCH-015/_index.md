@@ -4,7 +4,7 @@
 |---|---|---|
 | [ARCH-015-BACKGROUND-001](BACKGROUND-001-purchase-reconciliation.md) | complete | Candidate-centric provider reconciliation is complete; durable purchase event handles drive exact provider proof without singular BillingPlan pack-meter authority. |
 | [ARCH-015-BACKGROUND-002](BACKGROUND-002-cross-plan-consumption.md) | complete | Historical/non-current ACTIVE lots are consumed before current-context lots with fail-closed local context classification. |
-| [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | pending | Existing billing scheduler processes durable refunds using typed RecoveryCreditRefund correction evidence, submits safe negative/fractional corrections and reconciles completion. |
+| [ARCH-015-BACKGROUND-003](BACKGROUND-003-refund-correction-reconciliation.md) | ready | Existing billing scheduler processes durable refunds using typed RecoveryCreditRefund correction evidence, submits safe negative/fractional corrections and reconciles completion. |
 
 ## Current architect review state
 
@@ -58,3 +58,17 @@ Ready and is the current Background implementation frontier.
 Code/schema audit on 2026-09-16 found that the original BACKGROUND-003 contract referenced `UsageEvent.metadata`, but the current `UsageEvent` model has no metadata field. More importantly, provider baseline/expected-after values are authoritative refund settlement evidence and must not live in an untyped JSON blob.
 
 `ARCH-015-DATABASE-002` is therefore inserted before BACKGROUND-003. BACKGROUND-003 returns to **Pending** until DATABASE-002 is architect-accepted Complete. Its corrected contract uses typed `RecoveryCreditRefund` fields plus a unique explicit FK to the automatic correction `UsageEvent`. Existing refund plan/period/provider-context/event/refund-amount fields remain the sole provenance/economic source; no duplicates are added.
+
+
+## Post DATABASE-002 Attempt 1 acceptance
+
+`ARCH-015-DATABASE-002` is now **Complete**. Its typed refund-correction evidence schema
+and unique restrictive correction-UsageEvent relation satisfy the final declared
+prerequisite of `ARCH-015-BACKGROUND-003`.
+
+`ARCH-015-BACKGROUND-003` is therefore **Ready**. It must use the integrated typed
+`RecoveryCreditRefund` evidence fields and must not fall back to `UsageEvent.metadata` or
+process-local settlement evidence.
+
+The pre-existing database P3009 must be recovered before deployed migration/integration
+validation, but no additional DATABASE-002 implementation attempt is required.

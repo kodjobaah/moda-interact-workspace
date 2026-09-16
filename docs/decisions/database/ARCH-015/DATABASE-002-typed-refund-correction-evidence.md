@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 65
 executor: null
 claimed_at: null
@@ -317,3 +317,78 @@ STOP and return evidence to `moda_architect` if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Accepted — Complete**
+
+Architect inspection confirms the implementation matches the bounded ARCH-015 typed
+automatic-refund evidence contract.
+
+Accepted schema/migration behavior:
+
+```text
+RecoveryCreditRefund
+  automaticCorrectionUsageEventId String? @unique
+  providerUsageQuantityBeforeCorrection Decimal?
+  providerUsageCostBeforeCorrection Decimal?
+  expectedProviderUsageQuantityAfterCorrection Decimal?
+  expectedProviderUsageCostAfterCorrection Decimal?
+
+RecoveryCreditRefundAutomaticCorrection
+  one-to-one optional relation -> UsageEvent.id
+  ON DELETE RESTRICT
+
+UsageEvent.quantity remains Decimal
+Moda recovery-credit quantities remain Int
+no UsageEvent.metadata JSON is introduced
+```
+
+The migration `20260916083000_arch015_refund_correction_evidence` is lexically after the
+existing ARCH-015/ARCH-014 migrations and does not edit historical migration files. All
+five new columns are nullable and the migration contains no refund-evidence backfill.
+Existing rows therefore enter with the complete automatic-correction evidence group null.
+
+The grouped CHECK accepts exactly the intended two modes:
+
+```text
+automaticCorrectionUsageEventId IS NULL
+  -> all four new Decimal evidence fields are NULL
+  -> existing final/expected manual-fallback fields may independently be populated
+
+automaticCorrectionUsageEventId IS NOT NULL
+  -> all four Decimal evidence fields present
+  -> finalCreditQuantity present and > 0
+  -> expectedProviderAmount present and >= 0
+  -> expectedProviderCurrency present
+  -> provider quantity/cost before and expected-after values are non-negative
+```
+
+The unique FK prevents one correction UsageEvent from being linked to multiple refunds,
+and `ON DELETE RESTRICT` prevents deleting the linked provider-event evidence while the
+refund retains the relation.
+
+The static ARCH-015 validators, Prisma validate/generate and ERD generation passed.
+Architect review also re-ran both ARCH-015 static validators against the submitted
+snapshot successfully.
+
+`prisma migrate deploy` could not reach this new migration because the selected database
+already reports Prisma P3009 for the earlier
+`20260915140000_arch015_fractional_provider_usage_snapshots` migration. That failed
+migration predates DATABASE-002 and was not modified or resolved in this task. This is
+recorded as an environment/database-history limitation rather than a DATABASE-002 schema
+defect. The failed migration history must still be repaired before a deployed environment
+can apply this migration and run integration/system acceptance.
+
+Accepted implementation evidence:
+
+```text
+implementation: e54cd3fe5a21bab31037826c56fd3f62717d9cfd
+parent report:   9103132227ab9f9e34630362aa5b287311c5c7b3
+attempt:         1
+```
+
+No Attempt 2 is required.
