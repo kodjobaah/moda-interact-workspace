@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 63
 executor: null
 claimed_at: null
@@ -309,3 +309,49 @@ Do not:
 ## Stop conditions
 
 STOP if DATABASE-004 is absent or if the implementation cannot guarantee owner+generation fencing with PostgreSQL server time.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Functional finding
+
+The common runtime-config and fenced lease services are functionally sound after Attempt 2, including immutable published dates and reporting heartbeat loss discovered during cleanup. The dynamic leased scheduler still bypasses the lease lifecycle required for horizontally scaled periodic work.
+
+`startDynamicLeasedScheduler()` currently calls `lease.tryAcquire(...)` directly and, after a successful acquisition, calls `config.getFresh()` and `run(...)`. It never heartbeats or releases the acquired handle. This creates two production failures:
+
+1. a short successful cycle leaves the lease valid until its 120-second expiry, so later cycles can be skipped even when the configured interval is much shorter;
+2. a run lasting beyond the 120-second lease duration receives no heartbeat, allowing another replica to take over while the original work is still running, violating the one-global-run invariant.
+
+This is a runtime correctness defect, not a request for exhaustive test expansion.
+
+### Required Attempt 3 correction
+
+Keep the correction strictly inside the common scheduler/lease foundation.
+
+1. In `src/runtime/dynamic-leased-scheduler.ts`, execute each global cycle through `BackgroundRuntimeLeaseService.runWithLease(...)` (or an exactly equivalent lifecycle that uses the existing guarded heartbeat and release semantics). The preferred deterministic shape is:
+   - call `lease.runWithLease(leaseName, async (handle) => { ... })`;
+   - inside the leased callback, call `config.getFresh()` **after acquisition**;
+   - pass that immutable fresh snapshot and the exact lease handle to `run(snapshot, handle)`;
+   - if `runWithLease` returns `{ kind: "skipped" }`, perform no work and treat it as a normal skipped cycle.
+2. Do not add a second heartbeat/release implementation to the scheduler. Reuse the already-reviewed `runWithLease` fencing, recursive heartbeat, cleanup and release behavior.
+3. Preserve all existing scheduler behavior:
+   - no `setInterval`;
+   - no local overlap;
+   - `runImmediately` semantics unchanged;
+   - config changes reschedule a waiting timer;
+   - config changes do not interrupt running work;
+   - next delay comes from latest in-memory config;
+   - stop remains idempotent and waits for local in-flight work.
+4. Add focused regression evidence that proves the scheduler uses the full lease lifecycle rather than raw acquisition. At minimum prove:
+   - a completed scheduled cycle releases through the lease lifecycle so a subsequent interval is not artificially blocked for 120 seconds;
+   - a long scheduled run is protected by the lease heartbeat path;
+   - unavailable lease still skips without calling `run`;
+   - fresh config is still read only after the lease has been acquired.
+5. Do not modify DATABASE-004, business-specific billing/recovery/translation/messaging entrypoints, BullMQ concurrency, lease constants, runtime-config fields or environment-variable policy in this attempt.
+
+### Acceptance boundary
+
+Attempt 3 is acceptable when the dynamic scheduler cannot hold an idle lease until expiry after normal completion and cannot silently outlive the 120-second lease without the common heartbeat lifecycle. Existing unrelated baseline test failures do not block acceptance.
