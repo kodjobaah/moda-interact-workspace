@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
 executor: null
 claimed_at: null
@@ -849,3 +849,49 @@ focused regression evidence passes, the task claim is cleared, and both worktree
 clean and pushed.
 
 `ARCH-015-ADMIN-001` remains Pending until BACKGROUND-003 is architect-accepted Complete.
+
+
+## Architect Review — Attempt 3
+
+### Status
+
+**Accepted — Complete**
+
+Attempt 3 closes all five bounded findings from the Attempt-2 review without redesigning the accepted automatic-refund workflow.
+
+Accepted evidence:
+
+- Shared provider-context derivation now supports native App Pricing when the legacy provider subscription id is null and fails closed on malformed provider context.
+- PREPARE alone requires live pricing; RECONCILE uses fresh provider context plus exact quantity/cost/currency against the frozen typed expected-after evidence and does not recalculate settlement economics.
+- Unsafe PREPARE freezes proportional `expectedProviderAmount` from the final unused credit ratio using exact Decimal arithmetic.
+- A lost refund-link CAS throws inside the preparation transaction, rolling back any newly prepared unlinked PENDING correction before the winner is reloaded.
+- Successful automatic completion writes the deterministic `BILLING_REFUND_COMPLETED` SYSTEM/AVAILABLE merchant-support message in the same financial completion transaction.
+- Existing negative/fractional App Event support, deterministic idempotency, 202-as-receipt semantics, typed immutable evidence, exact provider proof, entitlement decrement and completion CAS remain intact.
+
+Validation recorded by the implementation agent:
+
+```text
+correction service:       10 passed
+usage-event publisher:    15 passed
+App Events provider:      20 passed
+billing runtime/scheduler: 8 passed
+full unit suite:          979 passed
+production build / tsc:   passed
+git diff --check:         passed
+```
+
+The implementation synchronization commit brought the task branch onto the newer Background baseline; architect review of implementation commit `2bafde9` confirms the task-specific correction is bounded to the authorized refund-correction surface and focused tests.
+
+The pre-existing database P3009 remains an external deployment/integration prerequisite. It does not require another BACKGROUND-003 implementation attempt.
+
+Dependency promotion:
+
+```text
+ARCH-015-BACKGROUND-003  Complete
+          |
+          +--> ARCH-015-ADMIN-001       Ready
+                      |
+                      +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+`ARCH-015-SYSTEM-TEST-001` remains Pending until `ARCH-015-ADMIN-001` is architect-accepted Complete and the target database can apply the accepted migrations.

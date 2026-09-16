@@ -910,3 +910,38 @@ docs/decisions/admin/ARCH-015/ADMIN-001-localization-matrix.json
 ```
 
 The matrix provides wording only; it does not authorize ADMIN-001 to invent an Admin-wide multilingual runtime when the current Admin runtime remains English-only.
+
+
+## Post-review update — BACKGROUND-003 Attempt 3 Accepted
+
+`ARCH-015-BACKGROUND-003` Attempt 3 is architect-accepted and **Complete**.
+
+The automatic recovery-credit refund correction path now preserves the accepted two-phase boundary:
+
+```text
+PREPARE
+  -> prove current provider context + live pricing/economics
+  -> atomically freeze typed refund evidence + exactly one correction UsageEvent
+  -> lost link CAS rolls the event back
+
+RECONCILE
+  -> never recalculate frozen economics
+  -> use fresh provider context + quantity/cost/currency only
+  -> exact frozen after-state proof
+  -> atomic purchase/counter/refund completion
+  -> deterministic REFUND_COMPLETED system message
+```
+
+Attempt 3 also restores native App Pricing provider-context identity when Shopify exposes no legacy subscription id and freezes proportional manual-fallback economics for partial unused packs. No new queue, schema, refund status, `UsageEvent.metadata`, process-local settlement evidence or automatic Admin provider action was introduced.
+
+The dependency frontier is now:
+
+```text
+ARCH-015-BACKGROUND-003  Complete
+          |
+          +--> ARCH-015-ADMIN-001       Ready
+                      |
+                      +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+SYSTEM-TEST-001 remains Pending until ADMIN-001 is Complete. The pre-existing database P3009 remains an external deployment/integration prerequisite before deployed end-to-end acceptance can apply the accepted migration chain.

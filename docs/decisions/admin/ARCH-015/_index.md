@@ -2,7 +2,14 @@
 
 | Task | Status | Summary |
 |---|---|---|
-| [ARCH-015-ADMIN-001](ADMIN-001-manual-refund-fallback.md) | pending | Atomic replacement of the superseded Admin refund workflow plus redesigned Refund Requests UI integration, deterministic manual-settlement guardrails, App Event drill-through and architect-supplied 20-locale refund translations. |
+| [ARCH-015-ADMIN-001](ADMIN-001-manual-refund-fallback.md) | ready | Atomic replacement of the superseded Admin refund workflow plus redesigned Refund Requests UI integration, deterministic manual-settlement guardrails, App Event drill-through and architect-supplied 20-locale refund translations. |
 | [ARCH-015-ADMIN-002](ADMIN-002-refund-requests-ui-lifecycle.md) | superseded | Do not execute. UI scope merged into ADMIN-001 so the Admin repo changes atomically without compatibility/intermediate-state code. |
 
 Localization contract: [ADMIN-001-localization-matrix.json](ADMIN-001-localization-matrix.json)
+
+
+## Post BACKGROUND-003 Attempt 3 acceptance
+
+`ARCH-015-BACKGROUND-003` is architect-accepted Complete, so the sole declared prerequisite of `ARCH-015-ADMIN-001` is satisfied. `ARCH-015-ADMIN-001` is now **Ready** and is the current ARCH-015 implementation frontier.
+
+`ARCH-015-SYSTEM-TEST-001` remains Pending until ADMIN-001 is architect-accepted Complete.
