@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-16T18:20:52Z
 attempt: 2
 depends_on:
 - ARCH-016-DATABASE-001
@@ -307,19 +305,21 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 
 ### Work Completed
 
-- Added the Shopify Admin GraphQL discount provider using the existing offline token refresh service, API version `2026-07`, bounded pagination, all eight documented union types, code-count/single-code normalization, and bounded provider snapshots without secrets.
-- Added generation/token-fenced catalogue claim, fetch, finalize, supersession, eligibility-loss, unavailable, and provider-error handling.
-- Added the canonical Shared discount-sync worker to the existing recovery worker with bounded concurrency.
-- Added deferred Background billing activation and reinstall sync publication after successful lifecycle transactions, with best-effort queue failure handling.
-- Pinned `@modainteract/moda-interact-shared` to exact `0.12.1`.
+- Finding 1, provider normalization: `src/providers/shopify-discount.provider.ts` now queries `codesCount` and the actual `codes` connection for all four code union members, preserves bounded count/precision/evidence snapshots, and only proves `singleRedeemCode` when the exact one-code connection is complete. App-backed rows remain stored but non-selectable.
+- Findings 2-3, catalogue fencing and request ordering: `src/services/shopify-discount-catalogue.service.ts` now uses one `FOR UPDATE` catalogue lock for request, claim, failure, and finalize paths; increments generations and replaces opaque tokens under the lock; revalidates eligibility before provider access and before `CURRENT`; preserves history/unavailable timestamps; and records `syncRequestedAt` monotonically from the canonical job timestamp. `src/workers/shopify-discount-sync.worker.ts` validates and passes `requestedAt`.
+- Finding 4, durable request state: `src/services/billing-subscription-reconciliation.service.ts` establishes `SYNC_REQUIRED` in a short transaction before enqueue, leaves it durable on queue failure, and uses three exponential retries with retained failures.
+- Findings 5-6, lifecycle coverage: `src/services/billing-subscription-reconciliation.service.ts` now publishes `REINSTALL_RECONCILED` for same-cycle Paid reinstall and marks NO_CONTRACT reinstall catalogues/rows unavailable without enqueueing.
+- Finding 7, periodic Paid activation: `src/services/billing-reconciliation.service.ts` and `src/entrypoints/billing.ts` inject the existing canonical discount queue through the periodic billing activation route. `tests/unit/runtime/entrypoint-isolation.test.ts` tracks the expanded dependency contract.
+- Accepted boundaries preserved: Shared remains exact `0.12.1`, Shopify API remains `2026-07`, the existing offline token mechanism is reused, the worker remains `moda-recovery-worker`, no write scope/AI selection/new service was added.
 
 ### Validation
 
-- `npm run prisma:validate`: passed;
-- catalogue/provider implementation has no new TypeScript diagnostics;
-- `npm run build`: blocked by pre-existing unrelated generated-client mismatches in checkout generation and WhatsApp transcription/content-type fields;
-- `git diff --check`: passed;
-- focused provider/catalogue/worker tests were not present in the supplied snapshot; implementation was validated through Prisma/schema compilation and existing worker/billing integration surfaces.
+- Focused lifecycle/entrypoint tests: passed, `3` files / `195` tests.
+- `npm run prisma:validate`: passed.
+- `npm run build`: task-owned files compile; blocked only by the unchanged baseline diagnostics in `src/services/inbound-whatsapp-audio.service.ts` (`transcriptionStatus`) and `src/workers/whatsapp.worker.ts` (`contentType`) from the generated Prisma client mismatch.
+- `git diff --check`: passed.
+- Full `npm test -- --passWithNoTests`: `7` existing failures remain outside this task: recovery entrypoint string expectation, translation batch concurrency integration, four translation enum/runtime configuration integrations, and the observability test expecting Shared `0.12.0` while the required dependency is `0.12.1`. No focused task test failed.
+- No dedicated provider/catalogue tests were present in the supplied snapshot; provider and catalogue changes were validated by task-owned compilation, the focused lifecycle suite, Prisma validation, and source-level contract inspection.
 
 ### Launcher / Git Evidence
 
@@ -330,9 +330,9 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 - start synchronization: parent/implementation origin/main already current; recursive submodule preparation passed;
 - database submodule commit: `655ff35ea04f4d2cdb4bef4313b3b977320999cd`;
 - launcher claim commit: `512ca126`;
-- implementation commit: `70770d6` (`feat(background): reconcile Shopify discount catalogue`);
+- implementation commit: `8665b93` (`fix(background): complete Shopify discount reconciliation rework`);
 - implementation branch pushed to `origin/task/ARCH-016-BACKGROUND-001`;
-- executor and claimed timestamp cleared; no main branch modified.
+- parent Completion Report updated on the mirrored parent task branch; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for review.
 
