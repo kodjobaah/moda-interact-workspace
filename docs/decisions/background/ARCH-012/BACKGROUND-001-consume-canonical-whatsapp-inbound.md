@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 21
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-012-SHARED-001
 - ARCH-012-DATABASE-001
@@ -352,18 +352,47 @@ Return `ARCH-012-BACKGROUND-001` to `review` and STOP. Do not create or execute 
 ## Completion Report
 
 ### Status
-Not started.
+Ready for architect review.
 
 ### Files Changed
-TBD.
+- Implementation branch commits: `aca37f9` (attempt 1) and `5851670` (attempt 2) on `task/ARCH-012-BACKGROUND-001`.
+- Accepted database submodule pointer: `655ff35` (`ARCH-012-DATABASE-001`).
+- Consumes `@modainteract/moda-interact-shared@0.12.0` and its strict canonical WhatsApp union.
+- Canonical worker-boundary parsing and legacy payload rejection in `src/workers/whatsapp.worker.ts` and `src/integration/whatsapp/types.ts`.
+- Outbound-only explicit context routing in `src/services/recovery-routing.service.ts`.
+- Typed Meta media and Groq transcription error classification in `src/services/whatsapp-media.service.ts`, `src/services/speech-transcription.service.ts`, and `src/services/inbound-whatsapp-audio.service.ts`.
+- Focused worker, routing, audio lifecycle, and media classification regression tests.
 
 ### Validation Results
-TBD.
+- Attempt-2 focused tests (`tests/unit/workers/whatsapp.worker.test.ts`, `tests/unit/services/recovery-routing.service.test.ts`, `tests/unit/services/inbound-whatsapp-audio.service.test.ts`, `tests/unit/services/whatsapp-media.service.test.ts`): 41 passed.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed, including Prisma generation.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- `npm test`: 1006 passed, 19 skipped, 4 failures in 1 unrelated translation integration file. Each failure is the documented baseline caused by `backgroundRuntimeConfigService` not being started in the existing integration harness.
+- `npm run typecheck`: repository has no declared `typecheck` script; the equivalent `npx tsc --noEmit` validation passed.
+- No live Groq call was made. Raw media bytes and signed Meta URLs are transient and are not logged or persisted.
+
+### Scope and Limitations
+- Existing routing, abuse admission, execution eligibility, worker factory, dynamic concurrency binding, and ordered turn processor were preserved.
+- Attempt-2 review corrections implemented: canonical Shared safe parsing before admission, outbound-only context match, and explicit typed terminal/retryable media and transcription outcomes.
+- Audio retryable provider failures remain `PENDING` for BullMQ retry; terminal duration/media/blank outcomes use bounded failure state and the admitted fallback path.
+- Full integration validation is limited by the unrelated runtime-config startup baseline described above.
 
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 2.
 
 ### Review Notes
-TBD.
+Functionally accepted. Implementation `5851670` resolves the three Attempt-1 production blockers without redesigning the accepted ARCH-012 pipeline:
+
+- `message-received` jobs are validated with the published `@modainteract/moda-interact-shared/whatsapp` parser before abuse admission, routing, persistence or agent execution; the legacy/fake-empty-text compatibility path and local message-type union are removed;
+- explicit `contextMessageId` routing is authoritative only when the referenced durable provider message is `OUTBOUND`; absent or inbound references fall through to the existing contextless tenant-resolution path;
+- WhatsApp media and Groq transcription failures now use explicit typed retryability rather than free-form message substring matching. Transient network / 408 / 429 / 5xx failures remain `PENDING` and rethrow for BullMQ retry, while unsupported/corrupt/oversized/invalid media and invalid terminal STT outcomes enter bounded failure/rejection state and use the existing deterministic customer fallback.
+
+The architect also confirmed that exactly 120 seconds remains accepted, >120 seconds is rejected before STT, completed audio replay does not repeat media/STT work or the logical turn increment, raw media/signed URLs remain transient, and the accepted `createWhatsappWorker()`, abuse admission, `shopExecutionEligibilityService`, runtime-config startup and `whatsappQueueGlobalConcurrency` binding remain intact.
+
+The returned validation evidence records 41 focused tests passing, `npx tsc --noEmit`, build, Prisma validation and `git diff --check` passing, and 1006 full-suite tests passing with 19 skipped. The four remaining translation-runtime failures are the documented unrelated baseline and are not an ARCH-012 functional blocker. The repository has no `npm run typecheck` script; the successful direct TypeScript check is the equivalent validation.
+
+This acceptance supersedes the Attempt-1 Changes Requested review. No further BACKGROUND-001 implementation attempt is required.

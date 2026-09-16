@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 - ARCH-012-GATEWAY-001
 enables: []
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-SYSTEM-TEST-001
