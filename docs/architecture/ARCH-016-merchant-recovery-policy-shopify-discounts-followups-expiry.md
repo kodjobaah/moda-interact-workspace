@@ -799,6 +799,35 @@ ARCH-016-SYSTEM-TEST-001 Pending
 
 The Ready promotions are dependency-state reconciliation only: each promoted task remains `attempt: 0`, `executor: null` and `claimed_at: null` until launched through the normal task workflow. `ARCH-016-SYSTEM-TEST-001` is not started automatically and remains behind completion of all implementation tasks plus the developer manual-testing checkpoint.
 
+## Post-review update — BACKGROUND-003 Attempt 2 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 2 implementation commit `256127f` correctly establishes
+the intended durable outreach-attempt identity, attempt-keyed recovery billing, one
+Conversation across initial/follow-up outreach, deterministic sequence-2 wake-up identity
+and the no-sequence-3 boundary. Those architectural choices are retained.
+
+The task returns to **Ready** for a bounded Attempt-3 correction because:
+
+```text
+1. FIXED offer resolution tests providerStatus == CURRENT instead of providerStatus == ACTIVE;
+2. customer engagement uses local processing time and the audio path does not mark outreach
+   engagement from the canonical WhatsApp event occurredAt;
+3. a retry after WhatsApp already persisted a successful outbound message is treated as a
+   duplicate failure, which can release billing and mark the sent attempt FAILED;
+4. unconditional attempt status changes can regress ENGAGED -> NO_RESPONSE, and a failed
+   follow-up queue publication cannot currently be repaired from durable followUpDueAt.
+```
+
+Attempt 3 must preserve the accepted queue, billing-allocation, Conversation and
+sequence-cap architecture and make only the explicit runtime corrections recorded in the
+task review. No schema/migration, AI-discount selection, new deployable service or
+sequence-3 behavior is authorised.
+
+`attempt` remains `2`, with `executor: null` and `claimed_at: null`; the deterministic
+launcher owns the increment when the task is reclaimed. No ARCH-016 dependency is
+promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
+automatically; the developer manual-testing checkpoint remains before terminal integrated
+testing.
 ## Post-review update — SHOPIFY-001 Attempt 2 Changes Requested
 
 `ARCH-016-SHOPIFY-001` Attempt 2 implementation commit `454f882` correctly narrows
@@ -901,6 +930,63 @@ billing behavior is changed by this acceptance.
 dependency is Complete and the developer has completed the existing manual-testing
 checkpoint. It is not started automatically by this acceptance.
 
+
+## Post-review update — BACKGROUND-003 Attempt 3 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 3 implementation commit `f2abbbc` correctly fixes the
+ACTIVE provider-status eligibility predicate, adopts canonical WhatsApp provider event time
+for inbound engagement, and adds the first guarded outreach-transition/duplicate-message
+reconciliation primitives. Those corrections are retained.
+
+The task returns to **Ready** for a bounded Attempt-4 correction because the successful-send
+state machine still does not converge after crash/retry. In particular, durable
+`followUpDueAt` is not used to repair a failed BullMQ publication once the recovery is
+`MESSAGE_SENT`; duplicate successful initial sends return before normal recovery/follow-up
+finalisation; `PENDING`/broken duplicate provenance is treated as successful or releasable
+instead of fail-closed; and guarded attempt updates are still followed by unconditional
+lifecycle writes that can regress `ENGAGED` state. Provider-time engagement must also
+converge on the earliest qualifying inbound timestamp under out-of-order delivery.
+
+Attempt 4 is restricted to the existing outreach/reconciliation services and focused tests.
+No schema/migration, entitlement-priority, Conversation-identity, queue-topology, AI discount
+selection or sequence-3 change is authorised.
+
+The task remains `attempt: 3`, `executor: null`, `claimed_at: null`; the deterministic
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.
+
+
+## Post-review update — BACKGROUND-003 Attempt 4 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 4 implementation commit `4bb8e21` correctly adds the
+common confirmed-send finaliser, durable `followUpDueAt` repair helper, fail-closed duplicate
+outbound reconciliation and monotonic provider-time engagement required by the previous
+review. Those corrections are retained.
+
+The task returns to **Ready** for a narrow Attempt-5 correction because three convergence
+edges remain:
+
+```text
+1. duplicate successful initial-send reconciliation omits the already-resolved recovery
+   policy, so a crash before followUpDueAt persistence can silently lose an enabled follow-up;
+2. sequence-1 finalisation still publishes the follow-up job directly from stale in-memory
+   state instead of reusing the durable-state repair helper, so a terminal/engagement race can
+   still enqueue a no-response wake-up;
+3. duplicate PENDING audio completion repairs engagement against the durable message
+   Conversation but still updates transcription Conversation state using the newly routed
+   Conversation ID.
+```
+
+Attempt 5 is restricted to `checkout-recovery.service.ts`,
+`inbound-whatsapp-audio.service.ts`, focused tests and the Completion Report. No schema,
+queue topology, Conversation identity, entitlement priority, Shared version, AI selection or
+sequence-cap change is authorised.
+
+The task remains `attempt: 4`, `executor: null`, `claimed_at: null`; the deterministic
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.
 ## Post-review update — BACKGROUND-001 Attempt 2 Changes Requested
 
 `ARCH-016-BACKGROUND-001` Attempt 2 implementation commit `8665b93` correctly fixes the
@@ -945,3 +1031,34 @@ No implementation dependency is promoted by this acceptance.
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation dependency is
 Complete and the developer has completed the existing manual-testing checkpoint. It is not
 started automatically.
+
+## Post-review update — BACKGROUND-003 Attempt 6 Accepted
+
+`ARCH-016-BACKGROUND-003` Attempt 6 is architect-accepted **Complete** at implementation
+commit `d985548`.
+
+The accepted outreach boundary now converges correctly across confirmed provider-send
+crash/retry windows: duplicate initial success reuses the already-resolved recovery policy,
+sequence-1 finalisation persists state before invoking the durable
+`ensureScheduledInitialFollowUp()` repair path, and the persisted attempt `followUpDueAt`
+rather than stale in-memory state controls deterministic sequence-2 wake-up publication.
+
+Inbound audio duplicate processing also preserves durable message provenance: both
+engagement repair and successful pending transcription completion use the
+`ConversationMessage` reservation's `conversationId`, so a rerouted duplicate cannot mutate
+a different Conversation.
+
+All prior accepted BACKGROUND-003 invariants remain: at most two proactive attempts, one
+Conversation per recovery generation, one recovery credit per successfully sent proactive
+outreach, no extra credit for customer/ordinary continuation messages, fail-closed duplicate
+provider reconciliation, monotonic provider-time engagement, and no AI discount selection.
+
+The Attempt-6 Completion Report cited historical claim commit `8dc667aa` as if it were the
+Attempt-6 claim. That hash is the Attempt-3 launcher claim. This is recorded as handoff
+evidence drift and is not used as fresh Attempt-6 claim proof; it does not require
+implementation churn or an additional attempt.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending. This task-specific parent branch may not yet
+contain every independently accepted sibling task, and the developer manual-testing
+checkpoint remains mandatory before terminal integrated testing. The system-test task is
+not started automatically by this acceptance.
