@@ -4,7 +4,7 @@
 |---|---|---|
 | [ARCH-015-SHOPIFY-001](SHOPIFY-001-live-top-up-offers.md) | complete | Resolve live top-up offers by Shopify current plan/meter intersected with ARCH-014 entitlement rows and render valid empty states. |
 | [ARCH-015-SHOPIFY-002](SHOPIFY-002-purchase-admission.md) | complete | Create selected top-up purchase with fresh provider/ARCH-014 proof and same-handle single-flight. |
-| [ARCH-015-SHOPIFY-003](SHOPIFY-003-refund-eligibility-hold.md) | pending | Permit normal refund hold only for current-provider-context positive-value purchases. |
+| [ARCH-015-SHOPIFY-003](SHOPIFY-003-refund-eligibility-hold.md) | ready | Permit normal refund hold only for current-provider-context positive-value purchases. |
 
 ## Current architect review state
 
@@ -15,3 +15,12 @@ The purchase-admission contract is now complete: selected-event admission, fresh
 `ARCH-015-BACKGROUND-001` is now Ready because all of its declared prerequisites are Complete.
 
 `ARCH-015-SHOPIFY-003` remains Pending because it additionally depends on `ARCH-015-BACKGROUND-001`.
+
+
+## Post BACKGROUND-001 Attempt 4 acceptance
+
+`ARCH-015-BACKGROUND-001` is now **Complete**, so every declared prerequisite of
+`ARCH-015-SHOPIFY-003` is Complete. `ARCH-015-SHOPIFY-003` is therefore **Ready**.
+
+`ARCH-015-BACKGROUND-003` remains Pending until SHOPIFY-003 is architect-accepted
+Complete.

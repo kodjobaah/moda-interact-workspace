@@ -10,3 +10,4 @@
 | [ARCH-014-ADMIN-006](ADMIN-006-prefilled-xlsx-translation-workbook.md) | complete | Establish the single `exceljs@4.4.0` Admin spreadsheet standard and replace human-facing MerchantPricing JSON with a pre-populated XLSX workbook. |
 | [ARCH-014-ADMIN-007](ADMIN-007-remove-legacy-economics-and-scope-tenant-search.md) | ready | Remove superseded manual BillingPlan economics controls and render tenant search only on the tenant directory. |
 | [ARCH-014-ADMIN-008](ADMIN-008-multilingual-promotion-xlsx.md) | complete | Reuse the ADMIN-006 XLSX standard to author exact 20-locale promotion merchant title/description and gate activation on 20/20. |
+| [ARCH-014-ADMIN-009](ADMIN-009-intuitive-background-runtime-controls.md) | pending | Add intuitive Operational/Advanced/Abuse Protection runtime controls with guidance, auditing and optimistic concurrency. |
