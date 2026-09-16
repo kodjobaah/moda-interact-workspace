@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -307,3 +307,382 @@ Ready for Review
 ## Completion protocol
 
 The implementation and report are complete. The task is returned to `moda_architect` at `status: review`; stop here pending architect review.
+
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Changes Requested — durable offline-session fencing and idempotent catalogue invalidation**
+
+This review is functionality-first. The Shopify configuration, authenticated discount
+webhook ingress, canonical Shared `0.12.1` queue payload/job identity, post-commit
+activation hook points and uninstall-before-session-delete ordering are otherwise
+accepted. Attempt 2 must be a narrow correction; do not redesign the accepted webhook
+or billing flows.
+
+The Completion Report contains the required launcher-resolved parent/implementation
+worktree isolation and synchronization evidence. There is no workflow-conformance
+correction required for Attempt 2.
+
+The reported ten merchant-i18n fixture failures do not drive this review decision. The
+Attempt-2 decision is based on the runtime lifecycle defects below.
+
+### Finding 1 — activation bootstrap does not prove the durable offline session and is not atomically fenced
+
+ARCH-016 requires discount catalogue eligibility to use the durable **offline** Shopify
+session:
+
+```text
+Shop ACTIVE
+ShopSettings.onboardingCompleted = true
+Subscription ACTIVE | TRIALING
+read_discounts present in the durable offline Session
+```
+
+The current `getDiscountSyncEligibility()` implementation uses:
+
+```ts
+db.session.findFirst({
+  where: { shop: shop.domain },
+  orderBy: { expires: "desc" },
+})
+```
+
+This does not constrain `isOnline = false`. An online session is therefore allowed to
+satisfy the discount-scope gate even though Background reconciliation requires durable
+offline Shopify authority.
+
+There is a second correctness problem in the same activation path: shop/subscription/
+scope eligibility is read **before** the transaction that writes
+`ShopifyDiscountCatalogue.status = SYNC_REQUIRED`. A concurrent uninstall or scope
+removal can therefore occur between the eligibility read and the catalogue write, after
+which the stale activation path can change an unavailable catalogue back to
+`SYNC_REQUIRED` and publish a job.
+
+#### Required Attempt-2 correction
+
+In:
+
+```text
+app/services/discounts/shopify-discount-lifecycle.service.ts
+```
+
+refactor the subscription-activation bootstrap so eligibility and the
+`SYNC_REQUIRED` state transition occur in **one bounded Prisma transaction**.
+
+The transaction must:
+
+1. load the shop by `shopId` with:
+   - `domain`;
+   - `status`;
+   - `ShopSettings.onboardingCompleted`;
+   - `Subscription.status`;
+2. load the durable session using an explicit offline predicate:
+
+```ts
+where: {
+  shop: shop.domain,
+  isOnline: false,
+}
+```
+
+If multiple offline rows are possible in the existing session-storage implementation,
+select deterministically using the existing session expiry convention. Do not hardcode a
+Shopify session ID string unless the existing repository already establishes that as its
+canonical lookup contract.
+
+3. evaluate the existing `isDiscountSyncEligible(...)` predicate using **that offline
+   session scope**;
+4. if not eligible, return `null` without changing the catalogue to `SYNC_REQUIRED` and
+   without publishing;
+5. if eligible, call `markDiscountCatalogueSyncRequired(...)` inside the same
+   transaction and return only the immutable publish data needed after commit:
+
+```text
+shopId
+shopDomain
+requestedAt
+```
+
+6. commit the transaction;
+7. only after commit, publish the canonical `SUBSCRIPTION_ACTIVATED` job;
+8. keep queue publication best-effort. A publication failure must still leave the
+   already-committed catalogue `SYNC_REQUIRED` and must not invalidate the successful
+   billing/subscription activation.
+
+Do **not** publish from inside the database transaction.
+
+`getDiscountSyncEligibility()` may be removed if no caller remains, or may be refactored
+to accept/use the transaction client, but there must be no separate pre-transaction
+eligibility read followed by a later catalogue-state transaction.
+
+Required concurrency behavior:
+
+```text
+activation transaction sees ACTIVE + eligible offline scope
+  -> mark SYNC_REQUIRED
+  -> commit
+  -> publish
+
+activation transaction sees UNINSTALLED
+  -> no SYNC_REQUIRED write
+  -> no publish
+
+activation transaction sees offline scope without read_discounts
+  -> no SYNC_REQUIRED write
+  -> no publish
+
+online session has read_discounts but offline session does not
+  -> not eligible
+  -> no publish
+```
+
+### Finding 2 — scope-update bootstrap trusts payload scope even when no durable offline scope proves it
+
+`app/routes/webhooks/app/scopes-update/route.jsx` currently persists the authenticated
+`session` when one exists, but then evaluates eligibility directly from:
+
+```ts
+payload.current.toString()
+```
+
+If no durable session is present, or if the authenticated session is not the durable
+offline session, the route can still mark the catalogue `SYNC_REQUIRED` and enqueue a
+`SCOPES_UPDATED` job from webhook payload state alone.
+
+That violates the ARCH-016 fail-closed rule: the payload is a lifecycle signal, while
+provider access authority is the persisted offline Session.
+
+#### Required Attempt-2 correction
+
+In:
+
+```text
+app/routes/webhooks/app/scopes-update/route.jsx
+```
+
+keep the existing authenticated webhook and Session-scope persistence, then in the **same
+transaction** read the durable offline Session for the shop using:
+
+```ts
+isOnline: false
+```
+
+Use the persisted offline Session's `scope` for the eligibility predicate. Do not use
+`payload.current` as the final authority for the sync decision after persistence.
+
+Required behavior after the Session write:
+
+```text
+offline Session exists + has read_discounts + shop/subscription eligible
+  -> mark catalogue SYNC_REQUIRED
+  -> commit
+  -> publish SCOPES_UPDATED
+
+offline Session absent
+  -> fail closed as unavailable
+  -> no publish
+
+offline Session present but read_discounts absent
+  -> mark catalogue UNAVAILABLE
+  -> no publish
+
+payload says read_discounts but durable offline Session does not
+  -> no publish
+```
+
+The queue publication stays after transaction commit. Do not call Shopify Admin API from
+this route.
+
+### Finding 3 — invalidation overwrites historical discount `unavailableAt`
+
+The task's uninstall contract explicitly requires every retained `ShopifyDiscount` row
+to become unavailable while setting:
+
+```text
+unavailableAt = uninstall event time when not already set
+```
+
+The current helper instead performs:
+
+```ts
+transaction.shopifyDiscount.updateMany({
+  where: { shopId },
+  data: { isAvailable: false, unavailableAt },
+})
+```
+
+That overwrites an existing `unavailableAt` timestamp for discounts that were already
+unavailable because of a prior full reconciliation, scope loss or earlier lifecycle
+invalidation. The same helper is also used by scope removal, so repeated invalidation
+mutates historical state instead of being idempotent.
+
+The helper also uses `ShopifyDiscountCatalogue.updateMany()`. When the catalogue row does
+not yet exist, "mark catalogue UNAVAILABLE" becomes a no-op even though ARCH-016 defines
+one durable catalogue state record and the lifecycle event is authoritative enough to
+establish the `UNAVAILABLE` state.
+
+#### Required Attempt-2 correction
+
+In:
+
+```text
+app/services/discounts/shopify-discount-lifecycle.service.ts
+```
+
+change `markDiscountCatalogueUnavailable(...)` so it satisfies all of the following:
+
+1. ensure a catalogue state row exists for the shop (use the existing unique `shopId`
+   boundary; an `upsert` is appropriate);
+2. set catalogue status to `UNAVAILABLE`;
+3. clear `activeSyncToken` and `syncStartedAt`;
+4. set the catalogue `unavailableAt` to the lifecycle event time required by the caller;
+5. set **all** shop discounts `isAvailable = false`;
+6. set a discount row's `unavailableAt` only when that row currently has
+   `unavailableAt = null`;
+7. never delete catalogue or discount rows.
+
+Because Prisma `updateMany` cannot express SQL `COALESCE` in a normal data object, use
+bounded separate writes if necessary, for example one write that marks every row
+unavailable and a second write restricted to `unavailableAt: null` that stamps the
+lifecycle time. Do not use raw SQL solely for this correction.
+
+For uninstall, preserve the existing ordering:
+
+```text
+authenticate
+  -> ShopService.markUninstalled transaction
+       -> Shop UNINSTALLED
+       -> catalogue/discount invalidation
+  -> delete Session rows
+```
+
+If `ShopService.markUninstalled()` needs to reuse an already-persisted `Shop.uninstalledAt`
+on a duplicate uninstall delivery so the effective lifecycle time remains stable, do so
+inside the existing service boundary. Do not move Session deletion into the transaction
+and do not enqueue a discount sync from uninstall.
+
+### Accepted behavior that MUST remain unchanged
+
+Attempt 2 must preserve the already-correct implementation:
+
+```text
+@modainteract/moda-interact-shared pinned exactly to 0.12.1
+read_discounts added to canonical shopify.app.moda-interact.toml
+exact five discount webhook topics on the existing /webhooks subscription
+root authenticate.webhook remains the authentication boundary
+all five discount webhook topics publish canonical DISCOUNT_WEBHOOK jobs
+Shopify delivery ID remains the deterministic webhook job identity input
+webhook payload is never persisted as catalogue truth
+no synchronous Shopify Admin API call from webhook ingress
+Free/Paid verified activation publishes only after subscription transaction completion
+queue failure does not roll back a committed activation
+scope-update queue publication remains after its DB transaction commits
+uninstall invalidates durable state before Session deletion
+no discount/history deletion
+no reinstall CURRENT mutation in moda-interact
+no write_discounts scope
+no CommerceAgent/AI discount-selection implementation
+```
+
+Do not redesign `shopify-webhook-ingress.service.ts`, the canonical Shared job schema,
+BullMQ queue names/job names, billing-provider verification, or reinstall authority for
+these findings.
+
+### Attempt-2 authorised implementation surface
+
+Modify only what is required for the corrections:
+
+```text
+app/services/discounts/shopify-discount-lifecycle.service.ts
+app/routes/webhooks/app/scopes-update/route.jsx
+app/services/shop/shop.service.ts                         # only if needed for stable duplicate-uninstall event time
+focused tests for the three corrected lifecycle boundaries
+this task Completion Report / review metadata
+```
+
+The following are already conformant and must not be changed merely to create a new
+attempt:
+
+```text
+shopify.app.moda-interact.toml
+app/routes/webhooks/root/route.jsx
+app/services/webhooks/shopify-webhook-ingress.service.ts
+app/services/webhooks/shopify-webhook-queue.server.ts
+app/routes/app/billing/callback/route.tsx
+package.json
+package-lock.json
+```
+
+The exact Shared dependency remains `0.12.1`; do not publish or consume another Shared
+version for these corrections.
+
+### Required focused regression cases
+
+Add/adjust only focused tests needed to prove the corrected functionality:
+
+1. subscription activation with an online Session containing `read_discounts` but no
+   eligible offline Session does not mark `SYNC_REQUIRED` and does not publish;
+2. subscription activation performs eligibility and `SYNC_REQUIRED` mutation through one
+   transaction-owned state read/write path, and publication occurs after that transaction
+   resolves;
+3. activation observed as `UNINSTALLED` (or with offline scope removed) at the
+   transaction fence does not publish;
+4. scope-update payload containing `read_discounts` does not publish when the durable
+   offline Session does not contain it / is absent;
+5. eligible persisted offline scope publishes `SCOPES_UPDATED` only after the
+   transaction completes;
+6. an already-non-null `ShopifyDiscount.unavailableAt` is preserved by scope/uninstall
+   invalidation while `isAvailable` becomes/remains false;
+7. a discount with `unavailableAt = null` receives the lifecycle timestamp;
+8. invalidation creates/establishes the catalogue `UNAVAILABLE` state when the catalogue
+   record is absent;
+9. uninstall still invalidates catalogue/discount state before Session deletion and does
+   not enqueue a sync.
+
+These are regression guards for concrete functional defects. Do not expand Attempt 2
+into exhaustive unrelated test work.
+
+### Attempt-2 validation
+
+Inspect the current `package.json` scripts and rerun the same declared validation used in
+Attempt 1, including at minimum:
+
+```text
+focused ARCH-016 lifecycle tests
+npm run typecheck
+npm run lint
+npm run build
+Shopify TOML/config validation used in Attempt 1
+git diff --check
+```
+
+Run `npm test` as required by the task. If the same ten merchant-i18n fixture failures
+remain unchanged and none is caused by the Attempt-2 files, record them with the same
+baseline evidence; do not modify merchant-i18n fixtures merely to turn the full-suite
+count green.
+
+### Completion / stop condition
+
+Attempt 2 is ready for architect re-review only when:
+
+```text
+activation eligibility is fenced inside the same transaction as SYNC_REQUIRED
+activation/scope eligibility uses only the durable offline Session scope
+scope payload alone cannot authorize a sync
+catalogue invalidation establishes UNAVAILABLE even when the row was absent
+existing discount unavailableAt timestamps are preserved
+newly unavailable discount rows receive the lifecycle timestamp
+uninstall ordering/history retention remain unchanged
+Shared stays pinned exactly to 0.12.1
+all focused lifecycle validation passes
+Completion Report records the actual Attempt-2 implementation/report commits and launcher evidence
+```
+
+Then push both mirrored task branches, set this same task back to `status: review`, clear
+`executor` / `claimed_at`, and return it to `moda_architect`.
+
+No ARCH-016 dependency is promoted by this review. `attempt` remains `1` in this Changes
+Requested patch; `/moda-task ARCH-016-SHOPIFY-001` owns the transition to Attempt 2 and
+the attempt increment when the task is reclaimed.
