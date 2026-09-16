@@ -755,6 +755,25 @@ be resolved before deployment; it does not reopen DATABASE-001.
 The terminal system-test task remains gated on all implementation prerequisites and
 continues to sit after the developer manual-testing checkpoint.
 
+## Post-review update — BACKGROUND-002 Attempt 1 Changes Requested
+
+`ARCH-016-BACKGROUND-002` Attempt 1 implementation commit `da4ccbb` is returned to
+**Ready** for bounded correction. The generation/restart and scheduler architecture is
+retained; no redesign is requested.
+
+Attempt 2 must correct four runtime issues discovered during functional review:
+
+```text
+inbound WhatsApp lifetime activity must use canonical event.occurredAt and count all routed inbound content, including rejected/failed audio
+active checkout-update activity must advance independently of Shopify basket-refresh outcome
+an expiry race must never allow markRecoveryMessageSent to reopen EXPIRED as MESSAGE_SENT
+expiry history fromStatus must be the exact status replaced by the terminal update
+```
+
+The task remains at `attempt: 1`, `executor: null`, `claimed_at: null`; the launcher will
+increment it on the next claim. No dependent task is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the
+existing developer manual-testing checkpoint remains before terminal integrated testing.
 
 ## Post-review update — ADMIN-001 Attempt 1 Accepted
 
@@ -843,3 +862,23 @@ discount-selection or provider-secret presentation was introduced.
 This acceptance does not independently make the terminal system-test task eligible.
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every implementation dependency is
 Complete and the developer has completed the existing manual-testing checkpoint.
+
+## Post-review update — BACKGROUND-002 Attempt 2 Accepted
+
+`ARCH-016-BACKGROUND-002` Attempt 2 is architect-accepted **Complete** at implementation
+commit `ad1f858`.
+
+The accepted Background boundary now provides generation-aware recovery restart after
+`EXPIRED`, monotonic checkout/inbound-customer activity using authoritative event time,
+bounded inactivity expiry driven by the current runtime lifetime, and an hourly leased
+expiry sweep in the existing recovery worker. Attempt 2 also closes the two terminal
+race paths identified during Attempt-1 review: an in-flight send cannot reopen an
+expired generation, and expiry history records the exact active status replaced by its
+conditional terminal update.
+
+No Conversation uniqueness, Render topology, merchant policy ownership or unrelated
+billing behavior is changed by this acceptance.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation
+dependency is Complete and the developer has completed the existing manual-testing
+checkpoint. It is not started automatically by this acceptance.
