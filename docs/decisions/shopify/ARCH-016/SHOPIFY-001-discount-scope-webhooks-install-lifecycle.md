@@ -1203,8 +1203,8 @@ Ready for Review
 
 ### Git / Handoff
 
-- implementation correction commit: recorded below after publication;
-- parent task/report commit: recorded below after publication;
+- implementation correction commit: `b7e7958ab739a023773ff5d74e72c4bfa84bd2cd`;
+- parent task/report commit: `0c24463d6f3c1ef87dec9fc91cf6cd1690c8b4f7` (this report-hash correction follows as a documentation-only commit);
 - both mirrored task branches are pushed to their corresponding `origin/task/ARCH-016-SHOPIFY-001` refs;
 - executor and claimed timestamp cleared; attempt remains `4`;
 - no merge to `main` performed.
