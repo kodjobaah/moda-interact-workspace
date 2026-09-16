@@ -9,8 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-015-SHARED-001
@@ -378,3 +380,61 @@ clear the claim and return to `moda_architect`.
 
 Do not mark `ARCH-015-BACKGROUND-003` Ready. Dependency promotion belongs to architect
 acceptance of SHOPIFY-003.
+
+
+## Architect Review — Attempt 2
+
+### Status
+
+**Accepted — Complete**
+
+Attempt 2 closes both production defects identified in Attempt 1.
+
+Architect review verified implementation commit
+`8c5a953eb3a391ffc1e8e8f6f85023c6ff273606` and parent Completion Report
+`1476c92fa51fe6ffe7be600da80409f71bb84a34`.
+
+Accepted refund-admission behavior is now:
+
+```text
+exact authenticated Shopify shop identity is mandatory at the service boundary
+missing/blank identity cannot create a refund row, withdraw a purchase or add a hold
+providerPurchaseAmount must be non-null and strictly greater than zero
+availableAmount = max(currentAmount - reservedAmount, 0) and must be >= 1
+fresh Shopify provider state is required before any new successful monetary-refund hold
+provider status ACTIVE or TRIALING is eligible for current-context proof
+canonical provider-context identity + plan + local billingPeriod + exact provider cycle must match
+purchase event handle must be present in the live provider subscription
+historical/context-mismatched purchases stay ACTIVE and spendable
+zero/non-positive-value purchases stay ACTIVE and return REFUND_NOT_AVAILABLE
+eligible requests create one idempotent REQUESTED RecoveryCreditRefund
+ACTIVE -> WITHDRAWN and refundingQuantity increases by availableAmount only
+reserved credits are excluded from the initial refund hold
+no provider-complete evidence is fabricated
+no direct Background / Redis / Shopify App Events invocation occurs
+```
+
+Existing non-mutating replay/terminal outcomes may still be resolved from durable local
+state without another provider call; they do not create a second refund or change the
+aggregate hold. This remains within the explicit Attempt-2 exception.
+
+Regression coverage now includes matching ACTIVE and TRIALING current contexts,
+mismatched TRIALING context, native App Pricing identity, prior plan/cycle, missing live
+event, zero/non-positive provider value, missing/blank Shopify shop identity, idempotent
+replay and historical merchant UI behavior.
+
+Validation recorded by the executor is sufficient for this task:
+
+```text
+focused Vitest: 31 / 31 passed
+focused ESLint: passed
+Prisma validation: passed
+application build: passed
+git diff --check: passed
+```
+
+No schema, Background, Shared or provider-correction implementation change is required.
+`ARCH-015-SHOPIFY-003` is Complete.
+
+All declared prerequisites of `ARCH-015-BACKGROUND-003` are now Complete, so
+`ARCH-015-BACKGROUND-003` is promoted to Ready.
