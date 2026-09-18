@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-09-18T22:12:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-017-DATABASE-001
@@ -534,3 +534,66 @@ Validation:
 - No TypeScript, focused tests, aggregate tests, lint, or build were run because the task stop condition prohibits implementing against the legacy schema.
 
 Required handoff: materialise the accepted DATABASE-001 revision in this worktree, then rerun the prepared task. No Architect Review section was edited.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+The implementation is close and the lazy BillingPlan materialiser plus merchant feature-preference surface are functionally aligned with ARCH-017. One blocking lifecycle defect remains in the first managed-pricing selection path.
+
+The callback now correctly commits `ShopSettings.onboardingCompleted=true` before local BillingPlan resolution. However, the initial-activation and token-fencing code still treats `onboardingCompleted=false` as a prerequisite:
+
+- `prepareFreeActivation()` requires `settings?.onboardingCompleted !== true` before it will create the initial pending token.
+- `preparePaidActivation()` has the same requirement.
+- `matchesInitialFreeActivationToken()` requires `settings?.onboardingCompleted === false`.
+- `syncSubscription()` additionally requires onboarding to remain false for `initialPaidActivation` and uses onboarding=false when deciding whether to preserve initial pending intent.
+
+Because the callback writes onboarding=true first, a fresh Free or Paid selection can materialise/reuse the BillingPlan and then immediately fail the initial-activation eligibility check. The callback therefore falls out of the intended immediate activation/sync path. The existing callback tests do not expose this because the onboarding write and BillingService state are mocked independently.
+
+This is a functional ARCH-017 issue, not a request for broader test hardening. `onboardingCompleted` is now a historical Shopify managed-pricing milestone and MUST NOT remain a gate for whether a valid initial activation token can be created, matched, synchronized or retried.
+
+### Required Corrections
+
+1. Keep the callback's separately committed onboarding transition exactly before local BillingPlan resolution. Do not move it after activation/sync and do not make it conditional on successful Moda mapping.
+2. In `prepareFreeActivation()`, remove `ShopSettings.onboardingCompleted` from initial-activation eligibility. Preserve the existing verified-same-plan replay rule and the protection against overwriting an active/different subscription. A first activation is determined from Subscription state: no Subscription, or `NO_CONTRACT` with `planId=null` and no observed Shopify plan handle.
+3. Apply the same change to `preparePaidActivation()`. A callback that has just set onboarding=true must still be able to persist the initial Paid pending-selection token.
+4. Change `matchesInitialFreeActivationToken()` so the stale-token fence is based on the exact durable Subscription token fields (`subscriptionId`, pending plan id/handle, pending effective time and reconcile time), not on onboarding state. Remove the `settings` dependency from this helper if no longer needed.
+5. Update `syncSubscription()` so an exact current initial token remains valid after onboarding has become true. In particular, remove the onboarding=false requirement from the initial Paid activation branch. Preserve the existing row locks and exact-token stale-write protection.
+6. Update initial-intent preservation/retry logic that currently uses `onboardingCompleted !== true` as the discriminator. The new discriminator must be durable pending-selection/token state, not the historical onboarding flag. Do not weaken stale-token protection and do not overwrite an active different-plan subscription.
+7. Add/adjust focused tests that execute the new ordering rather than mocking the two sides independently:
+   - onboarding already true + fresh `NO_CONTRACT` Free selection -> `prepareFreeActivation()` returns `mode=INITIAL` with a token;
+   - onboarding already true + fresh `NO_CONTRACT` Paid selection -> `preparePaidActivation()` returns `mode=INITIAL` with a token;
+   - an exact initial token still synchronizes when onboarding is true;
+   - current-token retry scheduling still works when onboarding is true;
+   - stale tokens remain no-ops;
+   - active different-plan protection and verified replay behavior remain unchanged.
+8. Replace the contradictory service test that currently asserts a fresh shop must be rejected merely because onboarding is already complete. Under ARCH-017 that expectation is no longer valid.
+9. Preserve all accepted materialisation behavior: no proration, no automatic reactivation of inactive BillingPlan rows, no usage-meter inference from top-up events, and no feature-preference deletion/copying on plan changes.
+10. On Attempt 2, leave one current `## Completion Report`. Remove/supersede the stale earlier `Status: Blocked` Completion Report and record the actual parent report commit used for the resubmission.
+
+### Reviewed Files
+
+- `app/routes/app/billing/callback/route.tsx`
+- `app/services/billing/billing.service.ts`
+- `app/routes/app/features/route.tsx`
+- `app/services/shop/merchant-route-access-policy.ts`
+- `tests/unit/routes/billing-callback.test.ts`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/routes/features-route.test.ts`
+- `database/prisma/schema.prisma`
+
+### Validation Reviewed
+
+The Completion Report records 259 focused tests passing, typecheck/build/changed-file lint/diff checks passing, with 16 unrelated full-lint baseline errors. Those results are accepted as evidence for the areas they exercise. They do not cover the blocking shared-state ordering defect above because the callback test mocks the onboarding persistence separately from BillingService.
+
+### Architecture Conformance
+
+Partial. BillingPlan materialisation, concurrency recovery, dynamic feature preferences, tenant scoping and route-policy integration are consistent with ARCH-017 on inspection. The first managed-pricing selection lifecycle is not yet conformant because historical onboarding state still gates activation-token semantics after the callback deliberately commits that milestone first.
+
+### Follow-up
+
+Return the same task for Attempt 2. No new task is required. Do not start terminal ARCH-017 system testing from this review.
