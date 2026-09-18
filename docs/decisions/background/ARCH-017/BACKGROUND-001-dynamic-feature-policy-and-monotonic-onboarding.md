@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-09-18T21:35:20Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-017-DATABASE-001
@@ -442,7 +442,7 @@ Ready for architect review. ARCH-017 Background changes are implemented and vali
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-BACKGROUND-001`.
 - Implementation commit: `fd267c8` (`fix(background): remove periodic onboarding gate`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
 - Prior accepted implementation commits remain `33c2645` and `cdb6e4d`.
-- Parent report commit: `2956a0dd08b045d5e74e6e30340c9c66873c72f2` (`chore(task): submit BACKGROUND-001 attempt 4 for review`), pushed to `origin/task/ARCH-017-BACKGROUND-001`; this metadata correction is the follow-up commit on the same parent task branch.
+- Parent report commit submitted for architect review: `cc7fca2f`, pushed to `origin/task/ARCH-017-BACKGROUND-001`.
 - No main branch was modified and no Architect Review section was edited.
 
 ### Attempt-4 Correction Mapping
@@ -1140,3 +1140,62 @@ periodic reconciler's treatment of an initial pending Free or Paid selection.
 ### Architecture Conformance
 
 Not yet accepted. Attempt 3 correctly fixed queued reconciliation. Attempt 4 is limited to removing the same obsolete onboarding authority from the periodic billing reconciler while preserving all already-correct ARCH-017 Background behaviour.
+
+## Architect Review — Attempt 4 — Accepted
+
+### Review Status
+
+**Accepted — Complete.**
+
+Architect re-review accepts Attempt 4. The functional blocker from Attempt 3 is corrected at the periodic billing-reconciliation boundary without reopening the already-correct ARCH-017 Background implementation.
+
+The reviewed production state now satisfies the required onboarding invariant:
+
+```text
+Holding Subscription state and provider truth constant, changing only
+ShopSettings.onboardingCompleted from false to true does not change the
+periodic reconciler's treatment of an initial pending Free or Paid selection.
+```
+
+Specifically:
+
+```text
+BillingReconciliationService.applySubscription(...)
+  - no longer reads ShopSettings.onboardingCompleted to classify an initial pending Subscription;
+  - protects matching initial Free from generic subscription/BillingPeriod projection for both historical onboarding values;
+  - delegates matching active PAID_METERED initial activation to
+    BillingSubscriptionReconciliationService.activateInitialPaid(...) for both historical onboarding values;
+  - preserves the provider/pending-handle mismatch guard for both historical onboarding values; and
+  - returns from both initial-pending branches before generic provider projection can consume pending state.
+```
+
+The accepted queued reconciliation correction remains intact: `BillingSubscriptionReconciliationService.reconcileJob(...)` classifies initial activation from durable Subscription state rather than requiring `onboardingCompleted=false`, and its initial completion paths use pending Subscription identity as their concurrency/staleness authority.
+
+The earlier ARCH-017 Background functionality also remains conformant:
+
+```text
+- effective features are dynamic persisted Feature keys rather than a fixed Prisma enum/list;
+- ALWAYS_ENABLED and MERCHANT_OPT_IN semantics are resolved from current plan mappings, Feature.active and ShopFeaturePreference;
+- Background does not create, update or delete ShopFeaturePreference during plan transitions;
+- outbound soft/hard/terminal limits resolve from PlatformBillingPolicy plus an active ShopBillingPolicyOverride;
+- checkout_recovery is checked before recovery reservation/admission mutations;
+- reinstall/no-contract reconciliation never writes onboardingCompleted=false.
+```
+
+Validation submitted for Attempt 4 and accepted as supporting evidence:
+
+```text
+focused billing-reconciliation tests: PASS (44)
+unit tests:                          PASS (1,035)
+full suite:                          PASS (1,039; 20 skipped)
+Prisma generation:                   PASS
+Prisma validation:                   PASS
+build / TypeScript compilation:      PASS
+git diff --check:                    PASS
+```
+
+The submitted implementation commit is `fd267c8`; the submitted parent report commit is `cc7fca2f`. The materialized database revision is `22d56f41`, containing the architect-accepted DATABASE-001 revision as an ancestor.
+
+The historical unused four-value `EntitlementFeature` union in `src/domain/types.ts` remains a non-blocking observation because the reviewed production entitlement/effective-policy paths do not consume it. No further implementation attempt is required solely to remove that dead type.
+
+`ARCH-017-BACKGROUND-001` is therefore Complete at Attempt 4. This acceptance does not create, authorize or start a terminal ARCH-017 system-test task; the existing manual-testing checkpoint remains in force.
