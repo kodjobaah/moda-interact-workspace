@@ -60,8 +60,6 @@ tests/unit/services/outbound-whatsapp-admission.service.test.ts
 package.json
 database/prisma/schema.prisma
 docs/architecture/ARCH-017-billing-plan-materialisation-dynamic-features.md
-docs/architecture/ARCH-014-admin-managed-merchant-pricing-catalogue.md
-docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md
 ```
 
 Search the repository for all remaining imports/usages of:
