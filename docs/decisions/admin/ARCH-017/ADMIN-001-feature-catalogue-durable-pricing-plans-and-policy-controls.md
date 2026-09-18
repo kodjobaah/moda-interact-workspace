@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-18T21:25:31Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-017-DATABASE-001
@@ -594,15 +594,15 @@ Set task to `review`. Completion Report must include exact implementation/parent
 
 ### Implementation
 
-- Added SUPER_ADMIN Feature catalogue create/edit/activation controls with server-side key, description, activation-mode, system-required, immutability, and checkout-recovery safeguards.
-- Extended MerchantPricingPlan administration with the dedicated recovery meter handle, dynamic supported-feature mappings, materialization status, paid/free validation, inactive-feature preservation, and durable plan-kind/delete restrictions.
-- Added same-transaction durable BillingPlan projection for operational name, recovery meter, allowance, and feature mappings without mutating BillingPlan lifecycle or credit-pack fields.
-- Updated platform and shop billing controls for PlatformBillingPolicy and terminal-message overrides.
-- Reworked legacy UNMAPPED repair to use MerchantPricingPlan catalogue state and the dedicated recovery meter rather than hand-authored enum/limit/top-up inputs.
+- Rework correction 1 implemented in `src/app/(protected)/billing/page.tsx`, `src/components/admin/billing-drawers.tsx`, and `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`: the authoritative Feature catalogue is passed into the builder; all active features are selectable; inactive mapped features remain checked/read-only; current mappings are initialized without dropping inactive rows; and server-side desired-set reconstruction remains unchanged.
+- Rework correction 2 implemented in `src/app/actions/merchant-pricing-plan.ts`: reactivation of an inactive `PAID_METERED` plan now rejects a missing or blank dedicated recovery usage-event handle before economics checks or mutation.
+- Rework correction 3 implemented in `src/components/admin/merchant/merchant-pricing-plan-catalog.tsx` and `src/components/admin/merchant/merchant-pricing-plan-delete-button.tsx`: each plan displays `Operational status` as not yet materialised or durable since its materialization time, and Delete is disabled with durable-specific copy for every durable plan regardless of active state.
+- Rework correction 4 implemented in `src/components/admin/billing-controls.tsx` and `src/i18n/locales/en.json`: shop terminal reserve now displays the active override or platform default, expired overrides fall back to the platform value, and shop-control copy refers to platform defaults.
+- Preserved the Attempt 1 implementation: SUPER_ADMIN Feature catalogue controls, dedicated recovery meter and dynamic plan mappings, durable same-transaction BillingPlan projection, PlatformBillingPolicy/ShopBillingPolicyOverride controls, and deterministic catalogue-based UNMAPPED repair.
 
 ### Commits and Dependency
 
-- implementation commit: `07817815134385202ab22519dc2bbcb99b6f3c69` (`feat(admin): manage durable billing catalogue and policies`);
+- implementation commits: `07817815134385202ab22519dc2bbcb99b6f3c69` (`feat(admin): manage durable billing catalogue and policies`) and `cdab884` (`fix(admin): complete durable billing rework corrections`);
 - implementation branch: `task/ARCH-017-ADMIN-001`, pushed to `origin/task/ARCH-017-ADMIN-001`;
 - accepted DATABASE-001 submodule revision materialized in the implementation worktree: `9921b273642599e5cf255565d73ebad507f71ee4`;
 - no database submodule files were edited by this task.
@@ -611,11 +611,15 @@ Set task to `review`. Completion Report must include exact implementation/parent
 
 - `npm run prisma:generate`: passed;
 - `npm run prisma:validate`: passed;
-- `npm run test:unit -- --test-name-pattern='merchant-pricing|billing|feature'`: task-focused assertions passed; two unrelated existing translation assertions failed in `merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`;
-- `npm test`: completed with existing baseline failures in shared-version/i18n/security fixture expectations and source-contract checks outside the ARCH-017 implementation; no task implementation runtime failure was identified;
-- `npm run lint`: existing baseline errors in promotion reactivation components and warnings in unrelated files; no ARCH-017 changed-file lint error reported;
-- `npm run build`: passed TypeScript and production build; only existing BullMQ optional dependency/critical-dependency warnings;
-- `git diff --check`: passed for the implementation commit.
+- `npm run prisma:generate`: passed after the rework;
+- `npm run prisma:validate`: passed;
+- focused `node --test tests/security/admin-merchant-pricing-plan.test.mjs tests/security/admin-billing-controls.test.mjs`: 14 passed, 4 existing baseline failures. The failures are the stale pre-namespace source paths in the MerchantPricing security test and an old policy fixture that omits the now-required platform fields; no rework assertion failed;
+- `npm run test:unit`: 134 passed, 2 existing unrelated translation-workbook/translation fixture failures;
+- `npm test`: completed with existing baseline failures in i18n/source-contract expectations, stale MerchantPricing source paths, shared-package version expectation, and one security-boundary fixture; no task-local runtime failure identified;
+- `npm run lint`: existing baseline errors in promotion reactivation components and unrelated warnings; no ARCH-017 changed-file error reported;
+- `npm run format:check`: existing repository-wide baseline failure reporting 153 files, including pre-existing formatting drift outside this rework;
+- `npm run build`: passed TypeScript and production build; only existing BullMQ optional-dependency/critical-dependency warnings;
+- `git diff --check`: passed.
 
 ### Physical Worktree Evidence
 
@@ -628,10 +632,10 @@ Set task to `review`. Completion Report must include exact implementation/parent
 - another task worktree reused: no;
 - recursive submodule sync/update: passed;
 - recorded database submodule commit: `9921b273642599e5cf255565d73ebad507f71ee4`;
-- launcher claim commit: `67c03781199ff3482611c832afa898419eb2f2c6`;
-- executor and claim timestamp cleared for review; no main branch modified.
+- launcher claim commit: `a4e7ee556e42ca74ab049fbbcabd93abce0e6ee8`;
+- start-of-attempt synchronization was already completed by the prepared launcher packet; no shared checkout or another task worktree was used; no main branch modified.
 
-Task status is `review`; return control to `moda_architect`.
+Task status is `review`; executor and claimed_at are cleared for architect review. Return control to `moda_architect`.
 
 
 ## Architect Review — Attempt 1 — Changes Requested
