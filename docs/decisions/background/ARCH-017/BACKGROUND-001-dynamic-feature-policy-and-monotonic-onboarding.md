@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 20
-executor: copilot
-claimed_at: 2026-09-18T20:27:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-017-DATABASE-001
@@ -400,3 +400,36 @@ STOP and return to moda_architect if:
 ## Completion protocol
 
 Set status to `review`, not `complete`. Completion Report must include exact implementation/parent commits, validation output, physical task worktree evidence and accepted DATABASE-001 revision.
+
+## Completion Report
+
+### Status
+
+Blocked pending correction of the prepared database submodule revision. No Background source or test files were changed, and no implementation commit was created.
+
+### Blocking Evidence
+
+- The authoritative ARCH-017-DATABASE-001 Completion Report identifies accepted database implementation commit `3c7179825c3e12af1d6db805b8a2a73c61c2097c` (`fix(database): tighten ARCH-017 billing schema validation`).
+- The prepared Background implementation worktree records database gitlink commit `3f8bc8aae7f6d39de960d7b52e8791d5e346be31` (`feat(database): persist inbound media transcription state (#30)`).
+- The prepared revision still contains `BillingPlanFeatureIdentifier`, `BillingPlan.defaultOutboundSoftLimit`, `BillingPlan.defaultOutboundHardLimit`, and `BillingPlan.terminalMessageReservedSlots`, and has no `Feature`, `ShopFeaturePreference`, or `FeatureActivationMode` models. It therefore does not satisfy the dependency contract required by this task.
+- The accepted commit object is present in the database repository, but the Background gitlink is not advanced to it. Per the task stop conditions, implementing against the old contract would require editing the database submodule or fabricating incompatible local types, both out of scope.
+
+### Validation
+
+- `git -C database rev-parse HEAD`: `3f8bc8aae7f6d39de960d7b52e8791d5e346be31`.
+- `git -C database show -s --format='%H %s' HEAD`: `3f8bc8aae7f6d39de960d7b52e8791d5e346be31 feat(database): persist inbound media transcription state (#30)`.
+- Schema inspection confirmed the dependency mismatch described above.
+- No Prisma generation, tests, build, typecheck, lint, or diff validation was run because the required database contract is absent and the task explicitly requires stopping in this condition.
+
+### Worktree / Git Evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-BACKGROUND-001`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-BACKGROUND-001`.
+- Both worktrees were clean before this report-only update.
+- Implementation commit: none.
+- Parent report commit: produced by the authorized report update.
+- No database submodule files were edited; no main branch was modified.
+
+### Required Resolution
+
+Advance the Background branch's database gitlink to accepted DATABASE-001 commit `3c7179825c3e12af1d6db805b8a2a73c61c2097c` (or rerun the prepared launcher with a corrected dependency packet), then resume this same task attempt. No Architect Review section was edited.
