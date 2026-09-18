@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-09-18T21:15:27Z
@@ -405,15 +405,13 @@ Set status to `review`, not `complete`. Completion Report must include exact imp
 
 ### Status
 
-Ready for architect review. ARCH-017 Background changes are implemented and validated on attempt 2.
+Ready for architect review. ARCH-017 Background changes are implemented and validated on attempt 3.
 
 ### Implementation
 
-- `src/services/effective-billing-policy.service.ts`: removed the Prisma feature enum and plan-owned outbound fields; resolves dynamic Feature keys, active plan mappings, ShopFeaturePreference opt-ins, platform defaults, active shop overrides, and fail-closed outbound validation.
-- `src/services/entitlement.service.ts`: accepts arbitrary persisted feature-key strings and checks the effective feature set.
-- `src/services/recovery-billing.service.ts`: requires the local `checkout_recovery` capability before reservation or usage mutation.
-- `src/services/billing-subscription-reconciliation.service.ts`: no-contract reinstall reconciliation no longer resets onboarding history.
-- Focused tests cover dynamic feature activation, policy limits/overrides, recovery admission, and onboarding preservation.
+- Attempt-2 implementation remains unchanged for dynamic Feature keys, platform policy limits, checkout-recovery admission, preference preservation, and reinstall onboarding monotonicity.
+- Attempt 3 updated `src/services/billing-subscription-reconciliation.service.ts` so pending initial activation is classified from durable Subscription intent without requiring `onboardingCompleted === false`; the three initial-activation completion CAS checks now rely only on locked Subscription pending-state identity.
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` now proves post-callback `onboardingCompleted=true` pending activation for null-provider retry, verified Free, verified Paid, and authoritative alternate-plan paths; existing pre-callback false-state and stale-job coverage remains.
 
 ### Dependency Evidence
 
@@ -423,23 +421,31 @@ Ready for architect review. ARCH-017 Background changes are implemented and vali
 
 ### Validation
 
-- `npm run prisma:generate`: passed.
+- `npm run prisma:generate`: passed after dependency materialisation.
 - `npm run prisma:validate`: passed.
-- Focused four-service Vitest run: 248 passed.
-- `npm run test:unit`: 1,032 passed.
-- `npm test`: 1,036 passed, 20 skipped; 11 test files skipped by repository configuration.
+- Focused reconciliation Vitest run (`tests/unit/services/billing-subscription-reconciliation.service.test.ts`): 146 passed.
+- `npm run test:unit`: 1,032 passed across 68 files.
+- `npm test`: 1,036 passed, 20 skipped across 69 passed and 11 skipped files.
 - `npm run build` (Prisma generate + `tsc`): passed.
 - `git diff --check`: passed.
+- Production acceptance search: no `BillingPlanFeatureIdentifier`, `defaultOutboundSoftLimit`, or `defaultOutboundHardLimit` references; `terminalMessageReservedSlots` remains only in effective-policy/platform/override validation and outbound calculation.
 - No separate `typecheck` or `lint` scripts exist in `package.json`; build TypeScript compilation was used.
-- Legacy production search found no `BillingPlanFeatureIdentifier` or BillingPlan outbound-limit references; `terminalMessageReservedSlots` remains only as the effective policy field, platform/override input, validation, and outbound calculation.
 
 ### Worktree / Git Evidence
 
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-BACKGROUND-001`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-BACKGROUND-001`.
-- Implementation commit: `cdb6e4d` (`feat(background): resolve dynamic billing feature policy`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
-- Parent report commit: `ce710095` (`chore(task): return BACKGROUND-001 for review`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
+- Implementation commit: `33c2645` (`fix(background): honor monotonic onboarding during reconciliation`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
+- Prior implementation commit: `cdb6e4d` (`feat(background): resolve dynamic billing feature policy`).
+- Parent report commit: recorded after this Completion Report update and pushed to `origin/task/ARCH-017-BACKGROUND-001`.
 - No main branch was modified and no Architect Review section was edited.
+
+### Attempt-3 Rework Mapping
+
+- **Initial activation classification:** implemented by removing onboarding state from `isInitialActivation`; focused null-provider and provider reconciliation tests pass with `onboardingCompleted=true`.
+- **Completion CAS prerequisites:** implemented in `completeVerifiedFree`, `completeVerifiedPaid`, and `applyOtherCurrentPlan`; locked Subscription status, plan, pending plan identity, pending effective time, and schedule remain authoritative; focused suite passes.
+- **Both milestone states:** preserved by retaining existing false-state transport/stale-job coverage and adding true-state activation/retry coverage; unit, full, and build validation pass.
+- **Reinstall monotonicity:** preserved from attempt 2; no `onboardingCompleted=false` write was added or restored, and existing reinstall coverage remains green.
 
 ## Architect Review — Attempt 2
 
