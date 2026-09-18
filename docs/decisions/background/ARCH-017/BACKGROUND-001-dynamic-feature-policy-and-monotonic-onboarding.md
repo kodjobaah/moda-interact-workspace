@@ -442,7 +442,7 @@ Ready for architect review. ARCH-017 Background changes are implemented and vali
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-BACKGROUND-001`.
 - Implementation commit: `fd267c8` (`fix(background): remove periodic onboarding gate`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
 - Prior accepted implementation commits remain `33c2645` and `cdb6e4d`.
-- Parent report commit: pending until this report is committed and pushed; it will be recorded with its exact resulting commit below before return.
+- Parent report commit: `2956a0dd08b045d5e74e6e30340c9c66873c72f2` (`chore(task): submit BACKGROUND-001 attempt 4 for review`), pushed to `origin/task/ARCH-017-BACKGROUND-001`; this metadata correction is the follow-up commit on the same parent task branch.
 - No main branch was modified and no Architect Review section was edited.
 
 ### Attempt-4 Correction Mapping
