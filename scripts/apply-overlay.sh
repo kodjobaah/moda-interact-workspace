@@ -89,7 +89,10 @@ OVERLAY_ROOT="$TMP_DIR"
 if [[ "$MODE" == "--strip-wrapper" ]]; then
   # Consider only non-metadata top-level entries when resolving an explicit
   # wrapper. Hidden workspace directories such as .codex and .claude count.
-  mapfile -t TOP_LEVEL < <(
+  TOP_LEVEL=()
+  while IFS= read -r entry; do
+    TOP_LEVEL+=("$entry")
+  done < <(
     find "$TMP_DIR" -mindepth 1 -maxdepth 1 \
       ! -name 'MANIFEST.txt' \
       ! -name 'README-OVERLAY.md' \
