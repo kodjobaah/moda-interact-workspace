@@ -368,7 +368,7 @@ There are no production customers or production billing lifecycle state to prese
 |---|---|---|---|
 | ARCH-017-DATABASE-001 | moda_database | Complete | - |
 | ARCH-017-BACKGROUND-001 | moda_background | Ready | ARCH-017-DATABASE-001 |
-| ARCH-017-SHOPIFY-001 | moda_app | Ready (Changes Requested, Attempt 1) | ARCH-017-DATABASE-001 |
+| ARCH-017-SHOPIFY-001 | moda_app | Ready (Changes Requested, Attempt 2) | ARCH-017-DATABASE-001 |
 | ARCH-017-ADMIN-001 | moda_admin | Ready | ARCH-017-DATABASE-001 |
 
 BACKGROUND-001, SHOPIFY-001 and ADMIN-001 intentionally have no dependencies on one another and may execute in parallel after DATABASE-001 is accepted.
