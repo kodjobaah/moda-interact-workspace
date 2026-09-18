@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-09-18T21:15:27Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-017-DATABASE-001
@@ -53,9 +53,11 @@ src/services/entitlement.service.ts
 src/services/recovery-billing.service.ts
 src/services/outbound-whatsapp-admission.service.ts
 src/services/billing-subscription-reconciliation.service.ts
+src/services/billing-reconciliation.service.ts
 tests/unit/services/effective-billing-policy.service.test.ts
 tests/unit/services/recovery-billing.service.test.ts
 tests/unit/services/billing-subscription-reconciliation.service.test.ts
+tests/unit/services/billing-reconciliation.service.test.ts
 tests/unit/services/outbound-whatsapp-admission.service.test.ts
 package.json
 database/prisma/schema.prisma
@@ -81,7 +83,10 @@ src/services/entitlement.service.ts
 src/services/recovery-billing.service.ts
 src/services/outbound-whatsapp-admission.service.ts
 src/services/billing-subscription-reconciliation.service.ts
-focused unit/integration tests for the above
+src/services/billing-reconciliation.service.ts
+focused unit/integration tests for the above, including:
+- tests/unit/services/billing-subscription-reconciliation.service.test.ts
+- tests/unit/services/billing-reconciliation.service.test.ts
 package.json only if a focused test command is added
 package-lock.json only if package.json changes
 ```
@@ -612,3 +617,524 @@ Do not add an exhaustive lifecycle matrix for this correction.
 ### Architecture Conformance
 
 Not yet accepted. The dynamic feature policy, platform billing-limit ownership, checkout-recovery admission gate, preference preservation, and reinstall monotonicity are functionally sound. Acceptance is blocked only on making pending initial subscription reconciliation compatible with ARCH-017's new monotonic onboarding timing.
+
+## Architect Review — Attempt 3
+
+### Review Status
+
+**Changes Requested — remove the remaining onboarding gate from periodic initial-subscription reconciliation**
+
+### Scope of this review
+
+This is a functionality-first review. Attempt 3 is not being reopened for exhaustive testing, lint coverage, code style, or unrelated cleanup.
+
+Attempt 3 correctly fixed the queued `BillingSubscriptionReconciliationService` path requested by the Attempt-2 review. Preserve all of the following exactly unless a change is mechanically required by the correction below:
+
+```text
+initial activation classification in BillingSubscriptionReconciliationService no longer requires onboardingCompleted=false
+completeVerifiedFree no longer uses onboarding as a CAS prerequisite
+completeVerifiedPaid no longer uses onboarding as a CAS prerequisite
+applyOtherCurrentPlan no longer uses onboarding as a CAS prerequisite
+completeReinstallWithoutContract performs no onboardingCompleted write
+dynamic persisted Feature keys remain in use
+MERCHANT_OPT_IN remains gated by ShopFeaturePreference + current plan capability
+ALWAYS_ENABLED remains independent of shop preference
+PlatformBillingPolicy + active ShopBillingPolicyOverride remain the outbound-limit authority
+checkout_recovery remains enforced before recovery admission/reservation
+Background plan transitions do not mutate ShopFeaturePreference
+```
+
+Do not redesign any of those areas in Attempt 4.
+
+### Functional defect
+
+`src/services/billing-reconciliation.service.ts` still treats `ShopSettings.onboardingCompleted=false` as authority for an initial pending Subscription.
+
+The current `applySubscription(...)` implementation contains this read:
+
+```ts
+const settings = await this.database.shopSettings.findUnique({
+  where: { shopId },
+  select: { onboardingCompleted: true },
+});
+```
+
+and then two initial-pending branches whose first predicate is:
+
+```ts
+settings?.onboardingCompleted === false
+```
+
+This is incompatible with ARCH-017. `onboardingCompleted=true` is a historical Shopify managed-pricing milestone. It may already be true while durable Subscription state is still:
+
+```text
+status = NO_CONTRACT
+planId = null
+pendingPlanId != null
+pendingShopifyPlanHandle != null
+```
+
+The periodic billing reconciler runs before queued subscription reconstruction in the billing worker. Therefore it can observe this legitimate post-callback state before `BillingSubscriptionReconciliationService` completes the initial transition.
+
+With `onboardingCompleted=true`, the two special initial-pending branches are currently skipped. The method can then fall through to generic provider projection and consume the pending initial state without the canonical initial-activation transition.
+
+That is a functional billing-state race and blocks acceptance.
+
+---
+
+## Attempt 4 deterministic correction contract
+
+### Objective
+
+Make the periodic `BillingReconciliationService` produce the same initial-pending result for identical Subscription/provider state regardless of whether:
+
+```text
+ShopSettings.onboardingCompleted = false
+```
+
+or:
+
+```text
+ShopSettings.onboardingCompleted = true
+```
+
+`ShopSettings.onboardingCompleted` MUST NOT decide whether an initial Subscription is eligible for periodic reconciliation.
+
+### Files allowed to change
+
+Implementation changes are limited to:
+
+```text
+src/services/billing-reconciliation.service.ts
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+The parent task Completion Report may also be updated through the normal task workflow.
+
+Do not change another production file.
+
+If the correction cannot be implemented using the existing public `BillingSubscriptionReconciliationService.activateInitialPaid(...)` method and the existing `Subscription` fields, stop and return the concrete blocker to `moda_architect` rather than expanding scope.
+
+### Step 1 — remove the periodic ShopSettings onboarding read
+
+Open:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+Inside `applySubscription(...)`, find the exact block immediately after the existing Subscription/lifecycle reconciliation logic:
+
+```ts
+const settings = await this.database.shopSettings.findUnique({
+  where: { shopId },
+  select: { onboardingCompleted: true },
+});
+```
+
+Delete that block completely.
+
+After Attempt 4, `applySubscription(...)` must not query `ShopSettings` solely to determine initial activation eligibility.
+
+Do not replace the deleted read with another ShopSettings read.
+
+### Step 2 — remove onboarding from the mismatch-protection branch
+
+Immediately after the deleted settings read, the first special branch currently begins with:
+
+```ts
+if (
+  settings?.onboardingCompleted === false
+  && existing?.status === SubscriptionProjectionStatus.NO_CONTRACT
+```
+
+Change this branch so that it begins with:
+
+```ts
+if (
+  existing?.status === SubscriptionProjectionStatus.NO_CONTRACT
+```
+
+Preserve every other predicate in that branch unchanged unless TypeScript formatting requires a mechanical edit.
+
+In particular preserve:
+
+```text
+existing.planId === null
+existing.pendingPlanId !== null
+plan?.active
+plan.kind === BillingPlanKind.PAID_METERED
+plan.id === existing.pendingPlanId
+provider.planHandle / plan.shopifyPlanHandle mismatch checks against existing.pendingShopifyPlanHandle
+```
+
+Preserve the existing result:
+
+```ts
+return { billingPeriodId: null, packMeterHandle: null };
+```
+
+This branch must continue to prevent a mismatched provider handle from falling into generic projection.
+
+### Step 3 — remove onboarding from the matching initial-pending branch
+
+The next special branch currently begins with:
+
+```ts
+if (
+  settings?.onboardingCompleted === false
+  && existing?.status === SubscriptionProjectionStatus.NO_CONTRACT
+```
+
+Change it so that it begins with:
+
+```ts
+if (
+  existing?.status === SubscriptionProjectionStatus.NO_CONTRACT
+```
+
+Preserve the remaining durable-state predicates:
+
+```text
+existing.planId === null
+existing.pendingPlanId !== null
+existing.pendingShopifyPlanHandle === provider.planHandle
+```
+
+Do not add an `onboardingCompleted===true` requirement.
+
+Do not add any replacement ShopSettings condition.
+
+### Step 4 — preserve canonical Paid initial activation
+
+Inside the matching initial-pending branch, preserve the existing Paid guard:
+
+```ts
+if (plan?.active && plan.id === existing.pendingPlanId && plan.kind === BillingPlanKind.PAID_METERED) {
+```
+
+and preserve the existing call to:
+
+```ts
+new BillingSubscriptionReconciliationService(...).activateInitialPaid(...)
+```
+
+Do not copy or reimplement `activateInitialPaid` transaction logic in `billing-reconciliation.service.ts`.
+
+Do not replace this with direct `subscription.upsert`, `billingPeriod.upsert`, or manual entitlement-counter mutations.
+
+The canonical method remains responsible for initial Paid BillingPeriod integrity, included recovery-credit entitlement creation, lifetime-Free state, and pending-state concurrency checks.
+
+After the optional Paid activation call, preserve the branch's unconditional:
+
+```ts
+return { billingPeriodId: null, packMeterHandle: null };
+```
+
+That return is required for both Free and Paid pending initial selections so generic projection cannot consume the state.
+
+### Step 5 — required behaviour for initial Free
+
+For this durable state:
+
+```text
+Subscription.status = NO_CONTRACT
+Subscription.planId = null
+Subscription.pendingPlanId = <Free plan id>
+Subscription.pendingShopifyPlanHandle = provider.planHandle
+provider resolves to that Free BillingPlan
+```
+
+the matching initial-pending branch must return before generic projection.
+
+It must NOT call `activateInitialPaid(...)` because the plan is Free.
+
+It must NOT call the generic `subscription.upsert` projection path.
+
+This behaviour must be identical whether onboarding is false or true.
+
+### Step 6 — required behaviour for matching initial Paid
+
+For this durable state:
+
+```text
+Subscription.status = NO_CONTRACT
+Subscription.planId = null
+Subscription.pendingPlanId = <Paid plan id>
+Subscription.pendingShopifyPlanHandle = provider.planHandle
+provider resolves to the same active PAID_METERED BillingPlan
+```
+
+periodic reconciliation MUST call the existing canonical `activateInitialPaid(...)` path and then return before generic projection.
+
+This behaviour must be identical whether onboarding is false or true.
+
+### Step 7 — required behaviour for provider/pending-plan mismatch
+
+For an initial pending Paid Subscription where the local pending identity does not match provider truth, preserve the state rather than projecting the provider plan generically.
+
+For both onboarding values, the periodic reconciler must:
+
+```text
+not call generic subscription.upsert for the provider plan
+not clear pendingPlanId
+not clear pendingShopifyPlanHandle
+not manufacture successful initial activation
+not create a generic BillingPeriod for the mismatched provider plan
+return from the existing mismatch-protection branch
+```
+
+Do not change the existing mismatch identity rules in Attempt 4. Only remove onboarding as a prerequisite for applying them.
+
+### Step 8 — provider-null retry path is not reopened
+
+The `if (!provider)` branch already preserves existing pending intent and advances `nextReconcileAt` without reading onboarding.
+
+Do not redesign it in Attempt 4.
+
+Do not add onboarding logic to it.
+
+### Step 9 — established Subscription behaviour is not reopened
+
+Do not change logic for:
+
+```text
+established ACTIVE/TRIALING subscriptions
+scheduled plan changes
+same-plan rollover
+FROZEN reconciliation
+provider cancellation/lifecycle reconciliation
+usage reconciliation
+recovery-credit purchase reconciliation
+ARCH-011/proration behaviour
+```
+
+Do not change generic projection except as a consequence of the two initial-pending branches returning correctly for both onboarding values.
+
+### Step 10 — exact focused test changes
+
+Open:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+Use the existing tests around the current initial-pending rotation behaviour. Do not create a separate broad lifecycle suite.
+
+#### Test A — Free pending initial selection
+
+Current test:
+
+```text
+does not consume an unresolved initial activation when rotation sees it current
+```
+
+Convert this test to execute the same scenario for both:
+
+```ts
+[false, true]
+```
+
+values of `onboardingCompleted`.
+
+`it.each([false, true])(...)` is preferred.
+
+For both values, assert at minimum:
+
+```ts
+expect(test.database.subscription.upsert).not.toHaveBeenCalled();
+```
+
+Also assert that generic BillingPeriod projection was not used if the harness exposes that mock:
+
+```ts
+expect(test.database.billingPeriod.upsert).not.toHaveBeenCalled();
+```
+
+Because `applySubscription(...)` no longer reads ShopSettings for this decision, it is valid and preferred to additionally assert:
+
+```ts
+expect(test.database.shopSettings.findUnique).not.toHaveBeenCalled();
+```
+
+provided no unrelated code in that scenario legitimately calls it.
+
+#### Test B — matching Paid pending initial selection
+
+Current test:
+
+```text
+uses canonical paid activation for a pending initial target during rotation
+```
+
+Convert this scenario to run for both onboarding values.
+
+For both values preserve the existing proof that canonical activation occurred, including the existing assertions that:
+
+```text
+generic billingPeriod.upsert was not used
+the canonical transaction created the paid BillingPeriod
+the included-recovery entitlement counter was created/upserted
+```
+
+Do not weaken those assertions.
+
+The canonical activation transaction may still write:
+
+```ts
+onboardingCompleted: true
+```
+
+idempotently. That write is allowed. Attempt 4 removes onboarding as an eligibility predicate; it does not prohibit successful activation from persisting the true milestone.
+
+#### Test C — provider/pending-plan mismatch
+
+Current test:
+
+```text
+leaves a same-local-plan handle drift pending during rotation
+```
+
+Convert this scenario to run for both onboarding values.
+
+For both values preserve/assert:
+
+```ts
+expect(test.database.billingPeriod.upsert).not.toHaveBeenCalled();
+expect(test.database.subscription.upsert).not.toHaveBeenCalled();
+expect(test.database.subscription.updateMany).not.toHaveBeenCalled();
+```
+
+Do not change the scenario into a successful activation case.
+
+#### Test D — existing trial/retry coverage
+
+Do not rewrite the existing:
+
+```text
+re-observes an unsupported paid trial with a null schedule and later activates its exact cycle
+```
+
+flow unless a minimal fixture adjustment is mechanically required after removal of the periodic ShopSettings read.
+
+Its billing semantics are not reopened.
+
+### Step 11 — repository search after editing
+
+From the `moda-interact-background` task worktree run:
+
+```bash
+grep -n "onboardingCompleted" src/services/billing-reconciliation.service.ts
+```
+
+Expected Attempt-4 result:
+
+```text
+no matches
+```
+
+If a remaining match exists in `billing-reconciliation.service.ts`, inspect it. Do not submit Attempt 4 while that service still uses onboarding as an initial-activation predicate.
+
+Also run:
+
+```bash
+grep -RInE \
+  "onboardingCompleted[[:space:]]*===[[:space:]]*false|onboardingCompleted[[:space:]]*!==[[:space:]]*true" \
+  src/services
+```
+
+Do not blindly change every result. Inspect results only for billing initial-activation/reconciliation authority. Existing unrelated lifecycle/reporting uses are outside scope.
+
+### Step 12 — validation commands
+
+Use the scripts that currently exist in `moda-interact-background/package.json`.
+
+Run, in this order:
+
+```bash
+npm run prisma:generate
+npm run prisma:validate
+npx vitest run tests/unit/services/billing-reconciliation.service.test.ts
+npm run test:unit
+npm test
+npm run build
+git diff --check
+```
+
+There is no separate `lint` script and no separate `typecheck` script in the submitted repository. Do not invent either command. `npm run build` is the required TypeScript compilation check.
+
+If an existing documented baseline failure appears unchanged, reference the relevant baseline ID in the Completion Report. Any failure caused by either Attempt-4 changed file is blocking.
+
+### Step 13 — Completion Report requirements
+
+Return the task to `review`, not `complete`.
+
+The Attempt-4 Completion Report must record the exact:
+
+```text
+implementation commit
+parent report commit
+accepted DATABASE-001 revision/materialized database gitlink
+focused billing-reconciliation test count/result
+unit test count/result
+full-suite count/result
+Prisma generate result
+Prisma validate result
+build result
+git diff --check result
+physical implementation worktree path
+physical parent task worktree path
+push evidence for both task branches
+```
+
+It must explicitly state all of the following functional outcomes:
+
+```text
+1. BillingReconciliationService no longer reads ShopSettings.onboardingCompleted to classify initial pending activation.
+
+2. Pending initial Free is protected from generic projection for both historical onboarding values.
+
+3. Matching pending initial Paid uses BillingSubscriptionReconciliationService.activateInitialPaid(...) for both historical onboarding values.
+
+4. Provider/pending-plan mismatch remains pending and cannot fall through to generic projection for either historical onboarding value.
+
+5. The accepted Attempt-3 queued reconciliation correction and reinstall monotonicity remain unchanged.
+```
+
+The prior Completion Report text currently records parent report commit `515f5fda4f69d9588bfc7a8e52e577ad84d41b4a`, while the Attempt-3 submission message identified `cdd05ff8`.
+
+Attempt 4 must replace stale report metadata with the actual pushed Attempt-4 parent report commit. Do not preserve contradictory current-attempt commit identifiers in the final Completion Report.
+
+### Stop conditions
+
+Stop and return the task to `moda_architect` without speculative changes if any of the following occurs:
+
+```text
+1. Removing the two onboarding predicates causes the initial-pending branches to become ambiguous for established Subscription state.
+
+2. The existing activateInitialPaid(...) method cannot be reused without changing its public contract.
+
+3. Correctness requires a schema/database change.
+
+4. Correctness requires changing ARCH-011/proration semantics.
+
+5. Correctness requires changing dynamic Feature policy, ShopFeaturePreference, checkout-recovery admission, or outbound policy resolution.
+
+6. Correctness requires changing another production service rather than the two authorised files.
+```
+
+Do not resolve a stop condition by inventing a new architecture or silently expanding the task.
+
+### Acceptance invariant
+
+Attempt 4 is functionally complete only when this statement is true:
+
+```text
+Holding Subscription state and provider truth constant, changing only
+ShopSettings.onboardingCompleted from false to true does not change the
+periodic reconciler's treatment of an initial pending Free or Paid selection.
+```
+
+### Architecture Conformance
+
+Not yet accepted. Attempt 3 correctly fixed queued reconciliation. Attempt 4 is limited to removing the same obsolete onboarding authority from the periodic billing reconciler while preserving all already-correct ARCH-017 Background behaviour.
