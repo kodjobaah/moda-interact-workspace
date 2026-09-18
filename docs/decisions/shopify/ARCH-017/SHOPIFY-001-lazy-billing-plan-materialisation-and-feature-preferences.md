@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-09-18T21:39:51Z
@@ -516,7 +516,7 @@ Validation:
 - `npm run typecheck`: failed on existing repository-wide diagnostics in unrelated JSX, webhook, Redis, and implicit-`any` files; no diagnostic referenced the changed callback route or focused tests.
 - `npm run lint`: failed with 16 existing unrelated errors and 2 existing warnings; no changed-file errors.
 
-Parent report commit: to be recorded after this report is committed and pushed; it is the only current Completion Report for Attempt 3.
+Parent report commit: `e319ee7e` (`task(ARCH-017-SHOPIFY-001): return Attempt 3 rework for review`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
 
 No database submodule contents or Architect Review section were edited.
 
