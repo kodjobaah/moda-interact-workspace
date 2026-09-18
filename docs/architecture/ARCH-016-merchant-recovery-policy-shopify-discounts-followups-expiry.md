@@ -892,6 +892,30 @@ This acceptance does not independently make the terminal system-test task eligib
 `ARCH-016-SYSTEM-TEST-001` remains Pending until every implementation dependency is
 Complete and the developer has completed the existing manual-testing checkpoint.
 
+## Post-review update — SHOPIFY-002 Attempt 1 Changes Requested
+
+`ARCH-016-SHOPIFY-002` Attempt 1 implementation commit `83f8e1e` establishes the intended
+merchant Recovery Settings route/access boundary, merchant-only ShopSettings writes,
+active-unexpired admin-override precedence, transactional shop-scoped FIXED-discount
+revalidation and AI-as-configuration-only behavior. Those architectural choices are retained.
+
+The task returns to **Ready** for one bounded UI/server-policy correction because the current
+page references missing `recoverySettings.effectiveOffer` and
+`recoverySettings.effectiveFollowUp` catalogue keys (which makes the Shared i18n runtime fail
+at render time), disabling a previously-enabled follow-up retains the stale submitted delay
+instead of persisting NULL, and the CURRENT-catalogue UI can present non-running discounts as
+enabled choices while omitting required normalized discount facts. The merchant loader must
+also project a bounded DTO instead of serializing raw admin-override/provider snapshot rows.
+
+Attempt 2 must preserve the accepted route/access, Shared `0.12.1`, no-AI, no-Shopify-API,
+merchant-only write and transaction-time fixed-discount authority boundaries. The architect
+translation handoff at
+`docs/decisions/shopify/ARCH-016/recovery-settings-attempt2-translations.json`
+is authoritative for all 20 locale `recoverySettings.*` values; the implementation agent
+must copy those values exactly rather than infer translations. No ARCH-016 dependency is
+promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
+automatically; the developer manual-testing checkpoint remains before terminal integrated
+testing.
 ## Post-review update — BACKGROUND-001 Attempt 1 Changes Requested
 
 `ARCH-016-BACKGROUND-001` Attempt 1 implementation commit `70770d6` establishes the intended
@@ -930,6 +954,27 @@ billing behavior is changed by this acceptance.
 dependency is Complete and the developer has completed the existing manual-testing
 checkpoint. It is not started automatically by this acceptance.
 
+## Post-review update — SHOPIFY-002 Attempt 2 Changes Requested
+
+`ARCH-016-SHOPIFY-002` Attempt 2 implementation commit `73d3bb3` correctly preserves the
+merchant route/access boundary, merchant-only `ShopSettings` writes, active-unexpired
+admin-override precedence, transactional authenticated-shop FIXED validation and
+CURRENT/ACTIVE/running catalogue filtering. All 20 locale files also exactly match the
+architect-provided 33-key Recovery Settings handoff. Those decisions are retained.
+
+The task returns to **Ready** for one narrow presentation correction. The route still calls
+non-existent `recoverySettings.discount.starts` / `discount.ends` keys instead of the
+handoff's `startsAt` / `endsAt`, bypasses the supplied translated summary/method/status/code
+fact labels, and does not present the configured/effective FIXED discount identity required
+to distinguish merchant configuration from an active admin override. The claimed focused
+Recovery Settings locale guard is also absent, allowing the stale route keys to escape the
+reported focused suite.
+
+Attempt 3 is limited to the Recovery Settings route, bounded server DTO identity projection
+and focused regression tests. It must not change the already-correct 20 locale handoff,
+merchant access policy, database schema, Shared `0.12.1`, AI boundary or transaction-time
+FIXED authority. The task remains `attempt: 2`, `executor: null`, `claimed_at: null`; the
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted.
 
 ## Post-review update — BACKGROUND-003 Attempt 3 Changes Requested
 
@@ -957,6 +1002,25 @@ launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by th
 manual-testing checkpoint remains before terminal integrated testing.
 
 
+## Post-review update — SHOPIFY-002 Attempt 3 Accepted
+
+`ARCH-016-SHOPIFY-002` Attempt 3 is architect-accepted **Complete** at implementation
+commit `711e984`.
+
+The accepted merchant Recovery Settings boundary now consumes the complete architect-provided
+20-locale / 33-key translation namespace, renders normalized currently-running Shopify
+discount facts with translated labels, and exposes only bounded same-shop `{ id, title }`
+identity projections for merchant/effective FIXED policy presentation. Retained stale identity
+may be displayed for policy transparency but remains non-selectable; transaction-time FIXED
+save authority still requires CURRENT + ACTIVE + available + in-window + fixedSelectable state.
+
+Merchant `ShopSettings` ownership, complete admin-override precedence, `/app/promotions`,
+Shared `0.12.1`, the no-Shopify-render-call boundary and the ARCH-016 AI/CommerceAgent
+non-goal are unchanged.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending because other implementation dependencies are
+still outstanding and the developer manual-testing checkpoint remains mandatory before
+terminal integrated testing. It is not started automatically by this acceptance.
 ## Post-review update — BACKGROUND-003 Attempt 4 Changes Requested
 
 `ARCH-016-BACKGROUND-003` Attempt 4 implementation commit `4bb8e21` correctly adds the
