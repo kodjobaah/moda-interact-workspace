@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
 - ARCH-017-DATABASE-001
 enables: []
 created: 2026-09-18
-updated: 2026-09-18T21:12:00Z
+updated: 2026-09-18T21:16:00Z
 ---
 
 # ARCH-017-ADMIN-001
@@ -632,3 +632,144 @@ Set task to `review`. Completion Report must include exact implementation/parent
 - executor and claim timestamp cleared for review; no main branch modified.
 
 Task status is `review`; return control to `moda_architect`.
+
+
+## Architect Review — Attempt 1 — Changes Requested
+
+### Decision
+
+**Changes Requested — return to Ready**
+
+Architect review covered implementation commit `07817815134385202ab22519dc2bbcb99b6f3c69`, parent Completion Report commit `062bb01c`, and the returned ARCH-017 database dependency state. The review is functionality-led: focused and aggregate test results are supporting evidence, but the decision below is based on production-path behaviour against the task contract.
+
+Most of the implementation is functionally aligned with ARCH-017. In particular:
+
+- Feature catalogue mutation is data-driven and server-authorized;
+- Feature deactivation does not rewrite MerchantPricingPlanFeature, BillingPlanFeature or ShopFeaturePreference rows;
+- normal MerchantPricingPlan creation leaves `materializedAt=null` and does not eagerly create BillingPlan;
+- durable edits project name, normal recovery meter, included allowance and exact BillingPlanFeature state inside the same transaction without mutating `BillingPlan.active`;
+- platform/shop billing policy writes use PlatformBillingPolicy / ShopBillingPolicyOverride rather than BillingPlan-owned limits;
+- UNMAPPED repair uses MerchantPricingPlan catalogue state, the dedicated recovery usage-meter handle and MerchantPricingPlanFeature mappings, preserves provider verification, and does not auto-reactivate an inactive BillingPlan.
+
+Attempt 2 is required for the functional gaps below.
+
+### 1. MerchantPricingPlan builder does not expose the authoritative Feature catalogue
+
+The billing page loads the full Feature catalogue with `getFeatureCatalogue()`, but those rows are only rendered by `FeatureCatalogue`. They are not passed to `MerchantPricingPlanDrawer` / `MerchantPricingPlanBuilder`.
+
+The builder currently constructs its selectable feature list only from:
+
+```text
+plan.features
++
+cataloguePlans[*].features
+```
+
+This means a newly created active optional Feature that is not yet mapped to any MerchantPricingPlan is absent from the builder and cannot be selected for its first plan through Admin.
+
+There is a second symptom in the same code path: initial `supportedFeatureKeys` filters current mappings by `feature.active`. Therefore an inactive optional Feature already mapped to the edited plan is rendered disabled but unchecked, even though ARCH-017 requires it to remain visibly checked/read-only with `Inactive globally` while the server preserves the mapping.
+
+Required correction:
+
+- pass the authoritative Feature catalogue into the plan drawer/builder;
+- show every active Feature;
+- additionally show any inactive Feature already mapped to the plan being edited;
+- initialize current mapped keys without dropping inactive mappings;
+- keep system-required features checked/read-only;
+- keep inactive mapped optional features checked/read-only with the existing `Inactive globally` indicator;
+- do not weaken the existing server-side desired-set reconstruction or inactive/new-key rejection.
+
+A new active Feature must be selectable for its first MerchantPricingPlan without first being mapped to another plan.
+
+### 2. Paid-plan activation bypasses the dedicated recovery-meter requirement
+
+`intent=toggle` can reactivate an inactive `PAID_METERED` MerchantPricingPlan without validating `shopifyRecoveryUsageEventHandle`.
+
+This is a real reachable state because the accepted DATABASE-001 migration intentionally did not infer/backfill the new normal recovery meter for existing development MerchantPricingPlan rows.
+
+The task contract requires:
+
+```text
+PAID_METERED:
+  shopifyRecoveryUsageEventHandle MUST be non-empty
+  before create/save/activation succeeds
+```
+
+Required correction:
+
+- when `intent=toggle` is activating an inactive `PAID_METERED` plan, reject activation if `shopifyRecoveryUsageEventHandle` is null/blank;
+- keep deactivation unaffected;
+- do not infer the handle from MerchantPricingUsageEvent/top-up offers;
+- retain existing economics activation checks.
+
+A focused regression should cover an inactive paid plan with no dedicated recovery meter remaining inactive after an activation attempt.
+
+### 3. Durable status/delete behaviour is not represented correctly in the Admin UI
+
+Server-side delete protection is correct, but the required durable lifecycle is not visible in the plan catalogue and the Delete control only considers `plan.isActive`.
+
+Current consequences:
+
+- there is no displayed `Operational status: Not yet materialised` / `Operational status: Durable since ...` state;
+- an inactive durable paid plan exposes an enabled Delete button even though the server must always reject that deletion.
+
+Required correction:
+
+- display the operational durability state for each MerchantPricingPlan;
+- disable or hide Delete whenever `materializedAt != null`, regardless of `isActive`;
+- retain the existing deactivate-first rule for non-durable paid plans;
+- use durable-specific UI copy so an inactive durable plan is not presented as deletable or as having a reusable handle.
+
+Server enforcement must remain unchanged.
+
+### 4. Shop terminal-message policy display does not show the effective value
+
+`TenantBillingControls` correctly computes effective soft/hard limits, but terminal reserve currently renders:
+
+```text
+active override value
+OR
+"inherit"
+```
+
+The ARCH-017 contract requires the effective display to be:
+
+```text
+active non-null shop override
+OR
+PlatformBillingPolicy.terminalMessageReservedSlots
+```
+
+Required correction:
+
+- compute and display the effective terminal reserve using the active override when present, otherwise the platform value already returned in `controls.platform`;
+- expired overrides must fall back to the platform value;
+- replace remaining shop-control wording that says numeric values inherit "plan defaults" with "platform defaults" so Admin no longer presents BillingPlan as the owner of these limits.
+
+For this narrow wording correction, Attempt 2 is authorized to update the existing English billing-control locale entry in `src/i18n/locales/en.json` in addition to the already-authorized billing-control component files.
+
+### Validation scope for Attempt 2
+
+Keep validation functionality-focused. At minimum:
+
+```text
+npm run prisma:generate
+npm run prisma:validate
+npm run build
+focused MerchantPricingPlan / billing-control tests covering the corrections
+git diff --check
+```
+
+Also rerun any existing focused security tests directly affected by changed files. Do not expand Attempt 2 into unrelated translation/lint/security baseline cleanup. Existing unrelated baseline failures remain non-blocking unless the Attempt 2 changes worsen them.
+
+### State transition
+
+```yaml
+ARCH-017-ADMIN-001:
+  status: ready
+  attempt: 1
+  executor: null
+  claimed_at: null
+```
+
+There is **no Attempt 2 yet**. Attempt 2 begins only when the normal task launcher claims the Ready task.
