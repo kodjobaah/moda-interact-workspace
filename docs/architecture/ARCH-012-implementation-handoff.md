@@ -1,6 +1,6 @@
-# ARCH-012 Implementation Handoff — deterministic communications contracts
+# ARCH-012 Implementation Handoff — consolidated deterministic communications contracts
 
-Date: 2026-09-14
+Date: 2026-09-16
 Coordinator: `moda_architect`
 Architecture: [`ARCH-012-moda-managed-whatsapp-communications.md`](ARCH-012-moda-managed-whatsapp-communications.md)
 
@@ -36,8 +36,6 @@ recovery/follow-up timing:                  out of scope
 
 ## Reply modes
 
-Both are first-class and must be preserved:
-
 ```text
 A. Explicit native WhatsApp reply
    message.context.id -> exact prior outbound providerMessageId -> Conversation
@@ -48,19 +46,56 @@ B. Ordinary contextless message
 
 Messaging never infers shop/conversation ownership. Customer phone is a communications endpoint, not a tenant key.
 
+## Consolidation decision — 2026-09-16
+
+Two artificial task boundaries are removed:
+
+```text
+SHARED-001 + SHARED-002 -> SHARED-001
+BACKGROUND-001 + BACKGROUND-002 -> BACKGROUND-001
+```
+
+Rationale:
+
+- the Shared contract is not usable downstream until the package is published, so one `moda_shared` task owns implementation, validation and publication;
+- voice-note processing is one content branch of Background's inbound routing/persistence pipeline, so routing and transcription are implemented/reviewed together.
+
+`ARCH-012-SHARED-002` and `ARCH-012-BACKGROUND-002` are now `superseded` and must never be launched.
+
+## Database freeze
+
+`ARCH-012-DATABASE-001` has already started in the developer workspace. This consolidation does **not** rewrite that task, its metadata, its attempt number, its status, its migration contract or any database implementation file.
+
+Merged BACKGROUND-001 depends on the live/accepted DATABASE-001 result. If database review exposes an incompatibility, return it to `moda_architect`; do not mutate DATABASE-001 through this handoff.
+
+## 2026-09-16 compatibility baseline
+
+Preserve later accepted runtime work:
+
+```text
+ARCH-010-BACKGROUND-013
+  -> shop execution eligibility and outbound suppression
+
+ARCH-014-BACKGROUND-004
+  -> runtime-configured WhatsApp abuse-admission limits
+
+ARCH-014-BACKGROUND-005
+  -> runtime-configured fleet-wide BullMQ concurrency, including whatsappQueueGlobalConcurrency
+```
+
+ARCH-012 must extend these implementations rather than restore older static behaviour. Do not replace `createWhatsappWorker()`, remove dynamic concurrency binding, bypass `shopExecutionEligibilityService`, or reintroduce static abuse/concurrency constants.
+
 ## Luna execution rule
 
-Every individual ARCH-012 task is an exact implementation contract.
-
-The repository agent MUST:
+Every active ARCH-012 task is an exact implementation contract. The repository agent MUST:
 
 1. use launcher-prepared parent + implementation task worktrees;
-2. record the prepared execution packet evidence in the Completion Report;
+2. record prepared execution packet evidence;
 3. read the exact task before editing;
-4. edit only the authorised repository/surface unless the task explicitly permits another file;
-5. preserve accepted ARCH-005/007 behaviours outside the stated change;
-6. run the task's focused tests plus repository-declared validation;
-7. use documented baseline IDs only for unchanged pre-existing conditions;
+4. edit only authorised surfaces;
+5. preserve accepted behaviours outside the stated change;
+6. run focused tests plus repository-declared validation;
+7. use baseline IDs only for unchanged pre-existing failures;
 8. return the task to `review` and STOP.
 
 The repository agent MUST NOT:
@@ -69,7 +104,6 @@ The repository agent MUST NOT:
 invent a second queue
 move DB/Shopify/STT/CommerceAgent work into Messaging webhook lifecycle
 copy the Shared inbound schema locally after publication
-choose an npm version not authorized by SHARED-002
 make customerPhone a tenant identity
 choose the latest merchant on cross-tenant ambiguity
 turn unsupported/audio input into empty text
@@ -78,141 +112,93 @@ persist raw audio or signed provider media URLs
 conflate WABA ID and phone-number ID
 build a sender pool or merchant WABA model
 implement recovery timing/business decisions
+execute SHARED-002 or BACKGROUND-002
 start a dependent task after returning current task to review
 ```
 
-If a required named file/symbol/capability is absent, or implementation requires a product/architecture decision not written in the task, **STOP and return evidence to `moda_architect`**. Do not infer an alternative design.
+If a named file/symbol/capability is absent or an architectural decision is missing, STOP and return evidence to `moda_architect`.
 
 ## Task graph
 
 ```text
-SHARED-001 (Ready)
-    -> SHARED-002 (Pending; also waits for ARCH-011-SHARED-002)
-        -> MESSAGING-001
-        -> BACKGROUND-001
+ARCH-012-SHARED-001
+        (accepted Attempt 1; published `0.12.0`)
+            -> ARCH-012-MESSAGING-001
+            -> ARCH-012-BACKGROUND-001
 
-DATABASE-001 (Ready)
-        -> BACKGROUND-001
-            -> BACKGROUND-002
+# Shared release-line reconciliation:
+ARCH-012-SHARED-001 -> ARCH-011-SHARED-001 -> ARCH-011-SHARED-002 (`0.13.0`)
 
-BACKGROUND-003 (Ready)
-        -> BACKGROUND-002
-        -> GATEWAY-001
+ARCH-012-DATABASE-001
+        -> ARCH-012-BACKGROUND-001
+
+ARCH-012-BACKGROUND-003
+        -> ARCH-012-BACKGROUND-001
+        -> ARCH-012-GATEWAY-001
 
 MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
         -> SYSTEM-TEST-001
-
-MESSAGING-001 + BACKGROUND-002 + BACKGROUND-003 + GATEWAY-001
         -> SYSTEM-TEST-002
 ```
 
-## Initial Ready frontier
-
-These may be prepared independently after the overlay is applied/materialised:
+## Current execution frontier after consolidation
 
 ```text
-ARCH-012-SHARED-001
-ARCH-012-DATABASE-001
-ARCH-012-BACKGROUND-003
+ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
+ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
+ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementation `2267f26` + `424e09d`
+ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
+ARCH-012-BACKGROUND-001    Complete — architect accepted Attempt 2; implementation `5851670`
+ARCH-012-GATEWAY-001       Complete — architect accepted Attempt 1; implementation `64cb326`; integration 58 passed / 0 failed
+ARCH-012-SYSTEM-TEST-001   Ready — all implementation dependencies are Complete
+ARCH-012-SYSTEM-TEST-002   Ready — all implementation dependencies are Complete
 ```
 
-Do not start Pending tasks manually. Their dependencies must be architect-accepted Complete and normal task gating must promote them.
+Never downgrade a task that has already advanced in the live workspace merely because this handoff shows the snapshot-era state.
 
-## Exact task contracts
+## Exact active task contracts
 
 ### `ARCH-012-SHARED-001`
 
-Owner: `moda_shared`.
-
-Creates strict Shared v1 inbound event with text/audio/unsupported union and preserves:
-
-```text
-providerAccountId
-providerPhoneNumberId
-providerMessageId
-customerPhone
-contextMessageId
-occurredAt
-content
-```
-
-No tenant/business fields. No publication in this task.
-
-### `ARCH-012-SHARED-002`
-
-Owner: `moda_shared`, developer execution mode.
-
-Publication metadata only. Serializes after `ARCH-011-SHARED-002`; expected `0.13.0` only if local/npm premise is exactly as written in the task. Otherwise STOP for architect reconciliation.
+Owner: `moda_shared`. Accepted Attempt 1. The strict Shared v1 inbound text/audio/unsupported contract is published as `@modainteract/moda-interact-shared@0.12.0`. The post-review release-line reconciliation makes this accepted release the baseline that ARCH-011 Shared work must preserve.
 
 ### `ARCH-012-DATABASE-001`
 
-Owner: `moda_database`.
-
-Adds exact `ConversationMessage` content/media/transcription lifecycle. Does not store raw audio or media URL. Existing providerMessageId uniqueness remains dedupe authority.
+Owner: `moda_database`. **Live task; untouched by this consolidation patch.** Adds durable media/transcription lifecycle needed by Background.
 
 ### `ARCH-012-MESSAGING-001`
 
-Owner: `moda_messaging`.
-
-Maps realistic Meta webhook payload to the Shared event, including `message.context.id` and `message.audio.id`. No DB, Shopify, media GET, STT or CommerceAgent work before webhook ACK.
+Owner: `moda_messaging`. Accepted Attempt 1 (`2267f26`, `424e09d`). Maps realistic Meta webhook payloads into the published Shared event, including `message.context.id` and audio media identity, validates before queue publication and keeps DB/media/STT/business work out of the ACK path.
 
 ### `ARCH-012-BACKGROUND-001`
 
-Owner: `moda_background`.
-
-Consumes Shared package, removes authoritative local inbound event, implements/preserves exact-vs-contextless routing and prevents audio/unsupported content becoming empty text.
-
-### `ARCH-012-BACKGROUND-002`
-
-Owner: `moda_background`.
-
-Implements route-first two-phase audio reservation/completion, Meta media retrieval, <=120s validation, provider-neutral STT + Groq adapter, multilingual transcript preservation, deterministic terminal fallbacks, no raw-audio retention.
+Owner: `moda_background`. Accepted Attempt 2 (`5851670`). Consumes only canonical Shared v1 inbound jobs, requires outbound-only explicit reply correlation, preserves contextless tenant resolution, and implements deterministic typed terminal/retryable audio handling with <=120-second pre-STT enforcement and exactly-once completed-turn semantics.
 
 ### `ARCH-012-BACKGROUND-003`
 
-Owner: `moda_background`.
-
-Separates WABA ID from phone-number sender ID, retains one sender v1, and provides outbound text/link preview plus approved-template image/URL-button transport. No sender-pool DB.
+Owner: `moda_background`. Accepted Attempt 1 (`bb01a66`). WABA and sender phone identity are separated; one Moda sender v1 supports outbound text/link preview plus approved template image/URL-button transport while preserving ARCH-010 outbound execution gates.
 
 ### `ARCH-012-GATEWAY-001`
 
-Owner: `moda_gateway`.
-
-Adds WABA identity to existing test/production messaging worker configuration. No new service, route or network topology.
+Owner: `moda_gateway`. Accepted Attempt 1 (`64cb326`; integration 58 passed / 0 failed). Wires WABA identity separately from sender phone identity in the existing test/production WhatsApp configuration; no new service/topology.
 
 ### `ARCH-012-SYSTEM-TEST-001`
 
-Owner: `moda_system_test`.
-
-Integrated deterministic text/reply/contextless/link/template-media/status/idempotency validation with existing WhatsApp emulator. No live Meta.
+Owner: `moda_system_test`. Ready. Integrated deterministic text/reply/contextless/link/template-media/status/idempotency validation.
 
 ### `ARCH-012-SYSTEM-TEST-002`
 
-Owner: `moda_system_test`.
+Owner: `moda_system_test`. Integrated deterministic voice media/download/duration/STT/retry/privacy validation.
 
-Integrated deterministic voice media/download/duration/STT/retry/privacy validation using emulator/fake provider boundaries. No live Groq required for normal acceptance suite.
-
-## Repository sequencing
-
-Tasks in the same repository are deliberately serialized:
+## Superseded task records
 
 ```text
-Shared:      SHARED-001 -> SHARED-002
-Background:  BACKGROUND-001 -> BACKGROUND-002
+ARCH-012-SHARED-002      superseded by ARCH-012-SHARED-001
+ARCH-012-BACKGROUND-002  superseded by ARCH-012-BACKGROUND-001
 ```
 
-`BACKGROUND-003` is an independent initial outbound track and may execute before BACKGROUND-001.
-
-Do not start the next same-repository task until predecessor dependencies are architect-accepted Complete.
-
-## System-test gate
-
-System-test tasks are terminal/manual invocation gates. No non-system-test task depends on them.
-
-After all implementation/infrastructure dependencies for a system-test task are Complete, the developer may manually validate the integrated environment before launching the Ready system-test task.
+Keep the files for history; never prepare them.
 
 ## Overlay/materialisation note
 
-This overlay places canonical task definitions in the workspace documentation tree. It does **not** claim that task branches/worktrees/commits have been created or pushed.
-
-Normal `/moda-task <TASK_ID>` preparation remains authoritative for task execution/materialisation and worktree isolation.
+This patch changes canonical task/documentation definitions only. It does not claim branches, worktrees, commits or pushes. Normal `/moda-task <TASK_ID>` preparation remains authoritative.

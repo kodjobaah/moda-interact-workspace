@@ -16,13 +16,20 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-010-SHARED-008
+- ARCH-012-SHARED-001
 enables:
 - ARCH-011-SHARED-002
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-011-SHARED-001
+
+## 2026-09-16 Shared release-line reconciliation
+
+ARCH-012-SHARED-001 was architect-accepted and published `@modainteract/moda-interact-shared@0.12.0` before this task executed. At task start, canonical Shared source must therefore contain that accepted `./whatsapp` entrypoint and use package version `0.12.0`. If canonical source is still behind the accepted ARCH-012 implementation, STOP for merge/integration reconciliation before editing.
+
+This task adds the ARCH-011 billing primitives on top of that baseline. It must preserve all accepted `0.12.0` exports and WhatsApp semantics. Do not change package version here; publication remains `ARCH-011-SHARED-002`.
 
 ## Authorized implementation surface
 Edit only:

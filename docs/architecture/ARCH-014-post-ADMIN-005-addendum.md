@@ -17,26 +17,26 @@ exceljs@4.4.0
 ```text
 ADMIN-005 COMPLETE                    DATABASE-002 COMPLETE
       │                                      │
-      ├────────► ADMIN-006 READY              └────────► DATABASE-003 COMPLETE
+      ├────────► ADMIN-006 COMPLETE           └────────► DATABASE-003 COMPLETE
       │                │                                      │
       └────────► ADMIN-007 COMPLETE           ┌───────────────┴──────────────┐
                                                │                              │
                                 ADMIN-006 + DATABASE-003               DATABASE-003
                                                │                              │
                                                ▼                              ▼
-                                      ADMIN-008 PENDING              SHOPIFY-003 READY
+                                      ADMIN-008 COMPLETE                SHOPIFY-003 COMPLETE
                                                │                              │
                                                └───────────────┬──────────────┘
                                                                ▼
                                                     SYSTEM-TEST-002 PENDING
 
 ADMIN-006 + existing MerchantPricing prerequisites
-      └────────► SYSTEM-TEST-001 PENDING (developer-gated)
+      └────────► SYSTEM-TEST-001 READY (developer-gated)
 ```
 
-`ADMIN-007` is architect-accepted Complete. `ADMIN-006` and `DATABASE-003` remain independent of this cleanup and may continue in parallel from the accepted baseline.
+`DATABASE-003`, `ADMIN-006`, `ADMIN-007`, `ADMIN-008`, and `SHOPIFY-003` are architect-accepted Complete. `SYSTEM-TEST-001` is Ready and developer-gated. `SYSTEM-TEST-002` now remains Pending only on the corrective `ARCH-014-ADMIN-010` hardening task before terminal execution.
 
-`SHOPIFY-003` may start immediately. `ADMIN-008` stays Pending until `ADMIN-006` is also Complete so it reuses the established XLSX implementation.
+`ADMIN-008` is Complete and reuses the XLSX implementation established by accepted `ADMIN-006`. `SHOPIFY-003` is Complete. The task metadata defect where ADMIN-008 had a blank front-matter `id` is corrected by the current overlay.
 
 ## Promotion localization invariant
 
@@ -45,3 +45,7 @@ ADMIN-006 + existing MerchantPricing prerequisites
 ## Admin cleanup invariant
 
 The manual `BillingUpgradeEconomicsEdge` / `BillingEconomicsSnapshot` Admin forms are superseded by ARCH-014 MerchantPricing catalogue position/full-portfolio economics and are removed from Admin code only. Existing operational database objects remain untouched. Tenant search is a tenant-directory tool, not global Admin chrome.
+
+## Corrective post-implementation audit
+
+The 16 Sep snapshot audit added `ARCH-014-ADMIN-010`; `SYSTEM-TEST-002` must wait for that hardening before developer execution. Runtime-control cadence corrections are documented separately in `ARCH-014-runtime-controls-corrective-addendum.md`.

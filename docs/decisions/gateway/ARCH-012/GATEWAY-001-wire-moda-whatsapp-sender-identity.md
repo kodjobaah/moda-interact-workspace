@@ -9,18 +9,18 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 31
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-012-BACKGROUND-003
 enables:
 - ARCH-012-SYSTEM-TEST-001
 - ARCH-012-SYSTEM-TEST-002
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-GATEWAY-001
@@ -96,18 +96,34 @@ Return GATEWAY-001 to `review`; STOP.
 ## Completion Report
 
 ### Status
-Not started.
+Ready for Review.
 
 ### Files Changed
-TBD.
+- `moda-interact-gateway/render.test.yaml`
+- `moda-interact-gateway/render.production.yaml`
+- `moda-interact-gateway/tests/validate-render-blueprints.sh`
+- `moda-interact-gateway/tests/validate-render-blueprints-negative.sh`
+
+Implementation commit: `64cb326` (`feat(gateway): wire WhatsApp business account identity`), pushed to `task/ARCH-012-GATEWAY-001`.
 
 ### Validation Results
-TBD.
+- `bash tests/validate-render-blueprints.sh`: passed for test and production Blueprints.
+- `bash tests/validate-render-blueprints-negative.sh`: passed; all negative cases rejected, including WABA-for-phone-number substitution.
+- `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`: passed.
+- `git diff --check`: passed.
+- `bash tests/run-tests.sh`: passed; gateway integration suite reported `58 passed, 0 failed`.
 
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 1.
 
 ### Review Notes
-TBD.
+Functionally accepted in the prior architect review. `render.test.yaml` and `render.production.yaml` carry `WHATSAPP_BUSINESS_ACCOUNT_ID` as a distinct member of the existing WhatsApp credential group while preserving `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN` and the existing worker topology. No public service, route or merchant-owned Meta credential surface was introduced.
+
+This file is reconciled here from the already-accepted live Gateway task branch so downstream ARCH-012 system-test dependency state is coherent on the BACKGROUND-001 acceptance branch. The prior Gateway evidence records the positive/negative Blueprint validators passing and the full gateway integration suite at 58 passed / 0 failed.
+Functionally accepted. `render.test.yaml` and `render.production.yaml` now carry `WHATSAPP_BUSINESS_ACCOUNT_ID` as a distinct member of the existing WhatsApp credential group while preserving `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN` and the existing worker topology. No public service, route or merchant-owned Meta credential surface was introduced.
+
+The Blueprint validators prove that WABA and sender-phone identities remain distinct and that WhatsApp credentials are not introduced as direct per-service literals. The architect independently reran the positive and negative Blueprint validators against the returned snapshot; both passed. The returned validation evidence records `bash tests/run-tests.sh` at 58 passed / 0 failed. The architect review environment does not provide Docker, so that Docker-backed suite was not independently rerun here.
+
+Non-blocking documentation note: `docs/deployment-prerequisites.md` still omits the WABA variable from some older credential inventory prose; the Render Blueprints themselves are authoritative and correctly expose the required configuration.

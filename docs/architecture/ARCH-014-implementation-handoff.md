@@ -69,10 +69,13 @@ ARCH-014-SHOPIFY-002                        COMPLETE
 ARCH-014-ADMIN-005                          COMPLETE
         |
         v
+ARCH-014-ADMIN-006                          COMPLETE
+        |
+        v
 ARCH-014-SYSTEM-TEST-001                    READY (DEVELOPER-GATED)
 ```
 
-DATABASE-002, ADMIN-004, ADMIN-005 and SHOPIFY-002 are architect-accepted/integrated. No automatic implementation task remains. SYSTEM-TEST-001 is **Ready** but terminal/developer-gated and must be invoked explicitly by the developer.
+DATABASE-002, ADMIN-004, ADMIN-005, ADMIN-006 and SHOPIFY-002 are architect-accepted/integrated. SYSTEM-TEST-001 is now **Ready** but remains terminal/developer-gated and must be invoked explicitly.
 
 ## Materialisation state
 
@@ -88,15 +91,57 @@ DATABASE-002 is accepted on the implemented runtime/database contract. Broader S
 The following tasks supersede any previously generated but unapplied standalone ADMIN-006 overlay:
 
 ```text
-ARCH-014-ADMIN-006       READY
+ARCH-014-ADMIN-006       COMPLETE
 ARCH-014-ADMIN-007       COMPLETE
 ARCH-014-DATABASE-003    COMPLETE
-ARCH-014-ADMIN-008       PENDING on ADMIN-006
-ARCH-014-SHOPIFY-003     READY
-ARCH-014-SYSTEM-TEST-001 PENDING on ADMIN-006 + existing pricing prerequisites
-ARCH-014-SYSTEM-TEST-002 PENDING on ADMIN-008 + SHOPIFY-003 + DATABASE-003
+ARCH-014-ADMIN-008       COMPLETE
+ARCH-014-SHOPIFY-003     COMPLETE
+ARCH-014-SYSTEM-TEST-001 READY (DEVELOPER-GATED)
+ARCH-014-SYSTEM-TEST-002 PENDING on corrective ADMIN-010 (DATABASE-003 + ADMIN-008 + SHOPIFY-003 COMPLETE)
 ```
 
 Spreadsheet standard: exactly `exceljs@4.4.0`, established in ADMIN-006 and reused by ADMIN-008. No alternate spreadsheet package is authorized.
 
 See `ARCH-014-post-ADMIN-005-addendum.md` for the binding dependency graph and invariants.
+
+## Background runtime controls frontier (16 Sep 2026)
+
+DATABASE-004 and BACKGROUND-001 are architect-accepted Complete. BACKGROUND-001 now supplies the shared monotonic runtime-config observer, fenced PostgreSQL lease lifecycle and dynamic leased scheduler foundation.
+
+```text
+ARCH-014-DATABASE-004    COMPLETE
+ARCH-014-BACKGROUND-001  COMPLETE
+ARCH-014-BACKGROUND-002  COMPLETE
+ARCH-014-BACKGROUND-003  COMPLETE
+ARCH-014-BACKGROUND-004  COMPLETE
+ARCH-014-BACKGROUND-005  COMPLETE
+ARCH-014-ADMIN-009       COMPLETE
+ARCH-014-SYSTEM-TEST-003 READY
+```
+
+`BACKGROUND-005` is architect-accepted Complete. The automatic Background implementation frontier is now empty. `SYSTEM-TEST-003` is Ready and remains terminal/developer-gated; it must be invoked explicitly to validate live multi-replica lease/concurrency convergence, including shared-Redis fleet caps and active-job cap decreases.
+
+
+## Corrective runtime-control frontier (16 Sep 2026 snapshot audit)
+
+The post-implementation source audit found that exclusive lease ownership alone did not enforce one shared cadence window, and that several runtime-policy authority gaps remained in the Background service. DATABASE-005 persisted cadence history and BACKGROUND-006 now closes the complete Background correction as one implementation task.
+
+The branch-local corrective graph is:
+
+```text
+ARCH-014-DATABASE-005    COMPLETE
+        |
+        v
+ARCH-014-BACKGROUND-006  COMPLETE
+
+ARCH-014-BACKGROUND-007  SUPERSEDED (scope merged into BACKGROUND-006)
+
+ARCH-014-ADMIN-010       READY
+        |
+        +--------------------------------> ARCH-014-SYSTEM-TEST-002 PENDING
+        +--------------------------------> ARCH-014-SYSTEM-TEST-003 PENDING
+```
+
+`BACKGROUND-006` is architect-accepted Complete. There is no separate BACKGROUND-007 implementation step. On this branch, `ADMIN-010` remains the only automatic corrective implementation task; terminal system tests remain developer-gated and pending until their declared dependencies are architect-accepted/integrated.
+
+See `ARCH-014-runtime-controls-corrective-addendum.md` for the binding cadence/fencing/runtime-authority invariants.

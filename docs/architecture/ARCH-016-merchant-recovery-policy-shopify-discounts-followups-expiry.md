@@ -1,0 +1,1128 @@
+---
+id: ARCH-016
+title: Merchant recovery policy, Shopify discount catalogue, follow-up outreach and recovery expiry
+status: in_progress
+coordinator: moda_architect
+created: 2026-09-16
+updated: 2026-09-16
+---
+
+# ARCH-016: Merchant recovery policy, Shopify discount catalogue, follow-up outreach and recovery expiry
+
+## Purpose
+
+Introduce one coherent merchant recovery-policy architecture that:
+
+- exposes the existing recovery-start delay to merchants;
+- lets Free and Paid merchants choose no recovery offer, one fixed Shopify discount, or `AI_BEST_APPLICABLE` as configuration state;
+- synchronises the merchant's Shopify discount catalogue only after an eligible Free/Paid subscription is verified;
+- maintains that catalogue from Shopify discount webhooks while the app is installed;
+- makes uninstall/reinstall/scope-change lifecycle explicit;
+- allows one configurable no-response follow-up;
+- consumes one recovery credit for each proactive outbound recovery outreach attempt, not for ordinary customer/agent continuation messages;
+- preserves one `Conversation` for the lifetime of one `CheckoutRecovery` generation;
+- expires stale `CheckoutRecovery` generations after an admin-controlled inactivity lifetime;
+- permits a later checkout update after `EXPIRED` to pass through the normal pending-abandonment delay and create a new recovery generation;
+- gives platform admins visibility into merchant recovery policy and an explicit override mechanism.
+
+## Current implementation facts
+
+The uploaded 2026-09-16 snapshot establishes these starting invariants:
+
+```text
+ShopSettings.recoveryDelayMinutes Int @default(30)
+
+CheckoutRecovery
+  @@unique([shopId, checkoutToken])
+
+Conversation
+  checkoutRecoveryId String?
+  @@unique([checkoutRecoveryId])
+```
+
+`moda-interact-background/src/services/checkout-recovery.service.ts` currently:
+
+- creates/materialises one recovery for a shop + checkout token;
+- refuses to reopen `COMPLETED`, `EXPIRED` or `CANCELLED` recovery rows;
+- refreshes active recovery basket state on checkout updates;
+- bills the initial recovery by `recoveryId`;
+- obtains/creates exactly one recovery `Conversation`;
+- sends the proactive recovery template through `OutboundWhatsAppAdmissionService`.
+
+`Conversation` is therefore already the durable WhatsApp thread and ordering/history boundary. ARCH-016 MUST preserve that responsibility.
+
+## Terminology boundary
+
+ARCH-010 promotion entities are Moda recovery-credit promotion campaigns. They are NOT Shopify merchant discounts.
+
+ARCH-016 MUST NOT reuse or reinterpret:
+
+```text
+PromotionCampaign
+PromotionalCreditGrant
+MerchantPromotionSelection
+/app/promotions
+```
+
+for Shopify discounts.
+
+Use the terms:
+
+```text
+ShopifyDiscount               provider discount projection
+RecoveryOfferMode             merchant recovery-offer configuration
+RecoveryOutreachAttempt       one proactive chargeable recovery outreach
+```
+
+## Merchant recovery policy
+
+The merchant-owned settings are stored on the existing `ShopSettings` row.
+
+Canonical settings:
+
+```text
+recoveryDelayMinutes
+recoveryOfferMode
+fixedShopifyDiscountId        nullable; required only for FIXED
+followUpEnabled
+followUpDelayMinutes          nullable; required only when enabled
+```
+
+Canonical offer modes:
+
+```text
+NONE
+FIXED
+AI_BEST_APPLICABLE
+```
+
+Rules:
+
+```text
+NONE
+  fixedShopifyDiscountId = null
+
+FIXED
+  fixedShopifyDiscountId != null
+  referenced discount belongs to the same shop
+  catalogue is CURRENT
+  discount is currently selectable
+
+AI_BEST_APPLICABLE
+  fixedShopifyDiscountId = null
+```
+
+The settings apply to Free and Paid subscribed merchants. They are not a paid-only entitlement.
+
+## CommerceAgent / AI boundary
+
+`AI_BEST_APPLICABLE` is configuration state only in ARCH-016.
+
+ARCH-016 MUST NOT implement:
+
+- LLM calls for discount selection;
+- ranking discounts;
+- deciding which discount is "best";
+- basket-to-discount AI eligibility reasoning;
+- CommerceAgent tools or prompts for discount selection;
+- AI fallback ranking;
+- AI-generated codes or discounts.
+
+A later CommerceAgent architecture owns those semantics.
+
+ARCH-016 persists/exposes the merchant's choice so that future CommerceAgent work has an authoritative configuration contract.
+
+For `FIXED`, ARCH-016 snapshots the chosen Shopify discount on the outreach attempt. Do not invent a new WhatsApp template-variable convention in this architecture. The current `WhatsAppTemplateVariant` model contains no parameter contract. Customer-facing template composition beyond the existing approved-template path is not authorised unless the existing template path already has an explicit compatible contract. The implementation MUST NOT guess Meta template variable positions.
+
+## Shopify discount catalogue lifecycle
+
+Shopify is provider authority for the discount catalogue.
+
+The canonical lifecycle is:
+
+```text
+APP INSTALLED
+    -> Shop ACTIVE / Subscription NO_CONTRACT
+    -> do not bootstrap discounts
+
+verified Free or Paid subscription
+Subscription ACTIVE or TRIALING
+ShopSettings.onboardingCompleted = true
+    -> request FULL discount sync
+
+while installed + eligible
+    discounts/create
+    discounts/update
+    discounts/delete
+    discounts/redeemcode_added
+    discounts/redeemcode_removed
+      -> request FULL reconciliation
+
+APP UNINSTALLED
+    -> existing Shop UNINSTALLED lifecycle
+    -> catalogue UNAVAILABLE
+    -> all provider discounts unavailable for new recovery selection
+    -> retain rows/history
+    -> no Shopify discount API call after access is gone
+
+APP REINSTALLED
+    -> existing reinstall billing reconciliation
+    -> if NO_CONTRACT: catalogue remains UNAVAILABLE
+    -> if eligible ACTIVE/TRIALING subscription restored:
+         request FULL authoritative reconciliation
+    -> old pre-uninstall catalogue is never trusted as current
+```
+
+The canonical Shopify app config is:
+
+```text
+moda-interact/shopify.app.moda-interact.toml
+```
+
+Add required scope:
+
+```text
+read_discounts
+```
+
+Add app-specific subscriptions to `/webhooks`:
+
+```text
+discounts/create
+discounts/update
+discounts/delete
+discounts/redeemcode_added
+discounts/redeemcode_removed
+```
+
+Shopify 2026-07 `discountNodes` is the provider read path. Pagination is mandatory.
+
+Webhook payloads are synchronization triggers, not the durable catalogue definition. Duplicate/out-of-order deliveries MUST remain harmless.
+
+## Catalogue state and concurrency
+
+Each shop has exactly one durable catalogue state record.
+
+Canonical status set:
+
+```text
+UNAVAILABLE
+SYNC_REQUIRED
+SYNCING
+CURRENT
+ERROR
+```
+
+A full sync uses a monotonic `syncGeneration` plus an opaque `activeSyncToken` fence.
+
+```text
+request sync
+  -> catalogue status SYNC_REQUIRED
+
+worker claims
+  -> increment syncGeneration
+  -> set activeSyncToken
+  -> status SYNCING
+
+fetch every discountNodes page outside a long DB transaction
+
+final commit only if activeSyncToken still matches
+  -> upsert every observed ShopifyDiscount
+  -> mark rows not seen in this generation unavailable
+  -> status CURRENT
+  -> clear token/error
+```
+
+A superseded/older worker MUST NOT overwrite a newer generation.
+
+Uninstall invalidation takes precedence over in-flight sync finalization: a final sync commit MUST recheck shop install/subscription eligibility and token authority before making the catalogue CURRENT.
+
+## ShopifyDiscount projection
+
+Store all provider discounts returned by `discountNodes`, including supported native and app/function-backed types. Preserve enough normalized display/provider state for merchant selection and future architecture, plus the bounded provider snapshot required for future interpretation.
+
+At minimum persist:
+
+```text
+shopifyDiscountNodeId
+discountType               GraphQL __typename
+method                     AUTOMATIC | CODE
+providerStatus
+title
+summary
+startsAt
+endsAt
+codeCount                  nullable
+singleRedeemCode           nullable; set only when exactly one code is provable
+providerSnapshot           JSON
+isAvailable
+lastSeenSyncGeneration
+lastSyncedAt
+unavailableAt
+```
+
+The merchant page may display every currently running discount. `FIXED` selection is allowed only when the record is current, belongs to the shop and is structurally usable without guessing. In v1:
+
+```text
+AUTOMATIC provider discount
+  -> fixedSelectable = true
+
+CODE provider discount with exactly one provable redeem code
+  -> fixedSelectable = true
+
+CODE provider discount with zero/multiple/unknown codes
+APP/Function-backed discount whose customer-facing redemption cannot be represented deterministically
+  -> display in catalogue
+  -> fixedSelectable = false
+```
+
+Do not infer a redeem code from a discount title.
+
+"Currently running" requires:
+
+```text
+catalogue CURRENT
+isAvailable = true
+providerStatus = ACTIVE
+startsAt <= now when startsAt is present
+endsAt > now when endsAt is present
+```
+
+## Effective policy and admin override
+
+Merchant settings remain merchant-owned. Platform admin override is a separate durable row.
+
+Use one complete override snapshot, not field-by-field nullable precedence.
+
+```text
+active unexpired ShopRecoveryPolicyOverride exists
+      -> effective policy = override snapshot
+otherwise
+      -> effective policy = ShopSettings
+```
+
+Admin override contains:
+
+```text
+recoveryDelayMinutes
+recoveryOfferMode
+fixedShopifyDiscountId
+followUpEnabled
+followUpDelayMinutes
+reason
+expiresAt
+updatedByPlatformAdminId
+```
+
+Every create/update/clear is also written to a dedicated durable recovery-policy override audit event containing shop, actor, action, reason and before/after JSON. Clearing an override MUST NOT erase its audit history.
+
+Merchant UI MUST show when an admin override controls the effective policy. Merchant may still edit underlying merchant values; those values become effective only after override removal/expiry.
+
+## RecoveryOutreachAttempt
+
+One `CheckoutRecovery` generation owns zero or more `RecoveryOutreachAttempt` rows.
+
+One attempt represents exactly one proactive outbound recovery outreach and one recovery-credit admission.
+
+Canonical triggers:
+
+```text
+INITIAL
+NO_RESPONSE_FOLLOW_UP
+```
+
+Canonical statuses:
+
+```text
+PENDING
+WAITING_FOR_RESPONSE
+ENGAGED
+NO_RESPONSE
+CAPACITY_BLOCKED
+CANCELLED
+FAILED
+```
+
+Required invariant:
+
+```text
+@@unique([checkoutRecoveryId, sequence])
+```
+
+Sequence starts at 1.
+
+Attempt #1 is the initial proactive recovery message. The configured no-response follow-up, if it actually sends, is attempt #2.
+
+ARCH-016 v1 permits at most one configured no-response follow-up. The schema remains sequence-capable so a later architecture does not require replacing the identity model.
+
+## Credit rule
+
+Canonical commercial rule:
+
+```text
+proactive outbound RecoveryOutreachAttempt successfully admitted/sent
+  -> one recovery credit
+
+customer replies
+  -> ordinary continuation messages in the same Conversation
+  -> no new recovery credit
+
+customer does not reply
+configured follow-up becomes due
+Moda sends another proactive recovery outreach
+  -> create/admit attempt #2
+  -> one additional recovery credit
+```
+
+Therefore:
+
+```text
+follow-up < 24h with no customer response   => new credit
+follow-up >= 24h with no customer response  => new credit
+customer has responded before due time      => suppress follow-up; no new credit
+```
+
+The 24-hour Meta customer-service window is provider-policy state and MUST NOT be used as Moda's recovery-credit boundary.
+
+## Follow-up timing
+
+The merchant configures one delay. It is measured from the latest successfully sent proactive recovery attempt:
+
+```text
+followUpDueAt = latestAttempt.sentAt + followUpDelayMinutes
+```
+
+A delayed job is only a wake-up hint. When it wakes, durable state is revalidated once.
+
+Before sending attempt #2 require:
+
+```text
+CheckoutRecovery still active
+shop execution still eligible
+attempt #1 successfully sent
+no customer inbound after attempt #1 sentAt
+order/recovery not completed/cancelled/expired
+follow-up still enabled in the policy snapshot governing the pending follow-up
+follow-up due time reached
+capacity admission succeeds
+```
+
+If capacity is unavailable, do not send. Mark the attempt `CAPACITY_BLOCKED`. Do not silently borrow another entitlement or send first and bill later.
+
+## Conversation invariant
+
+ARCH-016 MUST NOT create a new `Conversation` merely because a new outreach attempt exists.
+
+```text
+CheckoutRecovery generation N
+  -> exactly one recovery Conversation
+  -> N RecoveryOutreachAttempts
+```
+
+`Conversation` remains the long-lived communication thread for that recovery generation.
+
+An attempt links to the proactive outbound `ConversationMessage` created by the existing outbound admission path. This gives explicit provenance without duplicating `conversationId` on the attempt:
+
+```text
+RecoveryOutreachAttempt
+  -> CheckoutRecovery
+  -> Conversation
+
+RecoveryOutreachAttempt.outboundMessageId
+  -> proactive ConversationMessage
+```
+
+Inbound engagement resolves the recovery from `Conversation.checkoutRecoveryId` and marks the latest `WAITING_FOR_RESPONSE` attempt engaged. If Meta `context.id` points to an older proactive attempt, preserve the message reply-context provenance but suppress the current no-response follow-up because the customer has engaged with the recovery conversation.
+
+## CheckoutRecovery generations and expiry
+
+`EXPIRED` is historical, not deleted.
+
+Add:
+
+```text
+generation Int
+lastExternalActivityAt DateTime
+```
+
+Replace global uniqueness:
+
+```text
+@@unique([shopId, checkoutToken])
+```
+
+with:
+
+```text
+@@unique([shopId, checkoutToken, generation])
+```
+
+Add a PostgreSQL partial unique index guaranteeing at most one active generation for `(shopId, checkoutToken)` where status is one of:
+
+```text
+DETECTED
+MESSAGE_SENT
+ENGAGED
+```
+
+Only `EXPIRED` may restart from later checkout activity. `COMPLETED` and `CANCELLED` remain permanently terminal for that checkout token unless another future architecture changes the rule.
+
+## Recovery external activity clock
+
+`lastExternalActivityAt` is monotonic.
+
+Qualifying activity:
+
+```text
+checkout update activityAt
+inbound customer WhatsApp message for the recovery Conversation
+initial detectedAt at generation creation
+```
+
+Do NOT reset expiry from:
+
+```text
+Moda initial outbound recovery
+Moda follow-up outbound
+CommerceAgent outbound
+billing/capacity updates
+admin reads/edits
+background reconciliation
+updatedAt noise
+```
+
+Always write:
+
+```text
+lastExternalActivityAt = max(current, incomingActivityAt)
+```
+
+so late/out-of-order events never move the activity clock backwards.
+
+## Admin-controlled lifetime
+
+Extend the existing singleton `BackgroundRuntimeConfig`:
+
+```text
+checkoutRecoveryLifetimeDays Int @default(21)
+```
+
+Allowed range:
+
+```text
+1..90 days
+```
+
+This is an `OPERATIONAL` runtime control and uses the existing optimistic version + audit reason mechanism.
+
+Expiry calculation uses the current runtime value:
+
+```text
+cutoff = now - checkoutRecoveryLifetimeDays
+active recovery with lastExternalActivityAt <= cutoff
+  -> EXPIRED
+```
+
+Do not persist a derived `expiresAt`; this makes an admin lifetime change effective without rewriting every recovery row.
+
+## Expiry scheduler
+
+Reuse `moda-recovery-worker`; no new Render service and no Gateway task.
+
+Add one leased scheduler to the existing recovery worker process. Add lease enum:
+
+```text
+CHECKOUT_RECOVERY_EXPIRY
+```
+
+Use a fixed one-hour scheduler cadence. The lifetime remains admin-configurable; the sweep cadence is operational implementation detail for v1 and is not another merchant/admin setting.
+
+Each sweep processes bounded pages and performs conditional terminal transitions only when the row is still active and still older than the current cutoff.
+
+Expiry also cancels/suppresses any pending no-response follow-up attempt/job for the recovery.
+
+## Post-expiry checkout update
+
+Current code discards checkout updates when no recovery exists and ignores terminal recoveries. ARCH-016 changes only the `EXPIRED` case.
+
+When a checkout update arrives for a checkout whose latest recovery generation is `EXPIRED`:
+
+```text
+checkout update
+  -> create/refresh PendingRecoveryCandidate using existing inactivity scheduling
+  -> do not create CheckoutRecovery immediately
+  -> further activity resets pending timer
+  -> candidate maturity re-fetches current Shopify checkout
+  -> if still recoverable, create generation = previous generation + 1
+  -> create new Conversation only when the new recovery actually initiates
+  -> create RecoveryOutreachAttempt sequence 1
+```
+
+If latest generation is `COMPLETED` or `CANCELLED`, keep existing terminal behavior.
+
+Generation selection/materialisation MUST occur under the existing checkout-scoped lock and survive duplicate/concurrent Shopify deliveries.
+
+## Installation/scope/subscription eligibility
+
+A discount catalogue is usable only when:
+
+```text
+Shop.status = ACTIVE
+ShopSettings.onboardingCompleted = true
+Subscription.status IN (ACTIVE, TRIALING)
+read_discounts scope is present in the durable offline session
+```
+
+If any prerequisite is absent, fail closed as `UNAVAILABLE`/`SYNC_REQUIRED`; do not display stale data as current.
+
+## Infrastructure assessment
+
+No new deployable service is required.
+
+Existing boundaries are sufficient:
+
+```text
+moda-interact          Shopify UI + webhook ingress + install lifecycle
+moda-interact-background
+                       discount sync + expiry + recovery orchestration
+moda-interact-admin    platform controls + tenant override
+PostgreSQL             durable state
+Redis/BullMQ           async wake-up/sync work
+```
+
+No ARCH-016 Gateway task is authorised.
+
+## Observability assessment
+
+Reuse existing shared structured logging and BullMQ/OpenTelemetry instrumentation. Add bounded semantic log events for:
+
+```text
+discount sync requested/started/completed/failed/superseded
+recovery expired
+new recovery generation materialised
+outreach attempt admitted/sent/engaged/suppressed/capacity-blocked
+```
+
+Do not create duplicate generic HTTP/queue metrics.
+
+## Task graph
+
+```text
+ARCH-016-DATABASE-001 ------------------------------+
+       |                                               |
+       +--> ADMIN-001                                  |
+       +--> BACKGROUND-002                             |
+       |                                               |
+       +------------------+----------------------------+
+                          |
+ARCH-016-SHARED-001 ------+
+       |                  |
+       +--> SHOPIFY-001   |   requires DATABASE + SHARED
+       +--> BACKGROUND-001|   requires DATABASE + SHARED
+       +--> SHOPIFY-002   |   requires DATABASE + SHARED
+       +--> ADMIN-002     |   requires DATABASE + SHARED
+       +--> BACKGROUND-003|   requires DATABASE + SHARED
+
+No implementation sibling depends on another sibling merely because it supplies
+runtime data. Catalogue/UI/outreach tests seed the durable state they consume.
+
+All implementation tasks
+       -> SYSTEM-TEST-001
+```
+
+Parallelism is allowed where dependencies permit. Do not serialize tasks merely by task number. Dependencies in ARCH-016 represent hard schema, published-contract or validation prerequisites; they do not encode merchant/runtime sequence. A task that merely reads data another sibling will populate in production MUST seed that durable state in its focused tests rather than depend on the sibling implementation.
+
+## Tasks
+
+| Task | Repository | Summary |
+|---|---|---|
+| ARCH-016-DATABASE-001 | moda-interact-database | Persist recovery policy, admin override, discount catalogue, outreach attempts, generations and lifetime config. |
+| ARCH-016-SHARED-001 | moda-interact-shared | Implement, version and publish canonical ARCH-016 queue/policy contracts in one task. |
+| ARCH-016-SHOPIFY-001 | moda-interact | Add scope/webhooks/install lifecycle and app-side sync triggers/invalidation. |
+| ARCH-016-BACKGROUND-001 | moda-interact-background | Reconcile the authoritative Shopify discount catalogue and trigger sync after background subscription/reinstall activation. |
+| ARCH-016-SHOPIFY-002 | moda-interact | Add merchant Recovery Settings route/UI/actions. |
+| ARCH-016-ADMIN-001 | moda-interact-admin | Add checkout-recovery lifetime to platform runtime controls. |
+| ARCH-016-ADMIN-002 | moda-interact-admin | Add tenant recovery-policy visibility and explicit override. |
+| ARCH-016-BACKGROUND-002 | moda-interact-background | Expire stale recovery generations and restart after later checkout activity. |
+| ARCH-016-BACKGROUND-003 | moda-interact-background | Implement chargeable recovery outreach attempts and one no-response follow-up. |
+| ARCH-016-SYSTEM-TEST-001 | moda-interact-system-test | Integrated validation after implementation and developer manual testing. |
+
+## Post-review update — SHARED-001 Attempt 1 Accepted
+
+`ARCH-016-SHARED-001` is architect-accepted **Complete** at implementation commit `202082e`.
+
+The published Shared release is:
+
+```text
+@modainteract/moda-interact-shared@0.12.1
+```
+
+It supplies the architecture-owned runtime boundary for:
+
+```text
+merchant effective recovery policy
+Shopify discount-sync queue payload
+Shopify discount-sync queue/job names
+bounded deterministic discount-sync job identity
+```
+
+The accepted Shared implementation remains intentionally free of Prisma/database types, provider GraphQL response models and CommerceAgent/LLM discount-selection semantics.
+
+Current ARCH-016 frontier after this acceptance:
+
+```text
+SHARED-001       Complete
+DATABASE-001     Ready
+
+SHOPIFY-001      Pending; requires DATABASE-001 + SHARED-001
+BACKGROUND-001   Pending; requires DATABASE-001 + SHARED-001
+SHOPIFY-002      Pending; requires DATABASE-001 + SHARED-001
+ADMIN-002        Pending; requires DATABASE-001 + SHARED-001
+BACKGROUND-003   Pending; requires DATABASE-001 + SHARED-001
+
+ADMIN-001        Pending on DATABASE-001
+BACKGROUND-002   Pending on DATABASE-001
+SYSTEM-TEST-001  Pending; terminal integrated phase after all implementation tasks and developer manual testing
+```
+
+No implementation consumer is promoted merely because Shared is now Complete; `DATABASE-001` remains the unsatisfied common hard prerequisite.
+
+## Development migration/rollout
+
+Moda is still in development and has no live merchants. No business-data transformation for live merchants is required beyond deterministic schema backfill of existing development rows.
+
+Database migration order:
+
+```text
+1. ARCH-016-DATABASE-001
+2. ARCH-016-SHARED-001 package publication can occur independently
+3. consumers pin the published Shared version
+4. application/background/admin tasks deploy
+```
+
+The database migration MUST backfill existing `CheckoutRecovery` rows:
+
+```text
+generation = 1
+lastExternalActivityAt = max(detectedAt, engagedAt when present)
+```
+
+Do not delete/recreate durable PostgreSQL state merely because the environment is development.
+
+## System-test timing
+
+`ARCH-016-SYSTEM-TEST-001` is defined now but remains Pending until every implementation dependency is Complete.
+
+The developer may manually validate the integrated feature before invoking the Ready system-test task. No implementation task depends on the system-test task.
+
+## Post-review update — DATABASE-001 Attempt 2 Accepted
+
+`ARCH-016-DATABASE-001` Attempt 2 is architect-accepted and **Complete**. The durable
+schema boundary now provides the complete recovery policy/override state, authoritative
+Shopify discount catalogue projection, generation-aware recovery identity, proactive
+outreach-attempt identity and the admin-controlled inactivity lifetime/expiry lease.
+
+Attempt 2 corrected the three PostgreSQL integrity defects found during Attempt-1
+review: the historical recovery uniqueness object is dropped as an index, enabled
+follow-up policies cannot carry a NULL delay, and deterministic single-code claims
+cannot carry an unknown NULL `codeCount`. No Conversation identity, ARCH-010
+promotion data or unrelated billing schema was changed.
+
+The current ARCH-016 implementation frontier is:
+
+```text
+ARCH-016-DATABASE-001    Complete
+ARCH-016-SHARED-001      Ready
+
+DATABASE-only frontier:
+  ARCH-016-ADMIN-001       Ready
+  ARCH-016-BACKGROUND-002  Ready
+
+DATABASE + SHARED frontier (still waiting for SHARED-001):
+  ARCH-016-SHOPIFY-001     Pending
+  ARCH-016-BACKGROUND-001  Pending
+  ARCH-016-SHOPIFY-002     Pending
+  ARCH-016-ADMIN-002       Pending
+  ARCH-016-BACKGROUND-003  Pending
+
+ARCH-016-SYSTEM-TEST-001 Pending
+```
+
+The selected validation database still has the pre-existing ARCH-015 Prisma P3009,
+so ARCH-016 migration deployment was not executed there. That history condition must
+be resolved before deployment; it does not reopen DATABASE-001.
+
+The terminal system-test task remains gated on all implementation prerequisites and
+continues to sit after the developer manual-testing checkpoint.
+
+## Post-review update — BACKGROUND-002 Attempt 1 Changes Requested
+
+`ARCH-016-BACKGROUND-002` Attempt 1 implementation commit `da4ccbb` is returned to
+**Ready** for bounded correction. The generation/restart and scheduler architecture is
+retained; no redesign is requested.
+
+Attempt 2 must correct four runtime issues discovered during functional review:
+
+```text
+inbound WhatsApp lifetime activity must use canonical event.occurredAt and count all routed inbound content, including rejected/failed audio
+active checkout-update activity must advance independently of Shopify basket-refresh outcome
+an expiry race must never allow markRecoveryMessageSent to reopen EXPIRED as MESSAGE_SENT
+expiry history fromStatus must be the exact status replaced by the terminal update
+```
+
+The task remains at `attempt: 1`, `executor: null`, `claimed_at: null`; the launcher will
+increment it on the next claim. No dependent task is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the
+existing developer manual-testing checkpoint remains before terminal integrated testing.
+
+## Post-review update — ADMIN-001 Attempt 1 Accepted
+
+`ARCH-016-ADMIN-001` Attempt 1 is architect-accepted **Complete** at implementation commit `44dd7a5`. The existing audited platform runtime-controls path now exposes `checkoutRecoveryLifetimeDays` as an `OPERATIONAL` whole-day control with default `21` and range `1..90`; no tenant-specific lifetime state, direct recovery-row rewrite or scheduler-cadence control was introduced.
+
+This review also reconciles the ARCH-016 frontier after the independently accepted DATABASE-001 and SHARED-001 branches. Both prerequisites are now Complete, so every untouched task whose declared dependencies are exactly those accepted prerequisites is promoted without being claimed:
+
+```text
+ARCH-016-DATABASE-001    Complete
+ARCH-016-SHARED-001      Complete
+ARCH-016-ADMIN-001       Complete
+
+Ready:
+  ARCH-016-SHOPIFY-001
+  ARCH-016-SHOPIFY-002
+  ARCH-016-BACKGROUND-001
+  ARCH-016-BACKGROUND-002
+  ARCH-016-BACKGROUND-003
+  ARCH-016-ADMIN-002
+
+ARCH-016-SYSTEM-TEST-001 Pending
+```
+
+The Ready promotions are dependency-state reconciliation only: each promoted task remains `attempt: 0`, `executor: null` and `claimed_at: null` until launched through the normal task workflow. `ARCH-016-SYSTEM-TEST-001` is not started automatically and remains behind completion of all implementation tasks plus the developer manual-testing checkpoint.
+
+## Post-review update — BACKGROUND-003 Attempt 2 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 2 implementation commit `256127f` correctly establishes
+the intended durable outreach-attempt identity, attempt-keyed recovery billing, one
+Conversation across initial/follow-up outreach, deterministic sequence-2 wake-up identity
+and the no-sequence-3 boundary. Those architectural choices are retained.
+
+The task returns to **Ready** for a bounded Attempt-3 correction because:
+
+```text
+1. FIXED offer resolution tests providerStatus == CURRENT instead of providerStatus == ACTIVE;
+2. customer engagement uses local processing time and the audio path does not mark outreach
+   engagement from the canonical WhatsApp event occurredAt;
+3. a retry after WhatsApp already persisted a successful outbound message is treated as a
+   duplicate failure, which can release billing and mark the sent attempt FAILED;
+4. unconditional attempt status changes can regress ENGAGED -> NO_RESPONSE, and a failed
+   follow-up queue publication cannot currently be repaired from durable followUpDueAt.
+```
+
+Attempt 3 must preserve the accepted queue, billing-allocation, Conversation and
+sequence-cap architecture and make only the explicit runtime corrections recorded in the
+task review. No schema/migration, AI-discount selection, new deployable service or
+sequence-3 behavior is authorised.
+
+`attempt` remains `2`, with `executor: null` and `claimed_at: null`; the deterministic
+launcher owns the increment when the task is reclaimed. No ARCH-016 dependency is
+promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
+automatically; the developer manual-testing checkpoint remains before terminal integrated
+testing.
+## Post-review update — SHOPIFY-001 Attempt 2 Changes Requested
+
+`ARCH-016-SHOPIFY-001` Attempt 2 implementation commit `454f882` correctly narrows
+eligibility to the durable offline Session, removes scope-payload authority and makes
+catalogue/discount invalidation durable without overwriting existing per-discount
+`unavailableAt` values. Those corrections are retained.
+
+The task returns to **Ready** for one bounded lifecycle correction because the interactive
+Prisma transactions still use plain reads at the default isolation boundary. They do not
+serialize activation against concurrent uninstall/scope removal, so a stale activation
+can still write `SYNC_REQUIRED` after a disabling lifecycle event committed.
+
+Attempt 3 must establish one common Shop-row `FOR UPDATE` lifecycle fence across:
+
+```text
+subscription activation bootstrap
+APP_SCOPES_UPDATE persistence/eligibility
+APP_UNINSTALLED invalidation
+```
+
+and duplicate uninstall must use the persisted first `Shop.uninstalledAt` as the effective
+catalogue invalidation timestamp rather than moving that boundary on webhook retries.
+
+The task remains `attempt: 2`, `executor: null`, `claimed_at: null`; the launcher owns the
+increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.
+
+
+## Post-review update — SHOPIFY-001 Attempt 3 Changes Requested
+
+`ARCH-016-SHOPIFY-001` Attempt 3 implementation commit `2ffbd20` correctly adds the
+shared `commerce.Shop ... FOR UPDATE` lifecycle fence to subscription activation and
+uninstall, and duplicate uninstall now reuses the persisted first `Shop.uninstalledAt`
+for catalogue invalidation.
+
+One bounded correction remains: `APP_SCOPES_UPDATE` currently persists `Session.scope`
+before acquiring that same Shop-row lock. The task contract requires one consistent
+lifecycle lock order across activation, scope update and uninstall, with the Shop lock
+held before Session/catalogue lifecycle mutation. Attempt 4 must therefore move only the
+scope Session persistence behind the existing Shop lock, then re-read the durable offline
+Session and retain post-commit publication.
+
+The task returns to `status: ready`, remains `attempt: 3`, `executor: null` and
+`claimed_at: null`; the deterministic launcher owns the increment on reclaim. No
+ARCH-016 dependency is promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending and is not
+started automatically; the developer manual-testing checkpoint remains before terminal
+integrated testing.
+## Post-review update — ADMIN-002 Attempt 2 Accepted
+
+`ARCH-016-ADMIN-002` Attempt 2 is architect-accepted **Complete** at implementation
+commit `215cb7f`.
+
+The accepted Admin boundary now provides tenant-scoped merchant/override/effective
+recovery-policy visibility, CURRENT/ACTIVE/running Shopify discount eligibility,
+complete durable override UPSERT/CLEAR semantics, transactional active-SUPER_ADMIN
+rechecks and dedicated before/after audit history including override expiry. Merchant
+`ShopSettings` remains merchant-owned, Shared remains pinned to `0.12.1`, and no AI
+discount-selection or provider-secret presentation was introduced.
+
+This acceptance does not independently make the terminal system-test task eligible.
+`ARCH-016-SYSTEM-TEST-001` remains Pending until every implementation dependency is
+Complete and the developer has completed the existing manual-testing checkpoint.
+
+## Post-review update — SHOPIFY-002 Attempt 1 Changes Requested
+
+`ARCH-016-SHOPIFY-002` Attempt 1 implementation commit `83f8e1e` establishes the intended
+merchant Recovery Settings route/access boundary, merchant-only ShopSettings writes,
+active-unexpired admin-override precedence, transactional shop-scoped FIXED-discount
+revalidation and AI-as-configuration-only behavior. Those architectural choices are retained.
+
+The task returns to **Ready** for one bounded UI/server-policy correction because the current
+page references missing `recoverySettings.effectiveOffer` and
+`recoverySettings.effectiveFollowUp` catalogue keys (which makes the Shared i18n runtime fail
+at render time), disabling a previously-enabled follow-up retains the stale submitted delay
+instead of persisting NULL, and the CURRENT-catalogue UI can present non-running discounts as
+enabled choices while omitting required normalized discount facts. The merchant loader must
+also project a bounded DTO instead of serializing raw admin-override/provider snapshot rows.
+
+Attempt 2 must preserve the accepted route/access, Shared `0.12.1`, no-AI, no-Shopify-API,
+merchant-only write and transaction-time fixed-discount authority boundaries. The architect
+translation handoff at
+`docs/decisions/shopify/ARCH-016/recovery-settings-attempt2-translations.json`
+is authoritative for all 20 locale `recoverySettings.*` values; the implementation agent
+must copy those values exactly rather than infer translations. No ARCH-016 dependency is
+promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
+automatically; the developer manual-testing checkpoint remains before terminal integrated
+testing.
+## Post-review update — BACKGROUND-001 Attempt 1 Changes Requested
+
+`ARCH-016-BACKGROUND-001` Attempt 1 implementation commit `70770d6` establishes the intended
+Background provider/worker boundary but is not accepted. Review found functional gaps in
+Shopify code-discount normalization, atomic generation/token fencing, finalize-time eligibility
+revalidation, monotonic `syncRequestedAt`, durable `SYNC_REQUIRED` handling, and several
+background activation/reinstall trigger branches.
+
+Attempt 2 is narrowly authorised to correct those paths, including queue injection through the
+existing periodic `BillingReconciliationService` paid-activation route. The accepted boundaries
+remain unchanged: Shared stays at `0.12.1`, Shopify is read-only through API `2026-07`, the
+existing offline token mechanism is reused, the worker stays in `moda-recovery-worker`, and no
+CommerceAgent/AI selection or new Render service is introduced.
+
+The task returns to `status: ready`, remains `attempt: 1`, `executor: null` and
+`claimed_at: null`; `/moda-task ARCH-016-BACKGROUND-001` owns the Attempt-2 increment on reclaim.
+No dependency is promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending behind all implementation
+work and the developer manual-testing checkpoint.
+## Post-review update — BACKGROUND-002 Attempt 2 Accepted
+
+`ARCH-016-BACKGROUND-002` Attempt 2 is architect-accepted **Complete** at implementation
+commit `ad1f858`.
+
+The accepted Background boundary now provides generation-aware recovery restart after
+`EXPIRED`, monotonic checkout/inbound-customer activity using authoritative event time,
+bounded inactivity expiry driven by the current runtime lifetime, and an hourly leased
+expiry sweep in the existing recovery worker. Attempt 2 also closes the two terminal
+race paths identified during Attempt-1 review: an in-flight send cannot reopen an
+expired generation, and expiry history records the exact active status replaced by its
+conditional terminal update.
+
+No Conversation uniqueness, Render topology, merchant policy ownership or unrelated
+billing behavior is changed by this acceptance.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation
+dependency is Complete and the developer has completed the existing manual-testing
+checkpoint. It is not started automatically by this acceptance.
+
+## Post-review update — SHOPIFY-002 Attempt 2 Changes Requested
+
+`ARCH-016-SHOPIFY-002` Attempt 2 implementation commit `73d3bb3` correctly preserves the
+merchant route/access boundary, merchant-only `ShopSettings` writes, active-unexpired
+admin-override precedence, transactional authenticated-shop FIXED validation and
+CURRENT/ACTIVE/running catalogue filtering. All 20 locale files also exactly match the
+architect-provided 33-key Recovery Settings handoff. Those decisions are retained.
+
+The task returns to **Ready** for one narrow presentation correction. The route still calls
+non-existent `recoverySettings.discount.starts` / `discount.ends` keys instead of the
+handoff's `startsAt` / `endsAt`, bypasses the supplied translated summary/method/status/code
+fact labels, and does not present the configured/effective FIXED discount identity required
+to distinguish merchant configuration from an active admin override. The claimed focused
+Recovery Settings locale guard is also absent, allowing the stale route keys to escape the
+reported focused suite.
+
+Attempt 3 is limited to the Recovery Settings route, bounded server DTO identity projection
+and focused regression tests. It must not change the already-correct 20 locale handoff,
+merchant access policy, database schema, Shared `0.12.1`, AI boundary or transaction-time
+FIXED authority. The task remains `attempt: 2`, `executor: null`, `claimed_at: null`; the
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted.
+
+## Post-review update — BACKGROUND-003 Attempt 3 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 3 implementation commit `f2abbbc` correctly fixes the
+ACTIVE provider-status eligibility predicate, adopts canonical WhatsApp provider event time
+for inbound engagement, and adds the first guarded outreach-transition/duplicate-message
+reconciliation primitives. Those corrections are retained.
+
+The task returns to **Ready** for a bounded Attempt-4 correction because the successful-send
+state machine still does not converge after crash/retry. In particular, durable
+`followUpDueAt` is not used to repair a failed BullMQ publication once the recovery is
+`MESSAGE_SENT`; duplicate successful initial sends return before normal recovery/follow-up
+finalisation; `PENDING`/broken duplicate provenance is treated as successful or releasable
+instead of fail-closed; and guarded attempt updates are still followed by unconditional
+lifecycle writes that can regress `ENGAGED` state. Provider-time engagement must also
+converge on the earliest qualifying inbound timestamp under out-of-order delivery.
+
+Attempt 4 is restricted to the existing outreach/reconciliation services and focused tests.
+No schema/migration, entitlement-priority, Conversation-identity, queue-topology, AI discount
+selection or sequence-3 change is authorised.
+
+The task remains `attempt: 3`, `executor: null`, `claimed_at: null`; the deterministic
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.
+
+
+## Post-review update — SHOPIFY-002 Attempt 3 Accepted
+
+`ARCH-016-SHOPIFY-002` Attempt 3 is architect-accepted **Complete** at implementation
+commit `711e984`.
+
+The accepted merchant Recovery Settings boundary now consumes the complete architect-provided
+20-locale / 33-key translation namespace, renders normalized currently-running Shopify
+discount facts with translated labels, and exposes only bounded same-shop `{ id, title }`
+identity projections for merchant/effective FIXED policy presentation. Retained stale identity
+may be displayed for policy transparency but remains non-selectable; transaction-time FIXED
+save authority still requires CURRENT + ACTIVE + available + in-window + fixedSelectable state.
+
+Merchant `ShopSettings` ownership, complete admin-override precedence, `/app/promotions`,
+Shared `0.12.1`, the no-Shopify-render-call boundary and the ARCH-016 AI/CommerceAgent
+non-goal are unchanged.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending because other implementation dependencies are
+still outstanding and the developer manual-testing checkpoint remains mandatory before
+terminal integrated testing. It is not started automatically by this acceptance.
+## Post-review update — BACKGROUND-003 Attempt 4 Changes Requested
+
+`ARCH-016-BACKGROUND-003` Attempt 4 implementation commit `4bb8e21` correctly adds the
+common confirmed-send finaliser, durable `followUpDueAt` repair helper, fail-closed duplicate
+outbound reconciliation and monotonic provider-time engagement required by the previous
+review. Those corrections are retained.
+
+The task returns to **Ready** for a narrow Attempt-5 correction because three convergence
+edges remain:
+
+```text
+1. duplicate successful initial-send reconciliation omits the already-resolved recovery
+   policy, so a crash before followUpDueAt persistence can silently lose an enabled follow-up;
+2. sequence-1 finalisation still publishes the follow-up job directly from stale in-memory
+   state instead of reusing the durable-state repair helper, so a terminal/engagement race can
+   still enqueue a no-response wake-up;
+3. duplicate PENDING audio completion repairs engagement against the durable message
+   Conversation but still updates transcription Conversation state using the newly routed
+   Conversation ID.
+```
+
+Attempt 5 is restricted to `checkout-recovery.service.ts`,
+`inbound-whatsapp-audio.service.ts`, focused tests and the Completion Report. No schema,
+queue topology, Conversation identity, entitlement priority, Shared version, AI selection or
+sequence-cap change is authorised.
+
+The task remains `attempt: 4`, `executor: null`, `claimed_at: null`; the deterministic
+launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by this review.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
+manual-testing checkpoint remains before terminal integrated testing.
+## Post-review update — BACKGROUND-001 Attempt 2 Changes Requested
+
+`ARCH-016-BACKGROUND-001` Attempt 2 implementation commit `8665b93` correctly fixes the
+provider code-discount projection, catalogue generation/token locking, finalize-time
+eligibility fence, durable Background `SYNC_REQUIRED` publication and the missing
+activation/reinstall trigger branches identified in Attempt 1. Those corrections are retained.
+
+One narrow catalogue-state correction remains before acceptance. A valid worker job for an
+existing but currently ineligible Shop reaches `UNAVAILABLE` before persisting the canonical
+job `requestedAt`, so a newer request can disappear from the monotonic `syncRequestedAt`
+clock and an older retry can later appear to be the latest request. The claim path also
+attempts catalogue creation before proving the referenced Shop exists, allowing a stale
+hard-deleted-Shop job to fail on the catalogue foreign key rather than terminate without
+provider access.
+
+Attempt 3 is limited to `shopify-discount-catalogue.service.ts` plus focused catalogue
+regression tests: resolve Shop identity first, persist `max(existing, requestedAt)` under
+the catalogue lock before the eligibility branch for every existing-Shop worker claim,
+and return bounded `unavailable` without catalogue/provider work for a missing Shop.
+
+The task returns to `status: ready`, remains `attempt: 2`, `executor: null` and
+`claimed_at: null`; the launcher owns the Attempt-3 increment on reclaim. No dependency is
+promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the
+developer manual-testing checkpoint remains before terminal integrated testing.
+
+## Post-review update — BACKGROUND-001 Attempt 3 Accepted
+
+`ARCH-016-BACKGROUND-001` Attempt 3 is architect-accepted **Complete** at implementation
+commit `5c12354`.
+
+The accepted Background catalogue boundary now resolves Shop identity before catalogue creation,
+terminates stale missing-Shop requests without provider access, and monotonically preserves the
+canonical queue `requestedAt` even when an existing Shop is temporarily ineligible. Older
+out-of-order jobs cannot regress `syncRequestedAt`.
+
+All previously accepted Attempt-2 provider, generation/token fencing, eligibility recheck,
+activation/reinstall publication and Shared `0.12.1` boundaries remain unchanged. The parent
+Attempt-3 report contained accidental task-contract formatting damage; the architect acceptance
+repairs that documentation without requiring another implementation attempt.
+
+No implementation dependency is promoted by this acceptance.
+`ARCH-016-SYSTEM-TEST-001` remains Pending until every remaining implementation dependency is
+Complete and the developer has completed the existing manual-testing checkpoint. It is not
+started automatically.
+
+## Post-review update — BACKGROUND-003 Attempt 6 Accepted
+
+`ARCH-016-BACKGROUND-003` Attempt 6 is architect-accepted **Complete** at implementation
+commit `d985548`.
+
+The accepted outreach boundary now converges correctly across confirmed provider-send
+crash/retry windows: duplicate initial success reuses the already-resolved recovery policy,
+sequence-1 finalisation persists state before invoking the durable
+`ensureScheduledInitialFollowUp()` repair path, and the persisted attempt `followUpDueAt`
+rather than stale in-memory state controls deterministic sequence-2 wake-up publication.
+
+Inbound audio duplicate processing also preserves durable message provenance: both
+engagement repair and successful pending transcription completion use the
+`ConversationMessage` reservation's `conversationId`, so a rerouted duplicate cannot mutate
+a different Conversation.
+
+All prior accepted BACKGROUND-003 invariants remain: at most two proactive attempts, one
+Conversation per recovery generation, one recovery credit per successfully sent proactive
+outreach, no extra credit for customer/ordinary continuation messages, fail-closed duplicate
+provider reconciliation, monotonic provider-time engagement, and no AI discount selection.
+
+The Attempt-6 Completion Report cited historical claim commit `8dc667aa` as if it were the
+Attempt-6 claim. That hash is the Attempt-3 launcher claim. This is recorded as handoff
+evidence drift and is not used as fresh Attempt-6 claim proof; it does not require
+implementation churn or an additional attempt.
+
+`ARCH-016-SYSTEM-TEST-001` remains Pending. This task-specific parent branch may not yet
+contain every independently accepted sibling task, and the developer manual-testing
+checkpoint remains mandatory before terminal integrated testing. The system-test task is
+not started automatically by this acceptance.

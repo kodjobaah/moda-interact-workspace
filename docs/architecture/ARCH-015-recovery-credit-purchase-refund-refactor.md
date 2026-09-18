@@ -4,7 +4,7 @@ title: Recovery-credit purchase, reconciliation, cross-subscription consumption 
 status: in_progress
 coordinator: moda_architect
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015: Recovery-credit purchase, reconciliation, cross-subscription consumption and refund refactor
@@ -246,36 +246,90 @@ REQUESTED
 
 Ambiguous/mismatching evidence -> `NEEDS_ATTENTION`, never speculative completion.
 
-## Task graph
+
+## Typed automatic-refund correction evidence
+
+Automatic correction settlement evidence is owned by `RecoveryCreditRefund`; provider submission state is owned by `UsageEvent`.
+
+Do not use `UsageEvent.metadata` or another untyped JSON blob as the authoritative refund reconciliation record.
+
+Existing refund provenance/economic fields remain authoritative:
 
 ```text
-ARCH-014-DATABASE-001
-      |
-      +--> ARCH-015-DATABASE-001
-
-ARCH-015-SHARED-001  (independent/parallel)
-
-ARCH-014-SHOPIFY-001
-      |
-      +--> ARCH-015-SHOPIFY-001
-                 |
-ARCH-015-SHARED-001 + ARCH-015-DATABASE-001
-                 |
-                 +--> ARCH-015-SHOPIFY-002
-                              |
-                              +--> ARCH-015-BACKGROUND-001
-                                      |
-                                      +--> ARCH-015-BACKGROUND-002
-                                      |
-                                      +--> ARCH-015-SHOPIFY-003
-                                                |
-                                                +--> ARCH-015-BACKGROUND-003
-                                                          |
-                                                          +--> ARCH-015-ADMIN-001
-
-All accepted implementation tasks
-      -> ARCH-015-SYSTEM-TEST-001
+providerSubscriptionIdSnapshot
+planHandleSnapshot
+billingPeriodIdSnapshot
+eventHandleSnapshot
+purchaseProviderAmountSnapshot
+purchaseProviderCurrencySnapshot
+finalCreditQuantity
+expectedProviderAmount
+expectedProviderCurrency
 ```
+
+ARCH-015-DATABASE-002 adds only:
+
+```text
+automaticCorrectionUsageEventId
+providerUsageQuantityBeforeCorrection
+providerUsageCostBeforeCorrection
+expectedProviderUsageQuantityAfterCorrection
+expectedProviderUsageCostAfterCorrection
+```
+
+`automaticCorrectionUsageEventId` is a unique one-to-one FK to the exact automatic correction `UsageEvent`.
+
+The correction `UsageEvent` owns:
+
+```text
+quantity                         # exact negative/fractional correction
+correctionOfUsageEventId
+sourceType / sourceId
+shopifyEventHandle
+shopifyIdempotencyKey
+shopifyReportState
+provider submission/error evidence
+```
+
+The four typed provider correction values and existing final/expected refund values are frozen atomically when the automatic correction event is prepared. Later scheduler cycles never recompute them; they only compare fresh Shopify provider state with the frozen expected-after evidence.
+
+Naming contract:
+
+```text
+...Snapshot                 existing original provenance
+...BeforeCorrection         provider state actually observed before correction
+expected...AfterCorrection  provider state required for later completion proof
+```
+
+## Task graph
+
+Original implementation tasks are Complete. The current correction frontier is:
+
+```text
+ARCH-015-SHARED-001        Complete
+ARCH-015-DATABASE-001      Complete
+ARCH-015-DATABASE-002      Complete
+ARCH-015-SHOPIFY-001       Complete
+ARCH-015-SHOPIFY-002       Complete
+ARCH-015-BACKGROUND-001    Complete
+ARCH-015-BACKGROUND-002    Complete
+ARCH-015-SHOPIFY-003       Complete
+ARCH-015-BACKGROUND-003    Complete
+ARCH-015-ADMIN-001         Complete
+
+ARCH-015-SHOPIFY-004       Ready
+        |
+        v
+ARCH-015-BACKGROUND-004    Pending
+        |
+        v
+manual ARCH-015 billing/refund test pass
+        |
+        v
+ARCH-015-SYSTEM-TEST-001   Pending; explicit architect authorization required
+```
+
+SHOPIFY-004 and BACKGROUND-004 are bounded post-implementation integration corrections. They do not reopen accepted Database, Shared or Admin architecture and they do not authorize a new schema/queue/lock model.
 
 ## Explicit non-goals
 
@@ -294,8 +348,8 @@ ARCH-015 MUST NOT:
 
 ## Post-review update — DATABASE-001 Accepted
 
-`ARCH-015-DATABASE-001` Attempt 1 is architect-accepted. The only ARCH-015 schema
-amendment is now implemented as designed:
+`ARCH-015-DATABASE-001` Attempt 1 is architect-accepted. The first ARCH-015 schema
+amendment is implemented as designed:
 
 ```text
 RecoveryCreditPurchase.providerUsageQuantityBeforeSnapshot -> Decimal
@@ -502,3 +556,538 @@ ARCH-015-SHOPIFY-002     Complete
 ```
 
 `ARCH-015-SHOPIFY-003` remains Pending because `ARCH-015-BACKGROUND-001` is still an unsatisfied declared prerequisite.
+
+
+## Post-review update — BACKGROUND-001 Attempt 2 Changes Requested
+
+Architect review accepts the candidate-centric purchase reconciliation core and the
+Attempt-2 fixes for inactive tiered meters, Decimal provider quantities and sequential
+same-handle baselines.
+
+Two integration defects remain before `ARCH-015-BACKGROUND-001` can become Complete:
+
+```text
+1. Background still compares the raw nullable Shopify legacySubscriptionId against
+   RecoveryCreditPurchase.providerSubscriptionIdSnapshot. Native App Pricing purchases
+   store the canonical Shared app-pricing:v1 provider-context identity, so a null legacy
+   id can never match. Attempt 3 must consume Shared 0.11.2, derive the current context
+   identity, and use the canonical three-field context comparator.
+
+2. The Background Shopify Partner parser still filters current/pending FlatRatePrice
+   items on price.active. ARCH-015 requires returned subscription membership, not the
+   price.active flag, to decide plan/meter membership. Tiered handling is already fixed;
+   current and pending flat-rate handling must be aligned.
+```
+
+No schema, status, queue or reconciliation redesign is requested. Existing Decimal
+candidate proof, zero-cost activation, same-handle ambiguity, different-handle
+independence, Serializable activation, atomic entitlement increment and post-commit
+resume behavior remain accepted and must not be churned.
+
+The same `ARCH-015-BACKGROUND-001` task returns to **Ready** at Attempt 2. The next valid
+claim is Attempt 3. Its downstream tasks remain Pending until BACKGROUND-001 is accepted
+Complete.
+
+## Post-review update — BACKGROUND-001 Attempt 3 Changes Requested
+
+Architect review accepts the Attempt-3 corrections for canonical Shared provider-context
+identity and complete inactive-price parser alignment.
+
+The production reconciliation now correctly consumes exact Shared `0.11.2`, supports
+native App Pricing contexts with no legacy subscription id, compares identity + plan +
+billing period through the canonical Shared comparator, keeps event-handle proof
+operation-specific, and retains current/pending flat-rate plus tiered subscription items
+without filtering solely on `price.active`.
+
+One original BACKGROUND-001 invariant remains unresolved: the Background orchestration
+still requires `projection.packMeterHandle`, which is sourced from the retired singular
+`BillingPlan.shopifyRecoveryCreditPackEventHandle`, before it will invoke durable purchase
+reconciliation.
+
+ARCH-015 requires durable REQUESTED+REPORTED purchases to be discovered and proved from
+their own immutable `shopifyEventHandleSnapshot` against the complete live Shopify
+`providerUsageSnapshot`. A missing/disabled singular BillingPlan pack configuration must
+not prevent that reconciliation.
+
+Therefore the same `ARCH-015-BACKGROUND-001` task returns to **Ready** for Attempt 4.
+Attempt 4 is limited to removing the singular pack-meter prerequisite/scope from the
+normal Background purchase-reconciliation path while preserving all accepted provider-
+identity, Decimal, transaction, idempotency and parser behavior.
+
+Downstream tasks remain Pending until BACKGROUND-001 is architect-accepted Complete.
+
+## Post-review update — BACKGROUND-001 Attempt 4 Accepted
+
+`ARCH-015-BACKGROUND-001` Attempt 4 is architect-accepted and **Complete**.
+
+The final purchase-reconciliation flow is candidate-centric end to end:
+
+```text
+valid current local/provider billing context
+  -> derive canonical providerContextIdentity
+  -> pass complete live providerUsageSnapshot
+  -> discover durable REQUESTED + REPORTED purchases
+  -> group by each stored shopifyEventHandleSnapshot
+  -> prove each candidate against its own exact live meter
+  -> Decimal before + 1 quantity proof + cost/currency/context/cycle proof
+  -> Serializable ACTIVE transition + atomic purchased-credit grant
+```
+
+The retired singular `BillingPlan.shopifyRecoveryCreditPackEventHandle` and
+`recoveryCreditPackEnabled` no longer gate or select the normal Background purchase
+reconciliation path. Remaining references inside existing subscription plan-change /
+rollover compatibility logic are not purchase-reconciliation authority and were outside
+Attempt 4's bounded correction.
+
+The previously accepted Shared 0.11.2 provider-context identity, native App Pricing
+fallback identity, inactive-price provider membership, Decimal evidence, same-handle
+ambiguity, different-handle independence, idempotency and post-commit resume behavior
+remain intact.
+
+The execution frontier is now:
+
+```text
+ARCH-015-BACKGROUND-001  Complete
+        |
+        +--> ARCH-015-BACKGROUND-002  Ready
+        |
+        +--> ARCH-015-SHOPIFY-003     Ready
+                    |
+                    +--> ARCH-015-BACKGROUND-003 Pending
+```
+
+BACKGROUND-003 remains Pending because SHOPIFY-003 is not yet Complete.
+
+
+## Post-review update — BACKGROUND-002 Attempt 2 Changes Requested
+
+Architect review accepts the substantive Attempt-2 correction: reservation ordering now
+reads local period bounds, derives provider-context identity through the canonical Shared
+helper (including native App Pricing with nullable legacy provider ids), and applies this
+task's ACTIVE-only current-context rule. Reversed/non-forward periods and TRIALING
+projections are historical ordering hints, while existing cross-plan spendability, replay,
+refund-hold, CAS and local NOT_APPLICABLE evidence remain intact.
+
+One fail-closed defect remains. The selector uses truthiness for observed plan/billing
+period strings and invokes Shared derivation directly. Malformed native-App-Pricing local
+projection evidence (for example null legacy id plus whitespace-only observed plan handle)
+can therefore throw `SHOPIFY_PROVIDER_CONTEXT_INVALID` out of reservation selection.
+
+The local Subscription projection is only an ordering hint. Attempt 3 must validate
+nonblank plan/billing-period evidence and convert any unusable Shared derivation to
+`currentContext = null`, leaving every ACTIVE lot spendable under historical FIFO. No
+schema, Shopify I/O, Shared change, reservation transaction redesign or refund change is
+authorized.
+
+`ARCH-015-BACKGROUND-002` therefore remains Ready. `ARCH-015-SYSTEM-TEST-001` remains
+gated until all of its implementation prerequisites are architect-accepted Complete.
+
+## Post-review update — SHOPIFY-003 Attempt 2 Accepted
+
+`ARCH-015-SHOPIFY-003` Attempt 2 is architect-accepted and **Complete**.
+
+The merchant refund-admission boundary now enforces the full current-provider-context
+contract before any new monetary refund hold is created:
+
+```text
+authenticated exact shop + nonblank shopifyShopId
+  -> ACTIVE purchase
+  -> providerPurchaseAmount > 0
+  -> availableAmount >= 1
+  -> fresh Shopify ACTIVE/TRIALING subscription
+  -> canonical providerContextIdentity
+  -> exact plan + local billingPeriod + provider/local cycle match
+  -> purchase eventHandle present live
+  -> Serializable durable REQUESTED refund hold
+  -> ACTIVE purchase becomes WITHDRAWN
+  -> refundingQuantity += availableAmount only
+```
+
+Historical/non-current purchases remain ACTIVE and spendable and do not enter the normal
+monetary refund path. Zero/non-positive-value purchases likewise remain spendable and
+return `REFUND_NOT_AVAILABLE`. No direct web-to-Background invocation or provider
+completion evidence is introduced; `ARCH-015-BACKGROUND-003` remains responsible for
+asynchronous correction and provider reconciliation.
+
+The frontier is now:
+
+```text
+ARCH-015-SHOPIFY-003     Complete
+ARCH-015-BACKGROUND-001  Complete
+ARCH-015-SHARED-001      Complete
+ARCH-015-DATABASE-001    Complete
+        |
+        +--> ARCH-015-BACKGROUND-003 Ready
+```
+
+`ARCH-015-BACKGROUND-002` continues independently through its own review lifecycle.
+
+## Post-review update — BACKGROUND-002 Attempt 3 Accepted
+
+`ARCH-015-BACKGROUND-002` Attempt 3 is architect-accepted and **Complete**.
+
+Purchased-credit consumption now uses the local Subscription projection only as a
+fail-closed ordering hint:
+
+```text
+valid ACTIVE mapped subscription
++ nonblank observed plan handle
++ nonblank billing-period id
++ finite forward period
+  -> derive canonical Shared providerContextIdentity
+  -> partition ACTIVE lots into historical/non-current and current-context
+  -> spend historical/non-current first
+  -> FIFO within each partition
+
+missing / malformed / ambiguous / TRIALING projection
+  -> no current context hint
+  -> every ACTIVE lot remains spendable as historical FIFO
+```
+
+Native App Pricing remains supported when the raw provider subscription id is null; the
+canonical `app-pricing:v1:...` identity is derived from validated plan/period evidence.
+Any Shared derivation failure is contained as `currentContext = null` and cannot make
+purchased credits unavailable.
+
+Replay affinity, refund-held exclusion, Serializable/CAS reservation behavior and local
+`RECOVERY_CONVERSATION` / `NOT_APPLICABLE` usage evidence remain unchanged.
+
+The ARCH-015 execution frontier is now:
+
+```text
+ARCH-015-BACKGROUND-002  Complete
+ARCH-015-SHOPIFY-003     Complete
+        |
+        +--> ARCH-015-BACKGROUND-003  Ready
+                  |
+                  +--> ARCH-015-ADMIN-001 Pending
+                              |
+                              +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+SYSTEM-TEST-001 is not promoted by BACKGROUND-002 acceptance alone because BACKGROUND-003
+and ADMIN-001 are still unsatisfied declared prerequisites.
+
+
+## Pre-implementation correction — BACKGROUND-003 typed refund evidence (2026-09-16)
+
+Architect review before executing `ARCH-015-BACKGROUND-003` found that the original task contract instructed Background to store correction baseline/expected evidence in `UsageEvent.metadata`.
+
+The current schema has no `UsageEvent.metadata` field, and adding one would be the wrong ownership boundary for settlement-critical financial evidence. Most proposed metadata keys also duplicate already-typed `RecoveryCreditRefund` provenance/economic fields.
+
+Decision:
+
+```text
+RecoveryCreditRefund
+  = authoritative refund workflow, provenance, baseline and expected settlement evidence
+
+UsageEvent
+  = exact Shopify App Event submission identity, quantity, correction relation,
+    idempotency and provider reporting state
+```
+
+`ARCH-015-DATABASE-002` is inserted as the bounded schema prerequisite for the automatic correction path. It adds four typed Decimal correction-evidence fields plus a unique one-to-one FK from the refund to its correction UsageEvent. Existing plan/provider-context/period/meter/refund-amount fields are reused rather than duplicated.
+
+`ARCH-015-BACKGROUND-003` therefore returns from Ready to **Pending** until DATABASE-002 is architect-accepted Complete. Its corrected task contract forbids `UsageEvent.metadata`, freezes typed correction evidence atomically with the linked UsageEvent, and treats all later scheduler runs as reconciliation-only against those immutable values.
+
+`ARCH-015-ADMIN-001` is also corrected to use `refund.automaticCorrectionUsageEventId` as the double-settlement authority instead of a loose `UsageEvent sourceType/sourceId` search. The source fields remain consistency evidence only.
+
+
+## Post-review update — DATABASE-002 Attempt 1 Accepted
+
+`ARCH-015-DATABASE-002` Attempt 1 is architect-accepted and **Complete**.
+
+The automatic refund correction path now has a typed durable settlement boundary:
+
+```text
+RecoveryCreditRefund
+  -> immutable existing refund provenance/economic fields
+  -> provider quantity/cost before correction
+  -> expected provider quantity/cost after correction
+  -> unique automaticCorrectionUsageEventId
+
+UsageEvent
+  -> exact correction quantity
+  -> correction relation / source / event handle
+  -> Shopify idempotency and submission state
+```
+
+The database enforces that automatic correction evidence is either absent or complete,
+requires non-negative provider quantity/cost and expected refund amount evidence, requires
+positive final Moda credit quantity, and restricts deletion of the linked correction
+UsageEvent. Manual `PROVIDER_ACTION_REQUIRED` rows remain valid without an automatic
+correction link and may retain their existing final/expected refund fields.
+
+No generic `UsageEvent.metadata` field, new model, queue, enum or entitlement type was
+introduced.
+
+The submitted environment could not execute this migration because Prisma reports P3009
+on the earlier `20260915140000_arch015_fractional_provider_usage_snapshots` migration.
+That database-history failure predates DATABASE-002 and remains an environment/deployment
+recovery requirement; it does not alter the accepted schema contract.
+
+The execution frontier is now:
+
+```text
+ARCH-015-DATABASE-002   Complete
+ARCH-015-SHOPIFY-003    Complete
+ARCH-015-BACKGROUND-001 Complete
+ARCH-015-SHARED-001     Complete
+ARCH-015-DATABASE-001   Complete
+        |
+        +--> ARCH-015-BACKGROUND-003 Ready
+                  |
+                  +--> ARCH-015-ADMIN-001 Pending
+                              |
+                              +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+SYSTEM-TEST-001 remains Pending until BACKGROUND-003 and ADMIN-001 are Complete and the
+target database migration history is healthy enough to apply the accepted migrations.
+
+
+## Post-review update — BACKGROUND-003 Attempt 2 Changes Requested
+
+`ARCH-015-BACKGROUND-003` Attempt 2 is not yet architect-accepted. The typed automatic
+correction structure, exact Decimal correction event, deterministic idempotency,
+202-as-receipt semantics and atomic financial completion CAS are retained, but five bounded
+corrections are required before the automatic path is safe:
+
+```text
+1. derive Shared provider context for native App Pricing even when legacy provider id is null;
+2. RECONCILE compares frozen expected-after evidence to live quantity/cost/currency/context
+   without requiring live pricing or recalculating economics;
+3. unsafe PREPARE freezes proportional expectedProviderAmount for the final unused credits;
+4. a lost refund-link CAS must roll back any unlinked PENDING correction before publisher visibility;
+5. successful automatic completion writes the existing deterministic REFUND_COMPLETED billing system message.
+```
+
+The safe-vs-manual PREPARE race is especially important: the generic UsageEvent publisher
+selects due PENDING/RETRYABLE events independently of the refund FK, so an unlinked event
+must never be committed after `PROVIDER_ACTION_REQUIRED` wins the refund-state race.
+
+The frontier remains:
+
+```text
+ARCH-015-BACKGROUND-003  Ready (Attempt 3 correction)
+          |
+          +--> ARCH-015-ADMIN-001       Pending
+                      |
+                      +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+The pre-existing database P3009 remains an external deployment/integration prerequisite.
+## Admin implementation consolidation — 16 September 2026
+
+The Admin server/read-model changes and Refund Requests UI adaptation are one atomic implementation task:
+
+```text
+ARCH-015-BACKGROUND-003
+        |
+        v
+ARCH-015-ADMIN-001
+        |
+        v
+ARCH-015-SYSTEM-TEST-001
+```
+
+`ARCH-015-ADMIN-002` is superseded and MUST NOT be executed.
+
+Rationale: ADMIN-001 deletes server actions/types/status semantics that the current Refund Requests component imports and renders. A separate UI task would either require a temporary compatibility layer or leave `moda-interact-admin` internally inconsistent between tasks. Because Moda Interact is pre-production, ARCH-015 removes superseded Admin refund paths rather than preserving legacy behavior.
+
+ADMIN-001 also owns deterministic refund-specific localization wording. The authoritative 20-locale values are stored in:
+
+```text
+docs/decisions/admin/ARCH-015/ADMIN-001-localization-matrix.json
+```
+
+The matrix provides wording only; it does not authorize ADMIN-001 to invent an Admin-wide multilingual runtime when the current Admin runtime remains English-only.
+
+
+## Post-review update — BACKGROUND-003 Attempt 3 Accepted
+
+`ARCH-015-BACKGROUND-003` Attempt 3 is architect-accepted and **Complete**.
+
+The automatic recovery-credit refund correction path now preserves the accepted two-phase boundary:
+
+```text
+PREPARE
+  -> prove current provider context + live pricing/economics
+  -> atomically freeze typed refund evidence + exactly one correction UsageEvent
+  -> lost link CAS rolls the event back
+
+RECONCILE
+  -> never recalculate frozen economics
+  -> use fresh provider context + quantity/cost/currency only
+  -> exact frozen after-state proof
+  -> atomic purchase/counter/refund completion
+  -> deterministic REFUND_COMPLETED system message
+```
+
+Attempt 3 also restores native App Pricing provider-context identity when Shopify exposes no legacy subscription id and freezes proportional manual-fallback economics for partial unused packs. No new queue, schema, refund status, `UsageEvent.metadata`, process-local settlement evidence or automatic Admin provider action was introduced.
+
+The dependency frontier is now:
+
+```text
+ARCH-015-BACKGROUND-003  Complete
+          |
+          +--> ARCH-015-ADMIN-001       Ready
+                      |
+                      +--> ARCH-015-SYSTEM-TEST-001 Pending
+```
+
+SYSTEM-TEST-001 remains Pending until ADMIN-001 is Complete. The pre-existing database P3009 remains an external deployment/integration prerequisite before deployed end-to-end acceptance can apply the accepted migration chain.
+
+
+## Post-review update — ADMIN-001 Attempt 2 Accepted
+
+`ARCH-015-ADMIN-001` Attempt 2 is architect-accepted and **Complete**.
+
+The final Admin refund surface preserves the ARCH-015 authority boundary:
+
+```text
+REQUESTED
+  -> read-only in Admin; Background owns settlement-route selection
+
+PROVIDER_ACTION_REQUIRED + no automatic correction link
+  -> explicit SUPER_ADMIN REFUND/CREDIT evidence only
+
+automaticCorrectionUsageEventId != null
+  -> no normal Admin monetary action
+
+NEEDS_ATTENTION
+  -> investigation/reconciliation only; no normal monetary resubmission
+```
+
+The accepted UI distinguishes exact automatic and manual completion evidence, lets the automatic
+correction route override derived queue labels, preserves typed correction and purchase provenance
+under progressive disclosure, and links to the canonical App Event drawer URL without carrying
+Refund Requests query parameters. Architect-owned refund copy is consumed through the existing
+English Admin catalogue; the 20-locale matrix remains normative without introducing new locale
+runtime architecture.
+
+Attempt-2 validation passes focused refund/security tests, build, lint, forbidden legacy checks,
+localization-matrix equality and `git diff --check`. Remaining broad test/typecheck failures are
+documented pre-existing Prisma/merchant-support baseline issues, not changes introduced by the
+bounded correction commit.
+
+All declared ARCH-015 implementation tasks are now architect-accepted Complete. The execution
+frontier becomes:
+
+```text
+ARCH-015-ADMIN-001       Complete
+          |
+          +--> ARCH-015-SYSTEM-TEST-001 Ready
+```
+
+The existing database P3009 remains an external deployment/integration prerequisite and should be
+resolved before terminal deployed acceptance can apply the complete migration chain.
+
+
+## Post-implementation integration correction — provider-meter mutation serialization (2026-09-16)
+
+A cross-repository audit after the original ARCH-015 implementation tasks completed identified one missing global invariant: purchase `+1` and refund negative/fractional App Events mutate the same Shopify usage meter and therefore must share a single-flight boundary.
+
+Canonical invariant:
+
+```text
+provider-meter key = (shopId,eventHandle)
+
+at most one unresolved monetary mutation per key
+
+different event handles remain independent
+```
+
+Web admission uses the existing per-shop `billing.Subscription ... FOR UPDATE` row lock and re-checks both REQUESTED purchases and live refunds under that lock. No new lock model/schema is introduced.
+
+Background additionally processes same-handle refunds oldest-first and never freezes two automatic corrections from the same provider baseline.
+
+For a REPORTED automatic correction, provider state is classified exactly:
+
+```text
+actual == frozen BEFORE          -> propagation pending; remain REQUESTED
+actual == frozen EXPECTED AFTER  -> complete refund
+actual == neither                -> NEEDS_ATTENTION
+```
+
+Merchant refund reactivation is permanently unavailable once `automaticCorrectionUsageEventId` is linked.
+
+Top-up offer busy state is per meter rather than global, and displayed provider price represents the deterministically derived next Shopify meter-unit charge, never a per-conversation price.
+
+Correction execution model after architect review:
+
+```text
+ARCH-015-SHOPIFY-004      Complete
+ARCH-015-BACKGROUND-004   parallel correction task
+             \          /
+              \        /
+             correction implementation complete
+                        |
+                        v
+              developer/manual ARCH-015 test pass
+                        |
+                        v
+              ARCH-015-SYSTEM-TEST-001
+              explicit architect authorization only
+```
+
+SHOPIFY-004 is accepted on the production implementation and validation evidence. The Dutch matrix wording difference and several missing one-for-one focused regression cases are non-blocking observations to be exercised during later/manual/integrated validation. This SHOPIFY-004 task snapshot predates the separately accepted BACKGROUND-004 branch, so Background task metadata is intentionally not rewritten from this branch.
+Correction execution model:
+
+```text
+ARCH-015-SHOPIFY-004 (Ready) --------\
+                                      +--> both Complete --> manual ARCH-015 test pass
+ARCH-015-BACKGROUND-004 (Ready) -----/                         |
+                                                                v
+                                      ARCH-015-SYSTEM-TEST-001
+                                      (explicit architect authorization only)
+```
+
+SHOPIFY-004 and BACKGROUND-004 are coordinated implementations of the same provider-meter invariant but are not execution prerequisites of one another. They may run concurrently. The terminal manual/integrated proof must verify their interaction after both are Complete.
+
+## Post-review update — BACKGROUND-004 Attempt 2 Accepted
+
+`ARCH-015-BACKGROUND-004` Attempt 2 is architect-accepted and **Complete**.
+
+Attempt 1's production implementation remains the final Background provider-meter
+serialization behavior:
+
+```text
+per scheduler pass:
+  at most one REQUESTED refund per (shopId,eventHandle)
+
+before PREPARE:
+  older live same-meter refund -> defer
+  unresolved REQUESTED same-meter purchase -> defer
+  different event handle -> independent
+
+after a REPORTED automatic correction:
+  provider == frozen BEFORE         -> remain REQUESTED
+  provider == frozen EXPECTED AFTER -> complete atomically
+  provider == neither               -> NEEDS_ATTENTION
+```
+
+Attempt 2 changed tests only and closes the six missing regression proofs: different-handle
+purchase independence, next-pass unblocking after an older refund becomes terminal, the
+explicit 4.00 / -0.25 / 3.75 / 3.50 fractional conflict case, rollback of a staged event on
+lost PREPARE link CAS, linked-refund reconciliation without correction-event recreation,
+and immutable fractional evidence across retries.
+
+No schema, queue, status, lock model, generic publisher, Shopify/Admin UI or production
+Background source change was introduced in Attempt 2.
+
+Execution state:
+
+```text
+ARCH-015-BACKGROUND-004  Complete
+
+ARCH-015-SHOPIFY-004     parallel correction task
+           \             /
+            \           /
+             both Complete
+                  |
+                  v
+ARCH-015-SYSTEM-TEST-001 Pending until explicit architect authorization
+```
+
+This acceptance does not start or promote terminal system testing by itself.

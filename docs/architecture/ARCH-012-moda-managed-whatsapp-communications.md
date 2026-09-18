@@ -4,7 +4,7 @@ title: Moda-managed WhatsApp communications
 status: agreed
 coordinator: moda_architect
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012: Moda-managed WhatsApp communications
@@ -250,7 +250,7 @@ Meta status webhook
 
 ## Canonical inbound message contract
 
-`ARCH-012-SHARED-001` owns one strict Shared v1 event under:
+`ARCH-012-SHARED-001` owns implementation **and publication** of one strict Shared v1 event under:
 
 ```text
 @modainteract/moda-interact-shared/whatsapp
@@ -630,50 +630,57 @@ on the existing test/production messaging worker deployables while preserving le
 
 ## Shared package publication ordering
 
-The snapshot has Shared `0.11.0`, while `ARCH-011-SHARED-002` owns the next Shared publication in its current definition.
+The 2026-09-16 implementation review established that the live Shared baseline was `0.11.2` and ARCH-012-SHARED-001 published the additive WhatsApp contract as the next minor `0.12.0`.
 
-Therefore:
+A coordination error had manually marked `ARCH-011-SHARED-002` Complete before its prerequisite `ARCH-011-SHARED-001` was implemented. Because `0.12.0` is already correctly published and consumable, the architect does not churn the WhatsApp implementation. The release line is reconciled as:
 
 ```text
-ARCH-012-SHARED-001
-  -> waits for ARCH-011-SHARED-002 before publication
-  -> ARCH-012-SHARED-002 re-verifies local/npm latest
-  -> if both are 0.12.0, publish ARCH-012 contract as 0.13.0
-  -> otherwise STOP for architect version reconciliation
+ARCH-012-SHARED-001 accepted Complete (`0.12.0`)
+        -> ARCH-011-SHARED-001
+        -> ARCH-011-SHARED-002 publication (`0.13.0`)
 ```
 
-Repository agents must never independently choose a substitute version.
+ARCH-011 Shared implementation must preserve the accepted `./whatsapp` entrypoint and all `0.12.0` public capability when it advances the package to `0.13.0`.
+
+There is no executable ARCH-012 publication-only task. `ARCH-012-SHARED-002` is retained only as Superseded history.
 
 ## Task graph
 
 ```text
-ARCH-012-SHARED-001 (Ready)
-    -> ARCH-012-SHARED-002
-        -> ARCH-012-MESSAGING-001
+ARCH-012-SHARED-001 (accepted + published `0.12.0`)
+            -> ARCH-012-MESSAGING-001
+            -> ARCH-012-BACKGROUND-001
+
+ARCH-012-SHARED-001 -> ARCH-011-SHARED-001 -> ARCH-011-SHARED-002 (`0.13.0`)
+
+ARCH-012-DATABASE-001
         -> ARCH-012-BACKGROUND-001
 
-ARCH-012-DATABASE-001 (Ready)
+ARCH-012-BACKGROUND-003
         -> ARCH-012-BACKGROUND-001
-            -> ARCH-012-BACKGROUND-002
-
-ARCH-012-BACKGROUND-003 (Ready)
-        -> ARCH-012-BACKGROUND-002
         -> ARCH-012-GATEWAY-001
 
 MESSAGING-001 + BACKGROUND-001 + BACKGROUND-003 + GATEWAY-001
         -> SYSTEM-TEST-001
-
-MESSAGING-001 + BACKGROUND-002 + BACKGROUND-003 + GATEWAY-001
         -> SYSTEM-TEST-002
 ```
 
-Initial Ready frontier:
+`ARCH-012-SHARED-002` and `ARCH-012-BACKGROUND-002` are Superseded and must never be prepared/executed.
+
+Current execution frontier after this consolidation:
 
 ```text
-ARCH-012-SHARED-001
-ARCH-012-DATABASE-001
-ARCH-012-BACKGROUND-003
+ARCH-012-DATABASE-001      Complete — architect accepted Attempt 2; implementation `655ff35`
+ARCH-012-SHARED-001        Complete — architect accepted Attempt 1; published `0.12.0`
+ARCH-012-MESSAGING-001     Complete — architect accepted Attempt 1; implementation `424e09d`
+ARCH-012-BACKGROUND-003    Complete — architect accepted Attempt 1; implementation `bb01a66`
+ARCH-012-BACKGROUND-001    Complete — architect accepted Attempt 2; implementation `5851670`
+ARCH-012-GATEWAY-001       Complete — architect accepted Attempt 1; implementation `64cb326`; integration 58 passed / 0 failed
+ARCH-012-SYSTEM-TEST-001   Ready — all implementation dependencies are Complete
+ARCH-012-SYSTEM-TEST-002   Ready — all implementation dependencies are Complete
 ```
+
+Do not downgrade a task that has already advanced in the live developer workspace. `ARCH-012-BACKGROUND-001` remains Ready for Attempt 2 rework after Changes Requested at Attempt 1. System-test tasks remain Pending until BACKGROUND-001 is accepted Complete; Gateway acceptance does not independently promote them.
 
 System tests are terminal integrated validation tasks. No implementation task depends on a system-test task.
 

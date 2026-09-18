@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
 - ARCH-015-SHARED-001
 - ARCH-015-DATABASE-001
+- ARCH-015-DATABASE-002
 - ARCH-015-SHOPIFY-001
 - ARCH-015-SHOPIFY-002
 - ARCH-015-BACKGROUND-001
@@ -24,9 +25,11 @@ depends_on:
 - ARCH-015-SHOPIFY-003
 - ARCH-015-BACKGROUND-003
 - ARCH-015-ADMIN-001
+- ARCH-015-SHOPIFY-004
+- ARCH-015-BACKGROUND-004
 enables: []
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # ARCH-015-SYSTEM-TEST-001
@@ -68,10 +71,34 @@ At minimum automate/document deterministic scenarios for:
 27. transient provider delay does not duplicate correction;
 28. unsafe correction routes PROVIDER_ACTION_REQUIRED before any automatic event;
 29. Admin exact REFUND/CREDIT evidence completes manual fallback;
-30. Admin cannot issue manual monetary action when an automatic correction event exists;
-31. mismatched provider evidence becomes NEEDS_ATTENTION;
-32. no historical purchased lot is rewritten during plan/cycle transition;
-33. no runtime top-up decision falls back to singular BillingPlan pack fields.
+30. Admin cannot issue manual monetary action when `automaticCorrectionUsageEventId` exists;
+31. automatic correction baseline/expected-after evidence is stored as typed RecoveryCreditRefund columns and remains immutable across scheduler retries;
+32. no UsageEvent metadata JSON is required for settlement proof;
+33. mismatched provider evidence becomes NEEDS_ATTENTION;
+34. no historical purchased lot is rewritten during plan/cycle transition;
+35. no runtime top-up decision falls back to singular BillingPlan pack fields.
+
+36. Admin REQUESTED refund is read-only and exposes no lock/reject/manual-settlement controls;
+37. REQUESTED withdrawn zero-reservation refund is presented as READY_FOR_REFUND_PROCESSING, never READY_FOR_PROVIDER_ACTION;
+38. NEEDS_ATTENTION never exposes or accepts the normal manual REFUND/CREDIT evidence path;
+39. automatic correction blocks manual monetary action even when its UsageEvent is NEEDS_ATTENTION;
+40. automatic correction refund links to the existing Billing App Event drawer using `view=events&eventId=<id>`;
+41. completed refund presentation distinguishes automatic App Event correction from manual REFUND/CREDIT settlement;
+42. refund-specific English Admin copy matches the architect localization matrix exactly;
+43. if additional accepted Admin locale catalogues exist at implementation time, implemented refund-specific values match the architect matrix exactly for each locale;
+44. no ADMIN-002 implementation task or temporary Admin compatibility path is required.
+
+45. same-handle purchase is blocked while any live refund mutation exists on that meter;
+46. refund admission is blocked with `METER_BUSY` while a same-handle REQUESTED purchase exists;
+47. two same-handle purchases selected for refund in one batch produce first REQUESTED / second METER_BUSY;
+48. different event handles remain independently purchasable/refundable;
+49. merchant reactivation becomes unavailable immediately once `automaticCorrectionUsageEventId` is linked, including CAS race coverage;
+50. one busy top-up handle does not disable another available handle;
+51. top-up price presentation uses exact next Shopify meter-unit cost where deterministically derivable and never labels it per conversation;
+52. only one same-handle automatic refund is prepared per scheduler pass and later same-handle refunds wait oldest-first;
+53. REPORTED provider state equal to frozen BEFORE remains REQUESTED;
+54. REPORTED provider state equal to EXPECTED AFTER completes;
+55. REPORTED provider third-state quantity/cost/currency becomes NEEDS_ATTENTION.
 
 ## Evidence
 
@@ -81,6 +108,7 @@ Capture:
 provider activeSubscription snapshots
 ARCH-014 plan/event records used
 purchase/refund rows before/after
+RecoveryCreditRefund automaticCorrectionUsageEventId and typed correction evidence
 UsageEvent ids, quantities and idempotency keys
 provider quantity/cost before/after
 entitlement aggregate before/after
@@ -97,3 +125,8 @@ STOP and return evidence rather than weakening assertions if any accepted task c
 ## Completion protocol
 
 Publish terminal acceptance report, set task `status: review`, return to `moda_architect`, STOP.
+
+
+## Architect execution gate — manual testing first
+
+System testing is intentionally deferred. Even after SHOPIFY-004 and BACKGROUND-004 are accepted, do **not** launch this task until `moda_architect` explicitly confirms that the manual ARCH-015 billing/refund test pass has completed and authorizes terminal automated system testing. The absence of SYSTEM-TEST-001 implementation before that authorization is not an implementation gap.

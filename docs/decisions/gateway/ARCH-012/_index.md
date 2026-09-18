@@ -4,4 +4,4 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| [GATEWAY-001](GATEWAY-001-wire-moda-whatsapp-sender-identity.md) | Pending | Wire WABA identity separately from phone-number sender identity |
+| [GATEWAY-001](GATEWAY-001-wire-moda-whatsapp-sender-identity.md) | Complete | Wire WABA identity separately from phone-number sender identity |

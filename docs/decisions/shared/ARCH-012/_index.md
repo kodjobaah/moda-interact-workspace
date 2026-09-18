@@ -4,5 +4,5 @@
 
 | Task | Status | Purpose |
 |---|---|---|
-| [SHARED-001](SHARED-001-whatsapp-inbound-message-contract.md) | Ready | Canonical strict inbound text/audio/unsupported event |
-| [SHARED-002](SHARED-002-publish-whatsapp-communications-contract.md) | Pending | Publish architect-accepted Shared contract after version sequencing |
+| [SHARED-001](SHARED-001-whatsapp-inbound-message-contract.md) | Complete | Accepted Attempt 1; strict inbound text/audio/unsupported contract published as `0.12.0` |
+| [SHARED-002](SHARED-002-publish-whatsapp-communications-contract.md) | Superseded | Publication folded into SHARED-001 |

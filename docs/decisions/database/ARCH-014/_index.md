@@ -5,3 +5,5 @@
 | [ARCH-014-DATABASE-001](DATABASE-001-merchant-pricing-catalogue.md) | complete | Add isolated MerchantPricing* catalogue schema/order/completeness integrity without modifying or relating to existing operational billing tables. |
 | [ARCH-014-DATABASE-002](DATABASE-002-plan-card-highlights.md) | complete | Add additive MerchantPricing plan-card highlight + 20-locale translation tables and deferred integrity without altering existing database tables. |
 | [ARCH-014-DATABASE-003](DATABASE-003-promotion-campaign-translations.md) | complete | Add only the new PromotionCampaignTranslation table for exact 20-locale merchant copy; no existing table alteration. |
+| [ARCH-014-DATABASE-004](DATABASE-004-background-runtime-config-and-leases.md) | complete | Add one typed singleton background runtime configuration, versioned audit history, and fenced distributed leases for horizontal scaling. |
+| [ARCH-014-DATABASE-005](DATABASE-005-background-runtime-lease-cadence.md) | complete | Add nullable global-cycle finish history to the ARCH-014 lease row so Background can enforce cadence across skewed replicas while retaining monotonic fencing generations. |

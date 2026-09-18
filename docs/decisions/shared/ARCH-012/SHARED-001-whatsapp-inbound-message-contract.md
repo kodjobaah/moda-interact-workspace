@@ -1,7 +1,7 @@
 ---
 id: ARCH-012-SHARED-001
 architecture_id: ARCH-012
-title: Define the canonical inbound WhatsApp message contract
+title: Implement, validate and publish the canonical WhatsApp inbound contract
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -9,23 +9,33 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-007-SHARED-004
 enables:
-- ARCH-012-SHARED-002
+- ARCH-012-MESSAGING-001
+- ARCH-012-BACKGROUND-001
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-16
 ---
 
 # ARCH-012-SHARED-001
 
+> **Architect release-line reconciliation — 2026-09-16:** the dependency/release-order prose below records the original execution contract. During review, the architect confirmed that ARCH-011-SHARED-002 had been advanced to Complete without its prerequisite implementation. The Accepted Attempt 1 review at the end of this file supersedes that ordering: ARCH-012 `0.12.0` is accepted, and ARCH-011 Shared work follows it on the `0.13.0` publication line.
+
 ## Objective
-Create one strict, versioned cross-repository contract for inbound WhatsApp customer messages. This replaces the incompatible repository-local `WhatsAppInboundEvent` interfaces currently declared by Messaging and Background.
+Implement **and publish** one strict, versioned cross-repository contract for inbound WhatsApp customer messages. This single task replaces the previous split between SHARED-001 implementation and SHARED-002 publication.
+
+The task is complete only when the exact validated source has been published to npm and independently verified as consumable by Messaging and Background.
+
+## Why publication is in this task
+The contract has no useful downstream state between “implemented” and “published”: `moda_messaging` and `moda_background` must consume an immutable published Shared release. Keeping implementation and publication in one repository-owned task avoids a second artificial lifecycle boundary.
+
+Publication remains the **last phase** of this task. Do not publish before all source validation and package-content checks pass.
 
 ## Architectural boundary
 This contract represents **provider-normalized communications data only**. It MUST NOT contain Shopify recovery policy, merchant billing, CommerceAgent decisions, database entities, or recovery scheduling.
@@ -33,16 +43,48 @@ This contract represents **provider-normalized communications data only**. It MU
 Producer after publication: `moda_messaging`.
 Consumer after publication: `moda_background`.
 
+## Mandatory dependency and release ordering
+This task depends on `ARCH-011-SHARED-002` because both initiatives publish `@modainteract/moda-interact-shared` and must not race the package version line.
+
+Do not prepare/start this task while `ARCH-011-SHARED-002` is not architect-accepted Complete.
+
+At task start:
+
+1. inspect launcher-synchronised canonical `origin/main`;
+2. read local `package.json` version;
+3. read `npm view @modainteract/moda-interact-shared dist-tags.latest`;
+4. verify local source contains every previously architect-accepted Shared capability, including ARCH-015 provider-context work;
+5. verify local package version and npm `latest` represent the same accepted baseline before choosing the ARCH-012 publication version.
+
+If the canonical source is behind an already-published accepted Shared release, STOP before editing. Do not reconstruct missing source from npm artifacts.
+
+### Deterministic ARCH-012 version rule
+After the preflight succeeds, choose the ARCH-012 version using this exact rule:
+
+```text
+baseline = architect-accepted npm/latest version after ARCH-011-SHARED-002
+ARCH-012 target = next minor version, patch reset to 0
+
+examples:
+0.12.0 -> 0.13.0
+0.12.3 -> 0.13.0
+0.13.7 -> 0.14.0
+```
+
+This rule is architect-authorized. Do not choose a patch bump, major bump, prerelease tag or any other version.
+
+If local source version, ARCH-011 completion evidence and npm `latest` do not describe one coherent baseline, STOP for `moda_architect` reconciliation.
+
 ## Authorized implementation surface
-Prefer a dedicated package entrypoint rather than placing the new contract in billing code:
 
 ```text
 src/whatsapp.ts                              # new
 src/whatsapp.test.ts                         # new
-package.json                                 # add ./whatsapp export only
+package.json                                 # ./whatsapp export + final version bump
+package-lock.json                            # matching export/version metadata when required
 ```
 
-`package-lock.json` may change only if the repository tooling requires it after the package export edit. Do not edit existing billing behaviour.
+Do not edit existing billing/provider-status semantics except for mechanically preserving exports while changing package metadata.
 
 ## Exact contract
 Export:
@@ -86,54 +128,35 @@ The canonical event must be a strict object with exactly:
 Validation rules:
 
 - all identifiers: trim, non-empty, max 256 characters;
-- `customerPhone`: trim, non-empty, max 64 characters; do not perform tenant lookup or E.164 ownership inference in Shared;
-- `contextMessageId`: nullable, but a non-null value must be bounded/non-empty;
+- `customerPhone`: trim, non-empty, max 64 characters; no tenant lookup/E.164 ownership inference in Shared;
+- `contextMessageId`: nullable; non-null must be bounded/non-empty;
 - `occurredAt`: offset-aware ISO datetime;
-- text: trim only for validation; preserve actual normalized text value, min 1, max 4096 characters;
+- text: preserve normalized value; min 1, max 4096 characters after validation trimming;
 - audio `mediaId`: required bounded/non-empty;
-- audio `mimeType` and `sha256`: nullable bounded strings, no format invention if Meta omitted them;
-- `voice`: nullable because provider payload availability may vary;
-- unsupported `providerType`: bounded/non-empty and preserves the Meta message type label;
+- audio `mimeType` and `sha256`: nullable bounded strings; do not invent values Meta omitted;
+- `voice`: nullable;
+- unsupported `providerType`: bounded/non-empty and preserves Meta type label;
 - strict unknown-field rejection at every object level;
-- no raw webhook payload field;
+- no raw webhook payload;
 - no `shopId`, `conversationId`, `checkoutRecoveryId`, recovery state or merchant identity field.
 
-## Required tests
-Add focused tests proving:
+## Required source tests
+Prove at minimum:
 
-1. valid contextual text message parses;
-2. valid contextless text message parses;
-3. valid audio/voice event parses with media metadata;
-4. audio event with only required `mediaId` and null optional metadata parses;
-5. unsupported provider type parses through the explicit unsupported union member;
-6. blank/oversized provider/customer/message identifiers are rejected;
-7. invalid/non-offset datetime is rejected;
-8. blank/oversized text is rejected;
-9. `shopId`, `conversationId`, arbitrary raw payload and other unknown fields are rejected;
-10. schemaVersion other than 1 is rejected;
-11. exact TypeScript discriminated-union narrowing works for `text`, `audio`, and `unsupported`.
+1. contextual text parses;
+2. contextless text parses;
+3. audio parses with media metadata;
+4. audio parses with only required `mediaId` and null optional metadata;
+5. unsupported provider type parses through explicit union member;
+6. blank/oversized identifiers reject;
+7. invalid/non-offset datetime rejects;
+8. blank/oversized text rejects;
+9. tenant/business/raw-payload unknown fields reject;
+10. schemaVersion other than 1 rejects;
+11. TypeScript discriminated-union narrowing works for text/audio/unsupported.
 
-## Non-goals
-
-- provider status schema changes;
-- outbound message contracts;
-- voice duration policy;
-- transcription provider selection;
-- Meta webhook parsing;
-- database schema changes;
-- Shopify/recovery lifecycle.
-
-## Acceptance Criteria
-
-- [ ] Messaging and Background can import the same strict inbound-message type/schema from `@modainteract/moda-interact-shared/whatsapp` after publication.
-- [ ] The contract preserves explicit reply context without requiring it.
-- [ ] Audio is represented by provider media identity, not raw bytes.
-- [ ] Unsupported inbound types are explicit rather than silently collapsed into empty text.
-- [ ] No tenant/business decision is moved into Shared.
-- [ ] Existing Shared exports remain compatible.
-
-## Validation
-From `moda-interact-shared/`:
+## Phase 1 — implementation validation
+Before changing the package version or publishing, run repository-declared validation. Minimum expected where declared:
 
 ```text
 npm test
@@ -143,29 +166,121 @@ npm pack --dry-run --json
 git diff --check
 ```
 
-Inspect the packed manifest and prove `./whatsapp` runtime and declarations are present.
+Inspect the dry-run tarball/manifest and prove `./whatsapp` runtime and declarations are included while every pre-existing public entrypoint remains present.
+
+If any source validation fails because of this task, fix it before publication. Do not publish a known-failing source tree.
+
+## Phase 2 — package version and publication
+Only after Phase 1 passes:
+
+1. update `package.json` and lockfile root version to the deterministic target;
+2. rerun package/build validation required by repository scripts;
+3. verify target does not already exist;
+4. publish exactly once;
+5. verify registry version/tarball/shasum/latest;
+6. install the exact published version into an isolated temporary consumer and prove the `./whatsapp` runtime and declaration surface is usable.
+
+Required sequence (substitute the deterministic target calculated above):
+
+```text
+npm pack --dry-run --json
+npm view @modainteract/moda-interact-shared@<TARGET> version
+# previous command must show target is absent / not already published
+npm publish --access public
+npm view @modainteract/moda-interact-shared@<TARGET> version dist.tarball dist.shasum
+npm view @modainteract/moda-interact-shared dist-tags.latest
+```
+
+If the target already exists before publication, STOP. Never republish or silently choose another version.
+
+Do not expose npm credentials/tokens in logs or the Completion Report.
+
+## Non-goals
+
+- provider-status schema changes;
+- outbound message contracts;
+- voice duration policy;
+- transcription provider selection;
+- Meta webhook parsing;
+- database schema changes;
+- Shopify/recovery lifecycle.
+
+## Acceptance Criteria
+
+- [x] one canonical strict inbound contract exists at `@modainteract/moda-interact-shared/whatsapp`;
+- [x] explicit reply context is preserved but optional;
+- [x] audio uses provider media identity, not raw bytes;
+- [x] unsupported inputs are explicit, not empty text;
+- [x] no tenant/business decision is moved into Shared;
+- [x] all pre-existing Shared exports remain compatible;
+- [x] the exact validated source is published once using the deterministic version rule;
+- [x] npm `latest` points at the published ARCH-012 target;
+- [x] an isolated consumer can import the runtime/declarations.
 
 ## Stop conditions
-STOP and return to `moda_architect` if implementing the contract requires changing an accepted provider-status/billing schema or if the package cannot expose an additive `./whatsapp` entrypoint without removing an accepted export.
+STOP and return to `moda_architect` if:
+
+- ARCH-011-SHARED-002 is not accepted Complete;
+- canonical Shared source is behind an already-published accepted release;
+- local version / npm latest / ARCH-011 evidence disagree;
+- the contract requires changing an accepted billing/provider-status schema;
+- additive `./whatsapp` export requires removing an accepted export;
+- target version already exists before publication;
+- publication credentials/permissions are unavailable.
+
+Do not split publication into a new ARCH-012 task.
 
 ## Completion protocol
-After all acceptance/validation passes: update Completion Report, set `status: review`, clear the claim according to launcher protocol, return to `moda_architect`, and STOP. Do not publish the package; SHARED-002 owns publication.
+After implementation, validation, publication and clean-consumer verification all pass: update Completion Report, set `status: review`, clear the claim according to launcher protocol, return to `moda_architect`, and STOP. Do not start Messaging or Background.
 
 ## Completion Report
 
 ### Status
-Not started.
+Implemented, validated, published, and independently verified. Awaiting `moda_architect` review.
+
+### Published Version
+`@modainteract/moda-interact-shared@0.12.0`
+
+npm verification:
+
+- `npm view @modainteract/moda-interact-shared@0.12.0 version` returned `0.12.0`.
+- `dist.tarball` is `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.12.0.tgz`.
+- `dist.shasum` is `5d75b831cc6bdd0d631d6e08065c6ae12c130a59`.
+- `npm view @modainteract/moda-interact-shared dist-tags.latest` returned `0.12.0`.
 
 ### Files Changed
-TBD.
+- `src/whatsapp.ts`
+- `src/whatsapp.test.ts`
+- `tsup.config.ts`
+- `package.json`
+- `package-lock.json`
 
 ### Validation Results
-TBD.
+- `npm test`: 118 passed, 1 skipped, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; emitted `dist/whatsapp.js` and `dist/whatsapp.d.ts`.
+- `npm pack --dry-run --json`: passed; manifest retained all pre-existing public entrypoints and included the WhatsApp runtime/declaration files.
+- `git diff --check`: passed.
+- Isolated consumer installed exact `@modainteract/moda-interact-shared@0.12.0`, imported `@modainteract/moda-interact-shared/whatsapp`, parsed a text message, and verified `dist/whatsapp.d.ts`.
+- No Messaging or Background task was started.
 
 ## Architect Review
 
 ### Review Status
-Not reviewed.
+Accepted — Attempt 1.
 
 ### Review Notes
-TBD.
+Functionality-first review accepted. Implementation commit `147955b` implements the required strict Shared v1 WhatsApp inbound contract and publishes it as `@modainteract/moda-interact-shared@0.12.0`.
+
+Verified functional properties:
+
+- `providerAccountId` and `providerPhoneNumberId` remain distinct provider identities;
+- contextual and contextless customer messages are represented without tenant inference;
+- text, audio and unsupported inputs are explicit strict union members;
+- audio carries provider media identity/metadata only, not raw bytes;
+- unknown tenant/business/raw-payload fields are rejected by the Shared boundary;
+- `./whatsapp` is an additive package/build entry and existing public exports are preserved;
+- the implementation parent used Shared `0.11.2`, and `0.12.0` is the required next-minor target;
+- the Completion Report records successful source/package validation, publication evidence and an isolated consumer import.
+
+Architectural release-line reconciliation: review found that `ARCH-011-SHARED-002` had been manually advanced from `pending` to `complete` immediately before this task was claimed even though `ARCH-011-SHARED-001` remains unimplemented and its required billing primitives are absent from the Shared source. That coordination error is not a defect in the accepted WhatsApp implementation. The architect reconciliation restores `ARCH-011-SHARED-002` to `pending`, sequences ARCH-011 Shared implementation after this accepted `0.12.0` baseline, and reserves `0.13.0` for the subsequent ARCH-011 publication. Do not rerun `ARCH-012-SHARED-001`.
