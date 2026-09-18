@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-18T20:30:45Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-017-DATABASE-001
@@ -405,31 +405,38 @@ Set status to `review`, not `complete`. Completion Report must include exact imp
 
 ### Status
 
-Blocked pending correction of the prepared database submodule revision. No Background source or test files were changed, and no implementation commit was created.
+Ready for architect review. ARCH-017 Background changes are implemented and validated on attempt 2.
 
-### Blocking Evidence
+### Implementation
 
-- The authoritative ARCH-017-DATABASE-001 Completion Report identifies accepted database implementation commit `3c7179825c3e12af1d6db805b8a2a73c61c2097c` (`fix(database): tighten ARCH-017 billing schema validation`).
-- The prepared Background implementation worktree records database gitlink commit `3f8bc8aae7f6d39de960d7b52e8791d5e346be31` (`feat(database): persist inbound media transcription state (#30)`).
-- The prepared revision still contains `BillingPlanFeatureIdentifier`, `BillingPlan.defaultOutboundSoftLimit`, `BillingPlan.defaultOutboundHardLimit`, and `BillingPlan.terminalMessageReservedSlots`, and has no `Feature`, `ShopFeaturePreference`, or `FeatureActivationMode` models. It therefore does not satisfy the dependency contract required by this task.
-- The accepted commit object is present in the database repository, but the Background gitlink is not advanced to it. Per the task stop conditions, implementing against the old contract would require editing the database submodule or fabricating incompatible local types, both out of scope.
+- `src/services/effective-billing-policy.service.ts`: removed the Prisma feature enum and plan-owned outbound fields; resolves dynamic Feature keys, active plan mappings, ShopFeaturePreference opt-ins, platform defaults, active shop overrides, and fail-closed outbound validation.
+- `src/services/entitlement.service.ts`: accepts arbitrary persisted feature-key strings and checks the effective feature set.
+- `src/services/recovery-billing.service.ts`: requires the local `checkout_recovery` capability before reservation or usage mutation.
+- `src/services/billing-subscription-reconciliation.service.ts`: no-contract reinstall reconciliation no longer resets onboarding history.
+- Focused tests cover dynamic feature activation, policy limits/overrides, recovery admission, and onboarding preservation.
+
+### Dependency Evidence
+
+- Accepted DATABASE-001 implementation revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c` (`fix(database): tighten ARCH-017 billing schema validation`).
+- Materialized implementation database gitlink: `22d56f41dafd2fd6784058ef0691b1269019b4b2`, which contains the accepted revision as an ancestor and provides Feature, ShopFeaturePreference, FeatureActivationMode, and platform policy models.
+- No database submodule files or gitlinks were edited by this task.
 
 ### Validation
 
-- `git -C database rev-parse HEAD`: `3f8bc8aae7f6d39de960d7b52e8791d5e346be31`.
-- `git -C database show -s --format='%H %s' HEAD`: `3f8bc8aae7f6d39de960d7b52e8791d5e346be31 feat(database): persist inbound media transcription state (#30)`.
-- Schema inspection confirmed the dependency mismatch described above.
-- No Prisma generation, tests, build, typecheck, lint, or diff validation was run because the required database contract is absent and the task explicitly requires stopping in this condition.
+- `npm run prisma:generate`: passed.
+- `npm run prisma:validate`: passed.
+- Focused four-service Vitest run: 248 passed.
+- `npm run test:unit`: 1,032 passed.
+- `npm test`: 1,036 passed, 20 skipped; 11 test files skipped by repository configuration.
+- `npm run build` (Prisma generate + `tsc`): passed.
+- `git diff --check`: passed.
+- No separate `typecheck` or `lint` scripts exist in `package.json`; build TypeScript compilation was used.
+- Legacy production search found no `BillingPlanFeatureIdentifier` or BillingPlan outbound-limit references; `terminalMessageReservedSlots` remains only as the effective policy field, platform/override input, validation, and outbound calculation.
 
 ### Worktree / Git Evidence
 
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-BACKGROUND-001`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-BACKGROUND-001`.
-- Both worktrees were clean before this report-only update.
-- Implementation commit: none.
-- Parent report commit: produced by the authorized report update.
-- No database submodule files were edited; no main branch was modified.
-
-### Required Resolution
-
-Advance the Background branch's database gitlink to accepted DATABASE-001 commit `3c7179825c3e12af1d6db805b8a2a73c61c2097c` (or rerun the prepared launcher with a corrected dependency packet), then resume this same task attempt. No Architect Review section was edited.
+- Implementation commit: `cdb6e4d` (`feat(background): resolve dynamic billing feature policy`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
+- Parent report commit: to be created and pushed on `origin/task/ARCH-017-BACKGROUND-001`.
+- No main branch was modified and no Architect Review section was edited.
