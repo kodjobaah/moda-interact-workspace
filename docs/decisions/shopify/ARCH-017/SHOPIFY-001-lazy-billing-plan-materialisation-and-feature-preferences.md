@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: review
 priority: 20
 executor: copilot
-claimed_at: 2026-09-18T20:42:21Z
+claimed_at: 2026-09-18T22:12:00Z
 attempt: 1
 depends_on:
 - ARCH-017-DATABASE-001
@@ -482,6 +482,38 @@ STOP and return to moda_architect if:
 ## Completion protocol
 
 Set task to `review`. Completion Report must include implementation commit, parent report commit, exact test commands/results, physical worktree evidence and accepted DATABASE-001 dependency revision.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `1333957` (`feat(shopify): materialize billing plans and manage features`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+
+Accepted DATABASE-001 dependency revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`.
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-001`; implementation branch: `task/ARCH-017-SHOPIFY-001`.
+
+Implemented:
+
+- Reused one transactional resolver for existing, lazily materialized, unknown, inactive, invalid, and concurrent BillingPlan states; wired it into activation and generic subscription sync.
+- Added independent authenticated callback onboarding persistence before local BillingPlan resolution.
+- Added `/app/features`, central route-policy/navigation integration, tenant-scoped loader/action behavior, plan-gated opt-in persistence, and always-enabled rejection.
+- Added focused resolver, callback ordering/outcome, feature route, tenant isolation, and route-policy tests.
+
+Validation:
+
+- `npm test -- --run tests/unit/services/billing.service.test.ts`: 191 passed.
+- `npm test -- --run tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: 68 passed.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: 259 passed across 4 files.
+- `npm run typecheck`: passed.
+- `npx eslint` on all changed source/test files: 0 errors, 2 pre-existing duplicate-import warnings in `tests/unit/services/billing.service.test.ts`.
+- `npm run lint`: blocked by 16 pre-existing errors in unrelated repository files; no task-local errors.
+- `npm run build`: passed, including Prisma client generation and production client/SSR bundles.
+- `git diff --check`: passed.
+
+Parent report commit: `fe765f9d4d1eab5aada9ef6ab19c241b1a4fd65f`, to be pushed from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-001` on `task/ARCH-017-SHOPIFY-001`.
+
+Scope evidence: no database submodule contents or Architect Review section were edited.
 
 ## Completion Report
 
