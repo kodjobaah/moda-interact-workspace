@@ -19,7 +19,7 @@ ADMIN-005 COMPLETE                    DATABASE-002 COMPLETE
       │                                      │
       ├────────► ADMIN-006 COMPLETE           └────────► DATABASE-003 COMPLETE
       │                │                                      │
-      └────────► ADMIN-007 COMPLETE              ┌───────────────┴──────────────┐
+      └────────► ADMIN-007 COMPLETE           ┌───────────────┴──────────────┐
                                                │                              │
                                 ADMIN-006 + DATABASE-003               DATABASE-003
                                                │                              │
