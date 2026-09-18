@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -621,3 +621,91 @@ Set task to `review` only after all required validation is complete. Include exa
 - executor and claimed timestamp cleared; no main branch modified.
 
 Task status is `review`; return control to `moda_architect` for review.
+
+## Architect Review — Attempt 1 — Accepted
+
+### Status
+
+**Accepted — Complete**
+
+Architect review accepted implementation commit `3c71798` and the returned parent
+Completion Report commit `2467d422` on the implemented ARCH-017 database/runtime
+contract. No Attempt 2 is required.
+
+The review is functionality-led. The implementation establishes the required durable
+boundary for downstream ARCH-017 work:
+
+```text
+Feature catalogue:
+  BillingPlanFeatureIdentifier removed
+  FeatureActivationMode retained only as the stable activation-category enum
+  dynamic Feature rows keyed by immutable string identity
+
+Plan capability / preference state:
+  MerchantPricingPlanFeature persists commercial capability
+  BillingPlanFeature projects runtime capability through Feature FK
+  ShopFeaturePreference persists merchant opt-in independently of Subscription/BillingPeriod
+
+Materialisation support:
+  MerchantPricingPlan.materializedAt added
+  MerchantPricingPlan.shopifyRecoveryUsageEventHandle added
+  MerchantPricingPlan and BillingPlan remain physically independent
+  shopifyPlanHandle remains the runtime correlation key only
+
+Billing safety ownership:
+  defaultOutboundSoftLimit moved to PlatformBillingPolicy
+  defaultOutboundHardLimit moved to PlatformBillingPolicy
+  terminalMessageReservedSlots moved to PlatformBillingPolicy
+  ShopBillingPolicyOverride gains optional terminalMessageReservedSlots
+```
+
+The migration mechanically converts existing `BillingPlanFeature` enum identities to
+Feature foreign keys without changing each row's `enabled` value. It seeds the four
+initial Feature definitions at deploy time, creates only the mandatory
+`checkout_recovery` MerchantPricingPlan feature mapping for existing development
+plans, creates no merchant preference rows, and does not infer optional capability,
+`materializedAt`, or normal recovery-meter identity from existing BillingPlan or
+MerchantPricingUsageEvent state.
+
+The submitted seed correction is accepted: canonical Feature upserts now update the
+entire canonical row on repeat execution, including `active: true`. Therefore a
+previously deactivated seed-owned system Feature is restored to the required seed
+baseline instead of remaining inactive after a repeat seed.
+
+Platform policy defaults and database checks match the agreed ARCH-017 ownership
+model, including the FREE-plan direction check for
+`shopifyRecoveryUsageEventHandle`. The migration remains intentionally permissive for
+existing/development paid MerchantPricingPlans whose dedicated recovery meter still
+requires explicit Admin correction before materialisation.
+
+Reported validation includes Prisma format/validate/generate, the focused ARCH-017
+validator, ERD regeneration, syntax/diff checks, and the complete migration chain on
+a disposable PostgreSQL database. The focused validator is treated as a supporting
+regression guard rather than an exhaustive proof of every possible source mutation;
+its non-exhaustive static coverage does not reopen an otherwise conformant functional
+implementation.
+
+ARCH-011 remains out of scope and no prorated/same-cycle billing schema has been
+introduced.
+
+### Dependency reconciliation
+
+`ARCH-017-DATABASE-001` is now **Complete**.
+
+Its three implementation dependants have no remaining architectural prerequisite and
+are eligible to proceed once this acceptance and the accepted database revision are
+materialised into their task worktrees:
+
+```text
+ARCH-017-BACKGROUND-001   Ready
+ARCH-017-SHOPIFY-001      Ready
+ARCH-017-ADMIN-001        Ready
+```
+
+The returned DATABASE-001 parent-task snapshot contains only the DATABASE-001
+ARCH-017 task definition, so this acceptance patch does not manufacture absent sibling
+task files merely to encode those Ready states. Their canonical task definitions
+should be promoted by the coordinator state when materialised/launched.
+
+No terminal ARCH-017 system-test task is started automatically. The existing manual
+merchant/developer validation checkpoint remains before integrated system testing.
