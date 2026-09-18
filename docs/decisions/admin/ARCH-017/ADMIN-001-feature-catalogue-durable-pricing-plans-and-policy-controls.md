@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -777,3 +777,62 @@ ARCH-017-ADMIN-001:
 ```
 
 There is **no Attempt 2 yet**. Attempt 2 begins only when the normal task launcher claims the Ready task.
+
+## Architect Review — Attempt 2 — Accepted
+
+### Decision
+
+**Accepted — Complete**
+
+Architect review covered implementation commit `cdab8841`, parent Completion Report commit `fa6eeff`, and accepted DATABASE-001 revision `9921b273`. Review was functionality-led: aggregate lint/format/security baseline failures were treated as supporting validation context rather than acceptance gates unless they exposed an ARCH-017 regression.
+
+Attempt 2 closes all four functional corrections requested after Attempt 1:
+
+1. **Authoritative Feature catalogue is wired into the MerchantPricingPlan builder.** The billing page passes the complete Feature catalogue through `MerchantPricingPlanDrawer` to the builder. Every active Feature is selectable for its first plan, while inactive Features already mapped to the edited plan remain present, checked, locked, and labelled `Inactive globally`. Existing server-side desired-state reconstruction still adds active system-required Features and preserves inactive existing mappings rather than trusting browser omission.
+
+2. **Paid-plan reactivation enforces the dedicated recovery meter.** `intent=toggle` now refuses activation of an inactive `PAID_METERED` MerchantPricingPlan when `shopifyRecoveryUsageEventHandle` is null, blank, or whitespace. Deactivation remains unaffected, the recovery meter is not inferred from top-up usage events, and existing economics activation checks continue after this prerequisite.
+
+3. **Durability is represented correctly in Admin.** The catalogue displays `Operational status` as either `Not yet materialised` or `Durable since <timestamp>`. Delete is disabled for every durable plan regardless of catalogue activity, with durable-specific explanatory copy. Server-side delete enforcement remains authoritative and continues to reject durable deletion inside the transaction.
+
+4. **Terminal-message reserve uses effective platform/shop policy ownership.** Tenant billing controls display the active non-null shop override when present and otherwise the PlatformBillingPolicy terminal reserve. Expired overrides fall back to the platform value. Shop-control wording now refers to platform defaults rather than plan defaults.
+
+The underlying Attempt 1 ARCH-017 behaviour also remains functionally intact:
+
+- dynamic Feature catalogue mutations remain SUPER_ADMIN-controlled and do not rewrite plan/preference relationships on deactivation;
+- normal MerchantPricingPlan create/edit remains independent from BillingPlan until materialisation;
+- durable edits reconcile BillingPlan name, dedicated recovery meter, included allowance, and exact BillingPlanFeature desired state in the same transaction;
+- a durable edit with no matching BillingPlan aborts and rolls back rather than manufacturing replacement runtime state;
+- MerchantPricingPlan catalogue activation/deactivation does not mutate `BillingPlan.active`;
+- durable plan deletion and durable `planKind` mutation remain blocked;
+- inactive Shopify handles remain reserved by the global unique MerchantPricingPlan handle;
+- PlatformBillingPolicy and ShopBillingPolicyOverride own outbound defaults/terminal reserve;
+- legacy UNMAPPED repair uses MerchantPricingPlan catalogue state, the dedicated recovery meter and MerchantPricingPlanFeature mappings, and does not auto-reactivate an inactive BillingPlan.
+
+### Validation assessment
+
+The submitted validation is sufficient for this functionality-first review:
+
+```text
+Prisma generate/validate:                         PASS
+build:                                            PASS
+git diff --check:                                 PASS
+unit tests:                                       134 passed
+focused security tests:                           14 passed
+known unrelated/baseline failures:                non-blocking
+```
+
+The reported repository-wide lint/format and pre-existing security/unit failures do not identify a regression in the Attempt 2 implementation and do not require another implementation attempt.
+
+### State transition
+
+```yaml
+ARCH-017-ADMIN-001:
+  status: complete
+  attempt: 2
+  executor: null
+  claimed_at: null
+```
+
+There is **no Attempt 3**.
+
+`ARCH-017-ADMIN-001` has no direct `enables` entries, so this acceptance does not automatically start another repository task. The existing manual-validation checkpoint before terminal ARCH-017 integrated system testing remains unchanged.
