@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-09-18T21:26:06Z
@@ -487,53 +487,36 @@ Set task to `review`. Completion Report must include implementation commit, pare
 
 Status: Ready for Review
 
-Implementation commit: `1333957` (`feat(shopify): materialize billing plans and manage features`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+Attempt: 2 rework completed against the authoritative review corrections.
+
+Implementation commit: `4e215f2` (`fix(shopify): preserve initial activation after onboarding`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
 
 Accepted DATABASE-001 dependency revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`.
 
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-001`; implementation branch: `task/ARCH-017-SHOPIFY-001`.
 
-Implemented:
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-001`; parent branch: `task/ARCH-017-SHOPIFY-001`.
 
-- Reused one transactional resolver for existing, lazily materialized, unknown, inactive, invalid, and concurrent BillingPlan states; wired it into activation and generic subscription sync.
-- Added independent authenticated callback onboarding persistence before local BillingPlan resolution.
-- Added `/app/features`, central route-policy/navigation integration, tenant-scoped loader/action behavior, plan-gated opt-in persistence, and always-enabled rejection.
-- Added focused resolver, callback ordering/outcome, feature route, tenant isolation, and route-policy tests.
+Implemented review corrections:
+
+- Removed `onboardingCompleted` from Free/Paid initial activation eligibility and exact-token fencing; durable Subscription pending-selection fields now control initial intent, retries, stale-token rejection, and preservation.
+- Kept authenticated callback onboarding persistence separately committed before BillingService resolution; onboarding-complete fresh Free/Paid selections still create initial tokens and exact Paid tokens still synchronize.
+- Preserved active different-plan protection, verified replay behavior, accepted BillingPlan materialisation, feature preferences, and no-proration scope.
+- Removed the contradictory test that rejected a fresh shop solely because onboarding was already complete and added focused regression coverage.
 
 Validation:
 
+- `npm run prisma:generate`: passed.
 - `npm test -- --run tests/unit/services/billing.service.test.ts`: 191 passed.
-- `npm test -- --run tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: 68 passed.
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: 259 passed across 4 files.
-- `npm run typecheck`: passed.
-- `npx eslint` on all changed source/test files: 0 errors, 2 pre-existing duplicate-import warnings in `tests/unit/services/billing.service.test.ts`.
-- `npm run lint`: blocked by 16 pre-existing errors in unrelated repository files; no task-local errors.
-- `npm run build`: passed, including Prisma client generation and production client/SSR bundles.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/billing-callback.test.ts`: 220 passed.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: 260 passed across 4 files.
+
+- `npm run typecheck`: failed on existing repository-wide diagnostics, including unrelated JSX, webhook, Redis, and implicit-`any` errors; no new diagnostic was introduced in the edited activation/token lines.
+- `npm run lint`: failed with 16 existing errors in unrelated files and 2 existing warnings for duplicate imports in `tests/unit/services/billing.service.test.ts`; changed-file lint had 0 errors.
+- `npm run build`: passed, including Prisma generation and production client/SSR bundles.
 - `git diff --check`: passed.
 
-Parent report commit: `fe765f9d4d1eab5aada9ef6ab19c241b1a4fd65f`, to be pushed from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-001` on `task/ARCH-017-SHOPIFY-001`.
-
-Scope evidence: no database submodule contents or Architect Review section were edited.
-
-## Completion Report
-
-Status: Blocked. No implementation commit was created because the accepted DATABASE-001 schema contract is not materialised in the authoritative implementation worktree.
-
-Dependency evidence:
-
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-001`
-- Database submodule revision: `e246c70284bbe6889b494f30c1442894319f3de8`
-- The checked-out schema still contains `BillingPlanFeatureIdentifier` and lacks `MerchantPricingPlan.materializedAt`, `MerchantPricingPlan.shopifyRecoveryUsageEventHandle`, `Feature`, `MerchantPricingPlanFeature`, and `ShopFeaturePreference`.
-- The dependency task is marked complete, but its required schema is absent from the submodule revision available to this task.
-
-Validation:
-
-- `npm ci`: passed in the implementation worktree.
-- `npm run prisma:generate`: passed after dependency installation.
-- The required schema fields/models were checked directly with `rg`; the dependency contract is absent.
-- No TypeScript, focused tests, aggregate tests, lint, or build were run because the task stop condition prohibits implementing against the legacy schema.
-
-Required handoff: materialise the accepted DATABASE-001 revision in this worktree, then rerun the prepared task. No Architect Review section was edited.
+No database submodule contents or Architect Review section were edited. Parent report commit will be recorded on the mirrored parent task branch.
 
 ## Architect Review
 
