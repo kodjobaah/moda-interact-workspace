@@ -487,9 +487,9 @@ Set task to `review`. Completion Report must include implementation commit, pare
 
 Status: Ready for Review
 
-Attempt: 2 rework completed against the authoritative review corrections.
+Attempt: 3 rework completed against the complete Attempt 3 correction contract.
 
-Implementation commit: `4e215f2` (`fix(shopify): preserve initial activation after onboarding`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+Implementation commit: `a6772e5` (`fix(shopify): verify managed pricing before onboarding`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
 
 Accepted DATABASE-001 dependency revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`.
 
@@ -497,26 +497,26 @@ Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspa
 
 Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-001`; parent branch: `task/ARCH-017-SHOPIFY-001`.
 
-Implemented review corrections:
+Implemented Attempt 3 corrections:
 
-- Removed `onboardingCompleted` from Free/Paid initial activation eligibility and exact-token fencing; durable Subscription pending-selection fields now control initial intent, retries, stale-token rejection, and preservation.
-- Kept authenticated callback onboarding persistence separately committed before BillingService resolution; onboarding-complete fresh Free/Paid selections still create initial tokens and exact Paid tokens still synchronize.
-- Preserved active different-plan protection, verified replay behavior, accepted BillingPlan materialisation, feature preferences, and no-proration scope.
-- Removed the contradictory test that rejected a fresh shop solely because onboarding was already complete and added focused regression coverage.
+- Provider fence/state are read before onboarding or either activation preparation; onboarding is committed only for an authenticated provider-confirmed current or pending requested handle.
+- Provider verification failure preserves the existing guarded retry path without onboarding or local materialisation.
+- Fresh provider-confirmed current selections with no initial durable projection call `syncSubscription()` without a fabricated token, preserving UNMAPPED and SYNC_ERROR result codes; pending plan changes retain hosted-return handling.
+- Added focused regressions for arbitrary requests, verification failure, confirmed ordering, unknown/inactive/invalid fresh selections, and pending-plan preservation.
+- Preserved accepted durable-token semantics, BillingPlan materialisation/concurrency behavior, inactive-plan fail-closed handling, feature preferences, and no-proration scope.
 
 Validation:
 
 - `npm run prisma:generate`: passed.
-- `npm test -- --run tests/unit/services/billing.service.test.ts`: 191 passed.
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/billing-callback.test.ts`: 220 passed.
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: 260 passed across 4 files.
-
-- `npm run typecheck`: failed on existing repository-wide diagnostics, including unrelated JSX, webhook, Redis, and implicit-`any` errors; no new diagnostic was introduced in the edited activation/token lines.
-- `npm run lint`: failed with 16 existing errors in unrelated files and 2 existing warnings for duplicate imports in `tests/unit/services/billing.service.test.ts`; changed-file lint had 0 errors.
-- `npm run build`: passed, including Prisma generation and production client/SSR bundles.
+- `npm test -- --run tests/unit/routes/billing-callback.test.ts`: 34 passed.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: 266 passed across 4 files.
+- `npm run build`: passed.
+- Changed-file lint (`npx eslint app/routes/app/billing/callback/route.tsx tests/unit/routes/billing-callback.test.ts`): passed with 0 errors.
 - `git diff --check`: passed.
+- `npm run typecheck`: failed on existing repository-wide diagnostics in unrelated JSX, webhook, Redis, and implicit-`any` files; no diagnostic referenced the changed callback route or focused tests.
+- `npm run lint`: failed with 16 existing unrelated errors and 2 existing warnings; no changed-file errors.
 
-Parent report commit: `f368cdeb` (`task(ARCH-017-SHOPIFY-001): return rework for review`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+Parent report commit: to be recorded after this report is committed and pushed; it is the only current Completion Report for Attempt 3.
 
 No database submodule contents or Architect Review section were edited.
 
