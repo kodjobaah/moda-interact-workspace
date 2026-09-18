@@ -437,7 +437,7 @@ Ready for architect review. ARCH-017 Background changes are implemented and vali
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-BACKGROUND-001`.
 - Implementation commit: `33c2645` (`fix(background): honor monotonic onboarding during reconciliation`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
 - Prior implementation commit: `cdb6e4d` (`feat(background): resolve dynamic billing feature policy`).
-- Parent report commit: recorded after this Completion Report update and pushed to `origin/task/ARCH-017-BACKGROUND-001`.
+- Parent report commit: `515f5fda4f69d9588bfc7a8e52e577ad84d41b4a` (`chore(task): return BACKGROUND-001 for review after rework`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
 - No main branch was modified and no Architect Review section was edited.
 
 ### Attempt-3 Rework Mapping
