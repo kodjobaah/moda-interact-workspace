@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 10
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
 - ARCH-017-SHOPIFY-001
 - ARCH-017-ADMIN-001
 created: 2026-09-18
-updated: 2026-09-18T20:05:00Z
+updated: 2026-09-18
 ---
 
 # ARCH-017-DATABASE-001
@@ -600,7 +600,11 @@ Set task to `review` only after all required validation is complete. Include exa
 - `npm run erd:png`: passed;
 - `node --check prisma/seed.mjs`: passed;
 - `git diff --check`: passed;
-- `npx prisma migrate deploy --schema prisma/schema.prisma`: passed; migration applied successfully to the configured PostgreSQL database.
+- Required validation sequence was rerun in order: `format`, `validate`, `prisma:generate`, ARCH-017 validator, `erd`, `validate`, `prisma:generate`, `git diff --check`; all passed.
+- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run status`: reported the pre-existing failed migration `20260915140000_arch015_fractional_provider_usage_snapshots` and did not apply later migrations.
+- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run migrate:deploy`: blocked by that pre-existing P3009 failed-migration state; the configured development database was not modified.
+- Disposable database `moda_interact_arch017_validation`: full 12-migration `npm run migrate:deploy` passed, including `20260918120000_arch017_dynamic_features_billing_policy`; the disposable database was removed afterward.
+- `git diff --check`: passed after trimming generator-emitted trailing whitespace from the authorized ERD artifact.
 
 ### Launcher / Git Evidence
 
@@ -612,7 +616,7 @@ Set task to `review` only after all required validation is complete. Include exa
 - recursive submodule preparation: passed; no implementation submodules were present;
 - launcher claim commit: `5e5f1b6f`;
 - task-definition materialization commit: `d7bc688b`;
-- implementation commit: `6c9e03f` (`feat(database): add ARCH-017 dynamic billing schema`);
+- implementation commits: `6c9e03f` (`feat(database): add ARCH-017 dynamic billing schema`), `3c71798` (`fix(database): tighten ARCH-017 billing schema validation`);
 - implementation branch pushed to `origin/task/ARCH-017-DATABASE-001`;
 - executor and claimed timestamp cleared; no main branch modified.
 
