@@ -9,16 +9,16 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-18T20:50:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-017-DATABASE-001
 enables: []
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-18T21:12:00Z
 ---
 
 # ARCH-017-ADMIN-001
@@ -589,3 +589,46 @@ STOP and return to moda_architect if:
 ## Completion protocol
 
 Set task to `review`. Completion Report must include exact implementation/parent commits, validation output, physical worktree evidence and accepted DATABASE-001 revision.
+
+## Completion Report
+
+### Implementation
+
+- Added SUPER_ADMIN Feature catalogue create/edit/activation controls with server-side key, description, activation-mode, system-required, immutability, and checkout-recovery safeguards.
+- Extended MerchantPricingPlan administration with the dedicated recovery meter handle, dynamic supported-feature mappings, materialization status, paid/free validation, inactive-feature preservation, and durable plan-kind/delete restrictions.
+- Added same-transaction durable BillingPlan projection for operational name, recovery meter, allowance, and feature mappings without mutating BillingPlan lifecycle or credit-pack fields.
+- Updated platform and shop billing controls for PlatformBillingPolicy and terminal-message overrides.
+- Reworked legacy UNMAPPED repair to use MerchantPricingPlan catalogue state and the dedicated recovery meter rather than hand-authored enum/limit/top-up inputs.
+
+### Commits and Dependency
+
+- implementation commit: `07817815134385202ab22519dc2bbcb99b6f3c69` (`feat(admin): manage durable billing catalogue and policies`);
+- implementation branch: `task/ARCH-017-ADMIN-001`, pushed to `origin/task/ARCH-017-ADMIN-001`;
+- accepted DATABASE-001 submodule revision materialized in the implementation worktree: `9921b273642599e5cf255565d73ebad507f71ee4`;
+- no database submodule files were edited by this task.
+
+### Validation
+
+- `npm run prisma:generate`: passed;
+- `npm run prisma:validate`: passed;
+- `npm run test:unit -- --test-name-pattern='merchant-pricing|billing|feature'`: task-focused assertions passed; two unrelated existing translation assertions failed in `merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`;
+- `npm test`: completed with existing baseline failures in shared-version/i18n/security fixture expectations and source-contract checks outside the ARCH-017 implementation; no task implementation runtime failure was identified;
+- `npm run lint`: existing baseline errors in promotion reactivation components and warnings in unrelated files; no ARCH-017 changed-file lint error reported;
+- `npm run build`: passed TypeScript and production build; only existing BullMQ optional dependency/critical-dependency warnings;
+- `git diff --check`: passed for the implementation commit.
+
+### Physical Worktree Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-ADMIN-001`;
+- parent branch: `task/ARCH-017-ADMIN-001`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-ADMIN-001`;
+- implementation branch: `task/ARCH-017-ADMIN-001`;
+- shared workspace checkout switched/mutated for task work: no;
+- another task worktree reused: no;
+- recursive submodule sync/update: passed;
+- recorded database submodule commit: `9921b273642599e5cf255565d73ebad507f71ee4`;
+- launcher claim commit: `67c03781199ff3482611c832afa898419eb2f2c6`;
+- executor and claim timestamp cleared for review; no main branch modified.
+
+Task status is `review`; return control to `moda_architect`.
