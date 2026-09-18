@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
 - ARCH-017-BACKGROUND-001
@@ -566,3 +566,149 @@ STOP and return to moda_architect if implementation would require any of the fol
 ## Completion protocol
 
 Set task to `review` only after all required validation is complete. Include exact commands/results, migration name, implementation commit, parent report commit, physical worktree evidence and dependency evidence in the Completion Report.
+<<<<<<< HEAD
+=======
+
+## Completion Report
+
+### Work Completed
+
+- Added the dynamic billing `Feature` catalogue and `FeatureActivationMode` enum; removed the closed `BillingPlanFeatureIdentifier` enum.
+- Converted `BillingPlanFeature` to a Restrict-backed `Feature` relation while preserving existing `enabled` values through explicit enum-key migration mapping.
+- Added `MerchantPricingPlanFeature` and `ShopFeaturePreference` with the required composite identities and lifecycle constraints.
+- Added MerchantPricingPlan `materializedAt` and `shopifyRecoveryUsageEventHandle` without backfilling either from BillingPlan or usage-event data.
+- Established only the mandatory `checkout_recovery` MerchantPricingPlan feature mapping; no optional feature or merchant preference rows were inferred.
+- Moved outbound safety defaults to PlatformBillingPolicy, added optional terminal reservation override, constraints, seed defaults, and removed the three BillingPlan-owned fields.
+- Added the required schema validator, package script, and regenerated ERD artifacts.
+
+### Migration / Preservation Evidence
+
+- Migration: `20260918120000_arch017_dynamic_features_billing_policy`.
+- Existing BillingPlanFeature enum values map deterministically to Feature keys with `enabled` preserved.
+- `checkout_recovery` is seeded as `ALWAYS_ENABLED`, `systemRequired=true`, `active=true`.
+- Existing MerchantPricingPlan `materializedAt` and recovery usage handles remain NULL unless explicitly pre-existing.
+- No BillingPlan or MerchantPricingUsageEvent inference populates recovery usage handles.
+- Every existing MerchantPricingPlan receives only the mandatory checkout_recovery mapping.
+- No optional MerchantPricingPlanFeature inference and no ShopFeaturePreference inserts occur.
+- MerchantPricingPlan Shopify handles remain unique; BillingPlan has no moved outbound policy fields.
+
+### Validation
+
+- `npm run format`: passed;
+- `npm run validate`: passed;
+- `npm run prisma:generate`: passed;
+- `npm run test:arch017-billing-materialisation`: passed;
+- `npm run erd:puml`: passed;
+- `npm run erd:png`: passed;
+- `node --check prisma/seed.mjs`: passed;
+- `git diff --check`: passed;
+- Required validation sequence was rerun in order: `format`, `validate`, `prisma:generate`, ARCH-017 validator, `erd`, `validate`, `prisma:generate`, `git diff --check`; all passed.
+- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run status`: reported the pre-existing failed migration `20260915140000_arch015_fractional_provider_usage_snapshots` and did not apply later migrations.
+- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run migrate:deploy`: blocked by that pre-existing P3009 failed-migration state; the configured development database was not modified.
+- Disposable database `moda_interact_arch017_validation`: full 12-migration `npm run migrate:deploy` passed, including `20260918120000_arch017_dynamic_features_billing_policy`; the disposable database was removed afterward.
+- `git diff --check`: passed after trimming generator-emitted trailing whitespace from the authorized ERD artifact.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-DATABASE-001`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-DATABASE-001`;
+- branches: `task/ARCH-017-DATABASE-001` in both worktrees;
+- origin/main synchronization: already-current;
+- recursive submodule preparation: passed; no implementation submodules were present;
+- launcher claim commit: `5e5f1b6f`;
+- task-definition materialization commit: `d7bc688b`;
+- implementation commits: `6c9e03f` (`feat(database): add ARCH-017 dynamic billing schema`), `3c71798` (`fix(database): tighten ARCH-017 billing schema validation`);
+- implementation branch pushed to `origin/task/ARCH-017-DATABASE-001`;
+- executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for review.
+
+## Architect Review — Attempt 1 — Accepted
+
+### Status
+
+**Accepted — Complete**
+
+Architect review accepted implementation commit `3c71798` and the returned parent
+Completion Report commit `2467d422` on the implemented ARCH-017 database/runtime
+contract. No Attempt 2 is required.
+
+The review is functionality-led. The implementation establishes the required durable
+boundary for downstream ARCH-017 work:
+
+```text
+Feature catalogue:
+  BillingPlanFeatureIdentifier removed
+  FeatureActivationMode retained only as the stable activation-category enum
+  dynamic Feature rows keyed by immutable string identity
+
+Plan capability / preference state:
+  MerchantPricingPlanFeature persists commercial capability
+  BillingPlanFeature projects runtime capability through Feature FK
+  ShopFeaturePreference persists merchant opt-in independently of Subscription/BillingPeriod
+
+Materialisation support:
+  MerchantPricingPlan.materializedAt added
+  MerchantPricingPlan.shopifyRecoveryUsageEventHandle added
+  MerchantPricingPlan and BillingPlan remain physically independent
+  shopifyPlanHandle remains the runtime correlation key only
+
+Billing safety ownership:
+  defaultOutboundSoftLimit moved to PlatformBillingPolicy
+  defaultOutboundHardLimit moved to PlatformBillingPolicy
+  terminalMessageReservedSlots moved to PlatformBillingPolicy
+  ShopBillingPolicyOverride gains optional terminalMessageReservedSlots
+```
+
+The migration mechanically converts existing `BillingPlanFeature` enum identities to
+Feature foreign keys without changing each row's `enabled` value. It seeds the four
+initial Feature definitions at deploy time, creates only the mandatory
+`checkout_recovery` MerchantPricingPlan feature mapping for existing development
+plans, creates no merchant preference rows, and does not infer optional capability,
+`materializedAt`, or normal recovery-meter identity from existing BillingPlan or
+MerchantPricingUsageEvent state.
+
+The submitted seed correction is accepted: canonical Feature upserts now update the
+entire canonical row on repeat execution, including `active: true`. Therefore a
+previously deactivated seed-owned system Feature is restored to the required seed
+baseline instead of remaining inactive after a repeat seed.
+
+Platform policy defaults and database checks match the agreed ARCH-017 ownership
+model, including the FREE-plan direction check for
+`shopifyRecoveryUsageEventHandle`. The migration remains intentionally permissive for
+existing/development paid MerchantPricingPlans whose dedicated recovery meter still
+requires explicit Admin correction before materialisation.
+
+Reported validation includes Prisma format/validate/generate, the focused ARCH-017
+validator, ERD regeneration, syntax/diff checks, and the complete migration chain on
+a disposable PostgreSQL database. The focused validator is treated as a supporting
+regression guard rather than an exhaustive proof of every possible source mutation;
+its non-exhaustive static coverage does not reopen an otherwise conformant functional
+implementation.
+
+ARCH-011 remains out of scope and no prorated/same-cycle billing schema has been
+introduced.
+
+### Dependency reconciliation
+
+`ARCH-017-DATABASE-001` is now **Complete**.
+
+Its three implementation dependants have no remaining architectural prerequisite and
+are eligible to proceed once this acceptance and the accepted database revision are
+materialised into their task worktrees:
+
+```text
+ARCH-017-BACKGROUND-001   Ready
+ARCH-017-SHOPIFY-001      Ready
+ARCH-017-ADMIN-001        Ready
+```
+
+The returned DATABASE-001 parent-task snapshot contains only the DATABASE-001
+ARCH-017 task definition, so this acceptance patch does not manufacture absent sibling
+task files merely to encode those Ready states. Their canonical task definitions
+should be promoted by the coordinator state when materialised/launched.
+
+No terminal ARCH-017 system-test task is started automatically. The existing manual
+merchant/developer validation checkpoint remains before integrated system testing.
+>>>>>>> 0f5c834c332a6954d9c8a463f4c76ebb569672fa
