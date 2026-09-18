@@ -1,7 +1,7 @@
 ---
 id: ARCH-017
 title: Billing-plan materialisation, dynamic features, and billing-policy ownership
-status: Agreed
+status: In Progress
 coordinator: moda_architect
 created: 2026-09-18
 updated: 2026-09-18
@@ -11,7 +11,7 @@ updated: 2026-09-18
 
 ## Status
 
-Agreed.
+In Progress.
 
 This architecture is intentionally non-prorated. ARCH-011 is not part of this release and MUST NOT be used to introduce same-cycle plan segments, prorated allowance arithmetic or same-cycle downgrade/upgrade machinery.
 
@@ -366,9 +366,11 @@ There are no production customers or production billing lifecycle state to prese
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-017-DATABASE-001 | moda_database | Ready | - |
-| ARCH-017-BACKGROUND-001 | moda_background | Pending | ARCH-017-DATABASE-001 |
-| ARCH-017-SHOPIFY-001 | moda_app | Pending | ARCH-017-DATABASE-001 |
-| ARCH-017-ADMIN-001 | moda_admin | Pending | ARCH-017-DATABASE-001 |
+| ARCH-017-DATABASE-001 | moda_database | Complete | - |
+| ARCH-017-BACKGROUND-001 | moda_background | Complete | ARCH-017-DATABASE-001 |
+| ARCH-017-SHOPIFY-001 | moda_app | Ready | ARCH-017-DATABASE-001 |
+| ARCH-017-ADMIN-001 | moda_admin | Ready | ARCH-017-DATABASE-001 |
 
 BACKGROUND-001, SHOPIFY-001 and ADMIN-001 intentionally have no dependencies on one another and may execute in parallel after DATABASE-001 is accepted.
+
+Architect frontier after BACKGROUND-001 Attempt 4 acceptance: DATABASE-001 and BACKGROUND-001 are Complete. SHOPIFY-001 and ADMIN-001 remain independently executable correction work. No terminal ARCH-017 system-test task is started automatically; manual functional validation remains the checkpoint before integrated system testing.
