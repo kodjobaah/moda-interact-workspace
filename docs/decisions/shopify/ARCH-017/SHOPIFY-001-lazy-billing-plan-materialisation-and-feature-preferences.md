@@ -516,7 +516,9 @@ Validation:
 - `npm run build`: passed, including Prisma generation and production client/SSR bundles.
 - `git diff --check`: passed.
 
-No database submodule contents or Architect Review section were edited. Parent report commit will be recorded on the mirrored parent task branch.
+Parent report commit: `f368cdeb` (`task(ARCH-017-SHOPIFY-001): return rework for review`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+
+No database submodule contents or Architect Review section were edited.
 
 ## Architect Review
 
