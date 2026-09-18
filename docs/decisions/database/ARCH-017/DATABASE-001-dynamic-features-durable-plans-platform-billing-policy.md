@@ -566,6 +566,8 @@ STOP and return to moda_architect if implementation would require any of the fol
 ## Completion protocol
 
 Set task to `review` only after all required validation is complete. Include exact commands/results, migration name, implementation commit, parent report commit, physical worktree evidence and dependency evidence in the Completion Report.
+<<<<<<< HEAD
+=======
 
 ## Completion Report
 
@@ -709,3 +711,4 @@ should be promoted by the coordinator state when materialised/launched.
 
 No terminal ARCH-017 system-test task is started automatically. The existing manual
 merchant/developer validation checkpoint remains before integrated system testing.
+>>>>>>> 0f5c834c332a6954d9c8a463f4c76ebb569672fa
