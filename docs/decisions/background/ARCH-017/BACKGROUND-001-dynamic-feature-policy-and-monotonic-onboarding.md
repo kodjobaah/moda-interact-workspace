@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -440,3 +440,169 @@ Ready for architect review. ARCH-017 Background changes are implemented and vali
 - Implementation commit: `cdb6e4d` (`feat(background): resolve dynamic billing feature policy`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
 - Parent report commit: `ce710095` (`chore(task): return BACKGROUND-001 for review`), pushed to `origin/task/ARCH-017-BACKGROUND-001`.
 - No main branch was modified and no Architect Review section was edited.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+**Changes Requested — make pending initial activation independent of the monotonic onboarding milestone**
+
+### Accepted Attempt-2 functionality to preserve
+
+The following production changes are functionally aligned with ARCH-017 and are not being reopened:
+
+```text
+dynamic Feature keys resolved from persisted Feature rows
+MERCHANT_OPT_IN gated by ShopFeaturePreference + current plan mapping
+ALWAYS_ENABLED resolved without a shop preference
+PlatformBillingPolicy + active ShopBillingPolicyOverride own outbound limits
+checkout_recovery checked before recovery reservation/admission
+ShopFeaturePreference is not mutated by Background plan transitions
+reinstall + no provider contract no longer writes onboardingCompleted=false
+```
+
+The reported focused/unit/full validation is sufficient supporting evidence for those areas. Do not broaden Attempt 3 into exhaustive test expansion.
+
+### Functional finding — initial activation still requires `onboardingCompleted=false`
+
+ARCH-017 changes `ShopSettings.onboardingCompleted` into a monotonic Shopify managed-pricing milestone. `ARCH-017-SHOPIFY-001` is required to persist:
+
+```text
+onboardingCompleted=true
+```
+
+before BillingPlan resolution/materialisation or later Subscription/BillingPeriod projection can fail.
+
+The current Background reconciliation path still assumes the pre-ARCH-017 meaning of the flag.
+
+In `BillingSubscriptionReconciliationService.reconcileJob(...)`, initial activation is currently classified only when:
+
+```ts
+row.settings?.onboardingCompleted === false
+&& row.subscription.status === SubscriptionProjectionStatus.NO_CONTRACT
+&& row.subscription.planId === null
+&& row.subscription.pendingPlanId !== null
+&& row.subscription.pendingShopifyPlanHandle !== null
+&& row.subscription.nextReconcileAt !== null
+```
+
+The same obsolete condition is rechecked inside all three initial-activation completion/projection paths:
+
+```text
+completeVerifiedFree(...)
+completeVerifiedPaid(...)
+applyOtherCurrentPlan(...)
+```
+
+through:
+
+```ts
+settings?.onboardingCompleted !== false
+```
+
+as a reason to reject the transition.
+
+This becomes incorrect once SHOPIFY-001 implements the agreed ARCH-017 milestone ordering:
+
+```text
+authenticated Shopify managed-pricing selection observed
+  -> onboardingCompleted=true   (durable, separately committed)
+  -> local BillingPlan/projection work
+  -> if asynchronous reconciliation is still required,
+     Subscription may remain NO_CONTRACT + pending plan + nextReconcileAt
+```
+
+A valid queued Background reconciliation for that state currently fails `isInitialActivation` and returns without consulting Shopify. Even if entry were reached, the completion transaction would reject because onboarding is already true.
+
+That breaks the existing asynchronous recovery path precisely when the new monotonic milestone has already been persisted. The onboarding flag must no longer be used as the authority bit for pending initial billing reconciliation.
+
+### Required Attempt-3 correction
+
+Keep the correction narrowly scoped to `billing-subscription-reconciliation.service.ts` and its focused tests. Preserve all accepted Attempt-2 feature-policy/admission changes.
+
+#### 1. Classify pending initial activation from Subscription state, not onboarding state
+
+In `reconcileJob(...)`, remove `row.settings?.onboardingCompleted === false` from the `isInitialActivation` predicate.
+
+The durable authority shape remains:
+
+```text
+Shop.status = ACTIVE
+Subscription.status = NO_CONTRACT
+Subscription.planId = null
+Subscription.pendingPlanId != null
+Subscription.pendingShopifyPlanHandle != null
+Subscription.nextReconcileAt != null
+job.subscriptionId matches
+job.expectedNextReconcileAt matches the durable schedule
+```
+
+Keep the existing pending-plan identity and stale-job checks. Do not weaken them merely to remove the onboarding dependency.
+
+Both values of `onboardingCompleted` must be valid for this pending activation shape:
+
+```text
+false  -> pre-callback / older pending flow may still reconcile
+true   -> ARCH-017 callback milestone has already been persisted and reconciliation must still proceed
+```
+
+#### 2. Remove onboarding=false as a completion CAS prerequisite
+
+In:
+
+```text
+completeVerifiedFree(...)
+completeVerifiedPaid(...)
+applyOtherCurrentPlan(...)
+```
+
+remove the `settings?.onboardingCompleted !== false` rejection condition.
+
+Use the existing locked Subscription pending-state identity as the concurrency/staleness authority:
+
+```text
+status
+planId
+pendingPlanId
+pendingShopifyPlanHandle
+pendingEffectiveAt
+nextReconcileAt
+```
+
+Do not replace the removed condition with `onboardingCompleted===true`; the reconciliation must remain valid for both pre-milestone and post-milestone pending jobs.
+
+It is acceptable for successful verified activation paths to retain their existing idempotent `onboardingCompleted=true` write. No path may write `false`.
+
+`applyOtherCurrentPlan(...)` must not introduce a false write. Under ARCH-017, if Shopify already persisted the milestone it remains true; if Background is processing an older/pre-callback pending state, this task does not need to redefine unrelated callback semantics.
+
+#### 3. Preserve reinstall monotonicity
+
+Do not change the accepted Attempt-2 correction in `completeReinstallWithoutContract(...)`:
+
+```text
+no write to ShopSettings.onboardingCompleted
+```
+
+The correction requested here is only removal of onboarding as an initial-activation gating/CAS condition.
+
+### Required focused regression coverage
+
+Add only enough tests to prove the functional interaction:
+
+1. `NO_CONTRACT + pending plan + onboardingCompleted=true` is recognized as initial activation and reaches provider reconciliation rather than no-op;
+2. the same state with provider `null` preserves pending intent and schedules the next retry;
+3. the same state with verified Free provider truth completes Free activation;
+4. the same state with verified Paid provider truth completes Paid activation;
+5. `onboardingCompleted=false` pending activation still works, preserving the pre-callback recovery path;
+6. stale `subscriptionId` / `expectedNextReconcileAt` guards remain authoritative;
+7. reinstall + no contract still performs no onboarding write.
+
+Do not add an exhaustive lifecycle matrix for this correction.
+
+### Non-blocking observation
+
+`src/domain/types.ts` still contains the unused historical four-value `EntitlementFeature` union. Current production feature resolution and `EntitlementService` no longer consume it, so it does not block this functionality-first review. Do not broaden Attempt 3 solely to remove that dead type unless the implementation naturally touches that surface.
+
+### Architecture Conformance
+
+Not yet accepted. The dynamic feature policy, platform billing-limit ownership, checkout-recovery admission gate, preference preservation, and reinstall monotonicity are functionally sound. Acceptance is blocked only on making pending initial subscription reconciliation compatible with ARCH-017's new monotonic onboarding timing.
