@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-18T19:44:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -20,7 +20,7 @@ enables:
 - ARCH-017-SHOPIFY-001
 - ARCH-017-ADMIN-001
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-18T20:05:00Z
 ---
 
 # ARCH-017-DATABASE-001
@@ -566,3 +566,54 @@ STOP and return to moda_architect if implementation would require any of the fol
 ## Completion protocol
 
 Set task to `review` only after all required validation is complete. Include exact commands/results, migration name, implementation commit, parent report commit, physical worktree evidence and dependency evidence in the Completion Report.
+
+## Completion Report
+
+### Work Completed
+
+- Added the dynamic billing `Feature` catalogue and `FeatureActivationMode` enum; removed the closed `BillingPlanFeatureIdentifier` enum.
+- Converted `BillingPlanFeature` to a Restrict-backed `Feature` relation while preserving existing `enabled` values through explicit enum-key migration mapping.
+- Added `MerchantPricingPlanFeature` and `ShopFeaturePreference` with the required composite identities and lifecycle constraints.
+- Added MerchantPricingPlan `materializedAt` and `shopifyRecoveryUsageEventHandle` without backfilling either from BillingPlan or usage-event data.
+- Established only the mandatory `checkout_recovery` MerchantPricingPlan feature mapping; no optional feature or merchant preference rows were inferred.
+- Moved outbound safety defaults to PlatformBillingPolicy, added optional terminal reservation override, constraints, seed defaults, and removed the three BillingPlan-owned fields.
+- Added the required schema validator, package script, and regenerated ERD artifacts.
+
+### Migration / Preservation Evidence
+
+- Migration: `20260918120000_arch017_dynamic_features_billing_policy`.
+- Existing BillingPlanFeature enum values map deterministically to Feature keys with `enabled` preserved.
+- `checkout_recovery` is seeded as `ALWAYS_ENABLED`, `systemRequired=true`, `active=true`.
+- Existing MerchantPricingPlan `materializedAt` and recovery usage handles remain NULL unless explicitly pre-existing.
+- No BillingPlan or MerchantPricingUsageEvent inference populates recovery usage handles.
+- Every existing MerchantPricingPlan receives only the mandatory checkout_recovery mapping.
+- No optional MerchantPricingPlanFeature inference and no ShopFeaturePreference inserts occur.
+- MerchantPricingPlan Shopify handles remain unique; BillingPlan has no moved outbound policy fields.
+
+### Validation
+
+- `npm run format`: passed;
+- `npm run validate`: passed;
+- `npm run prisma:generate`: passed;
+- `npm run test:arch017-billing-materialisation`: passed;
+- `npm run erd:puml`: passed;
+- `npm run erd:png`: passed;
+- `node --check prisma/seed.mjs`: passed;
+- `git diff --check`: passed;
+- `npx prisma migrate deploy --schema prisma/schema.prisma`: passed; migration applied successfully to the configured PostgreSQL database.
+
+### Launcher / Git Evidence
+
+- canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-DATABASE-001`;
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-DATABASE-001`;
+- branches: `task/ARCH-017-DATABASE-001` in both worktrees;
+- origin/main synchronization: already-current;
+- recursive submodule preparation: passed; no implementation submodules were present;
+- launcher claim commit: `5e5f1b6f`;
+- task-definition materialization commit: `d7bc688b`;
+- implementation commit: `6c9e03f` (`feat(database): add ARCH-017 dynamic billing schema`);
+- implementation branch pushed to `origin/task/ARCH-017-DATABASE-001`;
+- executor and claimed timestamp cleared; no main branch modified.
+
+Task status is `review`; return control to `moda_architect` for review.
