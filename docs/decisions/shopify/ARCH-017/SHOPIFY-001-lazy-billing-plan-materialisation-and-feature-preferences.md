@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 20
 executor: copilot
 claimed_at: 2026-09-18T20:42:21Z
@@ -482,3 +482,23 @@ STOP and return to moda_architect if:
 ## Completion protocol
 
 Set task to `review`. Completion Report must include implementation commit, parent report commit, exact test commands/results, physical worktree evidence and accepted DATABASE-001 dependency revision.
+
+## Completion Report
+
+Status: Blocked. No implementation commit was created because the accepted DATABASE-001 schema contract is not materialised in the authoritative implementation worktree.
+
+Dependency evidence:
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-001`
+- Database submodule revision: `e246c70284bbe6889b494f30c1442894319f3de8`
+- The checked-out schema still contains `BillingPlanFeatureIdentifier` and lacks `MerchantPricingPlan.materializedAt`, `MerchantPricingPlan.shopifyRecoveryUsageEventHandle`, `Feature`, `MerchantPricingPlanFeature`, and `ShopFeaturePreference`.
+- The dependency task is marked complete, but its required schema is absent from the submodule revision available to this task.
+
+Validation:
+
+- `npm ci`: passed in the implementation worktree.
+- `npm run prisma:generate`: passed after dependency installation.
+- The required schema fields/models were checked directly with `rg`; the dependency contract is absent.
+- No TypeScript, focused tests, aggregate tests, lint, or build were run because the task stop condition prohibits implementing against the legacy schema.
+
+Required handoff: materialise the accepted DATABASE-001 revision in this worktree, then rerun the prepared task. No Architect Review section was edited.
