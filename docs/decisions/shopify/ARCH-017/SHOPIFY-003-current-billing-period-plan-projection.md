@@ -587,6 +587,8 @@ Status: Ready for Review
 
 Implementation commit: `b279d38` (`fix billing period projection repair`), pushed to `origin/task/ARCH-017-SHOPIFY-003`.
 
+Parent report commit: `b4909a5a` (`docs: submit SHOPIFY-003 for review`).
+
 Changed files: `app/services/billing/billing.service.ts`, `tests/unit/services/billing.service.test.ts`.
 
 Focused validation:
