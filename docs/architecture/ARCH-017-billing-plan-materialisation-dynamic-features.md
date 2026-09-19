@@ -358,6 +358,26 @@ ARCH-010 non-prorated BillingPeriod semantics remain unchanged:
 - paid included allowance is period-scoped;
 - lifetime Free and purchased credits remain independent of BillingPeriod.
 
+## Current BillingPeriod projection invariant
+
+Manual system testing on 2026-09-19 exposed a reachable inconsistent state where an ACTIVE mapped Subscription referenced an OPEN BillingPeriod whose `planId` and plan snapshots were null. The defect exists independently in Shopify generic sync and Background reconciliation.
+
+ARCH-017 therefore adds this invariant:
+
+```text
+Subscription.status = ACTIVE | TRIALING
+Subscription.planId != null
+Subscription.billingPeriodId != null
+    =>
+referenced BillingPeriod is OPEN, belongs to that Subscription, represents the exact current provider cycle, and contains the same complete BillingPlan identity.
+```
+
+For FREE, `includedRecoveryCreditsGranted` remains null and no period included-credit counter exists. For PAID_METERED, the period snapshots the plan allowance and exactly one `INCLUDED_RECOVERY_CREDITS` counter exists with the same grant.
+
+An exact current OPEN period with missing/null projection fields may be completed in place when every existing non-null field is compatible with the resolved plan. This is self-healing reconciliation, not historical rewriting. A CLOSED period, another Subscription's period, a different non-null plan, incompatible snapshots, or incompatible paid counter is a conflict and MUST NOT be overwritten. The caller fails closed with `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT` and a bounded retry. No overlapping replacement BillingPeriod is created.
+
+The repair and Subscription projection must commit atomically. No database backfill is required because the platform remains pre-production; the next successful same-cycle reconciliation repairs compatible development state.
+
 ## Rollout classification
 
 PRE-PRODUCTION / BREAKING ROLLOUT.
@@ -368,12 +388,14 @@ There are no production customers or production billing lifecycle state to prese
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-017-DATABASE-001 | moda_database | Ready | - |
-| ARCH-017-BACKGROUND-001 | moda_background | Pending | ARCH-017-DATABASE-001 |
+| ARCH-017-DATABASE-001 | moda_database | Complete | - |
+| ARCH-017-BACKGROUND-001 | moda_background | Complete | ARCH-017-DATABASE-001 |
+| ARCH-017-BACKGROUND-002 | moda_background | Ready | ARCH-017-BACKGROUND-001 |
 | ARCH-017-SHOPIFY-001 | moda_app | Complete | ARCH-017-DATABASE-001 |
 | ARCH-017-SHOPIFY-002 | moda_app | Ready | ARCH-017-SHOPIFY-001 |
-| ARCH-017-ADMIN-001 | moda_admin | complete | ARCH-017-DATABASE-001 |
+| ARCH-017-SHOPIFY-003 | moda_app | Pending | ARCH-017-SHOPIFY-002 |
+| ARCH-017-ADMIN-001 | moda_admin | Complete | ARCH-017-DATABASE-001 |
 
-BACKGROUND-001, SHOPIFY-001 and ADMIN-001 intentionally have no dependencies on one another and may execute in parallel after DATABASE-001 is accepted.
+BACKGROUND-002 is a bounded reconciliation-correctness follow-up discovered during manual testing. It does not reopen BACKGROUND-001.
 
-SHOPIFY-002 is a follow-on lifecycle correction after SHOPIFY-001. It does not reopen SHOPIFY-001 and has no dependency on BACKGROUND-001 or ADMIN-001.
+SHOPIFY-003 is intentionally separate from SHOPIFY-002: SHOPIFY-002 owns the onboarding milestone; SHOPIFY-003 owns current BillingPeriod projection consistency. SHOPIFY-003 depends on SHOPIFY-002 because both modify `billing.service.ts` and must execute sequentially in the same repository. SHOPIFY-001 remains Complete.
