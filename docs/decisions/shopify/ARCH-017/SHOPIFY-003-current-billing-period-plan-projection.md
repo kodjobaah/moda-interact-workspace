@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-19T11:08:39Z
@@ -550,15 +550,15 @@ Do not mock away the period/counter compatibility checks in the new tests.
 
 ## Acceptance criteria
 
-- [ ] No successful generic `ACTIVE`/`TRIALING` sync can point to a current OPEN BillingPeriod whose plan identity is null.
-- [ ] The exact observed Free null-mapped period is self-healed in place on the next successful same-cycle sync.
-- [ ] Paid same-cycle repair creates the included-credit counter exactly once.
-- [ ] Existing paid usage quantities are never reset during replay.
-- [ ] Conflicting durable period history is never overwritten or replaced by an overlapping row.
-- [ ] Conflicts project `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT`.
-- [ ] UNMAPPED/SYNC_ERROR paths do not grant paid entitlement.
-- [ ] SHOPIFY-002 onboarding behaviour is unchanged.
-- [ ] ARCH-011 remains absent.
+- [x] No successful generic `ACTIVE`/`TRIALING` sync can point to a current OPEN BillingPeriod whose plan identity is null.
+- [x] The exact observed Free null-mapped period is self-healed in place on the next successful same-cycle sync.
+- [x] Paid same-cycle repair creates the included-credit counter exactly once.
+- [x] Existing paid usage quantities are never reset during replay.
+- [x] Conflicting durable period history is never overwritten or replaced by an overlapping row.
+- [x] Conflicts project `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT`.
+- [x] UNMAPPED/SYNC_ERROR paths do not grant paid entitlement.
+- [x] SHOPIFY-002 onboarding behaviour is unchanged.
+- [x] ARCH-011 remains absent.
 
 ## Validation
 
@@ -580,3 +580,26 @@ If the repository lint command does not accept file arguments in this form, use 
 After the defined work, focused tests and required validation pass, complete the task Completion Report, set the task to `review`, return control to `moda_architect`, and STOP.
 
 Do not begin any Background or system-test task.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `b279d38` (`fix billing period projection repair`), pushed to `origin/task/ARCH-017-SHOPIFY-003`.
+
+Changed files: `app/services/billing/billing.service.ts`, `tests/unit/services/billing.service.test.ts`.
+
+Focused validation:
+
+- `npm run prisma:generate` — passed.
+- `npx vitest run tests/unit/services/billing.service.test.ts` — passed, 200 tests.
+- `npx eslint --ignore-path .gitignore --no-cache app/services/billing/billing.service.ts tests/unit/services/billing.service.test.ts` — passed with two pre-existing `import/no-duplicates` warnings in the test file and no errors.
+- `git diff --check` — passed.
+- `npm run typecheck` — blocked by unrelated pre-existing merge markers at `tests/unit/routes/billing-callback.test.ts:151-159`, which is SHOPIFY-002 scope and was not edited.
+- `npm run build` — blocked by unrelated duplicate `persistOnboardingMilestone` declaration in `app/routes/app/billing/callback/route.tsx:100`, which is SHOPIFY-002 scope and was not edited.
+
+Callback verification: `app/routes/app/billing/callback/route.tsx` contains no merge markers, but the duplicate declaration reported by build is present. The callback test merge markers are also present. No SHOPIFY-002 files were changed.
+
+Physical worktrees: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-003`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-003`.
+
+Unresolved baseline limitation: typecheck and build remain blocked by the pre-existing SHOPIFY-002 callback conflicts above; focused SHOPIFY-003 tests and changed-file lint pass.
