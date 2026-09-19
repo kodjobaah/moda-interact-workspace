@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-19T10:50:57Z
@@ -591,3 +591,51 @@ If `npm run test:unit` exposes a documented unrelated baseline failure, record t
 After implementation, focused/full-unit validation and Completion Report are complete, set status to `review`, return control to `moda_architect`, and STOP.
 
 Do not start SHOPIFY-003 or a system-test task.
+
+## Completion Report
+
+### Status
+
+Ready for Review
+
+### Files Changed
+
+- `src/services/current-billing-period-projection.service.ts`
+- `src/services/billing-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `tests/unit/services/billing-reconciliation.service.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+
+### Work Completed
+
+- Added the database-only current billing-period projection primitive, including compatible in-place repair, conflict detection, paid included-credit counter repair, and Free counter protection.
+- Routed generic mapped subscription reconciliation and same-plan current-cycle reconciliation through the projection primitive.
+- Preserved fail-closed `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT` handling and deterministic retry scheduling for incompatible history.
+- Corrected expired same-cycle handling so provider-cycle lag reaches the existing rollover repair path instead of being treated as a current-cycle no-op.
+- Updated dynamic catalogue and rollover fixtures to model registration, exact plan handles, latest open cycles, and included billing-period relations.
+
+### Validation Results
+
+- `npm run prisma:generate` passed.
+- `npm run prisma:validate` passed.
+- Focused reconciliation suite passed: 2 files, 190 tests.
+- `npm run test:unit` passed: 69 files, 1,039 tests.
+- `npm run build` passed, including TypeScript compilation.
+- `git diff --check` passed.
+- Implementation commit: `9eb3168` pushed to `origin/task/ARCH-017-BACKGROUND-002`.
+
+### Deviations
+
+- None.
+
+### Assumptions
+
+- Existing non-null conflicting BillingPeriod history remains immutable and correctly fails closed according to the task contract.
+
+### Unresolved Issues
+
+- None identified within ARCH-017-BACKGROUND-002.
+
+### Architectural Concerns
+
+- None.
