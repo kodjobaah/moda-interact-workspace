@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 attempt: 3
 depends_on:
@@ -1084,3 +1084,315 @@ attempt: 3
 Return control to `moda_architect` and STOP.
 
 There is no architect acceptance decision for Attempt 2.
+
+
+## Architect Review — Attempt 3 — Changes Requested
+
+### Review Status
+
+Changes Requested.
+
+Reviewed implementation commit: `1689f7c`.
+Reviewed parent report commit: `dddb0997`.
+
+Attempt 3 is not accepted because the exact blocking correction requested after Attempt 2 is not present in the submitted production source or focused test file.
+
+The submitted Completion Report states that Attempt 3 implemented the three older Attempt 1 corrections. Those corrections were already present in Attempt 2. It does not report the Attempt 2 Architect Review correction: the provider-present `UNFROZEN`/`restored` lifecycle branch must refresh the Subscription and continue into the normal ARCH-017 same-cycle projection repair instead of returning immediately.
+
+### Source/report mismatch that blocks acceptance
+
+File:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+In the submitted Attempt 3 source, the provider-present Subscription snapshot is still declared:
+
+```ts
+const existing = await this.database.subscription.findUnique({
+  where: { shopId },
+  select: {
+    id: true,
+    status: true,
+    planId: true,
+    pendingPlanId: true,
+    pendingShopifyPlanHandle: true,
+    pendingEffectiveAt: true,
+    billingPeriodId: true,
+    currentPeriodStart: true,
+    currentPeriodEnd: true,
+    cancelAtPeriodEnd: true,
+    nextReconcileAt: true,
+  },
+});
+```
+
+and the lifecycle branch still contains the early return:
+
+```ts
+if (lifecycleResult === "handled" || lifecycleResult === "restored") {
+  await this.publishCommittedLifecycleSchedule(shopId, existing.id);
+  if (lifecycleResult === "restored") {
+    const restored = await this.database.subscription.findUnique({
+      where: { id: existing.id },
+      select: { billingPeriodId: true },
+    });
+    return {
+      billingPeriodId: restored?.billingPeriodId ?? null,
+      packMeterHandle: null,
+    };
+  }
+  return { billingPeriodId: existing.billingPeriodId, packMeterHandle: null };
+}
+```
+
+Therefore the exact defect from Attempt 2 remains reachable:
+
+```text
+UNFROZEN provider lifecycle
+    -> lifecycle service restores Subscription to ACTIVE/TRIALING
+    -> applySubscription() returns immediately
+    -> exact current BillingPeriod is not passed through ensureCurrentBillingPeriodProjection()
+    -> plan-null/partial current BillingPeriod can remain attached to executable Subscription
+```
+
+The submitted `tests/unit/services/billing-reconciliation.service.test.ts` also contains no focused `restored`/`UNFROZEN` regression cases for the two scenarios required by the Attempt 2 Architect Review.
+
+### Attempt 4 correction — implement exactly this change
+
+Do not redesign the lifecycle service and do not rework the already accepted Attempt 1/2 corrections. Modify only the caller flow described below unless a compile-only import/type adjustment is unavoidable.
+
+#### File 1 — `src/services/billing-reconciliation.service.ts`
+
+Inside `BillingReconciliationService.applySubscription()` in the **provider-present** branch only:
+
+1. Find the Subscription read immediately after the provider-plan lookup. Change only that local binding from:
+
+```ts
+const existing = await this.database.subscription.findUnique(...);
+```
+
+to:
+
+```ts
+let existing = await this.database.subscription.findUnique(...);
+```
+
+Keep the existing select shape unchanged.
+
+2. Replace the combined lifecycle result block:
+
+```ts
+if (lifecycleResult === "handled" || lifecycleResult === "restored") {
+  ...
+}
+```
+
+with two explicit branches whose behaviour is exactly:
+
+```text
+if lifecycleResult === "handled"
+    -> publishCommittedLifecycleSchedule(shopId, existing.id)
+    -> return exactly as the current handled path returns
+
+if lifecycleResult === "restored"
+    -> publishCommittedLifecycleSchedule(shopId, existing.id)
+    -> reread Subscription by shopId using the exact same select shape as the original `existing` read
+    -> if the reread returns null:
+         return { billingPeriodId: null, packMeterHandle: null }
+    -> assign the reread row back to `existing`
+    -> DO NOT return
+    -> continue through the existing plan/cycle code below
+```
+
+A conforming implementation may use this structure:
+
+```ts
+if (lifecycleResult === "handled") {
+  await this.publishCommittedLifecycleSchedule(shopId, existing.id);
+  return {
+    billingPeriodId: existing.billingPeriodId,
+    packMeterHandle: null,
+  };
+}
+
+if (lifecycleResult === "restored") {
+  await this.publishCommittedLifecycleSchedule(shopId, existing.id);
+
+  const restored = await this.database.subscription.findUnique({
+    where: { shopId },
+    select: {
+      id: true,
+      status: true,
+      planId: true,
+      pendingPlanId: true,
+      pendingShopifyPlanHandle: true,
+      pendingEffectiveAt: true,
+      billingPeriodId: true,
+      currentPeriodStart: true,
+      currentPeriodEnd: true,
+      cancelAtPeriodEnd: true,
+      nextReconcileAt: true,
+    },
+  });
+
+  if (!restored) {
+    return { billingPeriodId: null, packMeterHandle: null };
+  }
+
+  existing = restored;
+}
+```
+
+3. Do not add a lifecycle-specific BillingPeriod mutation after assigning `existing = restored`.
+
+The existing code later in the same method must remain the single projection path:
+
+```text
+existing.planId === plan.id
+    -> providerMatchesCurrentCycle
+    -> transaction lock/reread
+    -> ensureCurrentBillingPeriodProjection()
+```
+
+That existing path must perform both the compatible repair and conflict fail-closed behaviour.
+
+4. Do not apply this change to the earlier `if (!provider)` branch. A `restored` result is not expected to make that branch continue with a provider that does not exist. Leave that branch unchanged unless a focused test proves otherwise and return to `moda_architect` before expanding scope.
+
+5. Preserve these already-correct behaviours unchanged:
+
+```text
+handled lifecycle result -> immediate return
+pending plan identity/CAS checks
+same-plan projection transaction
+BILLING_PERIOD_PLAN_CONFLICT fail-closed handling
+provider-cycle-lag handling
+fresh mapped Subscription reconstruction
+MISSING_BILLING_CYCLE handling
+Paid counter quantity preservation
+```
+
+#### File 2 — `tests/unit/services/billing-reconciliation.service.test.ts`
+
+Add exactly these two functional regression cases. Do not replace them with tests that call the projection helper directly; they must exercise `BillingReconciliationService` through the lifecycle branch.
+
+**Case A — restored same-cycle incomplete period is repaired before return**
+
+Arrange all of the following:
+
+```text
+provider exists and is ACTIVE or TRIALING
+provider current plan = plan-1
+provider current cycle = [cycleStart, cycleEnd]
+latest lifecycle event causes lifecycle reconcile() -> "restored"
+
+initial Subscription read:
+  id = subscription-1
+  status = FROZEN
+  planId = plan-1
+  billingPeriodId = period-1
+  currentPeriodStart = cycleStart
+  currentPeriodEnd = cycleEnd
+
+post-lifecycle Subscription reread:
+  id = subscription-1
+  status = ACTIVE or TRIALING
+  same planId
+  same billingPeriodId
+  same cycle
+
+period-1:
+  OPEN
+  subscriptionId = subscription-1
+  planId = null
+  shopifyPlanHandleSnapshot = null
+  planNameSnapshot = null
+  planKindSnapshot = null
+```
+
+Assert:
+
+```text
+publishCommittedLifecycleSchedule path is preserved
+post-lifecycle Subscription is reread
+ensureCurrentBillingPeriodProjection path executes
+period-1 is repaired in place
+no second BillingPeriod is created
+Subscription remains attached to period-1
+method does not return directly from lifecycleResult="restored"
+```
+
+**Case B — restored same-cycle conflict fails closed**
+
+Use the same setup except `period-1` contains an incompatible non-null plan identity.
+
+Assert:
+
+```text
+Subscription.status = SYNC_ERROR
+lastSyncErrorCode = BILLING_PERIOD_PLAN_CONFLICT
+planId and billingPeriodId remain the existing values
+exactly one bounded reconcile retry is scheduled after commit
+SamePlanBillingPeriodRolloverService.transition() is not allowed to mutate state in that pass
+historical BillingPeriod fields are not overwritten
+```
+
+### Completion Report correction
+
+Replace the Attempt 3-style correction summary with evidence for the actual Attempt 4 change. The next Completion Report must explicitly state all four facts below:
+
+```text
+1. provider-present `existing` snapshot is mutable only so it can be refreshed after lifecycle restore;
+2. `handled` still returns immediately;
+3. `restored` publishes lifecycle schedule, rereads full Subscription state, assigns it to `existing`, and continues without returning;
+4. both required restored lifecycle regression cases pass through BillingReconciliationService.
+```
+
+Do not report the older fresh-subscription/missing-cycle corrections as the work completed for Attempt 4; those are already present.
+
+### Required validation for Attempt 4
+
+Run exactly:
+
+```bash
+npm run prisma:generate
+npm run prisma:validate
+npx vitest run \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts
+npm run test:unit
+npm run build
+git diff --check
+```
+
+The two new restored-lifecycle regression cases must be visible in the focused suite and pass. Do not use the aggregate passing count as a substitute for demonstrating those two cases exist.
+
+### Scope guardrails
+
+Attempt 4 MUST NOT:
+
+- modify `src/services/shopify-subscription-lifecycle-reconciliation.service.ts`;
+- modify `src/services/same-plan-billing-period-rollover.service.ts`;
+- modify `src/services/shopify-plan-change-transition.service.ts`;
+- modify the database schema, migrations or database gitlink;
+- alter accepted ARCH-017-BACKGROUND-001 feature/policy/admission/onboarding behaviour;
+- reimplement `ensureCurrentBillingPeriodProjection()` in the lifecycle branch;
+- create a second BillingPeriod for the same `(shopId, periodStart, periodEnd)`;
+- reset existing Paid committed/reserved/forfeited quantities;
+- start a system-test task.
+
+If implementing the required flow would require any of those changes, STOP and return to `moda_architect` instead of expanding scope.
+
+### Stop condition
+
+After only the correction above is implemented, the two required restored-lifecycle tests pass, the required validation is complete, and the Completion Report accurately describes this correction:
+
+```text
+status: review
+attempt: 4
+```
+
+Return control to `moda_architect` and STOP.
+
+There is no architect acceptance decision for Attempt 3.
