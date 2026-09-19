@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-09-19T11:08:39Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-017-SHOPIFY-002
@@ -587,7 +587,7 @@ Status: Ready for Review
 
 Implementation commit: `b279d38` (`fix billing period projection repair`), pushed to `origin/task/ARCH-017-SHOPIFY-003`.
 
-Parent report commit: `b4909a5a` (`docs: submit SHOPIFY-003 for review`).
+Parent report commit: `b6d21f12` (final parent review submission).
 
 Changed files: `app/services/billing/billing.service.ts`, `tests/unit/services/billing.service.test.ts`.
 
@@ -605,3 +605,35 @@ Callback verification: `app/routes/app/billing/callback/route.tsx` contains no m
 Physical worktrees: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-003`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-003`.
 
 Unresolved baseline limitation: typecheck and build remain blocked by the pre-existing SHOPIFY-002 callback conflicts above; focused SHOPIFY-003 tests and changed-file lint pass.
+
+## Architect Review — Attempt 1
+
+Decision: **Accepted**
+
+Reviewed implementation commit: `b279d38`.
+
+Reviewed parent submission commit: `b6d21f12`.
+
+Functional review result:
+
+- compatible OPEN current-cycle BillingPeriods are repaired in place with the resolved plan identity;
+- successful generic `ACTIVE`/`TRIALING` projection uses the repaired/current BillingPeriod atomically with the Subscription write;
+- Free periods remain without an included-recovery entitlement counter;
+- Paid periods receive exactly one included-recovery counter when missing and existing committed/reserved/forfeited quantities are preserved on replay;
+- CLOSED periods, another Subscription's period, incompatible non-null plan/snapshot state, and incompatible counters fail closed rather than being overwritten or replaced;
+- current-period projection conflicts produce `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT` while preserving the existing durable Subscription plan/period identity;
+- invalid Paid included allowance produces `SYNC_ERROR/INVALID_INCLUDED_ALLOWANCE` without granting entitlement;
+- `UNMAPPED` and pre-projection configuration-error paths do not invoke mapped-period entitlement creation;
+- the strict initial-Paid activation path remains separate and unchanged; and
+- ARCH-011 proration behaviour remains outside this task.
+
+Validation evidence reviewed:
+
+- Prisma generation: passed;
+- focused `billing.service.test.ts`: 200 passed;
+- changed-file ESLint: passed with only the reported pre-existing warnings;
+- `git diff --check`: passed.
+
+The submitted worktree still contains the pre-existing SHOPIFY-002 callback baseline conflicts (duplicate `persistOnboardingMilestone` declaration and merge markers in the callback test), so repository-wide typecheck/build remain blocked independently of SHOPIFY-003. Those files are outside this task's authorised implementation surface and were not changed by this attempt; they do not require an Attempt 2 for SHOPIFY-003.
+
+`ARCH-017-SHOPIFY-003` is Complete at Attempt 1. There is no Attempt 2. Manual testing/integration remains subject to correcting the separate SHOPIFY-002 callback baseline before relying on repository-wide build/runtime validation.
