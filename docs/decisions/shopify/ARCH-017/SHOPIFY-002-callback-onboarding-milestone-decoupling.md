@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
-executor: copilot
-claimed_at: 2026-09-19T09:25:40Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
 - ARCH-017-SHOPIFY-001
@@ -906,6 +906,32 @@ Token freshness is determined only by durable Subscription token fields.
 Include launcher-prepared parent/implementation worktree isolation and synchronization evidence required by the repository workflow.
 
 Set task status to `review`; do not self-accept.
+
+# Completion Report
+
+Attempt: 1
+Implementation commit: 0a999bd782c3dc7faea3ce9268d06c787d89ab13
+Database revision: 9921b273642599e5cf255565d73ebad507f71ee4
+Focused callback/billing tests: PASS (218 tests)
+Full test suite: FAIL (5 unrelated baseline failures across billing-purchases-i18n, merchant-route-access-policy, and billing-ui; no failures in the four authorized files)
+Prisma generate: PASS
+Prisma validate: PASS
+Typecheck: FAIL (existing baseline errors, including unrelated files and unchanged lines in billing.service.ts and billing.service.test.ts)
+Build: PASS
+Changed-file lint: PASS (0 errors, 2 pre-existing import/no-duplicates warnings)
+git diff --check: PASS
+BillingService onboarding source invariant: PASS (rg returned no matches; explicit invariant command printed PASS)
+
+Callback milestone is persisted before plan_handle validation.
+Callback milestone is persisted before any provider/billing operation.
+Provider failure does not affect onboarding completion.
+Provider mismatch does not affect onboarding completion.
+BillingService contains zero onboardingCompleted references.
+Token freshness is determined only by durable Subscription token fields.
+
+Launcher-prepared isolation evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-002` were reused for task branch `task/ARCH-017-SHOPIFY-002`; the parent claim remained at `bedb2df7`, and the prepared execution had synchronized the task worktrees and recursive submodules before implementation.
+
+The implementation branch was pushed to `origin/task/ARCH-017-SHOPIFY-002`. The parent report is ready for architect review.
 
 # Architect Review
 
