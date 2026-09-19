@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-09-19T10:50:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-017-BACKGROUND-001
@@ -639,3 +639,170 @@ Ready for Review
 ### Architectural Concerns
 
 - None.
+
+## Architect Review — Attempt 1 — Changes Requested
+
+### Review Status
+
+Changes Requested.
+
+Reviewed implementation commit: `9eb3168`.
+Reviewed parent report commit: `456ab120`.
+
+The projection primitive and the four `BillingSubscriptionReconciliationService` integrations are directionally correct, and the implementation correctly preserves existing Paid counter quantities instead of resetting them. The task is not accepted because three reachable production paths still violate the task's functional contract.
+
+### Blocking correction 1 — generic mapped reconciliation must reconstruct a missing local Subscription
+
+File:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+Current defect:
+
+The generic mapped branch enters a transaction and does:
+
+```ts
+const current = await transaction.subscription.findUnique({
+  where: { shopId },
+  select: { id: true },
+});
+if (!current) return { kind: "stale" as const };
+```
+
+Therefore a valid provider `ACTIVE`/`TRIALING` subscription with a known active Moda plan and a valid provider cycle is ignored when Moda has no local `Subscription` row. No Subscription and no plan-complete BillingPeriod are reconstructed.
+
+Required implementation:
+
+1. Keep this correction inside the existing generic mapped `$transaction()`; do not create the BillingPeriod outside the transaction.
+2. When the pre-transaction `existing` Subscription is non-null:
+   - lock that exact Subscription row with `SELECT ... FOR UPDATE`;
+   - reread at minimum `id`, `status`, `planId`, `billingPeriodId`, `currentPeriodStart`, `currentPeriodEnd`, `pendingPlanId`, `pendingShopifyPlanHandle`, `pendingEffectiveAt`, and `nextReconcileAt`;
+   - compare those durable facts with the pre-transaction `existing` snapshot;
+   - if they changed, return `stale` and do not project provider state over the newer row.
+3. When the pre-transaction `existing` Subscription is null:
+   - ensure one local row exists inside the same transaction before creating the BillingPeriod;
+   - use `subscription.upsert()` on `shopId` with a minimal create state of `NO_CONTRACT` and no plan/period/pending pointers;
+   - lock the returned row with `SELECT ... FOR UPDATE` and reread it;
+   - proceed only if the row is still the empty `NO_CONTRACT` shell (`planId`, `billingPeriodId`, `pendingPlanId`, `pendingShopifyPlanHandle`, and `pendingEffectiveAt` all null); if another path has already populated authoritative state, return `stale` instead of overwriting it.
+4. Call `ensureCurrentBillingPeriodProjection()` only after the row is locked and reread.
+5. On `READY`, write the mapped Subscription and `billingPeriodId` in that same transaction.
+6. On `CONFLICT`, write `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT` to the locked row, preserve any existing plan/period pointers, commit, then publish the existing deterministic +60 second retry.
+7. Do not restore the removed bare `billingPeriod.upsert()` path and do not create a second period for the same `(shopId, periodStart, periodEnd)`.
+
+Required focused regression cases:
+
+- provider has a known active Free plan + valid cycle, local Subscription is absent -> one Subscription is created/reused, one complete Free BillingPeriod is created, final Subscription is `ACTIVE`/`TRIALING` and points at it;
+- provider has a known active Paid plan + valid cycle, local Subscription is absent -> one Subscription is created/reused, one complete Paid BillingPeriod and exactly one included counter are created, final Subscription points at it;
+- pre-read says no Subscription but the locked transaction sees a non-empty/pending Subscription created by another path -> return stale and do not overwrite that row.
+
+### Blocking correction 2 — repair an exact same cycle even when the provider cycle has just expired
+
+File:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+Current code gates the same-cycle projection repair with:
+
+```ts
+if (providerMatchesCurrentCycle && provider.currentPeriodEnd! > now) {
+```
+
+That leaves the original ARCH-017 defect in place during provider-cycle lag. When Shopify still reports the exact old cycle after its end time and that current local BillingPeriod is plan-null/incomplete, the helper is skipped. `SamePlanBillingPeriodRolloverService` then returns `provider-cycle-lag`, a retry is scheduled, and the mapped Subscription continues pointing at the incomplete period.
+
+Required implementation:
+
+1. Change the repair gate to run whenever `providerMatchesCurrentCycle` is true. Do **not** require `provider.currentPeriodEnd > now` for the projection repair.
+2. Keep the existing conflict behaviour: `CONFLICT` must commit `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT`, enqueue the bounded retry, return immediately, and must not enter rollover in the same pass.
+3. Keep the existing READY behaviour non-terminal. After a successful repair, continue through the existing logic:
+   - an unexpired exact cycle may use the existing pending/cancellation path;
+   - an expired exact cycle must continue into `SamePlanBillingPeriodRolloverService.transition()`;
+   - if that service reports `provider-cycle-lag`, preserve the repaired period and schedule the existing +60 second `PROVIDER_CYCLE_LAG` retry.
+4. Do not create a successor period while provider truth still reports the exact expired cycle.
+
+Required focused regression case:
+
+- mapped ACTIVE same-plan Subscription + exact provider cycle + `periodEnd <= now` + existing OPEN period whose plan snapshot fields are null -> the same period ID is repaired first, then provider-cycle-lag is recorded/scheduled; no successor period is created.
+
+### Blocking correction 3 — an otherwise executable mapped plan must not become ACTIVE/TRIALING without a valid exact provider cycle
+
+Files:
+
+```text
+src/services/billing-reconciliation.service.ts
+src/services/billing-subscription-reconciliation.service.ts
+```
+
+Current defects:
+
+- the generic `BillingReconciliationService` tail falls into the ordinary `subscription.upsert()` branch when the plan/meter are usable but `currentPeriodStart` or `currentPeriodEnd` is missing. Because `status` was already calculated as `ACTIVE`/`TRIALING`, it can persist a mapped executable Subscription with `billingPeriodId=null`;
+- `applyOtherCurrentPlan()` has the same shape: when the provider plan is usable but the cycle is absent, `billingPeriod` remains null and the function can still commit `ACTIVE`/`TRIALING` with `billingPeriodId=null`.
+
+Required implementation in `BillingReconciliationService`:
+
+1. Compute one explicit valid-cycle predicate for executable mapped projection:
+
+```ts
+provider.currentPeriodStart !== null
+&& provider.currentPeriodEnd !== null
+&& provider.currentPeriodStart < provider.currentPeriodEnd
+```
+
+2. When `planUsable === true`, the meter is usable, and the resulting provider status would otherwise be `ACTIVE` or `TRIALING`, a false valid-cycle predicate is fail-closed provider state.
+3. Do not call the projection helper and do not commit `ACTIVE`/`TRIALING` in that case.
+4. Persist `SYNC_ERROR` with `lastSyncErrorCode = "MISSING_BILLING_CYCLE"`, `lastSyncErrorAt = now`, `lastSyncedAt = now`, and a bounded retry at `now + 60 seconds`.
+5. If a local Subscription already has a current plan/period, preserve those current pointers while recording the error. If no local Subscription exists, create/update only the non-executable `SYNC_ERROR` projection; do not create a BillingPeriod or included counter without an exact provider cycle.
+6. Publish the deterministic reconcile job only after the database write commits.
+
+Required implementation in `BillingSubscriptionReconciliationService.applyOtherCurrentPlan()`:
+
+1. Before the transaction that commits another provider-current mapped plan, detect the same missing/invalid cycle when `planUsable && meterUsable` is true.
+2. Use the existing initial-activation CAS authority (`casPendingUpdate(expected, ...)`) to preserve the current `NO_CONTRACT` + pending intent state.
+3. Write `lastSyncErrorCode = "MISSING_BILLING_CYCLE"`, `lastSyncErrorAt = now`, `lastSyncedAt = now`, and `nextReconcileAt = now + ROLLOVER_RETRY_MS`.
+4. If the CAS succeeds, publish that deterministic retry and return.
+5. Do not call `ensureCurrentBillingPeriodProjection()`, do not set `planId`, do not set `billingPeriodId`, and do not commit `ACTIVE`/`TRIALING` on this path.
+6. Do not change the existing `UNMAPPED` or `MISSING_USAGE_METER` precedence when the plan itself is unusable or its required meter is absent.
+
+Required focused regression cases:
+
+- generic known mapped plan + missing cycle -> `SYNC_ERROR/MISSING_BILLING_CYCLE`, no BillingPeriod/counter, one retry, never `ACTIVE`/`TRIALING`;
+- generic known mapped plan + `periodStart >= periodEnd` -> same result;
+- `applyOtherCurrentPlan()` with otherwise usable mapped provider plan + missing/invalid cycle -> pending `NO_CONTRACT` state is preserved, `MISSING_BILLING_CYCLE` is recorded, one retry is scheduled, and no BillingPeriod/counter is created.
+
+### Required validation for Attempt 2
+
+Run exactly:
+
+```bash
+npm run prisma:generate
+npm run prisma:validate
+npx vitest run \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts
+npm run test:unit
+npm run build
+git diff --check
+```
+
+The focused suite must pass completely. Full-unit failures are acceptable only when they match a previously documented unrelated baseline and the Completion Report identifies that baseline explicitly.
+
+### Scope guardrails
+
+Attempt 2 MUST NOT:
+
+- modify the database submodule or introduce a migration/backfill;
+- modify `same-plan-billing-period-rollover.service.ts` or `shopify-plan-change-transition.service.ts` merely to avoid fixing the callers above;
+- reopen ARCH-017-BACKGROUND-001 dynamic-feature, PlatformBillingPolicy, checkout-admission, preference, or onboarding behaviour;
+- introduce ARCH-011 proration or same-cycle segmentation;
+- create a second BillingPeriod for an existing `(shopId, periodStart, periodEnd)`;
+- reset Paid committed/reserved/forfeited quantities;
+- start SHOPIFY-003 or any system-test task.
+
+### Stop condition
+
+After only the corrections above are implemented, the focused/full-unit validation and Completion Report are complete, set this task back to `status: review`, record `attempt: 2`, return control to `moda_architect`, and STOP.
+
+There is no architect acceptance decision for Attempt 1.
