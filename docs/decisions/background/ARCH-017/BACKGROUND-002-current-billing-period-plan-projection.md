@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 attempt: 3
 depends_on:
@@ -17,8 +17,6 @@ depends_on:
 enables: []
 created: 2026-09-19
 updated: 2026-09-19
-executor: copilot
-claimed_at: 2026-09-19T11:56:14Z
 ---
 
 # ARCH-017-BACKGROUND-002
@@ -663,6 +661,35 @@ Ready for Review
 - Correction 1: implemented and validated; paid repair creates one counter without resetting quantities.
 - Correction 2: implemented and validated; Free pack-enabled rotating lag reaches `PROVIDER_CYCLE_LAG/updateMany` with the old billing period and null schedule.
 - Correction 3: previously implemented in the Attempt 2 source changes and covered by the passing focused and full unit suites.
+
+Task status: Ready for Review.
+
+## Attempt 3 Completion Report
+
+### Correction Checklist
+
+- Correction 1 implemented: generic mapped reconciliation now reconstructs a missing local Subscription inside the existing transaction, locks and rereads it, rejects stale/non-empty shells, projects the exact BillingPeriod, and publishes bounded conflict retries only after commit.
+- Correction 2 implemented: exact same-cycle projection repair runs even when the provider-reported cycle has expired; successful repair continues to the existing rollover path, while provider-cycle lag preserves the repaired period and schedules the existing retry.
+- Correction 3 implemented: generic mapped reconciliation now uses the explicit valid-cycle predicate, so missing, zero-length, or reversed cycles fail closed as `SYNC_ERROR/MISSING_BILLING_CYCLE`; `applyOtherCurrentPlan()` preserves the initial `NO_CONTRACT` pending intent through its CAS and schedules the bounded retry without creating period/counter state.
+
+### Attempt 3 Validation Evidence
+
+- `npm run prisma:generate` passed.
+- `npm run prisma:validate` passed.
+- Focused reconciliation suites passed: 2 files, 193 tests.
+- `npm run test:unit` passed: 69 files, 1,042 tests.
+- `npm run build` passed, including TypeScript compilation.
+- `git diff --check` passed.
+- Implementation commit: `1689f7c` pushed to `origin/task/ARCH-017-BACKGROUND-002`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-BACKGROUND-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-BACKGROUND-002`.
+- Database dependency remained at accepted gitlink `9921b273642599e5cf255565d73ebad507f71ee4`; no database submodule, migration, schema, rollover/transition service, or other repository changes were made.
+
+### Attempt 3 Disposition
+
+- All requested Architect Review corrections are implemented and validated.
+- No unrelated baseline failures observed.
+- No deviations or unresolved issues identified within ARCH-017-BACKGROUND-002.
 
 Task status: Ready for Review.
 
