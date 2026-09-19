@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 attempt: 2
 depends_on:
@@ -830,3 +830,228 @@ Attempt 2 MUST NOT:
 After only the corrections above are implemented, the focused/full-unit validation and Completion Report are complete, set this task back to `status: review`, record `attempt: 2`, return control to `moda_architect`, and STOP.
 
 There is no architect acceptance decision for Attempt 1.
+
+## Architect Review — Attempt 2 — Changes Requested
+
+### Review Status
+
+Changes Requested.
+
+Reviewed implementation commit: `7125be9`.
+Reviewed parent report commit: `1ae1a615`.
+
+Attempt 2 correctly implements the three corrections requested after Attempt 1:
+
+- generic mapped reconciliation can create/lock an empty local Subscription shell and atomically reconstruct a complete Free or Paid current BillingPeriod;
+- exact same-cycle projection repair now runs before rollover even when the provider still reports the just-expired cycle;
+- generic mapped reconciliation and `applyOtherCurrentPlan()` fail closed with `MISSING_BILLING_CYCLE` when an otherwise executable provider plan has no valid exact cycle.
+
+The task is not accepted because one existing lifecycle path still bypasses the new current-period projection invariant.
+
+### Blocking correction — UNFROZEN lifecycle restore must not return before current-period projection repair
+
+File:
+
+```text
+src/services/billing-reconciliation.service.ts
+```
+
+Do **not** modify `shopify-subscription-lifecycle-reconciliation.service.ts` for this correction.
+
+#### Current defect
+
+Inside `BillingReconciliationService.applySubscription()`, lifecycle reconciliation runs before the ARCH-017 same-plan projection repair:
+
+```ts
+const lifecycleResult = await new ShopifySubscriptionLifecycleReconciliationService(...).reconcile(...);
+
+if (lifecycleResult === "handled" || lifecycleResult === "restored") {
+  await this.publishCommittedLifecycleSchedule(...);
+  if (lifecycleResult === "restored") {
+    const restored = await this.database.subscription.findUnique(...);
+    return { billingPeriodId: restored?.billingPeriodId ?? null, packMeterHandle: null };
+  }
+  return ...;
+}
+```
+
+For an `UNFROZEN` provider lifecycle event, the lifecycle service can restore a same-cycle Subscription from `FROZEN` to `ACTIVE`/`TRIALING` without validating or repairing the current BillingPeriod projection. `applySubscription()` then returns immediately.
+
+Therefore this reachable state can survive a successful reconciliation pass:
+
+```text
+provider lifecycle = UNFROZEN
+provider current plan/cycle = exact current local plan/cycle
+Subscription before lifecycle = FROZEN + mapped plan + current BillingPeriod
+BillingPeriod = OPEN but planId/snapshot fields are null/partial
+
+lifecycle restore
+    -> Subscription ACTIVE/TRIALING
+    -> applySubscription returns
+    -> BillingPeriod remains incomplete
+```
+
+That violates this task's required invariant because the Subscription becomes executable while its exact current OPEN BillingPeriod is still plan-null/partially projected.
+
+#### Required implementation
+
+Make the correction in `BillingReconciliationService.applySubscription()` only.
+
+1. Change the local `existing` Subscription snapshot from `const` to `let`, because the authoritative row must be refreshed after a lifecycle restore.
+
+2. Preserve the current behaviour for:
+
+```text
+lifecycleResult === "handled"
+```
+
+Specifically:
+
+- call `publishCommittedLifecycleSchedule(shopId, existing.id)`;
+- return immediately exactly as the current handled path does;
+- do not run current-period projection repair for a still-FROZEN/cancelled/unresolved lifecycle result.
+
+3. For:
+
+```text
+lifecycleResult === "restored"
+```
+
+perform these steps in this exact order:
+
+```text
+publishCommittedLifecycleSchedule(shopId, existing.id)
+    -> reread Subscription by shopId using the same field set used by the original `existing` read
+    -> if the row no longer exists, return { billingPeriodId: null, packMeterHandle: null }
+    -> assign the reread row to `existing`
+    -> continue through the normal applySubscription() plan/cycle logic
+```
+
+Do **not** return directly from the restored branch.
+
+The reread must include at least the fields already consumed later in `applySubscription()`:
+
+```text
+id
+status
+planId
+pendingPlanId
+pendingShopifyPlanHandle
+pendingEffectiveAt
+billingPeriodId
+currentPeriodStart
+currentPeriodEnd
+cancelAtPeriodEnd
+nextReconcileAt
+```
+
+4. After the reread, do not add a second lifecycle-specific projection implementation. Let the existing ARCH-017 logic execute normally:
+
+- if restored Subscription and provider now have the same plan and exact cycle, the existing `providerMatchesCurrentCycle` transaction must call `ensureCurrentBillingPeriodProjection()`;
+- compatible incomplete current period -> repair the same BillingPeriod ID in place;
+- conflicting current period -> commit `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT`, schedule the existing bounded retry, and do not proceed into rollover/plan-change logic in that pass;
+- a lifecycle restore that already transitioned to a new complete plan/cycle may pass through the same helper as an idempotent READY replay.
+
+5. Do not clear or rewrite pending plan/cancellation state merely because the lifecycle was restored. The same-plan repair must retain the existing Part B semantics.
+
+6. Do not modify `SamePlanBillingPeriodRolloverService` or `ShopifyPlanChangeTransitionService` for this correction.
+
+#### Required focused regression cases
+
+Add the following cases to:
+
+```text
+tests/unit/services/billing-reconciliation.service.test.ts
+```
+
+**Case 1 — restored same-cycle incomplete period repairs before the pass completes**
+
+Arrange:
+
+```text
+pre-lifecycle Subscription:
+  status = FROZEN
+  planId = plan-1
+  billingPeriodId = period-1
+  current cycle = provider exact cycle
+
+lifecycle reconcile result = restored
+
+post-lifecycle reread Subscription:
+  status = ACTIVE
+  same planId / billingPeriodId / cycle
+
+period-1:
+  status = OPEN
+  subscriptionId = current Subscription
+  planId = null
+  plan snapshots = null
+```
+
+Assert:
+
+```text
+BillingPeriod period-1 is updated in place with complete plan identity
+no second BillingPeriod is created
+Subscription remains mapped to period-1
+applySubscription/reconcileOnce does not return before projection repair
+```
+
+**Case 2 — restored same-cycle conflicting period fails closed**
+
+Arrange the same lifecycle state but make the exact period contain an incompatible non-null plan identity.
+
+Assert:
+
+```text
+Subscription -> SYNC_ERROR
+lastSyncErrorCode -> BILLING_PERIOD_PLAN_CONFLICT
+current plan/period pointers are preserved
+one bounded subscription-reconcile retry is scheduled
+SamePlanBillingPeriodRolloverService.transition() is not allowed to mutate state in that pass
+```
+
+Do not add broad lifecycle test expansion beyond these two functional cases.
+
+### Required validation for Attempt 3
+
+Run exactly:
+
+```bash
+npm run prisma:generate
+npm run prisma:validate
+npx vitest run \
+  tests/unit/services/billing-reconciliation.service.test.ts \
+  tests/unit/services/billing-subscription-reconciliation.service.test.ts
+npm run test:unit
+npm run build
+git diff --check
+```
+
+The focused suite must pass completely. Full-unit failures are acceptable only when they exactly match an already documented unrelated baseline and the Completion Report identifies that baseline.
+
+### Scope guardrails
+
+Attempt 3 MUST NOT:
+
+- change the database schema, migration history or database submodule revision;
+- edit `shopify-subscription-lifecycle-reconciliation.service.ts` to duplicate current-period projection logic;
+- change accepted ARCH-017-BACKGROUND-001 feature/policy/admission/onboarding behaviour;
+- modify rollover or plan-change transition services merely to work around the caller return;
+- introduce ARCH-011 proration or same-cycle segmentation;
+- create a second BillingPeriod for the same `(shopId, periodStart, periodEnd)`;
+- reset Paid committed/reserved/forfeited quantities;
+- start any system-test task.
+
+### Stop condition
+
+After only the lifecycle-return correction above is implemented, the two focused regression cases pass, the required validation is complete, and the Completion Report is updated:
+
+```text
+status: review
+attempt: 3
+```
+
+Return control to `moda_architect` and STOP.
+
+There is no architect acceptance decision for Attempt 2.
