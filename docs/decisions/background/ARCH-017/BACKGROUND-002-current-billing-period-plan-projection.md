@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 attempt: 4
 depends_on:
@@ -1430,3 +1430,57 @@ There is no architect acceptance decision for Attempt 3.
 - Correction 3 implemented and validated: both restored lifecycle cases execute through `BillingReconciliationService` and pass.
 
 Task status: review.
+
+
+## Architect Review — Attempt 4 — Accepted
+
+### Review Status
+
+Accepted.
+
+Reviewed implementation commit: `3cd17b1`.
+Reviewed parent report commit: `49e032b9`.
+Reviewed database gitlink: `9921b273` (unchanged).
+
+### Functional findings
+
+The Attempt 3 correction is now present in production code and the source matches the Attempt 4 Completion Report.
+
+In `src/services/billing-reconciliation.service.ts`, the provider-present Subscription snapshot is mutable only for the post-lifecycle reread. `handled` still publishes the committed lifecycle schedule and returns immediately. `restored` now publishes the committed lifecycle schedule, rereads the full Subscription projection by `shopId`, assigns the durable reread to `existing`, and deliberately continues into the existing ARCH-017 same-plan/same-cycle reconciliation path. It no longer returns before current-period projection repair.
+
+The existing `ensureCurrentBillingPeriodProjection()` transaction remains the single repair mechanism. For an exact provider cycle, compatible plan-null/partially projected OPEN periods are repaired in place and the Subscription continues to point at that same period. Conflicting non-null period history fails closed as `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT`, schedules the existing bounded retry, and does not enter same-plan rollover. No lifecycle-specific replacement period is created.
+
+The two required regressions are present at the `BillingReconciliationService` level:
+
+- `FROZEN -> restored ACTIVE`, same mapped plan/cycle, incomplete OPEN period -> the same period is repaired in place and no replacement period is created;
+- `FROZEN -> restored ACTIVE`, same mapped plan/cycle, conflicting period identity -> `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT`, bounded retry, no period rewrite and no rollover transition.
+
+The earlier BACKGROUND-002 guarantees remain intact: fresh mapped provider state can reconstruct a missing local Subscription transactionally; exact same-cycle repair runs even when the provider cycle is just expired; mapped executable state fails closed on a missing/invalid provider cycle; Free periods contain no included-credit counter; Paid periods preserve existing committed/reserved/forfeited quantities and create the included counter only when missing and compatible.
+
+No functional blocker remains within the authorized BACKGROUND-002 scope.
+
+### Validation accepted
+
+The submitted validation evidence is accepted as supporting evidence for the reviewed functionality:
+
+```text
+Focused reconciliation tests: 195 passed
+Full unit tests:              1,044 passed (69 files)
+Prisma generation:            PASS
+Prisma validation:            PASS
+Build / TypeScript:           PASS
+git diff --check:             PASS
+```
+
+No additional exhaustive testing is required for acceptance.
+
+### Architect disposition
+
+```yaml
+status: complete
+attempt: 4
+executor: null
+claimed_at: null
+```
+
+There is no Attempt 5. `ARCH-017-BACKGROUND-002` must not be reopened for broader lifecycle cleanup or unrelated test expansion alone. The manual-testing checkpoint remains in place before any terminal ARCH-017 system-test phase.
