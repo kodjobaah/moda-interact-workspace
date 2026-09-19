@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 attempt: 4
 depends_on:
@@ -17,8 +17,8 @@ depends_on:
 enables: []
 created: 2026-09-19
 updated: 2026-09-19
-executor: copilot
-claimed_at: 2026-09-19T12:05:47Z
+executor: null
+claimed_at: null
 ---
 
 # ARCH-017-BACKGROUND-002
@@ -1398,3 +1398,35 @@ attempt: 4
 Return control to `moda_architect` and STOP.
 
 There is no architect acceptance decision for Attempt 3.
+
+## Attempt 4 Completion Report
+
+### Correction Checklist
+
+- Implemented the provider-present lifecycle correction in `src/services/billing-reconciliation.service.ts`: the `existing` snapshot is mutable only so it can be refreshed after lifecycle restore.
+- Preserved the `handled` lifecycle result's immediate return and committed schedule publication.
+- Changed the `restored` result to publish its committed schedule, reread the complete Subscription select shape by `shopId`, assign the reread row to `existing`, and continue through the existing same-cycle projection path without a lifecycle-specific period mutation.
+- Added both required restored lifecycle regressions in `tests/unit/services/billing-reconciliation.service.test.ts`: compatible incomplete-period repair through `BillingReconciliationService`, and conflicting-period fail-closed behavior with rollover blocked.
+
+### Validation Evidence
+
+- `npm run prisma:generate` passed.
+- `npm run prisma:validate` passed.
+- Focused reconciliation suites passed: 2 files, 195 tests, including both restored lifecycle cases.
+- `npm run test:unit` passed: 69 files, 1,044 tests.
+- `npm run build` passed, including TypeScript compilation.
+- `git diff --check` passed.
+- Implementation commit: `3cd17b1` pushed to `origin/task/ARCH-017-BACKGROUND-002`.
+
+### Scope and Deviations
+
+- No database submodule, schema, migration, lifecycle service, rollover service, transition service, or other repository changes were made.
+- No deviations or unresolved issues identified within ARCH-017-BACKGROUND-002.
+
+### Disposition
+
+- Correction 1 implemented and validated: mutable provider-present snapshot with full post-restore reread.
+- Correction 2 implemented and validated: `handled` remains an immediate return; `restored` continues into projection repair.
+- Correction 3 implemented and validated: both restored lifecycle cases execute through `BillingReconciliationService` and pass.
+
+Task status: review.
