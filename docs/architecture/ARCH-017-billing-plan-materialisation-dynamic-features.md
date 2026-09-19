@@ -392,8 +392,8 @@ There are no production customers or production billing lifecycle state to prese
 | ARCH-017-BACKGROUND-001 | moda_background | Complete | ARCH-017-DATABASE-001 |
 | ARCH-017-BACKGROUND-002 | moda_background | Ready | ARCH-017-BACKGROUND-001 |
 | ARCH-017-SHOPIFY-001 | moda_app | Complete | ARCH-017-DATABASE-001 |
-| ARCH-017-SHOPIFY-002 | moda_app | Ready | ARCH-017-SHOPIFY-001 |
-| ARCH-017-SHOPIFY-003 | moda_app | Pending | ARCH-017-SHOPIFY-002 |
+| ARCH-017-SHOPIFY-002 | moda_app | Complete | ARCH-017-SHOPIFY-001 |
+| ARCH-017-SHOPIFY-003 | moda_app | Ready| ARCH-017-SHOPIFY-002 |
 | ARCH-017-ADMIN-001 | moda_admin | Complete | ARCH-017-DATABASE-001 |
 
 BACKGROUND-002 is a bounded reconciliation-correctness follow-up discovered during manual testing. It does not reopen BACKGROUND-001.

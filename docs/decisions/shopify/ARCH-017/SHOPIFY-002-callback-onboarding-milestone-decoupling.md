@@ -11,9 +11,9 @@ execution_mode: agent
 completion_mode: automatic
 status: complete
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor:
+claimed_at:
+attempt: 1
 depends_on:
 - ARCH-017-SHOPIFY-001
 enables:
@@ -908,6 +908,51 @@ Include launcher-prepared parent/implementation worktree isolation and synchroni
 
 Set task status to `review`; do not self-accept.
 
+# Completion Report
+
+Attempt: 1
+Implementation commit: 0a999bd782c3dc7faea3ce9268d06c787d89ab13
+Database revision: 9921b273642599e5cf255565d73ebad507f71ee4
+Focused callback/billing tests: PASS (218 tests)
+Full test suite: FAIL (5 unrelated baseline failures across billing-purchases-i18n, merchant-route-access-policy, and billing-ui; no failures in the four authorized files)
+Prisma generate: PASS
+Prisma validate: PASS
+Typecheck: FAIL (existing baseline errors, including unrelated files and unchanged lines in billing.service.ts and billing.service.test.ts)
+Build: PASS
+Changed-file lint: PASS (0 errors, 2 pre-existing import/no-duplicates warnings)
+git diff --check: PASS
+BillingService onboarding source invariant: PASS (rg returned no matches; explicit invariant command printed PASS)
+
+Callback milestone is persisted before plan_handle validation.
+Callback milestone is persisted before any provider/billing operation.
+Provider failure does not affect onboarding completion.
+Provider mismatch does not affect onboarding completion.
+BillingService contains zero onboardingCompleted references.
+Token freshness is determined only by durable Subscription token fields.
+
+Launcher-prepared isolation evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-002` were reused for task branch `task/ARCH-017-SHOPIFY-002`; the parent claim remained at `bedb2df7`, and the prepared execution had synchronized the task worktrees and recursive submodules before implementation.
+
+The implementation branch was pushed to `origin/task/ARCH-017-SHOPIFY-002`. The parent report is ready for architect review.
+
 # Architect Review
 
-Pending `moda_architect` review.
+## Attempt 1 — Accepted
+
+Decision: **Accepted**.
+
+Reviewed implementation commit `0a999bd782c3dc7faea3ce9268d06c787d89ab13` with parent Completion Report commit `63600f34`.
+
+Functional review confirmed:
+
+- the authenticated ACTIVE-shop callback persists `ShopSettings.onboardingCompleted=true` before `plan_handle` validation and before all billing/provider work;
+- milestone persistence is monotonic/idempotent and callback behaviour does not depend on the update count;
+- provider failure, provider mismatch, `UNMAPPED`, `SYNC_ERROR` and retry paths no longer control onboarding completion;
+- `BillingService` contains zero `onboardingCompleted` references;
+- initial Free/Paid eligibility is derived from durable `Subscription` state;
+- stale-token fencing still compares the exact durable token fields (`subscriptionId`, `pendingPlanId`, `pendingShopifyPlanHandle`, `pendingEffectiveAt`, `nextReconcileAt`);
+- provider-null initial intent preservation and initial Paid exact-plan activation remain on their existing durable-state paths; and
+- newer/different pending Free selections remain protected from stale completion.
+
+Reported validation is accepted on the task's functionality-first standard: Prisma generation/validation, 218 focused tests, build, changed-file ESLint, `git diff --check`, and the BillingService onboarding source invariant passed. Reported typecheck/full-suite failures are documented unrelated baseline failures with no failures in the four authorised files.
+
+No Attempt 2 is required.
