@@ -390,7 +390,7 @@ There are no production customers or production billing lifecycle state to prese
 |---|---|---|---|
 | ARCH-017-DATABASE-001 | moda_database | Complete | - |
 | ARCH-017-BACKGROUND-001 | moda_background | Complete | ARCH-017-DATABASE-001 |
-| ARCH-017-BACKGROUND-002 | moda_background | Ready | ARCH-017-BACKGROUND-001 |
+| ARCH-017-BACKGROUND-002 | moda_background | Complete | ARCH-017-BACKGROUND-001 |
 | ARCH-017-SHOPIFY-001 | moda_app | Complete | ARCH-017-DATABASE-001 |
 | ARCH-017-SHOPIFY-002 | moda_app | Complete | ARCH-017-SHOPIFY-001 |
 | ARCH-017-SHOPIFY-003 | moda_app | Complete | ARCH-017-SHOPIFY-002 |
