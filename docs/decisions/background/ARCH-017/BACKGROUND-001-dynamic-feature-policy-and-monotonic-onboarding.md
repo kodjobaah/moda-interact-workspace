@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-017-DATABASE-001
-enables: []
+enables:
+- ARCH-017-BACKGROUND-002
 created: 2026-09-18
 updated: 2026-09-18
 ---

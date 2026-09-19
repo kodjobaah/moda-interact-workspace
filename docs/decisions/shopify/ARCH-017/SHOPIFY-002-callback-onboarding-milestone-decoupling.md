@@ -16,7 +16,8 @@ claimed_at:
 attempt: 1
 depends_on:
 - ARCH-017-SHOPIFY-001
-enables: []
+enables:
+- ARCH-017-SHOPIFY-003
 created: 2026-09-19
 updated: 2026-09-19
 ---
