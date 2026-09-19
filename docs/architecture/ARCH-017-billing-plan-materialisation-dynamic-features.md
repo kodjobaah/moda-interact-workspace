@@ -4,7 +4,7 @@ title: Billing-plan materialisation, dynamic features, and billing-policy owners
 status: In Progress
 coordinator: moda_architect
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-19
 ---
 
 # ARCH-017: Billing-plan materialisation, dynamic features, and billing-policy ownership
@@ -339,12 +339,14 @@ Validation always requires terminal reserve >= 1 and < effective hard limit.
 `ShopSettings.onboardingCompleted` means: the merchant has completed the Shopify managed-pricing selection step at least once. It is a Shopify-side commercial milestone, not evidence that Moda successfully mapped, materialised or reconciled the selected plan.
 
 ```text
-fresh install / no Shopify managed-pricing selection yet -> false
-authenticated Shopify pricing selection observed          -> true
-any later Moda billing lifecycle outcome                  -> remains true
+fresh install / no authenticated Shopify billing callback yet -> false
+authenticated callback for an ACTIVE shop is entered          -> true
+any later Moda billing lifecycle outcome                       -> remains true
 ```
 
-The Shopify callback MUST persist this one-way transition before Moda BillingPlan resolution/materialisation so an internal mapping or reconciliation failure cannot roll it back. UNKNOWN/UNMAPPED, invalid catalogue state, inactive operational plan, SYNC_ERROR, cancellation, NO_CONTRACT, reinstall and plan change MUST NOT reset true to false.
+The authenticated Shopify billing callback owns this one-way transition. After Shopify admin authentication, authenticated-shop resolution and the ACTIVE-shop guard succeed, the callback MUST persist `onboardingCompleted=true` before validating Moda callback parameters and before any provider verification, BillingPlan resolution/materialisation, Subscription/BillingPeriod projection or retry scheduling. Missing callback metadata or any later Moda/provider failure does not undo or suppress this milestone.
+
+`BillingService` MUST NOT use `onboardingCompleted` to decide initial activation, token freshness, pending-intent preservation, reconciliation or billing projection. Those decisions derive from durable `Subscription` state and provider truth. UNKNOWN/UNMAPPED, invalid catalogue state, inactive operational plan, SYNC_ERROR, provider/API failure, cancellation, NO_CONTRACT, reinstall and plan change MUST NOT reset true to false.
 
 ## Billing periods
 
@@ -366,11 +368,12 @@ There are no production customers or production billing lifecycle state to prese
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-017-DATABASE-001 | moda_database | Complete | - |
-| ARCH-017-BACKGROUND-001 | moda_background | Complete | ARCH-017-DATABASE-001 |
-| ARCH-017-SHOPIFY-001 | moda_app | Ready | ARCH-017-DATABASE-001 |
-| ARCH-017-ADMIN-001 | moda_admin | Ready | ARCH-017-DATABASE-001 |
+| ARCH-017-DATABASE-001 | moda_database | Ready | - |
+| ARCH-017-BACKGROUND-001 | moda_background | Pending | ARCH-017-DATABASE-001 |
+| ARCH-017-SHOPIFY-001 | moda_app | Complete | ARCH-017-DATABASE-001 |
+| ARCH-017-SHOPIFY-002 | moda_app | Ready | ARCH-017-SHOPIFY-001 |
+| ARCH-017-ADMIN-001 | moda_admin | complete | ARCH-017-DATABASE-001 |
 
 BACKGROUND-001, SHOPIFY-001 and ADMIN-001 intentionally have no dependencies on one another and may execute in parallel after DATABASE-001 is accepted.
 
-Architect frontier after BACKGROUND-001 Attempt 4 acceptance: DATABASE-001 and BACKGROUND-001 are Complete. SHOPIFY-001 and ADMIN-001 remain independently executable correction work. No terminal ARCH-017 system-test task is started automatically; manual functional validation remains the checkpoint before integrated system testing.
+SHOPIFY-002 is a follow-on lifecycle correction after SHOPIFY-001. It does not reopen SHOPIFY-001 and has no dependency on BACKGROUND-001 or ADMIN-001.
