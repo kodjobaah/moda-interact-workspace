@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-19T09:25:40Z
+attempt: 1
 depends_on:
 - ARCH-017-SHOPIFY-001
 enables: []
