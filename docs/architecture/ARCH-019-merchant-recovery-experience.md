@@ -11,7 +11,7 @@ updated: 2026-09-20
 
 ## Status and agreement
 
-Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 at Attempt 3; SHOPIFY-004 and SHOPIFY-005 at Attempt 2 (SHOPIFY-005 accepted `5130f79`). SHOPIFY-006 Ready at Attempt 0; SYSTEM-TEST-001 Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependency records are reconciled into SHOPIFY-006; readiness does not launch implementation or authorize unmerged dependency consumption.
+Current frontier: all ARCH-019 implementation tasks are architect-accepted/Complete: DATABASE-001 and SHOPIFY-001/003/006 at Attempt 1, SHOPIFY-002 at Attempt 3, SHOPIFY-004/005 at Attempt 2. SHOPIFY-006 accepted `39054cec`. SYSTEM-TEST-001 Ready at Attempt 0, explicitly developer-invoked after manual validation; not started. Architecture remains In Progress pending terminal integrated validation and final architect acceptance. Accepted dependency records are reconciled into SYSTEM-TEST-001; readiness does not authorize execution, deployment or unmerged dependency consumption.
 
 ## Problem and inspected current behaviour
 
@@ -136,10 +136,10 @@ Required terminal system validation follows all accepted implementation tasks an
 | [ARCH-019-SHOPIFY-003](../decisions/shopify/ARCH-019/SHOPIFY-003-recovery-list-page.md) | moda_app | Complete | ARCH-019-SHOPIFY-001 |
 | [ARCH-019-SHOPIFY-004](../decisions/shopify/ARCH-019/SHOPIFY-004-recovery-conversation-detail-page.md) | moda_app | Complete | ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003 |
 | [ARCH-019-SHOPIFY-005](../decisions/shopify/ARCH-019/SHOPIFY-005-recovery-performance-overview.md) | moda_app | Complete | ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004 |
-| [ARCH-019-SHOPIFY-006](../decisions/shopify/ARCH-019/SHOPIFY-006-merchant-navigation-and-billing-history.md) | moda_app | Ready | ARCH-019-SHOPIFY-005 |
-| [ARCH-019-SYSTEM-TEST-001](../decisions/system-test/ARCH-019/SYSTEM-TEST-001-validate-merchant-recovery-experience.md) | moda_system_test | Pending | ARCH-019-DATABASE-001, ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004, ARCH-019-SHOPIFY-005, ARCH-019-SHOPIFY-006 |
+| [ARCH-019-SHOPIFY-006](../decisions/shopify/ARCH-019/SHOPIFY-006-merchant-navigation-and-billing-history.md) | moda_app | Complete | ARCH-019-SHOPIFY-005 |
+| [ARCH-019-SYSTEM-TEST-001](../decisions/system-test/ARCH-019/SYSTEM-TEST-001-validate-merchant-recovery-experience.md) | moda_system_test | Ready | ARCH-019-DATABASE-001, ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004, ARCH-019-SHOPIFY-005, ARCH-019-SHOPIFY-006 |
 
-Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 at Attempt 3; SHOPIFY-004 and SHOPIFY-005 at Attempt 2 (SHOPIFY-005 accepted `5130f79`). SHOPIFY-006 Ready at Attempt 0; SYSTEM-TEST-001 Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependency records are reconciled into SHOPIFY-006; readiness does not launch implementation or authorize unmerged dependency consumption.
+Current frontier: all ARCH-019 implementation tasks are architect-accepted/Complete: DATABASE-001 and SHOPIFY-001/003/006 at Attempt 1, SHOPIFY-002 at Attempt 3, SHOPIFY-004/005 at Attempt 2. SHOPIFY-006 accepted `39054cec`. SYSTEM-TEST-001 Ready at Attempt 0, explicitly developer-invoked after manual validation; not started. Architecture remains In Progress pending terminal integrated validation and final architect acceptance. Accepted dependency records are reconciled into SYSTEM-TEST-001; readiness does not authorize execution, deployment or unmerged dependency consumption.
 
 
 ## Risks and evidence gaps

@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 70
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-019-SHOPIFY-005
 enables:
@@ -54,12 +54,12 @@ The parent architecture's behavioural contracts are binding. Preserve current te
 
 ## Work Items
 
-- [ ] Apply the exact state-aware navigation order from the parent architecture: Overview, Recoveries, Billing, Promotions, Support, Recovery settings when allowed; onboarding retains Home and Support.
-- [ ] Rename merchant-support navigation to localized Support while preserving unread count and existing inbox behaviour.
-- [ ] Add Billing → Usage history entry using the existing USAGE guard, keep /app/usage URL, and change its breadcrumbs to Billing → Usage history.
-- [ ] Bound /app/usage period selection to cursor pages of 25 plus one lookahead, retrieve selected period directly by shop, aggregate its usage in SQL, and resolve source recoveries only for the current usage-event page.
-- [ ] Remove unbounded all-recovery/message-ID hydration and period usageEvents includes from /app/usage; support recovery/conversation/message source IDs with batched tenant-constrained joins and safe unresolved fallback.
-- [ ] Remove now-unreferenced old UsageOverview/RecoveryChart/Dashboard wiring only after import/test checks; preserve functional billing, promotions, settings and support destinations.
+- [x] Apply the exact state-aware navigation order from the parent architecture: Overview, Recoveries, Billing, Promotions, Support, Recovery settings when allowed; onboarding retains Home and Support.
+- [x] Rename merchant-support navigation to localized Support while preserving unread count and existing inbox behaviour.
+- [x] Add Billing → Usage history entry using the existing USAGE guard, keep /app/usage URL, and change its breadcrumbs to Billing → Usage history.
+- [x] Bound /app/usage period selection to cursor pages of 25 plus one lookahead, retrieve selected period directly by shop, aggregate its usage in SQL, and resolve source recoveries only for the current usage-event page.
+- [x] Remove unbounded all-recovery/message-ID hydration and period usageEvents includes from /app/usage; support recovery/conversation/message source IDs with batched tenant-constrained joins and safe unresolved fallback.
+- [x] Remove now-unreferenced old UsageOverview/RecoveryChart/Dashboard wiring only after import/test checks; preserve functional billing, promotions, settings and support destinations.
 
 ## Interfaces / Contracts
 
@@ -77,19 +77,19 @@ All listed dependencies must be Complete and architect-accepted. Consume actual 
 
 ## Acceptance Criteria
 
-- [ ] Every advertised navigation item is allowed by the current server policy; ONBOARDING does not regain billing/history access from stale ARCH-013 prose.
-- [ ] Frozen/no-contract/billing-attention merchants retain approved history access with mutations unchanged; support-only states see only Support.
-- [ ] Usage history still supports current/past period and billId selection without exposing another shop’s period or requiring a full period/event history load.
-- [ ] Existing /app/usage URLs remain functional and old detail redirects do not loop.
-- [ ] Accounting quantities/period scope remain unchanged; recovery-performance numbers are never substituted for billed usage.
-- [ ] Old unbounded dashboard paths and full recovery/message debug logging are absent from active overview/history routes.
+- [x] Every advertised navigation item is allowed by the current server policy; ONBOARDING does not regain billing/history access from stale ARCH-013 prose.
+- [x] Frozen/no-contract/billing-attention merchants retain approved history access with mutations unchanged; support-only states see only Support.
+- [x] Usage history still supports current/past period and billId selection without exposing another shop’s period or requiring a full period/event history load.
+- [x] Existing /app/usage URLs remain functional and old detail redirects do not loop.
+- [x] Accounting quantities/period scope remain unchanged; recovery-performance numbers are never substituted for billed usage.
+- [x] Old unbounded dashboard paths and full recovery/message debug logging are absent from active overview/history routes.
 
 ## Validation
 
-- [ ] Run npm test -- tests/unit/merchant-route-access-policy.test.ts tests/unit/usage-route.test.ts tests/unit/home-route.test.ts tests/unit/merchant-i18n.test.ts plus new navigation/link fixtures.
-- [ ] Run npm run typecheck, npm run lint and git diff --check.
-- [ ] Developer-owned if long: npm run build against the final implementation revision; record exact result before acceptance.
-- [ ] Verify navigation and billing history in local browser fixtures for every experience state, including past-period and unknown billId entry.
+- [x] Run npm test -- tests/unit/merchant-route-access-policy.test.ts tests/unit/usage-route.test.ts tests/unit/home-route.test.ts tests/unit/merchant-i18n.test.ts plus new navigation/link fixtures.
+- [x] Run npm run typecheck, npm run lint and git diff --check.
+- [x] Developer-owned if long: npm run build against the final implementation revision; record exact result before acceptance.
+- [x] Verify navigation and billing history in local browser fixtures for every experience state, including past-period and unknown billId entry.
 
 New test filenames above are required deliverables, not claims that those suites already exist. Use current package.json scripts; do not invent success when a command cannot run. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md: fast local checks are agent-owned; long infrastructure/live commands are developer-owned unless exactly authorized. Required developer evidence may remain pending at review, never at acceptance.
 
@@ -105,62 +105,85 @@ Use scripts/start-agent-task.py through the normal /moda-task preparation path. 
 
 ### Status
 
-Not Started.
+Attempt 1 implemented and submitted for moda_architect review. No architect acceptance decision has been made by this agent.
 
 ### Files Changed
 
-None.
+Implementation commit `39054cec8179870b6df2e629b5a23ffacf89a63b` contains the app shell and MerchantNavigation, route access navigation policy, Billing options history entry, usage route and new bounded usage/history.server reader, typed UsageEvents UI/CSS, 20 locale additions, focused unit fixtures and local browser evidence. Removed obsolete Dashboard, Stats, RecoveryChart and UsageOverview after reference checks; replaced UsageEvents.jsx with UsageEvents.tsx.
 
 ### Work Completed
 
-None; task definition only.
+- Applied exact state-aware navigation order and localized Home/Overview/Billing/Support; retained unread count and existing destinations. Existing surface permissions and lifecycle mutations are unchanged.
+- Added USAGE-guarded Billing entry and Billing → Usage history breadcrumb with validated embed context. Existing /app/usage and accepted legacy bridge behavior remain supported.
+- Period selector uses shop/status-scoped keyset pages of 25 plus one, with periodStart/id ordering and validated shop/view-scoped cursors. Explicit owned period lookup is independent of the selector page; missing/foreign/malformed/repeated explicit IDs never select a default.
+- Usage events remain offset-paged with a 100-row cap; count and quantity sum are database aggregates. One bounded parameterized query resolves current-page recovery/conversation/message source IDs using tenant-constrained commerce and whatsapp joins. Unresolved or ambiguous sources stay unlinked; message bodies and whole recovery histories are not hydrated.
+- Preserved accounting quantity semantics, added localized loading/error/empty/unavailable presentation, and linked identifiable recovery labels to recovery detail.
 
 ### Validation Results
 
-Not run; implementation has not started. Separate agent-executed evidence from developer validation required.
+Agent-executed against final implementation source:
+
+- `npm test -- tests/unit/merchant-route-access-policy.test.ts tests/unit/usage-route.test.ts tests/unit/home-route.test.ts tests/unit/merchant-i18n.test.ts tests/unit/billing-period-compatibility.test.ts tests/unit/merchant-navigation-history.test.tsx`: **104 passed, six suites**.
+- `npm run typecheck`: **fails with 78 existing diagnostics in 20 unchanged files**. No task-owned file diagnostics. Obsolete removed modules account for reduced baseline diagnostics.
+- `npm run lint`: **fails with 20 existing errors and two warnings in 15 unchanged files**. No task-owned diagnostics.
+- `npm run build`: **passed**, final server build completed in 2.29s. This was a fast local agent-owned build; no pending developer build command.
+- `git diff --check`: passed. All 20 locale files retain existing parsed values and add the same 11 keys.
+- Local browser fixtures verified all eight experience-state navigation sets, current/past selection, 25-period selector and next page, usage pagination preserving selected bill and embed context, explicit unknown-period unavailable state, linked/unlinked source presentation and recovery destination URL. Desktop 1024px and mobile 320/390px have no document horizontal overflow; table overflow remains in its container. Evidence and reproduction instructions: `tests/browser/usage-history/README.md` and `evidence/`.
+
+Browser fixtures use synthetic loader data and local Shopify link stand-ins. They do not establish live Shopify/App Bridge or real PostgreSQL query execution. SQL schema and joins were checked against the pinned Prisma schema; tenant predicates and bounded query shapes are unit-tested. System-test execution remains manually gated and was not started.
 
 ### Deviations
 
-None.
+No scope deviation. Repository-wide typecheck/lint are not green because of the unchanged baseline findings above; passing task checks do not imply global success.
 
 ### Assumptions
 
-Use current accepted dependency revisions and the parent architecture; return any contradictory source fact to moda_architect.
+Used the prepared, accepted SHOPIFY-005 dependency and current architecture contracts. No provider API or billing engine behavior changed.
 
 ### Unresolved Issues
 
-None identified at definition time beyond the parent architecture's recorded evidence gaps.
+Existing global typecheck/lint failures remain. No known task-owned defect from focused checks or local browser validation. Live integration evidence belongs to the separately gated system-test task.
 
 ### Architectural Concerns
 
-None newly reported.
+No new concern. Cursor scope validation never substitutes for tenant predicates; every period/event/source read retains shop ownership constraints.
 
 ### Git / VCS
 
-Execution branch: task/ARCH-019-SHOPIFY-006. Attempt: 0. No implementation claim, worktree, commit or validation is asserted. At execution submission record canonical workspace, both physical worktrees/branches, start-of-attempt synchronization, recursive submodule evidence, implementation and parent commit/push evidence, and confirmation that no parent service Gitlink or main branch was changed.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-019-SHOPIFY-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-019-SHOPIFY-006`.
+- Both branches: `task/ARCH-019-SHOPIFY-006`; execution mode agent, Attempt 1, claimed by codex at `2026-09-20T16:07:30Z`.
+- Prepared launcher reused parent and created implementation worktree; fetch/prune/synchronization completed, remote task fast-forward not needed and origin/main already incorporated. Dependency gate passed. Parent initial HEAD `c064ed8a3e76c9b04ee9bbf74fdc36673e97292b`; implementation initial HEAD `5a7d923ce316746e3b6ca470b873a1a19c5031b7`.
+- Recursive submodule sync/update verified database at `9c6a4d8402a01840e2ea8dc18e89171f00564d29`; no submodule update --remote used and no database/gitlink change made.
+- Durable parent claim committed/pushed: `e1931e83e047759a0d37e8cb8541967977423f6d`.
+- Implementation committed/pushed: `39054cec8179870b6df2e629b5a23ffacf89a63b`, origin/task/ARCH-019-SHOPIFY-006 at the configured moda-interact remote.
+- This report is committed/pushed on the matching parent task branch; its containing Git commit is the authoritative report revision. Only this task document changes in the parent.
+- No parent service Gitlink, shared index, architecture, or main branch changed. No main merge/push, live deployment, or enabled-task execution.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+**Accepted — Attempt 1, 2026-09-20, moda_architect.** Complete under `completion_mode: automatic`.
 
-### Review Notes
+Accepted implementation `39054cec8179870b6df2e629b5a23ffacf89a63b`, reviewed against report `b5df32966df59b92695db38d64ce3a25680f6dac`. Both published remote heads verified. No blocking implementation defect or workflow non-conformance found.
 
-No implementation submitted.
+### Review Notes / Architecture Conformance
 
-### Reviewed Files
+Navigation order and localized labels match all lifecycle states; existing surface permissions are preserved, including onboarding history denial and support-only behavior. Billing exposes the guarded Usage history entry with trusted embed context. Direct explicit unavailable period selection remains distinct from absent/default selection, and selected periods are read independently of selector pagination.
 
-None.
+Period transfer is bounded to 25 plus lookahead with tenant/view-scoped keyset boundaries. Usage events retain the 100-row cap, selected-period metric scope and database quantity/count aggregates. One parameterized source query limits resolution to current-page IDs, joining owned recovery/conversation/message records and tenant-owned customer data without message-body/history hydration. Ambiguous or unresolved sources remain unlinked. SQL table/column names and relation cardinalities agree with the pinned Prisma schema. Removed dashboard modules have no remaining runtime imports; the retained pricing test imports RecoveryOverview despite its historical variable name.
 
 ### Validation Reviewed
 
-None.
+- Architect reran the submitted access/usage/home/i18n/billing-compatibility/navigation command: **104 tests passed across six suites**.
+- Architect reran full typecheck: **78 diagnostics in 20 files**; full lint: **20 errors / 2 warnings**. All **30 distinct diagnostic files** are unchanged from prepared implementation base `5a7d923`. Global checks remain nonzero baseline debt, not new task regressions.
+- Accepted supplied successful final-source `npm run build` evidence (server build 2.29s); no redundant build rerun.
+- Parsed all twenty locale catalogues: eleven additions each, all prior values preserved. Committed-diff whitespace checks passed; implementation worktree clean.
+- Reviewed synthetic browser evidence and 320px screenshot for navigation, bounded selector/event pagination, explicit unknown periods, source links and contained table overflow. No independent browser/live Shopify/PostgreSQL replay is claimed by this review. Real database execution and integrated lifecycle/browser behavior remain terminal system-validation obligations.
+- Dedicated mirrored worktrees, prepared dependency synchronization, recursive database revision and durable Attempt 1 claim agree with the report. No implementation changes during architect review.
 
-### Architecture Conformance
+### Follow-up / Dependency State
 
-Awaiting implementation review.
-
-### Follow-up
-
-Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+SHOPIFY-006 is Complete at Attempt 1. All ARCH-019 implementation dependencies are accepted/Complete. SYSTEM-TEST-001 becomes Ready at Attempt 0, with accepted dependency records and shared state reconciled into its canonical parent branch. It remains explicitly developer-invoked after manual validation; no system-test execution, deployment, merge or main push is authorized by readiness. ARCH-019 remains In Progress pending integrated evidence and final architect acceptance. Consume integrated accepted revisions or explicitly authorized accepted commits for validation.
