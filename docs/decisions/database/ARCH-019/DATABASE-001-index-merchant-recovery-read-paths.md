@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-09-20T11:16:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -78,16 +78,16 @@ All listed dependencies must be Complete and architect-accepted. Consume actual 
 
 ## Acceptance Criteria
 
-- [ ] Migration is additive, preserves all rows/constraints and can be applied to an existing populated schema.
+- [x] Migration is additive, preserves all rows/constraints and can be applied to an existing populated schema.
 - [x] The migration and Prisma schema describe equivalent index definitions with deterministic query tie-breakers.
-- [ ] Representative two-tenant, status-filtered, related-customer and transcript queries have recorded EXPLAIN plans on a sufficiently populated local fixture; no fabricated throughput or forced index-selection claims.
+- [x] Representative two-tenant, status-filtered, related-customer and transcript queries have recorded EXPLAIN plans on a sufficiently populated local fixture; no fabricated throughput or forced index-selection claims.
 - [x] No new entity, provider interaction, billing rule or queue payload is introduced.
 
 ## Validation
 
 - [x] Run npm run prisma:validate and git diff --check.
 - [x] Add and run a bounded schema-contract check covering the required columns/order and additive migration.
-- [ ] Developer-owned: apply the migration to an isolated populated PostgreSQL fixture and record exact command, exit code and EXPLAIN (ANALYZE, BUFFERS) evidence. Do not access shared databases without exact authorization.
+- [x] Developer-owned: apply the migration to an isolated populated PostgreSQL fixture and record exact command, exit code and EXPLAIN (ANALYZE, BUFFERS) evidence. Do not access shared databases without exact authorization.
 
 New test filenames above are required deliverables, not claims that those suites already exist. Use current package.json scripts; do not invent success when a command cannot run. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md: fast local checks are agent-owned; long infrastructure/live commands are developer-owned unless exactly authorized. Required developer evidence may remain pending at review, never at acceptance.
 
@@ -103,9 +103,7 @@ Use scripts/start-agent-task.py through the normal /moda-task preparation path. 
 
 ### Status
 
-Ready for Review — Attempt 1. Implementation and fast local checks complete;
-developer-owned populated PostgreSQL migration/EXPLAIN evidence remains pending.
-This task is not accepted or Complete, and no dependent task is promoted.
+Complete — Attempt 1. Architect accepted implementation `54c0ec2e092cd9db52d76e5bb46899efa4063965` on 2026-09-20 after code review and the explicitly authorized PostgreSQL 15.19 populated rehearsal (exit 0). Submission-era validation notes below are historical; the final Architect Review supersedes pending-evidence statements.
 
 ### Files Changed
 
@@ -186,8 +184,7 @@ developer/architect; no production capacity or lock-duration claim is made.
 
 ### Unresolved Issues
 
-Required populated migration/data preservation and query-plan evidence is pending.
-Related Acceptance Criteria and developer-validation checkbox remain unchecked.
+None blocking database acceptance. Transcript query-shape evidence is assigned to SHOPIFY-002; no further database index is indicated by this fixture.
 
 ### Architectural Concerns
 
@@ -234,24 +231,32 @@ Parent report:
 
 ### Review Status
 
-Pending.
+Accepted — 2026-09-20, Attempt 1. Task Complete under completion_mode: automatic.
 
 ### Review Notes
 
-No implementation submitted.
+Accepted implementation `54c0ec2e092cd9db52d76e5bb46899efa4063965`, unchanged since source review. Reviewed all nine implementation files, submission `fdf51c7a750b1f9ac51dc63ed0dbaabc68f6ea79`, ARCH-019 contracts and the successful populated rehearsal. All database acceptance criteria are satisfied. No blocking implementation defect or workflow non-conformance remains.
 
 ### Reviewed Files
 
-None.
+Prisma schema and migration, package script, static validator, rehearsal shell, three SQL fixtures, rollout documentation, task report and architecture. Dedicated worktree and clean implementation HEAD verified; prepared launcher isolation/synchronization evidence retained in the Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Focused static contract test, shell syntax and committed-diff whitespace checks passed; submitted Prisma validation and exact offline schema-diff evidence reviewed.
+- User-authorized command `python3 /tmp/rehearse-arch019-existing.py`, exit 0, tested this exact implementation using PostgreSQL 15.19 in local_postgres. Runner, log and analysis are preserved in [rehearsal evidence](evidence/2026-09-20-postgresql15/README.md).
+- Prior migrations applied to a new temporary database; target migration applied transactionally to 20,000 recoveries and 201,980 messages. Row fingerprints and prior indexes preserved; all four new indexes valid, ready and nonunique. Temporary database cleanup succeeded.
+- Reviewed default-planner before/after EXPLAIN (ANALYZE, BUFFERS) for two tenants, completed/ongoing status, related recoveries and chronological/latest transcripts. Recovery pages use the intended new indexes without the former sorts.
+- Explicitly accepted test-environment variation: existing PostgreSQL 15.19 with temporary-database isolation instead of a new PostgreSQL 16 container. Committed SQL fixtures/migration unchanged. No PostgreSQL 16 or production performance claim.
 
 ### Architecture Conformance
 
-Awaiting implementation review.
+Four additive indexes match required equality prefixes and deterministic ordering. Existing fields, constraints, tenant/lifecycle semantics and business contracts are unchanged. Write-lock implications, deployment-before-app order and index-preserving rollback documented. No deployment or merge performed. The synthetic rehearsal proves fixture compatibility, not production lock duration or capacity.
 
 ### Follow-up
 
-Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+SHOPIFY-001 and SHOPIFY-002 are Ready with accepted dependency metadata reconciled into their canonical parent worktrees. All other tasks remain Pending. Actual source consumption still requires developer integration or explicit accepted-commit consumption under the existing handoff contract; no launch or claim is implied.
+
+SHOPIFY-002 must address the measured joined-transcript plan: top-N sorts consume 760/1,000 messages and one ownership lookup repeats 760 times. Resolve owned recovery/conversation once and paginate by an equality-bound conversation ID plus createdAt/id cursor, or demonstrate an equivalently bounded tenant-safe plan. Preserve fixed query count and server-side ownership checks; verify actual reader plans. This is application query work in its existing scope, not a missing database acceptance criterion.
+
+The developer explicitly delegated commit/push of acceptance and shared-frontier updates on 2026-09-20. These records are published on the matching parent task branches. No main/gitlink or implementation history changed.
