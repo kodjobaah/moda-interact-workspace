@@ -221,7 +221,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Review — Attempt 1, executor codex. Scoped implementation and local validation submitted; no architect acceptance or Complete decision is made. Architectural acceptance checkboxes remain for the coordinator to assess against the evidence and limits below.
+Ready — Attempt 2 retained, no active claim. R1/R2 corrections are in progress; acceptance remains pending. The submitted implementation and local validation remain as historical evidence while the task is re-opened for the specific corrections.
 
 ### Files Changed
 
