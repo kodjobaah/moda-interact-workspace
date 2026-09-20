@@ -44,7 +44,7 @@ Current frontier: all ARCH-019 implementation tasks are architect-accepted/Compl
 
 ## ARCH-020 — CommerceAgent Studio and MCP capabilities (2026-09-20)
 
-COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 is architect-accepted Complete at Attempt 2 (`fb3362e`): development HTTP mutations and revoked-session recovery are corrected. Live Google OAuth remains developer-owned deployment validation. Downstream source consumption awaits developer integration or explicit accepted-commit approval; no task is promoted or launched. COMMERCE-001 remains accepted and integrated. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 The Commerce repository and nested database are provisioned; live MCP remains private and staff UI routing remains Gateway-owned. This task review does not complete ARCH-020.
 

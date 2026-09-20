@@ -4,7 +4,7 @@ Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabi
 
 ## Initial review packet and definition frontier
 
-COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 is architect-accepted Complete at Attempt 2 (`fb3362e`): development HTTP mutations and revoked-session recovery are corrected. Live Google OAuth remains developer-owned deployment validation. Downstream source consumption awaits developer integration or explicit accepted-commit approval; no task is promoted or launched. COMMERCE-001 remains accepted and integrated. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 The consolidated packet contains 19 tasks; SHARED-001 owns contracts, runner and publication. The original definition/provisioning records below are historical setup evidence. Ready status elsewhere in this packet does not launch execution.
 
@@ -241,7 +241,7 @@ definitions are consolidated into ARCH-020-SHARED-001. The two superseded draft
 files were removed before execution; their requirements remain in SHARED-001.
 One task owns implementation, tests, publication and clean registry installation
 evidence. Consumers depend on its architect-accepted Complete state and recorded
-package version. Historical snapshot after COMMERCE-001 acceptance: 19 tasks, 1 Complete, 2 Ready, 16 Pending, 0 Blocked. The synchronized current frontier is recorded below. COMMERCE-002 awaits source integration or explicit accepted-commit consumption.
+package version. Historical snapshot after COMMERCE-001 acceptance: 19 tasks, 1 Complete, 2 Ready, 16 Pending, 0 Blocked. The synchronized current frontier is recorded below. COMMERCE-002 source integration was subsequently verified; it is now Ready, unclaimed at Attempt 0.
 No execution was claimed and no package was published by this documentation change.
 
 ## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
