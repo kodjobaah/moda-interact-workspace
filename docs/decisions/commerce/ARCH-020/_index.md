@@ -4,11 +4,11 @@ Architecture: [ARCH-020-commerce-agent-studio-mcp-capabilities.md](../../../arch
 
 Assigned agent: moda_commerce. Repository: moda-interact-commerce. Coordinator: moda_architect.
 
-Definitions are on local main for review by explicit developer request. Individual task YAML is authoritative; no task is claimed or launched. Commerce submodule provisioning remains a prerequisite; the owner and route are defined in this packet.
+Definitions are on local main for review by explicit developer request. Individual task YAML is authoritative; no task is claimed or launched. Commerce repository/submodule provisioning is complete; COMMERCE-001 is Ready and remains unclaimed. See the implementation handoff for verified evidence.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-COMMERCE-001](COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | blocked | — |
+| [ARCH-020-COMMERCE-001](COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | ready | — |
 | [ARCH-020-COMMERCE-002](COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | pending | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-003, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-004](COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-003 |

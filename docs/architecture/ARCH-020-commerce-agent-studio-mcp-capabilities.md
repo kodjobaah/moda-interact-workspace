@@ -109,7 +109,7 @@ submodule changes were present and were not integrated by this design task.
 | Background `src/services/recovery-policy.service.ts` | Existing merchant policy and unexpired admin overrides resolve `NONE`, `FIXED`, or `AI_BEST_APPLICABLE`. |
 | `moda-interact-admin/src/auth.ts` | Google login bound to active `PlatformAdmin` identities provides an existing staff-authentication model; Studio needs its own server-checked session. |
 | Admin/Background `.gitmodules` | Both use nested `database/` pointing to the canonical database repository. Commerce must follow this pattern. |
-| `scripts/start-agent-task.py` | COMMERCE was absent at inspection. This review packet registers the route and adds `moda_commerce.toml` plus its generated Claude mirror; the new Git repository/submodule still needs provisioning. |
+| `scripts/start-agent-task.py` | COMMERCE was absent at inspection. This review packet registers the route and adds `moda_commerce.toml` plus its generated Claude mirror; the private Git repository/submodule is now provisioned; see the handoff evidence. |
 
 ARCH-016 explicitly deferred AI discount selection; ARCH-020 owns this new
 behaviour. The accepted ARCH-016 task records are dependencies where their
@@ -715,7 +715,7 @@ definitions for review; no implementation is launched by this packet.
 | [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Define commerce capability and evidence contracts | moda_shared | ready | ARCH-016-SHARED-001 |
 | [ARCH-020-SHARED-002](../decisions/shared/ARCH-020/SHARED-002-provide-a-bounded-reusable-agent-runner.md) | Provide a bounded reusable agent runner | moda_shared | pending | ARCH-020-SHARED-001 |
 | [ARCH-020-SHARED-003](../decisions/shared/ARCH-020/SHARED-003-release-the-accepted-commerce-contracts-and-runner.md) | Release the accepted commerce contracts and runner | moda_shared | pending | ARCH-020-SHARED-001, ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | blocked | — |
+| [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | ready | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | pending | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-003, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-003 |
@@ -737,7 +737,7 @@ definitions for review; no implementation is launched by this packet.
 
 - Repository name, nested database submodule, team-only UI and pre-production
   breaking rollout are confirmed. The role and launch route are added in this packet. Remote repository/submodule
-  provisioning is not yet performed; see the handoff's concrete setup checkpoint.
+  provisioning is complete; see the handoff’s verified setup evidence.
 - Staff role split, v1 discount support boundary and numeric budgets are proposed
   for review, not descriptions of existing product behaviour.
 - Inspect actual Shopify permissions and rule-query feasibility for the pinned

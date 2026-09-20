@@ -9,13 +9,12 @@ This is an explicit exception to task-definition materialisation only. No task
 is claimed, no application implementation has started, and no remote repository,
 submodule, deployment or task worktree is claimed to exist because of this packet.
 
-The packet defines 21 tasks: **2 Ready, 18 Pending, 1 Blocked**. Ready means
+The packet defines 21 tasks: **3 Ready, 18 Pending, 0 Blocked**. Ready means
 dependency-eligible; this review request does not launch execution.
 
 - Ready: `ARCH-020-DATABASE-001`, `ARCH-020-SHARED-001` (accepted ARCH-016 task
   metadata is present in this checkout; verify actual source availability at launch).
-- Blocked: `ARCH-020-COMMERCE-001`, because the new implementation repository is
-  not provisioned yet. This is a repository setup blocker, not a missing code test.
+- Ready: `ARCH-020-COMMERCE-001`, following the verified repository provisioning below.
 - Pending: the remaining 18 tasks, including the terminal system test.
 
 Confirmed choices: `moda-interact-commerce`, team-only Studio frontend,
@@ -42,19 +41,21 @@ It is recorded explicitly here because a repository task cannot prepare its own
 implementation worktree before that repository exists. It is not a system-test
 dependency and does not permit implementation on main.
 
-- [ ] Create or identify the actual Git remote for `moda-interact-commerce` in
-  the developer's chosen account, with an initial integrated default-branch
-  commit and chosen repository visibility. Record the real URL; do not guess one.
-- [ ] Register that repository as the workspace `moda-interact-commerce`
-  submodule with a reviewed default-branch gitlink. Developer owns main integration.
-- [ ] Make the reviewed architecture/task/agent/launcher packet available to
-  execution branches. Local main was behind origin/main when drafted; reconcile
-  these scoped changes with the latest main before preparing execution. Preserve
-  unrelated local/submodule changes and current ARCH-019 state.
-- [ ] Verify the COMMERCE route and configured runtime can resolve the new role
-  and real repository; use route-only/local checks before claiming anything.
-- [ ] Architect records evidence and changes COMMERCE-001 from Blocked to Ready;
-  update domain index, architecture table and workspace rollup together.
+- [x] Created private repository `https://github.com/kodjobaah/moda-interact-commerce.git`
+  in the same account as the existing components. GitHub confirms default branch
+  `main`; its initial README-only commit is
+  `01c550c3e3f55dd23a4ecc9514c846bb88cf2067`.
+- [x] Registered `moda-interact-commerce` in workspace `.gitmodules` and pinned
+  its gitlink to that initial main commit. No application code is provisioned.
+- [x] Reviewed packet is integrated in workspace main (`20e720d3`). This readiness
+  correction follows the user's authorization to fix preparation and publish on main.
+  Execution must synchronize this correction from main before claiming.
+- [x] COMMERCE route resolves the real repository and the configured `moda_commerce`
+  role; agent definition synchronization is checked. Runtime host role loading is
+  still a launcher concern, not an assertion that application implementation exists.
+- [x] Architect promotes COMMERCE-001 from Blocked to Ready on 2026-09-20 and
+  reconciles task, domain index, architecture table and workspace rollup. The task
+  remains unclaimed at attempt 0. This is provisioning acceptance only.
 
 COMMERCE-001 then adds the **nested** submodule at `database/` from
 `https://github.com/kodjobaah/moda-interact-database.git`, provides the application
@@ -206,9 +207,9 @@ publication/replay operations, preview budgets, gateway routes and initial alert
 thresholds. Per-task implementation helpers may follow repository conventions;
 external wire/state/ownership contracts may not vary between implementations.
 
-Remaining external inputs are the actual Commerce repository/default-branch pin,
-Studio hostname and provisioned credentials. COMMERCE-001 remains Blocked until
-repository setup. Pin/test actual SDK dependencies in that foundation task;
+Remaining external inputs are the Studio hostname and provisioned credentials.
+Commerce repository/default-branch provisioning is complete and COMMERCE-001 is Ready.
+Pin/test actual SDK dependencies in that foundation task;
 Shopify schema/scope evidence belongs to COMMERCE-006, with closed unsupported
 outcomes when provider facts cannot be established. Do not invent deployed values,
 mark unrun live validation passed, or alter scopes outside an explicit owner task.
