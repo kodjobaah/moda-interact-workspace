@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: codex
 claimed_at: 2026-09-20T15:45:23Z
@@ -109,7 +109,7 @@ Use scripts/start-agent-task.py through the normal /moda-task preparation path. 
 
 ### Status
 
-Ready for Review. Attempt 1 implemented by codex on 2026-09-20. No architect acceptance decision made.
+Ready for Review. Attempt 2 corrected by codex on 2026-09-20. No architect acceptance decision made. Attempt 1 evidence below is preserved; the Attempt 2 addendum supersedes its legacy unavailable-period behavior.
 
 ### Files Changed
 
@@ -174,6 +174,40 @@ None requiring a contract change. Capacity projection remains read-only, and no 
 - Implementation `d5319e8eacd075e5d8cba633b4459ce150872042` committed and pushed successfully to `origin/task/ARCH-019-SHOPIFY-005` in the verified `kodjobaah/moda-interact` origin.
 - This report is the parent task review-submission commit, published on the mirrored parent task branch. Commit identity is recorded by Git and reported in the final execution response.
 - No parent service Gitlink, architecture/index/rollup, other task, or main branch changed. No merge into main, main push, force push, deployment, or enabled-task execution performed.
+
+### Attempt 2 — Changes Requested correction
+
+**Disposition: implemented.** The review’s P2 explicit-period substitution defect is corrected in implementation `5130f79bd71dfd980420f3b1aafee55c9e2fa72f`, committed and pushed to `origin/task/ARCH-019-SHOPIFY-005`.
+
+Correction checklist:
+
+- [x] Distinguish absent ID from an explicitly requested unavailable ID. Absent IDs retain the default current/past redirect; a valid owned ID retains its validated selection. Missing/deleted/foreign and malformed/empty/repeated IDs return the same explicit unavailable presentation without redirecting to another period.
+- [x] Keep trusted billing/embed context and tenant isolation. Only a single well-formed ID is looked up with both shop ID and period ID. Unavailable IDs are neither echoed nor passed to Usage, and no arbitrary return URL is accepted.
+- [x] Keep the change bounded to legacy compatibility. `LegacyBillingUnavailable.tsx` renders a localized explanation and an explicit Overview link. No Usage loader, billing semantics, or SHOPIFY-006 work changed.
+- [x] Preserve onboarding/restriction precedence and early compatibility handling. Existing authentication/shop/onboarding gates remain before compatibility handling; both redirect and unavailable outcomes return before performance, capacity and pending reads.
+- [x] Replace the lossy test expectation. Home tests now distinguish absent, owned, unavailable and malformed selections, including empty and repeated parameters. A rendering regression verifies the unavailable state offers no implicit Usage redirect/link.
+
+Changed files in Attempt 2: home route, new unavailable-state component, one message in each of twenty locale catalogues, home/overview tests, browser fixture/README and one mobile screenshot (27 files). Existing locale values are unchanged; all twenty receive the same new key with translated copy.
+
+Agent validation:
+
+- `npm test -- tests/unit/home-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/merchant-i18n.test.ts tests/unit/pending-recoveries-display-state.test.ts`: **56 tests passed / 5 suites**.
+- `npm run typecheck`: **131 diagnostics in 23 unchanged files**, identical count to the reviewed baseline; none in rework-owned files. Diagnostic source files compared byte-for-byte against Attempt 2 base `d5319e8`.
+- `npm run lint`: **20 errors / 2 warnings in 15 unchanged files**; none in rework-owned files. Diagnostic sources compared unchanged against Attempt 2 base.
+- `git diff --check`: passed. Locale preservation/parity comparison passed.
+- Browser replay: direct missing-period bookmark stayed at its requested URL and displayed “The requested billing period is unavailable. No other period has been selected.” Its only link returned to Overview with embed context; subsequent valid legacy selection reached Usage. No horizontal overflow at 390px. Screenshot and reproduction notes: `tests/browser/recovery-overview/evidence/unavailable-period-390.png` and README. This is synthetic presentation/navigation evidence; production tenant/selection handling is unit-tested. Prior Attempt 1 lifecycle/responsive evidence remains recorded above.
+- Temporary server/tab closed and viewport reset. No live Shopify or infrastructure validation executed or required for this bounded correction.
+
+Attempt 2 preparation/publication evidence:
+
+- Reused the same dedicated parent and implementation paths and mirrored `task/ARCH-019-SHOPIFY-005` branches recorded above; no shared checkout or other task worktree used.
+- Launcher verified all three dependencies complete, synchronized both task branches (remote fast-forward not-needed, origin/main already-current), parent starting HEAD `8e9472907029ac9fedefc1d3c37ef88f27c4fad7`, implementation starting HEAD `d5319e8eacd075e5d8cba633b4459ce150872042`.
+- Recursive sync/update passed; database remained `9c6a4d8402a01840e2ea8dc18e89171f00564d29` ready.
+- Attempt 2 claim committed/pushed as `1eae4b883739b5392e2e20c2a2db0bf3604bc83e`, claimed at `2026-09-20T15:45:23Z`, executor codex.
+- Implementation correction `5130f79bd71dfd980420f3b1aafee55c9e2fa72f` pushed successfully. This addendum is committed/pushed on the parent mirrored task branch; its identity is reported in the final response.
+- Architect Review below and Attempt 1 evidence preserved. Parent changes limited to this task file; no Gitlink, index, architecture, other task, or main changes. No downstream work started.
+
+No unresolved task-owned correction remains. Existing repository-wide check failures and the previously recorded promotional-expiry DTO limitation remain unchanged. Return to review; no acceptance decision made.
 
 ## Architect Review
 
