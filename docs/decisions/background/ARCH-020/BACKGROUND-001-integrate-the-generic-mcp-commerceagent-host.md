@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: codex
-claimed_at: 2026-09-20T22:36:19Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-016-BACKGROUND-003
@@ -89,7 +89,7 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Scope amendments requested during Attempt 1 review
 
-These are **new user-requested scope amendments A1/A2**, not defects against the original task or its submitted implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972`. Preserve the original Completion Report and validation history. Expanded scope is not yet implemented or accepted. The binding details are also recorded as C6.2/C6.3 in the architecture implementation contracts; they supersede conflicting assumptions about initial language/customer-preference inputs for this recovery path.
+These are **new user-requested scope amendments A1/A2**, not defects against the original task or its submitted implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972`. Preserve the original Completion Report and validation history. The original amendment introduced additional scope; implementation evidence is recorded in the Attempt 2 and Attempt 3 reports below. Expanded-scope architect acceptance remains pending. The binding details are also recorded as C6.2/C6.3 in the architecture implementation contracts; they supersede conflicting assumptions about initial language/customer-preference inputs for this recovery path.
 
 ### A1 — Shop language first, then customer message language
 
@@ -420,6 +420,57 @@ enabled task was changed.
   are updated by this submission; the containing commits are the review revisions.
 - No main merge/push, force-push, parent gitlink update, downstream launch or
   architect acceptance.
+
+### Attempt 3 — R1/R2 correction submission
+
+Status: Review, Attempt 3. Both requested corrections are implemented; no architect
+acceptance decision is asserted. The prior A1/A2 OpenAI/language implementation in
+399cc2f remains present. The user's quoted Groq-only report predates that source.
+
+| Review item | Change and focused evidence | Disposition |
+| --- | --- | --- |
+| R1 processing time versus event order | Audio admission compares persisted inbound createdAt/id order; never compares a provider sent timestamp with completion-time lastInboundAt. Tests cover a queued newer event after an older note completed, both overlapping provider completion orders and genuine newer-message rejection before download. The valid new note advances one turn; older superseded results remain ignored. | Implemented |
+| R2 prior reply completion versus new inbound activity | Removed lastProcessedVersion from audio staleness/preconditions. Completion locks the conversation row, rechecks durable inbound order, then conditionally persists the pending transcript and increments the turn atomically. Unit and worker-flow tests finish the prior reply during provider work and immediately at the completion transaction; the new voice is persisted/admitted/delivered once, including replay. | Implemented |
+
+Changed files: src/services/inbound-whatsapp-audio.service.ts,
+tests/unit/services/inbound-whatsapp-audio.service.test.ts,
+tests/integration/commerce/voice-workflow.test.ts and docs/commerce-host.md.
+Duplicate completion cannot advance the conversation version; the failed pending-row
+transition rolls back. A new inbound event wins against an older transcription;
+unchanged worker leases/version checks still suppress stale model delivery/language.
+Event timestamps use persisted createdAt, with id as deterministic tie-breaker for
+same-timestamp rows. Completion-time ordering remains for batching/history only.
+
+Validation in the prepared implementation worktree:
+
+- Initial focused audio/workflow run: 21 tests passed before adding the two overlap
+  orders and two additional workflow regressions.
+- Final command: `npm test -- tests/integration/commerce tests/unit/services/inbound-whatsapp-audio.service.test.ts tests/unit/services/speech-transcription.service.test.ts tests/unit/services/audio-format.test.ts tests/unit/services/conversation-language.service.test.ts tests/unit/services/conversation.service.test.ts tests/unit/services/conversation-turn-processor.service.test.ts` — 133 passed, 9 files, 6.93 seconds.
+- `npm run build` — passed (Prisma generation and TypeScript compilation).
+- `git diff --check` — passed.
+- Initial Node bootstrap from the implementation directory failed before testing
+  because the script discovers the workspace through the current directory. Running
+  the canonical bootstrap from the workspace and then entering the implementation
+  worktree succeeded with Node 24.19.0 / npm 11.17.0. No runtime was installed or changed.
+
+These are deterministic database/provider fixtures, not a live PostgreSQL concurrency
+rehearsal or paid acoustic evaluation. The separate French/English provider-quality
+record in docs/commerce-host.md remains Not run. No live credentials/provider,
+WhatsApp send, production deployment or migration was invoked. Gateway's explicit
+configuration handoff remains in that document; its implementation is owned by
+GATEWAY-001. No new Shared/Database changes or task dependencies were introduced.
+
+Prepared execution evidence: canonical workspace and both dedicated worktrees match
+the existing report. Launcher claim 9ffa1d9a292d132c11ec13ee391f09400f2c64c2 durably
+claimed Attempt 3 after all four dependencies passed. Parent preparation head
+13f4b86b3d87cada903e1ca454b10027c99d79a1 included current main. Implementation baseline
+399cc2f31f52d9ca88797a266129ee16c8465b14 already included its main. Nested database
+was recursively synchronized/initialized and verified at
+5abfd87f57038bae515aaa09ec7c8db62adcfb98; unchanged by this attempt.
+Implementation correction commit `4e42056` is pushed to existing Background PR #48.
+The containing report commit updates workspace PR #168. Both task branches are
+published for review; no main merge/push, parent gitlink,
+other task, architecture/index or architect-review section was changed by execution.
 
 ## Architect Review
 
