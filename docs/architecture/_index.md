@@ -38,6 +38,6 @@ Files named `*-review-*`, `*-amendment.md`, overview documents, and old overlay/
 
 ## ARCH-019 — merchant recovery experience (2026-09-20)
 
-Current frontier: DATABASE-001 and SHOPIFY-001 accepted/Complete. SHOPIFY-002 In Progress at Attempt 2; SHOPIFY-003 Ready at Attempt 0. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Accepted dependency metadata is reconciled into the newly Ready task worktree. The developer authorized publication of these review updates on the matching parent task branches on 2026-09-20. Readiness does not launch execution or authorize prerequisite integration.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1. SHOPIFY-002 is Review at Attempt 3, not yet accepted. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress. No new task is promoted or launched by SHOPIFY-003 acceptance.
 
 [Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)

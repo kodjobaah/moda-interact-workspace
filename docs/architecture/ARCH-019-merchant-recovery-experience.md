@@ -11,7 +11,7 @@ updated: 2026-09-20
 
 ## Status and agreement
 
-In Progress. DATABASE-001 and SHOPIFY-001 are architect-accepted/Complete. SHOPIFY-002 is In Progress at Attempt 2; SHOPIFY-003 is newly Ready. The complete experience is not implemented. Terminal system validation remains developer-invoked.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1. SHOPIFY-002 is Review at Attempt 3, not yet accepted. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress. No new task is promoted or launched by SHOPIFY-003 acceptance.
 
 ## Problem and inspected current behaviour
 
@@ -132,14 +132,14 @@ Required terminal system validation follows all accepted implementation tasks an
 |---|---|---|---|
 | [ARCH-019-DATABASE-001](../decisions/database/ARCH-019/DATABASE-001-index-merchant-recovery-read-paths.md) | moda_database | Complete | None |
 | [ARCH-019-SHOPIFY-001](../decisions/shopify/ARCH-019/SHOPIFY-001-bounded-recovery-cohort-readers.md) | moda_app | Complete | ARCH-019-DATABASE-001 |
-| [ARCH-019-SHOPIFY-002](../decisions/shopify/ARCH-019/SHOPIFY-002-bounded-recovery-detail-readers.md) | moda_app | In Progress | ARCH-019-DATABASE-001 |
-| [ARCH-019-SHOPIFY-003](../decisions/shopify/ARCH-019/SHOPIFY-003-recovery-list-page.md) | moda_app | Ready | ARCH-019-SHOPIFY-001 |
+| [ARCH-019-SHOPIFY-002](../decisions/shopify/ARCH-019/SHOPIFY-002-bounded-recovery-detail-readers.md) | moda_app | Review | ARCH-019-DATABASE-001 |
+| [ARCH-019-SHOPIFY-003](../decisions/shopify/ARCH-019/SHOPIFY-003-recovery-list-page.md) | moda_app | Complete | ARCH-019-SHOPIFY-001 |
 | [ARCH-019-SHOPIFY-004](../decisions/shopify/ARCH-019/SHOPIFY-004-recovery-conversation-detail-page.md) | moda_app | Pending | ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003 |
 | [ARCH-019-SHOPIFY-005](../decisions/shopify/ARCH-019/SHOPIFY-005-recovery-performance-overview.md) | moda_app | Pending | ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004 |
 | [ARCH-019-SHOPIFY-006](../decisions/shopify/ARCH-019/SHOPIFY-006-merchant-navigation-and-billing-history.md) | moda_app | Pending | ARCH-019-SHOPIFY-005 |
 | [ARCH-019-SYSTEM-TEST-001](../decisions/system-test/ARCH-019/SYSTEM-TEST-001-validate-merchant-recovery-experience.md) | moda_system_test | Pending | ARCH-019-DATABASE-001, ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004, ARCH-019-SHOPIFY-005, ARCH-019-SHOPIFY-006 |
 
-Current frontier: DATABASE-001 and SHOPIFY-001 accepted/Complete. SHOPIFY-002 In Progress at Attempt 2; SHOPIFY-003 Ready at Attempt 0. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Accepted dependency metadata is reconciled into the newly Ready task worktree. The developer authorized publication of these review updates on the matching parent task branches on 2026-09-20. Readiness does not launch execution or authorize prerequisite integration.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1. SHOPIFY-002 is Review at Attempt 3, not yet accepted. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress. No new task is promoted or launched by SHOPIFY-003 acceptance.
 
 
 ## Risks and evidence gaps
@@ -153,3 +153,5 @@ Case-insensitive substring search and long-range aggregates need measured plans 
 - 2026-09-20: accepted DATABASE-001 after populated PostgreSQL 15.19 evidence; promoted SHOPIFY-001/002 and assigned transcript query-shape validation to SHOPIFY-002.
 
 - 2026-09-20: accepted SHOPIFY-001 at `08af00b` after source review and 27 passing tests including PostgreSQL; promoted SHOPIFY-003. Full typecheck remains blocked by independently verified pre-task syntax debt.
+
+- 2026-09-20: accepted SHOPIFY-003 `37c62cd` after 72 passing tests, source/access/locale review and local browser evidence. No downstream promotion while SHOPIFY-002 awaits acceptance.
