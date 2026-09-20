@@ -248,43 +248,6 @@ Reviewed implementation a2c23d19a930bfb9e2402dbfb6b4fad454776b1f and report 8a5a
 
 ##### Required Corrections
 
-1. **P2 — Load the psql fixture through a compatible execution path.** At `tests/integration/recovery-detail-query-plans.test.ts:26`, `client.query` receives the complete `database/scripts/fixtures/arch019-recovery-indexes-seed.sql`. Its first line is `\set ON_ERROR_STOP on`, a psql client directive, not server SQL. The pg driver forwards it unchanged, so PostgreSQL rejects setup with a syntax error before any of the five tests run. Correct the app-owned harness: execute through psql with failure propagation, or explicitly remove the known directive and send SQL only, retaining fail-fast driver errors. Do not edit the database-owned fixture merely to work around this. Add a cheap regression using the actual fixture to prove the supported loading path; preserve all seed SQL and existing plan assertions.
-2. **Required evidence — Run the corrected five-test rehearsal under the non-UTC command and established execution policy.** Supply tested commit, exit code, PostgreSQL version, and full first/next/previous/latest EXPLAIN ANALYZE BUFFERS output. All five tests must pass with non-empty bounded index traversal and no sort/join. The authorization question raised during this review concerned the current command; no run was started after source inspection identified this setup defect. Pending or skipped validation cannot establish acceptance.
-3. **Preserve the verified corrections and baseline limits.** Keep UTC read/write handling and non-UTC tests. Full typecheck remains blocked by the unchanged baseline syntax errors; focused passing checks do not certify the repository.
-
-### Reviewed Files
-
-All eight task files: three production reader/DTO/cursor modules, focused tests, PostgreSQL suite, UTC helper, focused TypeScript configuration and reader documentation. Also inspected the exact database seed, schema relationships/indexes, parent architecture, task history and both PR states.
-
-### Validation Reviewed
-
-Architect reran `npm test -- tests/unit/recovery-detail-readers.test.ts --no-cache`: 34 passed. Focused `tsc --noEmit -p tests/tsconfig.recovery-detail.json` and committed-diff whitespace check passed. The baseline syntax-error file remains identical to `c4fd514`; the same seven errors were independently established during the adjacent reader review. No Docker or PostgreSQL plan rehearsal launched in this review. The fixture incompatibility is established by the exact file contents and direct `client.query` call; no claim of executed integration failure is made.
-
-### Architecture Conformance
-
-Production source remains read-only and follows owned-recovery lookup, direct conversation equality, tuple pagination, safe DTO projections and fixed query counts. The timezone correction is accepted as a correction, but the task is not accepted while actual-plan evidence is absent and its harness cannot load the fixture. SHOPIFY-004 and SYSTEM-TEST-001 remain gated.
-
-### Merge / Integration State
-
-GitHub confirms implementation PR #38 was merged by the developer at `2026-09-20T12:41:19Z`, merge commit `49526b503b82d1abe39642f44f3b9f3caacba5ee`. The merged task files exactly match reviewed Attempt 2; report PR #159 remains open. Record this as integration before architect acceptance, not agent workflow misconduct or implicit acceptance. These modules have no route consumers in the merged change. This test-harness finding does not itself require reverting production reader code. Correct the same task and submit the later implementation correction for separate developer integration; an already-merged PR cannot integrate later commits. Do not rewrite main or revert automatically.
-
-### Follow-up
-
-Reclaim `/moda-task ARCH-019-SHOPIFY-002` for Attempt 3 on the same canonical branch/worktrees, following normal main synchronization. Fix only the harness, supply focused and required PostgreSQL evidence, and return to review. SHOPIFY-001 remains Complete and SHOPIFY-003 remains In Progress at Attempt 1; preserve its active claim. No dependent promotion, implementation mutation, merge or deployment is performed by this review. Publish this parent review under the developer-delegated review-publication workflow.
-
-### Historical Architect Review — Attempt 1
-
-
-#### Review Status
-
-Changes Requested — 2026-09-20, Attempt 1. Not accepted. Same task returned to Ready; claim cleared, attempt preserved.
-
-#### Review Notes
-
-Reviewed implementation a2c23d19a930bfb9e2402dbfb6b4fad454776b1f and report 8a5aa031c640207cc939221db4818b5337bcd73c. Tenant-constrained ownership, explicit projections, parameterized tuple pagination and fixed query counts conform in source inspection. Required PostgreSQL evidence is absent, and its proposed harness has a reproducible timezone defect. No production data/code change is demanded by this finding; test source correction is required.
-
-#### Required Corrections
-
 1. **P2 — Match production timestamp semantics in the PostgreSQL harness.** tests/integration/recovery-detail-query-plans.test.ts uses pg default TIMESTAMP WITHOUT TIME ZONE decoding and Date parameter serialization. These use the host time zone, unlike the intended UTC Prisma behavior. Under TZ=Europe/London, timestamp `2026-09-01 00:02:05` decodes to `2026-08-31T23:02:05.000Z`, and Date `2026-09-01T00:02:05.000Z` serializes to `2026-09-01T01:02:05.000+01:00`. The builder casts to timestamp, yielding 01:02:05, beyond the fixture's final message at 00:04:10; the next-plan test can therefore return zero rows. Fix both input and output semantics, preferably exercising the production Prisma client, or use a demonstrably UTC-equivalent adapter. Add a cheap regression under a non-UTC host time zone that proves exact persisted timestamps and correct boundary parameters. Do not fix by weakening/removing the plan assertions or only testing under the default UTC environment.
 2. **Required evidence — Execute the corrected opt-in PostgreSQL validation under the existing developer-owned policy.** Supply command, tested commit, exit code, version and complete EXPLAIN output for first/next/previous/latest. Confirm non-empty bounded index traversal without full-transcript sorts/joins and actual tenant/page behavior. Skipped tests are not evidence. If still awaiting developer execution at submission, leave validation pending and return to Review, not Complete.
 3. **Report validation limits accurately.** Preserve the pre-existing full-typecheck syntax blocker and focused typecheck evidence. Do not equate the observed seven syntax errors with TYPECHECK-001's older 48 type errors. No unrelated repair is required by this review.
