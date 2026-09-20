@@ -26,3 +26,7 @@ Historical baseline documents: ARCH-013 routing and accepted ARCH-017 onboarding
 ## SHOPIFY-002 Attempt 2 review
 
 Changes Requested: timezone correction passes, but the pg harness sends a psql-only fixture directive as SQL. Correct setup and supply all five PostgreSQL tests/plans before acceptance. Implementation PR #38 was merged early at `49526b5`; report PR #159 remains open. No automatic revert: the finding concerns test setup and these readers are not wired into routes. Future corrections require developer integration after review.
+
+## Parent branch reconciliation — 2026-09-20
+
+At the developer’s request, incorporated parent `origin/main` at `3ffc6a58ce0e3b88f0ca06aa511472f4db334a63` into `task/ARCH-019-SHOPIFY-002`. Resolved six documentation conflicts by retaining the reviewed Attempt 2 report and Changes Requested contract, SHOPIFY-001 acceptance, and SHOPIFY-003’s independently verified active Attempt 1. SHOPIFY-002 stays Ready with attempt 2 and no claim; the next prepared execution claims Attempt 3. This reconciliation does not launch implementation or change either main branch.

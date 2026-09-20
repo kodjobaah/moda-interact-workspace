@@ -380,8 +380,8 @@ For current sequencing use `ARCH-010-implementation-handoff.md`; individual task
 
 ## ARCH-019 — merchant recovery experience (2026-09-20)
 
-DATABASE-001 accepted/Complete at `54c0ec2`, Attempt 1; populated PostgreSQL 15.19 rehearsal passed. Ready: SHOPIFY-001 and SHOPIFY-002. Pending: SHOPIFY-003 through SHOPIFY-006 and SYSTEM-TEST-001. Downstream tasks unclaimed; architecture remains Agreed, not Implemented. Acceptance and readiness records are published to the task branches under explicit developer delegation. Task YAML in canonical parent worktrees remains authoritative.
+DATABASE-001 and SHOPIFY-001 are accepted/Complete at Attempt 1. SHOPIFY-002 is Ready after Attempt 2 Changes Requested, with executor/claim cleared and attempt 2 preserved; its next successful preparation claims Attempt 3. The timezone correction passes, but fixture loading and actual PostgreSQL plan evidence remain required. SHOPIFY-003 is In Progress at Attempt 1. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress, not Implemented; terminal system validation is developer-invoked.
+
+Implementation PR #38 merged before SHOPIFY-002 acceptance at `49526b5`; report PR #159 remains open. The parent task branch now incorporates main's SHOPIFY-001 acceptance while preserving the latest SHOPIFY-002 review and SHOPIFY-003 active claim. No implementation or new claim is part of this reconciliation. Task YAML in canonical parent worktrees remains authoritative.
 
 [Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)
-
-ARCH-019 review checkpoint (2026-09-20): SHOPIFY-002 Ready for rework after Changes Requested, Attempt 1 preserved, executor/claim cleared. PostgreSQL harness timestamp fix and actual-plan evidence required. SHOPIFY-001 separately in Review per canonical task record. No downstream promotion.
