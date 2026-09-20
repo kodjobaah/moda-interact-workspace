@@ -4,7 +4,7 @@ title: Merchant recovery policy, Shopify discount catalogue, follow-up outreach 
 status: in_progress
 coordinator: moda_architect
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-20
 ---
 
 # ARCH-016: Merchant recovery policy, Shopify discount catalogue, follow-up outreach and recovery expiry
@@ -1162,3 +1162,26 @@ implementation churn or an additional attempt.
 contain every independently accepted sibling task, and the developer manual-testing
 checkpoint remains mandatory before terminal integrated testing. The system-test task is
 not started automatically by this acceptance.
+
+
+## Post-review update — BACKGROUND-004 Attempt 1 Accepted
+
+`ARCH-016-BACKGROUND-004` Attempt 1 is architect-accepted **Complete** at implementation
+commit `2c6fbab`.
+
+The pending-recovery inactivity clock now uses the canonical effective recovery policy on
+both scheduling decisions owned by `PendingRecoveryCandidateService`: initial candidate
+scheduling resolves policy after the existing execution-eligibility gates, and later
+qualifying checkout/cart activity re-resolves policy after stale/cancelled/non-delayed
+candidates have already returned. An active Admin override therefore governs both paths;
+a later scheduling decision naturally returns to merchant/platform policy after override
+removal or expiry.
+
+No direct `ShopSettings.recoveryDelayMinutes` scheduling read, bulk policy-change
+rescheduling mechanism, new queue/worker, schema change or Shared-contract change was
+introduced. Existing candidate identity, Redis indexes, BullMQ state boundaries and
+monotonic activity semantics remain unchanged.
+
+All ARCH-016 implementation tasks are now architect-accepted Complete in this snapshot.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the existing
+developer manual-testing checkpoint remains before the terminal integrated test phase.

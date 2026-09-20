@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 45
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-004-BACKGROUND-002
 - ARCH-016-BACKGROUND-003
@@ -576,3 +576,83 @@ existing candidate identity/index semantics would need redesign.
 ```
 
 Do not solve any stop condition by expanding task scope.
+
+## Completion Report
+
+Status: Ready for Review
+
+- Attempt: 1
+- Implementation commit: `2c6fbab` (`fix: use effective recovery delay for pending candidates`)
+- Parent Completion Report commit: `4a3edd63` (`docs: return background recovery delay task for review`)
+- Launcher preparation: authoritative prepared execution completed with `prepared_execution=true`, `status=in_progress`, `dependency_gate=passed`, `attempt=1`, `executor=copilot`; dedicated implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-004` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-004` were used.
+- Start-of-attempt synchronization: supplied by the prepared launcher packet; not repeated.
+- Recursive submodule/database revision evidence: supplied by the prepared launcher packet; no database schema or migration changes were made.
+- Focused test: `npx vitest run tests/unit/services/pending-recovery-candidate.service.test.ts` passed, 39/39 tests.
+- Prisma generate: `npm run prisma:generate` passed.
+- Prisma validate: `npm run prisma:validate` passed.
+- Build: `npm run build` passed.
+- Full test: `npm test` ran 83 files; 70 passed, 12 skipped, and 3 unrelated billing-reconciliation tests failed in `tests/unit/services/billing-reconciliation.service.test.ts`. No failure was in either authorized changed file.
+- `git diff --check`: passed.
+- Source invariants: no direct `ShopSettings.recoveryDelayMinutes` scheduling read remains; `recoveryPolicyService.resolve` is used at lines 121 and 619 of the implementation file.
+
+1. Initial pending-candidate scheduling now resolves the effective recovery policy.
+2. Activity rescheduling re-resolves the effective recovery policy.
+3. Active Admin override `recoveryDelayMinutes` therefore governs both paths.
+4. No bulk policy-change rescheduling mechanism was introduced.
+5. No direct ShopSettings recovery-delay scheduling read remains in `PendingRecoveryCandidateService`.
+
+No blockers for the scoped implementation. The unrelated full-suite billing-reconciliation failures remain documented above for architect review.
+
+
+## Architect Review — Attempt 1
+
+### Status
+
+**Accepted — Complete**
+
+Implementation commit reviewed: `2c6fbab`.
+Final parent Completion Report commit supplied with the review handoff: `48925ad5`.
+
+This review is functionality-first. The implementation satisfies the bounded
+ARCH-016 integration correction without changing the surrounding pending-candidate
+queue/index semantics.
+
+Accepted runtime behavior:
+
+```text
+initial checkout-created scheduling
+  -> preserve existing shop/subscription execution gates
+  -> resolve RecoveryPolicyService.resolve(shop.id)
+  -> use policy.recoveryDelayMinutes for BullMQ delay and candidate indexes
+
+later qualifying checkout/cart activity
+  -> reject mismatched/stale/cancelled/non-delayed candidates first
+  -> resolve RecoveryPolicyService.resolve(shopId) again
+  -> reschedule from new activityAt + then-current effective delay
+
+policy override changes without qualifying activity
+  -> no bulk delayed-job rewrite
+  -> next normal scheduling/rescheduling decision observes the then-current policy
+```
+
+The service no longer reads `ShopSettings.recoveryDelayMinutes` directly for
+pending-candidate scheduling and does not silently fall back when the canonical policy
+resolver fails. No new queue, worker, scheduler, schema, Shared contract or policy-change
+reconciliation mechanism was introduced.
+
+The focused suite reported `39/39` passing tests. Prisma generation/validation, build,
+source invariants and `git diff --check` passed. The full suite reported `1,058` passing,
+`24` skipped and three failures in `billing-reconciliation.service.test.ts`; those failures
+are outside the two authorised BACKGROUND-004 files and do not change this functional
+acceptance.
+
+### Completion-report reconciliation
+
+The embedded task Completion Report records parent report commit `4a3edd63`, while the final
+review submission identifies `48925ad5`. This architect acceptance records `48925ad5` as the
+final submitted parent report commit. No implementation churn is required solely to rewrite
+that intermediate report hash.
+
+`ARCH-016-BACKGROUND-004` is Complete at Attempt 1. There is no Attempt 2.
+`ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the existing
+developer manual-testing checkpoint remains before the terminal integrated test phase.
