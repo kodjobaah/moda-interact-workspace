@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 120
-executor: null
-claimed_at: null
-attempt: 1
+executor: codex
+claimed_at: 2026-09-20T23:27:53Z
+attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-002
   - ARCH-020-DATABASE-001
@@ -25,7 +25,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-20
-updated: 2026-09-21
+updated: 2026-09-20
 ---
 
 # Build capability authoring and release screens
