@@ -230,24 +230,39 @@ No new cross-repository implementation requirement. Background must consume the 
 
 ### Review Status
 
-Pending.
+**Acceptance withheld — pending required developer validation, Attempt 1, 2026-09-20, moda_architect.** Task remains `review`; no new implementation attempt, Complete transition or downstream promotion.
 
-### Review Notes
+Reviewed implementation `3ae6c7f12f2f0f6467c93ca49012967f26d16b44` and report `1ff2eafc3372332ec4c77f80ae0030e8254fd199`; both published remote heads verified. No blocking code defect found in the inspected foundation. This is not acceptance: real PostgreSQL/Redis readiness evidence is still required by the task and C10/C12.
 
-No implementation submitted. This task is a reviewable definition.
+### Review Notes / Architecture Conformance
+
+The Node App Router foundation, exact dependency pins, nested canonical database gitlink, generation/build/start contracts and server-only connection/configuration boundaries conform to the scoped task. Liveness is independent of dependencies. Readiness has generic responses, bounded work/deadline, required configuration/key checks and no release-publication or startup-migration dependency. The stateless MCP compatibility fixture uses the pinned SDK client and Next Request/Response objects outside the production route tree; it is not production authorization. The pending form synchronously guards dispatch, retains unknown operations for reconciliation and ignores stale completion; future business endpoints still require independent server replay/authentication.
+
+**Required evidence gap:** mocked readiness success and a production 503 smoke do not establish healthy real connectivity/schema compatibility. C12 states: “missing evidence prevents acceptance”. Record real healthy 200, unavailable PostgreSQL 503, unavailable Redis 503 and invalid-key 503, each within two seconds, against disposable local services with the recorded schema. The supplied validator is read-only and starts/stops its own application processes; it does not provision or migrate the dependencies.
+
+The reported Prisma/deepmerge-ts audit findings remain a documented toolchain limitation. Inspected request paths do not merge untrusted Prisma configuration; no dependency override or upgrade is required by this review. This disposition does not claim the dependency audit is clean; future changes to configuration inputs/runtime exposure must revisit it.
 
 ### Reviewed Files
 
-None for implementation review.
+Package/lockfile and runtime documentation; Next app/routes/config; server configuration, Prisma/Redis connections and readiness; pending form and behavioral tests; test-only MCP adapter/client fixture; health/database tests; production health, clean-clone and local-readiness scripts; nested database pin; task preparation/report evidence.
 
 ### Validation Reviewed
 
-None for implementation review.
-
-### Architecture Conformance
-
-Awaiting implementation.
+- Architect reran `npm test`: **19 passed across four suites**.
+- Architect reran `npm run typecheck` and `npm run lint`: **passed**, no diagnostics.
+- Architect reran `npm run test:health`: **passed** — production live 200, missing-config readiness 503, root 200 and production MCP GET/POST/DELETE 404.
+- Build and fresh-recursive-clone success are supplied implementation evidence; no redundant rebuild/reclone performed. Read-only built-static scan found none of the tested server credential/client markers.
+- Recursive database status matches `9c6a4d8402a01840e2ea8dc18e89171f00564d29`; committed whitespace checks pass and implementation worktree remains clean. Dedicated mirrored worktree/synchronization/claim evidence agrees with the report.
+- Real PostgreSQL/Redis success/failure validation was not run by this review and remains pending. No shared/deployed service or credential was used.
 
 ### Follow-up
 
-Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+From the canonical Commerce implementation worktree, after provisioning disposable local PostgreSQL with the pinned schema and local Redis, run:
+
+```sh
+npm run build
+COMMERCE_TEST_DATABASE_URL='<disposable-local-postgresql-url>' \
+COMMERCE_TEST_REDIS_URL='<disposable-local-redis-url>' npm run test:readiness-local
+```
+
+Provide the tested implementation/database SHAs, environment, command with credentials redacted, all four scenario results/timings and exit code. Do not claim Attempt 2 merely to supply evidence; retain Attempt 1 review state unless a validation failure requires implementation correction. The architect can complete acceptance after reviewing that evidence. COMMERCE-002 and other dependants remain gated; terminal system-test execution remains explicitly developer-invoked.

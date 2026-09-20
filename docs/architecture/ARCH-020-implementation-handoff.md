@@ -4,18 +4,9 @@ Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabi
 
 ## Review packet and current frontier
 
-The developer requested task definitions on local workspace `main` for review.
-This is an explicit exception to task-definition materialisation only. No task
-is claimed, no application implementation has started, and no remote repository,
-submodule, deployment or task worktree is claimed to exist because of this packet.
+COMMERCE-001 is in Review at Attempt 1 (`3ae6c7f`); architect code review found no blocking defect, but acceptance awaits real local PostgreSQL/Redis readiness evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
-The packet defines 21 tasks: **3 Ready, 18 Pending, 0 Blocked**. Ready means
-dependency-eligible; this review request does not launch execution.
-
-- Ready: `ARCH-020-DATABASE-001`, `ARCH-020-SHARED-001` (accepted ARCH-016 task
-  metadata is present in this checkout; verify actual source availability at launch).
-- Ready: `ARCH-020-COMMERCE-001`, following the verified repository provisioning below.
-- Pending: the remaining 18 tasks, including the terminal system test.
+The original definition/provisioning records below are historical setup evidence. Ready status elsewhere in this packet does not launch execution.
 
 Confirmed choices: `moda-interact-commerce`, team-only Studio frontend,
 `database/` nested submodule of `moda-interact-database`, private Background-only
@@ -208,7 +199,7 @@ thresholds. Per-task implementation helpers may follow repository conventions;
 external wire/state/ownership contracts may not vary between implementations.
 
 Remaining external inputs are the Studio hostname and provisioned credentials.
-Commerce repository/default-branch provisioning is complete and COMMERCE-001 is Ready.
+Commerce repository/default-branch provisioning is complete; COMMERCE-001 is in Review awaiting the real readiness evidence recorded in its architect review.
 Pin/test actual SDK dependencies in that foundation task;
 Shopify schema/scope evidence belongs to COMMERCE-006, with closed unsupported
 outcomes when provider facts cannot be established. Do not invent deployed values,

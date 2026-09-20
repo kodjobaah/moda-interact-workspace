@@ -389,9 +389,7 @@ Current frontier: all ARCH-019 implementation tasks are architect-accepted/Compl
 Scoped addition only; earlier architecture rollups are unchanged. Source:
 [ARCH-020 architecture](ARCH-020-commerce-agent-studio-mcp-capabilities.md) and
 [handoff](ARCH-020-implementation-handoff.md). Individual task YAML is authoritative.
-Definitions are in local main by developer exception, not task-branch materialisation.
-No task is claimed. Current counts: `ready` 3, `pending` 18, `blocked` 0.
-COMMERCE-001 is Ready following verified private repository/submodule provisioning; see the ARCH-020 implementation handoff.
+COMMERCE-001 is in Review at Attempt 1 (`3ae6c7f`); architect code review found no blocking defect, but acceptance awaits real local PostgreSQL/Redis readiness evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
@@ -399,7 +397,7 @@ COMMERCE-001 is Ready following verified private repository/submodule provisioni
 | ARCH-020-SHARED-001 | shared | ready | 0 | ARCH-016-SHARED-001 |
 | ARCH-020-SHARED-002 | shared | pending | 0 | ARCH-020-SHARED-001 |
 | ARCH-020-SHARED-003 | shared | pending | 0 | ARCH-020-SHARED-001, ARCH-020-SHARED-002 |
-| ARCH-020-COMMERCE-001 | commerce | ready | 0 | — |
+| ARCH-020-COMMERCE-001 | commerce | review | 1 | — |
 | ARCH-020-COMMERCE-002 | commerce | pending | 0 | ARCH-020-COMMERCE-001 |
 | ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-003, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-004 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-003 |
