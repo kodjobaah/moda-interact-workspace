@@ -6,8 +6,8 @@ Coordinator: moda_architect. Individual task YAML and canonical task worktrees a
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [ARCH-019-SHOPIFY-001](SHOPIFY-001-bounded-recovery-cohort-readers.md) | Implement bounded recovery cohort metrics and list readers | Pending | ARCH-019-DATABASE-001 |
-| [ARCH-019-SHOPIFY-002](SHOPIFY-002-bounded-recovery-detail-readers.md) | Implement tenant-scoped recovery detail and transcript readers | Pending | ARCH-019-DATABASE-001 |
+| [ARCH-019-SHOPIFY-001](SHOPIFY-001-bounded-recovery-cohort-readers.md) | Implement bounded recovery cohort metrics and list readers | Ready | ARCH-019-DATABASE-001 |
+| [ARCH-019-SHOPIFY-002](SHOPIFY-002-bounded-recovery-detail-readers.md) | Implement tenant-scoped recovery detail and transcript readers | Ready | ARCH-019-DATABASE-001 |
 | [ARCH-019-SHOPIFY-003](SHOPIFY-003-recovery-list-page.md) | Build the recovery browsing page and guarded route | Pending | ARCH-019-SHOPIFY-001 |
 | [ARCH-019-SHOPIFY-004](SHOPIFY-004-recovery-conversation-detail-page.md) | Build the read-only recovery conversation page | Pending | ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003 |
 | [ARCH-019-SHOPIFY-005](SHOPIFY-005-recovery-performance-overview.md) | Replace the usage-first home page with the recovery overview | Pending | ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004 |

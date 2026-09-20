@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -55,6 +55,8 @@ The parent architecture's behavioural contracts are binding. Preserve current te
 
 ## Work Items
 
+- [ ] Apply the accepted DATABASE-001 plan finding: resolve the owned recovery/conversation once, then paginate messages using equality-bound conversationId and createdAt/id keys (or prove an equivalent bounded plan). Avoid the fixture's join-driven sort over 760/1,000 messages and repeated ownership lookup; retain tenant authorization and fixed query count.
+
 - [ ] Load recovery by authenticated shopId plus recoveryId, then constrain every transcript/related read through that owned recovery.
 - [ ] Provide first/next/previous/latest transcript windows of 50 messages with chronological display and (createdAt,id) tie-breaking.
 - [ ] Map all sender/status/content enum values honestly, including AUTOMATION, HUMAN, AUDIO and unavailable/rejected/failed transcription; expose only safe merchant-facing content and recorded delivery evidence.
@@ -86,6 +88,8 @@ All listed dependencies must be Complete and architect-accepted. Consume actual 
 - [ ] A recovery without a conversation, a guest recovery and a long/multilingual transcript have valid bounded responses.
 
 ## Validation
+
+- [ ] Record representative local EXPLAIN (ANALYZE, BUFFERS) for actual chronological/latest reader queries on a long transcript; demonstrate index cursor traversal without work proportional to the entire transcript. Follow the existing developer-owned execution policy for long rehearsals.
 
 - [ ] Run npm test -- tests/unit/recovery-detail-readers.test.ts (create this focused suite).
 - [ ] Run npm run typecheck and git diff --check.
