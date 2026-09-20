@@ -81,3 +81,16 @@ and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
 GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+## COMMERCE-011 Attempt 3 — Changes Requested — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 3 retained**, claim cleared, not accepted.
+Reviewed implementation `c616560` and report `78325853`. Prior four compiler
+reproductions pass and R4's rolling-history/readiness/error-handling defects are
+corrected in source. Three additional invalid GraphQL definitions still return
+valid:true (unquoted String value, duplicate argument, conflicting alias).
+R1 remains incomplete; R3 still returns a search excerpt as a document and retains
+failed startup promises without owned shutdown. See the latest task Architect
+Review. Verified artifact is retained; no new live validation requirement, claim,
+dependent promotion, implementation edit or main integration. Other task states
+and C17 ownership remain unchanged.

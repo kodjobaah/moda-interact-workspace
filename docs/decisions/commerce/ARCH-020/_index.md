@@ -18,7 +18,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-008](COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001, ARCH-020-COMMERCE-013 |
 | [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | ready | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-012](COMMERCE-012-add-frequency-based-tool-result-caching.md) | Frequency-based tool-result caching; final implementation feature, readiness checkpoint outstanding | pending | All other ARCH-020 implementation tasks |
 | [ARCH-020-COMMERCE-013](COMMERCE-013-integrate-publication-and-studio-with-real-commerce-services.md) | Connect real services and verify integrated U01–U13 flows | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 
@@ -26,3 +26,16 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
 supersedes earlier no-promotion wording for these two tasks only.011 active task
 worktree status remains authoritative. No task was claimed by this amendment.
+
+## COMMERCE-011 Attempt 3 — Changes Requested — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 3 retained**, claim cleared, not accepted.
+Reviewed implementation `c616560` and report `78325853`. Prior four compiler
+reproductions pass and R4's rolling-history/readiness/error-handling defects are
+corrected in source. Three additional invalid GraphQL definitions still return
+valid:true (unquoted String value, duplicate argument, conflicting alias).
+R1 remains incomplete; R3 still returns a search excerpt as a document and retains
+failed startup promises without owned shutdown. See the latest task Architect
+Review. Verified artifact is retained; no new live validation requirement, claim,
+dependent promotion, implementation edit or main integration. Other task states
+and C17 ownership remain unchanged.

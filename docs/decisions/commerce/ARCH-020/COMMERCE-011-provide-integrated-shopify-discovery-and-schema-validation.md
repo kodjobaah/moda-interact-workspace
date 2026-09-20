@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
-executor:
-claimed_at:
+status: ready
+executor: null
+claimed_at: null
 priority: 85
 attempt: 3
 depends_on:
@@ -198,6 +198,46 @@ implementation and parent report are kept in dedicated physical task worktrees.
  Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Not accepted; Ready for correction.** Attempt 3 retained, executor/claimed_at null. Reviewed implementation `c61656073d35d8a7b3b9bfd3e4ecfe05385396fa` and report `78325853fb430bcf65e4cfd2e9c7aa8290f18c7a`. Both dedicated worktrees were clean and matched their remote task branches. No new attempt claimed, main integration, implementation edit or dependent promotion.
+
+#### Verified progress
+
+The four exact Attempt 2 compiler reproductions now pass; an independently valid ProductDetails-style control also passes. The compiler checks version/hash itself and derives array/scalar output types. R2's verified full artifact is retained. R4's identified code defects are corrected: completed requests remain in the rolling-rate ZSET, the key expires, Redis readiness is awaited, and authenticated GET/POST operation errors become bounded responses rather than escaping through the auth handler. These observations do not claim a live Redis test. The extra deadline timer was removed and service timeout now invokes upstream.close. `git diff --check 86bd4e4..HEAD` passes. Preserve these corrections.
+
+#### R1 remains open — P1: use complete GraphQL semantic validation
+
+The compiler still imports parse without running schema validation. `literalMatches` accepts EnumValue for String and accepts any object literal for INPUT_OBJECT without checking members; duplicate arguments and conflicting response aliases are not checked. This is the same incomplete validation defect, not new scope.
+
+Three independent valid:false assertions against the exact submitted code instead returned valid:true:
+
+1. `query X { product(handle: INVALID_ENUM) { title } }` — an unquoted enum token is not a String literal.
+2. `query X { product(handle: "a", handle: "b") { title } }` — duplicate argument names.
+3. `query X { product(handle: "a") { title same: title same: description } }` — incompatible fields share a response alias.
+
+Each used the accepted version/hash, operationName X, empty variables/input properties, resultPath product and a valid response template. Shopify cannot execute these as valid queries, yet Studio can mark them publishable.
+
+Local harness `/tmp/commerce011-attempt3-review/review.test.ts`; command from the implementation worktree: `./node_modules/.bin/vitest run --config /tmp/commerce011-attempt3-review/vitest.config.mjs`. Node 24.19.0 / Vitest 5.0.1: **5 passed, 3 failed**, exit 1. Passing cases comprise the four previous defects and a valid control. No implementation files or providers were touched.
+
+Correction: construct the GraphQL schema from the retained introspection artifact (GraphQL buildClientSchema), run the library's full validate/schema rules over the parsed document, then apply C14 policy and input-mapping checks. Do not keep adding isolated token cases to a partial validator. Validate nested input values and mapped schema compatibility against the actual schema. Keep these three functional regressions and valid neighboring queries as focused evidence; no exhaustive test-count target is requested.
+
+#### R3 remains open — P1: document retrieval is still a search excerpt
+
+`lib/discovery/upstream.ts:94–99` calls this.search(sourceUrl), selects the first matching URL and returns that result. parseSearchResults has already truncated content to 2,000 characters. Therefore a matching chunk still masquerades as the requested document; documents over that size cannot be retrieved and multiple chunks are not a document. The original correction explicitly prohibited this substitute. The same production parser assumes a JSON array of {url,title,content}, but no captured actual search/document response or production-adapter compatibility test was added. The unchanged process fixture only calls learn_shopify_api through a separate client.
+
+Correction: implement verified selected-document retrieval with authentic title/source/content and the C15 document bound. Exercise the production adapter with actual sanitized upstream response shapes. If the pinned MCP cannot fetch documents, explicitly report that capability gap for architect resolution; do not label a matched search chunk a document or claim R3 complete. No live merchant/store call is needed to establish this distinction.
+
+#### R3 lifecycle remains incomplete — P2: startup failure is retained permanently
+
+A rejected connect/list/capability-check promise remains stored in started. Non-timeout startup failures do not invoke close/reset, so every later request awaits the same rejection until the service restarts. There is still no runtime shutdown owner invoking service.close. A timeout cleanup helper alone is not the required supervised lifecycle.
+
+Correction: close/reset failed startup safely, permit bounded subsequent recovery without hidden request retries, and wire owned shutdown/reaping. Keep concurrency coordination so one cleanup cannot accidentally operate on a replacement client. Verify a failed initial connection followed by a successful later request and local owned shutdown. Deployed lifecycle evidence remains separately developer-owned; local lifecycle behavior cannot be reassigned to it.
+
+#### Resubmission boundary
+
+The submitted 22/91 tests and typecheck/lint/build are recorded as reported passing. The independent failures above and inspected document/lifecycle paths prevent acceptance despite that evidence. The latest report overstates full literal/input validation and production adapter/lifecycle evidence; reconcile those claims with what the fixtures actually exercise. No deployed OAuth, cross-replica saturation or live-store run is newly required. Correct R1/R3 on the existing task branches, run focused local checks plus required build checks, commit/push and resubmit. R2 and the inspected R4 corrections need no unrelated rework. Preserve the C17 parallel component/integration ownership split and downstream gates.
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 

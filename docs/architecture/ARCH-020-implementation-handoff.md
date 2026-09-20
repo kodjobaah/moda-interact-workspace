@@ -400,3 +400,16 @@ launched by this amendment. Fixtures never become production service fallbacks.
 2026-09-21 C18 frontier: BACKGROUND-002 promoted Ready, unclaimed, after accepted
 BACKGROUND-001. COMMERCE-007 retains its own evaluator prerequisite but no longer
 blocks the consumer. SYSTEM-TEST-001 owns EC01–EC12 real-service pairing.
+
+## COMMERCE-011 Attempt 3 — Changes Requested — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 3 retained**, claim cleared, not accepted.
+Reviewed implementation `c616560` and report `78325853`. Prior four compiler
+reproductions pass and R4's rolling-history/readiness/error-handling defects are
+corrected in source. Three additional invalid GraphQL definitions still return
+valid:true (unquoted String value, duplicate argument, conflicting alias).
+R1 remains incomplete; R3 still returns a search excerpt as a document and retains
+failed startup promises without owned shutdown. See the latest task Architect
+Review. Verified artifact is retained; no new live validation requirement, claim,
+dependent promotion, implementation edit or main integration. Other task states
+and C17 ownership remain unchanged.
