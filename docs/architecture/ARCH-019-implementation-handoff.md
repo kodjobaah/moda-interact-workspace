@@ -2,7 +2,7 @@
 
 Canonical architecture: [ARCH-019](ARCH-019-merchant-recovery-experience.md).
 
-Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1. SHOPIFY-002 is Review at Attempt 3, not yet accepted. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress. No new task is promoted or launched by SHOPIFY-003 acceptance.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3. SHOPIFY-004 Ready at Attempt 0. SHOPIFY-005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependencies are reconciled into SHOPIFY-004; readiness does not launch implementation or authorize unmerged dependency consumption.
 
 SHOPIFY-001 accepted implementation: `08af00b85508d3ae7e653890abbc8a5ca0c0cc9d`; reviewed report: `181e3a91b3cfc10e099b913db6d2e5fbb6f5dcfb`. DATABASE-001 accepted `54c0ec2` is integrated in database `9c6a4d8` with an identical tree. The complete experience still requires all remaining tasks and terminal validation. The developer explicitly delegated commit/push of these review updates on 2026-09-20.
 
@@ -22,3 +22,7 @@ Materialisation creates only parent task worktrees/branches. Execution creates t
 All new task branches start from current origin/main. Developer integrates accepted implementation dependencies before downstream execution or explicitly authorizes the appropriate accepted dependency commit consumption. Additive database migration precedes the final app release; app deploy follows SHOPIFY-006 acceptance. Retain existing billing URLs and legacy detail redirects. System testing is terminal, after developer manual exercise, and cannot gate unfinished implementation.
 
 Historical baseline documents: ARCH-013 routing and accepted ARCH-017 onboarding/current-period behaviour. ARCH-019 changes navigation/read presentation only; keep the current source lifecycle policy. Do not edit unrelated pending-recovery or recovery-settings work present in shared checkouts.
+
+## SHOPIFY-002 final acceptance
+
+Accepted `1a60f1e` (Attempt 3), with all five PostgreSQL tests and four bounded index plans at tested `eb34340`; production readers unchanged. Correction PR #40 and accepted SHOPIFY-003 implementation must follow developer integration/approved consumption rules before SHOPIFY-004 execution. Report PR #159 contains the acceptance record.

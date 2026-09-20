@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-09-20T12:56:40Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-019-DATABASE-001
@@ -170,13 +170,83 @@ Parent report: published in the commit containing this report (SHA provided in f
 
 ### Review Status
 
-Changes Requested — 2026-09-20, Attempt 2. Not accepted. Same task returned to Ready, claim cleared, attempt preserved at 2.
+Accepted — 2026-09-20, Attempt 3. Complete under `completion_mode: automatic`.
 
 ### Review Notes
 
+Accepted implementation `1a60f1e17a27b9b927bb9a8b0bfff4c032a85e16`, report `b0d2e628efaa3f57e94856624caa78f38da629ae`. Verified PR #40 and report PR #159 heads and open states. All previous correction items are satisfied; no blocking implementation defect or workflow non-conformance remains.
+
+The app-owned seed helper removes only the exact leading psql ON_ERROR_STOP directive, preserves all remaining SQL, rejects unsupported directives and propagates database failures. Regression tests use the real unmodified database-owned fixture. UTC decoding/bindings and non-UTC regressions remain intact; no query-plan assertions were weakened. Production detail/cursor/message DTO modules are unchanged from the prior source review.
+
+### Reviewed Files
+
+Attempt 3 helper, unit/integration diffs, reader documentation and complete rehearsal evidence; prior reviewed production reader/DTO/cursor and UTC adapter verified unchanged. Reviewed task corrections, architecture, accepted DATABASE-001 dependency and current SHOPIFY-003 acceptance for downstream readiness.
+
+### Validation Reviewed
+
+- Architect rerun: `npm test -- tests/unit/recovery-detail-readers.test.ts --no-cache` — **37 passed**, exit 0. Focused TypeScript and committed-diff whitespace checks passed.
+- Accepted the supplied explicitly authorized rehearsal evidence at `moda-interact/docs/evidence/ARCH-019-SHOPIFY-002-attempt3-rehearsal.md`: `TZ=Europe/London MODA_RECOVERY_DETAIL_POSTGRES=1 npm test -- tests/integration/recovery-detail-query-plans.test.ts --no-cache`, exit **0**, **5 passed**, PostgreSQL **15.19**, tested commit `eb343405196047e18c0537da69dd87015b9f6b38`. Final `1a60f1e` differs only by the added evidence document. No redundant infrastructure rerun.
+- Parsed all four recorded JSON EXPLAIN plans. First/next use forward and previous/latest backward `ConversationMessage_conversationId_createdAt_id_idx` scans, each **51 Actual Rows, 1 Actual Loop, 0 index rechecks**, no Sort/Join. Shared hits are **4/6/5/7**, with zero read/temp blocks. Actual-reader behavior tests also cover ownership denial, exact UTC timestamps, adjacent/round-trip/latest windows and bounded related recoveries. Fixture plans establish the required bounded traversal, not production throughput or latency guarantees.
+- Full typecheck evidence retains seven syntax diagnostics in the unchanged access-policy test on this branch. That branch-specific condition is not the newer baseline after SHOPIFY-003's accepted test repair; neither is a clean full typecheck. No unrelated repair required.
+- Canonical worktrees, Attempt 3 claim/synchronization history, clean implementation and recursive database `9c6a4d8` agree with submission. Database fixture and production reader sources remain unchanged by Attempt 3.
+
+### Architecture Conformance
+
+Owned-recovery resolution precedes direct conversation-bound tuple pagination, replacing the earlier join/sort query shape. Read-only behavior, tenant scoping, safe DTO projection, honest message states and fixed query counts conform. Prior developer merge #38 is historical integration before acceptance; this acceptance covers the final corrected task, with correction PR #40 still requiring developer integration. No main merge/push, deployment or automatic revert performed.
+
+### Follow-up
+
+SHOPIFY-002 Complete at Attempt 3, executor/claim cleared; prior reviews retained below. SHOPIFY-004 becomes Ready at Attempt 0 because SHOPIFY-002 and SHOPIFY-003 are both accepted/Complete. Accepted dependency records and shared state are reconciled into its canonical parent worktree before publication. SHOPIFY-005/006 and SYSTEM-TEST-001 remain Pending. Readiness does not claim or launch execution; integrate accepted implementation dependencies or explicitly authorize accepted-commit consumption before execution. Publish review/frontier updates on the matching parent task branches under the developer's delegated authorization.
+
+### Historical Architect Review — Attempt 2 and earlier
+
+
+#### Review Status
+
+Changes Requested — 2026-09-20, Attempt 2. Not accepted. Same task returned to Ready, claim cleared, attempt preserved at 2.
+
+#### Review Notes
+
 Reviewed implementation `85656328b8607236af017e36383a3b300b2e3a8a` and report `7835d3bba8b358d7a014c85e48e986f5c623b04b`. The prior timezone defect is corrected: client-local OID 1114 decoding and ISO Date bindings retain UTC fields; all three non-UTC subprocess regressions pass without weakening plan assertions. A separate fixture-loading defect prevents the required PostgreSQL rehearsal from reaching its assertions.
 
-### Required Corrections
+#### Required Corrections
+
+1. **P2 — Load the psql fixture through a compatible execution path.** At `tests/integration/recovery-detail-query-plans.test.ts:26`, `client.query` receives the complete `database/scripts/fixtures/arch019-recovery-indexes-seed.sql`. Its first line is `\set ON_ERROR_STOP on`, a psql client directive, not server SQL. The pg driver forwards it unchanged, so PostgreSQL rejects setup with a syntax error before any of the five tests run. Correct the app-owned harness: execute through psql with failure propagation, or explicitly remove the known directive and send SQL only, retaining fail-fast driver errors. Do not edit the database-owned fixture merely to work around this. Add a cheap regression using the actual fixture to prove the supported loading path; preserve all seed SQL and existing plan assertions.
+2. **Required evidence — Run the corrected five-test rehearsal under the non-UTC command and established execution policy.** Supply tested commit, exit code, PostgreSQL version, and full first/next/previous/latest EXPLAIN ANALYZE BUFFERS output. All five tests must pass with non-empty bounded index traversal and no sort/join. The authorization question raised during this review concerned the current command; no run was started after source inspection identified this setup defect. Pending or skipped validation cannot establish acceptance.
+3. **Preserve the verified corrections and baseline limits.** Keep UTC read/write handling and non-UTC tests. Full typecheck remains blocked by the unchanged baseline syntax errors; focused passing checks do not certify the repository.
+
+#### Reviewed Files
+
+All eight task files: three production reader/DTO/cursor modules, focused tests, PostgreSQL suite, UTC helper, focused TypeScript configuration and reader documentation. Also inspected the exact database seed, schema relationships/indexes, parent architecture, task history and both PR states.
+
+#### Validation Reviewed
+
+Architect reran `npm test -- tests/unit/recovery-detail-readers.test.ts --no-cache`: 34 passed. Focused `tsc --noEmit -p tests/tsconfig.recovery-detail.json` and committed-diff whitespace check passed. The baseline syntax-error file remains identical to `c4fd514`; the same seven errors were independently established during the adjacent reader review. No Docker or PostgreSQL plan rehearsal launched in this review. The fixture incompatibility is established by the exact file contents and direct `client.query` call; no claim of executed integration failure is made.
+
+#### Architecture Conformance
+
+Production source remains read-only and follows owned-recovery lookup, direct conversation equality, tuple pagination, safe DTO projections and fixed query counts. The timezone correction is accepted as a correction, but the task is not accepted while actual-plan evidence is absent and its harness cannot load the fixture. SHOPIFY-004 and SYSTEM-TEST-001 remain gated.
+
+#### Merge / Integration State
+
+GitHub confirms implementation PR #38 was merged by the developer at `2026-09-20T12:41:19Z`, merge commit `49526b503b82d1abe39642f44f3b9f3caacba5ee`. The merged task files exactly match reviewed Attempt 2; report PR #159 remains open. Record this as integration before architect acceptance, not agent workflow misconduct or implicit acceptance. These modules have no route consumers in the merged change. This test-harness finding does not itself require reverting production reader code. Correct the same task and submit the later implementation correction for separate developer integration; an already-merged PR cannot integrate later commits. Do not rewrite main or revert automatically.
+
+#### Follow-up
+
+Reclaim `/moda-task ARCH-019-SHOPIFY-002` for Attempt 3 on the same canonical branch/worktrees, following normal main synchronization. Fix only the harness, supply focused and required PostgreSQL evidence, and return to review. SHOPIFY-001 remains Complete and SHOPIFY-003 remains In Progress at Attempt 1; preserve its active claim. No dependent promotion, implementation mutation, merge or deployment is performed by this review. Publish this parent review under the developer-delegated review-publication workflow.
+
+#### Historical Architect Review — Attempt 1
+
+
+##### Review Status
+
+Changes Requested — 2026-09-20, Attempt 1. Not accepted. Same task returned to Ready; claim cleared, attempt preserved.
+
+##### Review Notes
+
+Reviewed implementation a2c23d19a930bfb9e2402dbfb6b4fad454776b1f and report 8a5aa031c640207cc939221db4818b5337bcd73c. Tenant-constrained ownership, explicit projections, parameterized tuple pagination and fixed query counts conform in source inspection. Required PostgreSQL evidence is absent, and its proposed harness has a reproducible timezone defect. No production data/code change is demanded by this finding; test source correction is required.
+
+##### Required Corrections
 
 1. **P2 — Load the psql fixture through a compatible execution path.** At `tests/integration/recovery-detail-query-plans.test.ts:26`, `client.query` receives the complete `database/scripts/fixtures/arch019-recovery-indexes-seed.sql`. Its first line is `\set ON_ERROR_STOP on`, a psql client directive, not server SQL. The pg driver forwards it unchanged, so PostgreSQL rejects setup with a syntax error before any of the five tests run. Correct the app-owned harness: execute through psql with failure propagation, or explicitly remove the known directive and send SQL only, retaining fail-fast driver errors. Do not edit the database-owned fixture merely to work around this. Add a cheap regression using the actual fixture to prove the supported loading path; preserve all seed SQL and existing plan assertions.
 2. **Required evidence — Run the corrected five-test rehearsal under the non-UTC command and established execution policy.** Supply tested commit, exit code, PostgreSQL version, and full first/next/previous/latest EXPLAIN ANALYZE BUFFERS output. All five tests must pass with non-empty bounded index traversal and no sort/join. The authorization question raised during this review concerned the current command; no run was started after source inspection identified this setup defect. Pending or skipped validation cannot establish acceptance.
@@ -219,20 +289,20 @@ Reviewed implementation a2c23d19a930bfb9e2402dbfb6b4fad454776b1f and report 8a5a
 2. **Required evidence — Execute the corrected opt-in PostgreSQL validation under the existing developer-owned policy.** Supply command, tested commit, exit code, version and complete EXPLAIN output for first/next/previous/latest. Confirm non-empty bounded index traversal without full-transcript sorts/joins and actual tenant/page behavior. Skipped tests are not evidence. If still awaiting developer execution at submission, leave validation pending and return to Review, not Complete.
 3. **Report validation limits accurately.** Preserve the pre-existing full-typecheck syntax blocker and focused typecheck evidence. Do not equate the observed seven syntax errors with TYPECHECK-001's older 48 type errors. No unrelated repair is required by this review.
 
-#### Reviewed Files
+##### Reviewed Files
 
 All seven changed implementation files, ARCH-019 detail/query contracts, task acceptance criteria and completion report. Implementation worktree clean at reviewed SHA; prepared physical isolation/synchronization evidence recorded.
 
-#### Validation Reviewed
+##### Validation Reviewed
 
 Submitted 31 passing focused tests, passing focused strict TypeScript check and whitespace checks inspected. Full typecheck blocked by unchanged syntax errors. PostgreSQL suite unrun (five skipped).
 
 Reviewer reproduced driver behavior without database access using installed pg and pg/lib/utils.js with TZ=Europe/London: getTypeParser(1114)("2026-09-01 00:02:05").toISOString() -> "2026-08-31T23:02:05.000Z"; prepareValue(new Date("2026-09-01T00:02:05.000Z")) -> "2026-09-01T01:02:05.000+01:00". No long/live rehearsal launched.
 
-#### Architecture Conformance
+##### Architecture Conformance
 
 Read-only service scope and tenant boundaries appear aligned. Missing/foreign records return null; unknown message states and inbound delivery are handled without invented receipts. Production query-plan conformance remains unproven until corrected validation passes. No schema or cross-service change requested.
 
-#### Follow-up
+##### Follow-up
 
 Reclaim the same task through `/moda-task ARCH-019-SHOPIFY-002` for Attempt 2, correct the test harness, rerun focused checks and publish both branches. SHOPIFY-004 and SYSTEM-TEST-001 remain gated; no dependent promotion. Implementation PR #38 and report PR #159 stay open for correction. Review metadata publication is delegated by the developer; no merge or main update.
