@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
 executor: codex
 claimed_at: 2026-09-20T21:40:08Z
@@ -135,11 +135,11 @@ Representative real-audio quality checks are a **separate evidence record**, not
 
 ### Completion gates for amended scope
 
-- [ ] A1-L01–L06 implemented and validated using shop initialization then detected customer language; phone-country logic is absent.
-- [ ] Reuse accepted Shared/Database language contracts and existing source mappings; no new provenance package or migration is required.
-- [ ] A2-V01–V07 implemented and validated with deterministic provider mocks; Groq retained and explicit OpenAI provider/model behavior verified.
-- [ ] Gateway configuration handoff recorded; no reverse dependency on deployment/system-test is introduced.
-- [ ] Representative real-audio quality evidence recorded separately with exact outcomes/limits; original build/focused workflow checks rerun as appropriate.
+- [x] A1-L01–L06 implemented and validated using shop initialization then detected customer language; phone-country logic is absent.
+- [x] Reuse accepted Shared/Database language contracts and existing source mappings; no new provenance package or migration is required.
+- [x] A2-V01–V07 implemented and validated with deterministic provider mocks; Groq retained and explicit OpenAI provider/model behavior verified.
+- [x] Gateway configuration handoff recorded; no reverse dependency on deployment/system-test is introduced.
+- [x] Representative real-audio quality evidence recorded separately with exact outcomes/limits; original build/focused workflow checks rerun as appropriate.
 
 ## Interfaces / Contracts
 
@@ -318,6 +318,108 @@ Review the referral translation fallback explicitly. The synthetic SDK fixture i
 - Implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972` committed/pushed; [PR #48](https://github.com/kodjobaah/moda-interact-background/pull/48).
 - This parent report is submitted as a separate task-branch commit/PR; its publication result is recorded in the session and PR history (no self-referential commit hash).
 - No main merge/push, parent service gitlink update, architecture/index edits, dependency launch or architect acceptance.
+
+### Attempt 2 scope-amendment report
+
+#### Status
+
+Review — Attempt 2, executor codex. The A1 shop-language and A2 spoken-language
+amendments are implemented and locally validated. This submission makes no
+architect acceptance or Complete decision.
+
+#### Work completed
+
+- New recovery conversations initialize the existing language fields from the
+  canonicalized shop default with `MERCHANT_DEFAULT`. Checkout locale, phone and
+  country no longer select recovery language. Existing conversations retain their
+  established detected language.
+- Initial outreach requests the approved shop-language template. Follow-ups retain
+  the established language and the selector's existing approved shop fallback.
+  The selected template descriptor records its actual language without changing
+  the conversation language; no approved variant preserves no-template handling.
+- Recovery-specific detection now permits substantive customer text or a persisted
+  transcript to replace legacy source values at confidence >=0.85. Ambiguous,
+  numeric, URL-only, emoji-only and short input produces null detection and retains
+  the current language. Fixed referral localization remains explicitly limited to
+  en/fr/de/es/it/pt/nl; other fixed replies remain English and are not recorded as
+  detected language.
+- `SpeechTranscriptionService` retains Groq as the default and adds explicit OpenAI
+  selection. OpenAI defaults to `gpt-4o-mini-transcribe` only when selected. The
+  transcription request uses `/audio/transcriptions`, includes no language or
+  translation hint, sends the exact byte view with matching MIME/extension, and
+  records the actual provider/model. Provider errors are bounded and sanitized.
+- Voice input preserves routing-before-download, the 15 MiB and 120-second limits,
+  existing engagement behavior and the queue attempt budget. Unsupported, empty,
+  terminal or exhausted transcription requests the customer type a message and
+  never admits an agent. There is no silent provider fallback.
+- Successful transcript persistence and inbound-version advancement are one
+  transaction with version CAS. Delayed/stale completion cannot mutate or reply to
+  a newer turn; a duplicate cannot increment another turn. Audio history uses
+  `transcriptionCompletedAt`, so the completed transcript enters the correct current
+  fragment while the original event timestamp remains intact.
+- `docs/commerce-host.md` records the Gateway variable/credential contract,
+  independent test/production rollout and Groq rollback, the translation-worker
+  credential separation, local Ogg/Opus evidence and the precise unrun real-provider
+  quality limits. No deployment, schema, Shared contract or other repository changed.
+
+#### Amendment requirement-to-fixture matrix
+
+| Requirement | Deterministic evidence and observed side effects | Outcome |
+| --- | --- | --- |
+| A1-L01/L02 | `checkout-refresh.test.ts` and `conversation.service.test.ts`: French checkout/number still asks selector for shop fallback; shop `en-GB`/`fr` initializes existing fields with `MERCHANT_DEFAULT`; invalid/missing config invents no locale | Passed |
+| A1-L03 | `conversation.service.test.ts`: persisted detected French wins over shop English on the next resolution/upsert path | Passed |
+| A1-L04 | `whatsapp-template-selector.service.test.ts`: missing French selects approved English shop variant with actual descriptor language; immutable detected French remains; absent shop variant returns template-unavailable | Passed |
+| A1-L05 | `host.test.ts`, conversation CAS fixtures and `voice-workflow.test.ts`: substantive text/transcript returns and persists confident language while recovery amount, currency, URLs and policy remain trusted context | Passed |
+| A1-L06 | `host.test.ts` and language fixtures: short, numeric, URL and emoji input forces null detection and retains current referral language | Passed |
+| A2-V01 | `speech-transcription.service.test.ts`: French/English provider results are returned unchanged; multipart has only file/model/JSON response format and uses transcription, never translation | Passed with mocked provider; acoustic quality not claimed |
+| A2-V02 | `voice-workflow.test.ts`: raw abuse → route → engagement → download → validation → transcription → persistence → one admission → one agent → one text reply | Passed |
+| A2-V03/V04 | Audio-service/workflow fixtures: MIME/container mismatch and empty transcript persist terminal state/request-to-type with zero agent reservation | Passed |
+| A2-V05 | Speech/audio fixtures: 408/429/5xx and network failures remain one selected provider, retry only within the queue budget, then terminal request-to-type; no raw error leakage | Passed |
+| A2-V06 | Audio/workflow fixtures: replay and concurrent completion produce one transcript turn/admission/reply; interrupted enqueue recovery is limited to the same unprocessed latest transcript | Passed |
+| A2-V07 | Audio/workflow fixtures: newer inbound version rejects late completion as stale, sends no fallback/agent reply and retains newer language | Passed |
+
+#### Validation
+
+All validation ran in the prepared implementation worktree with Node 24.19.0,
+npm 11.17.0, Prisma 6.19.3, Shared 0.13.1 / runner 1.0.0 and MCP SDK 1.30.0.
+
+- `npm run build` — passed after final changes, including Prisma generation and
+  TypeScript compilation.
+- Task-focused 21-file Vitest run — **235 passed**, 16.33 seconds. This includes the
+  original host/routing/history/admission/outreach suite plus the A1/A2 fixtures.
+- `voice-workflow.test.ts` — **4 passed** independently before the broad run.
+- `audio-format.test.ts` parses a locally generated 0.5-second synthetic Ogg/Opus
+  fixture with `audio/ogg; codecs=opus`; no conversion was needed.
+- `git diff --check` — passed.
+
+No paid OpenAI/Groq, Meta, Shopify, deployed Commerce, Redis or shared PostgreSQL
+service was contacted. French/English consented real-speech provider checks remain
+explicitly not run and are recorded separately in `docs/commerce-host.md`; mocked
+workflow and synthetic-tone parsing do not prove acoustic quality or live provider
+codec acceptance.
+
+#### Files and ownership
+
+Implementation changes are restricted to `moda-interact-background`: language
+initialization/detection, template selection inputs, host instructions/context,
+audio persistence/history, transcription adapters, worker retry handling, focused
+fixtures and `docs/commerce-host.md`. Parent changes are restricted to this task
+file. The accepted Shared/Database contracts are reused without migration or enum
+changes. No parent service gitlink, architecture/index, another task, deployment or
+enabled task was changed.
+
+#### Git / VCS
+
+- Canonical parent and implementation worktrees and the mirrored
+  `task/ARCH-020-BACKGROUND-001` branches supplied by the launcher were retained.
+- Attempt 2 claim is `9b79fcc8327a65aef2cbff86474af97cf6761968` on the parent branch.
+- Attempt 2 implementation commit `399cc2f31f52d9ca88797a266129ee16c8465b14`
+  is pushed to the implementation task branch.
+- Existing [Background PR #48](https://github.com/kodjobaah/moda-interact-background/pull/48)
+  and [workspace PR #168](https://github.com/kodjobaah/moda-interact-workspace/pull/168)
+  are updated by this submission; the containing commits are the review revisions.
+- No main merge/push, force-push, parent gitlink update, downstream launch or
+  architect acceptance.
 
 ## Architect Review
 
