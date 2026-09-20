@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-20T07:07:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-014-ADMIN-009
@@ -149,3 +149,54 @@ Set task to `review`, clear claim fields, report exact validation results/implem
 ## Acceptance invariant
 
 The Admin UI describes the existing interval as periodic billing **and entitlement** reconciliation including expired promotion cleanup, while the underlying runtime-control contract remains byte-for-byte compatible in key/type/range/default semantics.
+
+## Completion Report
+
+### Status
+
+Ready for Review.
+
+### Files Changed
+
+- `moda-interact-admin/src/lib/admin/background-runtime-control-validation.ts`
+- `moda-interact-admin/tests/unit/background-runtime-control-validation.test.ts`
+- `moda-interact-admin/tests/security/admin-background-runtime-controls.test.mjs`
+
+### Work Completed
+
+- Updated the existing reconciliation interval guidance to describe periodic billing and entitlement reconciliation, including Shopify billing checks and expired promotion cleanup.
+- Updated the existing reconciliation batch guidance to describe expired promotion cleanup without adding a new control.
+- Added exact metadata contract coverage for both fields and source-level security assertions for the approved copy and prohibited promotion-specific control names.
+- Preserved all existing keys, labels, units, ranges, defaults, authorization, version fencing, audit, and persistence semantics.
+
+### Validation Results
+
+- Focused unit/security tests: passed, 13 tests, 0 failures.
+- `git diff --check`: passed.
+- `npm run test:unit`: blocked by missing installed dependencies; changed tests passed, while unrelated tests failed on missing `exceljs` and `@modainteract/moda-interact-shared`.
+- `npm test`: blocked by missing installed dependencies including `bullmq` and other repository packages.
+- `npm run prisma:generate`: blocked because `prisma` is not installed.
+- `npm run prisma:validate`: blocked because `prisma` is not installed.
+- `npm run build`: blocked because `prisma` is not installed.
+- Focused lint: blocked because `eslint` is not installed.
+- Focused format check: blocked because `prettier` is not installed.
+
+### Deviations
+
+Repository-wide validation could not complete in the dependency-free prepared worktree. No unrelated failures were repaired.
+
+### Assumptions
+
+The existing `field.guidance` metadata path is the approved UI copy surface, as confirmed by the component read before editing.
+
+### Unresolved Issues
+
+Install the repository dependencies in the implementation worktree before rerunning the blocked required validation commands.
+
+### Architectural Concerns
+
+None.
+
+### Git / VCS
+
+Implementation commit and parent report commit are recorded in the final response after publication.
