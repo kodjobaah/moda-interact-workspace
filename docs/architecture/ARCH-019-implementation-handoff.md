@@ -2,7 +2,9 @@
 
 Canonical architecture: [ARCH-019](ARCH-019-merchant-recovery-experience.md).
 
-DATABASE-001 is accepted/Complete at `54c0ec2e092cd9db52d76e5bb46899efa4063965` (Attempt 1). Authorized PostgreSQL 15.19 rehearsal passed; evidence is retained with the database task. SHOPIFY-001/002 are Ready, with acceptance metadata reconciled and published on each canonical parent task branch. Remaining tasks are Pending. No downstream task is claimed. Review publication is explicitly delegated by the developer; developer integration or explicit accepted-commit consumption remains required. SHOPIFY-002 owns the measured transcript query-shape issue and actual-reader plan verification.
+Current frontier: DATABASE-001 and SHOPIFY-001 accepted/Complete. SHOPIFY-002 Ready for Attempt 3 corrections (Attempt 2 preserved); SHOPIFY-003 In Progress at Attempt 1. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Accepted dependency metadata is reconciled into the newly Ready task worktree. The developer authorized publication of these review updates on the matching parent task branches on 2026-09-20. Readiness does not launch execution or authorize prerequisite integration.
+
+SHOPIFY-001 accepted implementation: `08af00b85508d3ae7e653890abbc8a5ca0c0cc9d`; reviewed report: `181e3a91b3cfc10e099b913db6d2e5fbb6f5dcfb`. DATABASE-001 accepted `54c0ec2` is integrated in database `9c6a4d8` with an identical tree. The complete experience still requires all remaining tasks and terminal validation. The developer explicitly delegated commit/push of these review updates on 2026-09-20.
 
 Dependency sequence:
 
@@ -21,6 +23,6 @@ All new task branches start from current origin/main. Developer integrates accep
 
 Historical baseline documents: ARCH-013 routing and accepted ARCH-017 onboarding/current-period behaviour. ARCH-019 changes navigation/read presentation only; keep the current source lifecycle policy. Do not edit unrelated pending-recovery or recovery-settings work present in shared checkouts.
 
-## Latest SHOPIFY-002 review checkpoint
+## SHOPIFY-002 Attempt 2 review
 
-2026-09-20: Changes Requested on implementation a2c23d1. Same task Ready for Attempt 2, claim cleared. Fix timezone-dependent PostgreSQL harness and provide required query-plan evidence; no downstream promotion. SHOPIFY-001 is separately in Review in its canonical worktree; do not relaunch it from older initial snapshots.
+Changes Requested: timezone correction passes, but the pg harness sends a psql-only fixture directive as SQL. Correct setup and supply all five PostgreSQL tests/plans before acceptance. Implementation PR #38 was merged early at `49526b5`; report PR #159 remains open. No automatic revert: the finding concerns test setup and these readers are not wired into routes. Future corrections require developer integration after review.
