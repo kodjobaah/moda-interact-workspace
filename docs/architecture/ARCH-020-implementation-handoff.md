@@ -221,3 +221,14 @@ Shopify queries without per-business-tool handlers; policy helpers retain privil
 checks. C15/COMMERCE-011 provides core in-Studio discovery. COMMERCE-008 contains
 all U01–U13 pages/traversals and COMMERCE-009 U14; their prerequisites include the
 actual discovery, publication and execution services. No implementation is claimed.
+
+## Response-contract authoring amendment
+
+C16 adds release-owned response instructions and details schemas, U10/U11 authoring
+and U14 preview. Shared retains a stable delivery envelope with generic validation;
+CommerceRelease gains two fields, no new table. Nine owning tasks carry explicit
+implementation/acceptance requirements. Existing dependency edges already place
+persistence/contracts before publication/runtime/UI; no new task or readiness
+promotion is required. Published definitions are pinned through grant.releaseId.
+The original visual prototype predates the C16 release-panel extension; the exact
+page specification in the UI design and COMMERCE-008 is authoritative for it.

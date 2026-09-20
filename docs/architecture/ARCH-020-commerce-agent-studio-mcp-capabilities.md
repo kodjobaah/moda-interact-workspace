@@ -786,3 +786,21 @@ definitions for review; no implementation is launched by this packet.
 - 2026-09-20: added database-defined tools and response templates (C14). Existing seven-table layout stores complete definitions in CommerceCapabilityRevision.toolDefinitions; conversation grants pin definitionVersion. Updated affected tasks to use a generic Commerce executor over approved operations rather than per-tool code registrations.
 
 - 2026-09-20: reconciled full Studio authoring: nine tables with reusable tools, C14 generic public Shopify queries, C15 integrated discovery, 14 explicit UI pages, COMMERCE-011 and a 21-task reciprocal dependency graph. Earlier embedded-definition/fixed-operation notes are superseded.
+
+## Release-owned response definitions
+
+Binding contract C16 extends the finalResponse design. Each immutable release owns
+response instructions, a constrained JSON Schema for custom details and its hash.
+The Shared runner composes/validates that supplied definition generically; Background
+consumes the unchanged delivery fields and ignores details. Supported response
+changes require release publication, not a package/worker deployment. Delivery
+envelope changes remain coordinated code changes. ConversationGrant.releaseId pins
+the definition; current recovery and language context still refresh every turn.
+
+Studio U11 exposes Response contract; Edit as new release opens U10's Members /
+Response contract / Review composer. U14 tests its frozen synthetic definition,
+then returns to the composer before separate release creation and activation.
+The exact C16 page extension and N13 traversal appear in the UI design and
+COMMERCE-008. CommerceRelease adds responseContract and responseContractHash,
+keeping the nine-table design. Database, Shared contracts/runner, Commerce
+publication/MCP/UI/preview, Background and system-test tasks own the full change.

@@ -59,6 +59,8 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+- [ ] Serve C16 responseContract/hash in the C5 manifest from the selected/pinned release; reject incompatible definitions, never select latest for an existing grant. Cover R07/R12.
+
 - [ ] Implement the C5 Exact available-tool discovery sequence: trusted shop/recovery/conversation/turn claims, first resolve then immutable grant persistence, execute-purpose tools/list with empty params, and tools/call bound to that original grant. shopId alone is not a grant selector.
 
 - [ ] Resolve capability toolBindings through immutable CommerceToolRevision records and dispatch the C14 execution union. Dedupe identical shared versions; enforce enabled tool plus any still-eligible ORIGINAL provenance capability; never use newly added associations as authority.
@@ -106,6 +108,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] Two conversations for one shop with different pinned releases retain different original lists; a second shop cannot select those grants. tools/list contains exact descriptors only, omits revoked tools, rejects caller-supplied shopId parameters and never expands after publication.
 

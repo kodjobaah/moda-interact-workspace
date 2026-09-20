@@ -58,6 +58,8 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+- [ ] Extend CommerceManifest with required C16 responseContract/hash and CommerceFinalResponse with details. Export strict definition/envelope types and generic pure subset/hash validation contracts. Keep release-specific properties out of compiled types; document fixed envelope versus configurable details.
+
 - [ ] Export the separate bounded structural draft definition schema and strict publishable definition schema from C14; draft-save acceptance is not execution/publication approval.
 
 - [ ] Export C14 strict reusable tool identity/revision/binding/grant-provenance schemas and discriminated SHOPIFY_STOREFRONT_QUERY/POLICY_OPERATION execution definitions; no fixed MCP tool-name enum. Export the schema/compiler interface consumed by Commerce, not a provider process in Shared.
@@ -107,6 +109,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-SHARED-002
 
 ## Acceptance Criteria
+
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] A previously unknown feature key and query-based tool survive validation/manifest creation. Same shared revision deduplicates; different revisions conflict; grant provenance never widens after creation.
 

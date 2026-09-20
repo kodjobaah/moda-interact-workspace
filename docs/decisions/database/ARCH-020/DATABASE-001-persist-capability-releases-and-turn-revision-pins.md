@@ -169,6 +169,8 @@ once with the enclosing draft edit.
 |---|---|---|---|
 | `id` | String / text | cuid | Primary key |
 | `releaseNumber` | Int / integer | autoincrement() | Unique positive number; sequence gaps are allowed |
+| `responseContract` | Json / jsonb | Required, no default | C16 strict response.v1 definition; immutable with release |
+| `responseContractHash` | String / varchar(64) | Required, no default | C16 canonical SHA-256; SQL CHECK lowercase 64 hexadecimal characters |
 | `description` | String / text | Optional | At most 4,000 characters |
 | `runnerCompatibility` | String / varchar(128) | Required | Non-blank SemVer range, validated by publishing service |
 | `contractVersion` | String / varchar(64) | Required | Non-blank supported contract version |
@@ -423,6 +425,8 @@ User/Account/Session tables or replace the existing Shopify Session table.
 
 ## Work Items
 
+- [ ] Persist the two C16 CommerceRelease fields exactly as specified; enforce JSON object/version/required-key checks and hash format in SQL, full schema validation/hash computation in Commerce. Cover immutable fields and atomic release creation; no tenth table or separate grant pin.
+
 - [ ] Implement the independent CommerceTool/CommerceToolRevision tables, capability toolBindings and expanded audit targets exactly as specified; update migration/ERD/fixtures and preserve existing Admin Feature ownership.
 
 - [ ] Store full C14 definitions in CommerceToolRevision and exact toolBindings in CommerceCapabilityRevision, using the nine specified tables. Grant entries include exact tool/revision identity and original capabilityKeys provenance; SQL enforces the complete union.
@@ -461,6 +465,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] Direct SQL rejects dangling/wrong-tool bindings, duplicate tool IDs/names, conflicting release tool revisions, mismatched revision name/version, published tool edits/deletes and malformed grant provenance. A shared tool bound by two selected features appears once with both original provenance keys; zero remote tools is valid for conversation_core.
 
