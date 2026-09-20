@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
-executor: codex
-claimed_at: 2026-09-20T21:40:08Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-016-BACKGROUND-003
@@ -422,6 +422,39 @@ enabled task was changed.
   architect acceptance.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-20
+
+**Not accepted. Task returned to Ready**, Attempt 2 preserved, executor/claimed_at cleared. No new attempt is claimed. Latest reviewed implementation: `399cc2f31f52d9ca88797a266129ee16c8465b14`; report: `0ed919099feadf291d0521b07ed54c86157121ac`. PR #48/#168 remote heads verified open; both worktrees were clean. This decision supersedes older readiness/review notes below. The latest simplified shop-language scope remains binding: no phone-country inference or new Shared/Database provenance prerequisites.
+
+A1/A2 remain user scope amendments, not retroactive defects in the original task. The following are defects in the submitted implementation of amended audio behavior, confirmed independently against the committed Attempt 2 code.
+
+#### R1 — P1: do not compare transcription completion time with a new message's sent time
+
+`src/services/inbound-whatsapp-audio.service.ts:55–57` rejects an inbound voice when `lastInboundAt > event.occurredAt`, but `complete` writes `lastInboundAt = now` at lines 123–128. Those are different timelines. An earlier note sent at 11:59:50 and completed at 12:00:05 makes a newer note sent at 12:00:00 appear stale. The newer valid note is permanently marked STALE_TRANSCRIPTION and ignored before download; no reply/fallback reaches the customer.
+
+Independent fixture: pending new audio event at 12:00:00, conversation lastInboundAt 12:00:05 from the earlier audio completion, inboundVersion/lastProcessedVersion 2/2. Expected completed; actual ignored. This is a new customer message, not a duplicate or a completion from a superseded turn.
+
+Correction: use consistent durable event/ordering identity to distinguish genuinely newer inbound messages from later processing of older messages. Preserve required completed-transcript history ordering and duplicate/late-result protections; do not simply remove all stale checks. Add consecutive-note tests where event order and transcription completion order differ, including serial processing of a queued newer note and overlapping completions. Assert the valid newer message persists/admitted exactly once, while a genuinely superseded older result cannot send or overwrite newer language.
+
+#### R2 — P1: finishing the preceding reply does not supersede new incoming audio
+
+`src/services/inbound-whatsapp-audio.service.ts:115–117` treats any lastProcessedVersion change as stale, and the completion transaction repeats that condition at line 127. With inboundVersion fixed at 2, a new voice transcription that starts while prior turn 2 is processing is discarded when that reply finishes (lastProcessedVersion 1 -> 2), even though no newer inbound message arrived.
+
+Independent fixture: baseline inboundVersion/lastProcessedVersion 2/1; transcription returns substantive text after only lastProcessedVersion advances to 2. Expected completed; actual ignored. A new voice must be able to advance the next inbound turn when the prior reply completes normally.
+
+Correction: distinguish legitimate prior-turn completion from superseding inbound activity in both prechecks and transactional admission. Add deterministic races where the preceding reply finishes during provider work and immediately before the completion transaction; the new audio must persist once and enter normal admission. Retain negative controls for actual newer inbound activity, duplicate transcription completion and stale model delivery/language updates.
+
+#### Validation and resubmission
+
+Isolated review harness copied the submitted audio-service fixtures to `/tmp/arch020-bg-a2-review/audio-review.test.ts`, using the committed production modules and two added timing cases. Result: **13 existing tests passed; both new expected-completion tests failed with actual ignored**. No repository implementation was edited and no provider contacted. Initial sandbox test startup failed while writing Vitest cache; the authorized rerun produced these actual test results. The temporary path is convenience only; the two deterministic fixtures above are the durable reproduction specification.
+
+Reviewed the reported build/235-test/synthetic Ogg evidence and explicit unrun French/English live-provider quality limitations. Passing reported tests do not cover R1/R2. No acoustic quality claim is made or paid validation newly required by this decision. Preserve the separate real-audio evidence limitation in the next report.
+
+Correct R1/R2 on the same implementation task branch, add the named regression/negative-control cases, rerun the affected workflow suite/build, commit/push both branches and resubmit. Preparation owns the next Attempt 3 claim after this parent overlay is published. No downstream promotion, main integration, service gitlink update or implementation commit is performed by this review.
+
+### Historical architect decisions (superseded where inconsistent)
+
 
 ### Review disposition — scope amended, acceptance pending — 2026-09-20
 

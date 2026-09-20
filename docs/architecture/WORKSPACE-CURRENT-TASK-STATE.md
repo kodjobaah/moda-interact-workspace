@@ -406,7 +406,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| ARCH-020-BACKGROUND-001 | background | ready | 1 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
+| ARCH-020-BACKGROUND-001 | background | ready | 2 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
@@ -523,3 +523,17 @@ and superseded. Both unclaimed provenance tasks were removed with their dependen
 edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
 scope remains. All four retained prerequisites are accepted Complete. Active task
 scope returns to 20; no automatic execution or expanded-scope acceptance occurred.
+
+
+## BACKGROUND-001 Attempt 2 architect review — Changes Requested
+
+Reviewed implementation 399cc2f and report 0ed91909. **Ready, Attempt 2 preserved,
+claim cleared**, not accepted. R1 confuses earlier audio completion time with a
+new message's sent time; R2 treats completion of the preceding reply as superseding
+new audio. Both reproduce as ignored valid messages. The canonical task's latest
+Architect Review contains the correction contract and validation expectations.
+The original A1/A2 scope amendments are not retroactive defects; these findings
+concern the submitted amended implementation. Simplified shop-language scope
+remains; no phone-country prerequisites are restored. No downstream promotion or
+new attempt is claimed. Older Background review/in-progress/readiness statements
+are historical; this is the current decision. Architecture remains unaccepted.

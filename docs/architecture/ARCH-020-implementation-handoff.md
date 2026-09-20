@@ -346,3 +346,17 @@ and superseded. Both unclaimed provenance tasks were removed with their dependen
 edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
 scope remains. All four retained prerequisites are accepted Complete. Active task
 scope returns to 20; no automatic execution or expanded-scope acceptance occurred.
+
+
+## BACKGROUND-001 Attempt 2 architect review — Changes Requested
+
+Reviewed implementation 399cc2f and report 0ed91909. **Ready, Attempt 2 preserved,
+claim cleared**, not accepted. R1 confuses earlier audio completion time with a
+new message's sent time; R2 treats completion of the preceding reply as superseding
+new audio. Both reproduce as ignored valid messages. The canonical task's latest
+Architect Review contains the correction contract and validation expectations.
+The original A1/A2 scope amendments are not retroactive defects; these findings
+concern the submitted amended implementation. Simplified shop-language scope
+remains; no phone-country prerequisites are restored. No downstream promotion or
+new attempt is claimed. Older Background review/in-progress/readiness statements
+are historical; this is the current decision. Architecture remains unaccepted.
