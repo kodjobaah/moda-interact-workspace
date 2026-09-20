@@ -377,3 +377,9 @@ SHOPIFY-019   -> SHOPIFY-016
 `ARCH-010-DATABASE-012` remains Superseded by DATABASE-013, and `ARCH-010-SHOPIFY-005` remains Superseded by SHOPIFY-006.
 
 For current sequencing use `ARCH-010-implementation-handoff.md`; individual task `depends_on` remains authoritative.
+
+## ARCH-019 — merchant recovery experience (2026-09-20)
+
+Agreed; implementation not started. Ready: ARCH-019-DATABASE-001. Pending: ARCH-019-SHOPIFY-001 through SHOPIFY-006 and ARCH-019-SYSTEM-TEST-001. Task YAML in each canonical parent task worktree remains authoritative; system validation is terminal/manual-gated.
+
+[Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)
