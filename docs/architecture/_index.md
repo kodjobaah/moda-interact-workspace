@@ -61,6 +61,23 @@ typecheck/lint limitations remain documented. SYSTEM-TEST-001 remains Pending
 until all its implementation dependencies are accepted, then explicitly
 user-invoked; no task is launched. Developer integration remains separate.
 
-This task-branch snapshot has 19 tasks: 4 Complete, 1 Ready, 14 Pending.
+Historical pre-acceptance snapshot: 19 tasks, 4 Complete, 1 Ready, 14 Pending; superseded for BACKGROUND-001 by the Attempt 3 acceptance below.
 Other canonical task worktrees remain authoritative for concurrent progress;
 this review does not overwrite their state. Prior readiness records are historical.
+
+## BACKGROUND-001 Attempt 3 architect acceptance — 2026-09-20
+
+ARCH-020-BACKGROUND-001 is **Accepted / Complete, Attempt 3**, implementation
+`4e42056`, report `7a3cf35d`. R1/R2 are resolved: persisted inbound ordering
+replaces completion-time comparisons, and finishing an earlier reply does not
+discard valid pending audio. Architect independently reran **133 passing tests**
+and reviewed the submitted passing build and local real-SDK compatibility evidence.
+The existing configurable OpenAI adapter and A1/A2 amendments are accepted.
+Live audio-quality and PostgreSQL concurrency checks remain explicitly not run;
+no deployed integration or acoustic-quality result is asserted.
+
+This is the current decision and supersedes earlier BACKGROUND-001 Ready/Review
+and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
+GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
+no dependent task is promoted or launched. Developer integration remains separate,
+and ARCH-020 is not complete. See the task's latest Architect Review for limits.

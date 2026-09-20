@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 150
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 3
 depends_on:
   - ARCH-016-BACKGROUND-003
   - ARCH-020-SHARED-001
@@ -89,7 +89,7 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Scope amendments requested during Attempt 1 review
 
-These are **new user-requested scope amendments A1/A2**, not defects against the original task or its submitted implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972`. Preserve the original Completion Report and validation history. Expanded scope is not yet implemented or accepted. The binding details are also recorded as C6.2/C6.3 in the architecture implementation contracts; they supersede conflicting assumptions about initial language/customer-preference inputs for this recovery path.
+These are **new user-requested scope amendments A1/A2**, not defects against the original task or its submitted implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972`. Preserve the original Completion Report and validation history. The original amendment introduced additional scope; implementation evidence is recorded in the Attempt 2 and Attempt 3 reports below. Expanded-scope architect acceptance is recorded in the Attempt 3 Architect Review below. The binding details are also recorded as C6.2/C6.3 in the architecture implementation contracts; they supersede conflicting assumptions about initial language/customer-preference inputs for this recovery path.
 
 ### A1 — Shop language first, then customer message language
 
@@ -135,11 +135,11 @@ Representative real-audio quality checks are a **separate evidence record**, not
 
 ### Completion gates for amended scope
 
-- [ ] A1-L01–L06 implemented and validated using shop initialization then detected customer language; phone-country logic is absent.
-- [ ] Reuse accepted Shared/Database language contracts and existing source mappings; no new provenance package or migration is required.
-- [ ] A2-V01–V07 implemented and validated with deterministic provider mocks; Groq retained and explicit OpenAI provider/model behavior verified.
-- [ ] Gateway configuration handoff recorded; no reverse dependency on deployment/system-test is introduced.
-- [ ] Representative real-audio quality evidence recorded separately with exact outcomes/limits; original build/focused workflow checks rerun as appropriate.
+- [x] A1-L01–L06 implemented and validated using shop initialization then detected customer language; phone-country logic is absent.
+- [x] Reuse accepted Shared/Database language contracts and existing source mappings; no new provenance package or migration is required.
+- [x] A2-V01–V07 implemented and validated with deterministic provider mocks; Groq retained and explicit OpenAI provider/model behavior verified.
+- [x] Gateway configuration handoff recorded; no reverse dependency on deployment/system-test is introduced.
+- [x] Representative real-audio quality evidence recorded separately with exact outcomes/limits; original build/focused workflow checks rerun as appropriate.
 
 ## Interfaces / Contracts
 
@@ -181,31 +181,31 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
+- [x] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
-- [ ] Verify C6.1 P01–P12 through host integration fixtures, including fresh status on later turns, explicit-language precedence, validated detection persistence and no delivery from invalid/stale final results.
+- [x] Verify C6.1 P01–P12 through host integration fixtures, including fresh status on later turns, explicit-language precedence, validated detection persistence and no delivery from invalid/stale final results.
 
-- [ ] Two conversations for one shop with different pinned releases retain different original lists; a second shop cannot select those grants. tools/list contains exact descriptors only, omits revoked tools, rejects caller-supplied shopId parameters and never expands after publication.
+- [x] Two conversations for one shop with different pinned releases retain different original lists; a second shop cannot select those grants. tools/list contains exact descriptors only, omits revoked tools, rejects caller-supplied shopId parameters and never expands after publication.
 
-- [ ] Newly published query tool works for new grants without a Background build, while a retained grant cannot discover it; no fixed conversation_core/product_search admission dependency remains beyond legitimate current feature entitlement checks.
+- [x] Newly published query tool works for new grants without a Background build, while a retained grant cannot discover it; no fixed conversation_core/product_search admission dependency remains beyond legitimate current feature entitlement checks.
 
-- [ ] Valid explicit replies resume only their referenced recovery and original grant, including replies delayed by one or ten hours with intervening outreach to other recoveries.
-- [ ] Unreferenced messages with exactly one recovery route without clarification. Unreferenced zero/multiple-candidate, unknown-reference, wrong-customer, wrong-provider and missing-recovery cases cannot invoke CommerceAgent or access merchant tools. Replying to an unowned clarification cannot manufacture a recovery link.
+- [x] Valid explicit replies resume only their referenced recovery and original grant, including replies delayed by one or ten hours with intervening outreach to other recoveries.
+- [x] Unreferenced messages with exactly one recovery route without clarification. Unreferenced zero/multiple-candidate, unknown-reference, wrong-customer, wrong-provider and missing-recovery cases cannot invoke CommerceAgent or access merchant tools. Replying to an unowned clarification cannot manufacture a recovery link.
 
-- [ ] New conversations consume compatible tool/prompt revisions without redeploying Background; all turns/retries of existing conversations reuse their original exact tool grant and prompt release.
-- [ ] Unknown contract/runner versions, MCP outage and invalid results fail explicitly; no hard-coded discount fallback is used.
-- [ ] Existing language handling, admission ordering and structured final-response semantics remain intact with the generic runner.
+- [x] New conversations consume compatible tool/prompt revisions without redeploying Background; all turns/retries of existing conversations reuse their original exact tool grant and prompt release.
+- [x] Unknown contract/runner versions, MCP outage and invalid results fail explicitly; no hard-coded discount fallback is used.
+- [x] Existing language handling, admission ordering and structured final-response semantics remain intact with the generic runner.
 
-- [ ] Two turns of the same conversation use the same grant despite a new release/feature or worker restart. Concurrent first turns select one winning grant; a different eligible new conversation may receive the new release.
+- [x] Two turns of the same conversation use the same grant despite a new release/feature or worker restart. Concurrent first turns select one winning grant; a different eligible new conversation may receive the new release.
 
 ## Validation
 
-- [ ] Publish a newly named supported tool without Background deployment, use it for an eligible new conversation, and prove an existing conversation cannot list/call the new name or template version.
+- [x] Publish a newly named supported tool without Background deployment, use it for an eligible new conversation, and prove an existing conversation cannot list/call the new name or template version.
 
-- [ ] Add focused multi-turn grant and unanswerable-question fixtures for the scoped acceptance criteria; assert granted tool IDs/versions and referral output, not just prompt text.
-- [ ] Run focused Vitest tests with a local mock MCP server for discovery, prompt retrieval, tool calls, tenant headers, release pin races and deadlines.
-- [ ] Run declared npm run build and git diff --check; do not assume lint/typecheck scripts exist.
-- [ ] Record the client/server compatibility set established by Commerce foundation before acceptance; mocks alone cannot prove cross-SDK interoperability.
+- [x] Add focused multi-turn grant and unanswerable-question fixtures for the scoped acceptance criteria; assert granted tool IDs/versions and referral output, not just prompt text.
+- [x] Run focused Vitest tests with a local mock MCP server for discovery, prompt retrieval, tool calls, tenant headers, release pin races and deadlines.
+- [x] Run declared npm run build and git diff --check; do not assume lint/typecheck scripts exist.
+- [x] Record the client/server compatibility set established by Commerce foundation before acceptance; mocks alone cannot prove cross-SDK interoperability.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -319,7 +319,218 @@ Review the referral translation fallback explicitly. The synthetic SDK fixture i
 - This parent report is submitted as a separate task-branch commit/PR; its publication result is recorded in the session and PR history (no self-referential commit hash).
 - No main merge/push, parent service gitlink update, architecture/index edits, dependency launch or architect acceptance.
 
+### Attempt 2 scope-amendment report
+
+#### Status
+
+Review — Attempt 2, executor codex. The A1 shop-language and A2 spoken-language
+amendments are implemented and locally validated. This submission makes no
+architect acceptance or Complete decision.
+
+#### Work completed
+
+- New recovery conversations initialize the existing language fields from the
+  canonicalized shop default with `MERCHANT_DEFAULT`. Checkout locale, phone and
+  country no longer select recovery language. Existing conversations retain their
+  established detected language.
+- Initial outreach requests the approved shop-language template. Follow-ups retain
+  the established language and the selector's existing approved shop fallback.
+  The selected template descriptor records its actual language without changing
+  the conversation language; no approved variant preserves no-template handling.
+- Recovery-specific detection now permits substantive customer text or a persisted
+  transcript to replace legacy source values at confidence >=0.85. Ambiguous,
+  numeric, URL-only, emoji-only and short input produces null detection and retains
+  the current language. Fixed referral localization remains explicitly limited to
+  en/fr/de/es/it/pt/nl; other fixed replies remain English and are not recorded as
+  detected language.
+- `SpeechTranscriptionService` retains Groq as the default and adds explicit OpenAI
+  selection. OpenAI defaults to `gpt-4o-mini-transcribe` only when selected. The
+  transcription request uses `/audio/transcriptions`, includes no language or
+  translation hint, sends the exact byte view with matching MIME/extension, and
+  records the actual provider/model. Provider errors are bounded and sanitized.
+- Voice input preserves routing-before-download, the 15 MiB and 120-second limits,
+  existing engagement behavior and the queue attempt budget. Unsupported, empty,
+  terminal or exhausted transcription requests the customer type a message and
+  never admits an agent. There is no silent provider fallback.
+- Successful transcript persistence and inbound-version advancement are one
+  transaction with version CAS. Delayed/stale completion cannot mutate or reply to
+  a newer turn; a duplicate cannot increment another turn. Audio history uses
+  `transcriptionCompletedAt`, so the completed transcript enters the correct current
+  fragment while the original event timestamp remains intact.
+- `docs/commerce-host.md` records the Gateway variable/credential contract,
+  independent test/production rollout and Groq rollback, the translation-worker
+  credential separation, local Ogg/Opus evidence and the precise unrun real-provider
+  quality limits. No deployment, schema, Shared contract or other repository changed.
+
+#### Amendment requirement-to-fixture matrix
+
+| Requirement | Deterministic evidence and observed side effects | Outcome |
+| --- | --- | --- |
+| A1-L01/L02 | `checkout-refresh.test.ts` and `conversation.service.test.ts`: French checkout/number still asks selector for shop fallback; shop `en-GB`/`fr` initializes existing fields with `MERCHANT_DEFAULT`; invalid/missing config invents no locale | Passed |
+| A1-L03 | `conversation.service.test.ts`: persisted detected French wins over shop English on the next resolution/upsert path | Passed |
+| A1-L04 | `whatsapp-template-selector.service.test.ts`: missing French selects approved English shop variant with actual descriptor language; immutable detected French remains; absent shop variant returns template-unavailable | Passed |
+| A1-L05 | `host.test.ts`, conversation CAS fixtures and `voice-workflow.test.ts`: substantive text/transcript returns and persists confident language while recovery amount, currency, URLs and policy remain trusted context | Passed |
+| A1-L06 | `host.test.ts` and language fixtures: short, numeric, URL and emoji input forces null detection and retains current referral language | Passed |
+| A2-V01 | `speech-transcription.service.test.ts`: French/English provider results are returned unchanged; multipart has only file/model/JSON response format and uses transcription, never translation | Passed with mocked provider; acoustic quality not claimed |
+| A2-V02 | `voice-workflow.test.ts`: raw abuse → route → engagement → download → validation → transcription → persistence → one admission → one agent → one text reply | Passed |
+| A2-V03/V04 | Audio-service/workflow fixtures: MIME/container mismatch and empty transcript persist terminal state/request-to-type with zero agent reservation | Passed |
+| A2-V05 | Speech/audio fixtures: 408/429/5xx and network failures remain one selected provider, retry only within the queue budget, then terminal request-to-type; no raw error leakage | Passed |
+| A2-V06 | Audio/workflow fixtures: replay and concurrent completion produce one transcript turn/admission/reply; interrupted enqueue recovery is limited to the same unprocessed latest transcript | Passed |
+| A2-V07 | Audio/workflow fixtures: newer inbound version rejects late completion as stale, sends no fallback/agent reply and retains newer language | Passed |
+
+#### Validation
+
+All validation ran in the prepared implementation worktree with Node 24.19.0,
+npm 11.17.0, Prisma 6.19.3, Shared 0.13.1 / runner 1.0.0 and MCP SDK 1.30.0.
+
+- `npm run build` — passed after final changes, including Prisma generation and
+  TypeScript compilation.
+- Task-focused 21-file Vitest run — **235 passed**, 16.33 seconds. This includes the
+  original host/routing/history/admission/outreach suite plus the A1/A2 fixtures.
+- `voice-workflow.test.ts` — **4 passed** independently before the broad run.
+- `audio-format.test.ts` parses a locally generated 0.5-second synthetic Ogg/Opus
+  fixture with `audio/ogg; codecs=opus`; no conversion was needed.
+- `git diff --check` — passed.
+
+No paid OpenAI/Groq, Meta, Shopify, deployed Commerce, Redis or shared PostgreSQL
+service was contacted. French/English consented real-speech provider checks remain
+explicitly not run and are recorded separately in `docs/commerce-host.md`; mocked
+workflow and synthetic-tone parsing do not prove acoustic quality or live provider
+codec acceptance.
+
+#### Files and ownership
+
+Implementation changes are restricted to `moda-interact-background`: language
+initialization/detection, template selection inputs, host instructions/context,
+audio persistence/history, transcription adapters, worker retry handling, focused
+fixtures and `docs/commerce-host.md`. Parent changes are restricted to this task
+file. The accepted Shared/Database contracts are reused without migration or enum
+changes. No parent service gitlink, architecture/index, another task, deployment or
+enabled task was changed.
+
+#### Git / VCS
+
+- Canonical parent and implementation worktrees and the mirrored
+  `task/ARCH-020-BACKGROUND-001` branches supplied by the launcher were retained.
+- Attempt 2 claim is `9b79fcc8327a65aef2cbff86474af97cf6761968` on the parent branch.
+- Attempt 2 implementation commit `399cc2f31f52d9ca88797a266129ee16c8465b14`
+  is pushed to the implementation task branch.
+- Existing [Background PR #48](https://github.com/kodjobaah/moda-interact-background/pull/48)
+  and [workspace PR #168](https://github.com/kodjobaah/moda-interact-workspace/pull/168)
+  are updated by this submission; the containing commits are the review revisions.
+- No main merge/push, force-push, parent gitlink update, downstream launch or
+  architect acceptance.
+
+### Attempt 3 — R1/R2 correction submission
+
+Status: Review, Attempt 3. Both requested corrections are implemented; no architect
+acceptance decision is asserted. The prior A1/A2 OpenAI/language implementation in
+399cc2f remains present. The user's quoted Groq-only report predates that source.
+
+| Review item | Change and focused evidence | Disposition |
+| --- | --- | --- |
+| R1 processing time versus event order | Audio admission compares persisted inbound createdAt/id order; never compares a provider sent timestamp with completion-time lastInboundAt. Tests cover a queued newer event after an older note completed, both overlapping provider completion orders and genuine newer-message rejection before download. The valid new note advances one turn; older superseded results remain ignored. | Implemented |
+| R2 prior reply completion versus new inbound activity | Removed lastProcessedVersion from audio staleness/preconditions. Completion locks the conversation row, rechecks durable inbound order, then conditionally persists the pending transcript and increments the turn atomically. Unit and worker-flow tests finish the prior reply during provider work and immediately at the completion transaction; the new voice is persisted/admitted/delivered once, including replay. | Implemented |
+
+Changed files: src/services/inbound-whatsapp-audio.service.ts,
+tests/unit/services/inbound-whatsapp-audio.service.test.ts,
+tests/integration/commerce/voice-workflow.test.ts and docs/commerce-host.md.
+Duplicate completion cannot advance the conversation version; the failed pending-row
+transition rolls back. A new inbound event wins against an older transcription;
+unchanged worker leases/version checks still suppress stale model delivery/language.
+Event timestamps use persisted createdAt, with id as deterministic tie-breaker for
+same-timestamp rows. Completion-time ordering remains for batching/history only.
+
+Validation in the prepared implementation worktree:
+
+- Initial focused audio/workflow run: 21 tests passed before adding the two overlap
+  orders and two additional workflow regressions.
+- Final command: `npm test -- tests/integration/commerce tests/unit/services/inbound-whatsapp-audio.service.test.ts tests/unit/services/speech-transcription.service.test.ts tests/unit/services/audio-format.test.ts tests/unit/services/conversation-language.service.test.ts tests/unit/services/conversation.service.test.ts tests/unit/services/conversation-turn-processor.service.test.ts` — 133 passed, 9 files, 6.93 seconds.
+- `npm run build` — passed (Prisma generation and TypeScript compilation).
+- `git diff --check` — passed.
+- Initial Node bootstrap from the implementation directory failed before testing
+  because the script discovers the workspace through the current directory. Running
+  the canonical bootstrap from the workspace and then entering the implementation
+  worktree succeeded with Node 24.19.0 / npm 11.17.0. No runtime was installed or changed.
+
+These are deterministic database/provider fixtures, not a live PostgreSQL concurrency
+rehearsal or paid acoustic evaluation. The separate French/English provider-quality
+record in docs/commerce-host.md remains Not run. No live credentials/provider,
+WhatsApp send, production deployment or migration was invoked. Gateway's explicit
+configuration handoff remains in that document; its implementation is owned by
+GATEWAY-001. No new Shared/Database changes or task dependencies were introduced.
+
+Prepared execution evidence: canonical workspace and both dedicated worktrees match
+the existing report. Launcher claim 9ffa1d9a292d132c11ec13ee391f09400f2c64c2 durably
+claimed Attempt 3 after all four dependencies passed. Parent preparation head
+13f4b86b3d87cada903e1ca454b10027c99d79a1 included current main. Implementation baseline
+399cc2f31f52d9ca88797a266129ee16c8465b14 already included its main. Nested database
+was recursively synchronized/initialized and verified at
+5abfd87f57038bae515aaa09ec7c8db62adcfb98; unchanged by this attempt.
+Implementation correction commit `4e42056` is pushed to existing Background PR #48.
+The containing report commit updates workspace PR #168. Both task branches are
+published for review; no main merge/push, parent gitlink,
+other task, architecture/index or architect-review section was changed by execution.
+
 ## Architect Review
+
+### Accepted — Attempt 3 — 2026-09-20
+
+**Accepted / Complete**, Attempt 3 retained, executor/claimed_at null. Reviewed implementation `4e4205693e6a40e303e7a385abe2366e5dce5ff8` and report `7a3cf35d782e77abde07e4d07c5d8d901c3ee83b`; both published PR heads verified. This decision supersedes the historical Ready/Review holds and Attempt 2 Changes Requested below. No blocking functional finding remains in this submission.
+
+- **R1 resolved:** admission compares persisted inbound message createdAt/id order, rather than comparing provider event time with transcription completion time. Valid newer queued audio survives an older note's completion; genuinely superseded audio remains suppressed.
+- **R2 resolved:** prior reply completion no longer invalidates pending audio through lastProcessedVersion. Completion locks the conversation, rechecks inbound order, conditionally transitions the pending message and advances the conversation atomically. Duplicate completion rolls back without a second version increment. Existing worker version/lease guards remain in place.
+- The configurable OpenAI adapter already exists in `399cc2f` and remains present: explicit provider/model selection, Groq default, bounded transcription and no silent provider fallback. A1 shop-language/detection behavior and A2 ordered voice flow are accepted with the documented scope limits.
+- Architect independently reran the Attempt 3 nine-file command recorded above: **133 tests passed**, exit 0. Reviewed the submitted passing production build and prior host/routing evidence, including real local MCP SDK client/server HTTP interoperability. No redundant infrastructure or paid provider run was required for this correction review.
+- Prepared execution records and dedicated mirrored task worktrees conform; database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` is unchanged. Acceptance applies to the identified task implementation, not a main integration.
+
+Live French/English audio-quality checks and live PostgreSQL concurrency rehearsal remain **not run**. Deterministic fixtures are not acoustic or production concurrency evidence. Original referral locale fallback and other reported limits remain documented; full deployed publication/execution and discount delivery safeguards belong to the remaining architecture tasks. Gateway owns provider configuration. This acceptance does not claim deployment readiness or complete ARCH-020.
+
+Dependency reconciliation: BACKGROUND-002 still requires COMMERCE-007; GATEWAY-001 still requires its remaining Commerce dependencies; COMMERCE-012 and SYSTEM-TEST-001 retain their remaining dependency gates. No dependent task is promoted or launched. Developer integration of the accepted source remains separate.
+
+### User-directed return to Ready — 2026-09-20
+
+Following the user's latest instruction, **Ready for R1/R2 corrections**, Attempt 2 preserved, executor/claimed_at null. The completed architect review remains Changes Requested; acceptance is withheld. This supersedes the preceding user-directed Review hold. Normal preparation may claim the next correction attempt; this status update does not run preparation, claim a new attempt or change implementation. Preserve the existing R1/R2 correction contract and historical evidence below.
+
+### User-directed review hold — 2026-09-20
+
+By explicit user instruction, retain the task in **Review, Attempt 2** and do not rerun `--prepare`, reset a claim or claim another attempt. Current canonical parent state before this update was Ready at fadbfac7 with executor/claimed_at null; the reported in_progress/codex preparation error does not match that checked state. Keep executor/claimed_at null and preserve Attempt 2.
+
+This status-only workflow override supersedes the prior Ready/Attempt 3 preparation direction, not the R1/R2 findings. Implementation remains 399cc2f31f52d9ca88797a266129ee16c8465b14; no corrected implementation or new validation is asserted. R1/R2 remain open and architect acceptance remains withheld. Continue review against an explicitly identified correction submission when available; no automatic preparation or implementation launch.
+
+
+### Changes Requested — Attempt 2 — 2026-09-20
+
+**Not accepted. Task returned to Ready**, Attempt 2 preserved, executor/claimed_at cleared. No new attempt is claimed. Latest reviewed implementation: `399cc2f31f52d9ca88797a266129ee16c8465b14`; report: `0ed919099feadf291d0521b07ed54c86157121ac`. PR #48/#168 remote heads verified open; both worktrees were clean. This decision supersedes older readiness/review notes below. The latest simplified shop-language scope remains binding: no phone-country inference or new Shared/Database provenance prerequisites.
+
+A1/A2 remain user scope amendments, not retroactive defects in the original task. The following are defects in the submitted implementation of amended audio behavior, confirmed independently against the committed Attempt 2 code.
+
+#### R1 — P1: do not compare transcription completion time with a new message's sent time
+
+`src/services/inbound-whatsapp-audio.service.ts:55–57` rejects an inbound voice when `lastInboundAt > event.occurredAt`, but `complete` writes `lastInboundAt = now` at lines 123–128. Those are different timelines. An earlier note sent at 11:59:50 and completed at 12:00:05 makes a newer note sent at 12:00:00 appear stale. The newer valid note is permanently marked STALE_TRANSCRIPTION and ignored before download; no reply/fallback reaches the customer.
+
+Independent fixture: pending new audio event at 12:00:00, conversation lastInboundAt 12:00:05 from the earlier audio completion, inboundVersion/lastProcessedVersion 2/2. Expected completed; actual ignored. This is a new customer message, not a duplicate or a completion from a superseded turn.
+
+Correction: use consistent durable event/ordering identity to distinguish genuinely newer inbound messages from later processing of older messages. Preserve required completed-transcript history ordering and duplicate/late-result protections; do not simply remove all stale checks. Add consecutive-note tests where event order and transcription completion order differ, including serial processing of a queued newer note and overlapping completions. Assert the valid newer message persists/admitted exactly once, while a genuinely superseded older result cannot send or overwrite newer language.
+
+#### R2 — P1: finishing the preceding reply does not supersede new incoming audio
+
+`src/services/inbound-whatsapp-audio.service.ts:115–117` treats any lastProcessedVersion change as stale, and the completion transaction repeats that condition at line 127. With inboundVersion fixed at 2, a new voice transcription that starts while prior turn 2 is processing is discarded when that reply finishes (lastProcessedVersion 1 -> 2), even though no newer inbound message arrived.
+
+Independent fixture: baseline inboundVersion/lastProcessedVersion 2/1; transcription returns substantive text after only lastProcessedVersion advances to 2. Expected completed; actual ignored. A new voice must be able to advance the next inbound turn when the prior reply completes normally.
+
+Correction: distinguish legitimate prior-turn completion from superseding inbound activity in both prechecks and transactional admission. Add deterministic races where the preceding reply finishes during provider work and immediately before the completion transaction; the new audio must persist once and enter normal admission. Retain negative controls for actual newer inbound activity, duplicate transcription completion and stale model delivery/language updates.
+
+#### Validation and resubmission
+
+Isolated review harness copied the submitted audio-service fixtures to `/tmp/arch020-bg-a2-review/audio-review.test.ts`, using the committed production modules and two added timing cases. Result: **13 existing tests passed; both new expected-completion tests failed with actual ignored**. No repository implementation was edited and no provider contacted. Initial sandbox test startup failed while writing Vitest cache; the authorized rerun produced these actual test results. The temporary path is convenience only; the two deterministic fixtures above are the durable reproduction specification.
+
+Reviewed the reported build/235-test/synthetic Ogg evidence and explicit unrun French/English live-provider quality limitations. Passing reported tests do not cover R1/R2. No acoustic quality claim is made or paid validation newly required by this decision. Preserve the separate real-audio evidence limitation in the next report.
+
+Correct R1/R2 on the same implementation task branch, add the named regression/negative-control cases, rerun the affected workflow suite/build, commit/push both branches and resubmit. Preparation owns the next Attempt 3 claim after this parent overlay is published. No downstream promotion, main integration, service gitlink update or implementation commit is performed by this review.
+
+### Historical architect decisions (superseded where inconsistent)
+
 
 ### Review disposition — scope amended, acceptance pending — 2026-09-20
 
