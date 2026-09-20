@@ -1334,3 +1334,72 @@ resolve recovery -> download/validate audio -> transcribe -> persist transcript 
 Verify actual WhatsApp format/codec compatibility with matching MIME/filename. Bounded conversion is justified only by a demonstrated incompatibility; Background owns required image/runtime dependencies. Gateway owns environment-specific provider/model/secret wiring to the messaging runtime, preserving existing Groq selection and explicit rollout/rollback. No reverse Background dependency on deployment or terminal system testing.
 
 Deterministic provider mocks prove workflow. Record representative French/English real-audio quality and format evidence separately, including unrun checks; never claim mocks prove acoustic quality. Official [OpenAI transcription reference](https://developers.openai.com/api/reference/cli/resources/audio/subresources/transcriptions/methods/create) describes input-language transcription, lists gpt-4o-mini-transcribe and accepted audio formats, and recommends format-identifying filename/content type. Provider documentation alone does not prove a particular WhatsApp fixture works; do not mandate conversion without evidence.
+
+
+## C17. Parallel publication and Studio implementation
+
+COMMERCE-003 and COMMERCE-008 can start and complete their component work after
+002, DATABASE-001 and SHARED-001. They prove their contracts using deterministic
+fixtures. COMMERCE-013 separately owns real integration and cannot start until
+003/004/005/006/007/008/011 are Complete.009 and GATEWAY-001 require013 Complete.
+This is a task split, not a launcher bypass or deferred acceptance within003/008.
+No active011 attempt is reclaimed and no accepted task implementation is reopened.
+
+### Ports and file ownership
+
+COMMERCE-003 owns `src/commerce/publication/` (domain operations, persistence,
+read models and port types) and its focused tests.
+COMMERCE-008 owns `src/studio/` (page components, view models, ports and adapters),
+U01–U13 page entry points and browser fixtures.013 owns production adapters
+and composition in `src/commerce/integration/`, plus minimal wiring of these ports. Follow the accepted App Router root;
+do not create a second app directory. Existing002 auth handlers/helpers remain
+owned by their accepted implementation.011 keeps its discovery/compiler modules.
+Use separate launcher-resolved worktrees. Never edit another task's port/provider
+module to make local tests pass. New adapters wrap accepted exports; incompatible
+semantics must be reconciled by the architect, never solved by weakening validation.
+
+Publication defines `QueryValidationPort.validate` with input `{definition}` using
+the exact accepted Shared tool-definition type. Result is the discriminated union
+`{ok:true}` or `{ok:false,code,issues}`; code is INVALID_DEFINITION,
+SCHEMA_UNAVAILABLE or VALIDATOR_UNAVAILABLE; issues are at most32 objects with
+`path` (JSON Pointer, max512 chars) and `message` (max512 chars). The013 production
+adapter translates011's actual compiler API into this local port and does not
+reimplement parsing, projection or semantic checks. Schema identity remains in the
+canonical definition; never invent an alternative schema hash. A true result is
+not proof of installed runtime executors: publication checks its registry separately.
+Fixtures cover each result and thrown timeout/error; unexpected errors fail closed.
+
+Studio defines `StudioServices` with publication commands named exactly as C7,
+discovery/schema operations exactly as C15, and read models for each U03–U13 page.
+Command argument fields, CAS tokens, role checks, replay operation IDs and results
+come from C7/DATABASE-001/C16, not browser-specific substitutes. Read models contain
+only the fields required in the binding page specification, use its exact sort/
+pagination and preserve IDs/revision versions. Define and test these typed ports
+before page implementation. Fixtures and production adapters implement the same
+interfaces; UI components never import fixture implementations or provider modules.
+003 owns command/read service implementation;008 owns UI port definitions;
+013 owns real service translation into those ports.
+011's exports supply discovery;005/006/007 supply descriptors, not business-name
+lists hard-coded into the UI. Ports remain Commerce-local, with no Shared release
+or database change. Record exported method signatures and their canonical-field
+mapping in `docs/studio-service-contract.md` in008 and
+`docs/publication-service-contract.md` in003 for integration review.
+
+### Fixture isolation and acceptance
+
+Fixture composition is injected by the test harness only, not a public route,
+request flag, environment fallback or production dependency factory. Production
+adapters use real accepted services; unavailable services return the specified
+unavailable/error state and cannot publish, activate or report synthetic success.
+Fixtures include success, empty, not found, forbidden, unavailable, stale CAS,
+matching replay, conflicting replay and uncertain timeout, with operation counts.
+Test UI double-click/keyboard activation against those counts, 013 repeats the
+required cases against real adapters before its completion. Contract tests must run
+against both fixture and production adapter with controlled external transports;
+matching TypeScript types alone is not integration evidence.
+
+Any shared route/barrel/package configuration edit must be minimal and reconciled
+on synchronization.003 does not build Studio pages;008 does not add competing
+publication mutations or compiler endpoints. 003/008 submit component/fixture evidence;013 submits actual integration evidence.
+Downstream009/GATEWAY-001 and terminal caching/system-test gates require013.
+Fixture acceptance never asserts that the assembled application is functional.

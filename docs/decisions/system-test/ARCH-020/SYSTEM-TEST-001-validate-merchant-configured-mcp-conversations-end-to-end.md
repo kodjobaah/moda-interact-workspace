@@ -34,6 +34,7 @@ depends_on:
   - ARCH-020-GATEWAY-002
   - ARCH-020-SHARED-001
   - ARCH-020-SHOPIFY-001
+  - ARCH-020-COMMERCE-013
 enables: []
 created: 2026-09-20
 updated: 2026-09-20
@@ -132,6 +133,8 @@ Required scenario groups: routing0/1/2 and sender ownership; normal/voice histor
 For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
 
 ## Dependencies
+
+- ARCH-020-COMMERCE-013
 
 
 - ARCH-020-COMMERCE-012

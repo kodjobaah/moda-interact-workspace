@@ -967,3 +967,11 @@ and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
 GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+
+### Parallel component delivery and integration — 2026-09-21
+
+Binding C17 allows003 publication and008 Studio to be implemented and accepted
+against agreed service ports while011 continues. Separate013 owns production
+adapters and integrated U01–U13 acceptance;009, GATEWAY-001,012 and terminal
+system tests depend on013. Component fixtures never become production fallbacks.

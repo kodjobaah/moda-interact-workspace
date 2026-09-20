@@ -19,8 +19,8 @@ depends_on:
   - ARCH-020-COMMERCE-011
 enables:
   - ARCH-020-COMMERCE-012
-  - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-006
+  - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
 updated: 2026-09-20
@@ -106,9 +106,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 ## Enables
 
 - ARCH-020-COMMERCE-012
-
-- ARCH-020-COMMERCE-008
 - ARCH-020-COMMERCE-006
+- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria

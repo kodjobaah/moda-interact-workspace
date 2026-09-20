@@ -61,9 +61,10 @@ DATABASE-001 ---------------------------> publication persistence / Background g
 SHARED-001 (contracts + runner + publication) ---> shared contracts/runner publication
 provisioning -> COMMERCE-001 -> COMMERCE-002
 COMMERCE-002 + SHARED-001 -> COMMERCE-011 (Shopify discovery/schema services)
-COMMERCE-002/011 + DATABASE-001 + SHARED-001 -> COMMERCE-003 (publication)
+COMMERCE-002 + DATABASE-001 + SHARED-001 -> COMMERCE-003 (interface-based publication)
 COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005 -> COMMERCE-006 -> COMMERCE-007
-COMMERCE-003/005/006/007/011 -> COMMERCE-008 (U01–U13 full authoring UI)
+COMMERCE-002 + DATABASE-001 + SHARED-001 -> COMMERCE-008 start
+COMMERCE-003/004/005/006/007/008/011 -> COMMERCE-013 (real integration)
 COMMERCE-008/007 + SHARED-001 -> COMMERCE-009 (U14 tests/conversations)
 COMMERCE-004/007/009 -> COMMERCE-010 (observability)
 SHARED-001 + DATABASE-001 + COMMERCE-001 + ARCH-016-BACKGROUND-003 -> BACKGROUND-001
@@ -71,7 +72,7 @@ BACKGROUND-001 + COMMERCE-007 -> BACKGROUND-002
 SHARED-001 + ARCH-016-SHOPIFY-002 -> SHOPIFY-001
 COMMERCE-002/008/011 + BACKGROUND-001 -> GATEWAY-001
 GATEWAY-001 + COMMERCE-010 + BACKGROUND-002 -> GATEWAY-002
-all 18 nonterminal tasks -> SYSTEM-TEST-001 (manual terminal gate)
+all implementation tasks -> SYSTEM-TEST-001 (manual terminal gate)
 ```
 
 Individual task YAML contains the exact complete dependency sets. Runtime call
@@ -385,3 +386,12 @@ and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
 GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+
+## Parallel start frontier — 2026-09-21
+
+003 and008 are Ready, unclaimed, for independent component implementation and
+acceptance against C17 ports.011 continues separately. New013 connects real
+services after003/004/005/006/007/008/011 are accepted;009 and GATEWAY-001 now wait
+for013.012 and terminal system testing also explicitly depend on013. No task is
+launched by this amendment. Fixtures never become production service fallbacks.

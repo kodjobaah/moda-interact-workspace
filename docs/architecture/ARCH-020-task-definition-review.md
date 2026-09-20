@@ -148,3 +148,13 @@ Validation for this amendment is documentation-only: dependency reciprocity and
 cycle checks, owned UI embedding, local Markdown links, unchanged lifecycle fields
 and scoped whitespace. Application and live-provider evidence belongs to the
 implementation tasks; none is claimed by this review.
+
+
+## Parallel start amendment — 2026-09-21
+
+At the user's request, publication003 and Studio008 can start and complete their
+components against C17 typed ports/fixtures. Both are Ready, attempt0, unclaimed.
+A separate013 owns real service adapters and I01–I08 integrated acceptance.013
+waits for003/004/005/006/007/008/011;009/GATEWAY-001/012/SYSTEM-TEST-001 wait for013.
+Start/enable metadata and indexes are reciprocal. No launcher changes, task claims
+or application implementation.011 active implementation remains untouched.

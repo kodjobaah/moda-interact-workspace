@@ -19,6 +19,7 @@ depends_on:
   - ARCH-020-BACKGROUND-001
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-011
+  - ARCH-020-COMMERCE-013
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
@@ -104,6 +105,8 @@ Use existing gateway validation shell/config tooling (repository has no package.
 For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
 
 ## Dependencies
+
+- ARCH-020-COMMERCE-013
 
 - ARCH-020-COMMERCE-002
 - ARCH-020-BACKGROUND-001

@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -18,14 +18,13 @@ depends_on:
   - ARCH-020-COMMERCE-002
   - ARCH-020-DATABASE-001
   - ARCH-020-SHARED-001
-  - ARCH-020-COMMERCE-011
 enables:
-  - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-004
-  - ARCH-020-COMMERCE-008
+  - ARCH-020-COMMERCE-012
+  - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Implement draft and release publication lifecycle
@@ -80,6 +79,24 @@ Server authorisation and duplicate protection are required independently of the
 browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
+
+### Parallel implementation and integration ownership
+
+Architect promotion on 2026-09-21: Ready, unclaimed. Implement publication against
+C17 agreed ports and deterministic fixtures. This task may be accepted independently
+when its owned component, typed interfaces and fixture acceptance tests pass.
+ARCH-020-COMMERCE-013 owns real provider adapters, composition and integrated
+acceptance; do not wait for or implement that task here.
+
+For this task, all requirements below to consume pending services or exercise a
+complete service flow mean contract-fixture execution. This explicitly supersedes
+earlier accepted-service/full-integration wording for those pending dependencies.
+Retain every field, page, role, failure and side-effect expectation. Do not weaken
+them to snapshots or static mockups. Production composition must fail unavailable
+until013 installs real adapters; fixtures are test-harness-only, never a runtime
+fallback. Already accepted auth/Shared/database dependencies remain real inputs.
+Record the port signatures and mapping in the C17 contract document. Integration
+checks are assigned explicitly to013, not reported as passed by this task.
 
 - [ ] Reuse C7.1 guards for every publication operation and validation endpoint; ensureDevelopmentStudioAdmin inside the same FK-backed audit/publication transaction when the server-resolved principal is development bypass. Verify A07/A08/A10; no copied auth policy.
 
@@ -138,16 +155,14 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 - ARCH-020-COMMERCE-002
 - ARCH-020-DATABASE-001
 - ARCH-020-SHARED-001
-- ARCH-020-COMMERCE-011
 
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
 
 ## Enables
 
-- ARCH-020-COMMERCE-012
-
 - ARCH-020-COMMERCE-004
-- ARCH-020-COMMERCE-008
+- ARCH-020-COMMERCE-012
+- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
