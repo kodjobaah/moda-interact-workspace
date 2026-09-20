@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-20T07:20:32Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-014-ADMIN-009
@@ -171,15 +171,16 @@ Ready for Review.
 
 ### Validation Results
 
-- Focused unit/security tests: passed, 13 tests, 0 failures.
+- Focused unit test (`node --experimental-strip-types --test tests/unit/background-runtime-control-validation.test.ts`): passed, 7 tests, 0 failures.
+- Focused security test (`node --test tests/security/admin-background-runtime-controls.test.mjs`): passed, 6 tests, 0 failures.
 - `git diff --check`: passed.
-- `npm run test:unit`: blocked by missing installed dependencies; changed tests passed, while unrelated tests failed on missing `exceljs` and `@modainteract/moda-interact-shared`.
-- `npm test`: blocked by missing installed dependencies including `bullmq` and other repository packages.
-- `npm run prisma:generate`: blocked because `prisma` is not installed.
-- `npm run prisma:validate`: blocked because `prisma` is not installed.
-- `npm run build`: blocked because `prisma` is not installed.
-- Focused lint: blocked because `eslint` is not installed.
-- Focused format check: blocked because `prettier` is not installed.
+- `npm run test:unit`: ran the repository unit suite; the ARCH-018 test passed, while 12 unrelated tests failed because `exceljs` and `@modainteract/moda-interact-shared` are unavailable and one existing merchant-pricing assertion failed.
+- `npm test`: blocked by missing dependencies including `bullmq` and other repository packages.
+- `npm run prisma:generate`: blocked because `prisma` is not installed (`prisma: command not found`).
+- `npm run prisma:validate`: blocked because `prisma` is not installed (`prisma: command not found`).
+- `npm run build`: blocked by `npm run prisma:generate` because `prisma` is not installed (`prisma: command not found`).
+- Focused lint: blocked because `eslint` is not installed (`eslint: command not found`).
+- Focused format check: blocked because `prettier` is not installed (`prettier: command not found`).
 
 ### Deviations
 
@@ -191,7 +192,7 @@ The existing `field.guidance` metadata path is the approved UI copy surface, as 
 
 ### Unresolved Issues
 
-Install the repository dependencies in the implementation worktree before rerunning the blocked required validation commands.
+Install the repository dependencies in the implementation worktree before rerunning the blocked required validation commands. The prepared implementation worktree has its `database` submodule materialized at `3cb8ff374f914c4495958c85fed3f03cdd63ce37`.
 
 ### Architectural Concerns
 
@@ -199,9 +200,15 @@ None.
 
 ### Git / VCS
 
-Implementation commit: `1407869`.
-
-Parent report commit: `3d622105`.
+Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Dedicated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-018-ADMIN-001`.
+Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-018-ADMIN-001`.
+Mirrored branches: `task/ARCH-018-ADMIN-001` in both parent and implementation repositories.
+Preparation/claim evidence: prepared execution packet for attempt 2; parent claim commit `50bcc91280b892465ecc60f8cf627b173bdde675`.
+Start-of-attempt synchronization: parent task branch synchronized with `origin/main` by merge commit `1c2942fcfd2ec5cfe0a7970c8b419d2458a66b96`; implementation task branch was reset to `origin/main` and contains accepted commit `1407869c1c62d5df1904c10a33ef8755056fdc0e` with no unrelated changes.
+Recursive implementation-submodule materialisation: `database` present at `3cb8ff374f914c4495958c85fed3f03cdd63ce37`.
+Exact implementation commit reviewed: `1407869c1c62d5df1904c10a33ef8755056fdc0e`.
+Parent report commit: `a27a55aeca7f26b923f89d039f1581d246241b4f`.
 
 
 ## Architect Review — Attempt 1
