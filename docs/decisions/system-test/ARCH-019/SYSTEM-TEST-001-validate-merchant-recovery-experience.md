@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 80
 executor: null
 claimed_at: null
@@ -172,3 +172,9 @@ Awaiting implementation review.
 ### Follow-up
 
 Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+
+## Architect readiness reconciliation — 2026-09-20
+
+All seven implementation dependencies are accepted/Complete. Ready at Attempt 0; no executor or claim. This is readiness only: explicit developer invocation after manual validation remains required. Consume integrated accepted application/database revisions or obtain explicit approved accepted-commit consumption.
+
+Integrated billing evidence must exercise the production usage reader against PostgreSQL, including current-page recovery/conversation/message source IDs, null legacy conversation shop ownership, foreign and ambiguous/unresolved sources, selected periods outside selector pages, keyset traversal and unavailable explicit period selection. Repository unit mocks and synthetic destination fixtures are supporting evidence, not proof of these real joins or authenticated App Bridge behavior. Route any defect back to its existing implementation owner; do not repair app/database code here.

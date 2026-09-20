@@ -38,6 +38,6 @@ Files named `*-review-*`, `*-amendment.md`, overview documents, and old overlay/
 
 ## ARCH-019 — merchant recovery experience (2026-09-20)
 
-Agreed; implementation not started. Ready: ARCH-019-DATABASE-001. Pending: ARCH-019-SHOPIFY-001 through SHOPIFY-006 and ARCH-019-SYSTEM-TEST-001. Task YAML in each canonical parent task worktree remains authoritative; system validation is terminal/manual-gated.
+Current frontier: all ARCH-019 implementation tasks are architect-accepted/Complete: DATABASE-001 and SHOPIFY-001/003/006 at Attempt 1, SHOPIFY-002 at Attempt 3, SHOPIFY-004/005 at Attempt 2. SHOPIFY-006 accepted `39054cec`. SYSTEM-TEST-001 Ready at Attempt 0, explicitly developer-invoked after manual validation; not started. Architecture remains In Progress pending terminal integrated validation and final architect acceptance. Accepted dependency records are reconciled into SYSTEM-TEST-001; readiness does not authorize execution, deployment or unmerged dependency consumption.
 
 [Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)
