@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: codex
 claimed_at: 2026-09-20T14:59:09Z
@@ -57,11 +57,11 @@ The parent architecture's behavioural contracts are binding. Preserve current te
 
 ## Work Items
 
-- [ ] Render the agreed performance metrics, five recent recoveries and date controls using SHOPIFY-001; link into the list/detail routes with preserved date context.
-- [ ] Show current recovery capacity using the existing authoritative billing projection, clearly separate from historical date filters; preserve source/expiry distinctions and unavailable states.
-- [ ] Preserve onboarding, billing-setup and restriction banners and the current pending-recoveries capability gate; label pending queue candidates separately from ongoing durable recoveries.
-- [ ] Remove the home path’s unbounded recovery/message/usage-event hydration and full-payload debug logging; no synthetic metrics or guessed product details.
-- [ ] Redirect authorized legacy /app?view=detail&bill=... requests to /app/usage with validated bill context before performance reads; leave initial onboarding behaviour unchanged.
+- [x] Render the agreed performance metrics, five recent recoveries and date controls using SHOPIFY-001; link into the list/detail routes with preserved date context.
+- [x] Show current recovery capacity using the existing authoritative billing projection, clearly separate from historical date filters; preserve source/expiry distinctions and unavailable states.
+- [x] Preserve onboarding, billing-setup and restriction banners and the current pending-recoveries capability gate; label pending queue candidates separately from ongoing durable recoveries.
+- [x] Remove the home path’s unbounded recovery/message/usage-event hydration and full-payload debug logging; no synthetic metrics or guessed product details.
+- [x] Redirect authorized legacy /app?view=detail&bill=... requests to /app/usage with validated bill context before performance reads; leave initial onboarding behaviour unchanged.
 
 ## Interfaces / Contracts
 
@@ -82,18 +82,18 @@ All listed dependencies must be Complete and architect-accepted. Consume actual 
 
 ## Acceptance Criteria
 
-- [ ] Metrics/list cohort definitions match; empty data, unknown values and mixed currencies display without invented totals or percentages.
-- [ ] No all-shop messages or usage history is fetched to render Overview; the old customer modal is not reachable from the new home.
-- [ ] Historical lifecycle states retain readable performance/history; capacity exhaustion alone does not hide past records.
-- [ ] An empty pending queue does not imply recovery is healthy, disabled, or fully complete.
-- [ ] Legacy bookmarked billing-detail URLs land on billing usage, not silently on an unrelated date cohort.
-- [ ] Overview links work with dates and merchant embed context, and locale keys have parity.
+- [x] Metrics/list cohort definitions match; empty data, unknown values and mixed currencies display without invented totals or percentages.
+- [x] No all-shop messages or usage history is fetched to render Overview; the old customer modal is not reachable from the new home.
+- [x] Historical lifecycle states retain readable performance/history; capacity exhaustion alone does not hide past records.
+- [x] An empty pending queue does not imply recovery is healthy, disabled, or fully complete.
+- [x] Legacy bookmarked billing-detail URLs land on billing usage, not silently on an unrelated date cohort.
+- [x] Overview links work with dates and merchant embed context, and locale keys have parity.
 
 ## Validation
 
-- [ ] Run npm test -- tests/unit/home-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/merchant-i18n.test.ts (update obsolete assertions deliberately).
-- [ ] Run npm run typecheck, npm run lint and git diff --check.
-- [ ] Verify local browser fixtures for ACTIVE, ONBOARDING, NO_CONTRACT, FROZEN, BILLING_ATTENTION, zero history, capacity unavailable and legacy URL entry.
+- [x] Run npm test -- tests/unit/home-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/merchant-i18n.test.ts (update obsolete assertions deliberately).
+- [x] Run npm run typecheck, npm run lint and git diff --check.
+- [x] Verify local browser fixtures for ACTIVE, ONBOARDING, NO_CONTRACT, FROZEN, BILLING_ATTENTION, zero history, capacity unavailable and legacy URL entry.
 
 New test filenames above are required deliverables, not claims that those suites already exist. Use current package.json scripts; do not invent success when a command cannot run. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md: fast local checks are agent-owned; long infrastructure/live commands are developer-owned unless exactly authorized. Required developer evidence may remain pending at review, never at acceptance.
 
@@ -109,39 +109,71 @@ Use scripts/start-agent-task.py through the normal /moda-task preparation path. 
 
 ### Status
 
-Not Started.
+Ready for Review. Attempt 1 implemented by codex on 2026-09-20. No architect acceptance decision made.
 
 ### Files Changed
 
-None.
+Implementation commit `d5319e8eacd075e5d8cba633b4459ce150872042` changes 37 files:
+
+- `app/routes/app/home/route.jsx` and `overview.server.ts`: bounded cohort loading, validated legacy redirect, preserved lifecycle/onboarding and pending gates.
+- `app/components/dashboard/RecoveryOverview.tsx` and `.css`: metrics, date controls, five-row preview, source-specific current capacity and billing composition.
+- `app/components/dashboard/PendingRecoveries.jsx`: optional date/embed URL context for pagination/refresh, explicit prop types and React import; admission/queue business policy unchanged.
+- Twenty `app/i18n/locales/*.json` catalogues: nineteen overview keys each; all prior parsed values preserved.
+- Required home, overview and pricing-overview tests, shared synthetic fixture, browser fixture/readme and four screenshot artifacts under `tests/browser/recovery-overview/`.
+
+Parent changes are limited to this task file. Architect Review is preserved verbatim.
 
 ### Work Completed
 
-None; task definition only.
+- Replaced home’s all-shop recovery/conversation/message hydration, billing-period usage includes, usage-event scans and payload logging with accepted SHOPIFY-001 `readRecoveryOverview`. The existing two-read repeatable-read transaction supplies the date cohort summary and five newest rows.
+- Home accepts merchant-local date filters only, with accepted normalization, today/7/30/custom controls and bounded invalid-input presentation. List status/search/cursor do not alter overview metrics. List, ongoing and detail links preserve dates and trusted shop/host/embedded context.
+- Zero cohort rate/value use em dashes; unknown-only value is unavailable; known currency groups remain separate decimal strings; omitted counts are localized. No revenue uplift, product, comparison or message-count metrics invented.
+- Current capacity is separate from historical filters and preserves source balances, reservations, refunding and known paid-period end. Null projection remains neutral Unavailable. Exhaustion/restrictions do not hide history.
+- Preserved original onboarding and durable billing-setup precedence, restriction/cancellation/pending-plan notices, no-contract plan catalogue and management flow. Pending candidates are explicitly distinct from ongoing durable recoveries and do not imply service health when empty.
+- Legacy authorized `view=detail` requests redirect before capacity/performance/pending reads. Billing mode is allowlisted, bill ID is bounded and tenant-validated by a single `findFirst`, and only validated billing/embed parameters are retained. Initial onboarding still returns onboarding/setup.
 
 ### Validation Results
 
-Not run; implementation has not started. Separate agent-executed evidence from developer validation required.
+Agent-executed:
+
+- Required command `npm test -- tests/unit/home-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/merchant-i18n.test.ts`: 47 tests passed. Final run adds `tests/unit/pending-recoveries-display-state.test.ts`: **49 tests / 5 suites passed**.
+- `npm run typecheck`: nonzero, **131 diagnostics in 23 unchanged files**. Every diagnostic file compared byte-for-byte with its pre-implementation HEAD version; no changed/new task-owned file has a diagnostic. Removing old home hydration and typing the touched pending component also removes existing diagnostics on those paths.
+- `npm run lint`: nonzero, **20 errors and 2 warnings in 15 unchanged files**. All diagnostic paths compared unchanged against pre-implementation HEAD. Explicit focused ESLint over all changed/new JS/TS code, fixtures and tests passed.
+- `git diff --check` and staged whitespace check passed.
+- Locale parity/ICU formatting passed for all 20 catalogues. Independent parsed comparison confirmed nineteen additions per locale and no previous value changes.
+- Local browser fixtures verified ACTIVE, ONBOARDING, NO_CONTRACT, FROZEN, BILLING_ATTENTION, empty history, unavailable capacity, legacy billing entry, error and loading states. Custom 5–12 September dates survive form submission, list and direct detail navigation with embed context. At 1024/320/390 viewport widths there is no horizontal overflow; French and RTL checked at 390. Evidence and limitations are documented in `tests/browser/recovery-overview/README.md` and its screenshots.
+- Temporary fixture server and agent-created browser tab stopped/closed; viewport override reset.
+
+No live Shopify or infrastructure commands were required or executed. Browser fixture redirects/destinations are synthetic; production authorization, tenant validation and redirect order are covered by loader unit tests. Terminal architecture system-test work remains outside this task; enabled tasks were not started.
 
 ### Deviations
 
-None.
+No business-contract deviation. Existing capacity DTO has no promotional expiry timestamp: show explicit unavailable expiry instead of guessing or changing the billing service contract. Full repository checks retain the above unrelated baseline failures; focused checks pass.
 
 ### Assumptions
 
-Use current accepted dependency revisions and the parent architecture; return any contradictory source fact to moda_architect.
+Consumed accepted SHOPIFY-001/003/004 source present in prepared implementation HEAD `dbed756007823990d4e325911ec6d4a141d5b659`; dependency completion was verified by the launcher from the authoritative parent task branch. Historical recovery cohort semantics remain owned by SHOPIFY-001, and billing/pending admission remain their existing services’ responsibility.
 
 ### Unresolved Issues
 
-None identified at definition time beyond the parent architecture's recorded evidence gaps.
+Unrelated full typecheck/lint baseline failures remain. No task-owned validation failure remains. Promotional expiry is unavailable in the existing projection and is labelled accordingly.
 
 ### Architectural Concerns
 
-None newly reported.
+None requiring a contract change. Capacity projection remains read-only, and no billing/provider/accounting or recovery-admission semantics were modified.
 
 ### Git / VCS
 
-Execution branch: task/ARCH-019-SHOPIFY-005. Attempt: 0. No implementation claim, worktree, commit or validation is asserted. At execution submission record canonical workspace, both physical worktrees/branches, start-of-attempt synchronization, recursive submodule evidence, implementation and parent commit/push evidence, and confirmation that no parent service Gitlink or main branch was changed.
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent physical worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-019-SHOPIFY-005`.
+- Implementation physical worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-019-SHOPIFY-005`.
+- Both branches: `task/ARCH-019-SHOPIFY-005`.
+- Prepared launcher reused/synchronized parent, incorporated origin/main and recorded parent HEAD `8a79dd07f18d6e3746a405347b443077911178ed`; created/synchronized implementation with main already current at `dbed756007823990d4e325911ec6d4a141d5b659`. No repeated startup synchronization performed.
+- Recursive submodule sync/update verified database commit `9c6a4d8402a01840e2ea8dc18e89171f00564d29` ready; no remote-tracking submodule update used.
+- Attempt 1 claim committed/pushed as `7c1847f1cf2f651d920e7648944106f84280f879` at `2026-09-20T14:59:09Z`.
+- Implementation `d5319e8eacd075e5d8cba633b4459ce150872042` committed and pushed successfully to `origin/task/ARCH-019-SHOPIFY-005` in the verified `kodjobaah/moda-interact` origin.
+- This report is the parent task review-submission commit, published on the mirrored parent task branch. Commit identity is recorded by Git and reported in the final execution response.
+- No parent service Gitlink, architecture/index/rollup, other task, or main branch changed. No merge into main, main push, force push, deployment, or enabled-task execution performed.
 
 ## Architect Review
 
