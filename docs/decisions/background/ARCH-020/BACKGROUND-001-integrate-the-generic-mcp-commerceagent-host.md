@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -89,7 +89,7 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Scope amendments requested during Attempt 1 review
 
-These are **new user-requested scope amendments A1/A2**, not defects against the original task or its submitted implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972`. Preserve the original Completion Report and validation history. The original amendment introduced additional scope; implementation evidence is recorded in the Attempt 2 and Attempt 3 reports below. Expanded-scope architect acceptance remains pending. The binding details are also recorded as C6.2/C6.3 in the architecture implementation contracts; they supersede conflicting assumptions about initial language/customer-preference inputs for this recovery path.
+These are **new user-requested scope amendments A1/A2**, not defects against the original task or its submitted implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972`. Preserve the original Completion Report and validation history. The original amendment introduced additional scope; implementation evidence is recorded in the Attempt 2 and Attempt 3 reports below. Expanded-scope architect acceptance is recorded in the Attempt 3 Architect Review below. The binding details are also recorded as C6.2/C6.3 in the architecture implementation contracts; they supersede conflicting assumptions about initial language/customer-preference inputs for this recovery path.
 
 ### A1 — Shop language first, then customer message language
 
@@ -181,31 +181,31 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
+- [x] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
-- [ ] Verify C6.1 P01–P12 through host integration fixtures, including fresh status on later turns, explicit-language precedence, validated detection persistence and no delivery from invalid/stale final results.
+- [x] Verify C6.1 P01–P12 through host integration fixtures, including fresh status on later turns, explicit-language precedence, validated detection persistence and no delivery from invalid/stale final results.
 
-- [ ] Two conversations for one shop with different pinned releases retain different original lists; a second shop cannot select those grants. tools/list contains exact descriptors only, omits revoked tools, rejects caller-supplied shopId parameters and never expands after publication.
+- [x] Two conversations for one shop with different pinned releases retain different original lists; a second shop cannot select those grants. tools/list contains exact descriptors only, omits revoked tools, rejects caller-supplied shopId parameters and never expands after publication.
 
-- [ ] Newly published query tool works for new grants without a Background build, while a retained grant cannot discover it; no fixed conversation_core/product_search admission dependency remains beyond legitimate current feature entitlement checks.
+- [x] Newly published query tool works for new grants without a Background build, while a retained grant cannot discover it; no fixed conversation_core/product_search admission dependency remains beyond legitimate current feature entitlement checks.
 
-- [ ] Valid explicit replies resume only their referenced recovery and original grant, including replies delayed by one or ten hours with intervening outreach to other recoveries.
-- [ ] Unreferenced messages with exactly one recovery route without clarification. Unreferenced zero/multiple-candidate, unknown-reference, wrong-customer, wrong-provider and missing-recovery cases cannot invoke CommerceAgent or access merchant tools. Replying to an unowned clarification cannot manufacture a recovery link.
+- [x] Valid explicit replies resume only their referenced recovery and original grant, including replies delayed by one or ten hours with intervening outreach to other recoveries.
+- [x] Unreferenced messages with exactly one recovery route without clarification. Unreferenced zero/multiple-candidate, unknown-reference, wrong-customer, wrong-provider and missing-recovery cases cannot invoke CommerceAgent or access merchant tools. Replying to an unowned clarification cannot manufacture a recovery link.
 
-- [ ] New conversations consume compatible tool/prompt revisions without redeploying Background; all turns/retries of existing conversations reuse their original exact tool grant and prompt release.
-- [ ] Unknown contract/runner versions, MCP outage and invalid results fail explicitly; no hard-coded discount fallback is used.
-- [ ] Existing language handling, admission ordering and structured final-response semantics remain intact with the generic runner.
+- [x] New conversations consume compatible tool/prompt revisions without redeploying Background; all turns/retries of existing conversations reuse their original exact tool grant and prompt release.
+- [x] Unknown contract/runner versions, MCP outage and invalid results fail explicitly; no hard-coded discount fallback is used.
+- [x] Existing language handling, admission ordering and structured final-response semantics remain intact with the generic runner.
 
-- [ ] Two turns of the same conversation use the same grant despite a new release/feature or worker restart. Concurrent first turns select one winning grant; a different eligible new conversation may receive the new release.
+- [x] Two turns of the same conversation use the same grant despite a new release/feature or worker restart. Concurrent first turns select one winning grant; a different eligible new conversation may receive the new release.
 
 ## Validation
 
-- [ ] Publish a newly named supported tool without Background deployment, use it for an eligible new conversation, and prove an existing conversation cannot list/call the new name or template version.
+- [x] Publish a newly named supported tool without Background deployment, use it for an eligible new conversation, and prove an existing conversation cannot list/call the new name or template version.
 
-- [ ] Add focused multi-turn grant and unanswerable-question fixtures for the scoped acceptance criteria; assert granted tool IDs/versions and referral output, not just prompt text.
-- [ ] Run focused Vitest tests with a local mock MCP server for discovery, prompt retrieval, tool calls, tenant headers, release pin races and deadlines.
-- [ ] Run declared npm run build and git diff --check; do not assume lint/typecheck scripts exist.
-- [ ] Record the client/server compatibility set established by Commerce foundation before acceptance; mocks alone cannot prove cross-SDK interoperability.
+- [x] Add focused multi-turn grant and unanswerable-question fixtures for the scoped acceptance criteria; assert granted tool IDs/versions and referral output, not just prompt text.
+- [x] Run focused Vitest tests with a local mock MCP server for discovery, prompt retrieval, tool calls, tenant headers, release pin races and deadlines.
+- [x] Run declared npm run build and git diff --check; do not assume lint/typecheck scripts exist.
+- [x] Record the client/server compatibility set established by Commerce foundation before acceptance; mocks alone cannot prove cross-SDK interoperability.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -473,6 +473,20 @@ published for review; no main merge/push, parent gitlink,
 other task, architecture/index or architect-review section was changed by execution.
 
 ## Architect Review
+
+### Accepted — Attempt 3 — 2026-09-20
+
+**Accepted / Complete**, Attempt 3 retained, executor/claimed_at null. Reviewed implementation `4e4205693e6a40e303e7a385abe2366e5dce5ff8` and report `7a3cf35d782e77abde07e4d07c5d8d901c3ee83b`; both published PR heads verified. This decision supersedes the historical Ready/Review holds and Attempt 2 Changes Requested below. No blocking functional finding remains in this submission.
+
+- **R1 resolved:** admission compares persisted inbound message createdAt/id order, rather than comparing provider event time with transcription completion time. Valid newer queued audio survives an older note's completion; genuinely superseded audio remains suppressed.
+- **R2 resolved:** prior reply completion no longer invalidates pending audio through lastProcessedVersion. Completion locks the conversation, rechecks inbound order, conditionally transitions the pending message and advances the conversation atomically. Duplicate completion rolls back without a second version increment. Existing worker version/lease guards remain in place.
+- The configurable OpenAI adapter already exists in `399cc2f` and remains present: explicit provider/model selection, Groq default, bounded transcription and no silent provider fallback. A1 shop-language/detection behavior and A2 ordered voice flow are accepted with the documented scope limits.
+- Architect independently reran the Attempt 3 nine-file command recorded above: **133 tests passed**, exit 0. Reviewed the submitted passing production build and prior host/routing evidence, including real local MCP SDK client/server HTTP interoperability. No redundant infrastructure or paid provider run was required for this correction review.
+- Prepared execution records and dedicated mirrored task worktrees conform; database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` is unchanged. Acceptance applies to the identified task implementation, not a main integration.
+
+Live French/English audio-quality checks and live PostgreSQL concurrency rehearsal remain **not run**. Deterministic fixtures are not acoustic or production concurrency evidence. Original referral locale fallback and other reported limits remain documented; full deployed publication/execution and discount delivery safeguards belong to the remaining architecture tasks. Gateway owns provider configuration. This acceptance does not claim deployment readiness or complete ARCH-020.
+
+Dependency reconciliation: BACKGROUND-002 still requires COMMERCE-007; GATEWAY-001 still requires its remaining Commerce dependencies; COMMERCE-012 and SYSTEM-TEST-001 retain their remaining dependency gates. No dependent task is promoted or launched. Developer integration of the accepted source remains separate.
 
 ### User-directed return to Ready — 2026-09-20
 

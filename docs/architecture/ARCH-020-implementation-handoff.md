@@ -368,3 +368,20 @@ Current status: Review, Attempt 2, no active claim. User requested no re-prepara
 ## BACKGROUND-001 return to Ready
 
 Latest user instruction restores Ready for reviewed R1/R2 corrections, Attempt 2, executor/claimed_at null. This supersedes the preceding Review hold. Acceptance remains withheld; no preparation, new claim or downstream promotion is performed by this update.
+
+## BACKGROUND-001 Attempt 3 architect acceptance — 2026-09-20
+
+ARCH-020-BACKGROUND-001 is **Accepted / Complete, Attempt 3**, implementation
+`4e42056`, report `7a3cf35d`. R1/R2 are resolved: persisted inbound ordering
+replaces completion-time comparisons, and finishing an earlier reply does not
+discard valid pending audio. Architect independently reran **133 passing tests**
+and reviewed the submitted passing build and local real-SDK compatibility evidence.
+The existing configurable OpenAI adapter and A1/A2 amendments are accepted.
+Live audio-quality and PostgreSQL concurrency checks remain explicitly not run;
+no deployed integration or acoustic-quality result is asserted.
+
+This is the current decision and supersedes earlier BACKGROUND-001 Ready/Review
+and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
+GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
+no dependent task is promoted or launched. Developer integration remains separate,
+and ARCH-020 is not complete. See the task's latest Architect Review for limits.

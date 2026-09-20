@@ -726,7 +726,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | ready | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
+| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
@@ -906,7 +906,7 @@ typecheck/lint limitations remain documented. SYSTEM-TEST-001 remains Pending
 until all its implementation dependencies are accepted, then explicitly
 user-invoked; no task is launched. Developer integration remains separate.
 
-This task-branch snapshot has 19 tasks: 4 Complete, 1 Ready, 14 Pending.
+Historical pre-acceptance snapshot: 19 tasks, 4 Complete, 1 Ready, 14 Pending; superseded for BACKGROUND-001 by the Attempt 3 acceptance below.
 Other canonical task worktrees remain authoritative for concurrent progress;
 this review does not overwrite their state. Prior readiness records are historical.
 ## Deferred dynamic tool caching
@@ -950,3 +950,20 @@ Current status: Review, Attempt 2, no active claim. User requested no re-prepara
 ## BACKGROUND-001 return to Ready
 
 Latest user instruction restores Ready for reviewed R1/R2 corrections, Attempt 2, executor/claimed_at null. This supersedes the preceding Review hold. Acceptance remains withheld; no preparation, new claim or downstream promotion is performed by this update.
+
+## BACKGROUND-001 Attempt 3 architect acceptance — 2026-09-20
+
+ARCH-020-BACKGROUND-001 is **Accepted / Complete, Attempt 3**, implementation
+`4e42056`, report `7a3cf35d`. R1/R2 are resolved: persisted inbound ordering
+replaces completion-time comparisons, and finishing an earlier reply does not
+discard valid pending audio. Architect independently reran **133 passing tests**
+and reviewed the submitted passing build and local real-SDK compatibility evidence.
+The existing configurable OpenAI adapter and A1/A2 amendments are accepted.
+Live audio-quality and PostgreSQL concurrency checks remain explicitly not run;
+no deployed integration or acoustic-quality result is asserted.
+
+This is the current decision and supersedes earlier BACKGROUND-001 Ready/Review
+and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
+GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
+no dependent task is promoted or launched. Developer integration remains separate,
+and ARCH-020 is not complete. See the task's latest Architect Review for limits.
