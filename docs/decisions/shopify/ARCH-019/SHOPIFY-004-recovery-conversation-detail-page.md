@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: codex
-claimed_at: 2026-09-20T13:58:35Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-019-SHOPIFY-002
@@ -213,7 +213,7 @@ None newly required. No cross-repository implementation, new contracts, media/pr
 - Parent review submission is the task-only commit containing this report; exact hash/push result is supplied in the final handoff to avoid a self-referential hash.
 - Shared/default checkout switched/mutated for task implementation: no. Another task worktree reused: no. Parent implementation gitlink staged for review: no. Neither task branch merged into main; no main push, deployment, or enabled task execution.
 
-## Architect Review
+## Historical Architect Review — Attempt 1
 
 ### Review Status
 
@@ -247,3 +247,27 @@ Independent authentication/ownership guards, bounded section readers, safe messa
 ### Follow-up
 
 moda_app must reclaim the same task for Attempt 2, repair the restoration identity, rerun focused validation and the expanded navigation scenarios, and resubmit both task branches. Preserve Attempt 1 evidence and this review. No downstream task was launched or promoted.
+
+## Architect Review
+
+### Review Status
+
+**Accepted — Attempt 2, 2026-09-20, moda_architect.** Complete under `completion_mode: automatic`.
+
+Accepted implementation `ffb7b86a1111bc8947bd62e0f654d79fe9b427b5`, reviewed against report `f96c92333fefa4885aadaa2b0b1995a34371562e`. Both remote task heads verified. No blocking implementation defect or workflow non-conformance remains. Attempt 1's scroll finding is resolved; its report and review are retained above as history.
+
+### Review Notes / Architecture Conformance
+
+Scroll positions now use the loader-normalized, tenant-specific list identity, including filters and cursor. The detail Back link supplies the same identity through UI-only router state for the restoration lookup before destination loader data is available. That state does not authorize data access or determine a navigation target. Invalid list routes and other pages retain entry-key behavior. Existing guarded, bounded, read-only detail/resource behavior is unchanged.
+
+### Validation Reviewed
+
+- Architect reran all five required/expanded route, detail-reader, access, i18n and list suites: **151 tests passed**.
+- Architect replayed the prior failure in the actual local fixture: default `/app/recoveries` → basket 5 → related basket 2 → Back restores **720px → 720px**.
+- Reviewed submitted browser regression evidence for omitted defaults, reordered filters, canonical URLs and a cursor page, each restoring 575px; direct entry/reload retain safe local Back destinations. Cursor fixture data is synthetic; unit coverage checks production cursor binding.
+- Architect reran full typecheck: **173 diagnostics in 28 files**; full lint: **20 errors / 2 warnings**. All **38 distinct diagnostic files** are unchanged from the prepared Attempt 2 base `1c89d3b`. These remain known baseline debt, not clean global checks or correction regressions.
+- Committed diff whitespace checks passed. Dedicated mirrored task worktrees are clean before review edits; prepared synchronization, recursive database state and durable Attempt 2 claim are documented. No implementation changes were made during architect review.
+
+### Follow-up / Dependency State
+
+SHOPIFY-004 is Complete at Attempt 2; executor/claim cleared. SHOPIFY-005 becomes Ready at Attempt 0 because SHOPIFY-001, SHOPIFY-003 and SHOPIFY-004 are accepted/Complete. Reconcile accepted dependency records and the shared frontier into its canonical parent branch before publishing readiness. SHOPIFY-006 and terminal SYSTEM-TEST-001 remain Pending. ARCH-019 remains In Progress. Readiness does not launch a task or authorize unmerged dependency consumption; integrate the accepted implementation or obtain explicit accepted-commit consumption authorization before downstream execution.
