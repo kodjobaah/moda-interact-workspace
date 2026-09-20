@@ -4,18 +4,9 @@ Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabi
 
 ## Initial review packet and definition frontier
 
-The developer requested task definitions on local workspace `main` for review.
-This is an explicit exception to task-definition materialisation only. No task
-is claimed, no application implementation has started, and no remote repository,
-submodule, deployment or task worktree is claimed to exist because of this packet.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
-The packet defines 19 tasks: **3 Ready, 16 Pending, 0 Blocked**. Ready means
-dependency-eligible; this review request does not launch execution.
-
-- Ready: `ARCH-020-DATABASE-001`, `ARCH-020-SHARED-001` (accepted ARCH-016 task
-  metadata is present in this checkout; verify actual source availability at launch).
-- Ready: `ARCH-020-COMMERCE-001`, following the verified repository provisioning below.
-- Pending: the remaining 16 tasks, including the terminal system test.
+The consolidated packet contains 19 tasks; SHARED-001 owns contracts, runner and publication. The original definition/provisioning records below are historical setup evidence. Ready status elsewhere in this packet does not launch execution.
 
 Confirmed choices: `moda-interact-commerce`, team-only Studio frontend,
 `database/` nested submodule of `moda-interact-database`, private Background-only
@@ -80,7 +71,7 @@ BACKGROUND-001 + COMMERCE-007 -> BACKGROUND-002
 SHARED-001 + ARCH-016-SHOPIFY-002 -> SHOPIFY-001
 COMMERCE-002/008/011 + BACKGROUND-001 -> GATEWAY-001
 GATEWAY-001 + COMMERCE-010 + BACKGROUND-002 -> GATEWAY-002
-all 20 nonterminal tasks -> SYSTEM-TEST-001 (manual terminal gate)
+all 18 nonterminal tasks -> SYSTEM-TEST-001 (manual terminal gate)
 ```
 
 Individual task YAML contains the exact complete dependency sets. Runtime call
@@ -209,7 +200,7 @@ thresholds. Per-task implementation helpers may follow repository conventions;
 external wire/state/ownership contracts may not vary between implementations.
 
 Remaining external inputs are the Studio hostname and provisioned credentials.
-Commerce repository/default-branch provisioning is complete and COMMERCE-001 is Ready.
+Commerce repository/default-branch provisioning is complete; COMMERCE-001 is architect-accepted Complete at Attempt 3; developer integration precedes downstream source consumption, and the authorized real Docker readiness evidence is retained.
 Pin/test actual SDK dependencies in that foundation task;
 Shopify schema/scope evidence belongs to COMMERCE-006, with closed unsupported
 outcomes when provider facts cannot be established. Do not invent deployed values,
@@ -250,7 +241,7 @@ definitions are consolidated into ARCH-020-SHARED-001. The two superseded draft
 files were removed before execution; their requirements remain in SHARED-001.
 One task owns implementation, tests, publication and clean registry installation
 evidence. Consumers depend on its architect-accepted Complete state and recorded
-package version. Current frontier: 19 tasks, 3 Ready, 16 Pending, 0 Blocked.
+package version. This branch snapshot after COMMERCE-001 acceptance: 19 tasks, 1 Complete, 2 Ready, 16 Pending, 0 Blocked. COMMERCE-002 awaits source integration or explicit accepted-commit consumption.
 No execution was claimed and no package was published by this documentation change.
 
 ## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
