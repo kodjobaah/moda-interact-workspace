@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: codex
 claimed_at: 2026-09-20T12:36:41Z
@@ -109,7 +109,7 @@ Use scripts/start-agent-task.py through the normal /moda-task preparation path. 
 
 ### Status
 
-Ready for Review — Attempt 1. Implementation and fast checks finished. Actual PostgreSQL query-plan validation remains developer-owned/pending; no acceptance is claimed.
+Ready for Review — Attempt 2. Implementation and fast checks finished. Actual PostgreSQL query-plan validation remains developer-owned/pending; no acceptance is claimed.
 
 ### Files Changed
 
@@ -117,9 +117,16 @@ Ready for Review — Attempt 1. Implementation and fast checks finished. Actual 
 - app/services/recoveries/detail-message.ts
 - app/services/recoveries/recovery-detail.server.ts
 - tests/unit/recovery-detail-readers.test.ts
+- tests/helpers/recovery-detail-pg-utc.mjs
 - tests/integration/recovery-detail-query-plans.test.ts
 - tests/tsconfig.recovery-detail.json
 - docs/ARCH-019-recovery-detail-readers.md
+
+### Attempt 2 correction checklist
+
+1. **Timestamp semantics — implemented.** Client-local pg OID 1114 parser reads timestamp fields as UTC. Reader and EXPLAIN Date parameters are serialized to UTC ISO strings before pg sees them, matching the intended Prisma convention. Production readers unchanged. Three child-process regression cases explicitly run under Europe/London, America/New_York and Asia/Kolkata and verify persisted-field decoding and actual bound wire values; the legacy parser shifts values, corrected adapter does not. The opt-in suite now also asserts exact first-window persisted timestamps. No plan assertion weakened.
+2. **PostgreSQL evidence — pending developer authorization/execution.** Corrected suite available with the exact non-UTC command below. Five tests remain skipped during local fast checks. User was asked for specific run authorization; no authorization is inferred from elapsed time or prior DATABASE-001 runs. No acceptance claimed.
+3. **Typecheck reporting — preserved.** Focused strict TypeScript check passes. Prior required full typecheck remains blocked by seven unchanged syntax diagnostics, separately identified from TYPECHECK-001's older 48 type errors. No unrelated repair performed.
 
 ### Work Completed
 
@@ -133,8 +140,8 @@ Ready for Review — Attempt 1. Implementation and fast checks finished. Actual 
 ### Validation Results
 
 Passed:
-- `npm test -- tests/unit/recovery-detail-readers.test.ts --no-cache`: 31 passed.
-- `npm test -- tests/unit/recovery-detail-readers.test.ts tests/integration/recovery-detail-query-plans.test.ts --no-cache`: 31 passed; 5 PostgreSQL tests skipped because opt-in was not set. Skips are not runtime evidence.
+- `npm test -- tests/unit/recovery-detail-readers.test.ts --no-cache`: 34 passed.
+- `npm test -- tests/unit/recovery-detail-readers.test.ts tests/integration/recovery-detail-query-plans.test.ts --no-cache`: 34 passed; 5 PostgreSQL tests skipped because opt-in was not set. Skips are not runtime evidence.
 - `npx tsc --noEmit -p tests/tsconfig.recovery-detail.json`: passed; changed TS source and tests checked under strict repository settings, legacy imported JS excluded.
 - `git diff --cached --check`: passed.
 
@@ -142,10 +149,10 @@ Required full check executed: `npm run typecheck` exits 2 on seven pre-existing 
 
 Existing installed reference dependencies were linked read-only via ignored node_modules; tests used --no-cache. No dependency/lockfile or generated Prisma schema edits. Bootstrap succeeded from canonical workspace; invoking it from the sibling worktree cannot locate the workspace and was corrected by using canonical cwd.
 
-Developer validation required from this implementation worktree at a2c23d19a930bfb9e2402dbfb6b4fad454776b1f:
+Developer validation required from this implementation worktree at 85656328b8607236af017e36383a3b300b2e3a8a:
 
 ```sh
-MODA_RECOVERY_DETAIL_POSTGRES=1 npm test -- tests/integration/recovery-detail-query-plans.test.ts --no-cache
+TZ=Europe/London MODA_RECOVERY_DETAIL_POSTGRES=1 npm test -- tests/integration/recovery-detail-query-plans.test.ts --no-cache
 ```
 
 Supply tested commit, full output and exit code. Expected: all five tests pass, version and JSON EXPLAIN ANALYZE BUFFERS printed, message scans bounded to 51 rows with the accepted index and no sort/join. Suite uses a disposable PostgreSQL 15 container and does not consume live/default database credentials. This task has not been authorized to run the long rehearsal; the prior DATABASE-001 authorization applied to that specific run.
@@ -171,14 +178,14 @@ DATABASE-001 join/sort concern addressed by direct conversation equality and tup
 Mirrored branch: task/ARCH-019-SHOPIFY-002.
 Canonical primary workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
 Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-019-SHOPIFY-002 (reused).
-Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-019-SHOPIFY-002 (created).
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-019-SHOPIFY-002 (reused for Attempt 2).
 Shared/default checkouts switched/mutated for implementation: no. Another task worktree reused: no.
 
-Prepared launcher evidence: parent remote fast-forward not-needed; origin/main incorporated yes (a4b83a560a5dccc7fff05a75ba3bd776be52802d). Implementation remote fast-forward not-needed; origin/main already-current (c4fd514b54a34bac8ee4770dd6c9b0fe7a4059e5). Recursive submodule sync/update passed, status ready; database initialized at 9c6a4d8402a01840e2ea8dc18e89171f00564d29, which already includes the merged accepted ARCH-019 indexes. No gitlink update needed.
+Prepared Attempt 2 launcher evidence: both remote task fast-forwards not-needed; both origin/main already-current. Parent baseline e83a6be0e3aec718ad10dd337703af4cab184925; implementation baseline a2c23d19a930bfb9e2402dbfb6b4fad454776b1f. Recursive submodule sync/update passed, status ready; database at 9c6a4d8402a01840e2ea8dc18e89171f00564d29, unchanged. Both canonical worktrees reused.
 
-Attempt 1 claimed by codex at 2026-09-20T12:08:03Z; durable pushed parent claim 73044dae7af872eec90226db8acc2f9b6e5761c2. Existing Architect Review was Pending, with no rework requested. No startup re-claim performed.
+Attempt 2 claimed by codex at 2026-09-20T12:36:41Z; parent claim b62f107c3fa7071d1c34170471538269cceaece2 pushed by launcher. Latest Changes Requested reviewed completely; correction mapping above. No duplicate claim or start-of-attempt synchronization.
 
-Implementation commit: a2c23d19a930bfb9e2402dbfb6b4fad454776b1f; pushed origin/task/ARCH-019-SHOPIFY-002 and remote SHA verified. Parent report is published in the commit containing this report (SHA supplied in final submission). No parent gitlink staged, main merge/push, or downstream launch. Architect Review below preserved unchanged.
+Implementation commit: 85656328b8607236af017e36383a3b300b2e3a8a; pushed origin/task/ARCH-019-SHOPIFY-002 and remote SHA verified. Parent report is published in the commit containing this report (SHA supplied in final submission). No parent gitlink staged, main merge/push, or downstream launch. Architect Review below preserved unchanged.
 
 ## Architect Review
 
