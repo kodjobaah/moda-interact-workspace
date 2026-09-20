@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
 executor: null
 claimed_at: null
@@ -165,24 +165,25 @@ No new concern. Cursor scope validation never substitutes for tenant predicates;
 
 ### Review Status
 
-Pending.
+**Accepted — Attempt 1, 2026-09-20, moda_architect.** Complete under `completion_mode: automatic`.
 
-### Review Notes
+Accepted implementation `39054cec8179870b6df2e629b5a23ffacf89a63b`, reviewed against report `b5df32966df59b92695db38d64ce3a25680f6dac`. Both published remote heads verified. No blocking implementation defect or workflow non-conformance found.
 
-No implementation submitted.
+### Review Notes / Architecture Conformance
 
-### Reviewed Files
+Navigation order and localized labels match all lifecycle states; existing surface permissions are preserved, including onboarding history denial and support-only behavior. Billing exposes the guarded Usage history entry with trusted embed context. Direct explicit unavailable period selection remains distinct from absent/default selection, and selected periods are read independently of selector pagination.
 
-None.
+Period transfer is bounded to 25 plus lookahead with tenant/view-scoped keyset boundaries. Usage events retain the 100-row cap, selected-period metric scope and database quantity/count aggregates. One parameterized source query limits resolution to current-page IDs, joining owned recovery/conversation/message records and tenant-owned customer data without message-body/history hydration. Ambiguous or unresolved sources remain unlinked. SQL table/column names and relation cardinalities agree with the pinned Prisma schema. Removed dashboard modules have no remaining runtime imports; the retained pricing test imports RecoveryOverview despite its historical variable name.
 
 ### Validation Reviewed
 
-None.
+- Architect reran the submitted access/usage/home/i18n/billing-compatibility/navigation command: **104 tests passed across six suites**.
+- Architect reran full typecheck: **78 diagnostics in 20 files**; full lint: **20 errors / 2 warnings**. All **30 distinct diagnostic files** are unchanged from prepared implementation base `5a7d923`. Global checks remain nonzero baseline debt, not new task regressions.
+- Accepted supplied successful final-source `npm run build` evidence (server build 2.29s); no redundant build rerun.
+- Parsed all twenty locale catalogues: eleven additions each, all prior values preserved. Committed-diff whitespace checks passed; implementation worktree clean.
+- Reviewed synthetic browser evidence and 320px screenshot for navigation, bounded selector/event pagination, explicit unknown periods, source links and contained table overflow. No independent browser/live Shopify/PostgreSQL replay is claimed by this review. Real database execution and integrated lifecycle/browser behavior remain terminal system-validation obligations.
+- Dedicated mirrored worktrees, prepared dependency synchronization, recursive database revision and durable Attempt 1 claim agree with the report. No implementation changes during architect review.
 
-### Architecture Conformance
+### Follow-up / Dependency State
 
-Awaiting implementation review.
-
-### Follow-up
-
-Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+SHOPIFY-006 is Complete at Attempt 1. All ARCH-019 implementation dependencies are accepted/Complete. SYSTEM-TEST-001 becomes Ready at Attempt 0, with accepted dependency records and shared state reconciled into its canonical parent branch. It remains explicitly developer-invoked after manual validation; no system-test execution, deployment, merge or main push is authorized by readiness. ARCH-019 remains In Progress pending integrated evidence and final architect acceptance. Consume integrated accepted revisions or explicitly authorized accepted commits for validation.
