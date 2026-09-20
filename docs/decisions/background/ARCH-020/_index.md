@@ -8,7 +8,7 @@ Definitions are on local main for review by explicit developer request. Individu
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-BACKGROUND-001](BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | review | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 , ARCH-020-DATABASE-002, ARCH-020-SHARED-004 |
+| [ARCH-020-BACKGROUND-001](BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | ready | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | [ARCH-020-BACKGROUND-002](BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 
 BACKGROUND-001 is in Review at Attempt 1; A1/A2 are new user scope amendments, with no acceptance or active claim.
@@ -26,3 +26,13 @@ Shared/Database phone-country provenance prerequisites require separate new-scop
 materialisation/acceptance; Gateway owns hosted provider/model/secret wiring.
 The submitted implementation/report and accepted prerequisite history remain.
 No new attempt or downstream task is launched; expanded-scope acceptance pending.
+
+## Simplified language decision — 2026-09-20 (current)
+
+The user withdrew phone-country inference: initialize from shop language, then
+respond in clearly detected customer text/speech language. C6.2 and BACKGROUND-001
+A1 specify this rule. Earlier phone-country/Review coordination notes are historical
+and superseded. Both unclaimed provenance tasks were removed with their dependency
+edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
+scope remains. All four retained prerequisites are accepted Complete. Active task
+scope returns to 20; no automatic execution or expanded-scope acceptance occurred.

@@ -1197,19 +1197,30 @@ Record structural assertions separately from model-behaviour evaluation.
 
 
 
-## C6.2. Initial recovery language — user scope amendment
+## C6.2. Shop language and subsequent customer language — final amendment
 
-Added during BACKGROUND-001 Attempt 1 review; supersedes conflicting initial-language/customer-preference assumptions in C6.1 for this path. This is new scope, not a defect in the original submission. The canonical Background task's A1 requirements and A1-L01–L06 matrix are binding.
+This supersedes prior phone-country and assumed customer-preference requirements
+for this recovery path, including conflicting C6.1 language precedence. Initialize
+from the shop's configured language using existing merchant-default source. Do not
+infer language from phone/country or create preference settings. Missing/invalid
+shop configuration uses the existing platform fallback, not a newly guessed locale.
 
-Start with shop configured language. Validated international-number parsing may override only when it yields one valid country with an explicitly approved deterministic mapping. Approved initial table: FR -> fr; UK shop + valid French +33 customer -> French. Unknown/invalid/ambiguous/unmapped countries retain shop language; do not use a calling prefix as country proof. No customer preference settings or invented customer-explicit source. Initial/follow-up templates must be approved translations; missing desired variant falls back to the shop-language approved template, with actual language metadata. Never relabel untranslated text.
+Substantive customer text or persisted spoken-language transcript establishes the
+reply language using existing detection, confidence >=0.85, canonicalization and
+stale-turn safeguards. Persist detected language for later turns; do not reset it
+from shop settings every turn. Short/ambiguous/numeric/URL-only/emoji-only input
+retains current language with null detection. Keep prices/currency/URLs/state/policy
+unchanged. No new Shared enum, database migration or country mapping is needed.
 
-Substantive text or spoken-language transcript establishes subsequent conversation language; ambiguous/short/numeric/URL-only/emoji-only input retains it. Phone initialization cannot overwrite an established language. Preserve stable-confidence/stale-turn handling and prices/currency/URLs/policy. Generic legacy customer-explicit enum compatibility does not justify assuming settings exist for this flow.
-
-Cross-owner handoff: Shared owns a new phone-country source and published compatible validators; Database owns persisted PHONE_COUNTRY enum support; Background owns phone parsing/mapping, template selection and source conversions. Shared 0.13.1 and current Database enum have no such value. Compatible storage/readers must precede emission. These are new scope prerequisites to materialise before expanded task execution, not defects/reopenings of accepted SHARED-001/DATABASE-001. No local string casts or mislabeled detected source may bypass this gap.
+Initial outreach uses the approved shop-language template; follow-ups use established
+conversation language with approved shop-language fallback if its variant is absent.
+Record actual template language without replacing detected conversation language.
+If no approved fallback exists, preserve existing no-template handling. BACKGROUND-001
+A1-L01–L06 is the binding fixture matrix. C6.3 voice requirements remain in force.
 
 ## C6.3. Spoken-language voice input — user scope amendment
 
-The Background task's A2 requirements and A2-V01–V07 matrix are binding. Reuse SpeechTranscriptionService; retain Groq and add explicitly selected OpenAI provider/model configuration with proposed OpenAI default gpt-4o-mini-transcribe. No silent switch or automatic paid fallback. Transcribe the spoken language, never force initial shop/phone language or request English translation.
+The Background task's A2 requirements and A2-V01–V07 matrix are binding. Reuse SpeechTranscriptionService; retain Groq and add explicitly selected OpenAI provider/model configuration with proposed OpenAI default gpt-4o-mini-transcribe. No silent switch or automatic paid fallback. Transcribe the spoken language, never force initial shop language or request English translation.
 
 resolve recovery -> download/validate audio -> transcribe -> persist transcript -> normal conversation admission -> CommerceAgent -> WhatsApp text reply. Preserve raw abuse admission, engagement timing, audio bounds/timeouts/retries, duplicate protection and stale-turn checks. Empty/failed transcription uses existing request-to-type handling and never invokes CommerceAgent. Persist metadata without logging audio, transcript contents or credentials.
 

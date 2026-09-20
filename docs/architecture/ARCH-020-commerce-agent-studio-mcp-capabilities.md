@@ -726,13 +726,13 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | review | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 , ARCH-020-DATABASE-002, ARCH-020-SHARED-004 |
+| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | ready | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md) | Add frequency-based tool-result caching | moda_commerce | pending | All other ARCH-020 implementation tasks; exact list in task |
-| [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012 , ARCH-020-DATABASE-002, ARCH-020-SHARED-004 |
+| [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012  |
 
 ## Open Questions and Explicit Assumptions
 
@@ -919,14 +919,12 @@ Pending: exact policy persistence/API and U06/U14 integration must be reconciled
 before Ready, with separate owner prerequisites if needed. No completed task is
 reopened and no existing strict Shared schema is implicitly extended.
 
-## Phone-country prerequisite reconciliation — 2026-09-20
+## Simplified language decision — 2026-09-20 (current)
 
-The Background parent branch document conflicts were resolved preserving both
-A1/A2 and newer main records. ARCH-020-DATABASE-002 (persist PHONE_COUNTRY)
-and ARCH-020-SHARED-004 (accept/publish phone-country) are new Ready owner tasks.
-Their accepted predecessors remain Complete. They can execute independently.
-BACKGROUND-001 remains Review, Attempt 1, unclaimed until both are accepted and
-artifacts are available; then promote the same task to Ready. Caching and terminal
-system-test dependencies include both additions. Active scope is now 22 tasks.
-No code, package release, migration, acceptance or Background attempt is claimed
-by this reconciliation.
+The user withdrew phone-country inference: initialize from shop language, then
+respond in clearly detected customer text/speech language. C6.2 and BACKGROUND-001
+A1 specify this rule. Earlier phone-country/Review coordination notes are historical
+and superseded. Both unclaimed provenance tasks were removed with their dependency
+edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
+scope remains. All four retained prerequisites are accepted Complete. Active task
+scope returns to 20; no automatic execution or expanded-scope acceptance occurred.
