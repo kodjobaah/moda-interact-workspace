@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-20T06:40:56Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
 - ARCH-010-SHOPIFY-021
@@ -646,3 +646,65 @@ selected campaign expiresAt <= now -> stale pointer does not block a new eligibl
 ```
 
 Changing only exhaustion/status/target eligibility of the **selected** campaign before expiry must not release the selection lock.
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `31c2a2f1d91f995293ed5dd3746394d7b4bb27f5` (`31c2a2f`)
+
+Database gitlink: `3518f504a3ba1d600d603905a93371f385952cab`
+
+Changed files in the implementation commit:
+
+```text
+app/i18n/locales/cs.json
+app/i18n/locales/da.json
+app/i18n/locales/de.json
+app/i18n/locales/en.json
+app/i18n/locales/es.json
+app/i18n/locales/fi.json
+app/i18n/locales/fr.json
+app/i18n/locales/it.json
+app/i18n/locales/ja.json
+app/i18n/locales/ko.json
+app/i18n/locales/nb.json
+app/i18n/locales/nl.json
+app/i18n/locales/pl.json
+app/i18n/locales/pt-BR.json
+app/i18n/locales/pt-PT.json
+app/i18n/locales/sv.json
+app/i18n/locales/th.json
+app/i18n/locales/tr.json
+app/i18n/locales/zh-Hans.json
+app/i18n/locales/zh-Hant.json
+app/routes/app/promotions/PromotionsRoute.css
+app/routes/app/promotions/route.tsx
+app/services/promotions/promotion.service.ts
+tests/unit/routes/promotion-route.test.ts
+tests/unit/services/promotion.service.test.ts
+```
+
+Validation:
+
+- `npm run prisma:generate`: passed; Prisma Client v6.19.3 generated.
+- `npm run prisma:validate`: passed; schema valid.
+- Focused tests: `npx vitest run tests/unit/services/promotion.service.test.ts tests/unit/routes/promotion-route.test.ts tests/unit/merchant-i18n.test.ts` passed, 3 files and 56 tests.
+- Source invariant search for `isUsableGrant(currentGrant)`, `campaignId !== campaignId`, and `isTargetEligible(currentGrant.campaign...)`: no hits.
+- `npm run build`: passed; client and SSR production bundles built. Existing dependency/chunk-size warnings were non-fatal.
+- Targeted ESLint: passed for all five authorized changed source/test paths. Existing TypeScript-version support warning was non-fatal.
+- `npm run typecheck`: non-zero with 164 errors in 25 unrelated files; no new errors in the authorized changed files. This matches the documented `TYPECHECK-001` repository baseline condition, with the observed count higher than the stale documented count of 48.
+- `npm test`: 42 passed, 8 failed, 2 skipped test files; 653 passed, 14 failed, 3 skipped tests. All failures were outside the authorized changed files: `billing-purchase-hub.test.tsx`, `billing-purchases-i18n.test.ts`, `billing-ui.test.ts`, `merchant-route-access-policy.test.ts`, `subscription-change-panel.test.tsx`, `usage-route.test.ts`, `routes/billing-callback.test.ts`, and `services/billing.service.test.ts`.
+- `git diff --check`: passed.
+
+Physical worktree evidence:
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-018-SHOPIFY-001`, branch `task/ARCH-018-SHOPIFY-001`, clean after validation, implementation commit pushed to `origin/task/ARCH-018-SHOPIFY-001`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-018-SHOPIFY-001`, branch `task/ARCH-018-SHOPIFY-001`, active claim commit `adb8a4afbdc077a08cd86d21b54e903b8470187d` before this report update.
+- Database submodule remained at gitlink `3518f504a3ba1d600d603905a93371f385952cab`; no database schema, migration, or submodule content was edited.
+
+Acceptance invariant evidence:
+
+- Focused service tests cover same-campaign and alternate-campaign blocking before expiry, exhausted/CLOSED/target-ineligible selected campaigns remaining locked, expiry permitting replacement without pointer cleanup, exact grant reuse without replenishment, and SERIALIZABLE retry behavior.
+- Projection tests cover `locked=true` while an exhausted/CLOSED/target-ineligible selection remains unexpired, `locked=false` after expiry, and independent `spendable` semantics. History tests cover stale expired pointers as not currently selected.
+- Route tests cover the independent current-selection projection, page-wide synchronous submission lock, disabled button predicate, lock notice, and absence of merchant/internal IDs.
