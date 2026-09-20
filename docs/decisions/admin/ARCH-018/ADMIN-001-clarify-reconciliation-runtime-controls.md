@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-20T07:20:32Z
+attempt: 2
 depends_on:
 - ARCH-014-ADMIN-009
 enables:
