@@ -8,4 +8,6 @@ Definitions are on local main for review by explicit developer request. Individu
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-SHOPIFY-001](SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | pending | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
+| [ARCH-020-SHOPIFY-001](SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | ready | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
+
+SHOPIFY-001 is Ready after Shared 0.13.1 architect acceptance; no task is claimed or launched.

@@ -241,7 +241,7 @@ definitions are consolidated into ARCH-020-SHARED-001. The two superseded draft
 files were removed before execution; their requirements remain in SHARED-001.
 One task owns implementation, tests, publication and clean registry installation
 evidence. Consumers depend on its architect-accepted Complete state and recorded
-package version. This branch snapshot after COMMERCE-001 acceptance: 19 tasks, 1 Complete, 2 Ready, 16 Pending, 0 Blocked. COMMERCE-002 awaits source integration or explicit accepted-commit consumption.
+package version. Historical snapshot after COMMERCE-001 acceptance: 19 tasks, 1 Complete, 2 Ready, 16 Pending, 0 Blocked. The synchronized current frontier is recorded below. COMMERCE-002 awaits source integration or explicit accepted-commit consumption.
 No execution was claimed and no package was published by this documentation change.
 
 ## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
@@ -282,3 +282,35 @@ validation and canonical hash equality; Commerce owns atomic release assembly,
 authorization and audit. Merge database PR #33 first, pin its final integrated
 database-main commit in the parent, then merge parent PR #165. No main integration
 or gitlink update is performed by this acceptance. ARCH-020 is not Implemented.
+
+## Shared Attempt 1 architect review — 2026-09-20
+
+ARCH-020-SHARED-001 returned to Ready with Changes Requested against implementation
+34be970 and report f713caed: R1 whole-definition persistence size compatibility;
+R2 malformed model-call error classification. Attempt 1 is preserved and the
+claim is clear. Package 0.13.0 is published but not architect-accepted; corrections
+require a new verified registry version. No downstream task is promoted.
+See the canonical Shared task's latest Architect Review for the correction contract.
+Parent main synchronization preserves DATABASE-001 Complete at Attempt 2 and
+COMMERCE-001 Complete at Attempt 3 alongside this Shared correction contract.
+Current branch frontier: 19 tasks, 2 Complete, 1 Ready, 16 Pending, 0 Blocked.
+SHARED-001 remains Ready at Attempt 1 with no active claim. No next attempt is
+claimed by conflict resolution. Architecture completion/system-test gates remain.
+
+
+## Shared Attempt 2 acceptance — 2026-09-20
+
+ARCH-020-SHARED-001 is **Accepted / Complete, Attempt 2** against implementation
+a83bfc1 and report 595566ca. R1 storage-size compatibility and R2 malformed-model
+classification are closed. Independently passed typecheck, 30 focused tests and
+clean registry-consumer smoke; reviewed 160-pass/one-skipped full-suite evidence.
+Verified registry artifact **@modainteract/moda-interact-shared@0.13.1**, with all
+75 installed files matching publication files. Consumer tasks must use 0.13.1.
+The earlier Shared correction/frontier record is historical and superseded.
+
+BACKGROUND-001 (moda_background) and SHOPIFY-001 (moda_app) are newly Ready: all
+listed dependencies are Complete. No task is claimed or launched. Preparation
+must synchronize dedicated worktrees and verify dependency source availability.
+Other pending tasks retain their existing gates. Current branch frontier:
+**19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
+terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
