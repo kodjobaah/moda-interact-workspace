@@ -94,6 +94,10 @@ where recommendations are involved.
 
 ### Required evidence
 
+Apply binding C18 structured policy-output separation and evidence contract.
+EC07/EC08 must prove that query/template content cannot impersonate evidence and
+failed ownership/permission checks execute zero provider calls. No new wire fields.
+
 Prove percentage/fixed semantics against recorded official schema/rule evidence; if a rule cannot be calculated exactly, its fixture must assert UNSUPPORTED. Include equality at startsAt/endsAt, threshold boundaries, quantity/collection rules, decimal/currency precision, omitted customer/usage facts and offer policy changes.
 
 For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.

@@ -158,3 +158,18 @@ A separate013 owns real service adapters and I01–I08 integrated acceptance.013
 waits for003/004/005/006/007/008/011;009/GATEWAY-001/012/SYSTEM-TEST-001 wait for013.
 Start/enable metadata and indexes are reciprocal. No launcher changes, task claims
 or application implementation.011 active implementation remains untouched.
+
+
+## Independent evidence-contract amendment — 2026-09-21
+
+C18 plus the canonical JSON seed specifies requests, Shared output schemas, exact
+extraction/provenance/replay/comparison, failure/admission decisions and EC01–EC12.
+BACKGROUND-002 is Ready against accepted001;007 remains independently sequenced
+on006. Removed reciprocal dependency; terminal system test owns real pairing.
+No Shared publication, migration, implementation or task claim is introduced.
+
+Validation: reciprocal acyclic21-task graph, unchanged claims/attempts, local links
+and whitespace passed. BACKGROUND-002 prerequisite001 is Complete. Original and
+refreshed JSON seed replies passed the current Shared source Zod schemas under
+workspace Node24.19.0; both SHA-256 digests and frozen-clock freshness bounds passed.
+This validates contract examples, not the future producer/consumer implementation.
