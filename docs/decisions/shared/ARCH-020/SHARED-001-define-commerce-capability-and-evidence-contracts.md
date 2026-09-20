@@ -278,7 +278,7 @@ Structural enforcement is separate from model evaluation. adversarial-evaluation
 - Exports: `./commerce` and `./commerce/runner`, each with ESM JavaScript and declarations.
 - Tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.13.0.tgz
 - Integrity: `sha512-LNw7L1D7e+TGXT8GP2qZJMj2m3iU07fMONQPdGYWJjbtShgXd8H3/NZ1El4FJWLCa33s2OBEFw9/igxwBS92bg==`.
-- SHA-1: `0b94ce311e616c93c6375ca06310464d44cb205a`. Registry integrity equals the inspected local pre-publication pack integrity.
+- SHA-1: `0b94ce311e616c93c6375ca06310464d44cb205a`. The installed consumer lockfile integrity matches the registry. All 75 installed package files were compared byte-for-byte with the final local publication files and match. The earlier dry-run archive reported a different archive integrity; it is not used as publication-integrity evidence.
 - `npm publish --access public --registry=https://registry.npmjs.org/`: succeeded. Initial lookup returned E404 while npm processed the new version; subsequent online lookup succeeded without republishing.
 - `npm view @modainteract/moda-interact-shared@0.13.0 version dist gitHead --json --prefer-online --registry=https://registry.npmjs.org/`: returned exact version and metadata above.
 - Fresh consumer: `/tmp/shared020-consumer.hIjnbO` with a newly created private package.json, no workspace links.
