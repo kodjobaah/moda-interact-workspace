@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-09-20T19:42:47Z
@@ -139,6 +139,43 @@ After scoped work and agent-owned checks, update this task's execution/report fi
 Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; the actual repository must be provisioned before execution preparation.
 
 ## Completion Report
+
+### Attempt 3 — Ready for Review (2026-09-20)
+
+Addressed the current Attempt 2 Changes Requested finding on process-group teardown. Implementation **d7c1c65bf382de1538d77ac4dbe65c1d7fcd1276** is committed and pushed to `task/ARCH-020-COMMERCE-001`. Task status is **review**; architect acceptance is pending. The prior reports and the entire Architect Review/authorization are preserved as recorded history.
+
+#### Correction checklist
+
+- [x] **Source correction:** `scripts/readiness-docker.mjs` keeps one idempotent teardown promise after timeout/AbortSignal cancellation. It sends SIGTERM, retains the two-second SIGKILL escalation independently of the leader's `close`, and awaits escalation before settling the command. A scheduler turn after SIGKILL permits signal delivery before resource cleanup proceeds. Missing spawn PIDs cannot target a process group. Command output redaction/failure codes, main SIGINT/SIGTERM codes and ownership-verified Docker cleanup remain intact.
+- [x] **Behavioral regressions:** `tests/readiness-docker.test.ts` adds separate timeout and AbortSignal cases. A real Node parent spawns an ignored-stdio descendant; the descendant installs a no-op SIGTERM handler before reporting readiness, and the parent exits with code 17 on SIGTERM. Both cases verify cancellation rejection, preserved code 17, leader exit, and descendant/process-group absence within the bounded deadline. `finally` kills only those synthetic processes and removes its temporary directory if assertions fail. Existing single-process timeout and Docker ownership/cleanup tests remain.
+- [x] **Validation and publication:** focused regressions, full tests, typecheck, lint and whitespace checks passed. Published both mirrored task branches for architect review; no main merge or dependent-task execution.
+
+#### Requirement-to-fixture results
+
+| Requirement | Expected effects / command | Result |
+|---|---|---|
+| Timeout and AbortSignal after early leader exit | Synthetic local child processes only; `npm test -- tests/readiness-docker.test.ts` | **10 passed**, including both new descendant regressions and existing cleanup tests |
+| Foundation and cleanup regression coverage | Local mocks/loopback/subprocesses; `npm test` | **29 passed, five suites** |
+| Declared command-runner cancellation type | `npm run typecheck` | **Passed** after adding the explicit existing AbortSignal option declaration |
+| Lint / whitespace | `npm run lint`; `git diff --check` and staged check | **Passed** |
+| Schema ownership | Nested `database` status and unchanged pin | **Clean**, no database edit/pin change |
+
+Validation used workspace-bootstrap Node 24.19.0/npm 11.17.0 in the prepared implementation worktree. During implementation the new typed call exposed that JavaScript inference omitted the runner's existing `signal` option; an explicit JSDoc signature corrected it, and typecheck/lint then passed. No unresolved correction validation remains.
+
+Per the current architect review, the earlier successful real Docker readiness/build/clean-clone evidence is retained. This correction changes process teardown only; it does not change provisioning, readiness queries, runtime routes or dependencies. No Docker/build rerun or live/provider operation was required or performed. The previously reviewed Prisma/deepmerge-ts limitation retains its recorded disposition; no clean-audit claim is made. SIGKILL/host failure still cannot execute application cleanup, as already documented.
+
+#### Prepared launcher and VCS evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-001`.
+- Both worktrees reused for this task; both branches `task/ARCH-020-COMMERCE-001`. No shared/default checkout switched or mutated, no other task worktree reused.
+- Packet: both remote task fast-forwards `not-needed`; both origin/main incorporations `already-current`; no dependencies, dependency gate passed.
+- Prepared parent head `9414923a01c00b681a90bd96f2b29e546735896c`; implementation start `8c8b8250954aec9d6f011130bf05f620c35dff04`.
+- Recursive submodule sync/update passed, status ready; `database` initialized at **9c6a4d8402a01840e2ea8dc18e89171f00564d29**. No repeated startup preparation.
+- Attempt 3 claimed by codex at `2026-09-20T19:42:47Z`; launcher durably committed/pushed claim **99b6ec2f7d8429c1ed606e75f539cc814354a10a**.
+- Implementation correction commit above is pushed. The parent report revision is the commit containing this report, published on the mirrored branch. Parent edits are limited to this task file; Architect Review and execution authorization preserved byte-for-byte.
+- No gitlink, architecture, index, other task, main merge/push, deployment, downstream promotion or self-acceptance.
 
 ### Attempt 2 — Ready for Review (2026-09-20)
 
