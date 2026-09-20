@@ -148,6 +148,8 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] After amended BACKGROUND-001 and all prerequisites are accepted, cover C6.2/C6.3 and its A1-L01–L06/A2-V01–V07 matrix across the integrated path. Keep deterministic provider workflow results separate from representative French/English real-audio quality evidence and report limitations. No automatic paid/provider fallback or implicit test launch.
+
 - [ ] Cover C7.1 A01–A11 with injected Google/development identities and direct endpoint/action requests; verify hosted bypass rejection, local SUPER_ADMIN audit writes and no bypass-to-live-MCP access.
 
 - [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.

@@ -1194,3 +1194,25 @@ without fabricating required details; R09 ADMIN can validate/preview but cannot
 publish; R10 U11 clone/edit/cancel/validate/test/publish traversal; R11 definition
 instructions cannot override C6.1; R12 wrong/missing manifest hash fails closed.
 Record structural assertions separately from model-behaviour evaluation.
+
+
+
+## C6.2. Initial recovery language — user scope amendment
+
+Added during BACKGROUND-001 Attempt 1 review; supersedes conflicting initial-language/customer-preference assumptions in C6.1 for this path. This is new scope, not a defect in the original submission. The canonical Background task's A1 requirements and A1-L01–L06 matrix are binding.
+
+Start with shop configured language. Validated international-number parsing may override only when it yields one valid country with an explicitly approved deterministic mapping. Approved initial table: FR -> fr; UK shop + valid French +33 customer -> French. Unknown/invalid/ambiguous/unmapped countries retain shop language; do not use a calling prefix as country proof. No customer preference settings or invented customer-explicit source. Initial/follow-up templates must be approved translations; missing desired variant falls back to the shop-language approved template, with actual language metadata. Never relabel untranslated text.
+
+Substantive text or spoken-language transcript establishes subsequent conversation language; ambiguous/short/numeric/URL-only/emoji-only input retains it. Phone initialization cannot overwrite an established language. Preserve stable-confidence/stale-turn handling and prices/currency/URLs/policy. Generic legacy customer-explicit enum compatibility does not justify assuming settings exist for this flow.
+
+Cross-owner handoff: Shared owns a new phone-country source and published compatible validators; Database owns persisted PHONE_COUNTRY enum support; Background owns phone parsing/mapping, template selection and source conversions. Shared 0.13.1 and current Database enum have no such value. Compatible storage/readers must precede emission. These are new scope prerequisites to materialise before expanded task execution, not defects/reopenings of accepted SHARED-001/DATABASE-001. No local string casts or mislabeled detected source may bypass this gap.
+
+## C6.3. Spoken-language voice input — user scope amendment
+
+The Background task's A2 requirements and A2-V01–V07 matrix are binding. Reuse SpeechTranscriptionService; retain Groq and add explicitly selected OpenAI provider/model configuration with proposed OpenAI default gpt-4o-mini-transcribe. No silent switch or automatic paid fallback. Transcribe the spoken language, never force initial shop/phone language or request English translation.
+
+resolve recovery -> download/validate audio -> transcribe -> persist transcript -> normal conversation admission -> CommerceAgent -> WhatsApp text reply. Preserve raw abuse admission, engagement timing, audio bounds/timeouts/retries, duplicate protection and stale-turn checks. Empty/failed transcription uses existing request-to-type handling and never invokes CommerceAgent. Persist metadata without logging audio, transcript contents or credentials.
+
+Verify actual WhatsApp format/codec compatibility with matching MIME/filename. Bounded conversion is justified only by a demonstrated incompatibility; Background owns required image/runtime dependencies. Gateway owns environment-specific provider/model/secret wiring to the messaging runtime, preserving existing Groq selection and explicit rollout/rollback. No reverse Background dependency on deployment or terminal system testing.
+
+Deterministic provider mocks prove workflow. Record representative French/English real-audio quality and format evidence separately, including unrun checks; never claim mocks prove acoustic quality. Official [OpenAI transcription reference](https://developers.openai.com/api/reference/cli/resources/audio/subresources/transcriptions/methods/create) describes input-language transcription, lists gpt-4o-mini-transcribe and accepted audio formats, and recommends format-identifying filename/content type. Provider documentation alone does not prove a particular WhatsApp fixture works; do not mandate conversion without evidence.
