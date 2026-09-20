@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -535,3 +535,43 @@ Validation:
 - Required source invariant search and `git diff --check`: passed; one existing `startDynamicLeasedScheduler({` remains in `billing.ts`, and the new service contains no scheduler/timer.
 
 Blockers and unresolved issues: disposable PostgreSQL execution was unavailable. The unrelated provider-cycle lag failures were not changed.
+
+## Architect Review — Attempt 1 — Accepted
+
+Status: Accepted.
+
+Reviewed implementation commit: `4b1b81f436e04a91f5f9a689dcbbe60cf837b4e0`.
+
+Reviewed parent report commit: `dae98306`.
+
+Functional review findings:
+
+- `PromotionSelectionExpiryReconciliationService.reconcileOnce()` captures one cutoff per invocation and selects only pointers whose related campaign has `expiresAt <= cutoff`, bounded by `billingReconciliationShopBatchSize`.
+- Final deletion is race-safe: the `deleteMany` predicate rechecks the candidate selection id, shop id, observed promotional-credit grant id and the related campaign expiry against the same cutoff. A concurrently replaced selection or extended campaign therefore produces `count = 0` and is reported as `raced`.
+- Cleanup mutates only `MerchantPromotionSelection`; grant quantities/history, campaigns, reservations, billing periods, subscriptions and shops are not changed.
+- The stage runs inside the existing `BILLING_RECONCILIATION` cycle, receives the same runtime-config snapshot, creates no timer/lease/queue/runtime field, and executes before refund correction/subscription reconstruction.
+- Cleanup failure is isolated by the required catch, so eventual pointer cleanup cannot prevent the later billing-cycle maintenance stages from running.
+- Cycle-level result/failure logs are bounded and do not include shop, grant or campaign identifiers.
+
+Accepted validation evidence from the Completion Report:
+
+- focused tests: passed;
+- unit/full validation: 1,056 passed, 12 skipped, with three reported provider-cycle failures outside the files changed by this task;
+- Prisma validation/generation and build: passed;
+- source-invariant search and `git diff --check`: passed;
+- disposable PostgreSQL race execution remained unavailable because `TEST_DATABASE_URL` and `MODA_DISPOSABLE_INTEGRATION=1` were not available.
+
+Non-blocking validation observation:
+
+- the skipped `does not delete a newer replacement selection` disposable-PostgreSQL fixture currently moves the pointer to the replacement grant before its wrapped `findMany()` performs candidate discovery. If that gate is enabled later, correct the fixture so discovery first observes expired grant A and the pointer is changed to unexpired grant B only after `findMany()` has returned the candidate and before the service executes the final conditional delete. This does not change the accepted production algorithm, whose final predicate already enforces the required race safety. Do not reopen `BACKGROUND-001` for this test-fixture correction alone.
+
+Acceptance decision:
+
+```yaml
+status: complete
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+There is no Attempt 2. The ARCH-018 manual checkpoint remains in force; `SYSTEM-TEST-001` is not started automatically by this acceptance.

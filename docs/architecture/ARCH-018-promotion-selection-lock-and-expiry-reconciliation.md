@@ -359,7 +359,7 @@ No new telemetry framework is required. The billing entrypoint should emit bound
 
 ```text
 ARCH-018-SHOPIFY-001      Ready
-ARCH-018-BACKGROUND-001   Ready
+ARCH-018-BACKGROUND-001   Complete
 ARCH-018-ADMIN-001        Ready
           \                 |                 /
            \________________|________________/
