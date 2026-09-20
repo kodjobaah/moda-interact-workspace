@@ -4,7 +4,7 @@ Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabi
 
 ## Initial review packet and definition frontier
 
-COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 is Ready at Attempt 0: COMMERCE-001 is accepted and its source is integrated into Commerce main (`86929b2`, containing `d7c1c65`). No task is claimed or launched. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 is Ready for corrections after Attempt 1 Changes Requested (`7f70f33a`): allow the documented development HTTP origin under the explicit local policy and provide a safe session-clearing path for revoked users. Attempt 1 is retained with no active claim; no downstream task is promoted or launched. COMMERCE-001 remains accepted and integrated. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 The consolidated packet contains 19 tasks; SHARED-001 owns contracts, runner and publication. The original definition/provisioning records below are historical setup evidence. Ready status elsewhere in this packet does not launch execution.
 

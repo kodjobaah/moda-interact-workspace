@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -273,27 +273,82 @@ None. The task consumes exact `next-auth` 5.0.0-beta.32 and accepted Shared 0.13
 
 ### Review Status
 
-Pending.
+**Changes Requested — Attempt 1, 2026-09-20, moda_architect.** Reviewed published
+implementation `7f70f33a491dd60861b25b1f820668258ea5a5d2` and report
+`eb83eb8abe7f98af83f438639cacb440e30becf6`. Return the same task to Ready with
+Attempt 1 retained and executor/claimed_at null. No next attempt or dependent task
+is claimed/promoted. These are functional corrections, not a request for exhaustive
+coverage or live provider execution.
 
-### Review Notes
+### R1 — P2: documented local development cannot perform mutations
 
-No implementation submitted. This task is a reviewable definition.
+`lib/auth/environment.ts:32–44,72–78` accepts only HTTPS origins even after
+`assertStudioAuthConfiguration` permits explicit development. The documented and
+reported local setup uses `COMMERCE_STUDIO_ORIGIN=http://127.0.0.1:4184` with Next
+development mode. That setup resolves SUPER_ADMIN but every otherwise-valid
+mutation origin check throws configuration/503 before authorization, including
+sign-out and future Studio actions. The reported browser read checks do not prove
+that development writes work.
 
-### Reviewed Files
+Confirmed by transpiling/evaluating the committed environment module with
+`NODE_ENV=development`, `DEPLOYMENT_ENVIRONMENT_NAME=development`, and the documented
+HTTP origin: `isDevelopmentStudioAuth` returned true, while
+`configuredStudioOrigin` threw `503 configuration`.
 
-None for implementation review.
+Correction: support the documented local HTTP loopback origin only under the
+explicit, production-build-safe development policy. Preserve exact Origin
+comparison, POST enforcement and hosted HTTPS requirements. Verify a matching
+local development mutation succeeds and foreign/missing origins remain denied;
+hosted HTTP and production plus development override must still fail closed.
 
-### Validation Reviewed
+### R2 — P2: revoked session has no usable sign-out/account-recovery path
 
-None for implementation review.
+`app/actions/session.ts:16` requires current active-admin authorization before
+clearing the session. After the current PlatformAdmin is deactivated or its
+provider/subject no longer matches, the action therefore returns 403 and never
+calls NextAuth signOut. Meanwhile `app/sign-in/page.tsx:10–12` redirects that same
+session to access denied, whose only return link leads back to sign-in. The
+visible recovery path loops; a user cannot clear the rejected Studio session and
+try another authorized Google identity through this UI.
 
-### Architecture Conformance
+Correction: provide a minimal accessible way for a rejected/expired Studio
+session to clear its own cookie and return to Google sign-in using the NextAuth
+protocol or a narrow session-clearing adapter. Preserve same-origin/CSRF handling
+and the client submission guard; do not grant denied users any protected read,
+write, staff role or MCP authority. Clearing one's own session is a protocol
+exception already recognized by C7.1, not a privileged business mutation. Keep
+final U01/U02 visual ownership with COMMERCE-008.
 
-Awaiting implementation.
+Verify the concrete sequence: previously signed-in identity becomes inactive;
+protected access is denied; the user clears that session through the offered
+control; Google sign-in becomes available again. An expired-session sign-out
+should also recover gracefully rather than requiring active-admin authorization.
 
-### Follow-up
+### Conformance and Validation Reviewed
 
-Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+The core allowlist/Google verified-subject policy, conditional first binding,
+current-row permission resolution, separate Studio cookie/JWT, exact development
+identity helper and shared security logging otherwise align with the inspected
+C7.1/Admin reference. No schema or merchant permission mutation was introduced.
+
+Architect ran the five focused origin/environment/principal/Google-policy/auth-UI
+files: **27 tests passed**. The R1 source-module reproduction above independently
+failed as described. R2 follows the inspected resolver, action and page control
+flow; no real Google account was contacted. Reviewed the supplied 65-test,
+typecheck, lint, production-build and local browser evidence. Published heads,
+dedicated worktrees, claim and database pin match the report; whitespace checks pass.
+
+After the two source corrections, run targeted functional verification plus the
+declared typecheck/lint and update the report with results. Retain unaffected
+foundation evidence; no exhaustive coverage expansion or full Docker rerun is
+requested. Commit/push the same mirrored branches and return to review.
+
+Live Google OAuth remains explicitly developer-owned and unrun. C7.1 permits
+injected local identity fixtures and separately records developer live OAuth
+checks; this pending external callback/credential check is not the reason for
+Changes Requested. Deployment sign-in must still be verified with real provisioned
+configuration before claiming live OAuth works. No provider credentials, deployment
+or main integration were used by this review.
 
 ## Architect readiness reconciliation — 2026-09-20
 
