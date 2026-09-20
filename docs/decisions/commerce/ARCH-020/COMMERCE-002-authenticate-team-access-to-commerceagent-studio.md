@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: codex
-claimed_at: 2026-09-20T21:36:24Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -94,17 +94,17 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
-- [ ] Implement binding C7.1 in full: Google-only NextAuth, Admin-compatible development SUPER_ADMIN resolution, transaction-safe reserved development identity, reusable server-only auth entry points and typed route/action/page denial adapters. No application route may invent its own auth or role resolution.
+- [x] Implement binding C7.1 in full: Google-only NextAuth, Admin-compatible development SUPER_ADMIN resolution, transaction-safe reserved development identity, reusable server-only auth entry points and typed route/action/page denial adapters. No application route may invent its own auth or role resolution.
 
-- [ ] Configure NextAuth.js with Google and JWT sessions following Admin (including its current eight-hour maximum unless the architect changes it); supply Studio-specific callback, cookie and server-only secret configuration.
-- [ ] Require a verified Google email and non-empty subject, normalise email, and look up the same pre-provisioned active PlatformAdmin row with provider=google. Reject unlisted users, unverified emails and subject mismatch; do not auto-provision staff.
-- [ ] Match Admin's atomic first-login subject binding: update only an active Google row whose providerSubject is still null, then reload and accept only the same subject if another login won the race. Preserve display-name and last-login semantics.
-- [ ] Carry providerSubject in the NextAuth JWT/session and reload current PlatformAdmin identity/role for each protected request; request-local deduplication is allowed, stale cross-request permission caches are not.
-- [ ] Implement ADMIN inspect/edit/preview and SUPER_ADMIN publish/rollback/disable permissions with server-side checks.
-- [ ] Recheck active identity and role for protected reads/actions; protect mutation origins/CSRF and fail closed on missing hosted auth configuration; only the explicit C7.1 development environment bypass is exempt.
-- [ ] Provide a team-only shell and denied/expired-session states; no merchant account login or shared Admin host cookie trust.
+- [x] Configure NextAuth.js with Google and JWT sessions following Admin (including its current eight-hour maximum unless the architect changes it); supply Studio-specific callback, cookie and server-only secret configuration.
+- [x] Require a verified Google email and non-empty subject, normalise email, and look up the same pre-provisioned active PlatformAdmin row with provider=google. Reject unlisted users, unverified emails and subject mismatch; do not auto-provision staff.
+- [x] Match Admin's atomic first-login subject binding: update only an active Google row whose providerSubject is still null, then reload and accept only the same subject if another login won the race. Preserve display-name and last-login semantics.
+- [x] Carry providerSubject in the NextAuth JWT/session and reload current PlatformAdmin identity/role for each protected request; request-local deduplication is allowed, stale cross-request permission caches are not.
+- [x] Implement ADMIN inspect/edit/preview and SUPER_ADMIN publish/rollback/disable permissions with server-side checks.
+- [x] Recheck active identity and role for protected reads/actions; protect mutation origins/CSRF and fail closed on missing hosted auth configuration; only the explicit C7.1 development environment bypass is exempt.
+- [x] Provide a team-only shell and denied/expired-session states; no merchant account login or shared Admin host cookie trust.
 
-- [ ] Apply the common submission guard to Google sign-in, sign-out and any confirmation/retry controls. Keep sign-in pending through navigation; only a known provider error/cancel resets it. Preserve NextAuth state/CSRF handling and existing atomic account-subject binding.
+- [x] Apply the common submission guard to Google sign-in, sign-out and any confirmation/retry controls. Keep sign-in pending through navigation; only a known provider error/cancel resets it. Preserve NextAuth state/CSRF handling and existing atomic account-subject binding.
 
 ## Interfaces / Contracts
 
@@ -141,21 +141,21 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Pass C7.1 A01–A11 fixtures and provide an entry-point-to-guard matrix covering reads, writes, Server Actions, pages and explicit protocol exceptions. Demonstrate development SUPER_ADMIN, hosted rejection of bypass and reserved audit identity integrity.
+- [x] Pass C7.1 A01–A11 fixtures and provide an entry-point-to-guard matrix covering reads, writes, Server Actions, pages and explicit protocol exceptions. Demonstrate development SUPER_ADMIN, hosted rejection of bypass and reserved audit identity integrity.
 
-- [ ] Unauthenticated, deactivated and insufficient-role callers cannot access direct protected routes/actions.
-- [ ] An active pre-provisioned Admin account with the same verified Google subject can sign into Studio through NextAuth without another account being created; inactive, unlisted, wrong-provider and mismatched-subject accounts are denied.
-- [ ] Studio reads the same database identity/role records, creates no duplicate User/Account/Session tables, and never modifies merchant permissions.
-- [ ] Deactivation or role change in the shared PlatformAdmin row takes effect on the next protected Studio request even when its JWT has not expired; concurrent first-login binding cannot bind a different subject.
-- [ ] Authentication secrets stay server-side and denied operations produce bounded audit/security events.
+- [x] Unauthenticated, deactivated and insufficient-role callers cannot access direct protected routes/actions.
+- [x] An active pre-provisioned Admin account with the same verified Google subject can sign into Studio through NextAuth without another account being created; inactive, unlisted, wrong-provider and mismatched-subject accounts are denied.
+- [x] Studio reads the same database identity/role records, creates no duplicate User/Account/Session tables, and never modifies merchant permissions.
+- [x] Deactivation or role change in the shared PlatformAdmin row takes effect on the next protected Studio request even when its JWT has not expired; concurrent first-login binding cannot bind a different subject.
+- [x] Authentication secrets stay server-side and denied operations produce bounded audit/security events.
 
-- [ ] Rapid mouse/keyboard sign-in or sign-out activation initiates one client auth flow; repeated callbacks cannot create extra accounts or change provider-subject binding. Known provider failure/cancel permits a fresh intentional attempt.
+- [x] Rapid mouse/keyboard sign-in or sign-out activation initiates one client auth flow; repeated callbacks cannot create extra accounts or change provider-subject binding. Known provider failure/cancel permits a fresh intentional attempt.
 
 ## Validation
 
-- [ ] Run local NextAuth callback/guard tests for verified/unverified email, existing/unlisted/inactive users, wrong provider/subject, atomic first-login races, JWT subject propagation, expiry, sign-out, and next-request role/deactivation changes.
-- [ ] Test direct protected reads/actions, forged cross-host cookies, CSRF/origin rejection, host cookie isolation and failure on missing hosted auth configuration. Do not enable a hosted development bypass.
-- [ ] Run declared typecheck/lint; verify login/denied shell keyboard behaviour locally. Live OAuth validation is developer-owned.
+- [x] Run local NextAuth callback/guard tests for verified/unverified email, existing/unlisted/inactive users, wrong provider/subject, atomic first-login races, JWT subject propagation, expiry, sign-out, and next-request role/deactivation changes.
+- [x] Test direct protected reads/actions, forged cross-host cookies, CSRF/origin rejection, host cookie isolation and failure on missing hosted auth configuration. Do not enable a hosted development bypass.
+- [x] Run declared typecheck/lint; verify login/denied shell keyboard behaviour locally. Live OAuth validation is developer-owned.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -171,39 +171,103 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review — Attempt 1 implemented by codex on 2026-09-20. Local evidence is complete; live Google OAuth remains developer-owned and no architect acceptance is asserted.
 
 ### Files Changed
 
-None; implementation has not started.
+- `auth.ts`, `types/next-auth.d.ts`, `app/api/auth/[...nextauth]/route.ts`: NextAuth 5.0.0-beta.32 Google-only JWT session, eight-hour maximum, provider-subject propagation and Studio-specific host cookie.
+- `lib/auth/*`: server-only environment, current PlatformAdmin resolution, typed failures/adapters, permission matrix, origin policy, shared structured security audit and exact reserved development identity.
+- `app/page.tsx`, `app/sign-in/page.tsx`, `app/access-denied/page.tsx`, `components/auth-action-button.tsx`, `app/actions/session.ts`, `app/api/studio/access/route.ts`: protected team shell, minimal auth states, guarded sign-in/sign-out, protected read and privileged mutation entry points.
+- `.env.example`, `README.md`, `package.json`, `package-lock.json`: hosted/local configuration contract, separate-session documentation, exact NextAuth dependency and accepted Shared 0.13.1 logging dependency.
+- `tests/auth-*.test.{ts,tsx}`: C7.1 A01–A11 policy, entry-point, concurrency, environment, permission, origin and UI fixtures.
 
 ### Work Completed
 
-None; task definition only.
+Implemented the C7.1 auth boundary without a database adapter or new auth tables. Hosted login accepts only a verified Google profile matching an active, pre-provisioned `public.PlatformAdmin`; first subject binding uses conditional `updateMany`, reloads after a race and accepts only the winning subject. Existing display names are preserved and current logins refresh `lastLoginAt`.
+
+JWT sessions carry `providerSubject`, while every protected request reloads email, active state, provider, subject and role from the canonical table. ADMIN receives inspect/edit/preview permissions; publish/rollback/enable/disable require SUPER_ADMIN. Page, route and Server Action adapters distinguish 401, 403 and 503 without returning configuration values. Root and sign-in are forced dynamic to prevent build-time/static principal capture.
+
+Development bypass is derived only from the normalized server environment, fails closed for production builds, and yields the exact reserved SUPER_ADMIN. `ensureDevelopmentStudioAdmin` rechecks both environment and principal, inserts with `ON CONFLICT DO NOTHING`, and verifies every reserved field without modifying conflicts. Ordinary reads and startup create no auth row.
+
+Mutations require POST plus the exact configured Origin, including development. NextAuth retains OAuth CSRF/state handling. Sign-out additionally passes through the guarded Server Action. Auth controls acquire a synchronous lock, disable immediately, expose a pending label/status and only unlock on a known start failure. No staff cookie or development principal authorizes MCP; no production MCP route exists.
+
+Entry-point matrix:
+
+| Family | Entry point | Guard | Exception/status behavior |
+| --- | --- | --- | --- |
+| Page | `/` | `requireStudioAdminPage` | no session -> `/sign-in`; denied/configuration -> `/access-denied` |
+| Public auth page | `/sign-in` | `getStudioAdminPrincipal` | authenticated/development -> `/`; otherwise Google control |
+| Direct read | `GET /api/studio/access` | `requireStudioAdmin` | typed 401/403/503, private no-store |
+| Direct privileged write | `POST /api/studio/access` | exact Origin + `requireStudioSuperAdmin` | ADMIN and forged origins denied |
+| Server Action | `signOutStudioAction` | exact Origin + `requireStudioAdmin` | typed denial before NextAuth sign-out |
+| Protocol/public | `/api/auth/*`, `/health/live`, `/health/ready` | NextAuth protocol or health contract | explicit exceptions; no Studio session grants MCP access |
+
+Requirement-to-fixture matrix:
+
+| Contract | Fixture | Expected side effect | Result |
+| --- | --- | --- | --- |
+| A01 | verified allowlisted current Google subject | login timestamp refresh; no account creation | passed |
+| A02 | unverified/unlisted/inactive/wrong-provider/wrong-subject | deny; no bind/refresh | passed |
+| A03 | explicit development environment | server-resolved SUPER_ADMIN without Google credentials | passed |
+| A04 | production build plus development override | configuration failure before principal | passed |
+| A05 | test/production/unknown with missing configuration | fail closed as 503 adapter result | passed |
+| A06 | request-shaped bypass flags outside development | ignored; no bypass principal | passed |
+| A07 | concurrent reserved-row ensure and first-subject bind | one exact row/one subject; conflicts unchanged | passed with injected transaction/persistence fixtures |
+| A08 | page/read/write/Server Action matrix and all seven permissions | direct guards; ADMIN cannot publish, SUPER_ADMIN can | passed |
+| A09 | mutable role/active persistence behind repeated resolver calls | next request sees role/deactivation change | passed; no module-global principal cache |
+| A10 | wrong/missing Origin, development request and absent MCP production route | deny mutation; bypass cannot authorize MCP | passed |
+| A11 | sign-in redirect, badge and rapid mouse/keyboard auth controls | one flow, pending state, intentional retry after known failure | passed in DOM tests and local browser inspection |
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed validation from the isolated implementation worktree with workspace Node 24.19.0:
+
+```text
+npm run prisma:generate
+npm test
+npm run typecheck
+npm run lint
+npm run build
+git diff --check
+```
+
+- Prisma client generation: passed against recorded database submodule `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Vitest: **13 files, 65 tests passed**. This includes existing foundation checks and 37 task-specific auth/policy/UI cases.
+- Typecheck: passed (`next typegen && tsc --noEmit`).
+- Lint: passed (`eslint .`).
+- Production build: passed. `/`, `/sign-in`, auth handler, protected access route and health handlers compile; protected root/sign-in are dynamic.
+- Diff whitespace check: passed.
+- Local browser fixture: `DEPLOYMENT_ENVIRONMENT_NAME=development COMMERCE_STUDIO_ORIGIN=http://127.0.0.1:4184 npm run dev -- --port 4184`. Verified root shows `Development — SUPER_ADMIN`, `/sign-in` redirects to root without Google credentials, and `/access-denied` exposes its heading and return link. The dev server was stopped and its generated untracked agent files removed.
+
+Developer-owned live validation remains pending because it requires provisioned Google credentials and a real callback host. With `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, matching `AUTH_URL`/`COMMERCE_STUDIO_ORIGIN`, `DATABASE_URL` and normal runtime dependencies configured for a non-development environment, run `npm run dev` (or the deployed start contract), sign in with one active provisioned Google account, verify sign-out, verify an unlisted account is denied, then deactivate/change the role of the signed-in PlatformAdmin and confirm the next protected request reflects it. No repository live-OAuth automation script exists; do not report this manual check as passed until the developer supplies evidence.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+COMMERCE-008 owns the final U01/U02 prototype. This task supplies intentionally minimal accessible auth states and reusable auth behavior rather than the later visual design. The local browser run used the explicit development principal and made no provider/database call. The reserved-row concurrency proof uses an injected transaction fixture; no local/shared database was mutated.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+Separate Studio sessions remain the v1 default. The existing Shopify `Session` table remains in the canonical schema and is unrelated to NextAuth; no NextAuth User/Account/Session models or adapter were added. Future Studio pages/actions must call the exported server guards at each entry point.
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet. Confirm whether automatic Admin-to-Studio sign-on is required; the current design uses the same account with a separate Studio session.
+Live Google OAuth evidence is pending developer execution as described above. No implementation defect or cross-repository blocker is known.
 
 ### Architectural Concerns
 
-None newly reported.
+None. The task consumes exact `next-auth` 5.0.0-beta.32 and accepted Shared 0.13.1; it changes no shared contract or database schema.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-002. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+- Task branch: `task/ARCH-020-COMMERCE-002` in both repositories.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-002`; reused, remote task fast-forward not needed, origin/main incorporated yes.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-002`; created for this task, remote task fast-forward not needed, origin/main already current. No shared/default checkout or another task worktree was switched or reused.
+- Recursive submodule sync/update: passed; `database` remained at `5abfd87f57038bae515aaa09ec7c8db62adcfb98` with no pin change.
+- Claim commit `0d0089e4cfc8217ef6d5f3e9cca2bff4a3e26f36` was pushed before implementation; Attempt 1 retained.
+- Implementation commit `7f70f33a491dd60861b25b1f820668258ea5a5d2` pushed to `origin/task/ARCH-020-COMMERCE-002`.
+- Parent review submission is the commit containing this report, pushed to the matching parent task branch. Only this task file is staged; no Commerce gitlink, Architect Review, index/frontier, architecture document or main branch is changed.
+- Merged to implementation main: no. Merged to workspace main: no.
 
 ## Architect Review
 
