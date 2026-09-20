@@ -315,16 +315,10 @@ Other pending tasks retain their existing gates. Current branch frontier:
 **19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
 terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
 
-## Shopify merchant preferences acceptance — 2026-09-20
+## Caching backlog addition
 
-SHOPIFY-001 is architect-accepted Complete at Attempt 1 (`4693bba`, report
-`c5016d73`). Merchant eligibility, explicit idempotent saves and guarded form
-behavior conform; architect reran 18 passing focused checks and reviewed six
-passing PostgreSQL tests plus build/browser evidence. Existing repository-wide
-typecheck/lint limitations remain documented. SYSTEM-TEST-001 remains Pending
-until all its implementation dependencies are accepted, then explicitly
-user-invoked; no task is launched. Developer integration remains separate.
-
-This task-branch snapshot has 19 tasks: 4 Complete, 1 Ready, 14 Pending.
-Other canonical task worktrees remain authoritative for concurrent progress;
-this review does not overwrite their state. Prior readiness records are historical.
+COMMERCE-012 adds one Pending final implementation task; active scope is now 20
+tasks. Its prerequisites are all 18 other nonterminal ARCH-020 tasks; SYSTEM-TEST-001
+depends on it. Earlier 19-task counts predate this addition. Before promotion, resolve
+its explicit policy persistence/API/UI checkpoint and any owner-specific prerequisite
+tasks. No execution or cache enablement is authorized by task authorship alone.

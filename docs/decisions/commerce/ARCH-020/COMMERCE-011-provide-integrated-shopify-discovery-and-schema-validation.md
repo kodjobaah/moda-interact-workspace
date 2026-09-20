@@ -18,6 +18,7 @@ depends_on:
   - ARCH-020-COMMERCE-002
   - ARCH-020-SHARED-001
 enables:
+  - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-005
   - ARCH-020-COMMERCE-003
   - ARCH-020-COMMERCE-008
@@ -89,6 +90,8 @@ Record actual pinned dependency/tool schemas, artifact hash/version/provenance, 
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
 
 ## Enables
+
+- ARCH-020-COMMERCE-012
 
 - ARCH-020-COMMERCE-005
 - ARCH-020-COMMERCE-003
