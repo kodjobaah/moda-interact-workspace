@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-20T06:40:46Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-010-DATABASE-011
@@ -506,3 +506,32 @@ release a selection before expiry
 delete promotional grant/history evidence
 delete a newer concurrently selected promotion
 ```
+
+## Completion Report
+
+Status: Ready for Review
+
+Implementation commit: `4b1b81f436e04a91f5f9a689dcbbe60cf837b4e0`, pushed to `task/ARCH-018-BACKGROUND-001`.
+
+Changed files:
+
+- `src/services/promotion-selection-expiry-reconciliation.service.ts`
+- `src/entrypoints/billing.ts`
+- `tests/unit/services/promotion-selection-expiry-reconciliation.service.test.ts`
+- `tests/unit/runtime/billing-entrypoint.runtime-controls.test.ts`
+- `tests/integration/promotion-selection-expiry-reconciliation.integration.test.ts`
+
+Implemented the bounded expiry-only candidate query, single-cutoff race-safe conditional deletion, selected/released/raced result, and mutation boundary. Integrated cleanup into the existing `BILLING_RECONCILIATION` cycle with the same runtime snapshot, lease generation/config-version logs, and failure isolation before refund correction and subscription reconstruction. No new timer, scheduler, lease, runtime field, queue, schema or migration was added.
+
+Validation:
+
+- Focused Vitest: 2 files, 6 tests passed.
+- `npm run prisma:generate`: passed as part of `npm run build`.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed.
+- `npm run test:integration`: passed available gated set, 3 files and 4 tests.
+- Direct new integration file: 4 tests skipped because `TEST_DATABASE_URL` and `MODA_DISPOSABLE_INTEGRATION=1` were unavailable; disposable PostgreSQL race proof remains blocked by that exact gate.
+- `npm run test:unit` and `npm test`: 70 files passed, 1,056 tests passed, 12 skipped; 3 unrelated existing failures remain in `tests/unit/services/billing-reconciliation.service.test.ts` for provider-cycle lag behavior.
+- Required source invariant search and `git diff --check`: passed; one existing `startDynamicLeasedScheduler({` remains in `billing.ts`, and the new service contains no scheduler/timer.
+
+Blockers and unresolved issues: disposable PostgreSQL execution was unavailable. The unrelated provider-cycle lag failures were not changed.
