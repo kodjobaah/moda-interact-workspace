@@ -74,7 +74,7 @@ new database implementation was executed by this documentation amendment.
 
 ## Studio authoring reconciliation — current review packet
 
-The packet now has 21 unclaimed tasks: 3 Ready, 18 Pending, 0 Blocked. Added
+The packet now has 19 unclaimed tasks: 3 Ready, 16 Pending, 0 Blocked. Added
 COMMERCE-011 for core Shopify discovery/schema/compiler services. Admin continues
 to own Feature creation. Nine database tables support independent reusable tools,
 exact capability bindings and original grant provenance. C14 permits new public
@@ -90,7 +90,7 @@ the terminal dependency set are reconciled. No task is claimed or implemented.
 
 ### Reconciliation validation evidence
 
-- Packet validation passed for all21 tasks: exact task sections/frontmatter,
+- Packet validation passed for all19 tasks: exact task sections/frontmatter,
   unclaimed metadata, reciprocal acyclic dependencies, external prerequisite
   records, complete terminal dependency set, launcher routes and Markdown links.
 - UI consistency validation passed:14 unique page routes,12 navigation cases,
@@ -108,4 +108,6 @@ The earlier provisioning blocker is resolved: the private Commerce repository an
 workspace submodule now exist at the verified initial main commit recorded in the
 implementation handoff. COMMERCE-001 is Ready, unclaimed at attempt 0. Historical
 review counts above describe earlier drafts; current counts are 3 Ready and
-18 Pending across 21 tasks. Next.js and nested database setup remain task work.
+16 Pending across 19 tasks. Next.js and nested database setup remain task work.
+
+Shared consolidation: one SHARED-001 now includes all contracts, runner and publication requirements. The current 19-task graph passes schema, reciprocal dependency, cycle, terminal-gate, route and link validation.
