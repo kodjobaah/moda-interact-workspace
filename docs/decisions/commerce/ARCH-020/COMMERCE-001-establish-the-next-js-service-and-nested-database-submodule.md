@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: codex
-claimed_at: 2026-09-20T18:30:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -78,13 +78,13 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
-- [ ] After the handoff setup checkpoint registers the remote submodule and owner, scaffold the Node-runtime Next.js App Router application without business features.
-- [ ] Add database/ as a Git submodule of https://github.com/kodjobaah/moda-interact-database.git pinned to an integrated revision; never copy the schema.
-- [ ] Provide explicit dev/build/start/typecheck/lint/test and prisma:generate commands; recursively initialise database before client generation in clean builds.
-- [ ] Establish server-only connection handling and separate liveness/readiness routes with no secret disclosure; do not run migrations on application startup.
-- [ ] Choose and record a tested MCP SDK/Next.js adapter/client compatibility set with a bounded local round trip; no production endpoint or authentication bypass.
+- [x] After the handoff setup checkpoint registers the remote submodule and owner, scaffold the Node-runtime Next.js App Router application without business features.
+- [x] Add database/ as a Git submodule of https://github.com/kodjobaah/moda-interact-database.git pinned to an integrated revision; never copy the schema.
+- [x] Provide explicit dev/build/start/typecheck/lint/test and prisma:generate commands; recursively initialise database before client generation in clean builds.
+- [x] Establish server-only connection handling and separate liveness/readiness routes with no secret disclosure; do not run migrations on application startup.
+- [x] Choose and record a tested MCP SDK/Next.js adapter/client compatibility set with a bounded local round trip; no production endpoint or authentication bypass.
 
-- [ ] Provide a reusable pending-action/form pattern for the Studio shell so later screens can use a synchronous guard, native disabled controls and accessible busy/error states. No application-wide network lock.
+- [x] Provide a reusable pending-action/form pattern for the Studio shell so later screens can use a synchronous guard, native disabled controls and accessible busy/error states. No application-wide network lock.
 
 ## Interfaces / Contracts
 
@@ -117,16 +117,16 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] A fresh recursive clone and canonical execution worktree can generate Prisma and build the service using the database pin.
-- [ ] No browser bundle contains server credentials; health routes disclose no credentials or tenant records.
-- [ ] Actual build/start/port/health contracts are documented for Gateway; no Vercel hosting assumption is introduced.
+- [x] A fresh recursive clone and canonical execution worktree can generate Prisma and build the service using the database pin.
+- [x] No browser bundle contains server credentials; health routes disclose no credentials or tenant records.
+- [x] Actual build/start/port/health contracts are documented for Gateway; no Vercel hosting assumption is introduced.
 
-- [ ] A local example/test of the shared UI pattern dispatches once under same-tick double activation and permits an intentional retry after a known failure.
+- [x] A local example/test of the shared UI pattern dispatches once under same-tick double activation and permits an intentional retry after a known failure.
 
 ## Validation
 
-- [ ] Run the new declared typecheck/lint/build and focused local health/adapter smoke checks.
-- [ ] Check git submodule status --recursive and clean-clone/build instructions; record nested database SHA and git diff --check.
+- [x] Run the new declared typecheck/lint/build and focused local health/adapter smoke checks.
+- [x] Check git submodule status --recursive and clean-clone/build instructions; record nested database SHA and git diff --check.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -142,39 +142,89 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Attempt 1: Ready for Review. Implementation and bounded local checks are complete. Real PostgreSQL/Redis healthy-readiness evidence remains developer-owned and pending before acceptance. No architect acceptance decision has been made by this agent.
 
 ### Files Changed
 
-None; implementation has not started.
+Implementation commit `3ae6c7f12f2f0f6467c93ca49012967f26d16b44`:
+
+- App Router layout/static setup page, responsive CSS, exact `/health/live` and `/health/ready` Node routes.
+- `.nvmrc`, exact dependency package/lockfile, Next/TypeScript/ESLint/Vitest configuration and declared scripts.
+- Canonical nested `database/` gitlink and `.gitmodules`, no copied or edited schema.
+- Server-only configuration/Prisma/Redis/readiness modules.
+- Reusable `PendingActionForm` and synthetic behavioral tests.
+- Test-only MCP Next Request/Response adapter fixture and actual SDK client loopback test.
+- Production-process health smoke, fresh recursive clone validator, developer local-dependency validator, `.env.example`, README and `docs/runtime-compatibility.md`.
 
 ### Work Completed
 
-None; task definition only.
+The foundation runs Next.js 16.3.5 / React 19.3.0 on workspace Node 24.19.0. The pinned Prisma 6.19.3 client is generated from the canonical database submodule. Clean builds initialize recorded submodule pins before generation; no startup/build migrations are introduced.
+
+Liveness performs no external check. Readiness validates required configuration, one/two unique RSA public verification keys, database SELECT 1 and integrated foundation identity/shop columns, and Redis PING. It has a 1.8-second response deadline, bounded pool/connect/query work, no retries for Redis and no exception/credential details in the returned response. Missing published releases are not a readiness dependency. Future schema consumers must extend foundation checks when their tables exist.
+
+The static setup page exposes no business data or business action. Staff authentication and live MCP remain their owning tasks. The compatibility fixture lives outside the production app route tree, uses synthetic credentials/data and a fresh stateless SDK server for each request. The actual pinned SDK client successfully performs initialize/initialized notification, resource list/read, prompt list/get and tool list/call using NextRequest/Response over loopback HTTP with JSON responses and no session ID/SSE dependency. This is a protocol/adapter fixture, not a production service-authority implementation or a Shared manifest implementation.
+
+The reusable form acquires its guard before awaiting, immediately disables the conflicting fieldset, provides accessible pending feedback, keeps input after known failures and holds unknown outcomes until reconciliation of the same operation ID. Unmounted/stale completion is ignored. There is no global navigation lock. Server replay/authentication remains an independent requirement for future business-action owners; this task creates no server mutation endpoint.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+All commands below ran in the canonical implementation worktree with Node 24.19.0 unless stated otherwise.
+
+| Requirement / fixture | Expected side effects | Command / evidence | Actual result |
+| --- | --- | --- | --- |
+| Canonical schema client | Generated local client only; no migration/query | `npm run prisma:generate` | PASS; Prisma 6.19.3, database pin below |
+| MCP C5 stateless profile | Synthetic loopback HTTP only, no provider calls | `npm test`, `tests/mcp-compatibility.test.ts` | PASS; initialize protocol 2025-11-25, resources/prompts/tools, JSON/no session, GET/DELETE 405, Origin/batch/credential rejection |
+| Readiness/configuration | Mock dependency checks, synthetic RSA keys | `npm test`, `tests/health.test.ts` | PASS; success/failure/redaction/config rejection and 1.8-second abort behavior |
+| Pinned SQL adapter | Mock transaction plus actual pinned schema inspection | `npm test`, `tests/database-contract.test.ts` | PASS; exact SELECTs, existing schema/columns, transaction limits and no release/migration reads |
+| UI duplicate action | Synthetic local promise only | `npm test`, `tests/pending-action-form.test.tsx` | PASS; same-tick duplicate submit/button/keyboard paths, accessible busy feedback, retry after known failure, unknown reconciliation and stale completion |
+| All focused tests | Local only | `npm test` | **19 passed, four suites** |
+| Types/lint | Local generated types/cache only | `npm run typecheck`; `npm run lint` | **PASS**, no diagnostics |
+| Production build | Local client and Next build output only | `NEXT_TELEMETRY_DISABLED=1 npm run build` | **PASS**; root, not-found and two health routes only |
+| Production process | Own temporary loopback process, no shared config | `npm run test:health` | **PASS**; live 200, missing-dependency ready 503, root 200, MCP GET/POST/DELETE 404 |
+| Fresh recursive clone | Own temporary checkout/npm installation, cleaned afterward | `npm run test:clean-clone` at `3ae6c7f12f2f0f6467c93ca49012967f26d16b44` | **PASS**; npm ci, recorded database pin, Prisma generation, production build/start/health |
+| Responsive shell | Local browser only | In-app browser at 1024px and 320px | **PASS**, no mobile horizontal overflow; viewport and task tab cleaned up |
+| Client boundary | Read-only built bundle scan | `rg -l 'PrismaClient|COMMERCE_ASSERTION_PUBLIC_KEYS|AUTH_GOOGLE_SECRET|DATABASE_URL' .next/static` | No matches; server modules additionally use server-only |
+| Git/submodule | Read-only checks | `git diff --check`; `git submodule status --recursive` | **PASS**, exact database pin, no nested edits |
+| Real healthy readiness | Read-only SELECT/PING to disposable local services, own app processes | `npm run test:readiness-local` with explicit local fixture URLs | **PENDING developer execution**; unit-injected success does not establish real PostgreSQL/Redis connectivity |
+
+Developer validation required after provisioning disposable local PostgreSQL with the pinned schema and local Redis:
+
+```sh
+npm run build
+COMMERCE_TEST_DATABASE_URL='postgresql://fixture:fixture@127.0.0.1:5432/commerce_fixture' \
+COMMERCE_TEST_REDIS_URL='redis://127.0.0.1:6379' npm run test:readiness-local
+```
+
+Replace placeholders with disposable local credentials. The validator rejects remote hosts, uses synthetic keys/OAuth placeholders, starts/stops only its own Next processes, and never migrates or mutates records. Expected: healthy 200 ready; unreachable database, unreachable Redis and invalid keys 503 not_ready, each within two seconds. Infrastructure preparation and its real-dependency evidence are developer-owned under the validation policies; no shared/deployed credentials were inspected or used. Required evidence remains pending before acceptance.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+No business scope expansion. The MCP fixture uses the SDK's Web Standard transport directly with NextRequest/Response, avoiding an unnecessary third-party adapter; the pinned SDK client verifies compatibility. No production MCP route/auth bypass exists.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+Database main revision `9c6a4d8402a01840e2ea8dc18e89171f00564d29` is the integrated foundation schema. ARCH-020-DATABASE-001 and subsequent service tasks own the future commerce tables and consumption. No dependency acceptance was inferred from a task snapshot.
 
 ### Unresolved Issues
 
-None blocking task preparation; repository provisioning is complete. Application implementation and nested database registration remain outstanding task work.
+- Developer real PostgreSQL/Redis readiness evidence above is pending; it is not represented as passed.
+- `npm audit` reports three high findings in the build-time Prisma 6.19.3 → @prisma/config → deepmerge-ts chain, GHSA-ggr8-5vv4-36mx (recursive-object stack exhaustion). Only trusted checked-in Prisma configuration is consumed. No untested major override/force downgrade was applied. This toolchain limitation is documented for architect review; production request handlers do not merge user-controlled Prisma configuration.
 
 ### Architectural Concerns
 
-None newly reported.
+No new cross-repository implementation requirement. Background must consume the recorded MCP compatibility set while independently implementing the C5 assertion/grant contract. Gateway receives exact build/start/port/private health contracts in runtime-compatibility.md. Later mutation owners must supply durable server replay and status reconciliation independently of the reusable browser guard.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-001. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-001`; branch `task/ARCH-020-COMMERCE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-001`; same task branch.
+- Prepared launcher reused parent, created implementation, passed dependency gate (no dependencies), and completed fetch/prune/synchronization. Both remote task fast-forwards were not needed and origin/main was already incorporated. Initial parent HEAD `3d00af0fda3ded8305d178d900ee21a48c00619e`; implementation HEAD `01c550c3e3f55dd23a4ecc9514c846bb88cf2067`.
+- Initial recursive sync/update passed with no submodules. This task added the authorized nested `database/` from `https://github.com/kodjobaah/moda-interact-database.git` at integrated pin `9c6a4d8402a01840e2ea8dc18e89171f00564d29`; fresh recursive clone and final status verify it. No update --remote or nested schema edit.
+- Attempt 1 claimed by codex at `2026-09-20T18:30:42Z`; durable parent claim `ad47a97692321dccad7fbe2f54ef893e8ffed917` committed/pushed by launcher.
+- Implementation committed/pushed: `3ae6c7f12f2f0f6467c93ca49012967f26d16b44` to the provisioned private moda-interact-commerce origin/task/ARCH-020-COMMERCE-001.
+- This task report is committed/pushed on the mirrored parent branch; the containing Git commit is the report revision. Only this task document is staged in parent.
+- Shared/default checkouts were not switched or mutated for implementation; no other task worktree reused. No parent service gitlink, architecture, index, main merge/push, deployment or enabled-task execution.
 
 ## Architect Review
 
