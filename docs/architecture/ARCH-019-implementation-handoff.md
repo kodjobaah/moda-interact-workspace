@@ -2,7 +2,7 @@
 
 Canonical architecture: [ARCH-019](ARCH-019-merchant-recovery-experience.md).
 
-Eight agent-executed tasks; attempt 0; no executor/claim. Initial Ready frontier is **ARCH-019-DATABASE-001**. Start only that task with `/moda-task ARCH-019-DATABASE-001` when the developer chooses to begin.
+DATABASE-001 is accepted/Complete at `54c0ec2e092cd9db52d76e5bb46899efa4063965` (Attempt 1). Authorized PostgreSQL 15.19 rehearsal passed; evidence is retained with the database task. SHOPIFY-001/002 are Ready, with acceptance metadata reconciled and published on each canonical parent task branch. Remaining tasks are Pending. No downstream task is claimed. Review publication is explicitly delegated by the developer; developer integration or explicit accepted-commit consumption remains required. SHOPIFY-002 owns the measured transcript query-shape issue and actual-reader plan verification.
 
 Dependency sequence:
 

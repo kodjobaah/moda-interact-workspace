@@ -11,7 +11,7 @@ updated: 2026-09-20
 
 ## Status and agreement
 
-Agreed for task definition on 2026-09-20 following the developer's review of the proposed Overview → Recoveries → Recovery detail experience and request to create its tasks. No implementation is claimed by this document. Tasks are agent-executed with automatic architect completion unless the developer changes that choice explicitly. Terminal system validation remains developer-invoked.
+Agreed for task definition on 2026-09-20 following the developer's review of the proposed Overview → Recoveries → Recovery detail experience and request to create its tasks. DATABASE-001 is accepted/Complete at `54c0ec2` following the PostgreSQL 15.19 populated rehearsal. SHOPIFY-001/002 are Ready; the complete experience is not yet implemented. Tasks are agent-executed with automatic architect completion unless the developer changes that choice explicitly. Terminal system validation remains developer-invoked.
 
 ## Problem and inspected current behaviour
 
@@ -130,16 +130,17 @@ Required terminal system validation follows all accepted implementation tasks an
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
-| [ARCH-019-DATABASE-001](../decisions/database/ARCH-019/DATABASE-001-index-merchant-recovery-read-paths.md) | moda_database | Ready | None |
-| [ARCH-019-SHOPIFY-001](../decisions/shopify/ARCH-019/SHOPIFY-001-bounded-recovery-cohort-readers.md) | moda_app | Pending | ARCH-019-DATABASE-001 |
-| [ARCH-019-SHOPIFY-002](../decisions/shopify/ARCH-019/SHOPIFY-002-bounded-recovery-detail-readers.md) | moda_app | Pending | ARCH-019-DATABASE-001 |
+| [ARCH-019-DATABASE-001](../decisions/database/ARCH-019/DATABASE-001-index-merchant-recovery-read-paths.md) | moda_database | Complete | None |
+| [ARCH-019-SHOPIFY-001](../decisions/shopify/ARCH-019/SHOPIFY-001-bounded-recovery-cohort-readers.md) | moda_app | Ready | ARCH-019-DATABASE-001 |
+| [ARCH-019-SHOPIFY-002](../decisions/shopify/ARCH-019/SHOPIFY-002-bounded-recovery-detail-readers.md) | moda_app | Ready | ARCH-019-DATABASE-001 |
 | [ARCH-019-SHOPIFY-003](../decisions/shopify/ARCH-019/SHOPIFY-003-recovery-list-page.md) | moda_app | Pending | ARCH-019-SHOPIFY-001 |
 | [ARCH-019-SHOPIFY-004](../decisions/shopify/ARCH-019/SHOPIFY-004-recovery-conversation-detail-page.md) | moda_app | Pending | ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003 |
 | [ARCH-019-SHOPIFY-005](../decisions/shopify/ARCH-019/SHOPIFY-005-recovery-performance-overview.md) | moda_app | Pending | ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004 |
 | [ARCH-019-SHOPIFY-006](../decisions/shopify/ARCH-019/SHOPIFY-006-merchant-navigation-and-billing-history.md) | moda_app | Pending | ARCH-019-SHOPIFY-005 |
 | [ARCH-019-SYSTEM-TEST-001](../decisions/system-test/ARCH-019/SYSTEM-TEST-001-validate-merchant-recovery-experience.md) | moda_system_test | Pending | ARCH-019-DATABASE-001, ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004, ARCH-019-SHOPIFY-005, ARCH-019-SHOPIFY-006 |
 
-Initial Ready frontier: ARCH-019-DATABASE-001 only. All other tasks are Pending. SHOPIFY-001 and SHOPIFY-002 become dependency-ready after DATABASE-001 acceptance, subject to repository concurrency rules. Do not run enabled work without explicit launch and claim. All task attempt values remain zero with no executor.
+Current frontier: DATABASE-001 accepted/Complete, Attempt 1. SHOPIFY-001 and SHOPIFY-002 Ready; all other tasks Pending. Downstream tasks remain unclaimed at Attempt 0. Readiness does not authorize execution or prerequisite integration. Preserve repository concurrency and accepted-commit consumption rules.
+
 
 ## Risks and evidence gaps
 
@@ -148,3 +149,5 @@ Case-insensitive substring search and long-range aggregates need measured plans 
 ## Change history
 
 - 2026-09-20: agreed product experience translated into eight bounded tasks; added query indexes and bounded billing-history integration after source inspection; current onboarding permissions explicitly retained.
+
+- 2026-09-20: accepted DATABASE-001 after populated PostgreSQL 15.19 evidence; promoted SHOPIFY-001/002 and assigned transcript query-shape validation to SHOPIFY-002.
