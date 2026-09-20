@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-09-20T13:58:35Z
@@ -104,6 +104,46 @@ After scoped work and agent-owned checks, update this task's Work Items, Accepta
 Use scripts/start-agent-task.py through the normal /moda-task preparation path. Task creation has not claimed execution. Dedicated parent and implementation worktrees, synchronization and recursive database submodule preparation are mandatory when execution starts. Follow docs/agent-vcs-ownership-policy.md. The repository agent may update only this task's execution/report fields in parent docs; shared indexes and parent architecture remain architect-owned.
 
 ## Completion Report
+
+### Status
+
+Ready for Review — Attempt 2, codex. The architect's Attempt 1 Changes Requested section below is preserved unchanged. No architect acceptance decision is asserted.
+
+### Requested Correction — Implemented
+
+**P2: Restore list scroll across equivalent URLs.** `app/root.jsx` now uses `recoveryScrollKey` from `app/routes/app/recoveries/recovery-list-state.ts`. Saving a list position uses the authenticated loader's normalized filters, validated cursor and embed context, serialized by the same helper as the detail Back link. Raw query ordering and omitted defaults no longer determine identity.
+
+React Router consults saved positions before destination loader data is available. `RecoveryDetail.tsx` therefore carries the same loader-derived key in the Back link's router state. The callback uses that bounded UI-only key during the lookup, with normal entry-key fallback otherwise. This state never selects a navigation target, supplies tenant authority or bypasses cursor validation. Related navigation retains the original validated filters, so its Back link constructs the same identity. Invalid list data and other routes retain normal entry keys.
+
+`tests/unit/recovery-list-route.test.ts` adds six regressions covering omitted defaults, reordered/canonical filters, a real tenant-bound cursor page, distinct searches/shops, invalid/loading/detail fallbacks and the previous-loader-data timing. The browser fixture now imports the production callback instead of copying it.
+
+### Validation Results
+
+- Expanded required route/readers/access/i18n/list command: **151 tests passed across 5 files**, exit 0. This includes the original security and direct-entry tests plus six new scroll regressions.
+- Actual Chromium: omitted-default, reordered, canonical and cursor-page URLs each traversed **list → basket 5 → related basket 2 → Back**, restoring **575px → 575px** in every case. Cursor preserved. Direct detail entry and reload kept the safe local default Back link. Evidence: `tests/browser/recovery-detail/evidence/attempt2-scroll.json`, `attempt2-restored.png`, and appended README observations. Fixture cursor remains synthetic; production cursor validation is exercised by the unit suite.
+- The initial data-only implementation failed the browser replay because destination loader data was unavailable at restoration lookup; the final state-assisted correction and timing regression resolve that observed failure.
+- `npm run typecheck`: non-zero, **173 diagnostics in 28 unchanged files**; no changed-file diagnostic. Compared every diagnostic source byte-for-byte with the Attempt 2 starting commit. Existing TYPECHECK-001 debt remains; no claim of a clean full check.
+- `npm run lint`: non-zero, unchanged **20 errors / 2 warnings**. Focused ESLint over all changed JS/TS/TSX files passed with no diagnostics.
+- `git diff --check` and staged whitespace check passed.
+- No live provider, database or long infrastructure check required or executed for this correction. Existing Attempt 1 functional/responsive evidence remains preserved below.
+
+### Files Changed / Scope
+
+`app/root.jsx`, recovery list state helper, detail Back link, list route unit tests, browser fixture/README and two new evidence artifacts. No loader authorization, reader, locale, lifecycle permission, schema, provider or cross-repository implementation change. No deviation from the requested correction; no unresolved task-owned failure.
+
+### Git / VCS
+
+- Mirrored branch: `task/ARCH-019-SHOPIFY-004`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree reused: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-019-SHOPIFY-004`; prepared HEAD `f0c54b5fbc3e3d726f7ba929aa8b00990387f353`.
+- Implementation worktree reused: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-019-SHOPIFY-004`; prepared HEAD `1c89d3bd5e3bd3dd4f2cbb4afc496c1613bb57a0`.
+- Both remote task fast-forwards not-needed; both origin/main already-current. Recursive submodule sync/update passed; database ready at `9c6a4d8402a01840e2ea8dc18e89171f00564d29`, unchanged.
+- Durable Attempt 2 launcher claim `8eaa6f682193980e68f07dad367bbbe6a7b429e1`, codex, `2026-09-20T13:58:35Z`, committed/pushed. Full latest review read before source work; no repeated preparation.
+- Implementation **`ffb7b86a1111bc8947bd62e0f654d79fe9b427b5`**, committed and pushed to `origin/task/ARCH-019-SHOPIFY-004`.
+- Parent submission is the task-only commit containing this report; exact hash/push evidence supplied in final handoff. Architect Review and Attempt 1 report preserved.
+- Shared/default checkout mutated for implementation: no. Another task worktree reused: no. Parent gitlink staged: no. Neither task branch merged into main; no main push, deployment or downstream promotion.
+
+## Historical Completion Report — Attempt 1
 
 ### Status
 
