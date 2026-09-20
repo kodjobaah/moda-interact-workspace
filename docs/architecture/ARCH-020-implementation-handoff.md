@@ -2,7 +2,7 @@
 
 Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabilities](ARCH-020-commerce-agent-studio-mcp-capabilities.md).
 
-## Review packet and current frontier
+## Initial review packet and definition frontier
 
 The developer requested task definitions on local workspace `main` for review.
 This is an explicit exception to task-definition materialisation only. No task
@@ -241,3 +241,21 @@ persistence/contracts before publication/runtime/UI; no new task or readiness
 promotion is required. Published definitions are pinned through grant.releaseId.
 The original visual prototype predates the C16 release-panel extension; the exact
 page specification in the UI design and COMMERCE-008 is authoritative for it.
+
+## DATABASE-001 architect review — 2026-09-20
+
+Attempt 1 is **Changes Requested**, task `ready`, attempt 1, claim cleared.
+The implementation/report PRs are #33/#165 (0e992c4 / 312e350b). Preserve the
+implementation and rehearsal history. Required corrections are the newer C16
+CommerceRelease responseContract/responseContractHash persistence and negative
+fixtures that currently permit unrelated constraint failures. The full correction
+contract is in the task's Architect Review. C16 was incorporated by parent synchronization commit 7fef4689 from canonical
+workspace commit a710df26; its semantic consumer requirements remain binding.
+
+Guarded writes require READ COMMITTED or SERIALIZABLE with bounded transaction
+retries; REPEATABLE READ is rejected. BACKGROUND-001 and COMMERCE-003 must honor
+that database restriction when implementing grants/publication. No dependency is
+promoted by this review; SYSTEM-TEST-001 remains terminal and manually invoked.
+Other task states in this branch's older definition snapshot are not a fresh
+review of their separate execution branches. Integrate latest parent main before
+reclaiming this task, preserving its report, review and attempt metadata.

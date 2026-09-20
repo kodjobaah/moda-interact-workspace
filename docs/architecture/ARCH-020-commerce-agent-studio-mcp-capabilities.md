@@ -706,8 +706,8 @@ are server-only placeholders in infrastructure, never committed values.
 
 ## Decisions / Tasks
 
-See the generated task table below and domain `_index.md` files. Tasks are
-definitions for review; no implementation is launched by this packet.
+See the generated task table below and domain `_index.md` files. The table is the branch-local definition frontier; DATABASE-001 has completed
+Attempt 1 and is Ready for corrections. See the architect review below.
 
 | Task | Outcome | Owner | Status | Depends on |
 |---|---|---|---|---|
@@ -802,3 +802,28 @@ The exact C16 page extension and N13 traversal appear in the UI design and
 COMMERCE-008. CommerceRelease adds responseContract and responseContractHash,
 keeping the nine-table design. Database, Shared contracts/runner, Commerce
 publication/MCP/UI/preview, Background and system-test tasks own the full change.
+
+
+## Database review response-definition requirements
+
+C16 requires immutable CommerceRelease.responseContract and responseContractHash,
+with no defaults. ConversationGrant.releaseId pins both; no second grant selector
+is introduced. See the binding C16 companion and DATABASE-001 correction contract.
+
+## DATABASE-001 architect review — 2026-09-20
+
+Attempt 1 is **Changes Requested**, task `ready`, attempt 1, claim cleared.
+The implementation/report PRs are #33/#165 (0e992c4 / 312e350b). Preserve the
+implementation and rehearsal history. Required corrections are the newer C16
+CommerceRelease responseContract/responseContractHash persistence and negative
+fixtures that currently permit unrelated constraint failures. The full correction
+contract is in the task's Architect Review. C16 was incorporated by parent synchronization commit 7fef4689 from canonical
+workspace commit a710df26; its semantic consumer requirements remain binding.
+
+Guarded writes require READ COMMITTED or SERIALIZABLE with bounded transaction
+retries; REPEATABLE READ is rejected. BACKGROUND-001 and COMMERCE-003 must honor
+that database restriction when implementing grants/publication. No dependency is
+promoted by this review; SYSTEM-TEST-001 remains terminal and manually invoked.
+Other task states in this branch's older definition snapshot are not a fresh
+review of their separate execution branches. Integrate latest parent main before
+reclaiming this task, preserving its report, review and attempt metadata.

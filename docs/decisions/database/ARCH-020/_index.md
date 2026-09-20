@@ -4,7 +4,7 @@ Architecture: [ARCH-020-commerce-agent-studio-mcp-capabilities.md](../../../arch
 
 Assigned agent: moda_database. Repository: moda-interact-database. Coordinator: moda_architect.
 
-Definitions are on local main for review by explicit developer request. Individual task YAML is authoritative; no task is claimed or launched. Commerce submodule provisioning remains a prerequisite; the owner and route are defined in this packet.
+Individual task YAML is authoritative. DATABASE-001 Attempt 1 received Changes Requested on 2026-09-20 and is Ready for corrections with its claim cleared. See its Architect Review for C16 persistence and negative-fixture corrections. No downstream task is promoted.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|

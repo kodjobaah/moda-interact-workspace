@@ -425,6 +425,9 @@ User/Account/Session tables or replace the existing Shopify Session table.
 
 ## Work Items
 
+- [ ] Review correction R1: implement the two C16 release fields and database structural checks, regenerate the ERD, and add the response-contract persistence/immutability fixtures below.
+- [ ] Review correction R2: isolate negative fixtures from unrelated constraint failures and verify the expected SQLSTATE/constraint or trigger diagnostic.
+
 - [ ] Persist the two C16 CommerceRelease fields exactly as specified; enforce JSON object/version/required-key checks and hash format in SQL, full schema validation/hash computation in Commerce. Cover immutable fields and atomic release creation; no tenth table or separate grant pin.
 
 - [ ] Implement the independent CommerceTool/CommerceToolRevision tables, capability toolBindings and expanded audit targets exactly as specified; update migration/ERD/fixtures and preserve existing Admin Feature ownership.
@@ -466,6 +469,9 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
+- [ ] C16 responseContract/responseContractHash are required without defaults, round-trip through Prisma, reject malformed structural values and cannot be updated after release creation.
+- [ ] Every negative fixture fails for its named invariant; otherwise-valid controls succeed with distinct identities.
+
 - [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] Direct SQL rejects dangling/wrong-tool bindings, duplicate tool IDs/names, conflicting release tool revisions, mismatched revision name/version, published tool edits/deletes and malformed grant provenance. A shared tool bound by two selected features appears once with both original provenance keys; zero remote tools is valid for conversation_core.
@@ -484,6 +490,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - [ ] The enforcement matrix is reflected accurately in implementation/reporting: database constraints are tested directly; service-owned publication/role semantics are not falsely claimed as database guarantees.
 
 ## Validation
+
+- [ ] Correction validation: rerun static/Prisma/ERD checks and both isolated fresh/upgrade rehearsals against the corrected source; record exact revision and named results. The preserved Completion Report records Attempt 1 only and does not certify the corrections.
 
 - [ ] Agent: run `npm run prisma:validate` and the new `npm run test:arch020-commerce-capability-schema`; run `git diff --check` and verify the ERD includes all nine tables.
 - [ ] Agent: inspect migration SQL and fixture coverage for every acceptance case, including direct SQL writes that bypass Prisma/service validation.
@@ -600,24 +608,68 @@ Parent: report published in the commit containing this report (SHA supplied in f
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1 — 2026-09-20. Not accepted. Same task returns to ready with executor/claimed_at cleared and attempt retained at 1; the next claim increments to 2.
 
 ### Review Notes
 
-No implementation submitted. This task is a reviewable definition.
+Reviewed implementation PR #33 at `0e992c4ba2f897d1803cd29cbc64942ec124f82e` and report PR #165 at `312e350b16e2c6291f9751b3dc21eb274a959358`; remote heads initially matched the local dedicated worktrees. Parent synchronization commit 7fef4689 subsequently incorporated current main while retaining the report; this review is applied on that updated parent worktree. The implementation baseline is `9c6a4d8402a01840e2ea8dc18e89171f00564d29`. Tested source `226a306b3b54598242326af3f55bfa06a99a5b1d` differs from the final implementation head only by the evidence JSON. Preserve the existing implementation and report history.
+
+**R1 — P1: reconcile the newer C16 release-owned response contract.** The canonical architecture/task amendment in workspace commit `a710df26eaa83c42344aee17f3ff2535a93c6dc2` requires CommerceRelease.responseContract (required Json @db.JsonB, no default) and responseContractHash (required String @db.VarChar(64), no default). Neither exists in the submitted Prisma model or CREATE TABLE. Commerce publication therefore cannot persist the definition/hash, and a conversation's releaseId cannot pin them. This amendment postdates the attempt's starting definition; this is architecture reconciliation, not a claim that the original executor ignored its starting contract.
+
+- [ ] Add those exact two columns within the same nine-table design and the task's unmerged additive migration, update the physical-contract fixture and ERD. If the migration has since been deployed anywhere, stop and obtain an additive follow-up migration decision instead of rewriting deployed history.
+- [ ] SQL must reject missing/null/non-object responseContract, missing/extra top-level keys (exactly version/instructions/detailsSchema), version other than response.v1, non-string or out-of-range instructions (1..8000 characters), non-object detailsSchema, and malformed/non-lowercase/non-64-character hash. Preserve release UPDATE immutability. Full supported-schema validation, RFC8785 hash computation and hash-content equality are Commerce/Shared responsibilities, not a new SQL hashing engine.
+- [ ] Add named direct-SQL and Prisma round-trip fixtures for valid baseline/custom definitions, all structural rejections, both immutable fields, atomic release/member creation and rollback, and old grant -> old release definition after pointer activation/rollback. Do not claim service/UI/model C16 cases from database fixtures. Read the complete C16 companion, incorporated by the parent synchronization commit 7fef4689 during review.
+
+**R2 — P2: negative fixtures accept unrelated failures.** The reject helper in scripts/fixtures/arch020-commerce-capability-cases.mjs:35-40 accepts 23514, 23505, 23503, 23502 and 22001 interchangeably. Many capability cases retain the existing `conversation_core` key, and revision cases retain an existing (owner, revisionNumber) / (toolId, definitionVersion). For example, the nonblank capability test can still pass via duplicate-key 23505 if its nonblank CHECK is missing; malformed revision cases can similarly pass on revision uniqueness. Creator-immutability cases also use a nonexistent admin, so an FK error can mask a missing immutability guard. The reported 157 successes are real harness outcomes but do not independently prove each named invariant.
+
+- [ ] Use otherwise-valid, unique fixtures for each non-uniqueness rejection, and existing alternate parents for owner/creator immutability tests. Keep duplicate values only in tests explicitly about uniqueness.
+- [ ] Require the expected SQLSTATE plus the intended constraint name or stable ARCH020 trigger diagnostic where available. Prove that a valid control succeeds and that removing the targeted guard in an isolated test causes its named test to fail (a focused mutation check is sufficient; do not remove guards in the delivered migration).
+- [ ] Rerun both required isolated fresh/upgrade rehearsals on the corrected revision and retain preservation comparisons. Follow the existing validation execution policies; do not rerun against shared/live databases. Earlier evidence remains historical, not final correction validation.
 
 ### Reviewed Files
 
-None for implementation review.
+Prisma schema; additive migration (all tables, indexes, FKs, CHECKs and trigger functions); package commands; static and behaviour validators; physical-contract fixture; negative/concurrency fixtures; committed rehearsal evidence; generated ERD source; submitted task/report; canonical parent architecture and C14/C16 contracts; ARCH-016-DATABASE-001 accepted dependency; Git/VCS and physical-isolation policies.
 
 ### Validation Reviewed
 
-None for implementation review.
+- Architect reran `npm run test:arch020-commerce-capability-schema`: passed, exit 0.
+- Architect reran `npm run prisma:validate` using a synthetic localhost URL without opening a database connection: passed, exit 0.
+- `git diff --check 9c6a4d8..HEAD`: passed, exit 0.
+- Evidence JSON contains 157 named PASS lines and exit 0 for each fresh/upgrade run against the recorded tested source. Reviewed the upgrade count/hash/index comparison implementation and submitted preservation evidence. Did not repeat the expensive rehearsals merely to reproduce submitted evidence.
+- Both physical worktrees/branches and clean task checkouts verified. Prepared synchronization/claim evidence records parent baseline 20e720d3, implementation baseline 9c6a4d8, claim 71969a49 and no nested submodules. No physical-isolation violation found. The later C16 mainline change is not a start-of-attempt synchronization violation.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+The submitted nine-table design, immutable published revisions/grants/audit, complete tool union, recovery ownership and deletion boundaries align with the starting contract on inspection. Acceptance is withheld for R1/R2. Release membership INSERT remains service-owned as explicitly specified; it is not being misrepresented as database-sealed assembly.
+
+The isolation restriction is acceptable as an explicit consumer contract: use READ COMMITTED for guarded writes, or SERIALIZABLE with bounded whole-transaction retry for serialization/deadlock failures. REPEATABLE READ fails closed. This applies to guarded capability/tool/revision/member/grant writes and existing Conversation/CheckoutRecovery ownership-field updates; consumers must not assume it is grant-insert-only. Concurrency evidence covers READ COMMITTED races and an uncontended SERIALIZABLE grant, not a measured throughput guarantee or exhaustive SERIALIZABLE race certification.
 
 ### Follow-up
 
-Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+Reclaim the same task through `/moda-task ARCH-020-DATABASE-001` after the developer commits/pushes this parent review overlay. Before that claim, incorporate current parent origin/main while preserving this Attempt 1 report/review and ready/attempt:1 metadata; do not replace them with main's unclaimed definition. Keep both stable task branches. No new correction task, downstream promotion or system-test invocation is authorized by this review. BACKGROUND-001, COMMERCE-003 and SYSTEM-TEST-001 remain gated on accepted completion. No implementation edits, commits, pushes or main merges were performed by the architect.
+
+### Initial definition review (historical)
+>
+> ### Review Status
+>
+> Pending.
+>
+> ### Review Notes
+>
+> No implementation submitted. This task is a reviewable definition.
+>
+> ### Reviewed Files
+>
+> None for implementation review.
+>
+> ### Validation Reviewed
+>
+> None for implementation review.
+>
+> ### Architecture Conformance
+>
+> Awaiting implementation.
+>
+> ### Follow-up
+>
+> Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
