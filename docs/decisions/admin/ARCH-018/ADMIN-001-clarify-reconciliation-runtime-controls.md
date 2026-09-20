@@ -199,4 +199,6 @@ None.
 
 ### Git / VCS
 
-Implementation commit and parent report commit are recorded in the final response after publication.
+Implementation commit: `1407869`.
+
+Parent report commit: `3d622105`.
