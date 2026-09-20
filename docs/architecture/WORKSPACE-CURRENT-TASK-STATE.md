@@ -411,7 +411,8 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-SHOPIFY-001 | shopify | ready | 0 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 |
+| ARCH-020-COMMERCE-012 | commerce | pending | 0 | All other ARCH-020 implementation tasks; readiness checkpoint in task |
+| ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001  , ARCH-020-COMMERCE-012 |
 
 ## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
 
@@ -483,3 +484,5 @@ must synchronize dedicated worktrees and verify dependency source availability.
 Other pending tasks retain their existing gates. Current branch frontier:
 **19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
 terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
+
+ARCH-020 caching addition: COMMERCE-012 is Pending (attempt 0), depends on all other implementation tasks and precedes SYSTEM-TEST-001. Active scope is 20 tasks; existing task execution states are not reset.

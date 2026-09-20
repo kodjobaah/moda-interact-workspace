@@ -731,7 +731,8 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | ready | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 |
+| [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md) | Add frequency-based tool-result caching | moda_commerce | pending | All other ARCH-020 implementation tasks; exact list in task |
+| [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012 |
 
 ## Open Questions and Explicit Assumptions
 
@@ -880,3 +881,13 @@ must synchronize dedicated worktrees and verify dependency source availability.
 Other pending tasks retain their existing gates. Current branch frontier:
 **19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
 terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
+
+## Deferred dynamic tool caching
+
+[ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md)
+is the final implementation feature before system testing. It specifies Redis
+frequency admission, disabled defaults, immutable tool policy, strict eligibility,
+authorization before hits and fresh discount revalidation. Initial definition is
+Pending: exact policy persistence/API and U06/U14 integration must be reconciled
+before Ready, with separate owner prerequisites if needed. No completed task is
+reopened and no existing strict Shared schema is implicitly extended.

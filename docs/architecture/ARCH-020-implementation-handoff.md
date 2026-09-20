@@ -314,3 +314,11 @@ must synchronize dedicated worktrees and verify dependency source availability.
 Other pending tasks retain their existing gates. Current branch frontier:
 **19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
 terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
+
+## Caching backlog addition
+
+COMMERCE-012 adds one Pending final implementation task; active scope is now 20
+tasks. Its prerequisites are all 18 other nonterminal ARCH-020 tasks; SYSTEM-TEST-001
+depends on it. Earlier 19-task counts predate this addition. Before promotion, resolve
+its explicit policy persistence/API/UI checkpoint and any owner-specific prerequisite
+tasks. No execution or cache enablement is authorized by task authorship alone.
