@@ -1,0 +1,169 @@
+{
+  "fixtureVersion": 1,
+  "now": "2026-09-21T00:00:20.000Z",
+  "turn": {
+    "contractVersion": "commerce.v1",
+    "shopId": "shop-fixture",
+    "checkoutRecoveryId": "recovery-fixture",
+    "conversationId": "conversation-fixture",
+    "inboundVersion": 1
+  },
+  "grantId": "grant-fixture",
+  "releaseId": "release-fixture",
+  "toolRevisionId": "tool-revision-fixture",
+  "call": {
+    "name": "find_basket_matches",
+    "arguments": {
+      "search": "accessory",
+      "limit": 1
+    }
+  },
+  "original": {
+    "contractVersion": "commerce.v1",
+    "status": "OK",
+    "data": {
+      "alternatives": [
+        {
+          "product": {
+            "productId": "product-fixture",
+            "variantId": "variant-fixture",
+            "title": "Fixture item",
+            "url": "https://fixture.myshopify.com/products/item",
+            "available": true,
+            "unitPrice": "10.00",
+            "currency": "GBP",
+            "productType": "Accessory",
+            "vendor": "Fixture",
+            "observedAt": "2026-09-21T00:00:00.000Z"
+          },
+          "proposal": {
+            "operations": [
+              {
+                "kind": "ADD",
+                "variantId": "variant-fixture",
+                "quantity": 1
+              }
+            ]
+          },
+          "extraSpend": "10.00",
+          "resultingTotal": "25.00",
+          "currency": "GBP",
+          "evidence": {
+            "turn": {
+              "contractVersion": "commerce.v1",
+              "shopId": "shop-fixture",
+              "checkoutRecoveryId": "recovery-fixture",
+              "conversationId": "conversation-fixture",
+              "inboundVersion": 1
+            },
+            "grantId": "grant-fixture",
+            "releaseId": "release-fixture",
+            "offerId": "offer-fixture",
+            "proposal": {
+              "operations": [
+                {
+                  "kind": "ADD",
+                  "variantId": "variant-fixture",
+                  "quantity": 1
+                }
+              ]
+            },
+            "basketFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "ruleFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "evaluatedAt": "2026-09-21T00:00:00.000Z",
+            "expiresAt": "2026-09-21T00:01:00.000Z",
+            "outcome": "QUALIFIES_FOR_KNOWN_RULES",
+            "currency": "GBP",
+            "savings": "5.00",
+            "resultingTotal": "25.00",
+            "evaluatedConditions": [
+              {
+                "code": "MINIMUM_SUBTOTAL",
+                "description": "Known minimum met"
+              }
+            ],
+            "unresolvedConditions": [],
+            "evidenceId": "cf3ff1a281a668b726ef80eeb0929cdff5fed08ac787370609404a9e7e98b282"
+          },
+          "similarityReasons": []
+        }
+      ],
+      "truncated": false
+    },
+    "renderedText": "Fixture recommendation; known rules qualify."
+  },
+  "refreshed": {
+    "contractVersion": "commerce.v1",
+    "status": "OK",
+    "data": {
+      "alternatives": [
+        {
+          "product": {
+            "productId": "product-fixture",
+            "variantId": "variant-fixture",
+            "title": "Fixture item",
+            "url": "https://fixture.myshopify.com/products/item",
+            "available": true,
+            "unitPrice": "10.00",
+            "currency": "GBP",
+            "productType": "Accessory",
+            "vendor": "Fixture",
+            "observedAt": "2026-09-21T00:00:10.000Z"
+          },
+          "proposal": {
+            "operations": [
+              {
+                "kind": "ADD",
+                "variantId": "variant-fixture",
+                "quantity": 1
+              }
+            ]
+          },
+          "extraSpend": "10.00",
+          "resultingTotal": "25.00",
+          "currency": "GBP",
+          "evidence": {
+            "turn": {
+              "contractVersion": "commerce.v1",
+              "shopId": "shop-fixture",
+              "checkoutRecoveryId": "recovery-fixture",
+              "conversationId": "conversation-fixture",
+              "inboundVersion": 1
+            },
+            "grantId": "grant-fixture",
+            "releaseId": "release-fixture",
+            "offerId": "offer-fixture",
+            "proposal": {
+              "operations": [
+                {
+                  "kind": "ADD",
+                  "variantId": "variant-fixture",
+                  "quantity": 1
+                }
+              ]
+            },
+            "basketFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "ruleFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "evaluatedAt": "2026-09-21T00:00:10.000Z",
+            "expiresAt": "2026-09-21T00:01:10.000Z",
+            "outcome": "QUALIFIES_FOR_KNOWN_RULES",
+            "currency": "GBP",
+            "savings": "5.00",
+            "resultingTotal": "25.00",
+            "evaluatedConditions": [
+              {
+                "code": "MINIMUM_SUBTOTAL",
+                "description": "Known minimum met"
+              }
+            ],
+            "unresolvedConditions": [],
+            "evidenceId": "922b95e270869d96129e0590c0a2756fbec788cb6e59d32945550756b772dd89"
+          },
+          "similarityReasons": []
+        }
+      ],
+      "truncated": false
+    },
+    "renderedText": "Fixture recommendation; known rules qualify."
+  }
+}

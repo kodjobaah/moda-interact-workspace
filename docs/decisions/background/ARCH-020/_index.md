@@ -9,7 +9,7 @@ Definitions are on local main for review by explicit developer request. Individu
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ARCH-020-BACKGROUND-001](BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
-| [ARCH-020-BACKGROUND-002](BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
+| [ARCH-020-BACKGROUND-002](BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | ready | ARCH-020-BACKGROUND-001 |
 
 BACKGROUND-001 is Ready at Attempt 2, with no active claim or acceptance. A1/A2 remain user-requested correction scope, and acceptance remains pending.
 
@@ -76,3 +76,7 @@ and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
 GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+2026-09-21: BACKGROUND-002 is Ready, unclaimed, against C18 and its shared JSON
+seed. It no longer waits for007; SYSTEM-TEST-001 owns actual service integration.
+This supersedes earlier pending/no-promotion wording for002 only.

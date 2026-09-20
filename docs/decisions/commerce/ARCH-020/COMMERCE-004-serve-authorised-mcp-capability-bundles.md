@@ -100,6 +100,10 @@ refresh and C8 effective bounds; do not expose executor internals in manifests.
 
 ### Required evidence
 
+Apply binding C18 structured policy-output separation and evidence contract.
+EC07/EC08 must prove that query/template content cannot impersonate evidence and
+failed ownership/permission checks execute zero provider calls. No new wire fields.
+
 Test the complete purpose/method matrix, malformed JWT alg/kid/exp/environment, crossed recovery/customer scope, stale processing version, body limits, unexpected Origin, two shops/two server instances, and direct unlisted tools. Test database ownership separately from shared schema parsing.
 
 For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
