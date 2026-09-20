@@ -4,4 +4,4 @@ Architecture: `docs/architecture/ARCH-018-promotion-selection-lock-and-expiry-re
 
 | Task | Status | Purpose |
 |---|---|---|
-| `ADMIN-001` | Ready | Clarify that the existing reconciliation interval/batch includes expired promotion cleanup |
+| `ADMIN-001` | Complete | Clarify that the existing reconciliation interval/batch includes expired promotion cleanup |
