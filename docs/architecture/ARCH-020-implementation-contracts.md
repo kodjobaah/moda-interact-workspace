@@ -488,6 +488,78 @@ and role, not only UI controls/JWT age. Canonical hosted origin is configured;
 mutation Origin must match, server methods are POST, NextAuth owns OAuth CSRF.
 Use host-only secure HTTP-only session cookies with a Studio-specific name.
 
+### C7.1 Google-only Studio auth and development principal
+
+COMMERCE-002 owns the reusable server-only auth library. Hosted sign-in supports
+Google only through NextAuth's Google provider; no password, credentials, email
+link or additional OAuth providers. Existing active public.PlatformAdmin Google
+identities, verified email, atomic subject binding and separate Studio JWT session
+remain authoritative. Development bypass is not a NextAuth credentials provider.
+
+Match Admin's src/lib/auth/environment.ts semantics: resolve environment from
+trimmed/lowercased DEPLOYMENT_ENVIRONMENT_NAME, falling back to NODE_ENV, then
+"unknown". Only resolved "development" enables bypass. If it resolves to
+"development" while NODE_ENV is "production", throw a configuration error before
+returning any principal. All other environments require AUTH_SECRET,
+AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET and AUTH_URL; missing values fail closed.
+Never infer bypass from absent credentials, a request header/query/cookie, hostname
+or client flag. No NEXT_PUBLIC auth override. Document local development settings
+and the production-build rejection, including local production-build testing.
+
+Bypass returns {id:"development-platform-admin",role:"SUPER_ADMIN",
+developmentBypass:true} without Google login. Match Admin's reserved backing
+identity exactly: provider "development", providerSubject "development-platform-admin",
+email "development-platform-admin@local.invalid", displayName "Development Platform
+Admin", active true, role SUPER_ADMIN. Before FK-backed writes, ensure this row
+inside the same transaction: INSERT ON CONFLICT(id) DO NOTHING then reload/check
+all reserved fields; conflict fails closed without modifying an existing identity.
+Do not silently promote real staff. No new table/migration or auth-row creation on
+startup/ordinary reads. The helper is callable only for a server-resolved bypass
+principal after rechecking the environment; never trust a client-supplied principal.
+Hosted Google auth must reject this development provider identity.
+
+Deliver src/lib/auth/index.ts as server-only public entry point, with environment,
+principal, guards and development-identity modules behind it. Export
+getStudioAdminPrincipal(): Promise<StudioAdminPrincipal|null>,
+requireStudioAdmin(): Promise<StudioAdminPrincipal>,
+requireStudioSuperAdmin(): Promise<StudioAdminPrincipal>,
+requireStudioAdminPage(): Promise<StudioAdminPrincipal>, and
+ensureDevelopmentStudioAdmin(transaction,principal): Promise<void>.
+StudioAdminPrincipal is exactly {id,role:ADMIN|SUPER_ADMIN,developmentBypass:boolean}.
+No module-global principal cache: production resolution reloads current identity
+per request; request-local deduplication is permitted. Unit-test resolver receives
+injected session/database/environment dependencies like Admin.
+
+Use typed auth errors and one route/action adapter: missing session ->401,
+inactive/provider/subject mismatch or insufficient role ->403; invalid configuration
+->503 with no configuration values/secrets in response. Page guard redirects absent
+session to U01 and denied identity to U02. Authenticated U01 redirects to U03.
+Development U01 likewise resolves the bypass principal and redirects to U03, with
+no Google credentials required. All Studio pages, protected reads, Route Handlers
+and Server Actions call the library at their server entry point; a protected layout
+or hidden button alone is insufficient. Mutations additionally enforce existing
+Origin/CSRF/replay protections, including development; bypass changes identity
+resolution only. No duplicated route-local role tests or hand-decoded JWTs.
+
+Google callback/sign-in/out handlers and health routes retain their own specified
+public/protocol access; production /api/mcp always uses C5 Background assertions.
+Neither staff sessions nor development bypass authorise MCP. U03–U14 display a
+persistent "Development — SUPER_ADMIN" badge for bypass identity only. U01 has
+only Continue with Google outside bypass; no user-selectable development login.
+COMMERCE-008 owns these page details; COMMERCE-002 provides auth state/helpers.
+
+Required fixtures A01 verified allowlisted Google success; A02 other provider,
+unlisted/unverified/subject-mismatched identity denied; A03 local development yields
+SUPER_ADMIN without credentials; A04 production plus development override errors;
+A05 test/production/unknown without credentials denies; A06 request-supplied bypass
+flags ignored; A07 reserved row created once under concurrent FK-backed writes,
+existing exact row reused and mismatched row rejected without update; A08 every
+Studio route/action family uses guards, ADMIN cannot publish, SUPER_ADMIN can;
+A09 inactive/revoked role takes effect next request; A10 bypass cannot access live
+MCP or skip mutation Origin checks; A11 U01 redirects/badge/sign-in duplicate guard.
+Test Google/development identity precedence with injected fixtures; no live OAuth
+credentials required for local tests. Record separately any developer live OAuth check.
+
 COMMERCE-003 exposes typed server operations createTool, updateTool,
 createToolDraft, updateToolDraft, publishToolRevision, setToolEnabled,
 createCapability, updateCapability,

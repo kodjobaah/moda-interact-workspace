@@ -81,6 +81,8 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+- [ ] Implement C7.1 U01 Google-only sign-in, development redirect to U03, and persistent Development — SUPER_ADMIN badge across U03–U14 shell. Reuse COMMERCE-002 guards/session state; no client bypass toggle. Verify A11 and preserve same-tick submission guards.
+
 - [ ] Implement exact C16 U10/U11 response authoring panels and N13 traversal embedded below, including instructions/schema/example editors, local draft retention, roles, validation and separate creation/activation. Cover R05/R09/R10.
 
 - [ ] Implement each page and dialog below with the exact route, entry points, fields, actions, destination, Back/Cancel behaviour and empty/loading/error states. No placeholder links or inferred pages.
@@ -541,3 +543,10 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+
+### Google-only and local development UI amendment
+
+C7.1 governs U01/U02 and the authenticated shell: Continue with Google is the only
+hosted sign-in choice. A server-resolved development SUPER_ADMIN bypass redirects
+U01 to U03 and shows Development — SUPER_ADMIN across U03–U14. No UI bypass
+selector or extra provider. Protected page/API/action guards remain server-owned.

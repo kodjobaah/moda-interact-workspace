@@ -389,15 +389,13 @@ Current frontier: all ARCH-019 implementation tasks are architect-accepted/Compl
 Scoped addition only; earlier architecture rollups are unchanged. Source:
 [ARCH-020 architecture](ARCH-020-commerce-agent-studio-mcp-capabilities.md) and
 [handoff](ARCH-020-implementation-handoff.md). Individual task YAML is authoritative.
-Definitions are in local main by developer exception, not task-branch materialisation.
-No task is claimed. Current counts: `ready` 3, `pending` 16, `blocked` 0.
-COMMERCE-001 is Ready following verified private repository/submodule provisioning; see the ARCH-020 implementation handoff.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
-| ARCH-020-DATABASE-001 | database | ready | 0 | ARCH-016-DATABASE-001 |
+| ARCH-020-DATABASE-001 | database | complete | 2 | ARCH-016-DATABASE-001 |
 | ARCH-020-SHARED-001 | shared | ready (Changes Requested) | 1 | ARCH-016-SHARED-001 |
-| ARCH-020-COMMERCE-001 | commerce | ready | 0 | — |
+| ARCH-020-COMMERCE-001 | commerce | complete | 3 | — |
 | ARCH-020-COMMERCE-002 | commerce | pending | 0 | ARCH-020-COMMERCE-001 |
 | ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-004 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
@@ -415,6 +413,44 @@ COMMERCE-001 is Ready following verified private repository/submodule provisioni
 | ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 |
 
+## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
+
+Attempt 1 is **Changes Requested**, task `ready`, attempt 1, claim cleared.
+The implementation/report PRs are #33/#165 (0e992c4 / 312e350b). Preserve the
+implementation and rehearsal history. Required corrections are the newer C16
+CommerceRelease responseContract/responseContractHash persistence and negative
+fixtures that currently permit unrelated constraint failures. The full correction
+contract is in the task's Architect Review. C16 was incorporated by parent synchronization commit 7fef4689 from canonical
+workspace commit a710df26; its semantic consumer requirements remain binding.
+
+Guarded writes require READ COMMITTED or SERIALIZABLE with bounded transaction
+retries; REPEATABLE READ is rejected. BACKGROUND-001 and COMMERCE-003 must honor
+that database restriction when implementing grants/publication. No dependency is
+promoted by this review; SYSTEM-TEST-001 remains terminal and manually invoked.
+Other task states in this branch's older definition snapshot are not a fresh
+review of their separate execution branches. Integrate latest parent main before
+reclaiming this task, preserving its report, review and attempt metadata.
+
+## DATABASE-001 architect acceptance — 2026-09-20
+
+ARCH-020-DATABASE-001 is **Accepted / Complete, Attempt 2**. Implementation
+30de940 (tested source a835207) and report 17c9f9ab satisfy R1 C16 response
+persistence and R2 rejection-fixture isolation. Reviewed 298 distinct passing
+checks per fresh/upgrade rehearsal, including controls; preservation covers
+57 existing tables, 41 seeded rows and 217 indexes. Static/Prisma checks passed.
+The previous Changes Requested section is historical and superseded.
+
+No downstream promotion: canonical SHARED-001 is in_progress, COMMERCE-001 is
+review, and COMMERCE-002/011 remain pending. BACKGROUND-001 and COMMERCE-003 still
+have incomplete prerequisites. Terminal SYSTEM-TEST-001 remains pending/manual.
+Other task table rows are branch-local snapshots, not fresh acceptance decisions.
+
+Guarded consumers use READ COMMITTED or SERIALIZABLE with bounded whole-transaction
+retries; REPEATABLE READ is rejected. Shared/Commerce own semantic response-schema
+validation and canonical hash equality; Commerce owns atomic release assembly,
+authorization and audit. Merge database PR #33 first, pin its final integrated
+database-main commit in the parent, then merge parent PR #165. No main integration
+or gitlink update is performed by this acceptance. ARCH-020 is not Implemented.
 
 ## Shared Attempt 1 architect review — 2026-09-20
 
@@ -424,6 +460,8 @@ R2 malformed model-call error classification. Attempt 1 is preserved and the
 claim is clear. Package 0.13.0 is published but not architect-accepted; corrections
 require a new verified registry version. No downstream task is promoted.
 See the canonical Shared task's latest Architect Review for the correction contract.
-Other task rows in this branch retain their existing snapshot; this review does
-not supersede newer decisions on their dedicated task branches, including the
-DATABASE-001 Attempt 2 acceptance. Architecture completion/system-test gates remain.
+Parent main synchronization preserves DATABASE-001 Complete at Attempt 2 and
+COMMERCE-001 Complete at Attempt 3 alongside this Shared correction contract.
+Current branch frontier: 19 tasks, 2 Complete, 1 Ready, 16 Pending, 0 Blocked.
+SHARED-001 remains Ready at Attempt 1 with no active claim. No next attempt is
+claimed by conflict resolution. Architecture completion/system-test gates remain.

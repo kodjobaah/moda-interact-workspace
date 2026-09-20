@@ -44,14 +44,9 @@ Current frontier: all ARCH-019 implementation tasks are architect-accepted/Compl
 
 ## ARCH-020 — CommerceAgent Studio and MCP capabilities (2026-09-20)
 
-Proposed review packet, authored on local main by explicit developer request.
-21 tasks: 2 Ready, 18 Pending, 1 Blocked; none claimed. DATABASE-001 and
-SHARED-001 are dependency-ready. COMMERCE-001 is blocked on real repository/submodule
-provisioning; the scoped moda_commerce role and COMMERCE launch route are defined.
-The new moda-interact-commerce repository will include the canonical database/
-submodule. Gateway exposes only the staff UI publicly; live MCP requires private
-Background access and service authentication. Pre-production breaking rollout
-is explicitly permitted. Review readiness does not launch implementation.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+
+The Commerce repository and nested database are provisioned; live MCP remains private and staff UI routing remains Gateway-owned. This task review does not complete ARCH-020.
 
 [Architecture](ARCH-020-commerce-agent-studio-mcp-capabilities.md) ·
 [Implementation handoff](ARCH-020-implementation-handoff.md)

@@ -80,6 +80,8 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+- [ ] Reuse C7.1 guards for every publication operation and validation endpoint; ensureDevelopmentStudioAdmin inside the same FK-backed audit/publication transaction when the server-resolved principal is development bypass. Verify A07/A08/A10; no copied auth policy.
+
 - [ ] Implement C16 createRelease definition/hash persistence, replay binding and authenticated /api/studio/response-contract/validate; baseline seed, immutable clone semantics, role enforcement and R01–R06/R09.
 
 - [ ] Implement independent createTool/updateTool/createToolDraft/updateToolDraft/publishToolRevision/setToolEnabled with C7 replay/CAS/audit. Capability drafts store exact toolBindings; no copied definitions. Shared tools can be reused; no implicit latest revision.

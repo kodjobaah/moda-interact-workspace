@@ -63,6 +63,7 @@ Read the existing Admin implementation as the reference:
 - `moda-interact-admin/src/lib/auth/security-policy.ts`
 - `moda-interact-admin/src/lib/auth/platform-admin.ts`
 - `moda-interact-admin/src/lib/auth/environment.ts`
+- `moda-interact-admin/src/lib/auth/development-platform-admin.ts`
 - `moda-interact-admin/src/lib/auth/audit.ts`
 
 Use [NextAuth.js](https://next-auth.js.org/) through the `next-auth` package. Admin currently declares `next-auth` 5.0.0-beta.32 and uses App Router handlers; record a compatible version during implementation rather than copying an incompatible Pages Router example or silently downgrading to v4. No Admin source change is authorised by this task.
@@ -92,12 +93,14 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+- [ ] Implement binding C7.1 in full: Google-only NextAuth, Admin-compatible development SUPER_ADMIN resolution, transaction-safe reserved development identity, reusable server-only auth entry points and typed route/action/page denial adapters. No application route may invent its own auth or role resolution.
+
 - [ ] Configure NextAuth.js with Google and JWT sessions following Admin (including its current eight-hour maximum unless the architect changes it); supply Studio-specific callback, cookie and server-only secret configuration.
 - [ ] Require a verified Google email and non-empty subject, normalise email, and look up the same pre-provisioned active PlatformAdmin row with provider=google. Reject unlisted users, unverified emails and subject mismatch; do not auto-provision staff.
 - [ ] Match Admin's atomic first-login subject binding: update only an active Google row whose providerSubject is still null, then reload and accept only the same subject if another login won the race. Preserve display-name and last-login semantics.
 - [ ] Carry providerSubject in the NextAuth JWT/session and reload current PlatformAdmin identity/role for each protected request; request-local deduplication is allowed, stale cross-request permission caches are not.
 - [ ] Implement ADMIN inspect/edit/preview and SUPER_ADMIN publish/rollback/disable permissions with server-side checks.
-- [ ] Recheck active identity and role for protected reads/actions; protect mutation origins/CSRF and fail closed on missing auth configuration.
+- [ ] Recheck active identity and role for protected reads/actions; protect mutation origins/CSRF and fail closed on missing hosted auth configuration; only the explicit C7.1 development environment bypass is exempt.
 - [ ] Provide a team-only shell and denied/expired-session states; no merchant account login or shared Admin host cookie trust.
 
 - [ ] Apply the common submission guard to Google sign-in, sign-out and any confirmation/retry controls. Keep sign-in pending through navigation; only a known provider error/cancel resets it. Preserve NextAuth state/CSRF handling and existing atomic account-subject binding.
@@ -134,6 +137,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-COMMERCE-011
 
 ## Acceptance Criteria
+
+- [ ] Pass C7.1 A01–A11 fixtures and provide an entry-point-to-guard matrix covering reads, writes, Server Actions, pages and explicit protocol exceptions. Demonstrate development SUPER_ADMIN, hosted rejection of bypass and reserved audit identity integrity.
 
 - [ ] Unauthenticated, deactivated and insufficient-role callers cannot access direct protected routes/actions.
 - [ ] An active pre-provisioned Admin account with the same verified Google subject can sign into Studio through NextAuth without another account being created; inactive, unlisted, wrong-provider and mismatched-subject accounts are denied.

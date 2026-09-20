@@ -2,20 +2,11 @@
 
 Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabilities](ARCH-020-commerce-agent-studio-mcp-capabilities.md).
 
-## Review packet and current frontier
+## Initial review packet and definition frontier
 
-The developer requested task definitions on local workspace `main` for review.
-This is an explicit exception to task-definition materialisation only. No task
-is claimed, no application implementation has started, and no remote repository,
-submodule, deployment or task worktree is claimed to exist because of this packet.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
-The packet defines 19 tasks: **3 Ready, 16 Pending, 0 Blocked**. Ready means
-dependency-eligible; this review request does not launch execution.
-
-- Ready: `ARCH-020-DATABASE-001`, `ARCH-020-SHARED-001` (accepted ARCH-016 task
-  metadata is present in this checkout; verify actual source availability at launch).
-- Ready: `ARCH-020-COMMERCE-001`, following the verified repository provisioning below.
-- Pending: the remaining 16 tasks, including the terminal system test.
+The consolidated packet contains 19 tasks; SHARED-001 owns contracts, runner and publication. The original definition/provisioning records below are historical setup evidence. Ready status elsewhere in this packet does not launch execution.
 
 Confirmed choices: `moda-interact-commerce`, team-only Studio frontend,
 `database/` nested submodule of `moda-interact-database`, private Background-only
@@ -80,7 +71,7 @@ BACKGROUND-001 + COMMERCE-007 -> BACKGROUND-002
 SHARED-001 + ARCH-016-SHOPIFY-002 -> SHOPIFY-001
 COMMERCE-002/008/011 + BACKGROUND-001 -> GATEWAY-001
 GATEWAY-001 + COMMERCE-010 + BACKGROUND-002 -> GATEWAY-002
-all 20 nonterminal tasks -> SYSTEM-TEST-001 (manual terminal gate)
+all 18 nonterminal tasks -> SYSTEM-TEST-001 (manual terminal gate)
 ```
 
 Individual task YAML contains the exact complete dependency sets. Runtime call
@@ -209,7 +200,7 @@ thresholds. Per-task implementation helpers may follow repository conventions;
 external wire/state/ownership contracts may not vary between implementations.
 
 Remaining external inputs are the Studio hostname and provisioned credentials.
-Commerce repository/default-branch provisioning is complete and COMMERCE-001 is Ready.
+Commerce repository/default-branch provisioning is complete; COMMERCE-001 is architect-accepted Complete at Attempt 3; developer integration precedes downstream source consumption, and the authorized real Docker readiness evidence is retained.
 Pin/test actual SDK dependencies in that foundation task;
 Shopify schema/scope evidence belongs to COMMERCE-006, with closed unsupported
 outcomes when provider facts cannot be established. Do not invent deployed values,
@@ -250,9 +241,47 @@ definitions are consolidated into ARCH-020-SHARED-001. The two superseded draft
 files were removed before execution; their requirements remain in SHARED-001.
 One task owns implementation, tests, publication and clean registry installation
 evidence. Consumers depend on its architect-accepted Complete state and recorded
-package version. Current frontier: 19 tasks, 3 Ready, 16 Pending, 0 Blocked.
+package version. Historical snapshot after COMMERCE-001 acceptance: 19 tasks, 1 Complete, 2 Ready, 16 Pending, 0 Blocked. The synchronized current frontier is recorded below. COMMERCE-002 awaits source integration or explicit accepted-commit consumption.
 No execution was claimed and no package was published by this documentation change.
 
+## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
+
+Attempt 1 is **Changes Requested**, task `ready`, attempt 1, claim cleared.
+The implementation/report PRs are #33/#165 (0e992c4 / 312e350b). Preserve the
+implementation and rehearsal history. Required corrections are the newer C16
+CommerceRelease responseContract/responseContractHash persistence and negative
+fixtures that currently permit unrelated constraint failures. The full correction
+contract is in the task's Architect Review. C16 was incorporated by parent synchronization commit 7fef4689 from canonical
+workspace commit a710df26; its semantic consumer requirements remain binding.
+
+Guarded writes require READ COMMITTED or SERIALIZABLE with bounded transaction
+retries; REPEATABLE READ is rejected. BACKGROUND-001 and COMMERCE-003 must honor
+that database restriction when implementing grants/publication. No dependency is
+promoted by this review; SYSTEM-TEST-001 remains terminal and manually invoked.
+Other task states in this branch's older definition snapshot are not a fresh
+review of their separate execution branches. Integrate latest parent main before
+reclaiming this task, preserving its report, review and attempt metadata.
+
+## DATABASE-001 architect acceptance — 2026-09-20
+
+ARCH-020-DATABASE-001 is **Accepted / Complete, Attempt 2**. Implementation
+30de940 (tested source a835207) and report 17c9f9ab satisfy R1 C16 response
+persistence and R2 rejection-fixture isolation. Reviewed 298 distinct passing
+checks per fresh/upgrade rehearsal, including controls; preservation covers
+57 existing tables, 41 seeded rows and 217 indexes. Static/Prisma checks passed.
+The previous Changes Requested section is historical and superseded.
+
+No downstream promotion: canonical SHARED-001 is in_progress, COMMERCE-001 is
+review, and COMMERCE-002/011 remain pending. BACKGROUND-001 and COMMERCE-003 still
+have incomplete prerequisites. Terminal SYSTEM-TEST-001 remains pending/manual.
+Other task table rows are branch-local snapshots, not fresh acceptance decisions.
+
+Guarded consumers use READ COMMITTED or SERIALIZABLE with bounded whole-transaction
+retries; REPEATABLE READ is rejected. Shared/Commerce own semantic response-schema
+validation and canonical hash equality; Commerce owns atomic release assembly,
+authorization and audit. Merge database PR #33 first, pin its final integrated
+database-main commit in the parent, then merge parent PR #165. No main integration
+or gitlink update is performed by this acceptance. ARCH-020 is not Implemented.
 
 ## Shared Attempt 1 architect review — 2026-09-20
 
@@ -262,6 +291,8 @@ R2 malformed model-call error classification. Attempt 1 is preserved and the
 claim is clear. Package 0.13.0 is published but not architect-accepted; corrections
 require a new verified registry version. No downstream task is promoted.
 See the canonical Shared task's latest Architect Review for the correction contract.
-Other task rows in this branch retain their existing snapshot; this review does
-not supersede newer decisions on their dedicated task branches, including the
-DATABASE-001 Attempt 2 acceptance. Architecture completion/system-test gates remain.
+Parent main synchronization preserves DATABASE-001 Complete at Attempt 2 and
+COMMERCE-001 Complete at Attempt 3 alongside this Shared correction contract.
+Current branch frontier: 19 tasks, 2 Complete, 1 Ready, 16 Pending, 0 Blocked.
+SHARED-001 remains Ready at Attempt 1 with no active claim. No next attempt is
+claimed by conflict resolution. Architecture completion/system-test gates remain.
