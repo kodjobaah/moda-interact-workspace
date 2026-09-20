@@ -712,7 +712,7 @@ definitions for review; no implementation is launched by this packet.
 | Task | Outcome | Owner | Status | Depends on |
 |---|---|---|---|---|
 | [ARCH-020-DATABASE-001](../decisions/database/ARCH-020/DATABASE-001-persist-capability-releases-and-turn-revision-pins.md) | Persist capability releases and conversation tool grants | moda_database | ready | ARCH-016-DATABASE-001 |
-| [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | moda_shared | ready | ARCH-016-SHARED-001 |
+| [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | moda_shared | ready (Changes Requested, Attempt 1) | ARCH-016-SHARED-001 |
 | [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | ready | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | pending | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
@@ -800,3 +800,16 @@ The exact C16 page extension and N13 traversal appear in the UI design and
 COMMERCE-008. CommerceRelease adds responseContract and responseContractHash,
 keeping the nine-table design. Database, Shared contracts/runner, Commerce
 publication/MCP/UI/preview, Background and system-test tasks own the full change.
+
+
+## Shared Attempt 1 architect review — 2026-09-20
+
+ARCH-020-SHARED-001 returned to Ready with Changes Requested against implementation
+34be970 and report f713caed: R1 whole-definition persistence size compatibility;
+R2 malformed model-call error classification. Attempt 1 is preserved and the
+claim is clear. Package 0.13.0 is published but not architect-accepted; corrections
+require a new verified registry version. No downstream task is promoted.
+See the canonical Shared task's latest Architect Review for the correction contract.
+Other task rows in this branch retain their existing snapshot; this review does
+not supersede newer decisions on their dedicated task branches, including the
+DATABASE-001 Attempt 2 acceptance. Architecture completion/system-test gates remain.

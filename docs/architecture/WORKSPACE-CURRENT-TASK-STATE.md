@@ -396,7 +396,7 @@ COMMERCE-001 is Ready following verified private repository/submodule provisioni
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
 | ARCH-020-DATABASE-001 | database | ready | 0 | ARCH-016-DATABASE-001 |
-| ARCH-020-SHARED-001 | shared | ready | 0 | ARCH-016-SHARED-001 |
+| ARCH-020-SHARED-001 | shared | ready (Changes Requested) | 1 | ARCH-016-SHARED-001 |
 | ARCH-020-COMMERCE-001 | commerce | ready | 0 | — |
 | ARCH-020-COMMERCE-002 | commerce | pending | 0 | ARCH-020-COMMERCE-001 |
 | ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
@@ -414,3 +414,16 @@ COMMERCE-001 is Ready following verified private repository/submodule provisioni
 | ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 |
+
+
+## Shared Attempt 1 architect review — 2026-09-20
+
+ARCH-020-SHARED-001 returned to Ready with Changes Requested against implementation
+34be970 and report f713caed: R1 whole-definition persistence size compatibility;
+R2 malformed model-call error classification. Attempt 1 is preserved and the
+claim is clear. Package 0.13.0 is published but not architect-accepted; corrections
+require a new verified registry version. No downstream task is promoted.
+See the canonical Shared task's latest Architect Review for the correction contract.
+Other task rows in this branch retain their existing snapshot; this review does
+not supersede newer decisions on their dedicated task branches, including the
+DATABASE-001 Attempt 2 acceptance. Architecture completion/system-test gates remain.

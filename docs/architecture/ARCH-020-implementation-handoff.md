@@ -252,3 +252,16 @@ One task owns implementation, tests, publication and clean registry installation
 evidence. Consumers depend on its architect-accepted Complete state and recorded
 package version. Current frontier: 19 tasks, 3 Ready, 16 Pending, 0 Blocked.
 No execution was claimed and no package was published by this documentation change.
+
+
+## Shared Attempt 1 architect review — 2026-09-20
+
+ARCH-020-SHARED-001 returned to Ready with Changes Requested against implementation
+34be970 and report f713caed: R1 whole-definition persistence size compatibility;
+R2 malformed model-call error classification. Attempt 1 is preserved and the
+claim is clear. Package 0.13.0 is published but not architect-accepted; corrections
+require a new verified registry version. No downstream task is promoted.
+See the canonical Shared task's latest Architect Review for the correction contract.
+Other task rows in this branch retain their existing snapshot; this review does
+not supersede newer decisions on their dedicated task branches, including the
+DATABASE-001 Attempt 2 acceptance. Architecture completion/system-test gates remain.

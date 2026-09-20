@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -315,6 +315,39 @@ No cross-repository changes made. Shape validation does not claim tenant existen
 - No parent service gitlink, architecture/index/frontier, other task, main merge, main push or force push occurred.
 
 ## Architect Review
+
+### Review Status
+
+**Changes Requested — Attempt 1, 2026-09-20, moda_architect.** Not accepted or Complete. Return the same task to `ready`; preserve Attempt 1, with executor/claimed_at null. No downstream promotion.
+
+### Reviewed Source and Evidence
+
+Implementation `34be9702f39ee638631b99222562365c2fb0a4af`; parent report `f713caed8a074b1863ef0fd1a4c4fd4c1dcb3786`. Both remote task heads independently verified. Reviewed commerce schemas, definitions/compiler, canonicalisation, selection, response validation, runner, fixtures/tests, exports/build configuration and publication report. Prepared claim/worktree/synchronization evidence is conformant; canonical parent and implementation worktrees were clean.
+
+Independent typecheck and entrypoint smoke passed. Focused contracts/runner tests independently passed **26/26** using `node --import tsx --test src/commerce/contracts.test.ts src/commerce/runner/runner.test.ts`; the tsx CLI initially hit sandbox IPC permissions, so that failed invocation is not test evidence. Full 154-pass/one-skipped suite is developer-reported evidence. Reproductions below import the installed registry package in `/tmp/shared020-consumer.hIjnbO`, version 0.13.0.
+
+### R1 — P2: enforce the persisted whole-definition size bound
+
+`src/commerce/definitions.ts:136–177` omits a total size bound from CommerceToolDefinitionSchema and gives CommerceToolDraftDefinitionSchema a 131,072-byte total ceiling. C14 requires the same scalar/size bounds for drafts and publication; DATABASE-001 specifies the complete definition at <=65,536 bytes. Accepted database migration `20260920182429_arch020_commerce_capability_releases/migration.sql` enforces `octet_length(v::text)<=65536` on jsonb definitions. Independently bounding each child object is insufficient.
+
+Reproduction: a six-key draft with name `oversize_tool`, definitionVersion `1.0.0`, description `Review fixture`, inputSchema `{}`, and execution/responseTemplate each `{x: "x" repeated 40000}` has compact UTF-8 size **80,149 bytes**, yet draft safeParse succeeds. The exported exampleDefinition with ten variables v0..v9 each `{literal: "x" repeated 8000}` has size **80,974 bytes**, yet strict safeParse also succeeds. The strict reproduction demonstrates structural size admission, not GraphQL compilation approval. Such definitions can pass Shared's authoring boundary and fail persistence.
+
+Correction contract: enforce a whole-definition bound consistently for both draft and strict schemas, compatible with the database's jsonb text byte measurement (account for serialization overhead; changing 131072 to 65536 for compact JSON alone is insufficient at the boundary). Keep canonical hashing semantics unchanged. Add valid near-boundary controls and over-boundary rejections for both paths, including multibyte text and aggregate objects whose individual members fit. Demonstrate admitted boundary fixtures fit the persisted limit, with expected failures attributable to size rather than an unrelated schema constraint.
+
+### R2 — P2: classify malformed model calls as INVALID_FINAL
+
+`src/commerce/runner/index.ts:294–304` checks the calls array but dereferences each element before validating it. A model adapter returning `{calls:[null],outputTokens:1}` with otherwise valid zero-tool fixture inputs produces `{ok:false,error:{code:"INVALID_INPUT",retryable:false}}`. The TypeError is caught as host input failure. C6.1/P11 requires missing or malformed model final output to be INVALID_FINAL; consumers must be able to distinguish malformed model output from invalid host input.
+
+Correction contract: validate the model step/call shape before inspecting or dispatching calls, and map malformed model output to INVALID_FINAL without provider error text or tool side effects. Add null/non-object call, missing/non-string name and malformed final-arguments regression cases with exact error-code assertions; retain INVALID_INPUT for actual invalid host inputs and existing valid multi-step/zero-tool behavior.
+
+### Architecture Conformance and Follow-up
+
+The published 0.13.0 artifact is not architect-accepted for ARCH-020 consumers. Correct R1/R2 on the same implementation task branch, add focused regressions, rerun required validation, and publish a new version greater than 0.13.0 under the existing combined implementation/publication scope. Do not overwrite/reuse 0.13.0. Verify both exports and runner smoke from a clean registry consumer and report the new implementation SHA, version/integrity and test results. Preserve the existing report as historical evidence when submitting Attempt 2.
+
+The parent review overlay is to be committed/pushed using the previously delegated parent-publication workflow before preparation reclaims the task. Preparation owns the next claim; this review does not claim Attempt 2. Downstream task states, implementation code, gitlinks and main integration are unchanged. Architecture remains in implementation; terminal system validation remains required.
+
+### Historical Definition Review
+
 
 ### Review Status
 
