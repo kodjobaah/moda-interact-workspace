@@ -368,7 +368,7 @@ Tool/customer/catalogue text is untrusted data, never a new instruction layer.
 
 ### C6.1 Fixed instructions, recovery context and language
 
-This section is binding for BACKGROUND-001, SHARED-002, COMMERCE-009 and
+This section is binding for BACKGROUND-001, SHARED-001, COMMERCE-009 and
 SYSTEM-TEST-001. It replaces vague requirements to preserve the old prompt.
 
 Ownership and composition:
@@ -666,8 +666,10 @@ expected outcome, command and actual result. Assertions must cover side effects
 Record commands available in the actual repository; new commands named by tasks
 are deliverables. Don't claim runtime tests were run during architecture review.
 
-Publication-only SHARED-003 consumes accepted artifacts and performs release
-mechanics/registry verification; no repetition of implementation test suites.
+SHARED-001 implements contracts and runner, validates them and publishes one
+verified package version in the same task. Registry installation and both public
+entry-point smoke checks are required before completion; code-only completion
+does not unblock consumers. Re-run checks only when intervening changes require it.
 COMMERCE-001 produces the SDK compatibility fixture before BACKGROUND-001 executes.
 The dispatcher profile and compatibility document are inputs; the implementer
 cannot claim compatibility merely by matching a package major version.

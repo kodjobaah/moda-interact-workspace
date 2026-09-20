@@ -9,13 +9,13 @@ This is an explicit exception to task-definition materialisation only. No task
 is claimed, no application implementation has started, and no remote repository,
 submodule, deployment or task worktree is claimed to exist because of this packet.
 
-The packet defines 21 tasks: **3 Ready, 18 Pending, 0 Blocked**. Ready means
+The packet defines 19 tasks: **3 Ready, 16 Pending, 0 Blocked**. Ready means
 dependency-eligible; this review request does not launch execution.
 
 - Ready: `ARCH-020-DATABASE-001`, `ARCH-020-SHARED-001` (accepted ARCH-016 task
   metadata is present in this checkout; verify actual source availability at launch).
 - Ready: `ARCH-020-COMMERCE-001`, following the verified repository provisioning below.
-- Pending: the remaining 18 tasks, including the terminal system test.
+- Pending: the remaining 16 tasks, including the terminal system test.
 
 Confirmed choices: `moda-interact-commerce`, team-only Studio frontend,
 `database/` nested submodule of `moda-interact-database`, private Background-only
@@ -67,17 +67,17 @@ database revision. Never copy the Prisma schema into Commerce.
 
 ```text
 DATABASE-001 ---------------------------> publication persistence / Background grants
-SHARED-001 -> SHARED-002 -> SHARED-003 ---> shared contracts/runner publication
+SHARED-001 (contracts + runner + publication) ---> shared contracts/runner publication
 provisioning -> COMMERCE-001 -> COMMERCE-002
-COMMERCE-002 + SHARED-003 -> COMMERCE-011 (Shopify discovery/schema services)
-COMMERCE-002/011 + DATABASE-001 + SHARED-003 -> COMMERCE-003 (publication)
+COMMERCE-002 + SHARED-001 -> COMMERCE-011 (Shopify discovery/schema services)
+COMMERCE-002/011 + DATABASE-001 + SHARED-001 -> COMMERCE-003 (publication)
 COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005 -> COMMERCE-006 -> COMMERCE-007
 COMMERCE-003/005/006/007/011 -> COMMERCE-008 (U01–U13 full authoring UI)
-COMMERCE-008/007 + SHARED-003 -> COMMERCE-009 (U14 tests/conversations)
+COMMERCE-008/007 + SHARED-001 -> COMMERCE-009 (U14 tests/conversations)
 COMMERCE-004/007/009 -> COMMERCE-010 (observability)
-SHARED-003 + DATABASE-001 + COMMERCE-001 + ARCH-016-BACKGROUND-003 -> BACKGROUND-001
+SHARED-001 + DATABASE-001 + COMMERCE-001 + ARCH-016-BACKGROUND-003 -> BACKGROUND-001
 BACKGROUND-001 + COMMERCE-007 -> BACKGROUND-002
-SHARED-003 + ARCH-016-SHOPIFY-002 -> SHOPIFY-001
+SHARED-001 + ARCH-016-SHOPIFY-002 -> SHOPIFY-001
 COMMERCE-002/008/011 + BACKGROUND-001 -> GATEWAY-001
 GATEWAY-001 + COMMERCE-010 + BACKGROUND-002 -> GATEWAY-002
 all 20 nonterminal tasks -> SYSTEM-TEST-001 (manual terminal gate)
@@ -92,8 +92,9 @@ Each executor reads the full task/architecture and latest review, uses normal
 dedicated mirrored task branches, publishes its task-owned implementation and
 Completion Report, then stops at review. The architect accepts implementations,
 reconciles current prerequisite records and promotes newly eligible tasks.
-Use the actual published shared version; SHARED-003 performs publication mechanics
-only and does not repeat implementation tests or begin consumer work.
+Use the actual published shared version. SHARED-001 implements and validates both
+exports, publishes them together and verifies a clean registry installation before
+completion. It does not begin consumer implementation.
 
 ## Private MCP and administrator UI acceptance
 
@@ -201,7 +202,7 @@ for SDK compatibility. Existing batching and inbound/status schemas are unchange
 
 ## Determinism review and execution inputs
 
-All 21 tasks contain explicit contracts/guidance and expected validation evidence.
+All 19 tasks contain explicit contracts/guidance and expected validation evidence.
 The companion defines strict tool arguments/results, service assertions, grants,
 publication/replay operations, preview budgets, gateway routes and initial alert
 thresholds. Per-task implementation helpers may follow repository conventions;
@@ -241,6 +242,16 @@ persistence/contracts before publication/runtime/UI; no new task or readiness
 promotion is required. Published definitions are pinned through grant.releaseId.
 The original visual prototype predates the C16 release-panel extension; the exact
 page specification in the UI design and COMMERCE-008 is authoritative for it.
+
+## Shared task consolidation
+
+By developer request, the unclaimed Shared contracts, runner and publication
+definitions are consolidated into ARCH-020-SHARED-001. The two superseded draft
+files were removed before execution; their requirements remain in SHARED-001.
+One task owns implementation, tests, publication and clean registry installation
+evidence. Consumers depend on its architect-accepted Complete state and recorded
+package version. Current frontier: 19 tasks, 3 Ready, 16 Pending, 0 Blocked.
+No execution was claimed and no package was published by this documentation change.
 
 ## DATABASE-001 architect review — 2026-09-20
 
