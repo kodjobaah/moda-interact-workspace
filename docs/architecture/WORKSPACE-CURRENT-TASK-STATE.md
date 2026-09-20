@@ -380,8 +380,6 @@ For current sequencing use `ARCH-010-implementation-handoff.md`; individual task
 
 ## ARCH-019 — merchant recovery experience (2026-09-20)
 
-DATABASE-001 and SHOPIFY-001 are accepted/Complete at Attempt 1. SHOPIFY-002 is Ready after Attempt 2 Changes Requested, with executor/claim cleared and attempt 2 preserved; its next successful preparation claims Attempt 3. The timezone correction passes, but fixture loading and actual PostgreSQL plan evidence remain required. SHOPIFY-003 is In Progress at Attempt 1. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress, not Implemented; terminal system validation is developer-invoked.
-
-Implementation PR #38 merged before SHOPIFY-002 acceptance at `49526b5`; report PR #159 remains open. The parent task branch now incorporates main's SHOPIFY-001 acceptance while preserving the latest SHOPIFY-002 review and SHOPIFY-003 active claim. No implementation or new claim is part of this reconciliation. Task YAML in canonical parent worktrees remains authoritative.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3. SHOPIFY-004 Ready at Attempt 0. SHOPIFY-005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependencies are reconciled into SHOPIFY-004; readiness does not launch implementation or authorize unmerged dependency consumption.
 
 [Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)

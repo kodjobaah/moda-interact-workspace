@@ -2,7 +2,7 @@
 
 Canonical architecture: [ARCH-019](ARCH-019-merchant-recovery-experience.md).
 
-Current frontier: DATABASE-001 and SHOPIFY-001 accepted/Complete. SHOPIFY-002 Ready for Attempt 3 corrections (Attempt 2 preserved); SHOPIFY-003 In Progress at Attempt 1. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Accepted dependency metadata is reconciled into the newly Ready task worktree. The developer authorized publication of these review updates on the matching parent task branches on 2026-09-20. Readiness does not launch execution or authorize prerequisite integration.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3. SHOPIFY-004 Ready at Attempt 0. SHOPIFY-005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependencies are reconciled into SHOPIFY-004; readiness does not launch implementation or authorize unmerged dependency consumption.
 
 SHOPIFY-001 accepted implementation: `08af00b85508d3ae7e653890abbc8a5ca0c0cc9d`; reviewed report: `181e3a91b3cfc10e099b913db6d2e5fbb6f5dcfb`. DATABASE-001 accepted `54c0ec2` is integrated in database `9c6a4d8` with an identical tree. The complete experience still requires all remaining tasks and terminal validation. The developer explicitly delegated commit/push of these review updates on 2026-09-20.
 
@@ -23,10 +23,6 @@ All new task branches start from current origin/main. Developer integrates accep
 
 Historical baseline documents: ARCH-013 routing and accepted ARCH-017 onboarding/current-period behaviour. ARCH-019 changes navigation/read presentation only; keep the current source lifecycle policy. Do not edit unrelated pending-recovery or recovery-settings work present in shared checkouts.
 
-## SHOPIFY-002 Attempt 2 review
+## SHOPIFY-002 final acceptance
 
-Changes Requested: timezone correction passes, but the pg harness sends a psql-only fixture directive as SQL. Correct setup and supply all five PostgreSQL tests/plans before acceptance. Implementation PR #38 was merged early at `49526b5`; report PR #159 remains open. No automatic revert: the finding concerns test setup and these readers are not wired into routes. Future corrections require developer integration after review.
-
-## Parent branch reconciliation — 2026-09-20
-
-At the developer’s request, incorporated parent `origin/main` at `3ffc6a58ce0e3b88f0ca06aa511472f4db334a63` into `task/ARCH-019-SHOPIFY-002`. Resolved six documentation conflicts by retaining the reviewed Attempt 2 report and Changes Requested contract, SHOPIFY-001 acceptance, and SHOPIFY-003’s independently verified active Attempt 1. SHOPIFY-002 stays Ready with attempt 2 and no claim; the next prepared execution claims Attempt 3. This reconciliation does not launch implementation or change either main branch.
+Accepted `1a60f1e` (Attempt 3), with all five PostgreSQL tests and four bounded index plans at tested `eb34340`; production readers unchanged. Correction PR #40 and accepted SHOPIFY-003 implementation must follow developer integration/approved consumption rules before SHOPIFY-004 execution. Report PR #159 contains the acceptance record.
