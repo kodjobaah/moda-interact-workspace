@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
-executor: codex
-claimed_at: 2026-09-20T15:45:23Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-019-SHOPIFY-001
@@ -209,7 +209,7 @@ Attempt 2 preparation/publication evidence:
 
 No unresolved task-owned correction remains. Existing repository-wide check failures and the previously recorded promotional-expiry DTO limitation remain unchanged. Return to review; no acceptance decision made.
 
-## Architect Review
+## Historical Architect Review — Attempt 1
 
 ### Review Status
 
@@ -243,3 +243,29 @@ Inspected bounded cohort loading, separate current capacity, preserved lifecycle
 ### Follow-up
 
 moda_app must reclaim SHOPIFY-005 for Attempt 2, correct the legacy unavailable-period outcome, rerun the relevant validation and submit both mirrored branches. Preserve this review and Attempt 1 evidence. No downstream task was promoted or launched.
+
+## Architect Review
+
+### Review Status
+
+**Accepted — Attempt 2, 2026-09-20, moda_architect.** Complete under `completion_mode: automatic`.
+
+Accepted implementation `5130f79bd71dfd980420f3b1aafee55c9e2fa72f`, reviewed against report `50aed4d762e5d0343c2596318ed002e97fd570f6`. Both published remote heads verified. No blocking implementation defect or workflow non-conformance remains. Attempt 1's explicit-period substitution finding is resolved; historical evidence and review remain above.
+
+### Review Notes / Architecture Conformance
+
+An absent billId still permits the current/past default redirect, and a valid owned selection retains its validated ID. Explicit missing/deleted/foreign, malformed, empty or repeated IDs now produce the same localized unavailable presentation before performance/capacity/pending reads. They neither redirect to a substitute period nor expose the requested ID. Authentication, lifecycle/onboarding precedence and tenant-constrained lookup remain intact. The safe Overview link is an explicit user action. This bounded legacy correction does not implement SHOPIFY-006's direct Usage handling or alter billing semantics.
+
+The previously reviewed recovery overview retains bounded cohort loading, separate current capacity, date/embed links and pending capability gating. Promotional expiry remains explicitly unavailable because the authoritative DTO does not expose it.
+
+### Validation Reviewed
+
+- Architect reran the expanded required home/overview/pricing/i18n/pending command: **56 tests passed across 5 suites**. Coverage distinguishes absent, valid-owned, missing/deleted/foreign, malformed/empty and repeated selections, with no default substitution or extra performance reads.
+- Architect reran full typecheck: **131 diagnostics in 23 files**; full lint: **20 errors / 2 warnings**. All **33 distinct diagnostic files** remain unchanged from Attempt 2 base `d5319e8`; these remain documented baseline debt, not clean global checks.
+- Parsed all twenty locale catalogues: exactly the new unavailable key added, prior values unchanged. Committed-diff whitespace check passed.
+- Reviewed supplied synthetic browser replay and 390px screenshot: explicit unavailable message and local Overview escape, no automatic Usage fallback. Prior responsive/lifecycle evidence retained. No independent live Shopify/browser replay is claimed for this correction review.
+- Dedicated parent/implementation worktrees, matching branches, prepared synchronization and recursive database evidence match the report. Durable Attempt 2 claim recorded. Implementation remained unchanged during review.
+
+### Follow-up / Dependency State
+
+SHOPIFY-005 is Complete at Attempt 2; executor/claim cleared. SHOPIFY-006 becomes Ready at Attempt 0, with accepted dependency records and shared frontier reconciled into its canonical parent branch. SYSTEM-TEST-001 remains Pending until SHOPIFY-006 is accepted, and remains developer-invoked. ARCH-019 stays In Progress. Readiness does not launch execution or authorize unmerged dependency consumption: integrate accepted implementation first or obtain explicit accepted-commit consumption authorization.
