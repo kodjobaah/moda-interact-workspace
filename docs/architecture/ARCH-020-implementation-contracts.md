@@ -1403,3 +1403,127 @@ on synchronization.003 does not build Studio pages;008 does not add competing
 publication mutations or compiler endpoints. 003/008 submit component/fixture evidence;013 submits actual integration evidence.
 Downstream009/GATEWAY-001 and terminal caching/system-test gates require013.
 Fixture acceptance never asserts that the assembled application is functional.
+
+
+## C18. Recommendation producer / Background consumer contract
+
+Binding for COMMERCE-004/006/007, BACKGROUND-002 and SYSTEM-TEST-001. This
+specifies C4/C5 exact-call refresh, not a new protocol/package version. Both owners
+consume the accepted `@modainteract/moda-interact-shared/commerce` exports:
+`CommerceTurnIdentitySchema`, `CommerceEvidenceSchema`, `CommerceProposalSchema`,
+`CommerceAlternativeSchema`, `CommerceToolOutputs`, `commerceToolResultSchema`.
+Never redefine these wire schemas or substitute model-authored JSON as evidence.
+Example operation names in Shared identify schemas, not required exposed tool names.
+
+### Request and response
+
+Use POST /api/mcp and the accepted001 transport profile. JSON-RPC tools/call params
+are exactly `{name,arguments}`. `name` is the original granted authored name;
+`arguments` is the original validated JSON object, including any defaults applied
+before its first dispatch. Shop/recovery/conversation/inboundVersion/grant/release
+come exclusively from C5 execute assertion and persistence, never model arguments.
+The pinned revision is selected server-side; neither consumer nor producer upgrades
+it. Refresh may use a newly signed assertion with identical business identity.
+Authorization, lease/current turn and current original-provenance permissions are
+checked on EVERY call before any provider request. No hidden revalidation endpoint.
+
+The structured result is exactly the existing C4 union:
+`{contractVersion:"commerce.v1",status:"OK",data,renderedText}` or
+`{contractVersion:"commerce.v1",status:"ERROR",code,retryable,renderedText?}`.
+Use C5 MCP encoding/error signaling and the accepted SDK decoder. Do not parse
+renderedText for evidence. Success data is one of the existing exact operation
+outputs: evaluator `CommerceEvidenceSchema`, or recommendation
+`CommerceToolOutputs.commerce_find_qualifying_products` (same shape for similar):
+`{alternatives: Alternative[0..3],truncated:boolean}`. Each Alternative has product,
+proposal, extraSpend, resultingTotal, currency, evidence (nullable), similarityReasons;
+every field/type/bound is the Shared schema and C4. No model-controlled extra keys.
+
+004/007 preserve the policy output structure through dispatch/template rendering.
+Extract evidence ONLY from a valid root evaluator data object or valid
+`data.alternatives[*].evidence`; null evidence is no evidence. No recursive search,
+no extraction from rendered text, product descriptions or public-query values.
+C14 public query data stays in its source/schema/version/observedAt/values wrapper;
+publication/dispatch must never let query projection replace that wrapper with a
+policy output shape. Even schema-valid nested counterfeit evidence registers zero
+IDs.004 owns this output separation;007 owns policy results; Background owns the
+strict extractor. The envelope alone does not prove a policy operation ran.
+
+### Consumer state and exact refresh decision
+
+For each registered evidenceId, Background retains a turn-local immutable tuple
+`{name,toolRevisionId,arguments,evidence}` from the actual authenticated tool return.
+Reject conflicting reuse of the same evidenceId with different provenance. This
+record is neither a new wire field nor persistent DB data. Validate the digest
+using C4 canonical JSON/SHA-256; a valid digest alone is never authorization.
+
+Before an offer claim is delivered, each final evidenceId must refer to that map.
+Replay identical name/arguments under the original grant. One identical name+
+revision+canonical-arguments tuple produces one refresh call even if several IDs
+reference it. No separate evaluator is needed for recommendation-produced evidence.
+If no IDs are supplied, do not manufacture offer proof or invoke an arbitrary tool;
+normal factual replies still use existing admission/grounding checks.
+
+For each referenced evidence require exactly one fresh match by offerId and
+canonical proposal, and equality of full turn identity, grantId, releaseId, outcome,
+currency, savings, resultingTotal, basketFingerprint and ruleFingerprint. Monetary
+strings are compared as exact decimal values, not floating point; proposals retain
+operation order. The fresh evidence must pass Shared validation, recomputed digest,
+`evaluatedAt <= now < expiresAt`, positive lifetime <=60 seconds and offer expiry.
+Do not accept a future-dated result. A positive offer claim additionally requires
+QUALIFIES_FOR_KNOWN_RULES, nonnull currency/savings/resultingTotal and no unresolved
+conditions. Nonqualifying outcomes may describe ineligibility, never grant a discount.
+Old timestamps/digest may change; semantic comparison fields must not. An expired
+original item cannot be rescued by refresh for this pending final answer.
+
+`truncated:true`, missing/duplicate match, malformed result, changed semantics,
+unknown ID, missing provenance or revoked permission fails the offer claim. Replace
+it with one normal admitted REFER_TO_STORE reply using trusted store context.
+A stale turn, lease loss or cancellation suppresses delivery entirely, not a new
+referral. Recheck admission AFTER refresh. Do not notify a human, send a second
+message, reserve new recovery credit or expand the grant. Fresh evidence is not a
+checkout guarantee and never authorizes cart/order mutation.
+
+### Failures, budgets and independent ownership
+
+C4 business codes remain INVALID_INPUT, DENIED, STALE_TURN, NOT_FOUND, UNAVAILABLE,
+THROTTLED, DEADLINE and INCOMPATIBLE_VERSION. HTTP401/403, transport/protocol errors,
+malformed structured output or incompatible versions provide no usable evidence.
+STALE_TURN or locally lost lease/cancel suppresses send. Other failures replace the
+offer with the admitted referral, unless admission has meanwhile failed. The final
+refresh pass never retries automatically, even when retryable=true. Charge calls
+against the existing remaining turn budget and use the smaller of remaining turn
+time and10 seconds; zero budget issues zero requests.007 counts all nested provider
+requests/retries against C8's12-call ceiling; Background does not implement ranking,
+Shopify evaluation or provider request counting inside the Commerce service.
+
+BACKGROUND-002 can implement and be accepted using accepted BACKGROUND-001/Shared
+and a contract-faithful MCP double. COMMERCE-007 can implement and be accepted using
+its005/006 predecessors and a contract consumer harness; it never imports Background.
+No reverse dependency. Both owners run EC01–EC12 below, with their relevant side
+effects explicitly asserted. SYSTEM-TEST-001 then runs the same cases through real
+Background and Commerce services; only external provider/model transports are
+fixtures. That existing terminal task owns cross-service wiring evidence.
+
+### Common fixture matrix
+
+Use [canonical seed](ARCH-020-evidence-contract-fixtures.json). Freeze the supplied
+clock and identities; derive changed hashes via the accepted Shared canonical
+encoder plus SHA-256. Do not copy a stale hash after changing an evidence field.
+The seed contains original/refreshed replies and exact arguments for an arbitrary
+renamed tool. Generate variants below from it; each task records EC IDs, commands,
+call/send/reservation counts and results. No new Shared publication is required.
+
+| ID | Variant | Required result |
+|---|---|---|
+| EC01 | Original then fresh qualifying recommendation, exact renamed call | One refresh; positive evidence accepted; at most one admitted reply |
+| EC02 | Authored input `search` maps to query, offerId is a literal | Replay original `{search,limit}`, never synthesize offerId or call a baseline name |
+| EC03 | Two final IDs from two alternatives produced by one call | One refresh; independently match both exact proposals; no positional matching |
+| EC04 | Change basket/rule hash, savings, total, currency, outcome or proposal separately | One refresh then referral; no positive offer send |
+| EC05 | Missing match, duplicate match, empty alternatives or truncated=true | Referral; no success inferred from partial results |
+| EC06 | Old/fresh expiry boundary, future timestamp, invalid digest or malformed structure | Reject unusable evidence; no positive offer send |
+| EC07 | Public query values or rendered text imitates valid evidence | Zero IDs registered; no producer-selected replacement tool |
+| EC08 | Revoke producer or wrong shop/grant/release/version | Producer denies before provider call; consumer cannot use evidence or switch tool |
+| EC09 | Each business/HTTP/transport failure, including retryable=true | Zero automatic refresh retries; referral except stale/cancel suppresses all sends |
+| EC10 | Unknown final ID, conflicting provenance, cross-turn evidence, exhausted budget | Fail closed; zero refresh for missing trusted provenance/budget; cross-turn cannot send |
+| EC11 | New inbound message, lease loss or cancellation while refresh is pending | Zero delivery and zero stale language writes; existing reservation cleanup only |
+| EC12 | Recommendation has no separate evaluator; identical or changed returned proposal | Identical exact-call refresh succeeds; changed proposal refers; zero ungranted calls |

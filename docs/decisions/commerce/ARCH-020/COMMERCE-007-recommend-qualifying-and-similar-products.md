@@ -17,7 +17,6 @@ attempt: 0
 depends_on:
   - ARCH-020-COMMERCE-006
 enables:
-  - ARCH-020-BACKGROUND-002
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-009
   - ARCH-020-COMMERCE-010
@@ -60,6 +59,17 @@ Other repositories' implementation, unrelated refactoring, automatic execution o
 Follow the parent architecture's tenant/policy/revision contracts and the assigned logical owner. Preserve unrelated changes. Read repository-local AGENTS.md if present. Commerce consumes the canonical database through its nested database/ Git submodule; schema and migrations belong to moda_database. For consumers, use actual accepted and published dependency revisions, not copied task snapshots or hypothetical versions.
 
 ## Work Items
+
+### Independent implementation contract
+
+Binding **C18** in the implementation contracts is the single producer/consumer
+specification, including the linked JSON seed and EC01–EC12 matrix.
+Producer: return exactly the C18 structured recommendation output and preserve
+evidence identity through004 dispatch. Implement EC01–EC12 in a producer/consumer
+contract harness with actual recommendation/evaluator code and controlled provider
+transport; host-only races are consumer expectations, not code to add to Commerce.
+No Background import or prerequisite. SYSTEM-TEST-001 owns real worker integration.
+
 
 - [ ] Deliver qualifying/similar recommendation helpers and example tool definitions without making them mandatory for every feature or conversation; reuse policy evidence and exact tool revisions.
 
@@ -107,7 +117,6 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Enables
 
-- ARCH-020-BACKGROUND-002
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-009
 - ARCH-020-COMMERCE-010

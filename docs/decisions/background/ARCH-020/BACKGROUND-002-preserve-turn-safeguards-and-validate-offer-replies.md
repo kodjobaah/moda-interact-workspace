@@ -9,20 +9,19 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 160
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-020-BACKGROUND-001
-  - ARCH-020-COMMERCE-007
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-002
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Preserve turn safeguards and validate offer replies
@@ -59,6 +58,18 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+### Independent implementation contract
+
+Binding **C18** in the implementation contracts is the single producer/consumer
+specification, including the linked JSON seed and EC01–EC12 matrix.
+Consumer: implement the C18 strict extractor, immutable call provenance, exact
+refresh comparison and delivery decision. Use a contract-faithful MCP double;
+COMMERCE-007 implementation is not a prerequisite. Existing BACKGROUND-001 and
+its accepted Shared version remain prerequisites. Do not implement Commerce
+ranking/evaluation. Component acceptance uses EC01–EC12 with call/send/usage/state
+assertions; actual service pairing is SYSTEM-TEST-001-owned.
+
+
 - [ ] Treat generic public query data as ordinary facts, never signed/validated discount Evidence. Current offer-policy verification still uses exact originally granted policy helpers; absence of suitable evidence causes referral.
 
 - [ ] Keep final answer composition in CommerceAgent: a tool rendered template is not an instruction to send immediately. Validate structured facts/offer evidence and normal admission before WhatsApp delivery.
@@ -75,7 +86,7 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Interfaces / Contracts
 
-Existing ARCH-007/010/005 safeguards and COMMERCE-007 evidence revalidation. Do not redesign general billing policy.
+Existing ARCH-007/010/005 safeguards and the binding C18 producer/consumer contract. Do not redesign general billing policy.
 
 ### Implementation guidance
 
@@ -91,8 +102,8 @@ Implement the C4 Exact-call evidence refresh contract and its named fixtures.
 Business MCP names remain arbitrary. Background captures/replays actual calls;
 Commerce policy adapters return bounded structured evidence. No hard-coded
 evaluator discovery, extra grant, new Shared field or new database table. Apply
-C8 shared provider-request counter (including retries) and deterministic ranking
-where recommendations are involved.
+C18 host call/deadline budgets; C8 internal provider counters and ranking remain
+Commerce-owned and are represented by contract fixtures here.
 
 ### Required evidence
 
@@ -103,7 +114,6 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 ## Dependencies
 
 - ARCH-020-BACKGROUND-001
-- ARCH-020-COMMERCE-007
 
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
 
@@ -205,3 +215,11 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+
+
+### Architect readiness amendment — 2026-09-21
+
+Ready, unclaimed, attempt0. Accepted BACKGROUND-001 is the start prerequisite;
+C18 fixes the interface. COMMERCE-007 is removed as a code/start dependency.
+Component acceptance uses contract fixtures; terminal SYSTEM-TEST-001 owns real
+producer/consumer integration. No task is launched or implementation accepted here.

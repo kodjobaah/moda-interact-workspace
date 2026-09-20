@@ -68,7 +68,7 @@ COMMERCE-003/004/005/006/007/008/011 -> COMMERCE-013 (real integration)
 COMMERCE-008/007 + SHARED-001 -> COMMERCE-009 (U14 tests/conversations)
 COMMERCE-004/007/009 -> COMMERCE-010 (observability)
 SHARED-001 + DATABASE-001 + COMMERCE-001 + ARCH-016-BACKGROUND-003 -> BACKGROUND-001
-BACKGROUND-001 + COMMERCE-007 -> BACKGROUND-002
+BACKGROUND-001 + C18 agreed contract -> BACKGROUND-002 (independent consumer)
 SHARED-001 + ARCH-016-SHOPIFY-002 -> SHOPIFY-001
 COMMERCE-002/008/011 + BACKGROUND-001 -> GATEWAY-001
 GATEWAY-001 + COMMERCE-010 + BACKGROUND-002 -> GATEWAY-002
@@ -396,6 +396,10 @@ services after003/004/005/006/007/008/011 are accepted;009 and GATEWAY-001 now w
 for013.012 and terminal system testing also explicitly depend on013. No task is
 launched by this amendment. Fixtures never become production service fallbacks.
 
+
+2026-09-21 C18 frontier: BACKGROUND-002 promoted Ready, unclaimed, after accepted
+BACKGROUND-001. COMMERCE-007 retains its own evaluator prerequisite but no longer
+blocks the consumer. SYSTEM-TEST-001 owns EC01–EC12 real-service pairing.
 
 ## COMMERCE-003 Attempt 1 review — 2026-09-21
 
