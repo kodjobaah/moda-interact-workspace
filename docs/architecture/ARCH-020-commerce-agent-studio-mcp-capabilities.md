@@ -11,7 +11,7 @@ updated: 2026-09-20
 
 ## Status
 
-Architect task-review update (2026-09-20): COMMERCE-001 is Ready, unclaimed after Attempt 1 review (`3ae6c7f`), for the developer-authorized disposable Docker PostgreSQL/Redis setup script and readiness execution. Acceptance still requires the resulting evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+Architect task-review update (2026-09-20): COMMERCE-001 is Ready, unclaimed after Attempt 2 Changes Requested (`8c8b825`): correct bounded descendant-process teardown after timeout/cancellation and add regression tests. The real Docker PostgreSQL/Redis readiness evidence passed and is retained; acceptance awaits the cleanup correction. Attempt 2 is preserved, no new attempt is claimed, and no dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 Proposed implementation design for developer review. The developer has selected
 the separate Next.js repository/submodule `moda-interact-commerce`, a team-only

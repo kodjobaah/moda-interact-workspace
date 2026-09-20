@@ -4,7 +4,7 @@ Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabi
 
 ## Review packet and current frontier
 
-COMMERCE-001 is Ready, unclaimed after Attempt 1 review (`3ae6c7f`), for the developer-authorized disposable Docker PostgreSQL/Redis setup script and readiness execution. Acceptance still requires the resulting evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is Ready, unclaimed after Attempt 2 Changes Requested (`8c8b825`): correct bounded descendant-process teardown after timeout/cancellation and add regression tests. The real Docker PostgreSQL/Redis readiness evidence passed and is retained; acceptance awaits the cleanup correction. Attempt 2 is preserved, no new attempt is claimed, and no dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 The consolidated packet contains 19 tasks; SHARED-001 owns contracts, runner and publication. The original definition/provisioning records below are historical setup evidence. Ready status elsewhere in this packet does not launch execution.
 
@@ -200,7 +200,7 @@ thresholds. Per-task implementation helpers may follow repository conventions;
 external wire/state/ownership contracts may not vary between implementations.
 
 Remaining external inputs are the Studio hostname and provisioned credentials.
-Commerce repository/default-branch provisioning is complete; COMMERCE-001 is Ready for the developer-authorized local Docker readiness script and execution recorded in its task addendum.
+Commerce repository/default-branch provisioning is complete; COMMERCE-001 is Ready for the Attempt 2 process-cleanup correction recorded in its latest architect review; the authorized real Docker readiness evidence is retained.
 Pin/test actual SDK dependencies in that foundation task;
 Shopify schema/scope evidence belongs to COMMERCE-006, with closed unsupported
 outcomes when provider facts cannot be established. Do not invent deployed values,

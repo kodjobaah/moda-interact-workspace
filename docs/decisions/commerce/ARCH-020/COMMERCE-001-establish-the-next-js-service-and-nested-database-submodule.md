@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: codex
-claimed_at: 2026-09-20T19:19:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -324,6 +324,76 @@ No new cross-repository implementation requirement. Background must consume the 
 - Shared/default checkouts were not switched or mutated for implementation; no other task worktree reused. No parent service gitlink, architecture, index, main merge/push, deployment or enabled-task execution.
 
 ## Architect Review
+
+### Current review — Attempt 2, Changes Requested (2026-09-20)
+
+Reviewed published implementation `8c8b8250954aec9d6f011130bf05f620c35dff04`
+and report `f799eeb1b83bf259899438782d48a0bf7b240ad1`. **Changes Requested**:
+one reproducible process-cleanup defect remains. Task returns to `ready`,
+executor/claimed_at cleared, Attempt 2 retained. No Attempt 3 is claimed and no
+dependant is promoted. This is the authoritative correction contract; the
+Attempt 1 review below is historical.
+
+#### Blocking finding — P2: preserve process-group teardown after leader exit
+
+`scripts/readiness-docker.mjs:29–32` calls `finish()` when the direct child emits
+`close`; `finish()` clears the pending `force` timer. On timeout/abort, that timer
+is the only scheduled SIGKILL for the detached process group. A parent that exits
+on SIGTERM can therefore cancel escalation while its descendant is still alive.
+This is relevant to the actual fixture: `readiness-local-smoke.mjs` starts Next
+with ignored stdio, so closing the immediate script does not wait for Next or
+prove that the process group is gone. The runner can report cleanup and return
+while leaving a fixture application process running.
+
+A bounded synthetic reproduction imported the committed `commandRunner`, used a
+1000 ms timeout, and launched a Node parent that spawned an ignored-stdio child
+with a no-op SIGTERM handler. The runner rejected with `cancelled/timed out`;
+2500 ms later `process.kill(descendantPid, 0)` still succeeded. The reviewer then
+SIGKILLed only that synthetic descendant. No Docker service or shared process was
+used for the reproduction.
+
+Required source/test corrections on the same task branches:
+
+1. Retain and await bounded process-group teardown after timeout or AbortSignal
+   cancellation even when the group leader closes before the two-second grace
+   period. Do not treat leader exit as proof of descendant termination. Preserve
+   command failure and SIGINT/SIGTERM exit-code behavior and owned-resource cleanup.
+2. Add behavioral regressions for both timeout and AbortSignal with an
+   ignored-stdio descendant that ignores SIGTERM while its parent exits. Assert
+   the descendant/process group is no longer running within the bounded teardown
+   deadline; ensure the test itself cleans up if the assertion fails. Keep the
+   existing single-process timeout and Docker ownership/cleanup tests.
+3. Run the focused regression, `npm test`, `npm run typecheck`, `npm run lint` and
+   `git diff --check`; report outcomes and publish both mirrored branches. Existing
+   happy-path Docker readiness evidence below remains valid; no repeat of the
+   entire Docker/build fixture is required solely for this correction unless
+   relevant provisioning/readiness behavior changes or new failures justify it.
+
+#### Conformance and evidence retained
+
+The prior real PostgreSQL/Redis evidence gap is closed. The supplied authorized
+run built production and returned healthy 200 in 226.4 ms, unavailable Redis 503
+in 136.7 ms, unavailable PostgreSQL 503 in 98.2 ms, and invalid keys 503 in 58.3 ms;
+all satisfy C10's two-second deadline. Exit 0, image digests, database pin,
+invocation identity and successful Docker cleanup were recorded. This review did
+not redundantly rerun the full Docker fixture/build/clean clone.
+
+The fixture otherwise preserves the scoped boundary: official versioned images,
+unique labelled resources, loopback ephemeral ports, synthetic credentials,
+tmpfs storage, selected local Docker context, isolated child environments, dotenv
+refusal and ownership-verified container/network removal. Existing canonical
+schema is applied only to the fresh disposable database; no schema ownership or
+application-start migration change. Runtime endpoints and business behavior are
+unchanged. The documented Prisma/deepmerge-ts limitation retains its prior review
+disposition; no clean-audit claim is made.
+
+Architect reran `npm test`: **27 passed, five suites**. Those tests cover a single
+SIGTERM-resistant direct child, but not the confirmed descendant case. Supplied
+typecheck/lint/build evidence is passing. Published remote heads, prepared claim,
+dedicated mirrored worktrees and pinned submodule evidence agree with the report.
+No implementation edits or main integration were made during this review.
+
+### Historical Attempt 1 review
 
 ### Review Status
 
