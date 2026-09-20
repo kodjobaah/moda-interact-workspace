@@ -35,3 +35,9 @@
 ## Historical architecture material
 
 Files named `*-review-*`, `*-amendment.md`, overview documents, and old overlay/patch artifacts may intentionally preserve earlier decisions or task frontiers. Use the current-state rollup and task YAML for execution eligibility.
+
+## ARCH-019 — merchant recovery experience (2026-09-20)
+
+Agreed; implementation not started. Ready: ARCH-019-DATABASE-001. Pending: ARCH-019-SHOPIFY-001 through SHOPIFY-006 and ARCH-019-SYSTEM-TEST-001. Task YAML in each canonical parent task worktree remains authoritative; system validation is terminal/manual-gated.
+
+[Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)
