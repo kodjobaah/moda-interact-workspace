@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-09-20T18:21:08Z
@@ -423,14 +423,14 @@ User/Account/Session tables or replace the existing Shopify Session table.
 
 ## Work Items
 
-- [ ] Implement the independent CommerceTool/CommerceToolRevision tables, capability toolBindings and expanded audit targets exactly as specified; update migration/ERD/fixtures and preserve existing Admin Feature ownership.
+- [x] Implement the independent CommerceTool/CommerceToolRevision tables, capability toolBindings and expanded audit targets exactly as specified; update migration/ERD/fixtures and preserve existing Admin Feature ownership.
 
-- [ ] Store full C14 definitions in CommerceToolRevision and exact toolBindings in CommerceCapabilityRevision, using the nine specified tables. Grant entries include exact tool/revision identity and original capabilityKeys provenance; SQL enforces the complete union.
+- [x] Store full C14 definitions in CommerceToolRevision and exact toolBindings in CommerceCapabilityRevision, using the nine specified tables. Grant entries include exact tool/revision identity and original capabilityKeys provenance; SQL enforces the complete union.
 
-- [ ] Implement all nine exact model/column tables and four exact enums in Requirements, including CommerceReleaseCapability; add only required inverse relations on existing models.
-- [ ] Implement every specified unique/index/FK/CHECK and guard trigger, requiring checkout-recovery-linked conversation ownership with no direct-shop fallback, selected release keys and update-time ownership protection.
-- [ ] Implement the specified JSON/text limits, draft/pointer editVersion increments, published-revision/pin/audit immutability and exact deletion behaviour without adding retention jobs or copying auth tables.
-- [ ] Deliver the named migration/static/behaviour validation artifacts, update the ERD, and record direct-SQL plus Prisma fixture evidence for every required case.
+- [x] Implement all nine exact model/column tables and four exact enums in Requirements, including CommerceReleaseCapability; add only required inverse relations on existing models.
+- [x] Implement every specified unique/index/FK/CHECK and guard trigger, requiring checkout-recovery-linked conversation ownership with no direct-shop fallback, selected release keys and update-time ownership protection.
+- [x] Implement the specified JSON/text limits, draft/pointer editVersion increments, published-revision/pin/audit immutability and exact deletion behaviour without adding retention jobs or copying auth tables.
+- [x] Deliver the named migration/static/behaviour validation artifacts, update the ERD, and record direct-SQL plus Prisma fixture evidence for every required case.
 
 ## Interfaces / Contracts
 
@@ -462,28 +462,28 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Direct SQL rejects dangling/wrong-tool bindings, duplicate tool IDs/names, conflicting release tool revisions, mismatched revision name/version, published tool edits/deletes and malformed grant provenance. A shared tool bound by two selected features appears once with both original provenance keys; zero remote tools is valid for conversation_core.
+- [x] Direct SQL rejects dangling/wrong-tool bindings, duplicate tool IDs/names, conflicting release tool revisions, mismatched revision name/version, published tool edits/deletes and malformed grant provenance. A shared tool bound by two selected features appears once with both original provenance keys; zero remote tools is valid for conversation_core.
 
-- [ ] Draft definitions persist and round-trip input schemas, execution mappings and response templates. SQL rejects wrong JSON shape/keys/bounds and mutation of published definitions; grant inserts cannot reference another revision's name/version. Definition updates require new publication, not deployment or overwrite of granted definitions.
+- [x] Draft definitions persist and round-trip input schemas, execution mappings and response templates. SQL rejects wrong JSON shape/keys/bounds and mutation of published definitions; grant inserts cannot reference another revision's name/version. Definition updates require new publication, not deployment or overwrite of granted definitions.
 
-- [ ] Exactly nine specified commerce models/four enums and all columns/types/defaults/nullability/relations exist; no renaming, generic JSON-table substitution or duplicate auth/merchant tables.
-- [ ] Duplicate capability keys, revision numbers, release numbers, membership positions and conversation grants are rejected.
-- [ ] FEATURE without featureId, non-FEATURE with featureId, invalid base/recovery-policy keys, over-limit text/JSON, invalid publication fields and negative/non-incremented versions are rejected.
-- [ ] Wrong-capability or DRAFT release membership, empty release activation and selected keys outside the pinned release are rejected.
-- [ ] Published revision edits/deletion, release/member edits, pin edits and audit edits/deletion are rejected; valid new draft and pointer CAS updates succeed.
-- [ ] A valid WhatsApp conversation linked to a checkout recovery accepts one conversation grant. A conversation without checkoutRecoveryId, sentinel recovery, wrong shop, conflicting legacy shopId, future initialInboundVersion, recovery reassignment or later owner mutation invalidating a pin is rejected.
-- [ ] Conversation/shop deletion removes its pins without deleting release/audit history. Referenced feature/admin/revision/release deletions are restricted as specified.
-- [ ] A second grant insert for the same conversation is rejected even with a different initialInboundVersion. Later turns reuse the initial release/selection/tool set; direct grantedTools UPDATE and ungranted tool/version inserts are rejected. Service fixtures show concurrent initialisation conflict/read-winner behaviour.
-- [ ] Additive migration rehearsal preserves existing shops, conversations, staff identities, feature preferences, discount catalogue and recovery policies unchanged; no destructive seeds or schema copies.
-- [ ] The enforcement matrix is reflected accurately in implementation/reporting: database constraints are tested directly; service-owned publication/role semantics are not falsely claimed as database guarantees.
+- [x] Exactly nine specified commerce models/four enums and all columns/types/defaults/nullability/relations exist; no renaming, generic JSON-table substitution or duplicate auth/merchant tables.
+- [x] Duplicate capability keys, revision numbers, release numbers, membership positions and conversation grants are rejected.
+- [x] FEATURE without featureId, non-FEATURE with featureId, invalid base/recovery-policy keys, over-limit text/JSON, invalid publication fields and negative/non-incremented versions are rejected.
+- [x] Wrong-capability or DRAFT release membership, empty release activation and selected keys outside the pinned release are rejected.
+- [x] Published revision edits/deletion, release/member edits, pin edits and audit edits/deletion are rejected; valid new draft and pointer CAS updates succeed.
+- [x] A valid WhatsApp conversation linked to a checkout recovery accepts one conversation grant. A conversation without checkoutRecoveryId, sentinel recovery, wrong shop, conflicting legacy shopId, future initialInboundVersion, recovery reassignment or later owner mutation invalidating a pin is rejected.
+- [x] Conversation/shop deletion removes its pins without deleting release/audit history. Referenced feature/admin/revision/release deletions are restricted as specified.
+- [x] A second grant insert for the same conversation is rejected even with a different initialInboundVersion. Later turns reuse the initial release/selection/tool set; direct grantedTools UPDATE and ungranted tool/version inserts are rejected. Service fixtures show concurrent initialisation conflict/read-winner behaviour.
+- [x] Additive migration rehearsal preserves existing shops, conversations, staff identities, feature preferences, discount catalogue and recovery policies unchanged; no destructive seeds or schema copies.
+- [x] The enforcement matrix is reflected accurately in implementation/reporting: database constraints are tested directly; service-owned publication/role semantics are not falsely claimed as database guarantees.
 
 ## Validation
 
-- [ ] Agent: run `npm run prisma:validate` and the new `npm run test:arch020-commerce-capability-schema`; run `git diff --check` and verify the ERD includes all nine tables.
-- [ ] Agent: inspect migration SQL and fixture coverage for every acceptance case, including direct SQL writes that bypass Prisma/service validation.
-- [ ] Developer: on an explicitly isolated fresh PostgreSQL database, apply the repository migration chain and run `npm run test:arch020-commerce-capability-migration`; record commands, target isolation evidence without credentials, revisions, result and exit code.
-- [ ] Developer: on an isolated database migrated to the predecessor revision with seeded existing-domain records, apply the additive migration and run the same behaviour validator; compare before/after fixture counts and hashes to prove preservation.
-- [ ] Developer: include two-connection duplicate-conversation-grant/CAS tests, owner-change tests and all invalid-update/deletion cases. A failed or unrun required case prevents acceptance.
+- [x] Agent: run `npm run prisma:validate` and the new `npm run test:arch020-commerce-capability-schema`; run `git diff --check` and verify the ERD includes all nine tables.
+- [x] Agent: inspect migration SQL and fixture coverage for every acceptance case, including direct SQL writes that bypass Prisma/service validation.
+- [x] Developer: on an explicitly isolated fresh PostgreSQL database, apply the repository migration chain and run `npm run test:arch020-commerce-capability-migration`; record commands, target isolation evidence without credentials, revisions, result and exit code.
+- [x] Developer: on an isolated database migrated to the predecessor revision with seeded existing-domain records, apply the additive migration and run the same behaviour validator; compare before/after fixture counts and hashes to prove preservation.
+- [x] Developer: include two-connection duplicate-conversation-grant/CAS tests, owner-change tests and all invalid-update/deletion cases. A failed or unrun required case prevents acceptance.
 
 The two new commands are required deliverables, not claims that they already exist.
 Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md.
@@ -502,39 +502,93 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review — Attempt 1, codex. Implementation and both explicitly authorized isolated PostgreSQL rehearsals passed. No architect acceptance or downstream promotion is claimed. Latest Architect Review was Pending (definition only); no Changes Requested corrections existed for this attempt.
 
 ### Files Changed
 
-None; implementation has not started.
+Implementation repository:
+- `prisma/schema.prisma`: nine exact models/four enums and only the required inverse relations on Feature, PlatformAdmin, Shop and Conversation.
+- `prisma/migrations/20260920182429_arch020_commerce_capability_releases/migration.sql`: one additive migration, SQL CHECKs/functions/triggers and indexes/FKs.
+- `scripts/validate-arch020-commerce-capability-schema.mjs` and `scripts/validate-arch020-commerce-capability-migration.mjs`; matching package commands.
+- `scripts/fixtures/arch020-commerce-schema-contract.mjs`, `arch020-commerce-capability-cases.mjs` and `arch020-rehearsal-evidence.json`: independent physical contract, direct-SQL/Prisma fixtures and full execution evidence.
+- `docs/generated/prisma-erd.puml` and `docs/generated/erd.png`: regenerated through existing tooling; normalized generator trailing whitespace, rendered with PLANTUML_LIMIT_SIZE=16384 to avoid clipping.
+
+Parent repository: only this task file. Architect Review preserved verbatim.
 
 ### Work Completed
 
-None; task definition only.
+Published capability/tool revisions, release rows/membership, audit events and conversation grants have the required mutation restrictions. Feature selection identity freezes after the first revision; tool names freeze on creation. Bound JSON references require exact published tool identity, while release membership rejects conflicting revisions and grants require the complete deduplicated selected-tool union with original sorted provenance. Default BASE and empty remote-tool grants are supported without automatic seeds.
+
+Ownership resolves only through Conversation -> CheckoutRecovery -> Shop, with no standalone/direct-shop fallback. Parent row locks serialize grant creation and ownership edits; retained grants prevent recovery reassignment and shop inconsistency. Conversation/shop deletion cascades grants; release/audit history and other required references remain restricted. No existing ownership columns or rows were changed/backfilled.
+
+Indexes match the required access paths: unique conversationId supplies the one-grant lookup/idempotency boundary; immutable revisions/releases are read by primary/composite identity; draft/status, environment pointer, feature lookup, audit ordering and optional retention scans use the specified indexes. Grant insertion does bounded work over at most 32 selected capabilities/tools; later turns reuse the persisted grant. There are no provider calls or retention jobs. Lock contention is confined to initial grant/publication operations; no production throughput claim is made.
+
+### Requirement-to-fixture matrix
+
+The following cases run with direct SQL bypassing service validation, with selected generated-Prisma reads and two independent Prisma connections. Both `--mode fresh` and `--mode upgrade` passed **157 named cases**, exit **0**. Full per-case names/output are in the committed evidence JSON.
+
+| Requirement | Fixture/effect expected and observed |
+|---|---|
+| Nine tables, four enums, exact types/nullability/timestamps/FK actions | Independent contract compares all physical columns, enum values, 21 FKs and required Prisma indexes; no migration seed rows; passed |
+| Scalar/JSON bounds and feature/base policy | Invalid feature linkage, base/recovery keys, blank/oversize prompts/metadata, independent binding/grant byte bounds, invalid versions rejected; passed |
+| Definitions and bindings | Prisma preserves input schema/execution/template; wrong keys/types/name/version, dangling/wrong-tool/draft references rejected; passed |
+| Uniqueness and draft lifecycle | Duplicate keys/revision/release/member/grant identities rejected; exact increment and valid draft/publish changes succeed; published edits/deletes reject; passed |
+| Release assembly/pointer | Draft/wrong-capability membership, conflicting tool revisions, duplicate positions and empty activation reject; pointer CAS succeeds; concurrent conflicting tool membership has one winner; passed |
+| Audit | Required targets, matching revision ownership, metadata/reason limits and append-only guards; passed |
+| Grant authority | Shared tool stored once with both original provenance keys; missing/extra/unsorted provenance, omitted tools and wrong name/version rejected; prompt-only base accepts zero tools; passed |
+| Recovery ownership | Missing/standalone/sentinel recovery, wrong shop/legacy owner and future initial version reject; retained recovery detach/reassignment/owner changes reject; passed |
+| Lifetime/retries | Later inbound versions retain the original grant; duplicate initializations produce one unique-key winner, and loser rereads the same row; passed |
+| Concurrency/isolation | Independent-connection grant/CAS tests and blocked owner updates reject invalid mutations after winner commit; repeatable-read relational writes fail closed; serializable grant succeeds; passed |
+| Retention/deletion | Conversation/shop cascades remove only grants/owned records; release/audit history survives; referenced admin/feature/release/tool/capability deletion and key edits restricted; passed |
+| Additive preservation | Upgrade hashes/counts for all **57 existing tables**, including **39 seeded rows**, remain identical; all **217 existing indexes** unchanged; passed |
+| Validator isolation | Missing URL, remote host, shared DB name, query overrides and populated test target each exit 1 before any migration; passed |
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Executed in the task implementation worktree with lockfile-pinned dependencies:
+- `npm run migrate:dev -- --create-only --name arch020_commerce_capability_releases`: generated against this task's disposable local `arch020_test_author` database; exit 0. Manually removed unrelated baseline index-drop/renames and an unrelated FK rename proposed by Prisma, then added required SQL guards. No previously deployed migration was edited.
+- `npm run prisma:validate`: passed, exit 0.
+- `npm run prisma:generate`: passed, exit 0.
+- `npm run test:arch020-commerce-capability-schema`: passed, exit 0; no DB connection.
+- `npm run erd`, followed by `PLANTUML_LIMIT_SIZE=16384 npm run erd:png`: passed; all nine models verified in generated ERD.
+- `git diff --check` and staged whitespace check: passed.
 
-### Deviations
+The developer explicitly answered **Yes, run the isolated rehearsals** for this ARCH-020 task. Final tested implementation revision: **226a306b3b54598242326af3f55bfa06a99a5b1d**. PostgreSQL **15.19** in task-created `moda-arch020-database-001-rehearsal`, localhost-only port 32774. The two empty targets were `arch020_test_fresh` and `arch020_test_upgrade`; neither shared/local default nor hosted credentials were read. Actual commands, with credential-free target substitution:
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+```sh
+DATABASE_URL=<localhost isolated arch020_test_fresh URL> npm run test:arch020-commerce-capability-migration -- --mode fresh
+DATABASE_URL=<localhost isolated arch020_test_upgrade URL> npm run test:arch020-commerce-capability-migration -- --mode upgrade
+```
 
-### Assumptions
+Both exit 0 with 157 cases. Fresh applies the complete chain. Upgrade applies all predecessors, seeds synthetic shops/recoveries/conversations/admin/feature preference/discount catalogue/recovery policy, snapshots existing rows and indexes, applies ARCH-020, and compares before/after before running mutation fixtures. Earlier runs preceded fixture strengthening; only final evidence is claimed here. The task-created container and its disposable databases were removed after validation. Invocation and cleanup guidance is in the behaviour validator header. No required rehearsal remains pending.
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+### Deviations / Assumptions
 
-### Unresolved Issues
+Snapshot-sensitive relational guards explicitly reject PostgreSQL REPEATABLE READ: waiting for a row lock at that level does not refresh its stale snapshot. Consumers must use PostgreSQL default READ COMMITTED or SERIALIZABLE (retry serialization failures). The guard is an implementation restriction preserving the mandated invariant, not a new table/field or owner model; it is highlighted for architect/consumer review. No claim of production capacity or privileged service authorization is made.
 
-See parent architecture review assumptions; no implementation evidence asserted.
+Schema migration preserves all existing data and indexes; no live deployment, destructive seed, default release or duplicate authentication/catalogue model. A command containing a mistyped database name was rejected by automatic approval before execution; it was corrected to the authorized disposable targets. No unresolved approval block remains.
 
-### Architectural Concerns
+### Unresolved Issues / Architectural Concerns
 
-None newly reported.
+No known failing task validation. COMMERCE-003 still owns semantic GraphQL/SemVer ordering/hash checks, staff roles, replay, current permissions and atomic release assembly/audit. SQL intentionally permits membership INSERT into an existing release; the service must expose no append path and assemble complete membership in the creation transaction. Metadata privacy semantics also remain service-owned. Database fixtures do not certify those future services.
+
+Safe rollout: integrate this additive schema first through the database migration owner, regenerate/pin clients, then publish reviewed tool/capability/release content via Commerce before Background consumes grants. No drop-based rollback or grant-reset workflow is introduced. Review must assess the documented transaction-isolation requirement before downstream adoption.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-DATABASE-001. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Task branch in both histories: `task/ARCH-020-DATABASE-001`.
+Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-DATABASE-001` (new).
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-DATABASE-001` (new).
+Shared workspace/implementation checkouts switched or mutated for task implementation: no. Another task worktree reused: no.
+
+Launcher evidence: both remote task fast-forwards not-needed; both origin/main already-current. Parent baseline `20e720d3fa619568529e26376f2a515d7b92851d`; implementation baseline/accepted dependency `9c6a4d8402a01840e2ea8dc18e89171f00564d29`. Recursive submodule sync/update passed, status ready; this repository has no nested submodules. Dependency ARCH-016-DATABASE-001 complete gate passed.
+
+Attempt 1 claimed by codex at `2026-09-20T18:21:08Z`; parent claim `71969a492a61513f3ab282cfdb50758fddc662ef` committed/pushed by launcher. No duplicate claim or preparation.
+
+Implementation: tested source `226a306b3b54598242326af3f55bfa06a99a5b1d`; final evidence commit **0e992c4ba2f897d1803cd29cbc64942ec124f82e**, pushed to origin/task/ARCH-020-DATABASE-001. PR https://github.com/kodjobaah/moda-interact-database/pull/33.
+
+Parent: report published in the commit containing this report (SHA supplied in final submission), same remote task branch. Only current task staged; no parent gitlink, domain index, architecture or other task edits. Neither repository merged/pushed main. No dependent task started. Architect Review below remains unchanged.
 
 ## Architect Review
 
