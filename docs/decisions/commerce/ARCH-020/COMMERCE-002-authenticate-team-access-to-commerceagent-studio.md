@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -230,3 +230,20 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+
+## Architect readiness reconciliation — 2026-09-20
+
+Promoted to **Ready**, with Attempt 0, executor null and claimed_at null preserved.
+The sole dependency, ARCH-020-COMMERCE-001, is architect-accepted Complete at
+Attempt 3. Its accepted implementation `d7c1c65bf382de1538d77ac4dbe65c1d7fcd1276`
+is an ancestor of current Commerce origin/main
+`86929b2d0fa636f4fe3dd595f1cd85707b0cea9b`, integrated through merge `8303133`.
+Both acceptance and prerequisite source availability are now satisfied; the
+previous Pending integration gate is cleared.
+
+The canonical parent task branch was synchronized with workspace origin/main
+`3be22019` before this update. This is readiness reconciliation only: no claim,
+implementation change, new attempt, downstream launch or main merge/push.
+The normal `/moda-task ARCH-020-COMMERCE-002` launcher may now prepare the task,
+synchronize its implementation worktree and claim Attempt 1. Existing task scope,
+NextAuth/PlatformAdmin requirements and later-task dependencies remain unchanged.
