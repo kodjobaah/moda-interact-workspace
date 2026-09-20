@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: codex
-claimed_at: 2026-09-20T20:13:31Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-016-SHARED-001
@@ -222,6 +222,62 @@ After scoped work and agent-owned checks, update this task's execution/report fi
 Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; its real repository must be provisioned before execution preparation.
 
 ## Completion Report
+
+### Attempt 2 — Ready for Review
+
+Both mandatory corrections from the 2026-09-20 Changes Requested review are implemented. The corrected patch release is published and verified below. Attempt 1 evidence remains preserved in the historical report; 0.13.0 is not the corrected artifact. No downstream task was promoted or launched.
+
+### Attempt 2 correction checklist and requirement-to-fixture matrix
+
+| Review item | Disposition / changed files | Validation and expected effects |
+| --- | --- | --- |
+| R1 — whole-definition persisted byte bound | Implemented in src/commerce/definition-size.ts and definitions.ts. Draft and strict definitions share the 65,536-byte jsonb-text ceiling, accounting for UTF-8, separator whitespace, escaped strings and numeric exponent expansion. Canonical hash encoding is unchanged. README documents the separate storage measurement. | contracts.test.ts exercises both schemas with ASCII and multibyte aggregate definitions at 65,535/65,536 bytes (accepted) and 65,537 (rejected). Over-limit fixtures remain under 65,536 compact JSON bytes and fail solely with the size issue. Both original 80KB review reproductions reject solely for aggregate size; individual members remain valid. Separate numeric/escape/hash fixture passes. No persistence writes occur. |
+| R1 — prove boundary matches persistence | Independent read-only PostgreSQL 15 verification against local_postgres. | Six boundary SELECTs reported calculated/persisted lengths 65535/65535, 65536/65536 and 65537/65537 for ASCII and multibyte fixtures. Numeric extreme/exponent/escaped-string fixture matched 742/742. PostgreSQL, rather than a second compact JSON count, supplied actual octet_length(value::jsonb::text). No schema, table or data mutations. |
+| R2 — malformed model call classification | Implemented in src/commerce/runner/index.ts. Validate the entire step/call shape before name inspection or dispatch; serialization and shape errors in model output become INVALID_FINAL. | runner.test.ts tests null/scalar/array calls, missing/null/numeric/empty names, missing/non-object/partial/cyclic final arguments. Every malformed output returns exactly {ok:false,error:{code:INVALID_FINAL,retryable:false}}, one model invocation and zero tool executions, without error text. Invalid host inboundVersion remains INVALID_INPUT with zero model/tool calls. Existing valid zero-tool and four-step/three-tool fixtures pass. |
+| Corrected published consumer | scripts/validate-commerce-entrypoints.mjs now includes both review regressions in addition to imports/schema/finalResponse smoke. package.json/package-lock.json carry the patch release. | Fresh exact-version registry install imports both exports, validates the manifest, completes scripted finalResponse, rejects the aggregate oversized draft and classifies calls:[null] as INVALID_FINAL. Child process receives PATH only. |
+
+### Attempt 2 validation
+
+Node 24.19.0 selected through the canonical workspace bootstrap. Commands ran in the dedicated implementation worktree unless explicitly identified:
+
+- `npm run typecheck`: passed.
+- `node --import tsx --test src/commerce/contracts.test.ts src/commerce/runner/runner.test.ts`: **30 passed, zero failures**.
+- `npm test`: **160 passed, zero failures, one skipped** (existing live BullMQ trace case requires TEST_REDIS_URL). No live LLM is required or claimed.
+- Storage oracle: `node --import tsx --input-type=module` generated `/tmp/shared020-a2-jsonb.sql` using exampleDefinition and the same boundary payloads as the tests. `docker exec -i local_postgres sh -c 'exec psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "${POSTGRES_DB:-$POSTGRES_USER}" -tA' < /tmp/shared020-a2-jsonb.sql` executed seven read-only SELECTs; results in `/tmp/shared020-a2-jsonb.log` matched exactly as above.
+- `npm run build`: passed JavaScript and declarations.
+- `npm run validate:commerce-entrypoints`: passed imports, schema, finalResponse and R1/R2 smoke.
+- `npm pack --dry-run --json`: inspected final JSON after prepack build output and verified both commerce/commerce-runner JS/type declaration exports. Prepack rebuilds are release mechanics.
+- `git diff --check`: passed.
+
+### Attempt 2 publication and clean registry consumer
+
+- Corrected package: `@modainteract/moda-interact-shared@0.13.1`, a patch selected under the existing README SemVer policy. Registry latest was 0.13.0 before release; 0.13.0 was not overwritten or reused.
+- Validated source SHA: `a83bfc12721423f06af8f8732b07f7dd7153e067`, committed/pushed before publication. Both `./commerce` and `./commerce/runner` have ESM and declaration exports. runnerVersion remains 1.0.0; its interface is unchanged.
+- `npm publish --access public --registry=https://registry.npmjs.org/`: succeeded.
+- `npm view @modainteract/moda-interact-shared@0.13.1 version dist --json --prefer-online --registry=https://registry.npmjs.org/`: verified version 0.13.1 and metadata.
+- Tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.13.1.tgz
+- Integrity: `sha512-qano76oJ3McL/EYMq7D0GM0W+kAY0wMsSHzWP1NdXSGCa19YiakjkDjZ9WtUylFCDud+kO+uboR4PTSIBoXEBQ==`; SHA-1: `fde3c4dc74963509e6483a42388e54024ffc94c1`; 75 files.
+- Clean consumer: `/tmp/shared020-a2-consumer.KM8kB1`, freshly initialized private package.json with no workspace links.
+- `npm install --ignore-scripts --no-audit --no-fund --save-exact @modainteract/moda-interact-shared@0.13.1 --registry=https://registry.npmjs.org/`: succeeded. Installed lockfile version/integrity match the registry, without a link flag. All 75 installed files match final local publication files byte-for-byte.
+- `COMMERCE_CONSUMER_DIRECTORY=/tmp/shared020-a2-consumer.KM8kB1 node /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-SHARED-001/scripts/validate-commerce-entrypoints.mjs`: PASS both imports, schema, scripted finalResponse and R1/R2 regressions, with provider/database environment absent.
+
+
+### Attempt 2 deviations, assumptions and unresolved issues
+
+No requested correction is blocked. JSONB size measurement assumes normal JSON.stringify transport of JavaScript values, matching producer serialization; no canonical hash change or database migration is introduced. Domain ownership/compiler/live-model limitations from Attempt 1 remain unchanged. Architect acceptance is pending, and downstream consumers must wait for acceptance. The existing unrelated Redis-dependent test remains skipped.
+
+### Attempt 2 Git / VCS and prepared launcher evidence
+
+- Canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+- Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-SHARED-001.
+- Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-SHARED-001.
+- Both branches: task/ARCH-020-SHARED-001; launcher reused both correct physical worktrees. Both remote task branches required no fast-forward; origin/main already current. Initial parent HEAD 2e0cb0463116a9d84745d9bb0c784f181664edef; initial implementation HEAD 34be9702f39ee638631b99222562365c2fb0a4af.
+- Dependency gate passed for ARCH-016-SHARED-001. Recursive submodule sync/update passed, ready, entries empty (no database submodule SHA).
+- Attempt 2 claim: 176fc7665cbc06c20b22c0b46c242e4014bb4efa, committed/pushed by launcher, codex at 2026-09-20T20:13:31Z. No repeated claim or startup synchronization.
+- Implementation source SHA: a83bfc12721423f06af8f8732b07f7dd7153e067, pushed on the same task branch before publication. Parent submission is a subsequent task-only commit; its identifier is reported in the final execution response.
+- No shared/default checkout switch, other worktree reuse, Architect Review edit, architecture/index/frontier edit, parent service gitlink update, main integration/push or force push.
+
+### Historical Attempt 1 report (preserved)
 
 ### Status
 
