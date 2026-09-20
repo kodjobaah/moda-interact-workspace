@@ -78,6 +78,8 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+- [ ] Reuse C7.1 auth helpers for all preview routes/actions in both Google and development modes. Development SUPER_ADMIN remains subject to preview quotas, isolation and mutation guards; it grants no live MCP access.
+
 - [ ] Implement C16 U14 draft response preview handoff, frozen synthetic definition, Reply/Structured details views and return-to-composer flow. Validate R01–R05/R08/R10/R11 without production access.
 
 - [ ] Apply C6.1 in U14 Conversation mode using synthetic recovery status, nullable completedAt, languageTag/languageSource and customer-message fixtures. Supply equivalent fixed host recovery instructions to the same Shared runner; do not expose them as editable capability prompts. Select fixtures before Start conversation; use a scripted later-turn state change for P05 without replacing the frozen grant.

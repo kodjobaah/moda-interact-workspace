@@ -61,6 +61,8 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+- [ ] Reuse C7.1 server-only Studio guards for all documentation/schema discovery routes. Development identity follows the same bounded service policy, with no route-local bypass.
+
 - [ ] Implement C15 typed discovery operations, using a pinned @shopify/dev-mcp supervised stdio child and only its verified documentation/schema/validation capabilities. Capture actual upstream initialize/list/call fixtures and map them to the stable Studio API; no arbitrary proxy.
 - [ ] Deliver the official Storefront2026-07 schema artifact, SHA-256, provenance, version support and distribution evidence. Provide paginated typed fields/arguments/constraints and inline explanations, including unavailable/token-required fields. Fixture strings must not stand in for the actual schema.
 - [ ] Implement deterministic schema selection -> named GraphQL query compilation, variable mapping validation, response-path derivation and C14 AST/root/bounds checks. No business feature names in compiler dispatch.

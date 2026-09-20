@@ -148,6 +148,8 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] Cover C7.1 A01–A11 with injected Google/development identities and direct endpoint/action requests; verify hosted bypass rejection, local SUPER_ADMIN audit writes and no bypass-to-live-MCP access.
+
 - [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] Record C6.1 P01–P12 outcomes, including unsupported-question store referral, status transition without grant expansion and identical structural rules in live-host fixtures and preview. Distinguish scripted fixture evidence from any developer-invoked live-model evaluation.

@@ -378,3 +378,10 @@ loading/empty/error states. Tool/template/feature editing does not require an ID
 manual external documentation search, JSON or typed GraphQL; advanced views are
 optional. No broad assertion that this checklist alone proves factual AI safety:
 C8 evidence and end-to-end adversarial cases remain required separately.
+
+### Google-only and local development UI amendment
+
+C7.1 governs U01/U02 and the authenticated shell: Continue with Google is the only
+hosted sign-in choice. A server-resolved development SUPER_ADMIN bypass redirects
+U01 to U03 and shows Development — SUPER_ADMIN across U03–U14. No UI bypass
+selector or extra provider. Protected page/API/action guards remain server-owned.
