@@ -395,3 +395,15 @@ acceptance against C17 ports.011 continues separately. New013 connects real
 services after003/004/005/006/007/008/011 are accepted;009 and GATEWAY-001 now wait
 for013.012 and terminal system testing also explicitly depend on013. No task is
 launched by this amendment. Fixtures never become production service fallbacks.
+
+
+## COMMERCE-003 Attempt 1 review — 2026-09-21
+
+Current decision: Ready for Changes Requested, Attempt 1, claim cleared; not
+accepted. Reviewed 211b4a3 / 19441950. R1 Shared schemas/canonical hashes;
+R2 immutable ownership/unique release members; R3 complete C17 ports and lifecycle
+component with transactional fixtures; R4 pagination skipping rows. Eight original
+fixture tests passed and four architect regressions failed. Exact correction
+instructions/tests are in the task. C17 fixture acceptance remains permitted;
+013 production composition and developer PostgreSQL rehearsal remain separate.
+No new claim, downstream promotion, main integration or gitlink update.

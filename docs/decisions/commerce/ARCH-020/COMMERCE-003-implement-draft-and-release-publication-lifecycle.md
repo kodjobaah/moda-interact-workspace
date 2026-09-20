@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 70
-executor: copilot
-claimed_at: 2026-09-20T23:10:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -24,7 +24,7 @@ enables:
   - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Implement draft and release publication lifecycle
@@ -238,6 +238,53 @@ None newly reported.
 Expected execution branch: `task/ARCH-020-COMMERCE-003`. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-003`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-003`. No main merge or parent service gitlink update was performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Not accepted; Ready for corrections**, Attempt 1 preserved, executor/claimed_at cleared. Submission report says Ready for Review but YAML was in_progress; this review reconciles the authoritative state. Reviewed implementation 211b4a30a7fb73acf0195ca79e07e3c679a9e999 and report 194419508136a18edf21be8fa0decd3ebc162443 in clean dedicated worktrees. No new attempt or downstream promotion.
+
+C17 explicitly permits deterministic component acceptance. Pending COMMERCE-013 production adapters and explicitly unrun developer PostgreSQL rehearsal are not being treated as implementation defects here. The submitted component itself fails the following requirements.
+
+#### R1 — P1: consume the accepted Shared validation and canonical hash contracts
+
+Location: `lib/commerce/lifecycle.ts`, local `canonical`, `validateDetailsSchema`, `validateResponseContract`, `validateTool`, and publishToolRevision. Replace parallel schema/type/encoder implementations with accepted Shared exports. Current response validation accepts `{version:'response.v1',instructions:'fixture',detailsSchema:{type:'string',maxLength:20}}` although C16 requires an object root; it also requires `required` where Shared allows omission. A permissive registry fixture cannot substitute for independent structural validation.
+
+Tool hash currently includes the full mutable revision row (IDs, status, revisionNumber/editVersion) and is computed before editVersion is incremented. C14 hashes exactly `{contractVersion,definition}`, where definition has its six canonical keys. Use Shared's toolHashInput/canonicalJson, capabilityHashInput/canonicalJson and responseContractCanonicalJson as applicable. Do not substitute one generic sort/encoder for the distinct accepted contracts.
+
+Deterministic corrections/tests: create `src/commerce/publication/validation.ts`; export wrappers over accepted schemas and hash helpers. Non-object root, extra response envelope keys, invalid bounds/enums/templates and malformed definitions must reject; valid Shared baseline and optional-required-keyword cases must pass identically. Two storage rows holding the same six-key definition but different IDs/revision metadata must produce the same expected Shared hash. Changed definition content changes it; changing editVersion alone does not. Compare against Shared's helper output, not the implementation's own hash function.
+
+#### R2 — P1: enforce immutable release ownership and unique membership
+
+Location: createRelease/createToolDraft/createCapabilityDraft and replay result storage in `lib/commerce/lifecycle.ts`. The release keeps caller-owned nested detailsSchema references. Reproduction: create a release from `contract`, then assign `contract.detailsSchema.properties={injected:{type:'string',maxLength:20}}`; snapshot now contains injected data under an unchanged persisted hash. This violates immutability even in fixture-only execution. Similar shallow input/reference ownership must be eliminated throughout state and replay results.
+
+createRelease also accepts `[publishedRevisionId,publishedRevisionId]`, producing two members of the same capability. Distinct capability identities are required, not merely 1–32 array entries.
+
+Deterministic corrections/tests: clone validated data on admission and detach returned/replayed results; no caller-held reference may mutate durable fixture state. Validate all members before writes: unique capability IDs/revision membership, published status, base capability, contiguous positions, and no conflicting tool revision bindings. Mutate original inputs and returned/replayed results after commit: release content/hash/member rows/audit remain unchanged. Duplicate member test must reject with zero new release/member/audit writes; two distinct capabilities sharing one tool revision pass, conflicting revisions fail atomically. Preserve original payload/result replay binding.
+
+#### R3 — P1: deliver C17 ports and the complete owned lifecycle component
+
+The entire service is one class under lib/commerce with private arrays/Map and a per-instance Promise queue. There is no QueryValidationPort, separate executable-registry check, documented command/read mapping, storage transaction port, updateTool/updateToolDraft/updateCapabilityDraft commands or explicit idempotent seed CLI. Sequential replay within one instance does not prove two-transaction fixture semantics. The runtime unavailable factory is permitted by C17 and should remain unavailable until013 composes real adapters; it does not waive these owned component interfaces.
+
+Assigned files: place the owned component under `src/commerce/publication/` as C17 specifies; use `ports.ts` for QueryValidationPort/registry/storage/auth interfaces, `lifecycle.ts` for commands and `read-models.ts` for queries. The old lib path may re-export for compatibility. Add `docs/publication-service-contract.md` with every C7 command's exact fields/results/CAS/roles/errors and database field mapping. QueryValidationPort.validate takes `{definition}` using Shared's accepted type and returns exactly `{ok:true}` or `{ok:false,code,issues}` with C17 codes/32-issue/512-character bounds. It is separate from installed executor availability; ok validation cannot make a missing executor publishable.
+
+Implement omitted C7 create/update/draft/publish/release/activation/rollback/explicit-enabled/read operations and the explicit repeat-safe seed command. Use canonical IDs/fields and actor/reason/hash audit payloads; no invented storage enum/shape. Verify tool-name identity, strictly increasing published SemVer, absent-pointer CAS expected version, runner compatibility and release bounds. Recheck current server-resolved authorization before replay; reject invalid/revoked principals and unauthorized roles before any read of a replay result or write. Preserve development principal identity creation within the same FK-backed transaction when wired to the accepted auth dependency. Do not trust a TypeScript role annotation as runtime authorization.
+
+Fixture tests must use two independent service instances sharing a transaction fixture store: race matching operation IDs, different payload/actor reuse, concurrent revision allocation and conflicting CAS; inject failure after business write/before audit to prove rollback; retry after simulated lost response to prove exactly one committed operation. Cover each QueryValidationPort result plus thrown timeout/error; denied/unavailable cases cause zero state/audit changes. Fixture stores/adapters must only be injected from tests; no production fallback. Provide the isolated PostgreSQL rehearsal script/command and expected assertions, explicitly pending developer execution. Do not implement real013 provider composition here.
+
+#### R4 — P2: repair cursor continuation without skipping rows
+
+Location: paginate in `lib/commerce/lifecycle.ts` (move into read-models.ts with the component). It returns the first NOT returned row as nextCursor, while the next call starts AFTER that cursor. Independent test with [a,b,c], limit1 returns a then c, skipping b.
+
+Use an exclusive last-returned-row cursor consistently. After validating a known cursor and sorting by the binding read-model key plus stable ID tie-breaker, compute `page = items.slice(start, start + limit)` and return `nextCursor = start + page.length < items.length ? page[page.length - 1].id : null`. Reject an unknown cursor rather than silently restarting. Tests: limits1/2 over [a,b,c,d,e] concatenate to exactly all five IDs once; final cursor null, empty collection empty/null, unknown cursor typed invalid, invalid limits reject. Return detached read-model data so editing a response cannot mutate service state.
+
+#### Validation record and deterministic resubmission gate
+
+Independent harness at `/tmp/commerce003-review/lifecycle-review.test.ts` imports committed source and extends the submitted fixtures: **8 original tests passed, 4 review tests failed** (non-object details root, skipped pagination row, caller-mutated release, duplicate membership). No repository implementation edits or live service calls were made. Those four reproductions are specified above and must become permanent regressions. Submitted lint/type/build results and 75-pass/two-auth-fixture-failure full run remain reported evidence; do not claim a green full suite. Verify the auth fixture failures against unchanged baseline or fix task-caused regressions, without weakening accepted auth checks.
+
+For each R1–R4, report changed files, named tests, expected/actual state and audit counts, and exact command/results. Required local success: permanent regression cases plus C17 port/two-transaction/omitted-command fixtures, lint, typecheck/build and diff check. Keep developer database rehearsal and013 integration separately pending with runnable instructions, not marked passed. Preserve accepted dependencies and original report history. Commit/push the same implementation/report branches and resubmit; normal preparation owns the next claim after this review overlay is published.
+
+### Historical definition review
+
 
 ### Review Status
 

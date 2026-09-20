@@ -717,7 +717,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | moda_shared | complete | ARCH-016-SHARED-001 |
 | [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | complete | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | complete | ARCH-020-COMMERCE-001 |
-| [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
+| [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Implement basket and product discovery tools | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
@@ -975,3 +975,15 @@ Binding C17 allows003 publication and008 Studio to be implemented and accepted
 against agreed service ports while011 continues. Separate013 owns production
 adapters and integrated U01–U13 acceptance;009, GATEWAY-001,012 and terminal
 system tests depend on013. Component fixtures never become production fallbacks.
+
+
+## COMMERCE-003 Attempt 1 review — 2026-09-21
+
+Current decision: Ready for Changes Requested, Attempt 1, claim cleared; not
+accepted. Reviewed 211b4a3 / 19441950. R1 Shared schemas/canonical hashes;
+R2 immutable ownership/unique release members; R3 complete C17 ports and lifecycle
+component with transactional fixtures; R4 pagination skipping rows. Eight original
+fixture tests passed and four architect regressions failed. Exact correction
+instructions/tests are in the task. C17 fixture acceptance remains permitted;
+013 production composition and developer PostgreSQL rehearsal remain separate.
+No new claim, downstream promotion, main integration or gitlink update.

@@ -397,7 +397,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-SHARED-001 | shared | complete | 2 | ARCH-016-SHARED-001 |
 | ARCH-020-COMMERCE-001 | commerce | complete | 3 | — |
 | ARCH-020-COMMERCE-002 | commerce | complete | 2 | ARCH-020-COMMERCE-001 |
-| ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
+| ARCH-020-COMMERCE-003 | commerce | ready | 1 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-004 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-006 | commerce | pending | 0 | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
@@ -562,3 +562,15 @@ and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
 GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+
+## COMMERCE-003 Attempt 1 review — 2026-09-21
+
+Current decision: Ready for Changes Requested, Attempt 1, claim cleared; not
+accepted. Reviewed 211b4a3 / 19441950. R1 Shared schemas/canonical hashes;
+R2 immutable ownership/unique release members; R3 complete C17 ports and lifecycle
+component with transactional fixtures; R4 pagination skipping rows. Eight original
+fixture tests passed and four architect regressions failed. Exact correction
+instructions/tests are in the task. C17 fixture acceptance remains permitted;
+013 production composition and developer PostgreSQL rehearsal remain separate.
+No new claim, downstream promotion, main integration or gitlink update.
