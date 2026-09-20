@@ -708,12 +708,12 @@ are server-only placeholders in infrastructure, never committed values.
 
 ## Decisions / Tasks
 
-See the generated task table below and domain `_index.md` files. Tasks are
-definitions for review; no implementation is launched by this packet.
+See the generated task table below and domain `_index.md` files. The table is the branch-local definition frontier; DATABASE-001 has completed
+Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 
 | Task | Outcome | Owner | Status | Depends on |
 |---|---|---|---|---|
-| [ARCH-020-DATABASE-001](../decisions/database/ARCH-020/DATABASE-001-persist-capability-releases-and-turn-revision-pins.md) | Persist capability releases and conversation tool grants | moda_database | ready | ARCH-016-DATABASE-001 |
+| [ARCH-020-DATABASE-001](../decisions/database/ARCH-020/DATABASE-001-persist-capability-releases-and-turn-revision-pins.md) | Persist capability releases and conversation tool grants | moda_database | complete | ARCH-016-DATABASE-001 |
 | [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | moda_shared | ready | ARCH-016-SHARED-001 |
 | [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | complete | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | pending | ARCH-020-COMMERCE-001 |
@@ -802,3 +802,49 @@ The exact C16 page extension and N13 traversal appear in the UI design and
 COMMERCE-008. CommerceRelease adds responseContract and responseContractHash,
 keeping the nine-table design. Database, Shared contracts/runner, Commerce
 publication/MCP/UI/preview, Background and system-test tasks own the full change.
+
+
+## Database review response-definition requirements
+
+C16 requires immutable CommerceRelease.responseContract and responseContractHash,
+with no defaults. ConversationGrant.releaseId pins both; no second grant selector
+is introduced. See the binding C16 companion and DATABASE-001 correction contract.
+
+## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
+
+Attempt 1 is **Changes Requested**, task `ready`, attempt 1, claim cleared.
+The implementation/report PRs are #33/#165 (0e992c4 / 312e350b). Preserve the
+implementation and rehearsal history. Required corrections are the newer C16
+CommerceRelease responseContract/responseContractHash persistence and negative
+fixtures that currently permit unrelated constraint failures. The full correction
+contract is in the task's Architect Review. C16 was incorporated by parent synchronization commit 7fef4689 from canonical
+workspace commit a710df26; its semantic consumer requirements remain binding.
+
+Guarded writes require READ COMMITTED or SERIALIZABLE with bounded transaction
+retries; REPEATABLE READ is rejected. BACKGROUND-001 and COMMERCE-003 must honor
+that database restriction when implementing grants/publication. No dependency is
+promoted by this review; SYSTEM-TEST-001 remains terminal and manually invoked.
+Other task states in this branch's older definition snapshot are not a fresh
+review of their separate execution branches. Integrate latest parent main before
+reclaiming this task, preserving its report, review and attempt metadata.
+
+## DATABASE-001 architect acceptance — 2026-09-20
+
+ARCH-020-DATABASE-001 is **Accepted / Complete, Attempt 2**. Implementation
+30de940 (tested source a835207) and report 17c9f9ab satisfy R1 C16 response
+persistence and R2 rejection-fixture isolation. Reviewed 298 distinct passing
+checks per fresh/upgrade rehearsal, including controls; preservation covers
+57 existing tables, 41 seeded rows and 217 indexes. Static/Prisma checks passed.
+The previous Changes Requested section is historical and superseded.
+
+No downstream promotion: canonical SHARED-001 is in_progress, COMMERCE-001 is
+review, and COMMERCE-002/011 remain pending. BACKGROUND-001 and COMMERCE-003 still
+have incomplete prerequisites. Terminal SYSTEM-TEST-001 remains pending/manual.
+Other task table rows are branch-local snapshots, not fresh acceptance decisions.
+
+Guarded consumers use READ COMMITTED or SERIALIZABLE with bounded whole-transaction
+retries; REPEATABLE READ is rejected. Shared/Commerce own semantic response-schema
+validation and canonical hash equality; Commerce owns atomic release assembly,
+authorization and audit. Merge database PR #33 first, pin its final integrated
+database-main commit in the parent, then merge parent PR #165. No main integration
+or gitlink update is performed by this acceptance. ARCH-020 is not Implemented.
