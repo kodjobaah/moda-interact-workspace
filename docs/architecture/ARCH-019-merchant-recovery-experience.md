@@ -151,3 +151,7 @@ Case-insensitive substring search and long-range aggregates need measured plans 
 - 2026-09-20: agreed product experience translated into eight bounded tasks; added query indexes and bounded billing-history integration after source inspection; current onboarding permissions explicitly retained.
 
 - 2026-09-20: accepted DATABASE-001 after populated PostgreSQL 15.19 evidence; promoted SHOPIFY-001/002 and assigned transcript query-shape validation to SHOPIFY-002.
+
+## SHOPIFY-002 review checkpoint — 2026-09-20
+
+Attempt 1 returned Changes Requested. Task is Ready for rework with no active claim. Fix the PostgreSQL test adapter timestamp semantics and provide actual-reader plans before acceptance. No dependent promotion; architecture remains Agreed. See the task Architect Review for the correction contract.

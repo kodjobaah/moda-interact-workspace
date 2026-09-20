@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: codex
-claimed_at: 2026-09-20T12:08:03Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-019-DATABASE-001
@@ -184,24 +184,32 @@ Implementation commit: a2c23d19a930bfb9e2402dbfb6b4fad454776b1f; pushed origin/t
 
 ### Review Status
 
-Pending.
+Changes Requested — 2026-09-20, Attempt 1. Not accepted. Same task returned to Ready; claim cleared, attempt preserved.
 
 ### Review Notes
 
-No implementation submitted.
+Reviewed implementation a2c23d19a930bfb9e2402dbfb6b4fad454776b1f and report 8a5aa031c640207cc939221db4818b5337bcd73c. Tenant-constrained ownership, explicit projections, parameterized tuple pagination and fixed query counts conform in source inspection. Required PostgreSQL evidence is absent, and its proposed harness has a reproducible timezone defect. No production data/code change is demanded by this finding; test source correction is required.
+
+### Required Corrections
+
+1. **P2 — Match production timestamp semantics in the PostgreSQL harness.** tests/integration/recovery-detail-query-plans.test.ts uses pg default TIMESTAMP WITHOUT TIME ZONE decoding and Date parameter serialization. These use the host time zone, unlike the intended UTC Prisma behavior. Under TZ=Europe/London, timestamp `2026-09-01 00:02:05` decodes to `2026-08-31T23:02:05.000Z`, and Date `2026-09-01T00:02:05.000Z` serializes to `2026-09-01T01:02:05.000+01:00`. The builder casts to timestamp, yielding 01:02:05, beyond the fixture's final message at 00:04:10; the next-plan test can therefore return zero rows. Fix both input and output semantics, preferably exercising the production Prisma client, or use a demonstrably UTC-equivalent adapter. Add a cheap regression under a non-UTC host time zone that proves exact persisted timestamps and correct boundary parameters. Do not fix by weakening/removing the plan assertions or only testing under the default UTC environment.
+2. **Required evidence — Execute the corrected opt-in PostgreSQL validation under the existing developer-owned policy.** Supply command, tested commit, exit code, version and complete EXPLAIN output for first/next/previous/latest. Confirm non-empty bounded index traversal without full-transcript sorts/joins and actual tenant/page behavior. Skipped tests are not evidence. If still awaiting developer execution at submission, leave validation pending and return to Review, not Complete.
+3. **Report validation limits accurately.** Preserve the pre-existing full-typecheck syntax blocker and focused typecheck evidence. Do not equate the observed seven syntax errors with TYPECHECK-001's older 48 type errors. No unrelated repair is required by this review.
 
 ### Reviewed Files
 
-None.
+All seven changed implementation files, ARCH-019 detail/query contracts, task acceptance criteria and completion report. Implementation worktree clean at reviewed SHA; prepared physical isolation/synchronization evidence recorded.
 
 ### Validation Reviewed
 
-None.
+Submitted 31 passing focused tests, passing focused strict TypeScript check and whitespace checks inspected. Full typecheck blocked by unchanged syntax errors. PostgreSQL suite unrun (five skipped).
+
+Reviewer reproduced driver behavior without database access using installed pg and pg/lib/utils.js with TZ=Europe/London: getTypeParser(1114)("2026-09-01 00:02:05").toISOString() -> "2026-08-31T23:02:05.000Z"; prepareValue(new Date("2026-09-01T00:02:05.000Z")) -> "2026-09-01T01:02:05.000+01:00". No long/live rehearsal launched.
 
 ### Architecture Conformance
 
-Awaiting implementation review.
+Read-only service scope and tenant boundaries appear aligned. Missing/foreign records return null; unknown message states and inbound delivery are handled without invented receipts. Production query-plan conformance remains unproven until corrected validation passes. No schema or cross-service change requested.
 
 ### Follow-up
 
-Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+Reclaim the same task through `/moda-task ARCH-019-SHOPIFY-002` for Attempt 2, correct the test harness, rerun focused checks and publish both branches. SHOPIFY-004 and SYSTEM-TEST-001 remain gated; no dependent promotion. Implementation PR #38 and report PR #159 stay open for correction. Review metadata publication is delegated by the developer; no merge or main update.

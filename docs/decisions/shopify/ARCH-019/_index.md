@@ -14,3 +14,5 @@ Coordinator: moda_architect. Individual task YAML and canonical task worktrees a
 | [ARCH-019-SHOPIFY-006](SHOPIFY-006-merchant-navigation-and-billing-history.md) | Align merchant navigation and bounded billing-history access | Pending | ARCH-019-SHOPIFY-005 |
 
 No implementation has started. System tests are terminal and developer-invoked.
+
+SHOPIFY-002: Changes Requested on Attempt 1; Ready for correction of PostgreSQL harness timestamp semantics and required plan evidence. See canonical task review. SHOPIFY-004 remains gated.

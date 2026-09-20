@@ -20,3 +20,7 @@ Materialisation creates only parent task worktrees/branches. Execution creates t
 All new task branches start from current origin/main. Developer integrates accepted implementation dependencies before downstream execution or explicitly authorizes the appropriate accepted dependency commit consumption. Additive database migration precedes the final app release; app deploy follows SHOPIFY-006 acceptance. Retain existing billing URLs and legacy detail redirects. System testing is terminal, after developer manual exercise, and cannot gate unfinished implementation.
 
 Historical baseline documents: ARCH-013 routing and accepted ARCH-017 onboarding/current-period behaviour. ARCH-019 changes navigation/read presentation only; keep the current source lifecycle policy. Do not edit unrelated pending-recovery or recovery-settings work present in shared checkouts.
+
+## Latest SHOPIFY-002 review checkpoint
+
+2026-09-20: Changes Requested on implementation a2c23d1. Same task Ready for Attempt 2, claim cleared. Fix timezone-dependent PostgreSQL harness and provide required query-plan evidence; no downstream promotion. SHOPIFY-001 is separately in Review in its canonical worktree; do not relaunch it from older initial snapshots.
