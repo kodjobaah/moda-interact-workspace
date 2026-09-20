@@ -406,7 +406,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| ARCH-020-BACKGROUND-001 | background | ready | 2 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
+| ARCH-020-BACKGROUND-001 | background | review | 2 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
@@ -537,3 +537,7 @@ concern the submitted amended implementation. Simplified shop-language scope
 remains; no phone-country prerequisites are restored. No downstream promotion or
 new attempt is claimed. Older Background review/in-progress/readiness statements
 are historical; this is the current decision. Architecture remains unaccepted.
+
+## BACKGROUND-001 user-directed review hold
+
+Current status: Review, Attempt 2, no active claim. User requested no re-preparation or new claim. This supersedes the prior Ready/preparation direction only; R1/R2 remain unresolved against implementation 399cc2f and acceptance remains withheld. No downstream promotion.

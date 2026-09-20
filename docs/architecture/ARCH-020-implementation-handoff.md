@@ -360,3 +360,7 @@ concern the submitted amended implementation. Simplified shop-language scope
 remains; no phone-country prerequisites are restored. No downstream promotion or
 new attempt is claimed. Older Background review/in-progress/readiness statements
 are historical; this is the current decision. Architecture remains unaccepted.
+
+## BACKGROUND-001 user-directed review hold
+
+Current status: Review, Attempt 2, no active claim. User requested no re-preparation or new claim. This supersedes the prior Ready/preparation direction only; R1/R2 remain unresolved against implementation 399cc2f and acceptance remains withheld. No downstream promotion.

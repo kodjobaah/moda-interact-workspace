@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 150
 executor: null
 claimed_at: null
@@ -422,6 +422,13 @@ enabled task was changed.
   architect acceptance.
 
 ## Architect Review
+
+### User-directed review hold — 2026-09-20
+
+By explicit user instruction, retain the task in **Review, Attempt 2** and do not rerun `--prepare`, reset a claim or claim another attempt. Current canonical parent state before this update was Ready at fadbfac7 with executor/claimed_at null; the reported in_progress/codex preparation error does not match that checked state. Keep executor/claimed_at null and preserve Attempt 2.
+
+This status-only workflow override supersedes the prior Ready/Attempt 3 preparation direction, not the R1/R2 findings. Implementation remains 399cc2f31f52d9ca88797a266129ee16c8465b14; no corrected implementation or new validation is asserted. R1/R2 remain open and architect acceptance remains withheld. Continue review against an explicitly identified correction submission when available; no automatic preparation or implementation launch.
+
 
 ### Changes Requested — Attempt 2 — 2026-09-20
 

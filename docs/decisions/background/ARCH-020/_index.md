@@ -8,7 +8,7 @@ Definitions are on local main for review by explicit developer request. Individu
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-BACKGROUND-001](BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | ready | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
+| [ARCH-020-BACKGROUND-001](BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | review | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | [ARCH-020-BACKGROUND-002](BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 
 BACKGROUND-001 is in Review at Attempt 1; A1/A2 are new user scope amendments, with no acceptance or active claim.
@@ -50,3 +50,7 @@ concern the submitted amended implementation. Simplified shop-language scope
 remains; no phone-country prerequisites are restored. No downstream promotion or
 new attempt is claimed. Older Background review/in-progress/readiness statements
 are historical; this is the current decision. Architecture remains unaccepted.
+
+## BACKGROUND-001 user-directed review hold
+
+Current status: Review, Attempt 2, no active claim. User requested no re-preparation or new claim. This supersedes the prior Ready/preparation direction only; R1/R2 remain unresolved against implementation 399cc2f and acceptance remains withheld. No downstream promotion.

@@ -726,7 +726,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | ready | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
+| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | review | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
@@ -942,3 +942,7 @@ concern the submitted amended implementation. Simplified shop-language scope
 remains; no phone-country prerequisites are restored. No downstream promotion or
 new attempt is claimed. Older Background review/in-progress/readiness statements
 are historical; this is the current decision. Architecture remains unaccepted.
+
+## BACKGROUND-001 user-directed review hold
+
+Current status: Review, Attempt 2, no active claim. User requested no re-preparation or new claim. This supersedes the prior Ready/preparation direction only; R1/R2 remain unresolved against implementation 399cc2f and acceptance remains withheld. No downstream promotion.
