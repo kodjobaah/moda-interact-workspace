@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
-executor: null
-claimed_at: null
+status: in_progress
+executor: copilot
+claimed_at: 2026-09-20T23:24:09Z
 priority: 85
-attempt: 2
+attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-002
   - ARCH-020-SHARED-001
@@ -24,7 +24,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-20
-updated: 2026-09-21
+updated: 2026-09-20
 ---
 
 # Provide integrated Shopify discovery and schema validation
