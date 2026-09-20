@@ -19,6 +19,7 @@ depends_on:
   - ARCH-020-COMMERCE-007
   - ARCH-020-SHARED-001
 enables:
+  - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-010
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
@@ -155,6 +156,8 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
 
 ## Enables
+
+- ARCH-020-COMMERCE-012
 
 - ARCH-020-COMMERCE-010
 - ARCH-020-SYSTEM-TEST-001

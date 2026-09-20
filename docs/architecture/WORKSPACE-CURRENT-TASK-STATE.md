@@ -408,10 +408,11 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | review | 1 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
-| ARCH-020-SHOPIFY-001 | shopify | ready | 0 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
+| ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 |
+| ARCH-020-COMMERCE-012 | commerce | pending | 0 | All other ARCH-020 implementation tasks; readiness checkpoint in task |
+| ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001  , ARCH-020-COMMERCE-012 |
 
 ## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
 
@@ -497,3 +498,18 @@ Shared/Database phone-country provenance prerequisites require separate new-scop
 materialisation/acceptance; Gateway owns hosted provider/model/secret wiring.
 The submitted implementation/report and accepted prerequisite history remain.
 No new attempt or downstream task is launched; expanded-scope acceptance pending.
+
+## Shopify merchant preferences acceptance — 2026-09-20
+
+SHOPIFY-001 is architect-accepted Complete at Attempt 1 (`4693bba`, report
+`c5016d73`). Merchant eligibility, explicit idempotent saves and guarded form
+behavior conform; architect reran 18 passing focused checks and reviewed six
+passing PostgreSQL tests plus build/browser evidence. Existing repository-wide
+typecheck/lint limitations remain documented. SYSTEM-TEST-001 remains Pending
+until all its implementation dependencies are accepted, then explicitly
+user-invoked; no task is launched. Developer integration remains separate.
+
+This task-branch snapshot has 19 tasks: 4 Complete, 1 Ready, 14 Pending.
+Other canonical task worktrees remain authoritative for concurrent progress;
+this review does not overwrite their state. Prior readiness records are historical.
+ARCH-020 caching addition: COMMERCE-012 is Pending (attempt 0), depends on all other implementation tasks and precedes SYSTEM-TEST-001. Active scope is 20 tasks; existing task execution states are not reset.

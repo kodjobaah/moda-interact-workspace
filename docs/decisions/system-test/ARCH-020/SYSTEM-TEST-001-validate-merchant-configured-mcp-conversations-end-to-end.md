@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-020-COMMERCE-012
   - ARCH-020-BACKGROUND-001
   - ARCH-020-BACKGROUND-002
   - ARCH-020-COMMERCE-001
@@ -120,6 +121,8 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 
 ## Dependencies
 
+- ARCH-020-COMMERCE-012
+
 - ARCH-020-BACKGROUND-001
 - ARCH-020-BACKGROUND-002
 - ARCH-020-COMMERCE-001
@@ -149,6 +152,8 @@ None.
 ## Acceptance Criteria
 
 - [ ] After amended BACKGROUND-001 and all prerequisites are accepted, cover C6.2/C6.3 and its A1-L01–L06/A2-V01–V07 matrix across the integrated path. Keep deterministic provider workflow results separate from representative French/English real-audio quality evidence and report limitations. No automatic paid/provider fallback or implicit test launch.
+
+- [ ] Validate accepted COMMERCE-012 caching end to end: threshold/expiry, cross-shop isolation, revoked grants, Redis fallback and mandatory fresh offer evaluation.
 
 - [ ] Cover C7.1 A01–A11 with injected Google/development identities and direct endpoint/action requests; verify hosted bypass rejection, local SUPER_ADMIN audit writes and no bypass-to-live-MCP access.
 
