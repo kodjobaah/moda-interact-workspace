@@ -109,7 +109,7 @@ submodule changes were present and were not integrated by this design task.
 | Background `src/services/recovery-policy.service.ts` | Existing merchant policy and unexpired admin overrides resolve `NONE`, `FIXED`, or `AI_BEST_APPLICABLE`. |
 | `moda-interact-admin/src/auth.ts` | Google login bound to active `PlatformAdmin` identities provides an existing staff-authentication model; Studio needs its own server-checked session. |
 | Admin/Background `.gitmodules` | Both use nested `database/` pointing to the canonical database repository. Commerce must follow this pattern. |
-| `scripts/start-agent-task.py` | COMMERCE was absent at inspection. This review packet registers the route and adds `moda_commerce.toml` plus its generated Claude mirror; the new Git repository/submodule still needs provisioning. |
+| `scripts/start-agent-task.py` | COMMERCE was absent at inspection. This review packet registers the route and adds `moda_commerce.toml` plus its generated Claude mirror; the private Git repository/submodule is now provisioned; see the handoff evidence. |
 
 ARCH-016 explicitly deferred AI discount selection; ARCH-020 owns this new
 behaviour. The accepted ARCH-016 task records are dependencies where their
@@ -715,7 +715,7 @@ definitions for review; no implementation is launched by this packet.
 | [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Define commerce capability and evidence contracts | moda_shared | ready | ARCH-016-SHARED-001 |
 | [ARCH-020-SHARED-002](../decisions/shared/ARCH-020/SHARED-002-provide-a-bounded-reusable-agent-runner.md) | Provide a bounded reusable agent runner | moda_shared | pending | ARCH-020-SHARED-001 |
 | [ARCH-020-SHARED-003](../decisions/shared/ARCH-020/SHARED-003-release-the-accepted-commerce-contracts-and-runner.md) | Release the accepted commerce contracts and runner | moda_shared | pending | ARCH-020-SHARED-001, ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | blocked | — |
+| [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | ready | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | pending | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-003, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-003 |
@@ -737,7 +737,7 @@ definitions for review; no implementation is launched by this packet.
 
 - Repository name, nested database submodule, team-only UI and pre-production
   breaking rollout are confirmed. The role and launch route are added in this packet. Remote repository/submodule
-  provisioning is not yet performed; see the handoff's concrete setup checkpoint.
+  provisioning is complete; see the handoff’s verified setup evidence.
 - Staff role split, v1 discount support boundary and numeric budgets are proposed
   for review, not descriptions of existing product behaviour.
 - Inspect actual Shopify permissions and rule-query feasibility for the pinned
@@ -784,3 +784,21 @@ definitions for review; no implementation is launched by this packet.
 - 2026-09-20: added database-defined tools and response templates (C14). Existing seven-table layout stores complete definitions in CommerceCapabilityRevision.toolDefinitions; conversation grants pin definitionVersion. Updated affected tasks to use a generic Commerce executor over approved operations rather than per-tool code registrations.
 
 - 2026-09-20: reconciled full Studio authoring: nine tables with reusable tools, C14 generic public Shopify queries, C15 integrated discovery, 14 explicit UI pages, COMMERCE-011 and a 21-task reciprocal dependency graph. Earlier embedded-definition/fixed-operation notes are superseded.
+
+## Release-owned response definitions
+
+Binding contract C16 extends the finalResponse design. Each immutable release owns
+response instructions, a constrained JSON Schema for custom details and its hash.
+The Shared runner composes/validates that supplied definition generically; Background
+consumes the unchanged delivery fields and ignores details. Supported response
+changes require release publication, not a package/worker deployment. Delivery
+envelope changes remain coordinated code changes. ConversationGrant.releaseId pins
+the definition; current recovery and language context still refresh every turn.
+
+Studio U11 exposes Response contract; Edit as new release opens U10's Members /
+Response contract / Review composer. U14 tests its frozen synthetic definition,
+then returns to the composer before separate release creation and activation.
+The exact C16 page extension and N13 traversal appear in the UI design and
+COMMERCE-008. CommerceRelease adds responseContract and responseContractHash,
+keeping the nine-table design. Database, Shared contracts/runner, Commerce
+publication/MCP/UI/preview, Background and system-test tasks own the full change.

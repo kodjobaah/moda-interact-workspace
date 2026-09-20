@@ -74,6 +74,10 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+- [ ] Verify all C16 R01–R12 cases and N13 traversal, including release-only schema change without worker/Shared deployment, old/new conversation pinning, immutable publication and stable delivery-envelope behaviour.
+
+- [ ] Validate C6.1 fixed platform versus editable capability prompt boundaries across Background and Studio preview. Cover the exact recovery status/language matrix with equivalent synthetic inputs; distinguish fresh turn context from pinned prompts/tools.
+
 - [ ] Execute the UI navigation matrix N01–N12 against integrated services and the new COMMERCE-011 dependency. Include direct links, Back/Cancel, auth expiry, double activation, docs outage, draft conflict and publication-stage recovery.
 - [ ] Create an arbitrary non-seed Feature through existing Admin, include it in a plan, configure/publish a new schema-authored query tool in Studio and opt in through merchant UI. Confirm a new routed recovery conversation uses it without deployment of Commerce/Background/merchant UI between authoring and invocation.
 - [ ] Reuse one exact tool version in two feature configurations, publish a changed version, and prove old grants retain original query/template/provenance. Conflicting versions in one release reject; revoking original associations never gains authority from a new association.
@@ -147,6 +151,10 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 None.
 
 ## Acceptance Criteria
+
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
+
+- [ ] Record C6.1 P01–P12 outcomes, including unsupported-question store referral, status transition without grant expansion and identical structural rules in live-host fixtures and preview. Distinguish scripted fixture evidence from any developer-invoked live-model evaluation.
 
 - [ ] End-to-end navigation and unknown-feature/query acceptance cases pass with explicit side-effect evidence and versions; no manual DB edit, handler addition or feature-name whitelist is needed to complete authoring.
 - [ ] Live provider evidence is separate from synthetic preview evidence; public-query success is not claimed from a mocked response alone.

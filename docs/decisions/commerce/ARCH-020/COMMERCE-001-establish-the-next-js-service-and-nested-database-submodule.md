@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -43,7 +43,7 @@ Merchant-selected capabilities should drive WhatsApp CommerceAgent behaviour thr
 
 Task definition is on local workspace main by the developer's explicit 2026-09-20 review request. It is not a claim, task-branch materialisation or implementation approval. All execution fields remain unclaimed.
 
-**Execution blocker:** the Commerce remote/submodule has not been provisioned; the `moda_commerce` role and COMMERCE launcher route are defined in this review packet. Complete the repository provisioning checkpoint in the implementation handoff, then have the architect promote this same task; do not invent a remote or execute in another repository.
+**Readiness:** repository provisioning was verified on 2026-09-20. The private `https://github.com/kodjobaah/moda-interact-commerce.git` repository is registered as the workspace submodule at main commit `01c550c3e3f55dd23a4ecc9514c846bb88cf2067`. The architect promotes this task to Ready with no attempt claimed. See the completed provisioning checkpoint in the implementation handoff. Next.js and the nested database submodule remain this task’s deliverables.
 
 ## Scope
 
@@ -166,7 +166,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+None blocking task preparation; repository provisioning is complete. Application implementation and nested database registration remain outstanding task work.
 
 ### Architectural Concerns
 
