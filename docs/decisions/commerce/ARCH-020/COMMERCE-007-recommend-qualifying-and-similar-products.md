@@ -18,10 +18,9 @@ depends_on:
   - ARCH-020-COMMERCE-006
 enables:
   - ARCH-020-COMMERCE-012
-  - ARCH-020-BACKGROUND-002
   - ARCH-020-COMMERCE-009
-  - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-010
+  - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
 updated: 2026-09-20
@@ -61,6 +60,17 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+### Independent implementation contract
+
+Binding **C18** in the implementation contracts is the single producer/consumer
+specification, including the linked JSON seed and EC01–EC12 matrix.
+Producer: return exactly the C18 structured recommendation output and preserve
+evidence identity through004 dispatch. Implement EC01–EC12 in a producer/consumer
+contract harness with actual recommendation/evaluator code and controlled provider
+transport; host-only races are consumer expectations, not code to add to Commerce.
+No Background import or prerequisite. SYSTEM-TEST-001 owns real worker integration.
+
+
 - [ ] Deliver qualifying/similar recommendation helpers and example tool definitions without making them mandatory for every feature or conversation; reuse policy evidence and exact tool revisions.
 
 - [ ] Implement products.findQualifying and products.findSimilar operations and seed their tool definitions/templates. Reuse the deterministic evaluator; do not execute free-form database calculations or loops.
@@ -69,7 +79,8 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 - [ ] Construct add/replace proposals and rerun the evaluator for each; keep similarity and discount qualification separate.
 - [ ] Return no more than three customer-facing alternatives with extra spend, resulting total, currency, evidence and uncertainty.
 - [ ] Rank unchanged-basket offers by known savings; avoid advertising a higher-spend basket as cheaper solely because its discount is larger.
-- [ ] Support host-driven final revalidation through commerce_evaluate_discount for the exact authenticated turn and proposal; reuse its canonical schema rather than introduce another unversioned API.
+- [ ] Support host-driven final revalidation through replay of the actual originally
+  granted evidence-producing call under C4, including recommendation evidence.
 
 ## Interfaces / Contracts
 
@@ -81,7 +92,16 @@ Apply binding contracts **C14–C15** for reusable tool revisions, query/policy 
 
 Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARCH-020-implementation-contracts.md), sections **C4, C8**. These are required acceptance inputs, not optional examples.
 
-Implement the two recommendation operations exposed through database-defined tools and reuse the evaluator, not a second discount engine. Use C8 deterministic ranking/tie-breaks/provider bounds and C4 ADD/REPLACE proposals. Keep similarity independent of qualification. Direct evaluate_discount revalidation uses the same authenticated grant and current inboundVersion.
+Implement the two recommendation operations exposed through database-defined tools and reuse the evaluator, not a second discount engine. Use C8 deterministic ranking/tie-breaks/provider bounds and C4 ADD/REPLACE proposals. Keep similarity independent of qualification. Exact-call evidence refresh uses the same authenticated grant and current inboundVersion.
+
+### Deterministic review clarification
+
+Implement the C4 Exact-call evidence refresh contract and its named fixtures.
+Business MCP names remain arbitrary. Background captures/replays actual calls;
+Commerce policy adapters return bounded structured evidence. No hard-coded
+evaluator discovery, extra grant, new Shared field or new database table. Apply
+C8 shared provider-request counter (including retries) and deterministic ranking
+where recommendations are involved.
 
 ### Required evidence
 
@@ -98,11 +118,9 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 ## Enables
 
 - ARCH-020-COMMERCE-012
-
-- ARCH-020-BACKGROUND-002
 - ARCH-020-COMMERCE-009
-- ARCH-020-COMMERCE-008
 - ARCH-020-COMMERCE-010
+- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
@@ -158,7 +176,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

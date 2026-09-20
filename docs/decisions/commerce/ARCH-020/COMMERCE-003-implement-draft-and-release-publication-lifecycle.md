@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -18,14 +18,13 @@ depends_on:
   - ARCH-020-COMMERCE-002
   - ARCH-020-DATABASE-001
   - ARCH-020-SHARED-001
-  - ARCH-020-COMMERCE-011
 enables:
-  - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-004
-  - ARCH-020-COMMERCE-008
+  - ARCH-020-COMMERCE-012
+  - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Implement draft and release publication lifecycle
@@ -81,6 +80,24 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+### Parallel implementation and integration ownership
+
+Architect promotion on 2026-09-21: Ready, unclaimed. Implement publication against
+C17 agreed ports and deterministic fixtures. This task may be accepted independently
+when its owned component, typed interfaces and fixture acceptance tests pass.
+ARCH-020-COMMERCE-013 owns real provider adapters, composition and integrated
+acceptance; do not wait for or implement that task here.
+
+For this task, all requirements below to consume pending services or exercise a
+complete service flow mean contract-fixture execution. This explicitly supersedes
+earlier accepted-service/full-integration wording for those pending dependencies.
+Retain every field, page, role, failure and side-effect expectation. Do not weaken
+them to snapshots or static mockups. Production composition must fail unavailable
+until013 installs real adapters; fixtures are test-harness-only, never a runtime
+fallback. Already accepted auth/Shared/database dependencies remain real inputs.
+Record the port signatures and mapping in the C17 contract document. Integration
+checks are assigned explicitly to013, not reported as passed by this task.
+
 - [ ] Reuse C7.1 guards for every publication operation and validation endpoint; ensureDevelopmentStudioAdmin inside the same FK-backed audit/publication transaction when the server-resolved principal is development bypass. Verify A07/A08/A10; no copied auth policy.
 
 - [ ] Implement C16 createRelease definition/hash persistence, replay binding and authenticated /api/studio/response-contract/validate; baseline seed, immutable clone semantics, role enforcement and R01–R06/R09.
@@ -116,6 +133,17 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Deliver publication domain services, strict action schemas, transactional audit/replay and explicit seed CLI. Build typed read-only executor-operation descriptors as the publication registry; operations may be added by COMMERCE-005/006/007, but descriptors alone must not claim operation availability. Publish database tool definitions only when their query executor/schema or policy-operation versions have executable implementations in the deployed build. Synthetic registry fixtures permit this task to be tested before later implementations.
 
+### Deterministic review clarification
+
+Synthetic executable registry adapters are dependency-isolated test fixtures,
+never production registrations. This task proves publication validation and
+transactions with those fixtures; COMMERCE-005/006/007 provide real executors and
+SYSTEM-TEST-001 proves the deployed author/publish/invoke flow. Do not add a
+circular dependency on those later tasks or advertise unimplemented operations.
+Provide the isolated PostgreSQL rehearsal command and expected assertions; report
+agent fixture results separately from developer-owned database rehearsal evidence
+under C12. An unexecuted rehearsal must remain explicitly pending.
+
 ### Required evidence
 
 Use two-transaction local storage fixtures and an isolated PostgreSQL rehearsal for duplicate operation IDs, mismatched reuse, revision allocation, CAS pointer conflicts, rollback and failed partial publication. This backend task tests direct requests; COMMERCE-008 owns mouse/keyboard tests.
@@ -127,16 +155,14 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 - ARCH-020-COMMERCE-002
 - ARCH-020-DATABASE-001
 - ARCH-020-SHARED-001
-- ARCH-020-COMMERCE-011
 
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
 
 ## Enables
 
-- ARCH-020-COMMERCE-012
-
 - ARCH-020-COMMERCE-004
-- ARCH-020-COMMERCE-008
+- ARCH-020-COMMERCE-012
+- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
@@ -197,7 +223,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

@@ -18,6 +18,7 @@ depends_on:
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-007
   - ARCH-020-SHARED-001
+  - ARCH-020-COMMERCE-013
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-010
@@ -83,7 +84,7 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 - [ ] Implement C16 U14 draft response preview handoff, frozen synthetic definition, Reply/Structured details views and return-to-composer flow. Validate R01–R05/R08/R10/R11 without production access.
 
-- [ ] Apply C6.1 in U14 Conversation mode using synthetic recovery status, nullable completedAt, languageTag/languageSource and customer-message fixtures. Supply equivalent fixed host recovery instructions to the same Shared runner; do not expose them as editable capability prompts. Select fixtures before Start conversation; use a scripted later-turn state change for P05 without replacing the frozen grant.
+- [ ] Apply C6.1 as amended by final C6.2 in U14 Conversation mode using synthetic recovery status, nullable completedAt, languageTag/languageSource and customer-message fixtures. Supply equivalent fixed host recovery instructions to the same Shared runner; do not expose them as editable capability prompts. Select fixtures before Start conversation; use a scripted later-turn state change for P05 without replacing the frozen grant.
 
 ### U14: tool tests and conversation traversal (COMMERCE-009)
 
@@ -141,6 +142,15 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Implement preview conversation state separate from previewRunId. Deliver Redis atomic claim/budget/status/cancel operations and a bounded synthetic fixture catalogue. Default fixture mode uses no live keys. Paid preview uses explicit separate model config; no real message ingestion, credentials or live Shopify/MCP provider access.
 
+### Deterministic review clarification
+
+Implement C9.1 route/body/status/ownership contracts and all cross-replica
+creation, run, cancel and busy-conversation fixtures. Consume the U10 authenticated
+layout handoff specified in COMMERCE-008 and the UI design; test real N13 return
+without losing edits. P06/P07 use the final C6.2 shop-initialized/detected-language
+rule, with no customer-explicit-preference feature. Speech scenarios inject a
+persisted synthetic transcript; preview never transcribes audio or sends WhatsApp.
+
 ### Required evidence
 
 Cross-instance tests count one budget/model start per run ID, changed-payload conflicts, cancellation flag propagation, crash unknown outcome, expired in-flight slot without dedupe deletion, per-admin/hour/global bounds and preserved synthetic grant across turns. Publishing/editing requires a new preview conversation to alter prompts/tools.
@@ -148,6 +158,8 @@ Cross-instance tests count one budget/model start per run ID, changed-payload co
 For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
 
 ## Dependencies
+
+- ARCH-020-COMMERCE-013
 
 - ARCH-020-COMMERCE-008
 - ARCH-020-COMMERCE-007
@@ -226,7 +238,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

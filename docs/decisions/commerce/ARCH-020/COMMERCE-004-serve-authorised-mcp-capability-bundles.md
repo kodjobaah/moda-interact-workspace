@@ -18,9 +18,10 @@ depends_on:
   - ARCH-020-COMMERCE-003
   - ARCH-020-SHARED-001
 enables:
-  - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-005
+  - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-010
+  - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
 updated: 2026-09-20
@@ -62,7 +63,7 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 - [ ] Serve C16 responseContract/hash in the C5 manifest from the selected/pinned release; reject incompatible definitions, never select latest for an existing grant. Cover R07/R12.
 
-- [ ] Implement the C5 Exact available-tool discovery sequence: trusted shop/recovery/conversation/turn claims, first resolve then immutable grant persistence, execute-purpose tools/list with empty params, and tools/call bound to that original grant. shopId alone is not a grant selector.
+- [ ] Implement the C5 Exact available-tool discovery sequence: trusted shop/recovery/conversation/turn claims, first resolve returning a candidate, Background-owned immutable grant persistence, execute-purpose tools/list with empty params, and tools/call bound to that original grant. shopId alone is not a grant selector.
 
 - [ ] Resolve capability toolBindings through immutable CommerceToolRevision records and dispatch the C14 execution union. Dedupe identical shared versions; enforce enabled tool plus any still-eligible ORIGINAL provenance capability; never use newly added associations as authority.
 - [ ] Query execution is injected from COMMERCE-005; this transport task proves authorization/dispatch using shared-contract fixtures before real provider integration. No hard-coded business tool names. Zero remote tools produces an empty tools/list, not failure.
@@ -73,7 +74,8 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 - [ ] Validate service assertion issuer/audience/algorithm/expiry/purpose/key ID; accept only the Background live-turn principal, resolve durable Conversation -> CheckoutRecovery -> Shop ownership and current lifecycle, rejecting conversations without a recovery and mismatched recovery claims. Reject browser/admin sessions and other service identities even on the private network.
 - [ ] Resolve effective features, offer policy and immutable release pin; serve commerce.capabilities, prompts/get and tools/list explicitly. Resolve-purpose assertions can only select a published manifest; tool/prompt execution uses execute-purpose assertions checked against the durable pin.
 - [ ] Check current permissions and registry binding on every tool dispatch, including direct calls to undiscovered tools.
-- [ ] Disable personalised response caching and process-global tenant registry mutation; enforce body/result bounds, approved origins and typed errors.
+- [ ] Disable personalised response caching and process-global tenant registry mutation; enforce body/result bounds and typed errors. Reject every hosted MCP request containing an Origin
+  header; no approved-origin exception or browser session access.
 
 - [ ] Bind all tools/list, prompts/get and tools/call operations to CommerceConversationGrant. First resolve establishes one grant candidate; after a grant exists return that original bundle and never reselect from current release/features. Enforce exact tool name/version membership server-side as well as current permissions. No alternate endpoint, rediscovery, version substitution or reconnect may expand access.
 
@@ -89,7 +91,18 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Deliver /api/mcp with fixed method/purpose matrix, assertion verifier, request-scoped capability resolver and exact-version dispatcher. Local registered fixture handlers exercise transport before real Shopify handlers exist. Return only granted original tool versions still permitted now. No preview session can call this endpoint.
 
+### Deterministic review clarification
+
+Commerce only reads/verifies persisted grants. Background alone inserts the
+unique conversation grant and reads the race winner. Transport fixtures simulate
+that Background write before execute-purpose calls. Apply C4 exact-call evidence
+refresh and C8 effective bounds; do not expose executor internals in manifests.
+
 ### Required evidence
+
+Apply binding C18 structured policy-output separation and evidence contract.
+EC07/EC08 must prove that query/template content cannot impersonate evidence and
+failed ownership/permission checks execute zero provider calls. No new wire fields.
 
 Test the complete purpose/method matrix, malformed JWT alg/kid/exp/environment, crossed recovery/customer scope, stale processing version, body limits, unexpected Origin, two shops/two server instances, and direct unlisted tools. Test database ownership separately from shared schema parsing.
 
@@ -104,10 +117,10 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Enables
 
-- ARCH-020-COMMERCE-012
-
 - ARCH-020-COMMERCE-005
+- ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-010
+- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
@@ -172,7 +185,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

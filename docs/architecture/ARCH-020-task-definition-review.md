@@ -111,3 +111,65 @@ review counts above describe earlier drafts; current counts are 3 Ready and
 16 Pending across 19 tasks. Next.js and nested database setup remain task work.
 
 Shared consolidation: one SHARED-001 now includes all contracts, runner and publication requirements. The current 19-task graph passes schema, reciprocal dependency, cycle, terminal-gate, route and link validation.
+
+
+## Remaining-task determinism review — 2026-09-20
+
+Reviewed the remaining ARCH-020 definitions with separate read-only runtime and
+Studio reviews. This is a definition amendment, not implementation acceptance or
+a task claim. Completed tasks and the active COMMERCE-011 implementation are not
+reopened. Concurrent BACKGROUND-001 acceptance/integration edits are excluded.
+
+| Finding | Binding correction / owner |
+|---|---|
+| Arbitrary tool names made a hard-coded final evaluator impossible | C4 exact-call evidence provenance/replay; COMMERCE-004/006/007 and BACKGROUND-002, without a new Shared/DB contract |
+| Preview dependency cycle hidden inside acceptance | COMMERCE-008 owns composer plus stubbed handoff;009 owns real U14; SYSTEM-TEST owns production pinning |
+| Unsaved composer lost on route navigation | UI design and008 specify tab-local authenticated layout state and exact loss/return behaviour |
+| Preview APIs and concurrent different-run semantics missing | C9.1 exact routes, bodies, owner checks, replay, busy, cancellation and history rules;009/Gateway consume them |
+| Superseded language/preference tests and fixed-prompt ownership | C6.1 aligned to C6.2 and C16;009 and SYSTEM-TEST use final expectations |
+| Ranking, multiple capability limits and provider retries ambiguous | C8 deterministic normalization/order/effective minima/shared request counter |
+| Grant persistence and credential boundaries ambiguous |004 read/verifies Background-owned grant;005 public query never loads privileged credentials |
+| Publication acceptance implied later executors |003 fixture registry acceptance, production executor availability remains mandatory |
+| Deployment/alert handoffs not exact | AUTH_URL, readiness semantics, messaging transcription names, metric denominators and threshold boundaries |
+| Stale provisioning blockers | Removed from pending Commerce tasks; foundation already supplies repository provisioning |
+
+COMMERCE-011 is already being implemented: its historical unresolved-issues boilerplate
+still mentions provisioning, but the accepted COMMERCE-001 setup supersedes that
+line. No additional provisioning gate or new implementation requirement is imposed
+on its active attempt by this review.
+
+COMMERCE-012 intentionally remains an initial backlog definition. Its existing
+Before promotion to Ready checklist must first resolve policy persistence, API,
+U06/U14 controls, limits and any owner-specific prerequisites. It is not executable
+merely because other tasks finish. Do not invent a migration or reopen accepted
+Shared/Database tasks to bypass that checkpoint.
+
+Validation for this amendment is documentation-only: dependency reciprocity and
+cycle checks, owned UI embedding, local Markdown links, unchanged lifecycle fields
+and scoped whitespace. Application and live-provider evidence belongs to the
+implementation tasks; none is claimed by this review.
+
+
+## Parallel start amendment — 2026-09-21
+
+At the user's request, publication003 and Studio008 can start and complete their
+components against C17 typed ports/fixtures. Both are Ready, attempt0, unclaimed.
+A separate013 owns real service adapters and I01–I08 integrated acceptance.013
+waits for003/004/005/006/007/008/011;009/GATEWAY-001/012/SYSTEM-TEST-001 wait for013.
+Start/enable metadata and indexes are reciprocal. No launcher changes, task claims
+or application implementation.011 active implementation remains untouched.
+
+
+## Independent evidence-contract amendment — 2026-09-21
+
+C18 plus the canonical JSON seed specifies requests, Shared output schemas, exact
+extraction/provenance/replay/comparison, failure/admission decisions and EC01–EC12.
+BACKGROUND-002 is Ready against accepted001;007 remains independently sequenced
+on006. Removed reciprocal dependency; terminal system test owns real pairing.
+No Shared publication, migration, implementation or task claim is introduced.
+
+Validation: reciprocal acyclic21-task graph, unchanged claims/attempts, local links
+and whitespace passed. BACKGROUND-002 prerequisite001 is Complete. Original and
+refreshed JSON seed replies passed the current Shared source Zod schemas under
+workspace Node24.19.0; both SHA-256 digests and frozen-clock freshness bounds passed.
+This validates contract examples, not the future producer/consumer implementation.

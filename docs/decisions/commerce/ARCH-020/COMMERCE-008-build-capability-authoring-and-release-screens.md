@@ -9,24 +9,23 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 120
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-020-COMMERCE-003
-  - ARCH-020-COMMERCE-005
-  - ARCH-020-COMMERCE-006
-  - ARCH-020-COMMERCE-007
-  - ARCH-020-COMMERCE-011
+  - ARCH-020-COMMERCE-002
+  - ARCH-020-DATABASE-001
+  - ARCH-020-SHARED-001
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-009
+  - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Build capability authoring and release screens
@@ -81,6 +80,24 @@ Server authorisation and duplicate protection are required independently of the
 browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
+
+### Parallel implementation and integration ownership
+
+Architect promotion on 2026-09-21: Ready, unclaimed. Implement Studio against
+C17 agreed ports and deterministic fixtures. This task may be accepted independently
+when its owned component, typed interfaces and fixture acceptance tests pass.
+ARCH-020-COMMERCE-013 owns real provider adapters, composition and integrated
+acceptance; do not wait for or implement that task here.
+
+For this task, all requirements below to consume pending services or exercise a
+complete service flow mean contract-fixture execution. This explicitly supersedes
+earlier accepted-service/full-integration wording for those pending dependencies.
+Retain every field, page, role, failure and side-effect expectation. Do not weaken
+them to snapshots or static mockups. Production composition must fail unavailable
+until013 installs real adapters; fixtures are test-harness-only, never a runtime
+fallback. Already accepted auth/Shared/database dependencies remain real inputs.
+Record the port signatures and mapping in the C17 contract document. Integration
+checks are assigned explicitly to013, not reported as passed by this task.
 
 - [ ] Implement C7.1 U01 Google-only sign-in, development redirect to U03, and persistent Development — SUPER_ADMIN badge across U03–U14 shell. Reuse COMMERCE-002 guards/session state; no client bypass toggle. Verify A11 and preserve same-tick submission guards.
 
@@ -332,8 +349,14 @@ Review/Test/Create. Every edit clears prior validation/test success. Fresh creat
 copies the active definition or uses C16 baseline if no active release exists.
 
 **Test conversation** passes the local draft definition and selected published
-members to U14. Keep the unsaved composer only in this browser tab's memory; Back
-returns to it, refresh loses it with a clear notice. U14 freezes the definition at
+members to U14. Keep the unsaved composer in a tab-local authenticated layout provider that
+survives U10 -> U14 -> Back navigation. Store a synthetic handoff ID, selected
+revision IDs, draft response definition, validation hash, reason and allowlisted
+return route; never put the definition in a URL or browser storage. U14 copies
+and validates this state as authenticated preview input; Back restores the exact
+composer. Refresh, sign-out or loss of authorization clears it and displays
+**Draft unavailable—return to Releases** with a U10 link. Late validation results
+apply only to the same content hash. U14 freezes the definition at
 Start and displays separate Reply and Structured details panels. Reset permits a
 new definition; no automatic publication. No customer data in browser storage.
 
@@ -350,7 +373,9 @@ apply to Validate/Test/Create; late validation cannot approve changed input.
 Traversal case N13: U11 Response contract -> Edit as new release -> U10 Response
 contract -> edit -> Validate -> U14 Test -> Back -> Review -> Create -> new U11 ->
 Activate. Check cancellation, role denial, invalid schema, duplicate activation and
-existing-conversation pinning. This C16 extension supersedes the original approved
+existing-conversation pinning at terminal system validation. COMMERCE-008 tests
+the U14 handoff/return with a preview stub; COMMERCE-009 tests the real U14 round
+trip. COMMERCE-008 acceptance does not require COMMERCE-009. This C16 extension supersedes the original approved
 prototype's release panels; other U01–U14 routes and traversals remain unchanged.
 
 Publication stages are tool version -> capability revision -> release -> active
@@ -413,19 +438,17 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 
 ## Dependencies
 
-- ARCH-020-COMMERCE-003
-- ARCH-020-COMMERCE-005
-- ARCH-020-COMMERCE-006
-- ARCH-020-COMMERCE-007
-- ARCH-020-COMMERCE-011
+- ARCH-020-COMMERCE-002
+- ARCH-020-DATABASE-001
+- ARCH-020-SHARED-001
 
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
 
 ## Enables
 
 - ARCH-020-COMMERCE-012
-
 - ARCH-020-COMMERCE-009
+- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 - ARCH-020-GATEWAY-001
 
@@ -447,7 +470,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 All cases must be browser fixtures with expected destinations and side effects;
 run mouse and keyboard paths, direct deep links, mobile navigation and denied roles.
-COMMERCE-008 owns N01–N09, N12 and N13; COMMERCE-009 owns N10–N11 with U14; COMMERCE-011
+COMMERCE-008 owns N01–N09, N12 and the composer/handoff portion of N13;
+COMMERCE-009 owns N10–N11 and the real U14 round trip in N13; COMMERCE-011
 owns discovery service contract fixtures consumed by N04. Shared checks are reused.
 
 | Case | Traversal | Required result |
@@ -464,7 +488,7 @@ owns discovery service contract fixtures consumed by N04. Shared checks are reus
 | N10 | U06/U09/U13 Test -> U14 fixture run -> Return | Correct source context, no live credentials/shop writes; results visibly synthetic |
 | N11 | U14 start -> Send -> duplicate Send -> Cancel/timeout -> reconcile -> reset | One run, frozen preview grant, budgets enforced, no hidden retry |
 | N12 | Save/publish/activate/disable/attach/create double-click, tap or Enter | One intended persisted effect, immediate busy state; unknown outcomes reconcile |
-| N13 | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate | C16 definition validation, immutable release, role checks, original-conversation pinning |
+| N13 | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate | C16 validation, immutable release, roles; stubbed preview handoff here, real preview in009 and production pinning in SYSTEM-TEST-001 |
 
 Each page is inspected at desktop and narrow viewport with keyboard focus,
 loading/empty/error states. Tool/template/feature editing does not require an IDE,
@@ -511,7 +535,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

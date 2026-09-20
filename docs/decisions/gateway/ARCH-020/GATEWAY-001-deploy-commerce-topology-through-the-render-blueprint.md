@@ -19,6 +19,7 @@ depends_on:
   - ARCH-020-BACKGROUND-001
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-011
+  - ARCH-020-COMMERCE-013
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
@@ -82,6 +83,21 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Use canonical render.yaml and actual provisioned repository/Studio host inputs. Wire the messaging worker-only signing keys and Commerce verification keys. Explicit proxy allowlist covers server-action POSTs, auth callbacks, UI/static assets but never MCP; reject ambiguous encoded paths before upstream. No separate Redis service. Deliver docs/commerce-deployment.md with exact command/health/private/public expectations.
 
+### Deterministic review clarification
+
+Apply C9.1 exact preview routes/methods to the public Studio allowlist; no
+blanket /api/studio proxy. C10 includes AUTH_URL matching COMMERCE_STUDIO_ORIGIN.
+Wire WHATSAPP_TRANSCRIPTION_PROVIDER=groq|openai on the messaging worker;
+omitted/blank selects groq, other values fail closed. GROQ_TRANSCRIPTION_MODEL
+defaults to whisper-large-v3-turbo and uses GROQ_API_KEY. OpenAI selection uses
+OPENAI_TRANSCRIPTION_MODEL (default gpt-4o-mini-transcribe) and messaging-only
+WHATSAPP_OPENAI_API_KEY, never translation-worker OPENAI_API_KEY. Model IDs are
+1–128 characters, start alphanumeric and contain only alphanumeric, dot, underscore
+or hyphen. No automatic provider/model fallback. Test and production settings are
+independent. Validate blueprint wiring without paid provider calls or deployment;
+record provider-quality evidence separately. Reconcile these names against the
+accepted BACKGROUND-001 handoff before publishing configuration.
+
 ### Required evidence
 
 Use existing gateway validation shell/config tooling (repository has no package.json; do not invent npm build). Add deterministic host/path/method fixtures with stub upstream; include direct private calls missing credentials and each public encoded/alias MCP attempt. Deployment credentials/real hosts remain external inputs.
@@ -89,6 +105,8 @@ Use existing gateway validation shell/config tooling (repository has no package.
 For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
 
 ## Dependencies
+
+- ARCH-020-COMMERCE-013
 
 - ARCH-020-COMMERCE-002
 - ARCH-020-BACKGROUND-001
@@ -106,7 +124,7 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Coordinate BACKGROUND-001 A2/C6.3 transcription configuration: final provider/model selector names, allowed values/defaults and credentials must reach the messaging worker in independent test/production settings. Preserve Groq; OpenAI is explicit, with gpt-4o-mini-transcribe the proposed OpenAI-only default. No automatic fallback. Existing translation-worker OpenAI group is not messaging configuration; scope secrets narrowly rather than importing unrelated translation settings. Background owns any evidence-required conversion/image dependency; Gateway verifies runtime/resources and records explicit rollout/rollback. Configuration checks do not require paid live transcription.
+- [ ] Coordinate BACKGROUND-001 A2/C6.3 transcription configuration: the exact provider/model selector names, values/defaults and credentials below must reach the messaging worker in independent test/production settings. Preserve Groq; OpenAI is explicit, with gpt-4o-mini-transcribe the OpenAI-only default. No automatic fallback. Existing translation-worker OpenAI group is not messaging configuration; scope secrets narrowly rather than importing unrelated translation settings. Background owns any evidence-required conversion/image dependency; Gateway verifies runtime/resources and records explicit rollout/rollback. Configuration checks do not require paid live transcription.
 
 - [ ] Public staff can traverse all pages and authenticated discovery operations, but cannot access /api/mcp or invoke arbitrary developer/CLI tools; child process receives no production credentials.
 

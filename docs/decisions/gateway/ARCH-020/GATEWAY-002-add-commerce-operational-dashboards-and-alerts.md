@@ -74,6 +74,17 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Deliver version-controlled dashboards/alerts using the accepted actual signal inventory and C11 initial numeric thresholds/sample floors. Include no-data state and production/preview/environment filters. Add runbook steps for unavailable service, permission denials, unknown routing sends and evidence failures.
 
+### Deterministic review clarification
+
+Use the accepted COMMERCE-010 inventory and exact C11 outcome denominators.
+Evaluate rolling windows once per minute, separately by service/environment and
+purpose=live. Threshold comparisons are strictly greater than the stated value;
+minimum sample counts are inclusive. Readiness requires consecutive failures for
+2 minutes; oldest pending age must exceed120 seconds continuously for5 minutes.
+No samples render No data and do not trigger a failure-rate alert. Test boundary
+values, low samples, recovery, preview exclusion and missing telemetry separately;
+missing telemetry is observable, not fabricated success or a business failure.
+
 ### Required evidence
 
 Static fixtures validate each query references emitted names/units and each alert excludes preview with correct sample floor/duration. Required deployed arrival/alert evidence is recorded by the developer; do not claim config syntax proves live arrival.

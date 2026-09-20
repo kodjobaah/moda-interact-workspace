@@ -264,8 +264,14 @@ Review/Test/Create. Every edit clears prior validation/test success. Fresh creat
 copies the active definition or uses C16 baseline if no active release exists.
 
 **Test conversation** passes the local draft definition and selected published
-members to U14. Keep the unsaved composer only in this browser tab's memory; Back
-returns to it, refresh loses it with a clear notice. U14 freezes the definition at
+members to U14. Keep the unsaved composer in a tab-local authenticated layout provider that
+survives U10 -> U14 -> Back navigation. Store a synthetic handoff ID, selected
+revision IDs, draft response definition, validation hash, reason and allowlisted
+return route; never put the definition in a URL or browser storage. U14 copies
+and validates this state as authenticated preview input; Back restores the exact
+composer. Refresh, sign-out or loss of authorization clears it and displays
+**Draft unavailable—return to Releases** with a U10 link. Late validation results
+apply only to the same content hash. U14 freezes the definition at
 Start and displays separate Reply and Structured details panels. Reset permits a
 new definition; no automatic publication. No customer data in browser storage.
 
@@ -282,7 +288,9 @@ apply to Validate/Test/Create; late validation cannot approve changed input.
 Traversal case N13: U11 Response contract -> Edit as new release -> U10 Response
 contract -> edit -> Validate -> U14 Test -> Back -> Review -> Create -> new U11 ->
 Activate. Check cancellation, role denial, invalid schema, duplicate activation and
-existing-conversation pinning. This C16 extension supersedes the original approved
+existing-conversation pinning at terminal system validation. COMMERCE-008 tests
+the U14 handoff/return with a preview stub; COMMERCE-009 tests the real U14 round
+trip. COMMERCE-008 acceptance does not require COMMERCE-009. This C16 extension supersedes the original approved
 prototype's release panels; other U01–U14 routes and traversals remain unchanged.
 
 Publication stages are tool version -> capability revision -> release -> active

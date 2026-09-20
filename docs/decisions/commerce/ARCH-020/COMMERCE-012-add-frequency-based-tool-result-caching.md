@@ -33,6 +33,7 @@ depends_on:
   - ARCH-020-GATEWAY-002
   - ARCH-020-SHARED-001
   - ARCH-020-SHOPIFY-001
+  - ARCH-020-COMMERCE-013
 enables:
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
@@ -151,6 +152,8 @@ semantics above are binding inputs. Redis availability never becomes an authoriz
 or correctness dependency. Do not expose cache controls as model tool arguments.
 
 ## Dependencies
+
+- ARCH-020-COMMERCE-013
 
 
 - ARCH-020-BACKGROUND-001

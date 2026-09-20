@@ -82,6 +82,17 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Deliver the accepted signal inventory with actual framework/shared names, units, environment/purpose and sample fixture output. Only add missing semantic outcomes. Preview audit is redacted logging, not an unsupported CommerceAuditAction enum extension.
 
+### Deterministic review clarification
+
+The C11 inventory must identify counter numerator/denominator and one terminal
+outcome per logical MCP request, not per span/retry. Failure-rate numerator is
+transport timeout/unavailability or internal/provider operational failure; expected
+DENIED/revoked/INVALID_INPUT outcomes remain requests but are not operational
+errors. Evidence refresh uses one terminal outcome per refresh decision and counts
+changed/missing/expired evidence or operational failure as refresh failure. Record
+request-level call counts separately from provider attempts. Export local fixture
+samples for success, expected denial, operational failure and refresh failure.
+
 ### Required evidence
 
 Use local exporters and a sensitive-marker fixture; assert trace continuity, preview isolation and absent secrets/transcripts/phones. Demonstrate sink failures leave tool/publication results unchanged. Provide exact hosted arrival checks for developer evidence.
@@ -156,7 +167,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

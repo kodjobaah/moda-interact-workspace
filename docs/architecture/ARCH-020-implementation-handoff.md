@@ -61,17 +61,18 @@ DATABASE-001 ---------------------------> publication persistence / Background g
 SHARED-001 (contracts + runner + publication) ---> shared contracts/runner publication
 provisioning -> COMMERCE-001 -> COMMERCE-002
 COMMERCE-002 + SHARED-001 -> COMMERCE-011 (Shopify discovery/schema services)
-COMMERCE-002/011 + DATABASE-001 + SHARED-001 -> COMMERCE-003 (publication)
+COMMERCE-002 + DATABASE-001 + SHARED-001 -> COMMERCE-003 (interface-based publication)
 COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005 -> COMMERCE-006 -> COMMERCE-007
-COMMERCE-003/005/006/007/011 -> COMMERCE-008 (U01–U13 full authoring UI)
+COMMERCE-002 + DATABASE-001 + SHARED-001 -> COMMERCE-008 start
+COMMERCE-003/004/005/006/007/008/011 -> COMMERCE-013 (real integration)
 COMMERCE-008/007 + SHARED-001 -> COMMERCE-009 (U14 tests/conversations)
 COMMERCE-004/007/009 -> COMMERCE-010 (observability)
 SHARED-001 + DATABASE-001 + COMMERCE-001 + ARCH-016-BACKGROUND-003 -> BACKGROUND-001
-BACKGROUND-001 + COMMERCE-007 -> BACKGROUND-002
+BACKGROUND-001 + C18 agreed contract -> BACKGROUND-002 (independent consumer)
 SHARED-001 + ARCH-016-SHOPIFY-002 -> SHOPIFY-001
 COMMERCE-002/008/011 + BACKGROUND-001 -> GATEWAY-001
 GATEWAY-001 + COMMERCE-010 + BACKGROUND-002 -> GATEWAY-002
-all 18 nonterminal tasks -> SYSTEM-TEST-001 (manual terminal gate)
+all implementation tasks -> SYSTEM-TEST-001 (manual terminal gate)
 ```
 
 Individual task YAML contains the exact complete dependency sets. Runtime call
@@ -348,25 +349,54 @@ scope remains. All four retained prerequisites are accepted Complete. Active tas
 scope returns to 20; no automatic execution or expanded-scope acceptance occurred.
 
 
-## COMMERCE-011 Attempt 1 — Changes Requested
+## BACKGROUND-001 Attempt 2 architect review — Changes Requested
 
-Current decision: **Ready, Attempt 1, claim cleared**, not accepted. Reviewed
-5621ebf / 568c5dc9. R1 authoritative AST/schema/compiler validation; R2 verified
-Storefront artifact and typed browsing; R3 working pinned MCP adapter and actual
-process evidence; R4 C15 request/deadline/rate/concurrency/response limits.
-See the task's latest Architect Review. No downstream promotion or new claim;
-existing other-task decisions remain unchanged. Reported passing checks do not
-waive these original-scope requirements. ARCH-020 remains in implementation.
+Reviewed implementation 399cc2f and report 0ed91909. **Ready, Attempt 2 preserved,
+claim cleared**, not accepted. R1 confuses earlier audio completion time with a
+new message's sent time; R2 treats completion of the preceding reply as superseding
+new audio. Both reproduce as ignored valid messages. The canonical task's latest
+Architect Review contains the correction contract and validation expectations.
+The original A1/A2 scope amendments are not retroactive defects; these findings
+concern the submitted amended implementation. Simplified shop-language scope
+remains; no phone-country prerequisites are restored. No downstream promotion or
+new attempt is claimed. Older Background review/in-progress/readiness statements
+are historical; this is the current decision. Architecture remains unaccepted.
 
-## COMMERCE-011 Attempt 2 — Changes Requested — 2026-09-21
+## BACKGROUND-001 user-directed review hold
 
-COMMERCE-011 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
-Reviewed implementation `86bd4e4` (including `08d8cf2`) and report `49a6dff5`.
-Four isolated functional reproductions returned valid:true for invalid compiler
-inputs. Documentation source mapping/retrieval and process cancellation remain
-incorrect; rolling admission deletes completed request history and GET does not
-map admission errors. R1/R3/R4 remain open. The full schema artifact now matches
-the pinned package and recorded hash; trailing whitespace is not the blocker.
-See the task's latest Architect Review for concrete corrections. No new attempt,
-dependent promotion, implementation change or main integration. Other task states
-remain unchanged; prior COMMERCE-011 review notes are historical.
+Current status: Review, Attempt 2, no active claim. User requested no re-preparation or new claim. This supersedes the prior Ready/preparation direction only; R1/R2 remain unresolved against implementation 399cc2f and acceptance remains withheld. No downstream promotion.
+
+## BACKGROUND-001 return to Ready
+
+Latest user instruction restores Ready for reviewed R1/R2 corrections, Attempt 2, executor/claimed_at null. This supersedes the preceding Review hold. Acceptance remains withheld; no preparation, new claim or downstream promotion is performed by this update.
+
+## BACKGROUND-001 Attempt 3 architect acceptance — 2026-09-20
+
+ARCH-020-BACKGROUND-001 is **Accepted / Complete, Attempt 3**, implementation
+`4e42056`, report `7a3cf35d`. R1/R2 are resolved: persisted inbound ordering
+replaces completion-time comparisons, and finishing an earlier reply does not
+discard valid pending audio. Architect independently reran **133 passing tests**
+and reviewed the submitted passing build and local real-SDK compatibility evidence.
+The existing configurable OpenAI adapter and A1/A2 amendments are accepted.
+Live audio-quality and PostgreSQL concurrency checks remain explicitly not run;
+no deployed integration or acoustic-quality result is asserted.
+
+This is the current decision and supersedes earlier BACKGROUND-001 Ready/Review
+and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
+GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
+no dependent task is promoted or launched. Developer integration remains separate,
+and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+
+## Parallel start frontier — 2026-09-21
+
+003 and008 are Ready, unclaimed, for independent component implementation and
+acceptance against C17 ports.011 continues separately. New013 connects real
+services after003/004/005/006/007/008/011 are accepted;009 and GATEWAY-001 now wait
+for013.012 and terminal system testing also explicitly depend on013. No task is
+launched by this amendment. Fixtures never become production service fallbacks.
+
+
+2026-09-21 C18 frontier: BACKGROUND-002 promoted Ready, unclaimed, after accepted
+BACKGROUND-001. COMMERCE-007 retains its own evaluator prerequisite but no longer
+blocks the consumer. SYSTEM-TEST-001 owns EC01–EC12 real-service pairing.
