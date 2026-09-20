@@ -26,3 +26,15 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
 supersedes earlier no-promotion wording for these two tasks only.011 active task
 worktree status remains authoritative. No task was claimed by this amendment.
+
+## COMMERCE-008 Attempt 1 — Changes Requested — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 1 retained**, claim cleared, not accepted.
+Reviewed implementation `865e16c` and report `a6df81c1`. Authenticated shell and
+route scaffolding exist, but C17 StudioServices ports, authoring workflows,
+record resolution and required navigation behavior remain unimplemented.
+The task's latest Architect Review records R1–R3. Component/fixture behavior and
+local browser evidence remain008-owned; real provider composition remains013-owned.
+Readiness uses002, DATABASE-001 and SHARED-001, not the superseded service chain.
+No new claim, downstream promotion, implementation edit or main integration.
+Other canonical task states remain authoritative; ARCH-020 is not complete.

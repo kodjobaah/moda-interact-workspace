@@ -81,3 +81,15 @@ and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
 GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+## COMMERCE-008 Attempt 1 — Changes Requested — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 1 retained**, claim cleared, not accepted.
+Reviewed implementation `865e16c` and report `a6df81c1`. Authenticated shell and
+route scaffolding exist, but C17 StudioServices ports, authoring workflows,
+record resolution and required navigation behavior remain unimplemented.
+The task's latest Architect Review records R1–R3. Component/fixture behavior and
+local browser evidence remain008-owned; real provider composition remains013-owned.
+Readiness uses002, DATABASE-001 and SHARED-001, not the superseded service chain.
+No new claim, downstream promotion, implementation edit or main integration.
+Other canonical task states remain authoritative; ARCH-020 is not complete.

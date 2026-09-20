@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 120
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -570,6 +570,44 @@ None newly reported.
 Implementation repository: physical worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-008`, branch `task/ARCH-020-COMMERCE-008`, clean after commit/push. Implementation commit: `865e16cc474ad9560bc3e948f7447a382195686e`, pushed to `origin/task/ARCH-020-COMMERCE-008`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-008`, branch `task/ARCH-020-COMMERCE-008`; parent report update is task-owned and is ready to commit/push. Nested database submodule SHA: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`, matching the launcher fact. No parent service gitlink, main branch, architecture document, index, or another task was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Not accepted; Ready for correction.** Preserve Attempt 1, executor/claimed_at null. Reviewed implementation `865e16cc474ad9560bc3e948f7447a382195686e` and report `a6df81c13741d2f36cca4f47564d0f3f0e085629` in the launcher-resolved dedicated worktrees. Both were clean and remote heads matched. No new claim, implementation edit, main integration or downstream promotion.
+
+The authenticated shell, ordered links, development badge and root redirect are useful progress. This submission is a route scaffold, not the component implementation required by C17. The latest parallel-delivery amendment explicitly retains every field, action, role, failure and side-effect requirement and says not to weaken them to static mockups. Real provider wiring remains COMMERCE-013-owned; missing component behavior belongs here and is not blocked on COMMERCE-011 acceptance.
+
+#### R1 — P1: implement the authoring component and typed service ports
+
+`components/studio-screen.tsx:14–28` supplies a generic empty section; the tools/capabilities list pages only render it. U07 explicitly says discovery will appear later. U03 has no catalogue read, filters or rows. There is no `src/studio/` implementation or `docs/studio-service-contract.md`, no StudioServices injection boundary, and no new authoring actions/forms/dialogs in the submitted change.
+
+As a result a staff member cannot add behaviour to an arbitrary existing feature, create/edit/save/publish a reusable tool, select schema fields and build a query, attach an exact tool revision, edit capability prompts/settings, compose a response contract, create/activate/rollback a release, or inspect a merchant's resolved tool descriptors. These are the task's primary functions; routes displaying explanatory prose cannot perform N02–N08 or N13.
+
+Correction: implement the C17 `StudioServices` ports and canonical-field mapping first; build the specified U03–U13 components against those ports. Inject populated/empty/error fixtures only through tests. Production with absent adapters must show an explicit unavailable state, never load fixtures or pretend the database is empty. Keep publication, discovery and resolver implementations with their owners; COMMERCE-013 supplies real adapters later. Complete the existing page-specific forms, roles, validation, exact revision choice, mutation guards, CAS/replay and input-preserving failures. Reusing PendingActionForm is appropriate, but existing auth uses do not implement authoring actions.
+
+Acceptance evidence should demonstrate the core feature -> behaviour -> tool -> schema query -> exact association -> release flow and merchant inspection with injected service results and recorded command effects. Focus on functioning workflows and their failure behavior, not a larger test count.
+
+#### R2 — P2: resolve detail records and distinguish missing, unavailable and denied states
+
+`components/studio-screen.tsx:31–35` always renders Record unavailable, regardless of id, and never performs a read or calls notFound. Every feature/tool/capability/release/shop detail page passes arbitrary route text directly to this component. Valid IDs can never open, invalid IDs receive a normal page instead of the required 404, and revision ownership is not checked.
+
+Correction: use authenticated typed detail reads, resolve validated revision and return contexts, render actual records, and map not-found to Next's 404 boundary. Preserve distinct unavailable and forbidden states. Do not mask a provider outage or denied read as a missing record. Demonstrate a valid deep link, an unknown ID and a foreign revision ID using injected ports; navigation must preserve the specified source context.
+
+#### R3 — P2: implement truthful shell state and required navigation behavior
+
+`components/studio-shell.tsx` always says No active release; `app/features/page.tsx` labels static empty content Live data. These claims do not derive from a read model. On narrow screens the CSS turns navigation into a horizontal link strip, with no labelled open/close menu or selection-to-heading focus behavior. There is no dirty-editor Stay/Discard navigation because editors are absent.
+
+Correction: supply active release/availability through the shell read model, distinguish unavailable from genuinely empty data, remove false Live data claims, and implement the specified mobile menu and focus handling. Include dirty navigation and dialog focus return as the editors are built. Keep the existing auth guard and development badge behavior.
+
+#### Evidence and resubmission
+
+Reviewed all 16 changed files and the current C17/task split. The reported 69 passing tests and build/typecheck/lint establish the scaffold builds; the five focused tests are pre-existing auth source checks, not Studio workflow evidence. No test files changed in this submission. No redundant full-suite rerun was needed to confirm the missing implementation.
+
+Local component/browser fixture validation, keyboard/narrow behavior and screenshot evidence remain COMMERCE-008-owned under the explicit task amendment. They were not reassigned to the developer or013. Live Google OAuth and real service/provider integration remain separate and are not new acceptance blockers here. Correct the report's delegation of local UI evidence. Provide the task's requirement-to-fixture mapping with actual behavior/results and prepared worktree synchronization evidence on resubmission.
+
+Retain useful shell work, implement the owned component scope on the same task branch, validate, and push both branches. COMMERCE-009 owns actual U14 execution; this task owns valid entry/return context only. No other owner implementation or live deployment is requested. C17 dependencies remain 002/DATABASE-001/SHARED-001; do not restore the superseded pending-service dependency chain.
+
+### Historical definition review
 
 ### Review Status
 

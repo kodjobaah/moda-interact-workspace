@@ -395,3 +395,15 @@ acceptance against C17 ports.011 continues separately. New013 connects real
 services after003/004/005/006/007/008/011 are accepted;009 and GATEWAY-001 now wait
 for013.012 and terminal system testing also explicitly depend on013. No task is
 launched by this amendment. Fixtures never become production service fallbacks.
+
+## COMMERCE-008 Attempt 1 — Changes Requested — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 1 retained**, claim cleared, not accepted.
+Reviewed implementation `865e16c` and report `a6df81c1`. Authenticated shell and
+route scaffolding exist, but C17 StudioServices ports, authoring workflows,
+record resolution and required navigation behavior remain unimplemented.
+The task's latest Architect Review records R1–R3. Component/fixture behavior and
+local browser evidence remain008-owned; real provider composition remains013-owned.
+Readiness uses002, DATABASE-001 and SHARED-001, not the superseded service chain.
+No new claim, downstream promotion, implementation edit or main integration.
+Other canonical task states remain authoritative; ARCH-020 is not complete.
