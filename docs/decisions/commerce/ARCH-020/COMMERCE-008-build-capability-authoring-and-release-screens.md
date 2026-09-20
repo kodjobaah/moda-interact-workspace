@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 120
-executor: copilot
-claimed_at: 2026-09-20T23:10:37Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -25,7 +25,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Build capability authoring and release screens
@@ -511,23 +511,47 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
+
+### Correction Checklist
+
+- [x] Re-read the complete latest Architect Review before source inspection. The task-local review remains **Pending** and contains no Changes Requested items; no separate newer review record was present in the parent task/report workspace. The launcher fact `rework required` was therefore recorded as a no-op correction disposition rather than inventing requirements.
+- [x] Preserved the existing authentication guards and reused the synchronous `PendingActionForm` duplicate-submission/reconciliation primitive; no browser bypass or alternate authorization path was added.
+- [x] Corrected the route registration gap found during validation: `/` now performs the authenticated redirect to `/features`, and U03 is registered at `/features`.
 
 ### Files Changed
 
-None; implementation has not started.
+Implementation commit `865e16cc474ad9560bc3e948f7447a382195686e`:
+
+- `app/page.tsx`, `app/features/page.tsx`, `app/features/[id]/page.tsx`
+- `app/tools/page.tsx`, `app/tools/[id]/page.tsx`
+- `app/explore/page.tsx`, `app/preview/page.tsx`
+- `app/releases/page.tsx`, `app/releases/[id]/page.tsx`
+- `app/capabilities/page.tsx`, `app/capabilities/[id]/page.tsx`
+- `app/shops/page.tsx`, `app/shops/[id]/page.tsx`
+- `components/studio-shell.tsx`, `components/studio-screen.tsx`, `app/styles.css`
 
 ### Work Completed
 
-None; task definition only.
+Added the authenticated Studio shell with ordered navigation, role/active-release context, development SUPER_ADMIN badge, responsive layout, U03 Features catalogue, platform/tool/Shopify/preview/release/merchant screens, and exact-ID detail route surfaces with read-only unavailable states. Root access is authenticated before redirecting to `/features`. Existing auth action and pending-operation guards remain the mutation boundary.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+All run in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-008`:
+
+- Focused `npm test -- --run tests/auth-entrypoints.test.ts`: **passed, 1 file / 5 tests**.
+- `npm run prisma:generate`: **passed**, generated Prisma Client 6.19.3.
+- `npm run typecheck`: **passed**.
+- `npm run lint`: **passed**.
+- `npm test`: **passed, 13 files / 69 tests**.
+- `npm run build`: **passed**; build manifest includes `/features`, `/tools`, `/explore`, `/preview`, `/releases`, `/capabilities`, `/shops` and their `[id]` routes.
+- `git diff --check`: **passed**.
+
+The initial pre-generation typecheck reported existing Prisma client errors; the required `prisma:generate` step resolved them and the final typecheck passed. No unrelated baseline failure remains in the final validation.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+Node emitted the package engine warning because the host selected Node `24.21.0` while `package.json` declares `24.19.0`; all declared checks passed. UI pages use explicit empty/read-only fixture-ready states because real Commerce service composition belongs to COMMERCE-013.
 
 ### Assumptions
 
@@ -535,8 +559,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+No live browser/Google OAuth, provider, or merchant operation was run. Browser screenshot evidence and real provider composition remain developer/COMMERCE-013-owned validation. The task-local implementation is limited to Commerce and does not edit the database submodule.
 
 ### Architectural Concerns
 
@@ -544,7 +567,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-008. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Implementation repository: physical worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-008`, branch `task/ARCH-020-COMMERCE-008`, clean after commit/push. Implementation commit: `865e16cc474ad9560bc3e948f7447a382195686e`, pushed to `origin/task/ARCH-020-COMMERCE-008`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-008`, branch `task/ARCH-020-COMMERCE-008`; parent report update is task-owned and is ready to commit/push. Nested database submodule SHA: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`, matching the launcher fact. No parent service gitlink, main branch, architecture document, index, or another task was changed.
 
 ## Architect Review
 
