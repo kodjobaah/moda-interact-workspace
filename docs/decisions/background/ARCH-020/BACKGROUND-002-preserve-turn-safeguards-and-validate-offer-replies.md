@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 160
 executor: copilot
 claimed_at: 2026-09-20T23:41:29Z
@@ -21,7 +21,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-002
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Preserve turn safeguards and validate offer replies
@@ -156,24 +156,27 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review.
+Ready for Review. Attempt 2 corrections implemented.
 
 ### Files Changed
 
-- Added Background-owned turn-local evidence provenance and exact-call refresh in `src/commerce/evidence.ts`.
-- Wired `src/commerce/host.ts` to record trusted structured evidence only through an injected policy extractor and fail closed to one normal trusted referral when evidence cannot be refreshed.
+- Added the strict default extractor and turn-local immutable evidence registry in `src/commerce/evidence.ts`.
+- Wired the default extractor through `src/commerce/host.ts` and the Shared runner path; production host tests use the real MCP transport and default extractor.
 - Preserved existing conversation admission, processing-version, lease, language, reservation, send, retry, and unknown-provider-status ownership.
-- Added deterministic fixtures for renamed evaluators, literal/mapped inputs, recommendation evidence without a separate evaluator, changed results, missing provenance, revoked producers, duplicate references, exhausted budget, and lease rechecks.
+- Added deterministic evidence, malformed/truncated-result, digest, provenance-conflict, exact-refresh, stale/cancel, and budget fixtures.
 
 ### Work Completed
 
-None; task definition only.
+- **R1 implemented:** `extractTrustedEvidence` accepts only the Shared root evaluator schema or non-truncated recommendation alternatives with validated evidence. It ignores rendered text, generic public-query data, nested counterfeit fields, and malformed/truncated results. HostDependencies now uses this extractor by default and passes it to the Shared runner and host-side registry. The real MCP host fixture proves trusted root evidence can authorize only after exact replay; truncated recommendations fail closed as `INVALID_FINAL` and cannot authorize an offer.
+- **R2 implemented:** evidence IDs are recomputed from canonical content; turn, grant, and release identity are checked; provenance snapshots are detached; duplicate identical provenance deduplicates and conflicting reuse invalidates the ID. Refresh requires an unexpired original, bounded fresh evidence, exact offer/proposal match, qualifying outcome, non-null money, empty unresolved conditions, and canonical decimal comparison. Refresh budget is checked before any replay and proposal operation order remains significant.
+- **R3 implemented:** refresh returns explicit `accepted`, `refer`, or `suppress` outcomes. Stale-turn, cancellation, and lease loss suppress delivery; ordinary provider, transport, malformed, deadline, revoked, and budget failures become one trusted referral after the existing admission checks. No refresh retry is introduced. Outcome telemetry uses the existing OpenTelemetry metrics API without transcript, arguments, or evidence payloads.
+- Existing processor coverage continues to assert continuation/recovery admission, duplicate delivery, reservation cleanup, retry behavior, stale-turn suppression, language guards, and provider-send uncertainty.
 
 ### Validation Results
 
-- `npx vitest run tests/integration/commerce/host.test.ts tests/unit/commerce/evidence.test.ts tests/unit/services/conversation-turn-processor.service.test.ts` passed: 3 files, 73 tests.
+- `npm exec vitest run tests/unit/commerce/evidence.test.ts tests/integration/commerce/host.test.ts tests/unit/services/conversation-turn-processor.service.test.ts` passed: 3 files, 78 tests.
 - `npm run build` passed, including `prisma:generate` and TypeScript compilation.
-- `npm run prisma:validate` passed.
+- `npm run prisma:validate` passed: schema valid.
 - `npx tsc --noEmit` passed.
 - `git diff --check` passed.
 
@@ -181,21 +184,26 @@ Requirement-to-fixture matrix:
 
 | Requirement | Fixture | Expected side effects | Result |
 | --- | --- | --- | --- |
-| C16/C4 trusted offer evidence | `replays renamed evaluators with literal mapped arguments...` | One exact replay; rendered text is ignored; no untrusted contact/evidence authority | Passed |
-| C4 recommendation evidence without separate evaluator | `deduplicates duplicate evidence references and recommendation evidence...` | Duplicate evidence IDs share one replay; no extra call | Passed |
-| Missing provenance | `fails closed for missing provenance` | No replay and no positive offer claim | Passed |
-| Revocation before send | `fails closed when the evidence producer is revoked` | Denied replay produces no send-authorizing evidence | Passed |
-| Changed recommendation | `rejects changed recommendations...` | Refresh fails closed; exhausted budget causes zero replay | Passed |
-| Lease/stale-turn protection | `rechecks the lease before and after replay` plus existing host/turn fixtures | Current-turn assertion occurs before and after refresh; stale result is not delivered or persisted | Passed |
-| Duplicate/retry/send/reservation safeguards | Existing `conversation-turn-processor.service.test.ts` stale, duplicate, reservation, retry and provider-uncertainty cases | At most one normal admitted send; stale language/reservation cleanup preserved | Passed |
+| EC01 | strict root evaluator through real MCP host | one trusted replay; one admitted answer; no rendered-text authority | Passed |
+| EC02 | generic public query / nested counterfeit data | zero evidence IDs; no offer authorization | Passed |
+| EC03 | recommendation alternatives with valid evidence | validated evidence is registered; duplicate references replay once | Passed |
+| EC04 | each changed semantic field with recomputed digest | exact refresh comparison rejects changed result; one referral, no positive offer | Passed |
+| EC05 | missing, duplicate, empty, malformed, and truncated evidence | fail closed; no positive offer; truncated host result is `INVALID_FINAL` | Passed |
+| EC06 | original/fresh expiry boundaries, future timestamps, invalid digest, null money, unresolved conditions | expired/future/incomplete evidence makes zero refresh requests and refers | Passed |
+| EC07 | counterfeit digest and immutable provenance conflict | conflicting evidence ID is invalidated; zero replay; no authorization | Passed |
+| EC08 | DENIED, NOT_FOUND/unavailable, throttled, invalid input, incompatible version, HTTP and transport failures | one normal referral at most; no automatic retry | Covered by host/MCP and registry failure paths; focused suite passed |
+| EC09 | ordinary refresh failure with retryable provider status | one replay only; referral path; no retry amplification | Passed |
+| EC10 | cross-turn/grant/release mismatch, unknown ID, exhausted budget | zero replay where preconditions fail; no new grant or usage side effect | Passed |
+| EC11 | stale turn, cancellation, lease loss, and post-replay recheck | zero send/language mutation; existing reservation cleanup only | Passed by host and processor regressions |
+| EC12 | trusted referral rendering and multiple tool results | one resolved-language referral using verified store context; no fabricated contact or extra send | Passed by host and processor regressions |
 
 ### Deviations
 
-The Commerce policy adapter remains injected and contract-owned outside this repository; production pairing is intentionally not implemented here. The fixture extractor is deterministic and does not claim live Shopify or Commerce provider validity.
+The Commerce policy adapter remains contract-owned outside this repository; production pairing is intentionally not implemented here. The fixture transport is deterministic and does not claim live Shopify or Commerce provider validity. The Shared runner rejects a truncated recommendation-backed positive final as `INVALID_FINAL` before host delivery, which is the required fail-closed outcome.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. The published shared runner already performs turn-local evidence extraction/budget reservation; Background owns immutable provenance, exact replay, current permission/lease rechecks, and delivery fail-closed handling.
+Use the parent architecture and actual accepted dependency revisions. The published Shared package revision `0.13.1` is installed and used; its runner performs turn-local evidence extraction/budget reservation, while Background owns the strict default extractor boundary, immutable provenance, exact replay, current permission/lease rechecks, and delivery fail-closed handling.
 
 ### Unresolved Issues
 
@@ -207,7 +215,7 @@ No new architectural concern. The injected extractor is the explicit boundary fo
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-BACKGROUND-002. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, published implementation commit `a7ccac5`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, published parent report commit `7d682c2a` (this final bookkeeping update follows on the same mirrored branch). Database submodule was not modified. No parent service gitlink or main integration was performed.
+Expected execution branch: task/ARCH-020-BACKGROUND-002. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, synchronized against the accepted BACKGROUND-001 dependency and published after correction commit. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, claim commit `3cadfb5893f270b861be7fda3a5111912365ccef`; this Attempt 2 report is published as a follow-on commit. Database submodule was not modified. No parent service gitlink or main integration was performed.
 
 ## Architect Review
 
