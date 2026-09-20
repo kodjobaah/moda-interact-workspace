@@ -15,6 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-020-DATABASE-002
+  - ARCH-020-SHARED-004
   - ARCH-020-BACKGROUND-001
   - ARCH-020-BACKGROUND-002
   - ARCH-020-COMMERCE-001
@@ -151,6 +153,9 @@ semantics above are binding inputs. Redis availability never becomes an authoriz
 or correctness dependency. Do not expose cache controls as model tool arguments.
 
 ## Dependencies
+
+- ARCH-020-DATABASE-002
+- ARCH-020-SHARED-004
 
 - ARCH-020-BACKGROUND-001
 - ARCH-020-BACKGROUND-002

@@ -106,6 +106,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
+- [ ] Coordinate BACKGROUND-001 A2/C6.3 transcription configuration: final provider/model selector names, allowed values/defaults and credentials must reach the messaging worker in independent test/production settings. Preserve Groq; OpenAI is explicit, with gpt-4o-mini-transcribe the proposed OpenAI-only default. No automatic fallback. Existing translation-worker OpenAI group is not messaging configuration; scope secrets narrowly rather than importing unrelated translation settings. Background owns any evidence-required conversion/image dependency; Gateway verifies runtime/resources and records explicit rollout/rollback. Configuration checks do not require paid live transcription.
+
 - [ ] Public staff can traverse all pages and authenticated discovery operations, but cannot access /api/mcp or invoke arbitrary developer/CLI tools; child process receives no production credentials.
 
 - [ ] Blueprint references the real new repository and correct commands; no credentials or invented remote/host are committed.
