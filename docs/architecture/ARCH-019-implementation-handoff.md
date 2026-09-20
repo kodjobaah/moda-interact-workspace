@@ -2,7 +2,9 @@
 
 Canonical architecture: [ARCH-019](ARCH-019-merchant-recovery-experience.md).
 
-DATABASE-001 is accepted/Complete at `54c0ec2e092cd9db52d76e5bb46899efa4063965` (Attempt 1). Authorized PostgreSQL 15.19 rehearsal passed; evidence is retained with the database task. SHOPIFY-001/002 are Ready, with acceptance metadata reconciled and published on each canonical parent task branch. Remaining tasks are Pending. No downstream task is claimed. Review publication is explicitly delegated by the developer; developer integration or explicit accepted-commit consumption remains required. SHOPIFY-002 owns the measured transcript query-shape issue and actual-reader plan verification.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 at Attempt 3; SHOPIFY-004 and SHOPIFY-005 at Attempt 2 (SHOPIFY-005 accepted `5130f79`). SHOPIFY-006 Ready at Attempt 0; SYSTEM-TEST-001 Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependency records are reconciled into SHOPIFY-006; readiness does not launch implementation or authorize unmerged dependency consumption.
+
+SHOPIFY-001 accepted implementation: `08af00b85508d3ae7e653890abbc8a5ca0c0cc9d`; reviewed report: `181e3a91b3cfc10e099b913db6d2e5fbb6f5dcfb`. DATABASE-001 accepted `54c0ec2` is integrated in database `9c6a4d8` with an identical tree. The complete experience still requires all remaining tasks and terminal validation. The developer explicitly delegated commit/push of these review updates on 2026-09-20.
 
 Dependency sequence:
 
@@ -20,3 +22,7 @@ Materialisation creates only parent task worktrees/branches. Execution creates t
 All new task branches start from current origin/main. Developer integrates accepted implementation dependencies before downstream execution or explicitly authorizes the appropriate accepted dependency commit consumption. Additive database migration precedes the final app release; app deploy follows SHOPIFY-006 acceptance. Retain existing billing URLs and legacy detail redirects. System testing is terminal, after developer manual exercise, and cannot gate unfinished implementation.
 
 Historical baseline documents: ARCH-013 routing and accepted ARCH-017 onboarding/current-period behaviour. ARCH-019 changes navigation/read presentation only; keep the current source lifecycle policy. Do not edit unrelated pending-recovery or recovery-settings work present in shared checkouts.
+
+## SHOPIFY-002 final acceptance
+
+Accepted `1a60f1e` (Attempt 3), with all five PostgreSQL tests and four bounded index plans at tested `eb34340`; production readers unchanged. Correction PR #40 and accepted SHOPIFY-003 implementation must follow developer integration/approved consumption rules before SHOPIFY-004 execution. Report PR #159 contains the acceptance record.
