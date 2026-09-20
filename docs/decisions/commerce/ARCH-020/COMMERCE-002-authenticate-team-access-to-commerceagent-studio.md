@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor:
 claimed_at:
@@ -278,6 +278,53 @@ None. The task consumes exact `next-auth` 5.0.0-beta.32 and accepted Shared 0.13
 - Merged to implementation main: no. Merged to workspace main: no.
 
 ## Architect Review
+
+### Current review — Accepted, Attempt 2 (2026-09-20)
+
+**Accepted. COMMERCE-002 is Complete at Attempt 2.** Reviewed published
+implementation `fb3362e2e8df093c6a550bb08f9ee42aa8f778ab` and report
+`5b1b4ec58e6aa12acdfc729f4ec20dbbb4948d6f`; both remote task heads verified.
+This decision supersedes the historical Attempt 1 Changes Requested below.
+
+R1 is closed: HTTP is admitted only for the configured loopback host under
+explicit development, while exact Origin/POST checks remain. Hosted HTTP and
+production-build development overrides still fail closed. The documented local
+mutation origin no longer produces the previous configuration failure.
+
+R2 is closed: the denied page offers a guarded Clear session control invoking
+`clearStudioSessionAction`. That narrow protocol operation retains same-origin
+POST protection and delegates cookie clearing/redirect to NextAuth without
+requiring an active PlatformAdmin. A revoked or expired session can therefore
+return to sign-in. Protected business routes still require current identity and
+role; the change grants no staff permission or MCP authority. Final U01/U02 page
+layout ownership remains COMMERCE-008.
+
+Architect reran the four focused environment/origin/auth-control/entry-point files:
+**20 tests passed**. Inspected the actual environment, Server Action and denied-page
+flow rather than treating test count as acceptance. Supplied validation has
+**69 passing tests**, typecheck, lint, build and Prisma generation; committed
+whitespace checks pass. No further functional blocker found, no broader coverage
+expansion requested, and no redundant build/infrastructure run performed.
+
+Database remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Dedicated mirrored
+worktrees, prepared claim, publication and clean state are consistent with the
+report. No schema, main, gitlink or implementation changes by this review.
+
+Live Google OAuth remains **unrun and developer-owned**: real callback-host and
+credential verification is still required before claiming deployed sign-in works.
+As C7.1 specifies local injected fixtures and separate live-check recording, this
+is retained deployment validation, not a blocker to acceptance of the corrected
+repository auth foundation.
+
+Dependency disposition: accepted source is currently on task/ARCH-020-COMMERCE-002;
+Commerce origin/main remains `86929b2`. Downstream consumers require developer
+integration or explicit accepted-commit consumption before readiness promotion.
+COMMERCE-011's task dependencies are satisfied in this branch snapshot, but its
+source integration gate remains; COMMERCE-003/012, Gateway and terminal system
+validation retain their other dependencies. No downstream task is launched or
+promoted here; ARCH-020 is not Implemented.
+
+### Historical Attempt 1 review
 
 ### Review Status
 

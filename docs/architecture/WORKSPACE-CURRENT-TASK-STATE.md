@@ -389,14 +389,14 @@ Current frontier: all ARCH-019 implementation tasks are architect-accepted/Compl
 Scoped addition only; earlier architecture rollups are unchanged. Source:
 [ARCH-020 architecture](ARCH-020-commerce-agent-studio-mcp-capabilities.md) and
 [handoff](ARCH-020-implementation-handoff.md). Individual task YAML is authoritative.
-COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 is Ready for corrections after Attempt 1 Changes Requested (`7f70f33a`): allow the documented development HTTP origin under the explicit local policy and provide a safe session-clearing path for revoked users. Attempt 1 is retained with no active claim; no downstream task is promoted or launched. COMMERCE-001 remains accepted and integrated. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 is architect-accepted Complete at Attempt 2 (`fb3362e`): development HTTP mutations and revoked-session recovery are corrected. Live Google OAuth remains developer-owned deployment validation. Downstream source consumption awaits developer integration or explicit accepted-commit approval; no task is promoted or launched. COMMERCE-001 remains accepted and integrated. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
 | ARCH-020-DATABASE-001 | database | complete | 2 | ARCH-016-DATABASE-001 |
 | ARCH-020-SHARED-001 | shared | complete | 2 | ARCH-016-SHARED-001 |
 | ARCH-020-COMMERCE-001 | commerce | complete | 3 | — |
-| ARCH-020-COMMERCE-002 | commerce | ready | 1 | ARCH-020-COMMERCE-001 |
+| ARCH-020-COMMERCE-002 | commerce | complete | 2 | ARCH-020-COMMERCE-001 |
 | ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-004 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
