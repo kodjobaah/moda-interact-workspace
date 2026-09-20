@@ -39,3 +39,16 @@ failed startup promises without owned shutdown. See the latest task Architect
 Review. Verified artifact is retained; no new live validation requirement, claim,
 dependent promotion, implementation edit or main integration. Other task states
 and C17 ownership remain unchanged.
+
+## COMMERCE-011 Attempt 4 — document-provider resolution — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 4 retained**, claim cleared, not yet accepted.
+Reviewed `f363ac4` / report `05311f5b`; eight independent compiler checks pass.
+The pinned MCP document-fetch gap is valid and is resolved architecturally by
+**C15.1**: retain MCP search, add a bounded credential-free server adapter for
+exact official shopify.dev/docs document retrieval. The in-Studio API/workflow is
+preserved. Always-unavailable document retrieval is not task completion.
+Implement the amendment on the same task branch, then resubmit. Prior review
+history accidentally removed by the report has been restored. The reported full
+suite remains95/96; the unrelated timing failure is not asserted resolved.
+No new claim, downstream promotion, implementation edit or main integration.

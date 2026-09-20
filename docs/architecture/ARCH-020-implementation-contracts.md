@@ -1203,6 +1203,49 @@ for tokenless public data versus token-required fields. Actual pinned schema,
 provider behaviour and SDK compatibility are implementation evidence, not claims
 that this documentation review exercised a live merchant store.
 
+## C15.1 Document retrieval provider amendment — 2026-09-21
+
+Architect resolution of COMMERCE-011 Attempt 4: the verified tool list of pinned
+@shopify/dev-mcp@1.15.4 provides search chunks, not a full-document fetch operation.
+Keep that pin for documentation search and the verified schema artifact. For the
+existing typed document operation only, Commerce may use a server-owned HTTPS
+adapter to official `https://shopify.dev/docs/` pages. This explicitly supersedes
+any assumption that every documentation operation must be an MCP tool. The C15
+Studio API and U07/N04 workflow remain unchanged; no browser/external IDE handoff
+or search-excerpt substitution is accepted.
+
+COMMERCE-011 owns this narrow adapter, preferably `lib/discovery/document.ts`.
+It accepts the existing validated path, never a configurable origin, transport,
+headers or tool name. Normalize with URL parsing before any fetch; require HTTPS,
+exact hostname shopify.dev, default port, no userinfo, query or fragment, and a
+normalized path under /docs/. Reject ambiguous encoded separators/traversal.
+Use a fresh credential-free request with fixed headers: never forward browser,
+Studio, store or environment credentials. Fetch only this public documentation
+origin. Handle redirects manually, at most two, applying the same validation at
+each hop before fetching; off-origin/non-doc redirects fail closed. No retries.
+
+Use the existing authenticated admission and 20-second total operation deadline,
+including redirects/body reading; propagate cancellation to fetch and body reads.
+Bound decoded streamed input to 1 MiB before full accumulation/parsing, and return
+a typed unavailable/too-large failure if exceeded. Extract the actual document
+title and complete main documentation content from verified HTML or a verified
+official text representation; do not invent a .md endpoint or schema. A missing
+article/title, malformed representation or incomplete content is a typed failure.
+The existing response {title,text,sourceUrl} must fit 64 KiB serialized UTF-8,
+with title <=255 characters; reject oversized documents rather than silently
+truncating. sourceUrl is the final approved canonical documentation URL. Render
+text/escaped sanitized Markdown only; no active HTML/scripts or fetched resources.
+Documentation is untrusted explanatory content, never executable tool authority.
+
+Evidence: fixture-based selected-document traversal using a sanitized real public
+page representation (including content beyond 2,000 characters), exact canonical
+source/title, error handling, streamed oversize, timeout/cancellation and rejected
+redirect/URL controls. Exercise the production adapter with controlled transports;
+no live merchant store, deployed OAuth or Redis saturation run is required. Record
+the sample source/acquisition and parser behavior. Search continues to require
+actual verified upstream response mapping. COMMERCE-013 owns assembled provider
+integration; COMMERCE-008 consumes unchanged typed document results.
+
 ## C16. Release-owned response contracts and Studio authoring
 
 This section extends C4/C6/C7/C9. Shared fixes only the delivery envelope; it must
