@@ -334,4 +334,8 @@ RESOLVED
 
 and remove any exemptions that depend on the old baseline count.
 
+### Revision-specific observation — 2026-09-20
+
+ARCH-019-SHOPIFY-001 baseline `c4fd514` and reviewed implementation `08af00b` contain identical `tests/unit/merchant-route-access-policy.test.ts`. Full typechecking currently stops at seven parser errors at lines 201 and 219–220 of that unchanged file, before a complete semantic diagnostic inventory is available. The historical 48-error count above must not be presented as the current result or as resolved. Focused recovery-reader TypeScript passes with unrelated JavaScript diagnostics disabled; this does not certify the whole repository. Syntax cleanup belongs to separate owning-repository work.
+
 <!-- MODA-TYPECHECK-001:END -->
