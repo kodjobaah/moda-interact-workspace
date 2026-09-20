@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-20T23:46:39Z
+status: review
+executor: null
+claimed_at: null
 priority: 85
 attempt: 4
 depends_on:
@@ -24,7 +24,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Provide integrated Shopify discovery and schema validation
@@ -190,84 +190,58 @@ implementation and parent report are kept in dedicated physical task worktrees.
 
  The checked-in artifact is the accepted local Storefront 2026-07 schema surface
  used by the compiler; promotion still requires the pending deployed/live checks
- listed above.
+## Completion Report
+
+### Status
+
+Ready for Review.
+
+### Correction Checklist
+
+- Attempt 3 R1 implemented: `compiler.ts` now builds a `GraphQLSchema` from the retained introspection artifact and runs full GraphQL semantic validation after the C14 policy walk. Duplicate arguments, conflicting response aliases, enum/string mismatches, nested input semantics and schema-invalid documents are rejected without replacing established bounded policy error codes. The three exact review regressions and valid neighboring queries pass.
+- Attempt 3 R3 document retrieval: blocked and explicitly reconciled. The actual pinned `@shopify/dev-mcp@1.15.4` tool list contains `search_docs_chunks` but no verified document-fetch operation. The adapter no longer returns a search excerpt as a document; it returns a bounded capability error. `parseDocumentResult` accepts only a sanitized full-document response with title, canonical Shopify URL and complete content, and rejects excerpt-shaped arrays. This requires architect resolution or a later accepted upstream capability before document retrieval can be marked implemented.
+- Attempt 3 R3 lifecycle implemented: failed startup closes and resets only the failed client attempt, allowing later recovery; service-owned SIGTERM/SIGINT hooks close and reap the pinned child. Focused process tests pass against the real pinned process.
+- Attempt 3 R2 preserved: the verified Storefront 2026-07 artifact, provenance, distribution evidence and SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc` remain unchanged.
+- Attempt 3 R4 preserved: route admission, strict keys, Redis readiness/fail-closed behavior, bounded outputs, cancellation/deadline handling and typed route errors remain covered by the existing executable route tests.
+
+### Files Changed
+
+Implementation commit:
+
+- `f363ac4` (`fix(commerce): complete discovery semantic validation lifecycle`), pushed to `origin/task/ARCH-020-COMMERCE-011`.
+
+Changed files: `lib/discovery/compiler.ts`, `lib/discovery/upstream.ts`, `lib/discovery/service.ts`, `tests/discovery.test.ts`, `tests/discovery-process.test.ts`, and `docs/shopify-discovery-runtime.md`.
+
+### Work Completed
+
+Completed the scoped Attempt 4 corrections within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. The document-fetch capability gap is intentionally surfaced rather than represented as completed.
+
+### Validation Results
+
+- Passed focused discovery validation: `npm test -- --run tests/discovery.test.ts tests/discovery-process.test.ts tests/discovery-route.test.ts` (3 files, 27 tests).
+- Passed `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check`.
+- Full `npm test` reached 15/16 files and 95/96 tests. The sole failure was the existing timing-sensitive `tests/readiness-docker.test.ts` descendant signal-handler assertion; no readiness or unrelated files were changed. This is recorded as a baseline failure, not a task-local regression.
+- The real pinned compatibility fixture started `shopify-dev-mcp` v1.15.4, initialized/listed tools, called `learn_shopify_api` for Storefront 2026-07 and closed the child without a live store credential. The new adapter tests cover sanitized full-document shape rejection and the verified missing document capability.
+- The build generated Prisma Client v6.19.3 from nested database submodule SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+
+### Evidence Matrix
+
+- C14 compiler/schema: `tests/discovery.test.ts`, including the three Attempt 3 semantic regressions, valid ProductDetails, schema traversal and existing C14 boundary controls.
+- C15 process/adapter: `tests/discovery-process.test.ts`, `tests/fixtures/shopify-dev-mcp/compatibility.json`, `lib/discovery/upstream.ts`, and `docs/shopify-discovery-runtime.md`.
+- C15 route/admission: `tests/discovery-route.test.ts` and existing `lib/discovery/limits.ts` integration.
+- Offline fallback: local artifact browsing and validation remain independent of documentation availability.
+
+### Deviations
+
+The pinned process does not provide a verified document-fetch operation. Search chunks are therefore not promoted to documents. Node/package, artifact provenance and accepted database revision remain as recorded in the prior report.
+
+### Unresolved Issues
+
+Architect resolution is required for the C15 document operation gap: either accept a supported pinned upstream document-fetch capability and add its captured compatibility evidence, or narrow the document endpoint contract. Deployed OAuth/revocation, real Redis cross-replica saturation, live Shopify calls and deployment health/restart evidence remain developer-owned validation.
 
 ### Git / VCS
 
- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean at `c61656073d35d8a7b3b9bfd3e4ecfe05385396fa`; all implementation commits are pushed.
- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
-
-## Architect Review
-
-### Changes Requested — Attempt 3 — 2026-09-21
-
-**Not accepted; Ready for correction.** Attempt 3 retained, executor/claimed_at null. Reviewed implementation `c61656073d35d8a7b3b9bfd3e4ecfe05385396fa` and report `78325853fb430bcf65e4cfd2e9c7aa8290f18c7a`. Both dedicated worktrees were clean and matched their remote task branches. No new attempt claimed, main integration, implementation edit or dependent promotion.
-
-#### Verified progress
-
-The four exact Attempt 2 compiler reproductions now pass; an independently valid ProductDetails-style control also passes. The compiler checks version/hash itself and derives array/scalar output types. R2's verified full artifact is retained. R4's identified code defects are corrected: completed requests remain in the rolling-rate ZSET, the key expires, Redis readiness is awaited, and authenticated GET/POST operation errors become bounded responses rather than escaping through the auth handler. These observations do not claim a live Redis test. The extra deadline timer was removed and service timeout now invokes upstream.close. `git diff --check 86bd4e4..HEAD` passes. Preserve these corrections.
-
-#### R1 remains open — P1: use complete GraphQL semantic validation
-
-The compiler still imports parse without running schema validation. `literalMatches` accepts EnumValue for String and accepts any object literal for INPUT_OBJECT without checking members; duplicate arguments and conflicting response aliases are not checked. This is the same incomplete validation defect, not new scope.
-
-Three independent valid:false assertions against the exact submitted code instead returned valid:true:
-
-1. `query X { product(handle: INVALID_ENUM) { title } }` — an unquoted enum token is not a String literal.
-2. `query X { product(handle: "a", handle: "b") { title } }` — duplicate argument names.
-3. `query X { product(handle: "a") { title same: title same: description } }` — incompatible fields share a response alias.
-
-Each used the accepted version/hash, operationName X, empty variables/input properties, resultPath product and a valid response template. Shopify cannot execute these as valid queries, yet Studio can mark them publishable.
-
-Local harness `/tmp/commerce011-attempt3-review/review.test.ts`; command from the implementation worktree: `./node_modules/.bin/vitest run --config /tmp/commerce011-attempt3-review/vitest.config.mjs`. Node 24.19.0 / Vitest 5.0.1: **5 passed, 3 failed**, exit 1. Passing cases comprise the four previous defects and a valid control. No implementation files or providers were touched.
-
-Correction: construct the GraphQL schema from the retained introspection artifact (GraphQL buildClientSchema), run the library's full validate/schema rules over the parsed document, then apply C14 policy and input-mapping checks. Do not keep adding isolated token cases to a partial validator. Validate nested input values and mapped schema compatibility against the actual schema. Keep these three functional regressions and valid neighboring queries as focused evidence; no exhaustive test-count target is requested.
-
-#### R3 remains open — P1: document retrieval is still a search excerpt
-
-`lib/discovery/upstream.ts:94–99` calls this.search(sourceUrl), selects the first matching URL and returns that result. parseSearchResults has already truncated content to 2,000 characters. Therefore a matching chunk still masquerades as the requested document; documents over that size cannot be retrieved and multiple chunks are not a document. The original correction explicitly prohibited this substitute. The same production parser assumes a JSON array of {url,title,content}, but no captured actual search/document response or production-adapter compatibility test was added. The unchanged process fixture only calls learn_shopify_api through a separate client.
-
-Correction: implement verified selected-document retrieval with authentic title/source/content and the C15 document bound. Exercise the production adapter with actual sanitized upstream response shapes. If the pinned MCP cannot fetch documents, explicitly report that capability gap for architect resolution; do not label a matched search chunk a document or claim R3 complete. No live merchant/store call is needed to establish this distinction.
-
-#### R3 lifecycle remains incomplete — P2: startup failure is retained permanently
-
-A rejected connect/list/capability-check promise remains stored in started. Non-timeout startup failures do not invoke close/reset, so every later request awaits the same rejection until the service restarts. There is still no runtime shutdown owner invoking service.close. A timeout cleanup helper alone is not the required supervised lifecycle.
-
-Correction: close/reset failed startup safely, permit bounded subsequent recovery without hidden request retries, and wire owned shutdown/reaping. Keep concurrency coordination so one cleanup cannot accidentally operate on a replacement client. Verify a failed initial connection followed by a successful later request and local owned shutdown. Deployed lifecycle evidence remains separately developer-owned; local lifecycle behavior cannot be reassigned to it.
-
-#### Resubmission boundary
-
-The submitted 22/91 tests and typecheck/lint/build are recorded as reported passing. The independent failures above and inspected document/lifecycle paths prevent acceptance despite that evidence. The latest report overstates full literal/input validation and production adapter/lifecycle evidence; reconcile those claims with what the fixtures actually exercise. No deployed OAuth, cross-replica saturation or live-store run is newly required. Correct R1/R3 on the existing task branches, run focused local checks plus required build checks, commit/push and resubmit. R2 and the inspected R4 corrections need no unrelated rework. Preserve the C17 parallel component/integration ownership split and downstream gates.
-
-### Changes Requested — Attempt 2 — 2026-09-21
-
-**Not accepted; Ready for correction.** Attempt 2 retained, executor/claimed_at null. Reviewed implementation `08d8cf231c7ff1d097c75ec6c8ce442a1318c55a` / `86bd4e48b1561d7dd7496c2f4e8528a9b56cffb2`, parent report `49a6dff551c2a74240cd011235afadaa6e948f53`. Dedicated worktrees were clean and both remote heads matched. No next attempt claimed, implementation edit, main integration or downstream promotion.
-
-Review focuses on observable functionality. The trailing space is a minor cleanup, not the reason for this decision. The reported 17/86 passing tests and passing typecheck/lint/build do not resolve the following demonstrated behavior.
-
-#### R1 remains open — P1: invalid definitions are still approved
-
-`lib/discovery/compiler.ts` parses GraphQL but does not perform complete schema validation. Literal arguments and nested input values are not type-checked; mapped input types are only checked for property existence; connection bounds are checked only when first/last is present; operation directives are not inspected.
-
-Independent isolated tests against this exact revision all failed: each expected valid:false but received valid:true:
-
-- `query X { product(handle: 123) { title } }`: integer passed to String handle.
-- `query X { product(handle: "a") { title variants { nodes { title } } } }`: connection without a literal first bound.
-- `query X($handle: String!) { product(handle: $handle) { title } }` with handle mapped from an integer input property.
-- `query X @skip(if:true) { product(handle: "a") { title } }`: forbidden operation directive.
-
-Harness: `/tmp/commerce011-attempt2-review/review.test.ts`; command from implementation worktree: `./node_modules/.bin/vitest run --config /tmp/commerce011-attempt2-review/vitest.config.mjs`; Node 24.19.0, Vitest 5.0.1, 4 failed, exit 1. Harness changed no implementation file and used no provider.
-
-Correction: use the full pinned introspection schema with GraphQL semantic validation, then apply C14 policy. Validate every mapped value/input type and required input member; require bounds by the selected schema field's connection/list type, not merely presence of a pagination argument; prohibit directives throughout the AST. Preserve object/list/nullability/scalar types in compiler output (current pathSchema treats selected lists as objects and scalar numbers/booleans as strings), and require resultPath to identify an allowed object/list. The exported compiler must enforce version/hash itself for downstream consumers, rather than relying only on the discovery wrapper. Prove the four concrete failures are corrected alongside valid scalar and bounded-list controls. The original R1 contract remains applicable; no broader coverage target is introduced.
-
-#### R3 remains open — P1: documentation results and process lifecycle are not usable as specified
-
-`lib/discovery/upstream.ts:59` constructs every sourceUrl from the user's search query, not the upstream result source. Searching `product description` therefore produces an invented `/docs/product%20description` URL. Titles are numbered placeholders and blank-line splitting is not a verified response mapping. `document()` calls search again and returns only the first 2,000-character chunk, so it does not retrieve the requested document. `isError` tool responses are treated as normal text. The actual-process fixture calls learn_shopify_api through a separate Client; it does not exercise this production search/document mapping.
-
-Cancellation is also ineffective: the signal is checked once before the first call, never passed into SDK calls or observed thereafter. At the service's 20-second deadline the HTTP caller can settle and release its slot while upstream work continues. The second Promise.race timer is never cleared. A failed startup promise is retained forever, and no owning runtime invokes service.close for shutdown or restarts/reaps a failed child. textResult bounds data only after SDK accumulation and parsing.
-
-Correction: map captured actual search results into real titles/excerpts/canonical source URLs; implement genuine selected-document retrieval using verified supported behavior. Return bounded typed failures on upstream isError. Carry cancellation through initialization/calls and stop/reap timed-out work before releasing admission. Own bounded recovery and shutdown in the runtime, clear all timers, and bound transport input before unbounded accumulation. Exercise the production adapter with sanitized real response fixtures, not just a separate initialize/list/learn client. If the pinned upstream cannot supply document retrieval, report the concrete capability gap for an architecture decision rather than returning a search excerpt as a document.
-
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean and pushed at `f363ac4`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 #### R4 remains open — P1: admission does not implement the rolling limit and normal errors escape GET
 
 `lib/discovery/limits.ts:23` removes each request from the rate ZSET when it finishes. Consequently sequential requests never accumulate toward 60/minute; the 61st is admitted just like the first. Only in-flight counters should be released; rate entries must remain until the rolling window expires. Add a TTL for inactive rate keys without erasing the active window.
