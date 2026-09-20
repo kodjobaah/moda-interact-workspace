@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-09-20T22:14:17Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -171,7 +171,12 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review — Attempt 1 implemented by codex on 2026-09-20. Local evidence is complete; live Google OAuth remains developer-owned and no architect acceptance is asserted.
+Ready for Review — Attempt 2 implemented by copilot on 2026-09-20. The two Architect Review corrections are implemented and locally validated; live Google OAuth remains developer-owned and no architect acceptance is asserted.
+
+### Correction Checklist — Architect Review Attempt 1
+
+- [x] **R1 — documented local development mutations:** `lib/auth/environment.ts` now permits HTTP only for `localhost`, `127.0.0.1` or `[::1]` under the explicit development environment. Exact Origin comparison and POST enforcement remain unchanged; hosted HTTP, foreign origins and production builds using the development override fail closed. Covered by `tests/auth-environment.test.ts` and `tests/auth-origin.test.ts`.
+- [x] **R2 — revoked/expired session recovery:** `clearStudioSessionAction` clears only the Studio NextAuth session after the same-origin POST check and does not require an active PlatformAdmin. The denied shell exposes it through the existing duplicate-action guard; no protected read, write, role or MCP authority is granted. Covered by `tests/auth-entrypoints.test.ts` and `tests/auth-action-button.test.tsx`.
 
 ### Files Changed
 
@@ -180,6 +185,7 @@ Ready for Review — Attempt 1 implemented by codex on 2026-09-20. Local evidenc
 - `app/page.tsx`, `app/sign-in/page.tsx`, `app/access-denied/page.tsx`, `components/auth-action-button.tsx`, `app/actions/session.ts`, `app/api/studio/access/route.ts`: protected team shell, minimal auth states, guarded sign-in/sign-out, protected read and privileged mutation entry points.
 - `.env.example`, `README.md`, `package.json`, `package-lock.json`: hosted/local configuration contract, separate-session documentation, exact NextAuth dependency and accepted Shared 0.13.1 logging dependency.
 - `tests/auth-*.test.{ts,tsx}`: C7.1 A01–A11 policy, entry-point, concurrency, environment, permission, origin and UI fixtures.
+- Correction fixtures: development loopback mutation origins, hosted/foreign-origin rejection, revoked-session recovery entry-point isolation and duplicate-activation coverage for session clearing.
 
 ### Work Completed
 
@@ -232,11 +238,13 @@ git diff --check
 ```
 
 - Prisma client generation: passed against recorded database submodule `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
-- Vitest: **13 files, 65 tests passed**. This includes existing foundation checks and 37 task-specific auth/policy/UI cases.
+- Focused correction fixtures: **4 files, 20 tests passed**.
+- Vitest: **13 files, 69 tests passed**. This includes existing foundation checks, C7.1 auth/policy/UI cases and the two Architect Review corrections.
 - Typecheck: passed (`next typegen && tsc --noEmit`).
 - Lint: passed (`eslint .`).
 - Production build: passed. `/`, `/sign-in`, auth handler, protected access route and health handlers compile; protected root/sign-in are dynamic.
 - Diff whitespace check: passed.
+- No unrelated baseline failures were observed.
 - Local browser fixture: `DEPLOYMENT_ENVIRONMENT_NAME=development COMMERCE_STUDIO_ORIGIN=http://127.0.0.1:4184 npm run dev -- --port 4184`. Verified root shows `Development — SUPER_ADMIN`, `/sign-in` redirects to root without Google credentials, and `/access-denied` exposes its heading and return link. The dev server was stopped and its generated untracked agent files removed.
 
 Developer-owned live validation remains pending because it requires provisioned Google credentials and a real callback host. With `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, matching `AUTH_URL`/`COMMERCE_STUDIO_ORIGIN`, `DATABASE_URL` and normal runtime dependencies configured for a non-development environment, run `npm run dev` (or the deployed start contract), sign in with one active provisioned Google account, verify sign-out, verify an unlisted account is denied, then deactivate/change the role of the signed-in PlatformAdmin and confirm the next protected request reflects it. No repository live-OAuth automation script exists; do not report this manual check as passed until the developer supplies evidence.
@@ -264,8 +272,8 @@ None. The task consumes exact `next-auth` 5.0.0-beta.32 and accepted Shared 0.13
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-002`; reused, remote task fast-forward not needed, origin/main incorporated yes.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-002`; created for this task, remote task fast-forward not needed, origin/main already current. No shared/default checkout or another task worktree was switched or reused.
 - Recursive submodule sync/update: passed; `database` remained at `5abfd87f57038bae515aaa09ec7c8db62adcfb98` with no pin change.
-- Claim commit `0d0089e4cfc8217ef6d5f3e9cca2bff4a3e26f36` was pushed before implementation; Attempt 1 retained.
-- Implementation commit `7f70f33a491dd60861b25b1f820668258ea5a5d2` pushed to `origin/task/ARCH-020-COMMERCE-002`.
+- Attempt 2 claim commit `6201f93ecf9a3b83c09a1ebfa82c5dbb54ff062f` was already pushed before implementation.
+- Attempt 1 implementation head `7f70f33a491dd60861b25b1f820668258ea5a5d2` was corrected by implementation commit `fb3362e2e8df093c6a550bb08f9ee42aa8f778ab`, pushed to `origin/task/ARCH-020-COMMERCE-002`.
 - Parent review submission is the commit containing this report, pushed to the matching parent task branch. Only this task file is staged; no Commerce gitlink, Architect Review, index/frontier, architecture document or main branch is changed.
 - Merged to implementation main: no. Merged to workspace main: no.
 
