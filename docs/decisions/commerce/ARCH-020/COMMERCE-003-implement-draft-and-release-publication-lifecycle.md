@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 70
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-20T23:10:34Z
+attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-002
   - ARCH-020-DATABASE-001
@@ -24,7 +24,7 @@ enables:
   - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
-updated: 2026-09-21
+updated: 2026-09-20
 ---
 
 # Implement draft and release publication lifecycle
