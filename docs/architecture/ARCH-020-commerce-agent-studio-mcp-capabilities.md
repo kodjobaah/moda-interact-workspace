@@ -11,7 +11,7 @@ updated: 2026-09-20
 
 ## Status
 
-Architect task-review update (2026-09-20): COMMERCE-001 is in Review at Attempt 1 (`3ae6c7f`); architect code review found no blocking defect, but acceptance awaits real local PostgreSQL/Redis readiness evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+Architect task-review update (2026-09-20): COMMERCE-001 is Ready, unclaimed after Attempt 1 review (`3ae6c7f`), for the developer-authorized disposable Docker PostgreSQL/Redis setup script and readiness execution. Acceptance still requires the resulting evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 Proposed implementation design for developer review. The developer has selected
 the separate Next.js repository/submodule `moda-interact-commerce`, a team-only
@@ -717,7 +717,7 @@ definitions for review; no implementation is launched by this packet.
 | [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Define commerce capability and evidence contracts | moda_shared | ready | ARCH-016-SHARED-001 |
 | [ARCH-020-SHARED-002](../decisions/shared/ARCH-020/SHARED-002-provide-a-bounded-reusable-agent-runner.md) | Provide a bounded reusable agent runner | moda_shared | pending | ARCH-020-SHARED-001 |
 | [ARCH-020-SHARED-003](../decisions/shared/ARCH-020/SHARED-003-release-the-accepted-commerce-contracts-and-runner.md) | Release the accepted commerce contracts and runner | moda_shared | pending | ARCH-020-SHARED-001, ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | review | — |
+| [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | ready | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | pending | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-003, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-003 |

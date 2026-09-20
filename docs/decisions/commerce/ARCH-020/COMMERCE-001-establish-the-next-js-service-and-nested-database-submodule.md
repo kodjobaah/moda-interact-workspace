@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -266,3 +266,13 @@ COMMERCE_TEST_REDIS_URL='<disposable-local-redis-url>' npm run test:readiness-lo
 ```
 
 Provide the tested implementation/database SHAs, environment, command with credentials redacted, all four scenario results/timings and exit code. Do not claim Attempt 2 merely to supply evidence; retain Attempt 1 review state unless a validation failure requires implementation correction. The architect can complete acceptance after reviewing that evidence. COMMERCE-002 and other dependants remain gated; terminal system-test execution remains explicitly developer-invoked.
+
+## Architect execution authorization — disposable Docker readiness fixture
+
+The developer explicitly requests that this task provision and run its own local PostgreSQL and Redis in Docker, adding a repeatable setup script. This supersedes the earlier developer-execution-only handoff for this exact validation. Task returns to Ready, unclaimed, retaining Attempt 1 and its review; the normal launcher may claim Attempt 2 for the script and evidence work. This is an authorized scope addition, not a newly discovered defect in the reviewed foundation.
+
+moda_commerce owns the implementation repository script/package command, usage documentation and task report. Add a single documented command that provisions disposable local PostgreSQL and Redis, waits with bounded deadlines, prepares the existing pinned schema only inside its own disposable database, builds/starts the application as needed, and runs `test:readiness-local`. Use pinned official container images, synthetic credentials, unique run-scoped names and loopback-bound ephemeral ports to avoid existing services. Never consume shared/deployed database/Redis credentials, change the canonical schema/migrations, or use global Docker prune/volume deletion.
+
+The developer authorizes pulling those images, creating the isolated containers/network/volumes, applying the existing pinned schema to that disposable database, running the healthy and failure readiness scenarios, and cleaning up only resources created by the invocation. Cleanup must cover success, failure and signals and preserve the validation exit code. If Docker is unavailable, report the concrete environment blocker; do not install or reconfigure Docker without separate authorization. Keep logs bounded and redact connection secrets.
+
+Run the complete local fixture once after implementation; investigate genuine failures and rerun affected checks only after a relevant correction. Record app/database revisions, image versions, exact command, all scenario outcomes/timings, exit code and cleanup evidence. Include healthy 200, unavailable database 503, unavailable Redis 503 and invalid-key 503 within the contract deadline. Preserve the reviewed foundation and prior evidence. Commit/push both mirrored task branches, return to review, and stop for architect acceptance. No production endpoint/deployment, main integration, downstream execution or other repository implementation is authorized.

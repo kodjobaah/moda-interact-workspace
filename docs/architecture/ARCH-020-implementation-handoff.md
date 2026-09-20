@@ -4,7 +4,7 @@ Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabi
 
 ## Review packet and current frontier
 
-COMMERCE-001 is in Review at Attempt 1 (`3ae6c7f`); architect code review found no blocking defect, but acceptance awaits real local PostgreSQL/Redis readiness evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is Ready, unclaimed after Attempt 1 review (`3ae6c7f`), for the developer-authorized disposable Docker PostgreSQL/Redis setup script and readiness execution. Acceptance still requires the resulting evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 The original definition/provisioning records below are historical setup evidence. Ready status elsewhere in this packet does not launch execution.
 
@@ -199,7 +199,7 @@ thresholds. Per-task implementation helpers may follow repository conventions;
 external wire/state/ownership contracts may not vary between implementations.
 
 Remaining external inputs are the Studio hostname and provisioned credentials.
-Commerce repository/default-branch provisioning is complete; COMMERCE-001 is in Review awaiting the real readiness evidence recorded in its architect review.
+Commerce repository/default-branch provisioning is complete; COMMERCE-001 is Ready for the developer-authorized local Docker readiness script and execution recorded in its task addendum.
 Pin/test actual SDK dependencies in that foundation task;
 Shopify schema/scope evidence belongs to COMMERCE-006, with closed unsupported
 outcomes when provider facts cannot be established. Do not invent deployed values,

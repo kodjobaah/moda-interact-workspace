@@ -44,7 +44,7 @@ Current frontier: all ARCH-019 implementation tasks are architect-accepted/Compl
 
 ## ARCH-020 — CommerceAgent Studio and MCP capabilities (2026-09-20)
 
-COMMERCE-001 is in Review at Attempt 1 (`3ae6c7f`); architect code review found no blocking defect, but acceptance awaits real local PostgreSQL/Redis readiness evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is Ready, unclaimed after Attempt 1 review (`3ae6c7f`), for the developer-authorized disposable Docker PostgreSQL/Redis setup script and readiness execution. Acceptance still requires the resulting evidence. No dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 The Commerce repository and nested database are provisioned; live MCP remains private and staff UI routing remains Gateway-owned. This task review does not complete ARCH-020.
 
