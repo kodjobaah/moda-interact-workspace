@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-014-ADMIN-009
 enables:
@@ -149,3 +149,167 @@ Set task to `review`, clear claim fields, report exact validation results/implem
 ## Acceptance invariant
 
 The Admin UI describes the existing interval as periodic billing **and entitlement** reconciliation including expired promotion cleanup, while the underlying runtime-control contract remains byte-for-byte compatible in key/type/range/default semantics.
+
+## Completion Report
+
+### Status
+
+Ready for Review.
+
+### Files Changed
+
+- `moda-interact-admin/src/lib/admin/background-runtime-control-validation.ts`
+- `moda-interact-admin/tests/unit/background-runtime-control-validation.test.ts`
+- `moda-interact-admin/tests/security/admin-background-runtime-controls.test.mjs`
+
+### Work Completed
+
+- Updated the existing reconciliation interval guidance to describe periodic billing and entitlement reconciliation, including Shopify billing checks and expired promotion cleanup.
+- Updated the existing reconciliation batch guidance to describe expired promotion cleanup without adding a new control.
+- Added exact metadata contract coverage for both fields and source-level security assertions for the approved copy and prohibited promotion-specific control names.
+- Preserved all existing keys, labels, units, ranges, defaults, authorization, version fencing, audit, and persistence semantics.
+
+### Validation Results
+
+- Focused unit test (`node --experimental-strip-types --test tests/unit/background-runtime-control-validation.test.ts`): passed, 7 tests, 0 failures.
+- Focused security test (`node --test tests/security/admin-background-runtime-controls.test.mjs`): passed, 6 tests, 0 failures.
+- `git diff --check`: passed.
+- `npm run test:unit`: ran the repository unit suite; the ARCH-018 test passed, while 12 unrelated tests failed because `exceljs` and `@modainteract/moda-interact-shared` are unavailable and one existing merchant-pricing assertion failed.
+- `npm test`: blocked by missing dependencies including `bullmq` and other repository packages.
+- `npm run prisma:generate`: blocked because `prisma` is not installed (`prisma: command not found`).
+- `npm run prisma:validate`: blocked because `prisma` is not installed (`prisma: command not found`).
+- `npm run build`: blocked by `npm run prisma:generate` because `prisma` is not installed (`prisma: command not found`).
+- Focused lint: blocked because `eslint` is not installed (`eslint: command not found`).
+- Focused format check: blocked because `prettier` is not installed (`prettier: command not found`).
+
+### Deviations
+
+Repository-wide validation could not complete in the dependency-free prepared worktree. No unrelated failures were repaired.
+
+### Assumptions
+
+The existing `field.guidance` metadata path is the approved UI copy surface, as confirmed by the component read before editing.
+
+### Unresolved Issues
+
+Install the repository dependencies in the implementation worktree before rerunning the blocked required validation commands. The prepared implementation worktree has its `database` submodule materialized at `3cb8ff374f914c4495958c85fed3f03cdd63ce37`.
+
+### Architectural Concerns
+
+None.
+
+### Git / VCS
+
+Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Dedicated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-018-ADMIN-001`.
+Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-018-ADMIN-001`.
+Mirrored branches: `task/ARCH-018-ADMIN-001` in both parent and implementation repositories.
+Preparation/claim evidence: prepared execution packet for attempt 2; parent claim commit `50bcc91280b892465ecc60f8cf627b173bdde675`.
+Start-of-attempt synchronization: parent task branch synchronized with `origin/main` by merge commit `1c2942fcfd2ec5cfe0a7970c8b419d2458a66b96`; implementation task branch was reset to `origin/main` and contains accepted commit `1407869c1c62d5df1904c10a33ef8755056fdc0e` with no unrelated changes.
+Recursive implementation-submodule materialisation: `database` present at `3cb8ff374f914c4495958c85fed3f03cdd63ce37`.
+Exact implementation commit reviewed: `1407869c1c62d5df1904c10a33ef8755056fdc0e`.
+Parent report commit: `48ab19a0` (final submitted parent task/report commit; supersedes the intermediate evidence-report commit recorded during Attempt 2 preparation).
+
+
+## Architect Review — Attempt 1
+
+### Review Status
+
+Changes Requested — acceptance evidence correction only. No production-code correction is required.
+
+### Functional assessment
+
+The implementation is functionally conformant with ARCH-018-ADMIN-001. `RUNTIME_FIELDS.OPERATIONAL` retains the existing `billingReconciliationIntervalSeconds` and `billingReconciliationShopBatchSize` keys, labels, units, ranges and defaults while changing only their `guidance` strings to the exact architect-approved copy. The existing Admin component renders `field.guidance`, so the revised text reaches the Background Runtime UI without a component/action/schema change.
+
+The focused unit contract asserts both complete field objects, including unchanged key/label/unit/min/max/default semantics. The focused security contract asserts the approved copy and verifies that `promotionReconciliationIntervalSeconds` and `promotionReconciliationBatchSize` are absent from validation/action/component source. Source review found no new promotion-specific runtime control, lease, environment variable, action field or persistence contract.
+
+The unavailable repository dependencies do not expose a functional defect in this copy-only task. No implementation change is requested for Prisma, build, lint, formatting or unrelated dependency failures.
+
+### Blocking acceptance-evidence gap
+
+Architect acceptance cannot be recorded from this submission because the required task-execution evidence is internally inconsistent/incomplete:
+
+1. The Completion Report records parent report commit `3d622105`, while the architect submission identifies parent report commit `b8927548`. One exact canonical parent report commit must be reported.
+2. The Completion Report does not record the launcher-resolved dedicated parent worktree, implementation worktree, prepared execution/claim evidence, or start-of-attempt synchronization evidence required by `docs/agent-worktree-isolation-policy.md` and the architect contract.
+3. The submitted archive contains no Git metadata from which the architect can independently reconstruct that missing evidence. Do not infer or manufacture developer-specific paths or commit IDs.
+
+### Required Attempt 2 correction — deterministic and report-only
+
+Do **not** modify production code or tests solely for this review. The accepted functional implementation remains implementation commit `1407869` unless the steps below reveal that the submitted branch does not actually contain that implementation.
+
+1. Start `ARCH-018-ADMIN-001` through the normal deterministic `/moda-task` preparation path so `scripts/start-agent-task.py --prepare` resolves the canonical primary workspace and the dedicated mirrored worktrees.
+2. Use the launcher-returned values exactly. Do not derive paths from the previous task worktree and do not invent absolute paths.
+3. Verify the implementation worktree is on `task/ARCH-018-ADMIN-001` and contains implementation commit `1407869` (or a descendant containing exactly the same functional change with no unrelated code churn).
+4. Verify the parent worktree is on the matching `task/ARCH-018-ADMIN-001` branch.
+5. Record in the Completion Report, verbatim from the prepared execution packet / Git inspection:
+   - canonical `workspace_root`;
+   - dedicated parent worktree path;
+   - dedicated implementation worktree path;
+   - mirrored parent and implementation branch names;
+   - preparation/claim commit or packet identifier supplied by the launcher;
+   - start-of-attempt synchronization result for parent and implementation repositories;
+   - recursive implementation-submodule materialisation result where supplied by the launcher;
+   - exact implementation commit reviewed;
+   - the one exact parent report commit that actually contains the corrected Completion Report.
+6. Resolve the current `3d622105` versus `b8927548` discrepancy. The corrected report must contain only the actual parent report commit. Do not copy either value unless Git confirms it.
+7. Rerun the focused ARCH-018-ADMIN-001 tests in the canonical implementation worktree and report their exact result. The expected focused scope remains:
+   - `tests/unit/background-runtime-control-validation.test.ts`;
+   - `tests/security/admin-background-runtime-controls.test.mjs`.
+8. Rerun `git diff --check`.
+9. Run the task's other required validation commands if their declared dependencies are available in the canonical prepared worktree. If a command is blocked because the dependency is genuinely unavailable, record the exact command and exact blocker; do not modify unrelated code or broaden task scope merely to make repository-wide validation green.
+10. Confirm the implementation diff is still restricted to the three authorized implementation/test files:
+    - `src/lib/admin/background-runtime-control-validation.ts`;
+    - `tests/unit/background-runtime-control-validation.test.ts`;
+    - `tests/security/admin-background-runtime-controls.test.mjs`.
+11. Set the task back to `review`, clear `executor` and `claimed_at`, commit/push the corrected parent Completion Report, and resubmit.
+
+### Stop conditions
+
+STOP and return to `moda_architect` without changing implementation code if any of the following is true:
+
+- the normal launcher resolves execution in a shared/default checkout or another task's worktree;
+- implementation commit `1407869` is not present on the canonical task branch and the discrepancy cannot be explained by a no-churn descendant commit;
+- the parent and implementation branches are not both the mirrored `task/ARCH-018-ADMIN-001` branch;
+- the prepared packet reports unsatisfied dependency or synchronization gates;
+- correcting the evidence would require altering runtime-control schema, action/API behavior, component structure or any file outside the three authorized implementation/test files.
+
+No new Admin functionality, tests beyond the focused evidence above, schema work, or runtime-control design change is requested. Attempt 2 exists only to provide deterministic acceptance evidence for the already functionally conformant implementation.
+
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted — Complete.
+
+### Functional assessment
+
+No production or test correction was required in Attempt 2. The three authorized implementation/test files are byte-for-byte unchanged from the functionally conformant Attempt 1 implementation at `1407869`. The Admin runtime-control contract still changes copy only: existing keys, labels, units, ranges, defaults, authorization, version fencing, audit and persistence semantics remain unchanged, and no promotion-specific runtime control was introduced.
+
+### Acceptance-evidence assessment
+
+Attempt 2 supplies the deterministic execution evidence requested after Attempt 1:
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+- dedicated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-018-ADMIN-001`;
+- dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-018-ADMIN-001`;
+- mirrored branch: `task/ARCH-018-ADMIN-001` in both repositories;
+- preparation/claim commit: `50bcc91280b892465ecc60f8cf627b173bdde675`;
+- parent start-of-attempt synchronization merge: `1c2942fcfd2ec5cfe0a7970c8b419d2458a66b96`;
+- implementation branch reset/synchronized to `origin/main` while retaining implementation commit `1407869c1c62d5df1904c10a33ef8755056fdc0e`;
+- recursive `database` submodule materialisation at `3cb8ff374f914c4495958c85fed3f03cdd63ce37`;
+- final submitted parent task/report commit: `48ab19a0`.
+
+The `c890cf0...` value recorded while preparing the Completion Report is treated as an intermediate report commit. The architect submission identifies `48ab19a0` as the final pushed parent report commit, and this acceptance reconciliation records that final submission value.
+
+### Validation accepted
+
+- focused unit tests: 7 passed;
+- focused security tests: 6 passed;
+- combined focused evidence: 13 passed;
+- `git diff --check`: passed;
+- broader Prisma/build/lint/format/full-suite validation remained unavailable or non-green because the prepared implementation worktree lacked declared repository dependencies; those blockers are outside this copy-only task and no unrelated code was changed to mask them.
+
+### Decision
+
+`ARCH-018-ADMIN-001` is Complete at Attempt 2. No Attempt 3 is required. `ARCH-018-SYSTEM-TEST-001` remains pending/manual-gated until the developer performs the architecture's manual checkpoint.
