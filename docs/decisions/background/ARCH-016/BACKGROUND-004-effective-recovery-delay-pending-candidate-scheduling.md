@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
-executor: copilot
-claimed_at: 2026-09-20T07:45:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-004-BACKGROUND-002
@@ -576,3 +576,29 @@ existing candidate identity/index semantics would need redesign.
 ```
 
 Do not solve any stop condition by expanding task scope.
+
+## Completion Report
+
+Status: Ready for Review
+
+- Attempt: 1
+- Implementation commit: `2c6fbab` (`fix: use effective recovery delay for pending candidates`)
+- Parent Completion Report commit: `4a3edd63` (`docs: return background recovery delay task for review`)
+- Launcher preparation: authoritative prepared execution completed with `prepared_execution=true`, `status=in_progress`, `dependency_gate=passed`, `attempt=1`, `executor=copilot`; dedicated implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-004` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-004` were used.
+- Start-of-attempt synchronization: supplied by the prepared launcher packet; not repeated.
+- Recursive submodule/database revision evidence: supplied by the prepared launcher packet; no database schema or migration changes were made.
+- Focused test: `npx vitest run tests/unit/services/pending-recovery-candidate.service.test.ts` passed, 39/39 tests.
+- Prisma generate: `npm run prisma:generate` passed.
+- Prisma validate: `npm run prisma:validate` passed.
+- Build: `npm run build` passed.
+- Full test: `npm test` ran 83 files; 70 passed, 12 skipped, and 3 unrelated billing-reconciliation tests failed in `tests/unit/services/billing-reconciliation.service.test.ts`. No failure was in either authorized changed file.
+- `git diff --check`: passed.
+- Source invariants: no direct `ShopSettings.recoveryDelayMinutes` scheduling read remains; `recoveryPolicyService.resolve` is used at lines 121 and 619 of the implementation file.
+
+1. Initial pending-candidate scheduling now resolves the effective recovery policy.
+2. Activity rescheduling re-resolves the effective recovery policy.
+3. Active Admin override `recoveryDelayMinutes` therefore governs both paths.
+4. No bulk policy-change rescheduling mechanism was introduced.
+5. No direct ShopSettings recovery-delay scheduling read remains in `PendingRecoveryCandidateService`.
+
+No blockers for the scoped implementation. The unrelated full-suite billing-reconciliation failures remain documented above for architect review.
