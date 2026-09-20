@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 160
 executor: copilot
 claimed_at: 2026-09-20T23:24:55Z
@@ -21,7 +21,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-002
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Preserve turn safeguards and validate offer replies
@@ -156,11 +156,14 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+- Added Background-owned turn-local evidence provenance and exact-call refresh in `src/commerce/evidence.ts`.
+- Wired `src/commerce/host.ts` to record trusted structured evidence only through an injected policy extractor and fail closed to one normal trusted referral when evidence cannot be refreshed.
+- Preserved existing conversation admission, processing-version, lease, language, reservation, send, retry, and unknown-provider-status ownership.
+- Added deterministic fixtures for renamed evaluators, literal/mapped inputs, recommendation evidence without a separate evaluator, changed results, missing provenance, revoked producers, duplicate references, exhausted budget, and lease rechecks.
 
 ### Work Completed
 
@@ -168,27 +171,43 @@ None; task definition only.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+- `npx vitest run tests/integration/commerce/host.test.ts tests/unit/commerce/evidence.test.ts tests/unit/services/conversation-turn-processor.service.test.ts` passed: 3 files, 73 tests.
+- `npm run build` passed, including `prisma:generate` and TypeScript compilation.
+- `npm run prisma:validate` passed.
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+
+Requirement-to-fixture matrix:
+
+| Requirement | Fixture | Expected side effects | Result |
+| --- | --- | --- | --- |
+| C16/C4 trusted offer evidence | `replays renamed evaluators with literal mapped arguments...` | One exact replay; rendered text is ignored; no untrusted contact/evidence authority | Passed |
+| C4 recommendation evidence without separate evaluator | `deduplicates duplicate evidence references and recommendation evidence...` | Duplicate evidence IDs share one replay; no extra call | Passed |
+| Missing provenance | `fails closed for missing provenance` | No replay and no positive offer claim | Passed |
+| Revocation before send | `fails closed when the evidence producer is revoked` | Denied replay produces no send-authorizing evidence | Passed |
+| Changed recommendation | `rejects changed recommendations...` | Refresh fails closed; exhausted budget causes zero replay | Passed |
+| Lease/stale-turn protection | `rechecks the lease before and after replay` plus existing host/turn fixtures | Current-turn assertion occurs before and after refresh; stale result is not delivered or persisted | Passed |
+| Duplicate/retry/send/reservation safeguards | Existing `conversation-turn-processor.service.test.ts` stale, duplicate, reservation, retry and provider-uncertainty cases | At most one normal admitted send; stale language/reservation cleanup preserved | Passed |
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The Commerce policy adapter remains injected and contract-owned outside this repository; production pairing is intentionally not implemented here. The fixture extractor is deterministic and does not claim live Shopify or Commerce provider validity.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+Use the parent architecture and actual accepted dependency revisions. The published shared runner already performs turn-local evidence extraction/budget reservation; Background owns immutable provenance, exact replay, current permission/lease rechecks, and delivery fail-closed handling.
 
 ### Unresolved Issues
 
-See parent architecture review assumptions; no implementation evidence asserted.
+Live Commerce producer/consumer pairing, live provider discount semantics, and deployment validation remain developer-owned SYSTEM-TEST/Gateway work.
 
 ### Architectural Concerns
 
-None newly reported.
+No new architectural concern. The injected extractor is the explicit boundary for the Commerce-owned policy adapter; Background does not implement Commerce ranking, GraphQL execution, discount mutation, or a duplicate catalogue.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-BACKGROUND-002. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: task/ARCH-020-BACKGROUND-002. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, published implementation commit `a7ccac5`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, parent report publication pending in this attempt. Database submodule was not modified. No parent service gitlink or main integration was performed.
 
 ## Architect Review
 
