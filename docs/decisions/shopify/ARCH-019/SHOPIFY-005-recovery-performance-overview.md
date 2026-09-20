@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
-executor: codex
-claimed_at: 2026-09-20T14:59:09Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-019-SHOPIFY-001
@@ -179,24 +179,33 @@ None requiring a contract change. Capacity projection remains read-only, and no 
 
 ### Review Status
 
-Pending.
+**Changes Requested — Attempt 1, 2026-09-20, moda_architect.**
+
+Reviewed implementation `d5319e8eacd075e5d8cba633b4459ce150872042` and report `eac1c4302cb1b6d1fb64011760d1eb0e9ea44fc7`; both remote task heads verified. Task returns to Ready, executor/claimed_at cleared, attempt 1 preserved. No architect acceptance is granted.
 
 ### Review Notes
 
-No implementation submitted.
+**[P2] Do not silently replace an explicitly requested unavailable billing period (`app/routes/app/home/route.jsx:120-128`).** The new legacy redirect retains `billId` only when the tenant-scoped lookup succeeds. For a well-formed unknown/deleted/foreign ID it redirects to `/app/usage?shop=...&bill=current|past` without that ID. Usage then selects its default OPEN/CLOSED period. Thus an explicit bookmark can show a different period's usage with no unavailable indication. The architecture's Billing bridge contract requires an explicit unavailable/not-found state for an unknown or foreign requested period; defaults apply only when no billId was requested.
+
+For example, an authorized request to `/app?view=detail&bill=past&billId=missing-period` whose lookup returns null loses its explicit selection and displays the default past period. `tests/unit/home-route.test.ts` currently asserts this lossy behavior in “drops unauthorized or malformed legacy bill ID”. This also prevents SHOPIFY-006's planned Usage not-found handling from distinguishing the request later: the selection has already been discarded upstream.
+
+Preserve a safe, explicit unavailable outcome for a requested period that cannot be validated, while keeping only validated billing/embed context and maintaining identical missing/foreign behavior. Do not use an arbitrary return URL, expose another tenant's data, or treat an unvalidated ID as authority. Keep the correction bounded to legacy compatibility; the broader bounded Usage implementation remains SHOPIFY-006. Update regression coverage to distinguish absent ID (default allowed), valid owned ID, and explicit missing/deleted/foreign or malformed ID (no silent period substitution). Retain onboarding/restriction precedence and redirect-before-performance-read coverage.
 
 ### Reviewed Files
 
-None.
+Home loader and overview service; RecoveryOverview component/styles; pending component changes; existing lifecycle banner and capacity DTO; Usage period-selection consumer; required unit tests; local browser fixture README/mobile screenshot and task completion/isolation report.
 
 ### Validation Reviewed
 
-None.
+- Architect reran the required expanded command: `npm test -- tests/unit/home-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/merchant-i18n.test.ts tests/unit/pending-recoveries-display-state.test.ts`: **49 tests passed across 5 suites**. The legacy invalid-ID test currently codifies the reported defect.
+- Architect reran full typecheck: **131 diagnostics in 23 files**; full lint: **20 errors / 2 warnings**. All **33 distinct diagnostic files** are unchanged from prepared implementation base `dbed756`. These remain baseline failures, not clean global checks.
+- Committed-diff whitespace check passed; implementation worktree clean. Submitted browser evidence covers synthetic lifecycle, responsive, date and link scenarios; no independent browser replay or live Shopify validation is claimed by this review.
+- Dedicated mirrored worktrees, prepared synchronization, accepted dependency consumption, recursive database state and durable Attempt 1 claim are recorded and consistent with inspected history. Architect made no implementation edits.
 
 ### Architecture Conformance
 
-Awaiting implementation review.
+Inspected bounded cohort loading, separate current capacity, preserved lifecycle/pending gates and date/embed links conform to their contracts. Legacy explicit-period fallback remains an unresolved task-owned compatibility failure. ARCH-019 remains In Progress; SHOPIFY-006 and terminal SYSTEM-TEST-001 remain Pending.
 
 ### Follow-up
 
-Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+moda_app must reclaim SHOPIFY-005 for Attempt 2, correct the legacy unavailable-period outcome, rerun the relevant validation and submit both mirrored branches. Preserve this review and Attempt 1 evidence. No downstream task was promoted or launched.

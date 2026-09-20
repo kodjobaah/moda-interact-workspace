@@ -11,7 +11,7 @@ updated: 2026-09-20
 
 ## Status and agreement
 
-Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3; SHOPIFY-004 accepted/Complete at Attempt 2 (`ffb7b86`). SHOPIFY-005 Ready at Attempt 0; SHOPIFY-006 and SYSTEM-TEST-001 Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependency records are reconciled into SHOPIFY-005; readiness does not launch implementation or authorize unmerged dependency consumption.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3; SHOPIFY-004 accepted/Complete at Attempt 2 (`ffb7b86`). SHOPIFY-005 Ready after Attempt 1 Changes Requested: legacy explicit unavailable billing periods must not silently fall back (`d5319e8` not accepted); SHOPIFY-006 and SYSTEM-TEST-001 Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependency records are reconciled into SHOPIFY-005; readiness does not launch implementation or authorize unmerged dependency consumption.
 
 ## Problem and inspected current behaviour
 
@@ -139,7 +139,7 @@ Required terminal system validation follows all accepted implementation tasks an
 | [ARCH-019-SHOPIFY-006](../decisions/shopify/ARCH-019/SHOPIFY-006-merchant-navigation-and-billing-history.md) | moda_app | Pending | ARCH-019-SHOPIFY-005 |
 | [ARCH-019-SYSTEM-TEST-001](../decisions/system-test/ARCH-019/SYSTEM-TEST-001-validate-merchant-recovery-experience.md) | moda_system_test | Pending | ARCH-019-DATABASE-001, ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004, ARCH-019-SHOPIFY-005, ARCH-019-SHOPIFY-006 |
 
-Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3; SHOPIFY-004 accepted/Complete at Attempt 2 (`ffb7b86`). SHOPIFY-005 Ready at Attempt 0; SHOPIFY-006 and SYSTEM-TEST-001 Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependency records are reconciled into SHOPIFY-005; readiness does not launch implementation or authorize unmerged dependency consumption.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3; SHOPIFY-004 accepted/Complete at Attempt 2 (`ffb7b86`). SHOPIFY-005 Ready after Attempt 1 Changes Requested: legacy explicit unavailable billing periods must not silently fall back (`d5319e8` not accepted); SHOPIFY-006 and SYSTEM-TEST-001 Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependency records are reconciled into SHOPIFY-005; readiness does not launch implementation or authorize unmerged dependency consumption.
 
 
 ## Risks and evidence gaps
