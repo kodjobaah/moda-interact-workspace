@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-09-20T19:10:21Z
@@ -491,13 +491,13 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Validation
 
-- [ ] Correction validation: rerun static/Prisma/ERD checks and both isolated fresh/upgrade rehearsals against the corrected source; record exact revision and named results. The preserved Completion Report records Attempt 1 only and does not certify the corrections.
+- [x] Correction validation: rerun static/Prisma/ERD checks and both isolated fresh/upgrade rehearsals against the corrected source; record exact revision and named results. The preserved Completion Report records Attempt 1 only and does not certify the corrections.
 
-- [ ] Agent: run `npm run prisma:validate` and the new `npm run test:arch020-commerce-capability-schema`; run `git diff --check` and verify the ERD includes all nine tables.
-- [ ] Agent: inspect migration SQL and fixture coverage for every acceptance case, including direct SQL writes that bypass Prisma/service validation.
-- [ ] Developer: on an explicitly isolated fresh PostgreSQL database, apply the repository migration chain and run `npm run test:arch020-commerce-capability-migration`; record commands, target isolation evidence without credentials, revisions, result and exit code.
-- [ ] Developer: on an isolated database migrated to the predecessor revision with seeded existing-domain records, apply the additive migration and run the same behaviour validator; compare before/after fixture counts and hashes to prove preservation.
-- [ ] Developer: include two-connection duplicate-conversation-grant/CAS tests, owner-change tests and all invalid-update/deletion cases. A failed or unrun required case prevents acceptance.
+- [x] Agent: run `npm run prisma:validate` and the new `npm run test:arch020-commerce-capability-schema`; run `git diff --check` and verify the ERD includes all nine tables.
+- [x] Agent: inspect migration SQL and fixture coverage for every acceptance case, including direct SQL writes that bypass Prisma/service validation.
+- [x] Developer: on an explicitly isolated fresh PostgreSQL database, apply the repository migration chain and run `npm run test:arch020-commerce-capability-migration`; record commands, target isolation evidence without credentials, revisions, result and exit code.
+- [x] Developer: on an isolated database migrated to the predecessor revision with seeded existing-domain records, apply the additive migration and run the same behaviour validator; compare before/after fixture counts and hashes to prove preservation.
+- [x] Developer: include two-connection duplicate-conversation-grant/CAS tests, owner-change tests and all invalid-update/deletion cases. A failed or unrun required case prevents acceptance.
 
 The two new commands are required deliverables, not claims that they already exist.
 Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md.
@@ -513,6 +513,53 @@ After scoped work and agent-owned checks, update this task's execution/report fi
 Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; its real repository must be provisioned before execution preparation.
 
 ## Completion Report
+
+### Attempt 2 — review submission (current)
+
+Status: **review**, executor codex, 2026-09-20. Continued directly from `/tmp/arch020-database-001-preparation.json`; no second launcher, claim, dependency discovery or startup synchronization. R1 and R2 implemented and validated. Architect acceptance is pending; this agent has not marked the task Complete, promoted dependencies or merged main. The Attempt 1 report and Architect Review below remain historical evidence, not correction validation.
+
+#### Correction checklist and changed files
+
+- [x] **R1: C16 release response persistence.** `prisma/schema.prisma` and the existing unmerged `20260920182429_arch020_commerce_capability_releases/migration.sql` add required `responseContract Json @db.JsonB` and `responseContractHash String @db.VarChar(64)` without defaults. The migration retains exactly nine tables/four enums. New structural CHECKs require exact version/instructions/detailsSchema keys, response.v1, a string of 1..8000 characters, an object detailsSchema and lowercase 64-hex hash. NOT NULL and existing release UPDATE immutability cover both fields. Updated independent physical-column contract, static validator and generated PlantUML/PNG ERD. PR #33 remains open; known migration applications were disposable task rehearsals, not a deployed migration history.
+- [x] **R1: named database fixtures.** `scripts/fixtures/arch020-commerce-capability-cases.mjs` covers baseline/custom SQL and generated-Prisma round-trips, missing/SQL-null/JSON-null/non-object/extra-key/version/type/bound failures, both immutable fields, successful atomic release/member creation, rollback after invalid membership, and old grant -> old response definition/hash after activation and rollback. Inclusive instruction limits use character-based controls. Database fixtures do not claim Shared/Commerce supported-schema semantics, production RFC8785 hashing/hash equality, UI or model behavior.
+- [x] **R2: isolated negative inputs.** Capability bounds use unique FEATURE identities. Malformed revisions get real unique parents; creator changes use an existing alternate admin and recovery reassignment uses an existing unlinked recovery. Count/byte cases use distinct valid published references, and the oversized grant has a complete valid release/tool lineage. Referenced-admin/feature tests isolate the new FK edges from legacy references. Only explicitly named duplicate tests exercise uniqueness collisions.
+- [x] **R2: exact failure and controls.** Every SQL rejection requires its expected SQLSTATE and exact constraint name or stable ARCH020 trigger diagnostic; typemod/NOT NULL errors identify their precise type/column. A fixture-only anonymous SQL block preserves PostgreSQL stacked diagnostics that Prisma otherwise omits. Non-uniqueness insertion cases first prove a valid control succeeds in a rolled-back transaction. A focused mutation transaction removes `arch020_capability_bounds`, proves the named `capability nonblank` rejection fails because invalid SQL succeeds, then rolls back and verifies the guard exists. Delivered migration guards remain intact.
+- [x] **R2: corrected fresh/upgrade evidence.** `scripts/fixtures/arch020-rehearsal-attempt2-evidence.json` records the exact source revision, full named output, target isolation and preservation comparisons. Prior `arch020-rehearsal-evidence.json` is retained unchanged as Attempt 1 evidence.
+
+#### Validation and limitations
+
+Tested source commit: **a83520755f322d8a563f12e1b91faaeb3d8dc2ec**. Final implementation commit **30de940508bdab10e9bc1b857e3c12cedcdecee0** differs only by the Attempt 2 evidence file.
+
+Prisma validation/client generation, static schema/migration/ERD checks, diagram regeneration and `git diff --check` passed. ERD has all nine models and both response fields; PNG is 12790×3651 and was rendered with `PLANTUML_LIMIT_SIZE=16384`.
+
+The user's existing explicit authorization, **Yes, run the isolated rehearsals**, was used for a new task-owned PostgreSQL **15.19** container `moda-arch020-database-001-attempt2`, bound only to `127.0.0.1:32775`. Each final target was verified empty before migration. Commands:
+
+```sh
+DATABASE_URL=<isolated arch020_test_fresh URL> npm run test:arch020-commerce-capability-migration -- --mode fresh
+DATABASE_URL=<isolated arch020_test_upgrade URL> npm run test:arch020-commerce-capability-migration -- --mode upgrade
+```
+
+Both exited **0**, with **298 named checks each**, including positive controls (not a claim of 298 independent invariants). Fresh applied the full chain. Upgrade applied the predecessor chain, seeded **41 synthetic rows**, then applied ARCH-020: all **57 existing tables' counts/hashes** and **217 existing indexes** were unchanged. Concurrency, ownership, immutable-history and cascade tests passed in both modes. The task-created container and its databases were removed after success. No shared/live data or provider calls were used; no required rehearsal remains pending.
+
+The old selected-key byte-bound fixture was removed because invalid Unicode keys failed membership first. Valid capability keys are ASCII with at most 128 characters and 32 entries, so an independent 8192-byte overflow is unreachable through otherwise-valid keys; the SQL bound remains. Full-schema semantics and hash-content equality remain service-owned. The fixture hash helper is for these finite fixture values, not a new shared canonicalization implementation.
+
+The architect-reviewed transaction contract is unchanged: READ COMMITTED for guarded writes, or SERIALIZABLE with bounded whole-transaction retries for serialization/deadlock failures; REPEATABLE READ fails closed. Evidence covers READ COMMITTED races and an uncontended SERIALIZABLE grant, not throughput or exhaustive SERIALIZABLE certification. Atomic initial assembly and preventing later service append paths remain Commerce responsibilities.
+
+#### Prepared topology and publication
+
+Both branches: `task/ARCH-020-DATABASE-001`.
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-DATABASE-001`, reused for this same task.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-DATABASE-001`, reused for this same task.
+- Shared workspace/implementation checkouts switched or mutated for task implementation: no. Another task's worktree reused: no.
+- Packet synchronization: both remote task fast-forwards not-needed; both origin/main already-current. Parent preclaim head `17e6cec3c22167f4865125c705ebb6dd76b57adf`; implementation start `0e992c4ba2f897d1803cd29cbc64942ec124f82e`.
+- Packet recursive submodule sync/update passed, status ready; no nested submodules. ARCH-016-DATABASE-001 dependency gate passed.
+- Attempt 2 claimed by codex at `2026-09-20T19:10:21Z`; launcher claim **25bdda8fe338e786054b3a14365e57f850f8361b** was already committed/pushed when execution began.
+- Implementation source/evidence commits above pushed to the existing [implementation PR #33](https://github.com/kodjobaah/moda-interact-database/pull/33).
+- Parent publication contains only this task file in existing [report PR #165](https://github.com/kodjobaah/moda-interact-workspace/pull/165); final report commit is supplied with the submission. No gitlink, other task, domain index or architecture edits. Architect Review preserved byte-for-byte. No main merge/push or downstream execution.
+
+### Attempt 1 — preserved historical report
 
 ### Status
 
