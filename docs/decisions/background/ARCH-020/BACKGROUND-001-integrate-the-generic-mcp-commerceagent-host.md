@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -422,6 +422,10 @@ enabled task was changed.
   architect acceptance.
 
 ## Architect Review
+
+### User-directed return to Ready — 2026-09-20
+
+Following the user's latest instruction, **Ready for R1/R2 corrections**, Attempt 2 preserved, executor/claimed_at null. The completed architect review remains Changes Requested; acceptance is withheld. This supersedes the preceding user-directed Review hold. Normal preparation may claim the next correction attempt; this status update does not run preparation, claim a new attempt or change implementation. Preserve the existing R1/R2 correction contract and historical evidence below.
 
 ### User-directed review hold — 2026-09-20
 

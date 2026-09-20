@@ -364,3 +364,7 @@ are historical; this is the current decision. Architecture remains unaccepted.
 ## BACKGROUND-001 user-directed review hold
 
 Current status: Review, Attempt 2, no active claim. User requested no re-preparation or new claim. This supersedes the prior Ready/preparation direction only; R1/R2 remain unresolved against implementation 399cc2f and acceptance remains withheld. No downstream promotion.
+
+## BACKGROUND-001 return to Ready
+
+Latest user instruction restores Ready for reviewed R1/R2 corrections, Attempt 2, executor/claimed_at null. This supersedes the preceding Review hold. Acceptance remains withheld; no preparation, new claim or downstream promotion is performed by this update.
