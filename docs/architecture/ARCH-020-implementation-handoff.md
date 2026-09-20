@@ -4,7 +4,7 @@ Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabi
 
 ## Review packet and current frontier
 
-COMMERCE-001 is Ready, unclaimed after Attempt 2 Changes Requested (`8c8b825`): correct bounded descendant-process teardown after timeout/cancellation and add regression tests. The real Docker PostgreSQL/Redis readiness evidence passed and is retained; acceptance awaits the cleanup correction. Attempt 2 is preserved, no new attempt is claimed, and no dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 The consolidated packet contains 19 tasks; SHARED-001 owns contracts, runner and publication. The original definition/provisioning records below are historical setup evidence. Ready status elsewhere in this packet does not launch execution.
 
@@ -200,7 +200,7 @@ thresholds. Per-task implementation helpers may follow repository conventions;
 external wire/state/ownership contracts may not vary between implementations.
 
 Remaining external inputs are the Studio hostname and provisioned credentials.
-Commerce repository/default-branch provisioning is complete; COMMERCE-001 is Ready for the Attempt 2 process-cleanup correction recorded in its latest architect review; the authorized real Docker readiness evidence is retained.
+Commerce repository/default-branch provisioning is complete; COMMERCE-001 is architect-accepted Complete at Attempt 3; developer integration precedes downstream source consumption, and the authorized real Docker readiness evidence is retained.
 Pin/test actual SDK dependencies in that foundation task;
 Shopify schema/scope evidence belongs to COMMERCE-006, with closed unsupported
 outcomes when provider facts cannot be established. Do not invent deployed values,
@@ -241,5 +241,5 @@ definitions are consolidated into ARCH-020-SHARED-001. The two superseded draft
 files were removed before execution; their requirements remain in SHARED-001.
 One task owns implementation, tests, publication and clean registry installation
 evidence. Consumers depend on its architect-accepted Complete state and recorded
-package version. Current frontier: 19 tasks, 3 Ready, 16 Pending, 0 Blocked.
+package version. This branch snapshot after COMMERCE-001 acceptance: 19 tasks, 1 Complete, 2 Ready, 16 Pending, 0 Blocked. COMMERCE-002 awaits source integration or explicit accepted-commit consumption.
 No execution was claimed and no package was published by this documentation change.

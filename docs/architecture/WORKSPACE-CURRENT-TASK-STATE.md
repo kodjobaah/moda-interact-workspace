@@ -389,13 +389,13 @@ Current frontier: all ARCH-019 implementation tasks are architect-accepted/Compl
 Scoped addition only; earlier architecture rollups are unchanged. Source:
 [ARCH-020 architecture](ARCH-020-commerce-agent-studio-mcp-capabilities.md) and
 [handoff](ARCH-020-implementation-handoff.md). Individual task YAML is authoritative.
-COMMERCE-001 is Ready, unclaimed after Attempt 2 Changes Requested (`8c8b825`): correct bounded descendant-process teardown after timeout/cancellation and add regression tests. The real Docker PostgreSQL/Redis readiness evidence passed and is retained; acceptance awaits the cleanup correction. Attempt 2 is preserved, no new attempt is claimed, and no dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
 | ARCH-020-DATABASE-001 | database | ready | 0 | ARCH-016-DATABASE-001 |
 | ARCH-020-SHARED-001 | shared | ready | 0 | ARCH-016-SHARED-001 |
-| ARCH-020-COMMERCE-001 | commerce | ready | 2 | — |
+| ARCH-020-COMMERCE-001 | commerce | complete | 3 | — |
 | ARCH-020-COMMERCE-002 | commerce | pending | 0 | ARCH-020-COMMERCE-001 |
 | ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-004 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |

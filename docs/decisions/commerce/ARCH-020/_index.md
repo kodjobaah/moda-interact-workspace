@@ -4,11 +4,11 @@ Architecture: [ARCH-020-commerce-agent-studio-mcp-capabilities.md](../../../arch
 
 Assigned agent: moda_commerce. Repository: moda-interact-commerce. Coordinator: moda_architect.
 
-COMMERCE-001 is Ready, unclaimed after Attempt 2 Changes Requested (`8c8b825`): correct bounded descendant-process teardown after timeout/cancellation and add regression tests. The real Docker PostgreSQL/Redis readiness evidence passed and is retained; acceptance awaits the cleanup correction. Attempt 2 is preserved, no new attempt is claimed, and no dependent task is promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
+COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 has satisfied its task dependency but remains Pending until developer integration or explicit accepted-commit consumption. No downstream task is launched or promoted. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-COMMERCE-001](COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | ready | — |
+| [ARCH-020-COMMERCE-001](COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | complete | — |
 | [ARCH-020-COMMERCE-002](COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | pending | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-004](COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |

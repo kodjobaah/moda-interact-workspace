@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: codex
 claimed_at: 2026-09-20T19:42:47Z
@@ -362,7 +362,49 @@ No new cross-repository implementation requirement. Background must consume the 
 
 ## Architect Review
 
-### Current review — Attempt 2, Changes Requested (2026-09-20)
+### Current review — Attempt 3, Accepted (2026-09-20)
+
+**Accepted.** Reviewed implementation `d7c1c65bf382de1538d77ac4dbe65c1d7fcd1276`
+and report `a257985d44f5464a71c2ff3ecc1f79557e9ec84e`, both verified at their
+published task-branch heads. With `completion_mode: automatic`, COMMERCE-001 is
+**Complete at Attempt 3**. This decision supersedes the historical reviews below.
+
+The functional cleanup defect is resolved. `commandRunner` now retains an
+idempotent process-group teardown promise independently of the leader's close,
+keeps the two-second SIGKILL escalation, and awaits it before returning control.
+The correction preserves original command failure codes and the fixture's scoped
+Docker cleanup. No provisioning, schema, dependency or application behavior changed.
+
+Architect executed `npm test -- tests/readiness-docker.test.ts`: **10 passed**,
+including real ignored-stdio descendants surviving SIGTERM until bounded forced
+termination under both timeout and AbortSignal. The supplied full suite has
+**29 passing tests**; typecheck and lint passed. Committed whitespace checks pass.
+Review is focused on the required functionality and reproduced defect; no broader
+test-coverage or additional infrastructure run is required for acceptance.
+
+The successful real Docker evidence from Attempt 2 is retained: healthy readiness
+200 (226.4 ms), unavailable Redis 503 (136.7 ms), unavailable PostgreSQL 503
+(98.2 ms), invalid keys 503 (58.3 ms), production build success and owned-resource
+cleanup. The unchanged database pin is `9c6a4d8402a01840e2ea8dc18e89171f00564d29`.
+Earlier foundation/build/clean-clone/MCP compatibility evidence remains applicable.
+No redundant Docker, build or clean-clone run was performed by this review.
+
+Physical worktree isolation, prepared Attempt 3 claim, synchronization/submodule
+records and mirrored publication agree with the report. No blocking functional
+finding remains. The previously reviewed Prisma/deepmerge-ts audit limitation is
+unchanged and nonblocking under its recorded trusted-build-configuration scope.
+
+Integration and dependency disposition: the developer still owns implementation
+PR #1 and parent report PR #166 merges and the final parent gitlink update.
+Implementation main remains the scaffold revision `01c550c3`; this acceptance does
+not merge or authorize implicit consumption of unmerged source. COMMERCE-002's
+sole task dependency is now satisfied, but it remains Pending until developer
+integration or explicit accepted-commit consumption is established. Background
+and terminal system-test dependencies are not yet all satisfied; no downstream
+task is launched or promoted by this review. ARCH-020 remains unfinished.
+
+
+### Historical review — Attempt 2, Changes Requested (2026-09-20)
 
 Reviewed published implementation `8c8b8250954aec9d6f011130bf05f620c35dff04`
 and report `f799eeb1b83bf259899438782d48a0bf7b240ad1`. **Changes Requested**:
