@@ -377,3 +377,9 @@ SHOPIFY-019   -> SHOPIFY-016
 `ARCH-010-DATABASE-012` remains Superseded by DATABASE-013, and `ARCH-010-SHOPIFY-005` remains Superseded by SHOPIFY-006.
 
 For current sequencing use `ARCH-010-implementation-handoff.md`; individual task `depends_on` remains authoritative.
+
+## ARCH-019 — merchant recovery experience (2026-09-20)
+
+DATABASE-001 accepted/Complete at `54c0ec2`, Attempt 1; populated PostgreSQL 15.19 rehearsal passed. Ready: SHOPIFY-001 and SHOPIFY-002. Pending: SHOPIFY-003 through SHOPIFY-006 and SYSTEM-TEST-001. Downstream tasks unclaimed; architecture remains Agreed, not Implemented. Acceptance and readiness records are published to the task branches under explicit developer delegation. Task YAML in canonical parent worktrees remains authoritative.
+
+[Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)
