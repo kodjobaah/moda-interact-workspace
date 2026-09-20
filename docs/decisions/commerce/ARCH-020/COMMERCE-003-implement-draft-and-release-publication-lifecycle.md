@@ -17,7 +17,7 @@ attempt: 0
 depends_on:
   - ARCH-020-COMMERCE-002
   - ARCH-020-DATABASE-001
-  - ARCH-020-SHARED-003
+  - ARCH-020-SHARED-001
   - ARCH-020-COMMERCE-011
 enables:
   - ARCH-020-COMMERCE-004
@@ -123,7 +123,7 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 
 - ARCH-020-COMMERCE-002
 - ARCH-020-DATABASE-001
-- ARCH-020-SHARED-003
+- ARCH-020-SHARED-001
 - ARCH-020-COMMERCE-011
 
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.

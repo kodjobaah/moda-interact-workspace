@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-020-SHARED-003
+  - ARCH-020-SHARED-001
   - ARCH-016-SHOPIFY-002
 enables:
   - ARCH-020-SYSTEM-TEST-001
@@ -110,7 +110,7 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 
 ## Dependencies
 
-- ARCH-020-SHARED-003
+- ARCH-020-SHARED-001
 - ARCH-016-SHOPIFY-002
 
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.

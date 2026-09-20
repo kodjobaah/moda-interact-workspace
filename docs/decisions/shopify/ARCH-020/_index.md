@@ -8,4 +8,4 @@ Definitions are on local main for review by explicit developer request. Individu
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-SHOPIFY-001](SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | pending | ARCH-020-SHARED-003, ARCH-016-SHOPIFY-002 |
+| [ARCH-020-SHOPIFY-001](SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | pending | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
