@@ -17,7 +17,6 @@ attempt: 2
 depends_on:
   - ARCH-016-SHARED-001
 enables:
-  - ARCH-020-SHARED-004
   - ARCH-020-COMMERCE-012
   - ARCH-020-BACKGROUND-001
   - ARCH-020-COMMERCE-003
@@ -157,7 +156,6 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Enables
 
-- ARCH-020-SHARED-004
 
 - ARCH-020-COMMERCE-012
 

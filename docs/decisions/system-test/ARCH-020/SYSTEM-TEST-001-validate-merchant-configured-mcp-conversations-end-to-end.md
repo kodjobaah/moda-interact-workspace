@@ -15,8 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-020-DATABASE-002
-  - ARCH-020-SHARED-004
   - ARCH-020-COMMERCE-012
   - ARCH-020-BACKGROUND-001
   - ARCH-020-BACKGROUND-002
@@ -123,8 +121,6 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 
 ## Dependencies
 
-- ARCH-020-DATABASE-002
-- ARCH-020-SHARED-004
 
 - ARCH-020-COMMERCE-012
 

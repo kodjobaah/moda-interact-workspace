@@ -406,13 +406,13 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| ARCH-020-BACKGROUND-001 | background | review | 1 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 , ARCH-020-DATABASE-002, ARCH-020-SHARED-004 |
+| ARCH-020-BACKGROUND-001 | background | ready | 1 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | ARCH-020-COMMERCE-012 | commerce | pending | 0 | All other ARCH-020 implementation tasks; readiness checkpoint in task |
-| ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001  , ARCH-020-COMMERCE-012 , ARCH-020-DATABASE-002, ARCH-020-SHARED-004 |
+| ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001  , ARCH-020-COMMERCE-012  |
 
 ## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
 
@@ -514,14 +514,12 @@ Other canonical task worktrees remain authoritative for concurrent progress;
 this review does not overwrite their state. Prior readiness records are historical.
 ARCH-020 caching addition: COMMERCE-012 is Pending (attempt 0), depends on all other implementation tasks and precedes SYSTEM-TEST-001. Active scope is 20 tasks; existing task execution states are not reset.
 
-## Phone-country prerequisite reconciliation — 2026-09-20
+## Simplified language decision — 2026-09-20 (current)
 
-The Background parent branch document conflicts were resolved preserving both
-A1/A2 and newer main records. ARCH-020-DATABASE-002 (persist PHONE_COUNTRY)
-and ARCH-020-SHARED-004 (accept/publish phone-country) are new Ready owner tasks.
-Their accepted predecessors remain Complete. They can execute independently.
-BACKGROUND-001 remains Review, Attempt 1, unclaimed until both are accepted and
-artifacts are available; then promote the same task to Ready. Caching and terminal
-system-test dependencies include both additions. Active scope is now 22 tasks.
-No code, package release, migration, acceptance or Background attempt is claimed
-by this reconciliation.
+The user withdrew phone-country inference: initialize from shop language, then
+respond in clearly detected customer text/speech language. C6.2 and BACKGROUND-001
+A1 specify this rule. Earlier phone-country/Review coordination notes are historical
+and superseded. Both unclaimed provenance tasks were removed with their dependency
+edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
+scope remains. All four retained prerequisites are accepted Complete. Active task
+scope returns to 20; no automatic execution or expanded-scope acceptance occurred.

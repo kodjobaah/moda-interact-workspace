@@ -337,14 +337,12 @@ depends on it. Earlier 19-task counts predate this addition. Before promotion, r
 its explicit policy persistence/API/UI checkpoint and any owner-specific prerequisite
 tasks. No execution or cache enablement is authorized by task authorship alone.
 
-## Phone-country prerequisite reconciliation — 2026-09-20
+## Simplified language decision — 2026-09-20 (current)
 
-The Background parent branch document conflicts were resolved preserving both
-A1/A2 and newer main records. ARCH-020-DATABASE-002 (persist PHONE_COUNTRY)
-and ARCH-020-SHARED-004 (accept/publish phone-country) are new Ready owner tasks.
-Their accepted predecessors remain Complete. They can execute independently.
-BACKGROUND-001 remains Review, Attempt 1, unclaimed until both are accepted and
-artifacts are available; then promote the same task to Ready. Caching and terminal
-system-test dependencies include both additions. Active scope is now 22 tasks.
-No code, package release, migration, acceptance or Background attempt is claimed
-by this reconciliation.
+The user withdrew phone-country inference: initialize from shop language, then
+respond in clearly detected customer text/speech language. C6.2 and BACKGROUND-001
+A1 specify this rule. Earlier phone-country/Review coordination notes are historical
+and superseded. Both unclaimed provenance tasks were removed with their dependency
+edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
+scope remains. All four retained prerequisites are accepted Complete. Active task
+scope returns to 20; no automatic execution or expanded-scope acceptance occurred.

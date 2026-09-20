@@ -9,14 +9,12 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-  - ARCH-020-DATABASE-002
-  - ARCH-020-SHARED-004
   - ARCH-016-BACKGROUND-003
   - ARCH-020-SHARED-001
   - ARCH-020-DATABASE-001
@@ -93,20 +91,19 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 These are **new user-requested scope amendments A1/A2**, not defects against the original task or its submitted implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972`. Preserve the original Completion Report and validation history. Expanded scope is not yet implemented or accepted. The binding details are also recorded as C6.2/C6.3 in the architecture implementation contracts; they supersede conflicting assumptions about initial language/customer-preference inputs for this recovery path.
 
-### A1 — Initial language selection and subsequent conversation language
+### A1 — Shop language first, then customer message language
 
-- Begin with the shop's configured language. Resolve the customer's numbering country using validated international-number parsing, not prefix slicing, a guessed default region, customer names or an LLM. Require a valid number and an unambiguous country result; a shared calling code alone does not identify a country.
-- Apply a deterministic, explicitly approved country-to-language mapping only after validation. Initial approved mapping for this amendment: **FR -> fr**; thus a UK shop with a valid French +33 customer starts in French. Document the supported mapping table and parsing-library metadata/version. Other mappings require explicit approval; an unmapped, unknown, invalid, non-geographic or ambiguous country retains the shop language. Do not infer additional countries from a shared calling prefix.
-- Do not add customer language-preference settings, assume those settings exist, or synthesize customer-explicit provenance. The shop baseline and approved phone mapping govern the initial selection. Existing generic legacy source enum support is not evidence that a customer configured a preference.
-- Apply the initial selection consistently to initial recovery messages and follow-ups until substantive customer language is established. Select an available, approved WhatsApp template translation for the selected language. If unavailable, use the shop-language approved template; if that is unavailable too, preserve the existing no-approved-template handling. Record the language of the actual selected translation honestly; never relabel untranslated text. Template fallback does not masquerade as customer language evidence.
-- Once substantive customer text or a completed spoken-language transcript establishes a language, use that language for subsequent replies and retain it across turns. Short/ambiguous, numeric, URL-only or emoji-only input cannot switch it. Reuse the existing stable-signal/confidence and stale-turn persistence safeguards; phone initialization must not repeatedly overwrite an established conversation language. Subsequent applicable follow-ups use the established language subject to the same approved-template/shop fallback.
-- Never change currency, prices, URLs or merchant policy as a language side effect. Preserve the trusted store contact in referrals; document coverage and actual fallback language for fixed reply/referral text. The reported seven-language referral catalogue must not be represented as universal language coverage.
-- Shared owner coordination confirms 0.13.1 has no truthful source for phone-country selection. A new **phone-country** source requires Shared-owned schema/type/commerce-runner validation tests and publication. Persisting it also requires Database-owned **PHONE_COUNTRY** LanguageSource enum support and Background's wire/Prisma mappings. Do not label it detected, shopify, merchant-default or customer-explicit, or bypass the source validator. Compatible storage/readers and an accepted published contract must precede emitting the new value. Preserve accepted SHARED-001/DATABASE-001 history; these are new-scope owner handoffs, not retroactive defects. No other repository implementation belongs to this task.
+- Initialize the recovery conversation from the shop's configured language. Do not infer language from phone number, country, customer name or an assumed preference setting. No phone-country mapping file, new language-source value or Shared/Database prerequisite is required.
+- Use existing merchant-default / MERCHANT_DEFAULT provenance for shop initialization and detected / DETECTED after a qualifying customer message. Preserve existing schema values for compatibility, but do not introduce customer-preference settings or assume such settings exist in this flow.
+- A substantive customer text message or successfully persisted spoken-language transcript can establish a different language. Respond in that language and persist it for subsequent turns through existing stable-signal/confidence handling (threshold 0.85), canonicalization and stale-turn guards. Shop initialization runs only until conversation language is established; never reset detected language on each message.
+- Short, ambiguous, numeric, URL-only or emoji-only messages retain current language and emit null detection fields. Never fabricate regional subtags. With no customer detection, keep the configured shop language; missing/invalid shop language uses the existing documented platform fallback, not a new guessed locale.
+- Initial recovery outreach uses the approved shop-language template. Subsequent replies and applicable follow-ups use established conversation language. If its approved template translation is unavailable, use the approved shop-language variant; if that is also unavailable, retain existing no-approved-template handling. Record actual template language honestly without overwriting established customer language merely because a template fell back.
+- Language adaptation must not change prices, currency, URLs, recovery/order state or merchant policy. Assess actual fixed referral/fallback coverage; do not claim universal coverage or relabel English fallback as another language.
 
 ### A2 — Voice transcription and CommerceAgent input
 
 - Reuse SpeechTranscriptionService and add an OpenAI adapter with explicit provider/model configuration. Proposed OpenAI default: **gpt-4o-mini-transcribe**, only when OpenAI is selected. Preserve Groq and its existing deployment selection; no silent provider switch and no automatic paid/provider fallback. Validate configuration and report bounded configuration failure rather than selecting another provider.
-- Transcribe speech in its spoken language. Use transcription, not English translation; do not force shop/phone language into the transcription request. French audio must yield French text and English audio English text, independently of initial locale. Feed the persisted transcript through the same stable language handling as substantive text.
+- Transcribe speech in its spoken language. Use transcription, not English translation; do not force shop language into the transcription request. French audio must yield French text and English audio English text, independently of initial locale. Feed the persisted transcript through the same stable language handling as substantive text.
 - Make this order explicit and test it: **resolve recovery -> download and validate audio -> transcribe -> persist transcript -> normal conversation admission -> CommerceAgent -> WhatsApp text reply**. Preserve the existing raw abuse gate and engagement timing. Routing/ownership must precede audio download; normal merchant admission must follow successful transcript persistence. Do not create a second admission, reservation or delivery path.
 - Verify actual WhatsApp container/codec/MIME combinations, including representative Ogg/Opus voice notes, against the selected adapter. Supply matching content type and an extension-bearing filename. Use bounded conversion only for a demonstrated incompatibility; never simply relabel bytes. If needed, constrain input/output bytes, duration, process time, concurrency and temporary-file lifecycle, and have Background own the image dependency. Do not assume all provider/model/format combinations work from a mock alone.
 - Preserve current audio size/duration limits, media validation, provider timeouts, retry classification/budgets, duplicate protection, engagement handling, lease/version checks and stale-result suppression. Conversion/provider retries must fit those bounds, not introduce an unbounded extra retry layer.
@@ -120,13 +117,13 @@ All cases below require named deterministic fixtures and observed side effects, 
 
 | Case | Required outcome |
 |---|---|
-| A1-L01 UK shop / validated French +33 customer | FR -> fr mapping selects approved French initial and follow-up templates; correct actual translation metadata. |
-| A1-L02 unknown/invalid/unmapped number | Shop language retained; no guessed language or country. |
-| A1-L03 ambiguous numbering country | Unresolved shared-code/country fixture retains shop language; no first-country selection. |
-| A1-L04 missing French template translation | Approved shop-language template selected and honestly labelled; unavailable shop variant follows existing no-template outcome. |
+| A1-L01 UK shop / French-number customer | Initial message uses configured shop English regardless of phone country. |
+| A1-L02 shop language initialization | Valid shop language initializes existing language/source fields; no phone parser or new enum required. |
+| A1-L03 later turn after French reply | Persisted detected French remains French on subsequent turns; shop English does not reset it. |
+| A1-L04 missing detected-language template | Approved shop-language template fallback is honestly labelled, without changing detected conversation language; unavailable shop variant follows existing no-template outcome. |
 | A1-L05 customer replies in another language | Substantive text or persisted transcript establishes the new language for subsequent replies; amount/currency/URLs/policy unchanged. |
 | A1-L06 ambiguous replies | Short, numeric, URL-only, emoji-only and otherwise ambiguous input retain current language and do not emit false detection. |
-| A2-V01 French and English voice notes | Provider mocks preserve spoken language despite opposite shop/phone language; request does not force initial language or request English translation. |
+| A2-V01 French and English voice notes | Provider mocks preserve spoken language despite opposite shop language; request does not force initial language or request English translation. |
 | A2-V02 successful transcript-to-reply | Full ordered workflow persists once, admits once, invokes CommerceAgent once and delivers the WhatsApp text reply. |
 | A2-V03 unsupported audio | Validation/bounded conversion decision is explicit; unsupported result uses request-to-type with zero CommerceAgent calls. |
 | A2-V04 empty transcription | Request-to-type, zero CommerceAgent calls/reservations and no invented transcript. |
@@ -138,8 +135,8 @@ Representative real-audio quality checks are a **separate evidence record**, not
 
 ### Completion gates for amended scope
 
-- [ ] A1-L01–L06 implemented and validated; approved mappings documented.
-- [ ] Shared/Database source extension coordinated, independently accepted and available before phone-country emission; exact consumed revisions/version recorded. Architect must materialise the new owner prerequisites and reconcile dependencies before returning the whole amended task to Ready.
+- [ ] A1-L01–L06 implemented and validated using shop initialization then detected customer language; phone-country logic is absent.
+- [ ] Reuse accepted Shared/Database language contracts and existing source mappings; no new provenance package or migration is required.
 - [ ] A2-V01–V07 implemented and validated with deterministic provider mocks; Groq retained and explicit OpenAI provider/model behavior verified.
 - [ ] Gateway configuration handoff recorded; no reverse dependency on deployment/system-test is introduced.
 - [ ] Representative real-audio quality evidence recorded separately with exact outcomes/limits; original build/focused workflow checks rerun as appropriate.
@@ -166,8 +163,6 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 
 ## Dependencies
 
-- ARCH-020-DATABASE-002
-- ARCH-020-SHARED-004
 
 - ARCH-016-BACKGROUND-003
 - ARCH-020-SHARED-001
@@ -328,7 +323,7 @@ Review the referral translation fallback explicitly. The synthetic SDK fixture i
 
 ### Review disposition — scope amended, acceptance pending — 2026-09-20
 
-Status remains **Review**, Attempt 1, claim cleared. User-requested A1/A2 above are scope amendments, **not original-task defects**. No Accepted/Complete or Changes Requested defect verdict is asserted by this amendment. Original report/implementation remain preserved; no new attempt is claimed and no downstream task is promoted. Do not reclaim until the new Shared/Database owner prerequisites have been materialised/reconciled and the architect returns the expanded task to Ready.
+Historical scope-amendment decision (superseded by the simplified-language Ready decision below): status remained **Review**, Attempt 1, claim cleared. User-requested A1/A2 above are scope amendments, **not original-task defects**. No Accepted/Complete or Changes Requested defect verdict is asserted by this amendment. Original report/implementation remain preserved; no new attempt is claimed and no downstream task is promoted. Do not reclaim until the new Shared/Database owner prerequisites have been materialised/reconciled and the architect returns the expanded task to Ready.
 
 Reviewed submission heads: implementation `c3042825ac54f6fbb366baef6dd44b2adbef6972` (PR #48), report `4deb753816f49436e11f0dfa3dd0a2097e0f923d` (PR #168); remote PR heads verified. Inspected report, grants/host and language/referral/transcription/audio/template paths. Independently ran four focused files covering host, recovery routing, inbound audio and conversation language: **66 passed**. Initial sandbox invocation failed before tests while writing Vitest temporary configuration; the authorized rerun passed. Submitted build and broader tests remain developer-reported evidence. This scoped review does not assert full original-scope acceptance or amended-scope validation.
 
@@ -366,12 +361,14 @@ Reconcile task/index/frontier after review; preserve the terminal/manual system-
 
 All listed prerequisites are architect-accepted Complete following SHARED-001 Attempt 2 acceptance. Consume exact published Shared 0.13.1 (commerce and commerce/runner exports). Ready is eligibility only: no claim or execution is made by this review. Normal preparation must synchronize the canonical task worktrees and verify dependency source availability; do not silently use an older database/service revision.
 
-### Architect prerequisite reconciliation — 2026-09-20
+### Architect decision — simplified language scope — 2026-09-20
 
-Document conflicts with current main are resolved, preserving A1/A2 and the original
-Attempt 1 report. New prerequisites are ARCH-020-DATABASE-002 and
-ARCH-020-SHARED-004, both Ready and unclaimed. Background remains Review with
-claim cleared; no rejection of original scope is implied. After both are accepted
-Complete, consume the integrated enum/client and published Shared version, then
-architect promotes this same Background task to Ready for Attempt 2. Do not claim
-now or use the old package to emit phone-country.
+**Ready — Attempt 1 retained; executor and claimed_at null.** The user removed
+phone-country inference and requested return to Ready. A1 now starts from shop
+language and switches on substantive customer text/transcribed speech. The two
+unclaimed provenance tasks are withdrawn; no new Shared/Database contract is
+needed. This decision supersedes the earlier Review/do-not-reclaim coordination
+hold, not the original implementation report. A2 voice-transcription amendments
+remain required. Existing four prerequisites are accepted Complete; normal launcher
+preparation verifies their available source/artifacts and claims Attempt 2. No new
+attempt or acceptance of the expanded implementation is asserted here.
