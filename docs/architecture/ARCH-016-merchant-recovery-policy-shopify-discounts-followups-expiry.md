@@ -318,6 +318,21 @@ Every create/update/clear is also written to a dedicated durable recovery-policy
 
 Merchant UI MUST show when an admin override controls the effective policy. Merchant may still edit underlying merchant values; those values become effective only after override removal/expiry.
 
+
+Every runtime consumer of a recovery-policy field MUST consume the same effective-policy precedence. In particular, pending-recovery inactivity scheduling MUST NOT read `ShopSettings.recoveryDelayMinutes` directly:
+
+```text
+new PendingRecoveryCandidate scheduling
+  -> RecoveryPolicyService.resolve(shopId)
+  -> schedule from lastActivityAt + effective recoveryDelayMinutes
+
+qualifying later checkout/cart activity
+  -> RecoveryPolicyService.resolve(shopId) again
+  -> reschedule from new lastActivityAt + then-current effective recoveryDelayMinutes
+```
+
+Policy changes do not bulk-rewrite already-delayed BullMQ candidates in v1. An existing delayed candidate keeps its current due time until a normal qualifying activity refresh occurs; that refresh uses the policy effective at refresh time.
+
 ## RecoveryOutreachAttempt
 
 One `CheckoutRecovery` generation owns zero or more `RecoveryOutreachAttempt` rows.
@@ -626,7 +641,11 @@ ARCH-016-SHARED-001 ------+
 No implementation sibling depends on another sibling merely because it supplies
 runtime data. Catalogue/UI/outreach tests seed the durable state they consume.
 
-All implementation tasks
+ARCH-004-BACKGROUND-002 ----+
+                            +--> BACKGROUND-004
+ARCH-016-BACKGROUND-003 ----+
+
+All implementation tasks, including BACKGROUND-004
        -> SYSTEM-TEST-001
 ```
 
@@ -645,6 +664,7 @@ Parallelism is allowed where dependencies permit. Do not serialize tasks merely 
 | ARCH-016-ADMIN-002 | moda-interact-admin | Add tenant recovery-policy visibility and explicit override. |
 | ARCH-016-BACKGROUND-002 | moda-interact-background | Expire stale recovery generations and restart after later checkout activity. |
 | ARCH-016-BACKGROUND-003 | moda-interact-background | Implement chargeable recovery outreach attempts and one no-response follow-up. |
+| ARCH-016-BACKGROUND-004 | moda-interact-background | Apply effective recovery-policy delay, including active Admin overrides, to pending-candidate scheduling and activity rescheduling. |
 | ARCH-016-SYSTEM-TEST-001 | moda-interact-system-test | Integrated validation after implementation and developer manual testing. |
 
 ## Post-review update — SHARED-001 Attempt 1 Accepted
@@ -686,6 +706,22 @@ SYSTEM-TEST-001  Pending; terminal integrated phase after all implementation tas
 ```
 
 No implementation consumer is promoted merely because Shared is now Complete; `DATABASE-001` remains the unsatisfied common hard prerequisite.
+
+## 2026-09-20 integration correction — effective recovery delay
+
+The current integrated snapshot exposes one remaining effective-policy discrepancy after the accepted Recovery Settings/Admin override work:
+
+```text
+RecoveryPolicyService
+  recovery offer          -> effective policy
+  follow-up policy        -> effective policy
+
+PendingRecoveryCandidateService
+  initial recovery delay  -> direct ShopSettings read       # incorrect
+  activity reschedule     -> direct ShopSettings read       # incorrect
+```
+
+`ARCH-016-BACKGROUND-004` corrects only those two pending-candidate scheduling reads. It reuses `RecoveryPolicyService`; it does not reopen accepted BACKGROUND-003 behavior and does not introduce policy-change bulk rescheduling.
 
 ## Development migration/rollout
 
