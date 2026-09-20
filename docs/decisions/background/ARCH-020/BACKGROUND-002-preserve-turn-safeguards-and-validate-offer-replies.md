@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 160
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-09-20T23:41:29Z
+attempt: 2
 depends_on:
   - ARCH-020-BACKGROUND-001
 enables:
@@ -21,7 +21,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-002
 created: 2026-09-20
-updated: 2026-09-21
+updated: 2026-09-20
 ---
 
 # Preserve turn safeguards and validate offer replies
