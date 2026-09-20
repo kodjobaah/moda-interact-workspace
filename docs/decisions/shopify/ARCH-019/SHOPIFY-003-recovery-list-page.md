@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-09-20T12:44:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-019-SHOPIFY-001
@@ -178,24 +178,30 @@ None newly required. Authentication/lifecycle guards stay server-side, history b
 
 ### Review Status
 
-Pending.
+Accepted — 2026-09-20, Attempt 1. Complete under `completion_mode: automatic`.
 
 ### Review Notes
 
-No implementation submitted.
+Accepted implementation `37c62cde6c23f78b8cb61472d6bd0b4c4ee53199`, reviewed against report `c9f202f2ec48949549d1cb20a65728f680772079`. Both published remote task heads independently verified. No blocking implementation defect or workflow non-conformance found.
+
+Independent loader authentication and owned-shop resolution precede lifecycle enforcement and recovery reads. RECOVERY_HISTORY is added only for ACTIVE, NO_CONTRACT, FROZEN and BILLING_ATTENTION; all other permissions and navigation are preserved. Query parsing and shop-bound cursor validation reuse accepted SHOPIFY-001. Search/date/status changes clear pagination, navigation retains bounded embed context, and empty-history detection uses a tenant-scoped ID-only existence query. Safe rendering, localized statuses, unknown-value fallback and disabled premature detail links satisfy this task's contract.
 
 ### Reviewed Files
 
-None.
+All production additions and changes: route registration, loader/state/component/CSS, lifecycle policy, 20 catalogue diffs. Also inspected both modified/new unit suites, browser fixture and evidence README, captured 320px controls/rows, 390px German and 1024px desktop screenshots, existing merchant i18n/policy helpers, accepted reader dependency and task/architecture contracts.
 
 ### Validation Reviewed
 
-None.
+- Architect rerun of required route/access-policy/i18n suite: **72 passed across 3 files**, exit 0.
+- Architect rerun of full typecheck: exit 2, **171 diagnostics in 27 files**, none task-changed. Full lint: exit 1, **20 errors and 2 warnings**, none task-changed. All 37 distinct diagnostic files across both checks were compared byte-for-byte to the starting commit `30c69f8` and are unchanged. The access-policy syntax repair legitimately exposes older semantic debt; it does not establish a clean repository baseline. Reported focused ESLint success is consistent with the full lint result.
+- All 20 catalogue diffs add exactly 36 keys each, with no existing values changed; catalogue parity and ICU validation pass in the required suite.
+- Reviewed actual submitted responsive screenshots and detailed keyboard/search/status/date/next/previous/error-refresh browser evidence. Native controls, focus styles, wrapped RTL/long customer text and mobile layout agree with source. These are synthetic local component checks, not deployed Shopify embedding evidence; no independent browser replay or live-service check claimed by this review.
+- Accepted SHOPIFY-001 reader source is unchanged from `08af00b`. Dedicated task worktree is clean; prepared baseline, recursive database gitlink `9c6a4d8`, synchronization and durable claim evidence agree with report/history. Committed-diff whitespace checks pass.
 
 ### Architecture Conformance
 
-Awaiting implementation review.
+The bounded read-only browsing surface conforms. Repairing the malformed/stale access-policy tests is appropriate because this task directly changes that policy; no unrelated permission broadening or source repair occurred. No top-level navigation, detail route, mutation control, schema change or provider flow is introduced. Full embedding and terminal system validation remain later tasks. The complete architecture is not Implemented.
 
 ### Follow-up
 
-Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+SHOPIFY-003 is Complete at Attempt 1; claim cleared. SHOPIFY-002 is currently Review at Attempt 3 in its canonical parent worktree and is not accepted by this review. SHOPIFY-004 remains Pending until SHOPIFY-002 is Complete; SHOPIFY-005/006 and SYSTEM-TEST-001 remain gated. Preserve all current execution claims and reconcile accepted dependency copies into downstream task branches when their full dependency set is satisfied. Developer integration of the accepted implementation remains separate. Review publication follows the developer-delegated parent task commit/push workflow; no main merge/push or deployment performed.

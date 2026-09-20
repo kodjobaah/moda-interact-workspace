@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: codex
-claimed_at: 2026-09-20T12:36:41Z
-attempt: 2
+claimed_at: 2026-09-20T12:56:40Z
+attempt: 3
 depends_on:
   - ARCH-019-DATABASE-001
 enables:
@@ -89,7 +89,7 @@ All listed dependencies must be Complete and architect-accepted. Consume actual 
 
 ## Validation
 
-- [ ] Record representative local EXPLAIN (ANALYZE, BUFFERS) for actual chronological/latest reader queries on a long transcript; demonstrate index cursor traversal without work proportional to the entire transcript. Follow the existing developer-owned execution policy for long rehearsals.
+- [x] Record representative local EXPLAIN (ANALYZE, BUFFERS) for actual chronological/latest reader queries on a long transcript; demonstrate index cursor traversal without work proportional to the entire transcript. Follow the existing developer-owned execution policy for long rehearsals.
 
 - [x] Run npm test -- tests/unit/recovery-detail-readers.test.ts (create this focused suite).
 - [x] Run npm run typecheck and git diff --check.
@@ -109,107 +109,130 @@ Use scripts/start-agent-task.py through the normal /moda-task preparation path. 
 
 ### Status
 
-Ready for Review — Attempt 1. Implementation and fast checks finished. Actual PostgreSQL query-plan validation remains developer-owned/pending; no acceptance is claimed.
+Ready for Review — Attempt 3. Scoped correction and authorized PostgreSQL rehearsal passed. No architect acceptance is claimed. Full repository typecheck retains the unchanged baseline syntax blocker.
+
+### Attempt 3 correction checklist
+
+1. **Fixture loading — corrected.** `tests/helpers/recovery-detail-seed.mjs` removes only the exact leading psql `\set ON_ERROR_STOP on` directive, preserving every SQL byte after it. It rejects missing/unknown client directives and propagates pg errors. Three cheap tests use the real database-owned fixture and verify exact SQL preservation and failure propagation. The database fixture is unchanged.
+2. **Required PostgreSQL evidence — supplied.** The user explicitly authorized the exact non-UTC command below. All five tests passed on PostgreSQL 15.19. Complete version, command output, tested revision and four JSON EXPLAIN ANALYZE BUFFERS plans are committed in `moda-interact/docs/evidence/ARCH-019-SHOPIFY-002-attempt3-rehearsal.md`. The first passing run omitted console logs; direct stdout output fixed evidence capture and the same authorized rehearsal passed again. No query assertion was weakened.
+3. **Prior corrections and baseline — preserved.** Client-local UTC timestamp decoding and ISO Date binding remain unchanged; Europe/London, America/New_York and Asia/Kolkata regression cases pass. Full typecheck still fails with the same seven syntax diagnostics, distinct from TYPECHECK-001's older 48 type errors.
 
 ### Files Changed
 
-- app/services/recoveries/detail-cursor.server.ts
-- app/services/recoveries/detail-message.ts
-- app/services/recoveries/recovery-detail.server.ts
-- tests/unit/recovery-detail-readers.test.ts
-- tests/integration/recovery-detail-query-plans.test.ts
-- tests/tsconfig.recovery-detail.json
-- docs/ARCH-019-recovery-detail-readers.md
+Attempt 3 modifies the integration suite, focused unit suite and reader documentation; adds the fixture loader and committed rehearsal evidence. Earlier production reader/cursor/DTO modules, UTC helper and focused TypeScript configuration remain intact. No production reader change, database fixture edit, dependency/lockfile edit or unrelated route edit.
 
 ### Work Completed
 
-- Independent tenant-constrained ownership lookup in detail, transcript and related-recovery readers; missing/foreign returns null.
-- Direct equality-bound conversation query with tuple date/id keyset comparisons, first/next/previous/latest windows, 51-row limit and 50-row chronological result. At most three queries regardless of row count; indexed edge probes provide navigation.
-- Related recoveries use the owned customer's ID, authenticated shop and current-recovery exclusion; five rows plus lookahead. Guests have no grouping.
-- Strict bounded resource-bound cursors retain deleted-boundary coordinates; parameterized SQL and safe explicit projections.
-- Prisma enum-based sender/direction/content/delivery mapping, unknown fallbacks, successful audio transcription only, persisted milestones, exact decimal strings. No provider/media IDs, arbitrary metadata, history reasons, raw errors, writes or provider calls.
-- Added opt-in disposable PostgreSQL tests using the actual SQL builder and committed fixtures. Checks tenant isolation, real traversal and first/next/previous/latest plans without sort/join/full-transcript scanning.
+The existing implementation provides tenant-constrained recovery ownership; first/next/previous/latest message windows with tuple cursors, a 51-row query limit and 50-row chronological result; related same-shop/customer recoveries in pages of five; safe enum-based message/content/delivery DTOs; and persisted milestones/decimal values. Guests are not grouped. Missing and foreign IDs are indistinguishable. No provider calls, writes, raw media IDs or arbitrary metadata are exposed. Attempt 3 makes the actual PostgreSQL harness executable and records the required evidence.
 
 ### Validation Results
 
-Passed:
-- `npm test -- tests/unit/recovery-detail-readers.test.ts --no-cache`: 31 passed.
-- `npm test -- tests/unit/recovery-detail-readers.test.ts tests/integration/recovery-detail-query-plans.test.ts --no-cache`: 31 passed; 5 PostgreSQL tests skipped because opt-in was not set. Skips are not runtime evidence.
-- `npx tsc --noEmit -p tests/tsconfig.recovery-detail.json`: passed; changed TS source and tests checked under strict repository settings, legacy imported JS excluded.
-- `git diff --cached --check`: passed.
-
-Required full check executed: `npm run typecheck` exits 2 on seven pre-existing syntax diagnostics in tests/unit/merchant-route-access-policy.test.ts at lines 201, 219, 220. Confirmed unchanged in baseline HEAD c4fd514. This is a different condition from documented TYPECHECK-001's 48 type errors; no claim that the full check passed or that the old baseline exactly matches. That file was not modified. Focused changed-file typecheck passes.
-
-Existing installed reference dependencies were linked read-only via ignored node_modules; tests used --no-cache. No dependency/lockfile or generated Prisma schema edits. Bootstrap succeeded from canonical workspace; invoking it from the sibling worktree cannot locate the workspace and was corrected by using canonical cwd.
-
-Developer validation required from this implementation worktree at a2c23d19a930bfb9e2402dbfb6b4fad454776b1f:
+- `npm test -- tests/unit/recovery-detail-readers.test.ts tests/integration/recovery-detail-query-plans.test.ts --no-cache`: 37 unit tests passed; 5 opt-in tests skipped in this fast-check invocation only.
+- `./node_modules/.bin/tsc --noEmit -p tests/tsconfig.recovery-detail.json`: passed, including a repeat after the evidence-output change.
+- `git diff --check`: passed.
+- Authorized command below at **eb343405196047e18c0537da69dd87015b9f6b38**: exit **0**, all **5 passed**, PostgreSQL **15.19**, database submodule **9c6a4d8402a01840e2ea8dc18e89171f00564d29**. Final implementation commit adds evidence only after that tested revision.
 
 ```sh
-MODA_RECOVERY_DETAIL_POSTGRES=1 npm test -- tests/integration/recovery-detail-query-plans.test.ts --no-cache
+TZ=Europe/London MODA_RECOVERY_DETAIL_POSTGRES=1 npm test -- tests/integration/recovery-detail-query-plans.test.ts --no-cache
 ```
 
-Supply tested commit, full output and exit code. Expected: all five tests pass, version and JSON EXPLAIN ANALYZE BUFFERS printed, message scans bounded to 51 rows with the accepted index and no sort/join. Suite uses a disposable PostgreSQL 15 container and does not consume live/default database credentials. This task has not been authorized to run the long rehearsal; the prior DATABASE-001 authorization applied to that specific run.
+All four actual message queries use `ConversationMessage_conversationId_createdAt_id_idx`, with exactly 51 actual rows in a single index scan and no Sort or Join. First/next scan forward; previous/latest backward. Shared buffer hits are 4/6/5/7 respectively; no read or temporary blocks. Tenant isolation, round-trip pagination, exact UTC timestamps and related recovery bounds pass. These fixture observations do not establish production latency guarantees.
 
-### Deviations
+`npm run typecheck` was rerun in Attempt 3 and exited 2: seven TS1109/TS1434/TS1134/TS1128 syntax diagnostics in `tests/unit/merchant-route-access-policy.test.ts` at lines 201, 219 and 220. That file remains identical to baseline c4fd514. The complete output is in the evidence artifact. Focused validation does not certify full repository typecheck.
 
-Full repository typecheck is blocked by an unchanged syntax defect, with focused type evidence supplied. Required live query plans remain pending under the task's developer-owned validation policy. No source-scope deviation.
+Existing installed dependencies remain linked via ignored node_modules; tests used --no-cache. The rehearsal provisions and stops its own disposable PostgreSQL container, with no live/default database credentials.
 
-### Assumptions
+### Deviations / Unresolved Issues
 
-Future route loaders enforce authentication/lifecycle RECOVERY_HISTORY before passing resolved internal shopId. This task provides internal readers, not route wiring. UI maps stable enum codes to localized labels and renders text safely; no raw HTML/Markdown rendering is introduced here. Reads are live rather than cross-request snapshots.
+No pending PostgreSQL validation. The unchanged full-typecheck syntax defect remains for architect disposition; no unrelated repair performed. No source-scope deviation.
 
-### Unresolved Issues
+### Assumptions / Architectural Concerns
 
-Developer-owned PostgreSQL evidence pending. Existing repository test syntax defect blocks full typecheck. Both are explicitly reported for architect disposition.
-
-### Architectural Concerns
-
-DATABASE-001 join/sort concern addressed by direct conversation equality and tuple cursor SQL; actual-plan suite remains to be run. No new database index or shared contract required. No SHOPIFY-001 modules modified; reader implementations are separate for concurrent work.
+Future route loaders enforce authentication/lifecycle RECOVERY_HISTORY before supplying internal shopId, localize enum labels and render text safely. Reads are live rather than cross-request snapshots. The actual fixture plans now verify the direct conversation equality/tuple pagination response to DATABASE-001's join/sort finding. No new schema/shared contract is required. Downstream tasks are not launched or promoted.
 
 ### Git / VCS
 
-Mirrored branch: task/ARCH-019-SHOPIFY-002.
-Canonical primary workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
-Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-019-SHOPIFY-002 (reused).
-Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-019-SHOPIFY-002 (created).
+Mirrored branch: `task/ARCH-019-SHOPIFY-002`.
+Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-019-SHOPIFY-002` (reused).
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-019-SHOPIFY-002` (reused).
 Shared/default checkouts switched/mutated for implementation: no. Another task worktree reused: no.
 
-Prepared launcher evidence: parent remote fast-forward not-needed; origin/main incorporated yes (a4b83a560a5dccc7fff05a75ba3bd776be52802d). Implementation remote fast-forward not-needed; origin/main already-current (c4fd514b54a34bac8ee4770dd6c9b0fe7a4059e5). Recursive submodule sync/update passed, status ready; database initialized at 9c6a4d8402a01840e2ea8dc18e89171f00564d29, which already includes the merged accepted ARCH-019 indexes. No gitlink update needed.
+Prepared Attempt 3: both remote task fast-forwards not-needed; parent origin/main already-current; implementation origin/main incorporated. Parent baseline `1a6e78b3c5f56af09890d9c2d76640a9cfa8f3eb`; implementation synchronized baseline `30c69f842e71407055aa5a02f0ecd0ded21179f0`. Recursive submodule sync/update passed, status ready; database at `9c6a4d8402a01840e2ea8dc18e89171f00564d29` unchanged.
 
-Attempt 1 claimed by codex at 2026-09-20T12:08:03Z; durable pushed parent claim 73044dae7af872eec90226db8acc2f9b6e5761c2. Existing Architect Review was Pending, with no rework requested. No startup re-claim performed.
+Claim: codex, 2026-09-20T12:56:40Z, Attempt 3; parent claim `434c5eec731fbc8a413a5b4bcbd8b67b990dbf78` pushed by launcher. Latest Changes Requested read completely. No repeated preparation or claim.
 
-Implementation commit: a2c23d19a930bfb9e2402dbfb6b4fad454776b1f; pushed origin/task/ARCH-019-SHOPIFY-002 and remote SHA verified. Parent report is published in the commit containing this report (SHA supplied in final submission). No parent gitlink staged, main merge/push, or downstream launch. Architect Review below preserved unchanged.
+Implementation commits: fixture correction `39a30e4ed2d860b3da461a4f2f58d0c539b8e043`; tested evidence-output correction `eb343405196047e18c0537da69dd87015b9f6b38`; final evidence commit **1a60f1e17a27b9b927bb9a8b0bfff4c032a85e16**, pushed to origin/task/ARCH-019-SHOPIFY-002. Separate correction PR: https://github.com/kodjobaah/moda-interact/pull/40, because prior PR #38 was already merged by the developer.
+
+Parent report: published in the commit containing this report (SHA provided in final submission), same remote task branch; existing report PR https://github.com/kodjobaah/moda-interact-workspace/pull/159. Only this task file staged. No parent gitlink staged, main merge/push or downstream promotion. Architect Review below is preserved unchanged.
 
 ## Architect Review
 
 ### Review Status
 
-Changes Requested — 2026-09-20, Attempt 1. Not accepted. Same task returned to Ready; claim cleared, attempt preserved.
+Changes Requested — 2026-09-20, Attempt 2. Not accepted. Same task returned to Ready, claim cleared, attempt preserved at 2.
 
 ### Review Notes
 
-Reviewed implementation a2c23d19a930bfb9e2402dbfb6b4fad454776b1f and report 8a5aa031c640207cc939221db4818b5337bcd73c. Tenant-constrained ownership, explicit projections, parameterized tuple pagination and fixed query counts conform in source inspection. Required PostgreSQL evidence is absent, and its proposed harness has a reproducible timezone defect. No production data/code change is demanded by this finding; test source correction is required.
+Reviewed implementation `85656328b8607236af017e36383a3b300b2e3a8a` and report `7835d3bba8b358d7a014c85e48e986f5c623b04b`. The prior timezone defect is corrected: client-local OID 1114 decoding and ISO Date bindings retain UTC fields; all three non-UTC subprocess regressions pass without weakening plan assertions. A separate fixture-loading defect prevents the required PostgreSQL rehearsal from reaching its assertions.
 
 ### Required Corrections
+
+1. **P2 — Load the psql fixture through a compatible execution path.** At `tests/integration/recovery-detail-query-plans.test.ts:26`, `client.query` receives the complete `database/scripts/fixtures/arch019-recovery-indexes-seed.sql`. Its first line is `\set ON_ERROR_STOP on`, a psql client directive, not server SQL. The pg driver forwards it unchanged, so PostgreSQL rejects setup with a syntax error before any of the five tests run. Correct the app-owned harness: execute through psql with failure propagation, or explicitly remove the known directive and send SQL only, retaining fail-fast driver errors. Do not edit the database-owned fixture merely to work around this. Add a cheap regression using the actual fixture to prove the supported loading path; preserve all seed SQL and existing plan assertions.
+2. **Required evidence — Run the corrected five-test rehearsal under the non-UTC command and established execution policy.** Supply tested commit, exit code, PostgreSQL version, and full first/next/previous/latest EXPLAIN ANALYZE BUFFERS output. All five tests must pass with non-empty bounded index traversal and no sort/join. The authorization question raised during this review concerned the current command; no run was started after source inspection identified this setup defect. Pending or skipped validation cannot establish acceptance.
+3. **Preserve the verified corrections and baseline limits.** Keep UTC read/write handling and non-UTC tests. Full typecheck remains blocked by the unchanged baseline syntax errors; focused passing checks do not certify the repository.
+
+### Reviewed Files
+
+All eight task files: three production reader/DTO/cursor modules, focused tests, PostgreSQL suite, UTC helper, focused TypeScript configuration and reader documentation. Also inspected the exact database seed, schema relationships/indexes, parent architecture, task history and both PR states.
+
+### Validation Reviewed
+
+Architect reran `npm test -- tests/unit/recovery-detail-readers.test.ts --no-cache`: 34 passed. Focused `tsc --noEmit -p tests/tsconfig.recovery-detail.json` and committed-diff whitespace check passed. The baseline syntax-error file remains identical to `c4fd514`; the same seven errors were independently established during the adjacent reader review. No Docker or PostgreSQL plan rehearsal launched in this review. The fixture incompatibility is established by the exact file contents and direct `client.query` call; no claim of executed integration failure is made.
+
+### Architecture Conformance
+
+Production source remains read-only and follows owned-recovery lookup, direct conversation equality, tuple pagination, safe DTO projections and fixed query counts. The timezone correction is accepted as a correction, but the task is not accepted while actual-plan evidence is absent and its harness cannot load the fixture. SHOPIFY-004 and SYSTEM-TEST-001 remain gated.
+
+### Merge / Integration State
+
+GitHub confirms implementation PR #38 was merged by the developer at `2026-09-20T12:41:19Z`, merge commit `49526b503b82d1abe39642f44f3b9f3caacba5ee`. The merged task files exactly match reviewed Attempt 2; report PR #159 remains open. Record this as integration before architect acceptance, not agent workflow misconduct or implicit acceptance. These modules have no route consumers in the merged change. This test-harness finding does not itself require reverting production reader code. Correct the same task and submit the later implementation correction for separate developer integration; an already-merged PR cannot integrate later commits. Do not rewrite main or revert automatically.
+
+### Follow-up
+
+Reclaim `/moda-task ARCH-019-SHOPIFY-002` for Attempt 3 on the same canonical branch/worktrees, following normal main synchronization. Fix only the harness, supply focused and required PostgreSQL evidence, and return to review. SHOPIFY-001 remains Complete and SHOPIFY-003 remains In Progress at Attempt 1; preserve its active claim. No dependent promotion, implementation mutation, merge or deployment is performed by this review. Publish this parent review under the developer-delegated review-publication workflow.
+
+### Historical Architect Review — Attempt 1
+
+
+#### Review Status
+
+Changes Requested — 2026-09-20, Attempt 1. Not accepted. Same task returned to Ready; claim cleared, attempt preserved.
+
+#### Review Notes
+
+Reviewed implementation a2c23d19a930bfb9e2402dbfb6b4fad454776b1f and report 8a5aa031c640207cc939221db4818b5337bcd73c. Tenant-constrained ownership, explicit projections, parameterized tuple pagination and fixed query counts conform in source inspection. Required PostgreSQL evidence is absent, and its proposed harness has a reproducible timezone defect. No production data/code change is demanded by this finding; test source correction is required.
+
+#### Required Corrections
 
 1. **P2 — Match production timestamp semantics in the PostgreSQL harness.** tests/integration/recovery-detail-query-plans.test.ts uses pg default TIMESTAMP WITHOUT TIME ZONE decoding and Date parameter serialization. These use the host time zone, unlike the intended UTC Prisma behavior. Under TZ=Europe/London, timestamp `2026-09-01 00:02:05` decodes to `2026-08-31T23:02:05.000Z`, and Date `2026-09-01T00:02:05.000Z` serializes to `2026-09-01T01:02:05.000+01:00`. The builder casts to timestamp, yielding 01:02:05, beyond the fixture's final message at 00:04:10; the next-plan test can therefore return zero rows. Fix both input and output semantics, preferably exercising the production Prisma client, or use a demonstrably UTC-equivalent adapter. Add a cheap regression under a non-UTC host time zone that proves exact persisted timestamps and correct boundary parameters. Do not fix by weakening/removing the plan assertions or only testing under the default UTC environment.
 2. **Required evidence — Execute the corrected opt-in PostgreSQL validation under the existing developer-owned policy.** Supply command, tested commit, exit code, version and complete EXPLAIN output for first/next/previous/latest. Confirm non-empty bounded index traversal without full-transcript sorts/joins and actual tenant/page behavior. Skipped tests are not evidence. If still awaiting developer execution at submission, leave validation pending and return to Review, not Complete.
 3. **Report validation limits accurately.** Preserve the pre-existing full-typecheck syntax blocker and focused typecheck evidence. Do not equate the observed seven syntax errors with TYPECHECK-001's older 48 type errors. No unrelated repair is required by this review.
 
-### Reviewed Files
+#### Reviewed Files
 
 All seven changed implementation files, ARCH-019 detail/query contracts, task acceptance criteria and completion report. Implementation worktree clean at reviewed SHA; prepared physical isolation/synchronization evidence recorded.
 
-### Validation Reviewed
+#### Validation Reviewed
 
 Submitted 31 passing focused tests, passing focused strict TypeScript check and whitespace checks inspected. Full typecheck blocked by unchanged syntax errors. PostgreSQL suite unrun (five skipped).
 
 Reviewer reproduced driver behavior without database access using installed pg and pg/lib/utils.js with TZ=Europe/London: getTypeParser(1114)("2026-09-01 00:02:05").toISOString() -> "2026-08-31T23:02:05.000Z"; prepareValue(new Date("2026-09-01T00:02:05.000Z")) -> "2026-09-01T01:02:05.000+01:00". No long/live rehearsal launched.
 
-### Architecture Conformance
+#### Architecture Conformance
 
 Read-only service scope and tenant boundaries appear aligned. Missing/foreign records return null; unknown message states and inbound delivery are handled without invented receipts. Production query-plan conformance remains unproven until corrected validation passes. No schema or cross-service change requested.
 
-### Follow-up
+#### Follow-up
 
 Reclaim the same task through `/moda-task ARCH-019-SHOPIFY-002` for Attempt 2, correct the test harness, rerun focused checks and publish both branches. SHOPIFY-004 and SYSTEM-TEST-001 remain gated; no dependent promotion. Implementation PR #38 and report PR #159 stay open for correction. Review metadata publication is delegated by the developer; no merge or main update.

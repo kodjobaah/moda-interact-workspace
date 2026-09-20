@@ -380,6 +380,6 @@ For current sequencing use `ARCH-010-implementation-handoff.md`; individual task
 
 ## ARCH-019 — merchant recovery experience (2026-09-20)
 
-DATABASE-001 accepted/Complete at `54c0ec2`, Attempt 1; populated PostgreSQL 15.19 rehearsal passed. Ready: SHOPIFY-001 and SHOPIFY-002. Pending: SHOPIFY-003 through SHOPIFY-006 and SYSTEM-TEST-001. Downstream tasks unclaimed; architecture remains Agreed, not Implemented. Acceptance and readiness records are published to the task branches under explicit developer delegation. Task YAML in canonical parent worktrees remains authoritative.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1. SHOPIFY-002 is Review at Attempt 3, not yet accepted. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress. No new task is promoted or launched by SHOPIFY-003 acceptance.
 
 [Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)
