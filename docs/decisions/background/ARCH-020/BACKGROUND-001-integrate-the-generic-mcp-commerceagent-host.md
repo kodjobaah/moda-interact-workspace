@@ -15,6 +15,8 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
+  - ARCH-020-DATABASE-002
+  - ARCH-020-SHARED-004
   - ARCH-016-BACKGROUND-003
   - ARCH-020-SHARED-001
   - ARCH-020-DATABASE-001
@@ -163,6 +165,9 @@ Unit/integration fixtures cover valid reference delayed1h/10h, no-reference0/1/2
 For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
 
 ## Dependencies
+
+- ARCH-020-DATABASE-002
+- ARCH-020-SHARED-004
 
 - ARCH-016-BACKGROUND-003
 - ARCH-020-SHARED-001
@@ -360,3 +365,13 @@ Reconcile task/index/frontier after review; preserve the terminal/manual system-
 ## Dependency readiness — 2026-09-20
 
 All listed prerequisites are architect-accepted Complete following SHARED-001 Attempt 2 acceptance. Consume exact published Shared 0.13.1 (commerce and commerce/runner exports). Ready is eligibility only: no claim or execution is made by this review. Normal preparation must synchronize the canonical task worktrees and verify dependency source availability; do not silently use an older database/service revision.
+
+### Architect prerequisite reconciliation — 2026-09-20
+
+Document conflicts with current main are resolved, preserving A1/A2 and the original
+Attempt 1 report. New prerequisites are ARCH-020-DATABASE-002 and
+ARCH-020-SHARED-004, both Ready and unclaimed. Background remains Review with
+claim cleared; no rejection of original scope is implied. After both are accepted
+Complete, consume the integrated enum/client and published Shared version, then
+architect promotes this same Background task to Ready for Attempt 2. Do not claim
+now or use the old package to emit phone-country.

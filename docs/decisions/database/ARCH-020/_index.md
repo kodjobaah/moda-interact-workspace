@@ -14,3 +14,9 @@ Individual task YAML is authoritative. DATABASE-001 Attempt 2 is Accepted / Comp
 ## New-scope coordination: phone-country language provenance
 
 BACKGROUND-001 amendment A1 requires honest phone-country provenance (C6.2). Shared owns the new wire source/validators and publication; Database owns the persisted PHONE_COUNTRY enum addition. Current accepted contracts lack this value. Architect must materialise separate new-scope owner work and dependency gates before expanded Background execution; do not reopen or relabel accepted SHARED-001/DATABASE-001 as defective. No implementation is assigned or claimed by this coordination note.
+
+## Materialised owner prerequisite
+
+| Task | Outcome | Status | Depends on |
+|---|---|---|---|
+| [ARCH-020-DATABASE-002](DATABASE-002-add-phone-country-language-source.md) | Add persisted phone-country language provenance | ready | ARCH-020-DATABASE-001 |

@@ -336,3 +336,15 @@ tasks. Its prerequisites are all 18 other nonterminal ARCH-020 tasks; SYSTEM-TES
 depends on it. Earlier 19-task counts predate this addition. Before promotion, resolve
 its explicit policy persistence/API/UI checkpoint and any owner-specific prerequisite
 tasks. No execution or cache enablement is authorized by task authorship alone.
+
+## Phone-country prerequisite reconciliation — 2026-09-20
+
+The Background parent branch document conflicts were resolved preserving both
+A1/A2 and newer main records. ARCH-020-DATABASE-002 (persist PHONE_COUNTRY)
+and ARCH-020-SHARED-004 (accept/publish phone-country) are new Ready owner tasks.
+Their accepted predecessors remain Complete. They can execute independently.
+BACKGROUND-001 remains Review, Attempt 1, unclaimed until both are accepted and
+artifacts are available; then promote the same task to Ready. Caching and terminal
+system-test dependencies include both additions. Active scope is now 22 tasks.
+No code, package release, migration, acceptance or Background attempt is claimed
+by this reconciliation.

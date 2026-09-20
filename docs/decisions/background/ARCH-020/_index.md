@@ -8,7 +8,7 @@ Definitions are on local main for review by explicit developer request. Individu
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-BACKGROUND-001](BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | review | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 |
+| [ARCH-020-BACKGROUND-001](BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | review | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 , ARCH-020-DATABASE-002, ARCH-020-SHARED-004 |
 | [ARCH-020-BACKGROUND-002](BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 
 BACKGROUND-001 is in Review at Attempt 1; A1/A2 are new user scope amendments, with no acceptance or active claim.
