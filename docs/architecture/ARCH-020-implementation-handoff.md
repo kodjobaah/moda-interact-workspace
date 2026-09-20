@@ -2,7 +2,7 @@
 
 Canonical architecture: [CommerceAgent Studio and merchant-configured MCP capabilities](ARCH-020-commerce-agent-studio-mcp-capabilities.md).
 
-## Review packet and current frontier
+## Initial review packet and definition frontier
 
 The developer requested task definitions on local workspace `main` for review.
 This is an explicit exception to task-definition materialisation only. No task
@@ -252,3 +252,42 @@ One task owns implementation, tests, publication and clean registry installation
 evidence. Consumers depend on its architect-accepted Complete state and recorded
 package version. Current frontier: 19 tasks, 3 Ready, 16 Pending, 0 Blocked.
 No execution was claimed and no package was published by this documentation change.
+
+## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
+
+Attempt 1 is **Changes Requested**, task `ready`, attempt 1, claim cleared.
+The implementation/report PRs are #33/#165 (0e992c4 / 312e350b). Preserve the
+implementation and rehearsal history. Required corrections are the newer C16
+CommerceRelease responseContract/responseContractHash persistence and negative
+fixtures that currently permit unrelated constraint failures. The full correction
+contract is in the task's Architect Review. C16 was incorporated by parent synchronization commit 7fef4689 from canonical
+workspace commit a710df26; its semantic consumer requirements remain binding.
+
+Guarded writes require READ COMMITTED or SERIALIZABLE with bounded transaction
+retries; REPEATABLE READ is rejected. BACKGROUND-001 and COMMERCE-003 must honor
+that database restriction when implementing grants/publication. No dependency is
+promoted by this review; SYSTEM-TEST-001 remains terminal and manually invoked.
+Other task states in this branch's older definition snapshot are not a fresh
+review of their separate execution branches. Integrate latest parent main before
+reclaiming this task, preserving its report, review and attempt metadata.
+
+## DATABASE-001 architect acceptance — 2026-09-20
+
+ARCH-020-DATABASE-001 is **Accepted / Complete, Attempt 2**. Implementation
+30de940 (tested source a835207) and report 17c9f9ab satisfy R1 C16 response
+persistence and R2 rejection-fixture isolation. Reviewed 298 distinct passing
+checks per fresh/upgrade rehearsal, including controls; preservation covers
+57 existing tables, 41 seeded rows and 217 indexes. Static/Prisma checks passed.
+The previous Changes Requested section is historical and superseded.
+
+No downstream promotion: canonical SHARED-001 is in_progress, COMMERCE-001 is
+review, and COMMERCE-002/011 remain pending. BACKGROUND-001 and COMMERCE-003 still
+have incomplete prerequisites. Terminal SYSTEM-TEST-001 remains pending/manual.
+Other task table rows are branch-local snapshots, not fresh acceptance decisions.
+
+Guarded consumers use READ COMMITTED or SERIALIZABLE with bounded whole-transaction
+retries; REPEATABLE READ is rejected. Shared/Commerce own semantic response-schema
+validation and canonical hash equality; Commerce owns atomic release assembly,
+authorization and audit. Merge database PR #33 first, pin its final integrated
+database-main commit in the parent, then merge parent PR #165. No main integration
+or gitlink update is performed by this acceptance. ARCH-020 is not Implemented.
