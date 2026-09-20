@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-09-20T19:19:18Z
@@ -139,6 +139,103 @@ After scoped work and agent-owned checks, update this task's execution/report fi
 Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; the actual repository must be provisioned before execution preparation.
 
 ## Completion Report
+
+### Attempt 2 — Ready for Review (2026-09-20)
+
+Implemented the architect-authorized Docker fixture and supplied the previously
+missing real PostgreSQL/Redis readiness evidence. Implementation
+`8c8b8250954aec9d6f011130bf05f620c35dff04` is committed and pushed on
+`task/ARCH-020-COMMERCE-001`. Task status is **review**; no architect acceptance
+decision has been made by this agent. The Attempt 1 report and architect review
+below are retained as historical evidence; their pending local-readiness handoff
+is superseded by this successful authorized execution.
+
+#### Authorization checklist and changed files
+
+- Repeatable single command: `package.json` declares `npm run test:readiness-docker`;
+  `scripts/readiness-docker.mjs` provisions dependencies, waits for final PostgreSQL
+  TCP readiness/Redis PONG, applies the existing schema, builds, then runs the probe.
+- Isolation: unique invocation names/labels, own network, loopback ephemeral ports,
+  generated synthetic credentials, tmpfs storage and no persistent volumes.
+  Rejects remote Docker contexts and dotenv files; no shared service credentials
+  are inherited. No canonical schema/migration change or application startup migration.
+- Bounded failure handling: per-command deadlines, bounded/redacted child output,
+  process-group termination with a two-second kill grace, owned-resource cleanup
+  on success/failure/SIGINT/SIGTERM and preservation of validation failure exit codes.
+  Cleanup checks ownership labels, includes stopped containers, and reports failure.
+- Evidence: `scripts/readiness-local-smoke.mjs` now prints status and elapsed time;
+  `tests/readiness-docker.test.ts` covers isolated target construction, partial
+  setup cleanup, cancellation, ownership mismatch, remote-context rejection,
+  failure-code preservation, redaction and forced termination.
+- `README.md` and `docs/runtime-compatibility.md` document the command, prerequisites,
+  resource boundaries, cleanup and the lower-level read-only validator.
+
+#### Requirement-to-fixture results
+
+| Requirement / fixture | Expected effects | Actual command / result |
+| --- | --- | --- |
+| Existing foundation plus new lifecycle tests | Local mock/loopback/subprocess checks only | `npm test`: **27 passed, five suites** |
+| Types and lint | Local generated types/cache only | `npm run typecheck`, `npm run lint`: **passed** |
+| Disposable local infrastructure | Pull two official images; create only own network and two tmpfs containers | `npm run test:readiness-docker`: **passed, exit 0** |
+| Pinned schema | Apply recorded Prisma schema only to the new empty local fixture database | Docker command's `prisma db push --schema database/prisma/schema.prisma --skip-generate`: **passed** |
+| Production build | Generate pinned client/build locally; no app startup migrations | Docker command's `npm run build`: **passed** |
+| Real healthy connectivity | Read-only SQL/schema check and Redis PING through production Next process | **HTTP 200 ready, 226.4 ms** |
+| Unavailable Redis | Probe unreachable loopback endpoint; no shared service stopped | **HTTP 503 not_ready, 136.7 ms** |
+| Unavailable PostgreSQL | Probe unreachable loopback endpoint; no shared service stopped | **HTTP 503 not_ready, 98.2 ms** |
+| Invalid verification keys | Fresh app process with synthetic invalid key configuration | **HTTP 503 not_ready, 58.3 ms** |
+| Cleanup | Remove own containers/network only; no persistent volumes | **passed**; independent label-filtered container/network inventory returned no resources |
+| Git/schema ownership | No whitespace errors or nested database modifications | `git diff --check`, nested `git status --short`: **passed/clean** |
+
+Full fixture ran once successfully on local Docker Engine **29.5.2**, Node
+**24.19.0**, npm **11.17.0**, with implementation source subsequently committed
+unchanged as `8c8b8250954aec9d6f011130bf05f620c35dff04` (the fixture printed its
+pre-commit base `3ae6c7f12f2f0f6467c93ca49012967f26d16b44`). Database pin:
+`9c6a4d8402a01840e2ea8dc18e89171f00564d29`.
+
+Exact command: `npm run test:readiness-docker` from the canonical implementation
+worktree, after the workspace Node bootstrap. No credentials supplied by the user
+or loaded from deployment configuration. Run ID:
+`commerce-readiness-c2d65f87-1cf7-4d4e-b0aa-6e9f94ac6f55`.
+
+Resolved official image versions/digests:
+
+- `postgres:16.4-alpine` → `postgres@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c`.
+- `redis:7.4.0-alpine` → `redis@sha256:c35af3bbcef51a62c8bae5a9a563c6f1b60d7ebaea4cb5a3ccbcc157580ae098`.
+
+During development, one ownership-test mock incorrectly intercepted Docker context
+inspection and TypeScript exposed test/helper annotation issues; corrected before
+successful validation. Initial Node bootstrap from the implementation sibling
+could not resolve the primary workspace; sourcing the existing bootstrap from the
+canonical primary workspace resolved this without host/toolchain changes.
+
+No remaining required real local-readiness evidence gap. The previously reviewed
+Prisma/deepmerge-ts audit limitation remains unchanged. SIGKILL/host failure cannot
+run cleanup; documentation identifies the run ID for manual scoped inspection.
+No deployed/provider validation, browser rerun or redundant clean-clone run was
+needed for this script-only addition; prior foundation evidence remains recorded.
+
+#### Prepared launcher / publication evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-001`;
+  implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-001`.
+- Both branches: `task/ARCH-020-COMMERCE-001`; both canonical worktrees reused.
+- Both remote task fast-forwards `not-needed`; both origin/main incorporation
+  `already-current`; dependency gate passed (no dependencies).
+- Prepared parent HEAD `767b526f04a81f1edf3b0a46173e75bd7fa0a214`; implementation
+  HEAD `3ae6c7f12f2f0f6467c93ca49012967f26d16b44`.
+- Recursive submodule sync/update passed, status ready, database at
+  `9c6a4d8402a01840e2ea8dc18e89171f00564d29`; no repeated startup preparation.
+- Attempt 2 claimed by codex at `2026-09-20T19:19:18Z`; durable claim committed and
+  pushed by launcher as `cb2abb9968a94ced5c9b75bc9f1ee18d8c163e52`.
+- Implementation commit above pushed to Commerce origin/task/ARCH-020-COMMERCE-001.
+  This report's containing commit is the parent report revision and is published
+  on the mirrored parent branch. Only this task file is staged in parent.
+- No shared/default checkout switched or mutated, other task worktree reused,
+  parent gitlink staged, architecture/index edited, main merge/push, deployment,
+  downstream launch or self-acceptance.
+
+### Attempt 1 report (historical)
 
 ### Status
 
