@@ -38,6 +38,6 @@ Files named `*-review-*`, `*-amendment.md`, overview documents, and old overlay/
 
 ## ARCH-019 — merchant recovery experience (2026-09-20)
 
-Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3. SHOPIFY-004 Ready at Attempt 0. SHOPIFY-005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependencies are reconciled into SHOPIFY-004; readiness does not launch implementation or authorize unmerged dependency consumption.
+Current frontier: DATABASE-001, SHOPIFY-001 and SHOPIFY-003 accepted/Complete at Attempt 1; SHOPIFY-002 accepted/Complete at Attempt 3. SHOPIFY-004 Ready after Attempt 1 Changes Requested: default-list Back navigation loses scroll; implementation `1c89d3b` is not accepted. SHOPIFY-005/006 and SYSTEM-TEST-001 remain Pending. Architecture remains In Progress; system validation is terminal and developer-invoked. Accepted dependencies are reconciled into SHOPIFY-004; readiness does not launch implementation or authorize unmerged dependency consumption.
 
 [Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)

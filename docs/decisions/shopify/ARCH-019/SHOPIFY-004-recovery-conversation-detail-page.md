@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: codex
-claimed_at: 2026-09-20T13:26:33Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-019-SHOPIFY-002
@@ -177,24 +177,33 @@ None newly required. No cross-repository implementation, new contracts, media/pr
 
 ### Review Status
 
-Pending.
+**Changes Requested — Attempt 1, 2026-09-20, moda_architect.**
+
+Reviewed implementation `1c89d3bd5e3bd3dd4f2cbb4afc496c1613bb57a0` and submitted parent report `b471c06aecb54def1000d70d15f70b58cb23ecdd`; both remote task heads verified. Task returns to Ready with executor/claimed_at cleared and attempt 1 preserved. No architect acceptance is granted.
 
 ### Review Notes
 
-No implementation submitted.
+**[P2] Restore list scroll across equivalent list URLs (`app/root.jsx:22-25`).** The new scroll key is the raw pathname plus search string, whereas the detail Back link reconstructs the list URL with explicit normalized defaults and a fixed parameter order. A normal entry at `/app/recoveries` therefore saves a different key from the Back destination. The list loader does not redirect that initial URL to its normalized equivalent. The submitted browser evidence only exercises a URL already serialized in the Back link's exact format.
+
+Architect reproduction in the submitted local browser fixture: open `/app/recoveries`, scroll to `window.scrollY = 720`, open basket 5, then click **Back to recoveries**. The destination becomes `/app/recoveries?from=2026-09-01&to=2026-09-20&status=all&q=&pageSize=25&shop=fixture.myshopify.com` and `window.scrollY = 0`. This violates the explicit preserved-list-scroll acceptance criterion. Differently ordered equivalent filter URLs have the same key mismatch.
+
+Use one stable, validated list identity for saving and restoring scroll, or preserve the original list entry identity through detail/related navigation while retaining the safe direct-link fallback. Do not introduce an arbitrary return URL or weaken tenant/cursor validation. Add regression coverage for omitted defaults and reordered filter parameters, including list → detail → related → Back; retain coverage for canonical URLs, cursor pages and direct detail entry.
 
 ### Reviewed Files
 
-None.
+Detail route/section loaders and route registration; extracted recovery-history access guard; detail component, message rendering, navigation helpers and CSS; list detail links; root ScrollRestoration; route tests and browser fixture/evidence; Completion Report and prepared isolation/synchronization record.
 
 ### Validation Reviewed
 
-None.
+- Architect reran the exact expanded command: `npm test -- tests/unit/recovery-detail-route.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/merchant-route-access-policy.test.ts tests/unit/merchant-i18n.test.ts tests/unit/recovery-list-route.test.ts`: **145 tests passed, 5 files**.
+- Architect independently reproduced the default-list scroll defect in the running synthetic fixture using the production list/detail components and the submitted restoration key.
+- Submitted report records full typecheck/lint failures in unchanged files and focused lint success. Those broad commands were not rerun for this Changes Requested decision; they are not represented as clean checks.
+- Dedicated parent and implementation worktrees, matching task branches, prepared base/claim and recursive database evidence are recorded. Implementation remained unchanged during review.
 
 ### Architecture Conformance
 
-Awaiting implementation review.
+Independent authentication/ownership guards, bounded section readers, safe message rendering and read-only behavior conform to the inspected contract. Scroll restoration remains an unresolved task-owned acceptance failure. ARCH-019 remains In Progress; SHOPIFY-005/006 and terminal SYSTEM-TEST-001 remain Pending.
 
 ### Follow-up
 
-Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+moda_app must reclaim the same task for Attempt 2, repair the restoration identity, rerun focused validation and the expanded navigation scenarios, and resubmit both task branches. Preserve Attempt 1 evidence and this review. No downstream task was launched or promoted.
