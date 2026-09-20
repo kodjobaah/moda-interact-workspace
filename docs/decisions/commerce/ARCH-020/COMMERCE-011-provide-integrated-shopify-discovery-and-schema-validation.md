@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-20T22:41:57Z
+status: review
+executor:
+claimed_at:
 priority: 85
 attempt: 2
 depends_on:
@@ -25,7 +25,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Provide integrated Shopify discovery and schema validation
@@ -126,50 +126,68 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
- Ready for Review.
+Ready for Review.
 
 ### Files Changed
 
-Implemented in `5621ebf`: authenticated C15 discovery routes, local Storefront
-2026-07 schema artifact/hash, bounded schema browsing, deterministic query
-validation, canonical documentation URL checks, pinned developer-MCP child
-configuration, compatibility fixtures, and runtime documentation.
+Implementation commits:
 
-Correction checklist: the latest Architect Review section contains no Changes
-Requested items. No prior correction was silently waived.
+- `08d8cf231c7ff1d097c75ec6c8ce442a1318c55` (`feat(commerce): add Shopify discovery validation`): R1 compiler, R3 supervised pinned-process adapter and compatibility fixture, R4 route/admission/deadline enforcement and executable route tests, R2 retained schema artifact.
+- `86bd4e48b1561d7dd7496c2f4e8528a9b56cffb2` (`docs(commerce): record Shopify schema provenance`): R2 artifact provenance and distribution evidence.
+
+Correction checklist:
+
+- R1 implemented: `lib/discovery/compiler.ts` uses the GraphQL parser and the accepted Shared compiler interfaces; validates one named query, typed fields/arguments/variables, roots, directives/fragments, result paths, and bounded document/depth/selection/cost/connection limits. `tests/discovery.test.ts` covers the three invalid-document regressions, valid ProductDetails control, schema/type/path/mapping failures, and boundary controls. Local result: passed.
+- R2 implemented: `lib/discovery/artifacts/storefront-2026-07.json` is retained from pinned `@shopify/dev-mcp@1.15.4`; QueryRoot/Product traversal, typed metadata, token-required restrictions and hash checks are wired to the same artifact used by compilation. Provenance is recorded in `lib/discovery/artifacts/storefront-2026-07.provenance.json`. Recomputed SHA-256 matches `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`. Local result: passed.
+- R3 implemented: `lib/discovery/child.ts`, `lib/discovery/upstream.ts` and `lib/discovery/service.ts` use the pinned `shopify-dev-mcp` stdio process with an approved tool allowlist, typed search/document mapping, bounded calls and local-schema fallback. `tests/discovery-process.test.ts` exercised actual initialize/list/approved call/close against `shopify-dev-mcp` v1.15.4 and verified denied capabilities. Local result: passed.
+- R4 implemented: `lib/discovery/limits.ts` and `app/api/studio/discovery/route.ts` enforce authenticated admission, bounded request/response handling, strict keys, Redis-unavailable fail-closed behavior, and service dispatch through the admission boundary. `tests/discovery-route.test.ts` covers authentication denial, C15 envelopes, admission failure and unknown keys. Local result: passed.
+
+No R1-R4 correction was silently waived. The committed `git diff --check` has one trailing-space finding in `lib/discovery/compiler.ts`; implementation files were not modified during this handoff.
 
 ### Work Completed
 
-None; task definition only.
+Completed the scoped Commerce C15 discovery/schema/compiler implementation and its local evidence. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started.
 
 ### Validation Results
 
- Passed: `npm test -- --run tests/discovery.test.ts tests/discovery-route.test.ts`
-(6 tests); `npm test` (15 files, 75 tests); `npm run typecheck`; `npm run lint`;
-`npm run build`; `git diff --check`.
+Passed: `npm test -- --run tests/discovery.test.ts tests/discovery-route.test.ts tests/discovery-process.test.ts` (3 files, 17 tests); `npm test` (16 files, 86 tests); `npm run typecheck`; `npm run lint`; and `npm run build`.
 
-The build generated Prisma from the nested database submodule at accepted SHA
-`5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Live Shopify documentation calls,
-deployed Redis rate-limit behaviour, and deployed OAuth remain developer-owned
-validation; no live store or production credential was used.
+The build generated Prisma Client v6.19.3 from the nested database submodule at
+accepted SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. The actual pinned
+stdio compatibility test started `shopify-dev-mcp` v1.15.4, initialized/listed
+tools, called the approved `learn_shopify_api` operation for Storefront
+2026-07, and closed the client without a live store credential.
+
+Failed: `git diff --check 4b5920f..86bd4e4`, due only to the committed trailing
+space on `lib/discovery/compiler.ts:8`.
+
+Unrun/developer-owned: deployed OAuth/revocation, real Redis rolling admission
+and cross-replica saturation, live Shopify documentation/store calls, and
+deployment health/restart evidence. No live store or production credential was
+used. The local process fixture is actual pinned-process evidence, not a
+deterministic mock.
 
 ### Deviations
 
- Node 24.21.0 was used against the package engine requirement 24.19.0; npm
- reported the patch-level engine warning only. The upstream package was verified
- from the registry as `@shopify/dev-mcp@1.15.4` with executable
- `shopify-dev-mcp`.
+Node 24.21.0 was used against the package engine requirement 24.19.0; npm
+reported the patch-level engine warning only. The upstream package was verified
+as `@shopify/dev-mcp@1.15.4` with executable `shopify-dev-mcp`. The artifact
+was acquired from `dist/data/storefront-graphql_2026-07.json.gz` on
+2026-09-20; its exact hash and license/distribution references are recorded in
+the provenance file.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+Use the parent architecture and actual accepted dependency revisions. The
+implementation and parent report are kept in dedicated physical task worktrees.
 
 ### Unresolved Issues
 
- The live upstream stdio initialize/list/call process fixture and Redis-backed
- rolling request limiter require developer-owned integration validation before
- acceptance. Local schema browsing and validation remain available without that
- dependency.
+ The deployed Redis-backed rolling limiter, deployed auth/OAuth and live-store
+ checks remain developer-owned validation. Local schema browsing and validation
+ remain available without remote documentation availability. The committed
+ whitespace finding should be cleaned by a later implementation amendment if
+ the architect requires a clean diff check.
 
 ### Architectural Concerns
 
@@ -179,8 +197,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Git / VCS
 
- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, commit `5621ebf`, pushed to `origin/task/ARCH-020-COMMERCE-011`.
- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`; this report is being committed and pushed separately. Nested database is clean at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
+ Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean at `86bd4e48b1561d7dd7496c2f4e8528a9b56cffb2`; correction commits `08d8cf231c7ff1d097c75ec6c8ce442a1318c55` and `86bd4e48b1561d7dd7496c2f4e8528a9b56cffb2` are present and pushed.
+ Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, current claim commit `e406de1b`; this report is committed and pushed separately. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
 
