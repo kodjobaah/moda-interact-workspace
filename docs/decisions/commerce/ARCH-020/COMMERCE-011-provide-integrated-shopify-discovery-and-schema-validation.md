@@ -9,7 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
+executor: null
+claimed_at: null
 priority: 85
 attempt: 1
 depends_on:
@@ -181,6 +183,79 @@ Use the parent architecture and actual accepted dependency revisions. Return con
  Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`; this report is being committed and pushed separately. Nested database is clean at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-20
+
+**Not accepted; Ready for correction.** Preserve Attempt 1, executor/claimed_at null. Reviewed implementation 5621ebf and parent report 568c5dc98b797a61937c46a9ec4efe200b672f11 in the dedicated worktrees, both clean. No next attempt claimed or downstream promotion. Required task work is incomplete; these are original C14/C15 requirements, not new scope.
+
+#### R1 — P1: replace regex acceptance with the authoritative schema/compiler validation
+
+`lib/discovery/schema.ts:55–95` does not parse GraphQL or enforce the Shared publishable definition/compiler contract. It skips compileQuery entirely if operationName is absent; the regex path cannot validate syntax, typed selection, variable mappings, response paths, required input fields, all connections or depth. Empty input/response definitions can return valid:true.
+
+Independent temporary tests against committed source produced valid:true for all three invalid documents: (1) `not graphql` with operationName omitted; (2) `query X { product { title` with operationName X; (3) `query X { product { title { title } } }` with operationName X. Each used correct apiVersion/schemaHash and the same minimal draft envelope as the submitted tests. All three expected-valid:false assertions failed.
+
+Correction: consume Shared's bounded draft and strict definition/compiler interfaces; implement real GraphQL AST parsing and schema/type validation, named single operation, C14 root/construct/depth/selection/connection bounds, declared/used variable and literal/input mapping checks, and schema-derived valid response paths/templates. Distinguish incomplete draft structural errors from publishable definitions. Return bounded field/line-column errors; never approve unknown/malformed definitions. Add these three negative regressions plus independently valid C14 product-description and never-seeded query controls. Test every enforced bound without unrelated failures masking the intended check.
+
+#### R2 — P1: supply a verified schema artifact rather than the nine-field substitute
+
+`lib/discovery/storefront-2026-07.json` contains nine flat entries mixing QueryRoot and Product fields. `browseSchema` only accepts QueryRoot, so Product/Shop field traversal, argument/type guidance and token-required restrictions cannot work. Hashing those entries with an official documentation URL does not establish official artifact provenance, version fidelity or redistribution evidence. This contradicts the task's explicit prohibition on fixture strings standing in for the actual schema.
+
+Correction: obtain and retain the authoritative supported Storefront2026-07 schema with verifiable source/version/hash and license/distribution evidence. Supply real parent-type traversal, typed arguments, nullability, restrictions and pagination, with the compiler consuming the same artifact. Keep retained versions available across deployment. If official 2026-07 support cannot be established, report that concrete blocker; do not fabricate or silently substitute another version. Add U07/N04 traversal through QueryRoot -> Product/related types and token-required/unavailable-field cases. Reconcile the current checked work item only against actual evidence.
+
+#### R3 — P1: connect documentation operations to the pinned supervised MCP process
+
+The production route creates createDiscoveryService() with createUnavailableUpstream(), so every search/document request always fails. startPinnedShopifyDevMcp is never called, and its bare spawn has no MCP transport/initialize/list/call integration, health/restart policy or shutdown/reaping. The fixture JSON contains expected labels and an allowlist, not captured upstream initialize/list/call responses. Pinning the npm dependency alone does not implement C15 discovery.
+
+Correction: implement and wire the real pinned stdio adapter, verify actual supported tool names/input/output schemas, map only approved read capabilities into typed Studio responses, and supervise one bounded child per replica. Enforce nonsecret environment, bounded pending calls/output, health/restart/shutdown/reaping, no runtime arbitrary executable/tool/URL proxy. Record actual initialize/list/call evidence from the pinned local process, including denied capabilities and sanitized failure behavior. Preserve local authoritative schema validation when documentation is unavailable. Run the required real pinned-process compatibility fixture; it cannot be reassigned to developer-owned deployed validation. Update runtime docs to describe actual behavior.
+
+#### R4 — P2: enforce C15 limits and executable boundary tests
+
+The discovery route/service has no 60/admin/minute Redis limiter or 2/admin,4/replica concurrency gate, and does not fail closed when Redis is absent. Its bounded() timer only aborts a signal that search/document discard (`bounded(() => upstream.search(...))`), so a pending upstream call can hang beyond 20 seconds. Search/document results lack required count/field/byte enforcement; the search interface returns an array instead of the required {items:[...]} envelope. GET reconstructs recognized keys and silently drops unknown query parameters. The only route test checks source substrings, not requests or effects.
+
+Correction: implement the exact typed C15 API/envelopes, strict query/body keys, bounded body/result/error sizes, canonical URL handling, per-admin/per-replica concurrency and Redis rolling rate admission (including schema reads, fail closed on Redis outage). Propagate cancellation and enforce a real deadline even for a nonsettling upstream; release concurrency resources on all exits. Add executable authenticated/anonymous/revoked route tests, unknown keys, over-limit outputs, hanging upstream, concurrency/rate saturation, missing Redis, and complete search -> document -> schema -> validate traversal. No raw query, credentials or upstream payload in logs/errors.
+
+#### Deterministic implementation handoff (required for R1–R4)
+
+Implement in the following order. Existing filenames are exact; proposed new filenames below are the assigned locations for these responsibilities. Do not alter Shared's accepted implementation to bypass a Commerce compiler requirement.
+
+1. **R2 artifact first:** replace `lib/discovery/storefront-2026-07.json` with the verified artifact (or move the full artifact into `lib/discovery/artifacts/storefront-2026-07.json` and update imports). Add `lib/discovery/artifacts/storefront-2026-07.provenance.json` with source URL, acquisition command/date, schema version, source package version if applicable, exact file SHA-256 and license/distribution reference. Hash the shipped artifact bytes; a fresh recomputation must match the exposed hash. Do not hash a hand-selected nine-field projection and label it authoritative. `browseSchema` in `lib/discovery/schema.ts` must resolve the requested parent type from that artifact and expose its actual fields/arguments. Unknown parent/cursor must produce bounded INVALID_INPUT, not fall back to QueryRoot. Every field response includes arguments, selectable and restrictionReason (null if unrestricted).
+2. **R1 compiler:** add `lib/discovery/compiler.ts` implementing Shared's exported `CommerceDefinitionCompiler`. Replace `compileQuery` regex scanning in `lib/discovery/schema.ts`; import `CommerceToolDraftDefinitionSchema`, `CommerceToolDefinitionSchema` and `validateDefinitionForPublication` from the accepted `@modainteract/moda-interact-shared/commerce` export. Use the draft schema for draft shape/size admission, then strict publication validation with the real compiler for valid:true. Catch validation failures into the bounded C15 result rather than throwing a server error. Incomplete drafts return valid:false.
+3. Compiler algorithm, in order: check exact version/hash and UTF-8 document length; parse the complete GraphQL document with a maintained GraphQL parser; require exactly one named query matching operationName, no extra definitions/fragments/spreads/directives; validate fields/arguments/variable types against the pinned schema; enforce allowed roots/tokenless restrictions; walk typed field selections to calculate depth, selection count and connection/list bounds; validate declared/used/mapped variables without coercion; derive resultPath and output schema using actual selected field/alias paths; let Shared verify response-template scalar paths. Do not count words with regex. Field aliases and __typename remain allowed by C14. Nested connection edges.node is not the forbidden QueryRoot.node.
+4. Exact C14 limits: document <=16,384 UTF-8 bytes; root selected field depth 1 and maximum depth 8; <=100 selected fields; every connection has literal first in 1..20; last and variable page sizes reject. For each selected field, multiply enclosing connection first values, then sum field weights: <=500. Reject an unbounded list without a schema-backed bound. resultPath <=256 characters and must target a proved object/list; no prototype segments, indexes, expressions or wildcards. Required variables must resolve; undeclared/missing/wrong-type mappings reject. Keep these calculations in compiler.ts, reused by schema validation and downstream injected compiler consumers.
+5. **R3 adapter:** implement the MCP client adapter in `lib/discovery/upstream.ts`; use `lib/discovery/child.ts` for one owned pinned process and its lifecycle. Replace `createUnavailableUpstream()` as the production default in `lib/discovery/service.ts` with that working adapter. Keep an unavailable fake only for negative tests. Initialize the real pinned version, inspect/validate actual tools/list schemas, then expose only typed search/document operations. The allowlist is enforced on actual dispatch, not just exported as a constant. Add the lifecycle initialization/close hook in the owning server runtime; process spawn alone is insufficient. Capture actual sanitized responses in `tests/fixtures/shopify-dev-mcp/`, not expected labels. Record capture command, package integrity/version and tool schemas in runtime docs.
+6. **R4 admission/deadline:** add `lib/discovery/limits.ts` for atomic Redis rolling admission and per-admin/per-replica in-flight accounting. In `app/api/studio/discovery/route.ts`, authenticate first, then validate/admit, invoke typed service, bound response and release the in-flight slot in finally. Apply rate admission to schema reads too. Use stable authenticated admin identity, never a body-supplied identity. Request 61 within the rolling minute rejects with 429; call 3 for one admin or call 5 across the replica rejects with 429. Redis unavailable returns 503 and invokes no operation. The rate gate must be atomic across replicas; process-local counters alone are not the Redis rolling limiter.
+7. In `lib/discovery/service.ts`, replace the ineffective bounded callback with an enforced 20,000ms deadline that settles the caller and aborts/cancels the underlying operation; pass the signal into upstream.search/document. A provider that never settles must not hold the HTTP caller forever. Do not return the concurrency slot while unbounded uncancelled child work continues: cancel/reap the hung operation/process as needed. Late completion cannot mutate/send a second response. Always clear timers and pending-call entries on success/failure/cancellation.
+8. Route/service output validation: search returns `{items:[...]}`, <=10 items, title<=255 and text<=2000; document <=64KiB; schema <=100 fields and <=256KiB; validation errors <=50 with each message<=512. Enforce bytes before unbounded upstream accumulation/JSON parsing as well as before response emission. Reject unknown GET query keys instead of dropping them when reconstructing input. Bound request body reading and retain Shared's whole-definition limit. Validate canonical documentation URL with the URL parser after normalization and on redirects: https, host exactly shopify.dev, path under /docs/, no userinfo or external redirect. Do not pass search/document input to a generic tool proxy.
+
+Required test additions (real assertions on outcomes and side effects; source substring tests do not count):
+
+| Test ID / file | Input or boundary | Required assertion |
+|---|---|---|
+| R1-01–03 `tests/discovery.test.ts` | Three exact invalid documents in R1 above | valid:false, bounded error with relevant path; no execution/publication. |
+| R1-04 `tests/discovery.test.ts` | Full C14 ProductDetails definition, with mapped handle, resultPath and scalar response template | valid:true against verified artifact, not a minimal empty draft. |
+| R1-05 `tests/discovery.test.ts` | Unknown typed field/argument, missing variable, wrong variable mapping type, nonexistent result/template path, incomplete draft | Each rejects independently; valid neighbor control passes. |
+| R1-06 `tests/discovery.test.ts` | Depth 8/9, selections 100/101, document 16384/16385 bytes, cost 500/501, first 1/20 versus 0/21, last/variable page size | At-boundary otherwise valid fixtures pass; exceeded bound fails for that reason alone. Use actual schema-valid constructs. |
+| R1-07 `tests/discovery.test.ts` | Alias and nested edges.node versus forbidden root node; second operation, fragment, directive | Allowed constructs pass; each forbidden construct fails independently. |
+| R2-01 `tests/discovery.test.ts` | Recompute full artifact byte hash, QueryRoot -> Product/Shop typed traversal, token-required field | Hash matches; parent field sets differ correctly; restricted field visible but unselectable with reason. |
+| R2-02 `tests/discovery.test.ts` | Bad cursor/parent/version/hash; missing artifact | INVALID_INPUT for cursor/parent, valid:false for definition mismatch; missing authoritative artifact fails closed. |
+| R3-01 new `tests/discovery-process.test.ts` | Actual pinned child initialize/list/approved call/close with explicit nonsecret env | Actual recorded compatibility passes; no extra listener; child and pending calls reaped. No live store credentials. |
+| R3-02 same file | Unknown tool/schema drift, crash, malformed/oversized output, restart and shutdown | Bounded typed failures; no arbitrary dispatch; restart bounded; no orphan child. |
+| R4-01 `tests/discovery-route.test.ts` | Anonymous/revoked/other-service versus authorized staff | Denied requests cause zero upstream calls; authorized service traversal returns C15 envelopes. |
+| R4-02 same file | Request 60/61, concurrent 2/3 same admin and 4/5 replica, missing Redis | Exact allowed/rejected thresholds above; rejected requests cause zero upstream calls; settled calls release slots. |
+| R4-03 same file | Upstream promise never settles; advance fake time to 20,000ms; late result | Caller gets bounded failure by deadline; upstream cancellation observed; no duplicate response/pending leak. |
+| R4-04 same file | Unknown GET/body keys, URL userinfo/off-domain redirect, oversized body/output | Deterministic typed rejection; no forbidden fetch; no content/secrets in errors/logs. |
+| R4-05 same file | Docs outage plus available Redis/local artifact | Docs typed retryable failure; authenticated schema/validation still work and retain artifact. Redis outage still fails closed. |
+
+Mocks may establish service policy and deadlines; R3-01 must run the actual pinned process. The exact official artifact/tool schema is evidence to acquire, not something this review authorizes inventing. If unavailable, report the exact failed acquisition/compatibility result and stop that dependent implementation path. Do not mark it passed or transfer the local evidence requirement to a future deployment task. Internal class names/helpers may vary; these file responsibilities, operation ordering, limits and acceptance outcomes may not.
+
+#### Evidence and resubmission
+
+Reviewed all new discovery modules, route, artifact, fixtures and runtime docs. Three isolated compiler reproductions failed as described; harness at /tmp/commerce011-review/validation.test.ts, with no repository implementation edits or live provider calls. Submitted 75 tests/typecheck/lint/build are reported passing but do not establish missing compiler, artifact, process or rate-limit behavior. Live store/deployed OAuth checks remain separate; the explicitly required local process/artifact evidence and executable limiter tests remain task-owned.
+
+Correct R1–R4 on the same implementation branch, rerun required checks, commit/push and resubmit the report with a requirement-to-fixture matrix, pinned-process actual evidence, artifact distribution evidence and prepared synchronization details. Replace stale `Work Completed: None; task definition only` and distinguish actual results from unrun checks. Do not claim the compiler/schema/process requirements complete while deferring them. This parent review overlay is published before normal correction preparation; no main merge or gitlink update.
+
+### Historical definition review
+
 
 ### Review Status
 

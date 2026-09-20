@@ -346,3 +346,14 @@ and superseded. Both unclaimed provenance tasks were removed with their dependen
 edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
 scope remains. All four retained prerequisites are accepted Complete. Active task
 scope returns to 20; no automatic execution or expanded-scope acceptance occurred.
+
+
+## COMMERCE-011 Attempt 1 — Changes Requested
+
+Current decision: **Ready, Attempt 1, claim cleared**, not accepted. Reviewed
+5621ebf / 568c5dc9. R1 authoritative AST/schema/compiler validation; R2 verified
+Storefront artifact and typed browsing; R3 working pinned MCP adapter and actual
+process evidence; R4 C15 request/deadline/rate/concurrency/response limits.
+See the task's latest Architect Review. No downstream promotion or new claim;
+existing other-task decisions remain unchanged. Reported passing checks do not
+waive these original-scope requirements. ARCH-020 remains in implementation.

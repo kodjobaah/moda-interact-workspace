@@ -18,5 +18,16 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-008](COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-009](COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | ready | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-012](COMMERCE-012-add-frequency-based-tool-result-caching.md) | Frequency-based tool-result caching; final implementation feature, readiness checkpoint outstanding | pending | All other ARCH-020 implementation tasks |
+
+
+## COMMERCE-011 Attempt 1 — Changes Requested
+
+Current decision: **Ready, Attempt 1, claim cleared**, not accepted. Reviewed
+5621ebf / 568c5dc9. R1 authoritative AST/schema/compiler validation; R2 verified
+Storefront artifact and typed browsing; R3 working pinned MCP adapter and actual
+process evidence; R4 C15 request/deadline/rate/concurrency/response limits.
+See the task's latest Architect Review. No downstream promotion or new claim;
+existing other-task decisions remain unchanged. Reported passing checks do not
+waive these original-scope requirements. ARCH-020 remains in implementation.

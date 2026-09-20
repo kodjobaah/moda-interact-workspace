@@ -405,7 +405,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-011 | commerce | ready | 1 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | ready | 1 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
@@ -523,3 +523,14 @@ and superseded. Both unclaimed provenance tasks were removed with their dependen
 edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
 scope remains. All four retained prerequisites are accepted Complete. Active task
 scope returns to 20; no automatic execution or expanded-scope acceptance occurred.
+
+
+## COMMERCE-011 Attempt 1 — Changes Requested
+
+Current decision: **Ready, Attempt 1, claim cleared**, not accepted. Reviewed
+5621ebf / 568c5dc9. R1 authoritative AST/schema/compiler validation; R2 verified
+Storefront artifact and typed browsing; R3 working pinned MCP adapter and actual
+process evidence; R4 C15 request/deadline/rate/concurrency/response limits.
+See the task's latest Architect Review. No downstream promotion or new claim;
+existing other-task decisions remain unchanged. Reported passing checks do not
+waive these original-scope requirements. ARCH-020 remains in implementation.
