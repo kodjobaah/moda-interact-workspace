@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-09-20T12:12:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-019-DATABASE-001
@@ -180,24 +180,32 @@ Substring search and aggregation still scale with cohort size. Small-fixture pla
 
 ### Review Status
 
-Pending.
+Accepted — 2026-09-20, Attempt 1. Complete under `completion_mode: automatic`.
 
 ### Review Notes
 
-No implementation submitted.
+Reviewed implementation `08af00b85508d3ae7e653890abbc8a5ca0c0cc9d` against submission `181e3a91b3cfc10e099b913db6d2e5fbb6f5dcfb`, the complete ARCH-019 contract and accepted DATABASE-001. Both remote task branch heads were independently verified against GitHub. No blocking implementation defect or workflow non-conformance found.
+
+Tenant/date predicates remain independent of cursor contents. Customer joins constrain both customer and recovery shop; search is parameterized with literal wildcard escaping. SQL aggregates preserve decimal values and currency groups, report missing values, and ignore list filters. Keyset navigation uses the original timestamp/id without boundary-row lookup, fixed row limits and safe DTO projection. Overview uses two queries in a repeatable-read transaction. Merchant calendar boundaries, cursor context validation and live-page semantics conform to the task.
 
 ### Reviewed Files
 
-None.
+All six changed files: both recovery server modules, their README, focused test suite, focused TypeScript configuration and committed query plans. Also inspected merchant-i18n, package scripts, repository instructions, database schema/indexes, baseline test syntax, task and parent architecture.
 
 ### Validation Reviewed
 
-None.
+- Architect rerun: `RECOVERY_TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm test -- tests/unit/recovery-cohort-readers.test.ts` — 27 passed, exit 0. Initial sandbox-only localhost denial resolved with approved execution; the actual fixture passed and rolled back its temporary schema.
+- Architect rerun: `./node_modules/.bin/tsc --project tests/tsconfig.recovery-readers.json` and focused ESLint — passed. Committed implementation diff whitespace check passed.
+- Repository-wide typecheck remains blocked by seven pre-existing parser diagnostics in `tests/unit/merchant-route-access-policy.test.ts` (201, 219–220). The file is byte-identical to the pre-task baseline `c4fd514`; the new TypeScript passes the focused check. This does not establish a clean full repository typecheck. TYPECHECK-001 documentation is updated with this revision-specific observation.
+- Actual generated SQL fixture and retained EXPLAIN plans reviewed for aggregates, tenant/customer isolation, decimal sums, exclusive end dates, literal search, status filtering and tied/deleted-key traversal. The small fixture establishes correctness/query shape, not representative production capacity.
+- Canonical launcher paths match both physical worktrees and task branches; implementation worktree is clean. Claim/synchronization history and recursive database preparation agree with the report. Database `9c6a4d8` has the identical full tree as accepted `54c0ec2`; no Gitlink change is required.
 
 ### Architecture Conformance
 
-Awaiting implementation review.
+All bounded reader acceptance criteria are satisfied. App-local contracts, read-only behavior, schema ownership, currency semantics and safe projections are preserved. Authentication/lifecycle enforcement remains the explicit responsibility of consuming loaders in later tasks. No provider calls, route/UI changes or infrastructure additions are introduced. Rollout still requires the additive indexes before the complete app experience; terminal system validation remains outstanding.
 
 ### Follow-up
 
-Reconcile task/index/frontier after accepted implementation; terminal system test remains manually invoked.
+ARCH-019-SHOPIFY-003 becomes Ready, Attempt 0, with accepted dependency metadata copied into its canonical parent task worktree. SHOPIFY-002 is In Progress at Attempt 2; its current claim and latest review are preserved. SHOPIFY-004/005/006 and SYSTEM-TEST-001 remain Pending. Readiness does not launch a task or authorize unmerged prerequisite consumption: integrate the accepted implementation or explicitly authorize accepted-commit consumption before SHOPIFY-003 execution.
+
+The developer explicitly authorized commit/push of this review and frontier reconciliation on the matching SHOPIFY-001 and SHOPIFY-003 parent task branches on 2026-09-20. Publication follows `docs/agent-vcs-ownership-policy.md`. No implementation commit, merge, main push or deployment was performed by this review.
