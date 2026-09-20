@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
-executor:
-claimed_at:
+status: ready
+executor: null
+claimed_at: null
 priority: 85
 attempt: 2
 depends_on:
@@ -201,6 +201,49 @@ implementation and parent report are kept in dedicated physical task worktrees.
  Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, current claim commit `e406de1b`; this report is committed and pushed separately. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Not accepted; Ready for correction.** Attempt 2 retained, executor/claimed_at null. Reviewed implementation `08d8cf231c7ff1d097c75ec6c8ce442a1318c55a` / `86bd4e48b1561d7dd7496c2f4e8528a9b56cffb2`, parent report `49a6dff551c2a74240cd011235afadaa6e948f53`. Dedicated worktrees were clean and both remote heads matched. No next attempt claimed, implementation edit, main integration or downstream promotion.
+
+Review focuses on observable functionality. The trailing space is a minor cleanup, not the reason for this decision. The reported 17/86 passing tests and passing typecheck/lint/build do not resolve the following demonstrated behavior.
+
+#### R1 remains open — P1: invalid definitions are still approved
+
+`lib/discovery/compiler.ts` parses GraphQL but does not perform complete schema validation. Literal arguments and nested input values are not type-checked; mapped input types are only checked for property existence; connection bounds are checked only when first/last is present; operation directives are not inspected.
+
+Independent isolated tests against this exact revision all failed: each expected valid:false but received valid:true:
+
+- `query X { product(handle: 123) { title } }`: integer passed to String handle.
+- `query X { product(handle: "a") { title variants { nodes { title } } } }`: connection without a literal first bound.
+- `query X($handle: String!) { product(handle: $handle) { title } }` with handle mapped from an integer input property.
+- `query X @skip(if:true) { product(handle: "a") { title } }`: forbidden operation directive.
+
+Harness: `/tmp/commerce011-attempt2-review/review.test.ts`; command from implementation worktree: `./node_modules/.bin/vitest run --config /tmp/commerce011-attempt2-review/vitest.config.mjs`; Node 24.19.0, Vitest 5.0.1, 4 failed, exit 1. Harness changed no implementation file and used no provider.
+
+Correction: use the full pinned introspection schema with GraphQL semantic validation, then apply C14 policy. Validate every mapped value/input type and required input member; require bounds by the selected schema field's connection/list type, not merely presence of a pagination argument; prohibit directives throughout the AST. Preserve object/list/nullability/scalar types in compiler output (current pathSchema treats selected lists as objects and scalar numbers/booleans as strings), and require resultPath to identify an allowed object/list. The exported compiler must enforce version/hash itself for downstream consumers, rather than relying only on the discovery wrapper. Prove the four concrete failures are corrected alongside valid scalar and bounded-list controls. The original R1 contract remains applicable; no broader coverage target is introduced.
+
+#### R3 remains open — P1: documentation results and process lifecycle are not usable as specified
+
+`lib/discovery/upstream.ts:59` constructs every sourceUrl from the user's search query, not the upstream result source. Searching `product description` therefore produces an invented `/docs/product%20description` URL. Titles are numbered placeholders and blank-line splitting is not a verified response mapping. `document()` calls search again and returns only the first 2,000-character chunk, so it does not retrieve the requested document. `isError` tool responses are treated as normal text. The actual-process fixture calls learn_shopify_api through a separate Client; it does not exercise this production search/document mapping.
+
+Cancellation is also ineffective: the signal is checked once before the first call, never passed into SDK calls or observed thereafter. At the service's 20-second deadline the HTTP caller can settle and release its slot while upstream work continues. The second Promise.race timer is never cleared. A failed startup promise is retained forever, and no owning runtime invokes service.close for shutdown or restarts/reaps a failed child. textResult bounds data only after SDK accumulation and parsing.
+
+Correction: map captured actual search results into real titles/excerpts/canonical source URLs; implement genuine selected-document retrieval using verified supported behavior. Return bounded typed failures on upstream isError. Carry cancellation through initialization/calls and stop/reap timed-out work before releasing admission. Own bounded recovery and shutdown in the runtime, clear all timers, and bound transport input before unbounded accumulation. Exercise the production adapter with sanitized real response fixtures, not just a separate initialize/list/learn client. If the pinned upstream cannot supply document retrieval, report the concrete capability gap for an architecture decision rather than returning a search excerpt as a document.
+
+#### R4 remains open — P1: admission does not implement the rolling limit and normal errors escape GET
+
+`lib/discovery/limits.ts:23` removes each request from the rate ZSET when it finishes. Consequently sequential requests never accumulate toward 60/minute; the 61st is admitted just like the first. Only in-flight counters should be released; rate entries must remain until the rolling window expires. Add a TTL for inactive rate keys without erasing the active window.
+
+The same function constructs a new asynchronously connecting Redis client with enableOfflineQueue:false, then immediately calls eval without awaiting readiness. Handle connection readiness explicitly (prefer an owned ready client), and normalize connection failures. `GET` catches only schema errors before passing other errors into studioAuthErrorResponse, which rethrows non-auth errors: missing Redis or limit rejection therefore fails as an unhandled error instead of the required typed 503/429 response. POST also leaks unexpected Redis errors through that path.
+
+Correction: separate rolling history from in-flight release; establish Redis readiness before admission; map admission/provider failures to bounded typed errors for every route, retaining auth-specific statuses. Verify sequential requests 60/61 against the real limiter implementation and GET failure responses, rather than mocking admission out of the route tests. Keep the existing concurrency contract. This is a service behavior defect, not a request for deployed saturation testing.
+
+#### R2 progress and remaining scope
+
+The full shipped schema bytes exactly match decompression of pinned `@shopify/dev-mcp@1.15.4`'s `dist/data/storefront-graphql_2026-07.json.gz`; independently recomputed SHA-256 is `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`. Provenance and package license reference are now present. The original nine-field substitute is no longer the compiler artifact. Preserve this improvement.
+
+Local artifact/compiler/adapter/admission behavior remains task-owned. Live OAuth, deployed Redis and acoustic/store validation are not newly required by this review. Correct the functional items above, clean the trailing space while editing, reconcile runtime documentation and the report to actual behavior, then validate and push both existing task branches. No exhaustive test expansion or unrelated refactor is requested. Downstream tasks remain gated by this task's acceptance.
 
 ### Changes Requested — Attempt 1 — 2026-09-20
 

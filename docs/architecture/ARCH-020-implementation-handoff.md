@@ -357,3 +357,16 @@ process evidence; R4 C15 request/deadline/rate/concurrency/response limits.
 See the task's latest Architect Review. No downstream promotion or new claim;
 existing other-task decisions remain unchanged. Reported passing checks do not
 waive these original-scope requirements. ARCH-020 remains in implementation.
+
+## COMMERCE-011 Attempt 2 — Changes Requested — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `86bd4e4` (including `08d8cf2`) and report `49a6dff5`.
+Four isolated functional reproductions returned valid:true for invalid compiler
+inputs. Documentation source mapping/retrieval and process cancellation remain
+incorrect; rolling admission deletes completed request history and GET does not
+map admission errors. R1/R3/R4 remain open. The full schema artifact now matches
+the pinned package and recorded hash; trailing whitespace is not the blocker.
+See the task's latest Architect Review for concrete corrections. No new attempt,
+dependent promotion, implementation change or main integration. Other task states
+remain unchanged; prior COMMERCE-011 review notes are historical.

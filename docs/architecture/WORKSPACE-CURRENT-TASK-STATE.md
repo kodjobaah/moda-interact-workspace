@@ -405,7 +405,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| ARCH-020-COMMERCE-011 | commerce | ready | 1 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-011 | commerce | ready | 2 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | ready | 1 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
@@ -534,3 +534,16 @@ process evidence; R4 C15 request/deadline/rate/concurrency/response limits.
 See the task's latest Architect Review. No downstream promotion or new claim;
 existing other-task decisions remain unchanged. Reported passing checks do not
 waive these original-scope requirements. ARCH-020 remains in implementation.
+
+## COMMERCE-011 Attempt 2 — Changes Requested — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `86bd4e4` (including `08d8cf2`) and report `49a6dff5`.
+Four isolated functional reproductions returned valid:true for invalid compiler
+inputs. Documentation source mapping/retrieval and process cancellation remain
+incorrect; rolling admission deletes completed request history and GET does not
+map admission errors. R1/R3/R4 remain open. The full schema artifact now matches
+the pinned package and recorded hash; trailing whitespace is not the blocker.
+See the task's latest Architect Review for concrete corrections. No new attempt,
+dependent promotion, implementation change or main integration. Other task states
+remain unchanged; prior COMMERCE-011 review notes are historical.
