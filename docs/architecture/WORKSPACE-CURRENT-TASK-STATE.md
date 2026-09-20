@@ -407,7 +407,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
-| ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
+| ARCH-020-BACKGROUND-002 | background | ready | 1 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
@@ -562,3 +562,13 @@ and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
 GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+
+## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 1, claim cleared; not accepted. Reviewed a7ccac5 /
+ffcc0461. R1 wired strict C18 extractor; R2 digest/provenance/freshness/matching;
+R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
+three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
+are required; live producer pairing stays terminal-system-test-owned. See the
+canonical task's explicit correction steps. No new claim or downstream promotion.

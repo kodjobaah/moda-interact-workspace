@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 160
-executor: copilot
-claimed_at: 2026-09-20T23:24:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-BACKGROUND-001
@@ -210,6 +210,49 @@ No new architectural concern. The injected extractor is the explicit boundary fo
 Expected execution branch: task/ARCH-020-BACKGROUND-002. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, published implementation commit `a7ccac5`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, published parent report commit `7d682c2a` (this final bookkeeping update follows on the same mirrored branch). Database submodule was not modified. No parent service gitlink or main integration was performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Not accepted; Ready for corrections**, Attempt 1 preserved, executor/claimed_at cleared. Reviewed implementation a7ccac57f26ca672fcdf51d6b01800ccbfcd43f0 and report ffcc04618d05cd59123387aabc38223ddda1f622; both remote heads verified and worktrees clean. C18 component acceptance remains independent of live Commerce/provider pairing; the following are consumer-owned requirements, not new producer dependencies.
+
+#### R1 — P1: implement and wire the strict Background-owned extractor
+
+Locations: `src/commerce/evidence.ts`, `src/commerce/host.ts` and `src/agents/commerce.agent.ts`. C18 explicitly assigns extraction to Background. Currently HostDependencies.extractEvidence is optional, no default extractor exists, and the production caller supplies none. Consequently normal policy calls register no evidence. Injecting an arbitrary extractor is not implementation of the fixed consumer contract; the tests extract data directly and never exercise a real recommendation envelope.
+
+Add/export a strict extractor in evidence.ts using the accepted Shared CommerceEvidenceSchema and CommerceToolOutputs recommendation schema. Accept only a validated root evaluator or validated alternatives[*].evidence; null is no evidence. Reject malformed/truncated recommendation results as unusable, preserving that failure distinction rather than treating them as a legitimate empty success. C14 public-query wrappers, renderedText, nested values/product descriptions and arbitrary evidence-shaped JSON register zero IDs. Wire this extractor as the actual host default and Shared runner extractor; tests may inject controlled transports/results but must not supply a permissive evidence parser. No business tool-name switch, new endpoint or new Shared field.
+
+Tests: EC01/EC03/EC07/EC12 through executeCommerceHost with the production extractor and a contract-faithful MCP double. Valid root and recommendation results register; two alternatives/two final IDs from one producer replay once; truncated or counterfeit results cannot authorize an offer. A zero-evidence factual answer still follows ordinary admission. Assert send/reservation counts, not just registry booleans.
+
+#### R2 — P1: validate digests, immutable provenance and original/fresh evidence eligibility
+
+Locations: TurnEvidenceRegistry.record/refresh in evidence.ts. record overwrites an existing evidenceId unconditionally. Neither record nor refresh recomputes the digest. refresh tests only the fresh expiry, allowing an expired original to be rescued, and does not require nonnull amounts or no unresolved conditions. Comparable equality alone is not the C18 matching algorithm.
+
+Confirmed isolated reproductions: (a) an evidenceId of 64 literal c characters is accepted; (b) the same correctly hashed evidence recorded under arguments `{search:'one'}` then `{search:'two'}` overwrites without rejection; (c) original expires at 00:00:30, now is 00:00:31, refreshed evaluatedAt 00:00:30/expiresAt 00:01:00: refresh returns true. Case (c) recomputes both digests correctly. All must reject; an expired original should cause zero refresh requests.
+
+Implement this order: Shared structural validation -> SHA-256 of canonical complete evidence excluding evidenceId -> current turn/grant/release match -> original eligibility/freshness -> immutable provenance insertion. Duplicate identical provenance may deduplicate; conflicting reuse must invalidate/refuse that ID and never replace its first authority silently. Store and replay detached snapshots of `{name,toolRevisionId,arguments,evidence}` from actual authenticated returns. Do not expose mutable internal arguments to adapters.
+
+Before refresh, require each original ID to be trusted and unexpired at the frozen decision clock. Group by exact name/revision/canonical arguments; check remaining budget before any request. Validate every refreshed result/digest and require `evaluatedAt <= now < expiresAt`, positive lifetime <=60 seconds and applicable offer expiry. For each original, first find exactly one result by offerId plus canonical proposal, THEN compare full turn/grant/release and C18 semantic fields. A duplicate match must reject even if only one duplicate has matching savings. Require qualifying outcome, nonnull currency/savings/total and empty unresolvedConditions for a positive claim. Compare money as exact decimal values without floating point and preserve proposal operation order. Do not drop recommendation-level truncated state.
+
+Permanent tests: EC04 changes each field independently with a newly computed hash and sufficient budget; EC05 missing/duplicate/empty/truncated; EC06 original/fresh expiry boundaries, future date, invalid digest, null money/unresolved conditions; EC10 conflicting provenance/cross-turn/unknown ID/budget. Use the canonical C18 JSON seed, not placeholder fingerprints as evidence IDs. The current changed-recommendation test exhausts budget first, so it does not test changed semantics; split it into one-refreshed-call changed-result rejection and zero-call exhausted-budget cases.
+
+#### R3 — P1: distinguish refresh referral failures from stale/cancel suppression
+
+Locations: evidence.refresh, the post-run refresh block in host.ts, and host/turn integration tests. Current refresh returns false for EVERY non-OK result, including STALE_TURN, causing the host to construct a referral when C18 requires no delivery. Conversely, transport exceptions and malformed refreshed evidence throw out of refresh into executeCommerceHost's generic unavailable error instead of producing the required single admitted referral for non-stale failures.
+
+Use an explicit refresh outcome or typed error distinction: accepted / refer / suppress. STALE_TURN, local version/lease loss and cancellation suppress all send and language mutation. DENIED, NOT_FOUND, UNAVAILABLE, THROTTLED, INVALID_INPUT, INCOMPATIBLE_VERSION, ordinary refresh deadline, HTTP401/403, malformed result and transport failure produce one trusted admitted referral only if admission remains valid. No automatic refresh retry even with retryable=true. Preserve the smaller of remaining turn time and10-second call deadline; zero remaining call/time budget makes zero requests. Recheck normal admission after the refresh outcome before delivery; do not add another reservation/credit/send or switch tools/grants.
+
+Tests: EC08/EC09 table-test each structured code and HTTP/transport/parse failure through the host/processor, asserting exact replay count (never a retry), normal referral count <=1 and no positive offer. EC11 use controllable barriers for new inbound, lease loss and cancellation while replay is pending; assert zero send, zero stale language update and existing reservation cleanup only. Use the real default extractor/host path introduced in R1; registry-only tests cannot prove delivery behavior.
+
+#### Validation and deterministic resubmission
+
+Independent temporary harness `/tmp/bg002-review/evidence-review.test.ts`: **6 existing evidence tests passed; 3 added review tests failed** for digest, conflicting provenance and expired-original resurrection. A temporary helper syntax error was corrected before the final run; it is not implementation evidence. No implementation was edited or live service contacted. Submitted 73-test/build/Prisma results remain reported evidence, not proof of the uncovered EC cases.
+
+Implement R1–R3 in the listed modules and add the full EC01–EC12 consumer matrix in `tests/unit/commerce/evidence.test.ts`, `tests/integration/commerce/host.test.ts` and processor integration fixtures as appropriate. For each EC ID report replay/send/reservation/language-write counts and expected/actual outcome; tests must not let exhausted budget or invalid hashes mask unrelated checks. Add bounded evidence-outcome telemetry using existing infrastructure with no transcript/tool arguments or customer/evidence payload logging. Preserve C13/outbound uncertainty regressions. Rerun focused evidence/host/processor tests, build, Prisma validation and diff check. Replace stale Work Completed text and record prepared worktree/dependency pin evidence. Live pairing stays terminal-system-test-owned and explicitly unrun; do not wait for COMMERCE-007 implementation to complete these fixed contract checks.
+
+Commit/push corrections and the report on the same mirrored branches, then return to Review. This parent overlay is published before preparation; no new attempt or downstream promotion is made by the review.
+
+### Historical definition review
+
 
 ### Review Status
 

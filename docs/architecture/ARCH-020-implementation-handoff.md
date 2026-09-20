@@ -400,3 +400,13 @@ launched by this amendment. Fixtures never become production service fallbacks.
 2026-09-21 C18 frontier: BACKGROUND-002 promoted Ready, unclaimed, after accepted
 BACKGROUND-001. COMMERCE-007 retains its own evaluator prerequisite but no longer
 blocks the consumer. SYSTEM-TEST-001 owns EC01–EC12 real-service pairing.
+
+
+## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 1, claim cleared; not accepted. Reviewed a7ccac5 /
+ffcc0461. R1 wired strict C18 extractor; R2 digest/provenance/freshness/matching;
+R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
+three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
+are required; live producer pairing stays terminal-system-test-owned. See the
+canonical task's explicit correction steps. No new claim or downstream promotion.

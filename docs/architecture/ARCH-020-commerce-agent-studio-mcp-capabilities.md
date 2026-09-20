@@ -727,7 +727,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
-| [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
+| [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | ready | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
@@ -975,3 +975,13 @@ Binding C17 allows003 publication and008 Studio to be implemented and accepted
 against agreed service ports while011 continues. Separate013 owns production
 adapters and integrated U01–U13 acceptance;009, GATEWAY-001,012 and terminal
 system tests depend on013. Component fixtures never become production fallbacks.
+
+
+## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 1, claim cleared; not accepted. Reviewed a7ccac5 /
+ffcc0461. R1 wired strict C18 extractor; R2 digest/provenance/freshness/matching;
+R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
+three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
+are required; live producer pairing stays terminal-system-test-owned. See the
+canonical task's explicit correction steps. No new claim or downstream promotion.
