@@ -728,7 +728,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | ready | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 |
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
-| [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | ready | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
+| [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 |
@@ -880,3 +880,17 @@ must synchronize dedicated worktrees and verify dependency source availability.
 Other pending tasks retain their existing gates. Current branch frontier:
 **19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
 terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
+
+## Shopify merchant preferences acceptance — 2026-09-20
+
+SHOPIFY-001 is architect-accepted Complete at Attempt 1 (`4693bba`, report
+`c5016d73`). Merchant eligibility, explicit idempotent saves and guarded form
+behavior conform; architect reran 18 passing focused checks and reviewed six
+passing PostgreSQL tests plus build/browser evidence. Existing repository-wide
+typecheck/lint limitations remain documented. SYSTEM-TEST-001 remains Pending
+until all its implementation dependencies are accepted, then explicitly
+user-invoked; no task is launched. Developer integration remains separate.
+
+This task-branch snapshot has 19 tasks: 4 Complete, 1 Ready, 14 Pending.
+Other canonical task worktrees remain authoritative for concurrent progress;
+this review does not overwrite their state. Prior readiness records are historical.

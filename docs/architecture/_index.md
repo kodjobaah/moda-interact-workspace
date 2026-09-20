@@ -50,3 +50,17 @@ The Commerce repository and nested database are provisioned; live MCP remains pr
 
 [Architecture](ARCH-020-commerce-agent-studio-mcp-capabilities.md) ·
 [Implementation handoff](ARCH-020-implementation-handoff.md)
+
+## Shopify merchant preferences acceptance — 2026-09-20
+
+SHOPIFY-001 is architect-accepted Complete at Attempt 1 (`4693bba`, report
+`c5016d73`). Merchant eligibility, explicit idempotent saves and guarded form
+behavior conform; architect reran 18 passing focused checks and reviewed six
+passing PostgreSQL tests plus build/browser evidence. Existing repository-wide
+typecheck/lint limitations remain documented. SYSTEM-TEST-001 remains Pending
+until all its implementation dependencies are accepted, then explicitly
+user-invoked; no task is launched. Developer integration remains separate.
+
+This task-branch snapshot has 19 tasks: 4 Complete, 1 Ready, 14 Pending.
+Other canonical task worktrees remain authoritative for concurrent progress;
+this review does not overwrite their state. Prior readiness records are historical.

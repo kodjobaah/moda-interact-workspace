@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 170
 executor: null
 claimed_at: null
@@ -246,28 +246,62 @@ No contract/schema change is requested. Revision tokens are repository-local con
 
 ### Review Status
 
-Pending.
+**Accepted — Complete at Attempt 1, 2026-09-20, moda_architect.** Reviewed
+implementation `4693bba629fd53812b819c7dc43c52673a2bdab7` and report
+`c5016d73f1a7241cfbc661f4b0a0a8d43f044eda`; both published task heads verified.
+No blocking functional findings remain. Automatic completion applies.
 
-### Review Notes
+### Functional Review
 
-No implementation submitted. This task is a reviewable definition.
+Shop identity comes from authenticated Shopify session/access resolution; direct
+actions reject caller shop fields. The service loads arbitrary active database
+features through enabled current-plan mappings and denies inactive shop,
+subscription or plan state. Shared 0.13.1 selection preserves missing-opt-in,
+ALWAYS_ENABLED and systemRequired semantics without adding entitlement bypasses
+or a second feature catalogue. Required features cannot be changed through the
+merchant action. Disabled mappings retain saved preferences without granting use.
 
-### Reviewed Files
+Explicit desired-value writes serialize on the shop row, re-read eligibility and
+compare revisions before changes. Equal-value repeats return current state without
+another timestamp update; conflicting changes require an authoritative refresh.
+Feature saves do not modify recovery settings, schedule outreach or call providers.
 
-None for implementation review.
+The actual form/switch components use synchronous submission exclusion, immediate
+pending controls, frozen-intent reconciliation and stale/disposed-response guards.
+Known failures retain input for retry; an unknown outcome stays locked while the
+same original values are reconciled. The existing recovery form remains the sole
+NONE/FIXED/AI editor, retains follow-up delay/credit controls, and preserves Admin
+override precedence and Free/Paid availability. No new billing or Studio surface.
 
 ### Validation Reviewed
 
-None for implementation review.
+- Architect reran the six focused unit/DOM/action/locale/policy files: **18 tests
+  passed**, including duplicate activation, failure/retry, unknown outcome and
+  response correlation. Committed whitespace check passed.
+- Reviewed supplied **6 passing PostgreSQL integration tests**, including arbitrary
+  feature identities, eligibility denial, equal-value concurrency, stale conflicts,
+  preserved preferences and unchanged recovery state. This local persistence plus
+  Shared selection evidence supports the scoped merchant boundary; it does not
+  claim deployed Background conversation admission.
+- Reviewed supplied build and browser fixture checks and locale completeness for
+  all 20 locales. No redundant PostgreSQL/build/browser rerun was required.
+- Full typecheck/lint remain reported failures in unchanged files: 76 TypeScript
+  diagnostics (TYPECHECK-001), 19 lint errors and 2 warnings. These are retained
+  limitations, not represented as globally passing or task-created defects.
 
-### Architecture Conformance
+### Ownership and Follow-up
 
-Awaiting implementation.
+Reviewed the changed services/resource action, route/view integration, submission
+controller/components, recovery-policy delta, exact Shared dependency, locale and
+validation changes. Prepared claim `8f18471b`, dedicated mirrored worktrees,
+start-of-attempt synchronization, accepted prerequisites and unchanged database
+pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` are recorded consistently. No
+implementation edit, gitlink update, main integration or downstream launch by review.
 
-### Follow-up
-
-Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
-
+The developer owns final integration. SYSTEM-TEST-001 is the sole enabled task;
+its other implementation prerequisites remain incomplete, so it stays Pending
+and explicitly developer-invoked. ARCH-020 is not Implemented. Existing live
+Shopify/cross-service validation remains part of that terminal integration boundary.
 
 ## Dependency readiness — 2026-09-20
 
