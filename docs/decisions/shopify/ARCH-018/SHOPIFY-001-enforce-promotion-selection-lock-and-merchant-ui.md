@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor:
 claimed_at:
@@ -708,3 +708,50 @@ Acceptance invariant evidence:
 - Focused service tests cover same-campaign and alternate-campaign blocking before expiry, exhausted/CLOSED/target-ineligible selected campaigns remaining locked, expiry permitting replacement without pointer cleanup, exact grant reuse without replenishment, and SERIALIZABLE retry behavior.
 - Projection tests cover `locked=true` while an exhausted/CLOSED/target-ineligible selection remains unexpired, `locked=false` after expiry, and independent `spendable` semantics. History tests cover stale expired pointers as not currently selected.
 - Route tests cover the independent current-selection projection, page-wide synchronous submission lock, disabled button predicate, lock notice, and absence of merchant/internal IDs.
+
+## Architect Review — Attempt 1 — Accepted
+
+Decision: **Accepted — Complete**.
+
+Reviewed implementation commit: `31c2a2f1d91f995293ed5dd3746394d7b4bb27f5` (`31c2a2f`).
+
+Reviewed parent report commit: `6d71f94a`.
+
+Reviewed database gitlink: `3518f504a3ba1d600d603905a93371f385952cab`.
+
+Functional review findings:
+
+- `selectPromotionOffer()` now keeps the single merchant selection slot locked solely while the selected campaign has `expiresAt > now`; exhaustion, campaign closure, target ineligibility, campaign identity, grant quantities and current-plan state do not release the lock.
+- same-campaign and alternate-campaign requests are blocked before expiry before grant-selection mutation, so blocked duplicates do not increment `selectionCount` or change selection timestamps; the existing SERIALIZABLE three-attempt `P2034` retry contract remains intact.
+- an expired current selection does not block a new eligible selection and does not require Background pointer cleanup first.
+- the existing `(campaignId, shopId)` grant upsert remains reuse-only (`update: {}`), so later re-selection does not replenish or reset granted/reserved/committed/exhausted state.
+- `getCurrentPromotionSelectionState()` derives `locked` exclusively from campaign expiry and keeps `spendable` independent, while exposing only the architect-approved merchant-safe projection.
+- promotion history no longer presents an expired stale pointer as currently selected.
+- `/app/promotions` loads the current selection independently from paginated offers, renders the expiry lock notice even when the selected campaign is absent from eligible offers, keeps other offers visible, and disables all selection buttons while the slot is locked.
+- the page-wide synchronous `useRef` submission guard complements rather than replaces server-side SERIALIZABLE authority.
+- the exact approved `promotions.error.activeSelected` wording is present in all twenty locale catalogues.
+
+Validation evidence accepted for this functionality-first review:
+
+```text
+focused tests:       56 passed
+Prisma generation:   PASS
+Prisma validation:   PASS
+build:               PASS
+targeted lint:       PASS
+source invariant:    PASS
+git diff --check:    PASS
+```
+
+Repository-wide `npm run typecheck` remains non-zero (`164` diagnostics in unrelated files) and the full suite retains `14` unrelated failures / `3` skipped tests. No diagnostic or reported full-suite failure belongs to the authorized ARCH-018 changed files; these results are non-blocking for this bounded task. Historical task records in the same repository also show the `TYPECHECK-001` baseline count has moved well above the stale `48` recorded in `docs/development-baseline.md`, so that stale count is not treated as an ARCH-018 implementation regression.
+
+Final task state:
+
+```yaml
+status: complete
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+There is no Attempt 2. `ARCH-018-SYSTEM-TEST-001` remains pending/manual-gated; this acceptance does not start it.

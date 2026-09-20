@@ -4,4 +4,4 @@ Architecture: `docs/architecture/ARCH-018-promotion-selection-lock-and-expiry-re
 
 | Task | Status | Purpose |
 |---|---|---|
-| `SHOPIFY-001` | Ready | Enforce expiry-only promotion selection lock, project current selection, clarify merchant UI, and prevent duplicate submission |
+| `SHOPIFY-001` | Complete | Enforce expiry-only promotion selection lock, project current selection, clarify merchant UI, and prevent duplicate submission |
