@@ -366,6 +366,95 @@ Templates are literal text, not JavaScript, expressions or arbitrary interpolati
 trusted context is a separate serialised data block with a clear trust boundary.
 Tool/customer/catalogue text is untrusted data, never a new instruction layer.
 
+### C6.1 Fixed instructions, recovery context and language
+
+This section is binding for BACKGROUND-001, SHARED-002, COMMERCE-009 and
+SYSTEM-TEST-001. It replaces vague requirements to preserve the old prompt.
+
+Ownership and composition:
+
+1. Shared owns reusable platform constraints: grant enforcement, factual grounding,
+   language rules, budgets and structured final output. Background owns the fixed
+   checkout-recovery status instructions and supplies them to the runner as trusted
+   host instructions. Neither instruction set is editable in Studio.
+2. Background loads current persisted recovery status, checkout token, totalPrice,
+   completedAt, conversation type, resolved languageTag/languageSource and optional
+   customer firstName from the routed recovery/conversation. Identity/ownership is
+   checked before model work. Serialize context as data, never interpolate customer
+   strings into instruction text. Null fields remain unknown: a missing completedAt
+   must never override a COMPLETED status. A stored checkout total is historical
+   recovery data, not evidence of current product pricing or currency.
+3. Use C2 bounded same-conversation history; do not restore the old unmaintained
+   summary as authoritative context. Names, messages, summaries, catalogue text and
+   tool renderedText cannot provide instructions or change recovery state.
+4. Compose platform constraints and host recovery instructions before the pinned
+   capability prompts in membership order, with context/history in separate data
+   blocks. Capability text cannot override either fixed instruction layer. Prompts
+   and tool revisions remain pinned to the original grant, while current recovery
+   status and resolved language are freshly loaded each admitted turn.
+5. Product discovery and purchasing assistance are conditional on the original
+   grant. Never say "use Shopify tools" as an unrestricted permission or acquire
+   additional tools to answer a question. Answers require trusted recovery facts
+   or results from originally granted, currently authorised tools. Missing evidence
+   produces REFER_TO_STORE; Background renders the verified store referral under C4.
+
+Mandatory recovery instruction matrix:
+
+| Persisted status | Required behaviour |
+| --- | --- |
+| COMPLETED | Never call this an abandoned or active checkout. Acknowledge the completed purchase when relevant. Continue only within the original tool grant; completion does not grant order-management capabilities. |
+| EXPIRED | Never imply the original checkout is active. Current product facts require originally granted tools; otherwise refer to the store. |
+| CANCELLED | Never imply the original checkout is active or restored. Current product facts require originally granted tools; otherwise refer to the store. |
+| MESSAGE_SENT | Help with the identified recovery and only the product questions supported by the original grant. Do not infer current stock, prices or checkout validity from the message status. |
+| ENGAGED | Apply the same bounded assistance as MESSAGE_SENT; engagement does not expand permissions. |
+| Any other valid persisted status | State only supported recovery facts; do not infer active, abandoned or completed status or broaden the grant. Preserve existing admission checks. |
+
+Mandatory language and final-output instructions:
+
+- Keep WhatsApp replies concise and natural. Use resolved languageTag when present.
+- When languageSource is customer-explicit, that resolved preference governs the
+  reply. Ordinary message-language detection cannot replace it; emit both detection
+  fields as null. Explicit preference changes continue through the existing
+  preference-resolution path, not an invented model-driven override.
+- Otherwise, when the latest substantive customer input clearly establishes a
+  different language (or no language is resolved), answer in that language and emit
+  its narrowest defensible BCP-47 tag with confidence in [0,1], using existing
+  validators. Never invent a regional subtag. If no clear change is established,
+  retain the resolved language and emit both fields as null. With no resolved or
+  defensibly detected language, retain the existing host fallback; do not invent a
+  new fallback locale or fabricate detection metadata. Existing fallback precedence
+  is valid Shopify language, merchant default, then platform default; if none is
+  valid, retain null language/source.
+- Ambiguous, short, emoji-only, URL-only or numeric input emits both detection
+  fields as null. Do not infer language from a customer name or product title.
+- Language adaptation must not change prices, currency, URLs, order/recovery state
+  or merchant policy. Persist detection only through existing host validation and
+  confidence/precedence handling, never on stale or cancelled turns. Background
+  accepts detection updates only for a stable language signal and confidence
+  >=0.85 and <=1, preserving customer-explicit preference and existing tag
+  canonicalisation. Reuse conversation-language.service.ts; do not introduce a
+  second detector, threshold or persistence path.
+- Finish by calling host-local finalResponse exactly once, using the C4 schema.
+  Include customer-facing replyText and either two null detection fields or one
+  valid tag/confidence pair. No reasoning in replyText, no ordinary assistant text
+  as a substitute, and no partial pair. Missing, duplicate or malformed final output
+  is INVALID_FINAL, not a customer reply. finalResponse is outside remote grants.
+
+Required fixtures (record IDs and outcomes in each owning task): P01 COMPLETED
+with null completedAt; P02 EXPIRED; P03 CANCELLED; P04 MESSAGE_SENT/ENGAGED with
+and without discovery tools; P05 a later turn changes status to COMPLETED while
+retaining the original grant/prompt release; P06 customer-explicit French with an
+English message retains French and null detection; P07 non-explicit English with
+a substantive French message emits French plus a valid confidence; P08 ambiguous,
+short, emoji-only, URL-only and numeric messages emit null pairs; P09 missing
+regional evidence never adds a regional subtag and localisation preserves supplied
+amounts/currency/URLs/policy; P10 capability/customer/tool-text injection cannot
+change platform rules or grants; P11 absent/duplicate/malformed finalResponse is
+rejected; P12 no resolved language follows existing fallback without fabricated
+metadata. Use scripted models for structural/dispatch/state assertions and explicit
+adversarial evaluation cases for natural-language behaviour; do not claim scripted
+outputs prove a live model can never hallucinate.
+
 Maximum90 seconds end-to-end per admitted turn,12 model steps,10 remote calls,
 800 output tokens. Reserve one remote call for each offer-evidence revalidation:
 max3 offer references, at least that many remaining calls before accepting final.

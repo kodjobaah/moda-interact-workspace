@@ -78,6 +78,8 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+- [ ] Apply C6.1 in U14 Conversation mode using synthetic recovery status, nullable completedAt, languageTag/languageSource and customer-message fixtures. Supply equivalent fixed host recovery instructions to the same Shared runner; do not expose them as editable capability prompts. Select fixtures before Start conversation; use a scripted later-turn state change for P05 without replacing the frozen grant.
+
 ### U14: tool tests and conversation traversal (COMMERCE-009)
 
 Landing has **Tool test** and **Conversation** modes. Source context preselects
@@ -154,6 +156,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
+- [ ] Provide named C6.1 P01–P12 preview scenarios and deterministic assertions for context, grant and final-output handling; list expected natural-language outcomes separately. No live records, production credentials or WhatsApp sends.
 
 - [ ] U14 Tool test and Conversation modes follow the exact entry/return routes, frozen selection, send/cancel/reconcile/reset states specified above. N10/N11 pass with U06/U09/U11/U13 source contexts and sidebar entry; no dead-end navigation.
 - [ ] New query tools use the same C14 validator/projector/template renderer against fixtures, and independently published/shared revisions remain pinned for a preview conversation.

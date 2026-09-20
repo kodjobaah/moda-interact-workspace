@@ -61,6 +61,8 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+- [ ] Implement C6.1 host-owned recovery instructions and freshly loaded, serialized recovery/customer/language context. Apply the explicit status matrix including COMPLETED with null completedAt; replace unrestricted product-help wording with original-grant-only assistance. Keep the pinned prompt release separate from fresh recovery state; use C2 history rather than an authoritative summary.
+
 - [ ] Implement the C5 Exact available-tool discovery sequence: trusted shop/recovery/conversation/turn claims, first resolve then immutable grant persistence, execute-purpose tools/list with empty params, and tools/call bound to that original grant. shopId alone is not a grant selector.
 
 - [ ] Consume C14 exact reusable tool/revision identities and original capabilityKeys provenance without copying query execution into Background. Manifest may contain arbitrary new names or no remote tools; retain existing conversation grant through reconnects.
@@ -118,6 +120,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-GATEWAY-001
 
 ## Acceptance Criteria
+
+- [ ] Verify C6.1 P01–P12 through host integration fixtures, including fresh status on later turns, explicit-language precedence, validated detection persistence and no delivery from invalid/stale final results.
 
 - [ ] Two conversations for one shop with different pinned releases retain different original lists; a second shop cannot select those grants. tools/list contains exact descriptors only, omits revoked tools, rejects caller-supplied shopId parameters and never expands after publication.
 
