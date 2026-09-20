@@ -714,7 +714,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | Task | Outcome | Owner | Status | Depends on |
 |---|---|---|---|---|
 | [ARCH-020-DATABASE-001](../decisions/database/ARCH-020/DATABASE-001-persist-capability-releases-and-turn-revision-pins.md) | Persist capability releases and conversation tool grants | moda_database | complete | ARCH-016-DATABASE-001 |
-| [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | moda_shared | ready (Changes Requested, Attempt 1) | ARCH-016-SHARED-001 |
+| [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | moda_shared | complete | ARCH-016-SHARED-001 |
 | [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | complete | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | pending | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
@@ -726,9 +726,9 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | pending | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 |
+| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | ready | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 |
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
-| [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | pending | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
+| [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | ready | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 |
@@ -862,3 +862,21 @@ COMMERCE-001 Complete at Attempt 3 alongside this Shared correction contract.
 Current branch frontier: 19 tasks, 2 Complete, 1 Ready, 16 Pending, 0 Blocked.
 SHARED-001 remains Ready at Attempt 1 with no active claim. No next attempt is
 claimed by conflict resolution. Architecture completion/system-test gates remain.
+
+
+## Shared Attempt 2 acceptance — 2026-09-20
+
+ARCH-020-SHARED-001 is **Accepted / Complete, Attempt 2** against implementation
+a83bfc1 and report 595566ca. R1 storage-size compatibility and R2 malformed-model
+classification are closed. Independently passed typecheck, 30 focused tests and
+clean registry-consumer smoke; reviewed 160-pass/one-skipped full-suite evidence.
+Verified registry artifact **@modainteract/moda-interact-shared@0.13.1**, with all
+75 installed files matching publication files. Consumer tasks must use 0.13.1.
+The earlier Shared correction/frontier record is historical and superseded.
+
+BACKGROUND-001 (moda_background) and SHOPIFY-001 (moda_app) are newly Ready: all
+listed dependencies are Complete. No task is claimed or launched. Preparation
+must synchronize dedicated worktrees and verify dependency source availability.
+Other pending tasks retain their existing gates. Current branch frontier:
+**19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
+terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.

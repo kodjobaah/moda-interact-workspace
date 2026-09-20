@@ -394,7 +394,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
 | ARCH-020-DATABASE-001 | database | complete | 2 | ARCH-016-DATABASE-001 |
-| ARCH-020-SHARED-001 | shared | ready (Changes Requested) | 1 | ARCH-016-SHARED-001 |
+| ARCH-020-SHARED-001 | shared | complete | 2 | ARCH-016-SHARED-001 |
 | ARCH-020-COMMERCE-001 | commerce | complete | 3 | — |
 | ARCH-020-COMMERCE-002 | commerce | pending | 0 | ARCH-020-COMMERCE-001 |
 | ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
@@ -406,9 +406,9 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| ARCH-020-BACKGROUND-001 | background | pending | 0 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 |
+| ARCH-020-BACKGROUND-001 | background | ready | 0 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
-| ARCH-020-SHOPIFY-001 | shopify | pending | 0 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
+| ARCH-020-SHOPIFY-001 | shopify | ready | 0 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 |
@@ -465,3 +465,21 @@ COMMERCE-001 Complete at Attempt 3 alongside this Shared correction contract.
 Current branch frontier: 19 tasks, 2 Complete, 1 Ready, 16 Pending, 0 Blocked.
 SHARED-001 remains Ready at Attempt 1 with no active claim. No next attempt is
 claimed by conflict resolution. Architecture completion/system-test gates remain.
+
+
+## Shared Attempt 2 acceptance — 2026-09-20
+
+ARCH-020-SHARED-001 is **Accepted / Complete, Attempt 2** against implementation
+a83bfc1 and report 595566ca. R1 storage-size compatibility and R2 malformed-model
+classification are closed. Independently passed typecheck, 30 focused tests and
+clean registry-consumer smoke; reviewed 160-pass/one-skipped full-suite evidence.
+Verified registry artifact **@modainteract/moda-interact-shared@0.13.1**, with all
+75 installed files matching publication files. Consumer tasks must use 0.13.1.
+The earlier Shared correction/frontier record is historical and superseded.
+
+BACKGROUND-001 (moda_background) and SHOPIFY-001 (moda_app) are newly Ready: all
+listed dependencies are Complete. No task is claimed or launched. Preparation
+must synchronize dedicated worktrees and verify dependency source availability.
+Other pending tasks retain their existing gates. Current branch frontier:
+**19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
+terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
