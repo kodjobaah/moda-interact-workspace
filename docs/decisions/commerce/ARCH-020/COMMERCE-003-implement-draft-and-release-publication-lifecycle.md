@@ -116,6 +116,17 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Deliver publication domain services, strict action schemas, transactional audit/replay and explicit seed CLI. Build typed read-only executor-operation descriptors as the publication registry; operations may be added by COMMERCE-005/006/007, but descriptors alone must not claim operation availability. Publish database tool definitions only when their query executor/schema or policy-operation versions have executable implementations in the deployed build. Synthetic registry fixtures permit this task to be tested before later implementations.
 
+### Deterministic review clarification
+
+Synthetic executable registry adapters are dependency-isolated test fixtures,
+never production registrations. This task proves publication validation and
+transactions with those fixtures; COMMERCE-005/006/007 provide real executors and
+SYSTEM-TEST-001 proves the deployed author/publish/invoke flow. Do not add a
+circular dependency on those later tasks or advertise unimplemented operations.
+Provide the isolated PostgreSQL rehearsal command and expected assertions; report
+agent fixture results separately from developer-owned database rehearsal evidence
+under C12. An unexecuted rehearsal must remain explicitly pending.
+
 ### Required evidence
 
 Use two-transaction local storage fixtures and an isolated PostgreSQL rehearsal for duplicate operation IDs, mismatched reuse, revision allocation, CAS pointer conflicts, rollback and failed partial publication. This backend task tests direct requests; COMMERCE-008 owns mouse/keyboard tests.
@@ -197,7 +208,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

@@ -332,8 +332,14 @@ Review/Test/Create. Every edit clears prior validation/test success. Fresh creat
 copies the active definition or uses C16 baseline if no active release exists.
 
 **Test conversation** passes the local draft definition and selected published
-members to U14. Keep the unsaved composer only in this browser tab's memory; Back
-returns to it, refresh loses it with a clear notice. U14 freezes the definition at
+members to U14. Keep the unsaved composer in a tab-local authenticated layout provider that
+survives U10 -> U14 -> Back navigation. Store a synthetic handoff ID, selected
+revision IDs, draft response definition, validation hash, reason and allowlisted
+return route; never put the definition in a URL or browser storage. U14 copies
+and validates this state as authenticated preview input; Back restores the exact
+composer. Refresh, sign-out or loss of authorization clears it and displays
+**Draft unavailable—return to Releases** with a U10 link. Late validation results
+apply only to the same content hash. U14 freezes the definition at
 Start and displays separate Reply and Structured details panels. Reset permits a
 new definition; no automatic publication. No customer data in browser storage.
 
@@ -350,7 +356,9 @@ apply to Validate/Test/Create; late validation cannot approve changed input.
 Traversal case N13: U11 Response contract -> Edit as new release -> U10 Response
 contract -> edit -> Validate -> U14 Test -> Back -> Review -> Create -> new U11 ->
 Activate. Check cancellation, role denial, invalid schema, duplicate activation and
-existing-conversation pinning. This C16 extension supersedes the original approved
+existing-conversation pinning at terminal system validation. COMMERCE-008 tests
+the U14 handoff/return with a preview stub; COMMERCE-009 tests the real U14 round
+trip. COMMERCE-008 acceptance does not require COMMERCE-009. This C16 extension supersedes the original approved
 prototype's release panels; other U01–U14 routes and traversals remain unchanged.
 
 Publication stages are tool version -> capability revision -> release -> active
@@ -447,7 +455,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 All cases must be browser fixtures with expected destinations and side effects;
 run mouse and keyboard paths, direct deep links, mobile navigation and denied roles.
-COMMERCE-008 owns N01–N09, N12 and N13; COMMERCE-009 owns N10–N11 with U14; COMMERCE-011
+COMMERCE-008 owns N01–N09, N12 and the composer/handoff portion of N13;
+COMMERCE-009 owns N10–N11 and the real U14 round trip in N13; COMMERCE-011
 owns discovery service contract fixtures consumed by N04. Shared checks are reused.
 
 | Case | Traversal | Required result |
@@ -464,7 +473,7 @@ owns discovery service contract fixtures consumed by N04. Shared checks are reus
 | N10 | U06/U09/U13 Test -> U14 fixture run -> Return | Correct source context, no live credentials/shop writes; results visibly synthetic |
 | N11 | U14 start -> Send -> duplicate Send -> Cancel/timeout -> reconcile -> reset | One run, frozen preview grant, budgets enforced, no hidden retry |
 | N12 | Save/publish/activate/disable/attach/create double-click, tap or Enter | One intended persisted effect, immediate busy state; unknown outcomes reconcile |
-| N13 | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate | C16 definition validation, immutable release, role checks, original-conversation pinning |
+| N13 | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate | C16 validation, immutable release, roles; stubbed preview handoff here, real preview in009 and production pinning in SYSTEM-TEST-001 |
 
 Each page is inspected at desktop and narrow viewport with keyboard focus,
 loading/empty/error states. Tool/template/feature editing does not require an IDE,
@@ -511,7 +520,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

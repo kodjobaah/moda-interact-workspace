@@ -345,9 +345,9 @@ provider queries from model-controlled parameters.
 
 `finalResponse` stays a local runner tool, not an MCP tool. Extend its structured
 result with bounded offer-evidence references so Background can revalidate
-claims before sending. No raw evidence token is included in customer text. The host reuses
-`commerce_evaluate_discount` to refresh the exact proposal/evidence before
-delivery; this call counts within the same overall tool/deadline budget.
+claims before sending. No raw evidence token is included in customer text. The host replays the actual evidence-producing granted call under the binding
+C4 exact-call refresh contract; authored tool names/arguments are preserved.
+Refresh counts within the same overall tool/deadline budget.
 
 ### Discount scope and factual guarantees
 

@@ -85,6 +85,15 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Own final-delivery admission, evidence refresh, status handling and worker failure regression coverage. Preserve the existing unknown-message provider-status path for unpersisted guidance; no guidance receipt table/status handler or merchant usage. For normal replies recheck processing version/lease and current permissions immediately before send; revalidation failure replaces the proposed answer with one admitted referral.
 
+### Deterministic review clarification
+
+Implement the C4 Exact-call evidence refresh contract and its named fixtures.
+Business MCP names remain arbitrary. Background captures/replays actual calls;
+Commerce policy adapters return bounded structured evidence. No hard-coded
+evaluator discovery, extra grant, new Shared field or new database table. Apply
+C8 shared provider-request counter (including retries) and deterministic ranking
+where recommendations are involved.
+
 ### Required evidence
 
 Add controllable barriers for new-message-during-model, lease loss, revocation-before-send, unknown provider acceptance and duplicate job delivery. Verify no stale language write or double reservation; actual send status uncertainty is not treated as safe automatic retry. History inclusion is tested in BACKGROUND-001; do not substitute prompt snapshots.

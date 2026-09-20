@@ -75,7 +75,7 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 - [ ] Verify all C16 R01–R12 cases and N13 traversal, including release-only schema change without worker/Shared deployment, old/new conversation pinning, immutable publication and stable delivery-envelope behaviour.
 
-- [ ] Validate C6.1 fixed platform versus editable capability prompt boundaries across Background and Studio preview. Cover the exact recovery status/language matrix with equivalent synthetic inputs; distinguish fresh turn context from pinned prompts/tools.
+- [ ] Validate C6.1/C6.2 host-owned context versus C16 release-authored prompt boundaries across Background and Studio preview. Cover the exact recovery status/language matrix with equivalent synthetic inputs; distinguish fresh turn context from pinned prompts/tools.
 
 - [ ] Execute the UI navigation matrix N01–N12 against integrated services and the new COMMERCE-011 dependency. Include direct links, Back/Cancel, auth expiry, double activation, docs outage, draft conflict and publication-stage recovery.
 - [ ] Create an arbitrary non-seed Feature through existing Admin, include it in a plan, configure/publish a new schema-authored query tool in Studio and opt in through merchant UI. Confirm a new routed recovery conversation uses it without deployment of Commerce/Background/merchant UI between authoring and invocation.
@@ -109,9 +109,21 @@ All ARCH-020 contracts and accepted implementations. External/live validation us
 
 Apply binding contracts **C14–C15** for reusable tool revisions, query/policy execution, safe templates, original grant provenance and integrated Studio authoring. The page/traversal specification is required for UI owners.
 
-Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARCH-020-implementation-contracts.md), sections **C0 through C13**. Also apply **C13** for outreach/continuation semantics. These are required acceptance inputs, not optional examples.
+Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARCH-020-implementation-contracts.md), sections **C0 through C16**. Also apply **C13** for outreach/continuation semantics. These are required acceptance inputs, not optional examples.
 
 Deliver scripts/run-arch020-commerce.js and package script test:arch020-commerce for isolated end-to-end runs, plus test:arch020-commerce:static for agent-owned fixture/config checks. Runner must reject non-isolated targets and report implementation/DB/shared revisions. Build scenarios against real integrated services with fixture provider/model transports, not mocks replacing the services under test.
+
+### Deterministic review clarification
+
+Use final C6.2 P06/P07 expectations and test the complete N13 real preview
+round trip plus old/new production-conversation release pinning. Include C4
+renamed/mapped/recommendation evidence refresh fixtures and C9.1 owner/busy-run
+races. For the 20-conversation/two-shop/five-minute profile, require zero cross-shop
+leaks, duplicate sends, unauthorized calls or stale-turn deliveries; assert all
+expected admitted turns reach their fixture-defined terminal state within the
+existing task deadlines. Record latency/queue lag/provider calls/DB cost as measured
+observations, not an invented capacity SLO. Full/container/load/live evidence stays
+developer-owned; distinguish not-run from passed.
 
 ### Required evidence
 

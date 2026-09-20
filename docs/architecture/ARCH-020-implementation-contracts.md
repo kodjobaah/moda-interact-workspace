@@ -271,10 +271,42 @@ positive-evidence lifetime. Consumer must inspect outcome, not just evidence ID.
 Evidence ID is SHA-256 of canonical complete evidence excluding evidenceId.
 It is not a bearer credential or standalone proof. Runner registers actual tool
 results in a turn-local evidence map; final evidence IDs must be a subset of that
-map. Before delivery Background repeats evaluate_discount with the exact trusted
-proposal/offer, rejects changed outcome/currency/totals/rule/basket fingerprints,
+map. Before delivery Background applies the exact-call refresh contract below
 and replaces the proposed offer answer with a bounded referral on failure. Never
 trust a model-supplied evidence object or accept a recomputed hash as authority.
+
+### Exact-call evidence refresh (COMMERCE-004/006/007, BACKGROUND-002)
+
+Background owns a turn-local provenance record for each registered evidence ID:
+the actual successfully invoked granted tool name, its exact immutable revision,
+a deep copy of validated call arguments, and the extracted trusted Evidence.
+Capture this through the host tool wrapper/evidence extractor; no new Shared wire
+field, database column, executor metadata disclosure or model-supplied provenance.
+Only policy adapters can produce trusted Evidence; public GraphQL/template text
+cannot. Commerce preserves structured Evidence independently of rendered text.
+
+Before sending a claim, replay the evidence-producing call with identical arguments
+and the same authenticated turn/grant. Never hard-code an example tool name, infer
+an evaluator from its description, reverse-map authored inputs or add an ungranted
+tool. Deduplicate identical calls within this final refresh pass. Charge every
+refresh against the existing turn call/deadline budget; insufficient budget fails
+closed. Recheck current permission at dispatch. A renamed evaluator or narrowed
+literal/mapped input works because its actual original call is replayed unchanged.
+
+For each referenced old evidence item require exactly one fresh structured item
+matching offerId and canonical proposal (including null). Verify current turn,
+grant/release, freshness and trusted origin, and identical outcome, currency,
+savings, resultingTotal, basketFingerprint and ruleFingerprint. Timestamp/ID may
+change. Recommendation replay must return the exact original proposal; a changed,
+missing, duplicate, truncated or incomplete result cannot prove the claim. Absence
+of a separately named evaluator does not block a valid exact-call refresh; absence
+of replayable provenance, revocation, timeout or changed evidence yields one normal
+admitted store referral. Recheck stale-turn/lease/send admission after refresh.
+
+Required fixtures: renamed evaluator; narrowed/literal mapped input; evidence
+from a recommendation without a separate evaluator; changed recommendation;
+missing provenance; revoked producer; duplicate references sharing one refresh;
+and exhausted call/deadline budget. Assert zero ungranted calls and no extra sends.
 
 Canonical hashes: recursively sort object keys by Unicode code point, preserve
 array order, reject undefined/nonfinite numbers and encode compact UTF-8 JSON.
@@ -373,10 +405,12 @@ SYSTEM-TEST-001. It replaces vague requirements to preserve the old prompt.
 
 Ownership and composition:
 
-1. Shared owns reusable platform constraints: grant enforcement, factual grounding,
-   language rules, budgets and structured final output. Background owns the fixed
-   checkout-recovery status instructions and supplies them to the runner as trusted
-   host instructions. Neither instruction set is editable in Studio.
+1. Apply C16 for the final ownership split: release-authored response instructions
+   and details schema are editable in Studio; Shared enforces the stable envelope,
+   grant and budget boundaries. Background supplies authoritative current recovery
+   context and admission/language persistence. The behavioural matrix below must
+   remain covered by the initial release and tests; it does not require hard-coded
+   Shared prompt prose. C16 supersedes earlier fixed-prompt ownership wording.
 2. Background loads current persisted recovery status, checkout token, totalPrice,
    completedAt, conversation type, resolved languageTag/languageSource and optional
    customer firstName from the routed recovery/conversation. Identity/ownership is
@@ -387,9 +421,9 @@ Ownership and composition:
 3. Use C2 bounded same-conversation history; do not restore the old unmaintained
    summary as authoritative context. Names, messages, summaries, catalogue text and
    tool renderedText cannot provide instructions or change recovery state.
-4. Compose platform constraints and host recovery instructions before the pinned
-   capability prompts in membership order, with context/history in separate data
-   blocks. Capability text cannot override either fixed instruction layer. Prompts
+4. Compose the pinned C16 response instructions and capability prompts in the
+   order specified by C16, with trusted context/history in separate data blocks.
+   Authored prose cannot override enforced grant, envelope or admission rules. Prompts
    and tool revisions remain pinned to the original grant, while current recovery
    status and resolved language are freshly loaded each admitted turn.
 5. Product discovery and purchasing assistance are conditional on the original
@@ -412,11 +446,9 @@ Mandatory recovery instruction matrix:
 Mandatory language and final-output instructions:
 
 - Keep WhatsApp replies concise and natural. Use resolved languageTag when present.
-- When languageSource is customer-explicit, that resolved preference governs the
-  reply. Ordinary message-language detection cannot replace it; emit both detection
-  fields as null. Explicit preference changes continue through the existing
-  preference-resolution path, not an invented model-driven override.
-- Otherwise, when the latest substantive customer input clearly establishes a
+- Initialize from the shop language under C6.2; do not implement a separate
+  customer-explicit preference path or phone-country lookup.
+- When the latest substantive customer input clearly establishes a
   different language (or no language is resolved), answer in that language and emit
   its narrowest defensible BCP-47 tag with confidence in [0,1], using existing
   validators. Never invent a regional subtag. If no clear change is established,
@@ -431,8 +463,8 @@ Mandatory language and final-output instructions:
   or merchant policy. Persist detection only through existing host validation and
   confidence/precedence handling, never on stale or cancelled turns. Background
   accepts detection updates only for a stable language signal and confidence
-  >=0.85 and <=1, preserving customer-explicit preference and existing tag
-  canonicalisation. Reuse conversation-language.service.ts; do not introduce a
+  >=0.85 and <=1, preserving existing tag canonicalisation. Reuse
+  conversation-language.service.ts; do not introduce a
   second detector, threshold or persistence path.
 - Finish by calling host-local finalResponse exactly once, using the C4 schema.
   Include customer-facing replyText and either two null detection fields or one
@@ -443,9 +475,10 @@ Mandatory language and final-output instructions:
 Required fixtures (record IDs and outcomes in each owning task): P01 COMPLETED
 with null completedAt; P02 EXPIRED; P03 CANCELLED; P04 MESSAGE_SENT/ENGAGED with
 and without discovery tools; P05 a later turn changes status to COMPLETED while
-retaining the original grant/prompt release; P06 customer-explicit French with an
-English message retains French and null detection; P07 non-explicit English with
-a substantive French message emits French plus a valid confidence; P08 ambiguous,
+retaining the original grant/prompt release; P06 starts with the French shop
+language, switches on substantive English at confidence >=0.85, then retains
+English for ambiguous input with null detection; P07 established English with
+a substantive French message emits French plus a valid confidence >=0.85; P08 ambiguous,
 short, emoji-only, URL-only and numeric messages emit null pairs; P09 missing
 regional evidence never adds a regional subtag and localisation preserves supplied
 amounts/currency/URLs/policy; P10 capability/customer/tool-text injection cannot
@@ -627,14 +660,30 @@ FIXED checks only configured offer; NONE returns no offers and denies discount t
 
 Recommendations search <=60 variants and evaluate <=10 proposals per tool, bounded
 by its10-second deadline. Similarity requires at least matching productType;
-rank same vendor then shared normalised title tokens, then variantId ascending.
+rank same vendor first, then descending count of intersecting title tokens,
+then variantId ascending. Tokens are Unicode NFKC-normalised, lowercased with
+locale-independent casing, split on non-letter/non-number characters, empty
+tokens removed and deduplicated; no stemming, stop words or locale inference.
 Missing attributes -> no similarity claim. Qualifying suggestions rank lowest
 extraSpend then highest known savings then variantId. Return max3. Replacement
 removes exactly the selected basket line; quantity must be explicit. Show extra
 spend/resulting total separately; no claimed saving relative to the original basket
 when the proposed purchase costs more. No match returns [], not invented products.
+Before evaluating at most10 proposals, deduplicate by canonical proposal and
+sort by extraSpend ascending then variantId then canonical proposal JSON ascending.
+For qualifying-result ranking unknown savings sort after every known savings;
+compare monetary decimals exactly, never using lexical or floating-point order.
+All final ties use canonical proposal JSON ascending. Test Unicode/duplicate tokens,
+equal scores and truncation before/after evaluation with named fixture expectations.
+Effective search/recommendation limits are the minimum of requested value (or
+operation default), platform ceiling and configured limits from all currently
+eligible ORIGINAL provenance capabilities. An absent configured limit contributes
+no restriction. Revoking a restrictive original association can remove its bound
+only while another original association remains eligible; new associations never
+contribute authority or bounds. Test this explicitly in COMMERCE-004/007.
 Internal provider calls are additionally capped at12 requests per remote tool
-(including pagination/evaluation) and stop when either count/deadline is reached;
+(including pagination/evaluation, every retry and nested adapter request) and stop when either count/deadline is reached;
+stop before issuing request13. All adapters share the same counter/deadline;
 partial search results carry truncated=true. Exact evidence revalidation is not
 allowed to report success from a truncated/incomplete rule evaluation.
 
@@ -674,6 +723,62 @@ a new run ID; changing tools/prompts requires a new preview conversation. Audit
 preview through redacted shared logs (admin ID/run ID/hash/runner/version/outcome),
 not CommerceAuditEvent, whose enum covers only publication mutations.
 
+### C9.1 Preview lifecycle and ownership (COMMERCE-009)
+
+Use these authenticated JSON routes only; errors are `{code}` and use 400 for
+INVALID_INPUT, 403 for DENIED, 404 for NOT_FOUND, 409 for ID_CONFLICT/CONVERSATION_BUSY/HISTORY_LIMIT, 429 for
+QUOTA_EXCEEDED, 503 for UNAVAILABLE. Validate bodies strictly and return no stored
+payload on errors. Every call rechecks active ADMIN/SUPER_ADMIN and owner identity.
+Cross-admin conversation/run IDs return NOT_FOUND, including cancellation/status.
+Preview conversation/run IDs below are client-generated UUIDs; scope Redis state by environment and admin.
+
+| Method/path | Strict input | Success |
+|---|---|---|
+| GET /api/studio/preview/fixtures | no body | 200 `{fixtures}`: bounded catalogue of synthetic `{id,label,recoveryStatus,shopLanguage}` entries |
+| POST /api/studio/preview/tool-tests | `{previewRunId,toolRevisionId,fixtureId,arguments}`; arguments satisfy the selected revision schema | 200 `{previewRunId,status,result}`; fixture-only structured data, rendered text and validation trace |
+| GET /api/studio/preview/tool-tests/[runId] | no body | 200 `{previewRunId,status,result}` with the same owner/replay rules |
+| POST /api/studio/preview/conversations | `{previewConversationId,mode,selection,fixtureId}`; mode FIXTURE or MODEL; fixtureId from the server's synthetic catalogue | 201 `{previewConversationId}`; matching replay 200 |
+| POST /api/studio/preview/conversations/[id]/runs | `{previewRunId,message}`; synthetic text 1–4000 characters | 202 `{previewRunId,status}`; replay 200 existing status/result |
+| GET /api/studio/preview/conversations/[id]/runs/[runId] | no body | 200 `{previewRunId,status,result}`; result null until available, bounded C9 result otherwise |
+| POST /api/studio/preview/conversations/[id]/runs/[runId]/cancel | empty object | 200 `{previewRunId,status}`; repeated cancel returns current status |
+
+Selection is a discriminated union: `{kind:"RELEASE",releaseId}` or
+`{kind:"DRAFT",capabilityRevisionIds,toolRevisionIds,responseContract}`. Revision
+arrays contain unique IDs, at most32 capabilities and64 tools, at least one total;
+validate the selected bundle against Shared limits and C16. IDs reference saved
+authorized revisions (including saved unpublished revisions), never arbitrary
+executable definitions from the browser. Optional unsaved responseContract is
+allowed only for DRAFT and uses the full C16 validator; omission uses the baseline.
+Freeze loaded revisions, definitions and fixture state at creation. fixtureId
+selects synthetic shop language/status/basket/feature flags; the server catalogue
+covers P01–P12 (C6.2 governs language) and exposes labels/values to U14 selectors.
+No real shop/customer identifiers or imported transcripts. Draft selection changes
+require Reset and a new ID. Tool-test mode uses a selected frozen tool revision,
+fixture adapter and schema-validated arguments through the same bounded service;
+it does not invoke a model or consume paid-model quota.
+
+Tool tests use the same admin/run-ID hash and24-hour replay rules, validate current
+revision access and execute fixture adapters only. GET fixtures returns at most100
+entries with IDs<=64 and labels<=128 characters; it contains no stored conversation
+data. A tool-test response uses the same <=64KiB result bound.
+
+Canonical creation payload hash makes same-ID creation idempotent; different
+payload gives ID_CONFLICT. Check run-ID replay before busy/quota checks. Different
+payload for the same run ID gives ID_CONFLICT. Atomically allow only one active
+run per preview conversation, even with distinct IDs and FIXTURE mode; reject
+CONVERSATION_BUSY before starting a model, changing history or reserving budget.
+Completed/failed/cancelled runs release that slot; UNKNOWN blocks further turns
+until Reset, never silently retries. Expired conversation/run state returns404,
+never recreates history during a status request. Reset allocates a new conversation
+and cannot bypass the per-admin/model concurrency budget of an old running call.
+Cancellation is a request, not an immediate success: keep RUNNING until runner
+acknowledges it; a completed result wins a late cancel. A lost runner becomes UNKNOWN.
+Reserve turn count/history changes atomically; failed/cancelled/unknown dispatched
+runs count toward20, rejected requests do not. History includes only completed
+turns; reject HISTORY_LIMIT before dispatch if the new input exceeds32,000 chars,
+and fail closed rather than truncate a completed result that would exceed it.
+No automatic provider/model retry. Test races on separate service replicas.
+
 ## C10. Deployment and health
 
 Commerce Node runtime port uses PORT (default3000); bind0.0.0.0. GET /health/live
@@ -686,12 +791,14 @@ Studio must be usable to publish the first release. No migrations on startup.
 New secret/config names: COMMERCE_MCP_URL (Background only, private URL ending
 /api/mcp), COMMERCE_ASSERTION_PRIVATE_KEY and COMMERCE_ASSERTION_KEY_ID (messaging
 worker only), COMMERCE_ASSERTION_PUBLIC_KEYS (Commerce only, max2 kid/PEM entries),
-COMMERCE_STUDIO_ORIGIN, optional ADMIN_ORIGIN (server-only HTTPS navigation origin), AUTH_SECRET, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET,
+COMMERCE_STUDIO_ORIGIN, optional ADMIN_ORIGIN (server-only HTTPS navigation origin), AUTH_SECRET, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET, AUTH_URL,
 COMMERCE_PREVIEW_ENABLED (false default), COMMERCE_PREVIEW_MODEL,
 COMMERCE_PREVIEW_API_KEY.
 Reuse existing DATABASE_URL, REDIS_URL and deployment-environment conventions.
 No NEXT_PUBLIC secret; fake examples only. Validate hosted origins as HTTPS,
-MCP URL as configured private host; fail startup/readiness on malformed config.
+MCP URL as configured private host. Invalid required config fails readiness and
+protected operations closed; liveness/static shell may start, consistent with the
+accepted foundation. AUTH_URL must match COMMERCE_STUDIO_ORIGIN under C7.1.
 Actual repository URL, Studio hostname and secret values are deployment inputs,
 not guessed by task authors.
 

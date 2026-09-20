@@ -83,6 +83,15 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Implement discounts.getOptions and discounts.evaluate operation adapters; use current accepted recovery-policy resolver and canonical catalogue IDs. Deliver docs/discount-support-matrix.md with exact provider field/query mappings for each supported rule and a fixture for each support/unknown case. New OAuth scopes are not in this task: missing scope is a typed unavailable result and a concrete architect gap.
 
+### Deterministic review clarification
+
+Implement the C4 Exact-call evidence refresh contract and its named fixtures.
+Business MCP names remain arbitrary. Background captures/replays actual calls;
+Commerce policy adapters return bounded structured evidence. No hard-coded
+evaluator discovery, extra grant, new Shared field or new database table. Apply
+C8 shared provider-request counter (including retries) and deterministic ranking
+where recommendations are involved.
+
 ### Required evidence
 
 Prove percentage/fixed semantics against recorded official schema/rule evidence; if a rule cannot be calculated exactly, its fixture must assert UNSUPPORTED. Include equality at startsAt/endsAt, threshold boundaries, quantity/collection rules, decimal/currency precision, omitted customer/usage facts and offer policy changes.
@@ -158,7 +167,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 

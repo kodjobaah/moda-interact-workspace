@@ -83,6 +83,13 @@ Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARC
 
 Implement recovery.getBasket and shopify.searchProducts operation adapters, replacing test fixtures with read-only production adapters; the MCP names come from database definitions. Explicitly map existing CheckoutRecovery.lineItems provider shapes to the canonical basket; fixture every supported shape. Missing/unrecognised data stays unknown, never guessed from prompt text.
 
+### Deterministic review clarification
+
+Installation credentials are available only to privileged POLICY_OPERATION
+adapters. SHOPIFY_STOREFRONT_QUERY never loads or forwards installation tokens
+and never falls back to a privileged adapter. Assert credential lookup count zero
+for public queries, including failures; cover the privileged branch separately.
+
 ### Required evidence
 
 Provider fixtures assert static request destinations/query variables, unknown market/price/availability, pagination limits, tampered cursor, cross-shop IDs and provider timeout. Record no mutation request issued.
@@ -158,7 +165,8 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce remote repository/submodule provisioning remains outstanding; role/route definitions exist in this review packet.
+Commerce repository/submodule provisioning is complete; consume the accepted
+COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
 
 ### Architectural Concerns
 
