@@ -203,7 +203,7 @@ Named contracts:
   overwrite the grant or automatically upgrade any tool/prompt.
 - CommerceManifest: {contractVersion, releaseId, runnerCompatibility,
   capabilities:[{key,revisionId,position,promptName,configuration,toolDescriptors}],
-  selectedCapabilityKeys,grantedTools}; capability order is release position,
+  selectedCapabilityKeys,grantedTools,responseContract,responseContractHash}; capability order is release position,
   all IDs and grant entries must agree with the immutable release/grant.
   toolDescriptors contain only toolId,toolRevisionId,name,definitionVersion,description,inputSchema;
   execution and responseTemplate stay on Commerce, not in the host manifest.
@@ -212,7 +212,7 @@ Named contracts:
   DENIED, STALE_TURN, NOT_FOUND, UNAVAILABLE, THROTTLED, DEADLINE,
   INCOMPATIBLE_VERSION. Do not include arbitrary provider exception text.
 - CommerceFinalResponse: {answerKind:'ANSWER'|'REFER_TO_STORE', replyText,
-  referralReason, detectedLanguageTag, detectedLanguageConfidence, evidenceIds}.
+  referralReason, detectedLanguageTag, detectedLanguageConfidence, evidenceIds, details}.
   replyText 1..4096 characters; evidenceIds unique max3. ANSWER requires null
   referralReason. Referral requires the existing four-value reason enum and an
   empty evidenceIds array. Language tag/confidence are both null or both valid
@@ -1021,3 +1021,102 @@ for developer-resource integration and
 for tokenless public data versus token-required fields. Actual pinned schema,
 provider behaviour and SDK compatibility are implementation evidence, not claims
 that this documentation review exercised a live merchant store.
+
+## C16. Release-owned response contracts and Studio authoring
+
+This section extends C4/C6/C7/C9. Shared fixes only the delivery envelope; it must
+not hard-code release-specific response fields or instructions. Commerce publishes
+response definitions as release data. Adding/changing supported details fields or
+response guidance requires publication, not a Shared package or worker deployment.
+Changing the delivery envelope or introducing unsupported schema constructs requires
+an explicit coordinated implementation change; Studio cannot perform that change.
+
+### Persisted definition and compatibility
+
+Add two required columns to CommerceRelease (no new table): responseContract
+Json/JSONB and responseContractHash String/varchar(64). No defaults: createRelease
+must supply a validated definition; explicit seed supplies the empty-details
+baseline. Existing release immutability rules cover both columns. No separate
+mutable release draft or response-definition registry. releaseId already pins the
+contract for a ConversationGrant; do not add a mutable second version selector.
+
+responseContract is exactly {version:"response.v1", instructions, detailsSchema}.
+Instructions are literal text, 1..8000 characters, subordinate to C6.1 platform
+and host instructions, before capability prompts. They can guide style and details
+but cannot override grounding, language, grants, referral or final-output rules.
+Hash is lowercase SHA-256 of RFC8785 canonical JSON of this complete definition;
+release ID identifies the published version. Validate/recompute hash on publication
+and verify on manifest consumption. Missing/mismatched/unsupported contracts fail
+closed as INCOMPATIBLE_VERSION, never fall back to the current active release.
+
+The C4 envelope retains answerKind, replyText, referralReason, detectedLanguageTag,
+detectedLanguageConfidence and evidenceIds with exactly their existing constraints.
+Add required details, an object validated against detailsSchema. Background ignores
+details for sending, routing, billing, language and evidence decisions. Never send
+raw details to WhatsApp, render them as replyText or treat them as trusted actions.
+For REFER_TO_STORE details is always {} and bypasses required detail properties;
+all existing referral constraints remain. For ANSWER details must satisfy the
+published schema. C4's named envelope validator accepts details as an object;
+Shared's generic runner additionally performs the pinned schema validation.
+
+Supported schema subset is deliberately finite: JSON Schema 2020-12, root object,
+additionalProperties:false at every object, types object/string/number/integer/
+boolean/array; keywords type, description, properties, required, additionalProperties,
+items, enum, minLength, maxLength, minimum, maximum, minItems, maxItems only. No
+$ref, regex/pattern, format, defaults, unions, conditionals or external resolution.
+Reject unknown keywords. Depth <=4 including root, <=32 property definitions in
+total, names match ^[A-Za-z][A-Za-z0-9_]{0,63}$; required names must exist and be
+unique. Descriptions <=1000 chars; enum <=20 unique scalar values matching type.
+String maxLength is mandatory <=4096; array maxItems mandatory <=20 with one items
+schema. Bounds must be nonnegative for length/count and ordered; numeric bounds
+must be finite. Definition <=32KiB UTF-8; runtime details <=16KiB UTF-8 and entire
+finalResponse remains within existing runner output-token limits. Empty baseline
+schema is {"type":"object","properties":{},"required":[],"additionalProperties":false}.
+Baseline instructions: "Write a concise, natural WhatsApp reply supported by the
+available facts. Return an empty details object." Never require invented detail
+values: unsupported factual requests use the existing referral path.
+
+### Publication and MCP/runner consumption
+
+createRelease takes required responseContract along with existing members/reason/
+operationId, validates schema and immutable envelope compatibility, computes hash
+and persists both atomically with memberships/audit. Replay payloadHash includes
+the definition. No edit-in-place endpoint for a published response contract.
+Provide ADMIN/SUPER_ADMIN authenticated POST /api/studio/response-contract/validate
+with {responseContract,example:{...complete finalResponse}}; return
+{valid,errors:[{path,code,message}]} max50, stable JSON Pointer paths. No DB mutation,
+model invocation or publication. Use the same pure validation in publish/preview.
+Existing staff mutation/CSRF and body-size protections apply. Creation/activation
+remain SUPER_ADMIN operations; ADMIN may author locally, validate and preview.
+
+C5 resolve manifest includes responseContract and responseContractHash, loaded from
+the selected immutable release. Every subsequent manifest uses the grant's release;
+no extra remote tool or public live MCP route. Shared receives this definition,
+constructs the host-local finalResponse tool dynamically from the fixed envelope
+and details schema (ANSWER/referral branches), injects release instructions and
+validates final output against both. It must not switch on detail field names or
+fetch definitions itself. Background passes the pinned manifest, retains the stable
+envelope adapter and does not interpret custom fields. Reconnects, rollbacks and
+active-release changes cannot change an existing conversation's response definition.
+If the model SDK cannot express the supported schema subset, fail compatibility
+validation; do not silently weaken validation or discard required fields.
+
+### Preview and acceptance
+
+U14 accepts the unsaved composer definition only through its authenticated preview
+input, freezes it with the synthetic grant on Start conversation, and displays
+replyText plus a separate structured details view and validation errors. Reset is
+required to change the definition. No live MCP or production grant accepts browser
+contracts. Default fixtures require no model/network. Explicit Model mode retains
+existing isolation, quotas, pending-action guards and cancellation semantics.
+
+Required cases R01 empty baseline; R02 add a required bounded string detail and
+publish without Shared/Background code change; R03 missing/wrong-type/additional
+field rejected; R04 forbidden schema keyword/depth/size rejected; R05 incompatible
+envelope cannot be edited or published; R06 simultaneous duplicate create returns
+one immutable release; R07 existing conversation stays on old response hash after
+activation/rollback while new conversation uses new hash; R08 referral accepts {}
+without fabricating required details; R09 ADMIN can validate/preview but cannot
+publish; R10 U11 clone/edit/cancel/validate/test/publish traversal; R11 definition
+instructions cannot override C6.1; R12 wrong/missing manifest hash fails closed.
+Record structural assertions separately from model-behaviour evaluation.

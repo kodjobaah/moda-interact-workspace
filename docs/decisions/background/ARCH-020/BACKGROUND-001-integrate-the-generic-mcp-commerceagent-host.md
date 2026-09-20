@@ -61,6 +61,8 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+- [ ] Pass the pinned C16 response definition to Shared and consume only the stable finalResponse envelope; never interpret/send custom details. Cover R02/R07/R08/R12 and grant/hash persistence across turns.
+
 - [ ] Implement C6.1 host-owned recovery instructions and freshly loaded, serialized recovery/customer/language context. Apply the explicit status matrix including COMPLETED with null completedAt; replace unrestricted product-help wording with original-grant-only assistance. Keep the pinned prompt release separate from fresh recovery state; use C2 history rather than an authoritative summary.
 
 - [ ] Implement the C5 Exact available-tool discovery sequence: trusted shop/recovery/conversation/turn claims, first resolve then immutable grant persistence, execute-purpose tools/list with empty params, and tools/call bound to that original grant. shopId alone is not a grant selector.
@@ -120,6 +122,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-GATEWAY-001
 
 ## Acceptance Criteria
+
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] Verify C6.1 P01–P12 through host integration fixtures, including fresh status on later turns, explicit-language precedence, validated detection persistence and no delivery from invalid/stale final results.
 

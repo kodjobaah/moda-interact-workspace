@@ -57,6 +57,8 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
+- [ ] Implement C16 dynamic finalResponse schema construction and pinned definition validation/instruction composition. Fixed envelope rules remain reusable; no detail-name switch or Commerce fetch. Cover R01–R05/R08/R11/R12.
+
 - [ ] Implement C6.1 reusable fixed grounding, language and finalResponse rules. Accept host-owned recovery instructions/context separately from editable capability prompts; Shared must not load recovery records or own a checkout-status policy. Enforce instruction ordering, original-grant restrictions and the exact null-pair/final-output validation contract.
 
 - [ ] Accept arbitrary C14 tool descriptors/results without a six-tool switch. Empty remote-tool grants can still produce a grounded store referral through host-local finalResponse. Generic query facts never create discount Evidence.
@@ -101,6 +103,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-SHARED-003
 
 ## Acceptance Criteria
+
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] Verify C6.1 P06–P12 in the scripted runner harness, plus that P01–P05 host instructions/context are preserved without reinterpretation. Report structural checks separately from natural-language evaluation.
 

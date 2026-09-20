@@ -81,6 +81,8 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+- [ ] Implement exact C16 U10/U11 response authoring panels and N13 traversal embedded below, including instructions/schema/example editors, local draft retention, roles, validation and separate creation/activation. Cover R05/R09/R10.
+
 - [ ] Implement each page and dialog below with the exact route, entry points, fields, actions, destination, Back/Cancel behaviour and empty/loading/error states. No placeholder links or inferred pages.
 - [ ] Use COMMERCE-003 persisted operations, COMMERCE-011 discovery/compiler services and accepted COMMERCE-005/006/007 executor descriptors. U07 provides schema-driven authoring and inline help; typing GraphQL or visiting an external IDE is not required.
 - [ ] Implement all mutations with shared immediate submission guards, explicit desired values, stale-response protection, server replay/CAS and input-preserving errors. UI cannot create Admin features or edit merchant entitlements.
@@ -129,7 +131,7 @@ transcript is shown.
 | U08 | /capabilities | U03 Platform configurations | BASE/RECOVERY_POLICY configurations | Back to Features U03 |
 | U09 | /capabilities/[id] | U04 configuration row/create, U08 row | Behaviour prompt, settings, exact tool revision associations, history | Feature U04 for FEATURE; U08 otherwise |
 | U10 | /releases | Sidebar, release-stage completion | Active release and immutable release history; Create release | Sidebar |
-| U11 | /releases/[id] | U10 row, completed Create release | Members, exact revisions, diff, activation/rollback | Back to Releases U10 |
+| U11 | /releases/[id] | U10 row, completed Create release | Members, exact revisions, response contract, diff, activation/rollback | Back to Releases U10 |
 | U12 | /shops | Merchants sidebar | Read-only merchant search/list | Sidebar |
 | U13 | /shops/[id] | U12 row | Eligibility breakdown and tool list for a new conversation | Back to Merchants U12 |
 | U14 | /preview | Sidebar, Test from U06/U09/U11/U13 | Synthetic tool test and isolated conversation sandbox | Validated source page, or Features U03 |
@@ -309,6 +311,45 @@ choosing a previous compatible release from U10, opening U11 and confirming
 history. Existing conversations retain their original versions. A missing schema
 or executor prevents activation with its exact reason.
 
+
+### Response contract authoring (C16; U10 composer and U11 detail)
+
+U11 adds a **Response contract** tab beside Overview, Changes and Versions. Show
+release ID, contract version/hash, read-only fixed delivery fields with descriptions,
+published instructions, details schema and example validator. **Edit as new release**
+opens the U10 Create release dialog using this exact release's members and definition,
+not the current active release. Published rows are never edited in place.
+
+U10 Create release dialog has **Members**, **Response contract**, **Review** steps.
+Response contract step shows locked envelope fields and editable Instructions plus
+Details JSON Schema editor, built-in empty baseline/example, inline supported-keyword
+reference and limits from C16. No external toolkit is needed. Example final response
+editor and **Validate** show JSON Pointer field errors; invalid definition blocks
+Review/Test/Create. Every edit clears prior validation/test success. Fresh creation
+copies the active definition or uses C16 baseline if no active release exists.
+
+**Test conversation** passes the local draft definition and selected published
+members to U14. Keep the unsaved composer only in this browser tab's memory; Back
+returns to it, refresh loses it with a clear notice. U14 freezes the definition at
+Start and displays separate Reply and Structured details panels. Reset permits a
+new definition; no automatic publication. No customer data in browser storage.
+
+Review displays member and response-definition diffs, validation state, reason and
+new-conversation-only effect. SUPER_ADMIN **Create release** invokes the existing
+replay-safe createRelease with the full definition, then opens new U11 Response
+contract tab. Activate remains a separate confirmation. ADMIN sees Validate/Test
+but disabled Create with role explanation. Cancel/close/back with dirty edits asks
+Discard or Keep editing; discard writes nothing. Failed validation/publish retains
+inputs; unknown outcomes reconcile the same operation ID. Immediate synchronous
+submit guards, disabled conflicting controls and accessible pending/error states
+apply to Validate/Test/Create; late validation cannot approve changed input.
+
+Traversal case N13: U11 Response contract -> Edit as new release -> U10 Response
+contract -> edit -> Validate -> U14 Test -> Back -> Review -> Create -> new U11 ->
+Activate. Check cancellation, role denial, invalid schema, duplicate activation and
+existing-conversation pinning. This C16 extension supersedes the original approved
+prototype's release panels; other U01–U14 routes and traversals remain unchanged.
+
 Publication stages are tool version -> capability revision -> release -> active
 pointer. Each has its own stable operation ID and confirmation. Failure at a
 later stage preserves earlier published records and provides a link to resume.
@@ -385,6 +426,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
+
 - [ ] U05 clearly identifies the global library; U12 -> U13 displays the merchant-specific new-conversation tool list. Each Agent descriptor expansion exactly matches the corresponding tools/list descriptor produced by the shared resolver for the same fixture grant, with no execution/credential fields.
 
 - [ ] U01–U13 match the page register and each page's actions/destinations below; direct links and browser Back work, missing IDs are404 and denied roles leak no data.
@@ -399,7 +442,7 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 All cases must be browser fixtures with expected destinations and side effects;
 run mouse and keyboard paths, direct deep links, mobile navigation and denied roles.
-COMMERCE-008 owns N01–N09 and N12; COMMERCE-009 owns N10–N11 with U14; COMMERCE-011
+COMMERCE-008 owns N01–N09, N12 and N13; COMMERCE-009 owns N10–N11 with U14; COMMERCE-011
 owns discovery service contract fixtures consumed by N04. Shared checks are reused.
 
 | Case | Traversal | Required result |
@@ -416,6 +459,7 @@ owns discovery service contract fixtures consumed by N04. Shared checks are reus
 | N10 | U06/U09/U13 Test -> U14 fixture run -> Return | Correct source context, no live credentials/shop writes; results visibly synthetic |
 | N11 | U14 start -> Send -> duplicate Send -> Cancel/timeout -> reconcile -> reset | One run, frozen preview grant, budgets enforced, no hidden retry |
 | N12 | Save/publish/activate/disable/attach/create double-click, tap or Enter | One intended persisted effect, immediate busy state; unknown outcomes reconcile |
+| N13 | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate | C16 definition validation, immutable release, role checks, original-conversation pinning |
 
 Each page is inspected at desktop and narrow viewport with keyboard focus,
 loading/empty/error states. Tool/template/feature editing does not require an IDE,

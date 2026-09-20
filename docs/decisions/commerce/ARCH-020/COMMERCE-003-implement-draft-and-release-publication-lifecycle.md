@@ -80,6 +80,8 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+- [ ] Implement C16 createRelease definition/hash persistence, replay binding and authenticated /api/studio/response-contract/validate; baseline seed, immutable clone semantics, role enforcement and R01–R06/R09.
+
 - [ ] Implement independent createTool/updateTool/createToolDraft/updateToolDraft/publishToolRevision/setToolEnabled with C7 replay/CAS/audit. Capability drafts store exact toolBindings; no copied definitions. Shared tools can be reused; no implicit latest revision.
 - [ ] Consume the accepted COMMERCE-011 local schema/compiler validator for query publication; validate installed policy operation descriptors through an injected registry interface. Until concrete adapters exist, test policy operations using explicit fixtures and reject unavailable adapters at runtime, never claim they are installed.
 - [ ] Release creation rejects conflicting shared-tool revisions, deduplicates identical ones and preserves full original grant provenance. Base conversation_core can contain no tools. Publication never modifies Admin Feature/plan/preference records.
@@ -133,6 +135,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] Two features can reuse one published tool; editing/publishing a new tool version changes neither feature binding until explicitly updated. A release with conflicting tool versions is rejected atomically.
 - [ ] Publish a new static Shopify query within the pinned schema without registering a business operation or deploying a service; changed query/schema/template requires a new tool version.

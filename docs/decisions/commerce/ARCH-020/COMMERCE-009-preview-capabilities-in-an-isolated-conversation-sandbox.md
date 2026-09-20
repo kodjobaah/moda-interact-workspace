@@ -78,6 +78,8 @@ browser controls; inspect direct duplicate requests as well as UI behaviour.
 
 ## Work Items
 
+- [ ] Implement C16 U14 draft response preview handoff, frozen synthetic definition, Reply/Structured details views and return-to-composer flow. Validate R01–R05/R08/R10/R11 without production access.
+
 - [ ] Apply C6.1 in U14 Conversation mode using synthetic recovery status, nullable completedAt, languageTag/languageSource and customer-message fixtures. Supply equivalent fixed host recovery instructions to the same Shared runner; do not expose them as editable capability prompts. Select fixtures before Start conversation; use a scripted later-turn state change for P05 without replacing the frozen grant.
 
 ### U14: tool tests and conversation traversal (COMMERCE-009)
@@ -156,6 +158,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
+- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
 - [ ] Provide named C6.1 P01–P12 preview scenarios and deterministic assertions for context, grant and final-output handling; list expected natural-language outcomes separately. No live records, production credentials or WhatsApp sends.
 
