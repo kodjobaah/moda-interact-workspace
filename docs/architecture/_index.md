@@ -41,3 +41,17 @@ Files named `*-review-*`, `*-amendment.md`, overview documents, and old overlay/
 Current frontier: all ARCH-019 implementation tasks are architect-accepted/Complete: DATABASE-001 and SHOPIFY-001/003/006 at Attempt 1, SHOPIFY-002 at Attempt 3, SHOPIFY-004/005 at Attempt 2. SHOPIFY-006 accepted `39054cec`. SYSTEM-TEST-001 Ready at Attempt 0, explicitly developer-invoked after manual validation; not started. Architecture remains In Progress pending terminal integrated validation and final architect acceptance. Accepted dependency records are reconciled into SYSTEM-TEST-001; readiness does not authorize execution, deployment or unmerged dependency consumption.
 
 [Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)
+
+## ARCH-020 — CommerceAgent Studio and MCP capabilities (2026-09-20)
+
+Proposed review packet, authored on local main by explicit developer request.
+21 tasks: 2 Ready, 18 Pending, 1 Blocked; none claimed. DATABASE-001 and
+SHARED-001 are dependency-ready. COMMERCE-001 is blocked on real repository/submodule
+provisioning; the scoped moda_commerce role and COMMERCE launch route are defined.
+The new moda-interact-commerce repository will include the canonical database/
+submodule. Gateway exposes only the staff UI publicly; live MCP requires private
+Background access and service authentication. Pre-production breaking rollout
+is explicitly permitted. Review readiness does not launch implementation.
+
+[Architecture](ARCH-020-commerce-agent-studio-mcp-capabilities.md) ·
+[Implementation handoff](ARCH-020-implementation-handoff.md)

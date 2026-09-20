@@ -17,6 +17,7 @@ from typing import Any
 DOMAIN_CONFIG = {
     "ADMIN": {"folder": "admin", "agent": "moda_admin", "repository": "moda-interact-admin"},
     "BACKGROUND": {"folder": "background", "agent": "moda_background", "repository": "moda-interact-background"},
+    "COMMERCE": {"folder": "commerce", "agent": "moda_commerce", "repository": "moda-interact-commerce"},
     "DATABASE": {"folder": "database", "agent": "moda_database", "repository": "moda-interact-database"},
     "GATEWAY": {"folder": "gateway", "agent": "moda_gateway", "repository": "moda-interact-gateway"},
     "MESSAGING": {"folder": "messaging", "agent": "moda_messaging", "repository": "moda-interact-messaging"},

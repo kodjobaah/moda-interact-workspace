@@ -1,0 +1,185 @@
+---
+id: ARCH-020-SHARED-003
+architecture_id: ARCH-020
+title: Release the accepted commerce contracts and runner
+task_kind: publication
+domain: shared
+repository: moda-interact-shared
+assigned_agent: moda_shared
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: pending
+priority: 40
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+  - ARCH-020-SHARED-001
+  - ARCH-020-SHARED-002
+enables:
+  - ARCH-020-BACKGROUND-001
+  - ARCH-020-COMMERCE-003
+  - ARCH-020-COMMERCE-004
+  - ARCH-020-COMMERCE-009
+  - ARCH-020-SYSTEM-TEST-001
+  - ARCH-020-SHOPIFY-001
+  - ARCH-020-COMMERCE-011
+created: 2026-09-20
+updated: 2026-09-20
+---
+
+# Release the accepted commerce contracts and runner
+
+## Architecture
+
+Architecture ID: ARCH-020.
+
+Architecture document: docs/architecture/ARCH-020-commerce-agent-studio-mcp-capabilities.md.
+
+Coordinator: moda_architect. Read the complete parent architecture and relevant dependency/contract tasks. Execution handoff: docs/architecture/ARCH-020-implementation-handoff.md.
+
+## Objective
+
+Make the accepted commerce exports available as an exact registry version for consuming repositories.
+
+## Context
+
+Merchant-selected capabilities should drive WhatsApp CommerceAgent behaviour through a separate Next.js MCP server with a team-only Studio. Production conversation admission, ordering, model hosting and delivery remain in Background. This is a pre-production breaking rollout, with no implicit permission to delete durable data.
+
+Task definition is on local workspace main by the developer's explicit 2026-09-20 review request. It is not a claim, task-branch materialisation or implementation approval. All execution fields remain unclaimed.
+
+## Scope
+
+Release metadata and release mechanics only.
+
+## Out of Scope
+
+Other repositories' implementation, unrelated refactoring, automatic execution of enabled tasks, live deployment, main integration/push and changes to billing prices/merchant entitlements. No cart/order/discount mutation, WhatsApp sending from Commerce, arbitrary executable code or arbitrary-host HTTP endpoints; C14 validated read-only GraphQL definitions are explicitly permitted. No duplicate discount catalogue/merchant configuration system. Shared indexes and architecture reconciliation remain architect-owned.
+
+## Requirements
+
+Follow the parent architecture's tenant/policy/revision contracts and the assigned logical owner. Preserve unrelated changes. Read repository-local AGENTS.md if present. Commerce consumes the canonical database through its nested database/ Git submodule; schema and migrations belong to moda_database. For consumers, use actual accepted and published dependency revisions, not copied task snapshots or hypothetical versions.
+
+## Work Items
+
+- [ ] Confirm both prerequisite implementations are Complete/Accepted and identify the exact accepted source revisions.
+- [ ] Select the approved compatible package version; update release metadata/lockfile only as required by publication.
+- [ ] Publish through the existing package release mechanism and record the exact registry version and exported entry points.
+
+## Interfaces / Contracts
+
+Release version is determined during execution, not invented in the draft.
+
+### Implementation guidance
+
+Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARCH-020-implementation-contracts.md), sections **C12**. These are required acceptance inputs, not optional examples.
+
+Record accepted implementation SHAs, approved package version, registry identity and integrity/tarball metadata in the Completion Report. Use the repository release mechanism; if packing invokes its declared prepack build, record it as release mechanics rather than manually rerunning all prerequisite checks. No arbitrary new version is stated in task authorship.
+
+### Required evidence
+
+Verify registry metadata and exported artifact paths for ./commerce and ./commerce/runner. A missing export or source change returns to its implementation task; do not patch runtime code during publication.
+
+For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
+
+## Dependencies
+
+- ARCH-020-SHARED-001
+- ARCH-020-SHARED-002
+
+Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
+
+## Enables
+
+- ARCH-020-BACKGROUND-001
+- ARCH-020-COMMERCE-003
+- ARCH-020-COMMERCE-004
+- ARCH-020-COMMERCE-009
+- ARCH-020-SYSTEM-TEST-001
+- ARCH-020-SHOPIFY-001
+- ARCH-020-COMMERCE-011
+
+## Acceptance Criteria
+
+- [ ] The approved exact version exists in the intended registry and contains ./commerce and ./commerce/runner.
+- [ ] No runtime implementation changes or consumer integration occur during this release task.
+
+## Validation
+
+- [ ] Check prerequisite acceptance, version metadata, publication success and registry availability.
+- [ ] Do not rerun unit/integration tests, lint, typecheck or builds already accepted in prerequisites; report a release issue requiring code changes to the architect.
+
+Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
+
+## Stop Condition
+
+After scoped work and agent-owned checks, update this task's execution/report fields, publish task-owned mirrored branches and return to review. Record exact pending developer validation where applicable. Stop; do not begin enabled tasks or mark your own task Complete. Publication tasks stop after release mechanics. System tests require explicit developer invocation even after becoming Ready.
+
+## Implementation Notes
+
+Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; its real repository must be provisioned before execution preparation.
+
+## Completion Report
+
+### Status
+
+Not Started.
+
+### Files Changed
+
+None; implementation has not started.
+
+### Work Completed
+
+None; task definition only.
+
+### Validation Results
+
+Not run. At execution, distinguish agent checks from exact developer validation required.
+
+### Deviations
+
+Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+
+### Assumptions
+
+Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+
+### Unresolved Issues
+
+See parent architecture review assumptions; no implementation evidence asserted.
+
+### Architectural Concerns
+
+None newly reported.
+
+### Git / VCS
+
+Expected execution branch: task/ARCH-020-SHARED-003. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+
+## Architect Review
+
+### Review Status
+
+Pending.
+
+### Review Notes
+
+No implementation submitted. This task is a reviewable definition.
+
+### Reviewed Files
+
+None for implementation review.
+
+### Validation Reviewed
+
+None for implementation review.
+
+### Architecture Conformance
+
+Awaiting implementation.
+
+### Follow-up
+
+Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.

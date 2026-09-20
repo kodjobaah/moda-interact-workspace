@@ -383,3 +383,36 @@ For current sequencing use `ARCH-010-implementation-handoff.md`; individual task
 Current frontier: all ARCH-019 implementation tasks are architect-accepted/Complete: DATABASE-001 and SHOPIFY-001/003/006 at Attempt 1, SHOPIFY-002 at Attempt 3, SHOPIFY-004/005 at Attempt 2. SHOPIFY-006 accepted `39054cec`. SYSTEM-TEST-001 Ready at Attempt 0, explicitly developer-invoked after manual validation; not started. Architecture remains In Progress pending terminal integrated validation and final architect acceptance. Accepted dependency records are reconciled into SYSTEM-TEST-001; readiness does not authorize execution, deployment or unmerged dependency consumption.
 
 [Architecture](ARCH-019-merchant-recovery-experience.md) · [Implementation handoff](ARCH-019-implementation-handoff.md)
+
+## ARCH-020 — initial review definitions (2026-09-20)
+
+Scoped addition only; earlier architecture rollups are unchanged. Source:
+[ARCH-020 architecture](ARCH-020-commerce-agent-studio-mcp-capabilities.md) and
+[handoff](ARCH-020-implementation-handoff.md). Individual task YAML is authoritative.
+Definitions are in local main by developer exception, not task-branch materialisation.
+No task is claimed. Current counts: `ready` 2, `pending` 18, `blocked` 1.
+COMMERCE-001 awaits actual repository/submodule provisioning; role and route exist.
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-020-DATABASE-001 | database | ready | 0 | ARCH-016-DATABASE-001 |
+| ARCH-020-SHARED-001 | shared | ready | 0 | ARCH-016-SHARED-001 |
+| ARCH-020-SHARED-002 | shared | pending | 0 | ARCH-020-SHARED-001 |
+| ARCH-020-SHARED-003 | shared | pending | 0 | ARCH-020-SHARED-001, ARCH-020-SHARED-002 |
+| ARCH-020-COMMERCE-001 | commerce | blocked | 0 | — |
+| ARCH-020-COMMERCE-002 | commerce | pending | 0 | ARCH-020-COMMERCE-001 |
+| ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-003, ARCH-020-COMMERCE-011 |
+| ARCH-020-COMMERCE-004 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-003 |
+| ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
+| ARCH-020-COMMERCE-006 | commerce | pending | 0 | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
+| ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
+| ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
+| ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-003 |
+| ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
+| ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-003 |
+| ARCH-020-BACKGROUND-001 | background | pending | 0 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-003, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001 |
+| ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
+| ARCH-020-SHOPIFY-001 | shopify | pending | 0 | ARCH-020-SHARED-003, ARCH-016-SHOPIFY-002 |
+| ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
+| ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
+| ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHARED-002, ARCH-020-SHARED-003, ARCH-020-SHOPIFY-001 |
