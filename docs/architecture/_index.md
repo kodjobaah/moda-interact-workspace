@@ -134,3 +134,19 @@ or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
 without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
+
+## COMMERCE-009 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; **Ready, Attempt 3 retained, claim cleared; not accepted**.
+Reviewed implementation `8aaa2b3` and report `fb3413bd` against remote heads.
+Independent focused validation passed34/34, including actual local Redis Lua.
+Current-message/frozen-prompt execution, language persistence and bounded opaque
+Redis serialization are accepted corrections. One targeted reproduction fails:
+an expired UNKNOWN worker still calls the model after a replacement run reserves
+its released slot. A3-R1 requires active owner/status/expiry checks before model/tool
+dispatch and abort on lost ownership in both stores; completion fencing alone is
+insufficient. See the task's explicit implementation and resubmission instructions.
+The submitted `ready` frontmatter is now confirmed as Ready for this correction;
+next submission must use `review`. No new claim or dependent promotion. Live Redis
+and013 production composition remain separate integration checks. No implementation
+edits, main integration or gitlink changes; older reviews remain historical.

@@ -723,7 +723,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
 | [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
-| [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Implement isolated preview lifecycle and execution service | moda_commerce | ready | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001, ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
@@ -1132,3 +1132,19 @@ Redis transitions with executable adapter evidence.009 may expose a separate
 PreviewPromptLoader;013 provides saved-source composition, preserving C19 bundle
 shape. See task for precise corrections. No promotion, main merge or gitlink change;
 live deployment/provider evidence remains separate from component review.
+
+## COMMERCE-009 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; **Ready, Attempt 3 retained, claim cleared; not accepted**.
+Reviewed implementation `8aaa2b3` and report `fb3413bd` against remote heads.
+Independent focused validation passed34/34, including actual local Redis Lua.
+Current-message/frozen-prompt execution, language persistence and bounded opaque
+Redis serialization are accepted corrections. One targeted reproduction fails:
+an expired UNKNOWN worker still calls the model after a replacement run reserves
+its released slot. A3-R1 requires active owner/status/expiry checks before model/tool
+dispatch and abort on lost ownership in both stores; completion fencing alone is
+insufficient. See the task's explicit implementation and resubmission instructions.
+The submitted `ready` frontmatter is now confirmed as Ready for this correction;
+next submission must use `review`. No new claim or dependent promotion. Live Redis
+and013 production composition remain separate integration checks. No implementation
+edits, main integration or gitlink changes; older reviews remain historical.

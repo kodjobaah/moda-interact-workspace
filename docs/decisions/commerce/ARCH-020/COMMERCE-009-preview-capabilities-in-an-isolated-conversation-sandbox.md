@@ -237,6 +237,30 @@ None newly reported.
 
 ## Architect Review
 
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Current decision: Ready for corrections; Attempt 3 retained; executor/claimed_at null; not accepted.** Reviewed implementation `8aaa2b39dc5515ca5642b59f7bb639d03541efeb` and parent report `fb3413bdda38eae44c9f0edc79c3150204d76633`, verified against remote task heads. Both dedicated worktrees were clean. The submission's frontmatter already said `ready` despite its Ready for Review report; this decision now explicitly confirms Ready for the correction below. No new attempt was claimed.
+
+Independent validation: **34/34 focused tests passed**, including the three actual local Redis Lua tests, plus implementation diff check. Isolated `/tmp/c009-a3-review/review.test.ts` imports the submitted implementation and reproduces one functional failure: after a MODEL run expires to UNKNOWN at120s and a replacement run reserves the same admin's released slot, executing the old queued worker calls the model once (expected zero). No paid model/provider was contacted. Typecheck/lint/build and full-suite177 passed/one unrelated discovery timeout remain submitted evidence, not independently rerun.
+
+A2-R1 and A2-R2 are resolved: exact current input, completed history and frozen authored prompts reach the Shared runner; successful language transitions persist atomically. A2-R4 is resolved for component acceptance: validated opaque JSON preserves nested types, strict aggregate capacity rejects before mutation, and actual Lua transitions have local executable evidence. Retain these changes. A2-R3's result fencing, tool deadline and cross-replica cancellation improvements are valid, but execution fencing remains incomplete as below. Deployment Redis and013's saved-source/model/tool composition remain separate integration validation;017 owns U14.
+
+#### A3-R1 — P1 — Stop expired owners before they execute model or tool work
+
+Files: `src/commerce/preview/service.ts` (`cancelled`, cancellation watcher and dispatch boundaries), `store.ts` (`isCancelRequested` or a replacement ownership-check port), `redis-store.ts` equivalent Lua transition, and focused tests.
+
+Both stores sweep expired runs to UNKNOWN and release their model slots, but `isCancelRequested` returns only whether the matching token has `cancelRequested=true`. UNKNOWN, missing and mismatched-owner runs therefore return false. The service treats false as permission to continue. A delayed worker can consequently spend model quota after its ownership expired and after a replacement run has acquired the released concurrency slot. Fencing only `completeRun` prevents stale history writes but does not prevent the external call.
+
+Implement these steps:
+
+1. Add or adapt a store operation that atomically sweeps and validates that the exact environment/admin/run/token still owns a RUNNING, unexpired run and its conversation lock, with no cancellation request. Implement equivalent behavior in memory and Redis. Missing, expired, terminal or mismatched ownership must not authorize execution.
+2. Use that check before starting the Shared runner and immediately before every model/tool dispatch. Have the existing watcher abort the same active execution signal when ownership is lost, as well as on explicit cancellation. Preserve UNKNOWN and retained replay state; do not convert expired ownership into a new run, refund quota, append history/language or clear another run's lock. Keep the existing completion token fence.
+3. Add a fake-clock regression using the reproduction above: queue MODEL run A, advance to120s, observe UNKNOWN, reserve run B for the same admin, then invoke A's delayed callback. Assert zero A model/tool calls, unchanged UNKNOWN/history/language and B's reservation intact. Check the ownership operation's expired/missing/wrong-token outcomes against both stores using the existing local Lua harness. Retain the passing explicit remote-cancel and completion-race cases. This is a targeted functional correction, not a requirement for exhaustive coverage or live providers.
+
+### Attempt 3 resubmission instructions
+
+Implement A3-R1 only within009-owned backend modules/tests. Run focused preview validation and required lint/typecheck/build/diff checks, update the Completion Report with actual results, commit/push the same implementation and parent task branches, clear the claim and set the submission status to `review`. The architect retains acceptance authority. Do not launch enabled tasks, alter017 UI or implement013 production adapters. No dependent promotion, implementation edit, main merge/push or gitlink update was performed by this review.
+
 ### Changes Requested — Attempt 2 — 2026-09-21
 
 **Current decision: Ready; Attempt 2 retained; executor/claimed_at null; not accepted.** Verified implementation `e614a032c73463584fd6c9be91b97ed74b3deccb` and parent report `36d174b0f497af47be1be715948c47983e5a9ab9` against remote task heads. Dedicated worktrees clean; preparation/database evidence recorded. No implementation edits, new claim, dependent promotion, main integration or gitlink update.
