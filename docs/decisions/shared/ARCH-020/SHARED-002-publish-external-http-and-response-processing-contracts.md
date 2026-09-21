@@ -212,14 +212,30 @@ public lookup has not propagated.
 Archive SHA-1: `f83a226ff80f3900048a63246e839624f588ca0b`.
 Archive integrity: `sha512-6xC/cLnyWyeOpMHjTTH4mpWOJGnHx8K64Ldx7E2UYhhWxQp5aFf2GLhdvt9ZR6udmrZbf6zb6BcmvdFE6W+klw==`.
 
-Registry availability and clean-install verification remain pending: initial
-version lookup returned404 and install returnedETARGET after publication.
-Subsequent public-registry checks still returned404 during npm processing.
-No registry-installed exports, runner smoke test or consumer typecheck is claimed
-as passed. Once available, compare registry dist.integrity with the archive above,
-install the exact version into a fresh project, validate new /commerce exports and
-types, and run the existing validate-commerce-entrypoints.mjs with
-COMMERCE_CONSUMER_DIRECTORY pointing to that project.
+Registry availability and clean-install verification **passed** after npm processing
+completed. Initial404/ETARGET responses were temporary; no republish occurred.
+Independent `npm view` confirmed version0.14.0, dist.integrity and dist.shasum
+exactly match the archive above. The user also confirmed latest=0.14.0.
+
+A fresh temporary consumer installed the exact registry package using
+`npm install --ignore-scripts --no-audit --no-fund --prefer-online --save-exact @modainteract/moda-interact-shared@0.14.0 --registry=https://registry.npmjs.org`.
+The consumer had no previous package installation or workspace link.
+
+- New /commerce external query/path/format, projection/filter/processing,
+  TransformResponse/sample and connection DTO/schema exports: PASS. Valid JSON
+  format accepted and unsupported XML format rejected.
+- Existing `scripts/validate-commerce-entrypoints.mjs`, with
+  COMMERCE_CONSUMER_DIRECTORY set to the fresh consumer: PASS for Commerce and
+  runner imports, manifest schema, scripted finalResponse and retained regressions.
+- Consumer .mts imports of new public contract types, checked with the repository
+  TypeScript compiler using `--noEmit --strict --skipLibCheck --module NodeNext
+  --moduleResolution NodeNext --target ES2022`: PASS. This validates consumer
+  imports/types; skipLibCheck excludes dependency declaration internals.
+
+Verification artifacts reside in the temporary consumer recorded by
+`/tmp/arch020-shared002-consumer-path`; registry metadata is in
+`/tmp/arch020-shared002-registry.json`. No provider, database or live service calls
+were part of these package checks.
 
 This entry records publication execution only; it is not architect acceptance or
 a claim that SHARED-002 is Complete. Existing execution claim/status is preserved
