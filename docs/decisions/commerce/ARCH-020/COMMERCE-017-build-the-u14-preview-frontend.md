@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 135
 executor: null
 claimed_at: null
@@ -209,3 +209,12 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+
+## Architect readiness reconciliation — 2026-09-21
+
+Ready, Attempt 0, executor/claimed_at null. COMMERCE-008 is architect-accepted
+Complete at Attempt 6 (`8ba5e42`); COMMERCE-002 and SHARED-001 are already accepted
+Complete. All explicit prerequisites are satisfied. Use C19 contract fixtures for
+frontend component work;009 acceptance is not an added prerequisite, and013 owns
+the real service pairing. No implementation attempt is claimed or launched by
+this promotion. Normal preparation and accepted-source integration rules apply.

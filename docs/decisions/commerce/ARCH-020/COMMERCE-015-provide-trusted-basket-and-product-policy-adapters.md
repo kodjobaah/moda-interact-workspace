@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 95
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-001
   - ARCH-020-DATABASE-001
@@ -65,11 +65,11 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Normalize accepted CheckoutRecovery.lineItems into C4 basket; every supported source shape has an explicit fixture, unknown/missing source remains unknown, never a fabricated basket.
-- [ ] Implement bounded current product/variant search, decimal maximumPrice, availability/market/currency and safe shop URLs using privileged installation credentials only in these policy adapters.
-- [ ] Bind opaque cursors to shop/query/expiry; cap20 variants/page,3 pages and common12-request/deadline budget. Deny wrong-shop IDs before provider I/O.
-- [ ] Expose C19 ProductFactsPort.readVariants for exact proposal variants/collection membership; carry explicit unknowns/completeness for016/007. Never calculate discounts.
-- [ ] Export operation descriptors with executable adapters and test request construction.013 registers them through014; no bespoke MCP endpoints or public-query compiler.
+- [x] Normalize accepted CheckoutRecovery.lineItems into C4 basket; every supported source shape has an explicit fixture, unknown/missing source remains unknown, never a fabricated basket.
+- [x] Implement bounded current product/variant search, decimal maximumPrice, availability/market/currency and safe shop URLs using privileged installation credentials only in these policy adapters.
+- [x] Bind opaque cursors to shop/query/expiry; cap20 variants/page,3 pages and common12-request/deadline budget. Deny wrong-shop IDs before provider I/O.
+- [x] Expose C19 ProductFactsPort.readVariants for exact proposal variants/collection membership; carry explicit unknowns/completeness for016/007. Never calculate discounts.
+- [x] Export operation descriptors with executable adapters and test request construction.013 registers them through014; no bespoke MCP endpoints or public-query compiler.
 
 ## Interfaces / Contracts
 
@@ -95,10 +95,10 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] B01: each recovery snapshot source shape maps to strict Shared basket; zero lines/unknown prices are not live or free-basket facts.
-- [ ] B02: search filters unavailable/unknown/market/currency cases and preserves decimal prices; cursors reject tampering/cross-shop/expiry.
-- [ ] B03: exact variant/collection fact reads distinguish complete from partial results, including missing variant and provider failures; output is stable by variantId.
-- [ ] B04: tenant checks, throttle/timeout/cancel and nested request ceiling have measured call counts; no provider mutation or credential leakage.
+- [x] B01: each recovery snapshot source shape maps to strict Shared basket; zero lines/unknown prices are not live or free-basket facts.
+- [x] B02: search filters unavailable/unknown/market/currency cases and preserves decimal prices; cursors reject tampering/cross-shop/expiry.
+- [x] B03: exact variant/collection fact reads distinguish complete from partial results, including missing variant and provider failures; output is stable by variantId.
+- [x] B04: tenant checks, throttle/timeout/cancel and nested request ceiling have measured call counts; no provider mutation or credential leakage.
 
 ## Validation
 
@@ -124,23 +124,54 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+- `src/commerce/products/index.ts`: schema-shaped pinned Admin GraphQL policy adapters, recovery normalization, signed lossless cursors, ProductFactsPort collection reads, cancellation/error mapping and immutable C19 descriptors.
+- `tests/products-policy.test.ts`: raw Shopify fixtures and focused R1-R5 regressions with measured provider calls and zero-I/O denial cases.
 
 ### Work Completed
 
-None; task definition only.
+- R1 implemented with static 2026-07 Admin GraphQL `productVariants`, `nodes`, and bounded collection documents; raw response schemas map variant/product identity, price, availability, shop currency, safe URLs and collection edges, while missing facts fail closed.
+- R2 implemented with authorization before every recovery/facts/provider path, pre/post async deadline and signal checks, shared budget reservation before I/O, typed THROTTLED/DEADLINE/UNAVAILABLE mapping and no fallback.
+- R3 implemented with one variant per provider edge, consumed-edge signed continuation cursors bound to shop/query/price/availability/market/currency/expiry, including unconsumed edges on terminal provider pages, three pages per invocation and deterministic duplicate suppression.
+- R4 implemented with exact `execute({context,input})`, canonical Shared input/output validation, invalid-input zero-I/O behavior and frozen operation descriptors.
+- R5 implemented with explicit null/omitted basket unknown fields, persisted snapshot currency provenance without current-context fallback, authorized empty-snapshot handling and corrected evidence claims.
+- Nullable Shopify nodes now become per-requested-ID missing facts without discarding valid siblings. Post-authorization cancellation stops before recovery I/O, and nested collection provider errors retain typed THROTTLED/DEADLINE/UNAVAILABLE results without retry or partial success.
+- No discount arithmetic, cart/order mutation, live provider call or database schema change was added.
+
+### Correction Checklist
+
+- A2-R1 implemented in `src/commerce/products/index.ts` and terminal-page continuation regression: a limit-one response over two terminal-page edges resumes after the consumed edge and returns the second variant exactly once.
+- A2-R2 implemented in the raw variant response schema and mixed valid/null regression: nullable nodes preserve the valid row and emit `product:null`, `collectionsComplete:false` for the missing requested ID.
+- A2-R3 implemented in basket source normalization and provenance regressions: persisted source currency wins when different from context; null/missing/array currency stays null.
+- A2-R4 implemented in authorization and nested collection paths: abort-after-authorize performs zero recovery calls; a nested throttle returns typed THROTTLED after exactly two provider calls with no retry/fallback.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed validation:
+
+| Requirement | Fixture / expected side effect | Command | Result |
+|---|---|---|---|
+| B01 / A2-R3 | Array and envelope snapshots; known source currency differing from current context; null/missing source currency; null line facts and known decimal zero | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| B02 / A2-R1 | Terminal provider page with two edges and limit one; first call returns v-1 plus cursor after c1, second returns v-2 plus null cursor | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| B03 / A2-R2 | Mixed `[validVariant,null]` response; both requested rows retained, missing row incomplete, known collections preserved | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| B04 / A2-R4 | Authorizer abort before recovery read and nested collection THROTTLED on second call; zero recovery I/O and no provider retry/fallback | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| Existing B01-B04/C19 | Raw request mapping, policy filters, cursor binding/tamper, collection paging, 3-page/12-request ceilings, descriptor validation and frozen registry | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| Repository lint and whitespace | Scoped source/test lint and patch whitespace | `npm run lint`; `git diff --check` | **Passed** |
+| Production compilation | Prisma generation and Next production build | `npm run build` | **Passed** |
+| TypeScript diagnostics | Generated route and repository types after pinned Prisma generation | `npm run typecheck` | **Passed** |
+| Full Commerce tests | Existing repository regression suite including all 13 product-policy cases | `npm test` | **157 passed, 1 unrelated failure**: `tests/discovery-limits.test.ts` timed out against configured Redis after 30 seconds |
+
+Developer validation required:
+
+- Live Shopify/provider validation against a configured development shop, installation credential and current API response remains pending. Fixtures prove deterministic policy behavior only and do not claim live execution.
+- Developer-owned database/container/readiness and system validation remains pending where required by the repository workflow; this task introduced no schema or migration change.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+Attempt 3 executed from the prepared launcher packet after the Attempt 2 Changes Requested review. All A2-R1 through A2-R4 corrections were implemented in Commerce-owned files only. Normal execution policy remains unchanged.
 
 ### Assumptions
 
@@ -148,8 +179,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+No unresolved implementation issue. The full-suite Redis discovery-limit timeout is outside the changed Commerce-015 files and is recorded above. Live Shopify/database/container/system evidence remains developer-owned and pending.
 
 ### Architectural Concerns
 
@@ -157,9 +187,118 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-015. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Implementation commit: `511e14a`, pushed to `origin/task/ARCH-020-COMMERCE-015`. Attempt: 3. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-015`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-015`. Both use mirrored `task/ARCH-020-COMMERCE-015` branches; no shared checkout or another task worktree was reused. Parent and implementation remote task branches needed no fast-forward and both already incorporated `origin/main`. Recursive submodule sync/update passed; database remains pinned at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink, main branch, Architect Review text or enabled task was modified.
 
 ## Architect Review
+
+### Accepted — Attempt 3 — 2026-09-21
+
+**Current decision: Complete, architect accepted; Attempt 3 retained, executor/claimed_at null.** Reviewed implementation `511e14ad25fb5f34882102e324b246a601ca9053` and report `a8c9a9e34b2092d4d7330aa795356bdba7968ee1`. Launcher routing confirms the dedicated parent/implementation worktrees; both were clean and matched remote task heads. This acceptance supersedes all earlier Changes Requested/current-state wording while preserving history. The stale executor/claimed_at in the submitted review YAML is cleared. No implementation edit, next claim, main integration or gitlink update.
+
+A2-R1–A2-R4 are resolved:
+
+- Search continuation now considers unconsumed edges on the current terminal page as well as later provider pages. The limit-one two-variant fixture returns each variant once and ends with null cursor.
+- Nullable provider nodes become per-requested-ID missing facts without discarding valid variants; completeness remains false when any requested product is missing.
+- Basket currency comes only from the parsed persisted source envelope. Arrays and missing/null source currency remain unknown even when current context has a currency.
+- Authorization completion is followed by a deadline/signal check before recovery I/O. Nested collection errors retain their typed provider failure; cancellation and malformed nested responses no longer silently become successful facts.
+
+Independent validation: the previous isolated harness in `/tmp/c015-a3-review` passed **14/14** (nine earlier submitted cases plus all five previous failing review reproductions). The current committed focused product-policy suite separately passed **13/13**. Implementation diff whitespace check passed. No remaining blocker was identified in this correction review; earlier registry, authorization, bounded-read and null-line improvements remain accepted progress.
+
+Submitted lint/typecheck/build success is recorded as reported evidence, not independently rerun in full. The full-suite result remains **157 passed, one configured-Redis discovery-limit timeout**; discovery code/test and package manifests are unchanged by this correction. This review does not claim a green full suite or independent live Redis validation. That reported unrelated timeout is not an acceptance blocker.
+
+Acceptance covers the owned product-policy component under C19 and deterministic local evidence. Live Shopify, production adapter composition and developer-owned integration/system validation remain pending; no live provider or database checks were performed by this review. COMMERCE-013 retains production composition responsibility.
+
+Dependency reconciliation: no dependent task becomes Ready solely from this acceptance. COMMERCE-016 still requires COMMERCE-006 acceptance; COMMERCE-007 still requires COMMERCE-016; COMMERCE-012/013 and SYSTEM-TEST-001 retain other unresolved prerequisites. Preserve each task's actual state rather than copying stale branch snapshots. Architecture is not Implemented. Final developer integration remains implementation merge first, then parent gitlink/report integration.
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready, Attempt 2 retained, executor/claimed_at null; not accepted.** Reviewed implementation `8793bc2393b60dc7d323b6ab4615160ea777d30f` and report `b791e1c506325eaadbdbd6923422c5f7d4f328d3`, with clean dedicated worktrees and matching remote branch heads. No implementation edit, next claim, dependent promotion or main integration. This supersedes earlier current-state wording; historical reviews remain below.
+
+Accepted progress: authorization now covers variant facts; post-provider cancellation is checked; consumed-edge cursors fix the nonterminal-page case; C19 context/input invocation and frozen descriptors work; explicit null line fields and authorized empty snapshots are handled. R4's runtime interface correction is retained. The following remaining failures concern functionality in the existing R1–R5 scope, not exhaustive coverage or live validation.
+
+#### A2-R1 — P1 — Preserve unconsumed edges on the terminal provider page
+
+In searchProducts, continuation is assigned only when pageInfo.hasNextPage is true. That flag means another provider page exists, not that all edges of the current page were consumed. Exact reproduction: limit1, edges [c1/v-1,c2/v-2], hasNextPage=false, endCursor=c2. The adapter returns v-1 and cursor=null, permanently losing v-2. The new test uses hasNextPage=true and misses the original terminal-page failure.
+
+Track the consumed edge index. Return a signed cursor after the last consumed edge whenever either unconsumed current-page edges OR a later provider page remain. Alternatively request no more than remaining output capacity and consume every returned edge, enforcing the provider contract. Preserve filtering and page/request caps. Test the exact two-edge terminal-page case across two invocations and assert both variants are returned once, with a null cursor only after v-2.
+
+#### A2-R2 — P2 — Normalize nullable provider nodes into per-ID missing facts
+
+rawVariantResponseSchema requires every nodes element to be an object. A response `{shop:{currencyCode:'USD'},nodes:[validVariant,null]}` therefore returns UNAVAILABLE for the entire call, discarding the valid variant. C19 requires a row for each requested ID, with product=null and complete=false for missing products. The existing test models a missing variant by omitting its node, not by the nullable node response.
+
+Allow null node entries at the raw boundary, preserve known facts, and map each missing requested variant to product=null/collectionsComplete=false. Never read .id from null or infer missing membership as an empty complete set. Keep malformed/error responses separate from a valid nullable result. Add the exact mixed valid/null fixture and assert both requested rows plus complete=false.
+
+#### A2-R3 — P1 — Do not assign current currency to historical snapshot amounts
+
+getBasket falls back to context.currency when the snapshot currency is absent/null. Reproduction: `{lineItems:[{quantity:1,price:'10.00'}],currency:null}` with context.currency='GBP' returns basket currency GBP. This invents the monetary unit of historical source data and can corrupt subsequent comparison/calculation. Original R5 explicitly requires source currency provenance.
+
+Remove the current-context currency fallback. Extend/consume the trusted recovery reader envelope to provide the persisted snapshot currency where available; otherwise preserve null/unknown. Keep array compatibility without claiming arrays establish currency. Test known source currency differing from current context and missing/null source currency with a known current context. Preserve known zero price and null line unknownFields behavior.
+
+#### A2-R4 — P2 — Honor cancellation before recovery I/O and preserve nested provider errors
+
+Two independent failures remain in the asynchronous paths:
+
+- If authorizer.authorize aborts the signal then returns true, getBasket still calls recovery.read once before returning DEADLINE. Check deadline/signal immediately after authorization and before recovery I/O. Regression must assert DEADLINE and zero recovery/provider calls.
+- The collection paging catch simply breaks. If the first facts call succeeds but the nested collections request throws `{code:'THROTTLED'}`, readVariants returns OK instead of the C19 typed THROTTLED result. Use the same typed provider error mapping for nested failures as for initial calls; do not disguise a throttle/outage as successful fact acquisition. Keep deliberate membership-bound/budget incompleteness distinct from provider failure, and preserve cancellation/deadline behavior. Add a two-call fixture asserting the typed throttle, no retry/fallback and no further requests.
+
+#### Validation and resubmission
+
+Independent isolated harness `/tmp/c015-a2-review/review.test.ts` used a copy of the exact committed source plus submitted fixtures: **9 submitted tests passed; 5 architect checks failed**, with exact inputs/effects described above. Implementation diff whitespace check passed. Commit changes only the products module/tests; package manifests, discovery and readiness files are unchanged by this correction. Submitted lint success, 110 passing full-suite cases with reported baseline failures, and blocked typecheck/build are recorded as submitted evidence, not an independently reproduced clean build. Those baseline conditions are not this decision's blockers. Correct the report's failure tally/categories when resubmitting so test, suite-load and build failures are not conflated.
+
+Official Admin ProductVariant/productVariants documentation was inspected for the revised request direction; this is not a claim of complete offline schema validation or live execution. Keep original R1's pinned query evidence and trusted provider assumptions accurate. Live Shopify and developer-owned integration remain pending and are not new gates. Fix A2-R1–A2-R4 in015-owned files, run the focused regressions and required checks, publish the same branch pair and return to Review. No dependent task is promoted.
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Ready; Attempt 1 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `ff386e2ce906e121c7022af2def16991d9f5468d` and parent report `42b8c300abb959da80320e43d3ae9971a7275cce`. Both remote heads verified, both dedicated worktrees clean. No implementation edits, new claim, dependency promotion, main integration or gitlink update.
+
+Independent isolated harness `/tmp/c015-review/products-review.test.ts` imports the committed implementation: **7 submitted cases pass; 5 added architect cases fail** (denied variant read returns OK; post-dispatch cancellation returns OK; unconsumed search result lost; C19 context/input invocation rejected; explicit null price missing from unknownFields). Diff check passed. Submitted full98-pass/2-Prisma-failure, build/lint and typecheck evidence were inspected, not rerun. Only products source/test files differ from local origin/main; the reported auth/connections Prisma diagnostics are outside that change. No live Shopify, paid provider, database or system validation was run or added as an implementation acceptance gate.
+
+All corrections below belong to `src/commerce/products/` and `tests/products-policy.test.ts` (split focused files allowed). They correct existing B01–B04/C8/C19 requirements, not new scope. Preserve013's final production composition ownership.
+
+#### R1 — P1 — Replace fictitious provider requests with schema-shaped policy adapters
+
+Locations: SEARCH_DOCUMENT, VARIANT_DOCUMENT, ShopifyProvider boundary, parseProviderProducts, normalizeProduct and readVariants. SEARCH_DOCUMENT supplies unsupported products arguments maximumPrice/availableOnly/market/currency and selects flattened variant/policy fields on Product. Its normalizer expects productId/unitPrice/url whereas the query asks for id/price/handle without aliases. Variant normalization expects product.productId and top-level collectionIds/collectionsComplete, neither selected by VARIANT_DOCUMENT. Tests return already-normalized policy objects, so they cannot validate provider compatibility.
+
+Use C8's pinned Admin API2026-07 and static allowlisted documents. Define typed raw GraphQL response fixtures matching each document exactly; map actual variant identity, variant price, product identity/title/handle and product collection connection into Shared Product/fact rows. observedAt is the adapter observation time, not an invented provider field. Read collections through the proper product relationship with legal bounded connection requests; reserve the shared budget before each nested page and set collectionsComplete=false if membership cannot be exhausted within1000 IDs/budget. Do not mistake missing membership for an empty complete set. Do not send1001 as a substitute for bounded pagination.
+
+Compile legal provider search expressions/variables for price/query constraints, then apply decimal and confirmed market/currency/availability policy to actual response facts. Missing market context cannot be treated as confirmed merely by passing an unused variable. Keep historical snapshot facts distinct. Document the required trusted installation/scopes and provider transport contract;013 injects the production transport, but015 owns valid documents and normalization. Missing scope/config/provider data must fail closed. No live credentials are required for this correction.
+
+Validate static requests offline against the official pinned schema or a checked-in provenance-recorded schema fixture covering the actual selections. Add raw success, null product/price/currency/availability, partial membership, market mismatch/unknown, GraphQL errors and throttle fixtures. Assert exact request count and Shared outputs. The official2026-07 products argument list and ProductVariant reference were checked during review: [products](https://shopify.dev/docs/api/admin-graphql/2026-07/queries/products), [ProductVariant](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/ProductVariant). Do not replace the owned adapter with production normalized fixtures.
+
+#### R2 — P1 — Enforce authorization and cancellation on every facts path
+
+Locations: getBasket, searchProducts, productFacts.readVariants, reserve and provider error mapping. readVariants never calls the injected authorizer; authorize=false plus one valid ID still invokes the provider and returns OK. Search checks cancellation only before I/O: a provider which aborts the signal before resolving still yields successful facts. getBasket has no deadline checks.
+
+Apply the same trusted tenant/current-permission authorization to readVariants before budget reservation/provider I/O; rejected/throwing authorization returns DENIED with0 provider calls. Validate canonical IDs and their trusted tenant context before I/O using the existing authorized context/ownership boundary; do not infer shop ownership from a globally formatted Shopify GID or accept caller-supplied tenant assertions. Keep token resolution scoped to verified shop identity. Add concurrent different-shop fixtures and denied/wrong-context effects.
+
+Check deadline/signal before work, after asynchronous authorization/recovery/provider reads and immediately before successful return. Propagate the same signal to transport and enforce the absolute deadline; do not accept late success or launch subsequent pages after cancellation. Preserve typed DEADLINE/THROTTLED/provider failures instead of flattening every throw to retryable UNAVAILABLE. No automatic fallback/retry is added. Add barrier/fake-clock cases for pre-abort, in-flight abort, elapsed deadline, recovery read cancellation, authorization denial, throttle and provider rejection, with exact reservations/provider-call counts. Exercise12 shared requests across search and variant/nested reads and prove request13 is denied before I/O, using one budget object throughout.
+
+#### R3 — P1 — Make search pagination exclusive and lossless
+
+Locations: searchProducts loop, makeCursor/readCursor. With limit1 and two matching provider nodes on the final page, only the first is returned and cursor=null; the second is unreachable. On non-final pages the provider endCursor skips all unconsumed rows. page is also incremented before signing and again when reading, making the accounting inconsistent.
+
+Use per-edge provider cursors and return continuation immediately after the last consumed edge, or request no more than remaining output capacity and consume the full response before advancing. If buffering is chosen, retain unconsumed rows in a bounded signed server-owned cursor/state; never use page endCursor while discarding remaining nodes. Prefer the remaining-capacity approach with a provider variant connection so one row represents one variant. Count every actual provider page once; enforce<=3 provider pages per tool invocation plus the shared12-request ceiling. Cursor represents continuation, not a double-incremented page count across independent invocations. Emit no unusable cursor. Bind tenant, normalized query/filter and expiry; include market/currency context so reuse cannot silently alter the result set. Strictly validate token shape, signature, payload and expiry.
+
+Tests: limit1 over at least2 variants yields both exactly once across continuation; filtered rows advance correctly; multiple variants of one product are not lost; first/second/third provider requests are counted exactly and fourth is blocked in the same invocation; expired/tampered/cross-shop/changed-context cursors cause0 provider calls; no-data/last-page boundaries and duplicate provider nodes have deterministic output. Keep max20 results and typed bounded failures.
+
+#### R4 — P1 — Export the exact C19 execution interface
+
+Locations: PolicyOperationDescriptor and operations array. C19 requires `execute({context,input})`; this implementation destructures `arguments`, so a valid registry call returns INVALID_INPUT. Change the declaration to `execute(request: { context: PolicyContext; input: unknown }): Promise<CommerceToolResult>` using the accepted Shared result type (and a structurally equivalent compatible context). Change the search descriptor to `execute: ({ context, input }) => searchProducts(context, input as SearchProductsInput)`; runtime schema validation remains mandatory. Validate basket operation input against its canonical operation schema too; don't ignore malformed/extra arguments. Avoid a divergent handwritten subset of Shared result codes.
+
+Add a compile-time structural registry compatibility fixture plus runtime invocation of both descriptors using context/input, including invalid arguments with0 I/O and unchanged structured outputs. Publish required port declarations with success/error examples for013/016/007. If retaining the report's immutable-descriptor assertion, freeze descriptors/array or accurately document that013 freezes final registration; readonly TypeScript alone is not runtime immutability.
+
+#### R5 — P2 — Preserve explicit null basket facts and correct evidence claims
+
+Location: getBasket unknownFields construction. Accepted Background serializeLineItems persists nullable productId/variantId/price. The current undefined-only checks produce unknownFields=[] for null productId, null variantId and null price. Derive unknownFields from normalized output values (`value == null` covers null and undefined) so every unknown identity/quantity/unitPrice is represented, without treating zero price as unknown. Preserve source currency and snapshot provenance via the typed trusted reader contract; do not replace snapshot currency with unrelated current market currency.
+
+Add fixtures copied from accepted persisted serialization (array plus supported wrapper), explicit nulls, omitted values, known zero decimal price, malformed source and authorized empty array. The current zero-line test sets authorize=false and only proves DENIED; it does not exercise empty-basket normalization. Separate each negative from authorization/provider failure. Map B01–B04 to named tests and measured effects; the existing bounds test does not execute3-page/12-request/collection bounds despite the report claiming those results. Record launcher preparation synchronization and nested dependency revision evidence rather than only worktree names/future publication wording. Historical report claims remain below for traceability; they do not override this decision.
+
+### Resubmission
+
+Implement R1–R5 in015-owned files, run focused corrections and required lint/type/build/diff validation, record unchanged baseline diagnostics separately, commit/push implementation and report to the same task branches, and return to review. Keep developer live Shopify/database/system checks explicitly pending; no dependent task is promoted by this decision. Parent review overlay is committed/pushed before handoff; normal preparation owns the next attempt claim.
+
+### Historical pre-review placeholders
+
 
 ### Review Status
 
