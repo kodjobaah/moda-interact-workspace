@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 95
 executor: copilot
 claimed_at: 2026-09-21T01:13:16Z
@@ -124,19 +124,40 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+- `moda-interact-commerce/src/commerce/products/index.ts`: trusted recovery basket normalization, bounded Shopify product search, HMAC-bound cursors, ProductFactsPort, policy descriptors and fail-closed injected provider/authorization boundaries.
+- `moda-interact-commerce/tests/products-policy.test.ts`: deterministic fixtures for supported/malformed baskets, authorization/recovery/provider failures, filtering, cursor tenant binding, variant completeness, bounds and cancellation.
 
 ### Work Completed
 
-None; task definition only.
+- Implemented `recovery.getBasket` and `shopify.searchProducts` adapters using the canonical Shared Commerce schemas and `commerce.v1` result union.
+- Normalized supported array and `{lineItems}` recovery snapshots; omitted source fields remain explicit `unknownFields`, zero-line snapshots return `NOT_FOUND`, and no discount arithmetic or basket mutation is performed.
+- Added bounded read-only provider requests: 20 variants/request, 3 search pages, shared injected request budget, deadline/cancellation checks, 103 unique variant IDs, 1000 collection IDs/variant, decimal maximum-price filtering, availability/market/currency filtering and HTTPS verified-shop URLs.
+- Added cursor integrity/expiry/tenant/query binding and stable variant ordering/completeness results.
+- Added immutable descriptors for the two owned C19 policy operations; production construction requires injected adapters and never installs fixtures.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed validation:
+
+| Requirement | Fixture / expected side effect | Command | Result |
+|---|---|---|---|
+| B01 basket source normalization | Array and `{lineItems}` shapes; omitted facts stay unknown; zero lines are not free | `npm test -- tests/products-policy.test.ts` | **7 passed** |
+| B02 product filtering and cursor safety | Decimal price, availability, currency, verified URL, cross-shop/tampered cursor | `npm test -- tests/products-policy.test.ts` | **7 passed** |
+| B03 current variant facts | Missing variant, stable `variantId` ordering, explicit completeness/collection bounds | `npm test -- tests/products-policy.test.ts` | **7 passed** |
+| B04 tenant/auth/bounds/fail closed | Denied/throwing auth, recovery/provider errors, cancellation, 20/3/12/103 bounds and zero provider calls on invalid input | `npm test -- tests/products-policy.test.ts` | **7 passed** |
+| Repository lint and whitespace | Scoped source/test lint and patch whitespace | `npm run lint`; `git diff --check` | **Passed** |
+| Production compilation | Prisma generation and Next production build | `npm run build` | **Passed** |
+| Full Commerce tests | Existing repository regression suite | `npm test` | **98 passed, 2 pre-existing failures** in `auth-development-identity.test.ts` from `Prisma.sql is not a function` |
+| TypeScript diagnostics | Full declared typecheck | `npm run typecheck` | **Blocked by the same pre-existing Prisma client baseline**: 5 errors in `lib/auth/development-platform-admin.ts` and `lib/server/connections.ts`; no Commerce-015 diagnostics remain |
+
+Developer validation required:
+
+- Live Shopify/provider validation against a configured development shop, installation credential and current API response remains pending. Fixtures prove deterministic policy behavior only and do not claim live execution.
+- Developer-owned database/container/readiness and system validation remains pending where required by the repository workflow; this task introduced no schema or migration change.
 
 ### Deviations
 
@@ -157,7 +178,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-015. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: `task/ARCH-020-COMMERCE-015`. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-015`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-015`. Both branches are mirrored and will be committed/pushed for review. The nested database submodule pin is unchanged. No parent service gitlink, main branch, Architect Review text or enabled task was modified.
 
 ## Architect Review
 
