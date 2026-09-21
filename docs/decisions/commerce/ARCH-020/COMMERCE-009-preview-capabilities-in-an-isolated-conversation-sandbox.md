@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 130
-executor: codex
-claimed_at: 2026-09-21T01:19:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -235,6 +235,55 @@ None newly reported.
   file edit was performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready; Attempt 2 retained; executor/claimed_at null; not accepted.** Verified implementation `e614a032c73463584fd6c9be91b97ed74b3deccb` and parent report `36d174b0f497af47be1be715948c47983e5a9ab9` against remote task heads. Dedicated worktrees clean; preparation/database evidence recorded. No implementation edits, new claim, dependent promotion, main integration or gitlink update.
+
+Independent submitted suite: **19/19 passed**, covering service, routes and store. Isolated `/tmp/c009-a2-review/review.test.ts` imports committed code:11 copied service tests pass and3 added behavioral cases fail (current message absent from ModelRequest; second-turn language resets to English after French detection; abandoned FIXTURE dispatch still RUNNING at120s). Broader162-pass/2-infrastructure-failure, typecheck/lint/build remain submitted evidence. Diff check passed. No live Redis/model/provider/database checks were run. The Redis test only stubs EVAL with a constant CONFLICT response and asserts script text; it does not execute or validate Lua transitions.
+
+Retain the improvements: actual Shared runner invocation, canonical saved IDs, strict body/result schemas, atomic in-memory replay/quotas, retained tool tests and route error mapping. The following are remaining R1/R2 component requirements, not scope amendments.013 still owns real saved-source/provider assembly;017 owns UI.
+
+#### A2-R1 — P1 — Execute the current message and actual frozen instructions
+
+Files: `src/commerce/preview/service.ts` execute/startConversation, types.ts stored snapshot and prompt port, service tests. run.message is saved in state but never passed into runCommerceTurn. The first ModelRequest has history=[] and messages=[] and does not contain the submitted message anywhere. Every capability prompt is also replaced by `Synthetic preview instructions for ${capability.key}.`, so authored behavior is not being previewed.
+
+For each invocation construct runner history from the bounded completed history plus exactly one `{role:'user',content:run.message}`. Do not persist the pending message into completed history until successful fenced completion. Remove the unconditional slice(-20): preserve all accepted history within the canonical runner bounds or reject before dispatch if those bounds would be exceeded; do not silently drop accepted context. Add assertions on actual ModelRequest, not only on final canned replies.
+
+Resolve actual prompt texts for the exact frozen manifest revision/prompt names at conversation creation. Keep C19 PreviewBundleLoader's existing `{grant,manifest}` result; add a separate typed PreviewPromptLoader dependency if prompt contents cannot be obtained from that result. It accepts principal and validated bundle and returns bounded `{name,text}[]` corresponding exactly to required manifest prompt names.009 validates and freezes the returned text in StoredConversation;013 supplies the authorized production implementation, fixtures inject explicit texts. Missing/mismatched prompt adapters return503 before a run is admitted. Never synthesize placeholder authored instructions. This is an architect-approved local composition port clarification; no Shared wire or database change.
+
+Tests: unique current-message sentinel reaches first model request exactly once; second request contains first completed exchange plus current input once; later loader/source mutations cannot alter stored prompt text; invalid/missing/duplicate required prompt names reject before model execution; a model stub asserts selected authored prompt text is in its actual instructions. Keep fixture data clearly synthetic, without replacing the behavior being tested.
+
+#### A2-R2 — P1 — Persist preview conversation language transitions
+
+Files: service.ts execute, types.ts StoredConversation, store.ts/redis-store.ts atomic completion. Current execute always passes fixture.language; valid final detection is never applied. Reproduction uses the English fixture and a successful French detectedLanguageTag/confidence final; the next ModelRequest still has `{tag:'en',source:'merchant-default'}`.
+
+Initialize conversation language from its fixture once. Apply accepted language-resolution semantics to a successful validated final and the actual substantive input; persist the resulting language atomically with completed history under the run owner token. Subsequent turns use this stored state. Ambiguous/short/numeric/URL/emoji input or null/low-confidence detection retains current language; failed/cancelled/stale results cannot update it. Do not invent customer preferences or modify currency/policy. Reuse accepted Shared language helpers where provided rather than inventing thresholds.
+
+Tests: English initial -> substantive French -> ambiguous numeric reply remains French; reverse language change; null/low-confidence/ambiguous detection does not switch; cancelled or fenced-out completion does not change language. Assert both stored state and the next ModelRequest, with valid C16 finals and controlled fixtures. The current test only verifies initial French fixture context and does not prove language lifecycle.
+
+#### A2-R3 — P1 — Complete crash fencing and distributed cancellation
+
+Files: store.ts sweep/completeRun/completeToolTest, redis-store.ts Lua transitions, service.ts cancelled/execute/cancelRun/runToolTest. Expiry iterates only modelSlots, so fixture runs and tool tests never become UNKNOWN after crashed ownership. A suppressed fixture dispatch remains RUNNING at120s. In-memory completeRun also does not sweep before committing, so a late model completion can win if no intervening read triggers sweep. Tool tests execute synchronously with an AbortController that has no timeout. Remote cancel only writes a flag; an in-flight model on another service instance is not notified until it returns or another step begins.
+
+Track ownership expiry for every RUNNING run/tool-test independently of paid model quota slots. Apply120s expiry before read/reservation/completion/cancel transitions in both stores, fence expired tokens, retain UNKNOWN results/dedupe for24h and block an UNKNOWN conversation until Reset. Do not refund dispatched quotas. Add an explicit bounded tool execution deadline and never allow a late result to overwrite UNKNOWN. No automatic rerun.
+
+During execution use a bounded cancellation watcher or equivalent owner notification that aborts the same model/tool signal when another replica requests cancellation. Stop/clean up watchers in finally. Remote cancel must not acknowledge CANCELLED until execution stops; completed-before-cancel remains completed. Test cancellation while the model is waiting, not merely between calls. Do not swallow cancellation and subsequently label an unfinished response COMPLETED. Handle rejected dispatch/store completion without unhandled background promise rejections; leave durable recoverable UNKNOWN when terminal persistence fails.
+
+Tests: fixture/model/tool-test crash at120s; completion at the boundary without a preceding GET; stale token cannot append history or language; two distinct PreviewService instances share a store and service B cancels service A's waiting signal-aware model, with no manual release; no subsequent model/tool effect; tool timeout becomes terminal and late completion is fenced; completed-wins-late-cancel retained. Use fake clocks/barriers and effect counts, no live deployment.
+
+#### A2-R4 — P1 — Validate Redis serialization and bound the shared state document
+
+Files: redis-store.ts transport codec/Lua and tests/preview-store.test.ts. Every operation decodes/re-encodes the entire environment's nested bundles/history/results with Lua cjson and writes one global JSON document. This does not preserve the distinction between empty JSON arrays and objects through ordinary Lua tables; accepted manifests and empty history contain arrays whose types matter. The TypeScript `JSON.parse(...) as T` assertion cannot validate round-trip shape. The same environment document has no size/item cap and is rewritten on every poll/cancel, so per-result bounds do not bound work per EVAL. This is source-level review; the submitted test does not execute Lua and no live Redis behavior is claimed here.
+
+Preserve schema-bearing opaque JSON exactly (for example, store grant/manifest/result and history as explicit JSON strings with a typed adapter codec, while Lua handles only the small transition metadata), or use an explicitly verified array-preserving codec. Validate returned state before it reaches the runner; don't cast malformed transport data to StoredConversation. Avoid a single unbounded environment-wide payload: use scoped per-conversation/run data and bounded atomic quota indexes, or enforce documented strict aggregate byte/item bounds before state mutation with a bounded typed capacity error. Idle retention alone is not a capacity bound under continued fixture creation/polling. Keep atomic replay/quota/fencing behavior.
+
+Execute the actual Lua transition contract in an isolated deterministic local harness or compatible controlled evaluator. A mocked EVAL returning a fixed constant is not transition validation. Required round trips include nested empty arrays/objects, manifests/grants, empty/completed history, result details, nulls and Unicode; validate Shared schemas before/after and run a fixture through the returned state. Reuse the same race/expiry/cancel/quota tests against the Lua adapter and in-memory model, including simultaneous owners and configured capacity boundary rejection with no partial mutation. Live deployment Redis remains developer-owned and is not required; report runtime coverage limits honestly if the local evaluator is unavailable.
+
+### Resubmission
+
+Implement A2-R1–R4 only in009-owned backend paths and tests. Publish the prompt port clarification for013 and preserve PreviewBundleLoader compatibility. Update P01–P05 mappings to actual tested effects; separate constant transport-envelope checks from Lua behavior. Run focused and required validation, commit/push the same branch pair and return to review. No UI or live provider work is added. This parent review overlay is published before handoff; normal preparation owns the next claim.
+
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 

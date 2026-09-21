@@ -540,3 +540,16 @@ or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
 without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
+
+
+## COMMERCE-009 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt2 retained, claim clear; not accepted.
+Reviewed e614a032/36d174b0. Submitted19 preview tests pass; three added service
+cases fail: absent current message, reset detected language, abandoned fixture
+RUNNING at120s. A2-R1–R4 require real current-input/frozen-prompt execution,
+atomic language persistence, all-run crash/cancel fencing and bounded, type-safe
+Redis transitions with executable adapter evidence.009 may expose a separate
+PreviewPromptLoader;013 provides saved-source composition, preserving C19 bundle
+shape. See task for precise corrections. No promotion, main merge or gitlink change;
+live deployment/provider evidence remains separate from component review.

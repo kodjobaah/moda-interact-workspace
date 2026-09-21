@@ -695,3 +695,16 @@ Ready (001/011/Shared Complete), with no new claim. Other dependants retain curr
 states because prerequisites remain unresolved. No main merge or gitlink update;
 architecture is not Implemented. This supersedes older COMMERCE-011 current-state
 wording while preserving historical reviews.
+
+
+## COMMERCE-009 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt2 retained, claim clear; not accepted.
+Reviewed e614a032/36d174b0. Submitted19 preview tests pass; three added service
+cases fail: absent current message, reset detected language, abandoned fixture
+RUNNING at120s. A2-R1–R4 require real current-input/frozen-prompt execution,
+atomic language persistence, all-run crash/cancel fencing and bounded, type-safe
+Redis transitions with executable adapter evidence.009 may expose a separate
+PreviewPromptLoader;013 provides saved-source composition, preserving C19 bundle
+shape. See task for precise corrections. No promotion, main merge or gitlink change;
+live deployment/provider evidence remains separate from component review.
