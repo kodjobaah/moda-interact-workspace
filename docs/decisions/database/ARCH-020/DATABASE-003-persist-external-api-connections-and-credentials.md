@@ -9,10 +9,8 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 145
-executor: copilot
-claimed_at: 2026-09-21T15:08:21Z
 attempt: 1
 depends_on:
   - ARCH-020-DATABASE-001
@@ -118,23 +116,52 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Implementation submitted for architect review.
 
 ### Files Changed
 
-None; task definition only.
+- `prisma/schema.prisma`
+- `prisma/migrations/20260921160000_arch020_external_connections/migration.sql`
+- `scripts/validate-arch020-external-connections.mjs`
+- `scripts/generate-erd.mjs`
+- `docs/generated/prisma-erd.puml`
+- `docs/generated/erd.png`
+- `README.md`
+- `package.json`
 
 ### Work Completed
 
-None.
+Implemented the C21 section 3 database boundary in the dedicated database
+worktree: four commerce models, three enums, Shop/PlatformAdmin backrelations,
+RESTRICT foreign keys, version/length/digest/object checks, platform and
+per-shop credential partial unique indexes, and immutable revision/audit
+triggers. Credentials are stored only as opaque byte columns; no plaintext
+secret field or application encryption was added. The ERD generator now removes
+trailing whitespace emitted by the PlantUML generator so generated output passes
+repository whitespace checks. The validator covers fresh/upgrade migration
+rehearsals, existing-row preservation, duplicate platform/shop credentials,
+credential byte bounds, foreign keys, immutable rows, and transaction rollback.
 
 ### Validation Results
 
-No implementation validation performed.
+Passed in the dedicated implementation worktree:
+
+- `node --check scripts/validate-arch020-external-connections.mjs`
+- `npm run prisma:validate`
+- `npm run prisma:generate`
+- `npm run format -- --check`
+- `npm run erd:puml`
+- `git diff --check`
+
+Not run: fresh and upgrade disposable PostgreSQL validator modes. The local
+PostgreSQL database was unavailable (`arch020_connections_test_fresh` did not
+exist), and database provisioning was cancelled. No database pass is claimed.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+The PostgreSQL acceptance rehearsal remains for architect/developer execution
+when isolated local databases are available. No schema or application fallback
+was added to compensate.
 
 ### Assumptions
 
@@ -142,7 +169,8 @@ C21 read-only scope; visual rules and generic JavaScript only inside the specifi
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+Database-backed X02 evidence is pending because the isolated PostgreSQL test
+databases were unavailable in this execution environment.
 
 ### Architectural Concerns
 
@@ -150,9 +178,12 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-DATABASE-003. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-DATABASE-003`.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-DATABASE-003`.
+Attempt 1. Implementation commit `a96dfd7` pushed to
+`origin/task/ARCH-020-DATABASE-003`. Repository baseline was `5abfd87f`; Prisma
+client version was `6.19.3`. No submodules were present in the implementation
+packet. Parent claim commit was `b1f07a21`.
 
 ## Architect Review
 
@@ -162,20 +193,25 @@ Pending.
 
 ### Review Notes
 
-Definition only; no implementation acceptance.
+Implementation is bounded to the C21 section 3 database ownership. Review the
+migration SQL and run the documented fresh/upgrade PostgreSQL validator before
+acceptance; this report intentionally leaves that evidence open.
 
 ### Reviewed Files
 
-Not applicable.
+Implementation commit `a96dfd7` and the files listed in the Completion Report.
 
 ### Validation Reviewed
 
-Not applicable.
+Repository-side Prisma, generator, formatting, syntax, and whitespace checks
+passed. PostgreSQL migration/constraint rehearsal remains unrun.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to the C21 section 3 ownership and does not implement encryption,
+HTTP, Studio, or application seed data.
 
 ### Follow-up
 
-Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+Run both documented disposable PostgreSQL validator modes, then accept or return
+for rework. No downstream task was launched.
