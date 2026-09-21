@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 110
 executor: null
 claimed_at: null
@@ -236,6 +236,33 @@ Task branch: `task/ARCH-020-COMMERCE-007`, attempt 5; claim cleared for review (
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 5 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for the remaining harness/report correction. Attempt 5 retained; executor/claimed_at null. Not accepted.** Verified implementation `caf5d38e8f020d4a9f12ab3faf60eeb8f837d0a4` and report `40ed0a43912b230af5f5de4d472ba71b25fc91e2` against remote task heads. Both dedicated worktrees clean. No new production recommendation defect is alleged; preserve the runtime fixes.
+
+Independent checks: **11/11 focused tests and 7/7 prior runtime reproductions pass**. A temporary copy of the submitted contract test with an exact provider-count assertion confirms **12 actual requests, reservation 13 rejected, typed ERROR** during one top-level execution. **A4-R1.1 is resolved**; do not rework that fixture. Diff check passes. Submitted typecheck/lint/build and full 334/335 remain reported evidence rather than independently rerun full checks.
+
+Two diagnostic assertions in `/tmp/c007-a5-review/review.test.ts` fail in the new `selectedConsumer`: `truncated:true` is ACCEPTED; unchanged evidence semantics with valid refreshed timestamps/recomputed digests is REFERRED because selected original IDs no longer equal refreshed IDs. These are test-double defects, not claims about the production Background consumer.
+
+#### A5-R1 — Complete the one actual replay path; preserve the repaired budget fixture
+
+Scope remains `tests/recommendation-contract.test.ts`, task-owned fixtures and this report. This is unfinished A4-R1.2–4, not new feature scope or a larger coverage target.
+
+**Current problem:** there are now two incomplete consumer functions. The old function assigns `refreshCalls=1`; the new `selectedConsumer` increments a local counter but never calls a refresh transport. The new function checks digests only and ignores truncation/semantic/time/provenance checks in the other function. Passing separate tests against different partial functions does not establish the claimed C18 replay behavior. Its positive case reverses selected IDs, not the refreshed alternative order. Evidence for the matrix is still manually constructed separately from the actual producer fixture.
+
+**Implement this single flow, replacing both helpers:**
+
+1. Extract the existing real producer fixture so the matrix can obtain its reply and original authored call. Register each selected original evidenceId with its evidence and `{name,toolRevisionId,arguments}` provenance. This is test-only state.
+2. Give the double an actual async `refresh(originalCall)` callback. Resolve selected original IDs through the provenance map, group identical call tuples, invoke/await the callback once per tuple, and derive refresh count from the callback spy. Unknown IDs/missing provenance must not issue a refresh. Capture and assert exact original name/arguments.
+3. Parse the refreshed envelope, reject truncation, then for **each** selected original item require exactly one fresh offerId/canonical-proposal match. Compare required semantic/identity fields, validate its digest and time window, and reject the entire selection if any item fails. Do not search by the old digest: a fresh timestamp legitimately produces a new evidenceId. Only after all selected items validate may delivery/language-write spies run.
+4. Run the existing positive/mutation/expiry/denial/deferred-completion rows through this same function. Two selected items in reversed refresh order must accept once; truncated refresh and invalid second item must refer; changed valid timestamps/digests with identical semantics must accept. For expiry/future rows recompute valid hashes so invalid-digest rejection does not mask the time check. Use a deferred callback for cancellation during refresh and assert no delivery/language write when it settles. Do not simulate a callback by incrementing a counter or returning literal side-effect counts.
+5. Finish the already-requested local rows currently marked pending and align report claims to executable assertions. In particular, ordinary positive `CommerceToolOutputs.parse` is not a malformed-envelope rejection test, changing an expected grant string is not producer authorization denial, and no executed fixture currently proves the claimed async callback. Add the actual fixture boundary assertions or accurately leave their named claims pending; unfinished required local rows cannot be labeled completed. Keep real deployed MCP/worker/Shopify checks separate and developer-owned.
+
+The repaired provider-budget case and seven runtime regressions should remain passing. No arbitrary test-count target, production-code churn, Background import, schema change or live service is requested. Run the focused checks and required repository validation after the scoped change; publish mirrored branches and return to Review with claims clear.
+
+Readiness: no dependent promotion, new claim, main integration or gitlink update. Architecture is not yet Implemented. This decision supersedes earlier current-state wording while preserving review history.
+
 
 ### Changes Requested — Attempt 4 — 2026-09-21
 

@@ -941,3 +941,19 @@ No dependent promotion, new claim, implementation change, main integration or
 gitlink update. This supersedes earlier COMMERCE-017 current-state wording while preserving
 review history and other task decisions. Architecture remains not yet Implemented;
 COMMERCE-012 is the final implementation checkpoint.
+
+## COMMERCE-007 Attempt 5 architect review — 2026-09-21
+
+COMMERCE-007 is **Changes Requested / Ready, Attempt 5 retained**, claims cleared.
+Reviewed implementation `caf5d38` and report `40ed0a4`, matching remote task heads.
+Independent 11 focused tests and seven runtime reproductions pass. A4-R1.1 is
+resolved: one execution makes 12 actual provider requests and rejects reservation 13
+with typed ERROR. The remaining A5-R1 is confined to the C18 harness/report:
+replace the two partial consumer helpers with one measured async replay path,
+validate every selected item's provenance/proposal/semantics, and correct claims.
+Diagnostics show the new helper accepts truncation and rejects valid fresh digests.
+No new production defect is alleged. No dependent promotion, new claim,
+implementation change, main integration or gitlink update. Live deployed/worker/
+Shopify validation remains with its assigned owner. This supersedes older COMMERCE-007
+current-state wording only; other decisions and history remain unchanged.
+Architecture is not yet Implemented.
