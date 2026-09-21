@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -272,6 +272,120 @@ Architecture review is pending; no downstream task was launched. The task is
 ready for `moda_architect` review.
 
 ## Architect Review
+
+### Attempt 3 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed the submitted Attempt 3 snapshot for implementation
+`4bc52ad62d7833b9dcc5b13890370ab3c01d0e59` and parent report `5dc5f894`.
+**Changes Requested; Ready, Attempt 3 retained; executor/claimed_at null.**
+
+Attempt 3 closes A2-R1 in substance. The worker now inspects the complete own-property
+descriptor set with captured intrinsics and rejects non-enumerable `toJSON` before
+serialization; the adjacent ordinary-object case remains permitted. The packaged smoke
+consumer also correctly ignores the new nonterminal `started` event. Preserve those
+changes. The submitted 10-test/package/smoke/lint/typecheck/build evidence is supporting
+evidence; this review remains focused on the runtime's required behavior rather than an
+exhaustive test quota. Two functional corrections remain.
+
+#### A3-R1 — SB02 still requires an actual supervisor termination
+
+Files: `tests/code-runtime-proof.test.ts`, `docs/code-runtime-proof.md`; production
+runtime source only if needed to expose a host-only observation point.
+
+The new test named `proves supervisor termination after a built-in operation starts`
+does not demonstrate supervisor termination. It calls the real kernel with the 2,000 ms
+window, observes `started`, and then expects:
+
+```text
+{ok:false, code:'INVALID_OUTPUT', line:null, column:null}
+```
+
+`INVALID_OUTPUT` is a terminal worker result after the guest operation and result
+serialization path returned. The host supervisor in `kernel.ts` returns `DEADLINE` when
+its timer actually terminates the worker. Therefore this scenario proves that evaluation
+began and the large built-in path completed under other bounds; it does **not** prove
+that the supervisor terminated an in-flight guest/built-in operation. The generic
+`started` event is emitted immediately before the entire `evalCode(...)` call, not at a
+point that by itself establishes supervisor termination. This leaves the task's checked
+SB02 criterion unsupported.
+
+Correction contract:
+
+1. Add one focused committed scenario through the real `createSandboxKernel().run(...)`
+   path where guest execution has demonstrably begun and remains active until the host
+   supervisor terminates the worker.
+2. The terminal kernel result for that scenario must be `DEADLINE`; do not relabel an
+   `INVALID_OUTPUT` or `RESOURCE_LIMIT` result as supervisor proof.
+3. Use the production supervisor behavior (`min(2,000 ms, remaining turn deadline)`) and
+   keep an outer bounded harness deadline. Do not loosen the runtime limits merely to
+   make the fixture pass.
+4. Verify a following ordinary transform succeeds and the capacity slot is reusable
+   after the terminated worker exits.
+5. If the pinned QuickJS/artifact cannot produce the required supervisor case because a
+   different enforced resource limit always terminates first, record that concrete
+   runtime gap and return it to moda_architect instead of marking SB02 complete.
+6. Rename/reword the current `INVALID_OUTPUT` fixture and proof matrix so it describes
+   only what it actually proves.
+
+This correction can be test/proof-only if the existing production supervisor already
+meets the contract. Do not change production runtime behavior solely to manufacture a
+different result.
+
+#### A3-R2 — `compile()` must perform syntax validation without executing top-level source
+
+Files: `src/commerce/code-response/runtime/worker.mjs` and the focused runtime tests.
+
+C21 requires syntactic validation without source execution. The current compile branch
+interpolates authored source into `validator`, evaluates that script with
+`context.evalCode(...)`, and only afterwards reaches:
+
+```js
+if ("compile" === "compile") null;
+```
+
+The source at `worker.mjs` is therefore executed before the compile-only branch. In
+addition, the error path currently does:
+
+```js
+if (workerData.kind === 'compile') return error('SYNTAX_ERROR');
+```
+
+so any top-level runtime failure during that execution is falsely reported as syntax.
+A syntactically valid source such as a top-level `throw` or loop followed by a valid
+`transform` declaration is consequently executed by `compile()`, contrary to C21
+section 2.3 and the existing test's own “without running it” claim.
+
+Correction contract:
+
+1. Make `compile({source,signal,deadlineAt})` use the pinned engine's syntax/compile-only
+   path, or an equivalent sandboxed parse/compile mechanism, without evaluating authored
+   top-level statements.
+2. Preserve the same source-size, startup, caller-abort and caller-deadline bounds.
+3. Malformed syntax must still return bounded `SYNTAX_ERROR`; syntactically valid
+   top-level side effects must not run merely to validate syntax.
+4. Add a short regression proving a syntactically valid top-level throw/long-running
+   statement is not executed by `compile()`, alongside the existing malformed-source,
+   cancellation and expired-deadline cases.
+5. Keep `run(...)` semantics and the accepted A2-R1 output-isolation fix unchanged.
+   Do not defer this producer behavior to COMMERCE-026.
+
+No broader compiler feature, AST framework or sandbox coverage expansion is requested.
+The correction is the existing C21 compile contract only.
+
+#### Verification and disposition
+
+Static review of the exact submitted source confirms the two behaviors above.
+`node --check` passes `worker.mjs`, `code-runtime-manifest.mjs` and
+`code-runtime-packaged-smoke.mjs`; the lockfile pins `quickjs-emscripten@0.31.0` and
+`@jitl/quickjs-wasmfile-release-sync@0.31.0`. The archive does not include
+`node_modules`, so the submitted 10-test/package/smoke results were inspected rather
+than redundantly re-run in this review environment. No live provider, credential, DNS,
+WhatsApp, PostgreSQL, container or deployment validation is required for these two
+component corrections.
+
+Return the same task to `ready`, preserve Attempt 3, clear claims, and let the next
+authorized claim create Attempt 4 exactly once. COMMERCE-026 and every other dependant
+remain gated; no main merge, service gitlink update or downstream task launch.
 
 ### Attempt 2 — Changes Requested (2026-09-21)
 

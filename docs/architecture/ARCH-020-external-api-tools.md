@@ -896,3 +896,15 @@ labelled as the 2,000 ms scenario. Exact corrections are in the task review.
 Focused tests: 8/8; package/smoke passed; targeted architect checks: 1 passed,
 1 failed. No acceptance, implementation change, main merge, gitlink update or
 promotion. COMMERCE-026 remains Pending; SYSTEM-TEST-002 is developer-invoked.
+
+## COMMERCE-029 Attempt 3 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 3 retained; executor/claim null.** Reviewed
+implementation `4bc52ad` and report `5dc5f894`. The non-enumerable `toJSON`
+correction is accepted in substance and packaged smoke handles the nonterminal start
+event. Two functional items remain: SB02 still lacks an actual supervisor-terminated
+run (`INVALID_OUTPUT` proves the worker returned before the supervisor), and the
+current `compile()` path executes authored top-level source before reporting compile
+success/failure. Exact A3-R1/A3-R2 corrections are in the task Architect Review.
+No exhaustive coverage expansion, live validation, main integration or dependent
+promotion. COMMERCE-026 remains Pending; the next claim is Attempt 4.
