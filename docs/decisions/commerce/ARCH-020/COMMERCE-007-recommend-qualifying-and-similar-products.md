@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 110
 executor: null
 claimed_at: null
@@ -241,6 +241,24 @@ Task branch: `task/ARCH-020-COMMERCE-007`, attempt 7; claim cleared for review (
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
 ## Architect Review
+
+### Accepted — Attempt 7 — 2026-09-21
+
+**Current decision: Accepted / Complete. Attempt 7 retained; executor/claimed_at null.** Reviewed implementation `e08b896ab77eec6fc4e0afb66353c40a8e3fe3f4` and parent report `bb3e9770dec2e47e5acf3eef27ec679df5940a0a`, verified against remote task heads. Both dedicated worktrees were clean. This acceptance supersedes previous Changes Requested current-state wording while preserving review history.
+
+**A6-R1 is resolved.** The replay callback receives the original authored name, pinned toolRevisionId and exact arguments; grouping includes the revision and the callback's received tuple is asserted. Every selected original evidence item must have a valid digest and current time window before refresh. Expired original evidence returns without refresh or delivery and cannot be rescued by valid fresh evidence. Valid refreshed timestamps/digests remain accepted while the original remains valid. The unified producer-backed local harness and prior runtime corrections are preserved.
+
+Independent validation:
+
+- Current recommendation/C18 suite: **11/11 passed**.
+- Prior runtime reproductions: **7/7 passed** in `/tmp/c007-a2-review`, covering proposal admission/deduplication, currency/quantity handling, typed failures, replacement pricing and final-await cancellation.
+- `/tmp/c007-a7-review` imports a temporary copy of the current contract test with the two previously failing A6 diagnostics and exact provider-count assertion: **2/2 tests passed**. The callback receives the full original tuple; expired-original/fresh-valid response refers; budget makes exactly 12 actual provider requests and rejects reservation 13.
+- Diff check passed. Submitted typecheck/lint/build and full 334/335 are reported evidence rather than independent full reruns. The documented unrelated Redis timeout is not an acceptance blocker.
+
+No additional blocking functional finding was identified in this scoped review. Acceptance covers the bounded recommendation producer and local C18 contract behavior, not deployed MCP/Background delivery or live Shopify validation. Those remain with the assigned integration/system owners; the local consumer double is not production Background code or live-delivery proof. No implementation edit/push, main integration or gitlink update was performed by this review.
+
+Readiness reconciliation: **COMMERCE-010 and COMMERCE-013 are promoted Ready, Attempt 0 retained, executor/claimed_at null.** COMMERCE-010's 004/007/009 prerequisites are accepted Complete. COMMERCE-013's 003/004/005/006/007/011/014/015/016 prerequisites are accepted Complete. Normal preparation must consume actual accepted source and owns synchronization/claiming; this review does not launch either task. COMMERCE-018/019 still await COMMERCE-013; deployment, final implementation and terminal system-test gates remain. Architecture is not yet Implemented; COMMERCE-012 remains the final implementation checkpoint.
+
 
 ### Changes Requested — Attempt 6 — 2026-09-21
 

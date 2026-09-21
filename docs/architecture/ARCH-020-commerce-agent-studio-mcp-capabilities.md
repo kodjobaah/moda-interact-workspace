@@ -721,10 +721,10 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | complete | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | complete | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
-| [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | ready | ARCH-020-COMMERCE-006 |
+| [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | complete | ARCH-020-COMMERCE-006 |
 | [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
+| [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | ready | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | complete | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
@@ -1410,3 +1410,21 @@ recorded in the task; no production recommendation defect or code change is requ
 No dependent promotion, new claim, main integration or gitlink update. Live service
 validation remains with its assigned owner. This supersedes older COMMERCE-007 current-state
 wording only; other decisions remain unchanged. Architecture is not yet Implemented.
+
+## COMMERCE-007 Attempt 7 accepted — 2026-09-21
+
+COMMERCE-007 is **Accepted / Complete, Attempt 7 retained**, claims cleared.
+Reviewed implementation `e08b896` and report `bb3e977` against remote heads.
+A6-R1 is resolved: refresh receives the original name/revision/arguments and invalid
+or expired original evidence is rejected before refresh. Independent 11 focused
+tests, seven runtime reproductions and both augmented contract tests pass; the
+12-request provider budget and reservation 13 rejection remain verified. Diff checks
+pass. Submitted full 334/335 and typecheck/lint/build remain reported evidence;
+live MCP/Background/Shopify proof remains with integration/system owners.
+COMMERCE-010 and COMMERCE-013 are promoted **Ready, Attempt 0**, claims null:
+all their explicit prerequisites are accepted Complete. Preparation owns source
+synchronization and claims; neither task is launched. COMMERCE-018/019 still await
+COMMERCE-013; final/deployment/system gates remain. No implementation change,
+main integration or gitlink update. This supersedes older COMMERCE-007 current-state wording;
+other task decisions remain unchanged. Architecture is not yet Implemented and
+COMMERCE-012 remains the final implementation checkpoint.
