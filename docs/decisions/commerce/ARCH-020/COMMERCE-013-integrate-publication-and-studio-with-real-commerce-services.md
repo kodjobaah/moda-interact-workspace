@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 125
-executor: copilot
-claimed_at: 2026-09-21T15:03:49Z
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -695,6 +695,109 @@ Implementation branch `task/ARCH-020-COMMERCE-013` is pushed at
 submission response after this report commit. Both task worktrees must be clean
 at submission, with `status: review`, `executor: null`, and
 `claimed_at: null`. No main branch or parent service gitlink was changed.
+
+## Completion Report - Attempt 7
+
+Status: Ready for Review.
+
+Attempt 7 preserves Attempts 1-6 and implements both corrections from the latest
+Attempt 6 Architect Review. The implementation branch
+`task/ARCH-020-COMMERCE-013` is pushed at
+`0fab9dcc4d74f28b2537be1ccacf63b8ed93e560`. The parent report is updated only
+in this task file. No parent service gitlink, database schema, index, main
+branch, downstream task, or Architect Review text was changed.
+
+### A6 correction checklist
+
+- [x] **A6-R1:** Production native-basic discount normalization now retains
+  customer/context, usage, combination, status, value, target, and minimum
+  evidence. A pinned native-basic semantics profile is applied only to the
+  concrete basic Shopify types and is documented in
+  `docs/discount-support-matrix.md`; incomplete restrictions, minima, targets,
+  status, values, and non-basic provider shapes remain non-qualifying. Explicit
+  null minima are known absence, omitted/unrecognized minima are unknown, and
+  mixed product/variant targets are returned as incomplete rather than being
+  mislabeled as variants. Focused deterministic fixtures cover fixed,
+  percentage, restricted, and mixed-target normalization through the accepted
+  reader contract.
+- [x] **A6-R2:** Every capability-bound tool revision is now checked for exact
+  owner binding and `PUBLISHED` status before it is unioned with explicitly
+  selected draft tool revisions. Standalone selected DRAFT definitions still
+  return their validated current definition/hash; explicit selection can no
+  longer excuse an unpublished capability binding. Missing records and
+  inconsistent bindings remain fail closed.
+
+### Source and dependency mapping
+
+The implementation consumed the accepted producer revisions without copied
+source: COMMERCE-007 recommendation source `e08b896`;
+publication lifecycle/ports `ebe612bbcbccb69202c682ed009d1c302c347d3f`;
+query execution `f09965942cebd4aec15a40aa825975157d41c8c3`; product adapters
+`6821a49c5d8568227ff81085f0398c934df58332`; recommendations
+`bad71ef55e5942e74343c35b611c5177f0852a20`; discount reader
+`1c124f4b53a494425735a8064ac20a2e2000914e`; discount evaluator
+`bfbd7839503b60e88b17da49f258c84c4e50f6c76`; execution registry
+`232cbdd9af4411c2e4cdcac86bda8285e5b81554`; MCP auth/authentication
+`0411babc90182f41ad3f036096eb51427f128ac0`; compiler
+`f363ac41b2a36e683d1514d02a582dd2c375fef5`; and database submodule
+`5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Installed compatibility remains
+shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, MCP SDK `1.30.0`.
+
+### Files changed
+
+- `src/commerce/integration/backend.ts`: native-basic discount evidence,
+  semantics gating, mixed-target fail-closed handling, usage completeness,
+  and independent bound-tool publication validation.
+- `tests/backend-integration.test.ts`: mixed product/variant normalization
+  assertion.
+- `docs/discount-support-matrix.md`: pinned semantics profile and evidence
+  boundary.
+
+### Validation Results
+
+Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
+
+| Command | Result |
+| --- | --- |
+| `npm run test:arch020-backend-integration` | **passed: 4 files, 60 tests** |
+| `npm run typecheck` | **passed**; Next route type generation and `tsc --noEmit` completed |
+| `npm run lint` | **passed** with no reported errors |
+| `npm run build` | **passed**; Prisma Client `6.19.3` generated and Next production build completed |
+| `git diff --check` | **passed** |
+| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD check **passed**; migration validator failed closed with `AssertionError: Local isolated target required` before any DB connection |
+| `PATH=/usr/bin:/bin npm run test:arch020-backend-integration:database` | **not executable** in this macOS shell: `zsh: command not found: npm` |
+| `npm run test:arch020-backend-integration:postgres` | first real Prisma adapter smoke test **passed**; second mutation/replay/CAS/rollback test **failed before injected rollback** with `CAS_CONFLICT` where the reusable target expected `INJECTED_REHEARSAL_FAILURE` |
+
+The PostgreSQL command therefore does not provide a passing 2/2 rehearsal
+claim for Attempt 7. The observed failure is the existing reused-target
+precondition in the rehearsal's fixed capability revision edit-version
+expectation, not a failure in the Attempt 7 source files. The disposable SQL
+phase did not run because the script stops after the failed Vitest phase.
+
+### Infrastructure evidence disposition
+
+Actual local evidence is the 60-test focused suite, typecheck, lint, build,
+diff check, static database schema checks, database submodule SHA above, and
+the first real Prisma adapter smoke test. Pending developer-owned evidence is:
+run the migration validator against isolated `arch020_test_fresh` and
+`arch020_test_upgrade`; rerun the PostgreSQL mutation/replay/CAS/rollback
+rehearsal against a clean isolated target so its valid-publication and
+two-connection rows, operation IDs, audit rows, provider-call counts and
+rollback state can be recorded; run the separate disposable SQL phase after
+its explicit authorization; run Redis/container transport checks; and perform
+the final manual system-test gate. No live Shopify, model, Redis, WhatsApp,
+billing, customer-history, production credential, or paid-provider evidence is
+claimed.
+
+### Git / VCS
+
+Implementation commit: `0fab9dcc4d74f28b2537be1ccacf63b8ed93e560`, pushed to
+`origin/task/ARCH-020-COMMERCE-013`. The parent report commit is recorded after
+this edit. Both branches remain `task/ARCH-020-COMMERCE-013`; the parent
+submodule gitlink remains unchanged, and no main branch or downstream task was
+updated. Lifecycle fields are set for review: `status: review`,
+`executor: null`, `claimed_at: null`, `attempt: 7`.
 
 ## Architect Review
 
