@@ -82,25 +82,29 @@ GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
 
-## COMMERCE-008 Attempt 1 — Changes Requested — 2026-09-21
+## BACKGROUND-002 Attempt 4 — Accepted — 2026-09-21
 
-COMMERCE-008 is **Ready, Attempt 1 retained**, claim cleared, not accepted.
-Reviewed implementation `865e16c` and report `a6df81c1`. Authenticated shell and
-route scaffolding exist, but C17 StudioServices ports, authoring workflows,
-record resolution and required navigation behavior remain unimplemented.
-The task's latest Architect Review records R1–R3. Component/fixture behavior and
-local browser evidence remain008-owned; real provider composition remains013-owned.
-Readiness uses002, DATABASE-001 and SHARED-001, not the superseded service chain.
-No new claim, downstream promotion, implementation edit or main integration.
-Other canonical task states remain authoritative; ARCH-020 is not complete.
+ARCH-020-BACKGROUND-002 is **Accepted / Complete, Attempt 4**, claim cleared.
+Reviewed implementation `8b2f983` and report `47345f39`; architect independently
+reran **114 passing focused tests**, correcting the reported combined total110.
+Evidence/provenance refresh, trusted referrals and cancellation/admission guards
+conform to the component contract. Latest task review distinguishes registry,
+local MCP transport and injected processor evidence from unrun integrated/live
+pairing. No further coverage-only correction is required for this acceptance.
+Gateway002, Commerce012 and terminal system tests retain other dependencies;
+no dependent is promoted or launched. Developer integration remains separate;
+ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
 
-## COMMERCE-008 Attempt 2 — Changes Requested — 2026-09-21
+## COMMERCE-003 Attempt 4 accepted — 2026-09-21
 
-COMMERCE-008 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
-Reviewed `6c4ecbc` / report `10fc0ae6` (PR3/171). Typed unavailable/not-found states
-and shell improvements are retained. Remaining blockers are canonical port/data
-mismatches, incomplete connected authoring/release workflows, unsafe unknown-outcome
-retry, and exact-revision/navigation behavior. Latest task review records R1–R4.
-C17 still allows fixture component acceptance; real adapters and readiness timing
-failures are not the blocker. No new claim, downstream promotion, implementation
-edit or main integration. Other task states remain unchanged.
+COMMERCE-003 is **Complete, architect accepted, Attempt 4 retained**, claim cleared.
+Reviewed implementation `12df0104` and report `4b86771f`. The isolated rehearsal
+now fails closed on unexpected SQL/cleanup errors, identifies its injected
+rollback case, checks audit-backed replay and reaps owned workers. Independently
+passed 26 lifecycle tests, shell syntax, four mock harness scenarios and diff
+checks. Live disposable PostgreSQL execution remains explicitly developer-owned
+and unrun; COMMERCE-013 owns real adapter/integration composition. No main merge
+or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
+without claiming an attempt. Other dependent tasks retain their current states;
+012/013/system-test still have unresolved prerequisites. This acceptance supersedes
+older COMMERCE-003 current-state wording; architecture is not yet Implemented.

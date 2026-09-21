@@ -717,17 +717,17 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | moda_shared | complete | ARCH-016-SHARED-001 |
 | [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | complete | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | complete | ARCH-020-COMMERCE-001 |
-| [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
-| [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | ready | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Implement basket and product discovery tools | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
-| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
-| [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
+| [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | complete | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
@@ -976,37 +976,108 @@ against agreed service ports while011 continues. Separate013 owns production
 adapters and integrated U01–U13 acceptance;009, GATEWAY-001,012 and terminal
 system tests depend on013. Component fixtures never become production fallbacks.
 
-## COMMERCE-008 Attempt 1 — Changes Requested — 2026-09-21
 
-COMMERCE-008 is **Ready, Attempt 1 retained**, claim cleared, not accepted.
-Reviewed implementation `865e16c` and report `a6df81c1`. Authenticated shell and
-route scaffolding exist, but C17 StudioServices ports, authoring workflows,
-record resolution and required navigation behavior remain unimplemented.
-The task's latest Architect Review records R1–R3. Component/fixture behavior and
-local browser evidence remain008-owned; real provider composition remains013-owned.
-Readiness uses002, DATABASE-001 and SHARED-001, not the superseded service chain.
-No new claim, downstream promotion, implementation edit or main integration.
-Other canonical task states remain authoritative; ARCH-020 is not complete.
+## COMMERCE-003 Attempt 1 review — 2026-09-21
 
-## COMMERCE-008 Attempt 2 — Changes Requested — 2026-09-21
-
-COMMERCE-008 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
-Reviewed `6c4ecbc` / report `10fc0ae6` (PR3/171). Typed unavailable/not-found states
-and shell improvements are retained. Remaining blockers are canonical port/data
-mismatches, incomplete connected authoring/release workflows, unsafe unknown-outcome
-retry, and exact-revision/navigation behavior. Latest task review records R1–R4.
-C17 still allows fixture component acceptance; real adapters and readiness timing
-failures are not the blocker. No new claim, downstream promotion, implementation
-edit or main integration. Other task states remain unchanged.
+Current decision: Ready for Changes Requested, Attempt 1, claim cleared; not
+accepted. Reviewed 211b4a3 / 19441950. R1 Shared schemas/canonical hashes;
+R2 immutable ownership/unique release members; R3 complete C17 ports and lifecycle
+component with transactional fixtures; R4 pagination skipping rows. Eight original
+fixture tests passed and four architect regressions failed. Exact correction
+instructions/tests are in the task. C17 fixture acceptance remains permitted;
+013 production composition and developer PostgreSQL rehearsal remain separate.
+No new claim, downstream promotion, main integration or gitlink update.
 
 
-## COMMERCE-008 Attempt 3 review — 2026-09-21
+## COMMERCE-003 Attempt 2 review — 2026-09-21
 
-Current decision: Ready, Attempt3 retained, claim cleared; Changes Requested.
-Reviewed00c40087 /826f871e.14 focused Studio tests pass independently;3 added
-review cases fail (lost second tool binding, stale release validation unlocking,
-fixture-valid definition rejected by Shared). A3-R1–R4 specify canonical query/
-definition authoring, complete binding preservation, content-bound validation,
-and actual persistent navigation/dirty guards. Static/no-op browser harness does
-not prove page traversal. Preserve common component boundary and replay progress;
-013 production composition remains separate. No promotion, claim or main merge.
+Current decision: Ready, Attempt 2, claim cleared; Changes Requested, not accepted.
+Reviewed d5d7f56 / 6f4359a3. The17 submitted focused tests pass independently;
+three added architect regressions fail (ADMIN draft status injection, scalar
+configuration publication, incompatible release activation). Exact A2-R1–R4
+corrections cover strict command/persistence validation, runtime compatibility,
+canonical Feature/selection ports and executable transaction rehearsal evidence.
+Preserve the working Shared hashes, ownership/membership and cursor fixes.
+See the task for file-level algorithms/tests. This supersedes previous current-state
+wording. C17 component acceptance remains permitted;013 composition and developer
+PostgreSQL execution remain separate. No promotion, claim, main merge or gitlink edit.
+
+
+## COMMERCE-003 Attempt 3 review — 2026-09-21
+
+Current decision: Ready, Attempt3 retained, claim cleared; Changes Requested for
+the remaining rehearsal deliverable. Reviewed ebe612bb /3d58f69f. Strict inputs,
+compatibility and Feature/storage corrections are present;26 focused tests,
+shell syntax and diff checks independently pass. A3-R1 documents immutable-row
+cleanup failure, arbitrary SQL-error masking, replay assertion and worker-teardown
+corrections. Preserve passing component code. PostgreSQL execution remains
+explicitly developer-owned/unrun;013 composition remains separate. This is the
+latest decision. No downstream promotion, new claim, main merge or gitlink edit.
+### Smaller component scopes — 2026-09-21
+
+C19 splits004 into transport004/execution014,005 into queries005/basket-products015,
+006 into rule reader006/evaluator016 and009 into preview backend009/U14 interface017.
+013 owns backend and frontend service assembly;017 is frontend-only; SYSTEM-TEST owns cross-service evidence.
+This ownership replaces earlier combined-owner references without changing behavior.
+
+
+## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 1, claim cleared; not accepted. Reviewed a7ccac5 /
+ffcc0461. R1 wired strict C18 extractor; R2 digest/provenance/freshness/matching;
+R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
+three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
+are required; live producer pairing stays terminal-system-test-owned. See the
+canonical task's explicit correction steps. No new claim or downstream promotion.
+
+
+## BACKGROUND-002 Attempt 2 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 2, claim cleared; not accepted. Reviewed implementation
+55ac8b2 / report5802e25; 78 focused tests independently pass. Strict extraction and
+digest/provenance corrections are present. Remaining A2-R1: unusable final evidence
+must produce C18's admitted referral, not INVALID_FINAL; A2-R2: unconditional
+post-refresh cancellation/admission checks (ordinary-Error cancellation reproduced
+a deliverable referral); A2-R3: complete the canonical EC01–EC12 tests and correct
+overstated report mappings/results. See the task's exact code/location instructions.
+This is the latest decision; prior review entries are historical. No downstream
+promotion or claim; live pairing remains terminal-system-test-owned.
+
+
+## BACKGROUND-002 Attempt 3 review — 2026-09-21
+
+Current decision: Ready, Attempt 3, claim cleared; Changes Requested for remaining
+A2-R3 deterministic validation/report corrections. Reviewed7505ac3 / f409db23.
+A2-R1 referral conversion and A2-R2 cancellation/admission code fixes are verified:
+84 focused tests and the prior failing host cancellation reproduction now pass.
+Canonical two-alternative, independent semantic/error and refresh-pending processor
+cases remain required; exact files/cases/counts are in the task review. Live pairing
+is terminal-owned and is NOT a prerequisite to component acceptance. Prior review
+current-state wording is historical. No downstream promotion, claim or main merge.
+
+## BACKGROUND-002 Attempt 4 — Accepted — 2026-09-21
+
+ARCH-020-BACKGROUND-002 is **Accepted / Complete, Attempt 4**, claim cleared.
+Reviewed implementation `8b2f983` and report `47345f39`; architect independently
+reran **114 passing focused tests**, correcting the reported combined total110.
+Evidence/provenance refresh, trusted referrals and cancellation/admission guards
+conform to the component contract. Latest task review distinguishes registry,
+local MCP transport and injected processor evidence from unrun integrated/live
+pairing. No further coverage-only correction is required for this acceptance.
+Gateway002, Commerce012 and terminal system tests retain other dependencies;
+no dependent is promoted or launched. Developer integration remains separate;
+ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
+
+## COMMERCE-003 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-003 is **Complete, architect accepted, Attempt 4 retained**, claim cleared.
+Reviewed implementation `12df0104` and report `4b86771f`. The isolated rehearsal
+now fails closed on unexpected SQL/cleanup errors, identifies its injected
+rollback case, checks audit-backed replay and reaps owned workers. Independently
+passed 26 lifecycle tests, shell syntax, four mock harness scenarios and diff
+checks. Live disposable PostgreSQL execution remains explicitly developer-owned
+and unrun; COMMERCE-013 owns real adapter/integration composition. No main merge
+or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
+without claiming an attempt. Other dependent tasks retain their current states;
+012/013/system-test still have unresolved prerequisites. This acceptance supersedes
+older COMMERCE-003 current-state wording; architecture is not yet Implemented.

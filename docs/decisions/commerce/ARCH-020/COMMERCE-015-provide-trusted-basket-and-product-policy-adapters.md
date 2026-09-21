@@ -1,7 +1,7 @@
 ---
-id: ARCH-020-COMMERCE-005
+id: ARCH-020-COMMERCE-015
 architecture_id: ARCH-020
-title: Execute validated public Shopify queries
+title: Provide trusted basket and product policy adapters
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -9,24 +9,26 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
-priority: 90
+status: ready
+priority: 95
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-020-COMMERCE-001
-  - ARCH-020-COMMERCE-011
+  - ARCH-020-DATABASE-001
   - ARCH-020-SHARED-001
 enables:
   - ARCH-020-COMMERCE-012
+  - ARCH-020-COMMERCE-007
   - ARCH-020-COMMERCE-013
+  - ARCH-020-COMMERCE-016
   - ARCH-020-SYSTEM-TEST-001
-created: 2026-09-20
+created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Execute validated public Shopify queries
+# Provide trusted basket and product policy adapters
 
 ## Architecture
 
@@ -36,7 +38,7 @@ C4/C5/C7/C8/C9/C14/C16/C18 as applicable, and exact ownership/interfaces in **C1
 
 ## Objective
 
-Own tokenless execution of immutable SHOPIFY_STOREFRONT_QUERY definitions and schema-bound result projection only.
+Own recovery.getBasket and shopify.searchProducts reusable policy operations and current variant facts for evaluation/recommendations.
 
 ## Context
 
@@ -46,7 +48,7 @@ launcher/worktree/review policies apply. No task is claimed by this definition.
 
 ## Scope
 
-Own tokenless execution of immutable SHOPIFY_STOREFRONT_QUERY definitions and schema-bound result projection only.
+Own recovery.getBasket and shopify.searchProducts reusable policy operations and current variant facts for evaluation/recommendations.
 
 ## Out of Scope
 
@@ -63,20 +65,21 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Consume011 actual pinned compiler/schema exports; execute the fixed published query and mapped variables only against the verified canonical shop host.
-- [ ] Enforce C14 query/depth/list/time/response bounds and API-version checks. Reject partial GraphQL errors; no privileged fallback or installation-token lookup.
-- [ ] Preserve the query fact wrapper including source/schema/version/observedAt/values; selected values can never replace it with a policy-evidence output.
-- [ ] Expose QueryExecutionPort to014 with injected bounded provider transport, clock and signal. Do not implement basket/search policy helpers or MCP routes.
+- [ ] Normalize accepted CheckoutRecovery.lineItems into C4 basket; every supported source shape has an explicit fixture, unknown/missing source remains unknown, never a fabricated basket.
+- [ ] Implement bounded current product/variant search, decimal maximumPrice, availability/market/currency and safe shop URLs using privileged installation credentials only in these policy adapters.
+- [ ] Bind opaque cursors to shop/query/expiry; cap20 variants/page,3 pages and common12-request/deadline budget. Deny wrong-shop IDs before provider I/O.
+- [ ] Expose C19 ProductFactsPort.readVariants for exact proposal variants/collection membership; carry explicit unknowns/completeness for016/007. Never calculate discounts.
+- [ ] Export operation descriptors with executable adapters and test request construction.013 registers them through014; no bespoke MCP endpoints or public-query compiler.
 
 ## Interfaces / Contracts
 
-Own `src/commerce/query/`. C19 QueryExecutionPort receives trusted context and the canonical query definition;013 connects it to014. C14 result wrapper and Shared types remain unchanged.
+Own `src/commerce/products/`. Shared basket/product schemas are canonical; C19 ProductFactsPort supplies trusted current data to016/007.005 owns tokenless generic queries; no duplicated compiler or token lifecycle.
 
 
 ## Dependencies
 
 - ARCH-020-COMMERCE-001
-- ARCH-020-COMMERCE-011
+- ARCH-020-DATABASE-001
 - ARCH-020-SHARED-001
 
 All listed prerequisites must be Complete and architect-accepted before a claim.
@@ -85,15 +88,17 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 ## Enables
 
 - ARCH-020-COMMERCE-012
+- ARCH-020-COMMERCE-007
 - ARCH-020-COMMERCE-013
+- ARCH-020-COMMERCE-016
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
-- [ ] Q01: two arbitrary authored queries execute without registering business names; mapped variables/results match the accepted compiler.
-- [ ] Q02: wrong host, query/version, malformed variables/projection, partial errors and oversized response fail closed; zero credentials looked up on every path.
-- [ ] Q03: timeout/throttle/cancel/count limits are honored; no redirect to unverified host or mutation is emitted.
-- [ ] Q04: nested counterfeit evidence remains ordinary query values; no policy-shaped root output.
+- [ ] B01: each recovery snapshot source shape maps to strict Shared basket; zero lines/unknown prices are not live or free-basket facts.
+- [ ] B02: search filters unavailable/unknown/market/currency cases and preserves decimal prices; cursors reject tampering/cross-shop/expiry.
+- [ ] B03: exact variant/collection fact reads distinguish complete from partial results, including missing variant and provider failures; output is stable by variantId.
+- [ ] B04: tenant checks, throttle/timeout/cancel and nested request ceiling have measured call counts; no provider mutation or credential leakage.
 
 ## Validation
 
@@ -152,7 +157,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-005. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: task/ARCH-020-COMMERCE-015. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
 
 ## Architect Review
 

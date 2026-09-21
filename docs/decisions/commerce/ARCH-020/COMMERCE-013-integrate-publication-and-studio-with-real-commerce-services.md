@@ -22,11 +22,15 @@ depends_on:
   - ARCH-020-COMMERCE-007
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-011
-enables:
+  - ARCH-020-COMMERCE-014
+  - ARCH-020-COMMERCE-015
+  - ARCH-020-COMMERCE-016
   - ARCH-020-COMMERCE-009
-  - ARCH-020-GATEWAY-001
+  - ARCH-020-COMMERCE-017
+enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
+  - ARCH-020-GATEWAY-001
 created: 2026-09-21
 updated: 2026-09-21
 ---
@@ -63,22 +67,31 @@ Consume actual accepted011 exports. Do not copy or replace the compiler.
 ## Out of Scope
 
 New business features/pages, Shared publication, database migrations, other service
-implementation, live deployment, paid provider calls and WhatsApp delivery. U14
-is009-owned;013 tests its composer handoff with the agreed stub, not real preview.
+implementation, live deployment, paid provider calls and WhatsApp delivery. U14 components are017-owned and preview lifecycle is009-owned.013 connects both
+and tests the real round trip; it does not reimplement either component.
 
 ## Requirements
 
-Read C4/C7/C9/C14–C17, the binding Studio UI design and each prerequisite contract
+Read C4/C7/C9/C14–C19, the binding Studio UI design and each prerequisite contract
 report. Use accepted source in dedicated launcher-resolved worktrees. Preserve
 others' edits. New schema/semantic incompatibilities require architect resolution;
 never weaken validation or alter an accepted wire contract merely to connect code.
 
 ## Work Items
 
+- [ ] Own `src/commerce/integration/preview-bundle-adapter.ts`: resolve authorized
+  saved drafts/releases through003 into009 synthetic bundles, use014 interpreter
+  with isolated fixture provider operations and connect017 PreviewClient to009
+  routes. No production WhatsApp/provider access.
+
+- [ ] Apply C19 wiring:004 ->014;014 query ->005; policy basket/search ->015,
+  options/rules ->006, evaluation ->016, recommendations ->007. Run each port
+  contract against real adapters.013 also connects009 backend and017 frontend; no new UI or backend feature implementation.
+
 - [ ] Map003 QueryValidationPort to011's actual compiler, including all bounded
   errors, schema identity and timeout/unavailable semantics. Remove no validation.
-- [ ] Register only executable005/006/007 adapters and exact operation versions
-  in003 publication availability and004 dispatch. Unavailable operations remain
+- [ ] Register only executable005/015/006/016/007 adapters and exact operation versions
+  in003 publication availability and004 transport/014 dispatch. Unavailable operations remain
   unavailable; descriptors alone never make tools publishable or callable.
 - [ ] Implement008 StudioServices adapters using real003 reads/commands and011
   discovery/schema services, current accepted auth and real executor descriptors.
@@ -88,7 +101,7 @@ never weaken validation or alter an accepted wire contract merely to connect cod
 - [ ] Reconcile service exports and routes; preserve C15 exact paths and008 UI.
   Provide docs/commerce-integration.md listing port -> module/export mappings,
   dependency revisions, runtime composition and test commands.
-- [ ] Add one integrated suite and execute all I01–I08 below. Real application
+- [ ] Add one integrated suite and execute all I01–I09 below. Real application
   services must run; substitute only external provider/model transport and test
   infrastructure. Component-level fake publication/compiler services cannot pass.
 
@@ -108,17 +121,26 @@ is demonstrated by execution, not matching types alone.
 - ARCH-020-COMMERCE-007
 - ARCH-020-COMMERCE-008
 - ARCH-020-COMMERCE-011
+- ARCH-020-COMMERCE-014
+- ARCH-020-COMMERCE-015
+- ARCH-020-COMMERCE-016
+- ARCH-020-COMMERCE-009
+- ARCH-020-COMMERCE-017
 
-Every prerequisite must be Complete and architect-accepted before execution.
+All listed prerequisites must be Complete and architect-accepted before a claim.
 
 ## Enables
 
-- ARCH-020-COMMERCE-009
-- ARCH-020-GATEWAY-001
 - ARCH-020-COMMERCE-012
 - ARCH-020-SYSTEM-TEST-001
+- ARCH-020-GATEWAY-001
 
 ## Acceptance Criteria
+
+- [ ] I09: full N10/N11/N13 U14 round trip uses actual017 components,009 route/Redis
+  lifecycle and real saved-bundle adapter. Test duplicate sends, payload replay,
+  changed selection/reset, role denial, expiry and composer Back restoration;
+  verify one budget reservation/model start and no live customer/provider access.
 
 - [ ] I01: U03 -> U04 -> U09 -> U06 -> U07 -> U06 -> U09 -> U10 -> U11 with
   an arbitrary existing Admin Feature: author, validate, save, publish and activate
@@ -128,7 +150,7 @@ Every prerequisite must be Complete and architect-accepted before execution.
 - [ ] I03: authenticated MCP resolve/list/call uses that release and005 query
   adapter against controlled provider transport; changed publication cannot alter
   a seeded existing grant. Seed grant as Background-owned; no WhatsApp required.
-- [ ] I04:005/006/007 descriptors match installed executors and authoring fields;
+- [ ] I04:005/015/006/016/007 descriptors match installed executors and authoring fields;
   renamed policy tool dispatches correctly; unsupported/missing operation rejects.
 - [ ] I05: role revocation, ADMIN publication denial, stale CAS, matching replay,
   changed-payload replay and duplicate clicks have the specified write/audit counts.
@@ -146,7 +168,7 @@ Deliver `test:arch020-integration` for bounded local integration fixtures and
 `test:arch020-integration:database` for isolated PostgreSQL rehearsal. Run agent-owned
 checks under repository policy; provide developer-owned database command, assertions
 and actual evidence separately. Required database/I01/I05 evidence must exist before
-acceptance, not be claimed from mocked transactions. Record each I01–I08 command,
+acceptance, not be claimed from mocked transactions. Record each I01–I09 command,
 expected effects, actual result and dependency revisions. No paid live-provider or
 production customer data required. Terminal cross-repository testing remains separate.
 

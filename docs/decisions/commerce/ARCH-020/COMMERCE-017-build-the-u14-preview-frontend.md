@@ -1,7 +1,7 @@
 ---
-id: ARCH-020-COMMERCE-005
+id: ARCH-020-COMMERCE-017
 architecture_id: ARCH-020
-title: Execute validated public Shopify queries
+title: Build the U14 preview frontend
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -10,23 +10,24 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 90
+priority: 135
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-020-COMMERCE-001
-  - ARCH-020-COMMERCE-011
+  - ARCH-020-COMMERCE-008
+  - ARCH-020-COMMERCE-002
   - ARCH-020-SHARED-001
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
-created: 2026-09-20
+  - ARCH-020-GATEWAY-001
+created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Execute validated public Shopify queries
+# Build the U14 preview frontend
 
 ## Architecture
 
@@ -36,7 +37,7 @@ C4/C5/C7/C8/C9/C14/C16/C18 as applicable, and exact ownership/interfaces in **C1
 
 ## Objective
 
-Own tokenless execution of immutable SHOPIFY_STOREFRONT_QUERY definitions and schema-bound result projection only.
+Own the exact U14 /preview tool-test/conversation page, its controls and typed preview-client boundary with the008 composer.
 
 ## Context
 
@@ -46,7 +47,7 @@ launcher/worktree/review policies apply. No task is claimed by this definition.
 
 ## Scope
 
-Own tokenless execution of immutable SHOPIFY_STOREFRONT_QUERY definitions and schema-bound result projection only.
+Own the exact U14 /preview tool-test/conversation page, its controls and typed preview-client boundary with the008 composer.
 
 ## Out of Scope
 
@@ -63,37 +64,66 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Consume011 actual pinned compiler/schema exports; execute the fixed published query and mapped variables only against the verified canonical shop host.
-- [ ] Enforce C14 query/depth/list/time/response bounds and API-version checks. Reject partial GraphQL errors; no privileged fallback or installation-token lookup.
-- [ ] Preserve the query fact wrapper including source/schema/version/observedAt/values; selected values can never replace it with a policy-evidence output.
-- [ ] Expose QueryExecutionPort to014 with injected bounded provider transport, clock and signal. Do not implement basket/search policy helpers or MCP routes.
+- [ ] Implement the complete embedded U14 screen and approved prototype hierarchy. Use C9.1 routes as defined; no alternate preview backend or duplicated budget logic.
+- [ ] Implement the C19 PreviewClient interface with C9.1 exact request/result shapes, injected HTTP transport and contract fixtures. Do not load database bundles or implement backend adapters.
+- [ ] Implement tool-test/conversation selection, schema-driven arguments, trace/reply/structured-details panels, errors and quotas; changing frozen selection requires Reset.
+- [ ] Implement synchronous duplicate guards across mouse/keyboard, same-ID unknown reconciliation, cancel status, return context and C16 authenticated tab-local composer restoration.
+- [ ] Run populated browser workflows against contract-faithful preview service fixtures and assert request IDs/payloads/counts. Component acceptance is independent of009;013 owns real service pairing.
 
 ## Interfaces / Contracts
 
-Own `src/commerce/query/`. C19 QueryExecutionPort receives trusted context and the canonical query definition;013 connects it to014. C14 result wrapper and Shared types remain unchanged.
+Own U14 page entry and `src/studio/preview/` only. Reuse008 authenticated layout provider. No route handlers, Redis, database loaders or production backend composition.013 owns real PreviewBundleLoader and endpoint wiring. C9.1/C16/C19 remain binding.
 
+### U14: tool tests and conversation traversal (COMMERCE-017)
+
+Landing has **Tool test** and **Conversation** modes. Source context preselects
+saved draft/revision/release; direct navigation requires explicit selection.
+
+Tool test: choose saved tool revision, synthetic scenario (success, empty, missing
+fact, provider failure), enter schema-driven input, Run -> same page with mapped
+variables/arguments, structured facts, rendered text and validation/failure codes.
+No live Shopify request. Editing test input invalidates visible success until
+rerun. Return to tool links to U06; code/schema edits occur there.
+
+Conversation: choose saved behaviour revisions or release, synthetic feature flags
+and fixture basket. **Start conversation** freezes synthetic prompt/tool grant;
+then show chat with message input, Send, Cancel run, Reset conversation, trace and
+remaining limits. Default Fixture mode is deterministic. Explicit Model mode uses
+separate preview credentials and C9 quotas; controls explain unavailable config
+or exhausted budget. No production model credentials/customer transcripts.
+
+Send creates one previewRunId before dispatch, disables duplicate sends, preserves
+input on known failure and shows Running/Completed/Failed/Cancelled/Unknown.
+Trace lists discovered tools, chosen tool/input, structured output and final answer.
+Cancel requests cancellation of that same run and waits for confirmed status;
+unknown state is reconciled before another run. C9 max20 turns,32k history,24h
+retention and model budgets apply. Reset confirms abandoning synthetic state and
+creates a new preview conversation; never replaces a live grant. Changing selected
+release/tools/flags requires reset confirmation; an ongoing preview does not gain
+new tools. Back returns the originating page, or U03 when entered from sidebar.
 
 ## Dependencies
 
-- ARCH-020-COMMERCE-001
-- ARCH-020-COMMERCE-011
+- ARCH-020-COMMERCE-008
+- ARCH-020-COMMERCE-002
 - ARCH-020-SHARED-001
 
 All listed prerequisites must be Complete and architect-accepted before a claim.
-Use dedicated launcher worktrees and accepted source; do not launch enabled work.
 
 ## Enables
 
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
+- ARCH-020-GATEWAY-001
 
 ## Acceptance Criteria
 
-- [ ] Q01: two arbitrary authored queries execute without registering business names; mapped variables/results match the accepted compiler.
-- [ ] Q02: wrong host, query/version, malformed variables/projection, partial errors and oversized response fail closed; zero credentials looked up on every path.
-- [ ] Q03: timeout/throttle/cancel/count limits are honored; no redirect to unverified host or mutation is emitted.
-- [ ] Q04: nested counterfeit evidence remains ordinary query values; no policy-shaped root output.
+- [ ] U01: N10/N11 from every specified source and sidebar, populated tool test and multi-turn conversation, match exact routes/results; errors preserve inputs.
+- [ ] U02: N13 draft response -> preview -> Back restores definition/members/reason/hash; refresh/sign-out loss shows required notice; no browser storage or URL payload.
+- [ ] U03: repeated Send/Run/Cancel and uncertain status preserve one run/model-budget reservation; quota/owner/expired-state failures show correct accessible feedback.
+- [ ] U04: C16 response/language fixtures, ungranted tools and changed release demonstrate immutable preview state and bounded referral.
+- [ ] U05: desktop/narrow/keyboard views show actual populated workflows; auth guards remain active; UI fixtures cannot call live Shopify/MCP or WhatsApp; real loader evidence belongs to013.
 
 ## Validation
 
@@ -152,7 +182,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-005. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: task/ARCH-020-COMMERCE-017. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
 
 ## Architect Review
 
