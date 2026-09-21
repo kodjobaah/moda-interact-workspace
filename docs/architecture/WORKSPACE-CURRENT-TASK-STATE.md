@@ -1143,3 +1143,22 @@ and MODEL composition uses an unapproved `PREVIEW_MODEL_URL` plus an adapter tha
 always unavailable instead of the accepted separate preview configuration. Exact
 A1-R1–R3 corrections are in the task review. No dependent promotion, automatic launch,
 main integration or gitlink update.
+## COMMERCE-019 Attempt 2 blocked — 2026-09-21
+
+ARCH-020-COMMERCE-019 is **Blocked, Attempt 2**, claims cleared. Attempt 2 preserves
+the real preview integration and closes the process-local frozen-definition defect:
+exact definitions/authored prompts are now bounded in a private snapshot persisted
+with Redis conversation state, and saved-tool tests use the accepted empty-capability
+read shape. Reported focused/Redis tests, typecheck, lint and build pass; no broader
+test expansion is required for this decision.
+
+Two architecture/ownership gaps prevent acceptance. First, accepted U14 can submit a
+tool-only DRAFT to Conversation Start, but COMMERCE-013 returns no capability/authored
+prompt for that selection while the Shared manifest requires non-empty
+`conversation_core` capability provenance. C20 forbids fabricating a generic prompt;
+the U14 owner must require a real conversation source while retaining tool entry for
+Tool test. Second, ARCH-020 names preview MODEL configuration but defines no provider
+transport/protocol and Commerce has no accepted `PreviewModelPort` provider adapter;
+MODEL therefore remains fail-closed. Architect/provider resolution is required before
+another COMMERCE-019 claim. COMMERCE-012/024/031, GATEWAY-001 and SYSTEM-TEST-001
+remain gated; nothing is launched automatically.

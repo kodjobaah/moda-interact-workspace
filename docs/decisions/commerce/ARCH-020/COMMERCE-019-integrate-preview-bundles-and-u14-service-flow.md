@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: blocked
 priority: 145
 executor:
 claimed_at:
@@ -110,7 +110,7 @@ Readiness never launches a task; use the normal dedicated mirrored worktrees.
 ## Acceptance Criteria
 
 - [x] P01: real017 UI ->009 route -> real saved loader -> Shared runner/interpreter -> Redis -> reply/details flow; no fake preview service or constant EVAL response.
-- [x] P02: N10/N11/N13 preview portion covers release/draft/tool entry, sidebar, Back and refresh loss. Test the real008 composer handoff with injected source data;018 is not required.
+- [ ] P02: N10/N11/N13 preview portion covers release/draft/tool entry, sidebar, Back and refresh loss. Tool-test entry is integrated, but tool-only Conversation Start remains blocked by the accepted U14/manifest contract mismatch described in the Attempt 2 Architect Review.
 - [x] P03: repeated/concurrent Send, same-ID changed payload, cancel/complete race, expired/unknown state and quota boundaries preserve one reservation/model start per logical run across two service instances.
 - [x] P04: edit/publish saved content between turns; frozen prompts/tool definitions and language/history persist. New conversation sees new selection; no production grant/reset/write.
 - [x] P05: denied staff or foreign/missing revision fails before loading sensitive content; fixture/model credentials remain isolated and no WhatsApp/live-Shopify transport is constructed.
@@ -213,6 +213,100 @@ branch `task/ARCH-020-COMMERCE-019`. COMMERCE-013 accepted source commit:
 integration was performed.
 
 ## Architect Review
+
+### Attempt 2 — Blocked (2026-09-21)
+
+Reviewer: moda_architect. **Blocked; task status `blocked`, Attempt 2 retained,
+executor/claimed_at null. Not accepted or returned for another implementation
+attempt yet.** Reviewed the exact submitted
+`moda-interact-workspace-ARCH-020-COMMERCE-019(1).zip`, parent report commit
+`1d4007959b30fcde0163d0531681579d6d362569` (verified as the current remote
+`task/ARCH-020-COMMERCE-019` parent head), the reported implementation commit
+`3d0caf3`, C9/C10/C20 and the accepted U14 contract. The implementation repository
+commit is not independently addressable through the current GitHub connector, so
+implementation inspection is grounded in the exact submitted archive.
+
+Attempt 2 materially resolves the implementable A1 corrections and those changes
+must be preserved:
+
+- the exact selected definitions and authored prompts now form a bounded
+  `PreviewFrozenSnapshot`;
+- that snapshot is serialized into Redis conversation state and restored through
+  `StoredConversationSchema`, so later turns no longer depend on process-global
+  Maps;
+- later fixture execution receives the stored snapshot and does not re-read mutable
+  draft definitions for an existing conversation;
+- the saved-tool test path now uses the accepted DRAFT read shape with
+  `capabilityRevisionIds: []` and the exact tool revision;
+- snapshot bounds fail closed at 32 definitions, 65,536 bytes per definition,
+  64,000 authored prompt characters and 3 MiB serialized;
+- the submitted focused integration/Redis suites, typecheck, lint, build and diff
+  check are useful supporting evidence. No larger arbitrary test matrix is required.
+
+Two remaining blockers are not safe for COMMERCE-019 to invent around.
+
+#### A2-B1 — U14 tool-only Conversation Start conflicts with the accepted manifest/prompt contract
+
+Accepted U14 currently permits Conversation Start while a saved tool is the only
+selected source. `PreviewScreen.conversationPayload()` then sends:
+
+```text
+kind: DRAFT
+capabilityRevisionIds: []
+toolRevisionIds: [selectedToolRevisionId]
+```
+
+The accepted COMMERCE-013 `saved.readSelection` correctly returns the authorized
+tool but no capability revision or authored prompt for that selection. The
+COMMERCE-019 bundle loader therefore has zero capabilities. The Shared
+`CommerceManifestSchema` requires a non-empty capability set including
+`conversation_core`, and each granted tool must have selected capability
+provenance. C20 also requires the real selected authored prompt and explicitly
+forbids replacing it with a hard-coded generic prompt. There is therefore no valid
+COMMERCE-019-only transformation from a tool-only saved selection into the required
+conversation manifest.
+
+This is now an integration-discovered defect at the accepted U14 source-selection
+boundary. The U14 contract says Conversation uses saved behaviour revisions or a
+release; tool entry is valid for Tool test. Resolution belongs to the U14 owner:
+either reopen `ARCH-020-COMMERCE-017` or create a bounded Commerce correction task
+that makes Conversation Start require an actual conversation source
+(release/behaviour draft) while preserving saved-tool preselection for Tool test.
+COMMERCE-019 must not fabricate a `conversation_core` revision, prompt or capability
+ID. No COMMERCE-017 state is changed by this review because developer reopen
+authority has not been exercised.
+
+#### A2-B2 — Preview MODEL transport has no accepted provider protocol/implementation
+
+C9/C10/C20 require explicit MODEL mode to use a separately configured preview-only
+model transport and the accepted configuration names
+`COMMERCE_PREVIEW_ENABLED`, `COMMERCE_PREVIEW_MODEL` and
+`COMMERCE_PREVIEW_API_KEY`. The current production composition still installs
+`createUnavailableModel()` when preview is enabled, so there is no configured state
+that can execute a production MODEL preview.
+
+Attempt 1 explicitly permitted the repository agent to report an architectural gap
+rather than invent a provider transport. That gap is confirmed. ARCH-020 defines
+the model identifier and credential names but does not define the provider/protocol,
+endpoint, request/response adapter, authentication convention or failure mapping,
+and the Commerce repository contains no accepted `PreviewModelPort` provider
+implementation to reuse. Those details materially affect external I/O and secret
+handling and must not be guessed by the repository agent.
+
+Architect resolution is required before another COMMERCE-019 claim: select and
+document the preview model provider/transport contract, then either create a bounded
+Commerce provider task and add it as a dependency of COMMERCE-019 or explicitly
+amend COMMERCE-019 with the resolved transport contract. FIXTURE mode remains valid
+and credential-free; no Background/production credential fallback is permitted.
+
+### Disposition
+
+COMMERCE-019 is blocked on the two items above. Preserve all accepted Attempt 2
+implementation; do not churn the Redis snapshot, tool-test or working preview
+lifecycle while these dependencies are resolved. `ARCH-020-COMMERCE-012`,
+`ARCH-020-COMMERCE-024`, `ARCH-020-COMMERCE-031`, `ARCH-020-GATEWAY-001` and
+`ARCH-020-SYSTEM-TEST-001` remain gated. Nothing is promoted or launched
+automatically.
 
 ### Attempt 1 — Changes Requested — 2026-09-21
 
