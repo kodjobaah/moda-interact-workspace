@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 100
-executor: copilot
-claimed_at: 2026-09-21T01:50:29Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -127,7 +127,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review. Attempt 3 corrections and agent-owned validation are complete.
+Ready for Review. Attempt 4 corrections and agent-owned validation are complete.
 
 ### Files Changed
 
@@ -197,6 +197,73 @@ actual granted scopes. No live credentials were inspected or used here.
 ### Architectural Concerns
 
 None newly reported.
+
+### Attempt 4 Correction Report
+
+#### Correction Checklist
+
+- A3-R1 implemented: replaced every nested product, variant and collection
+  connection literal `first: 1000` with the conservative `first: 5` profile in
+  both static Shopify documents. Added a GraphQL AST regression requiring all
+  six nested connection sizes to equal 5 and remain within Shopify's documented
+  250-item connection limit. Added a raw target fixture representing
+  `hasNextPage=true`; it maps to incomplete targets and cannot become
+  `SUPPORTED`. Updated the support matrix to distinguish the 1000-ID DTO bound
+  from the per-request size and to document partial target semantics.
+- A3-R2 implemented: made C19 `DiscountTurnContext.signal` and
+  `deadlineAt` required, added fail-closed guards at read/list entry, after
+  policy resolution, before reservation, after provider resolution and before
+  successful returns, and converted abort/deadline paths to typed retryable
+  `DEADLINE` results. Added regressions for pre-abort, late provider data,
+  thrown `AbortError`, deadline expiry and cancellation between pages with
+  exact reservation/provider-call assertions.
+
+#### Files Changed
+
+- `src/commerce/discounts/reader/types.ts`
+- `src/commerce/discounts/reader/reader.ts`
+- `tests/discount-reader.test.ts`
+- `docs/discount-support-matrix.md`
+
+#### Validation Results
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused correction suite | `npm exec vitest run tests/discount-reader.test.ts` | Passed, 1 file / 25 tests |
+| Focused reader/auth suite | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | Passed, 2 files / 27 tests |
+| Prisma generation | `npm run prisma:generate` | Passed; Prisma Client 6.19.3 generated from accepted schema |
+| Type safety | `npm run typecheck` | Passed; Next route type generation and `tsc --noEmit` |
+| Lint | `npm run lint` | Passed |
+| Production build | `npm run build` | Passed; Prisma generation, webpack compilation, TypeScript and static generation |
+| Full tests | `npm test` | 19 files / 168 tests passed; 2 unrelated baseline/environment failures remained |
+| Diff hygiene | `git diff --check` | Passed |
+
+Full-suite failures were outside the changed discount files: the
+`tests/readiness-docker.test.ts` descendant signal-handler timing assertion and
+the Redis-backed `tests/discovery-limits.test.ts` rolling-window test timed out
+after 30 seconds. No task-local discount test failed.
+
+#### Requirement-to-Fixture Effects
+
+| Correction | Fixture/test | Expected side effects | Result |
+| --- | --- | --- | --- |
+| A3-R1 legal connections | `keeps list and fixed-ID Shopify documents distinct` | All six nested literals are exactly 5 and <=250 | Passed |
+| A3-R1 incomplete targets | `maps a paginated target response to incomplete targets instead of supported facts` | `complete=false` yields null targets, `TARGETS_INCOMPLETE`, and non-supported status | Passed |
+| A3-R2 pre-abort | `returns DEADLINE without reserving or calling for a pre-aborted context` | 0 reservations and 0 provider calls | Passed |
+| A3-R2 late data | `rejects provider data that arrives after cancellation` | 1 reservation, 1 provider call, typed `DEADLINE`, no success | Passed |
+| A3-R2 transport abort | `converts a thrown AbortError to a typed deadline result` | AbortError does not escape the result union | Passed |
+| A3-R2 deadline | `returns a deadline when the clock expires during provider work` | Late provider facts are rejected as `DEADLINE` | Passed |
+| A3-R2 pagination | `does not request a second page after cancellation between pages` | 1 reservation, 1 provider call, no second page | Passed |
+
+#### Database / Worktree Evidence
+
+- Accepted database revision: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-006`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-006`.
+- Implementation branch: `task/ARCH-020-COMMERCE-006`.
+- Implementation commit: `1c124f4b53a494425735a8064ac20a2e2000914e` (`fix(commerce): bound discount reader cancellation`), pushed to `origin/task/ARCH-020-COMMERCE-006`.
+- Implementation worktree was clean after push; database submodule remained pinned at the accepted revision. No database schema, migration, parent service gitlink or other repository was changed.
+- Developer-owned live/pre-production Shopify validation remains pending. No credentials or live endpoints were inspected or used.
 
 ### Attempt 3 Correction Report
 
