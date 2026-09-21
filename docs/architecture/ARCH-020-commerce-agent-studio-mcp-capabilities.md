@@ -722,7 +722,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | ready | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
-| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
+| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
@@ -1133,3 +1133,32 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 015;012/013/system-test retain other unfinished dependencies. No downstream
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
+
+## COMMERCE-008 Attempt 5 review — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
+Reviewed implementation `558432f` and report `0b2e03bb`; remote heads matched and
+worktrees were clean. A4-R2/R3 are accepted; all three previous reproductions and
+25 focused tests passed independently. One remaining A5-R1 failure: adding a
+nested field beneath an existing aliased product creates an unbound second root
+outside the retained resultPath. The canonical task review contains exact AST
+merge/validation instructions. Local U14 handoff passes; real preview integration
+and live validation remain separately owned and are not blockers. No dependent
+promotion or main integration. This supersedes older COMMERCE-008 state wording.
+
+## COMMERCE-008 Attempt 6 accepted — 2026-09-21
+
+COMMERCE-008 is **Accepted / Complete, Attempt 6 retained**, claim cleared.
+Reviewed implementation `8ba5e42` and report `7f8e194` against remote task heads.
+The final alias correction preserves the existing field's arguments/result path,
+rejects ambiguous edits and denies unbound duplicate roots. Independent validation:
+24 focused tests and all four previous architect reproductions passed; diff checks
+passed. Submitted typecheck/lint/build passed; the reported208-pass/one unrelated
+Redis timeout does not block this component acceptance. Live OAuth/providers,
+production composition and actual U14 execution remain separate integration work.
+COMMERCE-017 is promoted Ready, Attempt0, no claim, because008/002/SHARED-001 are
+accepted Complete.009 is not a prerequisite for017's contract-fixture frontend.
+Other downstream tasks remain gated by their own unresolved prerequisites;012 is
+still the final implementation checkpoint. No implementation changes, main merge,
+main push or gitlink update. Architecture is not yet Implemented. This supersedes
+older008 state wording while retaining historical reviews.
