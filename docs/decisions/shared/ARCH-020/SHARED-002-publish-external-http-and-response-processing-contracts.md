@@ -191,3 +191,36 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+
+
+## User-authorized npm publication — 2026-09-21
+
+The user explicitly authorized public publication of
+`@modainteract/moda-interact-shared@0.14.0` after the earlier automatic approval
+review rejection. Publication was executed from the prepared implementation at
+`dfc9abf5134b33906cb825fce5c70043fb37a427`, matching its remote task branch.
+No implementation source, version, main branch or gitlink was changed.
+
+The release archive was rebuilt by the normal `npm pack`/prepack workflow and
+contains75 entries: dist artifacts, README.md and package.json. Published the exact
+archive with `npm publish /tmp/modainteract-moda-interact-shared-0.14.0.tgz --access public --registry=https://registry.npmjs.org`.
+The command exited0 and reported `+ @modainteract/moda-interact-shared@0.14.0`,
+public access, tag latest, and “Your package is being processed and may take a few
+minutes to become available.” Do not republish this version solely because the
+public lookup has not propagated.
+
+Archive SHA-1: `f83a226ff80f3900048a63246e839624f588ca0b`.
+Archive integrity: `sha512-6xC/cLnyWyeOpMHjTTH4mpWOJGnHx8K64Ldx7E2UYhhWxQp5aFf2GLhdvt9ZR6udmrZbf6zb6BcmvdFE6W+klw==`.
+
+Registry availability and clean-install verification remain pending: initial
+version lookup returned404 and install returnedETARGET after publication.
+Subsequent public-registry checks still returned404 during npm processing.
+No registry-installed exports, runner smoke test or consumer typecheck is claimed
+as passed. Once available, compare registry dist.integrity with the archive above,
+install the exact version into a fresh project, validate new /commerce exports and
+types, and run the existing validate-commerce-entrypoints.mjs with
+COMMERCE_CONSUMER_DIRECTORY pointing to that project.
+
+This entry records publication execution only; it is not architect acceptance or
+a claim that SHARED-002 is Complete. Existing execution claim/status is preserved
+for the owning task to finish its report and submission. No downstream launch.
