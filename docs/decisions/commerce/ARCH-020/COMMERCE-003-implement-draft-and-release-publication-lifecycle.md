@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
 executor: codex
 claimed_at: 2026-09-21T00:10:32Z
@@ -195,7 +195,174 @@ After scoped work and agent-owned checks, update this task's execution/report fi
 
 Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; the actual repository must be provisioned before execution preparation.
 
-## Completion Report
+## Completion Report — Attempt 3
+
+### Status
+
+Ready for Review.
+
+### Files Changed
+
+Attempt 3 implementation commit `ebe612b` changes:
+
+- `src/commerce/publication/ports.ts`
+- `src/commerce/publication/validation.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `tests/commerce-lifecycle.test.ts`
+- `tests/fixtures/publication-store.ts`
+- `docs/publication-service-contract.md`
+- `scripts/rehearse-publication-postgres.sh`
+- `scripts/fixtures/arch020-publication-rehearsal/*.sql`
+
+### Work Completed
+
+Attempt 3 addresses every Attempt 2 architect correction:
+
+- **A2-R1 — strict runtime command validation:** every public command parses a
+  strict bounded schema before authorization or storage work. Capability drafts
+  consume the accepted Shared configuration and binding schemas. Draft updates
+  copy only the four permitted fields, publish revalidates persisted draft
+  content, and the command envelope is detached before its first await. Tests
+  cover unknown-field injection, malformed configuration, prompt and binding
+  rejection, and caller mutation while authorization is blocked.
+- **A2-R2 — release/runtime compatibility:** release creation validates the
+  bounded compatibility range and immutable contract metadata/hash. Both
+  activation and rollback revalidate the stored response contract/hash and call
+  the injected runtime-compatibility port before changing a pointer. Invalid
+  compatibility and corrupted metadata produce zero pointer or audit writes.
+- **A2-R3 — canonical feature identity and storage values:** capabilities store
+  nullable `featureId`, use the read-only Feature catalogue port, enforce exact
+  `BASE/conversation_core`, `RECOVERY_POLICY/discount_assistance`, and `FEATURE`
+  identity rules, and never mutate Admin feature data. IDs and ISO timestamps
+  now come from the storage transaction; metadata CAS accepts ISO timestamp
+  tokens. The service contract records the database/port mappings.
+- **A2-R4 — concurrency and rehearsal evidence:** deterministic local fixtures
+  cover concurrent revision allocation, pointer CAS, rollback, response loss
+  after commit, unavailable registries, and role denial. The PostgreSQL
+  rehearsal is now an executable multi-session harness with independent psql
+  sessions for revision allocation and absent-pointer CAS, plus replay,
+  rollback, and injected pre-audit rollback assertions.
+
+### Validation Results
+
+Commands and outcomes for Attempt 3:
+
+- `npm test -- --run tests/commerce-lifecycle.test.ts`: **26/26 passed**.
+- `npm run lint`: **passed**.
+- `npm run typecheck`: **passed**.
+- `npm run build`: **passed**, including Prisma generation and the Next.js
+  production build.
+- `npm test`: **95/95 passed** across 14 files.
+- `bash -n scripts/rehearse-publication-postgres.sh`: **passed**.
+- `git diff --check`: **passed**.
+
+Requirement-to-fixture matrix:
+
+- **A2-R1 / input boundary:** `rejects injection fields and malformed capability
+  draft content before writes` verifies unknown privilege fields, Shared
+  configuration and binding validation, and prompt bounds with zero writes and
+  zero audits. `detaches a validated request before the first await` mutates the
+  caller object while authorization is blocked and proves the stored command
+  and audit retain the admitted values.
+- **A2-R2 / release compatibility:** `validates release compatibility ranges`
+  rejects malformed ranges with zero release/audit writes. `checks immutable
+  release metadata and compatibility on activate and rollback` exercises valid
+  activation and rollback, incompatible runners, corrupted hashes and stale CAS;
+  invalid cases leave the pointer and audit count unchanged.
+- **A2-R3 / feature identity and storage allocation:** `enforces canonical
+  feature identity and ISO metadata CAS` verifies nullable feature identity,
+  read-only existence lookup, the three binding rules, storage-allocated IDs,
+  ISO timestamps and stale timestamp rejection.
+- **A2-R4 / transaction outcomes:** `allocates concurrent revisions and rejects
+  a stale edit CAS`, `recovers the committed result after a lost response`, and
+  `rejects role denial and unavailable registries without writes` prove the
+  required two-service local cases. Existing replay, altered-payload conflict,
+  pointer race, rollback, pre-audit rollback, shared-tool, immutable release and
+  pagination fixtures continue to pass in the full suite.
+
+Developer-owned PostgreSQL rehearsal remains explicitly pending and was not
+executed by the agent. Run it against an isolated database containing the
+accepted DATABASE-001 schema:
+
+```bash
+ARCH020_REHEARSAL_DATABASE_URL='postgresql://.../isolated_arch020_test' \
+  bash scripts/rehearse-publication-postgres.sh
+```
+
+Expected output includes PASS assertions for replay recovery and mismatched
+payload conflict, contiguous two-session revision allocation `[1,2,3,4]`, one
+winning absent-pointer CAS and audit, compatible rollback retaining both
+releases, and complete rollback of the injected pre-audit failure.
+
+### Deviations
+
+None for the Attempt 3 correction contract. Production Prisma composition and
+real executor registrations remain assigned to COMMERCE-013. The runtime,
+catalogue, registry, query-validator, authorization and storage implementations
+used here are explicit contract fixtures.
+
+### Assumptions
+
+The accepted parent architecture and dependency revisions remain authoritative.
+
+### Unresolved Issues
+
+The isolated PostgreSQL rehearsal is pending developer execution under the live
+validation policy. Real executor/provider adapters remain owned by
+COMMERCE-005/006/007 and COMMERCE-013.
+
+### Architectural Concerns
+
+None newly reported.
+
+### Git / VCS
+
+Task branch: `task/ARCH-020-COMMERCE-003`.
+
+Physical worktree isolation:
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-003`
+- parent branch: `task/ARCH-020-COMMERCE-003`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-003`
+- implementation branch: `task/ARCH-020-COMMERCE-003`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+
+- parent remote task branch fast-forwarded: not-needed
+- parent `origin/main` incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation `origin/main` incorporated: already-current
+
+Recursive implementation submodules:
+
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- recorded `database` commit: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`
+
+Implementation repository:
+
+- repository: `moda-interact-commerce`
+- commit: `ebe612b`
+- remote branch: `origin/task/ARCH-020-COMMERCE-003`
+- pushed: yes
+
+Parent workspace:
+
+- task file: `docs/decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md`
+- commit: this submission commit
+- remote branch: `origin/task/ARCH-020-COMMERCE-003`
+- pushed: yes
+- submodule gitlink staged: no
+
+Merged to implementation main: no.
+
+Merged to workspace main: no.
+
+## Completion Report — Attempt 2
 
 ### Status
 
