@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-21T19:43:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -137,23 +137,35 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Implementation submitted for Architect Review.
 
 ### Files Changed
 
-None; implementation has not started.
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `components/production-studio-page.tsx`
+- `tests/studio-integration.test.ts`
+- `docs/commerce-studio-integration.md`
+- `package.json`
 
 ### Work Completed
 
-None; task definition only.
+Connected the production Studio workspace to the accepted `CommerceBackend` facade. Added protected server actions and the production adapter for publication reads, lifecycle commands, discovery, validation, shop inspection, operation replay/CAS error translation, environment-scoped release pointers, subscription plan labels, and feature status mapping. Mutations rehydrate returned IDs from a fresh publication snapshot. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+- `npm run test:arch020-studio-integration` — passed, 1 file and 3 tests.
+- `npm run typecheck` — passed.
+- `npm run lint -- --quiet` — passed.
+- `npm run build` — passed; Next production build and route generation completed.
+- `git diff --check` — passed.
+
+The focused tests cover real backend service composition, publication mapping, operation ID forwarding with reread behavior, and stale CAS translation. Full acceptance flows requiring the shared isolated seed contract and external PostgreSQL/Redis evidence remain Architect/System Test follow-up.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+No scope deviations. The accepted backend facade does not expose a persisted release sequence number or shop plan in inspection results, so the adapter derives release display numbers deterministically from the publication snapshot and reads plan names from the existing subscription relation. Documentation upstream does not expose related field paths, so that DTO remains empty.
 
 ### Assumptions
 
@@ -170,7 +182,10 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-018. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-018`.
+Implementation branch: `task/ARCH-020-COMMERCE-018`.
+Implementation commit/push: `d074205` (`feat(commerce): integrate production studio services`), pushed to `origin/task/ARCH-020-COMMERCE-018`.
+Parent report branch: `task/ARCH-020-COMMERCE-018` in the dedicated parent worktree; this report is the only parent change. Parent commit/push is recorded after this update. No parent service gitlink or main integration was performed.
 
 ## Architect Review
 
@@ -180,19 +195,19 @@ Pending.
 
 ### Review Notes
 
-No implementation submitted. This task is a reviewable definition.
+Implementation and validation evidence are submitted. Architect review should verify the C20 acceptance flows, especially authorization boundary behavior, exact release/member mappings, and the remaining PostgreSQL/Redis system-test evidence.
 
 ### Reviewed Files
 
-None for implementation review.
+See the implementation commit `d074205` and the files listed in the Completion Report.
 
 ### Validation Reviewed
 
-None for implementation review.
+Focused Studio integration tests, typecheck, lint, production build, and diff hygiene all passed as listed above.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+The implementation consumes the accepted `getCommerceBackend()` exports and keeps production Studio composition server-only. COMMERCE-019 preview behavior remains untouched.
 
 ### Follow-up
 
