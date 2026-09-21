@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 105
 executor: null
 claimed_at: null
@@ -183,3 +183,13 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+
+
+### Architect readiness promotion — 2026-09-21
+
+Ready, unclaimed, attempt0. Prerequisites006 (accepted Attempt4, implementation
+1c124f4b53a494425735a8064ac20a2e2000914e),015 (accepted Attempt3, implementation
+511e14ad25fb5f34882102e324b246a601ca9053) and SHARED-001 are Complete in main.
+006's accidentally blank task ID is restored without changing its acceptance.
+No implementation scope change, task claim or automatic execution. Launcher must
+consume accepted prerequisite source through normal preparation/synchronization.

@@ -607,6 +607,17 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
 
+
+## COMMERCE-009 Attempt 4 accepted — 2026-09-21
+
+Complete, architect accepted; Attempt4 retained, claim clear. Reviewed5d4dcd3 /
+ef556b4c. Expired-owner execution fence verified in memory/Redis and all dispatch
+boundaries. Independent37/37 focused tests pass, including actual isolated Lua;
+prior architect expiry/replacement reproduction1/1 passes with0 stale model calls.
+Prior accepted prompt/history/language/replay/bounded-state corrections retained.
+009 is satisfied;012/013/system-test retain other unfinished prerequisites, and
+017 has no009 dependency. No promotion or automatic execution. Live deployment
+and013 assembly remain separate. No main integration or gitlink update.
 ## COMMERCE-008 Attempt 5 review — 2026-09-21
 
 COMMERCE-008 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
@@ -637,12 +648,8 @@ main push or gitlink update. Architecture is not yet Implemented. This supersede
 older008 state wording while retaining historical reviews.
 
 
-## COMMERCE-005 Attempt 2 architect review — 2026-09-21
+## COMMERCE-016 readiness reconciliation — 2026-09-21
 
-Changes Requested; Ready, Attempt2 retained, claim clear; not accepted.
-Reviewed2761e6b/e4fc15cd. Seven submitted tests pass; two task-owned review cases
-fail: populated list selection validation and blocked stream cancellation.
-A2-R1–R3 give exact recursion fix, active body cleanup and C14 UNAVAILABLE mapping
-for provider-version fallback. Retain variable validation/HTTP envelope/deadline
-race improvements. No scope expansion, promotion, new claim, main merge or gitlink
-change. See task for exact acceptance effects; live provider validation is separate.
+ARCH-020-COMMERCE-016 is Ready, attempt0, unclaimed. Accepted006/015/SHARED-001
+are Complete in main;006's blank frontmatter ID is repaired to its canonical ID.
+No task is launched and no other task lifecycle state changes in this update.
