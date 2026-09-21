@@ -1140,3 +1140,13 @@ ARCH-020-SHARED-002 is **Accepted / Complete, Attempt 5** (`95bab1d`, public
 promotes `COMMERCE-020`, `021`, `022`, `023`, `026` and `027` to Ready and confirms
 `COMMERCE-025` Ready. All later C21 tasks retain unsatisfied dependencies; no task
 is launched, no main integration is performed and no service gitlink is changed.
+
+
+## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
+
+COMMERCE-034 is **Accepted / Complete, Attempt 1**. The accepted U14 correction
+keeps tool-only handoff in Tool test and requires an authored persisted release or
+non-empty behaviour/draft source before Conversation preview can start; no synthetic
+tool-to-capability fallback is permitted. COMMERCE-019 now records COMMERCE-034 as
+an accepted prerequisite and remains **Ready**. No downstream task was launched by
+this state reconciliation.

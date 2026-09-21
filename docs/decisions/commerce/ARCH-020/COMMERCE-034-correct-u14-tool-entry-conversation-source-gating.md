@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 140
 executor:
 claimed_at:
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-020-COMMERCE-019
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Correct U14 tool-entry conversation source gating
@@ -239,4 +239,4 @@ semantics. The recorded typecheck baseline is not a regression from this task.
 
 ### Follow-up
 
-None for this task. No downstream task was launched.
+None for implementation. Architect state reconciliation marks this task `complete` and records it as an accepted prerequisite of COMMERCE-019. COMMERCE-019 remains `ready`; no downstream task was launched by this reconciliation.
