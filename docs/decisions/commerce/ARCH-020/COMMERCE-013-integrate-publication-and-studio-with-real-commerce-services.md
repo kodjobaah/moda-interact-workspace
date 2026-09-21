@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 125
 executor: copilot
 claimed_at: 2026-09-21T10:50:08Z
@@ -155,27 +155,78 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+Implementation branch `task/ARCH-020-COMMERCE-013`: `src/commerce/integration/backend.ts`,
+`src/commerce/integration/backend/{authorization,executors,publication-storage,query-validation}.ts`,
+`app/api/mcp/route.ts`, publication lifecycle/ports, backend integration tests,
+auth entrypoint test, package scripts, and `docs/commerce-backend-integration.md`.
 
 ### Work Completed
 
-None; task definition only.
+- Added the server-only `getCommerceBackend()` facade with publication, discovery,
+  compiler, shared execution, explicit fixture execution, saved-selection and
+  inspection boundaries; missing saved/inspection production adapters fail closed.
+- Replaced the MCP route's unavailable composition with the backend runtime and
+  retained request-scoped assertion, grant, turn and budget state.
+- Added Prisma-backed serializable publication storage with advisory locking,
+  durable replay reconstruction from audit metadata, atomic business/audit writes,
+  canonical tool-definition JSON, and strict metadata/edit/pointer CAS.
+- Wired accepted compiler, executor registry, query, policy, discount,
+  recommendation, assertion and authorization exports without adding fixture
+  registration to production.
+- Corrected the known enable/disable timestamp CAS mismatch for both capability
+  and tool commands; updated the lifecycle test to supply the current token.
+
+### C20 Requirement Matrix
+
+| Requirement | Evidence / disposition |
+| --- | --- |
+| B01 | Compiler validation and publication integration are wired; focused lifecycle and execution tests pass. Real PostgreSQL publication rows remain developer validation. |
+| B02 | Serializable transaction, advisory lock, replay audit and atomic write path are implemented. Two-connection race/rollback evidence remains pending isolated PostgreSQL validation. |
+| B03 | MCP route composes verified assertions, authorization snapshot and exact execution registry; request-scoped identity is preserved. Live grant/provider evidence remains pending. |
+| B04 | Exact `1.0.0` policy registration and immutable registry are composed from accepted exports; renamed/adapter/provider budget scenarios are covered by prerequisite tests and require integrated provider evidence. |
+| B05 | Server-only facade, no fixture registration, typed unavailable behavior, and production build are verified. |
+| B06 | Capability and tool enable/disable require `expectedUpdatedAt`, hash the strict request, compare inside the transaction, and update the timestamp. Focused suite passes. |
+
+Former I01-I09 ownership is preserved: I01/06/07 are COMMERCE-018, I09 is
+COMMERCE-019, and I02/03/04/05/08 are represented by this backend boundary and
+the pending real-infrastructure evidence above.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed checks, implementation worktree `task/ARCH-020-COMMERCE-013`:
+
+- `npm run test:arch020-backend-integration`: passed, 4 files / 49 tests.
+- `npm run typecheck`: passed; Next route types generated and `tsc --noEmit` passed.
+- `npm run lint`: passed.
+- `npm run build`: passed; Prisma Client 6.19.3 generated and Next production build completed.
+- `npm run test:arch020-backend-integration:database`: static schema check passed;
+  migration validator failed closed before connection with `Local isolated target required`
+  because no `DATABASE_URL` was supplied.
+- `git diff --check`: passed.
+
+Developer validation required: run the migration validator twice against
+developer-created localhost PostgreSQL databases `arch020_test_fresh` and
+`arch020_test_upgrade`, plus the C20 real PostgreSQL two-connection race/rollback
+and Redis/container transport checks. Record actual rows, operation IDs, audit
+rows, provider calls, and rollback state; no pass is claimed here.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+No scope deviation. The saved-selection and inspection adapters are explicit
+injected boundaries and fail closed until their owning Studio/preview integration
+provides real server adapters; no fixtures or browser code cross the backend
+boundary.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+Accepted producer source SHAs and installed versions are recorded in
+`docs/commerce-backend-integration.md`. Database submodule is consumed at
+`5abfd87f57038bae515aaa09ec7c8db62adcfb98`; shared package `0.13.1`, Prisma
+`6.19.3`, Next `16.3.5`, and MCP SDK `1.30.0`.
 
 ### Unresolved Issues
 
@@ -188,7 +239,11 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-013. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Attempt 1 uses mirrored `task/ARCH-020-COMMERCE-013` branches. Parent claim is
+`97180042`; implementation branch started at `aaa776c14dde87260afdd3c9a1d2797db613df4f`.
+At submission record the implementation and parent report commit hashes and push
+results, the database submodule SHA above, and confirmation that no main branch
+or parent service gitlink was changed.
 
 ## Architect Review
 
