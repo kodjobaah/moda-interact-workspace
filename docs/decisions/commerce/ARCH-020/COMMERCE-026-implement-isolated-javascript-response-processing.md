@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor:
 claimed_at:
@@ -140,10 +140,14 @@ pin and focused adapter command.
 
 * CA01: `tests/code-response-processor.test.ts` / `transforms JSON through the accepted kernel`,
   `transforms TEXT without attempting JSON parsing` / `npm run test:arch020-code-processor`
-  -> 5/5 tests passed.
+  -> 6/6 tests passed after the review regression was added.
 * CA02: `rejects malformed responses and non-object output roots`,
   `maps syntax, deadline, cancellation, and output-limit failures` / the same
   focused command -> passed; actual kernel diagnostics and bounded output checks observed.
+* C21 sections 2.3/9.4 schema boundary: `leaves result-schema enforcement at the Shared validation boundary`
+  uses `compileSubset(resultSchema, "details")` after a successful adapter result;
+  wrong-typed `title: 42` is rejected while `resultSchema` remains absent from
+  `CodeResponseProcessorInput`. `npm run test:arch020-code-processor` -> passed.
 * CA03: `keeps simultaneous inputs isolated` plus accepted runtime proof
   `tests/code-runtime-proof.test.ts` / `npm run test:arch020-code-processor` and
   `npm run test:arch020-code-runtime-proof` -> 5/5 and 10/10 passed.
@@ -169,25 +173,29 @@ JavaScript is executed only through the accepted COMMERCE-029 sandbox.
 
 Repository-wide typecheck remains blocked by pre-existing integration/Prisma
 diagnostics outside this task. Full schema/render validation is owned by the
-later publication/assembly tasks; this adapter consumes the Shared processor
-input contract and performs the bounded guest-output validation available at
-this port.
+later COMMERCE-030 publication validator and COMMERCE-024 assembly path. This
+task consumes the Shared processor input contract and performs the bounded
+guest-output validation available at this port; it does not duplicate or invent
+the downstream `resultSchema` port.
 
 ### Architectural Concerns
 
-No producer gap identified after consuming Shared `0.14.2` and the accepted
-COMMERCE-029 runtime export. Architect review should confirm the intended later
-result-schema validation boundary for the schema-less `CodeResponseProcessorInput`
-port.
+COMMERCE-030's production validator is still pending, so this task cannot prove
+the eventual assembled publication/sample service. The focused regression now
+proves the accepted Shared schema validator rejects a wrong-typed adapter result
+and explicitly preserves the boundary: COMMERCE-026 does not accept or validate
+`resultSchema`; COMMERCE-030/024 must perform that check before rendering/model
+flow.
 
 ### Git / VCS
 
 Implementation branch `task/ARCH-020-COMMERCE-026` published at commit
-`ae47b61`. Physical isolated worktree:
+`4b8e5bc` (includes prior implementation `ae47b61`). Physical isolated worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-026`.
 Accepted runtime dependency: `quickjs-emscripten@0.31.0`, Shared `0.14.2`;
 database submodule was initialized by launcher preparation. Parent report is
-ready for mirrored publication and Architect review.
+ready for mirrored publication and Architect review. Review correction returned
+the task to Ready with attempt 1 retained and no active executor claim.
 
 ## Architect Review
 
