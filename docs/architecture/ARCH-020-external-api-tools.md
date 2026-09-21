@@ -884,3 +884,15 @@ SQL confirms timestamp drift. Real fresh/upgrade PostgreSQL evidence remains
 unrun and is directly owned by this migration task. No acceptance, implementation
 change, main merge, gitlink update or downstream promotion. COMMERCE-020/028 remain
 gated on their actual dependencies; no automatic launch.
+
+### DATABASE-003 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** A1-R1/R2/R3
+remain materially corrected in submitted implementation `df86899`, but live PostgreSQL
+upgrade validation now fails inside `seedBaseline()` with SQLSTATE `23514` / `ARCH020
+definition identity mismatch` before DATABASE-003's additive migration. The upgrade
+fixture is not valid under the predecessor ARCH-020 guards: its tool definition is `{}`,
+and its later release/grant rows also omit the minimum predecessor-valid
+`conversation_core` release graph. Correct the fixture without weakening old constraints,
+then rerun clean fresh and upgrade modes. No broader test expansion and no dependent
+promotion.

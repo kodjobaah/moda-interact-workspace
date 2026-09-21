@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 executor: null
 claimed_at: null
 priority: 145
@@ -188,6 +188,95 @@ client version was `6.19.3`. No submodules were present in the implementation
 packet. Parent claim commit was `b1f07a21`.
 
 ## Architect Review
+
+### Attempt 2 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed the submitted Attempt 2 snapshot reporting
+implementation `df86899` and parent report `4ad398d4`. The archive contains no Git
+metadata, so those remote commit heads cannot be independently reverified from the
+submission itself. **Changes Requested; Ready, Attempt 2 retained; executor/claimed_at
+null.**
+
+The three Attempt 1 source corrections are materially improved. A1-R1 now maps all
+six new CommerceExternal timestamps to `@db.Timestamptz(3)`, matching the checked-in
+migration. A1-R2 supplies required timestamps to the raw prerequisite fixtures.
+A1-R3 now checks expected PostgreSQL SQLSTATEs, isolates credential constraint cases,
+tests immutable revision deletion without a credential FK masking it, verifies both
+rollback rows are absent, and snapshots existing Shop/Admin/tool/tool-revision/grant
+contents across the upgrade migration. Preserve those corrections.
+
+Architect static review inspected the schema, migration, validator, package script and
+README commands. `node --check scripts/validate-arch020-external-connections.mjs`
+passes in the submitted snapshot. Initial review could not execute PostgreSQL because
+its environment lacked a server/runtime, so the task was returned for the bounded X02
+rehearsal rather than for broader testing.
+
+The developer then provisioned the documented upgrade database and executed the real
+upgrade rehearsal. It reached `seedBaseline()` and failed before DATABASE-003's additive
+migration was applied:
+
+```text
+PrismaClientKnownRequestError / P2010
+SQLSTATE 23514
+ERROR: ARCH020 definition identity mismatch
+```
+
+This is now concrete validation evidence, not an infrastructure limitation. The failure
+is caused by the upgrade validator inserting `legacy-tool-revision` with
+`definition = '{}'::jsonb` even though the predecessor ARCH-020 schema requires a
+structurally valid tool definition and its `name` / `definitionVersion` to match the
+parent tool and revision. The currently submitted upgrade seed also attempts to create
+a release with an empty response contract and a conversation grant without the
+predecessor-valid recovery/conversation, `conversation_core` capability/revision and
+release-membership graph required by the existing guards. Fixing only the first failing
+INSERT would therefore leave the rehearsal invalid at later predecessor constraints.
+
+#### A2-R1 — Make the upgrade baseline valid under the predecessor ARCH-020 schema
+
+File: `scripts/validate-arch020-external-connections.mjs`, `seedBaseline()`.
+
+Correct the upgrade fixture; do not weaken, disable or bypass predecessor constraints,
+triggers or foreign keys, and do not modify predecessor migrations merely to make this
+rehearsal pass. Seed the minimum valid predecessor graph needed for X02 preservation:
+
+1. Keep the existing Shop and PlatformAdmin fixture rows.
+2. Seed `legacy-tool` / `legacy-tool-revision` with the predecessor six-field tool
+   definition shape (`name`, `definitionVersion`, `description`, `inputSchema`,
+   `execution`, `responseTemplate`), with `name = legacy_tool` and
+   `definitionVersion = 1.0.0` matching the owning rows.
+3. Seed `legacy-release` with a predecessor-valid `response.v1` response contract and
+   a valid 64-character lowercase hexadecimal `responseContractHash`. DATABASE-003
+   does not need to duplicate Shared/Commerce canonicalization/hash-content tests.
+4. Create the minimum valid CheckoutRecovery -> Conversation ownership chain required
+   by the predecessor grant trigger, including an inbound version compatible with the
+   grant.
+5. Create a BASE capability with key `conversation_core`, a valid published capability
+   revision with empty `toolBindings`, and a `CommerceReleaseCapability` membership for
+   `legacy-release`.
+6. Seed `legacy-grant` with `selectedCapabilityKeys = ["conversation_core"]` and
+   `grantedTools = []`. The preserved legacy tool/revision does not need to be granted;
+   X02 only requires that existing tool/revision and grant rows survive unchanged.
+7. Preserve the Attempt 2 before/after snapshots of Shop, PlatformAdmin, CommerceTool,
+   CommerceToolRevision and CommerceConversationGrant.
+
+After correcting the fixture, recreate clean disposable databases and rerun the two
+task-owned modes:
+
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/arch020_connections_test_fresh" \
+  npm run test:arch020-external-connections:database -- --mode fresh
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/arch020_connections_test_upgrade" \
+  npm run test:arch020-external-connections:database -- --mode upgrade
+```
+
+Record the complete observed result for both modes in the Completion Report. If another
+predecessor constraint rejects the fixture, correct the fixture so that it represents
+a genuinely valid pre-DATABASE-003 state; do not treat an unrelated `23514` as success.
+No broader database test matrix is requested.
+
+Until both modes pass, X02 remains unproved and the task cannot be accepted Complete.
+No downstream task is promoted or launched by this review.
 
 ### Attempt 1 — Changes Requested (2026-09-21)
 

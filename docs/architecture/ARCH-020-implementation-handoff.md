@@ -993,3 +993,15 @@ fresh/upgrade migration and runtime checks remain unrun and are directly owned
 by this migration task. No acceptance, implementation change, main merge, gitlink
 update or downstream promotion. COMMERCE-020/028 remain gated on their actual
 dependencies; no automatic launch.
+
+### DATABASE-003 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Submitted
+implementation `df86899` closes the prior timestamp/assertion defects, but the real X02
+upgrade rehearsal has now run and fails before the new migration: `seedBaseline()` is
+rejected with SQLSTATE `23514`, `ARCH020 definition identity mismatch`. The repository
+agent must make the upgrade seed a valid predecessor ARCH-020 state, including a valid
+legacy tool definition and the minimum recovery/conversation + `conversation_core`
+capability/revision + release membership needed for the preserved grant. Do not weaken
+predecessor guards. Recreate the disposable targets and rerun fresh/upgrade; no
+downstream task is promoted or launched.

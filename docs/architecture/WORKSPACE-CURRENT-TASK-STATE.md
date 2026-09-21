@@ -1098,3 +1098,15 @@ fresh/upgrade migration and runtime checks remain unrun and are directly owned
 by this migration task. No acceptance, implementation change, main merge, gitlink
 update or downstream promotion. COMMERCE-020/028 remain gated on their actual
 dependencies; no automatic launch.
+
+### DATABASE-003 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** A1-R1/R2/R3
+remain materially corrected in `df86899`. Real PostgreSQL upgrade execution is no longer
+unavailable: it reaches `seedBaseline()` and fails with SQLSTATE `23514`, `ARCH020
+definition identity mismatch`, proving the upgrade fixture is invalid under predecessor
+ARCH-020 guards. Correct the predecessor baseline graph (tool definition, valid
+response-contract release, recovery/conversation ownership, `conversation_core`
+capability/revision and release membership, valid grant), recreate clean disposable
+databases and rerun both bounded modes. DATABASE-003 remains unaccepted; no dependent
+promotion or automatic launch.
