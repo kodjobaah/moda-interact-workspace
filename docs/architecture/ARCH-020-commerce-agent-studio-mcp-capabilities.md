@@ -721,7 +721,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | complete | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | complete | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
-| [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
+| [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | ready | ARCH-020-COMMERCE-006 |
 | [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
@@ -1346,3 +1346,18 @@ separate calls rather than one nested execution. Latest task gives exact fixture
 structure, per-case expected counts and reporting corrections. No new runtime
 defect, dependency promotion, claim, main merge or gitlink change. Live integration
 remains separate. Reclaim after publication of this parent overlay.
+
+## COMMERCE-007 Attempt 4 architect review — 2026-09-21
+
+COMMERCE-007 is **Changes Requested / Ready, Attempt 4 retained**, claims cleared.
+Reviewed implementation `91faf18` and report `cb8f7f3` against remote task heads.
+Independent 11 focused tests and seven prior runtime reproductions pass; no new
+production defect is alleged. Two harness diagnostics fail: its exhausted-budget
+case issues zero provider requests, and its consumer accepts an invalid selected
+second evidence item. A4-R1 specifies the remaining A3-R1 harness/report correction:
+real nested budget work, measured replay callbacks, validation of every selected
+item, isolated valid negative fixtures and accurate report claims. Runtime fixes
+remain verified. No dependent promotion, new claim, implementation change, main
+integration or gitlink update. Deployed MCP/worker/Shopify evidence stays pending
+with its assigned owner. This supersedes older COMMERCE-007 current-state wording only;
+other task decisions remain unchanged and architecture is not yet Implemented.

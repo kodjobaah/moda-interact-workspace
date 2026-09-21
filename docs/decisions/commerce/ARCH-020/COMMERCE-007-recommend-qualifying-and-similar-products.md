@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 110
 executor: null
 claimed_at: null
@@ -232,6 +232,27 @@ Task branch: `task/ARCH-020-COMMERCE-007`, attempt 4; claim cleared for review (
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 4 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for the remaining harness/report correction. Attempt 4 retained; executor/claimed_at null. Not accepted.** Verified implementation `91faf18e8163b8b4bba231fbb6b2a30477d2aeb8` (including `89780156`) and report `cb8f7f3d010cae05bc0ccfa9c41f3939c8bad356` against remote task heads. Both dedicated worktrees were clean. No implementation edit, new claim, dependent promotion, main merge or gitlink update.
+
+Independent validation: **11/11 submitted focused tests and 7/7 prior runtime reproductions pass**. The earlier runtime corrections remain verified; this review alleges no new production recommendation defect. Diff check passes. Submitted typecheck/lint/build and full 311/312 remain reported evidence. Two diagnostic assertions against an isolated copy of the submitted harness (`/tmp/c007-a4-review/review.test.ts`) expose the incomplete proof: its exhaustion case performs zero actual provider requests, and its consumer accepts two selected IDs even though the second selected evidence has an invalid digest. These are defects in the test harness, not demonstrated production-consumer defects.
+
+#### A4-R1 — Finish A3-R1's existing executable proof and correct the report
+
+Scope remains `tests/recommendation-contract.test.ts`, task-owned fixtures and this Completion Report. Preserve working runtime code. No additional coverage target, live service or Background implementation is requested.
+
+1. **Replace the counter preload with real nested work.** At line29 the budget sets reservations to12 before incrementing on its first request. Thus the exhaustion scenario rejects search immediately, with providerCalls0; `<=12` passes without exercising nested calls. Remove that preload and start each scenario at0. Use one top-level execute, several valid candidates (for example six), and the same budget object across search, rule reads and product facts. Let each actual fixture provider request reserve once; provide a valid response for the rule path instead of its current unexpected-operation throw. One search plus repeated rule/fact reads can reach12 and deny reservation13 naturally. Assert providerCalls===12, reservations===13, typed ERROR and zero transport after denial. Do not loop top-level execute or add an artificial11-request rule loop. Keep the separate exhausted-before-start test if useful, labeled correctly.
+
+2. **Make the consumer double actually replay and inspect every selected item.** It currently assigns `refreshCalls=1` without calling any transport, accepts only one `expectedProposal`, and can accept selected IDs `[validFirst, invalidSecond]` after checking just the first. The second baseline evidence still has a fabricated `'b'.repeat(64)` digest. Extract the real producer fixture, generate both alternatives through it, and retain a provenance map keyed by original evidenceId with the authored call/revision/arguments. Pass an actual async refresh callback/spies into the test-only double; replay once per original call tuple and count invocations. For each selected original ID, require exactly one fresh offer/proposal match and validate its shape/digest/semantics/time; reject if any item fails. Do not require a fresh digest to equal the old digest, since timestamps may legitimately change. Test two selected valid alternatives with reversed refresh ordering, then a bad second item, plus changed valid timestamps/digest with unchanged semantics. Capture exact original name/arguments and assert no separately discovered evaluator call.
+
+3. **Remove invalid-fixture and constant-counter shortcuts from the existing negative cases.** Expiry/future rows currently change timestamps without recomputing the digest, so digest failure masks whether time checks work. Recompute valid digests for those rows and use an independent positive control; only the intentional invalid-digest case should have a bad hash. Feed malformed envelopes through runtime Shared parsing. Invoke a deferred refresh callback before injecting cancellation/new inbound/lease loss, then assert delivery/language-write spies remain unused; the current `cancel:true` early return and literal counters do not prove stale completion handling. Producer denial must run through the fixture authorization boundary with provider count0; changing an expected grant string is not producer revocation. Preserve A3-R1's named EC rows, including original-provenance/unknown-ID zero-call checks and actual configured-limit clamping with enough candidates to observe the limit.
+
+4. **Make report claims correspond to executed assertions.** The current report claims malformed-shape, imitation, producer-denial and configured-limit coverage absent from this file. It also claims two alternatives were accepted although only the first is selected in the positive case, and retains the stale “8 focused tests total” entry. Record exact EC row names, commands and observed callback/provider/delivery counts; mark any unimplemented row pending instead of passed. Keep typecheck/lint/build as actually executed after the correction. Passing the current 11 tests is not proof of behavior they never exercise.
+
+Acceptance remains the bounded local C18 contract work already specified in A3-R1, with the existing runtime regressions preserved. Use test-only consumer code or an approved executed fixture; do not import or modify Background. Real deployed MCP/worker/Shopify validation stays developer-owned. Return to Review with mirrored branches pushed and claims clear; do not self-accept or start dependent tasks.
+
 
 ### Changes Requested — Attempt 3 — 2026-09-21
 

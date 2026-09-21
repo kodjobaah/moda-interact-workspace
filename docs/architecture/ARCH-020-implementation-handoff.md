@@ -770,3 +770,18 @@ separate calls rather than one nested execution. Latest task gives exact fixture
 structure, per-case expected counts and reporting corrections. No new runtime
 defect, dependency promotion, claim, main merge or gitlink change. Live integration
 remains separate. Reclaim after publication of this parent overlay.
+
+## COMMERCE-007 Attempt 4 architect review — 2026-09-21
+
+COMMERCE-007 is **Changes Requested / Ready, Attempt 4 retained**, claims cleared.
+Reviewed implementation `91faf18` and report `cb8f7f3` against remote task heads.
+Independent 11 focused tests and seven prior runtime reproductions pass; no new
+production defect is alleged. Two harness diagnostics fail: its exhausted-budget
+case issues zero provider requests, and its consumer accepts an invalid selected
+second evidence item. A4-R1 specifies the remaining A3-R1 harness/report correction:
+real nested budget work, measured replay callbacks, validation of every selected
+item, isolated valid negative fixtures and accurate report claims. Runtime fixes
+remain verified. No dependent promotion, new claim, implementation change, main
+integration or gitlink update. Deployed MCP/worker/Shopify evidence stays pending
+with its assigned owner. This supersedes older COMMERCE-007 current-state wording only;
+other task decisions remain unchanged and architecture is not yet Implemented.
