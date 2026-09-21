@@ -10,8 +10,8 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 |---|---|---|---|
 | [ARCH-020-COMMERCE-001](COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | complete | — |
 | [ARCH-020-COMMERCE-002](COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | complete | ARCH-020-COMMERCE-001 |
-| [ARCH-020-COMMERCE-003](COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-004](COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-003](COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-004](COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | ready | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Implement basket and product discovery tools | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-006](COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | pending | ARCH-020-COMMERCE-006 |
@@ -64,3 +64,17 @@ cleanup failure, arbitrary SQL-error masking, replay assertion and worker-teardo
 corrections. Preserve passing component code. PostgreSQL execution remains
 explicitly developer-owned/unrun;013 composition remains separate. This is the
 latest decision. No downstream promotion, new claim, main merge or gitlink edit.
+
+## COMMERCE-003 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-003 is **Complete, architect accepted, Attempt 4 retained**, claim cleared.
+Reviewed implementation `12df0104` and report `4b86771f`. The isolated rehearsal
+now fails closed on unexpected SQL/cleanup errors, identifies its injected
+rollback case, checks audit-backed replay and reaps owned workers. Independently
+passed 26 lifecycle tests, shell syntax, four mock harness scenarios and diff
+checks. Live disposable PostgreSQL execution remains explicitly developer-owned
+and unrun; COMMERCE-013 owns real adapter/integration composition. No main merge
+or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
+without claiming an attempt. Other dependent tasks retain their current states;
+012/013/system-test still have unresolved prerequisites. This acceptance supersedes
+older COMMERCE-003 current-state wording; architecture is not yet Implemented.

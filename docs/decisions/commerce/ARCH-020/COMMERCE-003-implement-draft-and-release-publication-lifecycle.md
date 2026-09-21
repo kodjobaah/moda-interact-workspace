@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
 executor: codex
 claimed_at: 2026-09-21T00:39:48Z
@@ -659,6 +659,24 @@ submitted on the mirrored parent branch. No main merge or parent service gitlink
 update was performed.
 
 ## Architect Review
+
+### Accepted — Attempt 4 — 2026-09-21
+
+**Current decision: Complete, architect accepted; Attempt 4 retained, executor/claimed_at null.** Reviewed implementation `12df0104f9c8e6f9fb0ab3fe0888f6fadfaa367e` and report `4b86771f88533d203923e8529b14ec15ba8880e9`. Both launcher-resolved dedicated worktrees were clean and matched remote task heads. This decision supersedes previous Changes Requested/current-state wording; previous reports and reviews remain historical evidence. No implementation edits, next claim, main merge or gitlink update.
+
+A3-R1 is satisfied within the approved component/rehearsal-deliverable scope:
+
+- Isolation uses an explicitly authorized, uniquely named disposable PostgreSQL container with no host port, volume or external database URL. Pinned migrations provision the container. Teardown removes that invocation-owned container rather than deleting immutable history; failure is visible, nonzero and identifies the retained container. Final PASS follows successful teardown.
+- The partial-publication case verifies release/member writes before raising P0203 with the fixed injection marker. Other SQL failures are rejected with bounded diagnostics. Post-rollback assertions check zero release/member/audit rows.
+- The narrow storage replay fixture derives SHA-256 from canonical command strings, recovers the original bounded result, rejects changed actor/action/payload and checks one business/audit result. It is accurately separate from COMMERCE-013's real service composition.
+- Owned concurrent clients are tracked, terminated/reaped on worker failure and handled before container teardown. The deterministic harness covers expected injection, unrelated SQL error, cleanup failure and worker failure/peer teardown.
+- Report test mappings no longer claim an absent corrupted-hash test. Previously accepted service/contract fixes remain intact.
+
+Independent validation: focused lifecycle **26/26 passed**; both shell syntax checks passed; all four mock Docker/psql harness scenarios passed; implementation diff whitespace check passed. Reviewed fixture SQL against the consumed schema, including immutable audit/member triggers, release membership and pointer constraints. Submitted full **95/95**, lint, typecheck and production build are recorded as reported passing evidence, not independently rerun in full during this review.
+
+**Live disposable PostgreSQL rehearsal was not executed.** Its execution remains developer-owned, with the documented opt-in command and prerequisites. This acceptance establishes the owned deterministic lifecycle component and runnable rehearsal deliverable under C17; it does not claim production Prisma/provider composition or live database transaction validation. COMMERCE-013 retains real adapter/integration responsibility.
+
+Dependency reconciliation: COMMERCE-004 is promoted Pending -> Ready because COMMERCE-003 and SHARED-001 are now accepted Complete. No attempt is claimed. COMMERCE-012, COMMERCE-013 and SYSTEM-TEST-001 retain pending status because other implementation dependencies remain unresolved. Architecture status is not Implemented. Developer integration of implementation first and parent gitlink/report afterward remains separate.
 
 ### Changes Requested — Attempt 3 — 2026-09-21 — Rehearsal deliverable
 

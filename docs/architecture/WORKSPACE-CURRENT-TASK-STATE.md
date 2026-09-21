@@ -397,8 +397,8 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-SHARED-001 | shared | complete | 2 | ARCH-016-SHARED-001 |
 | ARCH-020-COMMERCE-001 | commerce | complete | 3 | — |
 | ARCH-020-COMMERCE-002 | commerce | complete | 2 | ARCH-020-COMMERCE-001 |
-| ARCH-020-COMMERCE-003 | commerce | ready | 1 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
-| ARCH-020-COMMERCE-004 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-003 | commerce | complete | 4 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-004 | commerce | ready | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-006 | commerce | pending | 0 | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
@@ -646,3 +646,17 @@ pairing. No further coverage-only correction is required for this acceptance.
 Gateway002, Commerce012 and terminal system tests retain other dependencies;
 no dependent is promoted or launched. Developer integration remains separate;
 ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
+
+## COMMERCE-003 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-003 is **Complete, architect accepted, Attempt 4 retained**, claim cleared.
+Reviewed implementation `12df0104` and report `4b86771f`. The isolated rehearsal
+now fails closed on unexpected SQL/cleanup errors, identifies its injected
+rollback case, checks audit-backed replay and reaps owned workers. Independently
+passed 26 lifecycle tests, shell syntax, four mock harness scenarios and diff
+checks. Live disposable PostgreSQL execution remains explicitly developer-owned
+and unrun; COMMERCE-013 owns real adapter/integration composition. No main merge
+or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
+without claiming an attempt. Other dependent tasks retain their current states;
+012/013/system-test still have unresolved prerequisites. This acceptance supersedes
+older COMMERCE-003 current-state wording; architecture is not yet Implemented.
