@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 125
-executor: copilot
-claimed_at: 2026-09-21T16:23:40Z
+executor: null
+claimed_at: null
 attempt: 9
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -1274,3 +1274,68 @@ Reconcile task/index/frontier after review; preserve the terminal/manual system-
 ## Architect readiness reconciliation — COMMERCE-007 acceptance — 2026-09-21
 
 Promoted **Ready**, Attempt 0 retained, executor/claimed_at null. COMMERCE-003/004/005/006/007/011/014/015/016 are architect-accepted Complete, including COMMERCE-007 Attempt 7 at `e08b896`. All explicit prerequisites are satisfied. Normal preparation owns synchronization and claim and must consume actual accepted source. No automatic launch, implementation change, main integration or gitlink update.
+
+## Completion Report - Attempt 9
+
+Status: Ready for Review.
+
+Attempt 9 applies the latest architect-required corrections while preserving
+the accepted production integration boundary. The implementation commit is
+`4d52977` (`fix(commerce): fail closed on unproven discount semantics`) on the
+mirrored `task/ARCH-020-COMMERCE-013` implementation branch. No downstream task
+was launched, no main branch was changed, and the Architect Review sections
+were not edited.
+
+### A8 correction checklist
+
+- [x] **A8-R1:** Production discount minimum normalization is target-aware:
+  `BASKET` is used only for an explicit `ALL` target, while recognized product,
+  variant, and collection targets use `ELIGIBLE_LINES`. Unknown or incomplete
+  targets do not claim a minimum basis and remain non-qualifying.
+- [x] **A8-R2:** Production normalization no longer asserts unproven
+  HALF_UP/LINE calculation semantics. Native-basic percentage and fixed rules
+  now carry `semantics: null`, causing the accepted reader/evaluator to fail
+  closed with `SEMANTICS_UNPROVEN` until independent provider evidence exists.
+  The support matrix retains proven subtotal/allocation facts and explicitly
+  treats the rounding mode and rounding point as unresolved. Synthetic
+  fractional-line coverage is retained only as evaluator regression behavior,
+  not provider proof.
+
+### Files changed
+
+- `src/commerce/integration/backend.ts`: target-aware minimum basis and
+  fail-closed production discount semantics.
+- `tests/backend-integration.test.ts`: updated fail-closed expectations and
+  targeted quantity/subtotal minimum-basis coverage.
+- `docs/discount-support-matrix.md`: corrected provider evidence and support
+  boundary.
+
+### Validation Results
+
+Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
+
+| Command | Result |
+| --- | --- |
+| `npm run test:arch020-backend-integration -- --run tests/backend-integration.test.ts` | passed, 4 files / 61 tests |
+| `npm run typecheck` | passed; Next route type generation and `tsc --noEmit` passed |
+| `npm run lint` | passed with no reported errors |
+| `npm run build` | passed; Prisma Client `6.19.3` generated and Next production build completed |
+| `git diff --check` | passed |
+| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD checks passed; migration validator stopped with `AssertionError: Local isolated target required` |
+| `npm run test:arch020-backend-integration:postgres` | 1 test passed; mutation/replay/CAS/rollback rehearsal timed out at 60 seconds |
+
+The focused suite also validates the exported Shopify Admin document against
+the pinned `admin_2026-07` schema and exercises synthetic production Admin
+responses with the Shopify access-token path. No live Shopify, production
+credential, model, WhatsApp, billing, or paid-provider evidence is claimed.
+Developer-owned infrastructure follow-up remains the isolated fresh/upgrade
+migration validation and diagnosis/rerun of the PostgreSQL timeout.
+
+### Lifecycle and Git / VCS
+
+Task fields are clean for review: `status: review`, `executor: null`,
+`claimed_at: null`, `attempt: 9`. Implementation commit `4d52977` is committed
+and pushed to `origin/task/ARCH-020-COMMERCE-013`. The parent report commit and
+push result will be recorded after this edit. No downstream task was launched;
+no main branch or parent service gitlink was changed.
