@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 145
 executor: null
 claimed_at: null
@@ -344,27 +344,47 @@ Run focused contract checks and repository-required typecheck/build, then clean 
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 4. Task returned to Ready with `attempt: 4` retained and `executor`/`claimed_at` null. Not accepted.
 
 ### Review Notes
 
-Definition only; no implementation acceptance.
+Reviewed the submitted Attempt 4 snapshot for implementation `b23a7c1da2c2dcfe51c20ebe3e24e7ac6e23f360` and parent report `52b14319`. The Attempt 1 source corrections are materially present: external dot-segment paths are rejected; response MIME types are mode-bounded; credential/header names are rejected as external mapping sources and query keys; mapped runtime values are revalidated with the external scalar bound; `ExternalHttpResultDataSchema` is exported; and visual publication no longer accepts the previously demonstrated OBJECT rename mismatch. The package remains `0.14.1`, and the Completion Report records fresh registry installation/runtime export/strict consumer typecheck evidence.
+
+One publication-safety defect remains in `visualPublicationCompatible()` for LIST processing. The function verifies that `resultSchema.properties.items` is an array and that projected item fields match, but it does not verify the LIST wrapper/array cardinality that the processor can actually produce. A definition can therefore pass publication when its closed `resultSchema` requires another root property that LIST never returns, requires `items.minItems > 0` even though C21 explicitly permits `{items: []}`, or sets `items.maxItems` below the configured LIST `limit`, allowing a valid processor result to exceed the authored schema. This violates C21 section 2.1/2.3 and the Attempt 1 R2 requirement that publication reject incompatible wrapper/array shape before a tool revision is publishable.
+
+The submitted package documentation is also not reconciled as claimed. `src/commerce/README.md` documents the C21 additions, but the package root `README.md` in the submitted implementation still omits `/commerce`, `/commerce/runner`, the C21 external export inventory and the complete public-entry inventory required by this task. Because npm publishes the root README, the current `0.14.1` artifact cannot be treated as satisfying the package-documentation work item even though its runtime/type exports are reported usable.
+
+The Completion Report additionally contains stale Attempt 2/current-state text below the Attempt 4 evidence (for example `In Progress`, evidence still required, and Attempt 2 VCS wording). Preserve useful historical evidence but make the final current report internally consistent before the next review.
 
 ### Reviewed Files
 
-Not applicable.
+- `moda-interact-shared/src/commerce/external.ts`
+- `moda-interact-shared/src/commerce/definitions.ts`
+- `moda-interact-shared/src/commerce/external-contracts.test.ts`
+- `moda-interact-shared/src/commerce/index.ts`
+- `moda-interact-shared/src/commerce/README.md`
+- `moda-interact-shared/README.md`
+- `moda-interact-shared/package.json`
+- `moda-interact-shared/scripts/validate-commerce-entrypoints.mjs`
+- this task and C21 sections 2, 2.1, 2.2, 2.3 and 4
 
 ### Validation Reviewed
 
-Not applicable.
+Submitted evidence reviewed: focused external-contract tests 4/4, repository typecheck/build, clean-process entrypoint validation, exact `0.14.1` fresh-registry runtime imports and strict consumer typecheck. The review sandbox could not independently re-fetch npm registry metadata because the registry request timed out; no contrary registry result was observed. Source inspection independently reproduces the remaining LIST publication-compatibility gap described above. No additional exhaustive test matrix is requested.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Partially conformant. The new external execution/result/processing/connection contracts remain within Shared ownership and preserve the existing MCP/grant/final-response boundary. Acceptance is withheld only for the remaining LIST publication-shape hole, package README/export-inventory drift, and contradictory current Completion Report state. No provider transport, credential runtime, visual processor, JavaScript sandbox or downstream Commerce implementation belongs in this correction.
 
 ### Follow-up
 
-Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+A4-R1 — correct LIST publication compatibility in the existing task scope. For visual `kind: 'LIST'`, publication must reject any authored `resultSchema` that cannot describe exactly the processor's `{items:[projected rows]}` output. At minimum: the closed root wrapper must not declare non-`items` output properties; `items` must be required and be the array; empty output must remain valid (`minItems` absent or zero); the authored array bound must permit every result allowed by the configured LIST limit (`maxItems >= processing.limit`); and the existing exact projected item-name/scalar/required-vs-`omitIfMissing` checks remain enforced. Add focused positive/negative regressions for wrapper extras, empty-result incompatibility and too-small `maxItems`, while preserving the valid LIST case and all OBJECT/JAVASCRIPT behavior.
+
+A4-R2 — reconcile the publishable package documentation. Update the package root `README.md` so `/commerce` and `/commerce/runner` plus the complete C21 external schemas/types are present in the public-entry/export inventory. Keep the server/runtime ownership distinctions explicit; do not move executable processing into Shared. Since `0.14.1` is immutable and A4-R1 changes runtime contract validation, publish the corrected implementation as the next exact patch version through the normal Shared release workflow; do not overwrite/unpublish `0.14.1`. Re-run the bounded fresh exact-version install/runtime export/strict consumer typecheck evidence for that corrected release.
+
+A4-R3 — reconcile the Completion Report to one current Attempt 4/next-attempt state. Remove or clearly label stale Attempt 2 `In Progress`/`still required` assertions so the durable report does not contradict the task YAML or current evidence. Record the correction commit, corrected package version/integrity, launcher/worktree evidence and actual focused/typecheck/build/clean-consumer results.
+
+Return the same task to Review after A4-R1–R3. Do not launch or promote downstream tasks; SHARED-002 remains an unsatisfied dependency until architect-accepted Complete.
 
 
 ## User-authorized npm publication — 2026-09-21

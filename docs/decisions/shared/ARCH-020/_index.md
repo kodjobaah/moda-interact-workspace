@@ -24,3 +24,7 @@ Latest task R1–R3 specify exact contract/test/report corrections and a correct
 patch release. Published0.14.0 is left intact and is not accepted for downstream
 prerequisite satisfaction. No dependency promotion, launch, main merge or gitlink
 change. Historical publication success does not imply architecture acceptance.
+
+## SHARED-002 Attempt 4 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 4 retained; executor/claimed_at null.** Attempt 1 contract corrections are largely present and the submitted `0.14.1` consumer evidence is retained, but LIST publication validation still accepts result wrappers/cardinality that the visual processor cannot produce. The package root README/export inventory is also stale, and the Completion Report contains contradictory Attempt 2 current-state text. A4-R1–R3 in the task define the bounded correction, corrected patch release and report reconciliation. No downstream dependency is satisfied or promoted.

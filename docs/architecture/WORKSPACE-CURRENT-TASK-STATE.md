@@ -1088,3 +1088,7 @@ passing scenario and one timeout; developer-owned adapter validation remains pen
 COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
+
+## ARCH-020 SHARED-002 Attempt 4 review — 2026-09-21
+
+ARCH-020-SHARED-002 is **Changes Requested / Ready, Attempt 4 retained**, claims cleared; not accepted. Reviewed implementation `b23a7c1` and report `52b14319`. Prior C21 contract fixes and submitted exact `0.14.1` clean-consumer evidence remain valid, but LIST publication compatibility still permits impossible result-wrapper/cardinality combinations. The package root README/export inventory and stale Completion Report state also require reconciliation. No dependency promotion, automatic launch, main integration or gitlink update.
