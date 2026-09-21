@@ -504,13 +504,18 @@ Decode declared responseFormat under section2.2. Reject MIME/charset mismatch,
 invalid JSON in JSON mode, unsafe keys or missing visual resultPath. TEXT mode
 passes bodyText to code without attempting JSON parsing. Pass selected visual
 source or TransformResponse to the injected processing dispatcher; INVALID_RESPONSE maps to
-UNAVAILABLE false, deadline/cancel preserve their existing codes. No raw fallback.
+UNAVAILABLE false. At the published `CommerceToolResult` boundary, both processor
+deadline and processor cancellation map to nonretryable DEADLINE because accepted
+Shared 0.14.2 does not expose CANCELLED in `CommerceErrorCodeSchema`; runner-level
+turn cancellation remains CANCELLED. No raw fallback.
 
 Error mapping: missing/disabled/foreign credential -> DENIED nonretryable; invalid
 arguments -> INVALID_INPUT false; remote401/403/404, redirect, bad JSON/schema/body
 bound/DNS target -> UNAVAILABLE false;429 -> THROTTLED true;5xx/connection failure ->
-UNAVAILABLE true; deadline -> DEADLINE false; abort -> CANCELLED false. No raw provider
-body, credentials or URL query in returned errors/logs. Bound numeric status and
+UNAVAILABLE true; deadline -> DEADLINE false; abort/cancel -> DEADLINE false at the
+`CommerceToolResult` boundary. Runner-level `RunCommerceTurnResult` cancellation
+remains CANCELLED; COMMERCE-021 must not locally widen the accepted Shared 0.14.2
+result union. No raw provider body, credentials or URL query in returned errors/logs. Bound numeric status and
 connection revision ID may appear in diagnostic fields with shared logging.
 Do not turn a missing field into a made-up success. Templates retain unavailable text.
 
@@ -976,3 +981,23 @@ execution frontier is `COMMERCE-020`, `021`, `022`, `023`, `025`, `026` and `027
 Ready. This does not imply that credentials, real HTTP, processors, publication,
 preview, availability, production wiring, gateway configuration or system tests
 are complete; their own task dependencies remain authoritative.
+
+
+## COMMERCE-021 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; claims cleared.** Reviewed
+implementation `b19f9d7` and report `5abdd61a`. The fixed-origin/TLS pinning, query
+encoding, one-request direction, injected processors, result validation and provider
+status mapping are retained. Four bounded functional corrections remain: provide the
+actual Node DNS resolver and replace local CIDR maintenance with a maintained global
+address classifier; impose absolute DNS/connect/body stage deadlines with active
+stream cleanup; reject raw parsed JSON beyond depth 20 or containing prototype-
+pollution keys before processing; and make EXTERNAL_HTTP an explicit exhaustive
+014 dispatcher branch. HT03 must prove compressed-size and in-flight deadline/abort
+behaviour through the production path, not only an already-aborted signal.
+
+Architectural contradiction resolved here: accepted Shared 0.14.2 does not permit a
+`CANCELLED` `CommerceToolResult`. Therefore processor/HTTP cancellation maps to
+nonretryable `DEADLINE` at this tool-result boundary; turn-runner cancellation remains
+runner-level `CANCELLED`. No new Shared publication is required by COMMERCE-021.
+Downstream C21 tasks remain dependency-gated.

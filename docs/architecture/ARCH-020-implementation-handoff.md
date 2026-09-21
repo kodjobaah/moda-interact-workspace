@@ -1040,3 +1040,16 @@ package `0.14.2`. The direct C21 component frontier is now Ready for
 `/moda-task ARCH-020-SHARED-002`; it has no further correction attempt. Use the
 normal launcher on an eligible Ready dependant when the developer chooses to start
 one. No automatic downstream launch occurs in this acceptance.
+
+
+## COMMERCE-021 Attempt 1 review — 2026-09-21
+
+`ARCH-020-COMMERCE-021` is **Changes Requested / Ready, Attempt 1 retained** after
+review of `b19f9d7` / report `5abdd61a`. Keep the working fixed-origin TLS/socket,
+Shared 0.14.2 and response-processing integration. Attempt 2 is bounded to four
+functional corrections: production DNS + maintained address classification,
+absolute DNS/connect/body stage deadlines and abort cleanup, raw JSON depth/unsafe-key
+rejection, and explicit EXTERNAL_HTTP dispatch exhaustiveness. C21 cancellation is
+reconciled to nonretryable `DEADLINE` at the CommerceToolResult boundary because
+Shared 0.14.2 has no CANCELLED tool-result member; runner cancellation remains
+separate. No downstream task is promoted or launched.

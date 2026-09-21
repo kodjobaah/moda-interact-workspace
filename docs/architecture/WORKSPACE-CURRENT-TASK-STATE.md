@@ -1140,3 +1140,16 @@ ARCH-020-SHARED-002 is **Accepted / Complete, Attempt 5** (`95bab1d`, public
 promotes `COMMERCE-020`, `021`, `022`, `023`, `026` and `027` to Ready and confirms
 `COMMERCE-025` Ready. All later C21 tasks retain unsatisfied dependencies; no task
 is launched, no main integration is performed and no service gitlink is changed.
+
+
+## ARCH-020 COMMERCE-021 Attempt 1 review — 2026-09-21
+
+Current authoritative task state: `ARCH-020-COMMERCE-021` **Ready, Attempt 1,
+Changes Requested**, executor/claimed_at null. Reviewed implementation `b19f9d7` and
+parent report `5abdd61a`. Attempt 2 is limited to the production DNS/classifier,
+absolute DNS/connect/body deadline+cleanup, raw JSON safety/depth, and explicit
+EXTERNAL_HTTP dispatcher corrections recorded in the task. The architect resolved
+the Shared cancellation mismatch as nonretryable `DEADLINE` at the tool-result
+boundary; no Shared task/publication is opened. `COMMERCE-030`, `COMMERCE-024`,
+`GATEWAY-003`, `COMMERCE-012` and system-test work receive no promotion from this
+review.
