@@ -120,13 +120,13 @@ Agent-executed:
 - `npm run build` -> PASS; Prisma client generation and Next.js webpack production build completed successfully.
 - `npm run code-runtime:manifest` -> PASS; `quickjs-emscripten@0.31.0`, `@jitl/quickjs-wasmfile-release-sync@0.31.0`, SHA-256 `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, configured WASM maximum `67108864` bytes.
 - `git diff --check` -> PASS.
-- `npm run typecheck` -> FAIL only in pre-existing unrelated Prisma client typing surfaces: `lib/auth/development-platform-admin.ts` (four `Prisma.Sql`/`Prisma.sql` errors) and `lib/server/connections.ts` (implicit `tx` any). No runtime-owned file was reported.
+- Historical Attempt 1 `npm run typecheck` -> FAIL only in pre-existing unrelated Prisma client typing surfaces: `lib/auth/development-platform-admin.ts` (four `Prisma.Sql`/`Prisma.sql` errors) and `lib/server/connections.ts` (implicit `tx` any). No runtime-owned file was reported; the Attempt 2 rerun passed with no diagnostics, as recorded below.
 
 Requirement-to-fixture matrix is committed in `docs/code-runtime-proof.md`; the focused command observes actual QuickJS execution, not safe-rejection-only mocks. No PostgreSQL, container, live provider, credential, DNS, or deployment validation was required or claimed for this bounded runtime task.
 
 Use /moda-task launcher-resolved dedicated worktrees and preparation packet.
 Task authoring on main is the user's documentation exception, not permission for
-The repository-wide typecheck remains blocked by the unrelated Prisma generated-client baseline listed above; the production build's TypeScript phase passed.
+Attempt 2 validation superseded that historical baseline observation: `npm run typecheck` passed with no diagnostics, and the production build's TypeScript phase passed.
 Runtime code is not wired into the future typed adapter or production factory; those are explicitly owned by COMMERCE-026/024.
 
 ## Completion Report
