@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 90
 executor: null
 claimed_at: null
@@ -188,6 +188,18 @@ Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 4. Implementat
 
 ## Architect Review
 
+### Accepted — Attempt 4 — 2026-09-21
+
+**Current decision: Accepted / Complete; Attempt 4 retained; executor/claimed_at null.** Reviewed implementation `f09965942cebd4aec15a40aa825975157d41c8c3` and parent report `e5662be50ab1e58e2bc59f53fd66fe9d8a353770`, verified against remote task heads. Both dedicated worktrees clean. Database pin remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. This supersedes previous current-state/Changes Requested wording while preserving the review history.
+
+**A3-R1 is resolved.** Early HTTP/status/redirect/version rejection and late response disposal now initiate rejection-observed cleanup without awaiting it before returning the determined result. Synchronous acquisition errors become observed cleanup rejections. The transport body contract is narrowed to Uint8Array or ReadableStream<Uint8Array>; generic AsyncIterable is neither advertised nor consumed, and unsupported runtime data fails closed. Active stream abort/overflow handling and byte bounds remain. The large commented duplicate module is removed. The previously accepted populated-list selection and provider-version semantics corrections are retained.
+
+Independent validation: **13/13 focused query tests passed**, including unsupported-body rejection, pending429 cancellation, existing blocked-stream/overflow/late-disposal cases and one-request behavior. The prior isolated pending-cleanup reproduction also **passed** (`/tmp/c005-a3-review`,1 selected/12 skipped). Its old generic-iterator cancellation case is superseded by the explicitly approved narrowed contract and the new runtime/type-level exclusion; it is not counted as an unchanged passing test. Implementation and parent diff checks passed. Submitted typecheck/lint/build success and full272 passed/three unrelated baseline failures remain reported evidence, not independently rerun. The stale five-failure sentence in Deviations is superseded by the current Attempt4 validation totals. No live Shopify/Redis/database validation was run.
+
+No remaining functional blocker was identified in the scoped correction review. Acceptance covers the generic C14 query execution component and its injected transport boundary, not013's production wiring or live tokenless provider behavior.013 must supply a no-redirect fetch-compatible body using the narrowed contract. Cleanup that remains pending cannot hold the caller's typed response; this does not assert that JavaScript can force a non-cooperative underlying source to settle.
+
+No dependent task is promoted:013 and terminal system testing retain other prerequisites, and012 remains the final implementation checkpoint. No new claim, implementation edits, main merge/push or gitlink update. Architecture is not yet Implemented; developer-owned live validation remains separately pending.
+
 ### Changes Requested — Attempt 3 — 2026-09-21
 
 **Current decision: Ready; Attempt 3 retained; executor/claimed_at null; not accepted.** Reviewed implementation `6b2c410a49a487d55a7435cace52540f44089129` and report `4b681aa1dd24be5d179f95a409c32e86197a6bae`, verified against remote heads; dedicated worktrees clean. No implementation changes, new claim, dependent promotion, main integration or gitlink update.
@@ -292,7 +304,7 @@ Update Q01–Q04 and work-item checkboxes only after their effects are exercised
 
 ### Review Status
 
-Pending.
+Accepted / Complete at Attempt 4; see the current architect decision above.
 
 ### Review Notes
 
