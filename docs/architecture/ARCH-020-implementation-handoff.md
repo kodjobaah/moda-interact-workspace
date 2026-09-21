@@ -907,3 +907,27 @@ SYSTEM-TEST-001 still have incomplete infrastructure/composition dependencies.
 No automatic task launch, implementation/main change or service gitlink update.
 Architecture remains in progress; latest task YAML/review supersedes historical
 Changes Requested summaries.
+
+## C21 extension execution sequence — 2026-09-21
+
+Read [C21](ARCH-020-external-api-tools.md) before extension work.
+
+```text
+DATABASE-003 (Ready)                 SHARED-002 (Ready; publish once)
+        \                            /
+         ->020 connection service   +->021 HTTP executor (ports)
+                                    +->025 visual processor
+                                    +->026 code sandbox
+                                    +->022 Connections UI
+                                    +->023 visual authoring UI
+                                    +->027 code editor UI
+020/021/022/023/025/026/027 +013/018/019 ->024 real integration
+GATEWAY-001 +020/021/026 ->GATEWAY-003 runtime configuration
+024 +GATEWAY-003 +BACKGROUND-002 ->SYSTEM-TEST-002 (manual)
+new implementation prerequisites ->012 caching (external tools bypassed)
+012 +SYSTEM-TEST-002 +existing dependencies ->SYSTEM-TEST-001 (manual)
+```
+
+The new tasks are unclaimed; no implementation/deployment started. Existing active
+base scopes and claims stay intact. Database and Shared definitions can begin
+independently; backend, processing and UI components use C21 ports independently.

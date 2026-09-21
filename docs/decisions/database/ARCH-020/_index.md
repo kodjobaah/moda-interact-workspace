@@ -9,3 +9,4 @@ Individual task YAML is authoritative. DATABASE-001 Attempt 2 is Accepted / Comp
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ARCH-020-DATABASE-001](DATABASE-001-persist-capability-releases-and-turn-revision-pins.md) | Persist capability releases and conversation tool grants | complete | ARCH-016-DATABASE-001 |
+| [ARCH-020-DATABASE-003](DATABASE-003-persist-external-api-connections-and-credentials.md) | Persist external API connections and encrypted credentials | ready | ARCH-020-DATABASE-001 |

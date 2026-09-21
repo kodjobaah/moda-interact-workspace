@@ -41,6 +41,7 @@ depends_on:
   - ARCH-020-COMMERCE-017
   - ARCH-020-COMMERCE-018
   - ARCH-020-COMMERCE-019
+  - ARCH-020-SYSTEM-TEST-002
 enables: []
 created: 2026-09-20
 updated: 2026-09-20
@@ -172,6 +173,7 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 - ARCH-020-COMMERCE-017
 - ARCH-020-COMMERCE-018
 - ARCH-020-COMMERCE-019
+- ARCH-020-SYSTEM-TEST-002
 
 All dependencies must be Complete and architect-accepted before execution.
 

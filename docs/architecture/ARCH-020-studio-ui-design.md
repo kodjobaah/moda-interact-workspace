@@ -405,3 +405,12 @@ C20 assigns backend assembly to013, U01–U13 service wiring to018 and U14/previ
 service wiring to019.018 and019 run independently after their prerequisites;
 neither owns or edits the other's adapters. Component page ownership is unchanged.
 Gateway/caching/system-test dependencies include both new integration tasks.
+
+## C21 extension: Connections and response processing
+
+The [C21 page specification](ARCH-020-external-api-tools.md#6-studio-pages-and-traversal)
+adds U15 `/connections`, U16 `/connections/[id]`, Connections navigation after Explore
+Shopify, U06 External API retrieval and Visual rules/JavaScript panels, and U14 raw
+JSON/text sample processing. Exact labels, fields, traversal XN01–04 and ownership
+are binding there.022 owns Connections,023 visual authoring,027 code editor,024
+real wiring. Existing page/component task scopes remain unchanged.

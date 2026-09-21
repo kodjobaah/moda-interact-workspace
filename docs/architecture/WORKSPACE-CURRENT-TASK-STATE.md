@@ -1044,3 +1044,10 @@ SYSTEM-TEST-001 still have incomplete infrastructure/composition dependencies.
 No automatic task launch, implementation/main change or service gitlink update.
 Architecture remains in progress; latest task YAML/review supersedes historical
 Changes Requested summaries.
+
+## ARCH-020 external API extension — 2026-09-21
+
+C21 adds DATABASE-003/SHARED-002 (Ready, attempt0) and COMMERCE-020–027,
+GATEWAY-003, SYSTEM-TEST-002 (Pending, attempt0). The user approved read-only calls
+and both visual rules and generic sandboxed code. No task was claimed/launched.
+See [C21](ARCH-020-external-api-tools.md) and handoff for exact interfaces/dependencies.

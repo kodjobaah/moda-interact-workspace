@@ -1483,3 +1483,13 @@ SYSTEM-TEST-001 still have incomplete infrastructure/composition dependencies.
 No automatic task launch, implementation/main change or service gitlink update.
 Architecture remains in progress; latest task YAML/review supersedes historical
 Changes Requested summaries.
+
+## Read-only external API extension — C21
+
+[C21](ARCH-020-external-api-tools.md) extends the design beyond Shopify: approved
+connections, per-shop/platform credentials and read-only HTTP tools. Studio supports
+visual filters plus generic JavaScript processing of JSON or textual responses in
+a bounded isolated runtime. Both return schema-validated objects before agent use.
+Source/processing configuration is published with the immutable tool revision.
+Future supported operations need authoring/publication, not Background handlers.
+The extension tasks are separate from accepted/in-progress base implementation.

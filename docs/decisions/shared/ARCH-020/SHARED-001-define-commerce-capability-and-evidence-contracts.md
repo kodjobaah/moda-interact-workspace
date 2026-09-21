@@ -32,6 +32,7 @@ enables:
   - ARCH-020-COMMERCE-016
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-SHOPIFY-001
+  - ARCH-020-SHARED-002
 created: 2026-09-20
 updated: 2026-09-20
 ---
@@ -178,6 +179,7 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-COMMERCE-016
 - ARCH-020-SYSTEM-TEST-001
 - ARCH-020-SHOPIFY-001
+- ARCH-020-SHARED-002
 
 ## Acceptance Criteria
 

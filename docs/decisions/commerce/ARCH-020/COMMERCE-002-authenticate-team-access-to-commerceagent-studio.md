@@ -27,6 +27,8 @@ enables:
   - ARCH-020-COMMERCE-018
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
+  - ARCH-020-COMMERCE-022
+  - ARCH-020-COMMERCE-020
 created: 2026-09-20
 updated: 2026-09-20
 ---
@@ -147,6 +149,8 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 - ARCH-020-COMMERCE-018
 - ARCH-020-SYSTEM-TEST-001
 - ARCH-020-GATEWAY-001
+- ARCH-020-COMMERCE-022
+- ARCH-020-COMMERCE-020
 
 ## Acceptance Criteria
 

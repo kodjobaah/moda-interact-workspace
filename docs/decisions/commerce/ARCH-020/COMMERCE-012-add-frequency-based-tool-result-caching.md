@@ -40,6 +40,17 @@ depends_on:
   - ARCH-020-COMMERCE-017
   - ARCH-020-COMMERCE-018
   - ARCH-020-COMMERCE-019
+  - ARCH-020-DATABASE-003
+  - ARCH-020-SHARED-002
+  - ARCH-020-COMMERCE-020
+  - ARCH-020-COMMERCE-021
+  - ARCH-020-COMMERCE-022
+  - ARCH-020-COMMERCE-023
+  - ARCH-020-COMMERCE-025
+  - ARCH-020-COMMERCE-024
+  - ARCH-020-GATEWAY-003
+  - ARCH-020-COMMERCE-026
+  - ARCH-020-COMMERCE-027
 enables:
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
@@ -352,8 +363,17 @@ or correctness dependency. Do not expose cache controls as model tool arguments.
 - ARCH-020-COMMERCE-017
 - ARCH-020-COMMERCE-018
 - ARCH-020-COMMERCE-019
-
-All dependencies must be Complete and architect-accepted before execution.
+- ARCH-020-DATABASE-003
+- ARCH-020-SHARED-002
+- ARCH-020-COMMERCE-020
+- ARCH-020-COMMERCE-021
+- ARCH-020-COMMERCE-022
+- ARCH-020-COMMERCE-023
+- ARCH-020-COMMERCE-025
+- ARCH-020-COMMERCE-024
+- ARCH-020-GATEWAY-003
+- ARCH-020-COMMERCE-026
+- ARCH-020-COMMERCE-027
 
 ## Enables
 
@@ -402,3 +422,10 @@ Not Started. No implementation, validation, package publication or deployment cl
 Initial backlog definition only. Pending prerequisite completion and policy storage/API
 and UI reconciliation before Ready. Review scope includes safety eligibility and all
 cross-repository dependencies; no implementation acceptance is implied.
+
+## External API extension boundary — 2026-09-21
+
+C21 EXTERNAL_HTTP tools bypass cache lookup, frequency counting, fill locks and
+result storage entirely. Do not derive cacheability from GET or shared credentials.
+New implementation prerequisites preserve this task as the final implementation
+feature; existing readiness-checkpoint decisions remain required.
