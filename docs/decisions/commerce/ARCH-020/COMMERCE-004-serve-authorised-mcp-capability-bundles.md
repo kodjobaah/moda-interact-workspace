@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-21T02:07:56Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -86,11 +86,10 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 ## Enables
 
 - ARCH-020-COMMERCE-012
+- ARCH-020-COMMERCE-013
 - ARCH-020-COMMERCE-010
 - ARCH-020-COMMERCE-014
-- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
-
 ## Acceptance Criteria
 
 - [x] M01: resolve vs execute matrix, malformed JWT/Origin/body and mismatched tenant/turn deny before executor calls.
@@ -133,7 +132,10 @@ Implementation branch `task/ARCH-020-COMMERCE-004`, commit `c97a85be3a1561adca06
 - `src/commerce/mcp/authentication.ts`
 - `src/commerce/mcp/ports.ts`
 - `src/commerce/mcp/service.ts`
+- `src/commerce/mcp/authorization.ts`
 - `tests/mcp-service.test.ts`
+- `tests/mcp-authorization.test.ts`
+- `tests/mcp-compatibility.test.ts`
 - `tests/auth-entrypoints.test.ts`
 
 ### Work Completed
@@ -198,6 +200,38 @@ None newly reported.
 ### Git / VCS
 
 Status: Ready for Review. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-004`, branch `task/ARCH-020-COMMERCE-004`, pushed commit `c97a85be3a1561adca06eb03577dd84ad30ed306`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-004`, branch `task/ARCH-020-COMMERCE-004`, based on pushed claim `1b1258f664eeb3f6c834d24f6fc68aeec17fb499`; this report update is the next parent task commit. The recursive database submodule remained at recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch integration was performed.
+
+### Attempt 2 Completion Update — 2026-09-21
+
+The requested correction was applied in `tests/mcp-compatibility.test.ts`: the
+MCP client's `result.content` is narrowed with `Array.isArray`, then the first
+element is narrowed to an object with `type === 'text'` before asserting its
+payload. This is the smallest type-safe fix for the SDK's `unknown` content
+type; no production code changed for this correction.
+
+Implementation commit `5ef60bd304e08b5b7a6099697bc73b5f55ff87ed` is pushed to
+`task/ARCH-020-COMMERCE-004`. Validation from the implementation worktree
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-004`:
+
+- `npm run typecheck` passed.
+- `npm run build` passed; Prisma Client generated from
+  `database/prisma/schema.prisma` and `/api/mcp` compiled as a dynamic route.
+- `npm test` ran 23 files / 180 tests: 22 files and 179 tests passed; the
+  unrelated Redis-backed `tests/discovery-limits.test.ts` timed out after 30s.
+- `git diff --check` passed.
+
+The Redis timeout remains pending developer validation with configured Redis;
+the required command is `REDIS_URL=<developer Redis> npm test -- --run
+tests/discovery-limits.test.ts`. Live Background-signed, provider, database,
+and system integration evidence remains developer-owned and is not claimed by
+fixture tests.
+
+Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-004`
+is on `task/ARCH-020-COMMERCE-004`; its recorded recursive submodule evidence
+includes Commerce `01c550c3e3f55dd23a4ecc9514c846bb88cf2067` and database
+`9c6a4d8402a01840e2ea8dc18e89171f00564d29`. The task status is `review`,
+`executor` and `claimed_at` are cleared, and no parent service gitlink or main
+integration was performed.
 
 ## Architect Review
 
