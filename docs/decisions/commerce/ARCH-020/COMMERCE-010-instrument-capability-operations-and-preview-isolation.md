@@ -1,3 +1,4 @@
+---
 id: ARCH-020-COMMERCE-010
 architecture_id: ARCH-020
 title: Instrument capability operations and preview isolation
@@ -23,6 +24,7 @@ enables:
   - ARCH-020-GATEWAY-002
 created: 2026-09-20
 updated: 2026-09-21
+---
 
 # Instrument capability operations and preview isolation
 
