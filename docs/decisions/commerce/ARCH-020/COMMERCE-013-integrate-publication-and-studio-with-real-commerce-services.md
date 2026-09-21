@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 125
-executor: copilot
-claimed_at: 2026-09-21T10:50:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -246,6 +246,62 @@ results, the database submodule SHA above, and confirmation that no main branch
 or parent service gitlink was changed.
 
 ## Architect Review
+
+### Attempt 1 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `8258b0139a1d722af418555b2d3c5ca5a05b36e8` and parent report `9c1a26b509adaffe5f21ca89717f1c51a78a1c0a`. Both submitted heads matched remote and their task worktrees were clean. Decision: **Changes Requested; Ready, Attempt 1; executor and claim cleared**. These are functional integration defects, not a requirement for exhaustive coverage. COMMERCE-018/019 remain Pending; this facade cannot yet be frozen for them.
+
+#### A1-R1 — Supply the production composition, not caller-provided missing adapters
+
+Files: `src/commerce/integration/backend.ts`, `backend/authorization.ts`, `backend/executors.ts`, `app/api/mcp/route.ts`.
+
+The only production caller is the route's `getCommerceBackend()` with no arguments. The factory throws unless a caller previously supplied config, and there is no such initializer. Thus every fresh production process returns 503 regardless of valid deployment configuration. The factory also requires the caller to supply query execution, policy registrations, authorization record resolution and publication authorization/features/runtime compatibility. It never constructs the accepted product/discount/recommendation adapters or durable authorization resolver claimed by the mapping table.
+
+Implement lazy production assembly from validated server configuration, real Prisma clients and accepted auth/installation libraries. Build the tokenless HTTP transport, privileged provider/recovery/policy adapters, exact-version immutable registry and durable grant/feature/recovery record resolver here. Share the same registry with publication and execution. Preserve request-local principal/turn/grant/shop, deadline, cancellation and budget references; singleton state may contain only reusable stateless dependencies. Keep an explicitly injected factory for tests, but the no-argument production entry must work without an out-of-band caller. Missing genuine configuration must fail with the accepted bounded availability contract. Do not delegate this assembly to018/019. Verify a fresh-process configured route reaches real authorization/execution with only external provider transport substituted, and that denied/revoked/cross-shop requests make zero provider calls.
+
+#### A1-R2 — Persist only the transaction's changes and honor database publication invariants
+
+File: `backend/publication-storage.ts`.
+
+`writeState()` upserts every loaded tool/revision/release/member/pointer/audit, even on a replay with no state changes. The canonical migration forbids UPDATE of audits, releases, release members and published revisions; unchanged draft/pointer updates also fail required editVersion increments. After the first audit exists, a subsequent command or replay attempts to update that audit and fails. Additionally, published tool/capability writes omit `publishedByAdminId` and `publishedAt`, which the database requires for PUBLISHED rows. A temporary recording Prisma port confirmed both generated-write defects; no real database pass is claimed.
+
+Replace whole-snapshot upserts with a before/after diff or explicit mutation journal under the C7/C20 locking/CAS transaction. Insert only new immutable rows/audits; update only changed owned metadata/drafts/pointers with locked current versions. A successful identical replay must return its durable original result with zero business/audit writes. Persist publisher identity/time on the actual DRAFT-to-PUBLISHED transition, preserving creator/history. Business rows, release members, pointer and audit must commit or rollback together. Follow the specified READ COMMITTED/locking design; do not rely on a global serializable lock to compensate for stale snapshots or missing CAS. Keep schema/triggers intact. Verify generated writes locally and provide the runnable PostgreSQL replay/race/rollback scenarios described in A1-R6.
+
+#### A1-R3 — Preserve exact timestamp CAS tokens
+
+File: `backend/publication-storage.ts`, `stateFromRows()` tool/capability mappings.
+
+`new Date(String(row.updatedAt))` converts Prisma Date objects through their human-readable string, losing milliseconds. Reproduction: `2026-09-21T12:00:00.456Z` becomes `.000Z`. This makes the token returned by a prior write fail on the next command and can collapse distinct updates within one second.
+
+Serialize Date objects directly to ISO (with validated handling for any other supported representation), preserving full stored precision. Apply to both tools and capabilities. Ensure metadata/enable updates produce a changed token even when operations occur within one clock tick, and retain expectedUpdatedAt in strict input, replay hash and locked write checks. Verify a write/read/token round trip and stale-token rejection with non-zero milliseconds and same-second updates.
+
+#### A1-R4 — Implement and freeze the C20 saved-selection and inspection facade
+
+File: `src/commerce/integration/backend.ts` and owned `backend/**` adapters.
+
+`saved.readSelection`, `inspection.listShops` and `inspection.inspectShop` are default throwing placeholders typed with unknown inputs/results. ProductionBackendConfig cannot even provide their optional overrides. The report assigns them to consumers, but C20 explicitly assigns these durable read adapters and canonical typed results to013;018/019 must import them without editing this facade.
+
+Implement authorized durable reads for accepted009 RELEASE/DRAFT selections, exact selected revisions/definitions/prompts/content hashes and response contract/hash. Validate ownership, conflicts and bounds; never substitute latest revisions. Define the concrete shared result types from accepted record contracts. Implement read-only merchant/feature eligibility and candidate manifest/exclusion reasons for inspection, with current server-resolved staff authorization on every protected entry and no tokens/customer history/grant writes in results. Keep019's grant-scoped frozen snapshot ownership separate. Freeze a read-only facade usable by both consumers and verify representative authorized and denied selections/inspection through it.
+
+#### A1-R5 — Validate the complete published query definition
+
+File: `backend/query-validation.ts`.
+
+The adapter invokes compile and validateMappedArguments, but never checks the response template against the compiled output schema. The lifecycle's schema parse does not supply this missing semantic validation. Consequently a valid query with `{{result.nonexistent}}` can be admitted even though the accepted Shared publication validator rejects it.
+
+Invoke the accepted full definition publication validator with the pinned compiler, covering schema, mappings and scalar/items template paths; do not implement another parser. Preserve bounded INVALID_DEFINITION versus schema/validator availability errors. Verify a valid query publishes and an absent/nonscalar template path fails before any business or audit write. Keep existing policy registry/version validation intact.
+
+#### A1-R6 — Provide executable integration evidence and correct the handoff record
+
+The named 49-test command mostly reruns prerequisite component suites; the two new backend tests only exercise helper validation/registry and missing-config behavior. They do not assemble the backend or exercise PrismaPublicationStorage. The `:database` script runs schema/migration validation, not B02's two-connection publication races, replay or injected rollback. Pending infrastructure execution is correctly not claimed as a pass, but the required backend scenarios themselves must exist.
+
+Add bounded scenarios for B01–B06 using the actual facade, lifecycle, authorization, compiler, execution and durable storage. Substitute only external provider/model transports. Supply a command that really runs the isolated PostgreSQL publication/replay/CAS/rollback/two-connection scenarios, in addition to migration validation; retain developer ownership of actually running restricted PostgreSQL/Redis/container checks. No paid/live provider requirement is added. Correct the mapping table to list adapters actually constructed and their accepted source revisions, and report per-scenario executed/pending results honestly. Record the prepared execution packet's exact dedicated worktrees, start synchronization and recursive database revision; retain existing history. Submission claim fields must be clear. Do not launch downstream work.
+
+#### Architect validation and disposition
+
+`npm run test:arch020-backend-integration`: **49/49 passed** on submitted implementation. Independent temporary harness `/tmp/c013-a1-review/review.test.ts` uses the actual storage/validation adapters with a recording Prisma boundary; **4/4 assertions failed**, confirming immutable-audit rewrites, missing publisher metadata, lost CAS milliseconds and acceptance of a template path rejected by the accepted Shared validator. This is local functional evidence, not real PostgreSQL validation. Submitted typecheck/lint/build/Prisma results were reviewed, not redundantly rerun. No implementation or main branch was changed. Pending live/infrastructure checks remain developer-owned. No downstream promotion; preserve the final manual system-test gate.
+
+### Original pending review placeholder (historical)
 
 ### Review Status
 

@@ -989,3 +989,17 @@ COMMERCE-013; final/deployment/system gates remain. No implementation change,
 main integration or gitlink update. This supersedes older COMMERCE-007 current-state wording;
 other task decisions remain unchanged. Architecture is not yet Implemented and
 COMMERCE-012 remains the final implementation checkpoint.
+
+
+### COMMERCE-013 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1; executor/claim null.** Reviewed implementation
+`8258b01` and report `9c1a26b5`. The canonical task's A1-R1–R6 specify production
+assembly, changed-row-only durable persistence/publication metadata, precise CAS
+tokens, real typed saved-selection/inspection adapters, complete query-template
+validation, and executable integration evidence. The submitted focused command
+passed 49 tests; four independent local adapter assertions failed. These are
+functional defects; pending infrastructure execution alone is not the decision.
+COMMERCE-013 is not accepted and its facade is not frozen. COMMERCE-018/019 stay
+Pending; no downstream promotion. PostgreSQL/Redis/container execution remains
+developer-owned and the final manual system-test gate is unchanged.
