@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: blocked
 priority: 145
 executor: null
 claimed_at: null
@@ -20,6 +20,7 @@ depends_on:
   - ARCH-020-COMMERCE-017
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-002
+  - ARCH-020-COMMERCE-033
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
@@ -212,3 +213,16 @@ Preserve native-basic monetary discount profiles as UNSUPPORTED while provider
 rounding semantics are unproven; do not estimate savings or implement missing
 provider semantics in this composition task. PostgreSQL adapter timeout diagnosis
 and live infrastructure evidence remain separately developer-owned.
+
+
+### Dependency correction — C20 fixture producer gap — 2026-09-21
+
+**Blocked; Attempt 0 retained; executor/claimed_at null.** COMMERCE-018 Attempt 3
+proved that the shared C20 persistent seed/reset helper assigned to the backend
+producer is absent from accepted COMMERCE-013. C20 requires the same helper for
+COMMERCE-019's real Redis/PostgreSQL preview integration evidence.
+
+ARCH-020-COMMERCE-033 is now the explicit producer-correction task and is added as a
+dependency. Do not claim COMMERCE-019 until 033 is architect-accepted Complete and
+`moda_architect` returns this task to Ready. No 019 implementation or attempt is
+started by this reconciliation.

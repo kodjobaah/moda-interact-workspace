@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: blocked
 priority: 140
 executor: null
 claimed_at: null
@@ -19,6 +19,7 @@ depends_on:
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-002
   - ARCH-020-COMMERCE-011
+  - ARCH-020-COMMERCE-033
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
@@ -516,3 +517,52 @@ Return this same task to its configured `/moda-task` correction path. Preserve
 `attempt: 2`; the next authorized claim increments once to Attempt 3.
 COMMERCE-012, COMMERCE-024, GATEWAY-001 and terminal system validation remain gated.
 Do not start or promote a dependent task from this review.
+
+
+### Attempt 3 Review — Blocked with producer correction materialised — 2026-09-21
+
+**Current decision: Blocked; Attempt 3 retained; executor/claimed_at null.** Reviewed
+submitted implementation `3de9940` and parent report `225ed421` from the exact supplied
+snapshot. The archive has no Git metadata, so those heads are recorded as submitted
+evidence rather than independently asserted.
+
+Attempt 3 closes A2-R1 and A2-R2: release mutation rereads now resolve through the
+configured environment and preserve the actual pointer CAS version/status across
+activate/rollback; U13 no longer substitutes capability IDs for absent feature IDs.
+The focused cross-environment and BASE+FEATURE regressions are present. Submitted
+9 focused tests, typecheck, lint, build and `git diff --check` are retained as passing.
+
+A2-R3 cannot be completed inside COMMERCE-018 because C20 assigns the missing
+real-integration seed/reset boundary to the backend producer. The accepted
+COMMERCE-013 source exposes `getCommerceBackend()`, `createCommerceBackend()`,
+`createFixtureExecution(...)` and `resetCommerceBackendForTests()`, but not the C20
+isolated persistent seed/reset helper required by both 018 and 019. COMMERCE-018
+correctly reported that gap instead of inventing another publication backend or local
+fixture graph.
+
+The architect therefore materialises **ARCH-020-COMMERCE-033** in this review:
+`docs/decisions/commerce/ARCH-020/COMMERCE-033-provide-c20-isolated-integration-fixture.md`.
+It is Ready, Attempt 0, claims null, depends only on accepted COMMERCE-013, and owns
+one deterministic test-only fixture boundary. Its task file is the complete execution
+contract; no agent is expected to infer fixture contents, reset behavior, target safety,
+file scope, exports or validation from this review prose.
+
+COMMERCE-018 now explicitly depends on COMMERCE-033 and remains Blocked until 033 is
+architect-accepted Complete. Do not reopen or modify accepted COMMERCE-013 for this
+correction.
+
+One 018-owned item remains after unblocking: the C20 producer mapping must record the
+accepted producer heads, not historical pre-acceptance revisions. At minimum reconcile:
+
+- COMMERCE-008 accepted head: `8ba5e423112771defe533438ea99965357271526`;
+- COMMERCE-011 accepted head: `11764125825a119b5dd7aa8c8adf88c0341f75f8`;
+- COMMERCE-013 accepted head: `4d529773fde26599027aef2d76fbd70bc974b352`.
+
+After COMMERCE-033 is Complete, `moda_architect` may transition this task
+`blocked -> ready` without changing `attempt: 3`. The next authorised `/moda-task`
+claim becomes Attempt 4. Attempt 4 must consume the 033 helper directly, run the C20
+real PostgreSQL/Redis integration path for S01/S03/S04/S05, correct the producer
+mapping, rerun the existing named repository checks, return to Review and stop.
+
+No UI redesign, new schema, Shared contract, live provider call or COMMERCE-019
+implementation is authorised by this review.

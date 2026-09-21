@@ -1597,3 +1597,23 @@ real-application-service integration path, and the C20 producer-SHA/source/expor
 mapping table is still absent. Exact A2-R1..R4 corrections are recorded in the task's
 Architect Review. Submitted 8 focused tests plus typecheck/lint/build/diff hygiene are
 retained as passing evidence. No dependent task is promoted or launched.
+
+
+### COMMERCE-018 Attempt 3 / COMMERCE-033 fixture correction — 2026-09-21
+
+COMMERCE-018 is **Blocked, Attempt 3 retained, claims null** after source-level
+acceptance of its environment-aware release rereads and authoritative U13 feature
+identity handling. Real C20 integration evidence is blocked by a producer gap: the
+accepted COMMERCE-013 backend does not contain the C20 persistent integration
+seed/reset boundary.
+
+The architect creates `ARCH-020-COMMERCE-033` as a bounded producer-correction task:
+**Ready, Attempt 0, executor/claimed_at null**, depends only on accepted COMMERCE-013.
+It has deterministic file ownership, exact exports, TEST target guards, a dedicated
+disposable PostgreSQL reset contract, prefix-scoped Redis cleanup, exact fixture graph
+and real-infrastructure validation. C20 now names 033 as the fixture owner while the
+accepted013 production runtime remains unchanged.
+
+COMMERCE-018 and unclaimed COMMERCE-019 both depend on 033 and are Blocked until it
+is Complete. Their existing attempt numbers are preserved; neither is automatically
+claimed or launched. COMMERCE-012, GATEWAY and system-test gates remain downstream.
