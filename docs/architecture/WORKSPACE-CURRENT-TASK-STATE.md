@@ -1128,3 +1128,16 @@ and real supervisor `DEADLINE` termination/recovery close the Attempt 3 function
 gaps; prior runtime isolation, packaging and fixed-memory proof remains accepted.
 COMMERCE-026 stays Pending because SHARED-002 is Ready, not Complete. No dependent
 promotion or automatic launch; ARCH-020 remains In Progress.
+### COMMERCE-018 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `d074205` and parent report `686abc47`. Production Studio composition
+is present, but six bounded functional corrections remain: mutation Server Actions
+need the canonical Origin guard; capability publication currently sends a strict-schema
+extra field; documentation search paths are double-prefixed on document fetch; release
+read models do not carry the current environment pointer CAS/member-order semantics;
+response validation ignores the supplied example; and U13 omits positive eligibility.
+The exact correction contract is recorded in COMMERCE-018 Architect Review. Submitted
+focused tests (3), typecheck, lint, build and diff hygiene pass, but do not establish
+these flows. No exhaustive retest is requested and no downstream task is promoted or
+launched.
