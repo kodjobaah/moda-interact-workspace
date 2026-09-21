@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-21T00:00:39Z
+status: review
+executor: null
+claimed_at: null
 priority: 85
 attempt: 5
 depends_on:
@@ -129,42 +129,42 @@ Ready for Review.
 
 ### Correction Checklist
 
-- Attempt 3 R1 implemented: `compiler.ts` now builds a `GraphQLSchema` from the retained introspection artifact and runs full GraphQL semantic validation after the C14 policy walk. Duplicate arguments, conflicting response aliases, enum/string mismatches, nested input semantics and schema-invalid documents are rejected without replacing established bounded policy error codes. The three exact review regressions and valid neighboring queries pass.
-- Attempt 3 R3 document retrieval: blocked and explicitly reconciled. The actual pinned `@shopify/dev-mcp@1.15.4` tool list contains `search_docs_chunks` but no verified document-fetch operation. The adapter no longer returns a search excerpt as a document; it returns a bounded capability error. `parseDocumentResult` accepts only a sanitized full-document response with title, canonical Shopify URL and complete content, and rejects excerpt-shaped arrays. This requires architect resolution or a later accepted upstream capability before document retrieval can be marked implemented.
-- Attempt 3 R3 lifecycle implemented: failed startup closes and resets only the failed client attempt, allowing later recovery; service-owned SIGTERM/SIGINT hooks close and reap the pinned child. Focused process tests pass against the real pinned process.
-- Attempt 3 R2 preserved: the verified Storefront 2026-07 artifact, provenance, distribution evidence and SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc` remain unchanged.
-- Attempt 3 R4 preserved: route admission, strict keys, Redis readiness/fail-closed behavior, bounded outputs, cancellation/deadline handling and typed route errors remain covered by the existing executable route tests.
+- Attempt 4 R1 implemented: `DiscoveryAdmissionError` now distinguishes `ADMISSION_UNAVAILABLE` from `RATE_LIMITED`; Redis connect/ping/script failures fail closed before service dispatch, and operation/provider failures are no longer incorrectly translated into admission failures.
+- Attempt 4 R2 implemented: rolling request history remains in its own Redis sorted set while released per-admin/per-replica in-flight counters are decremented separately. Existing concurrency limits remain 2 per admin and 4 per replica.
+- Attempt 4 R3 implemented: GET and POST now share bounded typed failure mapping; GET admission/provider failures cannot fall through to the auth responder. The route tests cover unavailable admission and the service-not-called side effect.
+- Attempt 4 R4 implemented: a real local Redis test admits 60 sequential requests and rejects request 61 with `RATE_LIMITED`; focused route tests cover GET/POST admission boundaries. Runtime documentation records the fail-closed statuses and release semantics. The existing document-fetch capability gap remains explicitly blocked as recorded below.
+- Preserved: Storefront 2026-07 artifact, provenance and SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`; pinned `@shopify/dev-mcp@1.15.4` lifecycle and document-capability evidence; nested database revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
 ### Files Changed
 
 Implementation commit:
 
-- `f363ac4` (`fix(commerce): complete discovery semantic validation lifecycle`), pushed to `origin/task/ARCH-020-COMMERCE-011`.
+- `fba9482` (`fix(commerce): correct discovery admission failures`), pushed to `origin/task/ARCH-020-COMMERCE-011`.
 
-Changed files: `lib/discovery/compiler.ts`, `lib/discovery/upstream.ts`, `lib/discovery/service.ts`, `tests/discovery.test.ts`, `tests/discovery-process.test.ts`, and `docs/shopify-discovery-runtime.md`.
+Changed files: `lib/discovery/limits.ts`, `app/api/studio/discovery/route.ts`, `tests/discovery-route.test.ts`, `tests/discovery-limits.test.ts`, and `docs/shopify-discovery-runtime.md`.
 
 ### Work Completed
 
-Completed the scoped Attempt 4 corrections within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. The document-fetch capability gap is intentionally surfaced rather than represented as completed.
+Completed the scoped Attempt 5 corrections within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. The document-fetch capability gap is intentionally surfaced rather than represented as completed.
 
 ### Validation Results
 
-- Passed focused discovery validation: `npm test -- --run tests/discovery.test.ts tests/discovery-process.test.ts tests/discovery-route.test.ts` (3 files, 27 tests).
+- Passed focused discovery validation with local Redis: `REDIS_URL=redis://127.0.0.1:6399 npm test -- --run tests/discovery-limits.test.ts tests/discovery.test.ts tests/discovery-route.test.ts tests/discovery-process.test.ts` (4 files, 29 tests), including real sequential requests 60/61 and the pinned process fixture.
 - Passed `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check`.
-- Full `npm test` reached 15/16 files and 95/96 tests. The sole failure was the existing timing-sensitive `tests/readiness-docker.test.ts` descendant signal-handler assertion; no readiness or unrelated files were changed. This is recorded as a baseline failure, not a task-local regression.
-- The real pinned compatibility fixture started `shopify-dev-mcp` v1.15.4, initialized/listed tools, called `learn_shopify_api` for Storefront 2026-07 and closed the child without a live store credential. The new adapter tests cover sanitized full-document shape rejection and the verified missing document capability.
+- Full `REDIS_URL= npm test -- --no-file-parallelism`: 16/17 files and 96/98 tests passed. The two failures are the existing timing-sensitive `tests/readiness-docker.test.ts` descendant signal-handler assertions; no readiness or unrelated files were changed. This is a documented baseline condition, not a task-local regression.
+- The real pinned compatibility fixture started `shopify-dev-mcp` v1.15.4, initialized/listed tools, called `learn_shopify_api` for Storefront 2026-07 and closed the child without a live store credential. The adapter continues to reject the unverified document-fetch capability rather than promoting search excerpts.
 - The build generated Prisma Client v6.19.3 from nested database submodule SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
 ### Evidence Matrix
 
 - C14 compiler/schema: `tests/discovery.test.ts`, including the three Attempt 3 semantic regressions, valid ProductDetails, schema traversal and existing C14 boundary controls.
 - C15 process/adapter: `tests/discovery-process.test.ts`, `tests/fixtures/shopify-dev-mcp/compatibility.json`, `lib/discovery/upstream.ts`, and `docs/shopify-discovery-runtime.md`.
-- C15 route/admission: `tests/discovery-route.test.ts` and existing `lib/discovery/limits.ts` integration.
+- C15 route/admission: `tests/discovery-route.test.ts` and `tests/discovery-limits.test.ts`, including typed GET/POST failures and real Redis rolling admission.
 - Offline fallback: local artifact browsing and validation remain independent of documentation availability.
 
 ### Deviations
 
-The pinned process does not provide a verified document-fetch operation. Search chunks are therefore not promoted to documents. Node/package, artifact provenance and accepted database revision remain as recorded in the prior report.
+The pinned process does not provide a verified document-fetch operation. Search chunks are therefore not promoted to documents. The full suite retains the documented readiness descendant-handler baseline failures. Node/package, artifact provenance and accepted database revision remain as recorded above.
 
 ### Unresolved Issues
 
@@ -172,7 +172,7 @@ Architect resolution is required for the C15 document operation gap: either acce
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean and pushed at `f363ac4`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean and pushed at `fba9482`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Historical Completion Report — through Attempt 3
 
