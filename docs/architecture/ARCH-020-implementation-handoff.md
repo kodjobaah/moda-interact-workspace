@@ -939,8 +939,8 @@ supersedes the earlier extension ownership diagram. No active013 scope/claim cha
 
 ```text
 DATABASE-003 +SHARED-002 ->020 connection lifecycle ->028 scoped credentials
-COMMERCE-001 ->029 reusable sandbox proof (Ready)
-029 +SHARED-002 ->026 typed code adapter
+COMMERCE-001 ->029 reusable sandbox proof (Complete; Accepted Attempt 4)
+029 (Complete) +SHARED-002 ->026 typed code adapter
 021 HTTP and025 visual processor remain independent component work
 003 +021 +025 +026 +SHARED-002 ->030 publication validation/receipts
 019 +009 +025 +026 +030 +SHARED-002 ->031 external preview backend
@@ -951,9 +951,10 @@ GATEWAY-001 +020/021/026/028/029 ->GATEWAY-003
 all extension implementation ->012 cache bypass ->SYSTEM-TEST-001 (manual)
 ```
 
-DATABASE-003, SHARED-002 and COMMERCE-029 can begin independently. The last is an
-implementation proof with reusable artifact, not an approval to defer hard limits.
-Each submission maps named acceptance case to a committed scenario and actual result.
+DATABASE-003 and SHARED-002 remain independent executable prerequisites.
+COMMERCE-029 is Complete at accepted Attempt 4 with the reusable bounded runtime;
+COMMERCE-026 remains Pending until SHARED-002 is also Complete. Each submission maps
+named acceptance cases to committed scenarios and actual results.
 
 ### COMMERCE-013 Attempt 8 architect review — 2026-09-21
 
@@ -983,3 +984,15 @@ passing scenario and one timeout; developer-owned adapter validation remains pen
 COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
+
+## COMMERCE-029 Attempt 4 accepted — 2026-09-21
+
+The bounded QuickJS runtime is **Accepted / Complete, Attempt 4** (`f22e2d6`; report
+`4069f60c`). Compile-only syntax validation no longer executes top-level guest code,
+and the real 2,000 ms supervisor now has committed evidence terminating an active
+built-in with `DEADLINE`, awaiting worker cleanup and recovering for the next run.
+SB01-SB03 component proof is accepted.
+
+Frontier: SHARED-002 remains Ready, so COMMERCE-026 stays Pending. Nothing else is
+promoted or launched by this acceptance; GATEWAY-003 and the final cache/system
+gates remain downstream.
