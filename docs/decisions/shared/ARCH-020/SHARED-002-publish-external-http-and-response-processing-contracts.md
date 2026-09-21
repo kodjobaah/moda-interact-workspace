@@ -73,10 +73,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement C21 sections2/2.1/4 strict shapes and export the named schemas/types, including connection DTOs, JSON/TEXT decoding, visual/JAVASCRIPT processing union, TransformResponse and both processor input/result types. Preserve existing exports.
-- [ ] Extend every execution-kind branch explicitly; reject unauthorized inputs/methods/path/query mappings. Retain definition size bound and add processing config to canonical tool hash through execution.
-- [ ] Allow publication compiler output-schema derivation for external wrapper/projection; keep MCP/grant/final-response wire shapes unchanged. Add unchanged old-definition/descriptor/runner fixtures.
-- [ ] Update README including complete inventory; publish one new exact package version following normal Shared release workflow and record registry/install verification. Do not mark Complete on local build alone.
+- [x] Implement C21 sections2/2.1/4 strict shapes and export the named schemas/types, including connection DTOs, JSON/TEXT decoding, visual/JAVASCRIPT processing union, TransformResponse and both processor input/result types. Preserve existing exports.
+- [x] Extend every execution-kind branch explicitly; reject unauthorized inputs/methods/path/query mappings. Retain definition size bound and add processing config to canonical tool hash through execution.
+- [x] Allow publication compiler output-schema derivation for external wrapper/projection; keep MCP/grant/final-response wire shapes unchanged. Add unchanged old-definition/descriptor/runner fixtures.
+- [ ] Update README including complete inventory; publish one new exact package version following normal Shared release workflow and record registry/install verification. Public publication is complete at `@modainteract/moda-interact-shared@0.14.1`; fresh exact-version registry install/typecheck evidence remains to be recorded before this item is complete.
 
 ## Interfaces / Contracts
 
@@ -106,9 +106,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] X01: C21 worked examples parse, unsupported method/body/authority/type/path/oversize fails, old two execution variants still parse unchanged.
-- [ ] Projection bounds/filter unions/connection DTOs are strict; malformed processing affects hash; external descriptor contains no origin/auth/execution fields.
-- [ ] Package exports and fresh install/typecheck demonstrate new named APIs; published version and integrity evidence recorded.
+- [x] X01: C21 worked examples parse, unsupported method/body/authority/type/path/oversize fails, old two execution variants still parse unchanged.
+- [x] Projection bounds/filter unions/connection DTOs are strict; malformed processing affects hash; external descriptor contains no origin/auth/execution fields.
+- [ ] Package exports and fresh install/typecheck demonstrate new named APIs; published version and integrity evidence recorded. Publication/integrity are recorded for `0.14.1`; fresh registry-consumer install/typecheck remains outstanding.
 
 ## Validation
 
@@ -138,41 +138,96 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+In Progress. Attempt 2 implementation and public package publication are complete.
+The task remains `in_progress` until the explicit fresh-registry consumer/install
+proof and Attempt 2 physical worktree/preparation evidence are recorded; those are
+task evidence gaps, not known functional defects.
 
 ### Files Changed
 
-None; task definition only.
+Implementation commit `b23a7c1da2c2dcfe51c20ebe3e24e7ac6e23f360` changes:
+
+- `package.json`
+- `package-lock.json`
+- `src/commerce/README.md`
+- `src/commerce/definitions.ts`
+- `src/commerce/external.ts`
+- `src/commerce/external-contracts.test.ts`
+
+This parent task file is updated separately to record Attempt 2/publication state.
 
 ### Work Completed
 
-None.
+- Corrected C21 external-path validation so exact `.`/`..` path segments are rejected rather than normalized into another authorized path.
+- Bound response-format MIME families by mode: JSON accepts JSON media types and TEXT accepts textual/XML/JSON media types while incompatible binary/image configurations are rejected.
+- Applied the C21 credential/header deny-list to external mapped source-input names as well as query destination keys.
+- Revalidated resolved EXTERNAL_HTTP query values against the bounded scalar contract at mapping time, rejecting null/object/array/oversized/non-finite values without changing Shopify/policy mapping semantics.
+- Added and exported `ExternalHttpResultDataSchema` and `ExternalHttpResultData`, with bounded/depth-limited processed values.
+- Added deterministic publication-time visual projection/result-schema compatibility for OBJECT and LIST processing, including required-field, optional-projection, scalar-field and wrapper-shape compatibility.
+- Preserved the existing MCP/grant/final-response wire shape and sensitive-field exclusion from descriptors.
+- Updated the public Commerce export inventory/README.
+- Prepared and publicly published the corrected exact package version `@modainteract/moda-interact-shared@0.14.1` after explicit developer authorization. `0.14.0` remains the historical Attempt 1 publication and was not overwritten or unpublished.
 
 ### Validation Results
 
-No implementation validation performed.
+Implementation / functional evidence:
+
+- Implementation commit: `b23a7c1da2c2dcfe51c20ebe3e24e7ac6e23f360`.
+- Remote implementation branch `task/ARCH-020-SHARED-002` was independently compared with that commit after publication and is identical.
+- Focused `test:arch020-external-contracts`: **4/4 PASS** (executor-reported).
+- Repository typecheck: **PASS** (executor-reported).
+- Repository production build: **PASS** (executor-reported).
+- Clean-process Commerce validation: **PASS** (executor-reported).
+- Architect functional inspection confirmed the Attempt 1 R1/R2 correction mechanisms are present in the exact implementation commit; no extra test-count requirement is imposed.
+
+Public npm publication evidence supplied by the developer:
+
+- Package: `@modainteract/moda-interact-shared@0.14.1`.
+- Public dist-tag: `latest: 0.14.1`.
+- Tarball: `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.14.1.tgz`.
+- SHA-1: `1809e603c298468cdc4ef4cf7965f978449dc08d`.
+- Integrity: `sha512-CbH7qVbBksIXar1M5mImihwPQDi03fG1eXPcN5D55EMSzSZ6HEENSHK+Ksl97I63LtlWShtzMZ7isiYsnPJAfw==`.
+- Registry-reported unpacked size: **666.6 kB**.
+- Registry output reports the package as publicly published and `latest` resolving to `0.14.1`.
+
+Still required before submission to Review:
+
+- Fresh temporary consumer must install exact public `@modainteract/moda-interact-shared@0.14.1` from npm and record runtime `/commerce` import/export verification including `ExternalHttpResultDataSchema`.
+- The same fresh consumer must record a strict TypeScript import/typecheck for `ExternalHttpResultData` and the new C21 public types.
+- Attempt 2 Completion Report must record the launcher-resolved physical parent and implementation worktree/preparation evidence required by the VCS isolation policy. The currently pushed parent report does not contain that packet.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+None in implementation scope. The public `0.14.0` artifact is retained as the historical Attempt 1 release; Attempt 2 correctly uses a new immutable patch version, `0.14.1`.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+- C21 remains read-only.
+- Transport, DNS/network policy, credential resolution/encryption, visual runtime processing and QuickJS execution remain Commerce-owned and are intentionally absent from Shared.
+- Publication metadata supplied by the developer is recorded as publication evidence; it is not substituted for the still-required fresh consumer install/typecheck proof.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+No known functional correction remains from Attempt 1 R1/R2.
+
+Evidence still required before `status: review`:
+
+1. fresh exact `0.14.1` registry install/runtime export/typecheck proof;
+2. Attempt 2 launcher/worktree physical-isolation/preparation evidence.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+None newly discovered. No downstream ARCH-020 task is promoted by package publication alone; SHARED-002 remains a dependency until architect acceptance and `status: complete`.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-SHARED-002. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+- Attempt: **2**.
+- Implementation branch: `task/ARCH-020-SHARED-002`.
+- Implementation head: `b23a7c1da2c2dcfe51c20ebe3e24e7ac6e23f360`.
+- Architect comparison after publication: branch and implementation commit are identical.
+- Parent branch: `task/ARCH-020-SHARED-002`.
+- Parent branch head immediately before this report update: `3bf605cd53f56c8389c3696731e36ef1c6afae45` (`task(ARCH-020-SHARED-002): claim task`).
+- Attempt 2 physical worktree/preparation packet is not present in the currently surfaced parent report and remains to be recorded before Review.
 
 ## Architect Review
 
