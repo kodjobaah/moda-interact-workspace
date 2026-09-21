@@ -11,7 +11,7 @@ execution_mode: agent
 completion_mode: automatic
 status: review
 priority: 110
-executor: copilot
+executor: null
 claimed_at: null
 attempt: 3
 depends_on:
