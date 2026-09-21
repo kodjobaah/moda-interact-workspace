@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 110
 executor: null
 claimed_at: null
@@ -223,6 +223,69 @@ Task branch: `task/ARCH-020-COMMERCE-007`, attempt 2; claim cleared for review.
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for corrections. Attempt 2 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `dd86f4403c3dfed9ad33b16098e198a34545ed0d` and report `5f5fbed402569299765a10013a2a84df895f54a0`, verified against remote task heads. Both dedicated worktrees were clean; database pin remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No code edits, new claim, main integration, gitlink change or dependent promotion.
+
+Independent validation: submitted recommendation/contract tests **8/8 passed**. The five original functional reproductions now pass (cheapest ADD admission, deduplication, typed DENIED, cross-currency exclusion, unknown replacement quantity). The isolated `/tmp/c007-a2-review/review.test.ts` contains those five plus two new checks: **5 passed, 2 failed**. The failures are replacement admission ordering and final-await cancellation. The former uses the actual evaluator with controlled facts; the latter uses a deterministic evaluator port that aborts the shared signal immediately before returning valid evidence. Diff check passed. Typecheck/lint/build and full308/309 are submitted evidence; Redis timeout is not a review blocker. A discarded unknown-savings probe supplied evidence forbidden by Shared and is not counted as a functional finding.
+
+Retain the corrected ADD ordering/deduplication, typed evaluator error propagation, currency/quantity exclusions, arbitrary mapped definition fixture and canonical evidence digest check. Complete the following remaining portions of A1-R1/R2/R4, without changing scope or implementing Background.
+
+#### A2-R1 — P1 — Use REPLACE cost for replacement admission
+
+File: `src/commerce/products/recommendations.ts`, `similar` preparedCandidates sorting and final pricing; tests in `tests/recommendations.test.ts`.
+
+The admission sort calls `proposedTotal(basket, product)`, which computes an ADD of one item. A REPLACE has different extra spend: `max(0, candidateUnitPrice * sourceQuantity - sourceUnitPrice * sourceQuantity)`. With a USD20 source and quantity1, ten `z-cheap-*` candidates priced1 and `a-equal-extra` priced19 all have extraSpend0. C8 therefore admits `a-equal-extra` first by variantId; current code treats its extraSpend as19 and excludes it before the10-evaluation cap.
+
+Extract one replacement-pricing helper and call it both when constructing preparedCandidates and when building final alternatives. Using existing decimal/money helpers, its known-value calculation is:
+
+```ts
+const removed = decimal(sourceLine.unitPrice) * BigInt(sourceLine.quantity);
+const added = decimal(product.unitPrice) * BigInt(sourceLine.quantity);
+const delta = added - removed;
+return {
+  extraSpend: money(delta > 0n ? delta : 0n),
+  resultingTotal: money(decimal(original.total) + delta),
+  currency: original.currency,
+};
+```
+
+Apply this only after checking known basket total, source unit price/quantity and candidate unit price with matching currency; otherwise return unknown pricing. Carry that computed pricing with each candidate. Deduplicate canonical proposals, sort by its actual extraSpend (unknown last), variantId and canonical proposal JSON, then slice10. Preserve the separate final similarity ranking and max3 output.
+
+Acceptance: the11-candidate example above admits `a-equal-extra` and exactly10 proposals; permutations preserve admitted IDs/order. Include a source quantity3 case and known/unknown pricing; final disclosed totals must equal the same helper's values. Do not merely sort the already-admitted results.
+
+#### A2-R2 — P1 — Recheck cancellation/deadline after awaits and before every successful return
+
+File: `src/commerce/products/recommendations.ts`, `evaluate`, `qualifying`, `similar`; focused tests.
+
+The wrapper checks `stopped(context)` only before evaluator dispatch. If the shared signal becomes aborted while the last admitted evaluation completes, it publishes `status: OK` with alternatives. The same publication guard is absent on no-evaluator similarity and empty/no-source early success paths. Typed errors now propagate correctly, but this requested post-completion guard is still missing.
+
+Add the existing typed guard immediately after awaited dependencies and before producing success, including early empty results:
+
+```ts
+if (stopped(context)) return failure('DEADLINE', true);
+```
+
+Inside the discriminated evaluation helper use `{ error: failure('DEADLINE', true) }` after its await. Preserve the shared context/budget/signal/deadline object and existing typed non-cancellation errors; do not add retries or a new grant. Stop before another evaluation/provider call after cancellation or deadline expiry. This is a Commerce result-publication guard, not Background delivery logic.
+
+Acceptance: abort inside the last evaluator completion -> DEADLINE, no successful alternatives; repeat with an expired fake-clock deadline, after an earlier qualified candidate, and with similar offerId:null while search is pending. A valid nonqualifying evaluation remains an OK empty result when not stopped. Assert subsequent call count0 after the stop.
+
+#### A2-R3 — P1 — Finish the local C18 and provider-budget evidence; correct report claims
+
+Files: `tests/recommendation-contract.test.ts`, task-owned contract fixtures and this Completion Report. The new real evaluator/definition executor fixture is useful, but it contains a single happy replay and changes basket/rule together. Its budget is `reserveProviderRequest() {}` and it only asserts providerCalls >0. There is no consumer double or EC01–EC12 case matrix in executable coverage. Existing eight tests therefore do not establish the report's “EC01–EC12 ... passed locally” or shared12-request ceiling claims. This is the remaining explicitly requested A1-R4 validation, not a new live-service requirement.
+
+Use the canonical C18 seed and controlled provider transport, preserving actual evaluator/definition executor dispatch. Add a local consumer double (no Background import) and map each EC ID to executable assertions, or to an exact reused fixture that is actually run:
+
+- EC01/02/12: capture the original arbitrary tool name/arguments, replay that same call once, retain mapped inputs, forbid separate ungranted evaluator discovery; identical proposal passes and changed proposal refers.
+- EC03/05: two alternatives from one call need one refresh; match by exact proposal, not array position; absent/duplicate matches, empty and truncated replies cannot yield positive acceptance.
+- EC04: vary basket hash, rule hash, savings, total, currency, outcome and proposal separately with recomputed canonical digests, so unrelated mismatches cannot mask the asserted condition.
+- EC06/07/08/10: expiry/future/malformed/digest cases, imitation evidence, provenance/turn/budget failures and revoked/wrong identities fail closed. Producer authorization fixtures assert zero provider calls for denials; host provenance checks belong only in the consumer double.
+- EC09/11: typed/transport failures get zero automatic refresh retries; cancellation/stale completion makes the double's delivery/language-write counts0. Do not implement host races in Commerce runtime.
+
+Replace the no-op budget in a dedicated actual-adapter fixture with a shared counter that throws before reservation13. Observe provider transport invocation count <=12 across search plus nested facts/rule evaluation, with no subsequent call after exhaustion; ensure output fails closed rather than claiming complete evidence. A10-evaluation spy is not a12-provider-call check. Keep the existing success/digest fixture, and test configured maxRecommendations/maxSearchResults through the dispatcher without expanding original authority.
+
+Update the report to list EC ID -> test/fixture -> command -> actual call/reservation/consumer counts and outcome. Remove the claim that the task-owned local renamed-call/tampered-evidence path is wholly developer-owned. Real deployed MCP/worker/Shopify validation remains separate and pending, as intended. Run focused tests, required lint/typecheck/build/diff checks after corrections and publish both task branches. Return to review, clear claims, and do not self-accept or start dependants.
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 

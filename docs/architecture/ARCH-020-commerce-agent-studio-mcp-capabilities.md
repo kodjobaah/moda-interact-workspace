@@ -1319,3 +1319,17 @@ C20 assigns backend assembly to013, U01–U13 service wiring to018 and U14/previ
 service wiring to019.018 and019 run independently after their prerequisites;
 neither owns or edits the other's adapters. Component page ownership is unchanged.
 Gateway/caching/system-test dependencies include both new integration tasks.
+
+
+## COMMERCE-007 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; **Ready**, Attempt 2 retained, executor/claimed_at null; not accepted.
+Implementation `dd86f44` and report `5f5fbed` match remote heads. Submitted focused
+checks8/8 and original regression checks5/5 pass. Two further regressions fail:
+REPLACE admission uses ADD cost, and final-await cancellation can publish success.
+Latest task A2-R1–R3 give exact pricing/guard corrections and remaining local C18
+consumer/provider-budget evidence. The single producer replay fixture does not
+establish EC01–EC12 or the12-request ceiling; live worker integration remains separate.
+No dependency promotion, new attempt, implementation edit, main merge or gitlink
+change. Reclaim only after this parent review overlay is published; historical
+summaries do not override the latest task YAML/review.

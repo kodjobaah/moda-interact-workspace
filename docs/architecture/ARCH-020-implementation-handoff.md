@@ -743,3 +743,17 @@ C20 replaces combined013 with backend013, Studio018 and preview019. Both new
 tasks are Pending, unclaimed; they may execute concurrently after013 and their
 listed components complete. Exact mappings, file ownership and prior I01–I09
 coverage are recorded. No active component implementation is changed or launched.
+
+
+## COMMERCE-007 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; **Ready**, Attempt 2 retained, executor/claimed_at null; not accepted.
+Implementation `dd86f44` and report `5f5fbed` match remote heads. Submitted focused
+checks8/8 and original regression checks5/5 pass. Two further regressions fail:
+REPLACE admission uses ADD cost, and final-await cancellation can publish success.
+Latest task A2-R1–R3 give exact pricing/guard corrections and remaining local C18
+consumer/provider-budget evidence. The single producer replay fixture does not
+establish EC01–EC12 or the12-request ceiling; live worker integration remains separate.
+No dependency promotion, new attempt, implementation edit, main merge or gitlink
+change. Reclaim only after this parent review overlay is published; historical
+summaries do not override the latest task YAML/review.
