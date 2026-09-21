@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 95
 executor: codex
 claimed_at: 2026-09-21T01:55:18Z
@@ -135,10 +135,18 @@ Ready for Review.
 
 - R1 implemented with static 2026-07 Admin GraphQL `productVariants`, `nodes`, and bounded collection documents; raw response schemas map variant/product identity, price, availability, shop currency, safe URLs and collection edges, while missing facts fail closed.
 - R2 implemented with authorization before every recovery/facts/provider path, pre/post async deadline and signal checks, shared budget reservation before I/O, typed THROTTLED/DEADLINE/UNAVAILABLE mapping and no fallback.
-- R3 implemented with one variant per provider edge, consumed-edge signed continuation cursors bound to shop/query/price/availability/market/currency/expiry, three pages per invocation and deterministic duplicate suppression.
+- R3 implemented with one variant per provider edge, consumed-edge signed continuation cursors bound to shop/query/price/availability/market/currency/expiry, including unconsumed edges on terminal provider pages, three pages per invocation and deterministic duplicate suppression.
 - R4 implemented with exact `execute({context,input})`, canonical Shared input/output validation, invalid-input zero-I/O behavior and frozen operation descriptors.
-- R5 implemented with explicit null/omitted basket unknown fields, source currency preservation, authorized empty-snapshot handling and corrected evidence claims.
+- R5 implemented with explicit null/omitted basket unknown fields, persisted snapshot currency provenance without current-context fallback, authorized empty-snapshot handling and corrected evidence claims.
+- Nullable Shopify nodes now become per-requested-ID missing facts without discarding valid siblings. Post-authorization cancellation stops before recovery I/O, and nested collection provider errors retain typed THROTTLED/DEADLINE/UNAVAILABLE results without retry or partial success.
 - No discount arithmetic, cart/order mutation, live provider call or database schema change was added.
+
+### Correction Checklist
+
+- A2-R1 implemented in `src/commerce/products/index.ts` and terminal-page continuation regression: a limit-one response over two terminal-page edges resumes after the consumed edge and returns the second variant exactly once.
+- A2-R2 implemented in the raw variant response schema and mixed valid/null regression: nullable nodes preserve the valid row and emit `product:null`, `collectionsComplete:false` for the missing requested ID.
+- A2-R3 implemented in basket source normalization and provenance regressions: persisted source currency wins when different from context; null/missing/array currency stays null.
+- A2-R4 implemented in authorization and nested collection paths: abort-after-authorize performs zero recovery calls; a nested throttle returns typed THROTTLED after exactly two provider calls with no retry/fallback.
 
 ### Validation Results
 
@@ -146,15 +154,15 @@ Agent-executed validation:
 
 | Requirement | Fixture / expected side effect | Command | Result |
 |---|---|---|---|
-| B01 / R5 | Array and `{lineItems}` snapshots; null/omitted product, variant, quantity and price evidence; known decimal zero remains known; authorized empty snapshot is `NOT_FOUND` | `npm test -- tests/products-policy.test.ts` | **9 passed** |
-| B02 / R1 / R3 | Raw ProductVariant filtering, legal request shape, decimal price, availability, currency, safe URL, consumed-edge continuation and cursor tamper/shop/context binding | `npm test -- tests/products-policy.test.ts` | **9 passed** |
-| B03 / R1 / R2 | Raw `nodes` facts, missing variant, stable ordering, nested collection completion and denied facts with zero provider calls | `npm test -- tests/products-policy.test.ts` | **9 passed** |
-| B04 / R2 / R3 | Late cancellation, typed throttle, 3-page cap, shared 12-request cap, invalid C19 input and measured provider calls | `npm test -- tests/products-policy.test.ts` | **9 passed** |
-| R4 registry | Both descriptors invoked with `{context,input}`, malformed basket input rejected without I/O, descriptor array frozen | `npm test -- tests/products-policy.test.ts` | **9 passed** |
+| B01 / A2-R3 | Array and envelope snapshots; known source currency differing from current context; null/missing source currency; null line facts and known decimal zero | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| B02 / A2-R1 | Terminal provider page with two edges and limit one; first call returns v-1 plus cursor after c1, second returns v-2 plus null cursor | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| B03 / A2-R2 | Mixed `[validVariant,null]` response; both requested rows retained, missing row incomplete, known collections preserved | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| B04 / A2-R4 | Authorizer abort before recovery read and nested collection THROTTLED on second call; zero recovery I/O and no provider retry/fallback | `npm test -- tests/products-policy.test.ts` | **13 passed** |
+| Existing B01-B04/C19 | Raw request mapping, policy filters, cursor binding/tamper, collection paging, 3-page/12-request ceilings, descriptor validation and frozen registry | `npm test -- tests/products-policy.test.ts` | **13 passed** |
 | Repository lint and whitespace | Scoped source/test lint and patch whitespace | `npm run lint`; `git diff --check` | **Passed** |
-| Production compilation | Prisma generation completed; Next production build | `npm run build` | **Blocked by baseline**: `graphql` cannot resolve in `lib/discovery/compiler.ts` and `lib/discovery/schema.ts` |
-| Full Commerce tests | Existing repository regression suite | `npm test` | **110 passed, 4 unrelated baseline failures**: 3 discovery failures including missing `graphql`/pinned MCP command, Redis discovery-limits timeout, and 2 readiness-docker descendant cancellation failures |
-| TypeScript diagnostics | Full declared typecheck | `npm run typecheck` | **Blocked by baseline**: 11 existing `lib/discovery/compiler.ts`/`schema.ts` errors caused by unresolved `graphql`; no Commerce-015 diagnostics remain |
+| Production compilation | Prisma generation and Next production build | `npm run build` | **Passed** |
+| TypeScript diagnostics | Generated route and repository types after pinned Prisma generation | `npm run typecheck` | **Passed** |
+| Full Commerce tests | Existing repository regression suite including all 13 product-policy cases | `npm test` | **157 passed, 1 unrelated failure**: `tests/discovery-limits.test.ts` timed out against configured Redis after 30 seconds |
 
 Developer validation required:
 
@@ -163,7 +171,7 @@ Developer validation required:
 
 ### Deviations
 
-Attempt 2 executed from the prepared launcher packet after the Attempt 1 Changes Requested review. All R1-R5 corrections were implemented in Commerce-owned files only. Normal execution policy remains unchanged.
+Attempt 3 executed from the prepared launcher packet after the Attempt 2 Changes Requested review. All A2-R1 through A2-R4 corrections were implemented in Commerce-owned files only. Normal execution policy remains unchanged.
 
 ### Assumptions
 
@@ -171,7 +179,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-No unresolved implementation issue. Build/typecheck/full-suite baseline failures are outside the changed Commerce-015 files and are recorded above. Live Shopify/database/container/system evidence remains developer-owned and pending.
+No unresolved implementation issue. The full-suite Redis discovery-limit timeout is outside the changed Commerce-015 files and is recorded above. Live Shopify/database/container/system evidence remains developer-owned and pending.
 
 ### Architectural Concerns
 
@@ -179,7 +187,7 @@ None newly reported.
 
 ### Git / VCS
 
-Implementation commit: `8793bc2393b60dc7d323b6ab4615160ea777d30f`, pushed to `origin/task/ARCH-020-COMMERCE-015`. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-015`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-015`. Both physical worktrees are clean on mirrored `task/ARCH-020-COMMERCE-015` branches. Nested database submodule is clean and pinned at accepted revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink, main branch, Architect Review text or enabled task was modified.
+Implementation commit: `511e14a`, pushed to `origin/task/ARCH-020-COMMERCE-015`. Attempt: 3. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-015`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-015`. Both use mirrored `task/ARCH-020-COMMERCE-015` branches; no shared checkout or another task worktree was reused. Parent and implementation remote task branches needed no fast-forward and both already incorporated `origin/main`. Recursive submodule sync/update passed; database remains pinned at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink, main branch, Architect Review text or enabled task was modified.
 
 ## Architect Review
 
