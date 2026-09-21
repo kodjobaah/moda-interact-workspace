@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-21T00:28:20Z
+status: review
+executor: null
+claimed_at: null
 priority: 85
 attempt: 7
 depends_on:
@@ -61,15 +61,15 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
-- [ ] Reuse C7.1 server-only Studio guards for all documentation/schema discovery routes. Development identity follows the same bounded service policy, with no route-local bypass.
+- [x] Reuse C7.1 server-only Studio guards for all documentation/schema discovery routes. Development identity follows the same bounded service policy, with no route-local bypass.
 
-- [ ] Implement C15 typed discovery operations, using a pinned @shopify/dev-mcp supervised stdio child and only its verified documentation/schema/validation capabilities. Capture actual upstream initialize/list/call fixtures and map them to the stable Studio API; no arbitrary proxy.
+- [x] Implement C15 typed discovery operations, using a pinned @shopify/dev-mcp supervised stdio child and only its verified documentation/schema/validation capabilities. Capture actual upstream initialize/list/call fixtures and map them to the stable Studio API; no arbitrary proxy.
 - [x] Deliver the Storefront2026-07 schema artifact, SHA-256, provenance, version support and distribution evidence. Provide paginated typed fields/arguments/constraints and inline explanations, including unavailable/token-required fields. Fixture strings must not stand in for the actual schema.
-- [ ] Implement deterministic schema selection -> named GraphQL query compilation, variable mapping validation, response-path derivation and C14 AST/root/bounds checks. No business feature names in compiler dispatch.
-- [ ] Implement POST discovery/search, POST discovery/document, GET discovery/schema and POST discovery/validate exactly as C15; authentication, limits, timeout, response bounds and redaction included.
-- [ ] Keep local schema/compiler validation operational on docs-search failure; show typed errors for the UI, retain accepted schema artifacts across deployments, and block unsupported schema versions. No provider/store credentials in the child environment or submitted search text.
-- [ ] Document child startup/health/restart/shutdown in docs/shopify-discovery-runtime.md; pass only explicit nonsecret environment needed for documentation connectivity. Bound pending calls and reap child on service shutdown. No extra network listener or Shopify CLI execution.
-- [ ] Supply U07/N04 service fixtures for docs search -> document -> field selection -> query validation -> apply-to-draft payload, including no external navigation requirement. Authoring services create no live grant, Shopify write, billing preference or release.
+- [x] Implement deterministic schema selection -> named GraphQL query compilation, variable mapping validation, response-path derivation and C14 AST/root/bounds checks. No business feature names in compiler dispatch.
+- [x] Implement POST discovery/search, POST discovery/document, GET discovery/schema and POST discovery/validate exactly as C15; authentication, limits, timeout, response bounds and redaction included.
+- [x] Keep local schema/compiler validation operational on docs-search failure; show typed errors for the UI, retain accepted schema artifacts across deployments, and block unsupported schema versions. No provider/store credentials in the child environment or submitted search text.
+- [x] Document child startup/health/restart/shutdown in docs/shopify-discovery-runtime.md; pass only explicit nonsecret environment needed for documentation connectivity. Bound pending calls and reap child on service shutdown. No extra network listener or Shopify CLI execution.
+- [x] Supply U07/N04 service fixtures for docs search -> document -> field selection -> query validation -> apply-to-draft payload, including no external navigation requirement. Authoring services create no live grant, Shopify write, billing preference or release.
 
 ## Interfaces / Contracts
 
@@ -100,18 +100,18 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Staff-facing service operations provide complete supported-field guidance, source excerpts and schema-generated query definitions; no handwritten per-feature operation registry is needed.
-- [ ] Invalid/unknown fields, forbidden roots/mutations/directives, excessive nesting/list bounds, missing variables and wrong schema hashes are rejected before execution/publication.
-- [ ] Remote docs unavailability preserves local schema browsing/validation; missing authoritative schema fails closed. No automatic API version upgrade.
-- [ ] Anonymous/revoked/other-service callers are denied; requests cannot invoke shell/CLI/store tools, pass credentials or fetch arbitrary URLs.
-- [ ] Accepted artifacts support the U07 traversal N04 and C14 product-description example, including its real schemaHash. No production credential or live Shopify store is needed for local discovery validation.
+- [x] Staff-facing service operations provide complete supported-field guidance, source excerpts and schema-generated query definitions; no handwritten per-feature operation registry is needed.
+- [x] Invalid/unknown fields, forbidden roots/mutations/directives, excessive nesting/list bounds, missing variables and wrong schema hashes are rejected before execution/publication.
+- [x] Remote docs unavailability preserves local schema browsing/validation; missing authoritative schema fails closed. No automatic API version upgrade.
+- [x] Anonymous/revoked/other-service callers are denied; requests cannot invoke shell/CLI/store tools, pass credentials or fetch arbitrary URLs.
+- [x] Accepted artifacts support the U07 traversal N04 and C14 product-description example, including its real schemaHash. No production credential or live Shopify store is needed for local discovery validation.
 
 ## Validation
 
-- [ ] Test the complete service traversal plus timeouts, upstream schema changes, invalid tool names, URL/domain injection, oversized responses, rate/concurrency limits and absent Redis.
-- [ ] Assert logs exclude query content/secrets and child environment excludes DB/Background/Shopify/preview credentials.
-- [ ] Run fixture tests, declared type/lint checks and the pinned-process compatibility fixture. Record exact versions/hashes/commands; actual runtime tests happen during implementation, not task authoring.
-- [ ] Record a requirement-to-fixture matrix for C14/C15 and U07/N04; keep developer-owned deployed validation separate.
+- [x] Test the complete service traversal plus timeouts, upstream schema changes, invalid tool names, URL/domain injection, oversized responses, rate/concurrency limits and absent Redis.
+- [x] Assert logs exclude query content/secrets and child environment excludes DB/Background/Shopify/preview credentials.
+- [x] Run fixture tests, declared type/lint checks and the pinned-process compatibility fixture. Record exact versions/hashes/commands; actual runtime tests happen during implementation, not task authoring.
+- [x] Record a requirement-to-fixture matrix for C14/C15 and U07/N04; keep developer-owned deployed validation separate.
 
 ## Stop Condition
 
@@ -129,36 +129,38 @@ Ready for Review.
 
 ### Correction Checklist
 
-- R5-1 implemented: added `lib/discovery/document.ts` as the approved C15.1 server-side HTTPS adapter. It accepts only canonical `shopify.dev/docs` URLs, follows at most three same-origin redirects, propagates the caller signal, bounds response bytes at 64 KiB before extraction, and returns title, complete text, and canonical source. `createPinnedUpstream().document()` now uses this adapter while pinned MCP search remains unchanged; it no longer presents a search excerpt as a document.
-- R5-1 evidence implemented: controlled transport fixtures in `tests/discovery-process.test.ts` prove document text beyond 2,000 characters, preserved title/source, and rejection of an off-domain redirect. The real pinned `@shopify/dev-mcp@1.15.4` compatibility fixture still proves initialize/list/approved call/close and records that no verified upstream full-document tool exists; no provider upgrade or live-store credential was used.
-- R5-2 implemented: moved Redis client shutdown into an outer `finally`, so admission denial, connection/ping/eval failure, operation success, and operation failure all close the owned client. In-flight counters are released only after successful admission, and cleanup errors cannot replace the primary typed error.
-- R5-2 evidence implemented: `tests/discovery-admission-cleanup.test.ts` asserts `quit()` on rate denial and connection failure; the existing route and real-limiter coverage remains preserved.
-- Preserved: Storefront 2026-07 artifact, provenance and SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`; pinned `@shopify/dev-mcp@1.15.4` lifecycle; nested database revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- R6-1 implemented: `document.ts` and `upstream.ts` now share one canonical URL validator requiring the exact `https://shopify.dev` origin, `/docs/` paths, no credentials/query/fragment, and no encoded separators/traversal. Initial and redirect requests use the same validator, follow at most two redirects, dispose redirect/error bodies, and preserve the final canonical source URL.
+- R6-1 evidence implemented: `tests/discovery-document.test.ts` covers nondefault port, userinfo, encoded separators/traversal, query/fragment, relative/default-443 inputs, two redirects, and rejection of a third redirect after exactly three fetches.
+- R6-2 implemented: the adapter permits up to 1 MiB of streamed decoded HTML input, requires `text/html`, a title of at most 255 characters, and verified `<main>`/`<article>` content. It rejects malformed/missing content and arbitrary error-page fallback. `service.ts` validates the complete serialized UTF-8 result at 64 KiB without truncation.
+- R6-2 evidence implemented: `tests/discovery-document.test.ts` covers >64 KiB HTML with a small valid article, missing title/main, malformed representation, and serialized output overflow; existing process tests retain >2,000-character full-document evidence. Runtime documentation records the actual limits and redirect policy.
+- R6-3 implemented: Redis admission normalization is limited to connect/ping/eval/rate denial. Admitted operation errors retain their identity; counter release occurs only after admission; bounded best-effort cleanup cannot mask the primary error, and quit/disconnect runs on every exit.
+- R6-3 evidence implemented: `tests/discovery-admission-cleanup.test.ts` covers denial, connection failure, fluent counter cleanup, client close, and exact admitted operation-error propagation.
+- Preserved: Storefront 2026-07 artifact and SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`; pinned `@shopify/dev-mcp@1.15.4`; nested database revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
 ### Files Changed
 
 Implementation commit:
 
-- `7bfa26d` (`fix(commerce): complete document adapter and admission cleanup`), pushed to `origin/task/ARCH-020-COMMERCE-011`.
+- `0ac23ea963508de37c37327560020d1364396473` (`fix(commerce): enforce C15.1 document and cleanup bounds`), pushed to `origin/task/ARCH-020-COMMERCE-011`, on top of `7bfa26d`.
 
-Changed files: `lib/discovery/document.ts`, `lib/discovery/limits.ts`, `lib/discovery/upstream.ts`, `tests/discovery-process.test.ts`, `tests/discovery-admission-cleanup.test.ts`, and `docs/shopify-discovery-runtime.md`.
+Changed files in Attempt 7: `lib/discovery/document.ts`, `lib/discovery/limits.ts`, `lib/discovery/service.ts`, `tests/discovery-admission-cleanup.test.ts`, `tests/discovery-document.test.ts`, and `docs/shopify-discovery-runtime.md`.
 
 ### Work Completed
 
-Completed the scoped Attempt 6 corrections within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. C15.1 is implemented without claiming a nonexistent pinned MCP document tool.
+Completed all scoped Attempt 7 corrections within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. C15.1 is implemented without claiming a nonexistent pinned MCP document tool.
 
 ### Validation Results
 
-- Passed focused discovery validation with Redis unset: `REDIS_URL= npm test -- --run tests/discovery.test.ts tests/discovery-route.test.ts tests/discovery-process.test.ts tests/discovery-limits.test.ts tests/discovery-admission-cleanup.test.ts` (5 files, 32 tests), including the pinned process fixture, full-document adapter fixture, redirect rejection, and cleanup assertions. The real Redis 60/61 test was attempted with the configured endpoint but timed out because no responsive Redis service was available; it was then skipped with `REDIS_URL=` rather than reported as a passing live check.
+- Passed focused discovery validation with Redis unset: `REDIS_URL= npm test -- --run tests/discovery.test.ts tests/discovery-route.test.ts tests/discovery-process.test.ts tests/discovery-limits.test.ts tests/discovery-admission-cleanup.test.ts tests/discovery-document.test.ts` (6 files, 47 tests), including the pinned process fixture and all R6 regressions.
 - Passed `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check`.
-- Passed full `REDIS_URL= npm test -- --no-file-parallelism`: 18 files and 101 tests. No readiness baseline failures occurred with Redis unset.
-- The real pinned compatibility fixture started `shopify-dev-mcp` v1.15.4, initialized/listed tools, called `learn_shopify_api` for Storefront 2026-07 and closed the child without a live store credential. The controlled HTTPS fixture proves the separate C15.1 full-document path.
+- Passed full `REDIS_URL= npm test -- --no-file-parallelism`: 19 files and 116 tests. No readiness baseline failures occurred with Redis unset.
+- The real pinned compatibility fixture started `shopify-dev-mcp` v1.15.4, initialized/listed tools, called `learn_shopify_api` for Storefront 2026-07 and closed the child without a live store credential. Controlled HTTPS fixtures prove the separate C15.1 full-document path, strict redirects, content representation and bounds.
 - The build generated Prisma Client v6.19.3 from nested database submodule SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
 ### Evidence Matrix
 
 - C14 compiler/schema: `tests/discovery.test.ts`, including the three Attempt 3 semantic regressions, valid ProductDetails, schema traversal and existing C14 boundary controls.
-- C15 process/adapter: `tests/discovery-process.test.ts`, `tests/fixtures/shopify-dev-mcp/compatibility.json`, `lib/discovery/document.ts`, `lib/discovery/upstream.ts`, and `docs/shopify-discovery-runtime.md`.
+- C15 process/adapter: `tests/discovery-process.test.ts`, `tests/discovery-document.test.ts`, `tests/fixtures/shopify-dev-mcp/compatibility.json`, `lib/discovery/document.ts`, `lib/discovery/upstream.ts`, and `docs/shopify-discovery-runtime.md`.
 - C15 route/admission: `tests/discovery-route.test.ts`, `tests/discovery-limits.test.ts`, and `tests/discovery-admission-cleanup.test.ts`, including typed GET/POST failures, cleanup on denial/failure, and the environment-gated real Redis rolling admission.
 - Offline fallback: local artifact browsing and validation remain independent of documentation availability.
 
@@ -172,7 +174,7 @@ Deployed OAuth/revocation, real Redis cross-replica saturation, live Shopify cal
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean and pushed at `7bfa26d`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean and pushed at `0ac23ea963508de37c37327560020d1364396473`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Historical Completion Report — through Attempt 3
 
