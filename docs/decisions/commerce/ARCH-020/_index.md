@@ -17,7 +17,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-007](COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | complete | ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-015 |
 | [ARCH-020-COMMERCE-008](COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Implement isolated preview lifecycle and execution service | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001, ARCH-020-COMMERCE-001 |
-| [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | ready | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
+| [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | complete | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-012](COMMERCE-012-add-frequency-based-tool-result-caching.md) | Frequency-based tool-result caching; final implementation feature, readiness checkpoint outstanding | pending | All other ARCH-020 implementation tasks |
 | [ARCH-020-COMMERCE-013](COMMERCE-013-integrate-publication-and-studio-with-real-commerce-services.md) | Integrate Commerce backend runtime and publication services | ready | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-014, ARCH-020-COMMERCE-015, ARCH-020-COMMERCE-016 |
@@ -408,28 +408,56 @@ other task decisions remain unchanged. Architecture is not yet Implemented and
 COMMERCE-012 remains the final implementation checkpoint.
 
 
-### COMMERCE-013 Attempt 1 architect review — 2026-09-21
+### COMMERCE-010 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1; executor/claim null.** Reviewed implementation
-`8258b01` and report `9c1a26b5`. The canonical task's A1-R1–R6 specify production
-assembly, changed-row-only durable persistence/publication metadata, precise CAS
-tokens, real typed saved-selection/inspection adapters, complete query-template
-validation, and executable integration evidence. The submitted focused command
-passed 49 tests; four independent local adapter assertions failed. These are
-functional defects; pending infrastructure execution alone is not the decision.
-COMMERCE-013 is not accepted and its facade is not frozen. COMMERCE-018/019 stay
-Pending; no downstream promotion. PostgreSQL/Redis/container execution remains
-developer-owned and the final manual system-test gate is unchanged.
+`7a88d72` and parent report `41d662e2`. A1-R1–R4 in the canonical task's Architect
+Review specify actual MCP terminal events/counts, single and correctly classified
+stage outcomes, provider correlation/preview-purpose propagation, and accurate
+service-level isolation/refresh evidence. Existing focused suites: 23 passed;
+two independent functional reproductions failed (duplicate execution and premature
+discovery success). Baseline repository-wide failures do not drive this decision.
+COMMERCE-010 is not accepted; no dependent is promoted. Hosted validation remains
+developer-owned; the final manual system-test gate is unchanged.
 
 
-### COMMERCE-013 Attempt 2 architect review — 2026-09-21
+### COMMERCE-010 Attempt 2 architect review — 2026-09-21
 
-**Changes Requested; Ready, Attempt 2; executor/claim null.** Reviewed `d432276`
-and report `b506f60d`. A2-R1–R6 specify tokenless bounded transport, complete real
-policy composition, initial resolution/pinned-grant eligibility, normalized
-changed-row persistence/CAS, exact saved-selection/inspection, and a backend
-rehearsal that invokes the adapter. Focused tests: 52 passed. Prior four architect
-reproductions pass; two new functional checks fail (unchanged draft UPDATE and
-missing selection accepted). No acceptance; COMMERCE-018/019 remain Pending.
-Infrastructure execution remains developer-owned; its absence alone does not
-cause this decision. Preserve the final manual system-test gate.
+**Changes Requested; Ready, Attempt 2; executor/claim null.** Reviewed `3343c95`
+and report `ad8e2de2`. A2-R1–R4 in the canonical task give explicit corrections
+for terminal MCP classification/counting, render-stage outcomes, evaluator
+preview/environment/trace propagation, and truthful refresh/isolation evidence.
+The submitted focused suite passed 106 tests; three independent functional
+assertions failed. Existing fixes are retained. C18 final evidence refresh remains
+Background-owned, distinct from evaluator eligibility; an external signal gap
+must be handed off honestly, not replaced by an evaluator metric. No acceptance
+or downstream promotion. Redis baseline and hosted arrival are not review blockers;
+the developer-owned final manual system-test gate remains unchanged.
+
+
+### COMMERCE-010 Attempt 3 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `a51eb69`
+and report `27429e6b`. One correction remains: A3-R1 preserves a completed tool's
+DENIED outcome when the JSON-RPC envelope succeeds. The submitted focused suites
+passed 71 tests; prior architect reproductions passed 3/3, while the new denial
+precedence check failed. Other A2 corrections are resolved. No acceptance or
+downstream promotion. External C18 refresh signal/hosted arrival remain explicit
+integration/developer handoffs; baseline failures are not review blockers.
+
+
+## COMMERCE-010 Attempt 4 architect acceptance — 2026-09-21
+
+**Accepted; Complete**, Attempt4 retained, executor/claimed_at null. Reviewed
+implementation `e8b43e4` and report `09e678e` against remote task heads. The completed
+DENIED tool outcome survives its valid JSON-RPC envelope; protocol classification
+and one terminal request event remain intact. Independent focused72/72 and prior
+architect regressions4/4 pass; diff check passes. Hosted arrival, preview exclusion
+from production alerts and Background-owned refresh-signal integration remain
+explicit external validation, not claimed complete.
+
+No dependent promotion: GATEWAY-002 still awaits GATEWAY-001; COMMERCE-012 and
+SYSTEM-TEST-001 still have incomplete infrastructure/composition dependencies.
+No automatic task launch, implementation/main change or service gitlink update.
+Architecture remains in progress; latest task YAML/review supersedes historical
+Changes Requested summaries.
