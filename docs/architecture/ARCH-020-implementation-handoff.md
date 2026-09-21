@@ -913,7 +913,7 @@ Changes Requested summaries.
 Read [C21](ARCH-020-external-api-tools.md) before extension work.
 
 ```text
-DATABASE-003 (Complete)              SHARED-002 (Ready; publish once)
+DATABASE-003 (Complete)              SHARED-002 (Complete; 0.14.2 accepted)
         \                            /
          ->020 connection service   +->021 HTTP executor (ports)
                                     +->025 visual processor
@@ -951,10 +951,11 @@ GATEWAY-001 +020/021/026/028/029 ->GATEWAY-003
 all extension implementation ->012 cache bypass ->SYSTEM-TEST-001 (manual)
 ```
 
-DATABASE-003 and SHARED-002 remain independent executable prerequisites.
-COMMERCE-029 is Complete at accepted Attempt 4 with the reusable bounded runtime;
-COMMERCE-026 remains Pending until SHARED-002 is also Complete. Each submission maps
-named acceptance cases to committed scenarios and actual results.
+DATABASE-003 and SHARED-002 are Complete. COMMERCE-029 is Complete at accepted
+Attempt 4 with the reusable bounded runtime. The direct Shared-gated component
+frontier 020/021/022/023/025/026/027 is Ready; later tasks remain gated by their
+other declared prerequisites. Each submission maps named acceptance cases to
+committed scenarios and actual results.
 
 ### COMMERCE-013 Attempt 8 architect review — 2026-09-21
 
@@ -985,6 +986,9 @@ COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their expl
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
 
+### SHARED-002 Attempt 4 review — 2026-09-21
+
+SHARED-002 is **Changes Requested / Ready, Attempt 4 retained**, executor/claim null. Reviewed `b23a7c1` / `52b14319`. Existing Attempt 1 fixes and `0.14.1` submitted consumer proof are retained. A4-R1 closes the remaining LIST publication wrapper/cardinality hole; A4-R2 restores the root package README/export inventory and publishes the corrected next patch version; A4-R3 makes the Completion Report current-state evidence coherent. No downstream task is promoted or launched until SHARED-002 is accepted Complete.
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1074,3 +1078,12 @@ accepted013 production runtime remains unchanged.
 COMMERCE-018 and unclaimed COMMERCE-019 both depend on 033 and are Blocked until it
 is Complete. Their existing attempt numbers are preserved; neither is automatically
 claimed or launched. COMMERCE-012, GATEWAY and system-test gates remain downstream.
+
+### SHARED-002 Attempt 5 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 5.** Implementation `95bab1d`; exact published Shared
+package `0.14.2`. The direct C21 component frontier is now Ready for
+`COMMERCE-020`, `021`, `022`, `023`, `025`, `026` and `027`. Do not rerun
+`/moda-task ARCH-020-SHARED-002`; it has no further correction attempt. Use the
+normal launcher on an eligible Ready dependant when the developer chooses to start
+one. No automatic downstream launch occurs in this acceptance.

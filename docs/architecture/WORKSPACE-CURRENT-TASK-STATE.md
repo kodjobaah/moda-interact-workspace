@@ -1054,11 +1054,12 @@ See [C21](ARCH-020-external-api-tools.md) and handoff for exact interfaces/depen
 
 ## C21 tightened task definitions — 2026-09-21
 
-Extension has17 tasks. DATABASE-003/SHARED-002 remain Ready; COMMERCE-029 is
-Accepted / Complete at Attempt 4.028 credentials,030 publication checks,031 preview
-backend and032 availability remain separate Pending producers;024 is wiring only.
-026 has cleared its029 prerequisite but still requires SHARED-002 Complete. C21
-section9 and task YAML are authoritative; existing execution claims remain untouched.
+Extension has17 tasks. DATABASE-003 and SHARED-002 are Complete; SHARED-002 is
+Accepted at Attempt 5 with exact public package `0.14.2`, and COMMERCE-029 is
+Accepted / Complete at Attempt 4. Direct dependants 020/021/022/023/025/026/027 are
+Ready.028 credentials,030 publication checks,031 preview backend and032 availability
+remain separate Pending producers;024 is wiring only. C21 section9 and individual
+task YAML are authoritative; no task is automatically claimed.
 
 ### COMMERCE-013 Attempt 8 architect review — 2026-09-21
 
@@ -1089,6 +1090,9 @@ COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their expl
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
 
+## ARCH-020 SHARED-002 Attempt 4 review — 2026-09-21
+
+ARCH-020-SHARED-002 is **Changes Requested / Ready, Attempt 4 retained**, claims cleared; not accepted. Reviewed implementation `b23a7c1` and report `52b14319`. Prior C21 contract fixes and submitted exact `0.14.1` clean-consumer evidence remain valid, but LIST publication compatibility still permits impossible result-wrapper/cardinality combinations. The package root README/export inventory and stale Completion Report state also require reconciliation. No dependency promotion, automatic launch, main integration or gitlink update.
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1175,3 +1179,11 @@ accepted013 production runtime remains unchanged.
 COMMERCE-018 and unclaimed COMMERCE-019 both depend on 033 and are Blocked until it
 is Complete. Their existing attempt numbers are preserved; neither is automatically
 claimed or launched. COMMERCE-012, GATEWAY and system-test gates remain downstream.
+
+## ARCH-020 SHARED-002 Attempt 5 acceptance — 2026-09-21
+
+ARCH-020-SHARED-002 is **Accepted / Complete, Attempt 5** (`95bab1d`, public
+`@modainteract/moda-interact-shared@0.14.2`). Direct dependency reconciliation
+promotes `COMMERCE-020`, `021`, `022`, `023`, `026` and `027` to Ready and confirms
+`COMMERCE-025` Ready. All later C21 tasks retain unsatisfied dependencies; no task
+is launched, no main integration is performed and no service gitlink is changed.

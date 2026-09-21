@@ -1527,6 +1527,9 @@ COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their expl
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
 
+### SHARED-002 Attempt 4 architect review — 2026-09-21
+
+**Changes Requested / Ready, Attempt 4 retained; claims cleared.** Reviewed implementation `b23a7c1` and report `52b14319`. Prior external-contract corrections and submitted `0.14.1` clean-consumer evidence are preserved. One C21 publication defect remains: LIST definitions can pass static publication compatibility with an impossible result wrapper/cardinality (extra root output, non-empty minimum, or array maximum below the LIST limit). The package root README/export inventory and current Completion Report also require reconciliation. Exact A4-R1–R3 are in SHARED-002. No dependent promotion, new claim, implementation/main change or gitlink update.
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1617,3 +1620,15 @@ accepted013 production runtime remains unchanged.
 COMMERCE-018 and unclaimed COMMERCE-019 both depend on 033 and are Blocked until it
 is Complete. Their existing attempt numbers are preserved; neither is automatically
 claimed or launched. COMMERCE-012, GATEWAY and system-test gates remain downstream.
+
+## SHARED-002 Attempt 5 architect acceptance — 2026-09-21
+
+ARCH-020-SHARED-002 is **Accepted / Complete, Attempt 5**, implementation `95bab1d`,
+public package `@modainteract/moda-interact-shared@0.14.2`. The final C21 LIST
+publication compatibility, package-root export documentation and durable current
+Completion Report are accepted. Direct C21 dependants `COMMERCE-020`, `021`, `022`,
+`023`, `026` and `027` are promoted Ready; `COMMERCE-025` remains Ready. Later
+integration, credentials, publication, preview, availability, gateway, cache and
+system-test work remains dependency-gated. No dependent task is automatically
+started and no implementation/main merge or gitlink update is performed by this
+review.
