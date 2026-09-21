@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-21T20:23:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -137,7 +137,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Implementation submitted for Architect Review.
+Attempt 2 implementation submitted for Architect Review.
 
 ### Files Changed
 
@@ -151,17 +151,17 @@ Implementation submitted for Architect Review.
 
 ### Work Completed
 
-Connected the production Studio workspace to the accepted `CommerceBackend` facade. Added protected server actions and the production adapter for publication reads, lifecycle commands, discovery, validation, shop inspection, operation replay/CAS error translation, environment-scoped release pointers, subscription plan labels, and feature status mapping. Mutations rehydrate returned IDs from a fresh publication snapshot. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
+Connected the production Studio workspace to the accepted `CommerceBackend` facade. Attempt 2 adds the canonical same-origin mutation check at the Server Action boundary, strict capability publication payload construction, exact documentation path normalization, environment-scoped pointer CAS and release member ordering/ownership validation, response-example validation, and complete U13 eligibility/exclusion/no-active-release/deduplicated-descriptor mapping. Mutations rehydrate returned IDs from a fresh publication snapshot. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
 
 ### Validation Results
 
-- `npm run test:arch020-studio-integration` — passed, 1 file and 3 tests.
+- `npm run test:arch020-studio-integration` — passed, 1 file and 8 tests.
 - `npm run typecheck` — passed.
 - `npm run lint -- --quiet` — passed.
 - `npm run build` — passed; Next production build and route generation completed.
 - `git diff --check` — passed.
 
-The focused tests cover real backend service composition, publication mapping, operation ID forwarding with reread behavior, and stale CAS translation. Full acceptance flows requiring the shared isolated seed contract and external PostgreSQL/Redis evidence remain Architect/System Test follow-up.
+The focused tests cover real backend service composition, strict lifecycle payloads, documentation search-to-document handoff, response-example validation, environment pointer version and member ordering, shop eligibility/exclusions/no-active-release handling, operation ID forwarding with reread behavior, and stale CAS translation. Full acceptance flows requiring the shared isolated seed contract and external PostgreSQL/Redis evidence remain Architect/System Test follow-up.
 
 ### Deviations
 
@@ -184,7 +184,7 @@ None newly reported.
 
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-018`.
 Implementation branch: `task/ARCH-020-COMMERCE-018`.
-Implementation commit/push: `d074205` (`feat(commerce): integrate production studio services`), pushed to `origin/task/ARCH-020-COMMERCE-018`.
+Implementation commits/push: Attempt 1 `d074205` (`feat(commerce): integrate production studio services`) and Attempt 2 `4fb9f91` (`ARCH-020: address commerce studio review`), pushed to `origin/task/ARCH-020-COMMERCE-018`.
 Parent report branch: `task/ARCH-020-COMMERCE-018` in the dedicated parent worktree; this report is the only parent change. Parent commit/push is recorded after this update. No parent service gitlink or main integration was performed.
 
 ## Architect Review
