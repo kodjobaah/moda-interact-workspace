@@ -405,7 +405,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-011 | commerce | complete | 9 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | complete | 4 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
@@ -671,15 +671,16 @@ The25-task graph is reciprocal and acyclic. Active task worktrees remain
 authoritative; the concurrently integrated BACKGROUND-002 Attempt4 acceptance
 is preserved. No task is launched by this definition update.
 
+## COMMERCE-011 Attempt 9 accepted — 2026-09-21
 
-## COMMERCE-015 Attempt 1 architect review — 2026-09-21
-
-Changes Requested; status Ready, Attempt1 retained, claim clear; not accepted.
-Reviewed implementationff386e2 and report42b8c300. Seven submitted tests pass;
-five independent cases fail: denied variant read, late cancelled success, skipped
-search results, C19 input mismatch, and missing null basket unknown markers.
-R1–R5 require schema-shaped Admin requests/normalization, authorization and bounded
-cancellation, lossless pagination, exact C19 descriptors, and null/source fixtures.
-See canonical COMMERCE-015 task for deterministic locations and acceptance effects.
-Prisma baseline and developer-owned live checks are separate from these blockers.
-No dependency promotion, implementation edits, new claim, main merge or gitlink change.
+COMMERCE-011 is **Complete, architect accepted, Attempt 9 retained**, claim cleared.
+Reviewed implementation `1176412` and report `ccb35ea3`; clean dedicated worktrees
+and matching remote heads verified. R8-1 inline text order is fixed; all four prior
+review reproductions and 38 focused checks passed independently. Submitted full
+suite remains 117/119 with two existing readiness timing failures in unchanged
+code; no green full-suite or live Redis claim is made. Live Redis/OAuth/Shopify/
+deployment checks remain developer-owned and pending. COMMERCE-005 is promoted
+Ready (001/011/Shared Complete), with no new claim. Other dependants retain current
+states because prerequisites remain unresolved. No main merge or gitlink update;
+architecture is not Implemented. This supersedes older COMMERCE-011 current-state
+wording while preserving historical reviews.
