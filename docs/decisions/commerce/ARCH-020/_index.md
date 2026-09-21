@@ -15,7 +15,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-005](COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | ready | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Read merchant discount policy and normalise Shopify rules | complete | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | pending | ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-015 |
-| [ARCH-020-COMMERCE-008](COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-008](COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Implement isolated preview lifecycle and execution service | ready | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001, ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
@@ -24,7 +24,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-014](COMMERCE-014-execute-and-render-pinned-tool-definitions.md) | Execute and render pinned tool definitions | pending | ARCH-020-COMMERCE-004, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-015](COMMERCE-015-provide-trusted-basket-and-product-policy-adapters.md) | Provide trusted basket and product policy adapters | ready | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | pending | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | ready | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -137,3 +137,20 @@ outside the retained resultPath. The canonical task review contains exact AST
 merge/validation instructions. Local U14 handoff passes; real preview integration
 and live validation remain separately owned and are not blockers. No dependent
 promotion or main integration. This supersedes older COMMERCE-008 state wording.
+
+## COMMERCE-008 Attempt 6 accepted — 2026-09-21
+
+COMMERCE-008 is **Accepted / Complete, Attempt 6 retained**, claim cleared.
+Reviewed implementation `8ba5e42` and report `7f8e194` against remote task heads.
+The final alias correction preserves the existing field's arguments/result path,
+rejects ambiguous edits and denies unbound duplicate roots. Independent validation:
+24 focused tests and all four previous architect reproductions passed; diff checks
+passed. Submitted typecheck/lint/build passed; the reported208-pass/one unrelated
+Redis timeout does not block this component acceptance. Live OAuth/providers,
+production composition and actual U14 execution remain separate integration work.
+COMMERCE-017 is promoted Ready, Attempt0, no claim, because008/002/SHARED-001 are
+accepted Complete.009 is not a prerequisite for017's contract-fixture frontend.
+Other downstream tasks remain gated by their own unresolved prerequisites;012 is
+still the final implementation checkpoint. No implementation changes, main merge,
+main push or gitlink update. Architecture is not yet Implemented. This supersedes
+older008 state wording while retaining historical reviews.

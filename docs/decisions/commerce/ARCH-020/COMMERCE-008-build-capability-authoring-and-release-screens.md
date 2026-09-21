@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 120
 executor: null
 claimed_at: null
@@ -736,6 +736,18 @@ This attempt makes no live-provider or production integration claim.
 
 ## Architect Review
 
+### Accepted — Attempt 6 — 2026-09-21
+
+**Current decision: Accepted / Complete; Attempt 6 retained; executor/claimed_at null.** Reviewed implementation `8ba5e423112771defe533438ea99965357271526` and parent report `7f8e194a1e75ffa05f636e2d97a91c5ce8e0140f`, verified against their remote task branches. Both dedicated worktrees were clean. Database revision remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. This acceptance supersedes older current-state/Changes Requested wording while preserving the review history.
+
+**A5-R1 is resolved.** The AST merge now matches an unambiguous existing field by schema name while retaining its alias, arguments, directives and nested structure. Multiple matching fields are rejected instead of selecting an arbitrary root. The fixture validator checks every product root and the declared response root, so the previously accepted unbound duplicate is invalid. The connected U06 -> U07 -> U06 regression preserves the single aliased product, argument mapping and resultPath. Prior record identity, validation freshness, navigation and unknown-save replay corrections remain intact. No remaining functional blocker was identified in this scoped correction review.
+
+Independent validation: **24/24 focused Studio tests passed**, plus **all four prior architect reproductions** (three earlier cases with14 unrelated cases skipped, and the formerly failing alias case). The existing isolated harness imports the current implementation. Implementation and parent diff checks passed. Typecheck/lint/build and full-suite208 passed/one unrelated Redis-gated timeout are submitted evidence, not independently rerun. No new live-provider or browser-screenshot evidence is claimed; retained connected component and prior browser evidence support this component acceptance.
+
+This accepts008's U03–U13 authoring/release screens and composer handoff boundary. COMMERCE-017 owns the U14 frontend,009 owns preview execution, and013 owns production adapter pairing and the real round trip. Live OAuth, Shopify/provider and deployment/readiness checks remain developer/integration validation; they do not block this component acceptance. The architecture is not yet Implemented.
+
+COMMERCE-017 is promoted **Ready**, Attempt0, no claim: its explicit prerequisites008,002 andSHARED-001 are now architect-accepted Complete. Its contract-fixture frontend work is independent of009 acceptance.012 remains the final implementation checkpoint;013, Gateway and system-test prerequisites remain unresolved, so no other promotion or execution is authorized by this review. Normal preparation must consume accepted source through the approved integration workflow; no main merge/push or service gitlink update was performed. Only parent review/coordination documentation is committed here.
+
 ### Changes Requested — Attempt 5 — 2026-09-21
 
 **Current decision: Ready, Attempt 5 retained, executor/claimed_at null; not accepted.** Reviewed implementation `558432f2f26890b3e7e44f64abd6ec27c4a50685` and report `0b2e03bbaf5461eea1081e977260997335342977`, with clean dedicated worktrees and matching remote task heads. This supersedes earlier current-state wording. No implementation edit, next claim, dependent promotion or main integration.
@@ -1009,7 +1021,7 @@ Retain useful shell work, implement the owned component scope on the same task b
 
 ### Review Status
 
-Pending.
+Accepted / Complete at Attempt 6; see the current architect decision above.
 
 ### Review Notes
 
