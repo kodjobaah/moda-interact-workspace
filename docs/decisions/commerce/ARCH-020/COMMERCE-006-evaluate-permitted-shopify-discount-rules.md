@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 100
-executor: copilot
-claimed_at: 2026-09-21T00:50:49Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -213,6 +213,44 @@ update `01f0532e`, pushed to `origin/task/ARCH-020-COMMERCE-006`. No parent serv
 architecture/index file, or `main` branch was updated.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Ready, Attempt 1 retained, executor/claimed_at cleared; not accepted.** Verified implementation `4b968c1dabc144102349e2415a7026108294e0e8` (the corrected hash) and report `abff9261c4730e71e8e87c142e3c4777b275fb5d` against remote branch heads. Dedicated worktrees match launcher routing and were clean. No implementation edit, next claim, dependent promotion or main integration. This supersedes the historical definition review below.
+
+The injected policy/provider separation, no-fixture production fallback, tenant check, NONE behavior, bounded request count and timestamp-independent fingerprint are useful progress. The following are observable violations of the narrowed C19/D01–D05 component contract, not requests for exhaustive test coverage or live integration.
+
+#### R1 — P1 — Permit AI-mode reads and enforce FIXED listing identity
+
+`src/commerce/discounts/reader/reader.ts`, createDiscountRuleReader/getDiscountOptions: `read` requires `authorized(policy, 'FIXED', offerId)`, denying every AI_BEST_APPLICABLE rule read. C19 denies NONE and a different FIXED offer, not AI mode; COMMERCE-016 must read candidates under AI policy. Reproduction with the submitted valid offer fixture and AI policy returns DENIED instead of a snapshot. Conversely FIXED listing returns every candidate supplied by the provider without checking the configured identity: a provider response containing offer-2 under fixedOfferId=offer-1 returns offer-2. Passing an offerIds hint is not enforcement of the owned policy boundary.
+
+Authorize NONE/FIXED/AI explicitly before I/O, preserving wrong-tenant/wrong-fixed-ID zero-call behavior; allow authorized AI reads. Validate/filter FIXED results to the configured offer only and fail closed on inconsistent identity. Add focused regressions for these two demonstrated cases.
+
+#### R2 — P1 — Repair the static provider query and prove its mapping
+
+`SHOPIFY_DISCOUNT_QUERY` and `docs/discount-support-matrix.md`: the exported query passes `ids` to discountNodes and selects `DiscountAmount { amount currencyCode appliesOnEachItem }`. Official Shopify documentation lists no ids argument on [discountNodes](https://shopify.dev/docs/api/admin-graphql/latest/queries/discountNodes); [DiscountAmount](https://shopify.dev/docs/api/admin-graphql/latest/objects/DiscountAmount) has `amount: MoneyV2!`, requiring a nested amount/currencyCode selection. The latter reference identifies its latest version as 2026-07. The submitted version-specific URLs were inaccessible through the review browser; the accessible official references were used, not a claim of live schema validation.
+
+Supply a valid pinned list query and an appropriate fixed-ID lookup, and validate their documents against the pinned schema/evidence. Select/map the fields claimed by the support matrix or explicitly carry their incompleteness. Current items/minimum selections contain only __typename and omit restriction facts; the doc table cannot establish complete target/minimum/restriction semantics from those selections. Clarify provider-vs-normalized units: Shopify's [10 percent example](https://shopify.dev/docs/api/admin-graphql/latest/mutations/discountcodebasiccreate) uses percentage 0.1 while the normalized DTO uses 10. Record and test the conversion boundary so raw percentage is not silently passed through in the wrong unit. Cite evidence for each supported allocation/rounding profile; arbitrary fixture enums are not provider proof. Unproven profiles remain UNSUPPORTED. This is the task-owned static query/normalization deliverable; live calls, credentials and COMMERCE-013 assembly remain out of scope.
+
+#### R3 — P1 — Do not label incomplete or malformed facts SUPPORTED
+
+`normalize` and `types.ts`: a valid fixture with minimum/status omitted returns SUPPORTED with enabled=null and minimum=null without MINIMUM_UNKNOWN. Under C19 that minimum representation means authoritatively no minimum, which was never established. A BASIC_FIXED fixture with amount='oops', currency='bad', appliesOnEachItem=true also returns SUPPORTED. C19 requires known enabled state, complete minimum facts and canonical positive monetary values. Source inspection additionally shows target IDs are not capped at1000, target completeness is accepted when unspecified, and Offer reasonCodes are not capped at the accepted Shared maximum16.
+
+Make unknown versus authoritatively absent facts explicit at the raw-provider boundary. Validate canonical decimal/currency/integer/boolean values, supported status/semantics, target completeness and C19/Shared bounds before marking support. Missing minimum facts must produce MINIMUM_UNKNOWN; missing status must prevent SUPPORTED. Preserve customer/usage/combination uncertainty instead of treating omitted restrictions as known empty. Reuse/validate against the accepted Shared Offer and options contract rather than relying only on local TypeScript annotations. Keep fixtures that deliberately inject proven normalized profiles clearly separate from claims of Shopify proof. Add regressions for the two demonstrated invalid-support cases and the concrete field bounds being corrected; no eligibility/savings calculation belongs here.
+
+#### R4 — P2 — Preserve typed budget/provider errors and pagination completeness
+
+`collect` reserves budget outside its try block, so a typed `{code:'DEADLINE'}` exception escapes the promised result union. Provider errors are classified by Error.message despite C19 explicitly requiring typed codes. Collection also discards hasNextPage: three short pages with more data return truncated=false because the final flag only checks length>=50. Conversely exactly50 terminal offers are always described as truncated.
+
+Return structured C4 errors for typed budget/deadline/throttle/cancellation failures, reserving before each actual request and preserving zero provider calls when reservation fails. Propagate cancellation without fallback. Preserve provider completion metadata through collection: a page/offer ceiling with more data must disclose truncation; exhausted terminal pages must not falsely claim it. Treat inconsistent pagination metadata as incomplete/unavailable rather than complete. Add focused tests for typed budget exhaustion and a three-page short-result ceiling (both independently reproduced), with terminal boundary behavior. Do not add retries or production adapters to satisfy this correction.
+
+#### Validation and resubmission
+
+Independent deterministic harness `/tmp/c006-review/review.test.ts` ran copies of the exact committed reader/types plus the submitted reader tests: **11 submitted tests passed; 6 review reproductions failed** (AI read denied, unknown minimum/status SUPPORTED, malformed fixed value SUPPORTED, escaped typed budget error, hidden page-limit truncation, nonconfigured FIXED offer returned). Exact inputs/expected effects are recorded above. Implementation diff check passed. Submitted 13 focused / 80 full tests, lint/typecheck/build/Prisma generation are reported evidence; not rerun in full here. Official schema documentation review is separate from live provider execution.
+
+Correct R1–R4 on the same branch pair, preserve the narrowed C19 ownership boundary, run focused regressions and required checks, and resubmit accurate evidence. Live Shopify/provider validation remains developer-owned and is not an acceptance blocker. No dependent tasks are promoted. The stale active claim in the submitted review YAML is cleared by this decision; preparation owns any next attempt.
+
+### Historical definition review
 
 ### Review Status
 

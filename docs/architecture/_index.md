@@ -94,3 +94,16 @@ pairing. No further coverage-only correction is required for this acceptance.
 Gateway002, Commerce012 and terminal system tests retain other dependencies;
 no dependent is promoted or launched. Developer integration remains separate;
 ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
+
+## COMMERCE-006 Attempt 1 review — 2026-09-21
+
+COMMERCE-006 is **Ready, Attempt 1 retained**, claim cleared, not accepted.
+Reviewed actual implementation `4b968c1` and report `abff9261`, with clean isolated
+worktrees and matching remote heads. Corrections: AI/FIXED authorization, valid
+pinned provider query/mapping evidence, fail-closed normalized facts and bounds,
+and typed budget/error plus pagination completeness. Independent deterministic
+checks: 11 submitted reader tests passed; six functional reproductions failed.
+See the latest task Architect Review for concrete inputs and correction scope.
+Live provider validation remains developer-owned and is not the review blocker.
+No dependent promotion or main integration. This note supersedes older
+COMMERCE-006 current-state wording; the narrowed C19 reader-only scope applies.

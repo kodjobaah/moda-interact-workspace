@@ -400,7 +400,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-003 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-004 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
-| ARCH-020-COMMERCE-006 | commerce | pending | 0 | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
+| ARCH-020-COMMERCE-006 | commerce | ready | 1 | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
 | ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
@@ -621,3 +621,16 @@ U14 only;013 assembles real frontend/backend services after component acceptance
 The25-task graph is reciprocal and acyclic. Active task worktrees remain
 authoritative; the concurrently integrated BACKGROUND-002 Attempt4 acceptance
 is preserved. No task is launched by this definition update.
+
+## COMMERCE-006 Attempt 1 review — 2026-09-21
+
+COMMERCE-006 is **Ready, Attempt 1 retained**, claim cleared, not accepted.
+Reviewed actual implementation `4b968c1` and report `abff9261`, with clean isolated
+worktrees and matching remote heads. Corrections: AI/FIXED authorization, valid
+pinned provider query/mapping evidence, fail-closed normalized facts and bounds,
+and typed budget/error plus pagination completeness. Independent deterministic
+checks: 11 submitted reader tests passed; six functional reproductions failed.
+See the latest task Architect Review for concrete inputs and correction scope.
+Live provider validation remains developer-owned and is not the review blocker.
+No dependent promotion or main integration. This note supersedes older
+COMMERCE-006 current-state wording; the narrowed C19 reader-only scope applies.
