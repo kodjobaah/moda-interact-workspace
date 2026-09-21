@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-21T10:50:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-004
@@ -60,15 +60,15 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
-- [ ] Include developer-resource unavailable/timeout/validation outcomes and schema/compiler availability in the existing technical signal inventory; never log document/query/input content or tool definitions. Keep discovery distinct from live MCP and preview.
+- [x] Include developer-resource unavailable/timeout/validation outcomes and schema/compiler availability in the existing technical signal inventory; never log document/query/input content or tool definitions. Keep discovery distinct from live MCP and preview.
 
-- [ ] Observe definition resolution/executor operation/render outcomes separately using bounded semantic events. Put version/IDs only in allowed redacted logs/traces, never metric labels or raw templates.
+- [x] Observe definition resolution/executor operation/render outcomes separately using bounded semantic events. Put version/IDs only in allowed redacted logs/traces, never metric labels or raw templates.
 
-- [ ] Inspect and reuse framework/shared HTTP, client and runtime telemetry before adding any semantic signals.
-- [ ] Use shared logging and OpenTelemetry resource identity for moda-interact-commerce with explicit environment and preview purpose.
-- [ ] Propagate Background trace context and emit bounded semantic outcomes for resolution, publishing, evaluation and preview budgets.
-- [ ] Redact secrets/customer data/provider payloads and keep high-cardinality identifiers out of metric labels.
-- [ ] Document available signal names/units/outcomes for Gateway dashboards and telemetry-failure isolation.
+- [x] Inspect and reuse framework/shared HTTP, client and runtime telemetry before adding any semantic signals.
+- [x] Use shared logging and the accepted Commerce service identity with explicit environment and preview purpose. No OpenTelemetry export exists in the consumed shared package, so no competing exporter was added.
+- [x] Propagate Background W3C `traceparent` context and emit bounded semantic outcomes for resolution, publishing, evaluation and preview.
+- [x] Redact secrets/customer data/provider payloads and keep high-cardinality identifiers out of metric labels.
+- [x] Document available signal names/units/outcomes for Gateway dashboards and telemetry-failure isolation.
 
 ## Interfaces / Contracts
 
@@ -143,11 +143,20 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+Implemented shared-logger-backed semantic telemetry, traceparent propagation, discovery/compiler/schema outcomes, definition resolution/execution/render outcomes, publication and eligibility outcomes, preview terminal outcomes, local redaction/sink-isolation fixtures, and the accepted signal inventory.
+
+Correction checklist applied for this rework attempt:
+
+- [x] Discovery unavailable/timeout/validation and schema/compiler availability are separate from live MCP and preview.
+- [x] One terminal outcome is recorded per logical request; request counts and provider attempts are distinct fields.
+- [x] Expected denial/revocation/invalid input remain non-operational outcomes; operational unavailable/error outcomes are distinguishable.
+- [x] Eligibility records the four C11 outcomes and preview records completed/cancelled/denied/unknown.
+- [x] Traceparent is validated and propagated into execution events; IDs are hashed or correlation-only and never metric labels.
+- [x] Sensitive-marker fixture proves no prompt/provider/run content leakage; logger failures do not alter results.
 
 ### Work Completed
 
@@ -155,11 +164,21 @@ None; task definition only.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed:
+
+- `npm test -- --run tests/observability.test.ts tests/definition-execution.test.ts tests/preview-service.test.ts tests/discovery.test.ts tests/discovery-process.test.ts tests/discount-evaluator.test.ts`: PASS, 72/72.
+- `npm test -- --run tests/mcp-service.test.ts tests/definition-execution.test.ts tests/observability.test.ts`: PASS, 23/23.
+- `npm run lint`: PASS.
+- `npm run build`: PASS; Prisma client generated from accepted database gitlink `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- `git diff --check`: PASS.
+- `npm run typecheck`: task-local changes clean; blocked by existing baseline errors: `Prisma.sql`/`Prisma.Sql` missing in `lib/auth/development-platform-admin.ts` (4 errors) and implicit `tx` in `lib/server/connections.ts` (1 error).
+- Full `npm test`: 334/337 passed. Existing baseline failures: 2 `tests/auth-development-identity.test.ts` failures caused by `Prisma.sql is not a function`; `tests/discovery-limits.test.ts` timed out after 30s in the Redis-backed rolling-window check with `REDIS_URL` configured.
+
+Developer-owned hosted evidence required: confirm one live trace/log correlation and one preview event arrive in the configured hosted sink, with no sensitive marker; preview must be excluded from production alerts. No live/shared environment was contacted by this agent.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+No scope deviation. The consumed shared package exposes structured logging but no OpenTelemetry exporter API, so the implementation uses the approved shared logger and does not invent a competing exporter. Framework HTTP/client telemetry remains reused rather than duplicated.
 
 ### Assumptions
 
@@ -167,8 +186,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+Hosted arrival verification remains developer-owned. The two baseline test/typecheck issues above are unrelated to changed files and were not modified.
 
 ### Architectural Concerns
 
@@ -176,7 +194,14 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-010. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: `task/ARCH-020-COMMERCE-010`.
+
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-010`, branch `task/ARCH-020-COMMERCE-010`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-010`, branch `task/ARCH-020-COMMERCE-010`.
+- Recursive database submodule: accepted SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed.
+- Implementation commit: `7a88d72` (`feat(commerce): instrument capability operations and previews`), pushed to `origin/task/ARCH-020-COMMERCE-010`.
+- Parent report commit: pending this report update, then pushed to `origin/task/ARCH-020-COMMERCE-010`.
+- No main branch integration, merge, parent service gitlink update, or hosted validation was performed.
 
 ## Architect Review
 
