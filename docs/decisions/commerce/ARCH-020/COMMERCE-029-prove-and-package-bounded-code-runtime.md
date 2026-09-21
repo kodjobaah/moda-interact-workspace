@@ -138,22 +138,22 @@ on `task/ARCH-020-COMMERCE-029`, committed and pushed as `b4e8d05`
 submitted on the mirrored parent branch. No service gitlink, main branch,
 database schema, architecture/index file or Architect Review text was modified.
 
-### Attempt 2 Corrections
+### Attempt 2 Correction Checklist
 
-- Replaced the producer surface with the exact C21 section 9.4
+- **A1-R1 implemented:** Replaced the producer surface with the exact C21 section 9.4
   `compile({source, signal, deadlineAt})` and
   `run({source, responseJson, signal, deadlineAt})` contracts and flat
   `{ok, code, line, column}` failures. Compile now honors cancellation and
   expired deadlines; serialized input is bounded at 2 MiB and raw bodies at
   256 KiB.
-- Captured trusted QuickJS validation/serialization intrinsics before guest
+- **A1-R2 implemented:** Captured trusted QuickJS validation/serialization intrinsics before guest
   source executes, froze the relevant built-ins, rejected accessors,
   prototypes, custom `toJSON` and invalid values, and added regression cases
   for guest replacement of `JSON.stringify` and `Object.keys`.
-- Awaited worker termination before resolving and releasing capacity, retained
+- **A1-R3 implemented:** Awaited worker termination before resolving and releasing capacity, retained
   the post-registration abort check, and added a cancellation-capacity proof
   that a fifth run remains throttled until a worker termination settles.
-- Added the reusable manifest `{runtimeVersion, artifactSha256,
+- **A1-R4 implemented:** Added the reusable manifest `{runtimeVersion, artifactSha256,
   enginePackageVersion, limits}`, deterministic `code-runtime:package` output,
   and `code-runtime:smoke` that loads only copied worker/loader/WASM files,
   executes a positive transform, and proves the 64 MiB WASM ceiling without a
@@ -197,6 +197,9 @@ Dependency/worktree evidence: the dedicated physical implementation worktree
 and mirrored task branch were used; implementation `b4e8d05` is pushed. The
 parent branch is `task/ARCH-020-COMMERCE-029`; this report is its only intended
 workspace change. The recursive database submodule state was not changed.
+Remaining live validation: developer-invoked provider, deployment, DNS,
+credential, database, container and assembled cross-service checks remain
+pending; this bounded task did not inspect secrets or launch those environments.
 Architecture review is pending; no downstream task was launched. The task is
 ready for `moda_architect` review.
 
