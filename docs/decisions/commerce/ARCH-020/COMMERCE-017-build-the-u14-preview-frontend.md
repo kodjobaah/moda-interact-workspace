@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 135
-executor: copilot
-claimed_at: 2026-09-21T04:58:27Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-COMMERCE-008
@@ -384,6 +384,83 @@ Agent-executed commands and results:
 
 No authenticated live browser workflow is claimed. The local app route guard correctly requires a provisioned Studio identity, which is absent in this worktree; prior built-route verification reached `/access-denied` as designed. Developer-owned follow-up is to run authenticated desktop, narrow, and keyboard workflows with the approved local identity/fixture setup. Live database, Shopify, MCP, model, WhatsApp, billing, customer transcript, and deployment validation remain out of scope and were not contacted. Fixture/component tests do not prove those live behaviors.
 
+### Submitted Attempt 5 Report
+
+Ready for Review. Attempt 5 preserves Attempts 1-4 and implements every remaining
+item in the latest Attempt 4 Changes Requested review. The prior review remains
+historical and is not represented as architect acceptance.
+
+#### Correction checklist
+
+- **A4-R1 implemented:** conversation creation admission is independently owned by
+  `conversationCheckGeneration`, so success and canonical failure release the
+  settled request even after its payload is cleared. Reset clears generation-local
+  admission state; success/error/finally paths capture the request generation and
+  stale completions cannot unlock a newer Start. Synchronous duplicate Start remains
+  guarded. Focused evidence covers success -> confirmed reset -> new distinct ID,
+  canonical `DENIED` -> new Start, and uncertain same-ID replay.
+- **A4-R2 implemented:** handoff and saved tool/release sources are one option set;
+  selecting saved B changes both schema/controls and the dispatched revision. Saved
+  releases submit their actual `RELEASE` ID, while an unsaved composer release uses
+  its `handoffId` only as a local option key and submits exact `DRAFT` members and
+  response contract. Back follows explicit `returnTo`, otherwise the active mode's
+  selected tool or release origin, then `/features`. Direct-entry sources remain
+  supplied by the authenticated `app/preview/page.tsx` read boundary; empty or lost
+  sources cannot execute.
+- **A4-R3 implemented:** nullable integer and boolean controls accept explicit
+  `null` before numeric/boolean conversion; ordinary values retain JSON number or
+  boolean types and string `"null"` remains a string for string schemas. The full
+  original schema still goes through Shared `compileSubset`, with existing bounds
+  and zero-dispatch invalid cases retained.
+- **Report/cleanup implemented:** the obsolete trailing commented screen was removed.
+
+#### Fixture and request matrix
+
+| Case | Fixture/test | Request and observed effect |
+| --- | --- | --- |
+| Reset and known-failure admission | `p01-healthy-en`; Attempt 5 screen regression | Start call 1 reserves UUID A and completes; confirmed Reset; Start call 2 reserves UUID B; `DENIED` settles; Start call 3 is admitted with a new UUID. Counts and IDs asserted. |
+| Uncertain creation replay | deferred `startConversation`; existing screen regression | Duplicate synchronous Start makes one call; same-ID Check replays the original `previewConversationId` and payload. |
+| Selected source execution | tool handoff A plus saved tool B; Attempt 5 screen regression | Selecting B and entering `linen-shirt` makes exactly one `runToolTest` with `toolRevisionId: toolrev_02SAVED`; no stale handoff A dispatch. |
+| Active release Back | saved `release_02SAVED` with `/releases/release_02SAVED`; Attempt 5 screen regression | Conversation source selection followed by Back navigates to the selected release, despite populated tool sources. |
+| Nullable values | typed nullable integer/boolean fixture; Attempt 5 screen regression | One valid tool request forwards exact `{ count: null, enabled: null }`; nonnullable and nested invalid cases remain zero-dispatch. |
+| Contract and fixture catalogue | six focused preview suites | Returned fixture IDs are used; malformed/uncertain transport, identity, route, service, store and Redis contract coverage remains green. |
+
+#### Agent-executed validation
+
+- `npm test -- --run tests/preview-screen.test.tsx`: **16 tests passed**.
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-client.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: **6 files, 57 tests passed**.
+- `npm run typecheck`: **passed** (`next typegen` and `tsc --noEmit`).
+- `npm run lint`: **passed** (`eslint .`).
+- `npm run build`: **passed**; Prisma Client generated and Next webpack build compiled `/preview` and all preview API routes.
+- `git diff --check`: **passed**.
+
+#### Synchronization and dependency evidence
+
+- Launcher-prepared Attempt 5 was already claimed on the mirrored
+  `task/ARCH-020-COMMERCE-017` branches; no preparation, reclaim, worktree
+  recreation or main-branch operation was performed in this attempt.
+- Implementation worktree is
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`.
+  Parent report worktree is
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`.
+- The accepted recursive database submodule pin remains
+  `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no schema, migration, architecture,
+  index, service gitlink or other repository changed.
+- Owned implementation files changed: `src/studio/preview/preview-screen.tsx`
+  and `tests/preview-screen.test.tsx`. `app/preview/page.tsx` and
+  `src/studio/preview/client.ts` remain unchanged in Attempt 5.
+
+#### Authenticated browser and live limitations
+
+Authenticated desktop, narrow, and keyboard application-browser evidence remains
+pending because this worktree has no provisioned local Studio identity; the
+existing auth guard therefore correctly yields `/access-denied`. Component tests
+are populated injected-fixture evidence, not authenticated browser screenshots.
+Live database/container, Shopify, MCP, model, WhatsApp, billing, customer
+transcript and deployment/system pairing remain developer-owned and were not
+contacted. No auth bypass, production fixture substitution or live credential was
+introduced.
+
 ### Status
 
 Ready for Review.
@@ -419,7 +496,7 @@ None newly reported.
 
 ### Git / VCS
 
-Implementation commit `8b902a6ab80d3751ce5f73d963c3e2e9776df58c` and parent report commit to be recorded after publication are on the mirrored `task/ARCH-020-COMMERCE-017` branches. The parent claim commit is `d6faaafa107aefdc317c2d228df28d30405cbafb`. No main branch, service gitlink, domain index, architecture document, other task or other repository was modified.
+Implementation commit `bdb753c` (`fix(commerce): close preview source lifecycle gaps`) is published on the mirrored `task/ARCH-020-COMMERCE-017` branches; the parent report commit is the publication commit for this Attempt 5 report. The parent claim commit is `d6faaafa107aefdc317c2d228df28d30405cbafb`. No main branch, service gitlink, domain index, architecture document, other task or other repository was modified.
 
 ## Architect Review
 
