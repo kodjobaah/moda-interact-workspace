@@ -143,7 +143,7 @@ Implementation commit:
 
 - `0ac23ea963508de37c37327560020d1364396473` (`fix(commerce): enforce C15.1 document and cleanup bounds`), pushed to `origin/task/ARCH-020-COMMERCE-011`, on top of `7bfa26d`.
 
-Changed files in Attempt 7: `lib/discovery/document.ts`, `lib/discovery/limits.ts`, `lib/discovery/service.ts`, `tests/discovery-admission-cleanup.test.ts`, `tests/discovery-document.test.ts`, and `docs/shopify-discovery-runtime.md`.
+Changed files in Attempt 7: `lib/discovery/document.ts`, `lib/discovery/limits.ts`, `lib/discovery/service.ts`, `lib/discovery/upstream.ts`, `tests/discovery-admission-cleanup.test.ts`, `tests/discovery-document.test.ts`, and `docs/shopify-discovery-runtime.md`.
 
 ### Work Completed
 
