@@ -721,7 +721,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | complete | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | complete | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
-| [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
+| [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | ready | ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-015 |
 | [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
@@ -1311,3 +1311,18 @@ submitted evidence; baseline failures do not block this component acceptance.
 pending. No dependent promotion, new claim, main integration or gitlink update.
 012 remains the final implementation checkpoint; architecture is not yet Implemented.
 This supersedes older005 current-state wording while preserving review history.
+
+## COMMERCE-007 Attempt 1 architect review — 2026-09-21
+
+COMMERCE-007 is **Changes Requested / Ready, Attempt 1 retained**, executor and
+claimed_at null; not accepted. Reviewed implementation `6821a49` and parent report
+`a67becf`, matching remote task heads. Independent focused tests passed 6/6;
+five functional reproductions failed: cheapest candidate omitted before evaluation,
+duplicate proposals returned, evaluator DENIED converted to OK, cross-currency
+replacement emitted, and unknown quantity defaulted to 1. The task's A1-R1–R3
+specify exact correction steps and effects; A1-R4 preserves COMMERCE-007's existing local C18
+producer-fixture ownership and separates real system/provider validation.
+No new claim, dependent promotion, implementation change, main integration or
+gitlink update. COMMERCE-010/013 remain gated by COMMERCE-007 acceptance and their remaining
+prerequisites. This supersedes older COMMERCE-007 current-state wording only; other task
+reviews and dependency states are preserved. Architecture is not yet Implemented.

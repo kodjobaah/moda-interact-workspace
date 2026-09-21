@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 110
 executor: null
 claimed_at: null
@@ -221,6 +221,57 @@ Task branch: `task/ARCH-020-COMMERCE-007`, attempt 1; claim cleared for review.
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for corrections. Attempt 1 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `6821a49c5d8568227ff81085f0398c934df58332` and parent report `a67becf02f1332aad3783597c5d0bfe862c9d80c`, matching their remote task heads. Both dedicated worktrees were clean. Database remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No implementation changes, new claim, dependency promotion, main integration or gitlink update.
+
+Independent validation: submitted recommendation tests **6/6 passed** and diff checks passed. The isolated `/tmp/c007-a1-review/review.test.ts` harness imports the actual recommendation operations and accepted discount evaluation adapter, with local basket/rule/product fixtures. It reproduces **five functional failures**: cheapest eleventh candidate omitted, duplicate proposals returned, DENIED converted to OK, cross-currency replacement emitted, and unknown quantity replaced with1. The authorization-failure case injects a typed evaluator failure; the other cases use the actual evaluator where evaluation is requested. Submitted typecheck/lint/build passes and full306/307 remain reported evidence, not independent architect reruns. The Redis discovery timeout is not the reason for this decision.
+
+Retain the existing operation descriptors, Shared output schemas, exact decimal calculations, evaluator reuse, known availability filtering and turn/basket/proposal comparisons. The corrections below are scoped to functionality, not an expanded coverage target.
+
+#### A1-R1 — P1 — Deduplicate and order proposals before applying the evaluation cap
+
+Files: `src/commerce/products/recommendations.ts`, focused recommendation tests. Binding contract: C8 deterministic proposal admission and ranking.
+
+**Observed:** `qualifying` and `similar` evaluate candidates in provider order, then sort only the retained alternatives. With ten eligible USD candidates priced20 through29 followed by an eligible USD1 candidate, the actual evaluator returns `costly-0` first; `cheapest` is never evaluated. Repeating the same candidate three times produces three identical ADD alternatives and consumes three evaluations. Besides poor suggestions, duplicate proposal matches break C18's exactly-one-match refresh requirement.
+
+**Correct exactly:** construct valid ADD/REPLACE proposals across the bounded search set before evaluation; deduplicate by Shared canonical proposal JSON, retaining operation order. Compute known extra spend, order proposals by extraSpend ascending (unknown after known), variantId ascending, then canonical proposal JSON ascending. Only then admit at most10 unique proposals to the evaluator. Apply the specified final qualifying and similarity rankings after evaluation, including canonical proposal tie-breaks. For qualifying savings, ensure unknown sorts after known even with descending comparison. Mark truncation whenever bounded search, unique proposal admission or output limit omits candidates; preserve max3 and the existing effective configured limit from dispatch.
+
+**Acceptance:** the11-candidate fixture evaluates `cheapest` and ranks it first with ten evaluations total; permutations of that candidate set produce the same admitted proposals and result order. Three identical candidates produce one proposal, one evaluation and one alternative. Apply the same admission/deduplication rule to similar replacements. Assert proposal IDs/call counts; do not merely sort the final three values in a test.
+
+#### A1-R2 — P1 — Preserve typed evaluator failures and incomplete evaluation
+
+Files: `src/commerce/products/recommendations.ts`, focused recommendation/adapter tests. Binding contracts: C8 shared budget and C18 fail-closed exact refresh.
+
+**Observed:** the local `evaluate` wrapper converts every evaluator ERROR into null. An evaluator response `{status:'ERROR',code:'DENIED',retryable:false}` becomes `{status:'OK',data:{alternatives:[],truncated:false}}`. The same conversion applies to DEADLINE, THROTTLED and UNAVAILABLE. After earlier candidates succeeded, a later failure can leave apparent complete successful recommendations. `stopped(context)` also returns null, obscuring exhaustion.
+
+**Correct exactly:** return a discriminated evaluation result, preserving typed failure separately from an OK nonqualifying/UNKNOWN evidence outcome. Stop on authorization, cancellation/deadline and provider failures and return the corresponding typed error; do not downgrade them to a complete successful search. Keep the same shared budget object/deadline through search, rule reads and product facts, and issue no provider request13. Check cancellation/deadline before each admitted evaluation and before publishing output. If an intentionally partial search result is returned, it must be explicitly truncated and cannot count as successful complete evidence refresh. Never expand a grant or retry the final refresh automatically.
+
+**Acceptance:** injected DENIED remains DENIED, and DEADLINE/THROTTLED remain typed failures even after an earlier candidate qualified; no subsequent candidate evaluation follows the failure. A controlled real-adapter fixture with a shared12-request counter records at most12 actual provider requests and fails closed on exhaustion. Distinguish an OK `DOES_NOT_QUALIFY` (legitimate no match) from transport/authorization failure.
+
+#### A1-R3 — P2 — Construct only supported same-currency replacement proposals
+
+Files: `src/commerce/products/recommendations.ts`, focused similar-product tests. Binding contracts: C4 explicit proposal quantities and C8 same-currency search/recommendations.
+
+**Observed:** `similar` lacks the known-currency mismatch filter present in `qualifying`. A USD basket produces a EUR replacement alternative, with null monetary totals rather than excluding the mismatch. Separately, `quantity: sourceLine.quantity ?? 1` turns an unknown basket quantity into a concrete replacement quantity1. The actual evaluator marks that proposal UNKNOWN, but the returned alternative still proposes the invented quantity.
+
+**Correct exactly:** exclude known currency mismatches before constructing or evaluating replacements. Missing currency remains unknown and must not be treated as confirmed matching currency. Require a known valid quantity for the selected basket line; when it is missing, do not construct a REPLACE operation with a default. Return no replacement for that line until facts are available, preserving null/unknown facts without inventing them. Remove exactly the selected line, and forward its explicit known quantity unchanged. Preserve separation between similarity reasons and discount qualification.
+
+**Acceptance:** a USD basket plus EUR candidate produces zero replacement alternatives and zero evaluations for that candidate. A source quantity null produces no fabricated proposal/evaluation; source quantity3 produces a REPLACE for the exact line with quantity3 and appropriate totals. No new input field or Shared version is needed.
+
+#### A1-R4 — Complete the local producer contract evidence and examples
+
+Files: task-owned fixtures/tests and recommendation example definitions/templates; update this Completion Report. Do not modify Background, database schemas or production integration to satisfy this item.
+
+The task explicitly assigns the local C18 producer/consumer contract harness to007; the report cannot move the local MCP/renamed-call/tampered-evidence fixture path wholesale to developer-owned validation. Current six tests use a mocked evaluator with constant fabricated evidence hashes and do not demonstrate actual evidence generation, dispatch preservation or exact replay. C18 separates this local responsibility from SYSTEM-TEST-001's real worker integration.
+
+Use the accepted evaluator and definition executor/dispatch ports with controlled provider transport, actual canonical digests, a fixed clock and an arbitrary authored tool name with mapped inputs. Include the requested example tool definitions/templates as executable fixtures (or identify existing exact examples that satisfy this). Record the existing EC01–EC12 matrix with007's relevant producer effects and explicitly identify host-only expectations as consumer-double assertions, not Commerce host code. Demonstrate exact original-call replay, unchanged evidence semantics, changed basket/rule semantics, duplicate/ambiguous alternatives, and the shared provider ceiling. Existing accepted consumer fixtures may be reused; no new exhaustive test program or live services are requested.
+
+Update the requirement-to-fixture matrix with actual commands and expected/observed calls/results. Keep real Shopify, deployed MCP and Background/system integration pending developer-owned validation. These external checks are not prerequisites for completing the local functional corrections above. Return to Review after the scoped implementation/report changes are pushed; do not self-accept or start enabled tasks.
+
+
+### Original definition review placeholder (historical)
 
 ### Review Status
 

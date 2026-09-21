@@ -872,3 +872,18 @@ submitted evidence; baseline failures do not block this component acceptance.
 pending. No dependent promotion, new claim, main integration or gitlink update.
 012 remains the final implementation checkpoint; architecture is not yet Implemented.
 This supersedes older005 current-state wording while preserving review history.
+
+## COMMERCE-007 Attempt 1 architect review — 2026-09-21
+
+COMMERCE-007 is **Changes Requested / Ready, Attempt 1 retained**, executor and
+claimed_at null; not accepted. Reviewed implementation `6821a49` and parent report
+`a67becf`, matching remote task heads. Independent focused tests passed 6/6;
+five functional reproductions failed: cheapest candidate omitted before evaluation,
+duplicate proposals returned, evaluator DENIED converted to OK, cross-currency
+replacement emitted, and unknown quantity defaulted to 1. The task's A1-R1–R3
+specify exact correction steps and effects; A1-R4 preserves COMMERCE-007's existing local C18
+producer-fixture ownership and separates real system/provider validation.
+No new claim, dependent promotion, implementation change, main integration or
+gitlink update. COMMERCE-010/013 remain gated by COMMERCE-007 acceptance and their remaining
+prerequisites. This supersedes older COMMERCE-007 current-state wording only; other task
+reviews and dependency states are preserved. Architecture is not yet Implemented.
