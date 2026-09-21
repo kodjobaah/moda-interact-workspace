@@ -684,3 +684,29 @@ Ready (001/011/Shared Complete), with no new claim. Other dependants retain curr
 states because prerequisites remain unresolved. No main merge or gitlink update;
 architecture is not Implemented. This supersedes older COMMERCE-011 current-state
 wording while preserving historical reviews.
+
+
+## COMMERCE-006 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
+Verified de532c6/ec088f27. A2 NONE, fraction conversion and zero-value fixes pass;
+both documents now pass pinned Admin2026-07 schema validation. Nineteen submitted
+reader tests pass; four added cases fail. A3-R1 corrects nested first:1000 runtime
+limits with an explicit bounded partial-target profile. A3-R2 requires typed
+cancellation, pre-dispatch checks and rejection of late successful data.
+See the canonical COMMERCE-006 task for precise code locations and expected effects.
+No live validation gate, dependent promotion, new claim, implementation change,
+main integration or gitlink update. Parent overlay published before preparation.
+
+
+## COMMERCE-006 Attempt 4 accepted — 2026-09-21
+
+Current decision: Complete, architect accepted; Attempt4 retained, claim clear.
+Implementation1c124f4 / report70c3cf24. A3-R1 bounded nested5-item query profile
+and A3-R2 typed cancellation/late-result guards accepted. Independent reader/auth
+27/27 pass; prior architect harness23/23 pass, including all4 prior failures.
+Live Shopify/provider assembly and unproven semantics remain explicitly separate;
+unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awaits
+015;012/013/system-test retain other unfinished dependencies. No downstream
+promotion, implementation changes, main integration or gitlink update. See the
+canonical task's latest Accepted review for validation limits and integration order.

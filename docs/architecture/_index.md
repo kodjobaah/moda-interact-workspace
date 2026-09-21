@@ -134,3 +134,16 @@ or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
 without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
+
+## COMMERCE-006 Attempt 2 review — 2026-09-21
+
+COMMERCE-006 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `724875d` and report `2000bccb`; dedicated worktrees clean
+and remote heads matched. Working AI/FIXED, completeness, budget and pagination
+improvements are retained. Corrections remain for NONE read denial, exact
+fraction-to-percentage conversion, executable list/ID query documents and positive
+canonical fixed amounts. Independent checks: 16 submitted reader tests passed;
+five functional reproductions failed. See the latest task Architect Review.
+Live Shopify remains developer-owned and is not the blocker. No dependent
+promotion or main integration. This supersedes prior COMMERCE-006 current-state
+wording; the narrowed C19 reader-only scope remains authoritative.
