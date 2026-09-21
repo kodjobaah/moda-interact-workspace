@@ -9,7 +9,7 @@ Individual task YAML is authoritative. DATABASE-001 Attempt 2 is Accepted / Comp
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ARCH-020-DATABASE-001](DATABASE-001-persist-capability-releases-and-turn-revision-pins.md) | Persist capability releases and conversation tool grants | complete | ARCH-016-DATABASE-001 |
-| [ARCH-020-DATABASE-003](DATABASE-003-persist-external-api-connections-and-credentials.md) | Persist external API connections and encrypted credentials | ready | ARCH-020-DATABASE-001 |
+| [ARCH-020-DATABASE-003](DATABASE-003-persist-external-api-connections-and-credentials.md) | Persist external API connections and encrypted credentials | complete | ARCH-020-DATABASE-001 |
 
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
@@ -36,3 +36,15 @@ capability/revision, release membership and grant graph; `grantedTools = []` is 
 when the capability has empty tool bindings. Do not weaken predecessor guards. Recreate
 clean disposable databases and rerun fresh + upgrade. No acceptance or downstream
 promotion until both pass.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Reviewed
+implementation `bc59bf0` and report `aca2c656`; exact remote task heads match.
+The predecessor upgrade fixture now satisfies the accepted ARCH-020 tool,
+release, capability and grant guards without weakening them. Recreated fresh and
+upgrade PostgreSQL rehearsals both pass, including existing-row preservation,
+partial credential uniqueness, byte bounds, RESTRICT foreign keys, immutable
+revision/audit rows and rollback. No downstream task becomes Ready solely from
+this acceptance because its remaining explicit dependencies are incomplete; no
+automatic launch.

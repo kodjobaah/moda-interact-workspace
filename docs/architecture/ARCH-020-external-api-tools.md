@@ -896,3 +896,15 @@ and its later release/grant rows also omit the minimum predecessor-valid
 `conversation_core` release graph. Correct the fixture without weakening old constraints,
 then rerun clean fresh and upgrade modes. No broader test expansion and no dependent
 promotion.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Implementation
+`bc59bf0` corrects only the predecessor upgrade fixture. It now satisfies the
+existing ARCH-020 tool identity, response contract, recovery/conversation,
+`conversation_core` capability/revision, release-membership and grant guards
+without disabling or weakening any predecessor protection. Both clean disposable
+PostgreSQL modes pass. X02 is therefore established for migration preservation,
+partial credential uniqueness, byte bounds, RESTRICT FKs, immutable
+revision/audit rows and rollback; no plaintext credential storage was introduced.
+No broader test expansion or downstream automatic launch is required.

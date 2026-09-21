@@ -1110,3 +1110,13 @@ response-contract release, recovery/conversation ownership, `conversation_core`
 capability/revision and release membership, valid grant), recreate clean disposable
 databases and rerun both bounded modes. DATABASE-003 remains unaccepted; no dependent
 promotion or automatic launch.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Reviewed
+implementation `bc59bf0` and report `aca2c656`; both task heads match remote.
+Fresh and upgrade PostgreSQL rehearsals now pass after correcting only the
+predecessor fixture. Existing Shop/Admin/tool/tool-revision/grant rows are
+preserved and the C21 database constraints, immutable rows and rollback behaviour
+are proven. DATABASE-003 is Complete. COMMERCE-020/028/012 remain gated by other
+explicit prerequisites, so no dependent is newly launched.

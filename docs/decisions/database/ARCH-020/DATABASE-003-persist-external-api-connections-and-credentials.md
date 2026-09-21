@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 executor: null
 claimed_at: null
 priority: 145
@@ -189,6 +189,45 @@ packet. Parent claim commit was `b1f07a21`.
 
 ## Architect Review
 
+### Attempt 3 — Accepted (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation
+`bc59bf068a9377afd0feb78028c5abb8d7ad7063` and parent report
+`aca2c656b084d2bb835d55ac890e490f956e668c`; both remote task heads were
+independently verified to match those exact commits. **Accepted / Complete,
+Attempt 3 retained; executor/claimed_at null.**
+
+The Attempt 2 correction is functionally complete. `seedBaseline()` now creates a
+genuinely valid predecessor ARCH-020 state: matching six-field legacy tool
+identity/version, BASE `conversation_core` capability with a published revision,
+release membership, a valid `response.v1` release contract, the required
+CheckoutRecovery/Conversation ownership chain and a grant selecting
+`conversation_core` with an empty complete tool union. Attempt 3 changes only this
+upgrade fixture; predecessor constraints, DATABASE-003 production schema/migration
+and runtime ownership boundaries are unchanged.
+
+X02 is now established by real PostgreSQL execution rather than inferred from
+static checks. Fresh and upgrade rehearsals both completed against recreated
+isolated databases. Upgrade preservation verified the existing Shop,
+PlatformAdmin, tool, tool revision and grant rows remained unchanged. The focused
+validator also exercised the two credential uniqueness modes, credential byte
+bounds, RESTRICT foreign keys, immutable revision/audit UPDATE+DELETE rejection
+and transaction rollback with no partial rows. Architect static review confirms
+the four C21 models/enums, `timestamptz(3)` alignment, partial indexes, opaque
+credential bytes and immutable triggers remain within DATABASE-003 ownership;
+`node --check scripts/validate-arch020-external-connections.mjs` independently
+passes in the submitted snapshot.
+
+No additional exhaustive test expansion is required for acceptance. The owning
+repository has no `typecheck`, `lint` or `build` scripts, so no such pass is
+invented. No encryption implementation, HTTP execution, Studio behaviour, live
+seed data or provider integration was added.
+
+Accepting DATABASE-003 does not by itself make a downstream task Ready in this
+submitted frontier: COMMERCE-020 still requires SHARED-002, COMMERCE-028 still
+requires COMMERCE-020 and SHARED-002, and COMMERCE-012 retains its broader
+prerequisite set. No dependent task is launched automatically.
+
 ### Attempt 2 — Changes Requested (2026-09-21)
 
 Reviewer: moda_architect. Reviewed the submitted Attempt 2 snapshot reporting
@@ -321,32 +360,41 @@ Ready for corrections, Attempt 1 retained, claims cleared. No acceptance, implem
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Implementation is bounded to the C21 section 3 database ownership. Review the
-migration SQL and run the documented fresh/upgrade PostgreSQL validator before
-acceptance; this report intentionally leaves that evidence open.
+Attempt 3 closes the predecessor-fixture defect without changing production
+schema semantics. Fresh and upgrade PostgreSQL rehearsals pass and X02 is
+satisfied. DATABASE-003 is architect-accepted Complete.
 
 ### Reviewed Files
 
-Implementation commit `a96dfd7` and the files listed in the Completion Report.
+Implementation through `bc59bf068a9377afd0feb78028c5abb8d7ad7063`, including
+`prisma/schema.prisma`, the ARCH-020 external-connections migration,
+`scripts/validate-arch020-external-connections.mjs`, generated ERD support,
+README migration guidance and package validation script.
 
 ### Validation Reviewed
 
-Repository-side Prisma, generator, formatting, syntax, and whitespace checks
-passed. PostgreSQL migration/constraint rehearsal remains unrun.
+Executor evidence records Prisma validation/generation, formatting, ERD, syntax
+and whitespace checks passing. Both recreated disposable PostgreSQL modes pass:
+fresh migration/constraints/rollback and upgrade preservation plus the same
+constraint/immutability/rollback checks. Architect independently reran Node
+syntax validation on the submitted validator.
 
 ### Architecture Conformance
 
-Conforms to the C21 section 3 ownership and does not implement encryption,
-HTTP, Studio, or application seed data.
+Conforms to C21 section 3: four database models, exact enums, RESTRICT relations,
+partial credential uniqueness, bounded checks, opaque secret bytes and immutable
+revision/audit rows. No encryption, HTTP, Studio or application seed behaviour
+is implemented here.
 
 ### Follow-up
 
-Run both documented disposable PostgreSQL validator modes, then accept or return
-for rework. No downstream task was launched.
+Integrate the implementation branch and parent task branch through the normal
+developer flow. No downstream task is newly Ready solely from DATABASE-003 in
+this submitted frontier, and none is launched automatically.
 
 ## Completion Report - Attempt 2
 

@@ -913,7 +913,7 @@ Changes Requested summaries.
 Read [C21](ARCH-020-external-api-tools.md) before extension work.
 
 ```text
-DATABASE-003 (Ready)                 SHARED-002 (Ready; publish once)
+DATABASE-003 (Complete)              SHARED-002 (Ready; publish once)
         \                            /
          ->020 connection service   +->021 HTTP executor (ports)
                                     +->025 visual processor
@@ -951,7 +951,7 @@ GATEWAY-001 +020/021/026/028/029 ->GATEWAY-003
 all extension implementation ->012 cache bypass ->SYSTEM-TEST-001 (manual)
 ```
 
-DATABASE-003, SHARED-002 and COMMERCE-029 can begin independently. The last is an
+DATABASE-003 is Complete. SHARED-002 and COMMERCE-029 retain their task-file states. The last is an
 implementation proof with reusable artifact, not an approval to defer hard limits.
 Each submission maps named acceptance case to a committed scenario and actual result.
 
@@ -1005,3 +1005,13 @@ legacy tool definition and the minimum recovery/conversation + `conversation_cor
 capability/revision + release membership needed for the preserved grant. Do not weaken
 predecessor guards. Recreate the disposable targets and rerun fresh/upgrade; no
 downstream task is promoted or launched.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Implementation
+`bc59bf0`; report `aca2c656`; remote heads verified. The upgrade fixture now forms
+a predecessor-valid ARCH-020 graph and both recreated fresh/upgrade PostgreSQL
+rehearsals pass. X02 preservation, uniqueness, bounds, RESTRICT FKs,
+immutability and rollback are established. DATABASE-003 alone does not unblock
+COMMERCE-020/028/012 because their other declared prerequisites remain incomplete;
+no automatic launch, main merge or gitlink update.

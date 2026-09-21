@@ -1548,3 +1548,14 @@ valid pre-DATABASE-003 ARCH-020 state, including a valid tool definition and the
 recovery/conversation + `conversation_core` release/grant graph. Preserve predecessor
 constraints; recreate clean targets and rerun fresh/upgrade. DATABASE-003 remains
 unaccepted and no dependent is promoted or launched.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Reviewed exact
+implementation `bc59bf0` and report `aca2c656`; remote task heads match. The
+DATABASE-003 schema/migration remains the bounded C21 section 3 implementation,
+while the corrected upgrade fixture now represents a valid predecessor ARCH-020
+state. Fresh and upgrade PostgreSQL rehearsals pass with preservation,
+credential uniqueness/bounds, RESTRICT FK, immutable-row and rollback evidence.
+No dependent task becomes Ready solely from this acceptance; remaining declared
+dependencies continue to gate the frontier.
