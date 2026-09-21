@@ -774,3 +774,16 @@ validation remain pending separately. No dependent promotion, new claim,
 implementation change, main integration or gitlink update. This supersedes older
 COMMERCE-017 current-state wording only; other task decisions remain unchanged.
 Architecture is not yet Implemented; COMMERCE-012 remains the final checkpoint.
+
+
+## COMMERCE-017 Attempt 6 architect review — 2026-09-21
+
+Changes Requested; **Ready**, Attempt6 retained, executor/claimed_at null; not accepted.
+Implementation `5aea0c4` and report `2d30a0aa` match remote heads. Independent22 UI/client
+checks and both Attempt5 regressions pass. One remaining source-lock case fails:
+uncertain conversation creation from tool A allows visible source B while replay
+retains A. Latest task A6-R1 supplies the exact shared lock predicate, event guard
+and regression expectations. Prior fixes are retained; browser identity remains
+an explicit separate validation prerequisite. No dependent promotion, new claim,
+implementation edit, main merge or gitlink change. Reclaim after this review
+overlay is published; older decisions are historical.

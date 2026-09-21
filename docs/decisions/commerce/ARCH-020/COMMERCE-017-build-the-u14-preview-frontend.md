@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 135
 executor: null
 claimed_at: null
@@ -565,6 +565,39 @@ were not contacted. No auth bypass, production fixture substitution or live
 credential was introduced.
 
 ## Architect Review
+
+### Changes Requested — Attempt 6 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for one scoped correction. Attempt 6 retained; executor/claimed_at null. Not accepted.** Verified implementation `5aea0c4a5f3dc4aec4230af45296a703ff787a4e` and report `2d30a0aa435ba3639602afbe3ebb8cfc89236e82` against remote task heads. Both worktrees clean; database pin remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No implementation edits, new claim, dependent promotion, main merge or gitlink change.
+
+Independent validation: **22/22 submitted UI/client tests passed**; both Attempt5 reproductions in `/tmp/c017-a5-review` now pass. Draft/saved/draft cycling, tool-test pending/UNKNOWN locks and obsolete-code removal are verified. Reported59 preview tests and typecheck/lint/build remain submitted evidence; diff check passed. One targeted conversation-source reproduction in `/tmp/c017-a6-review/review.test.tsx` fails. Preserve the working corrections; no expanded feature scope or exhaustive new matrix is requested.
+
+#### A6-R1 — P1 — Freeze the tool source when it owns an unresolved conversation creation
+
+This is the remaining conversation-creation path of A5-R1/A4-R2. Files: `src/studio/preview/preview-screen.tsx` and focused screen tests only.
+
+**Reproduce:** render tool handoff A and saved tool B, with no selected release. Switch to Conversation, Start with a deferred creation, then reject it with an uncertain timeout. The frozen request is DRAFT with toolRevisionIds:[A]. Select B using `Preview tool source`. Expected selection remains A; actual selection becomes B. The next same-conversation check still replays A, so the visible source and frozen request disagree. Switching to Tool test exposes the duplicate source control as well. Current toolSourceLocked covers only tool-test operations, not conversation creation.
+
+**Exact minimal implementation:** after the refs are declared, replace the existing toolSourceLocked calculation with a live predicate used both for render and event admission:
+
+```ts
+function isToolSourceLocked() {
+  return Boolean(
+    conversationId ||
+    conversationOperation.current ||
+    conversationCheckPending.current ||
+    toolOperation.current ||
+    toolCheckOperation.current
+  );
+}
+const toolSourceLocked = isToolSourceLocked();
+```
+
+In `selectTool`, replace `if (toolSourceLocked) return;` with `if (isToolSourceLocked()) return;`. Bind **both** tool selectors to this same lock (the top selector's existing `locked || toolSourceLocked` is redundant but safe). This freezes the source during pending/uncertain creation and an established frozen conversation, and checks synchronous operation refs rather than a previous render's boolean. Do not clear or regenerate conversationOperation to unlock selection. Existing known-failure settlement or confirmed Reset releases it through the normal lifecycle; UNKNOWN retains the original ID/payload. Preserve independent tool POST/GET locking and the completed draft/release cycling fixes.
+
+**Acceptance:** with A/B and no release, pending creation from A -> attempting B through either selector leaves A, one POST only; uncertain rejection -> A remains selected; same-ID check uses exactly the first ID/payload and does not create B. Successful reconciliation freezes A until confirmed Reset; after Reset selecting B and starting produces a new ID with B. Canonical known creation failure releases the selection. Include one same-React-batch Start/source-change assertion to prove the handler consults current refs. Keep the22 submitted UI/client tests and both Attempt5 reproductions passing, then required lint/typecheck/build/diff checks. No backend, composer ownership or auth change is needed.
+
+Authenticated desktop/narrow/keyboard validation remains explicitly pending the local Studio identity prerequisite; no browser or live-provider pass is claimed. That prerequisite is separate from this reproduced component defect. Update the report with the scoped correction and actual request-count/payload outcomes, publish the mirrored task branches, return to review and clear claims. No new attempt is claimed by this review.
 
 ### Changes Requested — Attempt 5 — 2026-09-21
 
