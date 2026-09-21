@@ -65,10 +65,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement exact fields, tabs, dialogs, search/pagination/return navigation and permission presentation specified in section6. Add Connections after Explore Shopify.
-- [ ] Credential controls use status-only reads, replace/remove dialogs, explicit reason/CAS and no reveal or browser persistence. Do not claim frontend masking is server authorization.
-- [ ] Apply immediate guards to every mutation, retain operation/payload on unknown outcomes and reconcile same command. Revision selection never silently changes to latest.
-- [ ] Document component port mapping and XN01 evidence. Use existing styles/components; provide narrow and keyboard validation with populated fixtures.
+- [x] Implement exact fields, tabs, dialogs, search/pagination/return navigation and permission presentation specified in section6. Add Connections after Explore Shopify.
+- [x] Credential controls use status-only reads, replace/remove dialogs, explicit reason/CAS and no reveal or browser persistence. Do not claim frontend masking is server authorization.
+- [x] Apply immediate guards to every mutation, retain operation/payload on unknown outcomes and reconcile same command. Revision selection never silently changes to latest.
+- [x] Document component port mapping and XN01 evidence. Use existing styles/components; provide narrow and keyboard validation with populated fixtures.
 
 ## Interfaces / Contracts
 
@@ -90,9 +90,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] X05/XN01: new connection -> exact revision -> credential status -> list, plus revision creation without copied secret, all against strict port fixtures.
-- [ ] ADMIN read-only, pending/double-click, stale/unknown, cancellation/unsaved navigation, missing key and revoked-session states work without secret leakage.
-- [ ] No backend or network implementation; component builds with fixture ports before020/021 complete.
+- [x] X05/XN01: new connection -> exact revision -> credential status -> list, plus revision creation without copied secret, all against strict port fixtures.
+- [x] ADMIN read-only, pending/double-click, stale/unknown, cancellation/unsaved navigation, missing key and revoked-session states work without secret leakage.
+- [x] No backend or network implementation; component builds with fixture ports before020/021 complete.
 
 ## Validation
 
@@ -126,7 +126,7 @@ Ready for Review.
 
 ### Files Changed
 
-Implementation branch contains the nine task-scoped files listed below.
+Implementation branch contains the ten task-scoped files listed below.
 
 ### Work Completed
 
@@ -137,6 +137,19 @@ immutable revision selection/creation, credential status-only reads, explicit
 SUPER_ADMIN reason acknowledgements, duplicate-click guards, same-operation
 credential retry retention, unknown-outcome messaging, ADMIN read-only controls,
 and return navigation retaining search.
+
+Files changed:
+
+- `app/styles.css`
+- `components/studio-shell.tsx`
+- `package.json`
+- `package-lock.json`
+- `app/connections/page.tsx`
+- `app/connections/[id]/page.tsx`
+- `src/studio/connections/connections-ui.tsx`
+- `src/studio/connections/contracts.ts`
+- `src/studio/connections/fixtures.ts`
+- `tests/connections-ui.test.tsx`
 
 The launcher claim step was attempted but could not repair durable claim state
 because the existing implementation worktree was already dirty. The dirty files
