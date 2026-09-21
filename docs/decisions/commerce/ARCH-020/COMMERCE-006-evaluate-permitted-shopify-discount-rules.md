@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 100
 executor: copilot
 claimed_at: 2026-09-21T00:50:49Z
@@ -66,11 +66,11 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Reuse accepted ARCH-016 merchant policy/catalogue: NONE/FIXED/AI_BEST_APPLICABLE, admin precedence and Free/Paid availability. Do not add another catalogue or synchronizer.
-- [ ] Implement discounts.getOptions and DiscountRuleReader under C19. Verify canonical offer/shop ownership before provider requests; fixed mode cannot read a different offer.
-- [ ] Inspect actual pinned Admin API/schema/scopes and document exact static query -> normalized-field mappings in docs/discount-support-matrix.md. Missing scope returns UNAVAILABLE; no OAuth scope expansion.
-- [ ] Normalize native basic percentage/fixed conditions, targets, minimums, dates and provider semantics; unresolved or unsupported clauses remain explicit and cannot be discarded.
-- [ ] Share injected provider-request budget across pagination/retries; <=50 offers and C8 bounds. No eligibility calculation, Evidence generation or recommendation ranking.
+- [x] Reuse the accepted policy shape through an injected policy port: NONE/FIXED/AI_BEST_APPLICABLE, with fixed-offer authorization and stale-catalogue/scope fail-closed checks. No catalogue or synchronizer was added.
+- [x] Implemented `getDiscountOptions` and `DiscountRuleReader` under C19. Shop ownership, policy mode and fixed-offer identity are checked before provider requests; denied cases produce zero provider calls.
+- [x] Inspected the pinned 2026-07 Admin GraphQL surface and documented the static query-to-normalized-field mapping in `docs/discount-support-matrix.md`. Missing `read_discounts` scope returns `UNAVAILABLE`; no OAuth expansion or privileged fallback exists.
+- [x] Normalized native basic percentage/fixed values, all/product/variant/collection targets, minimums, dates and semantics. Incomplete, customer/usage, combination and unsupported families remain explicit `UNKNOWN`/`UNSUPPORTED` conditions.
+- [x] Shared the injected request budget across bounded pagination (20 per page, 3 pages, 50 offers); no eligibility calculation, Evidence generation or recommendation ranking was added.
 
 ## Interfaces / Contracts
 
@@ -127,23 +127,61 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review. Attempt 1 implementation and agent-owned validation are complete.
 
 ### Files Changed
 
-None; implementation has not started.
+- `src/commerce/discounts/reader/types.ts`: C19 local ports, policy/result types, normalized snapshot and injected provider contracts.
+- `src/commerce/discounts/reader/reader.ts`: bounded policy-aware option listing, fixed-offer reader, normalization and semantic fingerprinting.
+- `src/commerce/discounts/reader/index.ts`: reader exports.
+- `tests/discount-reader.test.ts`: deterministic policy, authorization, normalization, bounds and fail-closed fixtures.
+- `docs/discount-support-matrix.md`: pinned 2026-07 Admin schema evidence and static query-to-DTO mapping.
 
 ### Work Completed
 
-None; task definition only.
+- Added injected `DiscountPolicyPort` and `DiscountProvider` boundaries; production construction with no approved provider fails `UNAVAILABLE` rather than using fixtures or live fallback.
+- Implemented `NONE` empty listing, `FIXED` configured-offer-only access and bounded `AI_BEST_APPLICABLE` listing with truncation disclosure.
+- Enforced shop/policy/offer authorization before provider I/O and shared the request budget across pages.
+- Normalized native basic percentage/fixed rules with explicit targets, minimums, dates, support states, unresolved/unsupported conditions and timestamp-independent SHA-256 semantic fingerprints.
+- Preserved the boundary to COMMERCE-016: this task does not calculate eligibility, savings or Evidence.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed validation:
+
+- `npm run prisma:generate`: passed; canonical nested Prisma client generated at pinned `6.19.3`.
+- `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts`: passed, 2 files / 13 tests.
+- `npm test`: passed, 14 files / 80 tests.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed; Next route types and `tsc --noEmit` completed successfully.
+- `npm run build`: passed; Prisma generation, webpack compilation, TypeScript, page data and static generation completed.
+- `git diff --check`: passed.
+
+Requirement-to-fixture matrix:
+
+| Requirement | Fixture/test | Expected side effects | Result |
+| --- | --- | --- | --- |
+| D01 NONE/FIXED | `returns no options...`; `permits only the configured FIXED offer...` | NONE makes zero provider requests; wrong fixed offer is `DENIED` before I/O | Passed |
+| D01 AI bound | `bounds AI listing at 50 offers...` | maximum 50 normalized offers and `truncated: true` | Passed |
+| D02 supported mapping | `normalizes percentage, all-target...` | percentage, target, minimum, dates and proven semantics map to C19 DTO | Passed |
+| D02 incomplete fields | `preserves incomplete targets...`; malformed native value fixture | no default target/value; explicit null and `UNKNOWN`/`UNSUPPORTED` condition | Passed |
+| D03 unsupported/unknown | `keeps unsupported discount families explicit`; incomplete target fixture | app/Function family and unknown target semantics remain explicit | Passed |
+| D04 scope/outage | `returns UNAVAILABLE for missing scope...`; `fails closed when provider adapter is unavailable` | zero provider requests for missing scope; bounded retryable unavailable result | Passed |
+| D04 stale catalogue | policy fixture uses `catalogueFresh: false` through the same guard | `UNAVAILABLE` before provider I/O | Covered by guard; no live provider claim |
+| D04 fingerprint | `does not include observation timestamps...` | same semantic fingerprint for different observation timestamps | Passed |
+| D05 pinned semantics | support matrix plus proven-semantics fixture | unsupported/unproven allocation and rounding cannot become supported | Passed |
+| Tenant/auth isolation | `rejects a wrong tenant...` plus wrong-offer fixture | `DENIED` and zero provider calls | Passed |
+
+Tests use injected deterministic policy/provider fixtures only. They do not claim
+live Shopify/provider behavior.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The accepted Shared package is not present as an installed source export in this
+fresh Commerce checkout, so the C19 reader port is declared structurally local as
+specified by C19; no new wire version or competing shared package was created.
+The production assembly owner (COMMERCE-013) and live provider adapter remain
+outside this task.
 
 ### Assumptions
 
@@ -151,8 +189,10 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+Developer-owned validation remains: pair the reader with the accepted production
+Shopify adapter/installation-token lookup and run the approved live/pre-production
+Shopify Admin API check against a test shop using the pinned 2026-07 schema and
+actual granted scopes. No live credentials were inspected or used here.
 
 ### Architectural Concerns
 
@@ -160,7 +200,17 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-006. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected mirrored branch: `task/ARCH-020-COMMERCE-006`. Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-006`.
+Parent task worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-006`.
+Both were prepared by the launcher and remained isolated from `main`.
+Implementation commit: `4b968c1` (`feat(commerce): add bounded discount rule
+reader`), pushed explicitly as `HEAD:refs/heads/task/ARCH-020-COMMERCE-006` to
+the Commerce remote after the Git helper reported the prepared local upstream
+was `origin/main`. Parent report commit and push are recorded by the matching
+parent branch publication. No parent service gitlink, architecture/index file,
+or `main` branch was updated.
 
 ## Architect Review
 
