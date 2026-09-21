@@ -59,8 +59,10 @@ database revision. Never copy the Prisma schema into Commerce.
 ```text
 003 publication +004/014 MCP +005/015 products +006/016 discounts +007 recommendations +011 compiler ->013 backend integration
 013 +008 Studio +002 auth +011 discovery ->018 Studio integration
-013 +009 preview +017 U14 +008 composer +002 auth ->019 preview integration
-018 and019 run concurrently; neither depends on the other
+009 +002 ->033 OpenAI/Groq preview model provider
+017 +009 ->034 U14 tool-entry source gating correction
+013 +009 preview +017 U14 +008 composer +002 auth +033 +034 ->019 preview integration
+018 may run independently;019 remains blocked until033/034 are accepted
 013 +018 +019 + existing prerequisites ->GATEWAY-001
 all feature/infrastructure tasks ->012 caching ->terminal SYSTEM-TEST-001
 ```
@@ -1061,3 +1063,15 @@ transport/protocol and Commerce has no accepted `PreviewModelPort` provider adap
 MODEL therefore remains fail-closed. Architect/provider resolution is required before
 another COMMERCE-019 claim. COMMERCE-012/024/031, GATEWAY-001 and SYSTEM-TEST-001
 remain gated; nothing is launched automatically.
+
+### COMMERCE-019 Attempt 2 deterministic blocked review — 2026-09-21
+
+Attempt 2 preserves accepted Redis frozen snapshots and saved-tool execution but is
+Blocked on two now-materialised prerequisites. COMMERCE-033 is Ready and implements
+one native-fetch OpenAI-compatible `PreviewModelPort` for exact providers
+`openai|groq`, fixed endpoints, actual completion-token accounting and no fallback;
+hosted test/development selects Groq/openai-gpt-oss-20b via the C10 variables.
+COMMERCE-034 is Ready and fixes U14 so a tool-only handoff remains Tool test and cannot
+start Conversation until a real release/behaviour source is selected. They are
+independent and may run in parallel.019 depends on both; once both are architect
+accepted, its next claim is Attempt3 and only composes their accepted outputs.

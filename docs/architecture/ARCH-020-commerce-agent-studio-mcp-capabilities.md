@@ -1604,3 +1604,15 @@ transport/protocol and Commerce has no accepted `PreviewModelPort` provider adap
 MODEL therefore remains fail-closed. Architect/provider resolution is required before
 another COMMERCE-019 claim. COMMERCE-012/024/031, GATEWAY-001 and SYSTEM-TEST-001
 remain gated; nothing is launched automatically.
+
+## COMMERCE-019 Attempt 2 deterministic blocked review — 2026-09-21
+
+**Blocked, Attempt 2 retained; claims null.** Redis-persisted frozen preview snapshots
+and the real empty-capability saved-tool read are accepted. Two architect-resolved
+prerequisites are added: COMMERCE-033 (Ready) implements the exact OpenAI/Groq
+preview-model transport/config contract; COMMERCE-034 (Ready) corrects U14 so tool-only
+entry is Tool test and Conversation requires an authored release/behaviour source.
+Both may execute in parallel.019 now depends on both and is not Ready until both are
+accepted Complete. Test/development MODEL deployment selects Groq with
+`COMMERCE_PREVIEW_PROVIDER=groq` and `COMMERCE_PREVIEW_MODEL=openai/gpt-oss-20b`;
+secrets remain external. No downstream task is promoted or launched.

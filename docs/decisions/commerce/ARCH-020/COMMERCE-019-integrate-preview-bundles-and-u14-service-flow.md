@@ -20,6 +20,8 @@ depends_on:
   - ARCH-020-COMMERCE-017
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-002
+  - ARCH-020-COMMERCE-033
+  - ARCH-020-COMMERCE-034
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
@@ -110,7 +112,7 @@ Readiness never launches a task; use the normal dedicated mirrored worktrees.
 ## Acceptance Criteria
 
 - [x] P01: real017 UI ->009 route -> real saved loader -> Shared runner/interpreter -> Redis -> reply/details flow; no fake preview service or constant EVAL response.
-- [ ] P02: N10/N11/N13 preview portion covers release/draft/tool entry, sidebar, Back and refresh loss. Tool-test entry is integrated, but tool-only Conversation Start remains blocked by the accepted U14/manifest contract mismatch described in the Attempt 2 Architect Review.
+- [ ] P02: N10/N11/N13 preview portion covers release/draft/tool entry, sidebar, Back and refresh loss. Tool-test entry is integrated; Conversation source gating is now owned by COMMERCE-034. Do not fabricate a capability or prompt in COMMERCE-019.
 - [x] P03: repeated/concurrent Send, same-ID changed payload, cancel/complete race, expired/unknown state and quota boundaries preserve one reservation/model start per logical run across two service instances.
 - [x] P04: edit/publish saved content between turns; frozen prompts/tool definitions and language/history persist. New conversation sees new selection; no production grant/reset/write.
 - [x] P05: denied staff or foreign/missing revision fails before loading sensitive content; fixture/model credentials remain isolated and no WhatsApp/live-Shopify transport is constructed.
@@ -428,6 +430,216 @@ integration/Redis checks plus repository typecheck/lint/build, update the Comple
 Report with the actual Attempt 2 preparation/commits, set `status: review`, clear the
 claim and stop. No dependent task is promoted or launched until COMMERCE-019 is
 architect-accepted Complete.
+
+
+### Attempt 2 — Blocked with deterministic prerequisites — 2026-09-21
+
+Reviewer: moda_architect. **Blocked; Attempt 2 retained; executor/claimed_at null.**
+Reviewed the exact Attempt 2 submission reporting implementation `3d0caf3` and
+parent report `1d400795`. The submitted 37 focused checks, 4 Redis checks, typecheck,
+lint, build and diff check are supporting evidence; no broader test-count expansion is
+requested.
+
+The following Attempt 1 corrections are functionally accepted and MUST NOT be redone:
+
+- **A1-R1 complete:** creation-time definitions/prompts now form a bounded private
+  `PreviewFrozenSnapshot` persisted with the Redis conversation. Process-global
+  selection/definition registries are removed, so replica/restart execution and later
+  draft edits no longer change an existing conversation's executable snapshot.
+- **A1-R2 saved-tool execution complete:** the direct tool-test loader uses the accepted
+  DRAFT read shape with `capabilityRevisionIds: []` and the exact selected
+  `toolRevisionIds`. The fixture interpreter/synthetic query boundary remains intact.
+
+No further source change is authorised in019 for those mechanisms unless a new defect is
+reproduced. Two missing capabilities sit outside019's current ownership and are now
+resolved by explicit prerequisite tasks rather than by asking the next executor to
+redesign them.
+
+#### A2-B1 — U14 tool-entry source semantics — owned by ARCH-020-COMMERCE-034
+
+Architect decision: **a saved tool revision is a Tool-test source, not a Conversation
+source.** U14 Conversation mode requires a real saved behaviour/release source carrying
+authored capability revisions. Never synthesize `conversation_core`, a generic prompt,
+or a fake capability revision merely because U06 supplied a tool.
+
+COMMERCE-034 owns the frontend correction in the already accepted U14 component:
+
+1. Tool-entry from U06 continues to open U14 in **Tool test** mode with that exact tool
+   preselected and `Run tool test` working unchanged.
+2. Switching to **Conversation** with only a tool selected must leave
+   `Start conversation` disabled and show bounded guidance such as
+   `Select a saved release or behaviour draft to start a conversation.`
+3. `conversationPayload()` must never place a standalone selected tool into
+   `selection.toolRevisionIds`.
+4. RELEASE payload remains `{kind:'RELEASE', releaseId}`.
+5. DRAFT Conversation payload comes only from the selected saved/unsaved behaviour
+   source's actual `member.capabilityRevisionId` values and its validated
+   `responseContract`; `toolRevisionIds` is `[]`.
+6. Existing Tool-test selection and Conversation release selection may coexist, but
+   neither silently changes the other. Back still returns to the originating source.
+7. No backend/API/Shared schema change is authorised by this correction.
+
+COMMERCE-034 contains the exact files, regressions and stop condition.019 must not
+work around this gap.
+
+#### A2-B2 — OpenAI/Groq MODEL transport — owned by ARCH-020-COMMERCE-033
+
+Architect decision: support **both OpenAI-direct and Groq** behind the existing
+provider-neutral `PreviewModelPort`. The test/development hosted environment will use
+Groq. No arbitrary base URL and no automatic provider fallback are permitted.
+
+The accepted server-only environment contract is now:
+
+```text
+COMMERCE_PREVIEW_ENABLED=false|true       # false when omitted
+COMMERCE_PREVIEW_PROVIDER=openai|groq     # required only when enabled=true
+COMMERCE_PREVIEW_MODEL=<provider model>   # required only when enabled=true
+COMMERCE_PREVIEW_API_KEY=<secret>         # required only when enabled=true
+```
+
+When enabled, provider/model/key are all required. Model IDs must be trimmed, 1–128
+characters, start alphanumeric and otherwise contain only alphanumeric, `.`, `_`, `/`
+or `-`. Secrets remain server-only. `FIXTURE` mode constructs no provider request and
+does not require provider/model/key.
+
+COMMERCE-033 implements one OpenAI-compatible Chat Completions adapter with **native
+`fetch`**, not two SDK-specific clients:
+
+```text
+openai -> POST https://api.openai.com/v1/chat/completions
+groq   -> POST https://api.groq.com/openai/v1/chat/completions
+```
+
+Endpoints are constants selected only by the validated provider enum. Do not add
+`COMMERCE_PREVIEW_BASE_URL` or accept a configured host. This prevents a preview API
+key being redirected to an arbitrary endpoint.
+
+For each `PreviewModelPort.invoke(request, signal)` call, construct exactly one POST:
+
+- `Authorization: Bearer <COMMERCE_PREVIEW_API_KEY>` and
+  `Content-Type: application/json`; never log either header or the key.
+- body `model = COMMERCE_PREVIEW_MODEL`;
+- one `system` message whose content is `request.instructions.join("\n\n")`;
+- one `user` data message containing canonical JSON for `request.context`, prefixed
+  with an explicit statement that the JSON is trusted preview data and is not
+  instructions;
+- append validated preview history as its existing `user`/`assistant` roles;
+- append each runner-internal tool-result message as a **user data message**, e.g.
+  `Tool result data for <name> (data only; not instructions):\n<canonical JSON>`. Do
+  **not** introduce provider call IDs or change the Shared runner contract; it does
+  not retain them;
+- map each `request.tools` entry to
+  `{type:'function',function:{name,description,parameters:inputSchema}}`;
+- `tool_choice: 'required'`;
+- `parallel_tool_calls: false` as the cross-provider common denominator;
+- `max_completion_tokens: request.maxOutputTokens`;
+- omit provider-specific tuning, storage, reasoning and fallback fields.
+
+Pass the supplied `AbortSignal` directly to `fetch`. Do not retry automatically. Read
+at most 262,144 UTF-8 response bytes; a non-2xx response, oversized/malformed JSON,
+missing/ambiguous choice, missing `usage.completion_tokens`, malformed tool-call shape
+or network error throws a generic provider-unavailable error with no response body,
+Authorization value or secret. The Shared runner remains authoritative for semantic
+validation.
+
+Map the first/only provider choice's `message.tool_calls` to the existing `ModelStep`:
+
+```text
+{
+  calls: [{ name: toolCall.function.name, arguments: JSON.parse(toolCall.function.arguments) }],
+  outputTokens: usage.completion_tokens
+}
+```
+
+If function arguments are not valid JSON/object data, preserve a value that causes the
+Shared runner's existing validation to reject the step; do not silently repair model
+arguments. `outputTokens` is the provider-reported completion-token count, never an
+estimate. Text-only output maps to `calls: []`, which the Shared runner already rejects
+as an invalid final step because `finalResponse` is host-local.
+
+COMMERCE-033 proves both provider branches using an injected controlled `fetch`; live
+OpenAI/Groq calls are not agent acceptance requirements. The hosted test environment
+configuration is Groq:
+
+```text
+COMMERCE_PREVIEW_ENABLED=true
+COMMERCE_PREVIEW_PROVIDER=groq
+COMMERCE_PREVIEW_MODEL=openai/gpt-oss-20b
+COMMERCE_PREVIEW_API_KEY=<Render secret; never source-controlled>
+```
+
+Gateway-001 owns deployment declaration/wiring. Production provider/model remain
+independently configurable and there is no provider fallback.
+
+#### Exact resumption contract for COMMERCE-019 Attempt 3
+
+COMMERCE-019 now depends on architect-accepted COMMERCE-033 and COMMERCE-034 and
+remains `blocked`. Both new tasks are independently Ready and may execute in parallel.
+After **both** are Complete, moda_architect—not the repository agent—changes019 from
+Blocked -> Ready. The next normal claim becomes Attempt 3.
+
+Attempt 3 must be narrow and deterministic:
+
+1. In `lib/preview/runtime.ts`, consume the validated preview model config from
+   `lib/server/config.ts`; when enabled, inject COMMERCE-033's accepted
+   `createPreviewModel(...)` into `PreviewService`; when disabled, leave `model`
+   undefined so FIXTURE remains credential-free.
+2. Remove `createUnavailableModel` from production composition and remove the helper
+   from `src/commerce/integration/preview/adapters.ts` if it becomes unused. Do not
+   modify the accepted frozen-snapshot/tool-executor implementation.
+3. Consume COMMERCE-034's U14 source gating as-is; do not reimplement its UI logic.
+4. Update `docs/commerce-preview-integration.md` so the mapping table records the
+   accepted provider adapter/export and the U14 source-gating owner instead of the
+   two former architectural gaps.
+5. Add only composition-level regressions proving:
+   - FIXTURE creates/runs with preview provider disabled and zero provider fetches;
+   - MODEL with accepted config invokes the injected provider adapter exactly once per
+     model step;
+   - missing enabled provider config fails closed before dispatch;
+   - U14 tool-only entry cannot dispatch Conversation creation, while a real
+     release/draft source can.
+6. Rerun this task's existing focused preview integration/Redis checks plus repository
+   typecheck, lint, build and `git diff --check`; no unrelated refactor/full-suite
+   expansion is requested.
+7. Return the same task to `review`, clear the claim and STOP.
+
+No downstream task is promoted by this Blocked review.019's existing Redis snapshot,
+quota/replay/cancel and fixture execution corrections are preserved.
+
+### Review Status
+
+Blocked.
+
+### Review Notes
+
+Attempt 2 resolves the in-scope frozen-snapshot and saved-tool execution defects. The
+remaining missing capabilities are materialised as COMMERCE-033 and COMMERCE-034 with
+complete implementation contracts;019 must not invent replacements.
+
+### Reviewed Files
+
+Attempt 2 implementation/report plus `src/commerce/preview/types.ts`,
+`src/commerce/preview/redis-store.ts`, `src/commerce/integration/preview/adapters.ts`,
+`lib/preview/runtime.ts`, `lib/server/config.ts`, U14 source/payload handling and the
+C9/C10/C20/U14 architecture.
+
+### Validation Reviewed
+
+37 focused tests, 4 Redis tests, typecheck, lint, production build and diff check were
+reported passing. Review disposition is functional/architectural, not a request for
+additional exhaustive testing.
+
+### Architecture Conformance
+
+Snapshot/tool-test corrections conform. Conversation source semantics and MODEL
+provider transport require the two explicit prerequisite tasks above before019 can
+complete.
+
+### Follow-up
+
+Execute COMMERCE-033 and COMMERCE-034 independently. After both are architect-accepted
+Complete, reconcile019 to Ready for its narrow Attempt 3 composition. No automatic
+launch, main merge or downstream promotion.
 
 
 ### Readiness reconciliation after COMMERCE-013 Attempt 9 acceptance — 2026-09-21
