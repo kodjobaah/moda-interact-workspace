@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 125
 executor: null
 claimed_at: null
@@ -802,6 +802,31 @@ updated. Lifecycle fields are set for review: `status: review`,
 `executor: null`, `claimed_at: null`, `attempt: 7`.
 
 ## Architect Review
+
+### Attempt 9 — Accepted (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `4d529773fde26599027aef2d76fbd70bc974b352` and parent report `650d53bcbcd414fe3a4bd6f322520e473504678f`; dedicated worktrees clean and submitted remote heads verified. **Accepted / Complete, Attempt 9 retained; executor/claimed_at null.**
+
+A8-R1 is resolved for the current fail-closed provider boundary: recognized targeted quantity/subtotal minima use ELIGIBLE_LINES, while explicit ALL uses BASKET. The accepted evaluator continues to reject incomplete targets/facts; normalization does not make an unsupported monetary profile qualify. A8-R2 follows the explicitly permitted disposition: production no longer asserts HALF_UP/LINE, and unknown calculation semantics produce SEMANTICS_UNPROVEN/UNSUPPORTED rather than invented savings or qualification. The support matrix records the precise missing provider facts. Existing query, binding, inspection, transport and publication corrections remain intact.
+
+#### Architectural decision and remaining capability boundary
+
+Accept the C20 backend composition with the documented fail-closed discount limitation. This supersedes earlier review wording that required a positive native-basic qualification fixture regardless of whether the provider semantics could be proven. Do not reopen this task simply to restore guessed constants or repeat synthetic evidence as provider proof.
+
+**Native-basic fixed/percentage monetary qualification is not enabled by this acceptance.** Production rule discovery can return facts, but these profiles remain UNSUPPORTED while rounding mode/point are unproven; no qualifying evidence or savings may be inferred from them. Resolving that provider profile requires independent authoritative/provider evidence and an explicit reviewed change before enabling it. The accepted generic evaluator's synthetic supported cases are not Shopify certification. Studio/preview integration must preserve this unavailable/unsupported behavior, not bypass it or substitute an estimate. This limitation remains visible in architecture/handoff records and final validation.
+
+#### Verification
+
+Reran focused backend integration: **61/61 passed**. Existing architect harness `/tmp/c013-a6-review/review.test.ts`: **12/12 passed**, including the production Admin schema, saved draft, bound-publication enforcement, configured environment and previous storage/facade regressions. Submitted typecheck/lint/build/diff and static database checks reviewed. Source review confirms the narrow minimum-basis change and removal of the unproven profile; no implementation files were modified by the architect.
+
+PostgreSQL evidence remains one passing adapter scenario and one mutation/replay/CAS/rollback timeout for this attempt. It is not a passing 2/2 result; timeout cause remains undiagnosed. Keep diagnosis/rerun on an authorized isolated target as developer-owned integration evidence before deployment/final system validation. No new schema or migration was introduced by013. Fresh/upgrade migration validation belongs to the database owner and should consume its accepted evidence; it is not a new013 implementation prerequisite. The composite historical command does not change that ownership. Redis/container/live-provider/OAuth/deployment evidence remains developer-owned; no such checks were performed by this review.
+
+#### Readiness reconciliation
+
+COMMERCE-018 and COMMERCE-019 become **Ready, Attempt 0 retained, claims null**, on this parent task branch: their other explicit prerequisites002/008/009/011/017 are already Complete as applicable. Neither task is launched. They must consume the accepted backend and preserve the documented unsupported discount result; they must not implement missing provider semantics inside composition.
+
+COMMERCE-012, deployment and final/system gates remain subject to their other dependencies and explicit developer/manual validation. This task acceptance is not an ARCH-020 Implemented decision, main merge, deployment, gitlink update or live-provider approval. Prior reviews are retained below as history.
+
 
 ### Attempt 8 — Changes Requested (2026-09-21)
 

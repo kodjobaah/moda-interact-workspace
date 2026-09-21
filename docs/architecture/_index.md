@@ -494,3 +494,19 @@ are in the task Architect Review. Focused integration: 61/61; architect checks:
 rollback evidence or a demonstrated new regression. Developer-owned infrastructure
 validation remains pending. No acceptance, implementation change, main merge,
 gitlink update or downstream promotion; COMMERCE-018/019 remain Pending.
+
+### COMMERCE-013 Attempt 9 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 9 retained; executor/claim null.** Reviewed
+implementation `4d52977` and report `650d53bc`. Targeted minima use eligible lines;
+unproven monetary semantics fail closed. Native-basic fixed/percentage monetary
+qualification remains UNSUPPORTED pending independent provider evidence and an
+explicit reviewed enabling change. Acceptance does not assert live discount
+qualification; Studio/preview must preserve this limitation. Earlier review demands
+for guessed/unsupported positive monetary profiles are superseded by this disposition.
+Focused integration: 61/61; architect regressions: 12/12. PostgreSQL remains one
+passing scenario and one timeout; developer-owned adapter validation remains pending.
+013 introduces no migration; database owners retain fresh/upgrade evidence ownership.
+COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
+prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
+Other deployment/cache/system gates retain their dependencies and manual validation.
