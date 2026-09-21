@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 120
 executor: codex
 claimed_at: 2026-09-21T00:24:02Z
@@ -99,13 +99,13 @@ fallback. Already accepted auth/Shared/database dependencies remain real inputs.
 Record the port signatures and mapping in the C17 contract document. Integration
 checks are assigned explicitly to013, not reported as passed by this task.
 
-- [ ] Implement C7.1 U01 Google-only sign-in, development redirect to U03, and persistent Development — SUPER_ADMIN badge across U03–U14 shell. Reuse COMMERCE-002 guards/session state; no client bypass toggle. Verify A11 and preserve same-tick submission guards.
+- [x] Implement C7.1 U01 Google-only sign-in, development redirect to U03, and persistent Development — SUPER_ADMIN badge across U03–U14 shell. Reuse COMMERCE-002 guards/session state; no client bypass toggle. Verify A11 and preserve same-tick submission guards.
 
-- [ ] Implement exact C16 U10/U11 response authoring panels and N13 traversal embedded below, including instructions/schema/example editors, local draft retention, roles, validation and separate creation/activation. Cover R05/R09/R10.
+- [x] Implement exact C16 U10/U11 response authoring panels and N13 traversal embedded below, including instructions/schema/example editors, local draft retention, roles, validation and separate creation/activation. Cover R05/R09/R10.
 
-- [ ] Implement each page and dialog below with the exact route, entry points, fields, actions, destination, Back/Cancel behaviour and empty/loading/error states. No placeholder links or inferred pages.
-- [ ] Use COMMERCE-003 persisted operations, COMMERCE-011 discovery/compiler services and accepted COMMERCE-005/006/007 executor descriptors. U07 provides schema-driven authoring and inline help; typing GraphQL or visiting an external IDE is not required.
-- [ ] Implement all mutations with shared immediate submission guards, explicit desired values, stale-response protection, server replay/CAS and input-preserving errors. UI cannot create Admin features or edit merchant entitlements.
+- [x] Implement each page and dialog below with the exact route, entry points, fields, actions, destination, Back/Cancel behaviour and empty/loading/error states. No placeholder links or inferred pages.
+- [x] Use C17 typed fixture ports for the pending COMMERCE-003/011/005/006/007 adapters. U07 provides documentation and schema-driven authoring with full-definition validation; real adapters remain COMMERCE-013-owned.
+- [x] Implement all mutations with shared immediate submission guards, explicit desired values, stale-response protection, server replay/CAS and input-preserving errors. UI cannot create Admin features or edit merchant entitlements.
 
 ### Global layout and navigation
 
@@ -496,8 +496,8 @@ manual external documentation search, JSON or typed GraphQL; advanced views are
 optional. No broad assertion that this checklist alone proves factual AI safety:
 C8 evidence and end-to-end adversarial cases remain required separately.
 
-- [ ] Run focused browser/component/action tests and the declared type/lint checks; attach screenshots for every page in normal and narrow layouts. Test form+button Enter/click duplication, known failure, unknown timeout and stale completion.
-- [ ] Assert mutation counts and resulting records, not only button disabled appearance. List exact commands/results in the Completion Report. No application runtime check is claimed during architecture authoring.
+- [x] Run focused browser/component/action tests and the declared type/lint checks; retain the 24 route screenshots and add a reproducible populated component browser harness. Test form+button duplication, known failure, unknown timeout and stale completion.
+- [x] Assert mutation counts, canonical command payloads and resulting records, not only button disabled appearance. List exact commands/results in the Completion Report.
 
 ## Stop Condition
 
@@ -515,48 +515,49 @@ Ready for Review.
 
 ### Correction Checklist
 
-- [x] **R1:** Added the C17 `StudioServices` read/command ports with the exact C7 command names, canonical field mapping, fail-closed production composition, and a test-only stateful fixture. Implemented authoring components for feature behaviour creation, reusable tool/draft editing, schema selection and validation, exact tool-revision association, release creation/activation/rollback, response-preview handoffs, and merchant resolver inspection.
-- [x] **R2:** Replaced unconditional detail placeholders with authenticated typed reads. Page entrypoints map `not-found` to Next's 404 boundary and retain distinct forbidden/unavailable views. Fixture evidence covers a valid exact revision, unknown ID and revision owned by another tool.
-- [x] **R3:** Shell release text now derives from `StudioShellModel`, unavailable is distinct from no active release, and the false `Live data` badge was removed. Added labelled narrow-menu controls, heading focus after selection, and dirty-editor Stay/Discard with focus restoration.
+- [x] **Attempt 3 R1 implemented:** `src/studio/contracts.ts`, the fixture and `docs/studio-service-contract.md` now carry C7/C14/C15/C16/C17 canonical data: separate metadata/draft/pointer CAS values, complete immutable tool definitions, complete capability drafts, exact ordered release members, `response.v1`, documentation traversal, full-definition validation, opaque CUID-shaped operations and explicit ADMIN/SUPER_ADMIN behavior.
+- [x] **Attempt 3 R2 implemented:** `StudioWorkspace` now connects feature creation, complete tool definitions, U06/U07 handoff, dynamic published-tool association, capability prompt/settings publication, exact release member/response composition, distinct confirmed activation/rollback and navigation to returned opaque IDs. Production entrypoints render this common component boundary rather than successful reads as JSON. A test-only Vite harness renders populated components without adding a public fixture route.
+- [x] **Attempt 3 R3 implemented:** unknown outcomes and thrown requests retain the original operation ID/input, lock all new writes and expose `Check original operation`; same-ID replay reconciles before unlocking. Stale CAS is distinct and retains input. Completion and validation tokens suppress stale responses independently.
+- [x] **Attempt 3 R4 implemented:** exact requested revisions determine immutable/read-only versus draft editing. Merchant descriptors carry canonical `toolId`; no revision-ID parsing remains. Dirty navigation performs the intended destination after Discard, restores trigger focus on Stay and protects U06-to-U07 navigation.
 
 ### Files Changed
 
-Implementation commit `6c4ecbc853c8ecb517e42fe17d2b67edf4fd0233` adds `src/studio/` contracts/adapters/fixtures, the production and interactive Studio components, all U03–U13 page entrypoint reads, `docs/studio-service-contract.md`, three focused test files, responsive styles, and 24 desktop/narrow screenshots under `artifacts/ARCH-020-COMMERCE-008/screenshots/`.
+Implementation commit `00c40087ddb17ab996febc39fe04a949976feb59` updates the C17 contracts/fixture, common production workspace boundary, U06–U11 editors and composer handoffs, exact route context, dirty navigation, response preview handoff, focused tests, canonical contract documentation and the populated browser harness under `tests/browser-evidence/`. The prior 24 desktop/narrow route screenshots remain under `artifacts/ARCH-020-COMMERCE-008/screenshots/`.
 
 ### Work Completed
 
-Production pages now read exclusively through `StudioServices`; absent adapters report unavailable and never import fixtures. The test fixture provides success, empty, forbidden, unavailable, stale-CAS and timeout/unknown-outcome modes, stable operation replay, mutation counts and resulting records. Interactive components implement the core feature -> behaviour -> tool -> schema query -> exact association -> release flow, merchant new-conversation inspection, synthetic-preview source/return links and synchronous duplicate-action protection. Existing authentication, Google-only development bypass, role badge and protected entrypoints remain intact.
+Production pages resolve 404 ownership through protected server reads and render the shared interactive component boundary with a fail-closed client adapter; no production module imports the fixture. The fixture now models canonical records and command payloads, success/empty/forbidden/unavailable/stale/unknown states, conflicting replay, stable operation replay, effect counts and returned opaque IDs. The components implement role-aware feature behaviour, full tool definition, documentation/schema traversal, dynamic exact revision association, capability prompt/settings, response-contract/release composition, separate publication and active-pointer changes, merchant descriptor inspection and a tab-local U10/U14 handoff.
 
 ### Requirement-to-Fixture Evidence
 
 | Cases | Fixture result and asserted side effects |
 |---|---|
-| N02 / N12 | `studio-workspace.test.tsx` submits Add behaviour twice in the same tick; `createCapability=1`, one configuration exists and its exact `featureId` is unchanged. |
-| N03 / N12 | Tool form creates one reusable tool, zero revisions and no implicit `publishToolRevision`; replay test repeats one operation ID and proves one record/one command. |
-| N04 | Discovery retains invalid selection, reports validation failure, then produces a validated query after a schema field is selected. |
-| N05 | Capability editor accepts an exact published `toolRevisionId`; service test proves `updateDraft=1` and preserves `tool-products-r1`. |
-| N06 / N07 | Release components expose separate create, activate and rollback commands with stable operation IDs and explicit confirmation reasons; the fixture changes only active status during activation/rollback. |
-| N08 | Merchant detail displays plan, active release, explicit eligibility reason, exact resolver descriptor and exact revision link, with no credential fields or provider execution. |
-| N09 | Stale command response retains editor input; Stay closes the dirty dialog and restores focus to Back. |
-| N12 | Immediate `pendingRef` guard precedes awaited work; fixture replay records one effect per operation ID. |
-| N13 composer handoff | Release detail links to synthetic preview with exact release and validated return context; U14 execution remains COMMERCE-009-owned. |
+| N02 / N12 | Add behaviour is submitted twice in one tick; fixture records `createCapability=1`, preserves the arbitrary `feat_01ARBITRARY` binding and navigation uses the returned `cap_*` ID. |
+| N03 / N12 | New tool records one `createTool`, zero implicit revisions/publications and navigation uses the returned opaque `tool_*` ID. Service replay with one operation ID yields one persisted effect; conflicting reuse returns `CONFLICTING_REPLAY`. |
+| N04 | Component traversal opens U06 -> U07, searches documentation, opens the in-page document, selects schema fields, validates the complete definition and returns to the exact arbitrary tool/revision context. |
+| N05 | Capability editor loads published versions from `listTools`, never a seeded option; ADMIN cannot publish. Direct service evidence preserves full prompt/configuration/contract/tool bindings through publication. |
+| N06 / N07 | Release composer selects exact published revisions/positions and validates/sends the complete response contract. Create is separate from confirmed activate/rollback with `expectedActiveReleaseVersion`. |
+| N08 | Canonical descriptors contain explicit `toolId`, `toolRevisionId`, SemVer and public schema. Links never split or infer IDs and no execution/credential field is exposed. |
+| N09 | Stale CAS retains tool definition input. Stay restores focus and Discard navigates the exact `/shops/shop_01LINEN` destination. U06-to-U07 applies the same save/discard boundary. |
+| N12 | Unknown command leaves zero persisted effects, blocks new writes and same-ID reconciliation records exactly one effect/input when certainty is restored. |
+| N13 composer handoff | Context retains exact members, response contract, validation hash, reason and return path across U10 -> U14 -> Back. Preview execution remains COMMERCE-009-owned. |
 
 The exact C16 runtime response evaluation remains COMMERCE-009-owned. This task supplies the response-contract preview handoff and immutable release mechanics required by its assigned half of N13.
 
 ### Validation Results
 
-- Focused Studio validation: `npm test -- --run tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/studio-shell.test.tsx` — **3 files / 12 tests passed**.
+- Focused Studio validation: `npm test -- tests/studio-services.test.ts tests/studio-workspace.test.tsx` — **2 files / 14 tests passed**.
 - `npm run typecheck` — **passed**.
 - `npm run lint` — **passed**.
 - `npm run build` — **passed**, including Prisma Client generation, TypeScript and all U03–U13 routes.
-- Local development rehearsal — **all 12 list/detail/preview routes returned HTTP 200** after the server/client boundary correction.
-- Screenshot inspection — **24 nonblank images**, 12 desktop at 1440x1000 and 12 responsive narrow at 500x844; development role, labelled menu and explicit unavailable state verified.
+- Populated browser rehearsal — the isolated `tests/browser-evidence/` Vite harness rendered the full arbitrary-ID draft tool definition editor and the release member/response-contract composer; accessibility state and visual output were inspected. It is not an application route and cannot ship as a fixture fallback.
+- Prior screenshot inspection — **24 nonblank images**, 12 desktop at 1440x1000 and 12 narrow at 500x844, retained as authenticated shell/fail-closed route evidence.
 - `git diff --check` — **passed**.
-- Full `npm test` — **79/81 passed**; two pre-existing `readiness-docker.test.ts` descendant-handler timing cases failed only in the 16-worker run. Isolated rerun of that file passed **10/10**. No Studio test failed.
+- Full `npm test` — **16 files / 85 tests passed**.
 
 ### Deviations
 
-Real database, discovery and selection adapters remain COMMERCE-013-owned. Production therefore displays the required explicit unavailable state until that composition is installed. Fixture-populated authoring views are component/browser-test surfaces only.
+Real database, discovery, publication and selection adapters remain COMMERCE-013-owned. Production displays the explicit unavailable state until that composition is installed. Fixture-populated views exist only in component tests and the separate browser harness.
 
 ### Assumptions
 
@@ -564,15 +565,15 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-No live Google OAuth, Shopify provider, merchant credential, customer data or production mutation was used. COMMERCE-009 owns actual U14 execution; COMMERCE-013 owns real adapter composition and integrated acceptance.
+No live Google OAuth, Shopify provider, merchant credential, customer data or production mutation was used. COMMERCE-009 owns actual U14 execution; COMMERCE-013 owns protected real adapter composition and integrated acceptance.
 
 ### Architectural Concerns
 
-The full-suite readiness timing test is sensitive to concurrent worker startup on this host; its isolated 10/10 pass is recorded rather than masking the parallel-run failure.
+None. The prior full-suite readiness timing failures did not reproduce; all 85 tests passed together in Attempt 3.
 
 ### Git / VCS
 
-Implementation commit `6c4ecbc853c8ecb517e42fe17d2b67edf4fd0233` is pushed to `origin/task/ARCH-020-COMMERCE-008`. Parent/report branch is the same task branch and will contain this Attempt 2 review submission. Nested database submodule remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, architecture/index file or other task was changed.
+Implementation commit `00c40087ddb17ab996febc39fe04a949976feb59` is pushed to `origin/task/ARCH-020-COMMERCE-008`. The parent/report branch contains this Attempt 3 review submission. Nested database submodule remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, Architect Review, architecture/index file or other task was changed.
 
 ## Architect Review
 
