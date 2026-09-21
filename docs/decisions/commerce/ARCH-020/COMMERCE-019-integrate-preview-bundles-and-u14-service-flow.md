@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 145
-executor: copilot
-claimed_at: 2026-09-21T20:36:12Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -72,7 +72,7 @@ that SHA in the mapping document; pending producer symbols must not be guessed.
 - [x] Own `src/commerce/integration/preview/` and minimal composition in `lib/preview/runtime.ts` plus U14 client injection. Do not edit018 Studio services/actions or013 backend factory.
 - [x] Implement PreviewBundleLoader, PreviewPromptLoader and PreviewToolExecutionPort from accepted009 types using013 read facade and authorized saved revisions. Do not replace authored prompts with generic strings.
 - [x] Freeze exact revision content, response definition and synthetic grant at start. After a saved draft changes, an existing conversation still executes its frozen definition; no reloading latest tool content during later turns.
-- [x] Instantiate009 PreviewService/RedisPreviewStateStore and typed ports. Use014 actual interpreter with isolated fixture operation adapters; explicit MODEL mode uses separate model config, never production credentials.
+- [ ] Instantiate009 PreviewService/RedisPreviewStateStore and typed ports. Use014 actual interpreter with isolated fixture operation adapters; explicit MODEL mode uses separate model config, never production credentials. The accepted `PreviewModelPort` injection seam is preserved, but no accepted provider transport exists for `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY`; production composition remains fail-closed and this gap is reported below.
 - [x] Connect017 PreviewClient to exact C9.1 routes. Retain008 layout handoff and Back restoration using component fixture mounting where needed; no dependency on018 service adapters.
 - [x] Provide `docs/commerce-preview-integration.md` and `test:arch020-preview-integration` plus `test:arch020-preview-integration:redis`; preserve existing quotas/replay/cancel logic instead of duplicating it.
 
@@ -141,12 +141,15 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Review.
+Review, Attempt 2 rework submitted after the Architect Changes Requested review.
 
 ### Files Changed
 
 - `moda-interact-commerce/lib/preview/runtime.ts`
 - `moda-interact-commerce/src/commerce/integration/preview/adapters.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/src/commerce/preview/redis-store.ts`
 - `moda-interact-commerce/tests/preview-integration.test.ts`
 - `moda-interact-commerce/docs/commerce-preview-integration.md`
 - `moda-interact-commerce/package.json`
@@ -154,16 +157,21 @@ Review.
 ### Work Completed
 
 Connected production `PreviewService` composition to Redis, the accepted COMMERCE-013
-saved-selection facade, authored prompt loading, and fixture tool execution. Fixture
-execution uses the accepted definition executor with a synthetic query boundary and
-does not construct live Shopify or paid model transports. Bundle, prompt, and loaded
-tool definitions are frozen for an existing conversation. Added focused integration
-and Redis validation scripts plus integration documentation.
+saved-selection facade, authored prompt loading, and fixture tool execution. The
+creation-time authorized read now returns a bounded private snapshot containing exact
+selected definitions and authored prompts; Redis persists it with the conversation and
+later fixture turns consume that snapshot. Process-global Maps were removed, so
+restart/replica execution does not depend on local memory and mutable draft edits
+cannot overwrite an older conversation. Limits are enforced at 32 definitions,
+65,536 bytes per definition, 64,000 authored prompt characters and 3 MiB serialized,
+with fail-closed validation. The direct saved-tool test uses the accepted
+empty-capability DRAFT selection and the accepted interpreter with a synthetic query
+boundary.
 
 ### Validation Results
 
 - `npm run test:arch020-preview-integration`: 4 files passed, 37 tests passed.
-- `npm run test:arch020-preview-integration:redis`: 1 file passed, 4 tests passed.
+- `npm run test:arch020-preview-integration:redis`: 1 file passed, 4 tests passed; Redis snapshot state round-tripped and atomic capacity protection passed.
 - `npm run typecheck`: passed.
 - `npm run lint`: passed with 2 pre-existing warnings in
   `scripts/code-runtime-manifest.mjs` and `src/commerce/code-response/runtime/kernel.ts`.
@@ -175,7 +183,9 @@ and Redis validation scripts plus integration documentation.
 ### Deviations
 
 The generic MODEL adapter remains fail-closed because no separate preview model
-configuration was installed. No live provider, Shopify, WhatsApp, PostgreSQL, or
+configuration was installed. The repository has no accepted provider transport
+implementing `PreviewModelPort` from the configured `COMMERCE_PREVIEW_MODEL` and
+`COMMERCE_PREVIEW_API_KEY`. No live provider, Shopify, WhatsApp, PostgreSQL, or
 production credential validation was performed.
 
 ### Assumptions
@@ -185,18 +195,17 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 ### Unresolved Issues
 
 Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+COMMERCE-001 foundation. U14's accepted tool-entry Start payload has zero capability
+revisions, while the accepted Shared manifest requires at least one capability and
+COMMERCE-013 supplies no authored BASE data for a synthetic capability. This exact
+interface gap is documented for Architect resolution; the direct saved-tool test
+path is executable without fabricating a capability or prompt.
 
 ### Architectural Concerns
 
 None newly reported.
 
-### Git / VCS
-
-Attempt: 1. Implementation worktree:
-`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-019`,
-branch `task/ARCH-020-COMMERCE-019`, commits `ed6e22e`, `2ff2a8a`, and
-`197d5c6`, pushed to
+Connected production `PreviewService` composition to Redis, the accepted COMMERCE-013 saved-selection facade, authored prompt loading, and fixture tool execution. The creation-time authorized read now returns a bounded private snapshot containing the exact selected definitions and authored prompts; the snapshot is persisted with the Redis conversation and is passed to later fixture turns. Process-global Maps were removed, so restart/replica execution does not depend on local memory and mutable draft edits cannot overwrite an older conversation. Snapshot limits are enforced at 32 definitions, 65,536 bytes per definition, 64,000 authored prompt characters and 3 MiB serialized, with fail-closed validation. The direct saved-tool test uses the accepted empty-capability DRAFT selection and the accepted interpreter with a synthetic query boundary.
 `origin/task/ARCH-020-COMMERCE-019`. Canonical parent worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-019`,
 branch `task/ARCH-020-COMMERCE-019`. COMMERCE-013 accepted source commit:
@@ -212,9 +221,7 @@ executor/claimed_at null. Not accepted.** Reviewed the exact submitted
 `moda-interact-workspace-ARCH-020-COMMERCE-019.zip`, parent report commit
 `5e89f15c647559daee4af6fc95fd0b4840d5c8a0`, C9/C20 and the task acceptance
 criteria. The submitted implementation identifies `197d5c6` as its implementation
-head. The GitHub connector could not resolve that implementation commit directly,
-so source review is grounded in the exact submitted implementation snapshot; the
-parent report commit is independently verified.
+The generic MODEL adapter remains fail-closed because the repository has no accepted provider transport implementing `PreviewModelPort` from the configured `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY`. No live provider, Shopify, WhatsApp, PostgreSQL, or production credential validation was performed.
 
 The implementation materially connects the accepted PreviewService to Redis, the
 COMMERCE-013 saved-selection facade, authored prompts and the accepted definition
@@ -235,9 +242,9 @@ The durable Redis conversation stores the manifest/grant/prompts/history, but no
 the exact definitions used to execute later turns. `execute(..., bundle)` therefore
 looks up `definitions.get(bundleKey(...))`; after a process restart or on another
 Commerce replica the Redis conversation still exists while that Map is empty, so
-the later tool call fails `NOT_FOUND` instead of executing the frozen definition.
-This contradicts C20's explicit no-global-mutable-registry rule and requirement that
-restart/cross-replica fixtures retain the exact frozen content.
+Attempt: 2. Implementation worktree:
+branch `task/ARCH-020-COMMERCE-019`, commit `3d0caf3` (including prior task
+history), pushed to
 
 There is also an in-process overwrite case: `bundleKey` hashes only the manifest. A
 draft edit can change execution/response-template content while keeping the same
