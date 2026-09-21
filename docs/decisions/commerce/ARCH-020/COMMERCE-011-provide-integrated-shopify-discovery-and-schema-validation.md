@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 executor: copilot
 claimed_at: 2026-09-21T01:04:35Z
 priority: 85
@@ -129,50 +129,54 @@ Ready for Review.
 
 ### Correction Checklist
 
-- R7-1 implemented: `lib/discovery/document.ts` now parses the supported HTML representation with a tag stack, preserves all readable descendants of the selected complete `main`/`article` container in document order, handles nested same-name containers, excludes active content, and rejects mismatched or unclosed markup. Existing title, content-type, input/output, redirect and deadline bounds remain unchanged.
-- R7-1 evidence implemented: `tests/discovery-document.test.ts` now proves both sibling sections and the final constraint survive extraction, and proves `<main>Incomplete content</article>` is rejected. The parser assumption and selected-container rule are recorded in `docs/shopify-discovery-runtime.md`.
-- R7-2 implemented: `lib/discovery/limits.ts` passes cleanup calls into the bounded helper as thunks, so synchronous `multi()`/release failures are contained. Counter release remains admission-only, client close remains independent, and cleanup cannot replace an operation result or error.
-- R7-2 evidence implemented: `tests/discovery-admission-cleanup.test.ts` now exercises synchronous counter-release failure, preserves the exact original `upstream timeout` error identity, and verifies client close still runs.
-- Preserved: R6-1/R6-2/R6-3 corrections, Storefront 2026-07 artifact SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`, pinned `@shopify/dev-mcp@1.15.4`, and nested database revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- R8-1 implemented: `lib/discovery/document.ts` now stores text and element children in one ordered sequence, preserving inline instructions such as `Use first before second` instead of concatenating parent text ahead of descendants. Existing container, active-content, malformed-markup, URL, redirect, deadline and size behavior remains unchanged.
+- R8-1 evidence implemented: `tests/discovery-document.test.ts` adds the reviewed mixed-content regression and retains the sibling/nested-container and mismatched-container regressions. `docs/shopify-discovery-runtime.md` records the ordered-child parser invariant.
+- Preserved: R7-1/R7-2 and R6-1/R6-2/R6-3 corrections, Storefront 2026-07 artifact SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`, pinned `@shopify/dev-mcp@1.15.4`, and nested database revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
 ### Files Changed
 
 Implementation commit:
 
-- `ae6acb49331068b35828ecf88a59ff5e33bdebe8` (`fix(commerce): preserve document containers and cleanup errors`), pushed to `origin/task/ARCH-020-COMMERCE-011`, on top of `0ac23ea`.
+- `1176412` (`fix(commerce): preserve inline document order`), pushed to `origin/task/ARCH-020-COMMERCE-011`, on top of `ae6acb4`.
 
-Changed files in Attempt 8: `lib/discovery/document.ts`, `lib/discovery/limits.ts`, `tests/discovery-admission-cleanup.test.ts`, `tests/discovery-document.test.ts`, and `docs/shopify-discovery-runtime.md`.
+Changed files in Attempt 9: `lib/discovery/document.ts`, `tests/discovery-document.test.ts`, and `docs/shopify-discovery-runtime.md`.
 
 ### Work Completed
 
-Completed all scoped Attempt 8 corrections within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. C15.1 is implemented without claiming a nonexistent pinned MCP document tool.
+Completed the sole Attempt 8 correction within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. C15.1 remains implemented without claiming a nonexistent pinned MCP document tool.
 
 ### Validation Results
 
-- Passed focused R7 validation: `npm test -- --run tests/discovery-document.test.ts tests/discovery-admission-cleanup.test.ts` (2 files, 19 tests), including nested-container preservation, malformed-container rejection, synchronous cleanup failure, original-error identity, and client close.
-- Passed full `REDIS_URL= npm test -- --no-file-parallelism`: 19 files and 118 tests. No readiness baseline failures occurred with Redis unset.
+- Passed focused R8/compiler validation: `REDIS_URL= npm test -- --run tests/discovery.test.ts tests/discovery-document.test.ts tests/discovery-admission-cleanup.test.ts tests/discovery-limits.test.ts` (4 files, 38 tests).
+- Passed focused correction validation: `npm test -- --run tests/discovery-document.test.ts tests/discovery-admission-cleanup.test.ts` (2 files, 20 tests).
+- Full declared suite `REDIS_URL= npm test -- --no-file-parallelism`: 18 files passed, 1 file failed with 117/119 tests passed. The two failures are the existing `tests/readiness-docker.test.ts` descendant signal-handler timing checks; the pinned MCP compatibility fixture ran during this suite.
+- Configured-endpoint focused Redis check without clearing `REDIS_URL` timed out after 30 seconds in `tests/discovery-limits.test.ts`; this is not live Redis evidence and remains developer-owned infrastructure validation.
 - Passed `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check`.
 - The real pinned compatibility fixture started `shopify-dev-mcp` v1.15.4, initialized/listed tools, called `learn_shopify_api` for Storefront 2026-07 and closed the child without a live store credential. Controlled HTTPS fixtures prove the separate C15.1 full-document path, strict redirects, content representation and bounds.
 - The build generated Prisma Client v6.19.3 from nested database submodule SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
 ### Evidence Matrix
 
-- C14 compiler/schema: `tests/discovery.test.ts`, including the three Attempt 3 semantic regressions, valid ProductDetails, schema traversal and existing C14 boundary controls.
-- C15 process/adapter: `tests/discovery-process.test.ts`, `tests/discovery-document.test.ts`, `tests/fixtures/shopify-dev-mcp/compatibility.json`, `lib/discovery/document.ts`, `lib/discovery/upstream.ts`, and `docs/shopify-discovery-runtime.md`.
-- C15 route/admission: `tests/discovery-route.test.ts`, `tests/discovery-limits.test.ts`, and `tests/discovery-admission-cleanup.test.ts`, including typed GET/POST failures, cleanup on denial/failure, synchronous cleanup containment, and the environment-gated real Redis rolling admission.
-- Offline fallback: local artifact browsing and validation remain independent of documentation availability.
+- C14 compiler/schema: `tests/discovery.test.ts` covers schema selection, ProductDetails compilation, field/variable mapping, response paths, AST/root/bounds rejection and wrong-hash validation.
+- C15 process/adapter: `tests/discovery-process.test.ts`, `tests/discovery-document.test.ts`, `tests/fixtures/shopify-dev-mcp/compatibility.json`, `lib/discovery/document.ts`, `lib/discovery/upstream.ts`, and `docs/shopify-discovery-runtime.md` cover pinned initialize/list/call, full-document extraction, ordered mixed content, complete-container handling, active-content exclusion, strict URL/redirect/content/size bounds and runtime assumptions.
+- C15 route/admission: `tests/discovery-route.test.ts`, `tests/discovery-limits.test.ts`, and `tests/discovery-admission-cleanup.test.ts` cover typed GET/POST errors, denied admission, rolling-limit fixture boundaries, operation-error preservation, synchronous cleanup containment, counter release and client close.
+- U07/N04 traversal: discovery route/service fixtures cover search -> document -> schema field selection -> validation -> draft payload without external navigation or live Shopify credentials.
+- Offline fallback and isolation: local artifact browsing/validation remains independent of documentation availability; compatibility fixtures prove no store/DB/Background/preview credentials are passed to the child.
 
 ### Deviations
 
-The pinned process does not provide a verified document-fetch operation; C15.1 therefore uses the approved official HTTPS adapter for documents and retains MCP for search. The configured Redis endpoint was unresponsive for the real 60/61 check, so that evidence remains pending local infrastructure/developer validation. No live store, OAuth, or deployment validation was run.
+The pinned process does not provide a verified document-fetch operation; C15.1 therefore uses the approved official HTTPS adapter for documents and retains MCP for search. The configured Redis endpoint timed out during the real 60/61 check, so real Redis rolling admission evidence remains pending local infrastructure/developer validation. No live store, OAuth, or deployment validation was run.
 
 ### Unresolved Issues
 
-Deployed OAuth/revocation, real Redis cross-replica saturation, live Shopify calls and deployment health/restart evidence remain developer-owned validation. The local C15.1 document adapter and pinned MCP compatibility evidence are complete.
+Developer-owned validation remains: live Redis 60/61 rolling admission and cross-replica saturation, deployed OAuth/revocation, live Shopify calls, and deployment health/restart evidence. The local C15.1 document adapter and pinned MCP compatibility evidence are complete. Full-suite readiness timing failures remain outside this task's changed files and were not repaired.
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean and pushed at `ae6acb49331068b35828ecf88a59ff5e33bdebe8`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
+Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`; parent branch: `task/ARCH-020-COMMERCE-011`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`; implementation branch: `task/ARCH-020-COMMERCE-011`.
+Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+Start-of-attempt synchronization: parent remote task branch fast-forwarded: not-needed (launcher claim `c3128f40b0dbcb065c83826f2b82e74337c23ed4`); parent `origin/main` incorporated: already-current; implementation remote task branch fast-forwarded: not-needed; implementation `origin/main` incorporated: already-current.
+Implementation worktree is clean and pushed at `1176412`. Parent/report worktree is being updated with this report commit. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Historical Completion Report — through Attempt 3
 
