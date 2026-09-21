@@ -21,7 +21,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-012](COMMERCE-012-add-frequency-based-tool-result-caching.md) | Frequency-based tool-result caching; final implementation feature, readiness checkpoint outstanding | pending | All other ARCH-020 implementation tasks |
 | [ARCH-020-COMMERCE-013](COMMERCE-013-integrate-publication-and-studio-with-real-commerce-services.md) | Integrate publication and Studio with real Commerce services | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-014, ARCH-020-COMMERCE-015, ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017 |
-| [ARCH-020-COMMERCE-014](COMMERCE-014-execute-and-render-pinned-tool-definitions.md) | Execute and render pinned tool definitions | ready | ARCH-020-COMMERCE-004, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-014](COMMERCE-014-execute-and-render-pinned-tool-definitions.md) | Execute and render pinned tool definitions | complete | ARCH-020-COMMERCE-004, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-015](COMMERCE-015-provide-trusted-basket-and-product-policy-adapters.md) | Provide trusted basket and product policy adapters | ready | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | pending | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
@@ -218,3 +218,16 @@ Other downstream tasks remain gated by their own unresolved prerequisites;012 is
 still the final implementation checkpoint. No implementation changes, main merge,
 main push or gitlink update. Architecture is not yet Implemented. This supersedes
 older008 state wording while retaining historical reviews.
+
+## COMMERCE-014 Attempt 1 accepted — 2026-09-21
+
+COMMERCE-014 is **Accepted / Complete, Attempt 1 retained**, claim cleared.
+Reviewed implementation `232cbdd` and report `6dc01a40` against remote task heads.
+Exact-version definition dispatch, Shared mappings/output validation, trusted-context
+separation and bounded one-pass rendering satisfy the owned component contract.
+Independent11 focused tests and diff checks passed. Lint/typecheck/build and wider
+suite results remain submitted evidence.013 owns real adapter registration and
+integrated policy/query execution; live infrastructure/evidence validation remains
+separate. No dependent promotion, new claim, implementation edit, main integration
+or gitlink update.012 remains the final implementation checkpoint; architecture is
+not yet Implemented. Older014 readiness wording is historical.
