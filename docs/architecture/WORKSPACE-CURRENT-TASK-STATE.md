@@ -811,6 +811,18 @@ ARCH-020-COMMERCE-016 is Ready, attempt0, unclaimed. Accepted006/015/SHARED-001
 are Complete in main;006's blank frontmatter ID is repaired to its canonical ID.
 No task is launched and no other task lifecycle state changes in this update.
 
+## COMMERCE-014 Attempt 1 accepted — 2026-09-21
+
+COMMERCE-014 is **Accepted / Complete, Attempt 1 retained**, claim cleared.
+Reviewed implementation `232cbdd` and report `6dc01a40` against remote task heads.
+Exact-version definition dispatch, Shared mappings/output validation, trusted-context
+separation and bounded one-pass rendering satisfy the owned component contract.
+Independent11 focused tests and diff checks passed. Lint/typecheck/build and wider
+suite results remain submitted evidence.013 owns real adapter registration and
+integrated policy/query execution; live infrastructure/evidence validation remains
+separate. No dependent promotion, new claim, implementation edit, main integration
+or gitlink update.012 remains the final implementation checkpoint; architecture is
+not yet Implemented. Older014 readiness wording is historical.
 ## COMMERCE-016 Attempt 1 architect review — 2026-09-21
 
 Changes Requested; Ready, Attempt 1 retained, claim cleared; not accepted.
