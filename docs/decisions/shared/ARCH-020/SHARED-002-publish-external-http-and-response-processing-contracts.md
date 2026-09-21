@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 145
-executor: copilot
-claimed_at: 2026-09-21T18:48:33Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-SHARED-001
@@ -76,7 +76,7 @@ and never expose secrets or raw external response data in errors/logs.
 - [x] Implement C21 sections2/2.1/4 strict shapes and export the named schemas/types, including connection DTOs, JSON/TEXT decoding, visual/JAVASCRIPT processing union, TransformResponse and both processor input/result types. Preserve existing exports.
 - [x] Extend every execution-kind branch explicitly; reject unauthorized inputs/methods/path/query mappings. Retain definition size bound and add processing config to canonical tool hash through execution.
 - [x] Allow publication compiler output-schema derivation for external wrapper/projection; keep MCP/grant/final-response wire shapes unchanged. Add unchanged old-definition/descriptor/runner fixtures.
-- [ ] Update README including complete inventory; publish one new exact package version following normal Shared release workflow and record registry/install verification. Public publication is complete at `@modainteract/moda-interact-shared@0.14.1`; fresh exact-version registry install/typecheck evidence remains to be recorded before this item is complete.
+- [x] Update README including complete inventory; publish one new exact package version following normal Shared release workflow and record registry/install verification. Public publication and fresh exact-version registry install/typecheck evidence are complete for `@modainteract/moda-interact-shared@0.14.1`.
 
 ## Interfaces / Contracts
 
@@ -108,7 +108,7 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 - [x] X01: C21 worked examples parse, unsupported method/body/authority/type/path/oversize fails, old two execution variants still parse unchanged.
 - [x] Projection bounds/filter unions/connection DTOs are strict; malformed processing affects hash; external descriptor contains no origin/auth/execution fields.
-- [ ] Package exports and fresh install/typecheck demonstrate new named APIs; published version and integrity evidence recorded. Publication/integrity are recorded for `0.14.1`; fresh registry-consumer install/typecheck remains outstanding.
+- [x] Package exports and fresh install/typecheck demonstrate new named APIs; published version and integrity evidence recorded for `0.14.1`.
 
 ## Validation
 
@@ -135,6 +135,78 @@ Task authoring on main is the user's documentation exception, not permission for
 implementation on main. Preserve unrelated work and existing task claims.
 
 ## Completion Report
+
+### Status
+
+Ready for Review.
+
+The Attempt 1 corrections and Attempt 2 implementation are complete on the
+mirrored task branches. The implementation head is `b23a7c1da2c2dcfe51c20ebe3e24e7ac6e23f360`
+(`fix(ARCH-020-SHARED-002): harden external contracts`) and the exact corrected
+public package is `@modainteract/moda-interact-shared@0.14.1`. No downstream task
+was launched, no main branch was changed, and the Architect Review sections above
+were preserved.
+
+### Acceptance and implementation evidence
+
+- C21 external GET execution, path, MIME, mapping, bounded scalar, processing,
+  DTO, result-wrapper, compiler compatibility, hashing, and sensitive-descriptor
+  contracts are implemented in the existing Attempt 2 commit.
+- `ExternalHttpResultDataSchema`/`ExternalHttpResultData` and the required
+  processing, transform, connection, and execution contracts are exported from
+  `/commerce`; README/export inventory work is included in `b23a7c1`.
+- The focused suite `npm run test:arch020-external-contracts` passed **4/4**:
+  C21 example and descriptor safety, malformed execution boundaries, strict
+  processing/connection DTOs, and mapped-value/publication-shape validation.
+- `npm run typecheck` passed.
+- `npm run build` passed, including Commerce declaration generation.
+- `npm run validate:commerce-entrypoints` passed against the fresh registry
+  consumer, covering clean-process Commerce and runner imports, manifest schema,
+  scripted `finalResponse`, and retained regressions.
+
+### Fresh registry consumer proof
+
+The fresh consumer was created at:
+`/tmp/arch020-shared002-registry-consumer.Vquude`.
+
+It installed with:
+`npm install --ignore-scripts --no-audit --no-fund --prefer-online --save-exact
+@modainteract/moda-interact-shared@0.14.1 --registry=https://registry.npmjs.org`.
+
+- Runtime import passed for `ExternalHttpResultDataSchema`,
+  `ExternalHttpExecutionSchema`, `ResponseProcessingSchema`, and
+  `commerce/runner`.
+- Strict consumer typecheck passed using the repository TypeScript compiler with
+  `--noEmit --strict --skipLibCheck --module NodeNext --moduleResolution NodeNext
+  --target ES2022`, importing `ExternalHttpExecution`, `ExternalHttpResultData`,
+  `ResponseProcessing`, `TransformResponse`, `VisualResponseProcessorInput`, and
+  `ConnectionView`.
+- `npm view` confirmed public version `0.14.1`, tarball
+  `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.14.1.tgz`,
+  SHA-1 `1809e603c298468cdc4ef4cf7965f978449dc08d`, and integrity
+  `sha512-CbH7qVbBksIXar1M5mImihwPQDi03fG1eXPcN5D55EMSzSZ6HEENSHK+Ksl97I63LtlWShtzMZ7isiYsnPJAfw==`.
+
+### Attempt 4 launcher and VCS evidence
+
+The deterministic launcher prepared Attempt 4 with `prepared_execution: true`,
+`execution_state: claimed`, dependency gate passed for `ARCH-020-SHARED-001`,
+recursive submodule sync/update passed, and no submodule entries. Claim commit
+`77e7f8f9857f14fc124d676f225e1a7ea48f956e` was committed and pushed at
+`2026-09-21T18:48:33Z`.
+
+Canonical workspace:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+
+Parent worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-SHARED-002`
+on `task/ARCH-020-SHARED-002`; implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-SHARED-002`
+on `task/ARCH-020-SHARED-002`. The launcher reused the exact canonical physical
+worktrees and incorporated current `origin/main` without a task-branch merge.
+
+The task is now ready for Architect review with `status: review`,
+`executor: null`, `claimed_at: null`, and `attempt: 4`. No implementation
+gitlink, main branch, or downstream task was changed.
 
 ### Status
 
