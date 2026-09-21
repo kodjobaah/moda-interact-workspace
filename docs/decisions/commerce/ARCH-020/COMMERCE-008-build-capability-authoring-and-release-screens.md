@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 120
 executor: copilot
 claimed_at: 2026-09-21T02:03:58Z
@@ -597,6 +597,83 @@ Validation:
 - `npm test` — 115/117 passed. The two unrelated `tests/readiness-docker.test.ts` descendant-handshake cases timed out before their helper wrote its readiness file; both reproduced when that file ran alone. All 22 Studio/task regressions pass, and the production build passes. No readiness implementation was changed in this task.
 
 No live Google OAuth, Shopify provider, merchant credential, customer data or production mutation was used. COMMERCE-009 still owns preview execution and COMMERCE-013 still owns real service composition. No main branch or Architect Review content was changed.
+
+### Attempt 5 Resubmission — 2026-09-21
+
+**Status: Ready for Review.** Implementation commit
+`558432f2f26890b3e7e44f64abd6ec27c4a50685` is pushed to
+`origin/task/ARCH-020-COMMERCE-008`. This attempt addresses every mandatory
+Attempt 4 correction without changing Shared, Database, COMMERCE-013 or the
+Architect Review.
+
+#### Correction checklist
+
+- [x] **A4-R1 — full query structure:** `StudioWorkspace` now parses and
+  structure-merges selected schema paths into the existing GraphQL AST. It
+  preserves existing operation names, aliases, arguments, variables, nesting,
+  result semantics and unrelated selections instead of rebuilding a hard-coded
+  ProductDetails query. The deterministic schema fixture includes the nested
+  `product.priceRange.minVariantPrice.amount` path and validates parsed field
+  paths plus the required product handle mapping; an unsupported sibling is
+  rejected and does not enable Use in tool.
+- [x] **A4-R2 — record identity reset:** tool and capability editors are keyed
+  by record ID plus resolved selected revision ID, including default draft
+  selection. Route-identity load gating prevents stale page/detail data from
+  rendering during transitions. A same-mounted two-record fixture asserts
+  heading, description, target revision ID and edit version belong to record two.
+- [x] **A4-R3 — admitted replay revision:** unknown commands retain the original
+  operation ID, closure/input and admitted content revision through
+  reconciliation. A newer edit remains dirty after the original operation
+  succeeds; the fixture asserts the discard guard remains available.
+
+#### Files changed
+
+- `components/studio-workspace.tsx`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/studio-services.test.ts`
+- `tests/studio-workspace.test.tsx`
+
+#### Requirement-to-fixture matrix
+
+| Correction / case | Fixture and asserted side effects | Result |
+|---|---|---|
+| A4-R1 nested discovery | `preserves nested query structure and mappings during discovery` selects `product.priceRange.minVariantPrice.amount`, validates, returns U07 -> U06, and asserts the nested query, preserved handle mapping and result path. | Pass |
+| A4-R1 invalid sibling | `supports documentation, schema browse and full-definition validation` submits `unknownField` under the nested path and asserts `UNKNOWN_FIELD`, `valid: false`. | Pass |
+| A4-R2 identity switch | `resets editor state when a mounted detail changes to another record` switches from `tool_01GLOBAL/toolrev_FIRST` to `tool_02SECOND/toolrev_SECOND`, asserts `SECOND CONTENT`, then asserts `updateToolDraft.toolRevisionId=toolrev_SECOND`. | Pass |
+| A4-R3 unknown replay | `keeps newer editor content dirty after unknown save reconciliation` saves in timeout mode, edits newer text, reconciles the same operation ID, and asserts one effect plus the dirty discard dialog and newer input. | Pass |
+| Duplicate protection / replay | Existing connected suite asserts double form submission creates one capability; service fixture asserts same-ID replay creates one effect and conflicting command reuse returns `CONFLICTING_REPLAY`. | Pass |
+
+#### Validation results
+
+- `npm test -- --run tests/studio-services.test.ts tests/studio-shell.test.tsx tests/studio-workspace.test.tsx` — **3 files / 25 tests passed**.
+- `npm run lint` — **passed**.
+- `npm run typecheck` — **passed** (`next typegen` and `tsc --noEmit`).
+- `npm run build` — **passed**, including Prisma Client generation and all
+  Studio routes U03–U13.
+- `git diff --check` — **passed**.
+- `npm test` — **24 files / 194 passed / 1 failed**. The remaining failure is
+  the Redis-gated `tests/discovery-limits.test.ts` 30-second timeout. The two
+  previously documented `tests/readiness-docker.test.ts` descendant
+  signal-handler timing cases passed in this current run. No readiness or
+  discovery-limits implementation was changed here; all 25 Commerce-008
+  focused tests pass.
+
+#### Worktree and dependency evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-008`, branch `task/ARCH-020-COMMERCE-008`, clean after commit and pushed at `558432f2f26890b3e7e44f64abd6ec27c4a50685`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-008`, same mirrored branch, claimed Attempt 5 from parent claim `bcdcf12452681b91ab6d7e85aeaa02a7096b0ad8`.
+- The implementation worktree consumed the existing declared `graphql@16.11.0`
+  dependency; `npm install --ignore-scripts` restored missing prepared-worktree
+  modules without changing package metadata. Nested Database remains at its
+  recorded submodule revision; no schema or migration was changed.
+
+#### Developer-owned live validation
+
+Live Google OAuth, Shopify discovery/provider calls, merchant credentials,
+production database/adapters, deployment/readiness infrastructure and the real
+U14 preview round trip remain explicitly developer-owned or COMMERCE-009/
+COMMERCE-013 scope. This attempt reports deterministic fixtures only and makes
+no live-provider or deployment claim.
 
 ## Architect Review
 
