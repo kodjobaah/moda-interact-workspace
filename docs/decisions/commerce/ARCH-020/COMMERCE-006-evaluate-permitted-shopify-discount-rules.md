@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 100
-executor: copilot
-claimed_at: 2026-09-21T01:10:17Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -97,11 +97,11 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] D01: NONE lists none; FIXED permits only its offer; AI listing is bounded and discloses truncation; wrong tenant/offer yields zero provider calls.
-- [ ] D02: provider fixtures map percentage/fixed/all/product/variant/collection/minimum/date fields to the exact C19 DTO; incomplete fields never become defaults claiming support.
-- [ ] D03: unsupported app/Function/BXGY/shipping/combination restrictions remain UNSUPPORTED; unverified customer/usage facts remain UNKNOWN.
-- [ ] D04: missing scopes, provider outage, stale catalogue and pagination/retry ceilings return bounded errors; semantic fingerprint excludes observation timestamps.
-- [ ] D05: every supported normalization profile has cited pinned provider-schema evidence; unproven allocation/rounding becomes UNSUPPORTED, not a guessed formula.
+- [x] D01: NONE lists none; FIXED permits only its offer; AI listing is bounded and discloses truncation; wrong tenant/offer yields zero provider calls.
+- [x] D02: provider fixtures map percentage/fixed/all/product/variant/collection/minimum/date fields to the exact C19 DTO; incomplete fields never become defaults claiming support.
+- [x] D03: unsupported app/Function/BXGY/shipping/combination restrictions remain UNSUPPORTED; unverified customer/usage facts remain UNKNOWN.
+- [x] D04: missing scopes, provider outage, stale catalogue and pagination/retry ceilings return bounded errors; semantic fingerprint excludes observation timestamps.
+- [x] D05: every supported normalization profile has cited pinned provider-schema evidence; unproven allocation/rounding becomes UNSUPPORTED, not a guessed formula.
 
 ## Validation
 
@@ -127,7 +127,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review. Attempt 1 implementation and agent-owned validation are complete.
+Ready for Review. Attempt 2 corrections and agent-owned validation are complete.
 
 ### Files Changed
 
@@ -211,6 +211,46 @@ the Commerce remote after the Git helper reported the prepared local upstream
 was `origin/main`. Parent report commits: `536484d0` and the final evidence
 update `01f0532e`, pushed to `origin/task/ARCH-020-COMMERCE-006`. No parent service gitlink,
 architecture/index file, or `main` branch was updated.
+
+### Attempt 2 Correction Report
+
+#### Correction Checklist
+
+- R1 implemented: `read` authorizes NONE/FIXED/AI explicitly; AI reads are permitted, FIXED results are identity-checked, and inconsistent provider identities fail closed.
+- R2 implemented: list and fixed-ID Shopify documents are distinct; the list query no longer passes `ids`, `DiscountAmount` selects nested `MoneyV2`, product-variant fields are selected, and Shopify percentage fractions convert to C19 percentage units. Static assertions and the support matrix document the boundary; unproven allocation/rounding remains unsupported.
+- R3 implemented: raw facts require explicit status/minimum/restriction completeness, canonical money/currency/integer/boolean values, complete targets capped at 1000 IDs, and offer reason codes capped at 16 before support can be `SUPPORTED`.
+- R4 implemented: typed budget/provider codes are preserved, reservation failures return bounded errors, cancellation is propagated, and pagination metadata determines truncation for short pages and terminal boundaries.
+
+#### Files Changed
+
+- `src/commerce/discounts/reader/reader.ts`
+- `src/commerce/discounts/reader/types.ts`
+- `tests/discount-reader.test.ts`
+- `docs/discount-support-matrix.md`
+
+#### Validation Results
+
+| Case | Fixture/test | Command | Result |
+| --- | --- | --- | --- |
+| R1 policy and identity | `allows AI reads and rejects an inconsistent fixed provider response` | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | Passed; AI read succeeds, inconsistent fixed identity is `UNAVAILABLE`, and the provider is called once. |
+| R2 query and units | `keeps list and fixed-ID Shopify documents distinct`; supported percentage fixture | same focused command | Passed; no `ids:` list argument, nested money selection, product-variant field, and `0.1 -> 10` mapping are asserted. |
+| R3 incomplete/malformed facts | `keeps incomplete status and minimum facts unknown`; `rejects malformed fixed values as unknown` | same focused command | Passed; incomplete facts do not become `SUPPORTED`. |
+| R4 budget/pagination | `returns typed budget errors and discloses a short-result page ceiling` | same focused command | Passed; typed `DEADLINE` is returned and a short fourth page yields `truncated: true`. |
+| Focused suite | reader plus auth tests | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | 2 files, 18 tests passed. |
+| Full suite | all repository tests | `npm test` | 15 files, 111 tests passed. |
+| Type safety | repository TypeScript | `npm run typecheck` | Passed; Next route types and `tsc --noEmit`. |
+| Lint | repository ESLint | `npm run lint` | Passed. |
+| Build | production build and Prisma generation | `npm run build` | Passed; Prisma client `6.19.3` generated and Next webpack build completed. |
+| Diff hygiene | implementation diff | `git diff --check` | Passed. |
+
+#### Database / Worktree Evidence
+
+- Accepted database revision: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-006`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-006`.
+- Implementation branch: `task/ARCH-020-COMMERCE-006`; implementation commit: `724875d` (`fix(commerce): enforce discount rule evidence boundaries`), pushed to `origin/task/ARCH-020-COMMERCE-006`.
+- Database submodule remained pinned at the accepted revision; no parent service gitlink was changed.
+- Developer-owned pending validation: approved live/pre-production Shopify Admin API check against a test shop using the pinned 2026-07 schema and granted scopes. No credentials or live endpoints were inspected or used by the agent.
 
 ## Architect Review
 
