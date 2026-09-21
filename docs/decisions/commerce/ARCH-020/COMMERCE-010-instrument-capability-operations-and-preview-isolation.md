@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 140
 executor: null
 claimed_at: null
@@ -204,6 +204,40 @@ Expected execution branch: `task/ARCH-020-COMMERCE-010`.
 - No main branch integration, merge, parent service gitlink update, or hosted validation was performed.
 
 ## Architect Review
+
+### Attempt 1 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `7a88d721d2b9c9a912b0886e2dc4544466205e38` and parent report `41d662e20815d4629d4824027de46746e3fda6aa` (including the local completion-checkbox follow-up to pushed report `baae4d96`). Decision: **Changes Requested; Ready, Attempt 1; executor and claim null**. No acceptance, implementation change, or main integration. Corrections concern observable functionality, not exhaustive test coverage.
+
+#### A1-R1 — Emit the actual MCP request signal
+
+`src/commerce/observability.ts` defines `request()`, but production source never calls it. `src/commerce/mcp/service.ts` only parses trace context; neither successful manifest/tool calls nor denied/revoked/unavailable requests emit the documented terminal request event. Consequently the documented request denominator, operational-failure numerator and provider-attempt counts do not exist at the service boundary.
+
+Add a telemetry dependency at the MCP service boundary and emit exactly one bounded terminal record for each logical request, including early rejection and error paths. Capture the final semantic outcome rather than assuming HTTP 200 means success. Preserve expected DENIED, REVOKED and INVALID_INPUT as non-operational outcomes. Populate logical-call and provider-attempt counts from their real owners; do not infer attempts from spans or emit a second generic HTTP metric. Make the dependency usable by the backend composition owner without requiring this task to complete COMMERCE-013. Verify actual manifest/tool success, expected denial and operational failure using a local sink; assert cardinality and counts, rather than invoking `telemetry.request()` directly.
+
+#### A1-R2 — Correct stage cardinality and failure classification
+
+In `src/commerce/execution/executor.ts`, a thrown provider error emits an execution outcome in the catch and again after it. Render outcome is inferred from the returned business result's ERROR status, so successfully rendering an unavailable fallback is reported as a renderer failure. In `lib/discovery/service.ts`, search emits SUCCEEDED before validating returned titles/URLs; rejected provider output then emits UNAVAILABLE as well. Invalid search/document input is also classified as upstream unavailability. In `src/commerce/publication/lifecycle.ts`, command validation and first authorization run outside the telemetry catch, while an authorization failure inside the transaction is mapped to ERROR.
+
+Move terminal emission after validation/final classification and emit once per performed stage/operation. Distinguish successful fallback rendering from actual rendering failure. Keep invalid input and expected authorization failures out of operational failures, including early publication rejection. Preserve original return values, thrown domain errors and transaction behavior. Add focused service-level regressions for a thrown executor provider failure, invalid discovery output/input, and early publication denial; no broad coverage expansion is requested.
+
+#### A1-R3 — Carry correlation and purpose through real boundaries
+
+MCP passes parsed trace IDs into the executor, but `src/commerce/query/index.ts` constructs the provider request with only content-type and no propagated trace context; there is no local Background-to-MCP-to-provider continuity fixture. The eligibility adapter drops trace fields and defaults environment to development, while executor/evaluator hard-code purpose live. `PreviewService.log()` only emits COMPLETED/CANCELLED/UNKNOWN, leaving the promised DENIED preview signal without an emission path.
+
+Carry a trusted execution telemetry context (environment, purpose, correlation) through query and policy adapters and their transport boundary, reusing existing framework/shared tracing when available. Preserve preview purpose through reused execution/evaluation paths; do not label preview work live. Emit a bounded preview denial at its actual decision boundary without double-counting a run terminal. Demonstrate an incoming traceparent reaching a synthetic provider boundary and a preview execution retaining preview purpose/environment in its domain records. This requires local fixtures, not hosted credentials or a new exporter.
+
+#### A1-R4 — Make the evidence and inventory match implementation
+
+`tests/observability.test.ts` exercises emitter methods directly; its throwing-logger test does not execute a tool or publication. The inventory nevertheless marks service-level sink isolation and other integrated requirements PASS. Correct the report/checklists and `docs/observability-commerce.md` to distinguish emitted service signals from helper-only samples and pending composition/deployment evidence. List actual available framework/shared signals (or explicitly state what was inspected and absent), and identify the concrete evidence-refresh owner/signal and its success/failure/count semantics instead of “when available.” Supply the required local refresh-failure sample from the owning boundary without modifying another repository.
+
+Use a small local fixture that passes sensitive markers through real tool/publication inputs and a throwing sink, confirming unchanged business results/commit behavior and absence of sensitive data in captured records. This is bounded evidence for the task's explicit isolation contract, not a request for exhaustive tests. Hosted arrival remains developer-owned.
+
+#### Validation and scope
+
+Architect reran `npm test -- tests/mcp-service.test.ts tests/definition-execution.test.ts tests/observability.test.ts`: **23/23 passed**. Source inspection confirms the missing request caller, missing provider trace propagation, hard-coded purpose and incorrect outcome paths. Temporary harness `/tmp/c010-a1-review/review.test.ts` (using the repository server-only alias) ran two service-level assertions: **both failed**, confirming two execution records for one thrown provider error and `[SUCCEEDED, UNAVAILABLE]` for rejected discovery output. The harness imports the submitted services; no implementation files were edited. Existing reported repository-wide typecheck/full-suite baseline failures are not reasons for this decision. No dependent is promoted until COMMERCE-010 is accepted. Preserve developer-owned live validation and the final manual system-test gate.
+
+### Original pending review placeholder (historical)
 
 ### Review Status
 

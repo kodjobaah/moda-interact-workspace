@@ -370,3 +370,16 @@ COMMERCE-013; final/deployment/system gates remain. No implementation change,
 main integration or gitlink update. This supersedes older COMMERCE-007 current-state wording;
 other task decisions remain unchanged. Architecture is not yet Implemented and
 COMMERCE-012 remains the final implementation checkpoint.
+
+
+### COMMERCE-010 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1; executor/claim null.** Reviewed implementation
+`7a88d72` and parent report `41d662e2`. A1-R1–R4 in the canonical task's Architect
+Review specify actual MCP terminal events/counts, single and correctly classified
+stage outcomes, provider correlation/preview-purpose propagation, and accurate
+service-level isolation/refresh evidence. Existing focused suites: 23 passed;
+two independent functional reproductions failed (duplicate execution and premature
+discovery success). Baseline repository-wide failures do not drive this decision.
+COMMERCE-010 is not accepted; no dependent is promoted. Hosted validation remains
+developer-owned; the final manual system-test gate is unchanged.
