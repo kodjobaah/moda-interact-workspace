@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -335,6 +335,48 @@ Architecture review is pending; no downstream task was launched. The task is
 ready for `moda_architect` review.
 
 ## Architect Review
+
+### Attempt 4 — Accepted (2026-09-21)
+
+Reviewer: moda_architect. Reviewed the exact submitted Attempt 4 snapshot for
+implementation `f22e2d6` and parent report `4069f60c`. **Accepted; Complete,
+Attempt 4 retained; executor/claimed_at null.**
+
+A3-R1 is resolved. The focused supervisor scenario now enters actual QuickJS
+execution, observes the host-only `started` event, remains active in a
+catastrophic regular-expression built-in, and terminates through the production
+2,000 ms supervisor with the kernel result `DEADLINE`. `runWorker(...)` awaits
+`worker.terminate()` before resolving; the same kernel then completes an ordinary
+transform, proving termination cleanup and capacity reuse. The production limits
+were not loosened to manufacture this result.
+
+A3-R2 is resolved. `compile()` now takes the QuickJS `compileOnly` path before the
+run validator/source-execution path is constructed. The committed regression
+accepts a syntactically valid top-level `throw` without executing it, while
+malformed source still returns bounded `SYNTAX_ERROR`; caller cancellation and
+expired deadlines remain covered by the existing kernel path. Attempt 3's
+accepted-in-substance descriptor/`toJSON` isolation and packaged-worker behavior
+remain intact.
+
+Functional review was intentionally bounded to the task contract rather than an
+exhaustive test quota. Static inspection confirms the two requested behaviors and
+`node --check` passes `worker.mjs`, `code-runtime-manifest.mjs` and
+`code-runtime-packaged-smoke.mjs`. The submitted focused runtime proof is 10/10;
+package/smoke, the 64 MiB WASM ceiling probe, lint, typecheck, production build and
+`git diff --check` are reported passing. The archive does not contain
+`node_modules`, so those dependency-backed commands were not redundantly rerun in
+the review container.
+
+Architecture conformance: SB01-SB03 and the C21 section 9.4 reusable kernel
+contract are satisfied for this component. No live provider, credential, DNS,
+WhatsApp, PostgreSQL, deployment or assembled cross-service behavior is accepted
+by this task; those remain with their assigned integration/system owners.
+
+Dependency/frontier result: `ARCH-020-COMMERCE-029` is Complete.
+`ARCH-020-COMMERCE-026` remains Pending because its other prerequisite,
+`ARCH-020-SHARED-002`, is still Ready rather than Complete. `GATEWAY-003`,
+`COMMERCE-012` and later system validation therefore remain gated. No downstream
+task is launched automatically.
 
 ### Attempt 3 — Changes Requested (2026-09-21)
 

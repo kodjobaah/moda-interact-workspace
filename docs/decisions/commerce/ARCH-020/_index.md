@@ -36,7 +36,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | pending | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | pending | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | pending | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | ready | ARCH-020-COMMERCE-001 |
+| [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | pending | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002 |
@@ -576,3 +576,18 @@ passing scenario and one timeout; developer-owned adapter validation remains pen
 COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
+
+## COMMERCE-029 Attempt 4 architect acceptance — 2026-09-21
+
+**Accepted / Complete, Attempt 4 retained; executor/claim null.** Reviewed
+implementation `f22e2d6` and report `4069f60c`. Compile validation now uses the
+QuickJS compile-only path and does not execute valid top-level side effects; the
+real supervisor proof observes execution start, returns `DEADLINE`, awaits worker
+termination and recovers for a following transform. Attempt 3's output-isolation
+and packaged-runtime corrections are preserved. Submitted focused proof: 10/10;
+package/smoke, 64 MiB WASM ceiling, lint, typecheck, build and diff checks pass.
+
+No dependent is promoted by this acceptance alone: COMMERCE-026 still awaits
+SHARED-002, which remains Ready rather than Complete. GATEWAY-003, COMMERCE-012
+and system validation retain their remaining dependency gates. No automatic task
+launch, implementation/main merge or service gitlink update.

@@ -1526,3 +1526,15 @@ passing scenario and one timeout; developer-owned adapter validation remains pen
 COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
+
+## COMMERCE-029 Attempt 4 accepted — 2026-09-21
+
+ARCH-020-COMMERCE-029 is **Accepted / Complete, Attempt 4**. Reviewed implementation
+`f22e2d6` and report `4069f60c`: the reusable C21 sandbox kernel now validates syntax
+through QuickJS compile-only evaluation without running authored top-level code, and
+demonstrates real supervisor termination/recovery with `DEADLINE`. Existing packaged
+artifact, isolation, serialization and fixed-memory evidence is preserved.
+
+No dependent task is newly Ready: COMMERCE-026 still awaits SHARED-002. GATEWAY-003,
+COMMERCE-012 and system validation keep their remaining gates. ARCH-020 remains In
+Progress and no task is launched automatically.

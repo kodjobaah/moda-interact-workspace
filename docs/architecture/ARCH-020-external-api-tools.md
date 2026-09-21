@@ -707,8 +707,9 @@ This section supersedes earlier combined020/024/026 ownership, not the behavior,
 schemas or limits above. It responds to COMMERCE-013's six review cycles: production
 assembly hid missing implementations, passing suites missed positive flows and
 local corrections broke adjacent allowed/denied cases. No active013 scope is changed.
-New tasks028–032 are unclaimed.029 is Ready from accepted001 and independent of
-Shared. All other new dependent tasks stay Pending until their prerequisites pass.
+New tasks028–032 are unclaimed.029 is architect-accepted Complete at Attempt 4.
+All other new dependent tasks stay Pending until their prerequisites pass; in
+particular026 still awaits SHARED-002.
 
 ### 9.1. Exact producer ownership
 
@@ -908,3 +909,19 @@ current `compile()` path executes authored top-level source before reporting com
 success/failure. Exact A3-R1/A3-R2 corrections are in the task Architect Review.
 No exhaustive coverage expansion, live validation, main integration or dependent
 promotion. COMMERCE-026 remains Pending; the next claim is Attempt 4.
+
+## COMMERCE-029 Attempt 4 architect acceptance — 2026-09-21
+
+**Accepted / Complete, Attempt 4 retained; executor/claim null.** Implementation
+`f22e2d6`, report `4069f60c`. The reusable C21 section 9.4 kernel now performs
+non-executing QuickJS compile-only validation and demonstrates actual host-supervisor
+termination of an already-started built-in with `DEADLINE`, awaited worker cleanup
+and successful post-termination reuse. The descriptor/serialization isolation,
+packaged artifact smoke and fixed 64 MiB WASM ceiling evidence from earlier attempts
+remain intact. Focused runtime proof is 10/10; submitted package/smoke, lint,
+typecheck, production build and diff checks pass.
+
+This accepts SB01-SB03 for the bounded runtime component only. COMMERCE-026 remains
+Pending until SHARED-002 is Complete; GATEWAY-003, COMMERCE-012 and system-test
+validation remain gated. No live provider/deployment behavior or downstream launch
+is implied.
