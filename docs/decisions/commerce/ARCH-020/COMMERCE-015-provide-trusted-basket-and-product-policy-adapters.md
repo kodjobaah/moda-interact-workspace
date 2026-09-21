@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 95
-executor: copilot
-claimed_at: 2026-09-21T01:35:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -128,16 +128,17 @@ Ready for Review.
 
 ### Files Changed
 
-- `moda-interact-commerce/src/commerce/products/index.ts`: trusted recovery basket normalization, bounded Shopify product search, HMAC-bound cursors, ProductFactsPort, policy descriptors and fail-closed injected provider/authorization boundaries.
-- `moda-interact-commerce/tests/products-policy.test.ts`: deterministic fixtures for supported/malformed baskets, authorization/recovery/provider failures, filtering, cursor tenant binding, variant completeness, bounds and cancellation.
+- `src/commerce/products/index.ts`: schema-shaped pinned Admin GraphQL policy adapters, recovery normalization, signed lossless cursors, ProductFactsPort collection reads, cancellation/error mapping and immutable C19 descriptors.
+- `tests/products-policy.test.ts`: raw Shopify fixtures and focused R1-R5 regressions with measured provider calls and zero-I/O denial cases.
 
 ### Work Completed
 
-- Implemented `recovery.getBasket` and `shopify.searchProducts` adapters using the canonical Shared Commerce schemas and `commerce.v1` result union.
-- Normalized supported array and `{lineItems}` recovery snapshots; omitted source fields remain explicit `unknownFields`, zero-line snapshots return `NOT_FOUND`, and no discount arithmetic or basket mutation is performed.
-- Added bounded read-only provider requests: 20 variants/request, 3 search pages, shared injected request budget, deadline/cancellation checks, 103 unique variant IDs, 1000 collection IDs/variant, decimal maximum-price filtering, availability/market/currency filtering and HTTPS verified-shop URLs.
-- Added cursor integrity/expiry/tenant/query binding and stable variant ordering/completeness results.
-- Added immutable descriptors for the two owned C19 policy operations; production construction requires injected adapters and never installs fixtures.
+- R1 implemented with static 2026-07 Admin GraphQL `productVariants`, `nodes`, and bounded collection documents; raw response schemas map variant/product identity, price, availability, shop currency, safe URLs and collection edges, while missing facts fail closed.
+- R2 implemented with authorization before every recovery/facts/provider path, pre/post async deadline and signal checks, shared budget reservation before I/O, typed THROTTLED/DEADLINE/UNAVAILABLE mapping and no fallback.
+- R3 implemented with one variant per provider edge, consumed-edge signed continuation cursors bound to shop/query/price/availability/market/currency/expiry, three pages per invocation and deterministic duplicate suppression.
+- R4 implemented with exact `execute({context,input})`, canonical Shared input/output validation, invalid-input zero-I/O behavior and frozen operation descriptors.
+- R5 implemented with explicit null/omitted basket unknown fields, source currency preservation, authorized empty-snapshot handling and corrected evidence claims.
+- No discount arithmetic, cart/order mutation, live provider call or database schema change was added.
 
 ### Validation Results
 
@@ -145,14 +146,15 @@ Agent-executed validation:
 
 | Requirement | Fixture / expected side effect | Command | Result |
 |---|---|---|---|
-| B01 basket source normalization | Array and `{lineItems}` shapes; omitted facts stay unknown; zero lines are not free | `npm test -- tests/products-policy.test.ts` | **7 passed** |
-| B02 product filtering and cursor safety | Decimal price, availability, currency, verified URL, cross-shop/tampered cursor | `npm test -- tests/products-policy.test.ts` | **7 passed** |
-| B03 current variant facts | Missing variant, stable `variantId` ordering, explicit completeness/collection bounds | `npm test -- tests/products-policy.test.ts` | **7 passed** |
-| B04 tenant/auth/bounds/fail closed | Denied/throwing auth, recovery/provider errors, cancellation, 20/3/12/103 bounds and zero provider calls on invalid input | `npm test -- tests/products-policy.test.ts` | **7 passed** |
+| B01 / R5 | Array and `{lineItems}` snapshots; null/omitted product, variant, quantity and price evidence; known decimal zero remains known; authorized empty snapshot is `NOT_FOUND` | `npm test -- tests/products-policy.test.ts` | **9 passed** |
+| B02 / R1 / R3 | Raw ProductVariant filtering, legal request shape, decimal price, availability, currency, safe URL, consumed-edge continuation and cursor tamper/shop/context binding | `npm test -- tests/products-policy.test.ts` | **9 passed** |
+| B03 / R1 / R2 | Raw `nodes` facts, missing variant, stable ordering, nested collection completion and denied facts with zero provider calls | `npm test -- tests/products-policy.test.ts` | **9 passed** |
+| B04 / R2 / R3 | Late cancellation, typed throttle, 3-page cap, shared 12-request cap, invalid C19 input and measured provider calls | `npm test -- tests/products-policy.test.ts` | **9 passed** |
+| R4 registry | Both descriptors invoked with `{context,input}`, malformed basket input rejected without I/O, descriptor array frozen | `npm test -- tests/products-policy.test.ts` | **9 passed** |
 | Repository lint and whitespace | Scoped source/test lint and patch whitespace | `npm run lint`; `git diff --check` | **Passed** |
-| Production compilation | Prisma generation and Next production build | `npm run build` | **Passed** |
-| Full Commerce tests | Existing repository regression suite | `npm test` | **98 passed, 2 pre-existing failures** in `auth-development-identity.test.ts` from `Prisma.sql is not a function` |
-| TypeScript diagnostics | Full declared typecheck | `npm run typecheck` | **Blocked by the same pre-existing Prisma client baseline**: 5 errors in `lib/auth/development-platform-admin.ts` and `lib/server/connections.ts`; no Commerce-015 diagnostics remain |
+| Production compilation | Prisma generation completed; Next production build | `npm run build` | **Blocked by baseline**: `graphql` cannot resolve in `lib/discovery/compiler.ts` and `lib/discovery/schema.ts` |
+| Full Commerce tests | Existing repository regression suite | `npm test` | **110 passed, 4 unrelated baseline failures**: 3 discovery failures including missing `graphql`/pinned MCP command, Redis discovery-limits timeout, and 2 readiness-docker descendant cancellation failures |
+| TypeScript diagnostics | Full declared typecheck | `npm run typecheck` | **Blocked by baseline**: 11 existing `lib/discovery/compiler.ts`/`schema.ts` errors caused by unresolved `graphql`; no Commerce-015 diagnostics remain |
 
 Developer validation required:
 
@@ -161,7 +163,7 @@ Developer validation required:
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+Attempt 2 executed from the prepared launcher packet after the Attempt 1 Changes Requested review. All R1-R5 corrections were implemented in Commerce-owned files only. Normal execution policy remains unchanged.
 
 ### Assumptions
 
@@ -169,8 +171,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+No unresolved implementation issue. Build/typecheck/full-suite baseline failures are outside the changed Commerce-015 files and are recorded above. Live Shopify/database/container/system evidence remains developer-owned and pending.
 
 ### Architectural Concerns
 
@@ -178,7 +179,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: `task/ARCH-020-COMMERCE-015`. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-015`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-015`. Both branches are mirrored and will be committed/pushed for review. The nested database submodule pin is unchanged. No parent service gitlink, main branch, Architect Review text or enabled task was modified.
+Implementation commit: `8793bc2393b60dc7d323b6ab4615160ea777d30f`, pushed to `origin/task/ARCH-020-COMMERCE-015`. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-015`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-015`. Both physical worktrees are clean on mirrored `task/ARCH-020-COMMERCE-015` branches. Nested database submodule is clean and pinned at accepted revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink, main branch, Architect Review text or enabled task was modified.
 
 ## Architect Review
 
