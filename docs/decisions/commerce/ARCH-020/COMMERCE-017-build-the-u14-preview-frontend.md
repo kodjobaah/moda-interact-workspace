@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 135
 executor: null
 claimed_at: null
@@ -644,6 +644,25 @@ were not contacted. No auth bypass, production fixture substitution or live
 credential was introduced.
 
 ## Architect Review
+
+### Accepted — Attempt 7 — 2026-09-21
+
+**Current decision: Accepted / Complete. Attempt 7 retained; executor/claimed_at null.** Reviewed implementation `c6da2f2bbb16d28aa469f4ed7d08d42a1d91f6e1` and parent report `e6c16617b1bb2dc22d1b36bc1f061661837a2494`, matching their remote task heads. Both dedicated worktrees were clean. This acceptance supersedes earlier Changes Requested current-state wording; earlier reports and findings remain historical evidence.
+
+**A6-R1 is resolved.** The live `isToolSourceLocked()` predicate includes conversation identity, unresolved creation payload, creation admission, tool operation and tool reconciliation. `selectTool` reads that predicate synchronously, and both tool selectors share its lock. Pending and uncertain creation retain the original tool revision and request payload; reconciliation reuses the same conversation ID. Confirmed Reset or definitive failure releases selection through the established lifecycle. Source changes cannot silently replace the tool in the unresolved request.
+
+Independent validation:
+
+- Current UI/client suite: **23/23 passed**, including 19 screen regressions.
+- Exact Attempt 6 conversation-source reproduction: **1/1 passed** in `/tmp/c017-a6-review`.
+- Earlier architect reproductions: **14/14 passed** across `/tmp/c017-a5-review`, `/tmp/c017-a4-review` and `/tmp/c017-a3-review`.
+- Source review verifies the requested synchronous predicate/handler and both controls. The prior draft/saved source selection, same-ID uncertainty handling, reset/cancellation fixes, canonical input validation and obsolete-code removal remain present.
+- Diff check passed. The submitted 60-test preview contract suite, typecheck, lint and production build are reported evidence; not independently rerun in full during this review.
+
+No additional blocking functional finding was identified in this scoped review. This is acceptance of COMMERCE-017's fixture-validated U14 frontend component, not proof of authenticated application or live-provider operation. Authenticated desktop/narrow/keyboard browser validation remains pending the provisioned local Studio identity. COMMERCE-019 owns real preview bundle/U14 service integration under the current task split; deployment/provider and terminal system evidence remain with their assigned owners. These pending integration checks must stay visible and must not be represented as completed by this acceptance.
+
+Readiness reconciliation: COMMERCE-019 still awaits COMMERCE-013; GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain their other prerequisites/manual execution gates. No dependent is promoted or launched by this review. No implementation edit, implementation push, main merge or service gitlink change. Architecture remains not yet Implemented; COMMERCE-012 is the final implementation checkpoint.
+
 
 ### Changes Requested — Attempt 6 — 2026-09-21
 

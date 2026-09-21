@@ -24,7 +24,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-014](COMMERCE-014-execute-and-render-pinned-tool-definitions.md) | Execute and render pinned tool definitions | complete | ARCH-020-COMMERCE-004, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-015](COMMERCE-015-provide-trusted-basket-and-product-policy-adapters.md) | Provide trusted basket and product policy adapters | complete | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | complete | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | ready | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | complete | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002 |
 
@@ -341,3 +341,20 @@ and regression expectations. Prior fixes are retained; browser identity remains
 an explicit separate validation prerequisite. No dependent promotion, new claim,
 implementation edit, main merge or gitlink change. Reclaim after this review
 overlay is published; older decisions are historical.
+
+## COMMERCE-017 Attempt 7 accepted — 2026-09-21
+
+COMMERCE-017 is **Accepted / Complete, Attempt 7 retained**, executor and claimed_at
+null. Reviewed implementation `c6da2f2` and report `e6c16617` against remote heads.
+A6-R1 is resolved: both tool selectors consult the live synchronous source lock,
+pending/uncertain creation retains its original source and payload, and same-ID
+reconciliation/reset follow the existing lifecycle. Independent 23 UI/client tests,
+the exact outstanding reproduction and all 14 earlier architect reproductions pass;
+diff checks pass. Submitted 60 preview tests/typecheck/lint/build remain reported
+evidence. This accepts the fixture-validated U14 component; authenticated browser
+validation awaits local Studio identity and COMMERCE-019 owns real U14 integration.
+COMMERCE-019 still awaits COMMERCE-013; other deployment/final/system gates remain.
+No dependent promotion, new claim, implementation change, main integration or
+gitlink update. This supersedes earlier COMMERCE-017 current-state wording while preserving
+review history and other task decisions. Architecture remains not yet Implemented;
+COMMERCE-012 is the final implementation checkpoint.
