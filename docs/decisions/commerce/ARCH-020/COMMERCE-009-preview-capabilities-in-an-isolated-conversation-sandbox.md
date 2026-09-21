@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 130
-executor: codex
-claimed_at: 2026-09-21T01:59:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -127,75 +127,76 @@ Ready for Review.
 
 ### Files Changed
 
-Implementation commit `e614a03` in
+Implementation commit `8aaa2b3` in
 `moda-interact-commerce`:
 
 - `src/commerce/preview/types.ts`, `store.ts`, `redis-store.ts`, `service.ts`
-- compatibility/runtime files under `lib/preview/`
-- C9.1 App Router handlers under `app/api/studio/preview/`
-- `tests/preview-service.test.ts`, `preview-store.test.ts`, `preview-routes.test.ts`
+- `tests/preview-service.test.ts`, `preview-store.test.ts`,
+  `preview-redis-lua.test.ts`, `preview-routes.test.ts`
 
 ### Work Completed
 
-- Moved the lifecycle contract into the C19-owned `src/commerce/preview/` path,
-  validated and froze accepted Shared grants/manifests, and executed fixture and
-  explicit-model turns through `runCommerceTurn` with C16 final validation.
-- Added one atomic state contract with a production Redis Lua adapter and a
-  detached in-memory test implementation. It owns environment/admin/run identity,
-  replay/conflict ordering, locks, fencing, 20-turn/32,000-character limits,
-  rolling model quotas, cancellation, 120-second UNKNOWN state and 24-hour retention.
-- Persisted tool-test claims/results in the shared run namespace, rechecked saved
-  revision access, validated arguments, and implemented retained GET/replay.
-- Completed every C9.1 handler with bounded streamed JSON, exact replay bodies,
-  strict saved/database IDs, owner isolation and bounded `{code}` 503 failures.
-- Kept production bundle loading and model/tool composition fail-closed until
-  COMMERCE-013 supplies the authorized adapters. Fixture mode has no paid model,
-  provider, WhatsApp or production credential path.
+- Added the C19 `PreviewPromptLoader` port without changing `PreviewBundleLoader`.
+  Conversation creation validates exact manifest prompt membership and freezes the
+  authored text; missing, duplicate and mismatched sources fail closed before a run.
+- The Shared runner now receives all accepted completed history plus exactly one
+  current user input. It uses the stored authored prompts and rejects before
+  dispatch when the canonical 20-message runner bound would require truncation.
+- Stored language now starts from the fixture and advances atomically only after a
+  successful fenced C16 final with substantive input and high-confidence detection.
+  Ambiguous, numeric, null and low-confidence cases retain the prior language.
+- All fixture, model and tool-test ownership expires to retained UNKNOWN at120s in
+  both stores. Completion sweeps first, stale tokens cannot append history/language,
+  tool execution has a deadline, and a cross-replica watcher propagates cancellation
+  to the active runner signal before cancellation is acknowledged.
+- Redis transport now keeps bundle, prompts, language, history items and results as
+  validated opaque JSON. The Lua state has a1MiB/128-conversation/1024-run aggregate
+  capacity guard that rejects before SET, and adapter responses are schema checked.
+- Added an isolated local Redis-compatible rehearsal that executes the actual Lua
+  script for opaque round trips, simultaneous owners, expiry, fencing and capacity.
 
 ### Correction Checklist
 
-- R1 implemented: Shared runner lifecycle, validated/frozen bundle and fixtures,
-  async RUNNING dispatch, cancellation, language and valid/invalid C16 cases.
-- R2 implemented: Redis atomic transitions, distributed identities/budgets,
-  replay-before-quota, history/turn limits, TTL/UNKNOWN and owner-token fencing.
-- R3 implemented: persisted bounded tool-test POST/GET/replay with schema-validated
-  arguments, cross-kind run identity and zero model quota.
-- R4 implemented: canonical saved IDs, strict response contracts, bounded body/result,
-  replay result body, bounded 503 handling and executable route tests.
+- A2-R1: actual message/history and exact frozen authored prompts reach the first
+  ModelRequest; invalid prompt adapters fail before model admission.
+- A2-R2: accepted language changes persist with history in the owner-token transition;
+  reverse, ambiguous, low-confidence, cancelled and stale cases retain prior state.
+- A2-R3: every execution kind has120s ownership expiry; completion/cancel sweep and
+  fence, remote cancellation aborts waiting work, and timed-out tool results stay UNKNOWN.
+- A2-R4: opaque validated Redis codecs preserve arrays/objects/null/Unicode, aggregate
+  state is bounded, and actual Lua behavior is exercised rather than stubbed.
 
 ### Validation Results
 
 Agent-executed:
 
-- `npm test -- tests/preview-service.test.ts tests/preview-routes.test.ts tests/preview-store.test.ts`:
-  PASS, 3 files / 19 tests.
+- `npm test -- tests/preview-redis-lua.test.ts tests/preview-service.test.ts tests/preview-routes.test.ts tests/preview-store.test.ts`:
+  PASS,4 files /34 tests. The three Redis tests executed a disposable local
+  `redis-server` over a Unix socket and removed it after the run.
 - `npm run lint`: PASS, zero warnings/errors.
 - `npm run typecheck`: PASS.
 - `npm run build`: PASS; all C9.1 routes compiled and were listed by Next.js.
 - `git diff --check`: PASS.
-- `npm test`: 162 passed, 2 failed outside preview scope. The readiness descendant
-  again failed to install its signal handler before cancellation; the live Redis
-  discovery-limit test timed out. All 19 preview tests passed in the full run.
+- `npm test`:177 passed,1 failed outside preview scope. The configured live
+  `tests/discovery-limits.test.ts` timed out at30s while exercising Shopify discovery.
+  All preview tests, including the isolated Redis Lua harness, passed.
 
 Focused case matrix:
 
-- P01/R4 routes -> actual handlers with injected service -> strict malformed/body
-  bounds, auth, saved CUID identity, replay result, owner isolation, tool GET and
-  bounded infrastructure failure all PASS with rejected effects at zero.
-- P02/R2 races -> two services sharing one atomic test store and Redis transport
-  boundary -> concurrent creation, duplicate run/tool replay, changed payload,
-  distinct-run busy, per-admin and platform slot boundaries all PASS.
-- P03 limits -> fake clock/barriers -> turn 21, exact 32,000 characters, rolling
-  10/hour, 120-second UNKNOWN fencing, cancellation/completion race and exact
-  24-hour retention all PASS.
-- P04/R1 contracts -> frozen English/French fixtures and actual Shared runner ->
-  frozen later mutation, runner language context and invalid C16 details PASS.
-- P05 isolation -> injected fixture/model/tool counters -> fixture uses no paid
-  model/provider/WhatsApp path; explicit model calls once and has no fallback.
+- P01 routes remain covered by executable auth/body/owner/replay/error tests.
+- P02 races now include two service instances sharing a store and two Redis adapters
+  racing through the actual Lua script; exactly one owner reserves work.
+- P03 fake-clock and Lua cases cover20 failed dispatches, canonical history rejection,
+  quotas,120s fixture/model/tool expiry, stale-token fencing, remote cancellation,
+  tool timeout and24-hour dedupe.
+- P04 ModelRequest assertions cover current input once, completed history, frozen
+  authored prompts, English/French transitions and retained ambiguous language.
+- P05 injected fixture/model/tool counters retain synthetic-only execution; no paid
+  model, Shopify provider, WhatsApp, database migration or customer data was used.
 
-Developer validation pending: live deployment Redis execution and COMMERCE-013's
-real saved-bundle/model/tool adapter pairing. No live paid model, provider,
-WhatsApp, database migration or customer data was used by this task.
+Developer/integration validation remains for deployed Redis and COMMERCE-013's real
+saved-bundle/prompt/model/tool adapter pairing. Local Redis proves the committed Lua
+contract only; it does not claim deployment configuration evidence.
 
 ### Deviations
 
@@ -209,8 +210,8 @@ None.
 
 ### Unresolved Issues
 
-The two full-suite infrastructure failures above remain outside this task. Live
-Redis and real COMMERCE-013 adapter pairing remain developer/integration evidence.
+The full-suite discovery-limit timeout remains outside this task. Deployed Redis and
+the real COMMERCE-013 adapter pairing remain developer/integration evidence.
 
 ### Architectural Concerns
 
@@ -229,7 +230,7 @@ None newly reported.
   `origin/main` incorporated by the launcher.
 - Recursive submodule sync/update: passed. Database pin:
   `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
-- Implementation commit `e614a03` pushed to
+- Implementation commit `8aaa2b39dc5515ca5642b59f7bb639d03541efeb` pushed to
   `origin/task/ARCH-020-COMMERCE-009`.
 - No main merge, main push, force push, parent gitlink update or unrelated parent
   file edit was performed.
