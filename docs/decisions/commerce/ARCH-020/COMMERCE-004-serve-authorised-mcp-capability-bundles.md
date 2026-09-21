@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 80
 executor: null
 claimed_at: null
@@ -234,6 +234,45 @@ includes Commerce `01c550c3e3f55dd23a4ecc9514c846bb88cf2067` and database
 integration was performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready; Attempt 2 retained; executor/claimed_at null; not accepted.** Reviewed implementation `5ef60bd304e08b5b7a6099697bc73b5f55ff87ed` and parent report `5d54102bba4d0cc293658b2968e9545d686ec0a7`; remote task heads verified, dedicated worktrees clean. No implementation edit, new claim, downstream promotion, main integration or gitlink update. This decision supersedes earlier current-state wording.
+
+Retain actual pinned prompt lookup, task-owned resolver, snapshot environment/domain checks, remote-key-header rejection, streaming body bound, initialized notification and real-handler SDK-client interoperability improvements. Independently ran the submitted MCP/resolver/interoperability suite: **12/12 passed**. `/tmp/c004-a2-review/{authorization,service}.test.ts` imports committed code:9 copied submitted tests pass and4 added regressions fail (duplicate association minima, absent pinned definition, malformed JSON503, deadline not settling ignored-abort executor). Diff checks passed. Typecheck/lint/build and full179/180 remain submitted evidence; no live Redis/provider/database validation was run. These are outstanding R1/R2/R4 behaviors, not scope amendments.
+
+#### A2-R1 — P1 — Preserve every original association and required pinned record
+
+Files: authorization.ts resolveAuthorizedSnapshot/CurrentCapabilityAssociation, ports.ts, service.ts availableTools and resolver tests. `new Map(...[association.key,association])` overwrites original associations sharing a capability. Reproduction with original enabled limits1/2 followed by3/10 returns3/10, violating the C8 minima requirement. Order also determines eligibility when duplicate rows disagree. The missing-definition test supplies an invalid object, not an absent map entry: an empty definitions map passes resolver and discovery silently returns no tools.
+
+Replace key-to-single-row reduction with grouping that retains every original association. Compute eligibility from surviving permitted original provenance according to C8; take effective minima across ALL surviving original applicable bounds, plus the fixed platform ceiling. Newly added associations never supply authority. Preserve association identity/current source fields needed to distinguish originals rather than accepting last-write order. Validate finite integer bounds within accepted C8 ranges before use. Do not use disabled/non-surviving associations as fresh authority or let their ordering discard a surviving original.
+
+For each currently authorized granted tool, require its exact pinned revision definition, matching authored name/version and immutable ownership; missing/mismatched records produce typed UNAVAILABLE/INCOMPATIBLE_VERSION, not silent omission. Deliberately revoked tools may be omitted. Add current tool enabled/revoked records to the trusted resolver input: enabledToolIds is currently inferred only from eligible capability membership and cannot express tool revocation while its capability stays enabled. Check required prompt revision presence/aggregate bounds similarly; retain legitimate zero-tool grants.
+
+Tests: two original associations for the SAME capability in both orders yield1/2 minima; one removed original and one surviving original retain only permitted authority; new association cannot restore revoked authority; current tool disabled while capability remains enabled=>0 calls/omitted tool; absent map entry vs malformed definition tested separately; exact-name/version mismatch unavailable; legitimate zero tools remains empty. Exercise resolver -> actual service -> executor effect counters, not only direct hand-built snapshots. This completes existing M02/M03; no new provider or grant writer.
+
+#### A2-R2 — P1 — Complete protocol/error and aggregate-bound corrections
+
+Files: service.ts requestShape/handle/dispatch/response, authentication.ts config validation, compatibility/service tests. The handler remains a handwritten dispatcher despite R1 requesting the accepted request-scoped SDK server. The new happy-path real-handler SDK test is useful, but malformed JSON still falls into the generic503 catch. It also accepts unvalidated initialized/cancelled notification payloads, arbitrary initialize params and several extraneous resource-list/envelope fields. The code checks tool payload size before JSON-RPC/text encoding, not actual aggregate encoded output; resource/list/prompt responses have no common output bound. Prompt64,000 limit is per text, not bundle total.
+
+Use the already-pinned McpServer/WebStandardStreamableHTTPServerTransport with request-scoped authenticated registrations as previously specified. Keep JSON-only/no-session profile and current true-handler client test. Let SDK perform protocol validation/error construction; retain explicit purpose/method and exact application parameter checks. Add malformed JSON/invalid notification/unsupported protocol and extraneous params cases; protocol input errors must not report infrastructure unavailable. Bound every final encoded response at256KiB and the complete selected prompt bundle at64,000 characters, including JSON escaping/wrappers. Preserve streaming128KiB input413 and no-store responses. Treat typed tool failures as C4 result/isError; framework/authentication errors retain their specified HTTP semantics.
+
+Complete the outstanding authentication config guard from R2: fixed C5 issuer/subject/audience, configured public-key count1–2, and explicit rejection of forbidden remote-key references. Header rejection improved; config remains arbitrary and unbounded. Validate config at construction and test invalid fixed values/three keys without network calls. Keep legitimate two-key rotation and repeated signed assertions within an admitted turn.
+
+Acceptance fixtures invoke actual production handler: malformed JSON yields protocol input error (the isolated test observes503); initialize/notifications validated; oversized escaped output rejected before sending; two allowed prompts individually under64k but aggregate over64k rejected; valid two-key rotation/invalid config; typed execution failure remains structured. No alternative endpoint or live deployment testing is added.
+
+#### A2-R3 — P1 — Bound waiting, not only the abort signal
+
+File: service.ts tools/call executor await. The timer aborts a child signal, but the handler still awaits execution unconditionally. A fake-clock test advances past10 seconds while an executor ignores abort: the HTTP promise remains pending until the fixture manually releases it. This is the exact ignored-signal case required by R4.
+
+Race execution against a cancellation/deadline promise wired to the combined signal before invocation; that promise rejects/returns a bounded typed DEADLINE when the remaining window ends. Observe eventual executor rejection so it cannot become unhandled, discard any late resolution, and clean timer/listeners in finally. Retain pre-dispatch and post-result deadline guards plus shared request12/13 checks. A client disconnect must also settle the handler without waiting for a non-cooperative executor. The executor still receives abort and owns stopping its internal work;004 cannot claim the external operation was forcibly terminated.
+
+Permanent fake-clock/barrier tests: never-settling executor=>handler settles by10s/assertion expiry; signal-aware executor sees abort; late resolve/reject cannot replace the deadline response or produce unhandled rejection; disconnect settles;0 executor on pre-expired/pre-aborted call; normal successful call executes once. Use the existing contract-faithful executor double; no014 implementation or paid/provider call is required.
+
+### Resubmission
+
+Implement A2-R1–A2-R3 within004-owned MCP files/tests, preserve working prompt/interop changes, and map each prior R1–R4 claim to actual effect evidence. Publish same implementation/report branch pair and return to review after focused/required checks. Live Redis and Background/provider integration remain developer-owned and are not blockers here. Parent overlay is committed/pushed before handoff; preparation owns the next attempt. No downstream task is promoted.
+
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 

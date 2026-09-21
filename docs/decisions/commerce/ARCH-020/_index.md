@@ -125,3 +125,16 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 015;012/013/system-test retain other unfinished dependencies. No downstream
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
+
+
+## COMMERCE-004 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt2 retained, claim clear; not accepted.
+Reviewed5ef60bd/5d54102b. Submitted12 tests pass; four added tests fail:
+last-write association bounds, missing pinned definition, malformed JSON503,
+and ignored-abort executor holding the response past deadline. A2-R1–R3 define
+original-association/tool-revocation resolution, protocol/aggregate bounds and
+bounded execution waiting. Retain actual prompt and true-handler interoperability
+improvements. See canonical task for precise files and acceptance effects.
+No promotion, new claim, main integration or gitlink update; live validation
+remains separate from component corrections.
