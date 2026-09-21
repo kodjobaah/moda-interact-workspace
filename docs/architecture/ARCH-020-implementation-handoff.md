@@ -913,7 +913,7 @@ Changes Requested summaries.
 Read [C21](ARCH-020-external-api-tools.md) before extension work.
 
 ```text
-DATABASE-003 (Ready)                 SHARED-002 (Ready; publish once)
+DATABASE-003 (Complete)              SHARED-002 (Ready; publish once)
         \                            /
          ->020 connection service   +->021 HTTP executor (ports)
                                     +->025 visual processor
@@ -988,6 +988,37 @@ Other deployment/cache/system gates retain their dependencies and manual validat
 ### SHARED-002 Attempt 4 review — 2026-09-21
 
 SHARED-002 is **Changes Requested / Ready, Attempt 4 retained**, executor/claim null. Reviewed `b23a7c1` / `52b14319`. Existing Attempt 1 fixes and `0.14.1` submitted consumer proof are retained. A4-R1 closes the remaining LIST publication wrapper/cardinality hole; A4-R2 restores the root package README/export inventory and publishes the corrected next patch version; A4-R3 makes the Completion Report current-state evidence coherent. No downstream task is promoted or launched until SHARED-002 is accepted Complete.
+### DATABASE-003 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `a96dfd7` and report `cee29108`. The generated ERD whitespace
+correction and expanded static validator coverage are preserved. PostgreSQL
+fresh/upgrade migration and runtime checks remain unrun and are directly owned
+by this migration task. No acceptance, implementation change, main merge, gitlink
+update or downstream promotion. COMMERCE-020/028 remain gated on their actual
+dependencies; no automatic launch.
+
+### DATABASE-003 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Submitted
+implementation `df86899` closes the prior timestamp/assertion defects, but the real X02
+upgrade rehearsal has now run and fails before the new migration: `seedBaseline()` is
+rejected with SQLSTATE `23514`, `ARCH020 definition identity mismatch`. The repository
+agent must make the upgrade seed a valid predecessor ARCH-020 state, including a valid
+legacy tool definition and the minimum recovery/conversation + `conversation_core`
+capability/revision + release membership needed for the preserved grant. Do not weaken
+predecessor guards. Recreate the disposable targets and rerun fresh/upgrade; no
+downstream task is promoted or launched.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Implementation
+`bc59bf0`; report `aca2c656`; remote heads verified. The upgrade fixture now forms
+a predecessor-valid ARCH-020 graph and both recreated fresh/upgrade PostgreSQL
+rehearsals pass. X02 preservation, uniqueness, bounds, RESTRICT FKs,
+immutability and rollback are established. DATABASE-003 alone does not unblock
+COMMERCE-020/028/012 because their other declared prerequisites remain incomplete;
+no automatic launch, main merge or gitlink update.
 ## COMMERCE-029 Attempt 4 accepted — 2026-09-21
 
 The bounded QuickJS runtime is **Accepted / Complete, Attempt 4** (`f22e2d6`; report

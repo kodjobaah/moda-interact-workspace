@@ -511,6 +511,15 @@ COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their expl
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
 
+### DATABASE-003 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `a96dfd7` and report `cee29108`. The generated ERD whitespace
+correction and expanded static validator coverage are preserved. PostgreSQL
+fresh/upgrade migration and runtime checks remain unrun and are directly owned
+by this migration task. No acceptance, implementation change, main merge, gitlink
+update or downstream promotion. COMMERCE-020/028 remain gated on their actual
+dependencies; no automatic launch.
 ### ARCH-020 COMMERCE-029 Attempt 4 accepted — 2026-09-21
 
 COMMERCE-029 is **Accepted / Complete, Attempt 4** (`f22e2d6`; report `4069f60c`).

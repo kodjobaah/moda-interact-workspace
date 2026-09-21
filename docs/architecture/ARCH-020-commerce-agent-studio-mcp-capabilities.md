@@ -1530,6 +1530,38 @@ Other deployment/cache/system gates retain their dependencies and manual validat
 ### SHARED-002 Attempt 4 architect review — 2026-09-21
 
 **Changes Requested / Ready, Attempt 4 retained; claims cleared.** Reviewed implementation `b23a7c1` and report `52b14319`. Prior external-contract corrections and submitted `0.14.1` clean-consumer evidence are preserved. One C21 publication defect remains: LIST definitions can pass static publication compatibility with an impossible result wrapper/cardinality (extra root output, non-empty minimum, or array maximum below the LIST limit). The package root README/export inventory and current Completion Report also require reconciliation. Exact A4-R1–R3 are in SHARED-002. No dependent promotion, new claim, implementation/main change or gitlink update.
+### DATABASE-003 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `a96dfd7` and report `cee29108`. The generated ERD whitespace
+correction and expanded static validator coverage are preserved. PostgreSQL
+fresh/upgrade migration and runtime checks remain unrun and are directly owned
+by this migration task. No acceptance, implementation change, main merge, gitlink
+update or downstream promotion. COMMERCE-020/028 remain gated on their actual
+dependencies; no automatic launch.
+
+### DATABASE-003 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** The three
+Attempt 1 implementation corrections remain materially resolved in `df86899`, but live
+X02 upgrade validation now supplies a concrete failure: predecessor migrations deploy,
+then `seedBaseline()` is rejected with SQLSTATE `23514`, `ARCH020 definition identity
+mismatch`, before DATABASE-003's migration runs. The upgrade fixture must represent a
+valid pre-DATABASE-003 ARCH-020 state, including a valid tool definition and the minimal
+recovery/conversation + `conversation_core` release/grant graph. Preserve predecessor
+constraints; recreate clean targets and rerun fresh/upgrade. DATABASE-003 remains
+unaccepted and no dependent is promoted or launched.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Reviewed exact
+implementation `bc59bf0` and report `aca2c656`; remote task heads match. The
+DATABASE-003 schema/migration remains the bounded C21 section 3 implementation,
+while the corrected upgrade fixture now represents a valid predecessor ARCH-020
+state. Fresh and upgrade PostgreSQL rehearsals pass with preservation,
+credential uniqueness/bounds, RESTRICT FK, immutable-row and rollback evidence.
+No dependent task becomes Ready solely from this acceptance; remaining declared
+dependencies continue to gate the frontier.
 ## COMMERCE-029 Attempt 4 accepted — 2026-09-21
 
 ARCH-020-COMMERCE-029 is **Accepted / Complete, Attempt 4**. Reviewed implementation
