@@ -21,6 +21,8 @@ depends_on:
   - ARCH-020-COMMERCE-011
   - ARCH-020-COMMERCE-013
   - ARCH-020-COMMERCE-017
+  - ARCH-020-COMMERCE-018
+  - ARCH-020-COMMERCE-019
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
@@ -113,9 +115,10 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 - ARCH-020-COMMERCE-011
 - ARCH-020-COMMERCE-013
 - ARCH-020-COMMERCE-017
+- ARCH-020-COMMERCE-018
+- ARCH-020-COMMERCE-019
 
-All listed prerequisites must be Complete and architect-accepted before a claim.
-Use accepted source in dedicated launcher worktrees; readiness never launches work.
+All dependencies must be Complete and architect-accepted before execution.
 
 ## Enables
 

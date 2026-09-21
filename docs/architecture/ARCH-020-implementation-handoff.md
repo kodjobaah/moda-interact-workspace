@@ -57,19 +57,12 @@ database revision. Never copy the Prisma schema into Commerce.
 ## Execution sequence
 
 ```text
-001/002 + DATABASE-001 + SHARED-001 ->003 publication and008 Studio components
-003 ->004 authenticated MCP ->014 definition execution
-011 +001 +SHARED-001 ->005 tokenless query adapter
-001 +DATABASE-001 +SHARED-001 ->015 basket/product adapters
-001 +DATABASE-001 +SHARED-001 + ARCH-016 policy prerequisites ->006 rule reader
-006 +015 +SHARED-001 ->016 evaluator ->007 recommendations
-003/004/005/006/007/008/009/011/014/015/016/017 ->013 full service/UI integration
-002 +001 +SHARED-001 ->009 preview service
-008 +002 +SHARED-001 ->017 U14 frontend (contract fixtures)
-BACKGROUND-001 + C18 contract ->BACKGROUND-002 independently
-013 +017 + existing auth/Background/discovery prerequisites ->GATEWAY-001
-instrumentation and existing gateway/Background prerequisites ->GATEWAY-002
-all other implementation tasks ->012 caching ->terminal SYSTEM-TEST-001
+003 publication +004/014 MCP +005/015 products +006/016 discounts +007 recommendations +011 compiler ->013 backend integration
+013 +008 Studio +002 auth +011 discovery ->018 Studio integration
+013 +009 preview +017 U14 +008 composer +002 auth ->019 preview integration
+018 and019 run concurrently; neither depends on the other
+013 +018 +019 + existing prerequisites ->GATEWAY-001
+all feature/infrastructure tasks ->012 caching ->terminal SYSTEM-TEST-001
 ```
 
 Individual task YAML contains the exact complete dependency sets. Runtime call
@@ -743,17 +736,10 @@ pending. No dependent promotion, new claim, main integration or gitlink update.
 012 remains the final implementation checkpoint; architecture is not yet Implemented.
 This supersedes older005 current-state wording while preserving review history.
 
-## COMMERCE-007 Attempt 1 architect review — 2026-09-21
 
-COMMERCE-007 is **Changes Requested / Ready, Attempt 1 retained**, executor and
-claimed_at null; not accepted. Reviewed implementation `6821a49` and parent report
-`a67becf`, matching remote task heads. Independent focused tests passed 6/6;
-five functional reproductions failed: cheapest candidate omitted before evaluation,
-duplicate proposals returned, evaluator DENIED converted to OK, cross-currency
-replacement emitted, and unknown quantity defaulted to 1. The task's A1-R1–R3
-specify exact correction steps and effects; A1-R4 preserves COMMERCE-007's existing local C18
-producer-fixture ownership and separates real system/provider validation.
-No new claim, dependent promotion, implementation change, main integration or
-gitlink update. COMMERCE-010/013 remain gated by COMMERCE-007 acceptance and their remaining
-prerequisites. This supersedes older COMMERCE-007 current-state wording only; other task
-reviews and dependency states are preserved. Architecture is not yet Implemented.
+## Integration task split — 2026-09-21
+
+C20 replaces combined013 with backend013, Studio018 and preview019. Both new
+tasks are Pending, unclaimed; they may execute concurrently after013 and their
+listed components complete. Exact mappings, file ownership and prior I01–I09
+coverage are recorded. No active component implementation is changed or launched.

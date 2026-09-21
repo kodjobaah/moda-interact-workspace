@@ -19,8 +19,8 @@ depends_on:
   - ARCH-020-COMMERCE-002
   - ARCH-020-SHARED-001
 enables:
+  - ARCH-020-COMMERCE-019
   - ARCH-020-COMMERCE-012
-  - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-21
@@ -112,8 +112,8 @@ All listed prerequisites must be Complete and architect-accepted before a claim.
 
 ## Enables
 
+- ARCH-020-COMMERCE-019
 - ARCH-020-COMMERCE-012
-- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 - ARCH-020-GATEWAY-001
 

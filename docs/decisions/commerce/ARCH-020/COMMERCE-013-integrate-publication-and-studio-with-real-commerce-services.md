@@ -1,7 +1,7 @@
 ---
 id: ARCH-020-COMMERCE-013
 architecture_id: ARCH-020
-title: Integrate publication and Studio with real Commerce services
+title: Integrate Commerce backend runtime and publication services
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -20,97 +20,83 @@ depends_on:
   - ARCH-020-COMMERCE-005
   - ARCH-020-COMMERCE-006
   - ARCH-020-COMMERCE-007
-  - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-011
   - ARCH-020-COMMERCE-014
   - ARCH-020-COMMERCE-015
   - ARCH-020-COMMERCE-016
-  - ARCH-020-COMMERCE-009
-  - ARCH-020-COMMERCE-017
 enables:
+  - ARCH-020-COMMERCE-019
   - ARCH-020-COMMERCE-012
+  - ARCH-020-COMMERCE-018
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Integrate publication and Studio with real Commerce services
+# Integrate Commerce backend runtime and publication services
 
 ## Architecture
 
-Architecture ID: ARCH-020.
-
-Architecture document: docs/architecture/ARCH-020-commerce-agent-studio-mcp-capabilities.md.
-
-Coordinator: moda_architect. Read the complete parent architecture and relevant dependency/contract tasks. Execution handoff: docs/architecture/ARCH-020-implementation-handoff.md.
+ARCH-020. [Implementation contracts](../../../architecture/ARCH-020-implementation-contracts.md)
+C4/C5/C7/C9/C14–C19 remain binding. The integration ownership specification is
+[C20](../../../architecture/ARCH-020-implementation-contracts.md#c20-integration-task-ownership-and-parallel-execution).
+Use actual accepted prerequisite source, never copied snapshots or new schemas.
 
 ## Objective
 
-Connect accepted publication, compiler, executor and Studio components through C17
-ports and prove the assembled U01–U13 authoring flow works with real services.
+Connect production publication storage/compiler validation, MCP authorization/dispatch and Shopify/policy adapters. Deliver the stable backend facade used independently by018 and019. No Studio page or preview lifecycle wiring.
 
 ## Context
 
-003 and008 are independently accepted against agreed interfaces and fixtures.
-This task supplies the production composition; it is not another UI build or a
-substitute for terminal cross-service SYSTEM-TEST-001. Definition authored on main
-under the user's exception. No attempt is claimed.
+The former013 combined backend, Studio and preview integration. This definition
+replaces that combined scope;018 and019 can execute concurrently after013 and
+their own component prerequisites complete. No task was claimed by this amendment.
 
 ## Scope
 
-Production adapters, route/service composition, installed executor registration,
-UI read-model translation and local integrated acceptance in moda-interact-commerce.
-Own `src/commerce/integration/` and minimal wiring into003/008 ports/page entries.
-Consume actual accepted011 exports. Do not copy or replace the compiler.
+Connect production publication storage/compiler validation, MCP authorization/dispatch and Shopify/policy adapters. Deliver the stable backend facade used independently by018 and019. No Studio page or preview lifecycle wiring.
 
 ## Out of Scope
 
-New business features/pages, Shared publication, database migrations, other service
-implementation, live deployment, paid provider calls and WhatsApp delivery. U14 components are017-owned and preview lifecycle is009-owned.013 connects both
-and tests the real round trip; it does not reimplement either component.
+Other integration owners' files; new business features/pages; new Shared release,
+database migration or external-service implementation; deployment, paid live
+provider calls or WhatsApp delivery. Do not replace real components with fixtures.
 
 ## Requirements
 
-Read C4/C7/C9/C14–C19, the binding Studio UI design and each prerequisite contract
-report. Use accepted source in dedicated launcher-resolved worktrees. Preserve
-others' edits. New schema/semantic incompatibilities require architect resolution;
-never weaken validation or alter an accepted wire contract merely to connect code.
+Follow C20 file ownership and mapping rules. Authorize each protected request using
+the accepted auth library. Reuse source schemas, field bounds, hashes and replay/CAS
+semantics. Preserve all active work. No production test-adapter registration.
+At preparation verify each source/export against its accepted commit and record
+that SHA in the mapping document; pending producer symbols must not be guessed.
 
 ## Work Items
 
-- [ ] Own `src/commerce/integration/preview-bundle-adapter.ts`: resolve authorized
-  saved drafts/releases through003 into009 synthetic bundles, use014 interpreter
-  with isolated fixture provider operations and connect017 PreviewClient to009
-  routes. No production WhatsApp/provider access.
-
-- [ ] Apply C19 wiring:004 ->014;014 query ->005; policy basket/search ->015,
-  options/rules ->006, evaluation ->016, recommendations ->007. Run each port
-  contract against real adapters.013 also connects009 backend and017 frontend; no new UI or backend feature implementation.
-
-- [ ] Map003 QueryValidationPort to011's actual compiler, including all bounded
-  errors, schema identity and timeout/unavailable semantics. Remove no validation.
-- [ ] Register only executable005/015/006/016/007 adapters and exact operation versions
-  in003 publication availability and004 transport/014 dispatch. Unavailable operations remain
-  unavailable; descriptors alone never make tools publishable or callable.
-- [ ] Implement008 StudioServices adapters using real003 reads/commands and011
-  discovery/schema services, current accepted auth and real executor descriptors.
-  Map fields/errors/CAS tokens without changing their defined meaning.
-- [ ] Wire every U01–U13 page/read/action to those adapters, with server authorization
-  on each request. No fixture flag, fake result or synthetic success in production.
-- [ ] Reconcile service exports and routes; preserve C15 exact paths and008 UI.
-  Provide docs/commerce-integration.md listing port -> module/export mappings,
-  dependency revisions, runtime composition and test commands.
-- [ ] Add one integrated suite and execute all I01–I09 below. Real application
-  services must run; substitute only external provider/model transport and test
-  infrastructure. Component-level fake publication/compiler services cannot pass.
+- [ ] Deliver `src/commerce/integration/backend.ts` with server-only `getCommerceBackend()`; C20 defines its typed members and lifetime rules. Do not import Studio or preview components.
+- [ ] Implement durable `PublicationStoragePort`/authorization/feature/runtime adapters under `src/commerce/integration/backend/`. The accepted003 factory currently throws UNAVAILABLE; tests/in-memory storage are not a production adapter.
+- [ ] Wire011 compiler into003 validation, one executable registry into publication and014, and014 into004. Resolve durable authorization records for004 using existing grant/feature/recovery models.
+- [ ] Connect005 tokenless transport and015/006/016/007 privileged adapters with current server-owned identity, policy, installation lookup and a shared per-call budget. Register exact installed versions only.
+- [ ] Preserve full Studio command semantics in the backend facade. Correct the known capability enable/disable CAS mismatch as C20 specifies; do not silently drop expectedUpdatedAt or weaken strict schemas.
+- [ ] Replace the unavailable MCP runtime at app/api/mcp/route.ts with this composition; preserve existing HTTP profile. No request-specific identity/grant stored in a process-global singleton.
+- [ ] Provide `docs/commerce-backend-integration.md`, exact facade types, mapping table and `test:arch020-backend-integration` plus `test:arch020-backend-integration:database` commands. Freeze these contracts before018/019 begin.
 
 ## Interfaces / Contracts
 
-C17 ports and003/008 contract documents are binding. Use current C7 operation IDs,
-CAS and audit behavior, C14 definition validation and C16 release response contract.
-No newly invented public endpoint or alternate command schema. Source compatibility
-is demonstrated by execution, not matching types alone.
+Binding wiring table (paths relative to Commerce repository):
+
+| Source/export | Destination | Required adapter/file |
+|---|---|---|
+| `src/commerce/publication/lifecycle.ts: CommerceLifecycle`; `ports.ts: PublicationStoragePort` | Durable publication facade | `backend/publication-storage.ts`, `backend/publication.ts` |
+| `lib/discovery/compiler.ts: createCommerceCompiler` | `QueryValidationPort.validate({definition})` | `backend/query-validation.ts`: compile the exact execution/input schema, validate mapping/output/template through accepted validators; bounded INVALID_DEFINITION vs unavailable errors |
+| `execution/ports.ts: createPolicyOperationRegistry`;005 `createQueryExecutionPort` |014 `createDefinitionExecutor` | `backend/executors.ts`: one immutable exact-version registry shared with publication availability |
+|015 `createProductPolicyAdapters`,006 `createDiscountRuleReader`/`getDiscountOptions`,016 `createDiscountEvaluationAdapter` | Policy registry | preserve operation input/output; adapt context without resetting budget/deadline or deriving shop from arguments |
+|007 accepted recommendation descriptors | Policy registry | record its actual exported symbol on accepted source before Ready; no invented handler name |
+|004 `resolveAuthorizedSnapshot`, `createMcpService`, assertion verifier | `/api/mcp` | `backend/authorization.ts`, backend facade and existing MCP route only |
+
+Typed product/rule/evidence interfaces are their accepted module exports; C19
+field semantics and C18 evidence separation remain authoritative. This task owns
+backend assembly only, including real PostgreSQL and HTTP transports.
 
 ## Dependencies
 
@@ -119,58 +105,43 @@ is demonstrated by execution, not matching types alone.
 - ARCH-020-COMMERCE-005
 - ARCH-020-COMMERCE-006
 - ARCH-020-COMMERCE-007
-- ARCH-020-COMMERCE-008
 - ARCH-020-COMMERCE-011
 - ARCH-020-COMMERCE-014
 - ARCH-020-COMMERCE-015
 - ARCH-020-COMMERCE-016
-- ARCH-020-COMMERCE-009
-- ARCH-020-COMMERCE-017
 
-All listed prerequisites must be Complete and architect-accepted before a claim.
+All dependencies must be Complete and architect-accepted before execution.
+Readiness never launches a task; use the normal dedicated mirrored worktrees.
 
 ## Enables
 
+- ARCH-020-COMMERCE-019
 - ARCH-020-COMMERCE-012
+- ARCH-020-COMMERCE-018
 - ARCH-020-SYSTEM-TEST-001
 - ARCH-020-GATEWAY-001
 
 ## Acceptance Criteria
 
-- [ ] I09: full N10/N11/N13 U14 round trip uses actual017 components,009 route/Redis
-  lifecycle and real saved-bundle adapter. Test duplicate sends, payload replay,
-  changed selection/reset, role denial, expiry and composer Back restoration;
-  verify one budget reservation/model start and no live customer/provider access.
-
-- [ ] I01: U03 -> U04 -> U09 -> U06 -> U07 -> U06 -> U09 -> U10 -> U11 with
-  an arbitrary existing Admin Feature: author, validate, save, publish and activate
-  a query through real services. Assert exact revision/member/hash/audit records.
-- [ ] I02: invalid field, input mapping and schema version are rejected by the real
-  compiler; missing compiler/adapter fails closed; zero publication writes/audits.
-- [ ] I03: authenticated MCP resolve/list/call uses that release and005 query
-  adapter against controlled provider transport; changed publication cannot alter
-  a seeded existing grant. Seed grant as Background-owned; no WhatsApp required.
-- [ ] I04:005/015/006/016/007 descriptors match installed executors and authoring fields;
-  renamed policy tool dispatches correctly; unsupported/missing operation rejects.
-- [ ] I05: role revocation, ADMIN publication denial, stale CAS, matching replay,
-  changed-payload replay and duplicate clicks have the specified write/audit counts.
-- [ ] I06: N01–N09/N12 and N13 composer portion run against real services, including
-  dirty Back/Cancel, unknown outcome reconciliation and refresh-loss notice.
-- [ ] I07: docs process outage preserves saved draft/schema editing; unavailable
-  required schema blocks publication; neither path falls back to synthetic data.
-- [ ] I08: production composition contains no fixture adapter. Run production build
-  and direct protected endpoint tests; unavailable dependency returns typed failure,
-  never mock success. Verify Google/development auth uses the accepted library.
+- [ ] B01: real publication/compiler/storage create and publish a valid query and release; invalid field/mapping/version or absent executor produces zero publication/audit writes.
+- [ ] B02: duplicate operation ID commits one effect/audit; mismatched reuse and stale CAS conflict. Pointer/member writes rollback together on injected failure; two real DB connections exercise races.
+- [ ] B03: authenticated MCP resolve/list/call executes the published query through005; old seeded grant remains pinned after new publication; cross-shop/revoked/expired assertion dispatches zero provider calls.
+- [ ] B04: every policy registration matches installed version/schema; renamed discount/recommendation tool works; unknown/missing adapter fails closed. Provider budgets are shared by reference across nested adapters.
+- [ ] B05: production factory is callable with real dependencies and contains no fixture registration; missing config returns typed unavailable; backend import does not require018/019 or browser code.
+- [ ] B06: known capability enable/disable timestamp CAS is preserved in strict input, payload hash and same transaction as the write; stale timestamp and changed replay payload have zero committed changes.
 
 ## Validation
 
-Deliver `test:arch020-integration` for bounded local integration fixtures and
-`test:arch020-integration:database` for isolated PostgreSQL rehearsal. Run agent-owned
-checks under repository policy; provide developer-owned database command, assertions
-and actual evidence separately. Required database/I01/I05 evidence must exist before
-acceptance, not be claimed from mocked transactions. Record each I01–I09 command,
-expected effects, actual result and dependency revisions. No paid live-provider or
-production customer data required. Terminal cross-repository testing remains separate.
+Use the C20 shared isolated seed contract and this task's named scenarios. Assert
+rows, operation IDs, provider calls and state, not only HTTP200 or screenshots.
+Substitute external provider/model transports only; application services under
+integration remain real. Run focused integration tests during work, then repository
+typecheck/lint/build before submission. No redundant full-suite reruns without new
+changes/failures. PostgreSQL/Redis/container checks obey the existing execution
+policy: provide the command and actual evidence separately; a not-run required
+check is not a pass. No paid model, live Shopify or production credentials required.
+Document owned commands and exact outputs in the report; C20 maps every former
+I01–I09 requirement to an owner so no acceptance coverage disappears.
 
 ## Stop Condition
 
@@ -178,7 +149,7 @@ After scoped work and agent-owned checks, update this task's execution/report fi
 
 ## Implementation Notes
 
-Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; the actual repository must be provisioned before execution preparation.
+Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; consume the accepted COMMERCE-001 foundation.
 
 ## Completion Report
 
