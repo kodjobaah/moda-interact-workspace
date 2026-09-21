@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 160
-executor: copilot
-claimed_at: 2026-09-21T00:04:36Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-BACKGROUND-001
@@ -227,6 +227,38 @@ No new architectural concern. The injected extractor is the explicit boundary fo
 Expected execution branch: `task/ARCH-020-BACKGROUND-002`. Attempt: 3. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, clean before edits, branch `task/ARCH-020-BACKGROUND-002`, published implementation commit `7505ac3`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, launcher claim `104c0fc85b9ca81fb109aec345f9f4197d050349`. Prepared-packet evidence was reused: launcher-created canonical worktrees, start-of-attempt branch synchronization, recursive submodule initialization, and clean dependency state. Accepted dependency pin consumed: database submodule `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; Background consumes published Shared package `@modainteract/moda-interact-shared@0.13.1`. Database submodule and parent service gitlink were not modified; no main integration or merge was performed.
 
 ## Architect Review
+
+### Attempt 3 architect decision — 2026-09-21 — Changes Requested (remaining validation)
+
+**Current status: Ready, Attempt 3 preserved, executor/claimed_at cleared; not yet accepted.** This supersedes earlier current-state wording. Reviewed published implementation `7505ac3513e91d3c649776a630d8d1bb35e76c6f` and report `f409db2392e8ebfe5d3f36bfcb435457f1f29501`. Remote heads verified; dedicated worktrees clean. No implementation changes, new claim, downstream promotion or main integration.
+
+**A2-R1 and A2-R2 code corrections verified.** The host uses the pinned Shared final schema and read-only evidence eligibility to convert valid unusable-evidence finals into trusted referrals. Malformed finals remain rejected. External cancellation is normalized and admission is checked after refresh. Independently reran evidence/host/processor tests: **84 passed (49 evidence/host +35 processor)**. Independently reran the prior failing real-MCP-host ordinary-Error cancellation reproduction at `/tmp/bg002-a2-review/host-review.test.ts`: **1 passed, 33 unselected tests skipped**. Implementation diff check passed. Submitted build/Prisma/TypeScript results remain reported evidence. No live service was contacted.
+
+#### A3-R1 — P2 — Finish the existing A2-R3 deterministic acceptance matrix
+
+This is the uncompleted previous correction, not new implementation scope. Files: `tests/unit/commerce/evidence.test.ts`, `tests/integration/commerce/host.test.ts`, and processor integration fixtures. Only three registry cancellation variants and three host-final cases were added in Attempt3; the processor file is unchanged. Code guards and old processor mocks do not establish the requested refresh-pending end-to-end effects.
+
+Required concrete corrections:
+
+1. Load `docs/architecture/ARCH-020-evidence-contract-fixtures.json` from the prepared parent task worktree (or include an explicitly identified fixture copy with a content/hash check). Freeze its clock/identities and recompute hashes for variants. Existing unit turn/clock/amounts are independently authored fixtures, not the canonical seed. Keep normal root-evaluator coverage as additional coverage.
+2. **EC01/02/03/12:** original and refreshed recommendation envelopes, exact renamed call and original `{search,limit}` arguments. Create TWO distinct alternatives with distinct proposal/evidence IDs, reverse their returned order, and assert one replay and independent matching of both. The existing test repeats the same ID and refreshes a root evaluator instead of the recommendation envelope. Distinct alternatives are a local contract fixture requirement; do not assign them to developer/live pairing.
+3. **EC04:** table-test basketFingerprint, ruleFingerprint, savings, resultingTotal, currency, outcome and proposal separately. Each input must pass Shared structural validation and have a freshly computed digest, with adequate call/time budget. Assert exactly one replay then referral; the current changed test covers only resultingTotal. Include exact decimal equivalence and preserved proposal order.
+4. **EC05/06/07/10:** independent missing/duplicate/empty/truncated match cases; original/fresh expiry boundaries and future-dated evidence; digest-only rejection separate from conflicting provenance; wrong turn/grant/release; budget and counterfeit-wrapper/renderedText cases. Assert each intended precondition is actually reached. Split null-money from unresolved-conditions and verify Shared schema success before the relevant business-rule test. A fixture rejected by its schema does not test a later eligibility rule.
+5. **EC08/09:** fix `fails closed when the evidence producer is revoked`: it uses Date.now against a fixed September21 midnight 30-second lifetime, so expiry can mask DENIED. Use the frozen seed clock and `expect(replay).toHaveBeenCalledTimes(1)`. Exercise each resolved ERROR envelope using mockResolvedValue (not mockRejectedValue), with retryable=true where allowed. At the real host MCP boundary cover HTTP401/403, malformed structured output, thrown transport failure and ordinary per-call timeout. Assert one refresh, no retries, referral for non-stale errors and suppression for stale/cancel. Preserve current admission.
+6. **EC11 and delivery effects:** port the now-passing independent host cancellation reproduction into permanent tests. Use controllable barriers during the actual refresh for AbortError, ordinary Error, string reason, new inbound and lease loss, on both success and failure completions. Connect host results/failures to the processor fixture; assert zero send/zero language writes on suppression and only existing reservation cleanup. For ordinary evidence failure assert one trusted referral send, one reservation lifecycle, no extra recovery credit or replacement grant. Current registry `isCancelled:()=>true` tests alone do not prove host cancellation during replay or processor effects.
+
+Run the focused matrix and processor regressions. Keep passing implementation behavior unchanged unless these contract-faithful tests uncover a defect; do not rewrite the host merely to create a new implementation change. Test source additions are sufficient work for this remaining correction.
+
+#### A3-R2 — P2 — Correct report ownership and unsupported result claims
+
+File: this task Completion Report. Preserve C18 EC identifiers verbatim. EC02 is authored input mapping/exact replay, EC07 is query/rendered-text counterfeiting, and EC12 is exact recommendation replay without a separate evaluator. The current matrix still substitutes other meanings and says EC03 distinct alternatives are developer-owned. Remove that deferral. Replace blanket Passed claims for unimplemented EC04/05/08/09/11 cases with actual named tests and measured replay/send/reservation/language counts after the tests above exist.
+
+The Unresolved Issues sentence requiring the developer to execute live SYSTEM-TEST/Gateway pairing **before architect acceptance of this task** contradicts C17/C18. Correct it: this task can be accepted on deterministic component evidence; real pairing/deployment remain terminal SYSTEM-TEST/Gateway validation and do not block BACKGROUND-002. No live/paid provider call, deployment or new dependency is requested. Preserve the reported unrun status of those separate checks.
+
+### Attempt 3 resubmission gate
+
+Implement only the outstanding deterministic coverage/report corrections above and any actual defects those tests reveal. Preserve Attempt3 history; normal preparation owns any next claim. Publish the same implementation/report branches and return to Review. No additional provider or database rehearsal is required for this correction. Re-run the required local checks appropriate to changed tests/code and keep command/results precise. This parent overlay is committed/pushed before handoff so there are no uncommitted architect changes blocking preparation.
+
 
 ### Attempt 2 architect decision — 2026-09-21 — Changes Requested
 

@@ -998,3 +998,15 @@ a deliverable referral); A2-R3: complete the canonical EC01–EC12 tests and cor
 overstated report mappings/results. See the task's exact code/location instructions.
 This is the latest decision; prior review entries are historical. No downstream
 promotion or claim; live pairing remains terminal-system-test-owned.
+
+
+## BACKGROUND-002 Attempt 3 review — 2026-09-21
+
+Current decision: Ready, Attempt 3, claim cleared; Changes Requested for remaining
+A2-R3 deterministic validation/report corrections. Reviewed7505ac3 / f409db23.
+A2-R1 referral conversion and A2-R2 cancellation/admission code fixes are verified:
+84 focused tests and the prior failing host cancellation reproduction now pass.
+Canonical two-alternative, independent semantic/error and refresh-pending processor
+cases remain required; exact files/cases/counts are in the task review. Live pairing
+is terminal-owned and is NOT a prerequisite to component acceptance. Prior review
+current-state wording is historical. No downstream promotion, claim or main merge.
