@@ -824,3 +824,14 @@ budget boundaries are retained. No implementation edits, next claim, main merge,
 gitlink update or dependent promotion.007 remains gated by016;013 and012 retain
 their remaining gates. Live provider composition remains separate integration work.
 Older readiness wording is historical; architecture is not yet Implemented.
+
+
+## COMMERCE-016 Attempt 2 accepted — 2026-09-21
+
+Complete, architect accepted; Attempt2 retained, claim clear. Reviewed55204ec /
+dc9edf85. Current-fact checks, consistent LINE/TOTAL savings caps and comparable
+currency minimum precedence accepted. Independent evaluator15/15 and previous
+architect regressions3/3 pass.007 promoted to Ready because015/016 are Complete;
+attempt0/claim unchanged, no execution.012/013/system-test retain other unmet
+prerequisites. Live integration and reader baseline limitation remain separate.
+No implementation changes, main integration or gitlink update.

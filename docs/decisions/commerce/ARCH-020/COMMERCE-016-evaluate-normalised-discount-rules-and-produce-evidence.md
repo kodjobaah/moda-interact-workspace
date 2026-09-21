@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 105
 executor: null
 claimed_at: null
@@ -256,6 +256,17 @@ None newly reported.
 - No main merge/push, force push, parent gitlink update or unrelated parent file edit.
 
 ## Architect Review
+
+### Accepted — Attempt 2 — 2026-09-21
+
+**Current decision: Complete; architect accepted. Attempt 2 retained; executor/claimed_at null.** Reviewed implementation `55204ec24b2508c38c064aadfd1dd81bef768e4a` and report `dc9edf8516dff5fa299b051528960424de739636`, verified against remote task heads. Dedicated worktrees clean; database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` unchanged. This supersedes the prior Changes Requested decision.
+
+R1 accepted: required basket current identity/availability/price facts are checked; missing currency stays unknown and historical basket prices remain snapshot values. R2 accepted: savings caps use the same LINE/TOTAL rounding basis as eligible/gross amounts; percentage and fixed boundary regressions pass. R3 accepted: monetary comparisons require currency comparability before a subtotal failure is declared, while independent disabled/quantity/target failures retain precedence. The adapter returns canonical UNKNOWN evidence for mixed currency.
+
+Independent validation: **15/15 evaluator tests passed**; prior architect harness `/tmp/c016-a1-review/review.test.ts` **3/3 passed** against current committed code. All three previous failures are resolved. Diff check passed. Lint/typecheck/build remain submitted evidence; the documented unchanged reader timing failure was not rerun and is outside this correction. No live provider/database or system validation was executed. No remaining blocking finding in the reviewed016 component scope; production013 composition and developer validation remain separate.
+
+Dependency reconciliation: COMMERCE-015 is already Complete. COMMERCE-007 therefore becomes Ready, preserving attempt0 and null claim; no execution is started.012/013/system-test retain other unfinished prerequisites and are not promoted. Architecture status remains in implementation. Parent task/index/architecture/handoff/workspace state reconciled and published. No implementation edits/commits, new claim, main merge/push or gitlink update; developer final integration remains implementation first, then parent gitlink/report integration.
+
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 
