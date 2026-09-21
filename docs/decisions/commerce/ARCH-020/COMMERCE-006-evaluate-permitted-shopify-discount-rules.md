@@ -208,8 +208,8 @@ Both were prepared by the launcher and remained isolated from `main`.
 Implementation commit: `4b968c1` (`feat(commerce): add bounded discount rule
 reader`), pushed explicitly as `HEAD:refs/heads/task/ARCH-020-COMMERCE-006` to
 the Commerce remote after the Git helper reported the prepared local upstream
-was `origin/main`. Parent report commit: `536484d0`, pushed to
-`origin/task/ARCH-020-COMMERCE-006`. No parent service gitlink,
+was `origin/main`. Parent report commits: `536484d0` and the final evidence
+update `01f0532e`, pushed to `origin/task/ARCH-020-COMMERCE-006`. No parent service gitlink,
 architecture/index file, or `main` branch was updated.
 
 ## Architect Review
