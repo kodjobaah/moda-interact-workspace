@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-21T00:42:41Z
+status: review
+executor: null
+claimed_at: null
 priority: 85
 attempt: 8
 depends_on:
@@ -129,31 +129,29 @@ Ready for Review.
 
 ### Correction Checklist
 
-- R6-1 implemented: `document.ts` and `upstream.ts` now share one canonical URL validator requiring the exact `https://shopify.dev` origin, `/docs/` paths, no credentials/query/fragment, and no encoded separators/traversal. Initial and redirect requests use the same validator, follow at most two redirects, dispose redirect/error bodies, and preserve the final canonical source URL.
-- R6-1 evidence implemented: `tests/discovery-document.test.ts` covers nondefault port, userinfo, encoded separators/traversal, query/fragment, relative/default-443 inputs, two redirects, and rejection of a third redirect after exactly three fetches.
-- R6-2 implemented: the adapter permits up to 1 MiB of streamed decoded HTML input, requires `text/html`, a title of at most 255 characters, and verified `<main>`/`<article>` content. It rejects malformed/missing content and arbitrary error-page fallback. `service.ts` validates the complete serialized UTF-8 result at 64 KiB without truncation.
-- R6-2 evidence implemented: `tests/discovery-document.test.ts` covers >64 KiB HTML with a small valid article, missing title/main, malformed representation, and serialized output overflow; existing process tests retain >2,000-character full-document evidence. Runtime documentation records the actual limits and redirect policy.
-- R6-3 implemented: Redis admission normalization is limited to connect/ping/eval/rate denial. Admitted operation errors retain their identity; counter release occurs only after admission; bounded best-effort cleanup cannot mask the primary error, and quit/disconnect runs on every exit.
-- R6-3 evidence implemented: `tests/discovery-admission-cleanup.test.ts` covers denial, connection failure, fluent counter cleanup, client close, and exact admitted operation-error propagation.
-- Preserved: Storefront 2026-07 artifact and SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`; pinned `@shopify/dev-mcp@1.15.4`; nested database revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- R7-1 implemented: `lib/discovery/document.ts` now parses the supported HTML representation with a tag stack, preserves all readable descendants of the selected complete `main`/`article` container in document order, handles nested same-name containers, excludes active content, and rejects mismatched or unclosed markup. Existing title, content-type, input/output, redirect and deadline bounds remain unchanged.
+- R7-1 evidence implemented: `tests/discovery-document.test.ts` now proves both sibling sections and the final constraint survive extraction, and proves `<main>Incomplete content</article>` is rejected. The parser assumption and selected-container rule are recorded in `docs/shopify-discovery-runtime.md`.
+- R7-2 implemented: `lib/discovery/limits.ts` passes cleanup calls into the bounded helper as thunks, so synchronous `multi()`/release failures are contained. Counter release remains admission-only, client close remains independent, and cleanup cannot replace an operation result or error.
+- R7-2 evidence implemented: `tests/discovery-admission-cleanup.test.ts` now exercises synchronous counter-release failure, preserves the exact original `upstream timeout` error identity, and verifies client close still runs.
+- Preserved: R6-1/R6-2/R6-3 corrections, Storefront 2026-07 artifact SHA-256 `54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`, pinned `@shopify/dev-mcp@1.15.4`, and nested database revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
 ### Files Changed
 
 Implementation commit:
 
-- `0ac23ea963508de37c37327560020d1364396473` (`fix(commerce): enforce C15.1 document and cleanup bounds`), pushed to `origin/task/ARCH-020-COMMERCE-011`, on top of `7bfa26d`.
+- `ae6acb49331068b35828ecf88a59ff5e33bdebe8` (`fix(commerce): preserve document containers and cleanup errors`), pushed to `origin/task/ARCH-020-COMMERCE-011`, on top of `0ac23ea`.
 
-Changed files in Attempt 7: `lib/discovery/document.ts`, `lib/discovery/limits.ts`, `lib/discovery/service.ts`, `lib/discovery/upstream.ts`, `tests/discovery-admission-cleanup.test.ts`, `tests/discovery-document.test.ts`, and `docs/shopify-discovery-runtime.md`.
+Changed files in Attempt 8: `lib/discovery/document.ts`, `lib/discovery/limits.ts`, `tests/discovery-admission-cleanup.test.ts`, `tests/discovery-document.test.ts`, and `docs/shopify-discovery-runtime.md`.
 
 ### Work Completed
 
-Completed all scoped Attempt 7 corrections within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. C15.1 is implemented without claiming a nonexistent pinned MCP document tool.
+Completed all scoped Attempt 8 corrections within Commerce. No UI, other repository, database schema, billing, cart/order mutation, live store, or deployment work was started. C15.1 is implemented without claiming a nonexistent pinned MCP document tool.
 
 ### Validation Results
 
-- Passed focused discovery validation with Redis unset: `REDIS_URL= npm test -- --run tests/discovery.test.ts tests/discovery-route.test.ts tests/discovery-process.test.ts tests/discovery-limits.test.ts tests/discovery-admission-cleanup.test.ts tests/discovery-document.test.ts` (6 files, 47 tests), including the pinned process fixture and all R6 regressions.
+- Passed focused R7 validation: `npm test -- --run tests/discovery-document.test.ts tests/discovery-admission-cleanup.test.ts` (2 files, 19 tests), including nested-container preservation, malformed-container rejection, synchronous cleanup failure, original-error identity, and client close.
+- Passed full `REDIS_URL= npm test -- --no-file-parallelism`: 19 files and 118 tests. No readiness baseline failures occurred with Redis unset.
 - Passed `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check`.
-- Passed full `REDIS_URL= npm test -- --no-file-parallelism`: 19 files and 116 tests. No readiness baseline failures occurred with Redis unset.
 - The real pinned compatibility fixture started `shopify-dev-mcp` v1.15.4, initialized/listed tools, called `learn_shopify_api` for Storefront 2026-07 and closed the child without a live store credential. Controlled HTTPS fixtures prove the separate C15.1 full-document path, strict redirects, content representation and bounds.
 - The build generated Prisma Client v6.19.3 from nested database submodule SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
@@ -161,7 +159,7 @@ Completed all scoped Attempt 7 corrections within Commerce. No UI, other reposit
 
 - C14 compiler/schema: `tests/discovery.test.ts`, including the three Attempt 3 semantic regressions, valid ProductDetails, schema traversal and existing C14 boundary controls.
 - C15 process/adapter: `tests/discovery-process.test.ts`, `tests/discovery-document.test.ts`, `tests/fixtures/shopify-dev-mcp/compatibility.json`, `lib/discovery/document.ts`, `lib/discovery/upstream.ts`, and `docs/shopify-discovery-runtime.md`.
-- C15 route/admission: `tests/discovery-route.test.ts`, `tests/discovery-limits.test.ts`, and `tests/discovery-admission-cleanup.test.ts`, including typed GET/POST failures, cleanup on denial/failure, and the environment-gated real Redis rolling admission.
+- C15 route/admission: `tests/discovery-route.test.ts`, `tests/discovery-limits.test.ts`, and `tests/discovery-admission-cleanup.test.ts`, including typed GET/POST failures, cleanup on denial/failure, synchronous cleanup containment, and the environment-gated real Redis rolling admission.
 - Offline fallback: local artifact browsing and validation remain independent of documentation availability.
 
 ### Deviations
@@ -174,7 +172,7 @@ Deployed OAuth/revocation, real Redis cross-replica saturation, live Shopify cal
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean and pushed at `0ac23ea963508de37c37327560020d1364396473`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean and pushed at `ae6acb49331068b35828ecf88a59ff5e33bdebe8`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule remains initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Historical Completion Report — through Attempt 3
 
