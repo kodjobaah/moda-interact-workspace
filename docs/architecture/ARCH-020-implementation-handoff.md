@@ -955,15 +955,41 @@ DATABASE-003, SHARED-002 and COMMERCE-029 can begin independently. The last is a
 implementation proof with reusable artifact, not an approval to defer hard limits.
 Each submission maps named acceptance case to a committed scenario and actual result.
 
+### COMMERCE-013 Attempt 8 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 8 retained; executor/claim null.** Reviewed
+implementation `13805d2` and report `de6b2829`. A7-R1 production Shopify schema
+correction passes. A8-R1 corrects whole-basket minimum assumptions for targeted
+discounts; A8-R2 separates provider-supported calculation semantics from a fixture
+of assumed rounding constants. Exact correction examples and evidence boundaries
+are in the task Architect Review. Focused integration: 61/61; architect checks:
+12/12. PostgreSQL remains one passing scenario and one timeout, not completed
+rollback evidence or a demonstrated new regression. Developer-owned infrastructure
+validation remains pending. No acceptance, implementation change, main merge,
+gitlink update or downstream promotion; COMMERCE-018/019 remain Pending.
+
+### COMMERCE-013 Attempt 9 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 9 retained; executor/claim null.** Reviewed
+implementation `4d52977` and report `650d53bc`. Targeted minima use eligible lines;
+unproven monetary semantics fail closed. Native-basic fixed/percentage monetary
+qualification remains UNSUPPORTED pending independent provider evidence and an
+explicit reviewed enabling change. Acceptance does not assert live discount
+qualification; Studio/preview must preserve this limitation. Earlier review demands
+for guessed/unsupported positive monetary profiles are superseded by this disposition.
+Focused integration: 61/61; architect regressions: 12/12. PostgreSQL remains one
+passing scenario and one timeout; developer-owned adapter validation remains pending.
+013 introduces no migration; database owners retain fresh/upgrade evidence ownership.
+COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
+prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
+Other deployment/cache/system gates retain their dependencies and manual validation.
+
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
-implementation `a96dfd7` and report `cee29108`. A1-R1 aligns six Prisma timestamp
-fields with the required timestamptz(3) migration; A1-R2 repairs missing updatedAt
-fixture values; A1-R3 makes constraint/immutability/rollback assertions specific
-and proves existing tool/grant data preservation. Explicit corrections are in the
-database task Architect Review. Syntax and Prisma validation pass; offline schema
-SQL confirms timestamp drift. Real fresh/upgrade PostgreSQL evidence remains
-unrun and is directly owned by this migration task. No acceptance, implementation
-change, main merge, gitlink update or downstream promotion. COMMERCE-020/028 remain
-gated on their actual dependencies; no automatic launch.
+implementation `a96dfd7` and report `cee29108`. The generated ERD whitespace
+correction and expanded static validator coverage are preserved. PostgreSQL
+fresh/upgrade migration and runtime checks remain unrun and are directly owned
+by this migration task. No acceptance, implementation change, main merge, gitlink
+update or downstream promotion. COMMERCE-020/028 remain gated on their actual
+dependencies; no automatic launch.

@@ -409,15 +409,114 @@ precedence check failed. Other A2 corrections are resolved. No acceptance or
 downstream promotion. External C18 refresh signal/hosted arrival remain explicit
 integration/developer handoffs; baseline failures are not review blockers.
 
+
+### COMMERCE-013 Attempt 3 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `1dd5211`
+and report `1961d586`. A3-R1–R5 specify real provider rule facts/scopes, eligible
+resolve manifests and shared lease/limits, durable cross-transaction CAS time,
+complete saved-selection/inspection results, and real adapter mutation rehearsals.
+Focused tests: 59 passed; six prior reproductions pass; two remaining contract
+checks fail (repeated CAS time and empty draft selection). The reported Prisma
+1/1 test is a no-op smoke check, not race/rollback evidence. No acceptance or
+downstream promotion; COMMERCE-018/019 stay Pending. Disposable infrastructure
+execution remains developer-owned; lack of Docker authorization is not the blocker.
+
+
+### COMMERCE-013 Attempt 4 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 4; executor/claim null.** Reviewed `d42f8e9`
+and report `b71c7874`. A4-R1–R4 specify canonical initial resolution/tool filtering,
+actual provider rule facts and bounded reads, real inspection/saved-binding
+contracts, and genuine contentious adapter race/rollback assertions. Focused
+suite: 59 passed; all eight prior reproductions pass; new no-grant production
+resolve check fails. No acceptance or downstream promotion; COMMERCE-018/019
+remain Pending. The submitted database 2/2 evidence covers its actual scenarios,
+not the missing publication/pointer contention/post-write rollback cases.
+Infrastructure execution remains developer-owned; Docker authorization is not
+the blocker. Preserve the final manual system-test gate.
+
+### COMMERCE-013 Attempt 5 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 5; executor/claim null.** Reviewed implementation
+`3ab8679` and submitted report `8bdc05d0`. The task report's A5-R1–R4 require:
+correct schema-valid Shopify discount reads and established normalization semantics;
+bounded product-response streaming; explicit saved-tool draft preview support;
+and inspection using the backend's validated deployment environment.
+Initial no-grant resolution and prior adapter regressions pass. Focused integration:
+59/59; previous architect checks: 9/9; expanded facade harness: 8 passed, 2 failed
+(saved DRAFT rejection and TEST inspection querying DEVELOPMENT).
+Actual contention/post-write rollback scenarios now exist; submitted PostgreSQL
+evidence was reviewed, while disposable infrastructure/migration validation remains
+pending. No implementation change, main merge, acceptance or downstream promotion.
+COMMERCE-018/019 remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 6 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 6 retained; executor/claim null.** Reviewed
+implementation `812e97e` and report `36a9a603`. A5-R2 bounded product streaming
+and A5-R4 configured inspection environment are resolved; standalone draft
+preview and the pinned Admin schema check pass. A6-R1 requires the supported
+production discount path (all rules still have unknown restrictions/null
+semantics); A6-R2 requires independent publication validation for every
+capability binding, including revisions also explicitly selected as drafts.
+Exact changes and focused acceptance examples are in the task's Architect Review.
+Focused integration: 59/59 passed. Architect harness: 11 passed, 1 failed,
+reproducing the unpublished-binding bypass. Submitted PostgreSQL 2/2 evidence
+reviewed; developer-owned infrastructure/migration validation remains pending.
+No acceptance, implementation change, main merge, gitlink update or downstream
+promotion. COMMERCE-018/019 remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 7 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 7 retained; executor/claim null.** Reviewed
+implementation `0fab9dc` and report `3dc1fbf7`. A6-R2 binding correction passes.
+A7-R1 requires correcting six pinned Shopify schema errors in the production
+customer/segment selections; A7-R2 requires substantiating the native-basic
+calculation profile and demonstrating the supported production path. Explicit
+corrections and bounded verification examples are in the task Architect Review.
+Focused integration: 60/60. Architect harness: 11 passed, 1 failed (production
+Admin document validation). PostgreSQL report remains one passing smoke and one
+failed rehearsal; no new storage regression is established, and developer-owned
+isolated infrastructure validation remains pending. No acceptance, implementation
+change, main merge, gitlink update or downstream promotion. COMMERCE-018/019
+remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 8 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 8 retained; executor/claim null.** Reviewed
+implementation `13805d2` and report `de6b2829`. A7-R1 production Shopify schema
+correction passes. A8-R1 corrects whole-basket minimum assumptions for targeted
+discounts; A8-R2 separates provider-supported calculation semantics from a fixture
+of assumed rounding constants. Exact correction examples and evidence boundaries
+are in the task Architect Review. Focused integration: 61/61; architect checks:
+12/12. PostgreSQL remains one passing scenario and one timeout, not completed
+rollback evidence or a demonstrated new regression. Developer-owned infrastructure
+validation remains pending. No acceptance, implementation change, main merge,
+gitlink update or downstream promotion; COMMERCE-018/019 remain Pending.
+
+### COMMERCE-013 Attempt 9 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 9 retained; executor/claim null.** Reviewed
+implementation `4d52977` and report `650d53bc`. Targeted minima use eligible lines;
+unproven monetary semantics fail closed. Native-basic fixed/percentage monetary
+qualification remains UNSUPPORTED pending independent provider evidence and an
+explicit reviewed enabling change. Acceptance does not assert live discount
+qualification; Studio/preview must preserve this limitation. Earlier review demands
+for guessed/unsupported positive monetary profiles are superseded by this disposition.
+Focused integration: 61/61; architect regressions: 12/12. PostgreSQL remains one
+passing scenario and one timeout; developer-owned adapter validation remains pending.
+013 introduces no migration; database owners retain fresh/upgrade evidence ownership.
+COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
+prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
+Other deployment/cache/system gates retain their dependencies and manual validation.
+
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
-implementation `a96dfd7` and report `cee29108`. A1-R1 aligns six Prisma timestamp
-fields with the required timestamptz(3) migration; A1-R2 repairs missing updatedAt
-fixture values; A1-R3 makes constraint/immutability/rollback assertions specific
-and proves existing tool/grant data preservation. Explicit corrections are in the
-database task Architect Review. Syntax and Prisma validation pass; offline schema
-SQL confirms timestamp drift. Real fresh/upgrade PostgreSQL evidence remains
-unrun and is directly owned by this migration task. No acceptance, implementation
-change, main merge, gitlink update or downstream promotion. COMMERCE-020/028 remain
-gated on their actual dependencies; no automatic launch.
+implementation `a96dfd7` and report `cee29108`. The generated ERD whitespace
+correction and expanded static validator coverage are preserved. PostgreSQL
+fresh/upgrade migration and runtime checks remain unrun and are directly owned
+by this migration task. No acceptance, implementation change, main merge, gitlink
+update or downstream promotion. COMMERCE-020/028 remain gated on their actual
+dependencies; no automatic launch.
