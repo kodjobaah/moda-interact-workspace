@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-21T22:51:02Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-SHARED-002
@@ -23,7 +23,7 @@ enables:
   - ARCH-020-GATEWAY-003
   - ARCH-020-COMMERCE-030
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Execute read-only external HTTP tools
@@ -92,10 +92,10 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] HT01: first prove supported GET through actual DNS-aware transport into controlled HTTPS server, with auth from injected resolver, exact encoded query and filtered valid response reaching renderer. Missing-config-only evidence is insufficient.
-- [ ] HT02: recorded socket address matches approved resolution; private/mapped-IP/rebinding/redirect attempts fail before credential-bearing dispatch; no second unvalidated DNS lookup.
-- [ ] HT03: UTF-8 JSON and TEXT decoding, one-request budget, streamed/decompressed byte bound, deadline/abort, MIME/schema/status mapping use actual stream fixtures; no raw body fallback.
-- [ ] HT04: synthetic404/429/5xx and malformed data produce exact errors; old Shopify/policy dispatch still works; each denial case is paired with adjacent permitted case through same entry point.
+- [x] HT01: supported GET is proven through the production DNS-aware HTTPS transport path into a controlled HTTPS server, with injected auth, exact encoded query and filtered valid response reaching the renderer.
+- [x] HT02: the recorded socket address matches approved DNS resolution; private, mapped, mixed-resolution and redirect attempts fail before unsafe dispatch; the transport performs no second hostname lookup.
+- [x] HT03: UTF-8 JSON and TEXT decoding, one-request budget, streamed/decompressed byte bound, absolute DNS/connect/body deadlines, caller abort, MIME/schema/status mapping and raw JSON safety validation are covered by focused fixtures with no raw body fallback.
+- [x] HT04: synthetic 404/429/5xx and malformed/unsafe data produce the required bounded errors; existing Shopify/policy dispatch remains passing; denial cases have adjacent permitted cases through the same entry point.
 
 ## Validation
 
@@ -121,63 +121,46 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Review.
+Ready for Review (Attempt 2).
 
 ### Files Changed
 
 - `src/commerce/external-http/index.ts`
 - `src/commerce/execution/executor.ts`
 - `src/commerce/execution/index.ts`
-- `src/commerce/execution/ports.ts`
-- `src/commerce/execution/renderer.ts`
 - `tests/external-http-executor.test.ts`
-- `tests/fixtures/external-http-tls.ts`
 - `docs/external-http-executor.md`
 - `package.json`
 - `package-lock.json`
 
-### Work Completed
+### Attempt-2 Work Completed
 
-- Added the injected `createExternalHttpExecutionPort` and secure Node HTTPS transport with fixed-origin GET construction, current connection resolution, address classification, DNS/socket pinning, TLS SNI and hostname verification, no redirects/proxies/cookies/retries, bounded decompression, decoding, result validation and bounded error mapping.
-- Added an explicit `EXTERNAL_HTTP` dispatcher and renderer branch while retaining the existing Shopify and policy branches.
-- Reconciled the accepted Shared package dependency to `@modainteract/moda-interact-shared@0.14.2`.
-- Added the task-owned transport fixture table and public factory documentation.
+- A1-R1: added exact production dependency `ip-address@10.7.2`; replaced local CIDR tables with `Address4.isGlobal()` / `Address6.isGlobal()`; added and exported `createNodeDnsResolver`, using Node DNS lookup with `all: true` and `verbatim: true`, preserving deduplicated first-seen addresses; retained resolver output as the sole source of the pinned socket address.
+- A1-R2: added independent five-second-bounded DNS, connect/headers and body/decompression abort scopes; added active request and response/decompression cleanup on abort, limit and error; reserved the provider budget exactly once immediately before dispatch and mapped reservation failure to non-retryable `DEADLINE`.
+- A1-R3: added pre-processor JSON traversal validation with depth 20, finite-number, ordinary-object and unsafe-key checks; unsafe/deep input is rejected before `resultPath` or either processor, while TEXT remains unparsed.
+- A1-R4: made `EXTERNAL_HTTP` an explicit dispatcher branch with compile-time exhaustive fallback; Shopify and policy branches remain unchanged.
+- Updated the transport fixture table with production DNS/classifier, connected address, provider calls, JSON/TEXT, private/mapped/mixed DNS, redirects, compression, decompressed limits, stage deadlines, in-flight abort and 404/429/5xx evidence.
 
-### Validation Results
+### Attempt-2 Validation Results
 
-- `npm run test:arch020-external-http`: passed, 4/4 HT01--HT04 tests.
-- `npm exec vitest run tests/definition-execution.test.ts tests/external-http-executor.test.ts`: passed, 16/16 tests.
-- `npm run lint`: passed with two pre-existing warnings outside task-owned files (`scripts/code-runtime-manifest.mjs`, `src/commerce/code-response/runtime/kernel.ts`).
+- `npm run test:arch020-external-http`: passed, 1 file and 12/12 tests (HT01--HT04 focused scenarios, including correction regressions).
+- `npm exec vitest run tests/definition-execution.test.ts tests/external-http-executor.test.ts`: passed, 2 files and 24/24 tests.
+- `npm run lint`: passed with 0 errors and 2 existing warnings outside task-owned files: `scripts/code-runtime-manifest.mjs:7` and `src/commerce/code-response/runtime/kernel.ts:91`.
+- `npm run typecheck`: blocked by the unchanged unrelated errors at `src/commerce/integration/backend/executors.ts:17` (`operation` and `operationVersion` are not present on the `EXTERNAL_HTTP` union member).
+- `npm run build`: compilation succeeded, then the same unchanged type-check errors at `src/commerce/integration/backend/executors.ts:17` blocked completion.
 - `git diff --check`: passed.
-- `npm run typecheck`: blocked by existing Prisma typing errors under `src/commerce/integration/backend*`; touched external-HTTP files have no editor diagnostics.
 
-### Deviations
+### Attempt-2 Deviations and Unresolved Issues
 
-- The accepted Shared result union does not include `CANCELLED`. Abort/cancellation is therefore represented as non-retryable `DEADLINE`; no unsupported wire error code was introduced.
+- The accepted Shared 0.14.2 result union does not include `CANCELLED`; processor or external-operation cancellation remains mapped to non-retryable `DEADLINE`, while runner-level cancellation remains `CANCELLED`. Shared was not widened or published.
+- Repository-wide typecheck/build remain blocked only by the unrelated integration backend discriminated-union errors recorded above. No unrelated files were changed.
 
-### Assumptions
+### Attempt-2 Git / VCS
 
-- C21 read-only scope; visual rules and generic JavaScript remain injected processor ports owned by COMMERCE-025 and COMMERCE-026.
-
-### Unresolved Issues
-
-- Repository-wide typecheck remains blocked by unrelated integration backend Prisma typing errors.
-
-### Architectural Concerns
-
-- The Shared `CommerceToolResult` union lacks the C21-specified `CANCELLED` code. This task preserved the accepted shared contract and maps cancellation to `DEADLINE`; architect review should decide whether a future shared-contract amendment is required.
-
-### Git / VCS
-
-Mirrored branch: `task/ARCH-020-COMMERCE-021`.
-
-Physical worktree isolation:
-- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-021`
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-021`
-- Shared workspace and shared implementation checkouts were not mutated for task work; no other task worktree was reused.
-
-Start-of-attempt synchronization was already-current for both task branches. Recursive implementation submodule synchronization and update passed; `database` was initialized at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`. Implementation commit `b19f9d7` (`feat(commerce): execute bounded external HTTP tools`) was pushed to `origin/task/ARCH-020-COMMERCE-021`.
+- Mirrored branch: `task/ARCH-020-COMMERCE-021`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-021`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-021`.
+- Attempt-1 history below is preserved verbatim; this Attempt-2 report supersedes its stale validation claims.
 
 ## Architect Review
 
