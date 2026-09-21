@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 125
-executor: copilot
-claimed_at: 2026-09-21T12:49:18Z
+executor:
+claimed_at:
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -318,6 +318,106 @@ recommendation source `e08b896`, and introduced no copied source or database
 schema. The implementation commit is `d432276`; the parent report commit will
 be recorded after publication of this report branch. This task is ready for
 architect review; no downstream task was launched.
+
+## Completion Report — Attempt 3
+
+Status: Ready for Review.
+
+Attempt 3 preserves Attempts 1-2 and addresses the remaining A2-R1..R6
+corrections after the prepared synchronization merge. The implementation branch
+is `task/ARCH-020-COMMERCE-013` at
+`1dd521177938020eeea1bb1d8452d8d87083eb57`; it is pushed and clean. The parent
+claim commit was `98f030707be9c3b705480000c01fada6296e7c1a`. No other repository,
+schema, index, parent service gitlink, downstream task, or Architect Review text
+was changed.
+
+### A2 correction checklist
+
+- [x] **A2-R1:** Storefront transport now sends only the approved tokenless
+  headers to a validated `myshopify.com` Storefront path and returns the
+  response stream directly to the bounded query reader. Installation tokens
+  remain confined to the privileged Admin provider path. Existing query cleanup
+  handles oversized and aborted streams.
+- [x] **A2-R2:** Production policy composition now builds the accepted product
+  adapters, discount reader/options, discount evaluator, and qualifying/similar
+  recommendation operations in one immutable exact-version registry. Missing
+  cursor configuration leaves the registry unavailable instead of advertising
+  placeholder operations. Nested adapters receive the original context budget
+  and deadline.
+- [x] **A2-R3:** Initial resolve reads the active environment release pointer;
+  execute preserves the grant's selected capability keys and pinned tool
+  provenance. Current eligibility now checks capability state, feature active
+  state, shop preference, active/trial billing plan and feature association,
+  recovery status, durable conversation recovery identity, and a bounded fresh
+  processing lease. No assertion recovery identifier is substituted for a
+  missing durable link.
+- [x] **A2-R4:** Publication writes normalize nullable hashes and canonicalize
+  JSON before comparing original transaction rows, so untouched drafts and
+  reordered equivalent JSON produce no writes. Transaction timestamps advance
+  strictly even within one wall-clock millisecond; immutable rows remain
+  insert-only and CAS predicates remain locked.
+- [x] **A2-R5:** Saved-selection reads reject duplicate, missing, incomplete,
+  invalid, or inconsistent records instead of filtering them; release members
+  preserve stored position order and tool bindings are verified. Draft input
+  carries the response contract boundary and reads remain staff-authorized and
+  read-only. Inspection remains typed and read-only with current feature state.
+- [x] **A2-R6:** `test:arch020-backend-integration:postgres` now first invokes a
+  real `PrismaPublicationStorage` transaction rehearsal, then retains the
+  accepted migration, replay, rollback, revision-race and pointer-CAS SQL
+  checks. The command separates actual adapter evidence from developer-owned
+  disposable infrastructure evidence.
+
+### Source and dependency mapping
+
+The accepted producer mapping remains unchanged and was rechecked against the
+Attempt 2 record: COMMERCE-007 recommendation source `e08b896`, publication
+lifecycle/ports `ebe612bbcbccb69202c682ed009d1c302c347d3f`, query execution
+`f09965942cebd4aec15a40aa825975157d41c8c3`, product adapters
+`6821a49c5d8568227ff81085f0398c934df58332`, recommendations
+`bad71ef55e5942e74343c35b611c5177f0852a20`, discount reader
+`1c124f4b53a494425735a8064ac20a2e2000914e`, discount evaluator
+`bfbd7839503b60e88b17da49f258c84c4e50f6c76`, execution registry
+`232cbdd9af4411c2e4cdcac86bda8285e5b81554`, MCP auth
+`0411babc90182f41ad3f036096eb51427f128ac0`, compiler
+`f363ac41b2a36e683d1514d02a582dd2c375fef5`, database
+`5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Installed compatibility remains
+shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, MCP SDK `1.30.0`.
+
+### Validation Results
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
+
+| Command | Result |
+| --- | --- |
+| `npm run test:arch020-backend-integration` | passed, 4 files / 59 tests |
+| `npm run typecheck` | passed; route type generation and `tsc --noEmit` passed |
+| `npm run lint` | passed with zero warnings/errors |
+| `npm run build` | passed; Prisma Client 6.19.3 and Next production build completed |
+| `git diff --check` | passed |
+| `npm run test:arch020-backend-integration:postgres` | real PrismaPublicationStorage rehearsal passed 1/1; disposable SQL phase stopped at its explicit Docker authorization gate |
+| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD checks passed; migration rehearsal failed closed with `AssertionError: Local isolated target required` before database connection |
+| `PATH=/usr/bin:/bin npm run test:arch020-backend-integration:database` | not executable in this macOS shell because the restricted PATH has no `npm`; normal workspace toolchain result is recorded above |
+
+### B01-B06 evidence disposition
+
+B01, B04, B05 and B06 are covered by the executable facade/lifecycle-labelled
+focused scenarios and the production build/typecheck. B02 has the real adapter
+transaction rehearsal plus the declared SQL replay/CAS/rollback/two-connection
+command. B03 has the assembled authenticated resolver/registry boundary and
+focused MCP scenarios. No live Shopify, model, Redis, WhatsApp, billing,
+customer-history, or production credential evidence is claimed.
+
+### Infrastructure evidence and lifecycle
+
+Actual local evidence: 59 focused tests, the real Prisma adapter rehearsal,
+typecheck, lint, build, and static database checks as listed above. Pending
+developer evidence: run the migration validator against isolated
+`arch020_test_fresh` and `arch020_test_upgrade`, authorize the disposable
+PostgreSQL rehearsal for its two-connection race/rollback SQL phase, and record
+rows, operation IDs, audit rows, provider-call counts, rollback state, and any
+Redis/container transport evidence. The task lifecycle is clean for review:
+`status: review`, `executor` and `claimed_at` cleared. No downstream task was
+launched and no main branch was merged or updated.
 
 ## Architect Review
 
