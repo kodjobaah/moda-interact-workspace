@@ -311,3 +311,16 @@ establish EC01–EC12 or the12-request ceiling; live worker integration remains 
 No dependency promotion, new attempt, implementation edit, main merge or gitlink
 change. Reclaim only after this parent review overlay is published; historical
 summaries do not override the latest task YAML/review.
+
+
+## COMMERCE-007 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; **Ready**, Attempt3 retained, executor/claimed_at null; not accepted.
+Verified implementation `bad71ef` and final report `f8f5928`. Independent focused11/11
+and prior architect regressions7/7 pass: replacement pricing and cancellation fixes
+are verified. Remaining A3-R1 is test/report work for existing A2-R3: claimed C18
+negative cases lack executable assertions, and the budget fixture loops across
+separate calls rather than one nested execution. Latest task gives exact fixture
+structure, per-case expected counts and reporting corrections. No new runtime
+defect, dependency promotion, claim, main merge or gitlink change. Live integration
+remains separate. Reclaim after publication of this parent overlay.

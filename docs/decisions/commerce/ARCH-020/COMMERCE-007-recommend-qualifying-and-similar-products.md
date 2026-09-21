@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 110
 executor: null
 claimed_at: null
@@ -231,6 +231,38 @@ Task branch: `task/ARCH-020-COMMERCE-007`, attempt 3; claim cleared for review (
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for a tests/report correction. Attempt 3 retained; executor/claimed_at null. Not accepted.** Verified implementation `bad71ef55e5942e74343c35b611c5177f0852a20` and final claim-cleared report `f8f59289e81cea193d16011b5af695e99b2f6b3c` (preceding report `aa87bb82`) against remote task heads. Both dedicated worktrees clean; database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` unchanged.
+
+Independent checks: **11/11 submitted focused tests pass**, and **7/7 prior architect reproductions pass** in `/tmp/c007-a2-review`. A2-R1 replacement pricing and A2-R2 post-await/publication cancellation guards are verified. Preserve those runtime fixes. Diff check passed. Lint/build/typecheck and full310 passes/two baseline failures remain submitted evidence; no live validation was run. No runtime defect is newly alleged by this decision. No dependent promotion, claim, main merge or gitlink update.
+
+#### A3-R1 — P1 — Complete the claimed local contract assertions, not just the report matrix
+
+Remaining scope is **A2-R3**, in `tests/recommendation-contract.test.ts`, task-owned test fixtures and this Completion Report. Do not change production recommendation code merely to manufacture a new runtime fix; production changes are needed only if the completed harness exposes a real defect.
+
+**Observed evidence gaps:** the file has two tests. The first still changes basket price and rule fingerprint together, uses one alternative, then exhausts a shared counter by repeatedly executing the top-level tool. The second defines `exactMatch` locally: it checks proposal uniqueness plus three IDs only. It never reads `truncated`, expiry, digest, outcome, turn or semantic changes; its baseline evidenceId is `'a'.repeat(64)`, not a computed valid digest. There are no refresh/delivery/language-write counters. Consequently the report's EC03/05 two-alternative/truncated assertions, EC04 independent-field rejection and EC06/07/08/10 expiry/imitation/revocation claims are not established. Matching a fixture's expiry string or asserting a valid grant equals itself is not a rejection test.
+
+**Implement this exact bounded test structure:**
+
+1. Keep the working real evaluator/definition-executor fixture. Extract setup so each scenario has a fresh context/budget and returns the actual producer reply, original authorized call, provider spy and consumer-double counters. Use the canonical C18 seed/identities and actual generated evidence where applicable. Generate evidenceId from canonicalJson of every evidence field except evidenceId; recompute it after each semantic mutation, except the deliberately invalid-digest case.
+2. Replace `exactMatch` with a test-only consumer double implementing the C18 admission/replay checks. It takes original call/provenance, selected evidence IDs, a refresh transport, current turn/clock/cancellation state and exposes `{decision, refreshCalls, deliveries, languageWrites}`. It replays the original name/arguments once per originating call, validates fresh evidence and matches exact proposal identity, never array position. Do not import Background or add consumer logic to Commerce production. Reuse an existing approved contract fixture instead if it implements these checks and is executed by the recorded command.
+3. Add named/table-driven rows for the following existing matrix. Every negative row must first demonstrate its unmodified positive control succeeds, then change only the named condition, so unrelated invalid fixture data cannot mask a failure:
+
+| Cases | Required assertions |
+| --- | --- |
+| EC01/02/12 | Actual arbitrary mapped call is captured/replayed once, exact original arguments preserved, identical proposal accepted, changed proposal refers, zero separately discovered/ungranted calls. |
+| EC03/05 | Two generated alternatives with selected IDs from one call cause exactly one refresh; reverse result order and still match; separate duplicate/missing/empty/truncated cases refer with deliveries0. |
+| EC04 | Separate basketFingerprint, ruleFingerprint, savings, resultingTotal, currency, outcome and proposal mutations, with recomputed valid digest, each refer; no simultaneous basket+rule mutation used as proof of individual rejection. |
+| EC06/07 | Separate expiry boundary, future timestamp, invalid digest and malformed-shape cases reject; rendered/public-query imitation registers zero evidence IDs and causes zero refresh. |
+| EC08/10 | Wrong shop/grant/release/version or revoked producer denies through the producer authorization boundary before provider work; consumer wrong turn/missing provenance/unknown ID/exhausted refresh budget fails closed with asserted zero calls where required. |
+| EC09/11 | Typed/HTTP/transport failures do not retry refresh; cancellation/new inbound/lease-loss injected while refresh is pending cause deliveries0 and languageWrites0. These are consumer-double assertions only. |
+
+4. Correct the budget fixture to exercise **one top-level remote tool execution** with a fresh12-request budget, enough admitted candidates and nested rule/fact requests to exhaust it. Assert each nested path shares that counter, reservation attempt13 issues no transport request, total actual requests<=12, and typed failure is returned rather than complete evidence. The current loop sharing one budget across many separate execute calls proves the counter throws, but not the requested nested per-call path. Retain it if useful, but do not label it that proof. Add a dispatch fixture with deliberately lower configured limits and enough candidates to observe the clamp; the current single-candidate call with maxRecommendations3 does not test limit enforcement.
+5. Replace each report matrix claim with EC ID -> named test/table row -> command -> observed refresh/provider/reservation/delivery counts. If a case is not implemented, mark it pending rather than passed. Correct the stale “8 focused tests total” entry and distinguish a current typecheck run from a pre-attempt result/build TypeScript phase. Record actual checks after the tests change.
+
+Acceptance requires the named local contract assertions above and all existing11 focused tests/seven architect regressions remaining passing. No arbitrary minimum test count is imposed; table-driven tests are fine. Run the focused suite and required repository validation, commit/push mirrored branches and return to review with claim clear. Real deployed MCP/worker/Shopify validation remains developer-owned and is not demanded here. No new feature scope, provider calls, schema or Shared publication is requested.
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 
