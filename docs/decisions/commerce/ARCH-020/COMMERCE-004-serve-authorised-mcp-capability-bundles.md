@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 80
-executor: copilot
-claimed_at: 2026-09-21T01:25:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -200,6 +200,53 @@ None newly reported.
 Status: Ready for Review. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-004`, branch `task/ARCH-020-COMMERCE-004`, pushed commit `c97a85be3a1561adca06eb03577dd84ad30ed306`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-004`, branch `task/ARCH-020-COMMERCE-004`, based on pushed claim `1b1258f664eeb3f6c834d24f6fc68aeec17fb499`; this report update is the next parent task commit. The recursive database submodule remained at recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch integration was performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Ready; Attempt 1 retained; executor/claimed_at null; not accepted.** Reviewed implementation `c97a85be3a1561adca06eb03577dd84ad30ed306` and report `566ecd9f74cda640f7ae5281dfead9c47d1657c1`; both remote task heads verified and dedicated worktrees clean. No implementation edits, next claim, dependent promotion, main integration or gitlink update. This supersedes pre-implementation readiness wording below.
+
+Independent submitted suite: **13/13 passed** across auth-entrypoints, mcp-service and mcp-compatibility. The compatibility test exercises a separate test-only SDK server, not createMcpService or the production route. Isolated `/tmp/c004-review/review.test.ts` imports the committed implementation:6 original service tests pass,4 new checks fail (initialized notification400, elapsed dispatch deadline still invokes executor, environment mismatch still invokes executor, malformed JSON503). The deadline case uses the submitted verifier double and past assertion expiry; it proves a missing dispatch guard, not a signature-verifier bypass. Diff check passed. Submitted full150/151, lint/typecheck/build remain reported evidence; no live Redis/provider/database/Background integration was executed.
+
+#### R1 — P1 — Use the accepted SDK transport and test the real handler
+
+Files: `src/commerce/mcp/service.ts`, `app/api/mcp/route.ts`, tests/mcp-service.test.ts and mcp-compatibility.test.ts. requestShape requires an id on every message, so the pinned client's `notifications/initialized` is rejected400. The compatibility suite passes only because it uses tests/fixtures/mcp-app's different SDK server. JSON.parse failure becomes503 and request.text consumes the entire body before checking64KiB; this is not a bounded reader or the C5 protocol-error contract.
+
+Use the accepted COMMERCE-001 request-scoped McpServer/WebStandardStreamableHTTPServerTransport profile with sessionIdGenerator undefined and enableJsonResponse true. Register the authenticated resource/prompt/tool callbacks against the request's trusted context. Handle initialize/initialized notification/ping through the SDK, including202 notification acknowledgement and negotiated protocol validation. Keep POST only, GET/DELETE405, Origin rejection, no sessions/SSE/batches. Enforce exact params and bounded IDs/envelopes through SDK plus task-specific validation; unknown method/parse/schema failures must be protocol errors, not503 infrastructure failures.
+
+Read streamed bytes incrementally and stop/cancel when C4 aggregate input128KiB is exceeded; return413 per C5. Validate the bounded JSON before dispatch. Bound serialized output256KiB and prompt bundle64,000 characters. Keep operation argument schema/size constraints independently. Do not use an arbitrary smaller HTTP bound as a replacement for the accepted contract. HTTP401/403 remain authentication/authority errors; business execution errors must be C4 structured results with isError, not unrelated RPC exceptions or HTTP503 for every failure.
+
+Replace/extend compatibility test so the pinned Client connects through the same createMcpService transport used by /api/mcp, injecting verifier/authorization/executor only. Verify initialization notification, resource/list/read, prompt/get, tools/list/call, typed tool failure, unsupported method, malformed JSON, streamed413 and output bounds. Keep the old foundation fixture as historical coverage if useful; do not count it as this handler's interoperability evidence. Production missing composition remains fail-closed until013 supplies it.
+
+#### R2 — P1 — Implement the task-owned grant/permission resolver
+
+Files: `src/commerce/mcp/ports.ts`, new authorization/resolution module(s), service.snapshot/availableTools and focused resolver fixtures. McpAuthorizationPort currently returns a final arbitrary snapshot; no implementation reads durable Conversation -> Recovery -> Shop ownership, processing lease, existing-grant winner, original association provenance or C8 minima. Passing caller-fixture sets to currentlyGrantedTools cannot prove these decisions. M02 grant-race and M03 conflicting-association cases claimed by the report are absent.
+
+Keep an injectable database/read port, but004 must implement the resolver that consumes authoritative ownership/turn/lease, active release, immutable grant and current association/permission records.013 wires the production data dependencies; it does not supply all of004's missing policy logic. Existing grant resolution returns its original manifest under both purposes; only no-grant resolve may produce a candidate. Background alone writes the grant. Validate original grant owner/release/manifest identities, supported versions/hash and exact original tool/revision provenance. Recompute current eligibility and effective C8 minima from surviving originally recorded associations; newly added association cannot expand authority. Disabled/revoked original associations remove access across replicas. Missing required pinned definition/schema must be typed unavailable, not silently omitted as an empty usable tool set.
+
+Reject snapshot/assertion/deployment environment mismatch and invalid verified shop-domain/ownership relationships before execution. Schema-validate immutable grant data and definitions, not only manifest. Add deterministic two-reader/winner-write fixtures, current release changed after grant, removed original association, newly added association, conflicting original limits taking minima, stale lease/completed turn, wrong tenant, wrong environment and unavailable exact revision. Assert candidate/grant identity, discovered names and0 executor/provider effects for denials. Do not create a grant writer, execute mappings, or implement014 here. Correct M02/M03 report claims to name actual cases and effects.
+
+Harden authentication.ts's config/header boundary to C5: fixed issuer/audience/subject values, at most2 configured public keys, and explicit rejection of jku/jwks header references even for a token signed by a configured key. The implementation currently ignores those references rather than rejecting them. Add valid/expired/future/wrong-environment/wrong-purpose and remote-key-header tests with signed fixtures; the existing JWT case only exercises a valid token and HS256 rejection. No network key lookup or credential use is needed.
+
+#### R3 — P1 — Return actual pinned capability prompt text
+
+Files: authorization snapshot/read ports, service prompts/list/get and resolver tests. prompts/get currently returns the string `commerce/<release>/<key>/<revision>` as the message content. That is the prompt identifier, not the authored immutable promptTemplate. Background cannot receive merchant capability behavior through this implementation.
+
+Resolve the exact authorized capability revision's stored promptTemplate with the grant, return it through a typed bounded prompt field/map, and use the C5 exact prompt name as the key. prompts/list exposes only currently permitted original capabilities; prompts/get requires arguments={} and emits the actual stored text as literal content. Never execute/interpolate templates or replace them with names/placeholders. Revoked/missing content must fail closed; new publication does not change an existing grant's text. Enforce aggregate64,000-character prompt bounds and exact release/revision ownership.
+
+Tests: unique authored text retrieved exactly, release changes leave original text unchanged, denied/revoked prompt does not leak text, wrong name/revision/extra arguments rejected, empty/oversized/missing source handled according to accepted capability schema. Test through the real SDK client, not just a fixture resource string.
+
+#### R4 — P1 — Enforce deadline and abort at dispatch and completion
+
+Files: service tools/call, ProviderBudget and executor fixture tests. deadlineAt is computed but never enforced before invoking runtime.execution.execute or before returning successful results. Only an executor that happens to call reserveProviderRequest notices expiry; CPU-only execution or a late resolver can run after the assertion deadline. Current fixtures even invoke the executor with a deadline in the past. ProviderBudget does not check request.signal.
+
+Before dispatch check now>=deadlineAt or aborted and return the bounded C4 DEADLINE failure with0 executor calls. Use a child AbortController combined with request cancellation and a timer for the remaining <=10-second/assertion-expiry window; pass that signal to014 and every nested provider reservation. Reject late successful output after cancellation/deadline. Stop timers/listeners in finally. Bound waiting so an executor which ignores its signal cannot keep the request open indefinitely; discard its late result safely. Preserve typed C4 errors, exact original context, and shared12-request ceiling; do not retry or reset the budget in nested work.
+
+Tests using fake clocks/barriers: valid assertion expires during authorization, pre-abort, abort/deadline during execution, executor ignores signal then resolves late, exact request12/13 boundary, current environment mismatch, typed executor error and successful once-only dispatch. Assert executor count, provider reservations, abort delivery and no success after expiry. Keep014 business validation out of004.
+
+### Resubmission and scope boundary
+
+Implement R1–R4 in004-owned MCP files and fixtures; update preparation/synchronization evidence and precise M01–M04 mapping. Commit/push the same implementation/report branches, then return to review. No new trusted commerce adapter work belongs in this task:015/006/016/007 and014 retain their separate ownership and normal preparation. The submitted “Starting: Implement trusted commerce adapters” progress line is not authorization to expand004. Parent overlay is published before handoff; no next attempt is claimed here. Live Background/Redis/provider integration remains developer-owned and is not the acceptance blocker.
+
 
 ### Review Status
 

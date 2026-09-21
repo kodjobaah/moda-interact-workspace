@@ -99,3 +99,16 @@ Ready (001/011/Shared Complete), with no new claim. Other dependants retain curr
 states because prerequisites remain unresolved. No main merge or gitlink update;
 architecture is not Implemented. This supersedes older COMMERCE-011 current-state
 wording while preserving historical reviews.
+
+
+## COMMERCE-004 Attempt 1 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt1 retained, claim clear; not accepted.
+Reviewed c97a85be/566ecd9f. Submitted13 tests pass but SDK compatibility uses a
+separate fixture server. Four added handler cases fail: initialized notification,
+elapsed dispatch deadline, environment mismatch and malformed JSON classification.
+R1–R4 specify real SDK transport/bounds, owned durable grant/current-permission
+resolver, actual pinned prompt text and bounded cancellation/deadline enforcement.
+See canonical task for exact files and effects.014/provider business adapters
+remain separate owners; no downstream promotion, new claim, main merge or gitlink
+change. Live integration remains separate from these component blockers.
