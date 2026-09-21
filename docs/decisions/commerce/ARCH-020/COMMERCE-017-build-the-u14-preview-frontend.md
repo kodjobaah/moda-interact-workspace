@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 135
 executor: null
 claimed_at: null
@@ -499,6 +499,35 @@ None newly reported.
 Implementation commit `bdb753c` (`fix(commerce): close preview source lifecycle gaps`) is published on the mirrored `task/ARCH-020-COMMERCE-017` branches; the parent report commit is the publication commit for this Attempt 5 report. The parent claim commit is `d6faaafa107aefdc317c2d228df28d30405cbafb`. No main branch, service gitlink, domain index, architecture document, other task or other repository was modified.
 
 ## Architect Review
+
+### Changes Requested — Attempt 5 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for corrections. Attempt 5 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `bdb753c47701650d85245793297e6d95d1444c53` and parent report `482a0964322a0b5debab9d9da81497f4824727b6`, matching remote task heads. Both dedicated worktrees were clean. No implementation change, new claim, dependent promotion, main integration or gitlink update.
+
+Independent validation: **20/20 submitted UI/client tests passed** (including 16 screen tests), and **all 12 previous architect reproductions passed** (`/tmp/c017-a4-review` and `/tmp/c017-a3-review`). Reset/known-failure admission, switching away from the initial tool handoff, mode-specific Back, nullable numeric/boolean handling and the earlier identity/cancellation/fixture guards are improved. Preserve these fixes. The submitted 57-test preview suite and typecheck/lint/build remain reported evidence rather than independent full reruns; diff checks passed. Two targeted tests in `/tmp/c017-a5-review/review.test.tsx`, importing the submitted component, fail as described below.
+
+#### A5-R1 — P1 — Complete source kind selection and freeze pending source identity
+
+This is the remaining portion of **A4-R2**, not a new feature or broader testing requirement. Change `src/studio/preview/preview-screen.tsx` and focused screen fixtures only.
+
+**Failure A — unsaved draft with populated saved releases:** provide an unsaved release handoff with `handoffId`, exact members/response contract, and at least one saved release in `releases`. The selected source is the unsaved draft, but `selectionKey` initializes to RELEASE merely because `releases[0].id` exists. Start appears enabled and makes zero requests because the selected draft has no persisted ID. Both release source handlers also unconditionally choose RELEASE, so selecting the unsaved option after a saved release has the same mismatch.
+
+**Correct exactly:** initialize and update source kind from the actual selected source, never from the presence of an unrelated saved release. An unsaved handoff always selects DRAFT with its exact capability revisions/response contract; a saved release selects RELEASE with its actual ID. Preserve the supported explicit draft selection without allowing controls to disagree with the dispatched source. Apply this to every copy of the selector, or consolidate the duplicates. Do not use handoffId as releaseId. Ensure button availability matches the handler's admissibility; no enabled Start that silently does nothing for a valid selected draft.
+
+**Acceptance A:** unsaved handoff plus a populated saved-release list -> Start issues one DRAFT creation with the handoff members. After terminal completion/reset, choose saved release -> Start issues RELEASE with that ID; after another reset, select the unsaved source -> Start issues DRAFT again. Selection and payload must match throughout.
+
+**Failure B — source changes while its POST is pending:** start tool test A with a deferred POST; change the top `Preview tool source` to B. Expected source remains A; observed B. The top selectors only use `disabled={locked}`, where locked means a conversation ID exists. Tool requests and uncertain creation are not covered. The unresolved operation remains A while the visible definition/source becomes B; A's eventual result can therefore be shown under the wrong source.
+
+**Correct exactly:** derive consistent source locks from unresolved operation identity, not just React pending flags or conversationId. While tool POST/GET is pending, RUNNING or UNKNOWN, freeze all controls that can change that tool's source; while creation is pending/uncertain, freeze its selection. Add synchronous guards to source-change handlers as well as disabled states. Keep original ID/payload for reconciliation, and unlock only when the owning operation settles terminally. Do not clear an unresolved operation simply to permit a source change. Preserve permitted source changes after terminal results, invalidating old output and arguments as appropriate.
+
+**Acceptance B:** deferred Tool A -> attempted selection of B leaves A selected and sends no additional POST; UNKNOWN retains that lock and same-ID check; terminal reconciliation unlocks selection, after which choosing B dispatches B. Apply equivalent locks to duplicate source controls and uncertain conversation creation. Assert selected IDs, original payload and call counts.
+
+#### Cleanup and evidence
+
+The obsolete commented screen implementation remains at the end of the submitted file despite the cleanup claim; remove that block as already requested. Update the report with the exact A5-R1 corrections/results, preserving earlier submission history. The four A4 reproductions and eight earlier reproductions must remain passing; no new exhaustive test matrix is requested.
+
+Authenticated desktop/narrow/keyboard browser validation remains pending a provisioned local Studio identity. Live-provider/system pairing remains developer-owned. These external prerequisites are separate from the two component failures above. Return to Review after the scoped corrections and mirrored task branches are pushed; do not self-accept or start dependent tasks.
+
 
 ### Changes Requested — Attempt 4 — 2026-09-21
 

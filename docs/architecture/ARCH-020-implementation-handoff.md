@@ -759,3 +759,18 @@ pending separately. No dependent promotion, new claim, implementation change,
 main integration or gitlink update. This supersedes earlier COMMERCE-017 current-state
 wording only; other task decisions remain unchanged. Architecture is not yet
 Implemented; COMMERCE-012 remains the final implementation checkpoint.
+
+## COMMERCE-017 Attempt 5 architect review — 2026-09-21
+
+COMMERCE-017 is **Changes Requested / Ready, Attempt 5 retained**, executor and
+claimed_at null; not accepted. Reviewed implementation `bdb753c` and report
+`482a0964`, matching remote task heads. Independent UI/client tests passed 20/20
+and all 12 prior architect reproductions passed. Two remaining source-flow tests
+failed: an unsaved handoff cannot start with a populated saved-release list,
+and the tool source can change while its original POST is pending. A5-R1 records
+exact corrections, guards and expected payload/call effects, completing A4-R2.
+Preserve the verified prior fixes. Authenticated browser identity and live-provider
+validation remain pending separately. No dependent promotion, new claim,
+implementation change, main integration or gitlink update. This supersedes older
+COMMERCE-017 current-state wording only; other task decisions remain unchanged.
+Architecture is not yet Implemented; COMMERCE-012 remains the final checkpoint.
