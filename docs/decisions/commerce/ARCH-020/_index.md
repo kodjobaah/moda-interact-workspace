@@ -89,3 +89,16 @@ latest Architect Review in the canonical COMMERCE-011 task for concrete evidence
 and correction scope. Live provider/deployment checks are not acceptance blockers.
 No dependent promotion, implementation edit or main integration; prior overlays
 remain historical and this note supersedes their COMMERCE-011 current-state wording.
+
+## COMMERCE-011 Attempt 8 review — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 8 retained**, claim cleared, not accepted.
+Reviewed implementation `ae6acb4` and report `409b14a`; clean dedicated worktrees
+and matching remote heads verified. All three Attempt 7 reproductions now pass;
+R7-2 Redis cleanup is accepted. The sole remaining correction is R8-1: preserve
+interleaved text/element order during document extraction (inline code currently
+scrambles instructions). Independent focused validation: 19 passed; isolated
+checks: 3 passed, 1 failed. See the latest canonical task Architect Review for
+reproduction and correction scope. No dependent promotion or main integration.
+Live validation remains developer-owned and is not an acceptance blocker.
+This note supersedes previous COMMERCE-011 current-state wording.

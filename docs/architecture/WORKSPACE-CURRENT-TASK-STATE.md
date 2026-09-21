@@ -610,3 +610,16 @@ pairing. No further coverage-only correction is required for this acceptance.
 Gateway002, Commerce012 and terminal system tests retain other dependencies;
 no dependent is promoted or launched. Developer integration remains separate;
 ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
+
+## COMMERCE-011 Attempt 8 review — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 8 retained**, claim cleared, not accepted.
+Reviewed implementation `ae6acb4` and report `409b14a`; clean dedicated worktrees
+and matching remote heads verified. All three Attempt 7 reproductions now pass;
+R7-2 Redis cleanup is accepted. The sole remaining correction is R8-1: preserve
+interleaved text/element order during document extraction (inline code currently
+scrambles instructions). Independent focused validation: 19 passed; isolated
+checks: 3 passed, 1 failed. See the latest canonical task Architect Review for
+reproduction and correction scope. No dependent promotion or main integration.
+Live validation remains developer-owned and is not an acceptance blocker.
+This note supersedes previous COMMERCE-011 current-state wording.

@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 executor: null
 claimed_at: null
 priority: 85
@@ -253,6 +253,30 @@ implementation and parent report are kept in dedicated physical task worktrees.
  Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 8 — 2026-09-21
+
+**Current decision: Ready, Attempt 8 retained, executor/claimed_at null; not accepted.** Reviewed implementation `ae6acb49331068b35828ecf88a59ff5e33bdebe8` and report `409b14a9d735ad1b7415f9c112bb3a8bb509aca7`. Dedicated task worktrees were clean and matched their remote task branch heads. This decision supersedes prior current-state wording. No new claim, implementation edit, dependent promotion or main integration.
+
+The three Attempt 7 reproductions now pass: sibling/nested container content is retained, mismatched main/article closure is rejected, and synchronous Redis counter-release failure preserves the original operation error. **R7-2 is accepted.** Existing URL, size, deadline and admission improvements remain accepted progress. R7-1 has one remaining functional defect below; acceptance is not withheld for exhaustive coverage or unavailable live environments.
+
+#### R8-1 — P1 — Keep text and element children in their original order
+
+At `lib/discovery/document.ts:23,34,49,76`, each node stores direct text in one concatenated `content` string separately from its element children. `readableText` emits all that direct text before all child elements. Ordinary inline code, links or emphasis therefore scramble documentation instructions.
+
+Controlled response: `<title>API</title><main><p>Use <code>first</code> before <code>second</code>.</p></main>`.
+
+Actual extracted text: `Use before . first second`.
+
+Required behavior: retain `Use first before second` in that order (normalizing whitespace around punctuation is immaterial). The current successful response moves the operand names away from their instruction and can change the meaning of API guidance. This contradicts the existing R7-1 requirement and the report/runtime claim that readable descendants preserve document order.
+
+Represent text nodes and element nodes in one ordered child sequence, or use an equivalent traversal that preserves their interleaving. Read the selected complete container in that order while continuing to exclude active/non-document subtrees. Do not append all parent text before its descendants. Keep the already fixed container pairing, bounds, URL restrictions and Redis behavior. Add a focused mixed-content regression that asserts the ordered result, rather than only checking that words are present. Correct the report/runtime claims to match the resulting behavior. This is the sole blocking correction for this review; no broad parser/test expansion or live infrastructure exercise is requested.
+
+#### Validation reviewed
+
+Independently ran the two submitted focused files: **19/19 passed**. Isolated checks against copies of the exact committed source in `/tmp/c011-a8-review` produced **3 passes / 1 failure**: all previous reproductions pass; mixed inline text ordering fails with the exact input/output above. Implementation diff whitespace check passed. The submitted full 118 tests, typecheck, lint and build are acknowledged as reported evidence and were not rerun in full by the architect.
+
+Resubmit the same branch pair after correcting R8-1 and running the relevant validation. Live Redis, OAuth, Shopify store and deployment checks remain developer-owned and are not acceptance blockers. No dependent promotion is made by this review.
 
 ### Changes Requested — Attempt 7 — 2026-09-21
 
