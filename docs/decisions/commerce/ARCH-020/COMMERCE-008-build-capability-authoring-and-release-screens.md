@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 120
-executor: codex
-claimed_at: 2026-09-21T00:24:02Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -576,6 +576,53 @@ None. The prior full-suite readiness timing failures did not reproduce; all 85 t
 Implementation commit `00c40087ddb17ab996febc39fe04a949976feb59` is pushed to `origin/task/ARCH-020-COMMERCE-008`. The parent/report branch contains this Attempt 3 review submission. Nested database submodule remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, Architect Review, architecture/index file or other task was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Current decision: Ready, Attempt 3 retained, executor/claimed_at cleared; not accepted.** Reviewed implementation `00c40087ddb17ab996febc39fe04a949976feb59` (Commerce PR3) and report `826f871ef2da60c77f9145bdc8a1ea932eb485f8` (Workspace PR171). Dedicated worktrees clean and remote task heads match. This supersedes historical current-state wording. No implementation edits, new claim, dependent promotion or main integration.
+
+Preserve progress: common interactive production boundary with unavailable adapter, explicit revision IDs/tool ownership, server-provided role use, same-operation reconciliation, selected release members and response fields. C17 still permits component/fixture acceptance; real013 provider composition is not requested here.
+
+Independently reran submitted Studio tests: **14/14 passed**. Temporary component harness `/tmp/c008-a3-review/workspace-review.test.tsx` imports actual committed components and extends submitted fixtures. Initial run:9 original component tests passed and2 review cases failed. Final focused run with a valid second published tool and a Shared-schema case: **3 review tests failed,9 unselected originals skipped**. Failures: prompt-only save drops the second binding; stale validation enables changed release content; fixture-declared valid definition fails accepted Shared validation. The harmless temporary esbuild/oxc option warning is not a product failure. Full85/type/lint/build are submitted passing evidence; implementation diff check independently passed. No live/provider calls or new browser screenshots were made in this review.
+
+#### A3-R1 — P1 — Use canonical definitions and contract-faithful query authoring
+
+Files: `src/studio/contracts.ts`, `components/studio-workspace.tsx` emptyDefinition/ToolEditor/Discovery, `src/studio/testing/in-memory-studio-services.ts`, and contract/component tests. The port still redefines accepted ToolDefinition/ResponseContract as broad records. Both the fixture published definition and new draft use `schemaHash:'schema-2026-07'` and `responseTemplate:{template:...}`, which fail Shared publication validation. Fixture validateToolDefinition merely checks that the document includes `{` and reports valid. This masks the broken authoring flow rather than proving C17 compatibility.
+
+Alias/import accepted Shared draft/full definition and response-contract types; preserve intentionally invalid draft JSON as editor text, not as a fake published definition. A success fixture must pass CommerceToolDefinitionSchema and the relevant accepted contract. Use the retained authoritative schema hash and canonical response template (e.g. `{kind:'text',text:'{{result.title}}',unavailable:'Product data is unavailable.'}` for a matching selected output). Keep explicit invalid/unavailable fixtures separate. Do not change Shared or011 implementation to accommodate invalid UI payloads.
+
+Discovery currently synthesizes `query <name> { product { <last path segments> } }`, discarding required product arguments, variable declarations, nesting and original result semantics; the editor cannot configure variables, execution kind or policy arguments. Preserve/build the full named definition through typed schema selection and argument/mapping input, including aliases/nesting/variables/resultPath. Use an injected query-building/validation boundary with contract-faithful fixtures where needed;013 owns concrete adapter wiring, not reconstructing user inputs missing from008. On return to U06, carry the complete validated definition and mark it dirty until explicitly saved. Verify an exact ProductDetails definition with mapped handle and valid scalar template, as well as invalid neighbors; a brace check is not validation.
+
+Tool input/response JSON textareas parse on every keystroke and discard invalid intermediate text. Keep raw text state for editing, parse/validate on explicit actions and show field errors without replacing input. Add a user-typing test that clears and enters JSON incrementally, saves the intended complete definition, and reports invalid JSON without losing it.
+
+#### A3-R2 — P1 — Preserve all capability tool bindings
+
+File: `components/studio-workspace.tsx` CapabilityEditor. It initializes only `selected.toolBindings[0]` and always submits either `[binding]` or `[]`. A prompt-only save silently removes every other existing binding. Reproduction uses two actual published tool records/revision IDs: outgoing updateDraft contains only the first. This violates the exact full-binding requirement even when no association was edited.
+
+Replace singleton state with a detached array initialized from the selected revision. Provide explicit add/remove/replace selection per tool; preserve every unaffected binding, validate unique tool IDs and exact published revisions, and support the canonical maximum32. Never infer removal from a single-select UI. A base capability may have zero tools. Save the complete array. Tests: load2 and32 bindings, edit only the prompt, assert outgoing array unchanged; replace one revision, remove one explicitly, and add one arbitrary published tool with exact expected payload. Reject duplicate tool identity without losing input. Preserve SUPER_ADMIN publication controls and independent server authorization.
+
+#### A3-R3 — P1 — Tie validation and pending writes to current content
+
+File: `components/studio-workspace.tsx` ReleaseComposer validation state/handlers and command success handling. The async validate closure compares its captured responseContract to itself; instructions/schema/member changes do not increment validationToken. A pending old validation resolves valid after an edit and enables Create immutable release/Test conversation for content that was never validated. This failure is independently reproduced.
+
+Increment a revision/token synchronously on EVERY relevant edit and invalidate a structured validation record. Retain `{token,canonicalInputHash,result}` rather than testing a display string's startsWith('Valid'). Compare completion against a ref containing the CURRENT token/hash. Only allow create/preview when that exact current contract (and any membership inputs covered by validation) has a successful result. Show pending state and acquire a synchronous guard before the validation await; duplicate activations issue one request. Invalid/failed results leave controls locked and preserve authored text. Discovery validation must use the same current-content discipline; provider failures must not leave an earlier valid result enabled.
+
+While a write is pending, either disable all conflicting editable fields or retain a content revision so completion cannot clear dirty state for edits made after dispatch. Unknown-outcome same-ID replay must retain its original admitted input. Tests: deferred success followed by instructions edit, schema edit and membership change cannot unlock new content; a second validation for current content can; double activation issues one validation; edit during save cannot falsely mark newer text saved. No extra publication/recovery attempts on reconciliation.
+
+#### A3-R4 — P1 — Make actual navigation preserve handoffs and protect dirty edits
+
+Files: `components/studio-workspace.tsx`, `components/studio-composer-context.tsx`, `components/dirty-navigation-guard.tsx`, shell/revision links and the browser harness. Default navigate uses window.location.assign, but composer state exists only in React useState. U06 sets context then reloads /explore, losing the originating draft; release -> preview similarly loses members/response state. Existing component tests inject navigate spies and rerender the same provider, concealing the failure. `tests/browser-evidence/main.tsx` sets navigate to a no-op, so the populated screenshot harness cannot establish page-to-page traversal.
+
+Use the App Router client navigation mechanism with a persistent root provider, or a deliberately scoped/persisted handoff restored across reloads; do not rely on a state update immediately before document replacement. Keep record/revision/return destination exact. Provide a functioning isolated harness navigation adapter that actually changes the page/route and retains the same state semantics as production; no public fixture route or production fallback. Exercise actual U06 -> U07 -> U06 and U10 -> U14 -> Back, asserting selected IDs and complete unsaved authored content survive.
+
+DirtyNavigationGuard still protects only its own Back/Browse buttons. Sidebar and revision-history Links bypass it, list tool/release editors have no guard, and ReleaseComposer Cancel closes immediately. Route all specified departures through a common pending-destination guard, with Stay preserving input/focus and Discard continuing to the exact destination. Do not replace this with arbitrary history.back. Protect unknown operation context from being silently abandoned. On same-page revision/record navigation, key or reset ToolEditor/CapabilityEditor to the explicitly selected identity after the guard; current useState initialization alone can retain the previous revision's fields. Suppress stale read completions after navigation.
+
+Tests: dirty sidebar departure, revision change, list-editor departure and composer Cancel all show the guard; Stay/Discard and focus/destination are asserted. Switch between two distinct draft revisions without full reload and verify fields/CAS IDs correspond to the selected revision. Browser evidence must exercise real navigation, not only static populated screens or unavailable production routes.
+
+### Attempt 3 resubmission gate
+
+Implement A3-R1–R4 on the same mirrored branches; these finish the previous four corrections, not new provider scope. Promote the three reproduced regressions to permanent tests, add connected navigation/authoring cases above, and run focused/full local checks plus type/lint/build/diff. Update the report with actual command payloads, preserved content and effect counts; distinguish static screenshot evidence from exercised traversal. Preserve prepared isolation/dependency evidence. Commit/push then return to Review. This parent overlay is published before handoff; no main merge or dependent execution is authorized by the review.
+
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 

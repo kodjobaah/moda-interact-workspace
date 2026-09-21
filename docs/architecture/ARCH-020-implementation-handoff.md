@@ -422,3 +422,15 @@ retry, and exact-revision/navigation behavior. Latest task review records R1–R
 C17 still allows fixture component acceptance; real adapters and readiness timing
 failures are not the blocker. No new claim, downstream promotion, implementation
 edit or main integration. Other task states remain unchanged.
+
+
+## COMMERCE-008 Attempt 3 review — 2026-09-21
+
+Current decision: Ready, Attempt3 retained, claim cleared; Changes Requested.
+Reviewed00c40087 /826f871e.14 focused Studio tests pass independently;3 added
+review cases fail (lost second tool binding, stale release validation unlocking,
+fixture-valid definition rejected by Shared). A3-R1–R4 specify canonical query/
+definition authoring, complete binding preservation, content-bound validation,
+and actual persistent navigation/dirty guards. Static/no-op browser harness does
+not prove page traversal. Preserve common component boundary and replay progress;
+013 production composition remains separate. No promotion, claim or main merge.
