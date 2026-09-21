@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 125
-executor: copilot
-claimed_at: 2026-09-21T14:17:25Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -498,6 +498,90 @@ commit: `3176ef9dcdb08b12597097a20be5941e0254a8c7` before this final report-hash
 record update. Both mirrored branches
 remain `task/ARCH-020-COMMERCE-013`; lifecycle fields are clean for review with
 `status: review`, `executor: null`, and `claimed_at: null`.
+
+## Completion Report - Attempt 5
+
+Status: Ready for Review.
+
+Attempt 5 preserves Attempts 1-4 and implements every A4 correction. The
+implementation commit is `3ab8679` (`3ab867916f53a9665c16062b34cacf4656f3a529`)
+on the pushed mirrored branch `task/ARCH-020-COMMERCE-013`. No other
+repository, database schema, index, parent service gitlink, downstream task,
+main branch, or Architect Review text was changed.
+
+### A4 correction checklist
+
+- [x] **A4-R1:** No-grant authorization now names prompts with the resolved
+  active manifest release ID and derives granted tools only from the filtered
+  manifest members. A capability with an excluded feature cannot leave an
+  empty-capability tool in the canonical manifest. Pinned grant execution
+  provenance remains unchanged.
+- [x] **A4-R2:** Production discount reads now use the privileged Admin
+  installation token, current `read_discounts` scope, cursor/first pagination,
+  actual basic percentage/fixed value, targets, minimums, status and bounded
+  provider semantics. Response bytes are streamed and bounded before JSON
+  parsing, with cancellation and reader cleanup. Storefront remains tokenless.
+- [x] **A4-R3:** Inspection now reads the active release, published capability
+  revisions, feature state, shop preferences, subscription plan features and
+  recovery state. Its concrete result returns real capability/revision IDs,
+  ordered tool revision bindings, a bounded manifest and explicit exclusion
+  reasons. Saved DRAFT selections now resolve capability-bound tool revisions,
+  validate ownership/status, reject inconsistent bindings and return exact
+  definitions/hashes.
+- [x] **A4-R4:** The real Prisma rehearsal now creates a valid publication,
+  durably replays it, contends on the same metadata CAS token across two
+  connections, and injects failure after `writeState` to verify business,
+  pointer and audit rollback. Lifecycle audit target derivation was corrected
+  so published revision audits satisfy the canonical target constraint.
+
+### Source and dependency mapping
+
+Accepted producer revisions re-verified and consumed without copied source:
+COMMERCE-007 `e08b896`; publication lifecycle/ports
+`ebe612bbcbccb69202c682ed009d1c302c347d3f`; query execution
+`f09965942cebd4aec15a40aa825975157d41c8c3`; product adapters
+`6821a49c5d8568227ff81085f0398c934df58332`; recommendations
+`bad71ef55e5942e74343c35b611c5177f0852a20`; discount reader
+`1c124f4b53a494425735a8064ac20a2e2000914e`; discount evaluator
+`bfbd7839503b60e88b17da49f258c84c4e50f6c76`; execution registry
+`232cbdd9af4411c2e4cdcac86bda8285e5b81554`; MCP auth/authentication
+`0411babc90182f41ad3f036096eb51427f128ac0`; compiler
+`f363ac41b2a36e683d1514d02a582dd2c375fef5`; database submodule
+`5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Installed compatibility remains
+shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, MCP SDK `1.30.0`.
+
+### Validation Results
+
+Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
+
+| Command | Result |
+| --- | --- |
+| `npm run test:arch020-backend-integration` | passed, 4 files / 59 tests |
+| `npm run typecheck` | passed; Next route type generation and `tsc --noEmit` passed |
+| `npm run lint` | passed with zero warnings/errors |
+| `npm run build` | passed; Prisma Client 6.19.3 and Next production build completed |
+| `git diff --check` | passed |
+| `npm run test:arch020-backend-integration:postgres` | real Prisma rehearsal passed 2/2; disposable Docker SQL phase stopped at its explicit authorization gate |
+| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD checks passed; migration rehearsal failed closed with `AssertionError: Local isolated target required` before connection |
+
+Actual PostgreSQL evidence includes durable publication rows/audits, one-effect
+replay, same-row two-connection CAS contention with one winner and one
+`CAS_CONFLICT`, and injected post-write rollback with restored business/pointer
+state and no rollback audit. Pending developer infrastructure evidence is the
+migration validator against isolated `arch020_test_fresh` and
+`arch020_test_upgrade`, the disposable PostgreSQL SQL phase after explicit
+`ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1` authorization, and Redis/container
+transport checks. No live Shopify, model, WhatsApp, billing, customer-history
+or production credential evidence is claimed.
+
+### Lifecycle and handoff
+
+Task fields are clean for review: `status: review`, `executor: null`,
+`claimed_at: null`, `attempt: 5`. No downstream task was launched and no main
+branch was merged or updated. The parent report commit and push are recorded
+after this report edit; implementation branch is already pushed at
+`3ab867916f53a9665c16062b34cacf4656f3a529`.
 
 ## Architect Review
 
