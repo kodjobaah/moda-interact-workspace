@@ -567,3 +567,15 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 015;012/013/system-test retain other unfinished dependencies. No downstream
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
+
+
+## COMMERCE-009 Attempt 4 accepted — 2026-09-21
+
+Complete, architect accepted; Attempt4 retained, claim clear. Reviewed5d4dcd3 /
+ef556b4c. Expired-owner execution fence verified in memory/Redis and all dispatch
+boundaries. Independent37/37 focused tests pass, including actual isolated Lua;
+prior architect expiry/replacement reproduction1/1 passes with0 stale model calls.
+Prior accepted prompt/history/language/replay/bounded-state corrections retained.
+009 is satisfied;012/013/system-test retain other unfinished prerequisites, and
+017 has no009 dependency. No promotion or automatic execution. Live deployment
+and013 assembly remain separate. No main integration or gitlink update.

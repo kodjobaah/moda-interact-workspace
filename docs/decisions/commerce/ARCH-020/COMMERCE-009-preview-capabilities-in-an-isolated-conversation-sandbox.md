@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 130
 executor: null
 claimed_at: null
@@ -123,7 +123,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review.
+Architect accepted — Complete, Attempt 4. See current Architect Review below.
 
 ### Files Changed
 
@@ -250,6 +250,26 @@ None newly reported.
   file edit was performed.
 
 ## Architect Review
+
+### Accepted — Attempt 4 — 2026-09-21
+
+**Current decision: Complete; architect accepted. Attempt 4 retained; executor/claimed_at null.** Reviewed implementation `5d4dcd3db0190940c603eefb1ac399ddc52c402a` and report `ef556b4cbb6602fb569276e22d129ca6871cb94d`, verified against remote task heads. Dedicated worktrees clean; preparation and unchanged database pin evidence retained. This supersedes prior Changes Requested decisions without deleting history.
+
+A3-R1 is resolved. Both stores' ownsActiveRun atomically sweep expiry and require the exact environment/admin/run/token, RUNNING status, unexpired reservation, no cancellation and ownership of the conversation lock. The service checks this before runner execution and model/tool dispatch; its watcher uses the same check to abort on ownership loss. Delayed callbacks cannot invoke model/tool work after expiry. Completion fencing preserves UNKNOWN/history/language and another run's reservation.
+
+Independent validation:
+
+- Focused preview service/routes/store/Redis-Lua suite: **37/37 passed**, all4 files executed, including actual isolated temporary Unix-socket Redis transitions. No deployed Redis or provider was contacted.
+- Prior architect reproduction `/tmp/c009-a3-review/review.test.ts`: **1/1 passed** against current committed code. Expired queued MODEL run A makes0 model calls after same-admin run B reserves the released slot.
+- Submitted replacement regression additionally asserts0 tool calls, unchanged old UNKNOWN/history/language and intact replacement lock. Both memory and Lua ownership tests cover live/expired/missing/wrong-token results.
+- Diff checks passed. Submitted lint/typecheck/build and full219-pass/one discovery-timeout evidence remain reported rather than independently rerun. No paid model, live Shopify, customer data or database rehearsal was used.
+
+The prior Attempt3 review already verified A2-R1/R2/R4 and the other A2-R3 changes; this targeted review retains those conclusions. No remaining blocking finding in009's component scope. Deployment Redis and013's actual saved-source/model/tool composition remain separate developer/integration validation;017 retains U14 ownership. Acceptance does not claim deployed preview functionality or system-test completion.
+
+Dependency reconciliation:009 prerequisite is satisfied. COMMERCE-012/013 and SYSTEM-TEST-001 retain unfinished prerequisites, including004/005, and remain pending.017 does not depend on009 and its state is unchanged by this acceptance. No downstream promotion or execution is claimed. The architecture remains in implementation until remaining required tasks and system validation are accepted.
+
+Parent task/index/architecture/handoff/workspace rollup are reconciled and published on the parent task branch. No implementation edit/commit, new claim, main merge/push or gitlink update. Developer final integration remains implementation merge first, then the parent gitlink/report integration.
+
 
 ### Changes Requested — Attempt 3 — 2026-09-21
 
