@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 110
-executor: copilot
-claimed_at: 2026-09-21T10:31:13Z
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
   - ARCH-020-COMMERCE-016
@@ -184,16 +184,17 @@ Implemented the qualifying and similar-product policy operations, deterministic 
 - A5-R1.2 implemented: refreshed envelopes are parsed through `CommerceToolOutputs...parse`, truncation is rejected, every selected original item requires exactly one fresh proposal/evidence match, and semantic identity fields, canonical digest and time window are checked before delivery/language writes. Reversed refreshed order accepts; invalid second IDs and truncated replies refer with `deliveries=0`, `languageWrites=0`.
 - A5-R1.3 implemented: the same replay flow covers valid timestamp/digest refreshes, expiry beyond `03:01:00Z`, wrong turn, revoked grant and wrong currency. Deferred refresh cancellation returns before delivery. The real mapped producer path records provider activity and preserves exact authored name/arguments; no separately discovered call is used.
 - A5-R1.4 implemented: report claims below are limited to executed Attempt 6 assertions. Live MCP/worker/Shopify and system validation remain explicitly developer-owned.
+- A6-R1 implemented in `tests/recommendation-contract.test.ts`: replay provenance is a `{name, toolRevisionId, arguments}` tuple included in the grouping key and passed to the async refresh callback. The observed callback count is one for all three selected IDs, with exact arguments `{search: 'shirt', max: 3}` and revision `revision-1`. Each selected original evidence item now validates its canonical digest and time window before refresh; an expired original at `2026-09-21T03:01:01.000Z` returns `REFER` with `refreshCalls=0`, while an unexpired original with changed valid timestamps accepts with `refreshCalls=1`, `deliveries=1`, and `languageWrites=1`.
 - C18 shared recommendation outputs and operation descriptors, C4 exact-call evidence identity, C8 deterministic ranking, max-three output, currency/extra-spend disclosure, evaluator bounds, and qualifying/similar separation remain preserved.
 
 ### Validation Results
 
-Focused: `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts` -> 2 files, 11 passed, 0 failed in Attempt 6.
-Typecheck: `npm run typecheck` -> passed in Attempt 6 (`next typegen` and `tsc --noEmit`).
-Lint: `npm run lint` -> passed with 0 warnings/errors.
-Build: `npm run build` -> passed; Prisma client generation and Next.js production build completed.
+Focused: `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts` -> 2 files, 11 passed, 0 failed in Attempt 7. The callback spy observed one invocation for the three selected IDs with the exact mapped name, revision and arguments; expired-original validation observed `refreshCalls=0`; changed valid timestamps observed `refreshCalls=1`, `deliveries=1`, `languageWrites=1`.
+Typecheck: `npm run typecheck` -> passed in Attempt 7 (`next typegen` and `tsc --noEmit`).
+Lint: `npm run lint` -> passed with 0 warnings/errors in Attempt 7.
+Build: `npm run build` -> passed in Attempt 7; Prisma client generation and Next.js production build completed.
 Full tests: `npm run test` -> 38 files passed, 1 failed; 334 tests passed and 1 failed. The unrelated failure is `tests/discovery-limits.test.ts`, which timed out after 30 seconds in the Redis-backed sequential limit test. No recommendation or contract test failed. This remains an unrelated baseline/environment condition and was not changed.
-Whitespace: `git diff --check` -> passed in Attempt 6.
+Whitespace: `git diff --check` -> passed in Attempt 7.
 
 #### Requirement-to-fixture matrix
 
@@ -208,10 +209,10 @@ Whitespace: `git diff --check` -> passed in Attempt 6.
 | Changed basket/turn/proposal evidence | `npx vitest run tests/recommendation-contract.test.ts`; real evaluator/dispatch fixture | reject stale or mismatched evidence and produce a new digest after basket/rule change | passed |
 | Arbitrary mapped definition and canonical evidence | `tests/recommendation-contract.test.ts`; fixed clock, mapped inputs, controlled provider, computed digest | preserve authored name, arguments, rendered response, canonical digest, and replay identity | passed; generated evidence and full replay proposal order asserted |
 | Similarity versus qualification separation | `tests/recommendations.test.ts`; similarity fixture | no qualifying label without separate evidence | passed |
-| EC01/02/12 original call and replay | `tests/recommendation-contract.test.ts`; mapped definition executor fixture | retain arbitrary tool name/arguments, replay once, preserve mapped inputs, and avoid ungranted discovery | passed; one exact replay, no extra grant |
+| EC01/02/12 original call and replay | `tests/recommendation-contract.test.ts`; mapped definition executor fixture | retain arbitrary tool name/revision/arguments, pass the tuple to refresh once, preserve mapped inputs, and avoid ungranted discovery | passed; callback observed once with `{name: 'mapped_replay_fixture', toolRevisionId: 'revision-1', arguments: {search: 'shirt', max: 3}}` |
 | EC03/05 exact alternative matching | `tests/recommendation-contract.test.ts`, `executes one provenance-backed C18 replay flow...` | three selected alternatives from one call, reversed refresh order, bad second ID and truncated reply | passed; one refresh, exact proposal matching, bad/truncated `deliveries=0`, `languageWrites=0` |
 | EC04 independent evidence fields | same contract test replay validation and tampered grant/currency rows | semantic/identity mismatches fail closed only after canonical digest validation | passed; tampered rows returned REFER with zero delivery/language writes |
-| EC06/07/08/10 expiry, digest, identity and authorization | same contract test valid refreshed timestamp, post-expiry clock, wrong turn, revoked grant and currency rows | valid fresh digest accepted; expiry/identity/provenance mismatches fail closed | passed; wrong turn `refreshCalls=0`, all invalid rows `deliveries=0` |
+| EC06/07/08/10 expiry, digest, identity and authorization | same contract test original-window gate, valid changed timestamp, wrong turn, revoked grant and currency rows | valid fresh digest accepted only while original evidence remains valid; expiry/identity/provenance mismatches fail closed | passed; expired original `refreshCalls=0`; changed valid timestamp `refreshCalls=1`, `deliveries=1`; wrong turn `refreshCalls=0`; invalid rows `deliveries=0` |
 | EC09/11 typed failures and stale completion | same contract test deferred async refresh with cancellation | pending refresh completion cannot deliver or write language | passed locally; cancellation row returned `deliveries=0`, `languageWrites=0`; live host races remain developer-owned |
 | EC01-EC12 producer/consumer effects | focused command above; actual mapped producer and unified replay fixture | arbitrary mapped call, generated evidence, exact replay, proposal/evidence bounds, and local delivery guards are executable; live worker/MCP remains developer-owned | passed locally for executed rows; provider-budget fixture remains reservation 13 with no later transport request |
 
@@ -233,9 +234,9 @@ None newly reported.
 
 ### Git / VCS
 
-Task branch: `task/ARCH-020-COMMERCE-007`, attempt 6; claim cleared for review (`status: review`, `executor: null`, `claimed_at: null`).
+Task branch: `task/ARCH-020-COMMERCE-007`, attempt 7; claim cleared for review (`status: review`, `executor: null`, `claimed_at: null`).
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`; this report is the task-owned evidence artifact.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `21e150f` (`test(commerce): complete unified recommendation replay harness`), pushed to `origin/task/ARCH-020-COMMERCE-007`; preceding implementation commits remain included.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `e08b896` (`test(commerce): verify replay provenance and expiry`), pushed to `origin/task/ARCH-020-COMMERCE-007`; preceding implementation commits remain included.
 - Recursive database submodule evidence: `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`).
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
