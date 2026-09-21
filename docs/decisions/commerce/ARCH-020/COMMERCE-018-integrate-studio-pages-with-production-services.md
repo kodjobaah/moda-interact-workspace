@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 140
 executor: null
 claimed_at: null
@@ -197,3 +197,14 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+
+
+### Readiness reconciliation after COMMERCE-013 Attempt 9 acceptance — 2026-09-21
+
+Ready, Attempt 0 retained; executor/claimed_at null. COMMERCE-013 implementation
+`4d52977` is architect accepted and all other explicit prerequisites are Complete.
+No claim or automatic launch. Consume the actual backend via normal preparation.
+Preserve native-basic monetary discount profiles as UNSUPPORTED while provider
+rounding semantics are unproven; do not estimate savings or implement missing
+provider semantics in this composition task. PostgreSQL adapter timeout diagnosis
+and live infrastructure evidence remain separately developer-owned.

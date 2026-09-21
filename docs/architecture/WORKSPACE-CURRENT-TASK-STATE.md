@@ -1060,39 +1060,31 @@ preview backend and032 availability are separate Pending producers;024 is wiring
 only.026 requires029's accepted runtime proof. C21 section9 and task YAML are
 authoritative; existing execution claims remain untouched.
 
-### COMMERCE-029 Attempt 1 architect review — 2026-09-21
+### COMMERCE-013 Attempt 8 architect review — 2026-09-21
 
-**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
-implementation `39e636f` and report `8af40208`. A1-R1 requires the exact C21 9.4
-serialized kernel contract; A1-R2 protects validation from guest intrinsic mutation;
-A1-R3 retains capacity until worker termination; A1-R4 provides the reusable runtime
-manifest and packaged artifact/resource evidence. Exact instructions and focused
-reproductions are in the task Architect Review. Submitted six runtime tests pass;
-three architect checks reproduce two output bypasses and contract rejection.
-Unrelated Prisma typecheck diagnostics are not the blocker. No acceptance, main
-merge, implementation change, gitlink update or downstream promotion. COMMERCE-026
-remains Pending; SYSTEM-TEST-002 remains explicitly developer-invoked.
+**Changes Requested; Ready, Attempt 8 retained; executor/claim null.** Reviewed
+implementation `13805d2` and report `de6b2829`. A7-R1 production Shopify schema
+correction passes. A8-R1 corrects whole-basket minimum assumptions for targeted
+discounts; A8-R2 separates provider-supported calculation semantics from a fixture
+of assumed rounding constants. Exact correction examples and evidence boundaries
+are in the task Architect Review. Focused integration: 61/61; architect checks:
+12/12. PostgreSQL remains one passing scenario and one timeout, not completed
+rollback evidence or a demonstrated new regression. Developer-owned infrastructure
+validation remains pending. No acceptance, implementation change, main merge,
+gitlink update or downstream promotion; COMMERCE-018/019 remain Pending.
 
-### COMMERCE-029 Attempt 2 architect review — 2026-09-21
+### COMMERCE-013 Attempt 9 accepted — 2026-09-21
 
-**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Reviewed
-implementation `b4e8d05` and report `92403d3c`. Exact kernel interface, awaited
-termination and packaged artifact/manifest improvements verified. A2-R1 fixes a
-reproduced non-enumerable toJSON bypass returning successful array JSON; A2-R2
-requires actual built-in supervisor evidence rather than a 50 ms startup deadline
-labelled as the 2,000 ms scenario. Exact corrections are in the task review.
-Focused tests: 8/8; package/smoke passed; targeted architect checks: 1 passed,
-1 failed. No acceptance, implementation change, main merge, gitlink update or
-promotion. COMMERCE-026 remains Pending; SYSTEM-TEST-002 is developer-invoked.
-
-## COMMERCE-029 Attempt 3 architect review — 2026-09-21
-
-**Changes Requested; Ready, Attempt 3 retained; executor/claim null.** Reviewed
-implementation `4bc52ad` and report `5dc5f894`. The non-enumerable `toJSON`
-correction is accepted in substance and packaged smoke handles the nonterminal start
-event. Two functional items remain: SB02 still lacks an actual supervisor-terminated
-run (`INVALID_OUTPUT` proves the worker returned before the supervisor), and the
-current `compile()` path executes authored top-level source before reporting compile
-success/failure. Exact A3-R1/A3-R2 corrections are in the task Architect Review.
-No exhaustive coverage expansion, live validation, main integration or dependent
-promotion. COMMERCE-026 remains Pending; the next claim is Attempt 4.
+**Accepted / Complete, Attempt 9 retained; executor/claim null.** Reviewed
+implementation `4d52977` and report `650d53bc`. Targeted minima use eligible lines;
+unproven monetary semantics fail closed. Native-basic fixed/percentage monetary
+qualification remains UNSUPPORTED pending independent provider evidence and an
+explicit reviewed enabling change. Acceptance does not assert live discount
+qualification; Studio/preview must preserve this limitation. Earlier review demands
+for guessed/unsupported positive monetary profiles are superseded by this disposition.
+Focused integration: 61/61; architect regressions: 12/12. PostgreSQL remains one
+passing scenario and one timeout; developer-owned adapter validation remains pending.
+013 introduces no migration; database owners retain fresh/upgrade evidence ownership.
+COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
+prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
+Other deployment/cache/system gates retain their dependencies and manual validation.

@@ -20,13 +20,13 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | complete | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-012](COMMERCE-012-add-frequency-based-tool-result-caching.md) | Frequency-based tool-result caching; final implementation feature, readiness checkpoint outstanding | pending | All other ARCH-020 implementation tasks |
-| [ARCH-020-COMMERCE-013](COMMERCE-013-integrate-publication-and-studio-with-real-commerce-services.md) | Integrate Commerce backend runtime and publication services | ready | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-014, ARCH-020-COMMERCE-015, ARCH-020-COMMERCE-016 |
+| [ARCH-020-COMMERCE-013](COMMERCE-013-integrate-publication-and-studio-with-real-commerce-services.md) | Integrate Commerce backend runtime and publication services | complete | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-014, ARCH-020-COMMERCE-015, ARCH-020-COMMERCE-016 |
 | [ARCH-020-COMMERCE-014](COMMERCE-014-execute-and-render-pinned-tool-definitions.md) | Execute and render pinned tool definitions | complete | ARCH-020-COMMERCE-004, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-015](COMMERCE-015-provide-trusted-basket-and-product-policy-adapters.md) | Provide trusted basket and product policy adapters | complete | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | complete | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | complete | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
-| [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
+| [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | pending | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | pending | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | pending | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
@@ -475,39 +475,104 @@ No automatic task launch, implementation/main change or service gitlink update.
 Architecture remains in progress; latest task YAML/review supersedes historical
 Changes Requested summaries.
 
-### COMMERCE-029 Attempt 1 architect review — 2026-09-21
 
-**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
-implementation `39e636f` and report `8af40208`. A1-R1 requires the exact C21 9.4
-serialized kernel contract; A1-R2 protects validation from guest intrinsic mutation;
-A1-R3 retains capacity until worker termination; A1-R4 provides the reusable runtime
-manifest and packaged artifact/resource evidence. Exact instructions and focused
-reproductions are in the task Architect Review. Submitted six runtime tests pass;
-three architect checks reproduce two output bypasses and contract rejection.
-Unrelated Prisma typecheck diagnostics are not the blocker. No acceptance, main
-merge, implementation change, gitlink update or downstream promotion. COMMERCE-026
-remains Pending; SYSTEM-TEST-002 remains explicitly developer-invoked.
+### COMMERCE-013 Attempt 3 architect review — 2026-09-21
 
-### COMMERCE-029 Attempt 2 architect review — 2026-09-21
+**Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `1dd5211`
+and report `1961d586`. A3-R1–R5 specify real provider rule facts/scopes, eligible
+resolve manifests and shared lease/limits, durable cross-transaction CAS time,
+complete saved-selection/inspection results, and real adapter mutation rehearsals.
+Focused tests: 59 passed; six prior reproductions pass; two remaining contract
+checks fail (repeated CAS time and empty draft selection). The reported Prisma
+1/1 test is a no-op smoke check, not race/rollback evidence. No acceptance or
+downstream promotion; COMMERCE-018/019 stay Pending. Disposable infrastructure
+execution remains developer-owned; lack of Docker authorization is not the blocker.
 
-**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Reviewed
-implementation `b4e8d05` and report `92403d3c`. Exact kernel interface, awaited
-termination and packaged artifact/manifest improvements verified. A2-R1 fixes a
-reproduced non-enumerable toJSON bypass returning successful array JSON; A2-R2
-requires actual built-in supervisor evidence rather than a 50 ms startup deadline
-labelled as the 2,000 ms scenario. Exact corrections are in the task review.
-Focused tests: 8/8; package/smoke passed; targeted architect checks: 1 passed,
-1 failed. No acceptance, implementation change, main merge, gitlink update or
-promotion. COMMERCE-026 remains Pending; SYSTEM-TEST-002 is developer-invoked.
 
-## COMMERCE-029 Attempt 3 architect review — 2026-09-21
+### COMMERCE-013 Attempt 4 architect review — 2026-09-21
 
-**Changes Requested; Ready, Attempt 3 retained; executor/claim null.** Reviewed
-implementation `4bc52ad` and report `5dc5f894`. The non-enumerable `toJSON`
-correction is accepted in substance and packaged smoke handles the nonterminal start
-event. Two functional items remain: SB02 still lacks an actual supervisor-terminated
-run (`INVALID_OUTPUT` proves the worker returned before the supervisor), and the
-current `compile()` path executes authored top-level source before reporting compile
-success/failure. Exact A3-R1/A3-R2 corrections are in the task Architect Review.
-No exhaustive coverage expansion, live validation, main integration or dependent
-promotion. COMMERCE-026 remains Pending; the next claim is Attempt 4.
+**Changes Requested; Ready, Attempt 4; executor/claim null.** Reviewed `d42f8e9`
+and report `b71c7874`. A4-R1–R4 specify canonical initial resolution/tool filtering,
+actual provider rule facts and bounded reads, real inspection/saved-binding
+contracts, and genuine contentious adapter race/rollback assertions. Focused
+suite: 59 passed; all eight prior reproductions pass; new no-grant production
+resolve check fails. No acceptance or downstream promotion; COMMERCE-018/019
+remain Pending. The submitted database 2/2 evidence covers its actual scenarios,
+not the missing publication/pointer contention/post-write rollback cases.
+Infrastructure execution remains developer-owned; Docker authorization is not
+the blocker. Preserve the final manual system-test gate.
+
+### COMMERCE-013 Attempt 5 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 5; executor/claim null.** Reviewed implementation
+`3ab8679` and submitted report `8bdc05d0`. The task report's A5-R1–R4 require:
+correct schema-valid Shopify discount reads and established normalization semantics;
+bounded product-response streaming; explicit saved-tool draft preview support;
+and inspection using the backend's validated deployment environment.
+Initial no-grant resolution and prior adapter regressions pass. Focused integration:
+59/59; previous architect checks: 9/9; expanded facade harness: 8 passed, 2 failed
+(saved DRAFT rejection and TEST inspection querying DEVELOPMENT).
+Actual contention/post-write rollback scenarios now exist; submitted PostgreSQL
+evidence was reviewed, while disposable infrastructure/migration validation remains
+pending. No implementation change, main merge, acceptance or downstream promotion.
+COMMERCE-018/019 remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 6 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 6 retained; executor/claim null.** Reviewed
+implementation `812e97e` and report `36a9a603`. A5-R2 bounded product streaming
+and A5-R4 configured inspection environment are resolved; standalone draft
+preview and the pinned Admin schema check pass. A6-R1 requires the supported
+production discount path (all rules still have unknown restrictions/null
+semantics); A6-R2 requires independent publication validation for every
+capability binding, including revisions also explicitly selected as drafts.
+Exact changes and focused acceptance examples are in the task's Architect Review.
+Focused integration: 59/59 passed. Architect harness: 11 passed, 1 failed,
+reproducing the unpublished-binding bypass. Submitted PostgreSQL 2/2 evidence
+reviewed; developer-owned infrastructure/migration validation remains pending.
+No acceptance, implementation change, main merge, gitlink update or downstream
+promotion. COMMERCE-018/019 remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 7 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 7 retained; executor/claim null.** Reviewed
+implementation `0fab9dc` and report `3dc1fbf7`. A6-R2 binding correction passes.
+A7-R1 requires correcting six pinned Shopify schema errors in the production
+customer/segment selections; A7-R2 requires substantiating the native-basic
+calculation profile and demonstrating the supported production path. Explicit
+corrections and bounded verification examples are in the task Architect Review.
+Focused integration: 60/60. Architect harness: 11 passed, 1 failed (production
+Admin document validation). PostgreSQL report remains one passing smoke and one
+failed rehearsal; no new storage regression is established, and developer-owned
+isolated infrastructure validation remains pending. No acceptance, implementation
+change, main merge, gitlink update or downstream promotion. COMMERCE-018/019
+remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 8 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 8 retained; executor/claim null.** Reviewed
+implementation `13805d2` and report `de6b2829`. A7-R1 production Shopify schema
+correction passes. A8-R1 corrects whole-basket minimum assumptions for targeted
+discounts; A8-R2 separates provider-supported calculation semantics from a fixture
+of assumed rounding constants. Exact correction examples and evidence boundaries
+are in the task Architect Review. Focused integration: 61/61; architect checks:
+12/12. PostgreSQL remains one passing scenario and one timeout, not completed
+rollback evidence or a demonstrated new regression. Developer-owned infrastructure
+validation remains pending. No acceptance, implementation change, main merge,
+gitlink update or downstream promotion; COMMERCE-018/019 remain Pending.
+
+### COMMERCE-013 Attempt 9 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 9 retained; executor/claim null.** Reviewed
+implementation `4d52977` and report `650d53bc`. Targeted minima use eligible lines;
+unproven monetary semantics fail closed. Native-basic fixed/percentage monetary
+qualification remains UNSUPPORTED pending independent provider evidence and an
+explicit reviewed enabling change. Acceptance does not assert live discount
+qualification; Studio/preview must preserve this limitation. Earlier review demands
+for guessed/unsupported positive monetary profiles are superseded by this disposition.
+Focused integration: 61/61; architect regressions: 12/12. PostgreSQL remains one
+passing scenario and one timeout; developer-owned adapter validation remains pending.
+013 introduces no migration; database owners retain fresh/upgrade evidence ownership.
+COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
+prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
+Other deployment/cache/system gates retain their dependencies and manual validation.
