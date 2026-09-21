@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: codex
-claimed_at: 2026-09-21T02:37:48Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -232,6 +232,60 @@ includes Commerce `01c550c3e3f55dd23a4ecc9514c846bb88cf2067` and database
 `9c6a4d8402a01840e2ea8dc18e89171f00564d29`. The task status is `review`,
 `executor` and `claimed_at` are cleared, and no parent service gitlink or main
 integration was performed.
+
+### Attempt 3 Completion Update — 2026-09-21
+
+Implementation commit `0411babc90182f41ad3f036096eb51427f128ac0` is pushed to
+`task/ARCH-020-COMMERCE-004`. Attempt 3 addresses every retained A2-R1–A2-R3
+review item within the task-owned MCP transport, authorization resolver and tests.
+
+The resolver now retains all original capability associations, verifies their
+pinned revision provenance and identity, validates C8 bounds, computes minima
+across every surviving applicable original, and prevents newly added associations
+from supplying authority. Current tool authorization is explicit: revoked tools
+are omitted, while enabled granted tools require their exact definition and
+authored name/version. Required prompt revisions and their JSON-encoded aggregate
+are bounded; legitimate zero-tool discovery remains valid.
+
+The production handler now uses a request-scoped pinned `McpServer` with
+`WebStandardStreamableHTTPServerTransport`, JSON responses and no session. It
+retains the resolve/execute purpose matrix, exact application parameters,
+streaming 128 KiB input rejection, no-store responses and a 256 KiB final encoded
+response bound. Malformed JSON, unsupported methods/protocol versions and invalid
+notifications are protocol/input errors rather than infrastructure failures.
+Assertion verifier construction enforces the fixed issuer, audience and subject,
+one or two local keys, and the existing remote-key-header rejection.
+
+Tool execution is raced against request cancellation and the smaller of the
+ten-second budget or assertion expiry. A non-cooperative executor can no longer
+hold the HTTP response open; late settlement is observed and discarded, timers
+and listeners are removed, typed execution failures remain C4 results with
+`isError`, and denied calls still reach the executor zero times.
+
+Requirement-to-effect evidence for this attempt:
+
+| Requirement | Fixture/test | Expected and observed effect |
+| --- | --- | --- |
+| M01 | `tests/mcp-service.test.ts` protocol, origin, streamed-body and purpose cases; `tests/mcp-compatibility.test.ts` real SDK client | Resolve discovery succeeds; execute-only methods, malformed JSON, invalid notifications/protocol, Origin and >128 KiB input fail before execution; the pinned client interoperates with the production handler. |
+| M02 | `tests/mcp-authorization.test.ts` absent/malformed/mismatched definitions, prompt aggregate and zero-tool cases | Missing current or pinned records fail closed with typed availability/compatibility errors; escaped aggregate prompt content is bounded; legitimate zero-tool discovery stays empty. |
+| M03 | duplicate original associations in both orders plus resolver-to-service execution/revocation fixture | Both orders produce `1/2` minima, removed/new provenance cannot restore authority, those limits reach the executor once, and current tool revocation removes the method with no additional execution. |
+| M04 | ignored-abort deadline and typed-failure service cases | A never-settling executor yields a bounded `DEADLINE` result by assertion expiry, successful dispatch occurs once, and typed `NOT_FOUND` remains a C4 `isError` tool result. |
+
+Agent-owned validation from the implementation worktree:
+
+- Focused MCP suite: 3 files / 18 tests passed.
+- Final escaped prompt regression: 1 file / 4 tests passed.
+- `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check` passed; the build generated Prisma Client and included `/api/mcp` as a dynamic route.
+- Full `npm test`: 22/24 files and 196/199 tests passed. The known Redis-backed `tests/discovery-limits.test.ts` timed out without configured Redis. Two unrelated readiness child-process tests missed their setup barrier under the 24-worker full-suite load; an immediate isolated rerun passed all 10/10 readiness tests.
+
+Developer-owned live validation remains unchanged: the Redis-backed discovery
+case requires a configured `REDIS_URL`, and live Background-signed assertions,
+production composition/provider calls and system integration remain outside this
+fixture-only task validation. No live behavior is claimed.
+
+Parent task status is `review`; `executor` and `claimed_at` are cleared. No
+enabled task was started, no parent service gitlink or main integration was
+performed, and the retained Architect Review below was not edited.
 
 ## Architect Review
 
