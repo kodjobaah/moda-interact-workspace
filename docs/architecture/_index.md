@@ -533,3 +533,17 @@ ARCH-020 remains In Progress.
 SHARED-002 is Accepted / Complete at Attempt 5 (`95bab1d`, Shared `0.14.2`). The
 direct C21 component frontier `COMMERCE-020/021/022/023/025/026/027` is Ready;
 remaining extension/integration/gateway/system-test tasks stay dependency-gated.
+
+### COMMERCE-020 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `5229b033` and parent report `29a6ffb1`. Preserve the lifecycle/CAS,
+immutable-revision and transaction/audit direction. Four bounded C21 contract defects
+remain: Commerce still pins Shared `0.13.1` and locally duplicates/mismatches the
+accepted `0.14.2` connection contracts; the reusable command kernel omits credential
+actions and an actual same-connection `FOR UPDATE` lock; development bypass does not
+materialize/verify its reserved PlatformAdmin row before FK-backed writes; and lifecycle
+request validation/default-port normalization is not strict (`:443` is retained and
+invalid bounds may reach/clamp at Prisma). The task Architect Review contains exact
+A1-R1..A1-R4 source, behavior and focused-proof instructions. No exhaustive retest,
+downstream promotion or automatic launch.
