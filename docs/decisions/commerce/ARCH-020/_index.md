@@ -474,3 +474,16 @@ SYSTEM-TEST-001 still have incomplete infrastructure/composition dependencies.
 No automatic task launch, implementation/main change or service gitlink update.
 Architecture remains in progress; latest task YAML/review supersedes historical
 Changes Requested summaries.
+
+### COMMERCE-029 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `39e636f` and report `8af40208`. A1-R1 requires the exact C21 9.4
+serialized kernel contract; A1-R2 protects validation from guest intrinsic mutation;
+A1-R3 retains capacity until worker termination; A1-R4 provides the reusable runtime
+manifest and packaged artifact/resource evidence. Exact instructions and focused
+reproductions are in the task Architect Review. Submitted six runtime tests pass;
+three architect checks reproduce two output bypasses and contract rejection.
+Unrelated Prisma typecheck diagnostics are not the blocker. No acceptance, main
+merge, implementation change, gitlink update or downstream promotion. COMMERCE-026
+remains Pending; SYSTEM-TEST-002 remains explicitly developer-invoked.

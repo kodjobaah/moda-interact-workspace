@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -245,6 +245,54 @@ those are downstream/developer-owned checks. The task is ready for
 `moda_architect` review.
 
 ## Architect Review
+
+### Attempt 1 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `39e636f01775edce38296b283eae3ffadfbfd666` and parent report `8af402088996abd563ecb8b60f9e28bb8d86b0af`; both dedicated worktrees clean and heads verified against remote. **Changes Requested; Ready, Attempt 1 retained; executor/claimed_at null.** The fresh QuickJS worker does execute the positive synthetic transform, and the submitted six tests pass. Four producer corrections are required before COMMERCE-026 can consume this kernel. They concern functional contracts, guest isolation, resource ownership and packaging, not an exhaustive test quota.
+
+#### A1-R1 — Implement the exact C21 section 9.4 kernel interface
+
+Files: runtime/types.ts and kernel.ts.
+
+The required interface is `compile({source,signal,deadlineAt})` and `run({source,responseJson,signal,deadlineAt})`, returning the common KernelResult: successful outputJson string (null for compile), or the closed direct code/line/column failure fields. The implementation instead requires contentHash, accepts a host response object, returns values/contentHash and nests a processor-style diagnostic. An actual call with the required responseJson throws TypeError in validResponse. Compile ignores caller cancellation/deadline. This is not an adapter detail to delegate to026: section9.4 explicitly supersedes the earlier combined ownership.
+
+Replace the producer types and implementation with that exact interface. Enforce the 2 MiB serialized input bound before transferring input and the 256 KiB raw-body bound within the kernel's bounded processing; source/output bounds remain unchanged. Return bounded typed errors on startup/worker failures rather than allowing constructor/input failures to escape. Compile must honor the caller's abort and remaining deadline and return outputJson:null on success. Source/content identity and Shared/business-schema validation remain026's responsibility. Verify one positive invocation through the exact interface plus cancelled/expired compile; retain the normal transform result.
+
+#### A1-R2 — Protect validation and serialization from guest mutation
+
+File: runtime/worker.mjs, source evaluation and validator.
+
+The validator runs after authored source in the same mutable global realm and calls guest-replaceable Object.keys/getPrototypeOf/getOwnPropertyDescriptor, Array.isArray, Number.isFinite and JSON.stringify. Two actual reproductions return success:
+
+- `JSON.stringify = () => "[]"; function transform() { return {}; }` returns an accepted array through the host JSON.parse despite the object-root requirement.
+- `Object.keys = () => []; function transform() { return { invalid: undefined }; }` silently strips the invalid member and succeeds.
+
+Establish a trusted validation/extraction boundary before executing source. Capture pristine intrinsic operations in inaccessible bindings or otherwise prevent authored code from replacing the operations used by validation; do not merely freeze the current two reproduced names. Keep inspection/serialization inside the sandbox budget. Reject accessors/custom toJSON/prototypes and invalid values without invoking them in the host or silently dropping them. A host-side root check alone would not fix the second case. Return only a validated, bounded JSON string to the host under R1. Retain a normal JSON transform and these two short adversarial cases as regression checks; the downstream result schema cannot substitute for this producer guarantee.
+
+#### A1-R3 — Retain the capacity slot until the worker has actually terminated
+
+File: runtime/kernel.ts, runWorker finish and capacity finally.
+
+finish calls `void worker.terminate()` and immediately resolves. The caller's finally releases capacity while termination is still in progress. Repeated abort/timeout calls can admit replacement workers while the previous workers still exist, violating the process-wide maximum of four and weakening the aggregate memory bound.
+
+Make terminal settlement/cleanup idempotent, initiate termination promptly and await confirmed termination/exit before resolving and releasing the slot. Cover success, error, timeout, abort and startup failure without double release; remove listeners/timers. Recheck abort after listener registration so cancellation during worker startup is not missed. Use a focused delayed-termination fixture to prove a fifth worker stays throttled until a slot's worker actually exits, plus a real cancel/recovery run. Do not queue work or reduce the contract's capacity.
+
+#### A1-R4 — Deliver a consumable runtime manifest and prove packaged artifact loading
+
+Files: runtime export/build manifest, scripts/code-runtime-manifest.mjs, package/build configuration, docs/code-runtime-proof.md.
+
+C21 requires an exported manifest `{runtimeVersion,artifactSha256,enginePackageVersion,limits}` for026. The current CLI only prints a differently shaped record, and the unchanged build command does not consume it. No worker/WASM references were found in the current Next artifact traces. The kernel is intentionally not wired into production factories yet, so a successful unrelated Next build does not prove this new entry or WASM was bundled/loaded. The report's claim that the build loaded the runtime artifact is unsupported by the submitted script/build path.
+
+Provide the exact reusable manifest tied to the pinned artifact and a deterministic build/package step that includes the worker entry and its runtime/WASM dependencies at paths the kernel resolves. Add a production-artifact smoke using that packaged output without a source-tree worker fallback or network download; it must execute the positive transform. This stays within029's artifact ownership and does not require024 factory wiring or live deployment.
+
+Keep the 64 MiB imported-memory configuration: static inspection shows the WASM imports memory and the loader accepts the supplied memory, so the source configuration is meaningful. However, the current tests do not demonstrate the stated WASM maximum, built-in long operation or serialization attack; a million-item result rejected by max-array validation is not that proof. Record a direct assertion on the actual memory used by the loaded artifact (growth beyond the configured ceiling fails), a bounded non-interruptible/built-in operation terminated by the supervisor, and serialization under the same budget, followed by recovery. These are the named SB02 deliverables, not unrelated coverage. Update the proof matrix and completion claims to the scenarios actually executed.
+
+#### Verification and disposition
+
+Reran `npm run test:arch020-code-runtime-proof`: **6/6 passed**. Temporary architect harness `/tmp/c029-review/review.test.ts`: **3/3 failed**, reproducing the two output-validation bypasses and exact-interface rejection. Reviewed source, manifest, build configuration and existing artifact traces; read the installed loader and inspected the WASM memory import. Submitted lint/build/manifest evidence reviewed; full typecheck's five unrelated Prisma diagnostics are not an acceptance blocker for these runtime corrections. No live provider, database, container or deployment action performed.
+
+Ready for corrections; Attempt 1 retained, claims cleared. No implementation edits, main merge, gitlink update or downstream promotion. COMMERCE-026 remains Pending until this kernel and its other prerequisite are accepted. SYSTEM-TEST-002 remains explicitly developer-invoked. Preserve historical definition/review notes below.
+
 
 ### Review Status
 
