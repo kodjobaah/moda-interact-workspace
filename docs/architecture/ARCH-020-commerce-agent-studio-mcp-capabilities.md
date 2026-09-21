@@ -1001,3 +1001,15 @@ Preserve the working Shared hashes, ownership/membership and cursor fixes.
 See the task for file-level algorithms/tests. This supersedes previous current-state
 wording. C17 component acceptance remains permitted;013 composition and developer
 PostgreSQL execution remain separate. No promotion, claim, main merge or gitlink edit.
+
+
+## COMMERCE-003 Attempt 3 review — 2026-09-21
+
+Current decision: Ready, Attempt3 retained, claim cleared; Changes Requested for
+the remaining rehearsal deliverable. Reviewed ebe612bb /3d58f69f. Strict inputs,
+compatibility and Feature/storage corrections are present;26 focused tests,
+shell syntax and diff checks independently pass. A3-R1 documents immutable-row
+cleanup failure, arbitrary SQL-error masking, replay assertion and worker-teardown
+corrections. Preserve passing component code. PostgreSQL execution remains
+explicitly developer-owned/unrun;013 composition remains separate. This is the
+latest decision. No downstream promotion, new claim, main merge or gitlink edit.

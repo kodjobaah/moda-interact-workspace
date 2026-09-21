@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 70
-executor: codex
-claimed_at: 2026-09-21T00:10:32Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -488,6 +488,35 @@ submitted on the mirrored parent branch. No main merge or parent service gitlink
 update was performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 3 — 2026-09-21 — Rehearsal deliverable
+
+**Current status: Ready, Attempt 3 retained, executor/claimed_at cleared; not yet accepted.** Reviewed implementation `ebe612bbcbccb69202c682ed009d1c302c347d3f` and report `3d58f69fa7706b1d600e54006bdbdda86248ee37`. Dedicated worktrees clean and published remote heads verified. This supersedes earlier current-state wording; no new claim, downstream promotion, implementation changes or main integration.
+
+The strict request/draft field boundary, detached admission snapshot, runtime compatibility port/checks, Feature identity/read-only catalogue mapping and storage-allocated timestamps are present. Preserve these A2-R1/R2/R3 corrections. Independently reran the focused lifecycle suite: **26/26 passed**. Shell syntax and implementation diff checks pass. Full95/lint/typecheck/build remain submitted passing evidence, not independently rerun here. SQL below was reviewed against the consumed database migration; **the developer-owned PostgreSQL rehearsal was not executed**, and is not being requested during agent correction work.
+
+#### A3-R1 — P2 — Make the promised PostgreSQL rehearsal trustworthy and repeatable
+
+Files: `scripts/rehearse-publication-postgres.sh`, `scripts/fixtures/arch020-publication-rehearsal/{setup,cleanup,partial-failure,assert}.sql`, and `docs/publication-service-contract.md`. This is the remaining A2-R4 deliverable correction. A pending developer run is permitted; a harness that hides failures or cannot clean its own setup is not adequate runnable evidence.
+
+1. **Immutable cleanup cannot work.** `cleanup.sql` deletes audit rows first, then published release membership and published capability revisions. The accepted `database/prisma/migrations/20260920182429_arch020_commerce_capability_releases/migration.sql` explicitly installs BEFORE DELETE rejection for CommerceAuditEvent and CommerceReleaseCapability (arch020_audit_immutable/arch020_member_immutable), and arch020_revision rejects DELETE of published revisions. After a successful run the first audit DELETE fails. The shell redirects cleanup errors away and uses `|| true`, so the script can announce success while leaving the singleton conversation_core and TEST pointer behind. A subsequent run uses a new prefix, cannot remove the prior run and collides with those singleton identities. A database with ordinary baseline seed rows can also fail immediately. Do not disable production integrity triggers or broaden row deletion to fix this.
+
+   Required approach: execute the multi-session rehearsal in a uniquely named disposable database created for this invocation, provisioned with the accepted schema through the established database setup mechanism. Track that exact database identity and remove only that invocation-owned database on teardown; never drop/reset the supplied existing database, schema or another run's data. The developer invocation must explicitly select provisioning/cleanup permissions and document prerequisites. Fail closed before setup if disposable isolation cannot be established. Cleanup failure must be visible and nonzero, with the exact retained database identified; no unconditional successful final message before teardown is known. Keep execution developer-owned. An equivalently isolated throwaway PostgreSQL instance is allowed if it has the same ownership/non-destructive guarantees. Do not attempt row-level DELETE cleanup of immutable publication history.
+
+2. **Any SQL error currently passes the injected-failure test.** The shell treats every nonzero psql result from partial-failure.sql as expected, suppresses all output, and assert.sql then checks the absence of rows. An unrelated INSERT/schema/constraint error before both business writes therefore appears to prove pre-audit rollback. Make the injected failure uniquely identifiable (dedicated SQLSTATE such as P0203 and a fixed marker) and capture bounded diagnostic output. Assert inside the transaction that the intended release AND member exist immediately before raising that error. The shell accepts only that exact injected failure; connection, syntax, constraint or setup errors fail the rehearsal. After rollback independently assert zero release, zero member and zero audit rows for the failed operation. Add a shell/mock-psql check proving an unrelated SQL error cannot print PASS, without executing PostgreSQL during this agent task.
+
+3. **Replay mismatch assertion is not a replay conflict.** setup.sql reads a known literal payloadHash e and compares it to f; this cannot test the actual replay decision. Add a narrow storage-contract rehearsal operation that checks actor, action and canonical payload hash, returns the original bounded result on a matching repeat, and raises the expected conflict on altered actor/action/payload. Invoke those paths and assert one business result/one audit, with zero new writes on conflicts. Use correctly derived canonical hashes rather than presenting repeat('e',64) as actual canonical payload evidence. Keep real013 service-adapter invocation separate: these are SQL/storage contract fixtures, not a claim that Prisma composition is installed. Retain two-session revision/pointer tests and rollback-history assertions.
+
+4. **Cleanup must await all owned sessions.** With `set -e`, an early failed `wait` can enter the EXIT trap while another background psql is still running. Track both process IDs for each pair, collect both statuses and terminate/reap any still-owned workers before removing the disposable database. Propagate failure rather than masking it.
+
+Tests/validation: shell syntax plus deterministic shell harness checks for expected injected error, unrelated failure, cleanup failure and one-worker failure; no live PostgreSQL run. Review generated SQL against the accepted schema. Developer rehearsal remains explicitly unrun after these corrections, with a truthful command/prerequisite/output description. This does not require COMMERCE-013 production adapters and does not add an integration dependency.
+
+#### Report accuracy and resubmission
+
+Correct the Completion Report to name tests that actually exist. For example, the current matrix claims a test named `checks immutable release metadata and compatibility on activate and rollback` including a corrupted-hash case, but no such named/corrupt-hash test appears in the submitted lifecycle file. Either add the narrowly claimed case or remove the unsupported result claim. Do not repeat full coverage claims solely from source checks or shell syntax. Preserve original reports/review history and passing service fixes.
+
+Publish the corrected rehearsal/tests/report on the same mirrored branches and return to Review. Normal preparation owns any next claim; this review retains Attempt3 and publishes the parent overlay before handoff. No database execution, production implementation rewrite, downstream launch, main merge or gitlink update is requested.
+
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 
