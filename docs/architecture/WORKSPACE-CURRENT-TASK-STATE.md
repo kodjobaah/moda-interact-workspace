@@ -574,3 +574,17 @@ fixture tests passed and four architect regressions failed. Exact correction
 instructions/tests are in the task. C17 fixture acceptance remains permitted;
 013 production composition and developer PostgreSQL rehearsal remain separate.
 No new claim, downstream promotion, main integration or gitlink update.
+
+
+## COMMERCE-003 Attempt 2 review — 2026-09-21
+
+Current decision: Ready, Attempt 2, claim cleared; Changes Requested, not accepted.
+Reviewed d5d7f56 / 6f4359a3. The17 submitted focused tests pass independently;
+three added architect regressions fail (ADMIN draft status injection, scalar
+configuration publication, incompatible release activation). Exact A2-R1–R4
+corrections cover strict command/persistence validation, runtime compatibility,
+canonical Feature/selection ports and executable transaction rehearsal evidence.
+Preserve the working Shared hashes, ownership/membership and cursor fixes.
+See the task for file-level algorithms/tests. This supersedes previous current-state
+wording. C17 component acceptance remains permitted;013 composition and developer
+PostgreSQL execution remain separate. No promotion, claim, main merge or gitlink edit.

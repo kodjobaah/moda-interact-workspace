@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 70
-executor: codex
-claimed_at: 2026-09-20T23:31:46Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -321,6 +321,57 @@ submitted on the mirrored parent branch. No main merge or parent service gitlink
 update was performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready, Attempt 2 preserved, executor/claimed_at cleared; not accepted.** Supersedes earlier current-state wording, preserving review history. Reviewed published implementation `d5d7f566f89bf62b385af550b435c6199e87590e` and parent report `6f4359a3383d5e36056e66149cbaf89430ea4cad`; both remote heads verified and dedicated worktrees clean. No implementation changes, main integration, gitlink updates or dependent promotion.
+
+Accepted progress: Shared response/tool validation and canonical hashes, detached post-commit results, unique release membership, injected component ports, exclusive last-returned cursor. These corrections should be retained. Independently reran the submitted focused command: **17/17 passed**. An isolated copy of those tests importing the actual implementation added three regressions: **17 passed, 3 failed**, detailed below. Diff check passed. Full86/lint/typecheck/build are submitted passing evidence, not rerun in this review. PostgreSQL and live/provider integration remain explicitly unrun; C17 permits independent component acceptance and does not require implementing COMMERCE-013 here.
+
+#### A2-R1 — P1 — Strict command validation must prevent ADMIN publication-state injection
+
+Files: `src/commerce/publication/validation.ts`, `ports.ts`, and `lifecycle.ts` (`command`, `createDraft`, `updateDraft`, `publishRevision`). `CapabilityDraft` is only a TypeScript annotation. `updateDraft` checks contractVersion and then Object.assigns the entire caller object into the persisted revision. An ADMIN can supply additional `status:'PUBLISHED'` and `contentHash` fields, bypassing the SUPER_ADMIN publication command. The same path can replace row identity/ownership fields. Separate reproduction: configuration set to the string `not an object` is accepted by createDraft and successfully published with a hash. Shared's hash helper encodes content; it is not structural validation.
+
+Required correction: define strict runtime command schemas, including strict nested capability drafts, and reject unknown keys before work/replay. Reuse accepted `CommerceConfigurationSchema`/tool binding schemas and DATABASE-001 prompt/configuration/binding bounds; do not create a parallel permissive wire schema. Persist only explicit owned fields. After parsing and detaching a draft, replace the update assignment with this field allowlist (variable names shown are local):
+
+```ts
+revision.contractVersion = draft.contractVersion;
+revision.promptTemplate = draft.promptTemplate;
+revision.configuration = structuredClone(draft.configuration);
+revision.toolBindings = structuredClone(draft.toolBindings);
+revision.editVersion += 1;
+```
+
+Never copy id, capabilityId, revisionNumber, status, contentHash, actor or timestamps from draft input. Publish must independently revalidate persisted prompt/configuration/bindings and exact published tool associations before changing status/hash. An invalid saved draft may remain editable where the contract permits it, but cannot publish. All command booleans/environments/CAS fields/metadata must be runtime validated; TypeScript alone does not satisfy C7 strict arguments. Capture a detached validated request before the first authorization/transaction await; hash and execute that same snapshot, rather than hashing a clone while work closures still read mutable caller input.
+
+Permanent tests: ADMIN injection of each status/hash/identity field rejects with zero changed revision/audit rows; published state cannot be reached by updateDraft. Scalar/over-limit configuration, blank/oversized prompt and invalid bindings reject at the contract-appropriate boundary. Valid inputs publish with the Shared expected hash. Add a controlled authorization/transaction barrier proving caller mutation while the command is waiting cannot change admitted payload or replay binding. The isolated review tests are `review: ADMIN draft update cannot set publication state` and `review: malformed capability configuration cannot be published` in `/tmp/c003-a2-review/publication-review.test.ts`; both currently resolve instead of rejecting.
+
+#### A2-R2 — P1 — Validate release compatibility before activation and rollback
+
+Files: `src/commerce/publication/lifecycle.ts` (`createRelease`, `pointerMutation`), `ports.ts`, validation wrappers and tests. createRelease stores arbitrary runnerCompatibility strings; pointerMutation checks only release existence and CAS. The isolated test creates a release with `runnerCompatibility:'^99.0.0'` and activates it in TEST: result is successful pointer editVersion1. The accepted runner is1.x, so this creates a release pointer that consumers cannot execute. Original R3 explicitly required runner compatibility; this is not a new requirement.
+
+Use a supported-runner/contract compatibility port or an explicit validated component dependency, supplied deterministically by fixtures and by013 production composition. Validate nonblank bounded SemVer ranges at release creation; before BOTH activateRelease and rollbackRelease, require target contractVersion and range compatibility with the supported runtime. Reject with INCOMPATIBLE_VERSION before pointer/audit writes. Recheck required immutable release metadata/hashes according to C16; do not make incompatible historical releases valid merely because they already exist. Preserve absent-pointer expectedEditVersion0 and normal CAS semantics. Add valid activation/rollback, malformed range, unsupported contract, unsupported range and stale-CAS tests; invalid operations leave pointer and audit counts unchanged. Keep creation of a valid future-version release separate from permission to activate it if that behavior is intentionally supported.
+
+#### A2-R3 — P1 — Make capability selection ports represent the accepted database contract
+
+Files: `src/commerce/publication/ports.ts`, `lifecycle.ts`, `read-models.ts`, fixture store and `docs/publication-service-contract.md`. Capability/createCapability omit featureId entirely, while DATABASE-001 requires FEATURE if and only if featureId is present. The submitted shared-tool fixture creates FEATURE without featureId, and another fixture uses RECOVERY_POLICY with key discount_help although the accepted key is discount_assistance. These synthetic successes cannot map to the real schema. Deferring013 adapters cannot repair missing business arguments without changing the accepted component interface.
+
+Add the canonical nullable featureId to command/state/read mappings and a read-only existing-Feature lookup port. Validate arbitrary existing Feature IDs without a seed-name whitelist; never insert/update Feature, plan or ShopFeaturePreference. Enforce BASE iff key is conversation_core (single BASE), RECOVERY_POLICY only for discount_assistance, FEATURE with a real Feature identity, and non-FEATURE with no featureId. Preserve logical selection identity once a revision exists. Apply DATABASE-001 metadata bounds and map expectedUpdatedAt as the canonical timestamp token rather than manufacturing `version:<sequence>` in the domain. IDs/timestamps should be allocated by the storage transaction contract (deterministic clocks/IDs in fixtures), enabling013 to implement persistence without replacing lifecycle business logic. Document exact DB fields for identity, actors, timestamps and CAS, not only table names.
+
+Tests: an arbitrary existing feature key/ID succeeds and is retained in the read model; nonexistent/missing/misbound Feature and wrong BASE/RECOVERY_POLICY identity reject with zero business/audit rows; multiple capabilities sharing the same Feature are allowed. Correct existing fixtures to use valid identities. Feature catalogue writes must remain zero. Metadata CAS tests must use real ISO timestamp tokens from a controlled storage clock.
+
+#### A2-R4 — P2 — Deliver executable rehearsal assertions and complete transaction evidence
+
+Files: `scripts/rehearse-publication-postgres.sh`, `scripts/fixtures/arch020-publication-rehearsal.sql`, `tests/commerce-lifecycle.test.ts`, fixture storage and contract/report docs. The SQL currently counts constraints and prints three PENDING strings; it does not execute replay conflicts, revision races, pointer CAS, rollback or injected partial-publication failure. The documentation calls these expected assertions of the command. Pending developer execution is valid; absent implementation of the promised rehearsal is a separate deliverable gap. A constraint count is not behavioral transaction evidence.
+
+Implement a developer-invoked isolated database rehearsal with deterministic setup and real assertion failures for the promised cases. Use two coordinated PostgreSQL sessions for concurrent cases; a single outer transaction cannot demonstrate two-transaction races. Keep setup/cleanup scoped to the dedicated rehearsal database and accepted schema; no production adapters or live execution are required in this task. If a scenario specifically tests013's eventual adapter, label it separately as013 integration and supply the required003 SQL/storage contract rehearsal now. The command must return nonzero on a failed behavior and must not print a pass for pending checks. Do not run the developer-owned rehearsal during correction execution.
+
+Complete the local two-service fixture cases promised in original R3: concurrent revision allocation, conflicting CAS winners, rollback, and lost response AFTER commit followed by matching retry. Existing pre-audit rollback proves a different case and must remain. Assert exact business/member/audit counts for each. Add unavailable-registry and role-denied publication cases independently of invalid schemas. Update the requirement matrix with actual test names/results; do not claim absent-pointer CAS conflict coverage from only a successful seed. Record the existing prepared packet's physical isolation, start-of-attempt synchronization and recursive database pin evidence; do not re-prepare an active attempt solely to recreate evidence.
+
+### Attempt 2 resubmission gate
+
+Make A2-R1–R4 corrections in the files above, preserving accepted R1/R2/R4 progress. Run permanent regressions and focused/full local tests, lint, typecheck, build and diff check; keep database/live013 validation honestly pending with runnable instructions. Publish the same implementation/report task branches and return to Review. This parent review overlay is published before handoff; it does not claim Attempt3. No new downstream task is started.
+
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 
