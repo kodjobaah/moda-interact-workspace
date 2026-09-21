@@ -85,3 +85,16 @@ older COMMERCE-003 current-state wording; architecture is not yet Implemented.
 2026-09-21 C19 split:004 transport/014 executor,005 queries/015 basket-products,
 006 rule reader/016 evaluator,009 backend/017 U14 frontend.013 owns real pairing.
 006/009/015 are newly Ready from accepted prerequisites; no task was launched.
+
+
+## COMMERCE-015 Attempt 1 architect review — 2026-09-21
+
+Changes Requested; status Ready, Attempt1 retained, claim clear; not accepted.
+Reviewed implementationff386e2 and report42b8c300. Seven submitted tests pass;
+five independent cases fail: denied variant read, late cancelled success, skipped
+search results, C19 input mismatch, and missing null basket unknown markers.
+R1–R5 require schema-shaped Admin requests/normalization, authorization and bounded
+cancellation, lossless pagination, exact C19 descriptors, and null/source fixtures.
+See canonical COMMERCE-015 task for deterministic locations and acceptance effects.
+Prisma baseline and developer-owned live checks are separate from these blockers.
+No dependency promotion, implementation edits, new claim, main merge or gitlink change.
