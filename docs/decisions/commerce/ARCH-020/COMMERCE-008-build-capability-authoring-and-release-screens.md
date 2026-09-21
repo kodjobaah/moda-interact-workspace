@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 120
-executor: codex
-claimed_at: 2026-09-20T23:27:53Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -575,6 +575,123 @@ The full-suite readiness timing test is sensitive to concurrent worker startup o
 Implementation commit `6c4ecbc853c8ecb517e42fe17d2b67edf4fd0233` is pushed to `origin/task/ARCH-020-COMMERCE-008`. Parent/report branch is the same task branch and will contain this Attempt 2 review submission. Nested database submodule remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, architecture/index file or other task was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Not accepted; Ready, Attempt 2 retained**, executor/claimed_at null. Reviewed
+implementation `6c4ecbc853c8ecb517e42fe17d2b67edf4fd0233` (PR3) and report
+`10fc0ae6fe7fb02ad1934e95950d05b2b3309f07` (PR171); both worktrees clean and
+published PR heads verified. No new claim, implementation edit, main integration
+or downstream promotion. C17 still permits fixture-based component completion;
+real provider composition is not the blocker.
+
+Useful progress: typed read result states, production unavailable composition,
+Next notFound mapping, dynamic shell release availability and labelled mobile
+navigation replace several original placeholders. Test fixtures stay out of the
+production service factory. Preserve this work.
+
+#### R1 — P1: make the ports carry the canonical authoring data
+
+`src/studio/contracts.ts` has C7 method names but incompatible/incomplete payloads.
+ToolRevision.version is numeric; one expectedVersion substitutes for the distinct
+expectedEditVersion/expectedUpdatedAt CAS fields. updateToolDraft carries only
+schemaFields/query rather than the full accepted definition. Capability drafts
+cannot carry promptTemplate/configuration/contractVersion. createRelease carries
+capability IDs, not exact published revision members/positions, and contains no
+C16 responseContract. Discovery has no documentation search/document operations
+or authoritative definition-validation contract. A real013 adapter cannot recover
+authored values the UI never supplies.
+
+Correction: align ports and docs/studio-service-contract.md with C7/C14/C15/C16/C17
+canonical inputs/results, preserving separate definition SemVer, immutable
+revision identity and edit CAS. Use the required operation ID shape. Carry full
+response instructions/schema/examples and exact release members; keep008's C16
+composer and read-only response tab here.009 owns runtime preview execution, not
+response authoring. Add role-aware UI inputs; currently StudioWorkspace has no
+principal/permission input and exposes release actions irrespective of role.
+Keep server authorization independent through the eventual protected adapters.
+
+#### R2 — P1: finish the connected authoring workflows
+
+`components/studio-workspace.tsx` still cannot perform the claimed flow:
+
+- Discovery shows field checkboxes but no documentation traversal. Use in tool
+  editor links to /tools, dropping the originating tool/revision and built query.
+- ToolDetail only offers a query textarea/save/create-draft; no input/response
+  authoring steps or publish control. Save hard-codes schemaFields=['product.title'].
+- CapabilityDetail asks staff to type a revision ID and defaults to fixture-specific
+  tool-products-r1; no prompt/settings editor or publish action exists.
+- ReleaseComposer always sends capabilityIds:[] and has no member/response-contract
+  composer. ReleaseDetail labels rollback only on the currently ACTIVE release;
+  the target is therefore that same active release, not the selected previous one.
+  There is no actual confirmation despite sending reason='Confirmed activation'.
+
+Correction: implement the existing task's editable fields and selection dialogs,
+carry validated source/revision context and the query payload through U06/U07,
+navigate to returned records after creation, publish exact revisions and compose
+real release members/response contracts before separate confirmed activation or
+rollback. Use arbitrary IDs, never seeded tool names. Demonstrate a connected
+feature -> behaviour -> new tool -> discovery -> exact association -> release
+flow with injected services and actual command payloads.
+
+ProductionStudioPage currently renders every successful read using JSON.stringify;
+StudioWorkspace is not referenced by any page. Provide the common component/view
+boundary so013 installs adapters/minimal composition rather than reimplementing
+the authored screens. Absent real adapters must still render unavailable; no
+fixture runtime fallback is requested.
+
+#### R3 — P1: preserve operation identity and lock on unknown outcomes
+
+`StudioWorkspace.once` clears pendingRef for every returned failure, including the
+fixture's 'Unknown outcome. Reconcile before retrying.' Every form submission then
+creates a fresh random operationId. Thus after an uncertain create, the next
+submit can create another operation instead of reconciling the first. The port
+union collapses unknown/CAS/ordinary unavailability into a message, and there is
+no reconciliation operation. A thrown promise also skips pending cleanup entirely.
+Discovery validation has no same-tick or stale-response guard.
+
+Correction: represent unknown versus definitive outcomes explicitly; retain the
+original operation ID/input and reconcile/replay that operation before permitting
+a new write. Preserve input on known failure, recover controls on thrown failures
+according to outcome certainty, and suppress stale completions. Share guarded
+submission across mouse/keyboard paths; control validation results independently
+from new editor state. This is a missing behavior, not an exhaustive test request.
+
+#### R4 — P2: honor exact revisions and navigation destinations
+
+getTool validates revision ownership but returns all revisions; ToolDetail ignores
+the selected revision and always chooses the first DRAFT. A link to a published
+revision can therefore show/edit an unrelated draft. ShopInspector derives toolId
+by splitting toolRevisionId on '-r', which only works for fixture IDs. Pass canonical
+toolId separately and render the explicitly selected revision read-only or editable
+according to its own status.
+
+DirtyNavigationGuard only handles its own Back button; Discard closes the dialog
+without performing navigation. Sidebar/editor links bypass it, and list editors
+have no guard. Preserve the intended destination and implement Stay/Discard across
+the specified navigation paths, including focus return. Do not rely on arbitrary
+history.back for specified parent/context links.
+
+#### Validation reviewed and resubmission
+
+Reviewed all changed components/ports/fixture behavior and the desktop tool-detail
+screenshot. The 24 images and reported route200 rehearsals document unavailable
+shell states, not populated authoring workflows. Retain them as that evidence;
+provide populated component/browser views for the corrected flow. The submitted
+12 focused tests and successful typecheck/lint/build are recorded; full79/81 and
+isolated readiness10/10 remain accurately distinguished. Readiness failures are
+not the acceptance blocker. git diff --check passes.
+
+An attempted isolated unknown-outcome component harness in /tmp failed to load
+under jsdom/Vitest before executing any test; no independent component-test pass
+or reproduced mutation count is claimed. R3 follows directly from the inspected
+unconditional unlock and new-ID generation. No implementation files were changed.
+
+Correct R1–R4 on the existing task branch. Prior R1/R2/R3 dispositions in the report
+must reflect these remaining behaviors; method names and isolated fixture calls
+do not establish the complete traversal. Preserve historical architect reviews,
+update actual evidence, validate and push both branches. No new live OAuth/provider
+run or other owner's implementation is requested. C17 ownership remains unchanged.
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 

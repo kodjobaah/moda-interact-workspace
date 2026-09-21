@@ -38,3 +38,14 @@ local browser evidence remain008-owned; real provider composition remains013-own
 Readiness uses002, DATABASE-001 and SHARED-001, not the superseded service chain.
 No new claim, downstream promotion, implementation edit or main integration.
 Other canonical task states remain authoritative; ARCH-020 is not complete.
+
+## COMMERCE-008 Attempt 2 — Changes Requested — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed `6c4ecbc` / report `10fc0ae6` (PR3/171). Typed unavailable/not-found states
+and shell improvements are retained. Remaining blockers are canonical port/data
+mismatches, incomplete connected authoring/release workflows, unsafe unknown-outcome
+retry, and exact-revision/navigation behavior. Latest task review records R1–R4.
+C17 still allows fixture component acceptance; real adapters and readiness timing
+failures are not the blocker. No new claim, downstream promotion, implementation
+edit or main integration. Other task states remain unchanged.

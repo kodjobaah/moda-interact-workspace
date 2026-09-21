@@ -411,3 +411,14 @@ Other canonical task states remain authoritative; ARCH-020 is not complete.
 2026-09-21 C18 frontier: BACKGROUND-002 promoted Ready, unclaimed, after accepted
 BACKGROUND-001. COMMERCE-007 retains its own evaluator prerequisite but no longer
 blocks the consumer. SYSTEM-TEST-001 owns EC01–EC12 real-service pairing.
+
+## COMMERCE-008 Attempt 2 — Changes Requested — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed `6c4ecbc` / report `10fc0ae6` (PR3/171). Typed unavailable/not-found states
+and shell improvements are retained. Remaining blockers are canonical port/data
+mismatches, incomplete connected authoring/release workflows, unsafe unknown-outcome
+retry, and exact-revision/navigation behavior. Latest task review records R1–R4.
+C17 still allows fixture component acceptance; real adapters and readiness timing
+failures are not the blocker. No new claim, downstream promotion, implementation
+edit or main integration. Other task states remain unchanged.
