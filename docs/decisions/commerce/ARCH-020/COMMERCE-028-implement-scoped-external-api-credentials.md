@@ -1,7 +1,7 @@
 ---
-id: ARCH-020-COMMERCE-025
+id: ARCH-020-COMMERCE-028
 architecture_id: ARCH-020
-title: Implement bounded response filtering and projection
+title: Implement scoped external API credentials
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -15,17 +15,19 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-020-COMMERCE-020
+  - ARCH-020-DATABASE-003
   - ARCH-020-SHARED-002
 enables:
+  - ARCH-020-COMMERCE-032
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-024
-  - ARCH-020-COMMERCE-030
-  - ARCH-020-COMMERCE-031
+  - ARCH-020-GATEWAY-003
 created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Implement bounded response filtering and projection
+# Implement scoped external API credentials
 
 ## Architecture
 
@@ -36,7 +38,7 @@ limits, errors, ownership and acceptance IDs. No model-selected replacement desi
 
 ## Objective
 
-Own src/commerce/external-response/** and focused pure tests only. Implement C21 section2.1 createResponseProcessor; no network, application factories, persistence, UI or arbitrary scripts.
+Own src/commerce/connections/credentials/** only. Implement credential encryption, CAS/replay, rotation and exact-shop resolution using020 command kernel. No connection metadata lifecycle, UI, HTTP or integration-factory edits.
 
 ## Context
 
@@ -47,7 +49,7 @@ This is new scope, not a correction to an accepted task.
 
 ## Scope
 
-Own src/commerce/external-response/** and focused pure tests only. Implement C21 section2.1 createResponseProcessor; no network, application factories, persistence, UI or arbitrary scripts.
+Own src/commerce/connections/credentials/** only. Implement credential encryption, CAS/replay, rotation and exact-shop resolution using020 command kernel. No connection metadata lifecycle, UI, HTTP or integration-factory edits.
 
 ## Out of Scope
 
@@ -65,43 +67,39 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement deterministic OBJECT/LIST projection, AND filtering, stable sort, bounded limit and own-property paths exactly as section2.1.
-- [ ] Use supplied signal/clock/deadline, enforce row/field/value limits and return typed failures without copying raw data into output.
-- [ ] Expose reusable pure port for production executor and preview; document input/result fixtures used by021/023/024. Do not mutate caller objects or keep shared request state.
+- [ ] Implement createCredentialService with getCredentialStatus/setCredential/removeCredential/resolveConnection/checkConnectionAvailability as C21 section9 defines.
+- [ ] Reuse020 locked command kernel for same-transaction credential and audit writes; do not clone replay/auth/digest logic or modify its files.
+- [ ] Implement AES-GCM/AAD/keyring handling, exact scope/no-fallback and current enabled checks. Keep secret result internal; status/availability expose no authentication value.
+- [ ] Deliver two-client credential race, stored-secret roundtrip and rotation fixtures; retain no real secrets in fixtures/logs.
 
 ## Interfaces / Contracts
 
-C21 is the shared contract between these tasks. Own only the paths identified
-above. Record exact accepted dependency SHA/package version and source exports
-in the Completion Report. No catch-all shared integration barrel. Return genuine
-contract contradictions with a source reproduction; do not weaken validation.
+C21 sections1–8 retain data/behavior requirements. [Section9](../../../architecture/ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence) is authoritative for the narrowed ownership, factory signatures, scenario IDs and handoff rules. Consume accepted exports; no consumer may repair a missing producer by weakening the contract. Record actual dependency commits and published package versions.
 
 ## Dependencies
 
+- ARCH-020-COMMERCE-020
+- ARCH-020-DATABASE-003
 - ARCH-020-SHARED-002
 
 ## Enables
 
+- ARCH-020-COMMERCE-032
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-024
-- ARCH-020-COMMERCE-030
-- ARCH-020-COMMERCE-031
+- ARCH-020-GATEWAY-003
 
 ## Acceptance Criteria
 
-- [ ] X10: golden samples prove output field removal/rename, type-strict comparisons, null/missing behavior, Unicode order and stable ties.
-- [ ] 1001 rows fail rather than truncate, abort/deadline checked, unsafe paths rejected; two concurrent invocations cannot contaminate results.
-- [ ] No networking, secrets or eval dependency; old response rendering unchanged because processor is a separate stage.
+- [ ] CR01: PLATFORM and two PER_SHOP credentials roundtrip through real service; correct decrypted value reaches a recording internal consumer, never a public DTO.
+- [ ] CR02: same-command duplicate yields one credential effect/audit; changed replay and stale credential version reject; NULL-platform uniqueness exercised on PostgreSQL.
+- [ ] CR03: wrong shop, absent credential, disabled connection, invalid key/AAD/tag and removed credential deny/unavailable exactly; old revision remains fixed while secret rotation affects future calls.
 
 ## Validation
 
-Provide `test:arch020-response-processing` in the owning repository and document its exact scope.
-Run focused changed-boundary tests, then existing repository typecheck/build
-and lint where defined. Inspect package scripts first; do not invent a claim that
-an absent script passed. Use C21 controlled transports and isolated stores.
-Follow current developer-owned live/container validation policy; clearly separate
-actual agent results from required unrun developer checks. No arbitrary screenshot
-quota or repeated full-suite runs without new changes/failures.
+Provide `test:arch020-external-credentials` and scenario IDs from C21 section9. Start with the named positive path through the actual owned implementation. Add the specified rejection/race cases. Each report maps criterion -> test file/test name -> command -> observable result, not just a suite count. No claimed success based only on safe rejection or missing-config tests. Preserve each review reproduction as a committed regression alongside adjacent allowed/denied cases.
+
+Use focused checks while implementing, then existing typecheck/build/lint where defined. Record unrun developer-owned PostgreSQL/container checks accurately; executable scenarios must still exist. No repeated unrelated full suites or screenshot quotas. No live credentials/WhatsApp delivery.
 
 ## Stop Condition
 
@@ -153,7 +151,7 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-025. Attempt0; no implementation worktree or
+Expected mirrored branch: task/ARCH-020-COMMERCE-028. Attempt0; no implementation worktree or
 commit claimed. At submission record physical isolation, dependency versions,
 recursive database submodule evidence where applicable, commits and pushes.
 

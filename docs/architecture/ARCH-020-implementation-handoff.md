@@ -931,3 +931,26 @@ new implementation prerequisites ->012 caching (external tools bypassed)
 The new tasks are unclaimed; no implementation/deployment started. Existing active
 base scopes and claims stay intact. Database and Shared definitions can begin
 independently; backend, processing and UI components use C21 ports independently.
+
+## C21 tightened frontier — 2026-09-21
+
+Section9 of [C21](ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence)
+supersedes the earlier extension ownership diagram. No active013 scope/claim changed.
+
+```text
+DATABASE-003 +SHARED-002 ->020 connection lifecycle ->028 scoped credentials
+COMMERCE-001 ->029 reusable sandbox proof (Ready)
+029 +SHARED-002 ->026 typed code adapter
+021 HTTP and025 visual processor remain independent component work
+003 +021 +025 +026 +SHARED-002 ->030 publication validation/receipts
+019 +009 +025 +026 +030 +SHARED-002 ->031 external preview backend
+013 +028 +SHARED-002 ->032 merchant/runtime availability
+020/021/022/023/025/026/027/028/030/031/032 +013/018/019 ->024 wiring only
+GATEWAY-001 +020/021/026/028/029 ->GATEWAY-003
+024 +GATEWAY-003 +BACKGROUND-002 ->SYSTEM-TEST-002 (manual)
+all extension implementation ->012 cache bypass ->SYSTEM-TEST-001 (manual)
+```
+
+DATABASE-003, SHARED-002 and COMMERCE-029 can begin independently. The last is an
+implementation proof with reusable artifact, not an approval to defer hard limits.
+Each submission maps named acceptance case to a committed scenario and actual result.

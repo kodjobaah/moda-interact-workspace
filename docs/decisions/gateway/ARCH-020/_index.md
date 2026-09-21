@@ -10,4 +10,4 @@ Definitions are on local main for review by explicit developer request. Individu
 |---|---|---|---|
 | [ARCH-020-GATEWAY-001](GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
 | [ARCH-020-GATEWAY-002](GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026 |
+| [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |

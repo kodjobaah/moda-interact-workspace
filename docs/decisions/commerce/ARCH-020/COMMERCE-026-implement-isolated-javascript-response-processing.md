@@ -1,7 +1,7 @@
 ---
 id: ARCH-020-COMMERCE-026
 architecture_id: ARCH-020
-title: Implement isolated JavaScript response processing
+title: Implement validated code-processing adapter over proven runtime
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -16,15 +16,18 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-020-SHARED-002
+  - ARCH-020-COMMERCE-029
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-024
   - ARCH-020-GATEWAY-003
+  - ARCH-020-COMMERCE-030
+  - ARCH-020-COMMERCE-031
 created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Implement isolated JavaScript response processing
+# Implement validated code-processing adapter over proven runtime
 
 ## Architecture
 
@@ -35,7 +38,7 @@ limits, errors, ownership and acceptance IDs. No model-selected replacement desi
 
 ## Objective
 
-Own src/commerce/code-response/**, pinned QuickJS sync WASM/worker packaging and security/resource tests. Implement C21 section2.2 with data-only ports. No UI, credentials, HTTP, production factories or host-evaluated source.
+Own src/commerce/code-response/processor.ts and validation adapter tests only;029 exclusively owns runtime/** and artifacts. Adapt accepted SandboxKernel to C21 Shared input/result types and output validation. No new sandbox engine, UI, HTTP or factory wiring.
 
 ## Context
 
@@ -46,7 +49,7 @@ This is new scope, not a correction to an accepted task.
 
 ## Scope
 
-Own src/commerce/code-response/**, pinned QuickJS sync WASM/worker packaging and security/resource tests. Implement C21 section2.2 with data-only ports. No UI, credentials, HTTP, production factories or host-evaluated source.
+Own src/commerce/code-response/processor.ts and validation adapter tests only;029 exclusively owns runtime/** and artifacts. Adapt accepted SandboxKernel to C21 Shared input/result types and output validation. No new sandbox engine, UI, HTTP or factory wiring.
 
 ## Out of Scope
 
@@ -64,43 +67,39 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement createCodeResponseProcessor with fresh worker/WASM/runtime per invocation, pinned runtimeVersion and documented exact artifact hashes.
-- [ ] Enforce actual finite WASM memory, QuickJS heap/stack, guest interrupt, supervisor deadline and process concurrency caps. Validate recursive output under limits without invoking guest objects on host.
-- [ ] Implement source compilation and bounded line/column diagnostics; remove ambient clock/randomness and expose no module loader/host callbacks. No promise/async transform results.
-- [ ] Provide syntax, infinite-loop, regex/native-long-operation, allocation, malformed return, proxy/getter/serialization, abort/startup failure and concurrent data-isolation evidence. Sandbox failure must not poison next run.
+- [ ] Import029 proven kernel; preserve exact runtime/artifact version and limits. Do not reimplement worker lifecycle or change memory/time configuration.
+- [ ] Implement createCodeResponseProcessor validation, JSON/TEXT response input serialization, guest-safe result extraction and strict output-schema-compatible object checks.
+- [ ] Map bounded diagnostics and runtime failures exactly; no raw exception/source/body leakage or fallback. Declare runtime unavailable if accepted kernel cannot initialize.
+- [ ] Cover correct text extraction, wrong output type/shape and malformed provider response through actual kernel; repeat029 smoke to establish the adapter retained limits.
 
 ## Interfaces / Contracts
 
-C21 is the shared contract between these tasks. Own only the paths identified
-above. Record exact accepted dependency SHA/package version and source exports
-in the Completion Report. No catch-all shared integration barrel. Return genuine
-contract contradictions with a source reproduction; do not weaken validation.
+C21 sections1–8 retain data/behavior requirements. [Section9](../../../architecture/ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence) is authoritative for the narrowed ownership, factory signatures, scenario IDs and handoff rules. Consume accepted exports; no consumer may repair a missing producer by weakening the contract. Record actual dependency commits and published package versions.
 
 ## Dependencies
 
 - ARCH-020-SHARED-002
+- ARCH-020-COMMERCE-029
 
 ## Enables
 
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-024
 - ARCH-020-GATEWAY-003
+- ARCH-020-COMMERCE-030
+- ARCH-020-COMMERCE-031
 
 ## Acceptance Criteria
 
-- [ ] X11: actual packaged WASM/worker tests prove time/memory ceilings and denial of network/process/filesystem/environment/credentials, not mock-only assertions.
-- [ ] JSON/text/HTML/XML/CSV text samples can be transformed using documented standard JS; same source/input yields same output; invalid/cyclic/nonfinite/oversized outputs fail.
-- [ ] All handles/worker slots released on every terminal path; fifth concurrent invocation throttles; supported runtime/version compiled and documented.
+- [ ] CA01: same accepted runtime produces exact synthetic text/JSON output through exported processor; unsupported version and invalid source rejected.
+- [ ] CA02: invalid/cyclic/nonfinite/oversized/nonobject results rejected, runtime failure maps correctly and successful sample does not bypass future checks.
+- [ ] CA03: actual kernel timeout/abort/isolation smoke still passes with adapter; no duplicated engine or relaxed limits.
 
 ## Validation
 
-Provide `test:arch020-code-sandbox` in the owning repository and document its exact scope.
-Run focused changed-boundary tests, then existing repository typecheck/build
-and lint where defined. Inspect package scripts first; do not invent a claim that
-an absent script passed. Use C21 controlled transports and isolated stores.
-Follow current developer-owned live/container validation policy; clearly separate
-actual agent results from required unrun developer checks. No arbitrary screenshot
-quota or repeated full-suite runs without new changes/failures.
+Provide `test:arch020-code-processor` and scenario IDs from C21 section9. Start with the named positive path through the actual owned implementation. Add the specified rejection/race cases. Each report maps criterion -> test file/test name -> command -> observable result, not just a suite count. No claimed success based only on safe rejection or missing-config tests. Preserve each review reproduction as a committed regression alongside adjacent allowed/denied cases.
+
+Use focused checks while implementing, then existing typecheck/build/lint where defined. Record unrun developer-owned PostgreSQL/container checks accurately; executable scenarios must still exist. No repeated unrelated full suites or screenshot quotas. No live credentials/WhatsApp delivery.
 
 ## Stop Condition
 

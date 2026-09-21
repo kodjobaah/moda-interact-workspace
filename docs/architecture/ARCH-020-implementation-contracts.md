@@ -1959,3 +1959,7 @@ execution definitions, visual filtering and sandboxed JavaScript over JSON/text.
 C21 defines exact schemas, routes U15/U16 and U06/U14 changes, validation, budgets,
 publication sample evidence and task ownership. Existing MCP/Background wire
 contracts and grant pinning remain unchanged.012 bypasses external-result caching.
+
+C21 [section9](ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence)
+supersedes combined020/024/026 ownership with explicit producer factories, reusable
+sandbox proof and scenario-level evidence. No change to existing MCP wire contracts.
