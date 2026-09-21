@@ -1044,3 +1044,16 @@ SYSTEM-TEST-001 still have incomplete infrastructure/composition dependencies.
 No automatic task launch, implementation/main change or service gitlink update.
 Architecture remains in progress; latest task YAML/review supersedes historical
 Changes Requested summaries.
+
+
+### COMMERCE-013 Attempt 3 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `1dd5211`
+and report `1961d586`. A3-R1–R5 specify real provider rule facts/scopes, eligible
+resolve manifests and shared lease/limits, durable cross-transaction CAS time,
+complete saved-selection/inspection results, and real adapter mutation rehearsals.
+Focused tests: 59 passed; six prior reproductions pass; two remaining contract
+checks fail (repeated CAS time and empty draft selection). The reported Prisma
+1/1 test is a no-op smoke check, not race/rollback evidence. No acceptance or
+downstream promotion; COMMERCE-018/019 stay Pending. Disposable infrastructure
+execution remains developer-owned; lack of Docker authorization is not the blocker.

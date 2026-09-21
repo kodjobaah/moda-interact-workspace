@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 125
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -420,6 +420,54 @@ Redis/container transport evidence. The task lifecycle is clean for review:
 launched and no main branch was merged or updated.
 
 ## Architect Review
+
+### Attempt 3 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `1dd521177938020eeea1bb1d8452d8d87083eb57` and report `1961d586bda94996dd9095ef2aba887c37e3cadf`; both remote heads verified and worktrees clean. **Changes Requested; Ready, Attempt 3; executor/claim null.** Preserve the fixes: Storefront is tokenless/streamed, nullable draft hashes and JSON comparisons are normalized, missing selected revisions are rejected, release ordering is restored, and policy factories are now connected. All six previous architect reproductions pass. Remaining corrections below concern actual functionality, not exhaustive coverage.
+
+#### A3-R1 — Supply real privileged provider semantics, not incomplete catalogue substitutes
+
+File: `src/commerce/integration/backend.ts:createProductionPolicyRegistrations`.
+
+The new discountProvider reads cached ShopifyDiscount metadata, then sets every rule's value/target to null and minimumKnown/restrictionsKnown false; both Basic percentage and fixed discounts are labelled BASIC_PERCENTAGE. The accepted006 reader necessarily treats such rules as unresolved, so the connected016 evaluator cannot qualify even a simple supported offer and007 qualifying recommendations cannot work end to end. The provider also ignores cursor/first, takes 50 and always reports hasNextPage false. Policy resolve invents grantedScopes=['read_discounts'] instead of checking the current installation.
+
+Implement the real bounded privileged discount read adapter using accepted006 raw-rule semantics: actual value/type/targets/minimum/restrictions/semantics and observation time, correct provider pagination/truncation, and current installation scopes. Catalogue status may gate admission but cannot replace rule facts it does not store. Unknown rules must still fail closed; supported basic rules must be evaluable. Retain shared context/budget/deadline across rule, product and recommendation calls. The product Admin fetch also still uses Bearer authorization: use the established installation-token transport convention (`X-Shopify-Access-Token`, as in Background's Shopify/discount providers), bounded response parsing, signal and redirect restrictions. Keep tokens entirely out of Storefront. Verify one supported fixed and one percentage rule through the production assembly with synthetic external HTTP responses, plus missing scope and pagination behavior. No live/paid Shopify check is requested.
+
+#### A3-R2 — Apply eligibility to the actual resolve manifest and use the accepted lease/limits
+
+File: `backend.ts:createPrismaAuthorizationResolver`.
+
+Initial resolution now finds the active release, but manifestCapabilities and selectedCapabilityKeys are still constructed from all release members before eligibility is calculated. `createMcpService` returns current.manifest directly for commerce://capabilities, so disabled/unentitled capabilities remain in the initial selection despite the new feature/plan checks. The resolver hard-codes a 15-minute processing lease, while the accepted Background host checks processingStartedAt against 120,000 ms (`src/commerce/host.ts` admission/recheck); Commerce therefore admits a lease the producer considers expired. Per-association limits remain omitted and platform maxima are always returned.
+
+For initial resolve, compute current eligible associations first and build the canonical ordered manifest/selected keys/tool union from that selection. Preserve the original pinned manifest/provenance for execute and apply current revocation without expansion. Use the same accepted lease duration/boundary and durable identity as Background rather than a new 15-minute window. Resolve applicable configured association limits and their minima; do not substitute maxima. Keep denial mapping typed. Verify that an inactive/plan-excluded capability is absent from the returned initial resource, a 3-minute-old processing lease makes zero provider calls, and a lower association limit reaches execution unchanged.
+
+#### A3-R3 — Advance timestamp CAS across transactions, not just calls within one transaction
+
+File: `backend/publication-storage.ts:transaction`.
+
+`lastNow=0` is reset for each transaction. `Math.max(Date.now(), lastNow+1)` only prevents repeated now() calls inside one transaction; a subsequent command in the same millisecond can write the same token already stored on the row. The architect reproduction seeds updatedAt at a frozen current time and receives that identical value from the next transaction. Metadata commands call now only once, so this does not meet the prior CAS correction.
+
+Derive the next metadata timestamp from the locked row's previous token (at least previous+1 ms and current wall clock), or an equivalent durable monotonic update that survives new instances/transactions. Apply to tool/capability metadata and enable commands, preserve the full token in replay hashing, and do not use process-local counters as authority. Verify two commands from separate transactions at a frozen clock produce distinct tokens and that reusing the first token conflicts with zero write/audit. Keep the now-passing precision and no-op/replay tests.
+
+#### A3-R4 — Complete the existing C20 saved/inspection contract
+
+File: `backend.ts` saved-selection parsing/results and inspection.
+
+Saved selection still uses hand-written count checks rather than accepted009 parsing. Empty DRAFT input resolves successfully (confirmed), the individual 32/64 bounds and cross-list uniqueness are not enforced, and responseContract remains unvalidated unknown. Draft contentHash is read from nullable unpublished database fields, so required current-content hashes and responseContractHash are absent. Inspection is unchanged: it returns shop preference rows but no candidate manifest, plan/recovery eligibility or exclusion reasons.018/019 cannot repair these missing013 outputs without violating the frozen-facade ownership boundary.
+
+Use the accepted selection schema or a shared canonical equivalent preserving all its rules and responseContract semantics. Build exact typed draft results with canonical current-content hashes and validated response contract/hash; validate selected bindings/ownership and reject incomplete/conflicting sets. Keep restored release order and missing-record rejection. Implement the required read-only inspection eligibility/candidate-manifest/exclusion result using the same production policy resolution, with no tokens/customer history/execution definitions/grant writes. Check empty selection rejection, a valid draft hash/contract round trip, and a concrete excluded capability in inspection. Do not weaken this contract to optional unknown fields.
+
+#### A3-R5 — Exercise adapter mutations in the database rehearsal
+
+Files: `tests/backend-postgres-rehearsal.test.ts`, rehearsal command and evidence report.
+
+The new real-Prisma test performs snapshot -> transaction returning counts -> compares counts. It exercises connection/read/no-op behavior only. It has no lifecycle command, mutation, operation replay, conflicting CAS, second connection or injected rollback. The subsequent003 SQL fixtures still do not invoke the TypeScript adapter, so they cannot establish those adapter guarantees. The reported 1/1 pass must be described as a no-op adapter smoke check, not completion of B02 race/rollback evidence.
+
+Provide the previously requested actual adapter/facade scenarios: publish valid rows/audit, duplicate operation returning the same durable result, mismatched replay/stale CAS with zero effect, two connections contending, and injected failure rolling back business/member/pointer/audit changes. Keep the isolated-target safeguards and separate existing SQL/migration checks. It is acceptable to leave execution of the disposable PostgreSQL scenarios pending developer authorization; the executable scenarios must exist. No Docker authorization or infrastructure execution is requested by this review. Correct completion claims to distinguish the smoke check from pending mutation/race/rollback scenarios.
+
+#### Architect verification and disposition
+
+Reran `npm run test:arch020-backend-integration`: **59/59 passed**. Prior temporary adapter harness: **6/6 passed**. Expanded `/tmp/c013-a3-review/review.test.ts`: **6 passed, 2 failed**, confirming repeated cross-transaction CAS time and empty draft selection acceptance. These harnesses import submitted code and use a recording Prisma port; they are not PostgreSQL evidence. The submitted 1/1 database test was inspected, not rerun against an unspecified target. Typecheck/lint/build/diff evidence reviewed. No implementation/main/gitlink change, no acceptance and no downstream promotion; COMMERCE-018/019 remain Pending. Preserve the developer-owned final manual system-test gate.
 
 ### Attempt 2 — Changes Requested (2026-09-21)
 
