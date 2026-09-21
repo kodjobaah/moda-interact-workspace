@@ -9,7 +9,9 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
+executor: null
+claimed_at: null
 priority: 145
 attempt: 1
 depends_on:
@@ -186,6 +188,47 @@ client version was `6.19.3`. No submodules were present in the implementation
 packet. Parent claim commit was `b1f07a21`.
 
 ## Architect Review
+
+### Attempt 1 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `a96dfd7f78a8d8c6b2d9dc1fbfd3a92df0623a7b` and parent report `cee2910850e0e3e7d9ed53452feaa6cde9a52cc5`; dedicated worktrees clean and both submitted remote heads verified. **Changes Requested; Ready, Attempt 1 retained; executor/claimed_at null.**
+
+The additive SQL contains the four C21 tables, required enums, partial platform/shop uniqueness, RESTRICT relations, opaque credential bytes, bounded checks and immutable revision/audit triggers. No application encryption or provider implementation was added. Preserve that scope. Three concrete corrections remain before the required X02 rehearsal can provide trustworthy evidence.
+
+#### A1-R1 — Align Prisma timestamps with the C21 migration
+
+File: `prisma/schema.prisma`, all four CommerceExternal models.
+
+C21 section3 and the migration require timestamptz(3), but all six new timestamp fields use plain DateTime without @db.Timestamptz(3). Prisma's schema SQL therefore describes TIMESTAMP(3), different from the checked-in migration's TIMESTAMPTZ(3). This is a schema/migration inconsistency that can produce drift and later timezone-changing alterations; Prisma syntax validation alone does not detect it.
+
+Add @db.Timestamptz(3) to createdAt/updatedAt on CommerceExternalConnection and CommerceExternalCredential, and createdAt on CommerceExternalConnectionRevision and CommerceExternalConnectionAudit. Preserve @default(now()) and @updatedAt semantics; reconcile any SQL/Prisma default differences deliberately. Regenerate the client/ERD as required and compare the new tables' generated SQL against the migration. Do not alter existing unrelated timestamp columns.
+
+#### A1-R2 — Make fresh/upgrade fixture setup executable
+
+File: `scripts/validate-arch020-external-connections.mjs`, Shop and PlatformAdmin inserts in both modes.
+
+Both branches issue raw INSERTs containing only Shop(id,domain) and PlatformAdmin(id,email). Their accepted baseline migration defines updatedAt as NOT NULL with no SQL default. Prisma @updatedAt is applied by Prisma model operations, not by $executeRawUnsafe. Thus either mode will fail in setup before exercising the new tables, even after the missing database is provisioned.
+
+Supply deterministic updatedAt values in all four raw fixture INSERTs, or use valid Prisma model creation that supplies the required fields. Retain explicit disposable-target/empty-database guards; do not add production defaults or disable constraints to make the rehearsal pass. Document the exact two mode commands and their prerequisites. This is a script defect independent of current infrastructure availability.
+
+#### A1-R3 — Ensure X02 assertions measure their claimed constraints and preserved data
+
+File: the same validator, mustReject helper, rejection fixtures and upgrade preservation.
+
+mustReject currently treats every exception as success. A missing table, wrong fixture, connection failure or an unrelated constraint can therefore masquerade as the intended protection. In particular, deleting the referenced revision could fail through credential FKs even without its immutable trigger. Several credential-bound checks reuse the already occupied platform revision, so a unique-index failure could mask a missing byte-bound check. Upgrade preservation compares only Shop/Admin row counts, not contents or the existing tool/grant records explicitly named in X02.
+
+Use the database error's SQLSTATE and available constraint identity to distinguish the expected unique/check/FK/immutable failure from infrastructure or unrelated errors. Where Prisma does not expose the constraint name, isolate the violating condition using an otherwise valid unoccupied fixture and assert the specific SQLSTATE. Verify immutable DELETE on an unreferenced revision so an FK cannot satisfy the assertion. Retain a successful adjacent insert before each boundary group. For rollback, assert the intended failure occurred after the first successful write and that its inserted row is absent afterward.
+
+For upgrade, seed a minimal valid existing tool/revision/grant graph under the predecessor schema (reuse the existing accepted fixture helpers where suitable), record relevant row contents/hashes before applying this additive migration and compare after, alongside Shop/Admin. Counts alone cannot establish unchanged values. This is the required X02 migration preservation evidence, not a request to test the whole legacy database or add an exhaustive constraint matrix.
+
+#### Verification and disposition
+
+Reran Node syntax validation and `npm run prisma:validate`: passed. Rendered schema SQL with `prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script` without a database: all six new timestamps are TIMESTAMP(3), confirming A1-R1 against the migration's TIMESTAMPTZ(3). Static review traced the fixture inserts to the accepted baseline SQL and reviewed migration constraints, triggers, schema, validator and documentation. No PostgreSQL provisioning, migration or container operation was performed. The report correctly leaves real fresh/upgrade evidence unrun; no database-backed pass is inferred from static checks.
+
+Unlike the migration checks discussed for COMMERCE-013, fresh/upgrade and constraint validation directly belong to DATABASE-003 because this task creates the migration. After fixing the script/schema issues, the two isolated modes still require real execution and recorded results before X02 is established. Keep unrun evidence explicit and use developer-provided/authorized disposable infrastructure; do not silently mark it passed or change shared databases.
+
+Ready for corrections, Attempt 1 retained, claims cleared. No acceptance, implementation edits, main merge, gitlink update or downstream promotion. COMMERCE-020/028 remain gated on their actual dependencies; no automatic launch. Historical submission review notes are retained below and superseded by this decision.
+
 
 ### Review Status
 
