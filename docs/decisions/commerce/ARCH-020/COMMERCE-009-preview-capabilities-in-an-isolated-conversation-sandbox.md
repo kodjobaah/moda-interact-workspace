@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 130
-executor: copilot
-claimed_at: 2026-09-21T00:50:51Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -123,27 +123,85 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+Implementation commit `fa795af310d0df76a1553e4adb7d77dbe6c7b149` in
+`moda-interact-commerce`:
+
+- `lib/preview/types.ts`, `store.ts`, `service.ts`, `runtime.ts`, `http.ts`
+- C9.1 App Router handlers under `app/api/studio/preview/`
+- `tests/preview-service.test.ts`
 
 ### Work Completed
 
-None; task definition only.
+- Implemented strict C9.1 preview schemas and typed error/status mapping.
+- Implemented owner-scoped conversation/run state, creation/run replay and
+  payload conflict handling, busy/history/TTL checks, fixture execution and
+  explicit cancellation flags.
+- Added authenticated fixtures, conversation, run status, cancellation and
+  tool-test route handlers. Authentication failures retain the existing Studio
+  401/403/503 contract; malformed bodies return `{code: INVALID_INPUT}`.
+- Added injected `PreviewBundleLoader` and state-store ports. Runtime composition
+  fails closed with `UNAVAILABLE` until the saved-bundle adapter is supplied by
+  COMMERCE-013; no production provider, customer transcript, Shopify token or
+  WhatsApp path is used.
+
+### Correction Checklist
+
+Architect Review outcome before implementation: Pending; no correction items
+were issued. Checklist disposition: no review corrections were applicable.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed:
+
+- `npm test -- tests/preview-service.test.ts`: PASS, 1 file / 4 tests.
+- `npm run lint`: PASS.
+- `npm run typecheck`: PASS after `npm run build` generated the accepted Prisma
+  client.
+- `npm run build`: PASS; all C9.1 routes compiled and were listed by Next.js.
+- `git diff --check`: PASS.
+- `npm test`: 72 passed, 1 failed. The unrelated failure is
+  `tests/readiness-docker.test.ts`, “kills ignored-stdio descendants after
+  leader exit on timeout”, failing because the descendant signal-handler IDs
+  were undefined before cancellation. No preview files are involved.
+
+Focused case matrix:
+
+- creation replay/conflict and owner isolation -> injected `InMemoryPreviewStateStore`
+  plus synthetic `PreviewBundleLoader` -> `npm test -- tests/preview-service.test.ts`
+  -> PASS; one matching payload returns 200, changed payload returns ID_CONFLICT,
+  and another admin returns NOT_FOUND without execution.
+- fixture execution/replay -> fixture loader and `healthy-en` fixture -> same
+  focused command -> PASS; no model configuration is required and duplicate run
+  returns the stored result.
+- invalid fixture/model fail-closed -> bounded fixture catalogue and absent model
+  env -> same focused command -> PASS; INVALID_INPUT/UNAVAILABLE and no loader
+  fallback.
+- history/retention/cancel -> injected fake clock and in-memory state -> same
+  focused command -> PASS; HISTORY_LIMIT is rejected, completed result wins a
+  late cancel, and expired status returns NOT_FOUND.
+
+Developer validation required: live Redis/production saved-bundle composition,
+multi-replica atomic quota/concurrency behaviour, and COMMERCE-013 real adapter
+pairing remain pending because this task owns injected lifecycle fixtures and
+must not use live provider infrastructure.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The task definition requires Redis-backed atomic budgets and multi-replica race
+evidence, but the accepted C19 task boundary permits injected lifecycle fixtures
+until COMMERCE-013 supplies real composition. This implementation provides the
+state-store port and deterministic local store; production runtime intentionally
+fails closed rather than inventing a Redis or saved-bundle adapter.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+- Accepted database revision consumed: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Fixture-only runtime is the safe default until COMMERCE-013 wiring; model mode
+  requires explicit preview configuration and never falls back to production keys.
 
 ### Unresolved Issues
 
@@ -156,7 +214,16 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-009. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-009`, branch `task/ARCH-020-COMMERCE-009`, clean after push.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-009`, branch `task/ARCH-020-COMMERCE-009`.
+- Database gitlink/submodule evidence: accepted SHA
+  `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were
+  edited.
+- Implementation commit pushed to
+  `origin/task/ARCH-020-COMMERCE-009`:
+  `fa795af310d0df76a1553e4adb7d77dbe6c7b149`.
+- No main branch merge, parent service gitlink update, or other repository edit
+  was performed.
 
 ## Architect Review
 
