@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 120
 executor: codex
 claimed_at: 2026-09-20T23:27:53Z
@@ -25,7 +25,7 @@ enables:
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Build capability authoring and release screens
@@ -515,43 +515,48 @@ Ready for Review.
 
 ### Correction Checklist
 
-- [x] Re-read the complete latest Architect Review before source inspection. The task-local review remains **Pending** and contains no Changes Requested items; no separate newer review record was present in the parent task/report workspace. The launcher fact `rework required` was therefore recorded as a no-op correction disposition rather than inventing requirements.
-- [x] Preserved the existing authentication guards and reused the synchronous `PendingActionForm` duplicate-submission/reconciliation primitive; no browser bypass or alternate authorization path was added.
-- [x] Corrected the route registration gap found during validation: `/` now performs the authenticated redirect to `/features`, and U03 is registered at `/features`.
+- [x] **R1:** Added the C17 `StudioServices` read/command ports with the exact C7 command names, canonical field mapping, fail-closed production composition, and a test-only stateful fixture. Implemented authoring components for feature behaviour creation, reusable tool/draft editing, schema selection and validation, exact tool-revision association, release creation/activation/rollback, response-preview handoffs, and merchant resolver inspection.
+- [x] **R2:** Replaced unconditional detail placeholders with authenticated typed reads. Page entrypoints map `not-found` to Next's 404 boundary and retain distinct forbidden/unavailable views. Fixture evidence covers a valid exact revision, unknown ID and revision owned by another tool.
+- [x] **R3:** Shell release text now derives from `StudioShellModel`, unavailable is distinct from no active release, and the false `Live data` badge was removed. Added labelled narrow-menu controls, heading focus after selection, and dirty-editor Stay/Discard with focus restoration.
 
 ### Files Changed
 
-Implementation commit `865e16cc474ad9560bc3e948f7447a382195686e`:
-
-- `app/page.tsx`, `app/features/page.tsx`, `app/features/[id]/page.tsx`
-- `app/tools/page.tsx`, `app/tools/[id]/page.tsx`
-- `app/explore/page.tsx`, `app/preview/page.tsx`
-- `app/releases/page.tsx`, `app/releases/[id]/page.tsx`
-- `app/capabilities/page.tsx`, `app/capabilities/[id]/page.tsx`
-- `app/shops/page.tsx`, `app/shops/[id]/page.tsx`
-- `components/studio-shell.tsx`, `components/studio-screen.tsx`, `app/styles.css`
+Implementation commit `6c4ecbc853c8ecb517e42fe17d2b67edf4fd0233` adds `src/studio/` contracts/adapters/fixtures, the production and interactive Studio components, all U03–U13 page entrypoint reads, `docs/studio-service-contract.md`, three focused test files, responsive styles, and 24 desktop/narrow screenshots under `artifacts/ARCH-020-COMMERCE-008/screenshots/`.
 
 ### Work Completed
 
-Added the authenticated Studio shell with ordered navigation, role/active-release context, development SUPER_ADMIN badge, responsive layout, U03 Features catalogue, platform/tool/Shopify/preview/release/merchant screens, and exact-ID detail route surfaces with read-only unavailable states. Root access is authenticated before redirecting to `/features`. Existing auth action and pending-operation guards remain the mutation boundary.
+Production pages now read exclusively through `StudioServices`; absent adapters report unavailable and never import fixtures. The test fixture provides success, empty, forbidden, unavailable, stale-CAS and timeout/unknown-outcome modes, stable operation replay, mutation counts and resulting records. Interactive components implement the core feature -> behaviour -> tool -> schema query -> exact association -> release flow, merchant new-conversation inspection, synthetic-preview source/return links and synchronous duplicate-action protection. Existing authentication, Google-only development bypass, role badge and protected entrypoints remain intact.
+
+### Requirement-to-Fixture Evidence
+
+| Cases | Fixture result and asserted side effects |
+|---|---|
+| N02 / N12 | `studio-workspace.test.tsx` submits Add behaviour twice in the same tick; `createCapability=1`, one configuration exists and its exact `featureId` is unchanged. |
+| N03 / N12 | Tool form creates one reusable tool, zero revisions and no implicit `publishToolRevision`; replay test repeats one operation ID and proves one record/one command. |
+| N04 | Discovery retains invalid selection, reports validation failure, then produces a validated query after a schema field is selected. |
+| N05 | Capability editor accepts an exact published `toolRevisionId`; service test proves `updateDraft=1` and preserves `tool-products-r1`. |
+| N06 / N07 | Release components expose separate create, activate and rollback commands with stable operation IDs and explicit confirmation reasons; the fixture changes only active status during activation/rollback. |
+| N08 | Merchant detail displays plan, active release, explicit eligibility reason, exact resolver descriptor and exact revision link, with no credential fields or provider execution. |
+| N09 | Stale command response retains editor input; Stay closes the dirty dialog and restores focus to Back. |
+| N12 | Immediate `pendingRef` guard precedes awaited work; fixture replay records one effect per operation ID. |
+| N13 composer handoff | Release detail links to synthetic preview with exact release and validated return context; U14 execution remains COMMERCE-009-owned. |
+
+The exact C16 runtime response evaluation remains COMMERCE-009-owned. This task supplies the response-contract preview handoff and immutable release mechanics required by its assigned half of N13.
 
 ### Validation Results
 
-All run in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-008`:
-
-- Focused `npm test -- --run tests/auth-entrypoints.test.ts`: **passed, 1 file / 5 tests**.
-- `npm run prisma:generate`: **passed**, generated Prisma Client 6.19.3.
-- `npm run typecheck`: **passed**.
-- `npm run lint`: **passed**.
-- `npm test`: **passed, 13 files / 69 tests**.
-- `npm run build`: **passed**; build manifest includes `/features`, `/tools`, `/explore`, `/preview`, `/releases`, `/capabilities`, `/shops` and their `[id]` routes.
-- `git diff --check`: **passed**.
-
-The initial pre-generation typecheck reported existing Prisma client errors; the required `prisma:generate` step resolved them and the final typecheck passed. No unrelated baseline failure remains in the final validation.
+- Focused Studio validation: `npm test -- --run tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/studio-shell.test.tsx` — **3 files / 12 tests passed**.
+- `npm run typecheck` — **passed**.
+- `npm run lint` — **passed**.
+- `npm run build` — **passed**, including Prisma Client generation, TypeScript and all U03–U13 routes.
+- Local development rehearsal — **all 12 list/detail/preview routes returned HTTP 200** after the server/client boundary correction.
+- Screenshot inspection — **24 nonblank images**, 12 desktop at 1440x1000 and 12 responsive narrow at 500x844; development role, labelled menu and explicit unavailable state verified.
+- `git diff --check` — **passed**.
+- Full `npm test` — **79/81 passed**; two pre-existing `readiness-docker.test.ts` descendant-handler timing cases failed only in the 16-worker run. Isolated rerun of that file passed **10/10**. No Studio test failed.
 
 ### Deviations
 
-Node emitted the package engine warning because the host selected Node `24.21.0` while `package.json` declares `24.19.0`; all declared checks passed. UI pages use explicit empty/read-only fixture-ready states because real Commerce service composition belongs to COMMERCE-013.
+Real database, discovery and selection adapters remain COMMERCE-013-owned. Production therefore displays the required explicit unavailable state until that composition is installed. Fixture-populated authoring views are component/browser-test surfaces only.
 
 ### Assumptions
 
@@ -559,15 +564,15 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-No live browser/Google OAuth, provider, or merchant operation was run. Browser screenshot evidence and real provider composition remain developer/COMMERCE-013-owned validation. The task-local implementation is limited to Commerce and does not edit the database submodule.
+No live Google OAuth, Shopify provider, merchant credential, customer data or production mutation was used. COMMERCE-009 owns actual U14 execution; COMMERCE-013 owns real adapter composition and integrated acceptance.
 
 ### Architectural Concerns
 
-None newly reported.
+The full-suite readiness timing test is sensitive to concurrent worker startup on this host; its isolated 10/10 pass is recorded rather than masking the parallel-run failure.
 
 ### Git / VCS
 
-Implementation repository: physical worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-008`, branch `task/ARCH-020-COMMERCE-008`, clean after commit/push. Implementation commit: `865e16cc474ad9560bc3e948f7447a382195686e`, pushed to `origin/task/ARCH-020-COMMERCE-008`. Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-008`, branch `task/ARCH-020-COMMERCE-008`; parent report update is task-owned and is ready to commit/push. Nested database submodule SHA: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`, matching the launcher fact. No parent service gitlink, main branch, architecture document, index, or another task was changed.
+Implementation commit `6c4ecbc853c8ecb517e42fe17d2b67edf4fd0233` is pushed to `origin/task/ARCH-020-COMMERCE-008`. Parent/report branch is the same task branch and will contain this Attempt 2 review submission. Nested database submodule remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, architecture/index file or other task was changed.
 
 ## Architect Review
 
