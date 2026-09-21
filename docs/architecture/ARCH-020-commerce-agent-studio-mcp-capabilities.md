@@ -1133,3 +1133,15 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 015;012/013/system-test retain other unfinished dependencies. No downstream
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
+
+
+## COMMERCE-005 Attempt 1 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt1 retained, claim clear; not accepted.
+Reviewed32fceff/6135a05f. Four submitted tests pass; three review cases fail:
+wrong variable type accepted, wrong response field type accepted, ignored abort
+holds execution past deadline. R1–R3 specify pinned runtime variable/schema
+validation, decoded HTTP/version/redirect bounds and bounded cancellation waiting.
+The query fact wrapper remains mandatory;013 supplies HTTP composition. See task
+for exact acceptance effects. No provider/business-adapter expansion, downstream
+promotion, next claim, main integration or gitlink change.

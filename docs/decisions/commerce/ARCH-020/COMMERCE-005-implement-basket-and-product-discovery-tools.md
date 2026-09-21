@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 90
-executor: copilot
-claimed_at: 2026-09-21T02:31:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -175,6 +175,45 @@ None newly reported.
 Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`. Recursive database submodule remained at recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Implementation and parent commits/pushes are recorded at submission. No main branch, parent service gitlink, architecture/index file or Architect Review text was modified; no enabled task was started.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Ready; Attempt 1 retained; executor/claimed_at null; not accepted.** Reviewed implementation `32fceff69e1ee437710b9555e8f00cd5a6698e25` and report `6135a05f290443ccc353e7056096a443b680e323`, verified against remote task heads. Dedicated worktrees clean; recorded database pin unchanged. No implementation edits, next claim, downstream promotion, main integration or gitlink update.
+
+Retain canonical host construction, accepted011 compiler invocation, source/schema/version/observation wrapper, partial-error rejection, shared reservation and no business-name registry. Independent isolated `/tmp/c005-review/review.test.ts` imports committed implementation: **4 submitted tests pass; 3 added cases fail**. handle=42 for String! returns OK; product.title=42 for a selected String field returns OK; a transport ignoring AbortSignal leaves execute pending beyond its deadline. Diff checks passed. Submitted lint/typecheck/build and182/187 full results are recorded evidence, not rerun here. No live Shopify/Redis/database validation was executed.
+
+All corrections below belong to `src/commerce/query/index.ts` (split owned modules allowed) and `tests/query-execution.test.ts`. They implement Q01–Q04/C14/C19 already assigned; no basket/discount/MCP work is added.
+
+#### R1 — P1 — Validate actual mapped variable values
+
+validVariables only checks JSON and equality of declared/supplied name sets. It accepts42 or null for a required String variable and rejects legitimate omitted optional/defaulted variables. createCommerceCompiler().compile(execution, EMPTY_INPUT_SCHEMA) validates the document but its returned validation/schema products are discarded; this does not validate the actual mapped values.
+
+Use the pinned011 schema and operation variable definitions to validate runtime values before reservation/I/O. Preserve strict no-coercion semantics: required non-null values present, scalar/enum/input-object/list types correct, unknown names/fields rejected, optional omitted variables allowed when valid. Distinguish014's mapping-definition validation from005's runtime mapped-variable validation; do not claim an empty authored input schema proves mappings. Reuse accepted compiler/schema exports, with a narrow adapter if needed, rather than duplicating a different Shopify type catalogue. Bound serialized variables before sending and retain fixed immutable document/version/hash checks.
+
+Permanent tests: String! numeric/null, missing required, unknown extra name, nested malformed input, valid optional omission/default and list/scalar mismatch all have explicit outcomes and0 provider calls on rejection. Execute TWO distinct authored queries (for example product details and a bounded collection query), including alias/result mapping, without adding name-specific code. The existing Q01 only executes one query.
+
+#### R2 — P1 — Validate result shape and decoded transport envelope
+
+Current StorefrontQueryTransport returns an arbitrary already-parsed unknown. responseBytes serializes that object after allocation, so it cannot enforce C14's decoded-body limit before processing, observe HTTP throttling, detect redirects or inspect Shopify API-version fallback headers. A safe constructed initial URL alone does not prohibit the injected transport from following a redirect. On success the compiled outputSchema is ignored; malformed selected field types become trusted query facts.
+
+Make the injected transport return a bounded HTTP envelope with status, final URL/redirect indication, headers and a decoded byte stream (a fetch Response or equivalent typed port).005 owns status/version/redirect/body admission and schema projection;013 supplies the actual HTTP transport. Express POST/tokenless/redirect-error/no-retry requirements in its request contract, with no caller credential/header fields. Reject redirect responses/final-host changes, missing or different pinned API-version evidence as C14 requires, non-success statuses and all GraphQL errors; preserve typed THROTTLED for HTTP/provider throttling. Do not perform installation-token lookup or fallback.
+
+Read decoded response bytes incrementally and cancel at256KiB before JSON parsing/projection. Do not substitute JSON.stringify length for the wire/decoded byte count. Validate the selected response against the compiler-derived schema, respecting selected aliases, nullable fields and list element types. Schema/provider failures return UNAVAILABLE; a valid null resultPath target returns NOT_FOUND; a valid empty list remains success. Validate final wrapper through accepted Shared bounds without dropping source/schema/version/observedAt. Extra counterfeit evidence must remain ordinary values, never become the policy root or trusted evidence.
+
+Tests: actual Response/controlled stream fixtures for exact limit/overflow/cancellation, redirect/unverified destination, fallback version,429, GraphQL errors with partial data, malformed selected type (title42 reproduction), missing required selected fields, valid null/empty list and nested counterfeit evidence. Assert no retry/credential lookup and body processing stops on overflow. These are deterministic local fixtures, not a requirement for a live Shopify call. Document the transport success/failure contract for013.
+
+#### R3 — P1 — Settle execution when its deadline or cancellation fires
+
+The timer aborts the controller, but execute continues awaiting transport.request forever if the transport ignores it. Fake-clock reproduction advances beyond the deadline; result remains pending until the fixture manually releases the transport. isAbort also recognizes only DOMException, and the catch does not check the internal controller's aborted state, so an internal timeout surfaced as ordinary Error(name=AbortError) can be mislabeled UNAVAILABLE.
+
+Race transport/body processing against a promise bound to the combined caller/internal deadline signal; settle with typed retryable DEADLINE at min(context.deadlineAt, start+10s). Wire cancellation before starting work, observe late resolution/rejection without accepting data or creating an unhandled rejection, and clean timer/listeners/readers in finally. Check controller.signal.aborted in error handling as well as caller signal/deadline; normalize standard AbortError shapes. Keep every actual provider request on the existing shared12-request budget, no retry or reset.
+
+Tests with fake clocks/barriers: never-settling transport returns DEADLINE on time, late resolve/reject discarded, caller cancellation settles, internal timeout with ordinary AbortError is DEADLINE, pre-abort/pre-expiry/budget exhaustion make0 requests, and exactly one successful request remains unchanged. No real sleeps or live provider effects.
+
+### Evidence and resubmission
+
+Update Q01–Q04 and work-item checkboxes only after their effects are exercised. The current Q02 report incorrectly says all invalid cases make0 calls, although provider-response cases necessarily make1; distinguish pre-I/O rejection from rejected response. Record actual preparation synchronization and accepted source revisions, same-branch commits and required checks. Keep the five unrelated full-suite limitations and developer live validation separate; they are not these blockers. Publish implementation/report and return to review. Parent architect overlay is committed/pushed before handoff; normal preparation owns the next claim. No dependent task is promoted.
+
 
 ### Review Status
 
