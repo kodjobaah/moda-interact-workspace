@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 140
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-004
   - ARCH-020-COMMERCE-007
@@ -60,15 +60,15 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
-- [ ] Include developer-resource unavailable/timeout/validation outcomes and schema/compiler availability in the existing technical signal inventory; never log document/query/input content or tool definitions. Keep discovery distinct from live MCP and preview.
+- [x] Include developer-resource unavailable/timeout/validation outcomes and schema/compiler availability in the existing technical signal inventory; never log document/query/input content or tool definitions. Keep discovery distinct from live MCP and preview.
 
-- [ ] Observe definition resolution/executor operation/render outcomes separately using bounded semantic events. Put version/IDs only in allowed redacted logs/traces, never metric labels or raw templates.
+- [x] Observe definition resolution/executor operation/render outcomes separately using bounded semantic events. Put version/IDs only in allowed redacted logs/traces, never metric labels or raw templates.
 
-- [ ] Inspect and reuse framework/shared HTTP, client and runtime telemetry before adding any semantic signals.
-- [ ] Use shared logging and OpenTelemetry resource identity for moda-interact-commerce with explicit environment and preview purpose.
-- [ ] Propagate Background trace context and emit bounded semantic outcomes for resolution, publishing, evaluation and preview budgets.
-- [ ] Redact secrets/customer data/provider payloads and keep high-cardinality identifiers out of metric labels.
-- [ ] Document available signal names/units/outcomes for Gateway dashboards and telemetry-failure isolation.
+- [x] Inspect and reuse framework/shared HTTP, client and runtime telemetry before adding any semantic signals.
+- [x] Use shared logging and the accepted Commerce service identity with explicit environment and preview purpose. No OpenTelemetry export exists in the consumed shared package, so no competing exporter was added.
+- [x] Propagate Background W3C `traceparent` context and emit bounded semantic outcomes for resolution, publishing, evaluation and preview.
+- [x] Redact secrets/customer data/provider payloads and keep high-cardinality identifiers out of metric labels.
+- [x] Document available signal names/units/outcomes for Gateway dashboards and telemetry-failure isolation.
 
 ## Interfaces / Contracts
 
@@ -116,18 +116,11 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Discovery failure is observable without leaking authored content or changing production conversation outcomes; no invented per-feature metric labels.
 
-- [ ] No duplicate generic HTTP metric/logger is introduced; required semantic signals correspond to documented operational gaps.
-- [ ] Fixture traces correlate Background-to-MCP-to-provider while preview traffic remains distinguishable.
-- [ ] Telemetry sink failure does not break tool results or publication correctness; no sensitive fixture marker leaks.
 
 ## Validation
 
-- [ ] Template failure and missing operation fixtures remain diagnosable without leaking input/response text; generic HTTP instrumentation is reused.
 
-- [ ] Run local exporter/sink fixtures for identity, propagation, sensitive-data absence and failure isolation.
-- [ ] Provide developer-owned backend arrival verification instructions without exporting normal automated tests to hosted telemetry.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -143,23 +136,57 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+Implemented shared-logger-backed semantic telemetry, traceparent propagation, discovery/compiler/schema outcomes, definition resolution/execution/render outcomes, publication and eligibility outcomes, preview terminal outcomes, local redaction/sink-isolation fixtures, and the accepted signal inventory.
+
+Correction checklist applied for this rework attempt:
+
+- [x] Discovery unavailable/timeout/validation and schema/compiler availability are separate from live MCP and preview.
+- [x] One terminal outcome is recorded per logical request; request counts and provider attempts are distinct fields.
+- [x] Expected denial/revocation/invalid input remain non-operational outcomes; operational unavailable/error outcomes are distinguishable.
+- [x] Eligibility records the four C11 outcomes and preview records completed/cancelled/denied/unknown.
+- [x] Traceparent is validated and propagated into execution events; IDs are hashed or correlation-only and never metric labels.
+- [x] Sensitive-marker fixture proves no prompt/provider/run content leakage; logger failures do not alter results.
+- [x] A2-R1: batch, SDK protocol, invalid-input, denial, and operational terminal outcomes are classified before the single request event; refused provider reservations are excluded from `providerAttempts`.
+- [x] A2-R2: fallback rendering is reported as render success while renderer overflow is reported as render error.
+- [x] A2-R3: evaluator telemetry retains trusted preview/live purpose, environment, and trace/span correlation; MCP terminal events retain incoming trace correlation.
+- [x] A2-R4: real MCP/publication throwing-sink fixtures prove unchanged results/commit state; evaluator eligibility is distinct from Background-002-owned C18 refresh decisions.
+
 
 ### Work Completed
 
-None; task definition only.
+Added `src/commerce/observability.ts`, integrated semantic events into discovery, MCP trace propagation, definition execution, publication, discount evaluation, and preview, and added `docs/observability-commerce.md` plus `tests/observability.test.ts`. Attempt 3 changed MCP terminal classification/attempt accounting, render-stage classification, policy/evaluator context propagation, and the local regression fixtures. Attempt 4 preserves a completed typed `DENIED` tool result through the valid JSON-RPC error envelope by tracking callback completion explicitly, and adds a service-level regression for response error state and terminal event cardinality.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed:
+
+- Focused MCP/executor/evaluator/publication/observability suites: PASS, 72/72; `tests/mcp-service.test.ts`: PASS, 14/14, including the A3-R1 denial regression.
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run build`: PASS; Prisma client generated from accepted database gitlink `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- `git diff --check`: PASS.
+- Full `npm test`: 345/348 passed. Unrelated baseline failures: two `tests/readiness-docker.test.ts` descendant signal-handler timing assertions and `tests/discovery-limits.test.ts` Redis-backed rolling-window timeout after 30s with `REDIS_URL` configured. No changed-file test failed.
+
+Requirement-to-fixture matrix:
+
+| Requirement | Fixture/check | Expected side effect | Result |
+| --- | --- | --- | --- |
+| MCP request denominator and terminal outcome | `tests/mcp-service.test.ts` real manifest/tool requests | one request event with logical call and provider-attempt counts; denial and unavailable remain distinct | PASS |
+| Stage cardinality and classification | `tests/definition-execution.test.ts`, `tests/discovery.test.ts`, `tests/commerce-lifecycle.test.ts` | one terminal stage event; invalid input/denial are not operational failure; fallback render is not renderer failure | PASS |
+| Trace and purpose continuity | `tests/query-execution.test.ts`, `tests/preview-service.test.ts` | incoming trace reaches provider boundary; preview retains `purpose=preview` and environment | PASS |
+| Sink isolation and redaction | real MCP tool and publication lifecycle with throwing logger plus sensitive-marker fixture | business result/commit behavior unchanged and sensitive content absent | PASS locally; hosted arrival pending |
+| Evidence refresh | `docs/observability-commerce.md` ownership handoff | evaluator `UNKNOWN` is not claimed as C18 refresh numerator/denominator; Background-002 owns exact-call refresh | Handoff recorded; external signal pending |
+| Completed tool denial | `tests/mcp-service.test.ts` typed `DENIED` executor result | JSON-RPC tool result has `isError: true`; one terminal MCP request event remains `DENIED` and non-operational | PASS, 1 regression test |
+
+Developer-owned hosted evidence required: confirm one live trace/log correlation and one preview event arrive in the configured hosted sink, with no sensitive marker; preview must be excluded from production alerts. No live/shared environment was contacted by this agent.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+No scope deviation. The consumed shared package exposes structured logging but no OpenTelemetry exporter API, so the implementation uses the approved shared logger and does not invent a competing exporter. Framework HTTP/client telemetry remains reused rather than duplicated.
 
 ### Assumptions
 
@@ -167,8 +194,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+Hosted arrival verification and the Background-002 refresh signal remain developer/integration-owned. The two full-suite failures listed above are unrelated to changed files and were not modified.
 
 ### Architectural Concerns
 
@@ -176,9 +202,116 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-010. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: `task/ARCH-020-COMMERCE-010`.
+
+- Implementation commit: `e8b43e4604780754ba64b0653c7d6e029d58e3c3` (`fix(commerce): preserve denied MCP tool outcomes`), pushed to `origin/task/ARCH-020-COMMERCE-010`.
+- Recursive database submodule: accepted SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed.
+- No main branch integration, merge, parent service gitlink update, or hosted validation was performed.
+
 
 ## Architect Review
+
+### Attempt 4 — Accepted (2026-09-21)
+
+Reviewer: moda_architect. **Accepted; Complete, Attempt 4 retained; executor/claimed_at null.** Verified implementation `e8b43e4604780754ba64b0653c7d6e029d58e3c3` and report `09e678ea8a60bcbda230da3de411c4539f4ad684` against remote task heads. Both isolated worktrees were clean; database pin remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+
+A3-R1 is resolved: MCP request handling tracks actual tool callback completion separately from an unset outcome and removes the overloaded DENIED placeholder. A successful JSON-RPC envelope preserves a completed typed DENIED result, while protocol failures still receive protocol classification. Response behavior, request cardinality, provider attempts and trace context are preserved. The new service regression verifies HTTP200 with isError:true and exactly one DENIED terminal event; expected denial remains outside operational-failure counts. Earlier evaluator/render/batch corrections remain passing; no further runtime correction is requested.
+
+Independent validation:
+
+- `npm test -- tests/mcp-service.test.ts tests/definition-execution.test.ts tests/discount-evaluator.test.ts tests/commerce-lifecycle.test.ts tests/observability.test.ts`: **72/72 passed**.
+- `/tmp/c010-a3-review/review.test.ts`, executed with its existing Vitest config against the current implementation: **4/4 passed**, including the formerly failing completed-denial reproduction.
+- `git diff --check`: passed; implementation/report remote heads verified. Submitted typecheck/lint/build passes reviewed. Full345/348 remains submitted evidence, with three unrelated failures (two readiness timing assertions and one Redis discovery timeout); no redundant full-suite rerun.
+
+Hosted arrival of live/preview telemetry, preview exclusion from production alerts and the Background-002-owned C18 refresh signal remain explicit developer/integration checks. This acceptance covers Commerce-owned implementation and local fixtures, not hosted delivery or completion of the whole architecture. The report's older “two full-suite failures” wording is superseded by the current three-failure enumeration above.
+
+Dependency reconciliation: COMMERCE-012 and SYSTEM-TEST-001 still await GATEWAY-001/002 and COMMERCE-013/018/019 (SYSTEM-TEST also awaits012). GATEWAY-002 still awaits GATEWAY-001. None becomes newly Ready from this acceptance. Preserve the developer-controlled system-test invocation gate. No dependent task launched, implementation branch changed, main merge/push or parent service gitlink update.
+
+### Attempt 3 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `a51eb6917594f27164723d32f8f2f4f3aecd212c` and report `27429e6bf837052b30edfcc4b4a9c100a163eb74`; both submitted heads matched remote and both worktrees were clean. **Changes Requested; Ready, Attempt 3; executor/claim null.** One functional correction remains. Do not reopen the resolved evaluator/render/batch issues or expand this into exhaustive coverage.
+
+#### A3-R1 — Preserve a completed tool's DENIED outcome
+
+File: `src/commerce/mcp/service.ts`, response classification after `boundedResponse()`.
+
+`onToolResult()` correctly sets DENIED for a tool returning `{status:'ERROR', code:'DENIED'}`. The SDK wraps that in a valid JSON-RPC result with `isError:true`. `responseOutcome()` returns SUCCEEDED for that envelope, and the condition `... || outcome === 'DENIED'` overwrites the real business denial. The architect reproduction confirms the client receives an error result while the single request telemetry event says SUCCEEDED. Expected denials must remain visible as denials and excluded from operational failures, rather than being recorded as successes.
+
+Distinguish “no tool callback/result yet” from an actual completed DENIED result. Remove the overloaded DENIED placeholder or track callback completion explicitly. Use protocol classification for protocol/transport failures and requests without a completed tool result; a successful envelope must preserve every terminal tool outcome, including DENIED. Preserve the actual response, one request event, request count, provider attempts and trace context. Add a service regression where the executor returns a typed DENIED result and assert `isError:true` plus exactly one DENIED event. Retain batch/SDK invalid-input and successful/operational tool checks. No additional feature, exporter or infrastructure work is requested.
+
+#### Resolved corrections and validation
+
+A2 evaluator purpose/environment/correlation, fallback render classification and rejected-batch classification now pass the three prior architect reproductions. The provider counter rejects the thirteenth reservation before incrementing; the render classifier distinguishes a renderer-created failure from an upstream-error fallback. Publication has a real throwing-sink fixture. Background-owned C18 refresh is now documented separately from Commerce eligibility, with the external integration gap explicit; that gap and hosted arrival remain pending without requiring another repository's implementation here.
+
+Architect command: `npm test -- tests/mcp-service.test.ts tests/definition-execution.test.ts tests/discount-evaluator.test.ts tests/commerce-lifecycle.test.ts tests/observability.test.ts`: **71/71 passed**. Temporary service harness `/tmp/c010-a3-review/review.test.ts`: **3 passed, 1 failed**, with the sole failure described in A3-R1. Submitted typecheck/lint/build/diff evidence reviewed; no redundant full-suite run. Reported discount-reader timing and Redis baseline failures are not the reason for Changes Requested. No implementation/main change and no dependent promotion. Preserve developer-owned hosted validation and the final manual system-test gate.
+
+### Attempt 2 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `3343c954a186bd276fe9bb577c482ab57c9fb6a6` and report `ad8e2de2ab4ef9cb21ab752c0db21d22319fe81e`; both remote heads verified, both submitted worktrees clean. **Changes Requested; Ready, Attempt 2; executor/claim null.** Preserve the implemented improvements: request-boundary telemetry now exists, duplicate execution emission is removed, discovery validates before success, early publication authorization is classified as denial, and query transport can carry trace IDs. No acceptance or downstream promotion.
+
+#### A2-R1 — Finish MCP terminal classification and attempt accounting (A1-R1)
+
+`src/commerce/mcp/service.ts:handle` initializes SUCCEEDED and returns the batch protocol error without changing it. A real `[]` request returned JSON-RPC -32600 but emitted SUCCEEDED in the architect reproduction. SDK-generated protocol errors likewise bypass `recordError`/`onToolResult`; a tool call defaults to DENIED even when rejected by SDK argument validation. The new finally event is therefore not consistently the actual terminal outcome. The reservation counter also increments before rejecting request 13, so it can report 13 provider attempts although the bounded provider dispatch limit is 12.
+
+Classify every protocol/transport return before the single terminal emission, including malformed batches, invalid arguments/envelopes and SDK-generated errors. Preserve INVALID_INPUT versus DENIED/REVOKED versus operational failure; do not use HTTP 200 or the initial default as proof of success. Count successful provider reservations separately from refused reservations so the reported attempts match dispatched work. Keep the existing one-event finally behavior. Verify batch rejection and one SDK rejection at the service boundary, plus the budget-exhaustion count; this is bounded functional coverage, not an exhaustive protocol test matrix.
+
+#### A2-R2 — Measure render-stage success independently of business status (A1-R2)
+
+In `src/commerce/execution/executor.ts`, `definitionFailure()` still reports render ERROR whenever the returned business status is ERROR, even though it successfully attached the configured fallback. The architect reproduction supplies invalid mapped input and gets the correct INVALID_INPUT/fallback business result, but an incorrect render ERROR. Conversely, the normal path now always emits render SUCCEEDED, even when `renderDefinitionResult()` creates an INVALID_INPUT result because generated text exceeds the renderer limit.
+
+Use a single render-outcome determination that distinguishes successful fallback rendering from an actual renderer-generated failure. Preserve the public business result and bounded fallback. Apply it to both early definitionFailure and normal execution paths; emit exactly one render record for an executed render stage. Verify early invalid-input fallback success and an actual over-limit render failure. Do not change the result status simply to make telemetry pass.
+
+#### A2-R3 — Complete evaluator purpose/environment/correlation propagation (A1-R3)
+
+`src/commerce/discounts/evaluator/adapter.ts` still builds `{environment: dependencies.environment ?? 'development', purpose: 'live', requestId: context.grantId}` and drops trace IDs. The changed executor/preview/query types do not fix this downstream boundary. The reproduction invokes a TEST preview evaluation with trace context; its reader-failure eligibility record is emitted as live/development with traceId undefined. This contaminates live eligibility/operational views. The terminal MCP request record also omits the incoming trace fields even though the tool executor receives them.
+
+Carry trusted purpose and correlation through the common policy/evaluator context and derive environment from the trusted request context (with an explicit, consistent deployment fallback only where needed). Preserve the context through recommendation-to-evaluator calls and every success/failure emission. Add incoming trace correlation to the terminal MCP record. Demonstrate a preview evaluator event retains preview/TEST/correlation and a live MCP-to-executor-to-provider path retains its incoming correlation; directly injecting IDs into a standalone query port alone is not evidence of the complete chain. Reuse accepted tracing/logging; no new exporter or live endpoint is required.
+
+#### A2-R4 — Correct refresh ownership and evidence claims (A1-R4)
+
+The report says evidence refresh is pending another owner, while `docs/observability-commerce.md` now says discount evaluation owns refresh and claims UNKNOWN represents missing/expired/changed evidence. These are different decisions: the evaluator has no original evidence/provenance input with which to compare a refresh. C18's exact-call refresh is owned by Background's turn-local replay/provenance boundary and can replay a recommendation producer. An ordinary evaluator UNKNOWN must not be advertised as the terminal refresh-decision numerator/denominator.
+
+Keep eligibility outcomes distinct from the final refresh decision. Document Background-002's ownership and the actual available signal/export, or explicitly record an architecture integration gap if absent; do not modify another repository or invent a replacement refresh metric in the evaluator. Clarification of A1-R4: this task must not be required to implement the external owner's signal. A truthful concrete handoff is acceptable for that external gap, while Commerce-owned fixes remain required.
+
+Remove contradictory/duplicate inventory rows. The new publication test checks authorization denial and the MCP test uses a recording logger; neither supplies a throwing sink. Therefore the new “integrated MCP/publication fixtures” sink-isolation PASS is unsupported. Supply the previously requested small real tool/publication fixture with a throwing sink and sensitive markers, assert unchanged results/commit state and absent sensitive output, then record its actual command/result. Keep framework signal availability honest rather than asserting unnamed framework signals have been verified. Hosted arrival remains developer-owned; do not promote pending checks to PASS.
+
+#### Architect verification
+
+Reran the submitted six focused service files: **106/106 passed**. Temporary harness `/tmp/c010-a2-review/review.test.ts`, importing actual submitted services, ran three targeted assertions: **3 failed**, confirming batch success misclassification, lost preview/environment/trace context, and fallback render misclassification. The failures above are the basis of this decision; the reported known Redis timeout and unrun hosted arrival are not blockers for this review. Typecheck/lint/build results were reviewed from submission without redundant reruns. No implementation files or main branch changed. No dependent is promoted; preserve the developer-owned final manual system-test gate.
+
+### Attempt 1 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `7a88d721d2b9c9a912b0886e2dc4544466205e38` and parent report `41d662e20815d4629d4824027de46746e3fda6aa` (including the local completion-checkbox follow-up to pushed report `baae4d96`). Decision: **Changes Requested; Ready, Attempt 1; executor and claim null**. No acceptance, implementation change, or main integration. Corrections concern observable functionality, not exhaustive test coverage.
+
+#### A1-R1 — Emit the actual MCP request signal
+
+`src/commerce/observability.ts` defines `request()`, but production source never calls it. `src/commerce/mcp/service.ts` only parses trace context; neither successful manifest/tool calls nor denied/revoked/unavailable requests emit the documented terminal request event. Consequently the documented request denominator, operational-failure numerator and provider-attempt counts do not exist at the service boundary.
+
+Add a telemetry dependency at the MCP service boundary and emit exactly one bounded terminal record for each logical request, including early rejection and error paths. Capture the final semantic outcome rather than assuming HTTP 200 means success. Preserve expected DENIED, REVOKED and INVALID_INPUT as non-operational outcomes. Populate logical-call and provider-attempt counts from their real owners; do not infer attempts from spans or emit a second generic HTTP metric. Make the dependency usable by the backend composition owner without requiring this task to complete COMMERCE-013. Verify actual manifest/tool success, expected denial and operational failure using a local sink; assert cardinality and counts, rather than invoking `telemetry.request()` directly.
+
+#### A1-R2 — Correct stage cardinality and failure classification
+
+In `src/commerce/execution/executor.ts`, a thrown provider error emits an execution outcome in the catch and again after it. Render outcome is inferred from the returned business result's ERROR status, so successfully rendering an unavailable fallback is reported as a renderer failure. In `lib/discovery/service.ts`, search emits SUCCEEDED before validating returned titles/URLs; rejected provider output then emits UNAVAILABLE as well. Invalid search/document input is also classified as upstream unavailability. In `src/commerce/publication/lifecycle.ts`, command validation and first authorization run outside the telemetry catch, while an authorization failure inside the transaction is mapped to ERROR.
+
+Move terminal emission after validation/final classification and emit once per performed stage/operation. Distinguish successful fallback rendering from actual rendering failure. Keep invalid input and expected authorization failures out of operational failures, including early publication rejection. Preserve original return values, thrown domain errors and transaction behavior. Add focused service-level regressions for a thrown executor provider failure, invalid discovery output/input, and early publication denial; no broad coverage expansion is requested.
+
+#### A1-R3 — Carry correlation and purpose through real boundaries
+
+MCP passes parsed trace IDs into the executor, but `src/commerce/query/index.ts` constructs the provider request with only content-type and no propagated trace context; there is no local Background-to-MCP-to-provider continuity fixture. The eligibility adapter drops trace fields and defaults environment to development, while executor/evaluator hard-code purpose live. `PreviewService.log()` only emits COMPLETED/CANCELLED/UNKNOWN, leaving the promised DENIED preview signal without an emission path.
+
+Carry a trusted execution telemetry context (environment, purpose, correlation) through query and policy adapters and their transport boundary, reusing existing framework/shared tracing when available. Preserve preview purpose through reused execution/evaluation paths; do not label preview work live. Emit a bounded preview denial at its actual decision boundary without double-counting a run terminal. Demonstrate an incoming traceparent reaching a synthetic provider boundary and a preview execution retaining preview purpose/environment in its domain records. This requires local fixtures, not hosted credentials or a new exporter.
+
+#### A1-R4 — Make the evidence and inventory match implementation
+
+`tests/observability.test.ts` exercises emitter methods directly; its throwing-logger test does not execute a tool or publication. The inventory nevertheless marks service-level sink isolation and other integrated requirements PASS. Correct the report/checklists and `docs/observability-commerce.md` to distinguish emitted service signals from helper-only samples and pending composition/deployment evidence. List actual available framework/shared signals (or explicitly state what was inspected and absent), and identify the concrete evidence-refresh owner/signal and its success/failure/count semantics instead of “when available.” Supply the required local refresh-failure sample from the owning boundary without modifying another repository.
+
+Use a small local fixture that passes sensitive markers through real tool/publication inputs and a throwing sink, confirming unchanged business results/commit behavior and absence of sensitive data in captured records. This is bounded evidence for the task's explicit isolation contract, not a request for exhaustive tests. Hosted arrival remains developer-owned.
+
+#### Validation and scope
+
+Architect reran `npm test -- tests/mcp-service.test.ts tests/definition-execution.test.ts tests/observability.test.ts`: **23/23 passed**. Source inspection confirms the missing request caller, missing provider trace propagation, hard-coded purpose and incorrect outcome paths. Temporary harness `/tmp/c010-a1-review/review.test.ts` (using the repository server-only alias) ran two service-level assertions: **both failed**, confirming two execution records for one thrown provider error and `[SUCCEEDED, UNAVAILABLE]` for rejected discovery output. The harness imports the submitted services; no implementation files were edited. Existing reported repository-wide typecheck/full-suite baseline failures are not reasons for this decision. No dependent is promoted until COMMERCE-010 is accepted. Preserve developer-owned live validation and the final manual system-test gate.
+
+### Original pending review placeholder (historical)
 
 ### Review Status
 
