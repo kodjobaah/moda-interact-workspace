@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-21T23:04:34Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-009
@@ -227,23 +227,38 @@ than inventing a parallel contract.
 
 ### Status
 
-Not Started.
+Implementation complete; returned to `moda_architect` review.
 
 ### Files Changed
 
-None.
+- `moda-interact-commerce/src/commerce/integration/preview/model-provider.ts`
+- `moda-interact-commerce/lib/server/config.ts`
+- `moda-interact-commerce/.env.example`
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/tests/preview-model-provider.test.ts`
+- `moda-interact-commerce/tests/database-contract.test.ts`
+- `moda-interact-commerce/README.md`
 
 ### Work Completed
 
-None.
+- Added a server-only native-fetch `PreviewModelPort` adapter for OpenAI and Groq with fixed endpoints, exact Chat Completions payloads, one request per invocation, signal propagation, bounded UTF-8 response reads, strict tool-call/usage mapping, and generic redacted failures.
+- Added strict discriminated preview configuration parsing with disabled-by-default behavior and provider/model/key validation.
+- Added controlled-fetch regressions for both providers, request/header/endpoint behavior, secret isolation, abort and malformed/oversized response handling, output-token mapping, and valid/invalid configuration.
+- Documented the Groq hosted test configuration and OpenAI support without adding provider SDK dependencies.
+- Implementation commit: `5fa33c7` (`feat(commerce): add preview model provider transport`), pushed to `task/ARCH-020-COMMERCE-033`.
 
 ### Validation Results
 
-Not run.
+- `npm run test:arch020-preview-model-provider`: passed, 1 file and 9 tests.
+- Focused ESLint for the provider, config, and focused tests: passed.
+- `git diff --check`: passed.
+- Repository `npm run typecheck`: baseline failure with 188 diagnostics across existing backend/database typing surfaces; task-local provider/config/test diagnostics were repaired and no longer appear in filtered output. The existing database contract test was updated for the new returned `preview` field.
+- `npm run build`: production compilation reached Next.js successfully, then entered the same repository TypeScript failure surface; no provider-specific build error remained after the task-local type fixes. Runtime packaging, smoke validation, and Prisma client generation completed successfully.
+- Validation used the isolated implementation worktree and synthetic controlled fetches only; no paid/live provider calls were made.
 
 ### Deviations
 
-None.
+The repository-wide typecheck and build remain blocked by pre-existing Prisma/backend typing errors unrelated to this task. No unrelated repairs were made.
 
 ### Assumptions
 
@@ -251,7 +266,7 @@ The exact provider protocol/configuration above is architect-approved for this t
 
 ### Unresolved Issues
 
-None at definition time.
+Repository baseline TypeScript errors remain in `lib/auth/development-platform-admin.ts`, `lib/server/connections.ts`, `src/commerce/integration/backend.ts`, and `src/commerce/integration/backend/publication-storage.ts`.
 
 ### Architectural Concerns
 
