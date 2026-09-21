@@ -1089,6 +1089,37 @@ COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their expl
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
 
+### DATABASE-003 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `a96dfd7` and report `cee29108`. The generated ERD whitespace
+correction and expanded static validator coverage are preserved. PostgreSQL
+fresh/upgrade migration and runtime checks remain unrun and are directly owned
+by this migration task. No acceptance, implementation change, main merge, gitlink
+update or downstream promotion. COMMERCE-020/028 remain gated on their actual
+dependencies; no automatic launch.
+
+### DATABASE-003 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** A1-R1/R2/R3
+remain materially corrected in `df86899`. Real PostgreSQL upgrade execution is no longer
+unavailable: it reaches `seedBaseline()` and fails with SQLSTATE `23514`, `ARCH020
+definition identity mismatch`, proving the upgrade fixture is invalid under predecessor
+ARCH-020 guards. Correct the predecessor baseline graph (tool definition, valid
+response-contract release, recovery/conversation ownership, `conversation_core`
+capability/revision and release membership, valid grant), recreate clean disposable
+databases and rerun both bounded modes. DATABASE-003 remains unaccepted; no dependent
+promotion or automatic launch.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Reviewed
+implementation `bc59bf0` and report `aca2c656`; both task heads match remote.
+Fresh and upgrade PostgreSQL rehearsals now pass after correcting only the
+predecessor fixture. Existing Shop/Admin/tool/tool-revision/grant rows are
+preserved and the C21 database constraints, immutable rows and rollback behaviour
+are proven. DATABASE-003 is Complete. COMMERCE-020/028/012 remain gated by other
+explicit prerequisites, so no dependent is newly launched.
 ## COMMERCE-029 Attempt 4 accepted — 2026-09-21
 
 Current state: `ARCH-020-COMMERCE-029` **Complete, Attempt 4**, claims null; reviewed

@@ -873,6 +873,42 @@ not only a single reproduction. Newly requested product behavior is a separate s
 change; review cannot quietly add features or demand unrelated exhaustive coverage.
 These gates reduce avoidable rework; they do not promise a fixed attempt count.
 
+### DATABASE-003 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `a96dfd7` and report `cee29108`. A1-R1 aligns six Prisma timestamp
+fields with the required timestamptz(3) migration; A1-R2 repairs missing updatedAt
+fixture values; A1-R3 makes constraint/immutability/rollback assertions specific
+and proves existing tool/grant data preservation. Explicit corrections are in the
+database task Architect Review. Syntax and Prisma validation pass; offline schema
+SQL confirms timestamp drift. Real fresh/upgrade PostgreSQL evidence remains
+unrun and is directly owned by this migration task. No acceptance, implementation
+change, main merge, gitlink update or downstream promotion. COMMERCE-020/028 remain
+gated on their actual dependencies; no automatic launch.
+
+### DATABASE-003 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** A1-R1/R2/R3
+remain materially corrected in submitted implementation `df86899`, but live PostgreSQL
+upgrade validation now fails inside `seedBaseline()` with SQLSTATE `23514` / `ARCH020
+definition identity mismatch` before DATABASE-003's additive migration. The upgrade
+fixture is not valid under the predecessor ARCH-020 guards: its tool definition is `{}`,
+and its later release/grant rows also omit the minimum predecessor-valid
+`conversation_core` release graph. Correct the fixture without weakening old constraints,
+then rerun clean fresh and upgrade modes. No broader test expansion and no dependent
+promotion.
+
+### DATABASE-003 Attempt 3 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 3 retained; executor/claim null.** Implementation
+`bc59bf0` corrects only the predecessor upgrade fixture. It now satisfies the
+existing ARCH-020 tool identity, response contract, recovery/conversation,
+`conversation_core` capability/revision, release-membership and grant guards
+without disabling or weakening any predecessor protection. Both clean disposable
+PostgreSQL modes pass. X02 is therefore established for migration preservation,
+partial credential uniqueness, byte bounds, RESTRICT FKs, immutable
+revision/audit rows and rollback; no plaintext credential storage was introduced.
+No broader test expansion or downstream automatic launch is required.
 ### COMMERCE-029 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
