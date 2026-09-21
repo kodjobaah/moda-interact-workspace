@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 130
-executor: codex
-claimed_at: 2026-09-21T02:42:42Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -127,7 +127,7 @@ Ready for Review.
 
 ### Files Changed
 
-Implementation commit `8aaa2b3` in
+Implementation commit `5d4dcd3` in
 `moda-interact-commerce`:
 
 - `src/commerce/preview/types.ts`, `store.ts`, `redis-store.ts`, `service.ts`
@@ -154,6 +154,14 @@ Implementation commit `8aaa2b3` in
   capacity guard that rejects before SET, and adapter responses are schema checked.
 - Added an isolated local Redis-compatible rehearsal that executes the actual Lua
   script for opaque round trips, simultaneous owners, expiry, fencing and capacity.
+- Replaced the cancellation-only query with an atomic positive ownership check.
+  In-memory and Redis implementations now authorize work only while the exact
+  environment/admin/run/token owns an unexpired RUNNING run and its conversation
+  lock, with no cancellation request. The service uses this check before the Shared
+  runner and each model/tool dispatch, and the watcher aborts when ownership is lost.
+- Added the Attempt 4 fake-clock regression: after run A expires and run B reserves
+  the same admin's released model slot, A's delayed callback performs zero model or
+  tool calls and cannot change UNKNOWN state, history, language or B's reservation.
 
 ### Correction Checklist
 
@@ -165,19 +173,22 @@ Implementation commit `8aaa2b3` in
   fence, remote cancellation aborts waiting work, and timed-out tool results stay UNKNOWN.
 - A2-R4: opaque validated Redis codecs preserve arrays/objects/null/Unicode, aggregate
   state is bounded, and actual Lua behavior is exercised rather than stubbed.
+- A3-R1: expired, missing, terminal, cancelled and wrong-token owners fail closed;
+  delayed callbacks stop before external effects while replacement ownership remains
+  intact. Both in-memory and executable Redis Lua contracts cover the ownership edge.
 
 ### Validation Results
 
 Agent-executed:
 
 - `npm test -- tests/preview-redis-lua.test.ts tests/preview-service.test.ts tests/preview-routes.test.ts tests/preview-store.test.ts`:
-  PASS,4 files /34 tests. The three Redis tests executed a disposable local
+  PASS,4 files /37 tests. The four Redis tests executed a disposable local
   `redis-server` over a Unix socket and removed it after the run.
 - `npm run lint`: PASS, zero warnings/errors.
 - `npm run typecheck`: PASS.
 - `npm run build`: PASS; all C9.1 routes compiled and were listed by Next.js.
 - `git diff --check`: PASS.
-- `npm test`:177 passed,1 failed outside preview scope. The configured live
+- `npm test`:219 passed,1 failed outside preview scope. The configured live
   `tests/discovery-limits.test.ts` timed out at30s while exercising Shopify discovery.
   All preview tests, including the isolated Redis Lua harness, passed.
 
@@ -193,6 +204,9 @@ Focused case matrix:
   authored prompts, English/French transitions and retained ambiguous language.
 - P05 injected fixture/model/tool counters retain synthetic-only execution; no paid
   model, Shopify provider, WhatsApp, database migration or customer data was used.
+- A3-R1 directly checks valid, expired, missing and wrong-token ownership in memory
+  and Redis Lua, and proves an expired queued MODEL callback has zero external effects
+  after a same-admin replacement reservation.
 
 Developer/integration validation remains for deployed Redis and COMMERCE-013's real
 saved-bundle/prompt/model/tool adapter pairing. Local Redis proves the committed Lua
@@ -230,7 +244,7 @@ None newly reported.
   `origin/main` incorporated by the launcher.
 - Recursive submodule sync/update: passed. Database pin:
   `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
-- Implementation commit `8aaa2b39dc5515ca5642b59f7bb639d03541efeb` pushed to
+- Implementation commit `5d4dcd3db0190940c603eefb1ac399ddc52c402a` pushed to
   `origin/task/ARCH-020-COMMERCE-009`.
 - No main merge, main push, force push, parent gitlink update or unrelated parent
   file edit was performed.
