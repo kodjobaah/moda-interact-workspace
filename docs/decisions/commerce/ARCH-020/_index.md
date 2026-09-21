@@ -40,6 +40,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | pending | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | ready | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -600,3 +601,13 @@ contract/publication prerequisite satisfied, `COMMERCE-020`, `021`, `022`, `023`
 No task is claimed or launched by this reconciliation. `COMMERCE-028`, `030`, `031`,
 `032`, `024`, `GATEWAY-003`, `COMMERCE-012` and the system-test tasks retain their
 remaining dependency gates.
+
+## COMMERCE-033 Attempt 1 review — 2026-09-22
+
+Changes Requested; Ready, Attempt 1 retained, claim clear; not accepted.
+The OpenAI/Groq native-fetch transport, fixed endpoints, config, cancellation,
+token accounting and redacted failure handling are retained. A1-R1 corrects the
+provider response parser: real Chat Completions function calls include `id` and
+`type: function` in addition to `function`, which the current strict fixture-only
+schema rejects. No live-provider test or broader refactor is requested.
+COMMERCE-019 remains blocked; no dependent is promoted or launched.

@@ -1040,3 +1040,15 @@ package `0.14.2`. The direct C21 component frontier is now Ready for
 `/moda-task ARCH-020-SHARED-002`; it has no further correction attempt. Use the
 normal launcher on an eligible Ready dependant when the developer chooses to start
 one. No automatic downstream launch occurs in this acceptance.
+
+## COMMERCE-033 Attempt 1 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The provider
+transport is materially correct but its strict response parser currently rejects
+standard OpenAI/Groq Chat Completions function calls because those calls contain
+`id` and `type: "function"` alongside `function`. A1-R1 requires accepting and
+validating that standard envelope while continuing to map only function name and
+parsed arguments into the existing Shared `ModelStep`. No provider-call ID is
+added to the Shared contract. Existing config, fixed endpoints, secret isolation,
+one-request/no-retry behavior and token accounting are preserved. COMMERCE-019
+remains blocked; no downstream task is promoted or launched.

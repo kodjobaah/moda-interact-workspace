@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 140
 executor:
 claimed_at:
@@ -272,3 +272,178 @@ Repository baseline TypeScript errors remain in `lib/auth/development-platform-a
 
 Return any contradiction in accepted `PreviewModelPort`/Shared runner types to
 moda_architect; do not broaden scope.
+
+## Architect Review
+
+### Attempt 1 — Changes Requested (2026-09-22)
+
+Reviewer: `moda_architect`. **Changes Requested; Ready, Attempt 1 retained;
+executor/claimed_at null. Not accepted.**
+
+Reviewed the exact submitted worktree snapshot and parent report
+`69ba0c2009c127b3b6b617ec1c9542f57c1d6ed8`. The implementation commit is
+reported as `5fa33c7`; the Commerce implementation repository commit was not
+resolvable through the available GitHub connection, so source review is grounded
+in the exact submitted archive. The parent task branch was independently verified
+to match the submitted report commit.
+
+The implementation direction is correct and should be preserved: strict
+`COMMERCE_PREVIEW_*` configuration, fixed OpenAI/Groq endpoints, native `fetch`,
+one provider request per invocation, AbortSignal propagation, bounded response
+reading, no provider fallback/retry, exact provider usage token accounting, and
+generic redacted failures. The controlled request fixtures also demonstrate the
+intended common request shape. Repository-wide typecheck/build failures remain
+the reported pre-existing backend/Prisma baseline rather than an independent
+reason for rejection.
+
+One functional interoperability defect remains.
+
+#### A1-R1 — Parse the actual OpenAI/Groq Chat Completions function-call object
+
+Files:
+
+- `src/commerce/integration/preview/model-provider.ts`
+- `tests/preview-model-provider.test.ts`
+
+The current response schema is:
+
+```ts
+const responseToolCall = z.strictObject({
+  function: z.strictObject({
+    name: z.string().min(1).max(128),
+    arguments: z.string(),
+  }),
+});
+```
+
+This accepts the simplified test fixture but rejects the standard
+Chat Completions function-tool response used by both configured providers.
+A normal function call contains the provider call identifier and tool type:
+
+```json
+{
+  "id": "call_abc123",
+  "type": "function",
+  "function": {
+    "name": "search",
+    "arguments": "{\"query\":\"orders\"}"
+  }
+}
+```
+
+Because the outer schema is strict, the valid `id` and `type` fields currently
+cause `safeParse()` to fail and MODEL preview returns
+`Preview model provider unavailable`. Groq documents this exact response shape,
+and OpenAI's Chat Completions API defines function tool calls as
+`{ id, function, type }`.
+
+Correct the schema deterministically to validate the standard function-call
+shape, for example:
+
+```ts
+const responseToolCall = z.strictObject({
+  id: z.string().min(1).max(256),
+  type: z.literal('function'),
+  function: z.strictObject({
+    name: z.string().min(1).max(128),
+    arguments: z.string(),
+  }),
+});
+```
+
+The adapter still maps only the architect-approved Shared fields:
+
+```ts
+{
+  name: call.function.name,
+  arguments: JSON.parse(call.function.arguments),
+}
+```
+
+Do **not** add provider `tool_call_id` to `ModelStep`, do not alter the Shared
+runner contract, and do not retain provider call IDs between turns. `id` and
+`type` are validated only so a real provider response is accepted. Continue
+rejecting non-function tool calls, malformed argument JSON, arrays/primitives,
+missing usage and oversized/malformed responses.
+
+Update the controlled OpenAI and Groq response fixture(s) to include realistic
+`id` and `type: "function"` fields. The focused proof must demonstrate that both
+provider branches accept that standard response and still produce exactly:
+
+```ts
+{
+  calls: [{ name: 'search', arguments: { query: 'orders' } }],
+  outputTokens: 17,
+}
+```
+
+Retain the existing endpoint/header/request-shape, abort, no-retry, redaction,
+oversize, malformed-usage and configuration checks. No live provider call and no
+broader test matrix are required.
+
+After the correction run:
+
+```bash
+npm run test:arch020-preview-model-provider
+
+npx eslint \
+  src/commerce/integration/preview/model-provider.ts \
+  lib/server/config.ts \
+  tests/preview-model-provider.test.ts \
+  tests/database-contract.test.ts
+
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If repository-wide typecheck/build still fail only on the documented pre-existing
+backend/Prisma baseline, record that accurately and show that the task-owned
+provider/config/test files introduce no diagnostics.
+
+Before resubmitting, complete the task-owned Work Item and Acceptance Criteria
+checkboxes that are currently left unchecked despite the Completion Report
+claiming implementation complete.
+
+### Review Status
+
+Changes Requested.
+
+### Review Notes
+
+The provider abstraction and configuration contract are retained. Only the
+standard Chat Completions function-tool response parser needs correction.
+
+### Reviewed Files
+
+- `src/commerce/integration/preview/model-provider.ts`
+- `lib/server/config.ts`
+- `tests/preview-model-provider.test.ts`
+- `tests/database-contract.test.ts`
+- `.env.example`
+- `README.md`
+- `package.json`
+- this Completion Report and the binding COMMERCE-033 task definition
+
+### Validation Reviewed
+
+The submitted report records 9 focused provider tests, focused lint and
+`git diff --check` passing. Independent execution from the review archive was
+not possible because it contains no installed `node_modules`; `vitest` is
+therefore unavailable in the review environment. Current OpenAI/Groq provider
+documentation was checked against the response parser and confirms the
+function-call object includes `id`, `type` and `function`.
+
+### Architecture Conformance
+
+Conforms to the intended provider-neutral `PreviewModelPort`, fixed-endpoint and
+secret-isolation design except for the live protocol response-shape mismatch in
+A1-R1.
+
+### Follow-up
+
+Return the same task through the normal `/moda-task ARCH-020-COMMERCE-033`
+execution path. The next authorised claim becomes Attempt 2. Do not start
+COMMERCE-019 or another enabled task; COMMERCE-019 remains blocked until
+COMMERCE-033 is architect-accepted Complete and its other prerequisite is
+resolved.
