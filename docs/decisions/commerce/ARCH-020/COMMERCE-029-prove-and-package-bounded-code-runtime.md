@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -204,6 +204,47 @@ Architecture review is pending; no downstream task was launched. The task is
 ready for `moda_architect` review.
 
 ## Architect Review
+
+### Attempt 2 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `b4e8d05c0f2ef74de96d7ee3e3611e593bd9a6f1` and parent report `92403d3c4089000b413d097dd925d56ba104ade9`; both submitted dedicated worktrees clean and remote heads verified. **Changes Requested; Ready, Attempt 2 retained; executor/claimed_at null.**
+
+A1-R1's serialized C21 kernel interface is now present, including caller compile cancellation/deadline and flat errors. A1-R3's capacity ownership now awaits termination and rechecks cancellation. Packaging runs in the build and produces the named manifest plus copied worker/loader/WASM; the packaged smoke and memory ceiling probe pass locally. Preserve these improvements. Two narrowly scoped corrections remain from the existing output-isolation and SB02 requirements.
+
+#### A2-R1 — Reject non-enumerable serialization hooks before serialization
+
+File: `src/commerce/code-response/runtime/worker.mjs`, trusted __walk and __stringify path.
+
+Capturing/fixing the intrinsics closes the earlier mutation cases, but __walk enumerates Object.keys only. JSON.stringify still discovers non-enumerable toJSON methods. This actual kernel invocation returns `{ok:true,outputJson:'[]'}`:
+
+```js
+function transform() {
+  return Object.defineProperty({}, 'toJSON', { value: () => [] });
+}
+```
+
+The validated root was a plain object; the guest method replaced it during serialization. This violates C21's custom-toJSON rejection and object-root contract. The new temporary fixture reproduces the bypass; a normal transform succeeds beside it.
+
+Inspect the complete own-property descriptor set with pristine intrinsics, including non-enumerable and symbol properties as appropriate to the JSON-only contract. Reject custom toJSON regardless of enumerability before invoking serialization; retain descriptor-based accessor rejection and nested-object validation. Ensure the same path prevents custom serialization from replacing nested validated data or silently dropping invalid members. Serialize only the validated representation under the existing sandbox budget; do not invoke guest hooks in the host or rely solely on a post-parse root check. Keep the exact C21 string result interface.
+
+Commit this short reproduction and its ordinary-object permitted case as focused regressions. A nested/non-enumerable hook must not receive a separate permissive path. No broader test quota is requested.
+
+#### A2-R2 — Demonstrate the stated supervisor scenario instead of a startup deadline
+
+Files: `tests/code-runtime-proof.test.ts`, `docs/code-runtime-proof.md` SB02 matrix and completion evidence.
+
+The matrix says large built-in serialization reaches the 2,000 ms supervisor deadline, but that fixture passes `deadlineAt: Date.now() + 50`. Its only assertion is DEADLINE. It can pass by timing out during worker/WASM startup without entering JSON.stringify; it does not establish the long built-in/serialization behavior required by A1-R4/SB02. The ordinary infinite loop tests the QuickJS interrupt, which is a separate mechanism.
+
+Add a controlled execution-start observation in the test/worker harness (no new guest host capability) or equivalent deterministic evidence that the relevant guest operation began. Demonstrate the supervisor terminating that bounded built-in operation when the interrupt cannot finish it, retaining the real production supervisor and capacity cleanup. Use an input that actually reaches that path and keep an overall bounded harness deadline. Verify a following normal transform succeeds. If allocation fails earlier instead, report that observed resource result rather than relabeling it supervisor proof. Correct the matrix's timing and evidence claims to match actual observations.
+
+This is completion of the already-required SB02 scenario, not a request for exhaustive sandbox coverage or live deployment. Do not loosen production limits to make the test pass.
+
+#### Verification and disposition
+
+Reran `npm run test:arch020-code-runtime-proof`: **8/8 passed**. Reran `npm run code-runtime:package` and `npm run code-runtime:smoke`: **passed**, including copied artifact execution and the 67,108,864-byte ceiling probe. Manifest SHA-256 remains `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`. Temporary architect harness `/tmp/c029-review/review.test.ts`: **1 passed, 1 failed**, reproducing hidden-toJSON acceptance with outputJson `[]` while normal object output passes. Submitted lint/typecheck/build/diff evidence reviewed; no redundant full-suite run.
+
+No implementation edit, main merge, gitlink update, live deployment or downstream promotion. Ready for corrections, Attempt 2 retained, claims cleared. COMMERCE-026 remains Pending until its prerequisites are accepted. SYSTEM-TEST-002 remains explicitly developer-invoked. Prior reviews are retained below.
+
 
 ### Attempt 1 — Changes Requested (2026-09-21)
 

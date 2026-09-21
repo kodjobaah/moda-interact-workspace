@@ -967,3 +967,15 @@ three architect checks reproduce two output bypasses and contract rejection.
 Unrelated Prisma typecheck diagnostics are not the blocker. No acceptance, main
 merge, implementation change, gitlink update or downstream promotion. COMMERCE-026
 remains Pending; SYSTEM-TEST-002 remains explicitly developer-invoked.
+
+### COMMERCE-029 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Reviewed
+implementation `b4e8d05` and report `92403d3c`. Exact kernel interface, awaited
+termination and packaged artifact/manifest improvements verified. A2-R1 fixes a
+reproduced non-enumerable toJSON bypass returning successful array JSON; A2-R2
+requires actual built-in supervisor evidence rather than a 50 ms startup deadline
+labelled as the 2,000 ms scenario. Exact corrections are in the task review.
+Focused tests: 8/8; package/smoke passed; targeted architect checks: 1 passed,
+1 failed. No acceptance, implementation change, main merge, gitlink update or
+promotion. COMMERCE-026 remains Pending; SYSTEM-TEST-002 is developer-invoked.
