@@ -865,3 +865,17 @@ two independent functional reproductions failed (duplicate execution and prematu
 discovery success). Baseline repository-wide failures do not drive this decision.
 COMMERCE-010 is not accepted; no dependent is promoted. Hosted validation remains
 developer-owned; the final manual system-test gate is unchanged.
+
+
+### COMMERCE-010 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2; executor/claim null.** Reviewed `3343c95`
+and report `ad8e2de2`. A2-R1–R4 in the canonical task give explicit corrections
+for terminal MCP classification/counting, render-stage outcomes, evaluator
+preview/environment/trace propagation, and truthful refresh/isolation evidence.
+The submitted focused suite passed 106 tests; three independent functional
+assertions failed. Existing fixes are retained. C18 final evidence refresh remains
+Background-owned, distinct from evaluator eligibility; an external signal gap
+must be handed off honestly, not replaced by an evaluator metric. No acceptance
+or downstream promotion. Redis baseline and hosted arrival are not review blockers;
+the developer-owned final manual system-test gate remains unchanged.

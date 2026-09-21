@@ -8,10 +8,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 140
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-004
@@ -203,6 +203,40 @@ Expected execution branch: `task/ARCH-020-COMMERCE-010`.
 
 
 ## Architect Review
+
+### Attempt 2 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `3343c954a186bd276fe9bb577c482ab57c9fb6a6` and report `ad8e2de2ab4ef9cb21ab752c0db21d22319fe81e`; both remote heads verified, both submitted worktrees clean. **Changes Requested; Ready, Attempt 2; executor/claim null.** Preserve the implemented improvements: request-boundary telemetry now exists, duplicate execution emission is removed, discovery validates before success, early publication authorization is classified as denial, and query transport can carry trace IDs. No acceptance or downstream promotion.
+
+#### A2-R1 — Finish MCP terminal classification and attempt accounting (A1-R1)
+
+`src/commerce/mcp/service.ts:handle` initializes SUCCEEDED and returns the batch protocol error without changing it. A real `[]` request returned JSON-RPC -32600 but emitted SUCCEEDED in the architect reproduction. SDK-generated protocol errors likewise bypass `recordError`/`onToolResult`; a tool call defaults to DENIED even when rejected by SDK argument validation. The new finally event is therefore not consistently the actual terminal outcome. The reservation counter also increments before rejecting request 13, so it can report 13 provider attempts although the bounded provider dispatch limit is 12.
+
+Classify every protocol/transport return before the single terminal emission, including malformed batches, invalid arguments/envelopes and SDK-generated errors. Preserve INVALID_INPUT versus DENIED/REVOKED versus operational failure; do not use HTTP 200 or the initial default as proof of success. Count successful provider reservations separately from refused reservations so the reported attempts match dispatched work. Keep the existing one-event finally behavior. Verify batch rejection and one SDK rejection at the service boundary, plus the budget-exhaustion count; this is bounded functional coverage, not an exhaustive protocol test matrix.
+
+#### A2-R2 — Measure render-stage success independently of business status (A1-R2)
+
+In `src/commerce/execution/executor.ts`, `definitionFailure()` still reports render ERROR whenever the returned business status is ERROR, even though it successfully attached the configured fallback. The architect reproduction supplies invalid mapped input and gets the correct INVALID_INPUT/fallback business result, but an incorrect render ERROR. Conversely, the normal path now always emits render SUCCEEDED, even when `renderDefinitionResult()` creates an INVALID_INPUT result because generated text exceeds the renderer limit.
+
+Use a single render-outcome determination that distinguishes successful fallback rendering from an actual renderer-generated failure. Preserve the public business result and bounded fallback. Apply it to both early definitionFailure and normal execution paths; emit exactly one render record for an executed render stage. Verify early invalid-input fallback success and an actual over-limit render failure. Do not change the result status simply to make telemetry pass.
+
+#### A2-R3 — Complete evaluator purpose/environment/correlation propagation (A1-R3)
+
+`src/commerce/discounts/evaluator/adapter.ts` still builds `{environment: dependencies.environment ?? 'development', purpose: 'live', requestId: context.grantId}` and drops trace IDs. The changed executor/preview/query types do not fix this downstream boundary. The reproduction invokes a TEST preview evaluation with trace context; its reader-failure eligibility record is emitted as live/development with traceId undefined. This contaminates live eligibility/operational views. The terminal MCP request record also omits the incoming trace fields even though the tool executor receives them.
+
+Carry trusted purpose and correlation through the common policy/evaluator context and derive environment from the trusted request context (with an explicit, consistent deployment fallback only where needed). Preserve the context through recommendation-to-evaluator calls and every success/failure emission. Add incoming trace correlation to the terminal MCP record. Demonstrate a preview evaluator event retains preview/TEST/correlation and a live MCP-to-executor-to-provider path retains its incoming correlation; directly injecting IDs into a standalone query port alone is not evidence of the complete chain. Reuse accepted tracing/logging; no new exporter or live endpoint is required.
+
+#### A2-R4 — Correct refresh ownership and evidence claims (A1-R4)
+
+The report says evidence refresh is pending another owner, while `docs/observability-commerce.md` now says discount evaluation owns refresh and claims UNKNOWN represents missing/expired/changed evidence. These are different decisions: the evaluator has no original evidence/provenance input with which to compare a refresh. C18's exact-call refresh is owned by Background's turn-local replay/provenance boundary and can replay a recommendation producer. An ordinary evaluator UNKNOWN must not be advertised as the terminal refresh-decision numerator/denominator.
+
+Keep eligibility outcomes distinct from the final refresh decision. Document Background-002's ownership and the actual available signal/export, or explicitly record an architecture integration gap if absent; do not modify another repository or invent a replacement refresh metric in the evaluator. Clarification of A1-R4: this task must not be required to implement the external owner's signal. A truthful concrete handoff is acceptable for that external gap, while Commerce-owned fixes remain required.
+
+Remove contradictory/duplicate inventory rows. The new publication test checks authorization denial and the MCP test uses a recording logger; neither supplies a throwing sink. Therefore the new “integrated MCP/publication fixtures” sink-isolation PASS is unsupported. Supply the previously requested small real tool/publication fixture with a throwing sink and sensitive markers, assert unchanged results/commit state and absent sensitive output, then record its actual command/result. Keep framework signal availability honest rather than asserting unnamed framework signals have been verified. Hosted arrival remains developer-owned; do not promote pending checks to PASS.
+
+#### Architect verification
+
+Reran the submitted six focused service files: **106/106 passed**. Temporary harness `/tmp/c010-a2-review/review.test.ts`, importing actual submitted services, ran three targeted assertions: **3 failed**, confirming batch success misclassification, lost preview/environment/trace context, and fallback render misclassification. The failures above are the basis of this decision; the reported known Redis timeout and unrun hosted arrival are not blockers for this review. Typecheck/lint/build results were reviewed from submission without redundant reruns. No implementation files or main branch changed. No dependent is promoted; preserve the developer-owned final manual system-test gate.
 
 ### Attempt 1 — Changes Requested (2026-09-21)
 

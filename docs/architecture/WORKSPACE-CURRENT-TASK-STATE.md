@@ -404,7 +404,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
 | ARCH-020-COMMERCE-008 | commerce | ready | 5 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
-| ARCH-020-COMMERCE-010 | commerce | ready | 1 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
+| ARCH-020-COMMERCE-010 | commerce | ready | 2 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | ARCH-020-COMMERCE-011 | commerce | complete | 9 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | complete | 4 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
@@ -1002,3 +1002,17 @@ two independent functional reproductions failed (duplicate execution and prematu
 discovery success). Baseline repository-wide failures do not drive this decision.
 COMMERCE-010 is not accepted; no dependent is promoted. Hosted validation remains
 developer-owned; the final manual system-test gate is unchanged.
+
+
+### COMMERCE-010 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2; executor/claim null.** Reviewed `3343c95`
+and report `ad8e2de2`. A2-R1–R4 in the canonical task give explicit corrections
+for terminal MCP classification/counting, render-stage outcomes, evaluator
+preview/environment/trace propagation, and truthful refresh/isolation evidence.
+The submitted focused suite passed 106 tests; three independent functional
+assertions failed. Existing fixes are retained. C18 final evidence refresh remains
+Background-owned, distinct from evaluator eligibility; an external signal gap
+must be handed off honestly, not replaced by an evaluator metric. No acceptance
+or downstream promotion. Redis baseline and hosted arrival are not review blockers;
+the developer-owned final manual system-test gate remains unchanged.
