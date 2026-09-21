@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 executor: null
 claimed_at: null
 priority: 85
@@ -253,6 +253,69 @@ implementation and parent report are kept in dedicated physical task worktrees.
  Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 5 — 2026-09-21
+
+**Not accepted; Ready, Attempt 5 retained**, executor/claimed_at null. Reviewed
+implementation `fba9482e7a0a8687d92aae01c01ef49067376b02` and report
+`0e91e5dd7a8115c32f18e1abd4b8d0b8e8df76df`. Dedicated worktrees are clean and
+remote heads match. No next attempt claimed, implementation edit, main integration
+or downstream promotion.
+
+#### R5-1 — P1: implement the already approved C15.1 document adapter
+
+The previous architect decision at `10a26f1d` resolved the missing MCP capability.
+It is the immediate ancestor of the Attempt 5 claim, and C15.1 is present in this
+parent task branch. It explicitly authorizes a restricted server HTTPS adapter
+for official Shopify documentation while retaining pinned MCP search.
+
+The five changed files in this attempt only address admission/routes/tests/runtime
+docs. There is no document adapter, and upstream.document still unconditionally
+throws the capability error. The required U07/N04 document traversal remains
+unavailable. This is now omitted authorized implementation, not an unresolved
+architecture question. Do not request another MCP capability decision or narrow
+the workflow: implement `lib/discovery/document.ts` and wire it under C15.1's
+existing URL/redirect/content/deadline limits. Demonstrate full text beyond 2,000
+characters using the real adapter with controlled transport and preserved title/
+source. No new scope, provider upgrade or live-store validation is required.
+
+#### R5-2 — P2: close the Redis client when admission fails
+
+`lib/discovery/limits.ts:25–38` now has two separate try blocks. Admission denial
+or connect/ping/eval failure throws from the first catch, so execution never enters
+the second try/finally containing redis.quit. Each rate/concurrency denial after
+successful connection leaves a client open; repeated rejected requests can exhaust
+connections. This is a regression introduced while separating error types.
+
+Independent isolated test against this revision reproduced it: mocked successful
+connect/ping, eval=0; RATE_LIMITED is returned as expected, but quit call count is
+**0**, expected1. Harness `/tmp/commerce011-attempt5-review/review.test.ts`, command
+`./node_modules/.bin/vitest run --config /tmp/commerce011-attempt5-review/vitest.config.mjs`:
+1 failed, exit1, Node24.19.0/Vitest5.0.1. No real Redis or Docker process started.
+
+Correction: place admission and operation inside one outer resource-cleanup finally.
+Keep admission error normalization limited to admission work, preserve operation
+errors, release in-flight counters only if acquired, and close/disconnect the owned
+client on every exit, including denial and partial connection failure. Cleanup
+must not replace the primary typed error. Verify denial, admission failure and
+operation failure cleanup with small deterministic checks; retain the reported
+real Redis 60/61 behavior.
+
+#### Evidence and next submission
+
+Typed error handling is useful progress. The reported 29 focused passes include
+an explicit local Redis URL and are retained as submitted evidence. The full run
+is96/98, not green; its readiness failures are reported as baseline, not independently
+diagnosed by this review. They are not the reason for withholding acceptance.
+`git diff --check f363ac4..HEAD` passes. No full suite/Docker rerun was needed.
+
+The report's Attempt4 R1–R4 checklist does not match the latest architect decision,
+and its request for architect resolution is stale. Replace that current checklist
+with R5-1/R5-2 dispositions and C15.1 implementation evidence while preserving
+historical reports/reviews. Complete the two functional items on the existing
+branches and resubmit; do not spend another attempt only on previously corrected
+admission behavior. Prior compiler/artifact fixes remain preserved. No new live
+validation requirement or downstream execution is authorized by this review.
 
 ### Attempt 4 review — architecture resolution / Ready — 2026-09-21
 

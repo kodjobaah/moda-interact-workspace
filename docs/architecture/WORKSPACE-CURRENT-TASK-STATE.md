@@ -405,7 +405,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| ARCH-020-COMMERCE-011 | commerce | ready | 4 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-011 | commerce | ready | 5 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
@@ -587,4 +587,15 @@ preserved. Always-unavailable document retrieval is not task completion.
 Implement the amendment on the same task branch, then resubmit. Prior review
 history accidentally removed by the report has been restored. The reported full
 suite remains95/96; the unrelated timing failure is not asserted resolved.
+No new claim, downstream promotion, implementation edit or main integration.
+
+## COMMERCE-011 Attempt 5 — Changes Requested — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
+Reviewed `fba9482` / report `0e91e5dd`. C15.1 was already present before the claim,
+but the approved official-document adapter remains unimplemented. A new admission
+cleanup regression leaves Redis clients open on rate denial; one isolated test
+reproduced zero close calls. Latest task review records R5-1/R5-2 and the exact
+next steps. Preserve prior compiler/artifact fixes and submitted local Redis
+evidence. Reported readiness baseline failures are not the review blocker.
 No new claim, downstream promotion, implementation edit or main integration.

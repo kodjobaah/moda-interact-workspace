@@ -107,3 +107,14 @@ Implement the amendment on the same task branch, then resubmit. Prior review
 history accidentally removed by the report has been restored. The reported full
 suite remains95/96; the unrelated timing failure is not asserted resolved.
 No new claim, downstream promotion, implementation edit or main integration.
+
+## COMMERCE-011 Attempt 5 — Changes Requested — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
+Reviewed `fba9482` / report `0e91e5dd`. C15.1 was already present before the claim,
+but the approved official-document adapter remains unimplemented. A new admission
+cleanup regression leaves Redis clients open on rate denial; one isolated test
+reproduced zero close calls. Latest task review records R5-1/R5-2 and the exact
+next steps. Preserve prior compiler/artifact fixes and submitted local Redis
+evidence. Reported readiness baseline failures are not the review blocker.
+No new claim, downstream promotion, implementation edit or main integration.
