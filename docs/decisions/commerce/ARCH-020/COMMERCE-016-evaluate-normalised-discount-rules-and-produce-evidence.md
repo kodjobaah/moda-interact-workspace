@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 105
 executor: null
 claimed_at: null
@@ -235,6 +235,42 @@ None newly reported.
 - No main merge/push, force push, parent gitlink update or unrelated parent file edit.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Ready for corrections; Attempt 1 retained; executor/claimed_at null; not accepted.** Reviewed implementation `bfbd7839503b60e88b17da49f258c84c4e506c76` and parent report `f96b41dfe2e532bfacbc765c1dcd08243cbdc2be`, verified against remote task heads. Dedicated worktrees clean; implementation database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No implementation edit, new claim, dependency promotion, main integration or gitlink update.
+
+Independent validation: **50/50 submitted evaluator/reader/product tests passed**. Isolated `/tmp/c016-a1-review/review.test.ts` imports the submitted pure evaluator and adds three functional reproductions: **all three fail**, detailed below. Diff check passed. Typecheck/lint/build and full253 passed/four infrastructure-sensitive failures remain submitted evidence, not independently rerun. No live provider/database validation was performed.
+
+Retain the pure value-only calculation boundary, integer decimal arithmetic, proposal order, Shared evidence digest, rule-first orchestration, shared budget and typed dependency failures. The blockers concern current V01/V02/V03 behavior, not exhaustive coverage or production013 composition.
+
+#### R1 — P1 — Do not qualify when required current variant facts are unknown
+
+File: `src/commerce/discounts/evaluator/evaluator.ts`, buildLines/qualification checks. Existing basket variants are checked only for product presence and productId consistency. Their nullable current availability/currency are ignored, unlike proposal variants. A fixture with a valid USD basket and a returned product whose available and currency are both null produces QUALIFIES_FOR_KNOWN_RULES instead of UNKNOWN. C19 defines missing product/null price/currency/availability as unknown; C8 says unknown availability is not available.
+
+Track missing/contradictory facts for every relevant basket and proposal variant and prevent qualification when a required fact is unknown. Keep legitimate historical basket unit prices as snapshot prices; this is not permission to overwrite them with live prices or claim a checkout guarantee. Validate the requested variant/product identity and establish required availability/currency facts before issuing qualification. Preserve provable failure -> unsupported -> unknown precedence; do not let an unknown fact erase an independent known expired/disabled failure.
+
+Add a regression for the existing-basket case above, separating missing availability and currency so each guard is demonstrated. Retain proposal-null/partial-membership and successful known snapshot cases. No new provider lookup belongs in the pure function; consume015 facts already supplied.
+
+#### R2 — P1 — Use a consistent rounding basis for savings caps
+
+File: evaluator.ts grossMinor/savingsMinor/eligibleMinor. grossMinor and percentage savings honor roundAt=LINE, but eligibleMinor always rounds the combined eligible subtotal. For two USD lines of0.005 each, quantity1, HALF_UP/LINE/ACROSS_ELIGIBLE_LINES and100% discount, gross and pre-cap savings are0.02; the TOTAL-rounded cap reduces savings to0.01 and incorrectly leaves0.01 payable.
+
+Derive the eligible monetary cap using the same proven rounding/allocation basis as the amounts it bounds. For this exact fixture, each line rounds to0.01, savings must be0.02 and resultingTotal0.00. Preserve the distinct TOTAL result and do not cap independently rounded LINE amounts with an unrelated TOTAL amount. Apply the consistent cap to both percentage and fixed branches; savings must never exceed the corresponding eligible amount or whole-basket gross.
+
+Add explicit arithmetic regressions for the reproduced LINE case and its TOTAL counterpart, plus a fixed amount hitting the same cap. Keep exact decimal/BigInt calculations and the reader-proven semantics boundary; do not change006 normalization to mask the error.
+
+#### R3 — P1 — Establish monetary comparability before declaring a minimum failure
+
+File: evaluator.ts subtotal/minimum evaluation and proposal currency checks. Proposal amounts enter basketSubtotal before currency is checked; an early minimum failure returns before the later currency guard. A USD100 basket plus a JPY1 proposal and USD200 basket minimum returns DOES_NOT_QUALIFY after treating the mixed amounts as101. This is not a provable USD subtotal failure and must be UNKNOWN.
+
+Track whether each monetary aggregate is known and denominated in the minimum/basket currency before comparing it. Never sum currencies or assume an exchange rate. Apply C8 precedence only to independently proven failures: a known expired/disabled rule can still win, and quantity or target failures can be known without a comparable monetary subtotal. Otherwise retain unsupported-before-unknown as specified. A missing or mismatched currency must not become a false known monetary failure merely because the numeric sum is small.
+
+Add the mixed-currency reproduction and a missing-currency equivalent, retaining existing exact/below minimum boundaries for comparable amounts. Verify these corrections through pure outputs and one adapter result so nonqualifying/unknown evidence remains canonical; production integration remains013-owned.
+
+### Resubmission
+
+Implement R1–R3 only in016-owned evaluator/adapter tests as needed. Keep006/015/Shared ownership intact. Update the Completion Report/checklist with actual effects, run focused functional and required typecheck/lint/build/diff validation, commit/push the same implementation/report branches, set status to review and clear claims. Live Shopify/provider composition is not required for this correction.007 remains pending on016 acceptance; no downstream promotion is made here. The broader infrastructure failures are not acceptance blockers.
 
 ### Review Status
 

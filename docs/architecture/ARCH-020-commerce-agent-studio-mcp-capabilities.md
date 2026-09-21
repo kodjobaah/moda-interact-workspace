@@ -1211,3 +1211,17 @@ Other downstream tasks remain gated by their own unresolved prerequisites;012 is
 still the final implementation checkpoint. No implementation changes, main merge,
 main push or gitlink update. Architecture is not yet Implemented. This supersedes
 older008 state wording while retaining historical reviews.
+
+## COMMERCE-016 Attempt 1 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt 1 retained, claim cleared; not accepted.
+Reviewed implementation `bfbd7839` and report `f96b41df` against remote task heads.
+Independent submitted contract suites passed50/50; three isolated functional
+reproductions fail: unknown current basket variant facts still qualify, a LINE
+rounding cap understates100% savings, and mixed-currency proposal amounts produce
+a false known subtotal failure. R1–R3 give explicit evaluator corrections and
+expected outputs in the task report. Pure arithmetic/Shared evidence and shared
+budget boundaries are retained. No implementation edits, next claim, main merge,
+gitlink update or dependent promotion.007 remains gated by016;013 and012 retain
+their remaining gates. Live provider composition remains separate integration work.
+Older readiness wording is historical; architecture is not yet Implemented.
