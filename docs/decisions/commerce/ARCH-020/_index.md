@@ -99,3 +99,16 @@ Ready (001/011/Shared Complete), with no new claim. Other dependants retain curr
 states because prerequisites remain unresolved. No main merge or gitlink update;
 architecture is not Implemented. This supersedes older COMMERCE-011 current-state
 wording while preserving historical reviews.
+
+
+## COMMERCE-006 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
+Verified de532c6/ec088f27. A2 NONE, fraction conversion and zero-value fixes pass;
+both documents now pass pinned Admin2026-07 schema validation. Nineteen submitted
+reader tests pass; four added cases fail. A3-R1 corrects nested first:1000 runtime
+limits with an explicit bounded partial-target profile. A3-R2 requires typed
+cancellation, pre-dispatch checks and rejection of late successful data.
+See the canonical COMMERCE-006 task for precise code locations and expected effects.
+No live validation gate, dependent promotion, new claim, implementation change,
+main integration or gitlink update. Parent overlay published before preparation.

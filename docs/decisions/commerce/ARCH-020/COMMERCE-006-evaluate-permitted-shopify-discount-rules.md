@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 100
 executor: null
 claimed_at: null
@@ -291,6 +291,47 @@ architecture/index file, or `main` branch was updated.
 - Developer-owned pending validation: approved live/pre-production Shopify Admin API check against a test shop using the pinned 2026-07 schema and granted scopes. No credentials or live endpoints were inspected or used by the agent.
 
 ## Architect Review
+
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Current decision: Ready; Attempt 3 retained; executor/claimed_at null; not accepted.** Verified implementation `de532c6ce57d7acd26af15527610f8efa627df21` and parent report `ec088f27d027b23200bd36e74b1e7452ff608b11` against their remote task heads. Both dedicated worktrees clean. The correction commit touches only reader source, focused tests and support matrix. No implementation changes, new claim, dependency promotion, gitlink change or main integration.
+
+A2-R1, A2-R2 and A2-R4 are verified corrected: NONE read denies before reservation, exact fraction scaling produces25/12.5 for0.25/0.125, and zero fixed amounts remain unknown. A2-R3's parser/schema correction is verified: both complete documents validate against the installed Admin2026-07 introspection artifact. Retain these changes. Static schema validation does not enforce Shopify's connection-size runtime limit; A3-R1 below is the remaining executable-document gap. A3-R2 records an outstanding cancellation requirement from Attempt1-R4/C19, now independently reproduced; this is not a new feature or live validation gate.
+
+Independent `/tmp/c006-a3-review/review.test.ts` imports the committed reader: **19 submitted reader tests pass, including pinned-schema validation; 4 added review cases fail**. Failures are oversized connection arguments, pre-aborted read returning OK, provider success after abort returning OK, and transport AbortError escaping the promised result union. The schema limit case is a deterministic local argument check against official documented limits, not a live request. Submitted21 reader/auth,161 full passing/3 environment failures, typecheck/lint/build remain reported evidence; those broader checks were not repeated. Diff checks passed. No live provider, Redis or database validation was executed.
+
+#### A3-R1 — P1 — Make nested target selections executable within provider limits
+
+Files: `src/commerce/discounts/reader/reader.ts` SHOPIFY_DISCOUNT_FIELDS and `docs/discount-support-matrix.md`; tests in `tests/discount-reader.test.ts`.
+
+Both documents contain products(first:1000), productVariants(first:1000) and collections(first:1000), repeated for native code/automatic branches. Shopify limits a connection page to250 resources, so legal GraphQL Int arguments still fail provider runtime limits. The official [GraphQL pagination reference](https://shopify.dev/docs/api/usage/pagination-graphql) documents this limit. The1000-target C19 DTO bound is not permission to request1000 items in one connection. Large nested pages multiplied by20 offers also need bounded requested cost.
+
+Deterministic minimal correction: replace each nested literal `first: 1000` with a conservative `first: 5` for this static listing/fixed-query profile. Keep top-level20/3/50 limits. Preserve hasNextPage and document that any true value means target completeness is false, targets normalize to null with TARGETS_INCOMPLETE, and support cannot be SUPPORTED. Do not silently label the first5 target IDs as exhaustive. Returning partial/unknown target facts is already allowed; fetching all1000 is not required for acceptance. Keep the same selection in both documents.
+
+If complete larger memberships are implemented instead, provide separate cursor-based target-page documents with first<=250, explicit endCursor/after, independent legal requested-cost bounds, reservations on the same12-request budget before every nested request, and incomplete results on exhaustion. Do not increase the offer ceiling, use bulk queries, or move live provider composition into006. The minimal partial-profile correction above avoids this expansion.
+
+Retain schema-validation tests and add a GraphQL AST check that every literal connection size is within the documented bound, with the exact conservative nested size asserted for this profile. Add a response-to-RawDiscount fixture demonstrating hasNextPage=true maps to complete=false and cannot become supported, plus a complete short target fixture. The production mapper remains013's assembly concern; the published provider contract/example must make this required mapping explicit. Update the matrix to distinguish total DTO membership bound from per-request selection size and to state runtime-cost limitations honestly. No live Shopify test is required.
+
+#### A3-R2 — P1 — Return bounded cancellation results and reject late data
+
+Files: reader.ts collect/read/getDiscountOptions, types.ts DiscountTurnContext, focused reader tests. collect forwards an optional signal but never checks it on successful paths. Its catch explicitly rethrows aborts. Consequently an already-aborted context still reserves/dispatches and returns a supported snapshot; a provider which aborts before resolving returns supported data; an AbortError rejects read rather than returning C4 ERROR.
+
+Use C19's required AbortSignal and absolute deadlineAt on the context; update deterministic fixtures with a live signal/deadline. Keep the existing shared budget object. Add a small guard, equivalent to:
+
+```ts
+function stopped(context: DiscountTurnContext): boolean {
+  return context.signal.aborted || Date.now() >= context.deadlineAt;
+}
+```
+
+At entry to read/getDiscountOptions, after policy.resolve, before each reservation, after provider.list resolves, and before returning successful facts, return `error('DEADLINE', true)` when stopped. Preserve NONE authorization semantics when no cancellation applies. Replace the abort rethrow in collect's catch with the same typed error; AbortError, elapsed deadline and an aborted signal must not escape or be converted to success. Preserve typed THROTTLED/UNAVAILABLE/DEADLINE for other failures. Never issue another page or retry after cancellation. Production transport must honor the passed signal; ignoring cancellation in a fixture must still not let late facts through.
+
+Permanent regressions for both read and listing: pre-abort=>ERROR DEADLINE with0 reservations/0 provider calls; provider abort-before-success=>ERROR DEADLINE with1 reservation/1 call and no subsequent page; thrown AbortError=>resolved typed ERROR; fake-clock deadline elapsing during policy or provider read=>no late success. Include an abort between two pages, retaining exact effect counts and the existing shared-budget test. Do not use real time sleeps or paid provider calls. These tests extend the existing cancellation requirement rather than expanding provider behavior.
+
+### Resubmission
+
+Correct A3-R1/A3-R2 on the same branch pair, retain working A2 regressions, run focused and required validation, and update the current Attempt report separately from historical evidence. Keep developer-owned live Shopify and unrelated environment failures explicit. Commit/push implementation and report, return to review. This parent review overlay is published before handoff; normal preparation owns the next claim. No dependent task is promoted.
+
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 
