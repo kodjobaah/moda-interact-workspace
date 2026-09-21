@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-21T23:04:39Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-017
@@ -87,10 +87,10 @@ Apply these exact UI/payload rules:
 
 ## Work Items
 
-- [ ] Remove selected-tool fallback from Conversation admission and payload construction.
-- [ ] Disable Conversation Start and render the specified guidance when no real behaviour/release source is selected.
-- [ ] Preserve Tool-test handoff/execution and independent source selectors.
-- [ ] Add focused regressions for tool-only entry, release/draft Conversation payloads and coexistence/back behavior.
+- [x] Remove selected-tool fallback from Conversation admission and payload construction.
+- [x] Disable Conversation Start and render the specified guidance when no real behaviour/release source is selected.
+- [x] Preserve Tool-test handoff/execution and independent source selectors.
+- [x] Add focused regressions for tool-only entry, release/draft Conversation payloads and coexistence/back behavior.
 
 ## Interfaces / Contracts
 
@@ -109,12 +109,12 @@ component after architect acceptance.
 
 ## Acceptance Criteria
 
-- [ ] U06 tool-only entry opens Tool test with the correct revision; a valid Run Tool request is emitted and `startConversation` remains zero calls.
-- [ ] Switching that tool-only entry to Conversation leaves Start disabled, shows accessible source guidance and never constructs/sends a zero-capability DRAFT.
-- [ ] Selecting a persisted release enables Start and sends exactly `{kind:'RELEASE',releaseId}`.
-- [ ] Selecting an unsaved/saved draft-behaviour source enables Start and sends its exact capability revision IDs, `toolRevisionIds: []` and response contract.
-- [ ] Tool selection remains usable for Tool test while Conversation selection is independent; reset/source locks/Back regressions remain green.
-- [ ] No fake capability/prompt, backend change or new API shape is introduced.
+- [x] U06 tool-only entry opens Tool test with the correct revision; a valid Run Tool request is emitted and `startConversation` remains zero calls.
+- [x] Switching that tool-only entry to Conversation leaves Start disabled, shows accessible source guidance and never constructs/sends a zero-capability DRAFT.
+- [x] Selecting a persisted release enables Start and sends exactly `{kind:'RELEASE',releaseId}`.
+- [x] Selecting an unsaved/saved draft-behaviour source enables Start and sends its exact capability revision IDs, `toolRevisionIds: []` and response contract.
+- [x] Tool selection remains usable for Tool test while Conversation selection is independent; reset/source locks/Back regressions remain green.
+- [x] No fake capability/prompt, backend change or new API shape is introduced.
 
 ## Validation
 
@@ -139,40 +139,50 @@ synthetic-capability alternative.
 
 ### Status
 
-Not Started.
+Ready for Architect Review.
 
 ### Files Changed
 
-None.
+- `moda-interact-commerce/src/studio/preview/preview-screen.tsx`
+- `moda-interact-commerce/tests/preview-screen.test.tsx`
 
 ### Work Completed
 
-None.
+- Conversation admission now requires a selected persisted release or non-empty behaviour draft source.
+- Removed selected-tool fallback from DRAFT payload construction; DRAFT payloads use the selected source members and `toolRevisionIds: []`.
+- Added bounded accessible guidance for tool-only Conversation entry and regressions covering tool handoff, release/draft payloads, source coexistence, reset, locks and Back behavior.
+- No backend, provider, Shared contract, route or deployment changes.
 
 ### Validation Results
 
-Not run.
+- Focused U14: `./node_modules/.bin/vitest run tests/preview-screen.test.tsx --reporter=dot` -> 20 passed.
+- Typecheck: `npm run typecheck` reached 179 pre-existing errors in four unrelated backend files; no diagnostics were reported in the touched U14 files.
+- Lint: `npm run lint` -> 0 errors, 2 pre-existing warnings in `scripts/code-runtime-manifest.mjs` and `src/commerce/code-response/runtime/kernel.ts`.
+- Production build: `npm run build` -> passed runtime packaging/smoke, Prisma generation, Next compilation, TypeScript, page data, static pages, traces and optimization.
+- Diff check: `git diff --check` -> passed.
 
 ### Deviations
 
-None.
+Repository typecheck remains red on unrelated pre-existing backend diagnostics; this task introduced no typecheck diagnostics in its changed files.
 
 ### Assumptions
 
-COMMERCE-017/009 accepted types remain unchanged.
+COMMERCE-017/009 accepted types remain unchanged; the implementation commit is `57bd7d6` on `task/ARCH-020-COMMERCE-034`.
 
 ### Unresolved Issues
 
-None at definition time.
+None for the bounded U14 change.
 
 ### Architectural Concerns
 
-Return any contradiction in the accepted U14/PreviewClient types to moda_architect.
+No contradiction found in the accepted U14/PreviewClient types.
 
 ### Git / VCS
 
-Defined but not claimed. Expected mirrored branch `task/ARCH-020-COMMERCE-034`.
-Record normal launcher preparation/isolation/commit/push evidence on execution.
+Attempt 1 claimed by the deterministic launcher; parent claim commit `6e118484b5eace5ebf17cabc2cede1f2d2581933`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-034`.
+Implementation commit `57bd7d6` pushed to `task/ARCH-020-COMMERCE-034`.
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-034`.
 
 ## Architect Review
 
