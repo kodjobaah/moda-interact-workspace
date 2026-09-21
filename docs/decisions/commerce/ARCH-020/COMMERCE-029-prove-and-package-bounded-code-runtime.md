@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: automatic
 status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-21T15:38:43Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -131,42 +131,118 @@ Runtime code is not wired into the future typed adapter or production factory; t
 
 ## Completion Report
 
-None within Commerce-029 scope. C21 live HTTP, credentials, preview receipts, schema validation and production assembly remain downstream task responsibilities.
-
-Not Started.
-
-Prepared physical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-029`.
-Implementation branch `task/ARCH-020-COMMERCE-029` committed and pushed as `39e636f` (`feat(commerce): add bounded QuickJS code runtime`). Parent task report is being committed and pushed on the mirrored parent branch `task/ARCH-020-COMMERCE-029`; no service gitlink, main branch, database schema, architecture/index file or Architect Review text was modified.
+Implementation completed in the dedicated implementation worktree
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-029`
+on implementation branch `task/ARCH-020-COMMERCE-029`, committed and pushed as
+`39e636f` (`feat(commerce): add bounded QuickJS code runtime`). The parent task
+report is being submitted on the mirrored parent branch
+`task/ARCH-020-COMMERCE-029`. No service gitlink, main branch, database schema,
+architecture/index file or Architect Review text was modified.
 
 ### Work Completed
 
-None.
+- Built and pinned the synchronous QuickJS WASM profile `quickjs-sync.v1` with
+  `quickjs-emscripten@0.31.0` and
+  `@jitl/quickjs-wasmfile-release-sync@0.31.0`.
+- Implemented `SandboxKernel` compile/run entry points and a fresh-worker
+  QuickJS execution path with bounded JSON-text results.
+- Enforced a 16 MiB QuickJS heap, 512 KiB stack, 64 MiB WASM linear-memory
+  maximum, 500 ms guest interrupt, 2,000 ms supervisor/turn deadline, 64/16
+  MiB worker V8 limits, four active workers with no queue, cancellation and
+  `finally` capacity cleanup.
+- Disabled guest module loading, network, filesystem, environment, timers and
+  credential host surfaces, with deterministic clock/random access.
+- Added bounded object-only JSON serialization with depth, array,
+  prototype/accessor, cycle-compatible and 48 KiB output protections.
+- Added deterministic fixtures for positive text transformation, syntax failure,
+  infinite loop and recovery, built-in long operation, allocation/serialization
+  pressure, forbidden capability, deadline, cancellation, concurrent
+  tenant-input isolation and fifth-run throttling.
+- Published `docs/code-runtime-proof.md`, including actual runtime limits,
+  artifact evidence and the requirement-to-fixture matrix. The runtime artifact
+  manifest is loaded by the production build without a network download.
+
+Implementation files are:
+
+- `src/commerce/code-response/runtime/types.ts`
+- `src/commerce/code-response/runtime/kernel.ts`
+- `src/commerce/code-response/runtime/worker.mjs`
+- `tests/code-runtime-proof.test.ts`
+- `scripts/code-runtime-manifest.mjs`
+- `docs/code-runtime-proof.md`
+- `package.json` and `package-lock.json`
 
 ### Validation Results
 
-No implementation validation performed.
+- `npm run test:arch020-code-runtime-proof` -> PASS, 1 file and exact focused
+  `6/6` tests. The scenarios observe actual QuickJS execution, not
+  safe-rejection-only mocks.
+- `npm run lint` -> PASS.
+- `npm run build` -> PASS; Prisma client generation and the Next.js webpack
+  production build completed successfully, including the production artifact
+  load.
+- `npm run code-runtime:manifest` -> PASS; the manifest records
+  `quickjs-emscripten@0.31.0`,
+  `@jitl/quickjs-wasmfile-release-sync@0.31.0`, SHA-256
+  `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, and
+  configured WASM maximum `67108864` bytes.
+- `git diff --check` -> PASS.
+- `npm run typecheck` -> BLOCKED only by five known unrelated Prisma client
+  typing diagnostics: four `Prisma.Sql`/`Prisma.sql` errors in
+  `lib/auth/development-platform-admin.ts` and one implicit `tx` any in
+  `lib/server/connections.ts`. No runtime-owned file was reported; the
+  production build TypeScript phase passed.
+
+### Requirement-to-Fixture Matrix
+
+The complete matrix is committed in `docs/code-runtime-proof.md`: SB01 is
+covered by the synthetic transform and artifact-load scenarios; SB02 by heap,
+stack/WASM limits, infinite-loop supervisor termination, allocation pressure
+and post-failure recovery; SB03 by forbidden-capability, tenant-isolation,
+fifth-run throttling and terminal-path capacity-reclamation scenarios.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+The repository-wide typecheck remains blocked by the five unrelated Prisma
+generated-client baseline diagnostics described above. Shared package
+publication is required only for SHARED-002 and is outside this task. Runtime
+code is not wired into the future typed adapter or production factory; those
+surfaces are owned by COMMERCE-026/024.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+C21 read-only scope applies; visual rules and generic JavaScript execute only
+inside the specified bounded sandbox. C21 live HTTP, credentials, preview
+receipts, schema validation and production assembly remain downstream task
+responsibilities.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+No implementation issue remains within this bounded runtime scope. PostgreSQL,
+container, live provider, credential, DNS and deployment validation were not
+required or claimed for this task. SYSTEM-TEST-002 requires explicit developer
+invocation even when Ready.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+None. The implementation preserves the C21 limits and ownership boundary;
+future external tool definitions require publication rather than another
+Background handler.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-029. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Dependency and worktree evidence: the dedicated physical implementation
+worktree and mirrored task branch were used; the implementation commit is
+`39e636f` and was pushed. The parent report branch is
+`task/ARCH-020-COMMERCE-029`; this report change is the only parent-workspace
+file change. Recursive database submodule state was not changed.
+
+### Remaining Validation
+
+Architecture review remains pending. No live credentials, WhatsApp delivery,
+PostgreSQL/container run, deployment or assembled cross-service flow is claimed;
+those are downstream/developer-owned checks. The task is ready for
+`moda_architect` review.
 
 ## Architect Review
 
