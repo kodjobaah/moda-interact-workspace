@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 125
-executor: copilot
-claimed_at: 2026-09-21T11:38:33Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -244,6 +244,80 @@ Attempt 1 uses mirrored `task/ARCH-020-COMMERCE-013` branches. Parent claim is
 At submission record the implementation and parent report commit hashes and push
 results, the database submodule SHA above, and confirmation that no main branch
 or parent service gitlink was changed.
+
+## Completion Report — Attempt 2
+
+Status: Ready for Review.
+
+Attempt 2 implements the six corrections from the latest Architect Review. The
+implementation branch is `task/ARCH-020-COMMERCE-013` at implementation commit
+`d432276`; the parent report branch is the mirrored
+`task/ARCH-020-COMMERCE-013` branch in its dedicated parent worktree. The
+implementation worktree is
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`;
+the parent worktree is
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-013`.
+The prepared claim was `495b88ed`; both task branches were synchronized from
+their respective remotes before this attempt. The database submodule remained at
+`5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service
+gitlink, downstream task, or Architect Review text was changed.
+
+### A1 correction checklist
+
+- [x] **A1-R1:** `getCommerceBackend()` now lazily assembles the production
+  server boundary from validated configuration, Prisma, accepted auth and
+  provider/policy adapters; injected construction remains test-only and missing
+  configuration fails closed with the bounded unavailable result.
+- [x] **A1-R2:** publication persistence now writes only changed mutable rows,
+  inserts immutable rows and audits once, preserves publisher metadata on a real
+  draft-to-published transition, and keeps pointer/member/business writes in the
+  locked transaction.
+- [x] **A1-R3:** CAS timestamps are reconstructed with exact Date precision for
+  tools and capabilities, preserving non-zero milliseconds and same-second
+  token changes.
+- [x] **A1-R4:** the facade now owns typed, authorized read-only
+  `saved.readSelection`, `inspection.listShops`, and `inspection.inspectShop`
+  adapters with bounded inputs, exact revision selection, and no grant/token or
+  customer-history writes.
+- [x] **A1-R5:** query validation now invokes Shared's accepted full publication
+  validator against the pinned compiler output, including response templates,
+  before lifecycle writes.
+- [x] **A1-R6:** executable B01-B06-labelled scenarios run through the backend
+  facade and lifecycle boundary; the disposable PostgreSQL replay/CAS/rollback
+  rehearsal has a declared command and remains separately developer-owned.
+
+### Validation Results
+
+Executed in the implementation worktree with Node `v24.21.0` and npm `11.19.0`:
+
+| Command | Result |
+|---|---|
+| `npm run test:arch020-backend-integration` | **passed: 4 files, 52 tests** |
+| `npm run lint` | **passed** |
+| `npm run typecheck` | **passed**; Next route types generated and `tsc --noEmit` completed |
+| `npm run build` | **passed**; Prisma Client `6.19.3` generated and Next production build completed |
+| `git diff --check` | **passed** |
+| `npm run test:arch020-backend-integration:database` | **static schema/migration/ERD checks passed**; migration rehearsal failed closed with `AssertionError: Local isolated target required` because no `DATABASE_URL`/isolated target was supplied |
+| `npm run test:arch020-backend-integration:postgres` | **pending**; failed closed before container creation with `Set ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1 to authorize creation and removal of one disposable Docker container.` |
+
+The database command made no database connection. PostgreSQL two-connection
+fresh/upgrade, replay/CAS, rollback and race evidence remains pending developer
+execution against the exact isolated targets `arch020_test_fresh` and
+`arch020_test_upgrade`. Redis-backed readiness and containerized provider
+transport validation also remain pending developer execution. No live Shopify,
+MCP, model, WhatsApp, billing, customer-history or production credential
+evidence is claimed.
+
+### Dependencies and handoff
+
+All listed prerequisites were accepted before the attempt:
+COMMERCE-003/004/005/006/007/011/014/015/016. Attempt 2 re-verified the
+producer exports and revisions recorded in
+`docs/commerce-backend-integration.md`, including the accepted COMMERCE-007
+recommendation source `e08b896`, and introduced no copied source or database
+schema. The implementation commit is `d432276`; the parent report commit will
+be recorded after publication of this report branch. This task is ready for
+architect review; no downstream task was launched.
 
 ## Architect Review
 
