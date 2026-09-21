@@ -9,9 +9,9 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-21T18:53:29Z
+status: review
+executor: null
+claimed_at: null
 priority: 145
 attempt: 3
 depends_on:
@@ -420,3 +420,66 @@ Implementation commit `df86899` is pushed to the implementation remote.
 Task fields are clean for review: `status: review`, `executor: null`,
 `claimed_at: null`, `attempt: 2`. No main branch, implementation submodule
 gitlink, or downstream task was changed.
+
+## Completion Report - Attempt 3
+
+Status: Ready for Review.
+
+Architect Review Attempt 2 identified a concrete predecessor-schema defect in
+the upgrade fixture: its legacy tool definition, release, and grant graph were
+not valid under the accepted ARCH-020 capability/release guards. Attempt 3
+corrects only that fixture; production migrations and predecessor constraints
+were not weakened.
+
+### Correction
+
+`seedBaseline()` now creates a valid pre-DATABASE-003 graph containing the
+six-field `legacy_tool` definition with matching identity/version, a valid
+`response.v1` release contract, BASE `conversation_core` capability and
+published revision, release membership, shop-owned CheckoutRecovery and
+Conversation with inbound version 1, and a grant with the required selected
+capability and empty complete tool union. The existing Shop/Admin/tool/tool
+revision/grant snapshots remain unchanged across the additive migration.
+
+### Validation Results
+
+Implementation commit `bc59bf0` (`test(database): seed valid external
+migration baseline`) is pushed to `origin/task/ARCH-020-DATABASE-003`.
+
+| Command | Result |
+| --- | --- |
+| `node --check scripts/validate-arch020-external-connections.mjs` | passed |
+| `npm run prisma:validate` | passed |
+| `npm run prisma:generate` | passed with Prisma `6.19.3` |
+| `npm run format -- --check` | passed |
+| `npm run erd:puml` | passed; no generated ERD diff |
+| `git diff --check` | passed |
+| `DATABASE_URL=...arch020_connections_test_upgrade node scripts/validate-arch020-external-connections.mjs --mode upgrade` | passed: existing Shop/PlatformAdmin/tool/grant rows unchanged; constraints, FKs, immutability, and rollback passed |
+| `DATABASE_URL=...arch020_connections_test_fresh node scripts/validate-arch020-external-connections.mjs --mode fresh` | passed: constraints, FKs, immutability, and rollback passed |
+
+The two isolated PostgreSQL databases were explicitly recreated before these
+runs. No database-backed X02 result is inferred from static checks; both
+task-owned modes completed against PostgreSQL. The owning repository still
+does not declare `typecheck`, `lint`, or `build` scripts; those remain
+unavailable rather than claimed.
+
+### Attempt 3 Launcher and VCS Evidence
+
+The deterministic launcher prepared Attempt 3 with `prepared_execution: true`,
+`execution_state: claimed`, dependency gate passed, recursive submodule
+sync/update passed, and no submodule entries. Claim commit
+`45fb728290a7eb8f443ca2952f765e499916faf6` was committed and pushed at
+`2026-09-21T18:53:29Z`.
+
+Canonical workspace:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+
+Parent worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-DATABASE-003`
+on `task/ARCH-020-DATABASE-003`; implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-DATABASE-003`
+on `task/ARCH-020-DATABASE-003`. No implementation gitlink, main branch,
+unrelated task file, or downstream task was changed.
+
+Task is submitted for Architect review with `status: review`, `executor: null`,
+`claimed_at: null`, and `attempt: 3`.
