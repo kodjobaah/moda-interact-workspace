@@ -1585,3 +1585,15 @@ integration, credentials, publication, preview, availability, gateway, cache and
 system-test work remains dependency-gated. No dependent task is automatically
 started and no implementation/main merge or gitlink update is performed by this
 review.
+
+## COMMERCE-026 Attempt 2 architect acceptance — 2026-09-21
+
+ARCH-020-COMMERCE-026 is **Accepted / Complete, Attempt 2** (`4b8e5bc`; report
+`170074b3`). The C21 JavaScript response adapter is accepted over the existing
+COMMERCE-029 QuickJS runtime and Shared `0.14.2` contracts. It preserves the bounded
+server-only processor/compile ports and does not duplicate publication/sample schema
+validation owned by COMMERCE-030.
+
+No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
+COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
+other prerequisites. No downstream task is launched automatically.

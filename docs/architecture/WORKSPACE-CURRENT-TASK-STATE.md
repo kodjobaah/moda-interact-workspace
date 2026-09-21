@@ -1140,3 +1140,15 @@ ARCH-020-SHARED-002 is **Accepted / Complete, Attempt 5** (`95bab1d`, public
 promotes `COMMERCE-020`, `021`, `022`, `023`, `026` and `027` to Ready and confirms
 `COMMERCE-025` Ready. All later C21 tasks retain unsatisfied dependencies; no task
 is launched, no main integration is performed and no service gitlink is changed.
+
+## COMMERCE-026 Attempt 2 architect acceptance — 2026-09-21
+
+ARCH-020-COMMERCE-026 is **Accepted / Complete, Attempt 2** (`4b8e5bc`; report
+`170074b3`). The C21 JavaScript response adapter is accepted over the existing
+COMMERCE-029 QuickJS runtime and Shared `0.14.2` contracts. It preserves the bounded
+server-only processor/compile ports and does not duplicate publication/sample schema
+validation owned by COMMERCE-030.
+
+No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
+COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
+other prerequisites. No downstream task is launched automatically.

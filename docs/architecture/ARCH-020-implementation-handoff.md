@@ -1040,3 +1040,15 @@ package `0.14.2`. The direct C21 component frontier is now Ready for
 `/moda-task ARCH-020-SHARED-002`; it has no further correction attempt. Use the
 normal launcher on an eligible Ready dependant when the developer chooses to start
 one. No automatic downstream launch occurs in this acceptance.
+
+## COMMERCE-026 Attempt 2 architect acceptance — 2026-09-21
+
+ARCH-020-COMMERCE-026 is **Accepted / Complete, Attempt 2** (`4b8e5bc`; report
+`170074b3`). The C21 JavaScript response adapter is accepted over the existing
+COMMERCE-029 QuickJS runtime and Shared `0.14.2` contracts. It preserves the bounded
+server-only processor/compile ports and does not duplicate publication/sample schema
+validation owned by COMMERCE-030.
+
+No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
+COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
+other prerequisites. No downstream task is launched automatically.
