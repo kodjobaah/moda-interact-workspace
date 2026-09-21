@@ -635,3 +635,10 @@ Other downstream tasks remain gated by their own unresolved prerequisites;012 is
 still the final implementation checkpoint. No implementation changes, main merge,
 main push or gitlink update. Architecture is not yet Implemented. This supersedes
 older008 state wording while retaining historical reviews.
+
+
+## COMMERCE-016 readiness reconciliation — 2026-09-21
+
+ARCH-020-COMMERCE-016 is Ready, attempt0, unclaimed. Accepted006/015/SHARED-001
+are Complete in main;006's blank frontmatter ID is repaired to its canonical ID.
+No task is launched and no other task lifecycle state changes in this update.

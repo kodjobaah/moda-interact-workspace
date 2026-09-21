@@ -1,5 +1,5 @@
 ---
-id: 
+id: ARCH-020-COMMERCE-006
 architecture_id: ARCH-020
 title: Read merchant discount policy and normalise Shopify rules
 task_kind: implementation
