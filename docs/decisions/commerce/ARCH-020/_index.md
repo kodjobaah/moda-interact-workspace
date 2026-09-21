@@ -503,3 +503,19 @@ Actual contention/post-write rollback scenarios now exist; submitted PostgreSQL
 evidence was reviewed, while disposable infrastructure/migration validation remains
 pending. No implementation change, main merge, acceptance or downstream promotion.
 COMMERCE-018/019 remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 6 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 6 retained; executor/claim null.** Reviewed
+implementation `812e97e` and report `36a9a603`. A5-R2 bounded product streaming
+and A5-R4 configured inspection environment are resolved; standalone draft
+preview and the pinned Admin schema check pass. A6-R1 requires the supported
+production discount path (all rules still have unknown restrictions/null
+semantics); A6-R2 requires independent publication validation for every
+capability binding, including revisions also explicitly selected as drafts.
+Exact changes and focused acceptance examples are in the task's Architect Review.
+Focused integration: 59/59 passed. Architect harness: 11 passed, 1 failed,
+reproducing the unpublished-binding bypass. Submitted PostgreSQL 2/2 evidence
+reviewed; developer-owned infrastructure/migration validation remains pending.
+No acceptance, implementation change, main merge, gitlink update or downstream
+promotion. COMMERCE-018/019 remain Pending; final manual system-test gate remains.

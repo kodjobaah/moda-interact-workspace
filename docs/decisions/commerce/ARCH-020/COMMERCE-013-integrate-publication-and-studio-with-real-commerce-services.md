@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 125
 executor: null
 claimed_at: null
@@ -695,6 +695,42 @@ at submission, with `status: review`, `executor: null`, and
 `claimed_at: null`. No main branch or parent service gitlink was changed.
 
 ## Architect Review
+
+### Attempt 6 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `812e97e85435ce9cefb520e4eb0cf6513c08e32f` and parent report `36a9a603b081fb6eb6b30f4549ed7176b76c80d5`; both submitted remote heads verified, dedicated worktrees clean. **Changes Requested; Ready, Attempt 6 retained; executor/claimed_at null.**
+
+A5-R2 is resolved: the product Admin path now shares bounded byte streaming with discounts. A5-R4 is resolved: inspection takes the configured backend environment. Explicit standalone saved DRAFT selection now succeeds. The complete exported Admin document validates against the installed pinned `admin_2026-07.json.gz` introspection schema. Preserve those changes. Two functional corrections remain; this is not a request to broaden repository-wide test coverage.
+
+#### A6-R1 — Finish the supported production discount path instead of disabling every rule
+
+Location: `src/commerce/integration/backend.ts`, `createProductionPolicyRegistrations`, discount provider normalization (around lines 438–447), and `discountTargets` (around lines 370–384).
+
+Every returned rule still unconditionally has `restrictionsKnown: false` and `semantics: null`. The actual accepted reader adds `RESTRICTIONS_UNKNOWN` and `SEMANTICS_UNPROVEN`, sets support to UNSUPPORTED, and the evaluator's supportOutcome cannot qualify that rule. Thus even a supported basic fixed/percentage offer cannot work through the production integration; merely returning its value and title does not finish A5-R1/A3-R1. The report correctly describes fail-closed behavior, but incorrectly marks the whole correction complete.
+
+Required changes:
+
+1. Extend the privileged read/normalization to establish the customer/context, usage and combination restrictions required by the supported native-basic profile. Preserve restrictions that are present. Set completeness only when the selected response establishes it; do not replace the constants with unconditional true/default semantics.
+2. Supply the supported pinned provider semantics profile for the basic fixed/percentage subset, with its subtotal basis, allocation, rounding and rounding point justified in the support documentation. Keep genuinely unsupported/unknown cases fail-closed. If no profile can be substantiated, report that specific architecture question and evidence gap explicitly rather than claiming supported production integration is complete or inventing semantics.
+3. Correct two related normalization mistakes before allowing support: `minimumKnown` must be true only for explicit null or a recognized, valid minimum, not any object that happens to occupy the field; mixed product and variant target IDs must not all be labelled VARIANT. Preserve their meaning using the existing contract, or mark the mixed case incomplete/unsupported when it cannot be represented faithfully. Do not change Shared merely to accommodate this adapter.
+4. Demonstrate a basic fixed and percentage offer through the actual production HTTP assembly and accepted reader/evaluator, plus a restricted/unknown response that remains non-qualifying. Use deterministic synthetic HTTP responses and the pinned local schema, not live Shopify or paid calls. The positive case must reach supported evaluation with complete input facts, not just assert a successful HTTP response or a raw value field. Keep the existing evaluator's checks intact.
+
+This is the outstanding functional producer integration already requested, not another discount engine or an exhaustive test matrix.
+
+#### A6-R2 — Enforce publication on every capability binding independently of explicit selection
+
+Location: `backend.ts:createPrismaSavedSelection`, tool binding validation and allToolRevisionIds mapping (around lines 239–243).
+
+The condition exempts any revision in `selection.toolRevisionIds` from the publication requirement. If a capability binds an unpublished revision, adding the same revision to the explicit list now bypasses that requirement. This contradicts the retained capability-binding requirement in A5-R3 and the Attempt 6 report. The architect fixture uses a valid DRAFT definition, matching owner IDs, one capability binding, and that same explicit revision ID: the facade resolves successfully where it should reject.
+
+Validate ownership and PUBLISHED status for **each bound revision** before or independently of constructing the union of bound and explicit revisions. Separately allow valid standalone explicitly selected DRAFT definitions and compute their current hashes. Membership in the explicit list must not excuse an invalid capability binding. Preserve missing-record checks and live-registry isolation. Verify only the relevant cases: standalone draft succeeds; published binding succeeds; unpublished binding rejects even when explicitly selected too.
+
+#### Verification and disposition
+
+Reran focused backend integration: **59/59 passed**. Temporary architect harness `/tmp/c013-a6-review/review.test.ts`: **11 passed, 1 failed**; the remaining failure reproduces successful resolution of an unpublished capability binding when also explicitly selected. It uses the actual facade with a recording Prisma port; the schema assertion reads the pinned local Shopify artifact. Prior draft-preview and TEST inspection regressions now pass. Source tracing through the accepted reader/evaluator establishes the unconditional unsupported discount behavior. Submitted PostgreSQL rehearsal 2/2 and typecheck/lint/build evidence reviewed; no database, Docker, migration, Redis or container operation was performed during this review.
+
+Status is Ready for corrections, Attempt 6 retained, claim cleared. No acceptance, implementation edits, main merge, gitlink update or downstream promotion. COMMERCE-018/019 remain Pending. Developer-owned infrastructure/migration validation and the final manual system-test gate remain separate; they are not the reason for this Changes Requested decision.
+
 
 ### Attempt 5 — Changes Requested (2026-09-21)
 
