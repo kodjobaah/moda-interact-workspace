@@ -1054,11 +1054,11 @@ See [C21](ARCH-020-external-api-tools.md) and handoff for exact interfaces/depen
 
 ## C21 tightened task definitions — 2026-09-21
 
-Extension now has17 tasks. DATABASE-003/SHARED-002/COMMERCE-029 are Ready in this
-workspace snapshot; no task launched.028 credentials,030 publication checks,031
-preview backend and032 availability are separate Pending producers;024 is wiring
-only.026 requires029's accepted runtime proof. C21 section9 and task YAML are
-authoritative; existing execution claims remain untouched.
+Extension has17 tasks. DATABASE-003/SHARED-002 remain Ready; COMMERCE-029 is
+Accepted / Complete at Attempt 4.028 credentials,030 publication checks,031 preview
+backend and032 availability remain separate Pending producers;024 is wiring only.
+026 has cleared its029 prerequisite but still requires SHARED-002 Complete. C21
+section9 and task YAML are authoritative; existing execution claims remain untouched.
 
 ### COMMERCE-013 Attempt 8 architect review — 2026-09-21
 
@@ -1092,3 +1092,11 @@ Other deployment/cache/system gates retain their dependencies and manual validat
 ## ARCH-020 SHARED-002 Attempt 4 review — 2026-09-21
 
 ARCH-020-SHARED-002 is **Changes Requested / Ready, Attempt 4 retained**, claims cleared; not accepted. Reviewed implementation `b23a7c1` and report `52b14319`. Prior C21 contract fixes and submitted exact `0.14.1` clean-consumer evidence remain valid, but LIST publication compatibility still permits impossible result-wrapper/cardinality combinations. The package root README/export inventory and stale Completion Report state also require reconciliation. No dependency promotion, automatic launch, main integration or gitlink update.
+## COMMERCE-029 Attempt 4 accepted — 2026-09-21
+
+Current state: `ARCH-020-COMMERCE-029` **Complete, Attempt 4**, claims null; reviewed
+implementation `f22e2d6` and report `4069f60c`. Non-executing compile-only validation
+and real supervisor `DEADLINE` termination/recovery close the Attempt 3 functional
+gaps; prior runtime isolation, packaging and fixed-memory proof remains accepted.
+COMMERCE-026 stays Pending because SHARED-002 is Ready, not Complete. No dependent
+promotion or automatic launch; ARCH-020 remains In Progress.

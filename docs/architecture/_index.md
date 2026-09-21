@@ -510,3 +510,11 @@ passing scenario and one timeout; developer-owned adapter validation remains pen
 COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their explicit
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
+
+### ARCH-020 COMMERCE-029 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-029 is **Accepted / Complete, Attempt 4** (`f22e2d6`; report `4069f60c`).
+The C21 bounded QuickJS kernel now has accepted compile-only, supervisor-termination,
+cleanup/recovery, packaged artifact and fixed-memory evidence. COMMERCE-026 remains
+Pending because SHARED-002 is not yet Complete; no downstream task is launched and
+ARCH-020 remains In Progress.
