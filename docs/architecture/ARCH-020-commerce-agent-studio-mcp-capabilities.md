@@ -1585,3 +1585,15 @@ integration, credentials, publication, preview, availability, gateway, cache and
 system-test work remains dependency-gated. No dependent task is automatically
 started and no implementation/main merge or gitlink update is performed by this
 review.
+
+
+## COMMERCE-025 Attempt 1 architect review — 2026-09-21
+
+ARCH-020-COMMERCE-025 is **Changes Requested / Ready, Attempt 1 retained**, claims
+cleared. Submitted implementation `44f9138` provides the bounded visual processor,
+but DESC sorting violates C21's direction-independent missing/null-last rule and
+the module lacks the required `server-only` marker. The canonical task Architect
+Review contains the exact correction and regression contract. Submitted focused
+5/5 and lint/diff evidence is preserved; repository typecheck remains reported on
+unrelated baseline errors and production build evidence is still required. No
+dependent task is promoted or launched.

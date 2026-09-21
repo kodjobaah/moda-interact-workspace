@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
-executor: copilot
-claimed_at: 2026-09-21T22:20:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-SHARED-002
@@ -172,24 +172,116 @@ Expected mirrored branch: `task/ARCH-020-COMMERCE-025`. Implementation commit `4
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Definition only; no implementation acceptance.
+Reviewed the exact submitted snapshot reporting implementation `44f9138` and
+parent report `4bd1e71`. The bounded OBJECT/LIST processor is materially aligned
+with C21, including own-property paths, strict filtering, code-point ordering,
+row bounds, projection and typed cancellation/deadline failures. Two task-owned
+contract defects remain and must be corrected in this same task.
+
+**A1-R1 — DESC sorting must keep missing/null values last.** The current comparator
+first assigns missing/null a positive ordering value and then multiplies that value
+by the DESC direction (`-1`). That moves missing/null rows to the front for DESC,
+contradicting C21 section 2.1: “missing/null last in either direction”. Correct the
+comparator so direction is applied only when both compared values are non-null
+valid sort values. Missing/null ordering is direction-independent and always after
+non-null values. When both values are missing/null, preserve original row order.
+
+Add this exact focused regression to `tests/response-processing.test.ts`:
+
+```ts
+const source = [
+  {id: 'a', sortKey: 'a'},
+  {id: 'null-1', sortKey: null},
+  {id: 'missing'},
+  {id: 'b', sortKey: 'b'},
+  {id: 'null-2', sortKey: null},
+];
+const processing = list({
+  fields: {id: {path: 'id'}},
+  sort: {path: 'sortKey', direction: 'DESC'},
+});
+expect(run(source, processing)).toEqual({
+  ok: true,
+  values: {items: [
+    {id: 'b'},
+    {id: 'a'},
+    {id: 'null-1'},
+    {id: 'missing'},
+    {id: 'null-2'},
+  ]},
+});
+```
+
+The existing ASC behavior must remain unchanged. Do not implement nulls-first or a
+configurable null-order option.
+
+**A1-R2 — enforce the server-only module boundary.** C21 section 2.1 explicitly
+requires server-only `createResponseProcessor`. Add `import 'server-only';` as the
+first import in `src/commerce/external-response/index.ts`, matching the existing
+Commerce server-side runtime convention. Do not add a client wrapper or duplicate
+processor implementation.
+
+**A1-R3 — complete the task-defined validation after A1-R1/R2.** Run exactly the
+repository scripts that already exist; do not invent replacement commands:
+
+```bash
+npm run test:arch020-response-processing
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If repository-wide `typecheck` or `build` still fails only on an established
+unrelated baseline, record the exact diagnostics/baseline reference and confirm
+there are no diagnostics in the task-owned files. Do not fix unrelated baseline
+code inside COMMERCE-025. A missing/failed build must not be silently reported as
+passed.
+
+The submitted snapshot also still contains `executor: copilot` and a non-null
+`claimed_at` despite the handoff saying claims were cleared. This architect overlay
+clears those fields while returning the task to Ready; no separate implementation
+change is required for that coordination mismatch.
 
 ### Reviewed Files
 
-Not applicable.
+- `moda-interact-commerce/src/commerce/external-response/index.ts`
+- `moda-interact-commerce/tests/response-processing.test.ts`
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/package-lock.json`
+- `docs/architecture/ARCH-020-external-api-tools.md` (C21 section 2.1)
+- this task Completion Report
 
 ### Validation Reviewed
 
-Not applicable.
+Submitted evidence:
+
+- `npm run test:arch020-response-processing`: 5/5 passed.
+- `npm run lint`: passed with two reported pre-existing warnings.
+- `npm run typecheck`: failed on reported unrelated existing repository errors;
+  task-owned files reported clean.
+- `git diff --check`: passed.
+- Production `npm run build` evidence was not supplied.
+
+Independent source reproduction of A1-R1 confirms the current DESC comparator
+orders null/missing rows before non-null rows.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Partially conformant. The implementation respects the task ownership boundary and
+does not add networking, persistence, UI or arbitrary script execution. Acceptance
+is blocked only by the direction-dependent null/missing sort defect, missing
+server-only marker and completion of the task-defined validation. No Shared schema
+or C21 architecture change is requested.
 
 ### Follow-up
 
-Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+Return the same task through `/moda-task ARCH-020-COMMERCE-025`. Preserve
+`attempt: 1`; the next valid claim increments it once to Attempt 2. Implement only
+A1-R1/A1-R2, add the exact regression, run A1-R3 validation, update the Completion
+Report, set status to Review, clear claim metadata and STOP. Do not start
+COMMERCE-012, COMMERCE-024, COMMERCE-030 or COMMERCE-031.

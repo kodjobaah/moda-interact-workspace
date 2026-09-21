@@ -1040,3 +1040,15 @@ package `0.14.2`. The direct C21 component frontier is now Ready for
 `/moda-task ARCH-020-SHARED-002`; it has no further correction attempt. Use the
 normal launcher on an eligible Ready dependant when the developer chooses to start
 one. No automatic downstream launch occurs in this acceptance.
+
+
+## COMMERCE-025 Attempt 1 review handoff — 2026-09-21
+
+ARCH-020-COMMERCE-025 is **Changes Requested / Ready, Attempt 1 retained**, claims
+cleared. Submitted implementation `44f9138` provides the bounded visual processor,
+but DESC sorting violates C21's direction-independent missing/null-last rule and
+the module lacks the required `server-only` marker. The canonical task Architect
+Review contains the exact correction and regression contract. Submitted focused
+5/5 and lint/diff evidence is preserved; repository typecheck remains reported on
+unrelated baseline errors and production build evidence is still required. No
+dependent task is promoted or launched.

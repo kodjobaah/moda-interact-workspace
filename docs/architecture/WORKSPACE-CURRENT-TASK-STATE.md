@@ -1140,3 +1140,15 @@ ARCH-020-SHARED-002 is **Accepted / Complete, Attempt 5** (`95bab1d`, public
 promotes `COMMERCE-020`, `021`, `022`, `023`, `026` and `027` to Ready and confirms
 `COMMERCE-025` Ready. All later C21 tasks retain unsatisfied dependencies; no task
 is launched, no main integration is performed and no service gitlink is changed.
+
+
+## COMMERCE-025 Attempt 1 current state — 2026-09-21
+
+ARCH-020-COMMERCE-025 is **Changes Requested / Ready, Attempt 1 retained**, claims
+cleared. Submitted implementation `44f9138` provides the bounded visual processor,
+but DESC sorting violates C21's direction-independent missing/null-last rule and
+the module lacks the required `server-only` marker. The canonical task Architect
+Review contains the exact correction and regression contract. Submitted focused
+5/5 and lint/diff evidence is preserved; repository typecheck remains reported on
+unrelated baseline errors and production build evidence is still required. No
+dependent task is promoted or launched.
