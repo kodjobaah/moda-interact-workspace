@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -179,3 +179,9 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+
+## Architect readiness reconciliation — 2026-09-21
+
+COMMERCE-001, COMMERCE-011 Attempt 9 and SHARED-001 are architect-accepted Complete.
+Promoted to Ready on the COMMERCE-011 acceptance branch; attempt and claim remain unchanged.
+Normal task preparation owns materialisation, synchronization and the next claim.
