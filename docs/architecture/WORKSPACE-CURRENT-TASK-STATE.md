@@ -881,44 +881,63 @@ service wiring to019.018 and019 run independently after their prerequisites;
 neither owns or edits the other's adapters. Component page ownership is unchanged.
 Gateway/caching/system-test dependencies include both new integration tasks.
 
+## COMMERCE-017 Attempt 4 architect review — 2026-09-21
 
-## COMMERCE-007 Attempt 2 architect review — 2026-09-21
+COMMERCE-017 is **Changes Requested / Ready, Attempt 4 retained**, executor and
+claimed_at null; not accepted. Reviewed implementation `8b902a6` and report
+`c44ebd71`, matching remote task heads. Independent UI/client tests passed 17/17
+and all 8 previous reproductions passed. Four current functional reproductions
+failed: Start after Reset is blocked, changing a handoff source still dispatches
+the original tool, Conversation Back chooses an unrelated tool, and a valid
+nullable integer null cannot execute. Task A4-R1–R3 provide exact correction
+steps and expected effects. Preserve the verified previous fixes and the existing
+authenticated source-read boundary. Browser identity/live-provider evidence remains
+pending separately. No dependent promotion, new claim, implementation change,
+main integration or gitlink update. This supersedes earlier COMMERCE-017 current-state
+wording only; other task decisions remain unchanged. Architecture is not yet
+Implemented; COMMERCE-012 remains the final implementation checkpoint.
 
-Changes Requested; **Ready**, Attempt 2 retained, executor/claimed_at null; not accepted.
-Implementation `dd86f44` and report `5f5fbed` match remote heads. Submitted focused
-checks8/8 and original regression checks5/5 pass. Two further regressions fail:
-REPLACE admission uses ADD cost, and final-await cancellation can publish success.
-Latest task A2-R1–R3 give exact pricing/guard corrections and remaining local C18
-consumer/provider-budget evidence. The single producer replay fixture does not
-establish EC01–EC12 or the12-request ceiling; live worker integration remains separate.
-No dependency promotion, new attempt, implementation edit, main merge or gitlink
-change. Reclaim only after this parent review overlay is published; historical
-summaries do not override the latest task YAML/review.
+## COMMERCE-017 Attempt 5 architect review — 2026-09-21
+
+COMMERCE-017 is **Changes Requested / Ready, Attempt 5 retained**, executor and
+claimed_at null; not accepted. Reviewed implementation `bdb753c` and report
+`482a0964`, matching remote task heads. Independent UI/client tests passed 20/20
+and all 12 prior architect reproductions passed. Two remaining source-flow tests
+failed: an unsaved handoff cannot start with a populated saved-release list,
+and the tool source can change while its original POST is pending. A5-R1 records
+exact corrections, guards and expected payload/call effects, completing A4-R2.
+Preserve the verified prior fixes. Authenticated browser identity and live-provider
+validation remain pending separately. No dependent promotion, new claim,
+implementation change, main integration or gitlink update. This supersedes older
+COMMERCE-017 current-state wording only; other task decisions remain unchanged.
+Architecture is not yet Implemented; COMMERCE-012 remains the final checkpoint.
 
 
-## COMMERCE-007 Attempt 3 architect review — 2026-09-21
+## COMMERCE-017 Attempt 6 architect review — 2026-09-21
 
-Changes Requested; **Ready**, Attempt3 retained, executor/claimed_at null; not accepted.
-Verified implementation `bad71ef` and final report `f8f5928`. Independent focused11/11
-and prior architect regressions7/7 pass: replacement pricing and cancellation fixes
-are verified. Remaining A3-R1 is test/report work for existing A2-R3: claimed C18
-negative cases lack executable assertions, and the budget fixture loops across
-separate calls rather than one nested execution. Latest task gives exact fixture
-structure, per-case expected counts and reporting corrections. No new runtime
-defect, dependency promotion, claim, main merge or gitlink change. Live integration
-remains separate. Reclaim after publication of this parent overlay.
+Changes Requested; **Ready**, Attempt6 retained, executor/claimed_at null; not accepted.
+Implementation `5aea0c4` and report `2d30a0aa` match remote heads. Independent22 UI/client
+checks and both Attempt5 regressions pass. One remaining source-lock case fails:
+uncertain conversation creation from tool A allows visible source B while replay
+retains A. Latest task A6-R1 supplies the exact shared lock predicate, event guard
+and regression expectations. Prior fixes are retained; browser identity remains
+an explicit separate validation prerequisite. No dependent promotion, new claim,
+implementation edit, main merge or gitlink change. Reclaim after this review
+overlay is published; older decisions are historical.
 
-## COMMERCE-007 Attempt 4 architect review — 2026-09-21
+## COMMERCE-017 Attempt 7 accepted — 2026-09-21
 
-COMMERCE-007 is **Changes Requested / Ready, Attempt 4 retained**, claims cleared.
-Reviewed implementation `91faf18` and report `cb8f7f3` against remote task heads.
-Independent 11 focused tests and seven prior runtime reproductions pass; no new
-production defect is alleged. Two harness diagnostics fail: its exhausted-budget
-case issues zero provider requests, and its consumer accepts an invalid selected
-second evidence item. A4-R1 specifies the remaining A3-R1 harness/report correction:
-real nested budget work, measured replay callbacks, validation of every selected
-item, isolated valid negative fixtures and accurate report claims. Runtime fixes
-remain verified. No dependent promotion, new claim, implementation change, main
-integration or gitlink update. Deployed MCP/worker/Shopify evidence stays pending
-with its assigned owner. This supersedes older COMMERCE-007 current-state wording only;
-other task decisions remain unchanged and architecture is not yet Implemented.
+COMMERCE-017 is **Accepted / Complete, Attempt 7 retained**, executor and claimed_at
+null. Reviewed implementation `c6da2f2` and report `e6c16617` against remote heads.
+A6-R1 is resolved: both tool selectors consult the live synchronous source lock,
+pending/uncertain creation retains its original source and payload, and same-ID
+reconciliation/reset follow the existing lifecycle. Independent 23 UI/client tests,
+the exact outstanding reproduction and all 14 earlier architect reproductions pass;
+diff checks pass. Submitted 60 preview tests/typecheck/lint/build remain reported
+evidence. This accepts the fixture-validated U14 component; authenticated browser
+validation awaits local Studio identity and COMMERCE-019 owns real U14 integration.
+COMMERCE-019 still awaits COMMERCE-013; other deployment/final/system gates remain.
+No dependent promotion, new claim, implementation change, main integration or
+gitlink update. This supersedes earlier COMMERCE-017 current-state wording while preserving
+review history and other task decisions. Architecture remains not yet Implemented;
+COMMERCE-012 is the final implementation checkpoint.
