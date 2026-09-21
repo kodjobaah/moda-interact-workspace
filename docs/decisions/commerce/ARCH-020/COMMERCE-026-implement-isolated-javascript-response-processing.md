@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
 executor: copilot
 claimed_at: 2026-09-21T22:47:39Z
@@ -67,10 +67,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Import029 proven kernel; preserve exact runtime/artifact version and limits. Do not reimplement worker lifecycle or change memory/time configuration.
-- [ ] Implement createCodeResponseProcessor validation, JSON/TEXT response input serialization, guest-safe result extraction and strict output-schema-compatible object checks.
-- [ ] Map bounded diagnostics and runtime failures exactly; no raw exception/source/body leakage or fallback. Declare runtime unavailable if accepted kernel cannot initialize.
-- [ ] Cover correct text extraction, wrong output type/shape and malformed provider response through actual kernel; repeat029 smoke to establish the adapter retained limits.
+- [x] Import029 proven kernel; preserve exact runtime/artifact version and limits. Do not reimplement worker lifecycle or change memory/time configuration.
+- [x] Implement createCodeResponseProcessor validation, JSON/TEXT response input serialization, guest-safe result extraction and strict output-schema-compatible object checks.
+- [x] Map bounded diagnostics and runtime failures exactly; no raw exception/source/body leakage or fallback. Declare runtime unavailable if accepted kernel cannot initialize.
+- [x] Cover correct text extraction, wrong output type/shape and malformed provider response through actual kernel; repeat029 smoke to establish the adapter retained limits.
 
 ## Interfaces / Contracts
 
@@ -158,6 +158,10 @@ pin and focused adapter command.
 * `npm run lint` -> passed with two existing warnings in COMMERCE-029 runtime
   files. `npm run typecheck` -> blocked by unrelated existing integration/Prisma
   diagnostics; no new processor/test diagnostics were reported.
+* Review correction rerun: the first post-correction focused invocation once
+  returned `EXECUTION_ERROR` before subsequent clean reruns; no deterministic
+  reproduction occurred. The final focused run passed 6/6, and the accepted
+  runtime proof remained 10/10.
 
 ### Deviations
 
@@ -193,9 +197,11 @@ Implementation branch `task/ARCH-020-COMMERCE-026` published at commit
 `4b8e5bc` (includes prior implementation `ae47b61`). Physical isolated worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-026`.
 Accepted runtime dependency: `quickjs-emscripten@0.31.0`, Shared `0.14.2`;
-database submodule was initialized by launcher preparation. Parent report is
-ready for mirrored publication and Architect review. Review correction returned
-the task to Ready with attempt 1 retained and no active executor claim.
+database submodule was initialized by launcher preparation. Correction was
+reclaimed through the launcher as Attempt 2 with executor `copilot`, claimed at
+`2026-09-21T22:47:39Z`; parent claim commit
+`5c9859e861cf19a3423a3423dfd37c5291299b77`. Parent report is resubmitted for
+Architect review.
 
 ## Architect Review
 
