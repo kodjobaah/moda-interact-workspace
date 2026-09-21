@@ -161,3 +161,15 @@ separate; live Shopify/integration validation is still developer-owned and pendi
 No dependent promotion:016 still needs006,007 needs016, and012/013/system-test have
 other prerequisites. No main merge/gitlink change; architecture is not Implemented.
 This acceptance supersedes all older COMMERCE-015 current-state wording.
+## COMMERCE-006 Attempt 2 review — 2026-09-21
+
+COMMERCE-006 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `724875d` and report `2000bccb`; dedicated worktrees clean
+and remote heads matched. Working AI/FIXED, completeness, budget and pagination
+improvements are retained. Corrections remain for NONE read denial, exact
+fraction-to-percentage conversion, executable list/ID query documents and positive
+canonical fixed amounts. Independent checks: 16 submitted reader tests passed;
+five functional reproductions failed. See the latest task Architect Review.
+Live Shopify remains developer-owned and is not the blocker. No dependent
+promotion or main integration. This supersedes prior COMMERCE-006 current-state
+wording; the narrowed C19 reader-only scope remains authoritative.

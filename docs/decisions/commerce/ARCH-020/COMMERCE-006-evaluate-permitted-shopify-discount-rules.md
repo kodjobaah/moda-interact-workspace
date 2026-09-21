@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 100
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-001
   - ARCH-020-DATABASE-001
@@ -66,11 +66,11 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Reuse accepted ARCH-016 merchant policy/catalogue: NONE/FIXED/AI_BEST_APPLICABLE, admin precedence and Free/Paid availability. Do not add another catalogue or synchronizer.
-- [ ] Implement discounts.getOptions and DiscountRuleReader under C19. Verify canonical offer/shop ownership before provider requests; fixed mode cannot read a different offer.
-- [ ] Inspect actual pinned Admin API/schema/scopes and document exact static query -> normalized-field mappings in docs/discount-support-matrix.md. Missing scope returns UNAVAILABLE; no OAuth scope expansion.
-- [ ] Normalize native basic percentage/fixed conditions, targets, minimums, dates and provider semantics; unresolved or unsupported clauses remain explicit and cannot be discarded.
-- [ ] Share injected provider-request budget across pagination/retries; <=50 offers and C8 bounds. No eligibility calculation, Evidence generation or recommendation ranking.
+- [x] Reuse the accepted policy shape through an injected policy port: NONE/FIXED/AI_BEST_APPLICABLE, with fixed-offer authorization and stale-catalogue/scope fail-closed checks. No catalogue or synchronizer was added.
+- [x] Implemented `getDiscountOptions` and `DiscountRuleReader` under C19. Shop ownership, policy mode and fixed-offer identity are checked before provider requests; denied cases produce zero provider calls.
+- [x] Inspected the pinned 2026-07 Admin GraphQL surface and documented the static query-to-normalized-field mapping in `docs/discount-support-matrix.md`. Missing `read_discounts` scope returns `UNAVAILABLE`; no OAuth expansion or privileged fallback exists.
+- [x] Normalized native basic percentage/fixed values, all/product/variant/collection targets, minimums, dates and semantics. Incomplete, customer/usage, combination and unsupported families remain explicit `UNKNOWN`/`UNSUPPORTED` conditions.
+- [x] Shared the injected request budget across bounded pagination (20 per page, 3 pages, 50 offers); no eligibility calculation, Evidence generation or recommendation ranking was added.
 
 ## Interfaces / Contracts
 
@@ -97,11 +97,11 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] D01: NONE lists none; FIXED permits only its offer; AI listing is bounded and discloses truncation; wrong tenant/offer yields zero provider calls.
-- [ ] D02: provider fixtures map percentage/fixed/all/product/variant/collection/minimum/date fields to the exact C19 DTO; incomplete fields never become defaults claiming support.
-- [ ] D03: unsupported app/Function/BXGY/shipping/combination restrictions remain UNSUPPORTED; unverified customer/usage facts remain UNKNOWN.
-- [ ] D04: missing scopes, provider outage, stale catalogue and pagination/retry ceilings return bounded errors; semantic fingerprint excludes observation timestamps.
-- [ ] D05: every supported normalization profile has cited pinned provider-schema evidence; unproven allocation/rounding becomes UNSUPPORTED, not a guessed formula.
+- [x] D01: NONE lists none; FIXED permits only its offer; AI listing is bounded and discloses truncation; wrong tenant/offer yields zero provider calls.
+- [x] D02: provider fixtures map percentage/fixed/all/product/variant/collection/minimum/date fields to the exact C19 DTO; incomplete fields never become defaults claiming support.
+- [x] D03: unsupported app/Function/BXGY/shipping/combination restrictions remain UNSUPPORTED; unverified customer/usage facts remain UNKNOWN.
+- [x] D04: missing scopes, provider outage, stale catalogue and pagination/retry ceilings return bounded errors; semantic fingerprint excludes observation timestamps.
+- [x] D05: every supported normalization profile has cited pinned provider-schema evidence; unproven allocation/rounding becomes UNSUPPORTED, not a guessed formula.
 
 ## Validation
 
@@ -127,23 +127,61 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Architect accepted — Complete, Attempt 4. See the current Architect Review decision below.
 
 ### Files Changed
 
-None; implementation has not started.
+- `src/commerce/discounts/reader/types.ts`: C19 local ports, policy/result types, normalized snapshot and injected provider contracts.
+- `src/commerce/discounts/reader/reader.ts`: bounded policy-aware option listing, fixed-offer reader, normalization and semantic fingerprinting.
+- `src/commerce/discounts/reader/index.ts`: reader exports.
+- `tests/discount-reader.test.ts`: deterministic policy, authorization, normalization, bounds and fail-closed fixtures.
+- `docs/discount-support-matrix.md`: pinned 2026-07 Admin schema evidence and static query-to-DTO mapping.
 
 ### Work Completed
 
-None; task definition only.
+- Added injected `DiscountPolicyPort` and `DiscountProvider` boundaries; production construction with no approved provider fails `UNAVAILABLE` rather than using fixtures or live fallback.
+- Implemented `NONE` empty listing, `FIXED` configured-offer-only access and bounded `AI_BEST_APPLICABLE` listing with truncation disclosure.
+- Enforced shop/policy/offer authorization before provider I/O and shared the request budget across pages.
+- Normalized native basic percentage/fixed rules with explicit targets, minimums, dates, support states, unresolved/unsupported conditions and timestamp-independent SHA-256 semantic fingerprints.
+- Preserved the boundary to COMMERCE-016: this task does not calculate eligibility, savings or Evidence.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed validation:
+
+- `npm run prisma:generate`: passed; canonical nested Prisma client generated at pinned `6.19.3`.
+- `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts`: passed, 2 files / 13 tests.
+- `npm test`: passed, 14 files / 80 tests.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed; Next route types and `tsc --noEmit` completed successfully.
+- `npm run build`: passed; Prisma generation, webpack compilation, TypeScript, page data and static generation completed.
+- `git diff --check`: passed.
+
+Requirement-to-fixture matrix:
+
+| Requirement | Fixture/test | Expected side effects | Result |
+| --- | --- | --- | --- |
+| D01 NONE/FIXED | `returns no options...`; `permits only the configured FIXED offer...` | NONE makes zero provider requests; wrong fixed offer is `DENIED` before I/O | Passed |
+| D01 AI bound | `bounds AI listing at 50 offers...` | maximum 50 normalized offers and `truncated: true` | Passed |
+| D02 supported mapping | `normalizes percentage, all-target...` | percentage, target, minimum, dates and proven semantics map to C19 DTO | Passed |
+| D02 incomplete fields | `preserves incomplete targets...`; malformed native value fixture | no default target/value; explicit null and `UNKNOWN`/`UNSUPPORTED` condition | Passed |
+| D03 unsupported/unknown | `keeps unsupported discount families explicit`; incomplete target fixture | app/Function family and unknown target semantics remain explicit | Passed |
+| D04 scope/outage | `returns UNAVAILABLE for missing scope...`; `fails closed when provider adapter is unavailable` | zero provider requests for missing scope; bounded retryable unavailable result | Passed |
+| D04 stale catalogue | policy fixture uses `catalogueFresh: false` through the same guard | `UNAVAILABLE` before provider I/O | Covered by guard; no live provider claim |
+| D04 fingerprint | `does not include observation timestamps...` | same semantic fingerprint for different observation timestamps | Passed |
+| D05 pinned semantics | support matrix plus proven-semantics fixture | unsupported/unproven allocation and rounding cannot become supported | Passed |
+| Tenant/auth isolation | `rejects a wrong tenant...` plus wrong-offer fixture | `DENIED` and zero provider calls | Passed |
+
+Tests use injected deterministic policy/provider fixtures only. They do not claim
+live Shopify/provider behavior.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The accepted Shared package is not present as an installed source export in this
+fresh Commerce checkout, so the C19 reader port is declared structurally local as
+specified by C19; no new wire version or competing shared package was created.
+The production assembly owner (COMMERCE-013) and live provider adapter remain
+outside this task.
 
 ### Assumptions
 
@@ -151,18 +189,307 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+Developer-owned validation remains: pair the reader with the accepted production
+Shopify adapter/installation-token lookup and run the approved live/pre-production
+Shopify Admin API check against a test shop using the pinned 2026-07 schema and
+actual granted scopes. No live credentials were inspected or used here.
 
 ### Architectural Concerns
 
 None newly reported.
 
+### Attempt 4 Correction Report
+
+#### Correction Checklist
+
+- A3-R1 implemented: replaced every nested product, variant and collection
+  connection literal `first: 1000` with the conservative `first: 5` profile in
+  both static Shopify documents. Added a GraphQL AST regression requiring all
+  six nested connection sizes to equal 5 and remain within Shopify's documented
+  250-item connection limit. Added a raw target fixture representing
+  `hasNextPage=true`; it maps to incomplete targets and cannot become
+  `SUPPORTED`. Updated the support matrix to distinguish the 1000-ID DTO bound
+  from the per-request size and to document partial target semantics.
+- A3-R2 implemented: made C19 `DiscountTurnContext.signal` and
+  `deadlineAt` required, added fail-closed guards at read/list entry, after
+  policy resolution, before reservation, after provider resolution and before
+  successful returns, and converted abort/deadline paths to typed retryable
+  `DEADLINE` results. Added regressions for pre-abort, late provider data,
+  thrown `AbortError`, deadline expiry and cancellation between pages with
+  exact reservation/provider-call assertions.
+
+#### Files Changed
+
+- `src/commerce/discounts/reader/types.ts`
+- `src/commerce/discounts/reader/reader.ts`
+- `tests/discount-reader.test.ts`
+- `docs/discount-support-matrix.md`
+
+#### Validation Results
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused correction suite | `npm exec vitest run tests/discount-reader.test.ts` | Passed, 1 file / 25 tests |
+| Focused reader/auth suite | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | Passed, 2 files / 27 tests |
+| Prisma generation | `npm run prisma:generate` | Passed; Prisma Client 6.19.3 generated from accepted schema |
+| Type safety | `npm run typecheck` | Passed; Next route type generation and `tsc --noEmit` |
+| Lint | `npm run lint` | Passed |
+| Production build | `npm run build` | Passed; Prisma generation, webpack compilation, TypeScript and static generation |
+| Full tests | `npm test` | 19 files / 168 tests passed; 2 unrelated baseline/environment failures remained |
+| Diff hygiene | `git diff --check` | Passed |
+
+Full-suite failures were outside the changed discount files: the
+`tests/readiness-docker.test.ts` descendant signal-handler timing assertion and
+the Redis-backed `tests/discovery-limits.test.ts` rolling-window test timed out
+after 30 seconds. No task-local discount test failed.
+
+#### Requirement-to-Fixture Effects
+
+| Correction | Fixture/test | Expected side effects | Result |
+| --- | --- | --- | --- |
+| A3-R1 legal connections | `keeps list and fixed-ID Shopify documents distinct` | All six nested literals are exactly 5 and <=250 | Passed |
+| A3-R1 incomplete targets | `maps a paginated target response to incomplete targets instead of supported facts` | `complete=false` yields null targets, `TARGETS_INCOMPLETE`, and non-supported status | Passed |
+| A3-R2 pre-abort | `returns DEADLINE without reserving or calling for a pre-aborted context` | 0 reservations and 0 provider calls | Passed |
+| A3-R2 late data | `rejects provider data that arrives after cancellation` | 1 reservation, 1 provider call, typed `DEADLINE`, no success | Passed |
+| A3-R2 transport abort | `converts a thrown AbortError to a typed deadline result` | AbortError does not escape the result union | Passed |
+| A3-R2 deadline | `returns a deadline when the clock expires during provider work` | Late provider facts are rejected as `DEADLINE` | Passed |
+| A3-R2 pagination | `does not request a second page after cancellation between pages` | 1 reservation, 1 provider call, no second page | Passed |
+
+#### Database / Worktree Evidence
+
+- Accepted database revision: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-006`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-006`.
+- Implementation branch: `task/ARCH-020-COMMERCE-006`.
+- Implementation commit: `1c124f4b53a494425735a8064ac20a2e2000914e` (`fix(commerce): bound discount reader cancellation`), pushed to `origin/task/ARCH-020-COMMERCE-006`.
+- Implementation worktree was clean after push; database submodule remained pinned at the accepted revision. No database schema, migration, parent service gitlink or other repository was changed.
+- Developer-owned live/pre-production Shopify validation remains pending. No credentials or live endpoints were inspected or used.
+
+### Attempt 3 Correction Report
+
+#### Correction Checklist
+
+- A2-R1 implemented: `read` explicitly denies `NONE` before provider I/O, permits `AI_BEST_APPLICABLE`, and retains configured-identity enforcement for `FIXED`. Regression coverage verifies `NONE` returns `DENIED` with zero provider calls.
+- A2-R2 implemented: Shopify fractions are converted by exact decimal string scaling, not digit splitting or floating-point arithmetic. Focused cases verify `0.25 -> 25` and `0.125 -> 12.5`, alongside the existing `0.1 -> 10` case.
+- A2-R3 implemented: list and fixed-ID documents now select the complete normalized rule fields, use the correct `DiscountCollections` fragment, and validate against the installed pinned Admin 2026-07 introspection artifact. Both documents parse and schema-validate in the focused suite.
+- A2-R4 implemented: fixed amounts and subtotal minima require canonical strictly positive decimals; `0.00` remains `UNKNOWN` and cannot become `SUPPORTED`. The zero-value regression passes while valid positive fractional amounts remain covered.
+
+#### Files Changed
+
+- `src/commerce/discounts/reader/reader.ts`
+- `tests/discount-reader.test.ts`
+- `docs/discount-support-matrix.md`
+
+#### Validation Results
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused correction suite | `npm exec vitest run tests/discount-reader.test.ts` | 1 file, 19 tests passed; includes parser and pinned Admin 2026-07 schema validation for both documents |
+| Focused reader/auth suite | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | 2 files, 21 tests passed |
+| Type safety | `npm run typecheck` | Passed; Next route type generation and `tsc --noEmit` |
+| Lint | `npm run lint` | Passed |
+| Production build | `npm run build` | Passed; Prisma client 6.19.3 generated and Next webpack build completed |
+| Full tests | `npm test` | 19 files / 161 tests passed; 3 unrelated baseline/environment failures remained |
+| Diff hygiene | `git diff --check` | Passed |
+
+Full-suite failures were outside the changed discount files: two `tests/readiness-docker.test.ts` descendant signal-handler timing assertions failed before cancellation, and `tests/discovery-limits.test.ts` timed out after 30 seconds in the Redis-backed rolling-window case. No task-local discount test failed.
+
+#### Database / Worktree Evidence
+
+- Accepted database revision: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-006`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-006`.
+- Implementation branch: `task/ARCH-020-COMMERCE-006`; implementation commit: `de532c6ce57d7acd26af15527610f8efa627df21` (`fix(commerce): close discount reader review gaps`), pushed to `origin/task/ARCH-020-COMMERCE-006`.
+- Database submodule remained pinned at the accepted revision; no database schema, migration, or parent service gitlink was changed.
+- Implementation worktree was clean after push. Developer-owned live/pre-production Shopify validation remains pending; no credentials or live endpoints were inspected or used.
+
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-006. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected mirrored branch: `task/ARCH-020-COMMERCE-006`. Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-006`.
+Parent task worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-006`.
+Both were prepared by the launcher and remained isolated from `main`.
+Implementation commit: `4b968c1` (`feat(commerce): add bounded discount rule
+reader`), pushed explicitly as `HEAD:refs/heads/task/ARCH-020-COMMERCE-006` to
+the Commerce remote after the Git helper reported the prepared local upstream
+was `origin/main`. Parent report commits: `536484d0` and the final evidence
+update `01f0532e`, pushed to `origin/task/ARCH-020-COMMERCE-006`. No parent service gitlink,
+architecture/index file, or `main` branch was updated.
+
+### Attempt 2 Correction Report
+
+#### Correction Checklist
+
+- R1 implemented: `read` authorizes NONE/FIXED/AI explicitly; AI reads are permitted, FIXED results are identity-checked, and inconsistent provider identities fail closed.
+- R2 implemented: list and fixed-ID Shopify documents are distinct; the list query no longer passes `ids`, `DiscountAmount` selects nested `MoneyV2`, product-variant fields are selected, and Shopify percentage fractions convert to C19 percentage units. Static assertions and the support matrix document the boundary; unproven allocation/rounding remains unsupported.
+- R3 implemented: raw facts require explicit status/minimum/restriction completeness, canonical money/currency/integer/boolean values, complete targets capped at 1000 IDs, and offer reason codes capped at 16 before support can be `SUPPORTED`.
+- R4 implemented: typed budget/provider codes are preserved, reservation failures return bounded errors, cancellation is propagated, and pagination metadata determines truncation for short pages and terminal boundaries.
+
+#### Files Changed
+
+- `src/commerce/discounts/reader/reader.ts`
+- `src/commerce/discounts/reader/types.ts`
+- `tests/discount-reader.test.ts`
+- `docs/discount-support-matrix.md`
+
+#### Validation Results
+
+| Case | Fixture/test | Command | Result |
+| --- | --- | --- | --- |
+| R1 policy and identity | `allows AI reads and rejects an inconsistent fixed provider response` | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | Passed; AI read succeeds, inconsistent fixed identity is `UNAVAILABLE`, and the provider is called once. |
+| R2 query and units | `keeps list and fixed-ID Shopify documents distinct`; supported percentage fixture | same focused command | Passed; no `ids:` list argument, nested money selection, product-variant field, and `0.1 -> 10` mapping are asserted. |
+| R3 incomplete/malformed facts | `keeps incomplete status and minimum facts unknown`; `rejects malformed fixed values as unknown` | same focused command | Passed; incomplete facts do not become `SUPPORTED`. |
+| R4 budget/pagination | `returns typed budget errors and discloses a short-result page ceiling` | same focused command | Passed; typed `DEADLINE` is returned and a short fourth page yields `truncated: true`. |
+| Focused suite | reader plus auth tests | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | 2 files, 18 tests passed. |
+| Full suite | all repository tests | `npm test` | 15 files, 111 tests passed. |
+| Type safety | repository TypeScript | `npm run typecheck` | Passed; Next route types and `tsc --noEmit`. |
+| Lint | repository ESLint | `npm run lint` | Passed. |
+| Build | production build and Prisma generation | `npm run build` | Passed; Prisma client `6.19.3` generated and Next webpack build completed. |
+| Diff hygiene | implementation diff | `git diff --check` | Passed. |
+
+#### Database / Worktree Evidence
+
+- Accepted database revision: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-006`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-006`.
+- Implementation branch: `task/ARCH-020-COMMERCE-006`; implementation commit: `724875d` (`fix(commerce): enforce discount rule evidence boundaries`), pushed to `origin/task/ARCH-020-COMMERCE-006`.
+- Database submodule remained pinned at the accepted revision; no parent service gitlink was changed.
+- Developer-owned pending validation: approved live/pre-production Shopify Admin API check against a test shop using the pinned 2026-07 schema and granted scopes. No credentials or live endpoints were inspected or used by the agent.
 
 ## Architect Review
+
+### Accepted — Attempt 4 — 2026-09-21
+
+**Current decision: Complete; architect accepted. Attempt 4 retained; executor/claimed_at null.** Reviewed implementation `1c124f4b53a494425735a8064ac20a2e2000914e` and report `70c3cf24166b70996ccdf2c251c23e5c9ca3815b` against verified remote task heads. Dedicated worktrees clean; accepted database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` and preparation evidence recorded. This supersedes previous Changes Requested decisions; their history is retained.
+
+A3-R1 accepted: both static documents retain pinned Admin2026-07 schema validation and use exactly5 for each of six nested target connections. The support matrix explicitly separates this conservative request profile from the1000-ID DTO bound. Incomplete provider target facts normalize to null targets/TARGETS_INCOMPLETE and cannot be supported.013 must preserve hasNextPage-to-completeness mapping when supplying the real provider; these fixtures prove normalization at the declared RawDiscount boundary, not live GraphQL response mapping.
+
+A3-R2 accepted: signal/deadlineAt are required; read/list check stop conditions before work, after policy resolution, around reservation/provider I/O and before success. AbortError resolves to typed DEADLINE; late successful data is rejected and no next page starts after cancellation. Prior NONE, identity, decimal conversion, positive-money, fingerprint and bounded-list corrections remain intact. No remaining blocking finding in the reviewed narrowed006 component scope.
+
+Independent validation:
+
+- `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts`: **27/27 passed**, including25 reader cases and both pinned-schema/AST query checks.
+- Previous architect harness `/tmp/c006-a3-review/review.test.ts`, with only newly required signal/deadline fixture fields added: **23/23 passed** (19 prior submitted tests plus all4 previously failing connection/cancellation cases). It imports the current committed implementation; no implementation edits were made.
+- Diff checks passed. Submitted Prisma generation, typecheck, lint, build and full168-pass/2-readiness/Redis-failure results are recorded evidence, not independent reruns. The deadline test uses a short real-clock starting window; fake-clock conversion is a non-blocking test robustness follow-up, not an acceptance condition.
+
+Live Shopify installation/scopes, actual provider response mapping and allocation/rounding proof remain explicitly developer/013-owned. Missing or unproven facts continue to be UNKNOWN/UNSUPPORTED. Acceptance does not certify live execution or activate a new discount profile. No credentials, Redis deployment, database rehearsal or system test was executed.
+
+Dependency reconciliation:006 is now satisfied. COMMERCE-016 remains pending because COMMERCE-015 is not accepted; COMMERCE-012 and013 retain their other unfinished prerequisites, including015/016. SYSTEM-TEST-001 likewise retains unfinished implementation dependencies and the developer invocation gate. No downstream task is promoted or regressed. The architecture remains in implementation until all required components and system validation are accepted.
+
+Parent task/index/architecture/handoff/workspace rollup are reconciled and published on the parent task branch. No implementation commit, new claim, main merge/push or parent gitlink change. Developer final integration remains implementation merge first, then parent gitlink/report integration.
+
+
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Current decision: Ready; Attempt 3 retained; executor/claimed_at null; not accepted.** Verified implementation `de532c6ce57d7acd26af15527610f8efa627df21` and parent report `ec088f27d027b23200bd36e74b1e7452ff608b11` against their remote task heads. Both dedicated worktrees clean. The correction commit touches only reader source, focused tests and support matrix. No implementation changes, new claim, dependency promotion, gitlink change or main integration.
+
+A2-R1, A2-R2 and A2-R4 are verified corrected: NONE read denies before reservation, exact fraction scaling produces25/12.5 for0.25/0.125, and zero fixed amounts remain unknown. A2-R3's parser/schema correction is verified: both complete documents validate against the installed Admin2026-07 introspection artifact. Retain these changes. Static schema validation does not enforce Shopify's connection-size runtime limit; A3-R1 below is the remaining executable-document gap. A3-R2 records an outstanding cancellation requirement from Attempt1-R4/C19, now independently reproduced; this is not a new feature or live validation gate.
+
+Independent `/tmp/c006-a3-review/review.test.ts` imports the committed reader: **19 submitted reader tests pass, including pinned-schema validation; 4 added review cases fail**. Failures are oversized connection arguments, pre-aborted read returning OK, provider success after abort returning OK, and transport AbortError escaping the promised result union. The schema limit case is a deterministic local argument check against official documented limits, not a live request. Submitted21 reader/auth,161 full passing/3 environment failures, typecheck/lint/build remain reported evidence; those broader checks were not repeated. Diff checks passed. No live provider, Redis or database validation was executed.
+
+#### A3-R1 — P1 — Make nested target selections executable within provider limits
+
+Files: `src/commerce/discounts/reader/reader.ts` SHOPIFY_DISCOUNT_FIELDS and `docs/discount-support-matrix.md`; tests in `tests/discount-reader.test.ts`.
+
+Both documents contain products(first:1000), productVariants(first:1000) and collections(first:1000), repeated for native code/automatic branches. Shopify limits a connection page to250 resources, so legal GraphQL Int arguments still fail provider runtime limits. The official [GraphQL pagination reference](https://shopify.dev/docs/api/usage/pagination-graphql) documents this limit. The1000-target C19 DTO bound is not permission to request1000 items in one connection. Large nested pages multiplied by20 offers also need bounded requested cost.
+
+Deterministic minimal correction: replace each nested literal `first: 1000` with a conservative `first: 5` for this static listing/fixed-query profile. Keep top-level20/3/50 limits. Preserve hasNextPage and document that any true value means target completeness is false, targets normalize to null with TARGETS_INCOMPLETE, and support cannot be SUPPORTED. Do not silently label the first5 target IDs as exhaustive. Returning partial/unknown target facts is already allowed; fetching all1000 is not required for acceptance. Keep the same selection in both documents.
+
+If complete larger memberships are implemented instead, provide separate cursor-based target-page documents with first<=250, explicit endCursor/after, independent legal requested-cost bounds, reservations on the same12-request budget before every nested request, and incomplete results on exhaustion. Do not increase the offer ceiling, use bulk queries, or move live provider composition into006. The minimal partial-profile correction above avoids this expansion.
+
+Retain schema-validation tests and add a GraphQL AST check that every literal connection size is within the documented bound, with the exact conservative nested size asserted for this profile. Add a response-to-RawDiscount fixture demonstrating hasNextPage=true maps to complete=false and cannot become supported, plus a complete short target fixture. The production mapper remains013's assembly concern; the published provider contract/example must make this required mapping explicit. Update the matrix to distinguish total DTO membership bound from per-request selection size and to state runtime-cost limitations honestly. No live Shopify test is required.
+
+#### A3-R2 — P1 — Return bounded cancellation results and reject late data
+
+Files: reader.ts collect/read/getDiscountOptions, types.ts DiscountTurnContext, focused reader tests. collect forwards an optional signal but never checks it on successful paths. Its catch explicitly rethrows aborts. Consequently an already-aborted context still reserves/dispatches and returns a supported snapshot; a provider which aborts before resolving returns supported data; an AbortError rejects read rather than returning C4 ERROR.
+
+Use C19's required AbortSignal and absolute deadlineAt on the context; update deterministic fixtures with a live signal/deadline. Keep the existing shared budget object. Add a small guard, equivalent to:
+
+```ts
+function stopped(context: DiscountTurnContext): boolean {
+  return context.signal.aborted || Date.now() >= context.deadlineAt;
+}
+```
+
+At entry to read/getDiscountOptions, after policy.resolve, before each reservation, after provider.list resolves, and before returning successful facts, return `error('DEADLINE', true)` when stopped. Preserve NONE authorization semantics when no cancellation applies. Replace the abort rethrow in collect's catch with the same typed error; AbortError, elapsed deadline and an aborted signal must not escape or be converted to success. Preserve typed THROTTLED/UNAVAILABLE/DEADLINE for other failures. Never issue another page or retry after cancellation. Production transport must honor the passed signal; ignoring cancellation in a fixture must still not let late facts through.
+
+Permanent regressions for both read and listing: pre-abort=>ERROR DEADLINE with0 reservations/0 provider calls; provider abort-before-success=>ERROR DEADLINE with1 reservation/1 call and no subsequent page; thrown AbortError=>resolved typed ERROR; fake-clock deadline elapsing during policy or provider read=>no late success. Include an abort between two pages, retaining exact effect counts and the existing shared-budget test. Do not use real time sleeps or paid provider calls. These tests extend the existing cancellation requirement rather than expanding provider behavior.
+
+### Resubmission
+
+Correct A3-R1/A3-R2 on the same branch pair, retain working A2 regressions, run focused and required validation, and update the current Attempt report separately from historical evidence. Keep developer-owned live Shopify and unrelated environment failures explicit. Commit/push implementation and report, return to review. This parent review overlay is published before handoff; normal preparation owns the next claim. No dependent task is promoted.
+
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready, Attempt 2 retained, executor/claimed_at null; not accepted.** Reviewed implementation `724875d3913207c583fc7f783c91379db5014ec9` and report `2000bccb5198dd86fcdd91ccc0c23385573d883f`. Clean dedicated worktrees and matching remote heads verified. The correction commit changes four discount-owned files; publication files in the wider branch diff arrived through synchronization and are not discount corrections. This decision supersedes earlier current-state wording, preserving history. No implementation edits, dependent promotions, next claim or main integration.
+
+Retain the working improvements: AI reads, FIXED result identity checks, explicit minimum/status/restriction completeness flags, target-count and reason-code caps, typed budget errors and page-ceiling truncation. Independent isolated review ran the 16 submitted reader tests successfully. Five additional functional checks failed as follows; these remain original R1–R3 requirements rather than new scope.
+
+#### A2-R1 — P1 — Deny NONE rule reads before provider I/O
+
+`reader.ts:163` calls `authorized(policy, policy.mode, offerId)`. For NONE the mode equality is trivially true and the FIXED-only identity condition is bypassed. With NONE policy and a valid provider fixture, `read` returns an OK snapshot and reserves/calls the provider. C19 requires DENIED with zero provider calls. Use an explicit permitted-mode decision: NONE denied, FIXED only its configured ID, AI permitted. Preserve the working AI/FIXED regressions and add a NONE read regression (the existing NONE test covers listing only).
+
+#### A2-R2 — P1 — Correct decimal fraction-to-percentage conversion
+
+`reader.ts:47` splits the stripped digits two places from the end whenever the source has at least two fractional digits. This does not multiply the original decimal by100: `0.25` returns `0.25` instead of `25`, and `0.125` returns `1.25` instead of `12.5`. Both wrong values are exposed as supported facts to COMMERCE-016. The single `0.1 -> 10` fixture masks the issue.
+
+Implement exact decimal multiplication by100 using the original decimal scale, retaining canonical decimal output and no floating-point rounding. Add the two demonstrated conversions alongside the existing case and supported range boundaries. This is normalization, not discount calculation.
+
+#### A2-R3 — P1 — Deliver executable list and fixed-ID query documents
+
+`reader.ts:193` exports a list document that fails the GraphQL parser with `Syntax Error: Unexpected Name "pageInfo"` at line3,column1423 due to malformed selection nesting. It cannot execute against any Shopify schema. The new fixed-ID document at line195 selects only id/__typename, so it also does not provide the rule fields promised by the reader/support matrix. Text substring assertions do not establish query correctness.
+
+Repair selection nesting and use the actual pinned node/discount wrapper and type structure for both list and ID retrieval. Validate both complete documents with a GraphQL parser and against the pinned Admin schema, including fragment applicability, item/collection field ownership and pagination arguments. Reuse the normalized-field selection/mapping for fixed-ID retrieval or document an explicit bounded follow-up that actually obtains those facts. Keep missing restrictions/semantics unknown or unsupported. Update the support matrix with actual query/schema evidence; no live Shopify call or COMMERCE-013 provider assembly is requested.
+
+#### A2-R4 — P2 — Enforce positive canonical fixed amounts
+
+`POSITIVE_DECIMAL` at reader.ts:9 accepts `0.00` (and leading-zero forms), so a fully known BASIC_FIXED fixture with amount='0.00', currency='USD', appliesOnEachItem=true is returned SUPPORTED. C19 requires a canonical amount strictly greater than zero. Validate canonical syntax and positivity together; zero must not become a supported discount. Preserve valid positive fractional amounts and apply the appropriate C19 rule separately for subtotal minima. Retain the prior malformed-value regression and add the demonstrated zero case.
+
+#### Validation and resubmission
+
+Isolated harness `/tmp/c006-a2-review/review.test.ts` uses copies of exact committed reader/types and the submitted tests: **16 submitted tests passed; 5 review checks failed** (NONE read, two fraction conversions, zero fixed amount, query parsing). The exact failing inputs/outputs are recorded above. GraphQL parsing used the installed GraphQL implementation from the existing COMMERCE-011 worktree; this was syntax validation, not a claim of full provider-schema validation. Diff whitespace check passed. Submitted 18 focused / 111 full tests, typecheck/lint/build/Prisma generation remain reported evidence, not independently rerun in full.
+
+Correct A2-R1–A2-R4 on the same branch pair and resubmit focused behavioral results plus required checks. Preserve the narrowed C19 ownership and working prior corrections. Live Shopify remains developer-owned and is not the blocker. No dependent task is promoted. Distinguish the historical Attempt1 validation/VCS section from the current Attempt2 correction report when updating evidence.
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Ready, Attempt 1 retained, executor/claimed_at cleared; not accepted.** Verified implementation `4b968c1dabc144102349e2415a7026108294e0e8` (the corrected hash) and report `abff9261c4730e71e8e87c142e3c4777b275fb5d` against remote branch heads. Dedicated worktrees match launcher routing and were clean. No implementation edit, next claim, dependent promotion or main integration. This supersedes the historical definition review below.
+
+The injected policy/provider separation, no-fixture production fallback, tenant check, NONE behavior, bounded request count and timestamp-independent fingerprint are useful progress. The following are observable violations of the narrowed C19/D01–D05 component contract, not requests for exhaustive test coverage or live integration.
+
+#### R1 — P1 — Permit AI-mode reads and enforce FIXED listing identity
+
+`src/commerce/discounts/reader/reader.ts`, createDiscountRuleReader/getDiscountOptions: `read` requires `authorized(policy, 'FIXED', offerId)`, denying every AI_BEST_APPLICABLE rule read. C19 denies NONE and a different FIXED offer, not AI mode; COMMERCE-016 must read candidates under AI policy. Reproduction with the submitted valid offer fixture and AI policy returns DENIED instead of a snapshot. Conversely FIXED listing returns every candidate supplied by the provider without checking the configured identity: a provider response containing offer-2 under fixedOfferId=offer-1 returns offer-2. Passing an offerIds hint is not enforcement of the owned policy boundary.
+
+Authorize NONE/FIXED/AI explicitly before I/O, preserving wrong-tenant/wrong-fixed-ID zero-call behavior; allow authorized AI reads. Validate/filter FIXED results to the configured offer only and fail closed on inconsistent identity. Add focused regressions for these two demonstrated cases.
+
+#### R2 — P1 — Repair the static provider query and prove its mapping
+
+`SHOPIFY_DISCOUNT_QUERY` and `docs/discount-support-matrix.md`: the exported query passes `ids` to discountNodes and selects `DiscountAmount { amount currencyCode appliesOnEachItem }`. Official Shopify documentation lists no ids argument on [discountNodes](https://shopify.dev/docs/api/admin-graphql/latest/queries/discountNodes); [DiscountAmount](https://shopify.dev/docs/api/admin-graphql/latest/objects/DiscountAmount) has `amount: MoneyV2!`, requiring a nested amount/currencyCode selection. The latter reference identifies its latest version as 2026-07. The submitted version-specific URLs were inaccessible through the review browser; the accessible official references were used, not a claim of live schema validation.
+
+Supply a valid pinned list query and an appropriate fixed-ID lookup, and validate their documents against the pinned schema/evidence. Select/map the fields claimed by the support matrix or explicitly carry their incompleteness. Current items/minimum selections contain only __typename and omit restriction facts; the doc table cannot establish complete target/minimum/restriction semantics from those selections. Clarify provider-vs-normalized units: Shopify's [10 percent example](https://shopify.dev/docs/api/admin-graphql/latest/mutations/discountcodebasiccreate) uses percentage 0.1 while the normalized DTO uses 10. Record and test the conversion boundary so raw percentage is not silently passed through in the wrong unit. Cite evidence for each supported allocation/rounding profile; arbitrary fixture enums are not provider proof. Unproven profiles remain UNSUPPORTED. This is the task-owned static query/normalization deliverable; live calls, credentials and COMMERCE-013 assembly remain out of scope.
+
+#### R3 — P1 — Do not label incomplete or malformed facts SUPPORTED
+
+`normalize` and `types.ts`: a valid fixture with minimum/status omitted returns SUPPORTED with enabled=null and minimum=null without MINIMUM_UNKNOWN. Under C19 that minimum representation means authoritatively no minimum, which was never established. A BASIC_FIXED fixture with amount='oops', currency='bad', appliesOnEachItem=true also returns SUPPORTED. C19 requires known enabled state, complete minimum facts and canonical positive monetary values. Source inspection additionally shows target IDs are not capped at1000, target completeness is accepted when unspecified, and Offer reasonCodes are not capped at the accepted Shared maximum16.
+
+Make unknown versus authoritatively absent facts explicit at the raw-provider boundary. Validate canonical decimal/currency/integer/boolean values, supported status/semantics, target completeness and C19/Shared bounds before marking support. Missing minimum facts must produce MINIMUM_UNKNOWN; missing status must prevent SUPPORTED. Preserve customer/usage/combination uncertainty instead of treating omitted restrictions as known empty. Reuse/validate against the accepted Shared Offer and options contract rather than relying only on local TypeScript annotations. Keep fixtures that deliberately inject proven normalized profiles clearly separate from claims of Shopify proof. Add regressions for the two demonstrated invalid-support cases and the concrete field bounds being corrected; no eligibility/savings calculation belongs here.
+
+#### R4 — P2 — Preserve typed budget/provider errors and pagination completeness
+
+`collect` reserves budget outside its try block, so a typed `{code:'DEADLINE'}` exception escapes the promised result union. Provider errors are classified by Error.message despite C19 explicitly requiring typed codes. Collection also discards hasNextPage: three short pages with more data return truncated=false because the final flag only checks length>=50. Conversely exactly50 terminal offers are always described as truncated.
+
+Return structured C4 errors for typed budget/deadline/throttle/cancellation failures, reserving before each actual request and preserving zero provider calls when reservation fails. Propagate cancellation without fallback. Preserve provider completion metadata through collection: a page/offer ceiling with more data must disclose truncation; exhausted terminal pages must not falsely claim it. Treat inconsistent pagination metadata as incomplete/unavailable rather than complete. Add focused tests for typed budget exhaustion and a three-page short-result ceiling (both independently reproduced), with terminal boundary behavior. Do not add retries or production adapters to satisfy this correction.
+
+#### Validation and resubmission
+
+Independent deterministic harness `/tmp/c006-review/review.test.ts` ran copies of the exact committed reader/types plus the submitted reader tests: **11 submitted tests passed; 6 review reproductions failed** (AI read denied, unknown minimum/status SUPPORTED, malformed fixed value SUPPORTED, escaped typed budget error, hidden page-limit truncation, nonconfigured FIXED offer returned). Exact inputs/expected effects are recorded above. Implementation diff check passed. Submitted 13 focused / 80 full tests, lint/typecheck/build/Prisma generation are reported evidence; not rerun in full here. Official schema documentation review is separate from live provider execution.
+
+Correct R1–R4 on the same branch pair, preserve the narrowed C19 ownership boundary, run focused regressions and required checks, and resubmit accurate evidence. Live Shopify/provider validation remains developer-owned and is not an acceptance blocker. No dependent tasks are promoted. The stale active claim in the submitted review YAML is cleared by this decision; preparation owns any next attempt.
+
+### Historical definition review
 
 ### Review Status
 
