@@ -466,3 +466,18 @@ reproducing the unpublished-binding bypass. Submitted PostgreSQL 2/2 evidence
 reviewed; developer-owned infrastructure/migration validation remains pending.
 No acceptance, implementation change, main merge, gitlink update or downstream
 promotion. COMMERCE-018/019 remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 7 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 7 retained; executor/claim null.** Reviewed
+implementation `0fab9dc` and report `3dc1fbf7`. A6-R2 binding correction passes.
+A7-R1 requires correcting six pinned Shopify schema errors in the production
+customer/segment selections; A7-R2 requires substantiating the native-basic
+calculation profile and demonstrating the supported production path. Explicit
+corrections and bounded verification examples are in the task Architect Review.
+Focused integration: 60/60. Architect harness: 11 passed, 1 failed (production
+Admin document validation). PostgreSQL report remains one passing smoke and one
+failed rehearsal; no new storage regression is established, and developer-owned
+isolated infrastructure validation remains pending. No acceptance, implementation
+change, main merge, gitlink update or downstream promotion. COMMERCE-018/019
+remain Pending; final manual system-test gate remains.

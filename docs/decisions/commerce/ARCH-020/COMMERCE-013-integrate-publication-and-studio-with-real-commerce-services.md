@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 125
 executor: null
 claimed_at: null
@@ -800,6 +800,41 @@ updated. Lifecycle fields are set for review: `status: review`,
 `executor: null`, `claimed_at: null`, `attempt: 7`.
 
 ## Architect Review
+
+### Attempt 7 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `0fab9dcc4d74f28b2537be1ccacf63b8ed93e560` and parent report `3dc1fbf74f14e71d6eca51e3cd623839a6b26b39`; dedicated worktrees clean and both submitted heads verified against remote. **Changes Requested; Ready, Attempt 7 retained; executor/claimed_at null.**
+
+A6-R2 is resolved: every capability binding independently requires the matching owner and PUBLISHED revision, including when that revision is explicitly selected too. The architect bypass fixture now passes, and standalone DRAFT selection and configured inspection remain correct. Mixed product/variant targeting now fails closed. Preserve these changes. The remaining blocker is the production discount path, with two explicit corrections below.
+
+#### A7-R1 — Remove invalid connection selections from the production Admin document
+
+Location: `src/commerce/integration/backend.ts:SHOPIFY_DISCOUNT_RULE_QUERY`, DiscountCodeBasic customerSelection fragments (around line 333).
+
+The exact outgoing document now fails validation against the installed pinned `@shopify/dev-mcp/dist/data/admin_2026-07.json.gz` schema with six errors: DiscountCustomers.customers and DiscountCustomerSegments.segments have no `first` argument, and their Customer/Segment result types have no `nodes` or `pageInfo` fields. They are lists, not connections. Shopify validates the whole document before execution, so this breaks unrestricted discounts too, not just customer-scoped ones.
+
+The current native-basic profile rejects customer- and segment-scoped discounts using only the selection typename. Therefore remove the unnecessary customers/segments subfield selections and retain `customerSelection { __typename ... on DiscountCustomerAll { allCustomers } }` (retain another scalar only if actually consumed). Do not replace them with unbounded customer/segment enumeration; this path does not need those identities. Keep the restricted typenames mapped to UNSUPPORTED.
+
+Validate the **exported production SHOPIFY_DISCOUNT_RULE_QUERY**, not only the separate reader documents or database schema, against the pinned Admin schema. Then exercise the actual production fetch assembly with synthetic HTTP responses for the supported and restricted cases. The new test currently calls only normalizeProductionDiscount and checks query substrings; it cannot detect this runtime failure. One schema assertion plus focused production-path cases is sufficient; no exhaustive coverage or live Shopify call is requested.
+
+#### A7-R2 — Substantiate the calculation profile before calling it proven
+
+Location: `backend.ts:normalizeProductionDiscount` semantics assignment (around lines 438–440) and `docs/discount-support-matrix.md` native-basic profile.
+
+The implementation now assigns HALF_UP/LINE and other calculation semantics based on basic type/value alone. The documentation asserts that Shopify rounds each eligible line this way, but adds no provider evidence establishing that behavior or its supported boundaries. A unit assertion that the adapter returns these constants does not establish that they match Shopify. These facts affect qualification/amount evidence and were explicitly required to be justified by A6-R1; the change moves from universally unsupported to assuming a calculation profile without closing that evidence gap.
+
+For the narrowly supported fixed and percentage shapes, record the authoritative provider source or existing accepted provider evidence that establishes subtotal basis, allocation, rounding and rounding point, including the appliesOnEachItem distinction. Apply the profile only within the boundaries that evidence supports. Add a focused discriminating calculation fixture through the real assembly and accepted reader/evaluator, with multiple lines/fractional amounts where line versus total rounding differs; a raw-normalizer equality assertion is insufficient. Keep restricted and unproven shapes non-qualifying and preserve the evaluator's checks.
+
+If that provider evidence is unavailable, explicitly report the exact unresolved semantics as an architecture decision needed, with the supported scope that can be proven; do not manufacture constants or claim A6-R1 is complete. This is the existing correctness requirement, not a request for live/paid validation or a new engine.
+
+#### Verification and infrastructure disposition
+
+Reran `npm run test:arch020-backend-integration`: **60/60 passed**. Existing architect harness `/tmp/c013-a6-review/review.test.ts` against Attempt 7: **11 passed, 1 failed**, with all six schema errors coming from the single production-document assertion. The unpublished-binding regression now passes. Submitted typecheck/lint/build/static database checks reviewed. Static database schema checks are not Shopify document validation.
+
+PostgreSQL evidence remains **one passing smoke test and one failed mutation/replay/CAS/rollback rehearsal**, not 2/2 for this attempt. No storage or rehearsal code changed in Attempt 7, so this is not treated as a demonstrated implementation regression or an additional acceptance blocker. Source inspection also shows the rollback transaction hard-codes pointer editVersion 2; a reused target can conflict before afterWrite injection. Do not claim the precise failing precondition is established merely from CAS_CONFLICT, or attribute it exclusively to the capability revision without a stack trace. When developer-owned isolated infrastructure validation runs, use a clean target or advance from its actual current pointer token, and distinguish the intended injected rollback from a pre-write CAS rejection. No DB/Docker/Redis/container operation was run by the architect.
+
+Ready for corrections; Attempt 7 retained and claims cleared. No acceptance, main merge, implementation edits, gitlink change or downstream promotion. COMMERCE-018/019 remain Pending. Developer-owned infrastructure/migration validation and final manual system testing remain separately recorded.
+
 
 ### Attempt 6 — Changes Requested (2026-09-21)
 
