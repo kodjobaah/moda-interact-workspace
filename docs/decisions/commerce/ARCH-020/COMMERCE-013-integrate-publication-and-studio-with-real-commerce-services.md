@@ -577,6 +577,9 @@ or production credential evidence is claimed.
 
 ### Lifecycle and handoff
 
+Parent report commit containing this Attempt 5 submission is
+`c32609db` (`c32609dba981c9b8c918111d549cf237131d62f5`).
+
 Task fields are clean for review: `status: review`, `executor: null`,
 `claimed_at: null`, `attempt: 5`. No downstream task was launched and no main
 branch was merged or updated. The parent report commit and push are recorded
