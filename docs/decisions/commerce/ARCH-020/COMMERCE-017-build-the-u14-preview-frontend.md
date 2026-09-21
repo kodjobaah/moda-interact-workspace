@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 135
-executor: copilot
-claimed_at: 2026-09-21T05:11:32Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-020-COMMERCE-008
@@ -497,6 +497,72 @@ None newly reported.
 ### Git / VCS
 
 Implementation commit `bdb753c` (`fix(commerce): close preview source lifecycle gaps`) is published on the mirrored `task/ARCH-020-COMMERCE-017` branches; the parent report commit is the publication commit for this Attempt 5 report. The parent claim commit is `d6faaafa107aefdc317c2d228df28d30405cbafb`. No main branch, service gitlink, domain index, architecture document, other task or other repository was modified.
+
+### Submitted Attempt 6 Report
+
+Ready for Review. Attempt 6 preserves Attempts 1-5 and addresses every remaining
+Attempt 5 A5-R1 correction. The latest review text below remains historical and
+unchanged.
+
+#### Correction checklist
+
+- **A5-R1 Failure A implemented:** `selectionKey` now derives from the actual
+  selected source. An unsaved release handoff initializes as `DRAFT` even when
+  saved releases are present; saved releases initialize and dispatch as
+  `RELEASE` with their persisted ID. Both release selectors use the same handler,
+  so cycling draft -> saved release -> draft keeps selection and payload aligned;
+  `handoffId` is never sent as `releaseId`.
+- **A5-R1 Failure B implemented:** tool source changes are synchronously rejected
+  while the owning tool operation or same-ID check is unresolved, including
+  `UNKNOWN`; both duplicate tool selectors share that lock. Conversation source
+  changes use the separate creation-operation lock through pending/uncertain
+  creation. Terminal reconciliation releases the owning lock, and source changes
+  clear stale tool arguments/results before a new dispatch.
+- **Cleanup implemented:** the obsolete commented duplicate screen was removed
+  from `src/studio/preview/preview-screen.tsx`.
+
+#### Fixture and request matrix
+
+| Case | Fixture/test | Expected and observed effect |
+| --- | --- | --- |
+| Unsaved draft beside saved release | `preview-screen.test.tsx`, draft handoff `draft-handoff-01`, saved `release_saved_01` | Start issues one DRAFT with `caprev_draft` and the exact response contract; reset/select saved issues RELEASE with `release_saved_01`; reset/select draft issues DRAFT again. Three calls and source payloads are asserted. |
+| Tool A pending/unknown source freeze | `preview-screen.test.tsx`, `toolrev_01PUBLISHED` -> `toolrev_02SAVED` with deferred POST/GET | Selection remains A during unknown POST and same-ID GET; no extra POST occurs. After terminal reconciliation, B is selectable and the next request carries `toolrev_02SAVED`. |
+| Existing lifecycle and schema regressions | Existing screen fixtures plus the new cases | Reset/restart, cancellation identity, nullable values, nested schema rejection, direct release selection, Back context, fixture gating and stale callback fencing remain passing. |
+
+#### Agent-executed validation
+
+- `npm test -- --run tests/preview-screen.test.tsx`: **18 tests passed**.
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-client.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: **6 files, 59 tests passed**. One earlier run showed a timing-sensitive existing cancellation test failure; isolated and full focused reruns passed without a source change.
+- `npm run typecheck`: **passed** (`next typegen` and `tsc --noEmit`).
+- `npm run lint`: **passed** (`eslint .`).
+- `npm run build`: **passed** (`prisma generate` and `next build --webpack`); `/preview` and preview API routes compiled.
+- `git diff --check`: **passed**.
+
+#### Synchronization and dependency evidence
+
+- Attempt 6 used the launcher-prepared mirrored task worktrees and existing
+  `task/ARCH-020-COMMERCE-017` branches; no preparation, reclaim, worktree
+  recreation, main operation or dependent-task promotion was performed.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`.
+- The accepted recursive database submodule pin remains
+  `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no schema, migration,
+  architecture, index, service gitlink or other repository was modified.
+- Attempt 6 implementation files are `src/studio/preview/preview-screen.tsx`
+  and `tests/preview-screen.test.tsx`.
+- Published implementation commit: `5aea0c4` (`fix(commerce): freeze preview
+  source identity`) on `origin/task/ARCH-020-COMMERCE-017`.
+
+#### Authenticated browser and live limitations
+
+No authenticated desktop, narrow, or keyboard application-browser evidence is
+claimed. The local Studio identity prerequisite remains unprovisioned, so the
+existing auth guard correctly prevents populated browser workflows; component
+tests use injected contract-faithful fixtures and are not authenticated browser
+evidence. Live database/container, Shopify, MCP, model, WhatsApp, billing,
+customer transcript and deployment/system pairing remain developer-owned and
+were not contacted. No auth bypass, production fixture substitution or live
+credential was introduced.
 
 ## Architect Review
 
