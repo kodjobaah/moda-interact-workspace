@@ -405,7 +405,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| ARCH-020-COMMERCE-011 | commerce | ready | 5 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-011 | commerce | ready | 7 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
@@ -611,3 +611,17 @@ preservation. R6-1–R6-3 give exact file/algorithm/test corrections in the task
 32 focused tests report passing; real Redis60/61 was not exercised with URL unset.
 Retain prior compiler/artifact/pinned-process fixes. Real Redis unavailability is
 not this review blocker. No downstream promotion, claim, main merge or gitlink edit.
+
+## COMMERCE-011 Attempt 7 review — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 7 retained**, claim cleared, not accepted.
+Reviewed implementation `0ac23ea` and report `164d859f`; exact remote heads and
+physical task isolation verified. R6-1 and separate input/output limits are retained.
+Two functional corrections remain: R7-1 preserves the entire nested documentation
+container and rejects incomplete representations; R7-2 prevents synchronous Redis
+counter-release failures from replacing the operation outcome. Independently ran
+17 submitted checks (passed) and three targeted reproductions (failed). See the
+latest Architect Review in the canonical COMMERCE-011 task for concrete evidence
+and correction scope. Live provider/deployment checks are not acceptance blockers.
+No dependent promotion, implementation edit or main integration; prior overlays
+remain historical and this note supersedes their COMMERCE-011 current-state wording.

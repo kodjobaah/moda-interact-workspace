@@ -118,3 +118,17 @@ reproduced zero close calls. Latest task review records R5-1/R5-2 and the exact
 next steps. Preserve prior compiler/artifact fixes and submitted local Redis
 evidence. Reported readiness baseline failures are not the review blocker.
 No new claim, downstream promotion, implementation edit or main integration.
+
+## COMMERCE-011 Attempt 7 review — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 7 retained**, claim cleared, not accepted.
+Reviewed implementation `0ac23ea` and report `164d859f`; exact remote heads and
+physical task isolation verified. R6-1 and separate input/output limits are retained.
+Two functional corrections remain: R7-1 preserves the entire nested documentation
+container and rejects incomplete representations; R7-2 prevents synchronous Redis
+counter-release failures from replacing the operation outcome. Independently ran
+17 submitted checks (passed) and three targeted reproductions (failed). See the
+latest Architect Review in the canonical COMMERCE-011 task for concrete evidence
+and correction scope. Live provider/deployment checks are not acceptance blockers.
+No dependent promotion, implementation edit or main integration; prior overlays
+remain historical and this note supersedes their COMMERCE-011 current-state wording.

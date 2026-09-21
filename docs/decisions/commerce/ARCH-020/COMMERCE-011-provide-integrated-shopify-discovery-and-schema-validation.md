@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 executor: null
 claimed_at: null
 priority: 85
@@ -255,6 +255,30 @@ implementation and parent report are kept in dedicated physical task worktrees.
  Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 7 — 2026-09-21
+
+**Current decision: Ready, Attempt 7 retained, executor/claimed_at null; not accepted.** Reviewed implementation `0ac23ea963508de37c37327560020d1364396473` and parent report `164d859fc03608b3f6c2e00f1e98dfb5a103a1eb`. Both dedicated launcher-resolved worktrees were clean and matched their remote task branch heads. This decision supersedes earlier current-state wording; earlier reviews and submitted reports remain historical evidence. No implementation edit, new claim, dependent promotion or main integration.
+
+R6-1 is accepted: shared exact-origin validation, default-port normalization and the two-redirect limit are implemented. The separate 1 MiB input / 64 KiB serialized output limits, required title/content type and admission-only error normalization are also retained as valid progress. Acceptance is withheld for the two functional defects below, not for exhaustive test coverage or unavailable live systems.
+
+#### R7-1 — P1 — Preserve the complete documentation container
+
+`lib/discovery/document.ts:25` matches the first opening main/article against the first closing main/article without respecting element nesting or pairing. A valid response `<title>API</title><main><article>First section</article><article>Second section</article><p>Final constraint</p></main>` returns only `First section`. The later section and constraint silently disappear even though the response is well below both size limits. `<title>API</title><main>Incomplete content</article>` also succeeds despite mismatched document-container tags. This leaves R6-2/C15.1 full-document and incomplete-representation handling unresolved.
+
+Use structure-aware extraction that selects the complete supported main/article container and retains all its readable descendants in document order, while excluding active/non-document content. Do not fix this with only a matching-tag backreference or a greedy regex: nested same-name containers must remain complete too. Reject an incomplete supported representation instead of returning a successful excerpt. Keep the existing title, input/output, redirect and deadline constraints. Add focused regressions for the demonstrated nested-container truncation and malformed-container acceptance; exercise the selected extraction rule with the previously requested sanitized official-page representation and document its assumptions. No general HTML conformance suite is requested.
+
+#### R7-2 — P2 — Contain synchronous counter-release failures
+
+`lib/discovery/limits.ts:49` evaluates `redis.multi().decr(...).decr(...).exec()` before entering `boundedCleanup`. If that expression throws synchronously, the surrounding finally closes the client but propagates the cleanup error, replacing the operation's original failure (or successful result). With an admitted mock whose `multi()` throws `synchronous cleanup failure`, an operation throwing `upstream timeout` rejects with the cleanup failure instead. This is the synchronous-cleanup requirement already explicit in R6-3.
+
+Catch cleanup invocation as well as promise rejection, for example by accepting a thunk and invoking it inside the bounded helper's try block. Keep client close independent of counter release, and ensure graceful-close/fallback errors cannot replace the operation outcome. Preserve admission failure mapping, counter release only after admission and bounded cleanup. Add the demonstrated synchronous-release regression with an assertion that the original error identity is preserved and client close still runs; also retain a successful operation result under cleanup failure.
+
+#### Validation and correction scope
+
+Independently reran the two submitted document/admission-cleanup files: **17/17 passed**. Three isolated functional checks against copies of the exact committed source in `/tmp/c011-a7-review/review.test.ts` **failed**: nested content preservation, mismatched-container rejection, and original-error preservation during synchronous release failure. The minimal inputs and expected/actual outcomes are recorded above so this evidence does not depend on the temporary harness surviving. Implementation diff whitespace check passed. Submitted 47 focused / 116 full tests, typecheck, lint and build are acknowledged as reported evidence, not rerun in full during this review.
+
+Correct R7-1/R7-2 on the existing branch pair and resubmit actual validation/results. R6-1 does not need reimplementation. Live Redis, OAuth, Shopify store and deployment evidence remain developer-owned and are not this decision's blockers. The environment-gated Redis early-return case is not live Redis evidence. No additional broad coverage requirement, provider upgrade or COMMERCE-013 implementation is introduced.
 
 ### Changes Requested — Attempt 6 — 2026-09-21
 
