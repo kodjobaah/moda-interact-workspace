@@ -9,9 +9,9 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
-executor: copilot
-claimed_at: 2026-09-21T18:08:28Z
+status: review
+executor: null
+claimed_at: null
 priority: 145
 attempt: 2
 depends_on:
@@ -258,3 +258,76 @@ HTTP, Studio, or application seed data.
 
 Run both documented disposable PostgreSQL validator modes, then accept or return
 for rework. No downstream task was launched.
+
+## Completion Report - Attempt 2
+
+Status: Ready for Review.
+
+Attempt 2 implements all three corrections from the latest Architect Review.
+The implementation commit is `df86899` (`fix(database): strengthen external
+connection rehearsal`) on `origin/task/ARCH-020-DATABASE-003`. The Architect
+Review section was not edited and no downstream task was launched.
+
+### Correction checklist
+
+- [x] **A1-R1:** Added `@db.Timestamptz(3)` to all six timestamps across the
+  four `CommerceExternal*` Prisma models, preserving defaults and `@updatedAt`.
+  Prisma validation and generated SQL now agree with the checked-in migration.
+- [x] **A1-R2:** All raw Shop, PlatformAdmin, and Conversation fixture inserts
+  now provide required `updatedAt` values. README already documents the exact
+  fresh and upgrade commands and isolated database names.
+- [x] **A1-R3:** The validator now asserts expected PostgreSQL SQLSTATEs for
+  unique, check, foreign-key, and immutable-trigger failures. Each boundary
+  uses an otherwise-valid isolated revision, immutable revision deletion is
+  tested without a credential FK masking it, rollback checks both inserted
+  rows, and upgrade mode snapshots Shop/Admin plus a tool, tool revision, and
+  conversation grant before and after the additive migration.
+
+### Files changed
+
+- `prisma/schema.prisma`: corrected external model timestamp types.
+- `scripts/validate-arch020-external-connections.mjs`: executable fixture,
+  SQLSTATE, preservation, and rollback assertions.
+
+### Validation Results
+
+Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-DATABASE-003`.
+
+| Command | Result |
+| --- | --- |
+| `node --check scripts/validate-arch020-external-connections.mjs` | passed |
+| `npm run prisma:validate` | passed |
+| `npm run prisma:generate` | passed with Prisma `6.19.3` |
+| `npm run format -- --check` | passed |
+| `npm run erd:puml` | passed; generated ERD had no additional diff |
+| `git diff --check` | passed |
+| `npm run test:arch020-external-connections:database -- --mode fresh` | not run to completion; isolated database `arch020_connections_test_fresh` does not exist |
+| `npm run test:arch020-external-connections:database -- --mode upgrade` | not run to completion; isolated database `arch020_connections_test_upgrade` does not exist |
+| `npm run typecheck`, `npm run lint`, `npm run build` | unavailable; no such scripts are declared in the owning repository |
+
+No database-backed X02 pass is claimed. The fresh/upgrade modes remain
+developer-owned validation requiring provisioned disposable PostgreSQL targets.
+No live credentials, application encryption, HTTP, Studio, or seed behavior was
+added.
+
+### Launcher and VCS evidence
+
+Canonical workspace root:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+
+Parent worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-DATABASE-003`
+on `task/ARCH-020-DATABASE-003`; implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-DATABASE-003`
+on `task/ARCH-020-DATABASE-003`. Shared workspace and another task worktree
+were not reused for implementation. Parent and implementation task branches
+were already synchronized by the launcher; origin/main was already current.
+Recursive submodule sync and update both passed; no recursive submodules were
+present. Attempt 2 was claimed by copilot at `2026-09-21T18:08:28Z` through
+launcher claim commit `3c37c4e`, which was pushed before implementation work.
+Implementation commit `df86899` is pushed to the implementation remote.
+
+Task fields are clean for review: `status: review`, `executor: null`,
+`claimed_at: null`, `attempt: 2`. No main branch, implementation submodule
+gitlink, or downstream task was changed.
