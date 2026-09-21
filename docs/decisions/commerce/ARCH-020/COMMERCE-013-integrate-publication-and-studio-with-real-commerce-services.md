@@ -494,7 +494,8 @@ claimed.
 ### Git / VCS
 
 Implementation commit: `d42f8e98a3c27643ad3df2ad88c34f4f0666db93`. Parent report
-commit and push result are recorded after publication. Both mirrored branches
+commit: `3176ef9dcdb08b12597097a20be5941e0254a8c7` before this final report-hash
+record update. Both mirrored branches
 remain `task/ARCH-020-COMMERCE-013`; lifecycle fields are clean for review with
 `status: review`, `executor: null`, and `claimed_at: null`.
 
