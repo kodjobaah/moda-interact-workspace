@@ -1496,3 +1496,17 @@ checks fail (repeated CAS time and empty draft selection). The reported Prisma
 1/1 test is a no-op smoke check, not race/rollback evidence. No acceptance or
 downstream promotion; COMMERCE-018/019 stay Pending. Disposable infrastructure
 execution remains developer-owned; lack of Docker authorization is not the blocker.
+
+
+### COMMERCE-013 Attempt 4 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 4; executor/claim null.** Reviewed `d42f8e9`
+and report `b71c7874`. A4-R1–R4 specify canonical initial resolution/tool filtering,
+actual provider rule facts and bounded reads, real inspection/saved-binding
+contracts, and genuine contentious adapter race/rollback assertions. Focused
+suite: 59 passed; all eight prior reproductions pass; new no-grant production
+resolve check fails. No acceptance or downstream promotion; COMMERCE-018/019
+remain Pending. The submitted database 2/2 evidence covers its actual scenarios,
+not the missing publication/pointer contention/post-write rollback cases.
+Infrastructure execution remains developer-owned; Docker authorization is not
+the blocker. Preserve the final manual system-test gate.

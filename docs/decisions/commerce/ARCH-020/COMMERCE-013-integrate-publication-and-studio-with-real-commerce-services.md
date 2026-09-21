@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 125
 executor: null
 claimed_at: null
@@ -500,6 +500,48 @@ remain `task/ARCH-020-COMMERCE-013`; lifecycle fields are clean for review with
 `status: review`, `executor: null`, and `claimed_at: null`.
 
 ## Architect Review
+
+### Attempt 4 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `d42f8e98a3c27643ad3df2ad88c34f4f0666db93` and report `b71c78749c9a42c9f7c1f31ccd1a91a509cb8607`; both remote heads match and submitted worktrees were clean. **Changes Requested; Ready, Attempt 4; executor/claim null.** All eight prior architect checks pass, including cross-transaction CAS time and empty selection rejection. Preserve those fixes, the tokenless streaming transport, publisher/audit target persistence and complete-definition validation. Four focused correction groups remain; no exhaustive test expansion is requested.
+
+#### A4-R1 — Make initial resolve produce a valid, eligible canonical manifest
+
+File: `src/commerce/integration/backend.ts:createPrismaAuthorizationResolver`.
+
+For a conversation without a grant, the active release is now loaded but promptName still uses `grant?.releaseId`, producing `commerce/undefined/...`. Shared requires the actual manifest releaseId in this path, so even a valid base-only initial resolve fails with “published release manifest is unavailable.” An architect fixture calls the actual no-argument production factory with mocked config/database clients and confirms that failure.
+
+Use the already resolved releaseId for prompt naming in both resolve/execute. Build grantedTools/definitions from manifestMembers, not the pre-filter definitions map: otherwise an excluded feature's unique tool remains in derivedGrantedTools with an empty capabilityKeys list and the manifest again fails validation. Keep the persisted original grant provenance on execute; do not widen it. Preserve the newly corrected lease and configured limits. Add one production-factory initial resolve fixture with an eligible base capability and an excluded feature with its own tool; assert canonical prompt names, absence of the excluded tool, and a valid returned resource. Keep an execute fixture for the pinned subset grant. Do not bypass the Shared schema to make resolution succeed.
+
+#### A4-R2 — Read actual discount rule facts and bound the HTTP read itself
+
+File: `backend.ts:createProductionPolicyRegistrations`.
+
+Spreading `row.providerSnapshot` does not supply accepted006 RawDiscount semantics. The existing producer (`moda-interact-background/src/providers/shopify-discount.provider.ts`) stores raw descriptive metadata from its query: type/title/summary/status/dates/codes. That query does not select rule value, targets, minimums or restriction/rounding semantics. The resulting records still have value/target null and unknown conditions; a supported basic offer cannot be evaluated correctly. The fallback also labels fixed Basic discounts as percentages. This is the same A3-R1 integration gap, not a new feature request.
+
+Implement the bounded privileged read of actual rule fields and explicitly map provider data to006's typed raw contract. Use real snapshots from that producer as fixtures; do not invent normalized fields the producer never writes. Catalogue metadata remains an admission/catalogue source, not semantic rule authority. Retain the now-real scope check and canonical Admin token header. Verify supported fixed and percentage rules through evaluation/recommendation with synthetic external provider responses. Separately, `await response.text()` followed by a length check reads the entire body before enforcing any limit. Replace it with bounded byte streaming/cancellation before JSON parsing; test oversized output and cleanup. No other-repository change or live Shopify call is required.
+
+#### A4-R3 — Return real C20 inspection and complete saved capability selections
+
+File: `backend.ts:createPrismaInspection`, saved-selection adapter and facade result types.
+
+The new candidateManifest is a feature-preference projection, not a Commerce manifest: it does not consult the active release, published capability/revision/tool rows, plan eligibility or recovery-policy associations. Exclusions set capabilityId to a feature ID. A shop with an enabled preference but an ineligible plan can therefore appear eligible in inspection while production resolution excludes it.018 needs actual capability IDs and exclusion reasons, not similarly named fields with different meaning.
+
+Build inspection from the same current release/eligibility rules as production resolution, using a shared read-only helper where appropriate. Return actual capability/revision identity and a bounded candidate manifest/exclusions with explicit plan/preference/feature/recovery reasons; preserve no credential/customer/definition leakage and no grant writes. Define the concrete result contract instead of candidateManifest: unknown.
+
+Also complete the previously requested saved binding resolution: a DRAFT selection containing a capability revision but no explicit toolRevisionIds currently returns that capability's toolBindings and an empty tools list. Resolve and validate its bound tool revisions/ownership (plus explicitly selected tools), reject incompatible/conflicting sets, and supply the canonical capability key with exact prompt/definition/hash data. Verify capability-only selection returns its exact bound definitions and inspection reports one plan-excluded capability using its real ID. Keep the passing empty/missing/invalid selection and ordering checks.
+
+#### A4-R4 — Make the database assertions demonstrate the claimed races and rollback
+
+File: `tests/backend-postgres-rehearsal.test.ts` and report.
+
+The new second test is useful evidence of real createTool/replay/metadata CAS behavior. However, its “race” creates two unrelated tools using different names and operation IDs; it never contends on the same revision/pointer/CAS value. Its rollback throws inside the in-memory work callback before `writeState()` runs, so no database business write has occurred. It also never publishes a tool revision/capability/release or changes a pointer, despite “publishes once” in the title. Thus the reported 2/2 does not establish the B02 mutation/race/rollback guarantees.
+
+Keep the existing checks and add the specified bounded contentious scenarios through actual storage/lifecycle: two connections update the same CAS token or publication pointer with exactly one winning effect/audit, and a failure injected after an actual database write causes all business/member/pointer/audit changes to rollback. Include a real valid publication/release path and assert durable rows/audit counts, not only returned values. Keep the original SQL checks separate. Execution against disposable infrastructure may remain pending developer authorization; the scenarios must exist and report titles/results must describe what actually ran. Docker authorization is not this review's blocker.
+
+#### Architect verification and disposition
+
+Reran `npm run test:arch020-backend-integration`: **59/59 passed**. Prior temporary harness `/tmp/c013-a3-review/review.test.ts`: **8/8 passed**. New production-factory fixture `/tmp/c013-a4-review/review.test.ts`: **1 failed**, confirming no-grant resolution rejects a valid active base release. The fixture imports the actual factory and mocks only configuration/database client boundaries; no implementation file was changed. Submitted typecheck/lint/build/diff evidence and the database test source were reviewed; no database/Docker command was run by this review. No main/gitlink/implementation mutation and no downstream promotion; COMMERCE-018/019 remain Pending. Preserve the final developer-owned manual system-test gate.
 
 ### Attempt 3 — Changes Requested (2026-09-21)
 
