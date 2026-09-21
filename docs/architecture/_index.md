@@ -82,53 +82,15 @@ GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
 
-## COMMERCE-011 Attempt 3 — Changes Requested — 2026-09-21
+## BACKGROUND-002 Attempt 4 — Accepted — 2026-09-21
 
-COMMERCE-011 is **Ready, Attempt 3 retained**, claim cleared, not accepted.
-Reviewed implementation `c616560` and report `78325853`. Prior four compiler
-reproductions pass and R4's rolling-history/readiness/error-handling defects are
-corrected in source. Three additional invalid GraphQL definitions still return
-valid:true (unquoted String value, duplicate argument, conflicting alias).
-R1 remains incomplete; R3 still returns a search excerpt as a document and retains
-failed startup promises without owned shutdown. See the latest task Architect
-Review. Verified artifact is retained; no new live validation requirement, claim,
-dependent promotion, implementation edit or main integration. Other task states
-and C17 ownership remain unchanged.
-
-## COMMERCE-011 Attempt 4 — document-provider resolution — 2026-09-21
-
-COMMERCE-011 is **Ready, Attempt 4 retained**, claim cleared, not yet accepted.
-Reviewed `f363ac4` / report `05311f5b`; eight independent compiler checks pass.
-The pinned MCP document-fetch gap is valid and is resolved architecturally by
-**C15.1**: retain MCP search, add a bounded credential-free server adapter for
-exact official shopify.dev/docs document retrieval. The in-Studio API/workflow is
-preserved. Always-unavailable document retrieval is not task completion.
-Implement the amendment on the same task branch, then resubmit. Prior review
-history accidentally removed by the report has been restored. The reported full
-suite remains95/96; the unrelated timing failure is not asserted resolved.
-No new claim, downstream promotion, implementation edit or main integration.
-
-## COMMERCE-011 Attempt 5 — Changes Requested — 2026-09-21
-
-COMMERCE-011 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
-Reviewed `fba9482` / report `0e91e5dd`. C15.1 was already present before the claim,
-but the approved official-document adapter remains unimplemented. A new admission
-cleanup regression leaves Redis clients open on rate denial; one isolated test
-reproduced zero close calls. Latest task review records R5-1/R5-2 and the exact
-next steps. Preserve prior compiler/artifact fixes and submitted local Redis
-evidence. Reported readiness baseline failures are not the review blocker.
-No new claim, downstream promotion, implementation edit or main integration.
-
-## COMMERCE-011 Attempt 7 review — 2026-09-21
-
-COMMERCE-011 is **Ready, Attempt 7 retained**, claim cleared, not accepted.
-Reviewed implementation `0ac23ea` and report `164d859f`; exact remote heads and
-physical task isolation verified. R6-1 and separate input/output limits are retained.
-Two functional corrections remain: R7-1 preserves the entire nested documentation
-container and rejects incomplete representations; R7-2 prevents synchronous Redis
-counter-release failures from replacing the operation outcome. Independently ran
-17 submitted checks (passed) and three targeted reproductions (failed). See the
-latest Architect Review in the canonical COMMERCE-011 task for concrete evidence
-and correction scope. Live provider/deployment checks are not acceptance blockers.
-No dependent promotion, implementation edit or main integration; prior overlays
-remain historical and this note supersedes their COMMERCE-011 current-state wording.
+ARCH-020-BACKGROUND-002 is **Accepted / Complete, Attempt 4**, claim cleared.
+Reviewed implementation `8b2f983` and report `47345f39`; architect independently
+reran **114 passing focused tests**, correcting the reported combined total110.
+Evidence/provenance refresh, trusted referrals and cancellation/admission guards
+conform to the component contract. Latest task review distinguishes registry,
+local MCP transport and injected processor evidence from unrun integrated/live
+pairing. No further coverage-only correction is required for this acceptance.
+Gateway002, Commerce012 and terminal system tests retain other dependencies;
+no dependent is promoted or launched. Developer integration remains separate;
+ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
