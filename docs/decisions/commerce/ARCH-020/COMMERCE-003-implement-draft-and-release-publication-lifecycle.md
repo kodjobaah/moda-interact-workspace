@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
 executor: codex
 claimed_at: 2026-09-21T00:39:48Z
@@ -194,6 +194,177 @@ After scoped work and agent-owned checks, update this task's execution/report fi
 ## Implementation Notes
 
 Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; the actual repository must be provisioned before execution preparation.
+
+## Completion Report — Attempt 4
+
+### Status
+
+Ready for Review.
+
+### Files Changed
+
+Attempt 4 implementation commit `12df010` changes:
+
+- `scripts/rehearse-publication-postgres.sh`
+- `scripts/test-publication-rehearsal-shell.sh`
+- `scripts/fixtures/arch020-publication-rehearsal/setup.sql`
+- `scripts/fixtures/arch020-publication-rehearsal/replay.sql`
+- `scripts/fixtures/arch020-publication-rehearsal/partial-failure.sql`
+- `scripts/fixtures/arch020-publication-rehearsal/assert.sql`
+- deleted `scripts/fixtures/arch020-publication-rehearsal/cleanup.sql`
+- `docs/publication-service-contract.md`
+
+### Work Completed
+
+Attempt 4 implements the remaining A3-R1 rehearsal correction:
+
+- The developer command now requires explicit
+  `ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1` authorization and an already
+  available PostgreSQL image. It creates one uniquely named container with no
+  host port, volume or external database URL, provisions the accepted pinned
+  schema by applying every database migration, and removes only that container.
+  It performs no row-level cleanup of immutable publication history. A teardown
+  failure exits nonzero and names the retained container; the final PASS is
+  printed only after successful removal.
+- The injected partial-publication failure now verifies that both release and
+  member writes exist inside the transaction, then raises the unique SQLSTATE
+  `P0203` and marker `C003_INJECTED_PRE_AUDIT_FAILURE`. The shell accepts only
+  that exact pair and prints at most 40 diagnostic lines for any other failure.
+  Post-rollback SQL independently asserts zero release, member and audit rows.
+- `replay.sql` implements a narrow audit-backed storage operation. It derives
+  SHA-256 values from the exact canonical command strings, returns the original
+  bounded result for a matching actor/action/hash replay, and raises `P0204` for
+  altered actor, action or payload. The fixture asserts exactly one tool and
+  one audit row after all replay/conflict paths.
+- Concurrent psql workers are started as directly owned Docker client
+  processes. A failed worker terminates and reaps its peer before failure is
+  propagated; the EXIT path also reaps any remaining owned workers before
+  container teardown.
+- The deterministic mock-psql shell harness proves the expected injection
+  passes, an unrelated SQL error cannot print PASS, cleanup failure is visible,
+  and one-worker failure terminates/reaps its peer. It does not start Docker or
+  PostgreSQL.
+- Report mappings now use the actual lifecycle test names. The prior unsupported
+  corrupted-hash result claim is not repeated; the existing test is accurately
+  named `rejects malformed ranges and incompatible activation/rollback without
+  pointer or audit writes`.
+
+### Validation Results
+
+- `bash -n scripts/rehearse-publication-postgres.sh`: **passed**.
+- `bash -n scripts/test-publication-rehearsal-shell.sh`: **passed**.
+- `bash scripts/test-publication-rehearsal-shell.sh`: **passed** all four mock
+  outcomes (expected `P0203`, unrelated SQL failure, cleanup failure and worker
+  failure/peer teardown).
+- `npm test -- --run tests/commerce-lifecycle.test.ts`: **26/26 passed**.
+- `npm run lint`: **passed**.
+- `npm run typecheck`: **passed**.
+- `npm run build`: **passed**, including Prisma generation and the Next.js
+  production build.
+- `npm test`: **95/95 passed** across 14 files.
+- `git diff --check`: **passed**.
+
+Requirement-to-fixture matrix for A3-R1:
+
+- **Disposable isolation and immutable cleanup:** the expected shell-harness
+  path provisions only the mock invocation-owned container and reaches PASS
+  after removal. The cleanup-failure path returns nonzero, emits the exact
+  retained container identity and emits no final PASS.
+- **Identified partial failure:** `partial-failure.sql` checks one release and
+  one member immediately before `P0203`; `assert.sql` checks zero release/member/
+  audit rows after rollback. The unrelated-error harness path proves another
+  SQLSTATE/marker cannot be accepted or print PASS.
+- **Replay binding:** `replay.sql` executes initial and matching operations plus
+  altered actor/action/payload conflicts, checks the recovered result, and
+  asserts one business row and one audit after all paths.
+- **Worker teardown:** the mock first worker fails while its peer is active; the
+  harness asserts the peer's termination marker exists, its completion marker
+  does not, and the rehearsal exits nonzero without PASS.
+
+The developer-owned live PostgreSQL rehearsal remains explicitly unexecuted.
+Prerequisites are Docker and a locally available approved `postgres:16` image.
+Run:
+
+```bash
+docker image inspect postgres:16
+ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1 \
+  bash scripts/rehearse-publication-postgres.sh
+```
+
+The expected final line is the PASS covering disposable provisioning/teardown,
+replay, two-session revision allocation, absent-pointer CAS, rollback and the
+identified partial failure. Any setup, SQL, assertion, worker or teardown error
+must return nonzero and cannot print that final PASS.
+
+### Deviations
+
+None. The first launcher invocation found parent `origin/main` coordination-file
+conflicts. The dedicated parent branch was synchronized in merge `125f4702`,
+preserving the COMMERCE-003 review history while incorporating accepted
+BACKGROUND-002 state, before the successful prepared claim. No shared checkout
+or main branch was changed.
+
+### Assumptions
+
+The accepted database migration history at submodule commit
+`5abfd87f57038bae515aaa09ec7c8db62adcfb98` is the authoritative schema setup
+mechanism for this disposable rehearsal.
+
+### Unresolved Issues
+
+The live disposable PostgreSQL rehearsal remains pending developer execution as
+required. COMMERCE-013 production adapters and integration remain separate.
+
+### Architectural Concerns
+
+None newly reported.
+
+### Git / VCS
+
+Task branch: `task/ARCH-020-COMMERCE-003`.
+
+Physical worktree isolation:
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-003`
+- parent branch: `task/ARCH-020-COMMERCE-003`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-003`
+- implementation branch: `task/ARCH-020-COMMERCE-003`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization from the successful preparation packet:
+
+- parent remote task branch fast-forwarded: not-needed
+- parent `origin/main` incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation `origin/main` incorporated: already-current
+
+Recursive implementation submodules:
+
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- recorded `database` commit: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`
+
+Implementation repository:
+
+- repository: `moda-interact-commerce`
+- commit: `12df010`
+- remote branch: `origin/task/ARCH-020-COMMERCE-003`
+- pushed: yes
+
+Parent workspace:
+
+- task file: `docs/decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md`
+- commit: this submission commit
+- remote branch: `origin/task/ARCH-020-COMMERCE-003`
+- pushed: yes
+- submodule gitlink staged: no
+
+Merged to implementation main: no.
+
+Merged to workspace main: no.
 
 ## Completion Report — Attempt 3
 
