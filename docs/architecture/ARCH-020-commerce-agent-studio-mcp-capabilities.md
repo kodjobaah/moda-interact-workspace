@@ -1510,3 +1510,18 @@ remain Pending. The submitted database 2/2 evidence covers its actual scenarios,
 not the missing publication/pointer contention/post-write rollback cases.
 Infrastructure execution remains developer-owned; Docker authorization is not
 the blocker. Preserve the final manual system-test gate.
+
+### COMMERCE-013 Attempt 5 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 5; executor/claim null.** Reviewed implementation
+`3ab8679` and submitted report `8bdc05d0`. The task report's A5-R1–R4 require:
+correct schema-valid Shopify discount reads and established normalization semantics;
+bounded product-response streaming; explicit saved-tool draft preview support;
+and inspection using the backend's validated deployment environment.
+Initial no-grant resolution and prior adapter regressions pass. Focused integration:
+59/59; previous architect checks: 9/9; expanded facade harness: 8 passed, 2 failed
+(saved DRAFT rejection and TEST inspection querying DEVELOPMENT).
+Actual contention/post-write rollback scenarios now exist; submitted PostgreSQL
+evidence was reviewed, while disposable infrastructure/migration validation remains
+pending. No implementation change, main merge, acceptance or downstream promotion.
+COMMERCE-018/019 remain Pending; final manual system-test gate remains.

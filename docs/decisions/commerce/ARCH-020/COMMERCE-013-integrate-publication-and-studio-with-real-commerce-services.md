@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 125
 executor: null
 claimed_at: null
@@ -587,6 +587,50 @@ after this report edit; implementation branch is already pushed at
 `3ab867916f53a9665c16062b34cacf4656f3a529`.
 
 ## Architect Review
+
+### Attempt 5 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `3ab867916f53a9665c16062b34cacf4656f3a529` and report `8bdc05d09e6cb61c12dbe7d12be70f9126628bea`; remote heads verified and submitted worktrees clean. **Changes Requested; Ready, Attempt 5; executor/claim null.** Initial no-grant resolution now passes; preserve it, filtered granted tools, CAS/replay fixes and bound-definition loading. A4-R4's real same-row contention and post-write rollback scenarios now exist; the reported database evidence remains distinct from pending disposable infrastructure/migration validation. Four functional correction groups remain.
+
+#### A5-R1 — Validate the actual Admin query and map only established rule semantics
+
+File: `src/commerce/integration/backend.ts:SHOPIFY_DISCOUNT_RULE_QUERY` and discountProvider normalization.
+
+The new query selects title/status/startsAt/endsAt directly on the Discount union. Those fields must be selected within concrete member fragments. It also uses `QuantityRequirement` and `SubtotalRequirement`; Shopify's 2026-07 documentation names the minimum union members `DiscountMinimumQuantity` and `DiscountMinimumSubtotal`. The current query will be rejected, so synthesized fixture payloads alone cannot prove the production read works. Official references checked during review: [Discount union](https://shopify.dev/docs/api/admin-graphql/latest/unions/Discount) and [DiscountMinimumRequirement](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountMinimumRequirement) (both identify 2026-07 as latest).
+
+Validate the complete outgoing document against the pinned Admin schema, correct fragments/type names and response typename mapping, then exercise the production fetch assembly with schema-realistic synthetic responses. No live Shopify request is required.
+
+Normalization must also preserve the accepted fail-closed006 semantics: a returned null minimum is known absence, not `minimumKnown:false`; an omitted/unrecognized field remains unknown. Do not set `restrictionsKnown:true` and an empty restrictions list without reading the customer/context, usage and combination constraints needed to establish that claim. Do not silently discard returned codes, or variant targeting by reading only product nodes, and do not assert unsupported allocation/rounding facts as known. Map proven supported facts and explicitly mark unestablished/unsupported conditions. Demonstrate a supported fixed/percentage rule plus a restricted/unknown rule through the real adapter; do not weaken evaluator validation to make a synthetic result qualify. This completes the existing provider-semantics correction, not a request for another discount engine.
+
+#### A5-R2 — Apply bounded streaming to the product provider as well
+
+File: `backend.ts:createProductionPolicyRegistrations` product ShopifyProvider.request.
+
+The new boundedJson helper is used for discount reads, but product reads still call `await response.text()` before checking text.length. That buffers the whole response before enforcing a limit and counts characters instead of bytes. A4-R2 explicitly covered this existing provider path too.
+
+Use the bounded streaming reader (or the accepted equivalent) for both privileged provider paths. Enforce bytes while reading, preserve deadline/abort and bounded cleanup behavior, and parse/validate only the bounded body. Confirm an oversized product response is cancelled before full consumption and cannot reach product normalization. Retain correct Admin token headers and tokenless Storefront transport.
+
+#### A5-R3 — Permit explicitly selected saved tool drafts
+
+File: `backend.ts:createPrismaSavedSelection`, DRAFT allToolRevisionIds mapping.
+
+The new `revision.status !== 'PUBLISHED'` rejection applies to both capability-bound revisions and explicitly selected toolRevisionIds. That prevents previewing a saved unpublished tool draft, a core009/U14 authoring workflow. The architect reproduction selects a valid saved DRAFT tool by ID and gets INVALID_INPUT “selection contains an unpublished tool revision.”
+
+Distinguish capability-bound publication requirements from explicit draft selection. Keep published/ownership validation for bindings that require published tools, but allow the accepted saved DRAFT selection to return its validated current tool definition/hash. Preserve conflict detection, complete record resolution and isolation from the live registry; preview must not publish or promote the draft. Verify a valid explicit DRAFT tool succeeds, while an invalid bound ownership/status combination still fails. Do not change the selection contract to published-only.
+
+#### A5-R4 — Use the same validated deployment environment for inspection
+
+File: `backend.ts:createPrismaInspection`.
+
+Production composition uses readConfig().environment (DEPLOYMENT_ENVIRONMENT_NAME/NODE_ENV), but inspection independently reads COMMERCE_ENVIRONMENT or defaults to DEVELOPMENT. Therefore a TEST/STAGING/PRODUCTION backend can inspect the wrong active release or falsely show no active release. This is not equivalent to the production resolver it is supposed to explain.
+
+Pass the immutable validated environment into inspection from the backend composition, including injected factory configuration. Remove the independent environment variable/default. Verify runtime authorization and inspection query the same release pointer under TEST with no COMMERCE_ENVIRONMENT override. Preserve current capability IDs, exclusions and read-only authorization behavior. The facade must not require consumers to know a second environment convention.
+
+#### Architect verification and disposition
+
+Reran `npm run test:arch020-backend-integration`: **59/59 passed**. Prior no-grant production factory fixture: **1/1 passed**; earlier adapter/facade regressions: **8/8 passed**. Expanded architect harness `/tmp/c013-a5-review/review.test.ts`: **8 passed, 2 failed**, reproducing the explicit saved-DRAFT rejection and TEST inspection querying DEVELOPMENT. These exercise the actual backend facade with a recording Prisma port; they are not live database evidence. Submitted database 2/2 evidence and its improved mutation/replay/contention/rollback source reviewed; no database/Docker action was performed by this review. Submitted typecheck/lint/build/diff evidence reviewed without redundant reruns. No implementation/main/gitlink mutation, acceptance or downstream promotion. COMMERCE-018/019 remain Pending. Keep developer-owned disposable infrastructure/migration validation and the final manual system-test gate.
+
+
 
 ### Attempt 4 — Changes Requested (2026-09-21)
 
