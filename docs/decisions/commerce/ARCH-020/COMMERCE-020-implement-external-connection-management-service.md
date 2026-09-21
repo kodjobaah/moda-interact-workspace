@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-21T21:48:07Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-DATABASE-003
@@ -119,41 +119,54 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Implementation complete; submitted for Architect Review.
 
 ### Files Changed
 
-None; task definition only.
+- `src/commerce/connections/command-kernel.ts`
+- `src/commerce/connections/lifecycle/index.ts`
+- `src/commerce/connections/lifecycle/types.ts`
+- `tests/connection-lifecycle.test.ts`
+- `package.json` (`test:arch020-external-connection-lifecycle`)
 
 ### Work Completed
 
-None.
+- Implemented the C21 command transaction kernel with active-staff/SUPER_ADMIN authorization before replay lookup, canonical keyed request digests, same-operation replay, conflicting replay rejection, atomic mutation/audit handling, and unique-race reconciliation.
+- Implemented metadata-only connection list/get/create/updateMetadata/createRevision/setEnabled lifecycle operations with strict bounded DTOs, HTTPS origin and auth-header validation, immutable revision numbering, and atomic edit-version CAS.
+- Added CL01/CL02/CL03 focused acceptance coverage for the positive lifecycle, replay/conflict/stale-CAS/rollback behavior, and origin/auth rejection.
 
 ### Validation Results
 
-No implementation validation performed.
+- `npm run test:arch020-external-connection-lifecycle`: passed, 1 file and 5 tests.
+- `npx eslint src/commerce/connections/command-kernel.ts src/commerce/connections/lifecycle/index.ts src/commerce/connections/lifecycle/types.ts tests/connection-lifecycle.test.ts`: passed.
+- `npm run typecheck`: task-owned connection files have no diagnostics; the repository command remains red on pre-existing unrelated baseline errors in `lib/auth/development-platform-admin.ts`, `lib/server/connections.ts`, and `src/commerce/integration/**`.
+- `git diff --check`: passed.
+- Full build and PostgreSQL/container checks were not run; no live credentials or external HTTP calls were used.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+No design deviations. Implementation remains within the task-owned connection lifecycle/kernel paths, with the required focused test script and test file added for acceptance evidence.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+C21 read-only scope; credential encryption/storage, OAuth, network execution, UI, publication, preview, and final factories remain out of scope.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+Repository-wide typecheck/build debt remains outside the task-owned files. PostgreSQL/container validation remains developer-owned and unrun.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+No architectural concern identified in the implemented scope. Architect review should confirm the accepted C21 field/error contracts and the baseline typecheck debt noted above.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-020. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-020`.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-020`.
+Logical agent: `moda_commerce`; canonical executor: `copilot`; attempt: 1.
+Dependencies were accepted before execution: DATABASE-003, SHARED-002, COMMERCE-002.
+Database submodule evidence: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+Implementation branch: `task/ARCH-020-COMMERCE-020`; commit/push: `5229b033a7dbef73b35571784996b539707cf03a`.
 
 ## Architect Review
 
