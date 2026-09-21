@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-21T16:29:53Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -130,6 +130,74 @@ Attempt 2 validation superseded that historical baseline observation: `npm run t
 Runtime code is not wired into the future typed adapter or production factory; those are explicitly owned by COMMERCE-026/024.
 
 ## Completion Report
+
+### Attempt 3
+
+Attempt 3 corrections are complete in the dedicated implementation worktree
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-029`
+on `task/ARCH-020-COMMERCE-029`, committed and pushed as `4bc52ad62d7833b9dcc5b13890370ab3c01d0e59`
+(`fix(commerce): close packaged runtime review gaps`). The parent report is on
+the mirrored `task/ARCH-020-COMMERCE-029` branch. Both worktrees were physically
+isolated and clean after publication; no service gitlink, database schema,
+architecture/index file or Architect Review text was modified.
+
+#### Correction checklist
+
+- **A2-R1 implemented:** Captured own-property names, symbols where supported,
+  and descriptors before serialization. Non-enumerable properties, symbols,
+  accessors, forbidden keys and enumerable or non-enumerable `toJSON` hooks are
+  rejected through the existing bounded `INVALID_OUTPUT` path. Ordinary object
+  output remains permitted. The regression is committed in
+  `tests/code-runtime-proof.test.ts`.
+- **A2-R2 implemented with observed-result evidence:** Added a host-side worker
+  execution-start event immediately before the real QuickJS evaluation, without
+  exposing a guest host capability. The focused fixture uses the real 2,000 ms
+  supervisor window, verifies the built-in JSON serialization path started,
+  records its actual `INVALID_OUTPUT` result from the existing 48 KiB output
+  bound, and verifies a following normal transform succeeds. It does not claim
+  a supervisor timeout where the configured output bound terminates the run
+  first; this is the observed bounded result requested by the review fallback.
+- **Packaging lifecycle correction:** Updated the packaged smoke consumer to
+  ignore the nonterminal start event and consume the terminal result, preserving
+  deterministic copied-artifact validation.
+
+#### Validation results
+
+- `npm run test:arch020-code-runtime-proof` -> PASS, 1 file, 10 tests; covers
+  exact transform, compile cancellation/deadline, infinite-loop recovery,
+  forbidden capabilities, output validation, non-enumerable `toJSON`, worker
+  cancellation/cleanup, capacity retention, concurrent isolation/fifth-run
+  throttling, built-in start observation/result, and post-failure recovery.
+- `npm run code-runtime:manifest` -> PASS; runtime `quickjs-sync.v1`,
+  `quickjs-emscripten@0.31.0`, WASM SHA-256
+  `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, and
+  configured WASM maximum `67108864` bytes.
+- `npm run code-runtime:package` -> PASS; copied `worker.mjs`, Emscripten
+  loader, WASM and `manifest.json` into ignored `build/code-runtime/`.
+- `npm run code-runtime:smoke` -> PASS; copied-artifact transform output was
+  `{"availability":"available"}` and the loaded WASM ceiling probe reported
+  `67108864` bytes, with no source-tree fallback or network download.
+- `npm run lint -- --quiet` -> PASS.
+- `npm run typecheck` -> PASS; no diagnostics.
+- `npm run build` -> PASS; package/smoke, Prisma client generation, Next webpack
+  production compilation, TypeScript phase, static generation and trace
+  finalization completed.
+- `git diff --check` -> PASS.
+
+#### Scope, dependency and remaining validation
+
+The root `package-lock.json` pins the runtime dependencies and the recursive
+database submodule remains at `5abfd87f57038bae515aaa09ec7c8db62adcfb98` on
+`heads/main`; its state was not changed. All executable scenarios use synthetic
+inputs and actual QuickJS execution. No live provider, credential, DNS,
+WhatsApp, PostgreSQL, container, deployment or assembled cross-service flow was
+run or claimed. Those remain developer/infrastructure validation outside this
+bounded task. Runtime wiring into the typed adapter and production factory
+remains COMMERCE-026/024 scope; Shared package publication remains SHARED-002
+scope. COMMERCE-026 remains pending until architect acceptance and no downstream
+task was launched.
+
+Completion Report status: **Ready for Review**.
 
 Attempt 2 corrections are complete in the dedicated implementation worktree
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-029`
