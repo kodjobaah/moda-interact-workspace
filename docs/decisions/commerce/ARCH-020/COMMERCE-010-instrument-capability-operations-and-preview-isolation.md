@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-21T12:20:45Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-004
@@ -158,18 +158,18 @@ Correction checklist applied for this rework attempt:
 
 ### Work Completed
 
-Added `src/commerce/observability.ts`, integrated semantic events into discovery, MCP trace propagation, definition execution, publication, discount evaluation, and preview, and added `docs/observability-commerce.md` plus `tests/observability.test.ts`. Attempt 3 changed MCP terminal classification/attempt accounting, render-stage classification, policy/evaluator context propagation, and the local regression fixtures.
+Added `src/commerce/observability.ts`, integrated semantic events into discovery, MCP trace propagation, definition execution, publication, discount evaluation, and preview, and added `docs/observability-commerce.md` plus `tests/observability.test.ts`. Attempt 3 changed MCP terminal classification/attempt accounting, render-stage classification, policy/evaluator context propagation, and the local regression fixtures. Attempt 4 preserves a completed typed `DENIED` tool result through the valid JSON-RPC error envelope by tracking callback completion explicitly, and adds a service-level regression for response error state and terminal event cardinality.
 
 ### Validation Results
 
 Agent-executed:
 
-- Focused MCP/executor/evaluator/publication/observability suites: PASS, 70/70; publication and observability sink-isolation fixtures: PASS, 30/30.
+- Focused MCP/executor/evaluator/publication/observability suites: PASS, 72/72; `tests/mcp-service.test.ts`: PASS, 14/14, including the A3-R1 denial regression.
 - `npm run typecheck`: PASS.
 - `npm run lint`: PASS.
 - `npm run build`: PASS; Prisma client generated from accepted database gitlink `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 - `git diff --check`: PASS.
-- Full `npm test`: 345/347 passed. Unrelated baseline failures: `tests/discount-reader.test.ts` deadline timing expectation and `tests/discovery-limits.test.ts` Redis-backed rolling-window timeout after 30s with `REDIS_URL` configured.
+- Full `npm test`: 345/348 passed. Unrelated baseline failures: two `tests/readiness-docker.test.ts` descendant signal-handler timing assertions and `tests/discovery-limits.test.ts` Redis-backed rolling-window timeout after 30s with `REDIS_URL` configured. No changed-file test failed.
 
 Requirement-to-fixture matrix:
 
@@ -180,6 +180,7 @@ Requirement-to-fixture matrix:
 | Trace and purpose continuity | `tests/query-execution.test.ts`, `tests/preview-service.test.ts` | incoming trace reaches provider boundary; preview retains `purpose=preview` and environment | PASS |
 | Sink isolation and redaction | real MCP tool and publication lifecycle with throwing logger plus sensitive-marker fixture | business result/commit behavior unchanged and sensitive content absent | PASS locally; hosted arrival pending |
 | Evidence refresh | `docs/observability-commerce.md` ownership handoff | evaluator `UNKNOWN` is not claimed as C18 refresh numerator/denominator; Background-002 owns exact-call refresh | Handoff recorded; external signal pending |
+| Completed tool denial | `tests/mcp-service.test.ts` typed `DENIED` executor result | JSON-RPC tool result has `isError: true`; one terminal MCP request event remains `DENIED` and non-operational | PASS, 1 regression test |
 
 Developer-owned hosted evidence required: confirm one live trace/log correlation and one preview event arrive in the configured hosted sink, with no sensitive marker; preview must be excluded from production alerts. No live/shared environment was contacted by this agent.
 
@@ -203,7 +204,7 @@ None newly reported.
 
 Expected execution branch: `task/ARCH-020-COMMERCE-010`.
 
-- Implementation commit: `a51eb69` (`fix(commerce): complete telemetry rework corrections`), pushed to `origin/task/ARCH-020-COMMERCE-010`.
+- Implementation commit: `e8b43e4604780754ba64b0653c7d6e029d58e3c3` (`fix(commerce): preserve denied MCP tool outcomes`), pushed to `origin/task/ARCH-020-COMMERCE-010`.
 - Recursive database submodule: accepted SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed.
 - No main branch integration, merge, parent service gitlink update, or hosted validation was performed.
 
