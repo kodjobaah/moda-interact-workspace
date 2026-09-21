@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 160
 executor: copilot
 claimed_at: 2026-09-21T00:22:03Z
@@ -156,7 +156,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review. Attempt 3 corrections implemented; awaiting architect review.
+Ready for Review. Attempt 4 corrections implemented; awaiting architect review.
 
 ### Files Changed
 
@@ -216,11 +216,65 @@ Use the parent architecture and actual accepted dependency revisions. The publis
 
 ### Unresolved Issues
 
-Live Commerce producer/consumer pairing, live provider discount semantics, and deployment validation remain developer-owned SYSTEM-TEST/Gateway work. The live validation command is not run by this agent; developer must execute the terminal SYSTEM-TEST-001/Gateway pairing command against the approved environment and provide its result before architect acceptance.
+Live Commerce producer/consumer pairing, live provider discount semantics, and deployment validation remain developer-owned SYSTEM-TEST/Gateway work. The live validation command is not run by this agent; developer must execute the terminal SYSTEM-TEST-001/Gateway pairing command separately against the approved environment. These checks do not block deterministic BACKGROUND-002 acceptance.
 
 ### Architectural Concerns
 
 No new architectural concern. The injected extractor is the explicit boundary for the Commerce-owned policy adapter; Background does not implement Commerce ranking, GraphQL execution, discount mutation, or a duplicate catalogue.
+
+### Attempt 4 Completion Addendum
+
+#### Correction checklist
+
+- **Canonical fixture:** loaded `docs/architecture/ARCH-020-evidence-contract-fixtures.json` from the prepared parent task worktree, froze its clock, asserted the exact `find_basket_matches` call and `{search: "accessory", limit: 1}` arguments, and recomputed the seed digest.
+- **EC01/EC02/EC03/EC12:** added two distinct recommendation alternatives with distinct evidence/proposal IDs, reversed refresh order, one replay, and independent matching. Existing strict root, renamed evaluator, mapped input, and no-separate-evaluator coverage remains.
+- **EC04:** table-tested independent basket fingerprint, rule fingerprint, savings, resulting total, currency, outcome, and proposal changes. Every case recomputes its digest, passes Shared extraction, has budget, replays once, and refers.
+- **EC05/EC06/EC07/EC10:** added independent missing, empty, duplicate, and truncated matches; frozen expiry/revocation timing; schema-valid `UNKNOWN` null-money and unresolved-condition cases; and separate digest/provenance, identity, budget, wrapper, and rendered-text coverage.
+- **EC08/EC09:** revoked-producer coverage uses the frozen seed clock and asserts one replay. Resolved DENIED, NOT_FOUND, UNAVAILABLE, THROTTLED, INVALID_INPUT, and INCOMPATIBLE_VERSION errors assert one replay/no retry. The real MCP host covers HTTP401/403, malformed JSON, and thrown transport failures with one `tools/call`/no retry; the accelerated deadline test remains.
+- **EC11/delivery:** processor fixtures assert one reservation/send/completion for an ordinary referral and zero send/language writes plus existing cleanup for cancellation, new inbound, and lease loss.
+
+#### Files changed
+
+- `tests/unit/commerce/evidence.test.ts`
+- `tests/integration/commerce/host.test.ts`
+- `tests/unit/services/conversation-turn-processor.service.test.ts`
+- This task Completion Report only; Architect Review text was not changed.
+
+#### Validation results
+
+- `npm exec vitest run tests/unit/commerce/evidence.test.ts`: passed, 1 file / 34 tests.
+- `npm exec vitest run tests/integration/commerce/host.test.ts`: passed, 1 file / 40 tests.
+- `npm exec vitest run tests/unit/services/conversation-turn-processor.service.test.ts`: passed, 1 file / 40 tests.
+- Combined focused Vitest command across those three files: passed, 3 files / 110 tests.
+- `npm run build`: passed, including `prisma:generate` and TypeScript compilation.
+- `npm run prisma:validate`: passed; schema valid.
+- `npx tsc --noEmit`: passed.
+- `git diff --check`: passed.
+
+#### Requirement-to-fixture matrix
+
+| Requirement | Fixture/test evidence | Expected effects and measured result |
+| --- | --- | --- |
+| EC01 | Canonical load plus strict root/evaluator extraction | Trusted evidence replays once; rendered text has no authority; passed |
+| EC02 | Exact canonical input mapping and public/nested counterfeit extraction | Only original call is replayed; counterfeit data yields zero IDs; passed |
+| EC03 | Distinct alternatives, reversed refresh order | Two IDs match independently; one replay; passed |
+| EC04 | Seven-field independent-change table | One replay per change, referral, no positive claim; passed |
+| EC05 | Missing/empty/duplicate/truncated match table and malformed final | One bounded failure path; malformed final remains rejected; passed |
+| EC06 | Frozen expiry, future/invalid digest, schema-valid incomplete evidence | Expired/incomplete evidence does not replay or authorize; passed |
+| EC07 | Invalid digest, immutable provenance, wrapper/rendered-text counterfeit | Zero trusted authorization; conflicting ID invalidated; passed |
+| EC08 | Revoked producer and resolved structured error table | Exactly one replay, no retry/replacement grant; passed |
+| EC09 | Real host HTTP401/403/malformed/transport plus resolved errors/deadline | One call/no retry; pre-final boundary failures are `UNAVAILABLE`; refresh failures refer; passed |
+| EC10 | Missing provenance, identity mismatch, expired/unknown IDs, budget, duplicate references | Zero replay on failed preconditions; duplicate references share one replay; passed |
+| EC11 | Host stale/cancel guards and processor suppression table | Zero send/language writes; existing reservation cleanup only; passed |
+| EC12 | Recommendation replay without separate evaluator and verified referral rendering | Exact provenance replay; one localized referral; no fabricated contact/extra send; passed |
+
+#### Worktree, dependency, and ownership evidence
+
+Prepared-packet synchronization and recursive submodule initialization were reused as launcher evidence for Attempt 4. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, same mirrored branch; launcher parent claim: `24caf66e3039cb9ec94c553d60d0a5f0e1ea5d78`. Accepted dependency pins remain database submodule `5abfd87f57038bae515aaa09ec7c8db62adcfb98` and `@modainteract/moda-interact-shared@0.13.1`. No schema, migration, submodule gitlink, architecture/index file, main branch, or Architect Review text was changed.
+
+#### Developer-owned live validation
+
+No live Commerce, Shopify, WhatsApp, deployment, paid-model, or provider call was run by this agent. Component acceptance is deterministic and complete for BACKGROUND-002. Live producer/consumer pairing, deployment smoke, and terminal SYSTEM-TEST/Gateway validation remain explicitly developer-owned terminal checks and are separate from this task's deterministic acceptance.
 
 ### Git / VCS
 
