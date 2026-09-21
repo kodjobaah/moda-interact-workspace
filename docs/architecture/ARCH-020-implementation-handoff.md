@@ -743,3 +743,64 @@ C20 replaces combined013 with backend013, Studio018 and preview019. Both new
 tasks are Pending, unclaimed; they may execute concurrently after013 and their
 listed components complete. Exact mappings, file ownership and prior I01–I09
 coverage are recorded. No active component implementation is changed or launched.
+
+## COMMERCE-017 Attempt 4 architect review — 2026-09-21
+
+COMMERCE-017 is **Changes Requested / Ready, Attempt 4 retained**, executor and
+claimed_at null; not accepted. Reviewed implementation `8b902a6` and report
+`c44ebd71`, matching remote task heads. Independent UI/client tests passed 17/17
+and all 8 previous reproductions passed. Four current functional reproductions
+failed: Start after Reset is blocked, changing a handoff source still dispatches
+the original tool, Conversation Back chooses an unrelated tool, and a valid
+nullable integer null cannot execute. Task A4-R1–R3 provide exact correction
+steps and expected effects. Preserve the verified previous fixes and the existing
+authenticated source-read boundary. Browser identity/live-provider evidence remains
+pending separately. No dependent promotion, new claim, implementation change,
+main integration or gitlink update. This supersedes earlier COMMERCE-017 current-state
+wording only; other task decisions remain unchanged. Architecture is not yet
+Implemented; COMMERCE-012 remains the final implementation checkpoint.
+
+## COMMERCE-017 Attempt 5 architect review — 2026-09-21
+
+COMMERCE-017 is **Changes Requested / Ready, Attempt 5 retained**, executor and
+claimed_at null; not accepted. Reviewed implementation `bdb753c` and report
+`482a0964`, matching remote task heads. Independent UI/client tests passed 20/20
+and all 12 prior architect reproductions passed. Two remaining source-flow tests
+failed: an unsaved handoff cannot start with a populated saved-release list,
+and the tool source can change while its original POST is pending. A5-R1 records
+exact corrections, guards and expected payload/call effects, completing A4-R2.
+Preserve the verified prior fixes. Authenticated browser identity and live-provider
+validation remain pending separately. No dependent promotion, new claim,
+implementation change, main integration or gitlink update. This supersedes older
+COMMERCE-017 current-state wording only; other task decisions remain unchanged.
+Architecture is not yet Implemented; COMMERCE-012 remains the final checkpoint.
+
+
+## COMMERCE-017 Attempt 6 architect review — 2026-09-21
+
+Changes Requested; **Ready**, Attempt6 retained, executor/claimed_at null; not accepted.
+Implementation `5aea0c4` and report `2d30a0aa` match remote heads. Independent22 UI/client
+checks and both Attempt5 regressions pass. One remaining source-lock case fails:
+uncertain conversation creation from tool A allows visible source B while replay
+retains A. Latest task A6-R1 supplies the exact shared lock predicate, event guard
+and regression expectations. Prior fixes are retained; browser identity remains
+an explicit separate validation prerequisite. No dependent promotion, new claim,
+implementation edit, main merge or gitlink change. Reclaim after this review
+overlay is published; older decisions are historical.
+
+## COMMERCE-017 Attempt 7 accepted — 2026-09-21
+
+COMMERCE-017 is **Accepted / Complete, Attempt 7 retained**, executor and claimed_at
+null. Reviewed implementation `c6da2f2` and report `e6c16617` against remote heads.
+A6-R1 is resolved: both tool selectors consult the live synchronous source lock,
+pending/uncertain creation retains its original source and payload, and same-ID
+reconciliation/reset follow the existing lifecycle. Independent 23 UI/client tests,
+the exact outstanding reproduction and all 14 earlier architect reproductions pass;
+diff checks pass. Submitted 60 preview tests/typecheck/lint/build remain reported
+evidence. This accepts the fixture-validated U14 component; authenticated browser
+validation awaits local Studio identity and COMMERCE-019 owns real U14 integration.
+COMMERCE-019 still awaits COMMERCE-013; other deployment/final/system gates remain.
+No dependent promotion, new claim, implementation change, main integration or
+gitlink update. This supersedes earlier COMMERCE-017 current-state wording while preserving
+review history and other task decisions. Architecture remains not yet Implemented;
+COMMERCE-012 is the final implementation checkpoint.
