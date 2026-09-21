@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 125
 executor: null
 claimed_at: null
@@ -802,6 +802,41 @@ updated. Lifecycle fields are set for review: `status: review`,
 `executor: null`, `claimed_at: null`, `attempt: 7`.
 
 ## Architect Review
+
+### Attempt 8 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `13805d22c6850d43537031a48c438a6b1f1a0a7c` and parent report `de6b2829a1b86b553fc5c67561325e3d8790348a`; submitted dedicated worktrees clean and remote heads verified. **Changes Requested; Ready, Attempt 8 retained; executor/claimed_at null.**
+
+A7-R1 is resolved: the exact production document passes the pinned Admin schema, customer/segment enumeration is removed and the production getOptions HTTP path now has permitted/restricted evidence. Existing saved-selection, inspection and binding regressions pass. Two calculation-profile correctness issues remain. Preserve the query and binding corrections; do not broaden unrelated test coverage.
+
+#### A8-R1 — Derive minimum eligibility from the eligible target set
+
+Location: `src/commerce/integration/backend.ts:normalizeProductionDiscount`, minimumValue's two `basis: 'BASKET'` assignments.
+
+Both quantity and subtotal minima are always labelled BASKET, including discounts restricted to a product or collection. The implementation's own cited [Shopify amount-off guide](https://help.shopify.com/en/manual/discounts/discount-types/percentage-fixed-amount) says targeted product/collection discounts count only those eligible items toward the minimum. The accepted evaluator deliberately trusts basis and chooses whole-basket versus eligible-line totals accordingly. The provider mapping can therefore falsely qualify an offer.
+
+Concrete correction: when the proven provider shape is a targeted product/collection discount, map the minimum to ELIGIBLE_LINES (and apply the same rule to the supported variant-target representation where justified); retain BASKET only for shapes whose documented rules establish it. Resolve the relevant discount class/purchase-type distinctions from provider facts or mark the case unknown/unsupported. Do not default unestablished minimum semantics to BASKET or change the evaluator to compensate for a false producer assertion.
+
+Focused example: a product-targeted discount requires USD100 of eligible purchases; the basket contains USD50 of that product and USD100 of an unrelated product. It must not qualify. The adjacent case with USD100 of the eligible product can pass that minimum. Do the analogous quantity mapping using the same normalization path, without building an exhaustive matrix. This is a functional flaw revealed while checking the newly cited source, not a new product requirement.
+
+#### A8-R2 — Separate provider proof from a fixture of the selected algorithm
+
+Location: `normalizeProductionDiscount` semantics assignment, `docs/discount-support-matrix.md` new evidence paragraph, and the A7-R2 integration test.
+
+The [DiscountAmount API reference](https://shopify.dev/docs/api/admin-graphql/latest/objects/DiscountAmount) establishes the per-item versus across-entitled-items choice. The [amount-off guide](https://help.shopify.com/en/manual/discounts/discount-types/percentage-fixed-amount) supports allocation/minimum facts, but does not establish a general HALF_UP/LINE settlement rule. Its USD50 allocation example is not evidence for how two USD0.03 lines at 50% settle. The test's expected USD0.04 is derived from the same HALF_UP/LINE constants under review: it confirms our evaluator follows those constants, not that Shopify follows them. Do not describe that as provider proof.
+
+The HTTP part of the new test calls the actual getOptions registration; the monetary assertion then constructs a separate reader, normalizer and evaluator with injected raw/product/basket fixtures. It does not demonstrate the production discounts.evaluate registration end to end. Correct the report's evidence boundary accordingly.
+
+Required disposition: preserve the externally established facts and retain unknown/unsupported behavior for any monetary profile whose rounding/allocation boundaries are not established. Do not replace one unsupported constant with another. If existing authoritative documentation or already-recorded provider evidence establishes the narrow profile, cite the exact relevant passage/observation and use it as an independent expected outcome for a discriminating production-registration fixture. If it does not, record the precise unresolved profile as an architecture question and leave that shape non-qualifying; explicitly list the remaining unsupported production behavior instead of marking A7-R2 complete. No live/paid Shopify operation is requested by this review. A synthetic fixture alone cannot close this provider-evidence question.
+
+#### Verification and infrastructure disposition
+
+Reran focused backend integration: **61/61 passed**. Existing architect harness `/tmp/c013-a6-review/review.test.ts`: **12/12 passed**, including exported production-schema validation, explicit draft, bound-publication enforcement and configured inspection. Reviewed the new source citations directly and traced minimum basis through the accepted evaluator. The minimum example above is source-derived reasoning, not a newly claimed live-provider or database test.
+
+Submitted typecheck/lint/build/static database evidence reviewed. PostgreSQL evidence remains one passing scenario and one 60-second timeout; this attempt does not establish mutation/replay/CAS/rollback completion. No storage or rehearsal source changed, so the timeout is not presented as a demonstrated regression or the reason for Changes Requested. Its cause remains unproven without the isolated-target investigation. Migration, disposable SQL, Redis/container and final manual system validation remain developer-owned; no such infrastructure operation was performed here.
+
+Ready for corrections; Attempt 8 retained and claims cleared. No acceptance, implementation edits, main merge, gitlink update or downstream promotion. COMMERCE-018/019 remain Pending. Historical reviews remain below.
+
 
 ### Attempt 7 — Changes Requested (2026-09-21)
 

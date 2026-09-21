@@ -481,3 +481,16 @@ failed rehearsal; no new storage regression is established, and developer-owned
 isolated infrastructure validation remains pending. No acceptance, implementation
 change, main merge, gitlink update or downstream promotion. COMMERCE-018/019
 remain Pending; final manual system-test gate remains.
+
+### COMMERCE-013 Attempt 8 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 8 retained; executor/claim null.** Reviewed
+implementation `13805d2` and report `de6b2829`. A7-R1 production Shopify schema
+correction passes. A8-R1 corrects whole-basket minimum assumptions for targeted
+discounts; A8-R2 separates provider-supported calculation semantics from a fixture
+of assumed rounding constants. Exact correction examples and evidence boundaries
+are in the task Architect Review. Focused integration: 61/61; architect checks:
+12/12. PostgreSQL remains one passing scenario and one timeout, not completed
+rollback evidence or a demonstrated new regression. Developer-owned infrastructure
+validation remains pending. No acceptance, implementation change, main merge,
+gitlink update or downstream promotion; COMMERCE-018/019 remain Pending.
