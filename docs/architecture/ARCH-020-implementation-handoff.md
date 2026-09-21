@@ -908,60 +908,26 @@ No automatic task launch, implementation/main change or service gitlink update.
 Architecture remains in progress; latest task YAML/review supersedes historical
 Changes Requested summaries.
 
+## C21 extension execution sequence — 2026-09-21
 
-### COMMERCE-013 Attempt 3 architect review — 2026-09-21
+Read [C21](ARCH-020-external-api-tools.md) before extension work.
 
-**Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `1dd5211`
-and report `1961d586`. A3-R1–R5 specify real provider rule facts/scopes, eligible
-resolve manifests and shared lease/limits, durable cross-transaction CAS time,
-complete saved-selection/inspection results, and real adapter mutation rehearsals.
-Focused tests: 59 passed; six prior reproductions pass; two remaining contract
-checks fail (repeated CAS time and empty draft selection). The reported Prisma
-1/1 test is a no-op smoke check, not race/rollback evidence. No acceptance or
-downstream promotion; COMMERCE-018/019 stay Pending. Disposable infrastructure
-execution remains developer-owned; lack of Docker authorization is not the blocker.
+```text
+DATABASE-003 (Ready)                 SHARED-002 (Ready; publish once)
+        \                            /
+         ->020 connection service   +->021 HTTP executor (ports)
+                                    +->025 visual processor
+                                    +->026 code sandbox
+                                    +->022 Connections UI
+                                    +->023 visual authoring UI
+                                    +->027 code editor UI
+020/021/022/023/025/026/027 +013/018/019 ->024 real integration
+GATEWAY-001 +020/021/026 ->GATEWAY-003 runtime configuration
+024 +GATEWAY-003 +BACKGROUND-002 ->SYSTEM-TEST-002 (manual)
+new implementation prerequisites ->012 caching (external tools bypassed)
+012 +SYSTEM-TEST-002 +existing dependencies ->SYSTEM-TEST-001 (manual)
+```
 
-
-### COMMERCE-013 Attempt 4 architect review — 2026-09-21
-
-**Changes Requested; Ready, Attempt 4; executor/claim null.** Reviewed `d42f8e9`
-and report `b71c7874`. A4-R1–R4 specify canonical initial resolution/tool filtering,
-actual provider rule facts and bounded reads, real inspection/saved-binding
-contracts, and genuine contentious adapter race/rollback assertions. Focused
-suite: 59 passed; all eight prior reproductions pass; new no-grant production
-resolve check fails. No acceptance or downstream promotion; COMMERCE-018/019
-remain Pending. The submitted database 2/2 evidence covers its actual scenarios,
-not the missing publication/pointer contention/post-write rollback cases.
-Infrastructure execution remains developer-owned; Docker authorization is not
-the blocker. Preserve the final manual system-test gate.
-
-### COMMERCE-013 Attempt 5 architect review — 2026-09-21
-
-**Changes Requested; Ready, Attempt 5; executor/claim null.** Reviewed implementation
-`3ab8679` and submitted report `8bdc05d0`. The task report's A5-R1–R4 require:
-correct schema-valid Shopify discount reads and established normalization semantics;
-bounded product-response streaming; explicit saved-tool draft preview support;
-and inspection using the backend's validated deployment environment.
-Initial no-grant resolution and prior adapter regressions pass. Focused integration:
-59/59; previous architect checks: 9/9; expanded facade harness: 8 passed, 2 failed
-(saved DRAFT rejection and TEST inspection querying DEVELOPMENT).
-Actual contention/post-write rollback scenarios now exist; submitted PostgreSQL
-evidence was reviewed, while disposable infrastructure/migration validation remains
-pending. No implementation change, main merge, acceptance or downstream promotion.
-COMMERCE-018/019 remain Pending; final manual system-test gate remains.
-
-### COMMERCE-013 Attempt 6 architect review — 2026-09-21
-
-**Changes Requested; Ready, Attempt 6 retained; executor/claim null.** Reviewed
-implementation `812e97e` and report `36a9a603`. A5-R2 bounded product streaming
-and A5-R4 configured inspection environment are resolved; standalone draft
-preview and the pinned Admin schema check pass. A6-R1 requires the supported
-production discount path (all rules still have unknown restrictions/null
-semantics); A6-R2 requires independent publication validation for every
-capability binding, including revisions also explicitly selected as drafts.
-Exact changes and focused acceptance examples are in the task's Architect Review.
-Focused integration: 59/59 passed. Architect harness: 11 passed, 1 failed,
-reproducing the unpublished-binding bypass. Submitted PostgreSQL 2/2 evidence
-reviewed; developer-owned infrastructure/migration validation remains pending.
-No acceptance, implementation change, main merge, gitlink update or downstream
-promotion. COMMERCE-018/019 remain Pending; final manual system-test gate remains.
+The new tasks are unclaimed; no implementation/deployment started. Existing active
+base scopes and claims stay intact. Database and Shared definitions can begin
+independently; backend, processing and UI components use C21 ports independently.

@@ -24,6 +24,7 @@ enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
   - ARCH-020-GATEWAY-001
+  - ARCH-020-COMMERCE-024
 created: 2026-09-21
 updated: 2026-09-21
 ---
@@ -102,6 +103,7 @@ Readiness never launches a task; use the normal dedicated mirrored worktrees.
 - ARCH-020-COMMERCE-012
 - ARCH-020-SYSTEM-TEST-001
 - ARCH-020-GATEWAY-001
+- ARCH-020-COMMERCE-024
 
 ## Acceptance Criteria
 

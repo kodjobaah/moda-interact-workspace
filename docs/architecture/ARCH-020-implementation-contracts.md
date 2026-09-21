@@ -1950,3 +1950,12 @@ and demonstrates its success path plus rejection paths. Build/typecheck alone is
 not integration evidence. No arbitrary additional screenshot count.013 acceptance
 unblocks both consumers; acceptance of one consumer must not block the other's
 execution. Gateway/terminal gates require all three completed integrations.
+
+## C21. External API tools and response processing
+
+The binding [external API extension](ARCH-020-external-api-tools.md) adds approved
+read-only HTTPS connections, encrypted platform/per-shop credentials, external
+execution definitions, visual filtering and sandboxed JavaScript over JSON/text.
+C21 defines exact schemas, routes U15/U16 and U06/U14 changes, validation, budgets,
+publication sample evidence and task ownership. Existing MCP/Background wire
+contracts and grant pinning remain unchanged.012 bypasses external-result caching.

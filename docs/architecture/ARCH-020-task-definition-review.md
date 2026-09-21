@@ -209,3 +209,21 @@ testing require both. Claims and attempts are unchanged. Both new tasks resolve
 through the launcher in read-only route mode as Pending, attempt 0 and unclaimed.
 Local links and scoped whitespace checks passed. Former I01–I09 checks are mapped
 to B/S/P owners in C20. These are task-definition checks, not application tests.
+
+## External API and generic response processing — 2026-09-21
+
+Created12 narrowly owned extension tasks under C21, preserving existing base task
+implementation scopes/claims. C21 specifies connection tables, immutable endpoint
+revisions, encrypted credential scope, strict external execution/processing schema,
+HTTP controls, visual operations, isolated JavaScript, raw UTF-8 formats, U15/U16 and
+U06/U14 traversal, sample/output-schema validation and real-call failure behavior.
+Database003 and Shared002 can start independently; UI and backend stay separate;024
+owns actual assembly.012 explicitly bypasses external caching and waits for extension
+implementation; overall system test waits for the separate manual external gate.
+
+Validation: all39 ARCH-020 tasks form a reciprocal acyclic graph; metadata/body
+dependency lists match. All12 new task IDs resolve through launcher read-only routing;
+DATABASE-003/SHARED-002 are Ready with Complete prerequisites, others Pending.
+Existing status/attempt/claim fields are unchanged. Required task sections, local
+links and scoped whitespace pass. No task claimed and no application/security test
+execution or deployed sandbox claimed by this documentation amendment.

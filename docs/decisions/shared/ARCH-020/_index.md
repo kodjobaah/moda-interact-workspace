@@ -9,3 +9,4 @@ Individual task YAML is authoritative. Attempt 2 is architect-accepted Complete 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ARCH-020-SHARED-001](SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | complete (Accepted, Attempt 2) | ARCH-016-SHARED-001 |
+| [ARCH-020-SHARED-002](SHARED-002-publish-external-http-and-response-processing-contracts.md) | Publish external HTTP and response-processing contracts | ready | ARCH-020-SHARED-001 |
