@@ -890,3 +890,20 @@ passed 71 tests; prior architect reproductions passed 3/3, while the new denial
 precedence check failed. Other A2 corrections are resolved. No acceptance or
 downstream promotion. External C18 refresh signal/hosted arrival remain explicit
 integration/developer handoffs; baseline failures are not review blockers.
+
+
+## COMMERCE-010 Attempt 4 architect acceptance — 2026-09-21
+
+**Accepted; Complete**, Attempt4 retained, executor/claimed_at null. Reviewed
+implementation `e8b43e4` and report `09e678e` against remote task heads. The completed
+DENIED tool outcome survives its valid JSON-RPC envelope; protocol classification
+and one terminal request event remain intact. Independent focused72/72 and prior
+architect regressions4/4 pass; diff check passes. Hosted arrival, preview exclusion
+from production alerts and Background-owned refresh-signal integration remain
+explicit external validation, not claimed complete.
+
+No dependent promotion: GATEWAY-002 still awaits GATEWAY-001; COMMERCE-012 and
+SYSTEM-TEST-001 still have incomplete infrastructure/composition dependencies.
+No automatic task launch, implementation/main change or service gitlink update.
+Architecture remains in progress; latest task YAML/review supersedes historical
+Changes Requested summaries.

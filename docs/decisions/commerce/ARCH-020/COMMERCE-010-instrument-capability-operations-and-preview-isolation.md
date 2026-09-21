@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 140
 executor: null
 claimed_at: null
@@ -210,6 +210,22 @@ Expected execution branch: `task/ARCH-020-COMMERCE-010`.
 
 
 ## Architect Review
+
+### Attempt 4 — Accepted (2026-09-21)
+
+Reviewer: moda_architect. **Accepted; Complete, Attempt 4 retained; executor/claimed_at null.** Verified implementation `e8b43e4604780754ba64b0653c7d6e029d58e3c3` and report `09e678ea8a60bcbda230da3de411c4539f4ad684` against remote task heads. Both isolated worktrees were clean; database pin remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+
+A3-R1 is resolved: MCP request handling tracks actual tool callback completion separately from an unset outcome and removes the overloaded DENIED placeholder. A successful JSON-RPC envelope preserves a completed typed DENIED result, while protocol failures still receive protocol classification. Response behavior, request cardinality, provider attempts and trace context are preserved. The new service regression verifies HTTP200 with isError:true and exactly one DENIED terminal event; expected denial remains outside operational-failure counts. Earlier evaluator/render/batch corrections remain passing; no further runtime correction is requested.
+
+Independent validation:
+
+- `npm test -- tests/mcp-service.test.ts tests/definition-execution.test.ts tests/discount-evaluator.test.ts tests/commerce-lifecycle.test.ts tests/observability.test.ts`: **72/72 passed**.
+- `/tmp/c010-a3-review/review.test.ts`, executed with its existing Vitest config against the current implementation: **4/4 passed**, including the formerly failing completed-denial reproduction.
+- `git diff --check`: passed; implementation/report remote heads verified. Submitted typecheck/lint/build passes reviewed. Full345/348 remains submitted evidence, with three unrelated failures (two readiness timing assertions and one Redis discovery timeout); no redundant full-suite rerun.
+
+Hosted arrival of live/preview telemetry, preview exclusion from production alerts and the Background-002-owned C18 refresh signal remain explicit developer/integration checks. This acceptance covers Commerce-owned implementation and local fixtures, not hosted delivery or completion of the whole architecture. The report's older “two full-suite failures” wording is superseded by the current three-failure enumeration above.
+
+Dependency reconciliation: COMMERCE-012 and SYSTEM-TEST-001 still await GATEWAY-001/002 and COMMERCE-013/018/019 (SYSTEM-TEST also awaits012). GATEWAY-002 still awaits GATEWAY-001. None becomes newly Ready from this acceptance. Preserve the developer-controlled system-test invocation gate. No dependent task launched, implementation branch changed, main merge/push or parent service gitlink update.
 
 ### Attempt 3 — Changes Requested (2026-09-21)
 

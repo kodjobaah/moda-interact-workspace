@@ -17,7 +17,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-007](COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | complete | ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-015 |
 | [ARCH-020-COMMERCE-008](COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Implement isolated preview lifecycle and execution service | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001, ARCH-020-COMMERCE-001 |
-| [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | ready | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
+| [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | complete | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-012](COMMERCE-012-add-frequency-based-tool-result-caching.md) | Frequency-based tool-result caching; final implementation feature, readiness checkpoint outstanding | pending | All other ARCH-020 implementation tasks |
 | [ARCH-020-COMMERCE-013](COMMERCE-013-integrate-publication-and-studio-with-real-commerce-services.md) | Integrate Commerce backend runtime and publication services | ready | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-014, ARCH-020-COMMERCE-015, ARCH-020-COMMERCE-016 |
@@ -444,3 +444,20 @@ passed 71 tests; prior architect reproductions passed 3/3, while the new denial
 precedence check failed. Other A2 corrections are resolved. No acceptance or
 downstream promotion. External C18 refresh signal/hosted arrival remain explicit
 integration/developer handoffs; baseline failures are not review blockers.
+
+
+## COMMERCE-010 Attempt 4 architect acceptance — 2026-09-21
+
+**Accepted; Complete**, Attempt4 retained, executor/claimed_at null. Reviewed
+implementation `e8b43e4` and report `09e678e` against remote task heads. The completed
+DENIED tool outcome survives its valid JSON-RPC envelope; protocol classification
+and one terminal request event remain intact. Independent focused72/72 and prior
+architect regressions4/4 pass; diff check passes. Hosted arrival, preview exclusion
+from production alerts and Background-owned refresh-signal integration remain
+explicit external validation, not claimed complete.
+
+No dependent promotion: GATEWAY-002 still awaits GATEWAY-001; COMMERCE-012 and
+SYSTEM-TEST-001 still have incomplete infrastructure/composition dependencies.
+No automatic task launch, implementation/main change or service gitlink update.
+Architecture remains in progress; latest task YAML/review supersedes historical
+Changes Requested summaries.
