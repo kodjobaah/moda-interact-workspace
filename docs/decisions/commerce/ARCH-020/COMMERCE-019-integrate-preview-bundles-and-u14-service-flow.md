@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 145
 executor: null
 claimed_at: null
@@ -205,29 +205,128 @@ integration was performed.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 — Changes Requested — 2026-09-21
 
-Pending.
+Reviewer: moda_architect. **Changes Requested; Ready, Attempt 1 retained;
+executor/claimed_at null. Not accepted.** Reviewed the exact submitted
+`moda-interact-workspace-ARCH-020-COMMERCE-019.zip`, parent report commit
+`5e89f15c647559daee4af6fc95fd0b4840d5c8a0`, C9/C20 and the task acceptance
+criteria. The submitted implementation identifies `197d5c6` as its implementation
+head. The GitHub connector could not resolve that implementation commit directly,
+so source review is grounded in the exact submitted implementation snapshot; the
+parent report commit is independently verified.
 
-### Review Notes
+The implementation materially connects the accepted PreviewService to Redis, the
+COMMERCE-013 saved-selection facade, authored prompts and the accepted definition
+executor. The reported 37 focused tests, 4 executable Redis tests, typecheck, lint,
+build and diff check are useful supporting evidence. This review does not require
+an arbitrary larger test count. The blockers below are functional integration
+failures in the submitted source.
 
-No implementation submitted. This task is a reviewable definition.
+#### A1-R1 — P1 — Make frozen tool definitions Redis/replica/restart durable
 
-### Reviewed Files
+Files: `src/commerce/integration/preview/adapters.ts`, the private preview snapshot
+shape/store plumbing needed by C20, `lib/preview/runtime.ts` only if composition
+changes, and focused integration tests.
 
-None for implementation review.
+The submitted adapter keeps the selected `PreviewSelection` and exact tool
+definitions in module-global process-local Maps (`selections` and `definitions`).
+The durable Redis conversation stores the manifest/grant/prompts/history, but not
+the exact definitions used to execute later turns. `execute(..., bundle)` therefore
+looks up `definitions.get(bundleKey(...))`; after a process restart or on another
+Commerce replica the Redis conversation still exists while that Map is empty, so
+the later tool call fails `NOT_FOUND` instead of executing the frozen definition.
+This contradicts C20's explicit no-global-mutable-registry rule and requirement that
+restart/cross-replica fixtures retain the exact frozen content.
 
-### Validation Reviewed
+There is also an in-process overwrite case: `bundleKey` hashes only the manifest. A
+draft edit can change execution/response-template content while keeping the same
+revision identity and descriptor-visible fields. Starting a new conversation then
+writes the new definition under the same Map key; an older conversation can execute
+the newer definition. That violates P04's "existing conversation still executes its
+frozen definition" requirement.
 
-None for implementation review.
+Replace the process-local Maps as correctness authority with a bounded frozen
+snapshot owned by the preview conversation. Persist the exact selected definitions
+with the Redis conversation or persist an opaque Redis snapshot handle that resolves
+to the exact immutable snapshot. Take prompts/definitions/response definition from
+the authorized creation-time selection, not by re-reading mutable draft content on
+a later turn. Preserve the public C9.1 payloads. Enforce C20's snapshot bounds: at
+most 32 definitions, each definition <=65,536 bytes, total authored prompts <=64,000
+characters and total serialized snapshot <=3 MiB; fail closed rather than dropping
+content. No new database table or browser field is required.
 
-### Architecture Conformance
+Acceptance reproduction: start a tool-using conversation on service instance A,
+execute a later turn on instance B sharing only Redis/backend state, and repeat after
+a fresh service construction; both must execute the original definition. Also edit
+only execution/response-template content so the descriptor/manifest identity remains
+otherwise unchanged, start a second conversation, and prove conversation A still
+executes its original definition while conversation B sees the edited definition.
 
-Awaiting implementation.
+#### A1-R2 — P1 — Make the real saved-tool test and tool-entry paths executable
 
-### Follow-up
+Files: `src/commerce/integration/preview/adapters.ts` and focused real-facade
+integration coverage; do not weaken COMMERCE-013 authorization.
 
-Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+`PreviewToolExecutionPort.load()` currently calls the accepted saved facade with
+`capabilityRevisionIds: ['preview-capability']`. COMMERCE-013 validates that every
+requested capability revision exists, so the production U14 tool-test path is rejected
+unless a database row happens to use that fabricated ID. Use the accepted DRAFT
+shape for an authorized tool-only read (`capabilityRevisionIds: []`, exact
+`toolRevisionIds: [toolRevisionId]`) or another already-accepted facade path; do not
+invent a capability identity. The fixture executor must continue to use the accepted
+interpreter and synthetic query boundary only.
+
+Also reconcile U14's accepted tool-entry Start flow. The accepted screen sends a
+DRAFT selection with zero capability revisions and one tool revision when entered
+from a saved tool. The current bundle loader produces zero capabilities and therefore
+cannot satisfy `CommerceManifestSchema`; Start fails before a preview conversation is
+created. P02 explicitly includes tool entry. Support the accepted tool-entry behavior
+without fabricating a generic authored prompt or live grant. If the accepted
+COMMERCE-013 facade genuinely lacks the authored BASE data needed to form a valid
+synthetic conversation bundle, record that exact interface gap for architect
+resolution instead of silently claiming P02 complete. Tool-test execution itself must
+work regardless.
+
+Acceptance reproduction should exercise the production adapter against a
+COMMERCE-013-compatible saved facade, not a stub that accepts arbitrary IDs: a real
+saved tool test succeeds with zero live Shopify/WhatsApp/provider calls, missing or
+foreign revisions fail before execution, and the U14 tool-entry Start path either
+creates a valid frozen conversation or returns an explicitly documented architectural
+gap for resolution.
+
+#### A1-R3 — P2 — Reconcile MODEL mode with the accepted preview configuration
+
+Files: `lib/preview/runtime.ts`, preview integration adapter/config wiring and focused
+composition tests.
+
+The production runtime checks `PREVIEW_MODEL_URL`, which is not an ARCH-020 preview
+configuration name, and when present installs `createUnavailableModel()`, whose every
+call throws `UNAVAILABLE`. Under the accepted C10 configuration
+`COMMERCE_PREVIEW_ENABLED=true` with `COMMERCE_PREVIEW_MODEL` and
+`COMMERCE_PREVIEW_API_KEY`, `MODEL` therefore remains unavailable; adding the
+unapproved variable still cannot produce a model turn. That is not the task's stated
+"explicit MODEL mode uses separate model config" integration.
+
+Use the accepted preview-enable/model/API-key configuration and a separately injected
+preview model transport. `FIXTURE` must remain the default and require no paid
+credentials. Disabled/missing preview/model configuration must fail closed before
+model dispatch, and MODEL must never fall back to Background/production credentials
+or enable live tools. No paid/live provider call is required for review: prove this
+with an injected configured model transport and call counts. If no accepted provider
+transport contract exists in the current source, report that exact architectural gap
+instead of inventing `PREVIEW_MODEL_URL` or claiming MODEL integration complete.
+
+#### Resubmission
+
+Preserve the working Redis quota/replay/cancellation logic, authored prompt loading,
+fixture query boundary and accepted Shared runner/interpreter composition. This is not
+a request for broader refactoring or exhaustive tests. Add only targeted regressions
+that demonstrate the corrected functional paths above, rerun this task's focused
+integration/Redis checks plus repository typecheck/lint/build, update the Completion
+Report with the actual Attempt 2 preparation/commits, set `status: review`, clear the
+claim and stop. No dependent task is promoted or launched until COMMERCE-019 is
+architect-accepted Complete.
 
 
 ### Readiness reconciliation after COMMERCE-013 Attempt 9 acceptance — 2026-09-21

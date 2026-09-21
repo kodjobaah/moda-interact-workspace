@@ -1128,3 +1128,18 @@ and real supervisor `DEADLINE` termination/recovery close the Attempt 3 function
 gaps; prior runtime isolation, packaging and fixed-memory proof remains accepted.
 COMMERCE-026 stays Pending because SHARED-002 is Ready, not Complete. No dependent
 promotion or automatic launch; ARCH-020 remains In Progress.
+
+## COMMERCE-019 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** The submitted
+preview composition is not accepted yet. Exact saved prompts/Redis lifecycle and
+fixture interpreter wiring are retained, but frozen tool definitions currently live
+in process-local Maps rather than the Redis-owned conversation snapshot, so a restart/
+second replica loses them and a later draft can overwrite an older conversation's
+execution definition. Production tool tests also request a fabricated
+`preview-capability` revision that the accepted COMMERCE-013 saved facade rejects.
+The accepted U14 tool-entry Start path currently produces a zero-capability manifest,
+and MODEL composition uses an unapproved `PREVIEW_MODEL_URL` plus an adapter that is
+always unavailable instead of the accepted separate preview configuration. Exact
+A1-R1–R3 corrections are in the task review. No dependent promotion, automatic launch,
+main integration or gitlink update.

@@ -591,3 +591,18 @@ No dependent is promoted by this acceptance alone: COMMERCE-026 still awaits
 SHARED-002, which remains Ready rather than Complete. GATEWAY-003, COMMERCE-012
 and system validation retain their remaining dependency gates. No automatic task
 launch, implementation/main merge or service gitlink update.
+
+## COMMERCE-019 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** The submitted
+preview composition is not accepted yet. Exact saved prompts/Redis lifecycle and
+fixture interpreter wiring are retained, but frozen tool definitions currently live
+in process-local Maps rather than the Redis-owned conversation snapshot, so a restart/
+second replica loses them and a later draft can overwrite an older conversation's
+execution definition. Production tool tests also request a fabricated
+`preview-capability` revision that the accepted COMMERCE-013 saved facade rejects.
+The accepted U14 tool-entry Start path currently produces a zero-capability manifest,
+and MODEL composition uses an unapproved `PREVIEW_MODEL_URL` plus an adapter that is
+always unavailable instead of the accepted separate preview configuration. Exact
+A1-R1–R3 corrections are in the task review. No dependent promotion, automatic launch,
+main integration or gitlink update.
