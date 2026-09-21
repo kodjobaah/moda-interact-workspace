@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 90
-executor: copilot
-claimed_at: 2026-09-21T02:53:10Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -63,10 +63,10 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Consume011 actual pinned compiler/schema exports; execute the fixed published query and mapped variables only against the verified canonical shop host.
-- [ ] Enforce C14 query/depth/list/time/response bounds and API-version checks. Reject partial GraphQL errors; no privileged fallback or installation-token lookup.
-- [ ] Preserve the query fact wrapper including source/schema/version/observedAt/values; selected values can never replace it with a policy-evidence output.
-- [ ] Expose QueryExecutionPort to014 with injected bounded provider transport, clock and signal. Do not implement basket/search policy helpers or MCP routes.
+- [x] Consume011 actual pinned compiler/schema exports; execute the fixed published query and mapped variables only against the verified canonical shop host.
+- [x] Enforce C14 query/depth/list/time/response bounds and API-version checks. Reject partial GraphQL errors; no privileged fallback or installation-token lookup.
+- [x] Preserve the query fact wrapper including source/schema/version/observedAt/values; selected values can never replace it with a policy-evidence output.
+- [x] Expose QueryExecutionPort to014 with injected bounded provider transport, clock and signal. Do not implement basket/search policy helpers or MCP routes.
 
 ## Interfaces / Contracts
 
@@ -90,10 +90,10 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] Q01: two arbitrary authored queries execute without registering business names; mapped variables/results match the accepted compiler.
-- [ ] Q02: wrong host, query/version, malformed variables/projection, partial errors and oversized response fail closed; zero credentials looked up on every path.
-- [ ] Q03: timeout/throttle/cancel/count limits are honored; no redirect to unverified host or mutation is emitted.
-- [ ] Q04: nested counterfeit evidence remains ordinary query values; no policy-shaped root output.
+- [x] Q01: two arbitrary authored queries execute without registering business names; mapped variables/results match the accepted compiler.
+- [x] Q02: wrong host, query/version, malformed variables/projection, partial errors and oversized response fail closed; zero credentials looked up on every path.
+- [x] Q03: timeout/throttle/cancel/count limits are honored; no redirect to unverified host or mutation is emitted.
+- [x] Q04: nested counterfeit evidence remains ordinary query values; no policy-shaped root output.
 
 ## Validation
 
@@ -128,11 +128,10 @@ Ready for Review.
 
 ### Work Completed
 
-- Added the Commerce-owned `QueryExecutionPort` and injected bounded tokenless Storefront transport.
-- Consumes the accepted `SHOPIFY_STOREFRONT_QUERY` definition/compiler, fixed `2026-07` API version, verified `*.myshopify.com` host, validated mapped variables, and schema-proved result path.
-- Sends one request with a 10-second bound, shared request-budget reservation and cancellation signal; no retry, redirect, credential lookup or privileged fallback.
-- Returns the unchanged C14 fact wrapper `{source, apiVersion, schemaHash, observedAt, values}` inside the Shared structured result union. Partial GraphQL errors, null projections, oversized responses and provider failures fail closed.
-- Added deterministic injected fixtures for success, invalid host/variables/path, partial errors, null facts, oversized output, throttling, cancellation, expired deadline and exhausted request budget.
+- R1 implemented: runtime values use the pinned Storefront schema and GraphQL coercion, with strict declared-name, required/default, nested input, scalar/list and serialized-variable bounds before budget reservation or I/O.
+- R2 implemented: the injected transport is a typed POST/HTTP envelope with fixed destination, redirect/final-URL, status/429, pinned-version-header, incremental 256 KiB decoded-body, GraphQL-envelope and compiler-derived output-shape checks. No credentials or retry path exists.
+- R3 implemented: provider request and body consumption race the caller/internal deadline; ignored transports settle as retryable `DEADLINE`, late results are discarded, abort errors are normalized, and cleanup cancels readers/timers/listeners.
+- Q01 uses distinct ProductDetails and aliased ProductAlias queries; Q02 covers invalid host, numeric String, missing/extra variables, invalid projection, malformed response and overflow; Q03 covers throttle, cancellation, deadline, budget, redirect and version failures; Q04 preserves ordinary nested values inside the C14 fact wrapper.
 
 ### Validation Results
 
@@ -140,16 +139,13 @@ Agent validation:
 
 | Case | Fixture | Command | Result |
 |---|---|---|---|
-| Q01 valid authored query and fact wrapper | C14 wrapper success fixture | `npm test -- --run tests/query-execution.test.ts` | PASS, 4/4 |
-| Q02 wrong host, malformed variables/path, partial errors, oversized response | invalid-input and partial/oversized fixtures | focused command above | PASS; invalid cases made zero provider calls |
-| Q03 deadline, cancellation, request budget and provider errors | cancellation/budget/throttled fixtures | focused command above | PASS; no retry or late result |
-| Q04 ordinary query facts, not policy evidence | structured wrapper assertion | focused command above | PASS; source/schema/version/observation preserved |
+| Focused Q01-Q04 | injected query, malformed input, HTTP envelope, stream and deadline fixtures | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 7/7; pre-I/O rejects made zero provider calls and response rejects made only their single injected request |
 | lint | query module and tests | `npm run lint` | PASS |
 | typecheck | repository after Prisma generation | `npm run typecheck` | PASS |
 | build | production build and Prisma generation | `npm run build` | PASS |
 | diff hygiene | scoped files | `git diff --check` | PASS |
 
-Full `npm test`: 187 tests, 182 passed and 5 failed outside this task: two Prisma development-identity failures (`Prisma.sql is not a function`), two readiness child-process timing failures, and the Redis-backed discovery admission timeout. No failure involved the Commerce-005 files; focused tests remained 4/4 passing.
+Full `npm test`: 26 files, 214 passed and 2 failed (216 total). Both are unrelated baseline failures: `tests/discovery-limits.test.ts` timed out in the Redis-backed rolling-window admission test, and `tests/readiness-docker.test.ts` failed the child signal-handler timing assertion. No failure involved the changed Commerce-005 files.
 
 Developer validation required: execute against an approved development Shopify shop to confirm real tokenless `2026-07` provider behavior, redirect rejection, cancellation/timeout and GraphQL error handling. Fixture tests do not prove live provider behavior. Run environment/database/container readiness checks when developer-owned dependencies are available; this task performs no migrations.
 
@@ -172,7 +168,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`. Recursive database submodule remained at recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Implementation and parent commits/pushes are recorded at submission. No main branch, parent service gitlink, architecture/index file or Architect Review text was modified; no enabled task was started.
+Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005` on `task/ARCH-020-COMMERCE-005`, clean after implementation commit `2761e6b` pushed to `origin/task/ARCH-020-COMMERCE-005`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`; starting claim was `762b3678`, now cleared with status `review`. Recursive database submodule remained at recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, architecture/index file or Architect Review text was modified; no enabled task was started.
 
 ## Architect Review
 
