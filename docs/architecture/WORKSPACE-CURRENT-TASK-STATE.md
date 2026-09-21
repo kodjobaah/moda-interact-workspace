@@ -1141,3 +1141,17 @@ The exact correction contract is recorded in COMMERCE-018 Architect Review. Subm
 focused tests (3), typecheck, lint, build and diff hygiene pass, but do not establish
 these flows. No exhaustive retest is requested and no downstream task is promoted or
 launched.
+
+### COMMERCE-018 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Attempt 2
+closes the Origin-boundary source check, strict capability-publish payload, discovery
+path handoff and response-example validation, and preserves no-active-release and
+descriptor de-duplication. Acceptance is still blocked because mutation release
+rereads use the environment-agnostic `release(state,id)` helper (returning the wrong
+pointer CAS/status), U13 still substitutes capability IDs for missing feature IDs,
+the named suite remains mocked-adapter evidence rather than C20's required
+real-application-service integration path, and the C20 producer-SHA/source/export
+mapping table is still absent. Exact A2-R1..R4 corrections are recorded in the task's
+Architect Review. Submitted 8 focused tests plus typecheck/lint/build/diff hygiene are
+retained as passing evidence. No dependent task is promoted or launched.

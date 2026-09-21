@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 140
 executor: null
 claimed_at: null
@@ -370,3 +370,144 @@ Preserve native-basic monetary discount profiles as UNSUPPORTED while provider
 rounding semantics are unproven; do not estimate savings or implement missing
 provider semantics in this composition task. PostgreSQL adapter timeout diagnosis
 and live infrastructure evidence remain separately developer-owned.
+
+
+### Attempt 2 Review — Changes Requested — 2026-09-21
+
+**Current decision: Changes Requested; Ready, Attempt 2 retained; executor/claimed_at
+null.** Reviewed the submitted implementation commit `4fb9f91` and parent report
+commit `07d1ac14` from the exact supplied snapshot. The archive does not contain Git
+metadata, so remote-head equality is recorded as submitted evidence rather than
+independently asserted here. No next attempt is claimed, no downstream task is
+promoted, and no main/gitlink integration is performed.
+
+Attempt 2 correctly preserves the production facade and closes A1-R1, A1-R2, A1-R3
+and A1-R5 at source level: Server Action mutations execute the canonical Origin check
+before service construction, capability publication sends the strict lifecycle
+payload, documentation search/document paths round-trip without `/docs/docs`, and
+response examples are validated against the submitted contract while retaining the
+content hash. The U13 no-active-release state and descriptor de-duplication are also
+present. The following original C20/A1 requirements remain incomplete.
+
+#### A2-R1 — release command rereads are still environment-agnostic
+
+`services.ts` correctly calls `models(state, env())` for shell/list/get release reads,
+but the shared `release(state,id)` helper still calls `models(state)` without the
+configured environment. `createRelease`, `activateRelease`, `rollbackRelease` and
+U13's active-release mapping all use that helper. Their returned `ReleaseSummary` can
+therefore carry `activePointerVersion: 0` and can classify a release ACTIVE because a
+different environment points to it. This is the same A1-R4 contract: command rereads
+must use the same configured-environment semantics as list/get reads.
+
+Correction contract:
+
+- make every release summary used by Studio command rereads and U13 resolve through
+  the configured environment; do not fall back to all pointers;
+- after create, return the current environment pointer editVersion; after activate or
+  rollback, reread the updated pointer and return its new editVersion/status;
+- preserve PUBLISHED/ACTIVE/SUPERSEDED semantics from the configured environment only;
+- add the exact non-zero-pointer create -> activate -> previous-release -> rollback
+  regression requested in A1-R4, including a second environment pointer so cross-env
+  activity cannot make a release ACTIVE.
+
+#### A2-R2 — U13 still synthesizes feature identity for non-feature capabilities
+
+The eligibility mapper currently uses `capability?.featureId ?? value.capabilityId`.
+For BASE/RECOVERY_POLICY members (or a missing publication capability), that invents a
+feature ID from the capability ID. A1-R6 required *feature-bound* candidate
+capabilities to use their actual publication feature identity and prohibited inferred
+identity.
+
+Correction contract:
+
+- include positive/negative feature eligibility rows only where the authoritative
+  publication capability has a real non-null `featureId`;
+- never substitute `capabilityId`, key text or parsed identifiers into `featureId`;
+- keep BASE/RECOVERY_POLICY candidates available to descriptor construction where
+  appropriate without misrepresenting them as feature eligibility rows;
+- retain exact exclusion reasons and descriptor de-duplication by tool revision;
+- add a focused fixture containing BASE plus FEATURE candidates and an excluded FEATURE
+  capability, asserting only the real feature IDs appear and U13 remains read-only.
+
+#### A2-R3 — task-owned C20 production-integration evidence is still missing
+
+The named `tests/studio-integration.test.ts` suite injects a mocked
+`CommerceBackend`, mocks `requireStudioAdmin`, and mocks the database client. Those
+regressions are useful adapter tests, but C20 and this task's Validation require the
+application services under integration to remain real, with only external
+provider/model transports substituted. The Completion Report explicitly defers the
+full acceptance flows to Architect/System Test; S01-S06 and C20 do not permit this
+task's own integration evidence to be transferred to terminal system validation.
+
+Correction contract:
+
+- retain the eight focused adapter regressions; they need not be broadened arbitrarily;
+- add/run the bounded C20 real-adapter integration path for this task using the
+  accepted production publication/discovery/inspection composition and isolated test
+  data; substitute only external provider/model transports;
+- prove the task-owned success/rejection paths needed by S01/S03/S04/S05, including
+  same-origin versus missing/mismatched-origin mutation with zero command invocation,
+  SUPER_ADMIN/ADMIN authorization, one-write replay/CAS behavior, authoring through
+  activation/rollback, discovery outage draft preservation and U13 read-only behavior;
+- record actual PostgreSQL/Redis/container evidence only for infrastructure genuinely
+  exercised by that path. A required check that is not run is not a pass;
+- if the accepted COMMERCE-013 source lacks the C20 shared isolated seed/helper needed
+  by 018, report that exact producer/export gap to `moda_architect` rather than
+  inventing a competing backend helper or marking the real-adapter requirement passed.
+
+#### A2-R4 — C20 producer mapping document is still incomplete
+
+`docs/commerce-studio-integration.md` contains useful narrative mappings but does not
+record the required accepted producer SHAs or the C20 table of source file/export,
+input/output mapping, destination adapter, bounded error mapping and test ID. A1
+explicitly required this reconciliation.
+
+Correction contract: update that existing document from the actual accepted dependency
+source consumed by the prepared worktree. Record exact accepted revisions for
+COMMERCE-002/008/011/013 and map the concrete exports used by 018. Do not guess a SHA
+or copy stale conversational values; use the prepared source/task records.
+
+No UI redesign, new Shared/database contract, live Shopify call, paid model call or
+COMMERCE-019 work is requested. Preserve the passing typecheck/lint/build and the
+source corrections already made. Before the next Review submission, reconcile the
+implementing-agent-owned Work Items/Acceptance Criteria/Validation checkboxes and
+Completion Report to the evidence actually executed; do not mark deferred S01-S06
+requirements complete.
+
+### Reviewed Files — Attempt 2
+
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/contracts.ts`
+- `src/commerce/integration/backend.ts`
+- `lib/auth/origin.ts` / `lib/auth/errors.ts`
+- `tests/studio-integration.test.ts`
+- `tests/backend-integration.test.ts` / `tests/backend-postgres-rehearsal.test.ts`
+- `docs/commerce-studio-integration.md`
+- C20 in `docs/architecture/ARCH-020-implementation-contracts.md`
+
+### Validation Reviewed — Attempt 2
+
+Submitted evidence: 8 focused Studio integration tests passed; typecheck, quiet lint,
+production build and `git diff --check` passed. The source review confirms the four
+Attempt-1 corrections listed above, but the current tests do not exercise the
+environment-aware mutation reread, non-feature U13 identity case, Server Action
+Origin side effects, or the required real-application-service C20 path. No exhaustive
+full-suite rerun is requested.
+
+### Architecture Conformance — Attempt 2
+
+Repository/file ownership and the COMMERCE-013 facade boundary remain correct; no MCP
+or preview ownership drift was found. A2-R1/A2-R2 prevent A1-R4/A1-R6 and S01/S05
+from being complete, while A2-R3/A2-R4 leave the explicit C20 integration-evidence
+and mapping contract incomplete.
+
+### Follow-up — Attempt 2
+
+Return this same task to its configured `/moda-task` correction path. Preserve
+`attempt: 2`; the next authorized claim increments once to Attempt 3.
+COMMERCE-012, COMMERCE-024, GATEWAY-001 and terminal system validation remain gated.
+Do not start or promote a dependent task from this review.
