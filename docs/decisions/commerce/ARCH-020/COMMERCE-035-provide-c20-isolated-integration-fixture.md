@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 130
-executor: copilot
-claimed_at: 2026-09-21T23:41:12Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -20,7 +20,7 @@ enables:
   - ARCH-020-COMMERCE-018
   - ARCH-020-COMMERCE-019
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Provide the C20 isolated integration fixture boundary
@@ -551,31 +551,56 @@ constraint to `moda_architect`.
 
 ### Status
 
-Not Started
+Blocked: implementation is present, but the required disposable PostgreSQL and
+Redis targets were not supplied in this execution environment.
 
 ### Files Changed
 
-None
+- `src/commerce/integration/backend/c20-test-fixture.ts`
+- `scripts/reset-c20-integration-fixture.mjs`
+- `tests/c20-integration-fixture.test.ts`
+- `package.json`
+- `docs/commerce-backend-integration.md`
 
 ### Work Completed
 
-None
+Implemented the guarded C20 fixture API, lifecycle-backed publication graph,
+prefix-scoped Redis seed/reset boundary, focused real-client proof, package
+scripts, and consumer documentation. No production route or startup registration
+was added.
 
 ### Validation Results
 
-None
+- `npm ci` passed.
+- `npm run prisma:generate` passed.
+- `npm run typecheck` passed.
+- `npm run lint -- --quiet` passed.
+- `npm run build` passed.
+- `node --check scripts/reset-c20-integration-fixture.mjs` passed.
+- `git diff --check` passed.
+- `npm run c20-fixture:reset` failed closed with `C20_FIXTURE_UNSAFE_ENVIRONMENT:
+  C20 test targets are required` because no disposable URLs were supplied.
+- `npm run test:arch020-c20-integration-fixture` failed before tests with
+  `C20_FIXTURE_UNSAFE_ENVIRONMENT: disposable PostgreSQL, Redis, and namespace
+  variables are required` for the same reason.
 
 ### Deviations
 
-None
+F02, F03, F05, and F06 remain unverified because the required real PostgreSQL and
+Redis targets were unavailable. The task is intentionally blocked rather than
+claiming integration evidence.
 
 ### Assumptions
 
-None
+The developer/test harness will provide a fresh PostgreSQL database named
+`arch020_c20_<unique_name>`, a Redis URL, the matching C20 namespace, and
+`DEPLOYMENT_ENVIRONMENT_NAME=test` for the remaining validation.
 
 ### Unresolved Issues
 
-None
+Run the reset twice and execute the focused proof against supplied disposable
+targets, then review persisted graph, immutability, grant, and Redis sentinel
+evidence.
 
 ### Architectural Concerns
 
