@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 135
 executor: copilot
 claimed_at: 2026-09-21T04:18:17Z
@@ -289,6 +289,49 @@ The correction checklist is implemented and revalidated in the current Attempt 2
 #### Browser/live limitation
 
 `PORT=3318 npm run start` served the validated build during Attempt 2 and `/preview` redirected to `/access-denied` with the expected auth guard. No local Studio identity is provisioned for this worktree, so populated authenticated desktop/narrow/keyboard workflows remain developer-owned pending that prerequisite. No live database, Shopify, MCP, model, WhatsApp, billing or customer transcript was used.
+
+### Submitted Attempt 3 Report
+
+Ready for Review. Attempt 3 preserves Attempts 1-2 and implements every remaining Attempt 2 correction in the owned preview client/screen and focused tests.
+
+#### Correction checklist
+
+- **A2-R1 implemented:** synchronous operation refs now guard Start/Send/Cancel/Run and same-ID checks; FAILED/CANCELLED/UNKNOWN preserve submitted text; only COMPLETED clears it once; RUNNING cancellation retains the active ID and polls to terminal acknowledgement; UNKNOWN stops automatic polling; generation and timer checks fence reset/unmount callbacks; reset requires confirmation.
+- **A2-R2 implemented within the available handoff boundary:** `release.id` is the only value submitted as `RELEASE`; an unsaved composer handoff submits `DRAFT` with exact members/response contract and no inferred release ID; tool handoff remains Tool test; Back honors explicit return context, then tool/release context, then `/features`. No new backend loader or auth bypass was added.
+- **A2-R3 implemented:** `createPreviewClient` validates canonical UUID response IDs against each expected request ID for conversation creation, POST, GET and cancel; mismatches and malformed successful envelopes remain `PreviewUncertainError`; arbitrary error codes no longer become typed failures; catalogue entries are bounded and no fallback fixture is executable.
+- **A2-R4 implemented:** typed arguments recursively validate nested required properties, item schemas, additional properties, enum/type/range/length/item bounds and the 32KiB argument limit; invalid input dispatches zero calls and edits invalidate output.
+- **A2-R5 evidence:** local fixture/component evidence is complete below. Authenticated application browser evidence remains pending because this worktree has no provisioned Studio identity; `/preview` therefore correctly remains behind the existing auth guard. No production credentials or provider calls were used.
+
+#### Fixture and request matrix
+
+| Case | Fixture/test | Expected and observed effect |
+| --- | --- | --- |
+| Duplicate Start/Send/Cancel and same-ID replay | `tests/preview-screen.test.tsx` deferred operations | One synchronous dispatch; original UUID/payload retained; cancellation remains tied to the active run through RUNNING -> CANCELLED. |
+| Unknown response and stale callback fencing | screen deferred/reconciliation cases | UNKNOWN remains explicitly checkable; reset/unmount generation prevents late mutation. |
+| Tool schema validation | nested object/array and typed primitive cases | Missing nested `sku`, wrong array item, prohibited extra property, and out-of-bound values produce zero calls; valid typed payload forwards exact values. |
+| Transport identity and paths | `tests/preview-client.test.ts` | Exact UUID IDs are accepted; different valid IDs and malformed results are uncertain; six request paths/methods match C9.1. |
+| Existing preview contracts | five prior preview contract suites | Backend/route/store/Redis fixture contracts remain passing. |
+
+#### Validation
+
+Agent-executed:
+
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-client.test.ts`: **2 files, 12 tests passed**.
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-client.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: **6 files, 49 tests passed**.
+- `npm run typecheck`: **passed** (`next typegen`, `tsc --noEmit`).
+- `npm run lint`: **passed** with no warnings/errors after cleanup.
+- `npm run build`: **passed** (`prisma generate`, `next build --webpack`); `/preview` and all preview API routes compiled.
+- `git diff --check`: **passed**.
+
+#### Browser/live limitations
+
+No authenticated browser workflow is claimed. The existing route guard requires a provisioned local Studio identity that is absent from this worktree; prior built-route verification reached `/access-denied` as designed. Component/injected fixture coverage includes populated Tool test and Conversation interactions, narrow-independent state transitions, keyboard-click duplicate guards, cancellation, reset confirmation, source return context, uncertainty and nested schema errors. Live database, Shopify, MCP, model, WhatsApp, billing and customer-transcript validation remain out of scope and were not contacted.
+
+#### Worktree/dependency evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`; prior Attempt 2 commit `74a848ad7cebfe39524f12a3a657167cde864f4c` retained.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`; only this task report is changed.
+- Dependency source remains accepted Commerce baseline with database submodule pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no schema, architecture, index, service gitlink or other repository changed.
 
 ### Status
 
