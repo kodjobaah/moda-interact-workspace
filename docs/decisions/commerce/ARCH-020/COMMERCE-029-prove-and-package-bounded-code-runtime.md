@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-21T18:52:48Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -130,6 +130,69 @@ Attempt 2 validation superseded that historical baseline observation: `npm run t
 Runtime code is not wired into the future typed adapter or production factory; those are explicitly owned by COMMERCE-026/024.
 
 ## Completion Report
+
+### Attempt 4
+
+Attempt 4 corrections are complete in the dedicated implementation worktree
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-029`
+on `task/ARCH-020-COMMERCE-029`, committed and pushed as `f22e2d6`
+(`fix(commerce): complete bounded runtime review corrections`). The parent report
+is submitted on the mirrored `task/ARCH-020-COMMERCE-029` branch. No service
+gitlink, database schema, architecture/index file or Architect Review text was
+modified.
+
+#### Correction checklist
+
+- **A3-R1 implemented:** Replaced the misleading large-serialization
+  `INVALID_OUTPUT` observation with a real active QuickJS catastrophic-regex
+  operation. The focused test observes execution start, receives the terminal
+  `DEADLINE` result from the 2,000 ms supervisor, and verifies a following
+  transform succeeds after worker termination and capacity cleanup.
+- **A3-R2 implemented:** `compile()` now uses QuickJS `compileOnly` evaluation
+  before any run validator is constructed. Malformed syntax remains
+  `SYNTAX_ERROR`, while a syntactically valid top-level `throw` is accepted
+  without execution. Existing run isolation and output validation remain
+  unchanged.
+- Updated `docs/code-runtime-proof.md` so the SB02 and compile evidence describe
+  observed behavior rather than the prior `INVALID_OUTPUT` result.
+
+#### Validation results
+
+- `npm run test:arch020-code-runtime-proof` -> PASS, 1 file, 10 tests.
+- `npm run code-runtime:package` -> PASS; runtime `quickjs-sync.v1`,
+  `quickjs-emscripten@0.31.0`, WASM SHA-256
+  `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, and
+  configured WASM maximum `67108864` bytes.
+- `npm run code-runtime:smoke` -> PASS; copied-artifact transform output and
+  64 MiB WASM ceiling probe passed without source-tree fallback or network
+  download.
+- `npm run lint -- --quiet` -> PASS.
+- `npm run typecheck` -> PASS; no diagnostics.
+- `npm run build` -> PASS; package/smoke, Prisma generation, Next webpack
+  production compilation, TypeScript phase, static generation and trace
+  finalization completed.
+- `git diff --check` -> PASS.
+
+#### Physical worktree and synchronization evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-029`, `task/ARCH-020-COMMERCE-029`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-029`, `task/ARCH-020-COMMERCE-029`.
+- Shared workspace and source checkout were not switched or mutated; no other
+  task worktree was reused.
+- Parent remote fast-forward: `not-needed`; parent `origin/main`
+  incorporation: `already-current` after the generated-document merge commit
+  `428281ce`.
+- Implementation remote fast-forward: `not-needed`; implementation
+  `origin/main` incorporation: `yes`.
+- Recursive submodule sync/update: passed; database commit
+  `5abfd87f57038bae515aaa09ec7c8db62adcfb98` was initialized and unchanged.
+
+No live provider, credential, DNS, WhatsApp, PostgreSQL, container, deployment
+or assembled cross-service flow was run or claimed. Runtime wiring remains
+COMMERCE-026/024 scope, Shared package publication remains SHARED-002 scope,
+and no downstream task was launched. Completion Report status: **Ready for
+Review**.
 
 ### Attempt 3
 
