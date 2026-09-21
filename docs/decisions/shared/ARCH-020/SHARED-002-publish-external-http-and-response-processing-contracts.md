@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 145
 executor: null
 claimed_at: null
@@ -500,3 +500,65 @@ exports, runner and consumer typecheck. The old “approval pending to publish0.
 message is stale. Do not republish0.14.0. Resume the latest R1–R3 corrections under
 the updated C21 boundaries and prepare the corrected patch release. No acceptance
 or downstream promotion is implied by this reconciliation.
+
+### Attempt 5 — Accepted (2026-09-21)
+
+### Review Status
+
+Accepted. `ARCH-020-SHARED-002` is Complete at Attempt 5 with `executor: null`
+and `claimed_at: null`.
+
+### Review Notes
+
+Reviewed the exact Attempt 5 submission represented by implementation commit
+`95bab1d` and package `@modainteract/moda-interact-shared@0.14.2`.
+
+A4-R1 is resolved in `visualPublicationCompatible()`: LIST publication now requires
+an `items` array, requires `items` at the closed root, rejects any non-`items` root
+property, permits empty output only (`minItems` absent/zero), rejects an authored
+`maxItems` below the configured LIST `limit`, and retains the existing projected
+field/scalar/required-versus-`omitIfMissing` compatibility checks.
+
+A4-R2 is resolved: the publishable root README documents `/commerce`,
+`/commerce/runner`, the C21 external schema/type inventory and the runtime ownership
+boundary. The immutable corrected package is `0.14.2`; the Completion Report records
+its SHA-1/integrity plus fresh exact-version registry install, runtime import, strict
+consumer typecheck and Commerce entrypoint validation.
+
+A4-R3 is resolved: Attempt 5 is explicitly the current submission, while earlier
+Attempt 1-4/Attempt 2 evidence is retained under historical headings. Current task
+metadata and current evidence no longer depend on those historical state assertions.
+
+No provider transport, credential runtime, response processor, JavaScript sandbox,
+Commerce integration or other repository implementation was added to Shared.
+
+### Reviewed Files
+
+- `moda-interact-shared/src/commerce/definitions.ts`
+- `moda-interact-shared/src/commerce/external-contracts.test.ts`
+- `moda-interact-shared/README.md`
+- `moda-interact-shared/package.json`
+- `moda-interact-shared/scripts/validate-commerce-entrypoints.mjs`
+- this task and C21 sections 2, 2.1, 2.2, 2.3, 4 and 9
+
+### Validation Reviewed
+
+Submitted focused evidence: `test:arch020-external-contracts` 4/4, typecheck,
+build, `git diff --check`, exact `0.14.2` clean-registry install/runtime imports,
+strict consumer typecheck and Commerce entrypoint validation. The review remains
+functionality-led; no additional exhaustive matrix is required.
+
+### Architecture Conformance
+
+Conformant. Shared owns the strict C21 contracts/publication compatibility and
+published package surface; executable provider transport, credential handling and
+response processing remain in their assigned Commerce tasks.
+
+### Follow-up
+
+Dependency frontier reconciled after completion. `ARCH-020-COMMERCE-020`, `021`,
+`022`, `023`, `026` and `027` become Ready because all of their declared
+prerequisites are Complete. `COMMERCE-025` was already Ready in its authoritative
+task YAML and its domain index is reconciled accordingly. `COMMERCE-028`, `030`,
+`031`, `032`, `024`, `GATEWAY-003`, `COMMERCE-012` and system tests retain their
+remaining dependency gates. No downstream task is launched automatically.

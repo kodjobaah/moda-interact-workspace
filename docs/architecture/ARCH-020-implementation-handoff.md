@@ -913,7 +913,7 @@ Changes Requested summaries.
 Read [C21](ARCH-020-external-api-tools.md) before extension work.
 
 ```text
-DATABASE-003 (Complete)              SHARED-002 (Ready; publish once)
+DATABASE-003 (Complete)              SHARED-002 (Complete; 0.14.2 accepted)
         \                            /
          ->020 connection service   +->021 HTTP executor (ports)
                                     +->025 visual processor
@@ -951,10 +951,11 @@ GATEWAY-001 +020/021/026/028/029 ->GATEWAY-003
 all extension implementation ->012 cache bypass ->SYSTEM-TEST-001 (manual)
 ```
 
-DATABASE-003 and SHARED-002 remain independent executable prerequisites.
-COMMERCE-029 is Complete at accepted Attempt 4 with the reusable bounded runtime;
-COMMERCE-026 remains Pending until SHARED-002 is also Complete. Each submission maps
-named acceptance cases to committed scenarios and actual results.
+DATABASE-003 and SHARED-002 are Complete. COMMERCE-029 is Complete at accepted
+Attempt 4 with the reusable bounded runtime. The direct Shared-gated component
+frontier 020/021/022/023/025/026/027 is Ready; later tasks remain gated by their
+other declared prerequisites. Each submission maps named acceptance cases to
+committed scenarios and actual results.
 
 ### COMMERCE-013 Attempt 8 architect review — 2026-09-21
 
@@ -1030,3 +1031,12 @@ SB01-SB03 component proof is accepted.
 Frontier: SHARED-002 remains Ready, so COMMERCE-026 stays Pending. Nothing else is
 promoted or launched by this acceptance; GATEWAY-003 and the final cache/system
 gates remain downstream.
+
+### SHARED-002 Attempt 5 accepted — 2026-09-21
+
+**Accepted / Complete, Attempt 5.** Implementation `95bab1d`; exact published Shared
+package `0.14.2`. The direct C21 component frontier is now Ready for
+`COMMERCE-020`, `021`, `022`, `023`, `025`, `026` and `027`. Do not rerun
+`/moda-task ARCH-020-SHARED-002`; it has no further correction attempt. Use the
+normal launcher on an eligible Ready dependant when the developer chooses to start
+one. No automatic downstream launch occurs in this acceptance.

@@ -527,3 +527,9 @@ The C21 bounded QuickJS kernel now has accepted compile-only, supervisor-termina
 cleanup/recovery, packaged artifact and fixed-memory evidence. COMMERCE-026 remains
 Pending because SHARED-002 is not yet Complete; no downstream task is launched and
 ARCH-020 remains In Progress.
+
+## ARCH-020 SHARED-002 Attempt 5 accepted — 2026-09-21
+
+SHARED-002 is Accepted / Complete at Attempt 5 (`95bab1d`, Shared `0.14.2`). The
+direct C21 component frontier `COMMERCE-020/021/022/023/025/026/027` is Ready;
+remaining extension/integration/gateway/system-test tasks stay dependency-gated.

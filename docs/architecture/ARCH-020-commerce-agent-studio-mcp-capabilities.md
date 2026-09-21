@@ -1573,3 +1573,15 @@ artifact, isolation, serialization and fixed-memory evidence is preserved.
 No dependent task is newly Ready: COMMERCE-026 still awaits SHARED-002. GATEWAY-003,
 COMMERCE-012 and system validation keep their remaining gates. ARCH-020 remains In
 Progress and no task is launched automatically.
+
+## SHARED-002 Attempt 5 architect acceptance — 2026-09-21
+
+ARCH-020-SHARED-002 is **Accepted / Complete, Attempt 5**, implementation `95bab1d`,
+public package `@modainteract/moda-interact-shared@0.14.2`. The final C21 LIST
+publication compatibility, package-root export documentation and durable current
+Completion Report are accepted. Direct C21 dependants `COMMERCE-020`, `021`, `022`,
+`023`, `026` and `027` are promoted Ready; `COMMERCE-025` remains Ready. Later
+integration, credentials, publication, preview, availability, gateway, cache and
+system-test work remains dependency-gated. No dependent task is automatically
+started and no implementation/main merge or gitlink update is performed by this
+review.
