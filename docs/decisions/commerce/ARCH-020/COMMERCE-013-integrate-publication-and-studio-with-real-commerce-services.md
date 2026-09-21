@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 125
-executor: copilot
-claimed_at: 2026-09-21T15:51:03Z
+executor: null
+claimed_at: null
 attempt: 8
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -836,6 +836,97 @@ Reran `npm run test:arch020-backend-integration`: **60/60 passed**. Existing arc
 PostgreSQL evidence remains **one passing smoke test and one failed mutation/replay/CAS/rollback rehearsal**, not 2/2 for this attempt. No storage or rehearsal code changed in Attempt 7, so this is not treated as a demonstrated implementation regression or an additional acceptance blocker. Source inspection also shows the rollback transaction hard-codes pointer editVersion 2; a reused target can conflict before afterWrite injection. Do not claim the precise failing precondition is established merely from CAS_CONFLICT, or attribute it exclusively to the capability revision without a stack trace. When developer-owned isolated infrastructure validation runs, use a clean target or advance from its actual current pointer token, and distinguish the intended injected rollback from a pre-write CAS rejection. No DB/Docker/Redis/container operation was run by the architect.
 
 Ready for corrections; Attempt 7 retained and claims cleared. No acceptance, main merge, implementation edits, gitlink change or downstream promotion. COMMERCE-018/019 remain Pending. Developer-owned infrastructure/migration validation and final manual system testing remain separately recorded.
+
+## Completion Report - Attempt 8
+
+Status: Ready for Review.
+
+Attempt 8 preserves Attempts 1-7 and implements both corrections from the
+latest Attempt 7 Changes Requested review. The implementation commit is
+`13805d22c6850d43537031a48c438a6b1f1a0a7c` on the mirrored
+`task/ARCH-020-COMMERCE-013` implementation branch. No other repository,
+database schema, index, parent service gitlink, downstream task, main branch,
+or Architect Review text was changed.
+
+### A7 correction checklist
+
+- [x] **A7-R1:** Removed the invalid `first`, `nodes`, and `pageInfo` selections
+  from `DiscountCustomers` and `DiscountCustomerSegments` in the exported
+  `SHOPIFY_DISCOUNT_RULE_QUERY`. Restricted typenames remain mapped to
+  `UNSUPPORTED` without enumerating customer or segment identities. The exact
+  exported production document is validated against the pinned
+  `admin_2026-07.json.gz` schema, and the production discount fetch is exercised
+  with synthetic supported and restricted responses using the Admin token path.
+- [x] **A7-R2:** Added provider evidence and a bounded native-basic calculation
+  profile to `docs/discount-support-matrix.md`: Shopify's `DiscountAmount`
+  contract establishes EACH versus spread allocation, `DiscountCodeBasic`
+  establishes no shipping discount, and Shopify's amount-off guide establishes
+  product-price subtotal treatment and proportional allocation. The focused
+  production assembly test feeds the normalized provider result through the
+  accepted reader and evaluator using two fractional lines where line and total
+  rounding differ, asserting the supported result (`$0.04` savings from `$0.06`)
+  and restricted responses remain non-qualifying. No non-basic or incomplete
+  shape receives the profile.
+
+### Source and dependency SHA mapping
+
+Attempt 8 consumes the accepted mapping without copied source: COMMERCE-007
+`e08b896`; publication lifecycle/ports
+`ebe612bbcbccb69202c682ed009d1c302c347d3f`; query execution
+`f09965942cebd4aec15a40aa825975157d41c8c3`; product adapters
+`6821a49c5d8568227ff81085f0398c934df58332`; recommendations
+`bad71ef55e5942e74343c35b611c5177f0852a20`; discount reader
+`1c124f4b53a494425735a8064ac20a2e2000914e`; discount evaluator
+`bfbd7839503b60e88b17da49f258c84c4e50f6c76`; execution registry
+`232cbdd9af4411c2e4cdcac86bda8285e5b81554`; MCP auth/authentication
+`0411babc90182f41ad3f036096eb51427f128ac0`; compiler
+`f363ac41b2a36e683d1514d02a582dd2c375fef5`; and database submodule
+`5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Installed compatibility remains
+shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, and MCP SDK `1.30.0`.
+
+### Files changed
+
+- `src/commerce/integration/backend.ts`: corrected the exported production
+  Shopify Admin discount document.
+- `tests/backend-integration.test.ts`: pinned-schema assertion and real
+  production HTTP/reader/evaluator synthetic scenarios.
+- `docs/discount-support-matrix.md`: authoritative provider evidence and exact
+  native-basic support boundary.
+
+### Validation Results
+
+Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
+
+| Command | Result |
+| --- | --- |
+| `npm run test:arch020-backend-integration -- --run tests/backend-integration.test.ts` | passed, 4 files / 61 tests |
+| `npm run typecheck` | passed; Next route type generation and `tsc --noEmit` passed |
+| `npm run lint` | passed with no reported errors |
+| `npm run build` | passed; Prisma Client `6.19.3` generated and Next production build completed |
+| `git diff --check` | passed |
+| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD schema checks passed; migration validator stopped before connection with `AssertionError: Local isolated target required` |
+| `npm run test:arch020-backend-integration:postgres` | real isolated-target rehearsal: 1 test passed; mutation/replay/CAS/rollback test timed out at 60 seconds; disposable SQL phase did not run after the failed Vitest phase |
+
+Actual Attempt 8 evidence is the 61-test focused suite, exported-document
+schema validation, synthetic production Admin fetches, accepted evaluator
+fractional-line evidence, typecheck, lint, build, diff check, and static
+database checks. Pending developer-owned infrastructure evidence remains the
+fresh/upgrade migration validator against isolated `arch020_test_fresh` and
+`arch020_test_upgrade`, diagnosis/rerun of the PostgreSQL mutation/replay/CAS/
+rollback timeout on a clean supervised target, the separately authorized
+disposable SQL phase, Redis/container transport checks, and the final manual
+system-test gate. No live Shopify, model, WhatsApp, billing, customer-history,
+production credential, or paid-provider evidence is claimed.
+
+### Lifecycle and Git / VCS
+
+Task fields are clean for review: `status: review`, `executor: null`,
+`claimed_at: null`, `attempt: 8`. Implementation commit
+`13805d22c6850d43537031a48c438a6b1f1a0a7c` is committed on the mirrored
+implementation branch. The parent report commit and both push results will be
+recorded after this report edit. No downstream task was launched; no main branch
+was merged or updated.
 
 
 ### Attempt 6 — Changes Requested (2026-09-21)
