@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
 executor: copilot
 claimed_at: 2026-09-21T21:49:12Z
@@ -66,10 +66,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement createExternalHttpExecutionPort and explicit EXTERNAL_HTTP branch, runtime wrapper/schema validation, rendering and result/error mapping. Existing query/policy dispatch remains exhaustive.
-- [ ] Implement fixed-origin DNS/socket pinning, TLS hostname verification, target classification, no redirects/proxies/cookies, encoded bounded query and abort/deadline/decompression limits.
-- [ ] Decode declared JSON/TEXT without assuming structured content; apply injected visual/code dispatcher before final schema validation/rendering; on failure return bounded error, never raw upstream data. Exclude provider responses from logs.
-- [ ] Consume shared per-call budgets with no hidden retries; current connection authorization every call. Document transport fixture evidence and exact public factory in docs/external-http-executor.md.
+- [x] Implement createExternalHttpExecutionPort and explicit EXTERNAL_HTTP branch, runtime wrapper/schema validation, rendering and result/error mapping. Existing query/policy dispatch remains exhaustive.
+- [x] Implement fixed-origin DNS/socket pinning, TLS hostname verification, target classification, no redirects/proxies/cookies, encoded bounded query and abort/deadline/decompression limits.
+- [x] Decode declared JSON/TEXT without assuming structured content; apply injected visual/code dispatcher before final schema validation/rendering; on failure return bounded error, never raw upstream data. Exclude provider responses from logs.
+- [x] Consume shared per-call budgets with no hidden retries; current connection authorization every call. Document transport fixture evidence and exact public factory in docs/external-http-executor.md.
 
 ## Interfaces / Contracts
 
@@ -121,41 +121,63 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Review.
 
 ### Files Changed
 
-None; task definition only.
+- `src/commerce/external-http/index.ts`
+- `src/commerce/execution/executor.ts`
+- `src/commerce/execution/index.ts`
+- `src/commerce/execution/ports.ts`
+- `src/commerce/execution/renderer.ts`
+- `tests/external-http-executor.test.ts`
+- `tests/fixtures/external-http-tls.ts`
+- `docs/external-http-executor.md`
+- `package.json`
+- `package-lock.json`
 
 ### Work Completed
 
-None.
+- Added the injected `createExternalHttpExecutionPort` and secure Node HTTPS transport with fixed-origin GET construction, current connection resolution, address classification, DNS/socket pinning, TLS SNI and hostname verification, no redirects/proxies/cookies/retries, bounded decompression, decoding, result validation and bounded error mapping.
+- Added an explicit `EXTERNAL_HTTP` dispatcher and renderer branch while retaining the existing Shopify and policy branches.
+- Reconciled the accepted Shared package dependency to `@modainteract/moda-interact-shared@0.14.2`.
+- Added the task-owned transport fixture table and public factory documentation.
 
 ### Validation Results
 
-No implementation validation performed.
+- `npm run test:arch020-external-http`: passed, 4/4 HT01--HT04 tests.
+- `npm exec vitest run tests/definition-execution.test.ts tests/external-http-executor.test.ts`: passed, 16/16 tests.
+- `npm run lint`: passed with two pre-existing warnings outside task-owned files (`scripts/code-runtime-manifest.mjs`, `src/commerce/code-response/runtime/kernel.ts`).
+- `git diff --check`: passed.
+- `npm run typecheck`: blocked by existing Prisma typing errors under `src/commerce/integration/backend*`; touched external-HTTP files have no editor diagnostics.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+- The accepted Shared result union does not include `CANCELLED`. Abort/cancellation is therefore represented as non-retryable `DEADLINE`; no unsupported wire error code was introduced.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+- C21 read-only scope; visual rules and generic JavaScript remain injected processor ports owned by COMMERCE-025 and COMMERCE-026.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+- Repository-wide typecheck remains blocked by unrelated integration backend Prisma typing errors.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+- The Shared `CommerceToolResult` union lacks the C21-specified `CANCELLED` code. This task preserved the accepted shared contract and maps cancellation to `DEADLINE`; architect review should decide whether a future shared-contract amendment is required.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-021. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Mirrored branch: `task/ARCH-020-COMMERCE-021`.
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-021`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-021`
+- Shared workspace and shared implementation checkouts were not mutated for task work; no other task worktree was reused.
+
+Start-of-attempt synchronization was already-current for both task branches. Recursive implementation submodule synchronization and update passed; `database` was initialized at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`. Implementation commit `b19f9d7` (`feat(commerce): execute bounded external HTTP tools`) was pushed to `origin/task/ARCH-020-COMMERCE-021`.
 
 ## Architect Review
 
