@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 120
-executor: copilot
-claimed_at: 2026-09-21T02:34:09Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -674,6 +674,65 @@ production database/adapters, deployment/readiness infrastructure and the real
 U14 preview round trip remain explicitly developer-owned or COMMERCE-009/
 COMMERCE-013 scope. This attempt reports deterministic fixtures only and makes
 no live-provider or deployment claim.
+
+### Attempt 6 Resubmission — 2026-09-21
+
+**Status: Ready for Review.** Implementation commit `8ba5e42` is pushed to
+`origin/task/ARCH-020-COMMERCE-008`. This attempt implements the complete A5-R1
+correction on the existing branch pair and preserves the accepted A4-R2/A4-R3
+record identity and admitted replay fixes.
+
+#### Correction checklist
+
+- [x] **A5-R1.1 — alias-aware AST merge:** Discovery now resolves selected schema
+  paths by GraphQL field name while preserving an existing response alias,
+  arguments, directives, operation name, variables and result path. The aliased
+  `selected: product(handle: $handle)` field is extended in place rather than
+  creating an unbound `product` root.
+- [x] **A5-R1.2 — ambiguity rejection:** Multiple same-name AST fields fail
+  closed with an actionable ambiguity error; no arbitrary first match or
+  argument-free duplicate is generated.
+- [x] **A5-R1.3 — complete fixture validation:** The injectable in-memory
+  validator checks every product occurrence and requires exactly one response
+  root matching the declared result path. Every product occurrence must retain
+  the mapped handle variable, so malformed duplicate/unbound branches are
+  invalid and cannot enable Use in tool.
+- [x] **A5-R1.4 — connected regressions:** Added the aliased nested-selection
+  traversal through U06 -> U07 -> U06, asserting one product root, preserved
+  alias/handle argument, nested amount selection and `selected` result path, plus
+  direct rejection of an unbound duplicate. The prior A4 regressions remain in
+  the focused suite.
+
+#### Requirement-to-fixture evidence
+
+| Requirement | Fixture and asserted result | Outcome |
+|---|---|---|
+| A5-R1.1 | `merges nested discovery fields into an aliased product and rejects an unbound duplicate` selects `product.priceRange.minVariantPrice.amount` from `selected: product(handle: $handle) { title }`; returned U06 query contains one `product(`, the original handle argument, alias and nested path; result path remains `selected`. | Pass |
+| A5-R1.2/R1.3 | The same regression validates a second unbound `product` occurrence through the injectable fixture validator and asserts invalid `REQUIRED_ARGUMENT`; result-root validation also rejects mismatches. | Pass |
+| A4 preservation | Existing focused connected tests retain record-switch reset, unknown replay with newer dirty input, nested unaliased structure, stale validation, duplicate suppression and navigation handoffs. | Pass |
+
+#### Validation results
+
+- `npm test -- --run tests/studio-services.test.ts tests/studio-workspace.test.tsx` — **2 files / 24 tests passed**.
+- `npm run typecheck` — **passed** (`next typegen` and `tsc --noEmit`).
+- `npm run lint` — **passed** with no warnings.
+- `npm run build` — **passed**, including Prisma Client generation and all U03-U13 routes.
+- `git diff --check` — **passed**.
+- `npm test` — **24 files / 208 passed / 1 failed**. The single failure is the pre-existing Redis-gated `tests/discovery-limits.test.ts` 30-second timeout while allowing 60 sequential requests; no discovery-limits implementation was changed. All focused Commerce-008 tests pass.
+
+#### Worktree and dependency evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-008`, branch `task/ARCH-020-COMMERCE-008`, clean after commit and pushed at `8ba5e42`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-008`, same mirrored branch; this report update is the only parent-owned change.
+- Accepted nested Database revision consumed and retained: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- No database schema/migration, Shared repository, COMMERCE-013 adapter, main branch, Architect Review, architecture index or other task was changed.
+
+#### Developer-owned validation
+
+Live Google OAuth, Shopify provider calls, merchant credentials, production
+adapter composition, deployment/readiness infrastructure and the real U14
+preview round trip remain developer-owned or COMMERCE-009/COMMERCE-013 scope.
+This attempt makes no live-provider or production integration claim.
 
 ## Architect Review
 
