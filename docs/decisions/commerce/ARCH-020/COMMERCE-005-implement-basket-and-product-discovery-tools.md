@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 90
-executor: copilot
-claimed_at: 2026-09-21T03:24:17Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -128,10 +128,16 @@ Ready for Review.
 
 ### Work Completed
 
-- R1 implemented: runtime values use the pinned Storefront schema and GraphQL coercion, with strict declared-name, required/default, nested input, scalar/list and serialized-variable bounds before budget reservation or I/O.
-- R2 implemented: the injected transport is a typed POST/HTTP envelope with fixed destination, redirect/final-URL, status/429, pinned-version-header, incremental 256 KiB decoded-body, GraphQL-envelope and compiler-derived output-shape checks. No credentials or retry path exists.
-- R3 implemented: provider request and body consumption race the caller/internal deadline; ignored transports settle as retryable `DEADLINE`, late results are discarded, abort errors are normalized, and cleanup cancels readers/timers/listeners.
-- Q01 uses distinct ProductDetails and aliased ProductAlias queries; Q02 covers invalid host, numeric String, missing/extra variables, invalid projection, malformed response and overflow; Q03 covers throttle, cancellation, deadline, budget, redirect and version failures; Q04 preserves ordinary nested values inside the C14 fact wrapper.
+### Attempt 3 Correction Checklist
+
+- [x] A2-R1: list response validation preserves the selection set; populated `ProductList` data succeeds with one request and aliased/scalar shape validation remains compiler-bound.
+- [x] A2-R2: `ReadableStream` readers are preferred over async iteration, abort listeners cancel blocked reads, overflow and early status/version/redirect rejection dispose bodies, and late responses are cancelled without accepting facts.
+- [x] A2-R3: missing or mismatched record/`Headers` API-version evidence returns retryable `UNAVAILABLE`; request transport explicitly sets `redirect: 'error'`.
+
+- R1 retained: runtime values use the pinned Storefront schema and GraphQL coercion, with strict declared-name, required/default, nested input, scalar/list and serialized-variable bounds before budget reservation or I/O.
+- R2 retained and corrected: the typed POST/HTTP envelope enforces fixed destination, redirect/final-URL, status/429, pinned-version-header, incremental 256 KiB decoded-body, GraphQL-envelope and compiler-derived output-shape checks. No credentials or retry path exists.
+- R3 retained and corrected: provider request and body consumption race the caller/internal deadline; ignored transports settle with retryable `DEADLINE`, late results are discarded, abort errors are normalized, and cleanup cancels readers/timers/listeners.
+- Q01 uses distinct ProductDetails, ProductAlias and ProductList queries; Q02 covers invalid host, runtime variables, invalid projection, malformed response and overflow; Q03 covers throttle, cancellation, deadline, budget, redirect, version and body disposal; Q04 preserves ordinary nested values inside the C14 fact wrapper.
 
 ### Validation Results
 
@@ -139,13 +145,13 @@ Agent validation:
 
 | Case | Fixture | Command | Result |
 |---|---|---|---|
-| Focused Q01-Q04 | injected query, malformed input, HTTP envelope, stream and deadline fixtures | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 7/7; pre-I/O rejects made zero provider calls and response rejects made only their single injected request |
+| Focused Q01-Q04 and A2 regressions | injected query, ProductList projection, malformed input, HTTP envelope, controlled streams, overflow, early rejection and deadline fixtures | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 11/11; pre-I/O rejects made zero provider calls, response rejects made one injected request, and rejected/late streams were cancelled |
 | lint | query module and tests | `npm run lint` | PASS |
 | typecheck | repository after Prisma generation | `npm run typecheck` | PASS |
 | build | production build and Prisma generation | `npm run build` | PASS |
 | diff hygiene | scoped files | `git diff --check` | PASS |
 
-Full `npm test`: 26 files, 214 passed and 2 failed (216 total). Both are unrelated baseline failures: `tests/discovery-limits.test.ts` timed out in the Redis-backed rolling-window admission test, and `tests/readiness-docker.test.ts` failed the child signal-handler timing assertion. No failure involved the changed Commerce-005 files.
+Full `npm test`: 30 files, 255 passed and 2 failed (257 total). Both are unrelated baseline failures: `tests/discovery-limits.test.ts` timed out in the Redis-backed rolling-window admission test, and `tests/readiness-docker.test.ts` failed the ignored-stdio descendant signal-handler timing assertion in abort mode. No failure involved the changed Commerce-005 files.
 
 Developer validation required: execute against an approved development Shopify shop to confirm real tokenless `2026-07` provider behavior, redirect rejection, cancellation/timeout and GraphQL error handling. Fixture tests do not prove live provider behavior. Run environment/database/container readiness checks when developer-owned dependencies are available; this task performs no migrations.
 
@@ -168,7 +174,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005` on `task/ARCH-020-COMMERCE-005`, clean after implementation commit `2761e6b` pushed to `origin/task/ARCH-020-COMMERCE-005`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`; starting claim was `762b3678`, now cleared with status `review`. Recursive database submodule remained at recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, architecture/index file or Architect Review text was modified; no enabled task was started.
+Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 3. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005` on `task/ARCH-020-COMMERCE-005`, clean after implementation commit `6b2c410` pushed to `origin/task/ARCH-020-COMMERCE-005`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`; claim cleared with status `review`. Recursive database submodule remained at accepted recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed. No main branch, architecture/index file or Architect Review text was modified; no enabled task was started.
 
 ## Architect Review
 
