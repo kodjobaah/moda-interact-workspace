@@ -180,3 +180,18 @@ Other downstream tasks remain gated by their own unresolved prerequisites;012 is
 still the final implementation checkpoint. No implementation changes, main merge,
 main push or gitlink update. Architecture is not yet Implemented. This supersedes
 older008 state wording while retaining historical reviews.
+
+## COMMERCE-017 Attempt 1 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt 1 retained, claim cleared; not accepted.
+Reviewed implementation `2ec7f66` and report `c9385f1d` against remote heads.
+Four submitted UI tests pass; four independent functional reproductions fail:
+duplicate Start, new tool ID after uncertainty, stuck RUNNING cancellation, and
+wrong Back destination. R1–R5 require retained lifecycle identities, exact C19
+client/catalogue/errors, connected saved-source/composer navigation, typed tool
+arguments/stale-result handling, and task-owned populated browser validation.
+An occupied local port does not transfer fixture browser validation to the developer.
+Definition sections overwritten by completion prose are restored; submitted prose
+is preserved under Completion Report. No new claim, dependency promotion, code
+change, main integration or gitlink update. Live production integration remains
+separate. See task for explicit corrections; older readiness wording is historical.
