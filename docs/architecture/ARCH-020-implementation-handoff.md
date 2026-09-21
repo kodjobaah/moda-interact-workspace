@@ -653,3 +653,14 @@ older008 state wording while retaining historical reviews.
 ARCH-020-COMMERCE-016 is Ready, attempt0, unclaimed. Accepted006/015/SHARED-001
 are Complete in main;006's blank frontmatter ID is repaired to its canonical ID.
 No task is launched and no other task lifecycle state changes in this update.
+
+
+## COMMERCE-005 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
+Reviewed6b2c410/4b681aa1. List recursion and provider-version/redirect fixes verified.
+Eleven submitted tests pass; two cleanup cases fail: awaited rejected-body cancel
+exceeds deadline and pending AsyncIterable read is not interrupted. A3-R1 gives
+bounded cleanup and a minimal ReadableStream/Uint8Array-only contract correction.
+No new scope, downstream promotion, claim, main merge or gitlink update. See task
+for exact effects; live provider and baseline validation remain separate.

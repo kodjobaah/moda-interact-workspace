@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -177,6 +177,29 @@ None newly reported.
 Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 3. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005` on `task/ARCH-020-COMMERCE-005`, clean after implementation commit `6b2c410` pushed to `origin/task/ARCH-020-COMMERCE-005`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`; claim cleared with status `review`. Recursive database submodule remained at accepted recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed. No main branch, architecture/index file or Architect Review text was modified; no enabled task was started.
 
 ## Architect Review
+
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Current decision: Ready; Attempt 3 retained; executor/claimed_at null; not accepted.** Reviewed implementation `6b2c410a49a487d55a7435cace52540f44089129` and report `4b681aa1dd24be5d179f95a409c32e86197a6bae`, verified against remote heads; dedicated worktrees clean. No implementation changes, new claim, dependent promotion, main integration or gitlink update.
+
+A2-R1 populated-list selection recursion and A2-R3 provider-version UNAVAILABLE/redirect-error fixes are verified. Retain them and the new ReadableStream cancellation/overflow cases. Independent `/tmp/c005-a3-review/review.test.ts` imports committed code: **11 submitted tests pass; 2 added cleanup-boundary cases fail**. Diff checks passed. Submitted lint/typecheck/build/full255-pass/two-baseline-failure evidence was inspected, not broadly rerun. No live provider/Redis/database validation was executed.
+
+#### A3-R1 — P1 — Finish bounded body cleanup on all supported paths
+
+Files: `src/commerce/query/index.ts` StorefrontQueryResponse/readBody/disposeBody and execute early-return branches; focused query tests. This is the remaining A2-R2 requirement, not new scope.
+
+1. HTTP429/status/redirect/version rejection currently `await disposeBody(...)` outside the deadline race. A ReadableStream.cancel callback returning a pending promise holds execute beyond its deadline. Reproduction:429 response with cancel waiting on a barrier, context deadline100ms, advance fake time101ms: execute remains pending until the barrier is manually released. Start cleanup without waiting for it before returning the already determined typed error. Use a rejection-observing helper equivalent to `void disposeBody(body).catch(() => undefined)` for early-rejected and late-arriving bodies, or race cleanup against the remaining deadline. Catch synchronous getReader/iterator acquisition failures too. Never let cleanup replace the selected business failure or create an unhandled rejection.
+
+2. Generic AsyncIterable remains an advertised body type, but readBody's iterator.next has no abort listener/hook. Its finally/iterator.return cannot run until next settles. Reproduction: next stays pending, deadline returns DEADLINE, return/cancel hook is never called. Minimal deterministic correction: remove generic AsyncIterable from StorefrontQueryResponse and its read/dispose branches; support only Uint8Array or ReadableStream<Uint8Array>, with the latter's existing active cancel listener.013 can supply a fetch Response.body; generic iteration is not required by C14. Update the published TypeScript contract/examples so callers cannot pass unsupported iterators. If generic iteration is retained instead, require a separate mandatory cancel/close hook that can interrupt a pending next, invoke it on abort, and prove that behavior; plain iterator.return queued behind next is insufficient.
+
+Preserve active ReadableStream cancellation, lock release, byte bounds and late-result disposal. Do not add retries or live transport composition. Remove the remaining large commented duplicate module as already requested while editing this file; keep one authoritative implementation.
+
+Permanent regressions: rejected429/redirect/version body whose cancel promise never settles still returns its typed response within the overall bound; eventual cleanup rejection produces no unhandled rejection; normal blocked ReadableStream cancellation and overflow still work. For the minimal narrowed body contract, add type-level coverage showing AsyncIterable is not accepted and a runtime defensive rejection for unsupported transport data; no attempt to consume an unsupported iterator. If the explicit-cancel alternative is chosen, test a pending next is interrupted through that hook. Retain all11 passing cases and exact one-request/no-retry effects.
+
+### Resubmission
+
+Implement only A3-R1 in005-owned query files/tests, run focused and required checks, update report, commit/push the same branch pair and return to review. The prior two closed corrections do not need reimplementation. Live Shopify and full-suite baseline conditions remain separate; no dependent task is promoted. Parent review overlay is published before handoff; normal preparation owns the next claim.
+
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 

@@ -1222,3 +1222,14 @@ A2-R1–R3 give exact recursion fix, active body cleanup and C14 UNAVAILABLE map
 for provider-version fallback. Retain variable validation/HTTP envelope/deadline
 race improvements. No scope expansion, promotion, new claim, main merge or gitlink
 change. See task for exact acceptance effects; live provider validation is separate.
+
+
+## COMMERCE-005 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
+Reviewed6b2c410/4b681aa1. List recursion and provider-version/redirect fixes verified.
+Eleven submitted tests pass; two cleanup cases fail: awaited rejected-body cancel
+exceeds deadline and pending AsyncIterable read is not interrupted. A3-R1 gives
+bounded cleanup and a minimal ReadableStream/Uint8Array-only contract correction.
+No new scope, downstream promotion, claim, main merge or gitlink update. See task
+for exact effects; live provider and baseline validation remain separate.
