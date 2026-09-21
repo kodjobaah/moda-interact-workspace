@@ -119,23 +119,43 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+- `moda-interact-commerce/src/commerce/query/index.ts`
+- `moda-interact-commerce/tests/query-execution.test.ts`
 
 ### Work Completed
 
-None; task definition only.
+- Added the Commerce-owned `QueryExecutionPort` and injected bounded tokenless Storefront transport.
+- Consumes the accepted `SHOPIFY_STOREFRONT_QUERY` definition/compiler, fixed `2026-07` API version, verified `*.myshopify.com` host, validated mapped variables, and schema-proved result path.
+- Sends one request with a 10-second bound, shared request-budget reservation and cancellation signal; no retry, redirect, credential lookup or privileged fallback.
+- Returns the unchanged C14 fact wrapper `{source, apiVersion, schemaHash, observedAt, values}` inside the Shared structured result union. Partial GraphQL errors, null projections, oversized responses and provider failures fail closed.
+- Added deterministic injected fixtures for success, invalid host/variables/path, partial errors, null facts, oversized output, throttling, cancellation, expired deadline and exhausted request budget.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent validation:
+
+| Case | Fixture | Command | Result |
+|---|---|---|---|
+| Q01 valid authored query and fact wrapper | C14 wrapper success fixture | `npm test -- --run tests/query-execution.test.ts` | PASS, 4/4 |
+| Q02 wrong host, malformed variables/path, partial errors, oversized response | invalid-input and partial/oversized fixtures | focused command above | PASS; invalid cases made zero provider calls |
+| Q03 deadline, cancellation, request budget and provider errors | cancellation/budget/throttled fixtures | focused command above | PASS; no retry or late result |
+| Q04 ordinary query facts, not policy evidence | structured wrapper assertion | focused command above | PASS; source/schema/version/observation preserved |
+| lint | query module and tests | `npm run lint` | PASS |
+| typecheck | repository after Prisma generation | `npm run typecheck` | PASS |
+| build | production build and Prisma generation | `npm run build` | PASS |
+| diff hygiene | scoped files | `git diff --check` | PASS |
+
+Full `npm test`: 187 tests, 182 passed and 5 failed outside this task: two Prisma development-identity failures (`Prisma.sql is not a function`), two readiness child-process timing failures, and the Redis-backed discovery admission timeout. No failure involved the Commerce-005 files; focused tests remained 4/4 passing.
+
+Developer validation required: execute against an approved development Shopify shop to confirm real tokenless `2026-07` provider behavior, redirect rejection, cancellation/timeout and GraphQL error handling. Fixture tests do not prove live provider behavior. Run environment/database/container readiness checks when developer-owned dependencies are available; this task performs no migrations.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The user request mentioned basket/product discovery broadly, but the authoritative narrowed task and C19 assign basket/search policy adapters to Commerce-015. This implementation therefore owns only generic query execution and does not add basket/search policy helpers or MCP routes. The five unrelated full-suite failures remain unchanged.
 
 ### Assumptions
 
@@ -152,7 +172,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-005. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`. Recursive database submodule remained at recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Implementation and parent commits/pushes are recorded at submission. No main branch, parent service gitlink, architecture/index file or Architect Review text was modified; no enabled task was started.
 
 ## Architect Review
 
