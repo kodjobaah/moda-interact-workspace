@@ -333,6 +333,12 @@ No authenticated browser workflow is claimed. The existing route guard requires 
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`; only this task report is changed.
 - Dependency source remains accepted Commerce baseline with database submodule pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no schema, architecture, index, service gitlink or other repository changed.
 
+#### Attempt 3 publication
+
+- Implementation commit: `64847e6` (`fix(commerce): harden preview lifecycle validation`), pushed to `origin/task/ARCH-020-COMMERCE-017`.
+- Parent report commit: `bf25962f` (`docs(commerce): submit preview frontend attempt 3`), pushed to `origin/task/ARCH-020-COMMERCE-017` before this hash update.
+- The final parent report hash containing this publication record is recorded by the follow-up parent commit after this edit; no main branch was changed.
+
 ### Status
 
 Ready for Review.
