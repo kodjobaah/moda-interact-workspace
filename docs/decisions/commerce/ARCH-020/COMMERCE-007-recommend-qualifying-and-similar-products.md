@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 110
-executor: copilot
-claimed_at: 2026-09-21T04:54:16Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-016
@@ -158,43 +158,45 @@ Ready for Review.
 ### Files Changed
 
 Implementation repository files:
-- `src/commerce/products/index.ts`
 - `src/commerce/products/recommendations.ts`
 - `tests/recommendations.test.ts`
+- `tests/recommendation-contract.test.ts`
 
 ### Work Completed
 
-Implemented the qualifying and similar-product policy operations, deterministic ranking, bounded evaluator processing, currency-safe totals, unavailable-variant filtering, and exact C4 evidence provenance checks. Existing recovery and public product-search operations remain available.
+Implemented the qualifying and similar-product policy operations, deterministic proposal admission and ranking, bounded evaluator processing, currency-safe totals, unavailable-variant filtering, typed evaluator failures, and exact C4 evidence provenance checks. Added a local C18 producer/consumer contract harness using the accepted evaluator, definition executor, mapped authored inputs, controlled provider transport, fixed clock, and canonical evidence digests. Existing recovery and public product-search operations remain available.
 
 #### Correction checklist
 
-- No separate Architect Review `Changes Requested` items were present; the latest review remained `Pending` with no implementation submitted.
-- C18 shared recommendation outputs and operation descriptors: implemented and wired.
-- C4 exact-call evidence identity for offer, turn, current basket fingerprint, and exact proposal: implemented.
-- C8 deterministic ranking, max-three output, currency/extra-spend disclosure, and evaluator bound: implemented.
-- Qualifying/similar separation and unavailable/cross-currency filtering: implemented.
+- A1-R1 deduplicated and deterministically ordered valid ADD/REPLACE proposals before the ten-evaluation admission cap; focused tests assert cheapest admission, duplicate collapse, call counts, stable ordering, truncation, and max-three output. Implemented in `src/commerce/products/recommendations.ts` and `tests/recommendations.test.ts`.
+- A1-R2 preserved typed evaluator failures and deadline handling as fail-closed results; focused tests assert `DENIED` propagation and no subsequent evaluation after failure. Implemented in `src/commerce/products/recommendations.ts` and `tests/recommendations.test.ts`.
+- A1-R3 excluded known cross-currency replacements and refused unknown quantities without fabricating a REPLACE proposal; focused tests cover both cases and preserve exact line/quantity semantics. Implemented in `src/commerce/products/recommendations.ts` and `tests/recommendations.test.ts`.
+- A1-R4 completed the local C18 producer evidence with actual evaluator/evidence generation, arbitrary mapped definition dispatch, canonical digest verification, unchanged replay, changed basket/rule semantics, and controlled provider transport. Implemented in `tests/recommendation-contract.test.ts`.
+- C18 shared recommendation outputs and operation descriptors, C4 exact-call evidence identity, C8 deterministic ranking, max-three output, currency/extra-spend disclosure, evaluator bounds, and qualifying/similar separation remain preserved.
 
 ### Validation Results
 
-Focused: `npm test -- --run tests/recommendations.test.ts` -> 6 passed, 0 failed.
+Focused: `npm test -- --run tests/recommendations.test.ts tests/recommendation-contract.test.ts` -> 2 files, 8 passed, 0 failed.
 Typecheck: `npm run typecheck` -> passed.
 Lint: `npm run lint` -> passed with 0 warnings/errors.
 Build: `npm run build` -> passed; Prisma client generation and Next.js production build completed.
-Full tests: `npm test` -> 36 test files, 306 passed and 1 failed. The unrelated baseline failure is `tests/discovery-limits.test.ts`, which timed out after 30 seconds in the Redis-backed sequential discovery-limit test; no recommendation tests failed.
+Full tests: `npm test` -> 37 test files, 308 passed and 1 failed. The unrelated Redis-backed `tests/discovery-limits.test.ts` sequential discovery-limit test timed out after 30 seconds; all recommendation and contract tests passed.
 Whitespace: `git diff --check` -> passed.
 
 #### Requirement-to-fixture matrix
 
 | Requirement | Fixture/check | Expected side effect | Result |
 |---|---|---|---|
-| Same inputs produce ordered max-three results | ranking/cap test | stable order and truncation | passed |
-| No match or unsupported qualification | nonqualifying-evidence test | empty alternatives, no invented savings | passed |
-| Missing attributes and unavailable variant | similarity fixture | exclude unknown type/unavailable product | passed |
-| Higher-spend proposal disclosure | ranking fixture | disclose exact extra spend and resulting total | passed |
-| Wrong currency | currency-bound fixture | skip known EUR candidate for USD basket | passed |
-| Provider/evaluator ceiling | 11-candidate fixture | evaluate at most 10 and mark truncated | passed |
-| Changed basket/turn/proposal evidence | provenance fixtures | reject stale or mismatched evidence | passed |
-| Similarity versus qualification separation | similarity fixture | no qualifying label without separate evidence | passed |
+| Same inputs produce ordered max-three results | `npm test -- --run tests/recommendations.test.ts`; ranking/cap fixture | stable order, cheapest admission, duplicate collapse, max-three output, truncation | passed; 8 focused tests total |
+| No match or unsupported qualification | `tests/recommendations.test.ts`; nonqualifying-evidence fixture | empty alternatives, no invented savings | passed |
+| Missing attributes and unavailable variant | `tests/recommendations.test.ts`; similarity fixture | exclude unknown type/unavailable product | passed |
+| Higher-spend proposal disclosure | `tests/recommendations.test.ts`; exact pricing fixture | disclose exact extra spend and resulting total | passed |
+| Wrong currency and unknown quantity | `tests/recommendations.test.ts`; replacement fixtures | zero replacement proposals/evaluations for unsupported inputs | passed |
+| Provider/evaluator ceiling and typed failure | `tests/recommendations.test.ts`; 11-candidate and DENIED fixtures | evaluate at most 10, mark truncated, preserve typed error, stop after failure | passed |
+| Changed basket/turn/proposal evidence | `npm test -- --run tests/recommendation-contract.test.ts`; real evaluator/dispatch fixture | reject stale or mismatched evidence and produce a new digest after basket/rule change | passed |
+| Arbitrary mapped definition and canonical evidence | `tests/recommendation-contract.test.ts`; fixed clock and controlled provider | preserve authored name, mapped inputs, rendered response, canonical digest, and replay identity | passed |
+| Similarity versus qualification separation | `tests/recommendations.test.ts`; similarity fixture | no qualifying label without separate evidence | passed |
+| EC01-EC12 producer effects | focused recommendation and contract fixtures | producer-side proposal, evidence, bound, and failure effects covered; host-only races remain consumer-double assertions | passed locally; live worker/MCP integration pending developer validation |
 
 ### Deviations
 
@@ -214,9 +216,9 @@ None newly reported.
 
 ### Git / VCS
 
-Task branch: `task/ARCH-020-COMMERCE-007`, attempt 1; claim cleared for review.
+Task branch: `task/ARCH-020-COMMERCE-007`, attempt 2; claim cleared for review.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, claim revision `98b876779783fdc49127d182aa73295ea6d8c8bd`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `6821a49` (`feat(commerce): recommend qualifying and similar products`), pushed to `origin/task/ARCH-020-COMMERCE-007`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `dd86f44` (`test(commerce): add recommendation producer contract`), pushed to `origin/task/ARCH-020-COMMERCE-007`.
 - Recursive database submodule evidence: `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`).
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
