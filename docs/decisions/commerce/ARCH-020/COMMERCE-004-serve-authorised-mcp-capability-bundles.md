@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
 executor: null
 claimed_at: null
@@ -289,6 +289,22 @@ performed, and the retained Architect Review below was not edited.
 
 ## Architect Review
 
+### Accepted — Attempt 3 — 2026-09-21
+
+**Current decision: Accepted / Complete; Attempt 3 retained; executor/claimed_at null.** Reviewed implementation `0411babc90182f41ad3f036096eb51427f128ac0` and parent report `b272d1a960fc9936bc83cb174317d9051b6a8e7e`, verified against remote task heads. Both dedicated worktrees were clean. Implementation database pin is `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. This acceptance supersedes prior current-state/Changes Requested wording while preserving history.
+
+A2-R1–A2-R3 are resolved for the owned component boundary:
+
+- The resolver preserves original association identity and revision provenance, computes minima across surviving originals, validates bounds and exposes explicit current tool revocation. Authorized tools require their pinned definition/name/version; missing records fail closed. Required prompt content and its encoded aggregate are bounded; legitimate zero-tool discovery remains supported.
+- The production handler uses the pinned request-scoped McpServer and WebStandardStreamableHTTPServerTransport. Protocol/input errors, method-purpose checks, bounded streamed input and final encoded output, and fixed local assertion-verifier configuration are implemented. The real SDK client exercises this handler.
+- Executor waiting is raced against request cancellation and the assertion/tool deadline. The non-cooperative fixture now yields a bounded DEADLINE result; late settlement is observed and discarded. Typed business failures remain C4 tool results. This does not claim004 forcibly stops an external operation; the execution adapter still owns stopping its work on abort.
+
+Independent evidence: **18/18 focused MCP tests passed**, plus **4/4 prior failure reproductions** in `/tmp/c004-a3-review` (6 unrelated copied tests skipped). The reproductions retain duplicate-association minima, absent pinned definition, malformed JSON and ignored-abort waiting assertions; fixtures were adapted only to the new association/current-tool contract, actual prompt revision and SDK Accept header. The deadline reproduction verifies exactly one executor invocation. Implementation and parent diff checks passed. Typecheck/lint/build, full196/199 and the isolated10/10 readiness rerun remain submitted evidence, not independently rerun. No live Redis, signed Background integration, database operation or provider call was performed.
+
+No remaining functional blocker was identified in this scoped review. COMMERCE-013 still owns production composition and014 owns definition execution. Live keys, durable adapter/network integration, Redis and deployment behavior require their separate developer/integration validation; fixture acceptance is not a claim of completed system validation.
+
+COMMERCE-014 is promoted **Ready**, Attempt0, no claim:004 andSHARED-001 are now architect-accepted Complete.010,012,013 and system-test remain gated by other prerequisites;012 remains the final implementation checkpoint. Normal preparation and approved accepted-source integration rules apply. No implementation change, new attempt, main merge/push or service gitlink update is performed by this review. The architecture is not yet Implemented.
+
 ### Changes Requested — Attempt 2 — 2026-09-21
 
 **Current decision: Ready; Attempt 2 retained; executor/claimed_at null; not accepted.** Reviewed implementation `5ef60bd304e08b5b7a6099697bc73b5f55ff87ed` and parent report `5d54102bba4d0cc293658b2968e9545d686ec0a7`; remote task heads verified, dedicated worktrees clean. No implementation edit, new claim, downstream promotion, main integration or gitlink update. This decision supersedes earlier current-state wording.
@@ -377,7 +393,7 @@ Implement R1–R4 in004-owned MCP files and fixtures; update preparation/synchro
 
 ### Review Status
 
-Pending.
+Accepted / Complete at Attempt 3; see the current architect decision above.
 
 ### Review Notes
 

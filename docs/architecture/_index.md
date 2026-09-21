@@ -147,3 +147,19 @@ five functional reproductions failed. See the latest task Architect Review.
 Live Shopify remains developer-owned and is not the blocker. No dependent
 promotion or main integration. This supersedes prior COMMERCE-006 current-state
 wording; the narrowed C19 reader-only scope remains authoritative.
+
+## COMMERCE-004 Attempt 3 accepted — 2026-09-21
+
+COMMERCE-004 is **Accepted / Complete, Attempt 3 retained**, claim cleared.
+Reviewed implementation `0411babc` and parent report `b272d1a9` against remote heads.
+Original-association minima, required pinned records/current revocation, SDK
+transport/protocol bounds and bounded executor waiting resolve A2-R1–A2-R3.
+Independent validation passed18 focused MCP tests and all four prior failure
+reproductions; diff checks passed. Submitted typecheck/lint/build passed; reported
+full-suite infrastructure failures remain separate from component acceptance.
+Live Background assertions, Redis, production adapter/provider and deployment
+validation remain developer/integration-owned. COMMERCE-014 is promoted Ready,
+Attempt0 with no claim, because004/SHARED-001 are Complete. Other dependants retain
+their unresolved gates;012 is still the final implementation checkpoint.
+No implementation changes, main integration or gitlink update. Architecture is not
+yet Implemented. This supersedes older004 state wording and retains review history.
