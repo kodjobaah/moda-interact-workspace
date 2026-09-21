@@ -1,7 +1,7 @@
 ---
-id: ARCH-020-COMMERCE-025
+id: ARCH-020-COMMERCE-032
 architecture_id: ARCH-020
-title: Implement bounded response filtering and projection
+title: Implement external tool availability
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -15,17 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-020-COMMERCE-013
+  - ARCH-020-COMMERCE-028
   - ARCH-020-SHARED-002
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-024
-  - ARCH-020-COMMERCE-030
-  - ARCH-020-COMMERCE-031
 created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Implement bounded response filtering and projection
+# Implement external tool availability
 
 ## Architecture
 
@@ -36,7 +36,7 @@ limits, errors, ownership and acceptance IDs. No model-selected replacement desi
 
 ## Objective
 
-Own src/commerce/external-response/** and focused pure tests only. Implement C21 section2.1 createResponseProcessor; no network, application factories, persistence, UI or arbitrary scripts.
+Own src/commerce/external-availability/** only. Implement shared read-only external-tool availability projection for merchant inspection and live authorization; no page, network, secret disclosure or grant creation.
 
 ## Context
 
@@ -47,7 +47,7 @@ This is new scope, not a correction to an accepted task.
 
 ## Scope
 
-Own src/commerce/external-response/** and focused pure tests only. Implement C21 section2.1 createResponseProcessor; no network, application factories, persistence, UI or arbitrary scripts.
+Own src/commerce/external-availability/** only. Implement shared read-only external-tool availability projection for merchant inspection and live authorization; no page, network, secret disclosure or grant creation.
 
 ## Out of Scope
 
@@ -65,43 +65,37 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement deterministic OBJECT/LIST projection, AND filtering, stable sort, bounded limit and own-property paths exactly as section2.1.
-- [ ] Use supplied signal/clock/deadline, enforce row/field/value limits and return typed failures without copying raw data into output.
-- [ ] Expose reusable pure port for production executor and preview; document input/result fixtures used by021/023/024. Do not mutate caller objects or keep shared request state.
+- [ ] Export section9 createExternalAvailabilityResolver over current connection status/credential availability and the accepted base eligibility result.
+- [ ] Keep original granted tool/revision set as the upper bound; new credentials/releases cannot expand old grants. Recheck exact scope/enabled/revision and key availability consistently.
+- [ ] Return actual tool/capability/revision identities and closed exclusion reasons for U13. No decryption or credential values in inspection.
+- [ ] Prove two merchants, pinned old/new revisions, changed credential configuration, disabled connection and missing-key paths with same resolver used by both consumers.
 
 ## Interfaces / Contracts
 
-C21 is the shared contract between these tasks. Own only the paths identified
-above. Record exact accepted dependency SHA/package version and source exports
-in the Completion Report. No catch-all shared integration barrel. Return genuine
-contract contradictions with a source reproduction; do not weaken validation.
+C21 sections1–8 retain data/behavior requirements. [Section9](../../../architecture/ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence) is authoritative for the narrowed ownership, factory signatures, scenario IDs and handoff rules. Consume accepted exports; no consumer may repair a missing producer by weakening the contract. Record actual dependency commits and published package versions.
 
 ## Dependencies
 
+- ARCH-020-COMMERCE-013
+- ARCH-020-COMMERCE-028
 - ARCH-020-SHARED-002
 
 ## Enables
 
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-024
-- ARCH-020-COMMERCE-030
-- ARCH-020-COMMERCE-031
 
 ## Acceptance Criteria
 
-- [ ] X10: golden samples prove output field removal/rename, type-strict comparisons, null/missing behavior, Unicode order and stable ties.
-- [ ] 1001 rows fail rather than truncate, abort/deadline checked, unsafe paths rejected; two concurrent invocations cannot contaminate results.
-- [ ] No networking, secrets or eval dependency; old response rendering unchanged because processor is a separate stage.
+- [ ] AV01: eligible PLATFORM and exact PER_SHOP cases return expected descriptors; missing credential excluded with real identities/reason, not a fabricated feature ID.
+- [ ] AV02: inspection and runtime availability agree for same facts; no provider calls, credential data or grant writes; expired/disabled contexts remain denied by base authorization.
+- [ ] AV03: credential addition never grants an unpinned tool to old conversation; rotation uses same pinned revision; revocation removes permission.
 
 ## Validation
 
-Provide `test:arch020-response-processing` in the owning repository and document its exact scope.
-Run focused changed-boundary tests, then existing repository typecheck/build
-and lint where defined. Inspect package scripts first; do not invent a claim that
-an absent script passed. Use C21 controlled transports and isolated stores.
-Follow current developer-owned live/container validation policy; clearly separate
-actual agent results from required unrun developer checks. No arbitrary screenshot
-quota or repeated full-suite runs without new changes/failures.
+Provide `test:arch020-external-availability` and scenario IDs from C21 section9. Start with the named positive path through the actual owned implementation. Add the specified rejection/race cases. Each report maps criterion -> test file/test name -> command -> observable result, not just a suite count. No claimed success based only on safe rejection or missing-config tests. Preserve each review reproduction as a committed regression alongside adjacent allowed/denied cases.
+
+Use focused checks while implementing, then existing typecheck/build/lint where defined. Record unrun developer-owned PostgreSQL/container checks accurately; executable scenarios must still exist. No repeated unrelated full suites or screenshot quotas. No live credentials/WhatsApp delivery.
 
 ## Stop Condition
 
@@ -153,7 +147,7 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-025. Attempt0; no implementation worktree or
+Expected mirrored branch: task/ARCH-020-COMMERCE-032. Attempt0; no implementation worktree or
 commit claimed. At submission record physical isolation, dependency versions,
 recursive database submodule evidence where applicable, commits and pushes.
 

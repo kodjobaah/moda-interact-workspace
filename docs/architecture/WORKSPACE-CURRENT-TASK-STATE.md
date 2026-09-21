@@ -1051,3 +1051,11 @@ C21 adds DATABASE-003/SHARED-002 (Ready, attempt0) and COMMERCE-020–027,
 GATEWAY-003, SYSTEM-TEST-002 (Pending, attempt0). The user approved read-only calls
 and both visual rules and generic sandboxed code. No task was claimed/launched.
 See [C21](ARCH-020-external-api-tools.md) and handoff for exact interfaces/dependencies.
+
+## C21 tightened task definitions — 2026-09-21
+
+Extension now has17 tasks. DATABASE-003/SHARED-002/COMMERCE-029 are Ready in this
+workspace snapshot; no task launched.028 credentials,030 publication checks,031
+preview backend and032 availability are separate Pending producers;024 is wiring
+only.026 requires029's accepted runtime proof. C21 section9 and task YAML are
+authoritative; existing execution claims remain untouched.

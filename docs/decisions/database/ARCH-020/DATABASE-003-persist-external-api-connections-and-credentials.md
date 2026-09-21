@@ -19,6 +19,7 @@ depends_on:
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-020
+  - ARCH-020-COMMERCE-028
 created: 2026-09-21
 updated: 2026-09-21
 ---
@@ -79,9 +80,10 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-DATABASE-001
 
 ## Enables
+
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-020
-
+- ARCH-020-COMMERCE-028
 
 ## Acceptance Criteria
 

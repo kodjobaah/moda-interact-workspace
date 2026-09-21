@@ -1,7 +1,7 @@
 ---
 id: ARCH-020-COMMERCE-020
 architecture_id: ARCH-020
-title: Implement external connection management service
+title: Implement external connection lifecycle and command kernel
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -22,11 +22,12 @@ enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-024
   - ARCH-020-GATEWAY-003
+  - ARCH-020-COMMERCE-028
 created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Implement external connection management service
+# Implement external connection lifecycle and command kernel
 
 ## Architecture
 
@@ -37,7 +38,7 @@ limits, errors, ownership and acceptance IDs. No model-selected replacement desi
 
 ## Objective
 
-Own src/commerce/connections/** and its service tests. Implement persistence/auth/encryption/replay behind section4 ports. No UI, network calls, shared factories or existing backend composition edits.
+Own src/commerce/connections/lifecycle/** and src/commerce/connections/command-kernel.ts only. Implement metadata/revision/enabled lifecycle and reusable transaction/auth/replay kernel. No credential encryption/storage commands/resolver, network, UI or final factories.
 
 ## Context
 
@@ -48,7 +49,7 @@ This is new scope, not a correction to an accepted task.
 
 ## Scope
 
-Own src/commerce/connections/** and its service tests. Implement persistence/auth/encryption/replay behind section4 ports. No UI, network calls, shared factories or existing backend composition edits.
+Own src/commerce/connections/lifecycle/** and src/commerce/connections/command-kernel.ts only. Implement metadata/revision/enabled lifecycle and reusable transaction/auth/replay kernel. No credential encryption/storage commands/resolver, network, UI or final factories.
 
 ## Out of Scope
 
@@ -66,17 +67,14 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Consume accepted database submodule revision and published Shared version. Implement every section4 method with exact DTOs/errors, principal checks, Origin at browser adapter boundary and locked CAS.
-- [ ] Implement immutable revision creation, per-shop/platform credential resolution, AES-256-GCM/AAD and validated key injection exactly as C21. Expose no secret-bearing DTO.
-- [ ] Use audit replay identity/digest and same-transaction business effect; authorization before replay, unique-race winner reconciliation, no action on stale/changed replay.
-- [ ] Expose injected server-only resolveConnection port for021; document creation/rotation/missing-key behavior and exact factory exports in docs/external-connections-service.md.
+- [ ] Implement createConnectionLifecycle with list/get/create/updateMetadata/createRevision/setEnabled, strict section4 DTOs, immutable revision allocation and locked metadata CAS.
+- [ ] Implement section9 command kernel with authorization-before-replay, canonical keyed digest, transaction mutation/audit atomicity and unique-race reconciliation.028 imports it; no generic application framework.
+- [ ] Provide metadata-only U15/U16 read models; do not claim credential status is implemented. Return exact new revision IDs without migrating published tool references.
+- [ ] Produce actual lifecycle create/revise/disable success and contentious update/replay/rollback scenarios early.
 
 ## Interfaces / Contracts
 
-C21 is the shared contract between these tasks. Own only the paths identified
-above. Record exact accepted dependency SHA/package version and source exports
-in the Completion Report. No catch-all shared integration barrel. Return genuine
-contract contradictions with a source reproduction; do not weaken validation.
+C21 sections1–8 retain data/behavior requirements. [Section9](../../../architecture/ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence) is authoritative for the narrowed ownership, factory signatures, scenario IDs and handoff rules. Consume accepted exports; no consumer may repair a missing producer by weakening the contract. Record actual dependency commits and published package versions.
 
 ## Dependencies
 
@@ -85,26 +83,23 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-COMMERCE-002
 
 ## Enables
+
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-024
 - ARCH-020-GATEWAY-003
-
+- ARCH-020-COMMERCE-028
 
 ## Acceptance Criteria
 
-- [ ] X03: ADMIN/revoked account denied for writes; duplicate concurrent operation creates one effect/audit; altered replay conflicts; stale CAS leaves rows unchanged.
-- [ ] Exact-shop credentials used; no fallback; ciphertext/AAD tampering, wrong key, missing key and disabled connection fail closed without exposing secrets.
-- [ ] Two independent database clients prove unique insert and update races; revision creation never copies credentials or changes prior revisions.
+- [ ] CL01: valid create->metadata update->new immutable revision->disable/enable path through actual service preserves prior revision and returns exact IDs.
+- [ ] CL02: two clients contend on same CAS or operation: one effect/audit; same replay returns original; altered replay/stale CAS produce no write; failure after actual write rolls back.
+- [ ] CL03: ADMIN/revoked staff mutation denied before replay; connection origin/auth schema errors rejected; no credentials or HTTP in owned implementation.
 
 ## Validation
 
-Provide `test:arch020-external-connections` in the owning repository and document its exact scope.
-Run focused changed-boundary tests, then existing repository typecheck/build
-and lint where defined. Inspect package scripts first; do not invent a claim that
-an absent script passed. Use C21 controlled transports and isolated stores.
-Follow current developer-owned live/container validation policy; clearly separate
-actual agent results from required unrun developer checks. No arbitrary screenshot
-quota or repeated full-suite runs without new changes/failures.
+Provide `test:arch020-external-connection-lifecycle` and scenario IDs from C21 section9. Start with the named positive path through the actual owned implementation. Add the specified rejection/race cases. Each report maps criterion -> test file/test name -> command -> observable result, not just a suite count. No claimed success based only on safe rejection or missing-config tests. Preserve each review reproduction as a committed regression alongside adjacent allowed/denied cases.
+
+Use focused checks while implementing, then existing typecheck/build/lint where defined. Record unrun developer-owned PostgreSQL/container checks accurately; executable scenarios must still exist. No repeated unrelated full suites or screenshot quotas. No live credentials/WhatsApp delivery.
 
 ## Stop Condition
 

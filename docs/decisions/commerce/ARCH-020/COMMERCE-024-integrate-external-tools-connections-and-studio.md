@@ -1,7 +1,7 @@
 ---
 id: ARCH-020-COMMERCE-024
 architecture_id: ARCH-020
-title: Integrate external tools connections and Studio
+title: Wire accepted external API components into production factories
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -25,6 +25,10 @@ depends_on:
   - ARCH-020-COMMERCE-019
   - ARCH-020-COMMERCE-026
   - ARCH-020-COMMERCE-027
+  - ARCH-020-COMMERCE-028
+  - ARCH-020-COMMERCE-030
+  - ARCH-020-COMMERCE-031
+  - ARCH-020-COMMERCE-032
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-002
@@ -32,7 +36,7 @@ created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Integrate external tools connections and Studio
+# Wire accepted external API components into production factories
 
 ## Architecture
 
@@ -43,7 +47,7 @@ limits, errors, ownership and acceptance IDs. No model-selected replacement desi
 
 ## Objective
 
-Own src/commerce/integration/external/** and minimal accepted factory/Server Action/U13 wiring. Assemble accepted components; no replacement business implementations or re-opening base tasks.
+Composition only: src/commerce/integration/external/**, minimal accepted backend/Studio/preview factory wiring, approved Server Action bindings and panel insertion. All connection, credential, HTTP, validation/receipt, preview and availability behavior must already exist in accepted producers.
 
 ## Context
 
@@ -54,7 +58,7 @@ This is new scope, not a correction to an accepted task.
 
 ## Scope
 
-Own src/commerce/integration/external/** and minimal accepted factory/Server Action/U13 wiring. Assemble accepted components; no replacement business implementations or re-opening base tasks.
+Composition only: src/commerce/integration/external/**, minimal accepted backend/Studio/preview factory wiring, approved Server Action bindings and panel insertion. All connection, credential, HTTP, validation/receipt, preview and availability behavior must already exist in accepted producers.
 
 ## Out of Scope
 
@@ -72,19 +76,14 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Install027 panels into023 slots; add exact-hash sample receipts and section2.3 validation. Guard publication against stale/expired receipts. Use existing preview lifecycle for saved-revision tests with new optional externalResponseFixture, leaving old requests compatible.
-
-- [ ] Wire real Prisma/keyring connection service, visual processor, sandboxed code engine, raw-response decoder and HTTP executor into accepted backend/publication/Studio/preview boundaries; map section4 service methods to authenticated Server Actions.
-- [ ] Implement merchant inspection exclusion for missing credential/disabled connection and same authorization before every call; existing conversation grants never gain new tools/revisions.
-- [ ] Freeze exact external connection revision/processing definition in preview while using fixture resolver/transport with no keys or live network, even in Model mode.
-- [ ] Prove XN01–04 with real application services, isolated DB and controlled HTTP fixture; expose deterministic integration seed. Explicitly mark EXTERNAL_HTTP uncached for012.
+- [ ] Wire020 lifecycle +028 credentials +021 transport +025/026 processors +030 publication +031 preview +032 availability into accepted factories; adapt fields without recreating business logic.
+- [ ] Install022/023/027 components and bind accepted service methods with existing auth/Origin adapters. Preserve method/result/operation identity, not catch-all success wrappers.
+- [ ] Demonstrate XN01–04 using real assembled application services and controlled external HTTP; verify EXTERNAL_HTTP cache bypass.
+- [ ] If a producer is incomplete, record concrete failing producer contract and route correction to its owner; do not absorb missing persistence, eligibility, receipt/quota or runtime implementation into024.
 
 ## Interfaces / Contracts
 
-C21 is the shared contract between these tasks. Own only the paths identified
-above. Record exact accepted dependency SHA/package version and source exports
-in the Completion Report. No catch-all shared integration barrel. Return genuine
-contract contradictions with a source reproduction; do not weaken validation.
+C21 sections1–8 retain data/behavior requirements. [Section9](../../../architecture/ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence) is authoritative for the narrowed ownership, factory signatures, scenario IDs and handoff rules. Consume accepted exports; no consumer may repair a missing producer by weakening the contract. Record actual dependency commits and published package versions.
 
 ## Dependencies
 
@@ -98,6 +97,10 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-COMMERCE-019
 - ARCH-020-COMMERCE-026
 - ARCH-020-COMMERCE-027
+- ARCH-020-COMMERCE-028
+- ARCH-020-COMMERCE-030
+- ARCH-020-COMMERCE-031
+- ARCH-020-COMMERCE-032
 
 ## Enables
 - ARCH-020-COMMERCE-012
@@ -106,19 +109,15 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] X07: author JSON or TEXT -> visual/code processing -> schema/test -> publish -> behaviour binding -> release activation -> merchant selection -> MCP call returns only processed external facts.
-- [ ] Two merchants with PER_SHOP credentials cannot cross accounts; absent credential excluded; PLATFORM shared access is deliberate; rotation/disable and old revision pinning match C21.
-- [ ] Preview and UI cannot read secrets or make live external requests; original Shopify/policy routes still work; current Background descriptors/envelopes remain unchanged.
+- [ ] WI01: new connection/credential->external tool->visual/code sample->publish->release->merchant->real MCP call succeeds through configured no-argument production factories.
+- [ ] WI02: actual composition preserves tenant/pin/validation/cancel boundaries and preview has zero provider/decrypt calls; field mapping tests invoke actual producers.
+- [ ] WI03: report identifies each producer export and accepted SHA plus test evidence;024 introduces no new business algorithm or duplicated engine.
 
 ## Validation
 
-Provide `test:arch020-external-integration` in the owning repository and document its exact scope.
-Run focused changed-boundary tests, then existing repository typecheck/build
-and lint where defined. Inspect package scripts first; do not invent a claim that
-an absent script passed. Use C21 controlled transports and isolated stores.
-Follow current developer-owned live/container validation policy; clearly separate
-actual agent results from required unrun developer checks. No arbitrary screenshot
-quota or repeated full-suite runs without new changes/failures.
+Provide `test:arch020-external-wiring` and scenario IDs from C21 section9. Start with the named positive path through the actual owned implementation. Add the specified rejection/race cases. Each report maps criterion -> test file/test name -> command -> observable result, not just a suite count. No claimed success based only on safe rejection or missing-config tests. Preserve each review reproduction as a committed regression alongside adjacent allowed/denied cases.
+
+Use focused checks while implementing, then existing typecheck/build/lint where defined. Record unrun developer-owned PostgreSQL/container checks accurately; executable scenarios must still exist. No repeated unrelated full suites or screenshot quotas. No live credentials/WhatsApp delivery.
 
 ## Stop Condition
 

@@ -23,6 +23,7 @@ enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-010
   - ARCH-020-SYSTEM-TEST-001
+  - ARCH-020-COMMERCE-031
 created: 2026-09-20
 updated: 2026-09-21
 ---
@@ -90,6 +91,7 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-010
 - ARCH-020-SYSTEM-TEST-001
+- ARCH-020-COMMERCE-031
 
 ## Acceptance Criteria
 
