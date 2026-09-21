@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 110
-executor: copilot
-claimed_at: 2026-09-21T09:43:55Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-COMMERCE-016
@@ -175,17 +175,21 @@ Implemented the qualifying and similar-product policy operations, deterministic 
 - A2-R1 corrected REPLACE admission pricing to use source quantity and candidate/source unit prices, including known/unknown pricing and deterministic pre-cap ordering. Focused tests cover the eleven-candidate admission case, duplicate collapse, source quantity three, and final disclosed totals.
 - A2-R2 added post-await and pre-publication deadline/cancellation guards across evaluator, qualifying, and similar paths. Focused tests cover cancellation after the last evaluator, expired deadlines after an earlier result, pending similar searches, and zero subsequent calls after stopping.
 - A2-R3 completed the local C18 producer/consumer evidence with a shared provider-request counter that rejects reservation 13, arbitrary mapped tool replay, exact proposal matching, canonical digest/provenance assertions, tampered evidence rejection, configured limits, and fail-closed typed errors. The local contract fixture remains Commerce-owned and imports no Background code.
-- A3-R1 completed the remaining local C18 assertions in `tests/recommendation-contract.test.ts`: actual generated digest validation, exact-call mapped replay, reverse-order and exact-proposal matching, duplicate/missing/empty/truncated rejection, isolated basket/rule/savings/total/currency/outcome/proposal mutations, expiry/future/digest/malformed rejection, rendered imitation with zero refresh, provenance/turn/identity denial, typed transport failure without retry, cancellation with zero deliveries/language writes, and explicit consumer counters. Implemented and focused-validated in attempt 4; no production recommendation change was required.
+- A3-R1 remains preserved in the production recommendation implementation; the Attempt 5 fixture correction is limited to `tests/recommendation-contract.test.ts`.
+- A4-R1.1 implemented: one top-level mapped execution now uses six valid candidates, one shared fresh budget, real search/rule/facts transport, and no counter preload or artificial request loop. Focused evidence observes `reservations=13`, `providerCalls<=12`, and typed `ERROR` on reservation 13.
+- A4-R1.2 implemented in the task-owned consumer double: valid second evidence uses a computed digest; reverse-order two-item selection checks every selected ID; bad second IDs refer with zero deliveries/language writes; async refresh is invoked and counted.
+- A4-R1.3 implemented for the executed rows: malformed envelopes go through `CommerceToolOutputs...parse`, valid digest mutations are checked independently for basket/rule/savings/total/currency/outcome, expiry is checked with a positive-control evidence envelope, and authorization denial reaches the producer boundary with zero provider calls. The pre-existing legacy rows for transport-error and cancellation remain unchanged and are reported as fixture-only pending coverage rather than claimed as completed A4 proof.
+- A4-R1.4 implemented: this report now records only assertions executed by the Attempt 5 command and distinguishes local proof from developer-owned live/system validation.
 - C18 shared recommendation outputs and operation descriptors, C4 exact-call evidence identity, C8 deterministic ranking, max-three output, currency/extra-spend disclosure, evaluator bounds, and qualifying/similar separation remain preserved.
 
 ### Validation Results
 
-Focused: `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts` -> 2 files, 11 passed, 0 failed after the A3-R1 harness correction.
-Typecheck: `npm run typecheck` -> passed in attempt 4 after the harness changes.
+Focused: `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts` -> 2 files, 11 passed, 0 failed in Attempt 5.
+Typecheck: `npm run typecheck` -> passed in Attempt 5 (`next typegen` and `tsc --noEmit`).
 Lint: `npm run lint` -> passed with 0 warnings/errors.
 Build: `npm run build` -> passed; Prisma client generation and Next.js production build completed.
-Full tests: `npm run test` -> 36 files passed, 1 failed; 311 tests passed and 1 failed. The unrelated failure is `tests/discovery-limits.test.ts`, which timed out after 30 seconds in the Redis-backed sequential limit test. No recommendation or contract test failed; the prior readiness-docker failure did not reproduce in this run. This remains an unrelated baseline/environment condition and was not changed.
-Whitespace: `git diff --check` -> passed after the attempt 4 edit.
+Full tests: `npm run test` -> 38 files passed, 1 failed; 334 tests passed and 1 failed. The unrelated failure is `tests/discovery-limits.test.ts`, which timed out after 30 seconds in the Redis-backed sequential limit test. No recommendation or contract test failed. This remains an unrelated baseline/environment condition and was not changed.
+Whitespace: `git diff --check` -> passed in Attempt 5.
 
 #### Requirement-to-fixture matrix
 
@@ -198,18 +202,18 @@ Whitespace: `git diff --check` -> passed after the attempt 4 edit.
 | Wrong currency and unknown quantity | `tests/recommendations.test.ts`; replacement fixtures | zero replacement proposals/evaluations for unsupported inputs | passed |
 | Provider/evaluator ceiling and typed failure | `tests/recommendations.test.ts`; 11-candidate, DENIED, deadline, and shared-counter fixtures | evaluate at most 10, reserve at most 12 provider requests, mark truncation, preserve typed error, stop after failure/exhaustion | passed; reservation 13 rejected, no later provider call |
 | Changed basket/turn/proposal evidence | `npx vitest run tests/recommendation-contract.test.ts`; real evaluator/dispatch fixture | reject stale or mismatched evidence and produce a new digest after basket/rule change | passed |
-| Arbitrary mapped definition and canonical evidence | `tests/recommendation-contract.test.ts`; fixed clock, mapped inputs, controlled provider, computed digest | preserve authored name, arguments, rendered response, canonical digest, and replay identity | passed; actual generated evidence accepted and exact replay asserted |
+| Arbitrary mapped definition and canonical evidence | `tests/recommendation-contract.test.ts`; fixed clock, mapped inputs, controlled provider, computed digest | preserve authored name, arguments, rendered response, canonical digest, and replay identity | passed; generated evidence and full replay proposal order asserted |
 | Similarity versus qualification separation | `tests/recommendations.test.ts`; similarity fixture | no qualifying label without separate evidence | passed |
 | EC01/02/12 original call and replay | `tests/recommendation-contract.test.ts`; mapped definition executor fixture | retain arbitrary tool name/arguments, replay once, preserve mapped inputs, and avoid ungranted discovery | passed; one exact replay, no extra grant |
-| EC03/05 exact alternative matching | `tests/recommendation-contract.test.ts`, `executes the C18 consumer matrix...`; command `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts` | two alternatives and reverse order accepted by exact proposal; duplicate/missing/empty/truncated refer with deliveries0; refresh/provider counts remain bounded | passed; consumer refresh assertions 1 per positive call, 0 for empty/imitation, deliveries/languageWrites 0 for negative cases |
+| EC03/05 exact alternative matching | `tests/recommendation-contract.test.ts`, `executes the C18 consumer matrix...`; command `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts` | two alternatives and reverse order accepted by exact proposal; bad second/truncated refer with deliveries0 | passed; reverse-order refresh checked every selected item, refresh count 1, bad second and truncation deliveries/languageWrites 0 |
 | EC04 independent evidence fields | same named contract test, mutation table | basket/rule/savings/total/currency/outcome/proposal mismatches each recomputed with a valid digest and refer independently | passed; each row returned REFER with deliveries0 |
-| EC06/07/08/10 expiry, digest, identity and authorization | same named contract test, expiry/identity table | expiry boundary, future timestamp, invalid digest, malformed shape, imitation, wrong turn/grant and revoked identity fail closed | passed; imitation and identity prechecks used zero refresh; denied producer used providerCalls/reservations 0 |
-| EC09/11 typed failures and stale completion | same named contract test, transport/cancellation rows; `tests/recommendations.test.ts` deadline fixtures | typed failure has one refresh and no retry; cancellation yields deliveries0/languageWrites0 | passed; refreshCalls1, deliveries0, languageWrites0 |
+| EC06/07/08/10 expiry, digest, identity and authorization | same named contract test, digest/expiry/authorization rows | valid-digest field mutations, malformed shape, expiry boundary, wrong turn and producer denial fail closed | passed for executed rows; producer denial providerCalls=0; future-timestamp and rendered-imitation rows remain pending fixture coverage |
+| EC09/11 typed failures and stale completion | `tests/recommendations.test.ts` deadline fixtures; legacy consumer rows | typed failure and cancellation delivery guards | pending in the task-owned consumer fixture; production deadline tests passed, but no new Attempt 5 transport-error/deferred-refresh assertion is claimed |
 | EC01-EC12 producer/consumer effects | focused command above; real mapped producer fixture plus consumer matrix | arbitrary mapped call, generated evidence, exact replay, proposal/evidence bounds, and host-only delivery assertions are executable; live worker/MCP remains developer-owned | passed locally; provider-budget fixture bounded at reservation 13 with no later transport request |
 
 ### Deviations
 
-The full-suite Redis-backed discovery admission timeout is unrelated to the changed recommendation files. No live MCP, deployment, Shopify, or system-test validation was launched.
+The full-suite Redis-backed discovery admission timeout is unrelated to the changed recommendation files. A4-R1 legacy transport-error/deferred-refresh rows were not expanded in Attempt 5; they are explicitly pending rather than represented as passed. No live MCP, deployment, Shopify, or system-test validation was launched.
 
 ### Assumptions
 
@@ -225,9 +229,9 @@ None newly reported.
 
 ### Git / VCS
 
-Task branch: `task/ARCH-020-COMMERCE-007`, attempt 4; claim cleared for review (`status: review`, `executor: null`, `claimed_at: null`).
+Task branch: `task/ARCH-020-COMMERCE-007`, attempt 5; claim cleared for review (`status: review`, `executor: null`, `claimed_at: null`).
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`; this report is the task-owned evidence artifact.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `91faf18e8163b8b4bba231fbb6b2a30477d2aeb8` (`test(commerce): make provider budget fixture single-dispatch`), pushed to `origin/task/ARCH-020-COMMERCE-007`; preceding harness commit `89780156e1f5bc2e53cbec26be3ee4927fd2fbce` is included.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `caf5d38` (`test(commerce): complete recommendation replay evidence`), pushed to `origin/task/ARCH-020-COMMERCE-007`; preceding implementation commits remain included.
 - Recursive database submodule evidence: `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`).
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
