@@ -1253,3 +1253,18 @@ Definition sections overwritten by completion prose are restored; submitted pros
 is preserved under Completion Report. No new claim, dependency promotion, code
 change, main integration or gitlink update. Live production integration remains
 separate. See task for explicit corrections; older readiness wording is historical.
+
+
+## COMMERCE-017 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; **Ready**, Attempt 2 retained, executor/claimed_at null; not accepted.
+Reviewed implementation `74a848ad` and report `bb816b26` against remote task heads.
+Independent U14 tests:9/9 passed; four added regression checks fail: failed input
+is cleared, returned UNKNOWN tool state loses reconciliation, unsaved handoffId
+is used as releaseId, and client accepts a different run ID. The task's latest
+A2-R1–R5 specify lifecycle, saved-source/composer, client identity/uncertainty,
+complete input validation and populated workflow evidence corrections. Missing
+local Studio identity remains an explicit browser-validation prerequisite.
+No dependency is promoted, no new attempt claimed, no implementation/main/gitlink
+changed. Reclaim the same task only after this parent review overlay is published.
+Older decision summaries are historical; task YAML and latest review govern.

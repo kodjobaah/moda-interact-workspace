@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 135
 executor: null
 claimed_at: null
@@ -332,6 +332,62 @@ This report is the only parent-workspace change. No domain index, architecture d
 
 ## Architect Review
 
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for corrections. Attempt 2 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `74a848ad7cebfe39524f12a3a657167cde864f4c` and parent report `bb816b265caba4822ba30cd03500af0fae687a4d`, matching remote task heads. Both dedicated worktrees were clean; database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No implementation change, new claim, main merge or dependency promotion.
+
+Independent validation: submitted U14 suite **9/9 passed**. `/tmp/c017-a2-review/review.test.tsx` imports the submitted component/client and reproduces **four failures**: FAILED clears submitted input; resolved UNKNOWN tool POST loses its same-ID check; composer handoffId is submitted as a persisted releaseId; getRun accepts a different valid UUID. Diff check passed. The reported46 preview tests and typecheck/lint/build remain submitted evidence; backend tests do not substitute for U14 flows. The local identity prerequisite and absent populated browser evidence are acknowledged, not represented as a pass.
+
+Retain the improved Start/Send identity reservation, uncertain POST replay, tool GET check, RUNNING cancellation polling, explicit Back destination and primitive input parsing. The following is the authoritative remaining correction contract, within the existing scope.
+
+#### A2-R1 — P1 — Correct lifecycle transitions and preserve failed input
+
+Change `src/studio/preview/preview-screen.tsx` and `tests/preview-screen.test.tsx`.
+
+1. In `finishRun`, replace the message-clear condition with `operation.message && response.status === 'COMPLETED' && !operation.cleared`. FAILED, CANCELLED and UNKNOWN preserve submitted input; terminal success clears once whether returned immediately or by polling.
+2. `runTool` currently clears `toolOperation.current` on every resolved POST. Apply the same status transition to POST and GET: only COMPLETED/FAILED/CANCELLED release the operation; RUNNING retains the original payload/ID and schedules bounded status polling; UNKNOWN retains them, stops automatic polling and exposes the same-ID Check. No new POST is enabled until terminal acknowledgement. Deduplicate POST/GET checks and do not allow a delayed earlier response to regress a terminal state.
+3. Use synchronous refs for Cancel admission (React `cancelPending` alone is not a same-turn lock). Capture generation for conversation creation and all tool check success/error/finally paths, and reject stale callbacks before any state mutation. Cancel/poll overlap must not publish stale results. Clean outstanding timers on status UNKNOWN, reset and unmount.
+4. Restore the required reset confirmation before discarding a completed synthetic conversation. Cancelling the confirmation leaves history/selection unchanged; unresolved operations continue to require reconciliation, and reset must not imply server cancellation.
+
+Tests: returned FAILED and CANCELLED preserve text; polled COMPLETED clears once; returned UNKNOWN/RUNNING tool POST keeps exactly one ID/payload and zero second POSTs; terminal GET unlocks; duplicate Cancel in one React batch dispatches once; delayed completion after unmount/reset cannot mutate the next generation. Assert values and calls, not only absence of a rendered unmounted component.
+
+#### A2-R2 — P1 — Distinguish unsaved composer handoffs from saved releases and connect entry paths
+
+Change U14 page/source selection in `app/preview/page.tsx` and `src/studio/preview/`; consume the existing Studio read interface, without adding backend loaders. `components/studio-workspace.tsx` creates `handoffId: newOperationId()` for an **unsaved release composer**. It is not a database release ID. The previous R3 wording about RELEASE applied to an actual saved release; it did not authorize using this operation ID as one.
+
+For that composer source, submit exactly:
+
+```ts
+{ kind: 'DRAFT',
+  capabilityRevisionIds: handoffRelease.members.map(member => member.capabilityRevisionId),
+  toolRevisionIds: [],
+  responseContract: handoffRelease.responseContract }
+```
+
+Retain its handoffId/reason/hash/members in the authenticated tab-local composer for Back restoration. For a separately selected saved release, submit `{ kind: 'RELEASE', releaseId: selectedRelease.id }` from an authenticated read result. Never infer persisted identity from handoffId or mix an unrelated stale tool composer into a release draft.
+
+Direct/sidebar entry remains unusable: the page passes no sources, Start is disabled, and the tool select still contains only `value=""` rather than a selectable revision. Connect existing `StudioServices.listTools/getTool/listReleases` through the approved read boundary and injected fixtures; render real revision/release options and update the chosen source. Resolve allowed route/source context and default a composer tool handoff to Tool test (currently only the `tool` prop controls this). Show explicit lost-context guidance when a source handoff is absent after refresh/sign-out. Honor the selected origin for Back without falling through to a stale other composer.
+
+Tests must exercise the composer/provider and page boundary: unsaved release -> DRAFT with exact response contract -> Back preserves reason/hash/members; saved release -> RELEASE with actual saved ID; tool handoff -> Tool test; direct entry chooses a populated source; source loss produces guidance. If an existing read interface cannot supply a required field, report the exact missing interface to architect/008 or013; do not implement their adapters.
+
+#### A2-R3 — P1 — Validate expected response identity without unlocking uncertain writes
+
+Change `src/studio/preview/client.ts` and add transport-boundary tests. Pass the expected ID to each parser: startConversation input.previewConversationId; sendRun/runToolTest input.previewRunId; GET/cancel path runId. Validate UUID using existing PreviewIdSchema and require equality, in addition to canonical status/result validation. A well-formed result for another ID must never render or release the tracked operation. Fixtures must echo actual request IDs; current screen fixtures use arbitrary conversation-1/run-1 and mask this defect.
+
+A malformed/mismatched successful response is an **uncertain outcome**, not proof that a mutating request failed. Use a distinct client/protocol uncertainty error (not PreviewError('UNAVAILABLE'), which the screen currently treats as known failure). Preserve the original ID/payload and reconcile via same-ID GET or exact conversation-create replay. Only recognized canonical error envelopes may become known PreviewError codes; do not cast arbitrary code strings. Treat malformed non-success envelopes as uncertain too. Validate the fixture catalogue fields/bounds used by UI; remove the fallback fixture as an executable choice while catalogue is loading/failed/empty. Disable dispatch until a returned fixture has been selected.
+
+Tests through createPreviewClient: exact paths/methods/payloads for all seven methods; missing/invalid/different IDs rejected; different result never shown; malformed successful POST retains one original operation; canonical denial remains known failure; failed/empty catalogue causes zero execution calls. Preserve accessible error feedback and render available quota/configuration information without inventing server fields.
+
+#### A2-R4 — P2 — Validate complete supported input schemas
+
+Change `parseArguments` in preview-screen.tsx and focused tests. Current object/array handling only checks JSON container type and skips nested required/properties/items/additionalProperties and array bounds. Parse the typed values, then validate the entire object against the approved supported input schema before dispatch; reuse an existing canonical validator if available, otherwise implement the declared supported subset and fail closed for unsupported rules. Validate defaults through the same path. Enforce the existing C9.1 tool argument byte bound. Preserve edit-after-success invalidation and pending/unknown input locks. Tests: nested required property missing, wrong array item type, prohibited extra property and over-bound arguments each produce zero calls; one valid nested input arrives with exact types. Do not invent a new Shared wire contract.
+
+#### A2-R5 — P2 — Close the validation gap accurately
+
+The access-denied result identifies a genuine local Studio identity prerequisite, unlike the former occupied-port explanation. No production identity or live provider is required. Keep authenticated browser evidence explicitly pending until that prerequisite is supplied; do not change U05 into a developer-only requirement. Use contract-faithful populated component/injected-browser fixtures for task-owned source/navigation/error/cancellation/schema flows, keeping the real page auth guard intact. Record desktop/narrow/keyboard evidence where the approved local fixture harness permits it, and distinguish that from authenticated application evidence. Do not introduce a production auth bypass.
+
+Update Completion Report with exact corrected case -> fixture -> request IDs/payloads/counts/outcome, and current preparation/synchronization evidence. Remove superseded pending/template review claims or mark them historical; never replace task definition sections. Source/tests changes are required for R1–R4; merely repeating the submitted checks is insufficient. Remove the obsolete commented duplicate screen while editing that file. Preserve owner boundaries; rerun focused checks and required lint/typecheck/build/diff checks, publish both task branches and return to review with claims clear.
+
 ### Changes Requested — Attempt 1 — 2026-09-21
 
 **Current decision: Ready for corrections, Attempt 1 retained, executor/claimed_at null; not accepted.** Verified implementation `2ec7f661bd56ca44e1fdbed8d30a05f48fd78d59` and report `c9385f1d7d34b9733456c0ef3aecfbc7f4b0c8f8` against remote task heads. Dedicated worktrees were clean. The report still contained an active executor/claimed_at; this review clears them. No implementation edits, new claim, dependency promotion, main integration or gitlink update.
@@ -376,11 +432,11 @@ Implement R1–R5 in017-owned frontend/client/tests. Keep009 backend,013 product
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 2.
 
 ### Review Notes
 
-No implementation submitted. This task is a reviewable definition.
+Current decision and required corrections are recorded above; prior reviews remain historical.
 
 ### Reviewed Files
 
