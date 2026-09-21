@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 135
-executor: copilot
-claimed_at: 2026-09-21T04:18:17Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-008
@@ -380,6 +380,65 @@ Dependency evidence: implementation repository consumed the accepted `origin/mai
 This report is the only parent-workspace change. No domain index, architecture document, other task, service gitlink or `main` branch was modified. Generated Next.js `AGENTS.md` and `CLAUDE.md` files were removed and not committed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for corrections. Attempt 3 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `64847e64ceead10f7763b5c9606f0018a10c153b` and parent report `f3644a64ca67e3156678a0aeeebd2cbc5a5ce512`, each matching its remote `task/ARCH-020-COMMERCE-017` head. Dedicated worktrees were clean. This decision supersedes Attempt 2's current-state wording; prior reports and reviews remain historical evidence. No implementation changes, new claim, main integration, gitlink update or dependent promotion.
+
+Independent validation: the submitted UI/client suite passed **12/12**. The four Attempt 2 reproductions now pass: FAILED preserves input, resolved UNKNOWN tool POST retains reconciliation, unsaved release handoff becomes DRAFT, and a different valid response UUID is rejected. A temporary harness importing the submitted implementation (`/tmp/c017-a3-review/review.test.tsx`, run with its `vitest.config.mts`) passed those four and reproduced **four remaining functional failures** described below. Source inspection also confirms direct-entry selection is absent. The reported 49 preview tests, typecheck, lint and production build are submitted evidence; they were not rerun in full by the architect. Missing local Studio identity remains a genuine external prerequisite for authenticated browser validation, not evidence that these implementation defects are resolved.
+
+The following is the authoritative remaining correction checklist. Preserve the four verified fixes. Do not start a fresh implementation or expand into backend loaders, production adapters or live providers.
+
+#### A3-R1 — P1 — Release the cancellation guard and fence lifecycle callbacks
+
+Files: `src/studio/preview/preview-screen.tsx`, focused screen tests.
+
+**Reproduction:** start a conversation, Send run A returning RUNNING, Cancel A returning CANCELLED, then Send run B returning RUNNING and press Cancel. Expected two cancel calls, one for each run; observed only one. `cancelPendingRef.current` is set true in `cancel` and never released on a successful response. The second Cancel silently does nothing even though the button is enabled; Reset also leaves this ref set.
+
+**Correct exactly:** scope cancellation admission to the active operation. Release its in-flight guard on settled success/error, with operation/generation ownership checks so an old callback cannot unlock a newer cancellation. Keep the run ID reserved until terminal acknowledgement; RUNNING cancel responses continue same-ID polling, and UNKNOWN requires explicit reconciliation. Reset the relevant guards on a permitted reset. Retain synchronous duplicate protection.
+
+Complete the still-open A2-R1 fencing in the same lifecycle code: capture/check generation in conversation creation success/error/finally; guard tool-check finally before changing state; clear the conversation timer on UNKNOWN and terminal outcomes. Serialize or sequence cancel/poll responses so an earlier poll cannot replace a newer cancellation/UNKNOWN result. No stale request may regress a terminal result or unlock another operation.
+
+**Acceptance:** A -> CANCELLED -> B -> CANCELLED produces exactly two cancel calls with their respective IDs; duplicate Cancel for one in-flight request still produces one. A delayed response from an older request cannot overwrite the newer status. UNKNOWN schedules no further automatic GETs. These are behavioral checks, not requests for an exhaustive race matrix.
+
+#### A3-R2 — P1 — Implement actual direct-entry source selection
+
+Files: `app/preview/page.tsx` and `src/studio/preview/`, consuming the existing Studio read contract.
+
+**Observed:** the page renders `<PreviewScreen />` without source data/read access. With no composer handoff, execution is permanently unavailable; the saved-tool select has only an empty-valued option and never chooses a revision. Conversation options are labels for a handoff, not a list of real saved sources. This is unfinished A2-R2, independent of local OAuth provisioning.
+
+**Correct exactly:** consume existing `StudioServices.listTools`, `getTool`, `listReleases`/`getRelease` as needed through the established server/read boundary. Pass serializable source results or an appropriate existing injected read boundary into U14; do not pass server functions to a client component or invent backend loaders. Render real tool/revision and release options, keep selected IDs in state, and load the selected definition for arguments. Saved release selection submits its actual ID as RELEASE; preserve exact DRAFT members/response contract for unsaved handoffs. Preserve Tool test preselection for tool entry. Handle empty/unavailable/lost source with useful guidance and zero execution. Back must use the active entry context, not a stale unrelated composer tool when previewing a release.
+
+**Acceptance:** with an injected existing Studio service fixture and no composer, select a real tool revision and run once with that revision; select a saved release and start once with its ID. Empty/unavailable sources dispatch zero calls. An unsaved release still sends DRAFT and returns to its own origin. Production missing adapters continue to fail closed; COMMERCE-013 owns real service composition. If an exact read-contract field is missing, identify that field/interface in the report instead of declaring direct entry implemented.
+
+#### A3-R3 — P1 — Preserve uncertain HTTP outcomes and gate execution on fixtures
+
+Files: `src/studio/preview/client.ts`, `preview-screen.tsx`, focused client/screen tests.
+
+**Reproduction 1:** default browser transport receives HTTP 502 whose JSON parser fails (e.g. a proxy HTML response). Expected `PreviewUncertainError`; observed `PreviewError('UNAVAILABLE')`. The screen treats that invented typed failure as definitive, clears the pending operation and permits a fresh ID even though the original POST might have executed.
+
+**Correct exactly:** only a valid canonical error envelope with an allowed error code becomes `PreviewError`. A missing, unrecognized or malformed error envelope, including JSON parse failure on non-success responses, remains uncertain. Preserve the original POST ID/payload and same-ID reconciliation. Keep the verified successful-response UUID equality checks. Exercise the default fetch transport, not only an injected transport that bypasses error decoding.
+
+**Reproduction 2:** `listFixtures()` returns `[]`; after entering handle `shirt`, Run tool test dispatches once with `fixtureId: ''`. Expected zero calls. `runTool` has no catalogue/selection guard and the button is enabled.
+
+**Correct exactly:** track catalogue readiness and require a non-empty selected ID present in the validated catalogue in both execution handlers and button state. Loading, failure, empty catalogue and invalid selection must disable Tool test and conversation creation and send no request. Do not synthesize a fallback fixture. Reject empty catalogue IDs at the client boundary.
+
+**Acceptance:** malformed 502 after POST retains its original ID; a canonical typed rejection follows the known-failure path. Empty/loading/failed catalogue sends zero execution requests; a valid selected fixture is forwarded unchanged.
+
+#### A3-R4 — P2 — Validate against the full canonical input subset
+
+Files: `src/studio/preview/preview-screen.tsx`, focused input tests.
+
+**Reproduction:** a supported nested schema declares `payload.count` as `type: ['integer', 'null']`; enter `{"count":"wrong-type"}`. Expected a local error and zero calls; observed dispatch with that string. The custom validator compares only single-string types and silently accepts the union. It also ignores canonical string patterns.
+
+**Correct exactly:** validate the complete original `definition.inputSchema` using the existing Shared `compileSubset(schema, 'input')` contract (already used by preview backend), or explicitly fail closed for a supported form the editor cannot encode. Do not reconstruct a partial root schema or silently ignore rules. Parse nullable/typed inputs deliberately, preserve supported defaults, apply the existing 32KiB limit and display a field/path error before dispatch. No Shared wire change or parallel schema validator is needed.
+
+**Acceptance:** the nested wrong-type value above and an invalid value for the canonical money pattern dispatch zero calls; valid integer/null and valid patterned strings preserve their exact JSON types/values. Existing nested required/additional-properties and size checks remain intact.
+
+#### Evidence and report cleanup before resubmission
+
+Update the Attempt 3 checklist with an explicit superseding correction report: direct source selection, non-success uncertainty and full schema support are not yet implemented. Remove the obsolete commented-out screen implementation. Record the targeted fixture/component flows above with actual request values/counts. Keep authenticated desktop/narrow/keyboard evidence explicitly pending local Studio identity; do not claim component tests are browser screenshots or reclassify U14-owned source selection as developer-owned. No auth bypass or production fixture substitution is authorized. A missing identity alone does not add another implementation defect or require live-provider work here.
+
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 

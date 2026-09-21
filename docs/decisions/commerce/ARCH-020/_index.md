@@ -24,7 +24,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-014](COMMERCE-014-execute-and-render-pinned-tool-definitions.md) | Execute and render pinned tool definitions | complete | ARCH-020-COMMERCE-004, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-015](COMMERCE-015-provide-trusted-basket-and-product-policy-adapters.md) | Provide trusted basket and product policy adapters | ready | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | pending | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | ready | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -291,3 +291,20 @@ submitted evidence; baseline failures do not block this component acceptance.
 pending. No dependent promotion, new claim, main integration or gitlink update.
 012 remains the final implementation checkpoint; architecture is not yet Implemented.
 This supersedes older005 current-state wording while preserving review history.
+
+## COMMERCE-017 Attempt 3 architect review — 2026-09-21
+
+COMMERCE-017 is **Changes Requested / Ready, Attempt 3 retained**, executor and
+claimed_at cleared; not accepted. Reviewed implementation `64847e64` and parent
+report `f3644a64` against their remote task heads. Independent UI/client tests
+passed 12/12 and all four previous reproductions now pass. Four new reproductions
+fail: second-run cancellation remains locked, empty catalogue permits a tool POST,
+malformed HTTP failures discard uncertainty, and nullable input types bypass
+validation. Direct-entry saved-source selection also remains unimplemented.
+The task's A3-R1–R4 specify exact files, corrections and expected request effects;
+preserve the verified prior fixes. Authenticated browser evidence remains pending
+local Studio identity; source-selection implementation is still task-owned.
+No new claim, dependent promotion, implementation change, main integration or
+gitlink update. This overlay supersedes older COMMERCE-017 current-state wording only;
+other task decisions and historical reports remain unchanged. Architecture is
+not yet Implemented; COMMERCE-012 remains the final implementation checkpoint.
