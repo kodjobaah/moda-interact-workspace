@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 120
-executor: copilot
-claimed_at: 2026-09-21T02:03:58Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -676,6 +676,41 @@ COMMERCE-013 scope. This attempt reports deterministic fixtures only and makes
 no live-provider or deployment claim.
 
 ## Architect Review
+
+### Changes Requested — Attempt 5 — 2026-09-21
+
+**Current decision: Ready, Attempt 5 retained, executor/claimed_at null; not accepted.** Reviewed implementation `558432f2f26890b3e7e44f64abd6ec27c4a50685` and report `0b2e03bbaf5461eea1081e977260997335342977`, with clean dedicated worktrees and matching remote task heads. This supersedes earlier current-state wording. No implementation edit, next claim, dependent promotion or main integration.
+
+**A4-R2 and A4-R3 are accepted.** Record/revision keying and route loading separation fix the reproduced cross-record state leak; admittedRevision is retained through replay and preserves newer dirty content. The original unaliased nested-query reproduction also passes. All three previous review reproductions passed independently, and the current focused Studio suite passed **25/25**. Preserve these fixes. The sole remaining blocker is the alias case of the already-required A4-R1 query semantics below.
+
+#### A5-R1 — P1 — Merge selected fields into the intended aliased field
+
+In components/studio-workspace.tsx, addPath deliberately excludes every field with an alias (`!selection.alias`). Given this existing definition:
+
+```graphql
+query ProductDetails($handle: String!) {
+  selected: product(handle: $handle) { title }
+}
+```
+
+with resultPath `selected`, selecting `product.priceRange.minVariantPrice.amount` creates two root selections: the original aliased product plus a new unaliased `product { priceRange { minVariantPrice { amount } } }`. The added field has lost the required original handle argument and is outside the retained resultPath. A component reproduction observed two roots where one was expected. The fixture validator checks the first product's argument and accepts the unbound second branch, so it does not protect this flow.
+
+**Explicit correction instructions:**
+
+1. Resolve schema paths against the intended existing AST field by schema field name while preserving its response alias, arguments and directives. For the unambiguous single-product example, extend `selected: product(handle: $handle)`; do not add another root. Preserve operationName, variable definitions/mappings and resultPath `selected`.
+2. If multiple existing fields share that schema name but have different aliases/arguments, require a selected AST/response-path identity or reject the ambiguous edit with an actionable message. Do not merge into an arbitrary first field or invent an argument-free duplicate.
+3. Make fixture query validation check every relevant field occurrence rather than only the first product root. The malformed duplicate/unbound branch must not be presented as valid or enable Use in tool. Keep the validation boundary injectable; no live provider composition or Shared/011 change is required.
+4. Add a focused connected component regression starting from the aliased query above. Select the nested path, validate and return to U06; assert exactly one product root with alias `selected`, its original handle argument/mapping, nested selected field and unchanged resultPath. Include a denied ambiguous/unbound case. Retain the three passing previous regressions.
+
+This finishes the existing alias/argument/result-semantics requirement; no general GraphQL editor expansion or exhaustive coverage is requested.
+
+#### Validation and remaining scope
+
+Independent prior reproductions: **3/3 passed** (`/tmp/c008-a4-review/acceptance.config.mjs`, 14 unrelated original cases skipped). Independent current Studio suite: **25/25 passed**. The additional alias component check in `/tmp/c008-a4-review/alias.test.tsx` **failed** with two root fields instead of one. Implementation diff whitespace check passed. Submitted typecheck/lint/build success and 194-pass/one Redis timeout full-suite result remain reported evidence, not independently rerun in full. No Redis/live Shopify call or new browser screenshot was made by this review.
+
+The local U10 -> U14 -> Back component handoff is covered by the passing focused suite. The report's pending real U14 round trip refers to actual preview execution/provider integration owned by COMMERCE-009/013/developer validation; it is not a new008 acceptance blocker. Live OAuth, production adapters and deployment validation remain separate. The Redis-gated timeout is not this decision's blocker.
+
+Correct only A5-R1 and resubmit the same branch pair with actual validation results. No dependent task is promoted; normal preparation owns the next attempt claim.
 
 ### Changes Requested — Attempt 4 — 2026-09-21
 

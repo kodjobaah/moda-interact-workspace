@@ -567,3 +567,15 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 015;012/013/system-test retain other unfinished dependencies. No downstream
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
+
+## COMMERCE-008 Attempt 5 review — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
+Reviewed implementation `558432f` and report `0b2e03bb`; remote heads matched and
+worktrees were clean. A4-R2/R3 are accepted; all three previous reproductions and
+25 focused tests passed independently. One remaining A5-R1 failure: adding a
+nested field beneath an existing aliased product creates an unbound second root
+outside the retained resultPath. The canonical task review contains exact AST
+merge/validation instructions. Local U14 handoff passes; real preview integration
+and live validation remain separately owned and are not blockers. No dependent
+promotion or main integration. This supersedes older COMMERCE-008 state wording.

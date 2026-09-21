@@ -147,3 +147,15 @@ five functional reproductions failed. See the latest task Architect Review.
 Live Shopify remains developer-owned and is not the blocker. No dependent
 promotion or main integration. This supersedes prior COMMERCE-006 current-state
 wording; the narrowed C19 reader-only scope remains authoritative.
+
+## COMMERCE-008 Attempt 5 review — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
+Reviewed implementation `558432f` and report `0b2e03bb`; remote heads matched and
+worktrees were clean. A4-R2/R3 are accepted; all three previous reproductions and
+25 focused tests passed independently. One remaining A5-R1 failure: adding a
+nested field beneath an existing aliased product creates an unbound second root
+outside the retained resultPath. The canonical task review contains exact AST
+merge/validation instructions. Local U14 handoff passes; real preview integration
+and live validation remain separately owned and are not blockers. No dependent
+promotion or main integration. This supersedes older COMMERCE-008 state wording.
