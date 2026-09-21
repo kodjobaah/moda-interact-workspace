@@ -63,3 +63,15 @@ reproduced zero close calls. Latest task review records R5-1/R5-2 and the exact
 next steps. Preserve prior compiler/artifact fixes and submitted local Redis
 evidence. Reported readiness baseline failures are not the review blocker.
 No new claim, downstream promotion, implementation edit or main integration.
+
+
+## COMMERCE-011 Attempt 6 review — 2026-09-21
+
+Current decision: Ready, Attempt6 retained, claim clear; Changes Requested.
+Reviewed7bfa26d /08caea2d. Document adapter and outer Redis cleanup are present,
+but six controlled architect checks fail: nondefault port/encoded separator,
+third redirect, missing title/article, valid larger source HTML, operation-error
+preservation. R6-1–R6-3 give exact file/algorithm/test corrections in the task.
+32 focused tests report passing; real Redis60/61 was not exercised with URL unset.
+Retain prior compiler/artifact/pinned-process fixes. Real Redis unavailability is
+not this review blocker. No downstream promotion, claim, main merge or gitlink edit.

@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 executor: null
 claimed_at: null
 priority: 85
@@ -253,6 +253,65 @@ implementation and parent report are kept in dedicated physical task worktrees.
  Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 6 — 2026-09-21
+
+**Current decision: Ready, Attempt 6 retained, executor/claimed_at null; not accepted.** Reviewed implementation `7bfa26da1019f6c7b594c824e84f3a19b6ffaefe` and report `08caea2d446c2c5b4018612fb36e7c57a6488e13`; remote heads match and dedicated worktrees are clean. This supersedes earlier current-state wording. No new claim, dependent promotion, implementation edit or main integration.
+
+Progress retained: production document() now invokes the approved HTTPS adapter; denial/connect-failure paths enter Redis client cleanup. Prior compiler/artifact/process fixes remain intact. Independently ran the submitted five focused files with REDIS_URL unset: **32 reported passed**, including the actual pinned1.15.4 initialize/list/learn/close test. The real Redis60/61 test returns early when REDIS_URL is unset; that reported pass is NOT Redis execution evidence. The report correctly records the unavailable endpoint. No real Redis rerun is required by this review. Full101/type/lint/build are submitted evidence; diff check independently passed.
+
+Six isolated deterministic checks against committed source failed in `/tmp/c011-a6-review` (Vitest5.0.1, controlled fetch/Redis mocks, no live endpoint): nondefault port, encoded separator, missing title/main, valid >64KiB HTML, third redirect, and preservation of the operation error. These are failures of already binding C15.1/R5-2, not new scope.
+
+#### R6-1 — P1 — Enforce the exact document origin and redirect policy
+
+Files: `lib/discovery/document.ts` canonicalDocumentUrl/redirect loop; `lib/discovery/upstream.ts` assertDocumentationPath; `tests/discovery-process.test.ts` or a focused document-adapter test file.
+
+Both validators inspect hostname but omit port and ambiguous encoded separators. Reproductions fetch and return documents from `https://shopify.dev:444/docs/api/storefront/2026-07/queries/product` and `https://shopify.dev/docs/a%2fb`. C15.1 requires the default HTTPS port and rejection of ambiguous encoded separators/traversal. The implementation also allows three redirects, whereas C15.1 permits at most two.
+
+Use one shared document URL validator so the service boundary and every redirect apply identical rules. After URL normalization require `url.origin === 'https://shopify.dev'`, no credentials/query/fragment and a path under /docs/. Reject encoded slash/backslash and ambiguous encoded traversal (including encoded encodings that change separator/dot-segment meaning on further decoding); do not rely only on URL.pathname.startsWith. Accept explicitly supplied default443 after normalizing it. Apply validation before the initial fetch and before every redirect fetch. Set maxRedirects=2; after two followed redirects, reject a third redirect response without fetching its target. Cancel/dispose redirect response bodies on all paths. Requests remain credential-free with fixed headers and no retry.
+
+Tests: allowed relative/canonical/default443 input and two same-origin redirects pass; nondefault port, userinfo, external/non-doc redirects, query/fragment, encoded separator/traversal reject before forbidden fetch; third redirect rejects with exactly3 total fetches (initial plus2). Preserve final canonical source URL. Do not weaken the policy to match the current fixtures.
+
+#### R6-2 — P1 — Implement C15.1 content validation and separate input/output limits
+
+Files: `lib/discovery/document.ts` readBounded/extractDocument, `lib/discovery/service.ts` document output validation, fixture/runtime docs. C15.1 allows up to1MiB decoded streamed HTML before extraction, while requiring the COMPLETE serialized {title,text,sourceUrl} response to fit64KiB. Current maxDocumentBytes=64KiB rejects valid source HTML with small article content. Reproduction: a70,000-character script plus short valid title/main rejects, though both C15.1 limits permit it. The service checks text alone, not serialized response size.
+
+Separate constants for `maxInputBytes = 1024 * 1024` and `maxOutputBytes = 64 * 1024`. Count streamed decoded body bytes before accumulation/parsing and cancel on overflow. After extraction measure `Buffer.byteLength(JSON.stringify(result), 'utf8')` for the complete result; reject, never truncate. Count escaping/multibyte characters as serialized UTF-8. Title must be present and <=255 characters; remove title.slice and path-derived fallback. Require verified main/article content and expected representation/content type; remove fallback to the entire HTML document. The current `<html><body>Unexpected error page</body></html>` becomes a successful document titled product, violating the required missing-title/article failure. Malformed, missing or incomplete content must return the bounded typed unavailable/too-large result. Continue stripping active markup/resources; do not treat arbitrary error-page text as the selected documentation.
+
+Replace the repeated synthetic `Product documentation` string as the sole parser evidence with a sanitized real official page representation, recording source/acquisition and parser assumptions. Controlled fetch remains required; no live merchant store is needed. Tests must include title/main preservation beyond2,000 characters, missing title/main, malformed representation, HTML between64KiB and1MiB with a small valid article, streamed1MiB boundary/overflow, serialized64KiB boundary/overflow, overlong title, and cancellation/deadline while reading a stalled body. Preserve production service20-second total deadline over redirects and body reads. These are the existing C15.1 evidence requirements, not a request to change provider pin or build013 integration.
+
+#### R6-3 — P2 — Preserve operation errors while retaining outer Redis cleanup
+
+File: `lib/discovery/limits.ts`, tests/discovery-admission-cleanup.test.ts and route tests. The outer catch now wraps both admission and operation; any operation error becomes DiscoveryAdmissionError(ADMISSION_UNAVAILABLE). This regresses Attempt5's separation: a validation error that should be400 is now503 admission failure. Independent admitted-operation fixture throws a specific Error and receives a different DiscoveryAdmissionError. R5-2 explicitly required preserving operation errors.
+
+Keep the resource finally outside BOTH stages, but catch/normalize admission failures only. Required structure (reuse the actual key/limit variables):
+
+```ts
+try {
+  try {
+    await redis.connect();
+    await redis.ping();
+    admitted = Number(await redis.eval(/* existing script and arguments */)) === 1;
+    if (!admitted) throw new DiscoveryAdmissionError('RATE_LIMITED');
+  } catch (error) {
+    if (error instanceof DiscoveryAdmissionError) throw error;
+    throw new DiscoveryAdmissionError('ADMISSION_UNAVAILABLE');
+  }
+  return await operation();
+} finally {
+  // Best-effort slot release only when admitted; it must not mask operation errors.
+  // Always close the owned client, including partial connection failures.
+}
+```
+
+Move admitted counter release to the outer finally before close, with nested try/finally so a cleanup failure still closes the client. Suppress both synchronous and asynchronous cleanup failures; use disconnect if graceful close cannot finish, respecting the existing bounded timeout. Do not restore the old early-throw leak or normalize operation failures as Redis errors.
+
+Extend the Redis mock to use a correctly chainable multi/decr/exec object and an admitted eval=1 path. Test operation success, exact original error identity, typed Zod/DiscoveryInputError propagation to400, denied admission, connection/ping/eval failures, and failing cleanup. Assert no operation on failed admission, counter release only after admission, and client close on every exit. The current two tests only cover eval0/connect failure and miss this regression.
+
+### Attempt 6 resubmission gate
+
+Correct R6-1–R6-3 on the same branch pair, preserve prior accepted progress, and update runtime/report limits to the ACTUAL C15.1 values (two redirects,1MiB input,64KiB serialized output). Add the six isolated reproductions as permanent tests plus the specified contract boundaries. Run focused local checks, typecheck/lint/build/diff and report actual results. Label the environment-gated Redis case as unrun/skipped instead of treating early return as exercised coverage; unavailable real Redis is not the reason this review withholds acceptance. No live Redis/store/deployment run or provider upgrade is requested. This parent overlay is published before preparation; no new attempt is claimed by review.
+
 
 ### Changes Requested — Attempt 5 — 2026-09-21
 
