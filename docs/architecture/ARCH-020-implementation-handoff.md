@@ -57,22 +57,19 @@ database revision. Never copy the Prisma schema into Commerce.
 ## Execution sequence
 
 ```text
-DATABASE-001 ---------------------------> publication persistence / Background grants
-SHARED-001 (contracts + runner + publication) ---> shared contracts/runner publication
-provisioning -> COMMERCE-001 -> COMMERCE-002
-COMMERCE-002 + SHARED-001 -> COMMERCE-011 (Shopify discovery/schema services)
-COMMERCE-002 + DATABASE-001 + SHARED-001 -> COMMERCE-003 (interface-based publication)
-COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005 -> COMMERCE-006 -> COMMERCE-007
-COMMERCE-002 + DATABASE-001 + SHARED-001 -> COMMERCE-008 start
-COMMERCE-003/004/005/006/007/008/011 -> COMMERCE-013 (real integration)
-COMMERCE-008/007 + SHARED-001 -> COMMERCE-009 (U14 tests/conversations)
-COMMERCE-004/007/009 -> COMMERCE-010 (observability)
-SHARED-001 + DATABASE-001 + COMMERCE-001 + ARCH-016-BACKGROUND-003 -> BACKGROUND-001
-BACKGROUND-001 + C18 agreed contract -> BACKGROUND-002 (independent consumer)
-SHARED-001 + ARCH-016-SHOPIFY-002 -> SHOPIFY-001
-COMMERCE-002/008/011 + BACKGROUND-001 -> GATEWAY-001
-GATEWAY-001 + COMMERCE-010 + BACKGROUND-002 -> GATEWAY-002
-all implementation tasks -> SYSTEM-TEST-001 (manual terminal gate)
+001/002 + DATABASE-001 + SHARED-001 ->003 publication and008 Studio components
+003 ->004 authenticated MCP ->014 definition execution
+011 +001 +SHARED-001 ->005 tokenless query adapter
+001 +DATABASE-001 +SHARED-001 ->015 basket/product adapters
+001 +DATABASE-001 +SHARED-001 + ARCH-016 policy prerequisites ->006 rule reader
+006 +015 +SHARED-001 ->016 evaluator ->007 recommendations
+003/004/005/006/007/008/009/011/014/015/016/017 ->013 full service/UI integration
+002 +001 +SHARED-001 ->009 preview service
+008 +002 +SHARED-001 ->017 U14 frontend (contract fixtures)
+BACKGROUND-001 + C18 contract ->BACKGROUND-002 independently
+013 +017 + existing auth/Background/discovery prerequisites ->GATEWAY-001
+instrumentation and existing gateway/Background prerequisites ->GATEWAY-002
+all other implementation tasks ->012 caching ->terminal SYSTEM-TEST-001
 ```
 
 Individual task YAML contains the exact complete dependency sets. Runtime call
@@ -400,3 +397,10 @@ launched by this amendment. Fixtures never become production service fallbacks.
 2026-09-21 C18 frontier: BACKGROUND-002 promoted Ready, unclaimed, after accepted
 BACKGROUND-001. COMMERCE-007 retains its own evaluator prerequisite but no longer
 blocks the consumer. SYSTEM-TEST-001 owns EC01–EC12 real-service pairing.
+
+
+## Smaller task frontier — 2026-09-21
+
+C19 replaces combined004/005/006/009 scopes and adds014/015/016/017. Every
+predecessor task keeps its existing ID/path. No attempted task is split or reset.
+Component and assembly evidence owners are explicit; no task is launched here.

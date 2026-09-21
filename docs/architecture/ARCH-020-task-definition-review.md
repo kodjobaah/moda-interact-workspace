@@ -173,3 +173,22 @@ and whitespace passed. BACKGROUND-002 prerequisite001 is Complete. Original and
 refreshed JSON seed replies passed the current Shared source Zod schemas under
 workspace Node24.19.0; both SHA-256 digests and frozen-clock freshness bounds passed.
 This validates contract examples, not the future producer/consumer implementation.
+
+
+## Smaller-scope task amendment — 2026-09-21
+
+Rewrote unattempted004/005/006/009 as single-scope tasks and added014–017.
+C19 names owner directories, typed boundary inputs/results, rule normalization,
+provider budgets, fixture cases and integration owners. Original task bodies were
+replaced instead of accumulating scope overrides. U14 exact page specification
+is embedded in017;009 now owns lifecycle only.012 and SYSTEM-TEST explicitly wait
+for all four new tasks. Active attempts retain implementation scope/claim fields;
+only reciprocal enables metadata is reconciled where required.
+
+Validation:25-task reciprocal dependency graph is acyclic; all prerequisites for
+newly Ready006/009/015 are Complete. All eight narrowed/new task bodies retain
+required sections, claims/attempts are unchanged and U14's embedded page text
+matches the binding UI design.012 and terminal system testing include014–017.
+Local Markdown links and scoped whitespace checks passed. These are definition
+checks only, not application/provider test results. Frontend017 owns no backend
+implementation;013 owns saved-bundle loading and actual preview/frontend pairing.

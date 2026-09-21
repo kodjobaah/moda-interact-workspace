@@ -1,7 +1,7 @@
 ---
-id: ARCH-020-COMMERCE-005
+id: ARCH-020-COMMERCE-016
 architecture_id: ARCH-020
-title: Execute validated public Shopify queries
+title: Evaluate normalised discount rules and produce evidence
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -10,23 +10,24 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 90
+priority: 105
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-020-COMMERCE-001
-  - ARCH-020-COMMERCE-011
+  - ARCH-020-COMMERCE-006
+  - ARCH-020-COMMERCE-015
   - ARCH-020-SHARED-001
 enables:
   - ARCH-020-COMMERCE-012
+  - ARCH-020-COMMERCE-007
   - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
-created: 2026-09-20
+created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Execute validated public Shopify queries
+# Evaluate normalised discount rules and produce evidence
 
 ## Architecture
 
@@ -36,7 +37,7 @@ C4/C5/C7/C8/C9/C14/C16/C18 as applicable, and exact ownership/interfaces in **C1
 
 ## Objective
 
-Own tokenless execution of immutable SHOPIFY_STOREFRONT_QUERY definitions and schema-bound result projection only.
+Own deterministic eligibility/savings evaluation and discounts.evaluate adapter using006 normalized rules and015 basket/product facts.
 
 ## Context
 
@@ -46,7 +47,7 @@ launcher/worktree/review policies apply. No task is claimed by this definition.
 
 ## Scope
 
-Own tokenless execution of immutable SHOPIFY_STOREFRONT_QUERY definitions and schema-bound result projection only.
+Own deterministic eligibility/savings evaluation and discounts.evaluate adapter using006 normalized rules and015 basket/product facts.
 
 ## Out of Scope
 
@@ -63,20 +64,21 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Consume011 actual pinned compiler/schema exports; execute the fixed published query and mapped variables only against the verified canonical shop host.
-- [ ] Enforce C14 query/depth/list/time/response bounds and API-version checks. Reject partial GraphQL errors; no privileged fallback or installation-token lookup.
-- [ ] Preserve the query fact wrapper including source/schema/version/observedAt/values; selected values can never replace it with a policy-evidence output.
-- [ ] Expose QueryExecutionPort to014 with injected bounded provider transport, clock and signal. Do not implement basket/search policy helpers or MCP routes.
+- [ ] Implement the pure C19 evaluator with injected now and exact decimal/currency metadata; no network/DB access inside arithmetic.
+- [ ] Apply C8 condition precedence, startsAt<=now<endsAt, native supported rule scope, minimum bases/allocation/rounding only where006 evidence proves semantics.
+- [ ] Implement discounts.evaluate orchestration: re-read current policy/rule, load exact basket/proposal facts, enforce NONE/FIXED and caller ownership, and share request budget across adapters.
+- [ ] Generate C4/C18 Evidence/digest/fingerprints/lifetime for exact proposal; UNKNOWN/UNSUPPORTED/unresolved never qualifies. No checkout guarantee or mutation.
+- [ ] Export evaluator for007 and operation adapter for013 registration. Accept rule-reader/product fixtures plus actual pure evaluator tests;013 verifies real reader/provider composition.
 
 ## Interfaces / Contracts
 
-Own `src/commerce/query/`. C19 QueryExecutionPort receives trusted context and the canonical query definition;013 connects it to014. C14 result wrapper and Shared types remain unchanged.
+Own `src/commerce/discounts/evaluator/`.006 owns DiscountRuleSnapshot/provider semantics;015 owns basket/current facts;007 owns recommendations.013 owns their real registration/composition.
 
 
 ## Dependencies
 
-- ARCH-020-COMMERCE-001
-- ARCH-020-COMMERCE-011
+- ARCH-020-COMMERCE-006
+- ARCH-020-COMMERCE-015
 - ARCH-020-SHARED-001
 
 All listed prerequisites must be Complete and architect-accepted before a claim.
@@ -85,15 +87,17 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 ## Enables
 
 - ARCH-020-COMMERCE-012
+- ARCH-020-COMMERCE-007
 - ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
-- [ ] Q01: two arbitrary authored queries execute without registering business names; mapped variables/results match the accepted compiler.
-- [ ] Q02: wrong host, query/version, malformed variables/projection, partial errors and oversized response fail closed; zero credentials looked up on every path.
-- [ ] Q03: timeout/throttle/cancel/count limits are honored; no redirect to unverified host or mutation is emitted.
-- [ ] Q04: nested counterfeit evidence remains ordinary query values; no policy-shaped root output.
+- [ ] V01: percentage/fixed rule matrix includes quantity/subtotal boundaries, product/variant/collection scope and exact decimal rounding/allocation; expected money is explicitly calculated in fixtures.
+- [ ] V02: time/disabled/failure -> nonqualification precedes unsupported/missing facts; unknown semantics and customer/usage restrictions never qualify.
+- [ ] V03: wrong currency, absent variants, partial memberships and stale/changed rules fail closed; exact proposal operation order and fingerprints are preserved.
+- [ ] V04: canonical C18 seed parses; producer evidence lifetime/digest, renamed evaluator, NONE/FIXED and revoked policy cases have zero unauthorized reads.
+- [ ] V05: re-evaluation of changed basket/rule produces changed semantic evidence; provider ceiling includes all nested reads; pure arithmetic makes zero I/O calls.
 
 ## Validation
 
@@ -152,7 +156,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-005. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: task/ARCH-020-COMMERCE-016. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
 
 ## Architect Review
 

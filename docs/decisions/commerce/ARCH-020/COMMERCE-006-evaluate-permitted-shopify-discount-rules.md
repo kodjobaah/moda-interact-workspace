@@ -1,7 +1,7 @@
 ---
 id: ARCH-020-COMMERCE-006
 architecture_id: ARCH-020
-title: Evaluate permitted Shopify discount rules
+title: Read merchant discount policy and normalise Shopify rules
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -9,130 +9,111 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 100
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-020-COMMERCE-005
+  - ARCH-020-COMMERCE-001
+  - ARCH-020-DATABASE-001
+  - ARCH-020-SHARED-001
   - ARCH-016-BACKGROUND-001
   - ARCH-016-DATABASE-001
 enables:
   - ARCH-020-COMMERCE-012
-  - ARCH-020-COMMERCE-007
   - ARCH-020-COMMERCE-013
+  - ARCH-020-COMMERCE-016
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
-# Evaluate permitted Shopify discount rules
+# Read merchant discount policy and normalise Shopify rules
 
 ## Architecture
 
-Architecture ID: ARCH-020.
-
-Architecture document: docs/architecture/ARCH-020-commerce-agent-studio-mcp-capabilities.md.
-
-Coordinator: moda_architect. Read the complete parent architecture and relevant dependency/contract tasks. Execution handoff: docs/architecture/ARCH-020-implementation-handoff.md.
+ARCH-020. [Parent architecture](../../../architecture/ARCH-020-commerce-agent-studio-mcp-capabilities.md).
+Binding [implementation contracts](../../../architecture/ARCH-020-implementation-contracts.md):
+C4/C5/C7/C8/C9/C14/C16/C18 as applicable, and exact ownership/interfaces in **C19**.
 
 ## Objective
 
-Produce evidence-backed eligibility results for the supported native discount subset.
+Own current discount-policy resolution, permission-aware offer listing and provider rule normalization. Do not calculate qualification or savings.
 
 ## Context
 
-Merchant-selected capabilities should drive WhatsApp CommerceAgent behaviour through a separate Next.js MCP server with a team-only Studio. Production conversation admission, ordering, model hosting and delivery remain in Background. This is a pre-production breaking rollout, with no implicit permission to delete durable data.
-
-Task definition is on local workspace main by the developer's explicit 2026-09-20 review request. It is not a claim, task-branch materialisation or implementation approval. All execution fields remain unclaimed.
+This is the canonical narrowed definition from the 2026-09-21 task split, replacing
+the former combined scope. No prior attempt or implementation is discarded. Normal
+launcher/worktree/review policies apply. No task is claimed by this definition.
 
 ## Scope
 
-Commerce discount rule reader, permission-aware offer listing and deterministic eligibility evaluator.
+Own current discount-policy resolution, permission-aware offer listing and provider rule normalization. Do not calculate qualification or savings.
 
 ## Out of Scope
 
-Other repositories' implementation, unrelated refactoring, automatic execution of enabled tasks, live deployment, main integration/push and changes to billing prices/merchant entitlements. No cart/order/discount mutation, WhatsApp sending from Commerce, arbitrary executable code or arbitrary-host HTTP endpoints; C14 validated read-only GraphQL definitions are explicitly permitted. No duplicate discount catalogue/merchant configuration system. Shared indexes and architecture reconciliation remain architect-owned.
+Other C19 owners' modules; new Shared wire versions or database schema; live
+deployment/provider calls; unrelated refactors; cart/order writes or WhatsApp sends.
+Do not implement missing dependencies or substitute production fixtures to finish.
 
 ## Requirements
 
-Follow the parent architecture's tenant/policy/revision contracts and the assigned logical owner. Preserve unrelated changes. Read repository-local AGENTS.md if present. Commerce consumes the canonical database through its nested database/ Git submodule; schema and migrations belong to moda_database. For consumers, use actual accepted and published dependency revisions, not copied task snapshots or hypothetical versions.
+Use accepted auth/Shared/database source, canonical types and C19 ports. Preserve
+others' changes. Exact business names remain database-authored. Fixtures are injected
+only by tests; production missing adapters fail closed. Each case below has an
+expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Preserve authoritative discount policy/Evidence as a platform helper usable by dynamic tools. Generic public query results and configurable templates cannot establish offer eligibility or bypass NONE/FIXED/current permissions.
-
-- [ ] Implement discounts.getOptions and discounts.evaluate executor operations. Policy checks live in these adapters regardless of configurable tool name/feature mapping; read-only database tool definitions cannot bypass NONE or fixed-offer restrictions.
-
-- [ ] Resolve NONE/FIXED/AI_BEST_APPLICABLE and admin-override precedence from the canonical current merchant policy; preserve Free/Paid availability.
-- [ ] Inspect installed Shopify scopes and pinned API schema; read complete supported rule detail on demand rather than parsing catalogue summaries.
-- [ ] Implement basic percentage/fixed-amount product/variant/collection conditions and minimum quantity/subtotal with exact decimal/currency handling.
-- [ ] Return qualifies-for-known-rules, does-not-qualify, unknown or unsupported with rule/basket fingerprints and unresolved conditions.
-- [ ] Fail conservatively for unsupported app/Function/BXGY/shipping/stacking/customer/usage conditions; document the support matrix and live-scope validation command.
+- [ ] Reuse accepted ARCH-016 merchant policy/catalogue: NONE/FIXED/AI_BEST_APPLICABLE, admin precedence and Free/Paid availability. Do not add another catalogue or synchronizer.
+- [ ] Implement discounts.getOptions and DiscountRuleReader under C19. Verify canonical offer/shop ownership before provider requests; fixed mode cannot read a different offer.
+- [ ] Inspect actual pinned Admin API/schema/scopes and document exact static query -> normalized-field mappings in docs/discount-support-matrix.md. Missing scope returns UNAVAILABLE; no OAuth scope expansion.
+- [ ] Normalize native basic percentage/fixed conditions, targets, minimums, dates and provider semantics; unresolved or unsupported clauses remain explicit and cannot be discarded.
+- [ ] Share injected provider-request budget across pagination/retries; <=50 offers and C8 bounds. No eligibility calculation, Evidence generation or recommendation ranking.
 
 ## Interfaces / Contracts
 
-ARCH-016 policy/catalogue plus shared evaluation evidence. Missing provider capability returns to architect before scope changes.
+Own `src/commerce/discounts/reader/`. C19 DiscountRuleSnapshot is the sole input contract for016.016 owns calculation;013 connects discounts.getOptions to014. Provider schema evidence is an implementation deliverable, not permission to invent Shopify semantics.
 
-### Implementation guidance
-
-Apply binding contracts **C14–C15** for reusable tool revisions, query/policy execution, safe templates, original grant provenance and integrated Studio authoring. The page/traversal specification is required for UI owners.
-
-Binding companion: [ARCH-020 implementation contracts](../../../architecture/ARCH-020-implementation-contracts.md), sections **C1, C4, C8**. These are required acceptance inputs, not optional examples.
-
-Implement discounts.getOptions and discounts.evaluate operation adapters; use current accepted recovery-policy resolver and canonical catalogue IDs. Deliver docs/discount-support-matrix.md with exact provider field/query mappings for each supported rule and a fixture for each support/unknown case. New OAuth scopes are not in this task: missing scope is a typed unavailable result and a concrete architect gap.
-
-### Deterministic review clarification
-
-Implement the C4 Exact-call evidence refresh contract and its named fixtures.
-Business MCP names remain arbitrary. Background captures/replays actual calls;
-Commerce policy adapters return bounded structured evidence. No hard-coded
-evaluator discovery, extra grant, new Shared field or new database table. Apply
-C8 shared provider-request counter (including retries) and deterministic ranking
-where recommendations are involved.
-
-### Required evidence
-
-Apply binding C18 structured policy-output separation and evidence contract.
-EC07/EC08 must prove that query/template content cannot impersonate evidence and
-failed ownership/permission checks execute zero provider calls. No new wire fields.
-
-Prove percentage/fixed semantics against recorded official schema/rule evidence; if a rule cannot be calculated exactly, its fixture must assert UNSUPPORTED. Include equality at startsAt/endsAt, threshold boundaries, quantity/collection rules, decimal/currency precision, omitted customer/usage facts and offer policy changes.
-
-For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
 
 ## Dependencies
 
-- ARCH-020-COMMERCE-005
+- ARCH-020-COMMERCE-001
+- ARCH-020-DATABASE-001
+- ARCH-020-SHARED-001
 - ARCH-016-BACKGROUND-001
 - ARCH-016-DATABASE-001
 
-Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
+All listed prerequisites must be Complete and architect-accepted before a claim.
+Use dedicated launcher worktrees and accepted source; do not launch enabled work.
 
 ## Enables
 
 - ARCH-020-COMMERCE-012
-- ARCH-020-COMMERCE-007
 - ARCH-020-COMMERCE-013
+- ARCH-020-COMMERCE-016
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
-- [ ] A renamed/reused discount tool remains policy checked, and an authored public query cannot manufacture usable discount Evidence.
-
-- [ ] FIXED evaluates only its configured usable offer; NONE exposes no discount assistance; AI mode compares only supported current offers.
-- [ ] Unresolved eligibility, stale/mismatched facts or unsupported discount families never produce a guaranteed checkout claim.
-- [ ] Expiry, minimum thresholds, collection membership, currency and customer restrictions are covered by fixtures; no new catalogue synchroniser is created.
+- [ ] D01: NONE lists none; FIXED permits only its offer; AI listing is bounded and discloses truncation; wrong tenant/offer yields zero provider calls.
+- [ ] D02: provider fixtures map percentage/fixed/all/product/variant/collection/minimum/date fields to the exact C19 DTO; incomplete fields never become defaults claiming support.
+- [ ] D03: unsupported app/Function/BXGY/shipping/combination restrictions remain UNSUPPORTED; unverified customer/usage facts remain UNKNOWN.
+- [ ] D04: missing scopes, provider outage, stale catalogue and pagination/retry ceilings return bounded errors; semantic fingerprint excludes observation timestamps.
+- [ ] D05: every supported normalization profile has cited pinned provider-schema evidence; unproven allocation/rounding becomes UNSUPPORTED, not a guessed formula.
 
 ## Validation
 
-- [ ] Expose the same operation through another database-defined tool name and prove policy/evidence checks remain identical; template text must not turn UNKNOWN into qualifying structured evidence.
-
-- [ ] Run deterministic rule-matrix tests including quantity boundaries, decimal totals, collection/variant exclusions, dates, unknown conditions and stale catalogue/provider reads.
-- [ ] Provide exact developer-owned Shopify read-validation steps for the pinned API/scopes and anonymised evidence; no agent live calls implied.
-
-Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
+Implement the named cases above as focused tests. Record case -> fixture -> command
+-> expected/actual effects in the Completion Report. Check shared contract examples
+where applicable; include malformed and denied inputs with zero side effects.
+Run focused tests while developing, then typecheck/lint/build once before submission;
+repeat broader checks only for new failures or changed concerns. Use actual repository
+commands and record them. Local browser/component evidence is task-owned where a UI
+is in scope. Follow agent-validation/live-validation policies; separate pending
+required developer database/container evidence and never claim fixture tests prove
+live service behavior. No minimum screenshot/test count substitutes for coverage.
 
 ## Stop Condition
 
@@ -140,7 +121,7 @@ After scoped work and agent-owned checks, update this task's execution/report fi
 
 ## Implementation Notes
 
-Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; the actual repository must be provisioned before execution preparation.
+Normal execution uses /moda-task and scripts/start-agent-task.py preparation, dedicated parent and implementation worktrees, synchronization and recursive submodule initialisation. Follow docs/agent-vcs-ownership-policy.md, docs/agent-worktree-isolation-policy.md and docs/task-definition-materialization.md. The main-only exception applies to this review draft, not task execution. The COMMERCE route is registered in this packet; consume the accepted COMMERCE-001 foundation.
 
 ## Completion Report
 

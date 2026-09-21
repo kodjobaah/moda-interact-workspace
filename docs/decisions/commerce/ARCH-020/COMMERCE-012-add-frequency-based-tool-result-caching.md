@@ -34,6 +34,10 @@ depends_on:
   - ARCH-020-SHARED-001
   - ARCH-020-SHOPIFY-001
   - ARCH-020-COMMERCE-013
+  - ARCH-020-COMMERCE-014
+  - ARCH-020-COMMERCE-015
+  - ARCH-020-COMMERCE-016
+  - ARCH-020-COMMERCE-017
 enables:
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
@@ -153,9 +157,6 @@ or correctness dependency. Do not expose cache controls as model tool arguments.
 
 ## Dependencies
 
-- ARCH-020-COMMERCE-013
-
-
 - ARCH-020-BACKGROUND-001
 - ARCH-020-BACKGROUND-002
 - ARCH-020-COMMERCE-001
@@ -174,10 +175,14 @@ or correctness dependency. Do not expose cache controls as model tool arguments.
 - ARCH-020-GATEWAY-002
 - ARCH-020-SHARED-001
 - ARCH-020-SHOPIFY-001
+- ARCH-020-COMMERCE-013
+- ARCH-020-COMMERCE-014
+- ARCH-020-COMMERCE-015
+- ARCH-020-COMMERCE-016
+- ARCH-020-COMMERCE-017
 
-All are deliberately explicit: this is the final current implementation feature.
-New owner-specific cache prerequisites, if required by the readiness checkpoint,
-must be added reciprocally. Never depend on SYSTEM-TEST-001.
+All listed prerequisites must be Complete and architect-accepted before a claim.
+Use accepted source in dedicated launcher worktrees; readiness never launches work.
 
 ## Enables
 

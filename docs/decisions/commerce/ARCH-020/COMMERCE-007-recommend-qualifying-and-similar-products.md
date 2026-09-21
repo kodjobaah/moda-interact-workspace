@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-020-COMMERCE-006
+  - ARCH-020-COMMERCE-016
+  - ARCH-020-COMMERCE-015
 enables:
   - ARCH-020-COMMERCE-012
-  - ARCH-020-COMMERCE-009
   - ARCH-020-COMMERCE-010
   - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
@@ -84,7 +84,7 @@ No Background import or prerequisite. SYSTEM-TEST-001 owns real worker integrati
 
 ## Interfaces / Contracts
 
-SHARED-001 recommendation/evidence schemas and COMMERCE-006 evaluator; customer consent for future mutation remains out of scope.
+SHARED-001 recommendation/evidence schemas and COMMERCE-016 evaluator; customer consent for future mutation remains out of scope.
 
 ### Implementation guidance
 
@@ -111,14 +111,15 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 
 ## Dependencies
 
-- ARCH-020-COMMERCE-006
+- ARCH-020-COMMERCE-016
+- ARCH-020-COMMERCE-015
 
-Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
+All listed prerequisites must be Complete and architect-accepted before a claim.
+Use accepted source in dedicated launcher worktrees; readiness never launches work.
 
 ## Enables
 
 - ARCH-020-COMMERCE-012
-- ARCH-020-COMMERCE-009
 - ARCH-020-COMMERCE-010
 - ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
