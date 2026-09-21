@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 130
 executor: codex
 claimed_at: 2026-09-21T01:19:29Z
@@ -64,11 +64,11 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Implement every C9.1 route and strict body/status/ownership shape using accepted auth guards. Fixture mode requires no live provider/model; explicit model mode has separate credentials.
-- [ ] Implement atomic environment/admin/run identity, creation replay, payload conflicts, conversation busy lock, 24h retention,20-turn/32k history, quotas and cancellation/UNKNOWN handling.
-- [ ] Reuse the accepted Shared runner, C16 synthetic frozen response definition and C6.2 language/status fixtures. No production transcript/shop credential or WhatsApp admission.
-- [ ] Use C19 PreviewBundleLoader against injected authorized synthetic bundle fixtures until013 supplies the real saved-bundle adapter. Unavailable production composition fails closed.
-- [ ] Expose the exact service contract and controlled runner fixtures to017. Do not implement UI forms/navigation/screens or production publication/compiler services.
+- [x] Implement every C9.1 route and strict body/status/ownership shape using accepted auth guards. Fixture mode requires no live provider/model; explicit model mode has separate credentials.
+- [x] Implement atomic environment/admin/run identity, creation replay, payload conflicts, conversation busy lock, 24h retention,20-turn/32k history, quotas and cancellation/UNKNOWN handling.
+- [x] Reuse the accepted Shared runner, C16 synthetic frozen response definition and C6.2 language/status fixtures. No production transcript/shop credential or WhatsApp admission.
+- [x] Use C19 PreviewBundleLoader against injected authorized synthetic bundle fixtures until013 supplies the real saved-bundle adapter. Unavailable production composition fails closed.
+- [x] Expose the exact service contract and controlled runner fixtures to017. Do not implement UI forms/navigation/screens or production publication/compiler services.
 
 ## Interfaces / Contracts
 
@@ -93,11 +93,11 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] P01: all C9.1 methods validate auth/owner/body and return exact statuses; other admin IDs leak no data.
-- [ ] P02: cross-replica same-ID replay reserves one budget/model call; changed payload conflicts; distinct run IDs on one conversation reject before any start.
-- [ ] P03: quotas, history/turn boundaries, cancellation/completion race, unknown/crash state, slot TTL and retained dedupe have explicit fake-clock assertions.
-- [ ] P04: C6.2 language and C16 response cases use frozen synthetic state and the same runner version; later publication never expands the preview grant.
-- [ ] P05: fixture output cannot send WhatsApp, access production providers or spend model quota; model mode never falls back to production keys.
+- [x] P01: all C9.1 methods validate auth/owner/body and return exact statuses; other admin IDs leak no data.
+- [x] P02: cross-replica same-ID replay reserves one budget/model call; changed payload conflicts; distinct run IDs on one conversation reject before any start.
+- [x] P03: quotas, history/turn boundaries, cancellation/completion race, unknown/crash state, slot TTL and retained dedupe have explicit fake-clock assertions.
+- [x] P04: C6.2 language and C16 response cases use frozen synthetic state and the same runner version; later publication never expands the preview grant.
+- [x] P05: fixture output cannot send WhatsApp, access production providers or spend model quota; model mode never falls back to production keys.
 
 ## Validation
 
@@ -127,86 +127,90 @@ Ready for Review.
 
 ### Files Changed
 
-Implementation commit `fa795af310d0df76a1553e4adb7d77dbe6c7b149` in
+Implementation commit `e614a03` in
 `moda-interact-commerce`:
 
-- `lib/preview/types.ts`, `store.ts`, `service.ts`, `runtime.ts`, `http.ts`
+- `src/commerce/preview/types.ts`, `store.ts`, `redis-store.ts`, `service.ts`
+- compatibility/runtime files under `lib/preview/`
 - C9.1 App Router handlers under `app/api/studio/preview/`
-- `tests/preview-service.test.ts`
+- `tests/preview-service.test.ts`, `preview-store.test.ts`, `preview-routes.test.ts`
 
 ### Work Completed
 
-- Implemented strict C9.1 preview schemas and typed error/status mapping.
-- Implemented owner-scoped conversation/run state, creation/run replay and
-  payload conflict handling, busy/history/TTL checks, fixture execution and
-  explicit cancellation flags.
-- Added authenticated fixtures, conversation, run status, cancellation and
-  tool-test route handlers. Authentication failures retain the existing Studio
-  401/403/503 contract; malformed bodies return `{code: INVALID_INPUT}`.
-- Added injected `PreviewBundleLoader` and state-store ports. Runtime composition
-  fails closed with `UNAVAILABLE` until the saved-bundle adapter is supplied by
-  COMMERCE-013; no production provider, customer transcript, Shopify token or
-  WhatsApp path is used.
+- Moved the lifecycle contract into the C19-owned `src/commerce/preview/` path,
+  validated and froze accepted Shared grants/manifests, and executed fixture and
+  explicit-model turns through `runCommerceTurn` with C16 final validation.
+- Added one atomic state contract with a production Redis Lua adapter and a
+  detached in-memory test implementation. It owns environment/admin/run identity,
+  replay/conflict ordering, locks, fencing, 20-turn/32,000-character limits,
+  rolling model quotas, cancellation, 120-second UNKNOWN state and 24-hour retention.
+- Persisted tool-test claims/results in the shared run namespace, rechecked saved
+  revision access, validated arguments, and implemented retained GET/replay.
+- Completed every C9.1 handler with bounded streamed JSON, exact replay bodies,
+  strict saved/database IDs, owner isolation and bounded `{code}` 503 failures.
+- Kept production bundle loading and model/tool composition fail-closed until
+  COMMERCE-013 supplies the authorized adapters. Fixture mode has no paid model,
+  provider, WhatsApp or production credential path.
 
 ### Correction Checklist
 
-Architect Review outcome before implementation: Pending; no correction items
-were issued. Checklist disposition: no review corrections were applicable.
+- R1 implemented: Shared runner lifecycle, validated/frozen bundle and fixtures,
+  async RUNNING dispatch, cancellation, language and valid/invalid C16 cases.
+- R2 implemented: Redis atomic transitions, distributed identities/budgets,
+  replay-before-quota, history/turn limits, TTL/UNKNOWN and owner-token fencing.
+- R3 implemented: persisted bounded tool-test POST/GET/replay with schema-validated
+  arguments, cross-kind run identity and zero model quota.
+- R4 implemented: canonical saved IDs, strict response contracts, bounded body/result,
+  replay result body, bounded 503 handling and executable route tests.
 
 ### Validation Results
 
 Agent-executed:
 
-- `npm test -- tests/preview-service.test.ts`: PASS, 1 file / 4 tests.
-- `npm run lint`: PASS.
-- `npm run typecheck`: PASS after `npm run build` generated the accepted Prisma
-  client.
+- `npm test -- tests/preview-service.test.ts tests/preview-routes.test.ts tests/preview-store.test.ts`:
+  PASS, 3 files / 19 tests.
+- `npm run lint`: PASS, zero warnings/errors.
+- `npm run typecheck`: PASS.
 - `npm run build`: PASS; all C9.1 routes compiled and were listed by Next.js.
 - `git diff --check`: PASS.
-- `npm test`: 72 passed, 1 failed. The unrelated failure is
-  `tests/readiness-docker.test.ts`, “kills ignored-stdio descendants after
-  leader exit on timeout”, failing because the descendant signal-handler IDs
-  were undefined before cancellation. No preview files are involved.
+- `npm test`: 162 passed, 2 failed outside preview scope. The readiness descendant
+  again failed to install its signal handler before cancellation; the live Redis
+  discovery-limit test timed out. All 19 preview tests passed in the full run.
 
 Focused case matrix:
 
-- creation replay/conflict and owner isolation -> injected `InMemoryPreviewStateStore`
-  plus synthetic `PreviewBundleLoader` -> `npm test -- tests/preview-service.test.ts`
-  -> PASS; one matching payload returns 200, changed payload returns ID_CONFLICT,
-  and another admin returns NOT_FOUND without execution.
-- fixture execution/replay -> fixture loader and `healthy-en` fixture -> same
-  focused command -> PASS; no model configuration is required and duplicate run
-  returns the stored result.
-- invalid fixture/model fail-closed -> bounded fixture catalogue and absent model
-  env -> same focused command -> PASS; INVALID_INPUT/UNAVAILABLE and no loader
-  fallback.
-- history/retention/cancel -> injected fake clock and in-memory state -> same
-  focused command -> PASS; HISTORY_LIMIT is rejected, completed result wins a
-  late cancel, and expired status returns NOT_FOUND.
+- P01/R4 routes -> actual handlers with injected service -> strict malformed/body
+  bounds, auth, saved CUID identity, replay result, owner isolation, tool GET and
+  bounded infrastructure failure all PASS with rejected effects at zero.
+- P02/R2 races -> two services sharing one atomic test store and Redis transport
+  boundary -> concurrent creation, duplicate run/tool replay, changed payload,
+  distinct-run busy, per-admin and platform slot boundaries all PASS.
+- P03 limits -> fake clock/barriers -> turn 21, exact 32,000 characters, rolling
+  10/hour, 120-second UNKNOWN fencing, cancellation/completion race and exact
+  24-hour retention all PASS.
+- P04/R1 contracts -> frozen English/French fixtures and actual Shared runner ->
+  frozen later mutation, runner language context and invalid C16 details PASS.
+- P05 isolation -> injected fixture/model/tool counters -> fixture uses no paid
+  model/provider/WhatsApp path; explicit model calls once and has no fallback.
 
-Developer validation required: live Redis/production saved-bundle composition,
-multi-replica atomic quota/concurrency behaviour, and COMMERCE-013 real adapter
-pairing remain pending because this task owns injected lifecycle fixtures and
-must not use live provider infrastructure.
+Developer validation pending: live deployment Redis execution and COMMERCE-013's
+real saved-bundle/model/tool adapter pairing. No live paid model, provider,
+WhatsApp, database migration or customer data was used by this task.
 
 ### Deviations
 
-The task definition requires Redis-backed atomic budgets and multi-replica race
-evidence, but the accepted C19 task boundary permits injected lifecycle fixtures
-until COMMERCE-013 supplies real composition. This implementation provides the
-state-store port and deterministic local store; production runtime intentionally
-fails closed rather than inventing a Redis or saved-bundle adapter.
+None.
 
 ### Assumptions
 
 - Accepted database revision consumed: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
-- Fixture-only runtime is the safe default until COMMERCE-013 wiring; model mode
-  requires explicit preview configuration and never falls back to production keys.
+- Production runtime uses Redis state and fails closed until COMMERCE-013 injects
+  the authorized saved-bundle and explicit preview model/tool adapters.
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+The two full-suite infrastructure failures above remain outside this task. Live
+Redis and real COMMERCE-013 adapter pairing remain developer/integration evidence.
 
 ### Architectural Concerns
 
@@ -214,16 +218,21 @@ None newly reported.
 
 ### Git / VCS
 
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-009`, branch `task/ARCH-020-COMMERCE-009`, clean after push.
-- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-009`, branch `task/ARCH-020-COMMERCE-009`.
-- Database gitlink/submodule evidence: accepted SHA
-  `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were
-  edited.
-- Implementation commit pushed to
-  `origin/task/ARCH-020-COMMERCE-009`:
-  `fa795af310d0df76a1553e4adb7d77dbe6c7b149`.
-- No main branch merge, parent service gitlink update, or other repository edit
-  was performed.
+- Task branch: `task/ARCH-020-COMMERCE-009`.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-009`, `task/ARCH-020-COMMERCE-009`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-009`, `task/ARCH-020-COMMERCE-009`.
+- Shared workspace/implementation checkout switched or mutated: no. Another task
+  worktree reused: no.
+- Start synchronization: parent remote task fast-forward not needed; parent
+  `origin/main` already current; implementation remote task fast-forwarded and
+  `origin/main` incorporated by the launcher.
+- Recursive submodule sync/update: passed. Database pin:
+  `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Implementation commit `e614a03` pushed to
+  `origin/task/ARCH-020-COMMERCE-009`.
+- No main merge, main push, force push, parent gitlink update or unrelated parent
+  file edit was performed.
 
 ## Architect Review
 
