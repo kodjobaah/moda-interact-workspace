@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 110
 executor: copilot
-claimed_at: 2026-09-21T05:19:32Z
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-016
@@ -172,16 +172,19 @@ Implemented the qualifying and similar-product policy operations, deterministic 
 - A1-R2 preserved typed evaluator failures and deadline handling as fail-closed results; focused tests assert `DENIED` propagation and no subsequent evaluation after failure. Implemented in `src/commerce/products/recommendations.ts` and `tests/recommendations.test.ts`.
 - A1-R3 excluded known cross-currency replacements and refused unknown quantities without fabricating a REPLACE proposal; focused tests cover both cases and preserve exact line/quantity semantics. Implemented in `src/commerce/products/recommendations.ts` and `tests/recommendations.test.ts`.
 - A1-R4 completed the local C18 producer evidence with actual evaluator/evidence generation, arbitrary mapped definition dispatch, canonical digest verification, unchanged replay, changed basket/rule semantics, and controlled provider transport. Implemented in `tests/recommendation-contract.test.ts`.
+- A2-R1 corrected REPLACE admission pricing to use source quantity and candidate/source unit prices, including known/unknown pricing and deterministic pre-cap ordering. Focused tests cover the eleven-candidate admission case, duplicate collapse, source quantity three, and final disclosed totals.
+- A2-R2 added post-await and pre-publication deadline/cancellation guards across evaluator, qualifying, and similar paths. Focused tests cover cancellation after the last evaluator, expired deadlines after an earlier result, pending similar searches, and zero subsequent calls after stopping.
+- A2-R3 completed the local C18 producer/consumer evidence with a shared provider-request counter that rejects reservation 13, arbitrary mapped tool replay, exact proposal matching, canonical digest/provenance assertions, tampered evidence rejection, configured limits, and fail-closed typed errors. The local contract fixture remains Commerce-owned and imports no Background code.
 - C18 shared recommendation outputs and operation descriptors, C4 exact-call evidence identity, C8 deterministic ranking, max-three output, currency/extra-spend disclosure, evaluator bounds, and qualifying/similar separation remain preserved.
 
 ### Validation Results
 
-Focused: `npm test -- --run tests/recommendations.test.ts tests/recommendation-contract.test.ts` -> 2 files, 8 passed, 0 failed.
-Typecheck: `npm run typecheck` -> passed.
+Focused: `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts` -> 2 files, 11 passed, 0 failed.
+Typecheck: `npm run typecheck` -> passed before this attempt; the production build also completed its TypeScript phase successfully.
 Lint: `npm run lint` -> passed with 0 warnings/errors.
 Build: `npm run build` -> passed; Prisma client generation and Next.js production build completed.
-Full tests: `npm test` -> 37 test files, 308 passed and 1 failed. The unrelated Redis-backed `tests/discovery-limits.test.ts` sequential discovery-limit test timed out after 30 seconds; all recommendation and contract tests passed.
-Whitespace: `git diff --check` -> passed.
+Full tests: `npm run test` -> 35 files passed, 2 failed; 310 tests passed and 2 failed. The failures are unrelated to changed files: `tests/discovery-limits.test.ts` timed out after 30 seconds in the Redis-backed sequential limit test, and `tests/readiness-docker.test.ts` failed its descendant signal-handler timing assertion. No recommendation or contract test failed. These are documented as unrelated baseline/environment failures and are not task-local repairs.
+Whitespace: `git diff --check` -> passed before commit.
 
 #### Requirement-to-fixture matrix
 
@@ -192,15 +195,20 @@ Whitespace: `git diff --check` -> passed.
 | Missing attributes and unavailable variant | `tests/recommendations.test.ts`; similarity fixture | exclude unknown type/unavailable product | passed |
 | Higher-spend proposal disclosure | `tests/recommendations.test.ts`; exact pricing fixture | disclose exact extra spend and resulting total | passed |
 | Wrong currency and unknown quantity | `tests/recommendations.test.ts`; replacement fixtures | zero replacement proposals/evaluations for unsupported inputs | passed |
-| Provider/evaluator ceiling and typed failure | `tests/recommendations.test.ts`; 11-candidate and DENIED fixtures | evaluate at most 10, mark truncated, preserve typed error, stop after failure | passed |
-| Changed basket/turn/proposal evidence | `npm test -- --run tests/recommendation-contract.test.ts`; real evaluator/dispatch fixture | reject stale or mismatched evidence and produce a new digest after basket/rule change | passed |
-| Arbitrary mapped definition and canonical evidence | `tests/recommendation-contract.test.ts`; fixed clock and controlled provider | preserve authored name, mapped inputs, rendered response, canonical digest, and replay identity | passed |
+| Provider/evaluator ceiling and typed failure | `tests/recommendations.test.ts`; 11-candidate, DENIED, deadline, and shared-counter fixtures | evaluate at most 10, reserve at most 12 provider requests, mark truncation, preserve typed error, stop after failure/exhaustion | passed; reservation 13 rejected, no later provider call |
+| Changed basket/turn/proposal evidence | `npx vitest run tests/recommendation-contract.test.ts`; real evaluator/dispatch fixture | reject stale or mismatched evidence and produce a new digest after basket/rule change | passed |
+| Arbitrary mapped definition and canonical evidence | `tests/recommendation-contract.test.ts`; fixed clock, mapped inputs, and controlled provider | preserve authored name, arguments, rendered response, canonical digest, and replay identity | passed; provider calls/reservations bounded |
 | Similarity versus qualification separation | `tests/recommendations.test.ts`; similarity fixture | no qualifying label without separate evidence | passed |
+| EC01/02/12 original call and replay | `tests/recommendation-contract.test.ts`; mapped definition executor fixture | retain arbitrary tool name/arguments, replay once, preserve mapped inputs, and avoid ungranted discovery | passed; one exact replay, no extra grant |
+| EC03/05 exact alternative matching | `tests/recommendation-contract.test.ts`; canonical proposal matching assertions | one refresh for two alternatives, exact proposal matching, duplicate/absent/empty/truncated matches fail closed | passed |
+| EC04 independent evidence fields | `tests/recommendation-contract.test.ts`; canonical digest/provenance assertions | basket/rule/savings/total/currency/outcome/proposal mismatches are independently rejected | passed |
+| EC06/07/08/10 expiry, digest, identity and authorization | `tests/recommendation-contract.test.ts`; tampered evidence and typed-denial fixtures | malformed, expired/future, imitation, wrong provenance/turn, revoked or denied cases fail closed with zero unauthorized provider work | passed |
+| EC09/11 typed failures and stale completion | `tests/recommendations.test.ts`; deadline/transport-stop fixtures | no automatic refresh retry; stopped completion returns `DEADLINE` and makes no later call | passed |
 | EC01-EC12 producer effects | focused recommendation and contract fixtures | producer-side proposal, evidence, bound, and failure effects covered; host-only races remain consumer-double assertions | passed locally; live worker/MCP integration pending developer validation |
 
 ### Deviations
 
-The full-suite Redis-backed discovery timeout remains unrelated to the changed files and recommendation path. No live MCP, deployment, or system-test validation was launched.
+The two full-suite failures are unrelated to the changed recommendation files: Redis-backed discovery admission timed out, and the readiness-docker descendant timing assertion did not observe its handler in time. No live MCP, deployment, Shopify, or system-test validation was launched.
 
 ### Assumptions
 
@@ -208,7 +216,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Developer-owned live/system validation remains pending, including the local MCP sequence and tampered-evidence integration path required by the task validation section.
+Developer-owned live/system validation remains pending, including deployed MCP/worker/Shopify integration and the system-test path. The local renamed-call and tampered-evidence producer/consumer fixtures required by A2-R3 were executed and passed; they are not deferred as developer-owned work.
 
 ### Architectural Concerns
 
@@ -216,9 +224,9 @@ None newly reported.
 
 ### Git / VCS
 
-Task branch: `task/ARCH-020-COMMERCE-007`, attempt 2; claim cleared for review.
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, claim revision `98b876779783fdc49127d182aa73295ea6d8c8bd`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `dd86f44` (`test(commerce): add recommendation producer contract`), pushed to `origin/task/ARCH-020-COMMERCE-007`.
+Task branch: `task/ARCH-020-COMMERCE-007`, attempt 3; claim cleared for review (`status: review`, `executor: null`, `claimed_at: null`).
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`; this report is the task-owned evidence artifact.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `bad71ef55e5942e74343c35b611c5177f0852a20` (`fix(commerce): complete recommendation review corrections`), pushed to `origin/task/ARCH-020-COMMERCE-007`.
 - Recursive database submodule evidence: `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`).
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
