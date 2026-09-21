@@ -85,3 +85,16 @@ older COMMERCE-003 current-state wording; architecture is not yet Implemented.
 2026-09-21 C19 split:004 transport/014 executor,005 queries/015 basket-products,
 006 rule reader/016 evaluator,009 backend/017 U14 frontend.013 owns real pairing.
 006/009/015 are newly Ready from accepted prerequisites; no task was launched.
+
+## COMMERCE-008 Attempt 4 review — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 4 retained**, claim cleared, not accepted.
+Reviewed implementation `04c0838a` and report `4f8c6180`; clean dedicated worktrees
+and matching remote heads verified. Canonical types, multiple bindings, validation
+freshness and persistent handoff progress are retained. Corrections remain for
+nested/full query authoring, editor record identity, and preserving newer dirty
+content when an older unknown write is reconciled. Independent component checks:
+14 submitted cases passed; three targeted failures reproduced. See the latest
+task Architect Review for explicit correction instructions. Reported readiness
+timing failures and pending real integration are not the blockers. No dependent
+promotion or main integration; this supersedes prior COMMERCE-008 state wording.

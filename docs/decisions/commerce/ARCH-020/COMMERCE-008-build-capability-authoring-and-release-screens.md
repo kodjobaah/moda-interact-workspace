@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 120
 executor: null
 claimed_at: null
@@ -599,6 +599,40 @@ Validation:
 No live Google OAuth, Shopify provider, merchant credential, customer data or production mutation was used. COMMERCE-009 still owns preview execution and COMMERCE-013 still owns real service composition. No main branch or Architect Review content was changed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 4 — 2026-09-21
+
+**Current decision: Ready, Attempt 4 retained, executor/claimed_at null; not accepted.** Reviewed implementation `04c0838a996136894d1bc00cf917fdd74b9548af` (Commerce PR3) and report `4f8c6180ccf5f35508e1d41d93c8e2fcea8bbd2a` (Workspace PR171). Dedicated worktrees clean and remote branch heads matched. This supersedes historical current-state wording. No implementation edit, next claim, dependent promotion or main integration.
+
+Retain canonical Shared type/schema use, editable raw JSON, detached multi-binding state, content-bound release validation, persistent App Router composer provider and working connected simple handoffs. The submitted component tests including binding preservation, stale-validation rejection and ordinary in-flight save handling pass independently. The three remaining failures below concern original A3-R1/R3/R4 behavior, not exhaustive coverage or COMMERCE-013 production composition.
+
+#### A4-R1 — P1 — Preserve the full query structure in discovery
+
+`components/studio-workspace.tsx`, Discovery proposed definition: the builder still takes only each path's last segment and reconstructs a hard-coded product(handle:$handle) query. It overwrites resultPath and the handle mapping and cannot preserve nesting, aliases, other root arguments or variable semantics. Reproduction: select `product.priceRange.minVariantPrice.amount`; validation receives `query ProductDetails($handle: String!) { product(handle: $handle) { amount } }`, losing both nested containers. The injected fixture validator accepts the Shared envelope without compiling the query, so this broken definition can be described as valid.
+
+Replace last-segment concatenation with structure-aware query construction, preferably the typed injected query-building/validation boundary already requested in A3-R1. Carry the complete source definition, field paths, argument mappings and selected result semantics. Preserve existing variables/aliases/nesting unless the user explicitly changes them; do not unconditionally replace execution with the ProductDetails example. Provide editable mappings/arguments needed by the supported workflow. Use the authoritative schema identity for success fixtures rather than treating a repeated-character hash plus envelope parsing as semantic validation. Fixture validation must reject invalid field paths/required arguments and verify the actual query/definition contract. No change to Shared/011 or installation of real013 adapters is requested.
+
+Regression: exercise the nested selection above and assert its exact nested query plus mappings/resultPath through U06 -> U07 -> U06; an invalid sibling must not unlock Use in tool. Retain the working simple ProductDetails flow and raw JSON editing.
+
+#### A4-R2 — P1 — Reset editor state on actual record identity changes
+
+Detail keys ToolEditor/CapabilityEditor only by revisionId or the constant `latest-draft`. When a preserved workspace switches between two record detail IDs without explicit revision query parameters, the key is unchanged and useState retains the old record's data. Reproduction: first tool draft description FIRST CONTENT, second tool draft description SECOND CONTENT; after rerender/navigation the heading is Second tool but the Description still reads FIRST CONTENT. A subsequent save uses the second selected revision ID with the first tool's definition. The browser harness key={path} hides this state-retention path; production's workspace wrapper does not apply that key.
+
+Key/reset the editor using both record ID and the resolved selected revision ID (including default draft selection), after the dirty-departure guard. Apply the same rule to capability editors. Cancel/invalidate obsolete loads when route identity changes and avoid showing editable previous detail under a new route. Test a same-mounted-workspace transition between two distinct records without revision parameters: heading, input values, saved target ID and expectedEditVersion must all belong to the second record. Also retain explicit revision navigation behavior. Do not rely on a harness-only remount to satisfy production semantics.
+
+#### A4-R3 — P1 — Retain the originally admitted content revision during replay
+
+StudioWorkspace.attempt captures submittedRevision afresh on every invocation. An unknown operation stores its original run closure but not the original content revision. During reconciliation, the newly captured revision equals the current newer edits, so success clears dirty even though the replay saved the older input.
+
+Exact reproduction: edit description to admitted content; Save returns unknown; edit to newer unsaved content; Check original operation returns OK for the old write; Back no longer opens the discard guard. The newer text is falsely marked saved and can be lost. This is distinct from the ordinary deferred-success case covered by the new submitted test.
+
+Store the admitted content revision/hash alongside operationId, original immutable input/run and onSuccess when the command is first dispatched. Reuse that original revision across every reconciliation. Clear dirty only when current editor content matches the originally admitted content. Alternatively disable all conflicting editing for the entire pending/unknown operation lifetime. Do not allocate a new operation ID or overwrite admitted payload on replay. Add the exact regression, asserting same ID/input, preserved newer text and a dirty guard after replay success. Retain the existing unknown-write lock and ordinary in-flight save regression.
+
+#### Validation and resubmission
+
+Independent component harness `/tmp/c008-a4-review/review.test.tsx` imports the actual committed components: **14 submitted component tests passed; 2 additional review tests failed** (nested query construction and record-switch state). A separate `/tmp/c008-a4-review/replay.test.tsx` reproduced the **third failure**, lost dirty state after unknown-operation replay. Exact triggers/results are recorded above. The temporary esbuild/oxc configuration warning is harmless harness output. Implementation diff whitespace check passed. Submitted 22 focused, typecheck/lint/build and browser traversal are acknowledged as reported evidence; no new independent browser screenshots or full-suite run were performed.
+
+The reported 115/117 full-suite result and separately reproduced readiness helper timing failures remain documented; readiness files are unchanged by this correction and are not the reason for Changes Requested. Live integration remains developer-owned/COMMERCE-013 scope. Fix A4-R1–A4-R3 on the existing branch pair, run focused behavioral regressions and required checks, and resubmit accurate evidence. No broad coverage expansion, production provider wiring, main merge or dependent execution is requested.
 
 ### Changes Requested — Attempt 3 — 2026-09-21
 

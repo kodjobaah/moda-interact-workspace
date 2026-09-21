@@ -402,7 +402,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-006 | commerce | pending | 0 | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
-| ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
+| ARCH-020-COMMERCE-008 | commerce | ready | 4 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
@@ -670,3 +670,16 @@ U14 only;013 assembles real frontend/backend services after component acceptance
 The25-task graph is reciprocal and acyclic. Active task worktrees remain
 authoritative; the concurrently integrated BACKGROUND-002 Attempt4 acceptance
 is preserved. No task is launched by this definition update.
+
+## COMMERCE-008 Attempt 4 review — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 4 retained**, claim cleared, not accepted.
+Reviewed implementation `04c0838a` and report `4f8c6180`; clean dedicated worktrees
+and matching remote heads verified. Canonical types, multiple bindings, validation
+freshness and persistent handoff progress are retained. Corrections remain for
+nested/full query authoring, editor record identity, and preserving newer dirty
+content when an older unknown write is reconciled. Independent component checks:
+14 submitted cases passed; three targeted failures reproduced. See the latest
+task Architect Review for explicit correction instructions. Reported readiness
+timing failures and pending real integration are not the blockers. No dependent
+promotion or main integration; this supersedes prior COMMERCE-008 state wording.

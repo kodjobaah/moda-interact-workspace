@@ -722,7 +722,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Implement basket and product discovery tools | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
-| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
+| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
@@ -1081,3 +1081,16 @@ or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
 without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
+
+## COMMERCE-008 Attempt 4 review — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 4 retained**, claim cleared, not accepted.
+Reviewed implementation `04c0838a` and report `4f8c6180`; clean dedicated worktrees
+and matching remote heads verified. Canonical types, multiple bindings, validation
+freshness and persistent handoff progress are retained. Corrections remain for
+nested/full query authoring, editor record identity, and preserving newer dirty
+content when an older unknown write is reconciled. Independent component checks:
+14 submitted cases passed; three targeted failures reproduced. See the latest
+task Architect Review for explicit correction instructions. Reported readiness
+timing failures and pending real integration are not the blockers. No dependent
+promotion or main integration; this supersedes prior COMMERCE-008 state wording.
