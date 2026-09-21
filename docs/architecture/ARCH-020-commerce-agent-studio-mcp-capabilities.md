@@ -718,7 +718,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | complete | — |
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | complete | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
-| [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | complete | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | ready | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
@@ -1172,6 +1172,44 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
 
+
+## COMMERCE-004 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt2 retained, claim clear; not accepted.
+Reviewed5ef60bd/5d54102b. Submitted12 tests pass; four added tests fail:
+last-write association bounds, missing pinned definition, malformed JSON503,
+and ignored-abort executor holding the response past deadline. A2-R1–R3 define
+original-association/tool-revocation resolution, protocol/aggregate bounds and
+bounded execution waiting. Retain actual prompt and true-handler interoperability
+improvements. See canonical task for precise files and acceptance effects.
+No promotion, new claim, main integration or gitlink update; live validation
+remains separate from component corrections.
+
+## COMMERCE-004 Attempt 3 accepted — 2026-09-21
+
+COMMERCE-004 is **Accepted / Complete, Attempt 3 retained**, claim cleared.
+Reviewed implementation `0411babc` and parent report `b272d1a9` against remote heads.
+Original-association minima, required pinned records/current revocation, SDK
+transport/protocol bounds and bounded executor waiting resolve A2-R1–A2-R3.
+Independent validation passed18 focused MCP tests and all four prior failure
+reproductions; diff checks passed. Submitted typecheck/lint/build passed; reported
+full-suite infrastructure failures remain separate from component acceptance.
+Live Background assertions, Redis, production adapter/provider and deployment
+validation remain developer/integration-owned. COMMERCE-014 is promoted Ready,
+Attempt0 with no claim, because004/SHARED-001 are Complete. Other dependants retain
+their unresolved gates;012 is still the final implementation checkpoint.
+No implementation changes, main integration or gitlink update. Architecture is not
+yet Implemented. This supersedes older004 state wording and retains review history.
+## COMMERCE-009 Attempt 4 accepted — 2026-09-21
+
+Complete, architect accepted; Attempt4 retained, claim clear. Reviewed5d4dcd3 /
+ef556b4c. Expired-owner execution fence verified in memory/Redis and all dispatch
+boundaries. Independent37/37 focused tests pass, including actual isolated Lua;
+prior architect expiry/replacement reproduction1/1 passes with0 stale model calls.
+Prior accepted prompt/history/language/replay/bounded-state corrections retained.
+009 is satisfied;012/013/system-test retain other unfinished prerequisites, and
+017 has no009 dependency. No promotion or automatic execution. Live deployment
+and013 assembly remain separate. No main integration or gitlink update.
 ## COMMERCE-008 Attempt 5 review — 2026-09-21
 
 COMMERCE-008 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
