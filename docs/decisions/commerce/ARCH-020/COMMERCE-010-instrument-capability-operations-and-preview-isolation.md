@@ -116,18 +116,18 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Discovery failure is observable without leaking authored content or changing production conversation outcomes; no invented per-feature metric labels.
+- [x] Discovery failure is observable without leaking authored content or changing production conversation outcomes; no invented per-feature metric labels.
 
-- [ ] No duplicate generic HTTP metric/logger is introduced; required semantic signals correspond to documented operational gaps.
-- [ ] Fixture traces correlate Background-to-MCP-to-provider while preview traffic remains distinguishable.
-- [ ] Telemetry sink failure does not break tool results or publication correctness; no sensitive fixture marker leaks.
+- [x] No duplicate generic HTTP metric/logger is introduced; required semantic signals correspond to documented operational gaps.
+- [x] Fixture traces correlate Background-to-MCP-to-provider while preview traffic remains distinguishable.
+- [x] Telemetry sink failure does not break tool results or publication correctness; no sensitive fixture marker leaks.
 
 ## Validation
 
-- [ ] Template failure and missing operation fixtures remain diagnosable without leaking input/response text; generic HTTP instrumentation is reused.
+- [x] Template failure and missing operation fixtures remain diagnosable without leaking input/response text; generic HTTP instrumentation is reused.
 
-- [ ] Run local exporter/sink fixtures for identity, propagation, sensitive-data absence and failure isolation.
-- [ ] Provide developer-owned backend arrival verification instructions without exporting normal automated tests to hosted telemetry.
+- [x] Run local exporter/sink fixtures for identity, propagation, sensitive-data absence and failure isolation.
+- [x] Provide developer-owned backend arrival verification instructions without exporting normal automated tests to hosted telemetry.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -160,7 +160,7 @@ Correction checklist applied for this rework attempt:
 
 ### Work Completed
 
-None; task definition only.
+Added `src/commerce/observability.ts`, integrated semantic events into discovery, MCP trace propagation, definition execution, publication, discount evaluation, and preview, and added `docs/observability-commerce.md` plus `tests/observability.test.ts`.
 
 ### Validation Results
 
