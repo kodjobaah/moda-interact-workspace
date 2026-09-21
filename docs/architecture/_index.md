@@ -95,6 +95,32 @@ Gateway002, Commerce012 and terminal system tests retain other dependencies;
 no dependent is promoted or launched. Developer integration remains separate;
 ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
 
+## COMMERCE-011 Attempt 8 review — 2026-09-21
+
+COMMERCE-011 is **Ready, Attempt 8 retained**, claim cleared, not accepted.
+Reviewed implementation `ae6acb4` and report `409b14a`; clean dedicated worktrees
+and matching remote heads verified. All three Attempt 7 reproductions now pass;
+R7-2 Redis cleanup is accepted. The sole remaining correction is R8-1: preserve
+interleaved text/element order during document extraction (inline code currently
+scrambles instructions). Independent focused validation: 19 passed; isolated
+checks: 3 passed, 1 failed. See the latest canonical task Architect Review for
+reproduction and correction scope. No dependent promotion or main integration.
+Live validation remains developer-owned and is not an acceptance blocker.
+This note supersedes previous COMMERCE-011 current-state wording.
+
+## COMMERCE-011 Attempt 9 accepted — 2026-09-21
+
+COMMERCE-011 is **Complete, architect accepted, Attempt 9 retained**, claim cleared.
+Reviewed implementation `1176412` and report `ccb35ea3`; clean dedicated worktrees
+and matching remote heads verified. R8-1 inline text order is fixed; all four prior
+review reproductions and 38 focused checks passed independently. Submitted full
+suite remains 117/119 with two existing readiness timing failures in unchanged
+code; no green full-suite or live Redis claim is made. Live Redis/OAuth/Shopify/
+deployment checks remain developer-owned and pending. COMMERCE-005 is promoted
+Ready (001/011/Shared Complete), with no new claim. Other dependants retain current
+states because prerequisites remain unresolved. No main merge or gitlink update;
+architecture is not Implemented. This supersedes older COMMERCE-011 current-state
+wording while preserving historical reviews.
 ## COMMERCE-003 Attempt 4 accepted — 2026-09-21
 
 COMMERCE-003 is **Complete, architect accepted, Attempt 4 retained**, claim cleared.
@@ -109,15 +135,15 @@ without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
 
-## COMMERCE-008 Attempt 4 review — 2026-09-21
+## COMMERCE-006 Attempt 2 review — 2026-09-21
 
-COMMERCE-008 is **Ready, Attempt 4 retained**, claim cleared, not accepted.
-Reviewed implementation `04c0838a` and report `4f8c6180`; clean dedicated worktrees
-and matching remote heads verified. Canonical types, multiple bindings, validation
-freshness and persistent handoff progress are retained. Corrections remain for
-nested/full query authoring, editor record identity, and preserving newer dirty
-content when an older unknown write is reconciled. Independent component checks:
-14 submitted cases passed; three targeted failures reproduced. See the latest
-task Architect Review for explicit correction instructions. Reported readiness
-timing failures and pending real integration are not the blockers. No dependent
-promotion or main integration; this supersedes prior COMMERCE-008 state wording.
+COMMERCE-006 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `724875d` and report `2000bccb`; dedicated worktrees clean
+and remote heads matched. Working AI/FIXED, completeness, budget and pagination
+improvements are retained. Corrections remain for NONE read denial, exact
+fraction-to-percentage conversion, executable list/ID query documents and positive
+canonical fixed amounts. Independent checks: 16 submitted reader tests passed;
+five functional reproductions failed. See the latest task Architect Review.
+Live Shopify remains developer-owned and is not the blocker. No dependent
+promotion or main integration. This supersedes prior COMMERCE-006 current-state
+wording; the narrowed C19 reader-only scope remains authoritative.

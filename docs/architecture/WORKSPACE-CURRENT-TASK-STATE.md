@@ -402,10 +402,10 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-006 | commerce | pending | 0 | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
-| ARCH-020-COMMERCE-008 | commerce | ready | 4 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-011 | commerce | complete | 9 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | complete | 4 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
@@ -671,15 +671,42 @@ The25-task graph is reciprocal and acyclic. Active task worktrees remain
 authoritative; the concurrently integrated BACKGROUND-002 Attempt4 acceptance
 is preserved. No task is launched by this definition update.
 
-## COMMERCE-008 Attempt 4 review — 2026-09-21
+## COMMERCE-011 Attempt 9 accepted — 2026-09-21
 
-COMMERCE-008 is **Ready, Attempt 4 retained**, claim cleared, not accepted.
-Reviewed implementation `04c0838a` and report `4f8c6180`; clean dedicated worktrees
-and matching remote heads verified. Canonical types, multiple bindings, validation
-freshness and persistent handoff progress are retained. Corrections remain for
-nested/full query authoring, editor record identity, and preserving newer dirty
-content when an older unknown write is reconciled. Independent component checks:
-14 submitted cases passed; three targeted failures reproduced. See the latest
-task Architect Review for explicit correction instructions. Reported readiness
-timing failures and pending real integration are not the blockers. No dependent
-promotion or main integration; this supersedes prior COMMERCE-008 state wording.
+COMMERCE-011 is **Complete, architect accepted, Attempt 9 retained**, claim cleared.
+Reviewed implementation `1176412` and report `ccb35ea3`; clean dedicated worktrees
+and matching remote heads verified. R8-1 inline text order is fixed; all four prior
+review reproductions and 38 focused checks passed independently. Submitted full
+suite remains 117/119 with two existing readiness timing failures in unchanged
+code; no green full-suite or live Redis claim is made. Live Redis/OAuth/Shopify/
+deployment checks remain developer-owned and pending. COMMERCE-005 is promoted
+Ready (001/011/Shared Complete), with no new claim. Other dependants retain current
+states because prerequisites remain unresolved. No main merge or gitlink update;
+architecture is not Implemented. This supersedes older COMMERCE-011 current-state
+wording while preserving historical reviews.
+
+
+## COMMERCE-006 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
+Verified de532c6/ec088f27. A2 NONE, fraction conversion and zero-value fixes pass;
+both documents now pass pinned Admin2026-07 schema validation. Nineteen submitted
+reader tests pass; four added cases fail. A3-R1 corrects nested first:1000 runtime
+limits with an explicit bounded partial-target profile. A3-R2 requires typed
+cancellation, pre-dispatch checks and rejection of late successful data.
+See the canonical COMMERCE-006 task for precise code locations and expected effects.
+No live validation gate, dependent promotion, new claim, implementation change,
+main integration or gitlink update. Parent overlay published before preparation.
+
+
+## COMMERCE-006 Attempt 4 accepted — 2026-09-21
+
+Current decision: Complete, architect accepted; Attempt4 retained, claim clear.
+Implementation1c124f4 / report70c3cf24. A3-R1 bounded nested5-item query profile
+and A3-R2 typed cancellation/late-result guards accepted. Independent reader/auth
+27/27 pass; prior architect harness23/23 pass, including all4 prior failures.
+Live Shopify/provider assembly and unproven semantics remain explicitly separate;
+unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awaits
+015;012/013/system-test retain other unfinished dependencies. No downstream
+promotion, implementation changes, main integration or gitlink update. See the
+canonical task's latest Accepted review for validation limits and integration order.
