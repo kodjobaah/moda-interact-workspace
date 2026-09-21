@@ -941,3 +941,51 @@ No dependent promotion, new claim, implementation change, main integration or
 gitlink update. This supersedes earlier COMMERCE-017 current-state wording while preserving
 review history and other task decisions. Architecture remains not yet Implemented;
 COMMERCE-012 is the final implementation checkpoint.
+
+## COMMERCE-007 Attempt 5 architect review — 2026-09-21
+
+COMMERCE-007 is **Changes Requested / Ready, Attempt 5 retained**, claims cleared.
+Reviewed implementation `caf5d38` and report `40ed0a4`, matching remote task heads.
+Independent 11 focused tests and seven runtime reproductions pass. A4-R1.1 is
+resolved: one execution makes 12 actual provider requests and rejects reservation 13
+with typed ERROR. The remaining A5-R1 is confined to the C18 harness/report:
+replace the two partial consumer helpers with one measured async replay path,
+validate every selected item's provenance/proposal/semantics, and correct claims.
+Diagnostics show the new helper accepts truncation and rejects valid fresh digests.
+No new production defect is alleged. No dependent promotion, new claim,
+implementation change, main integration or gitlink update. Live deployed/worker/
+Shopify validation remains with its assigned owner. This supersedes older COMMERCE-007
+current-state wording only; other decisions and history remain unchanged.
+Architecture is not yet Implemented.
+
+## COMMERCE-007 Attempt 6 architect review — 2026-09-21
+
+COMMERCE-007 is **Changes Requested / Ready, Attempt 6 retained**, claims cleared.
+Reviewed implementation `21e150f` and report `73981c7b`, matching remote heads.
+Independent 11 focused tests and seven runtime reproductions pass; the 12-request
+budget proof remains valid. The unified replay now handles all selected proposals,
+truncation and valid fresh digests. A6-R1 identifies two remaining harness issues:
+refresh receives no original-call tuple, and expired original evidence can be
+rescued by a fresh response. Exact callback/provenance and expiry corrections are
+recorded in the task; no production recommendation defect or code change is requested.
+No dependent promotion, new claim, main integration or gitlink update. Live service
+validation remains with its assigned owner. This supersedes older COMMERCE-007 current-state
+wording only; other decisions remain unchanged. Architecture is not yet Implemented.
+
+## COMMERCE-007 Attempt 7 accepted — 2026-09-21
+
+COMMERCE-007 is **Accepted / Complete, Attempt 7 retained**, claims cleared.
+Reviewed implementation `e08b896` and report `bb3e977` against remote heads.
+A6-R1 is resolved: refresh receives the original name/revision/arguments and invalid
+or expired original evidence is rejected before refresh. Independent 11 focused
+tests, seven runtime reproductions and both augmented contract tests pass; the
+12-request provider budget and reservation 13 rejection remain verified. Diff checks
+pass. Submitted full 334/335 and typecheck/lint/build remain reported evidence;
+live MCP/Background/Shopify proof remains with integration/system owners.
+COMMERCE-010 and COMMERCE-013 are promoted **Ready, Attempt 0**, claims null:
+all their explicit prerequisites are accepted Complete. Preparation owns source
+synchronization and claims; neither task is launched. COMMERCE-018/019 still await
+COMMERCE-013; final/deployment/system gates remain. No implementation change,
+main integration or gitlink update. This supersedes older COMMERCE-007 current-state wording;
+other task decisions remain unchanged. Architecture is not yet Implemented and
+COMMERCE-012 remains the final implementation checkpoint.
