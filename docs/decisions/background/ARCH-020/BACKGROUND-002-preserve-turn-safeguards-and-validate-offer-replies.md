@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 160
 executor: copilot
 claimed_at: 2026-09-21T00:04:36Z
@@ -156,7 +156,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review. Attempt 2 corrections implemented.
+Ready for Review. Attempt 3 corrections implemented; awaiting architect review.
 
 ### Files Changed
 
@@ -164,17 +164,20 @@ Ready for Review. Attempt 2 corrections implemented.
 - Wired the default extractor through `src/commerce/host.ts` and the Shared runner path; production host tests use the real MCP transport and default extractor.
 - Preserved existing conversation admission, processing-version, lease, language, reservation, send, retry, and unknown-provider-status ownership.
 - Added deterministic evidence, malformed/truncated-result, digest, provenance-conflict, exact-refresh, stale/cancel, and budget fixtures.
+- Added host-boundary final-response preflight and arbitrary external-cancellation coverage.
 
 ### Work Completed
 
-- **R1 implemented:** `extractTrustedEvidence` accepts only the Shared root evaluator schema or non-truncated recommendation alternatives with validated evidence. It ignores rendered text, generic public-query data, nested counterfeit fields, and malformed/truncated results. HostDependencies now uses this extractor by default and passes it to the Shared runner and host-side registry. The real MCP host fixture proves trusted root evidence can authorize only after exact replay; truncated recommendations fail closed as `INVALID_FINAL` and cannot authorize an offer.
+- **A2-R1 implemented:** `extractTrustedEvidence` remains strict and `TurnEvidenceRegistry.hasEligibleEvidence` is read-only. The host validates a sole structurally valid `finalResponse` against the pinned response contract before returning it to the Shared runner; ANSWER claims with missing, invalid, conflicting, expired, or nonqualifying evidence are rewritten to `REFER_TO_STORE` with `UNVERIFIABLE_FACTS`, empty evidence IDs, and empty details. Unknown and expired evidence are admitted referrals; malformed envelopes and mixed calls remain `INVALID_FINAL`.
 - **R2 implemented:** evidence IDs are recomputed from canonical content; turn, grant, and release identity are checked; provenance snapshots are detached; duplicate identical provenance deduplicates and conflicting reuse invalidates the ID. Refresh requires an unexpired original, bounded fresh evidence, exact offer/proposal match, qualifying outcome, non-null money, empty unresolved conditions, and canonical decimal comparison. Refresh budget is checked before any replay and proposal operation order remains significant.
-- **R3 implemented:** refresh returns explicit `accepted`, `refer`, or `suppress` outcomes. Stale-turn, cancellation, and lease loss suppress delivery; ordinary provider, transport, malformed, deadline, revoked, and budget failures become one trusted referral after the existing admission checks. No refresh retry is introduced. Outcome telemetry uses the existing OpenTelemetry metrics API without transcript, arguments, or evidence payloads.
+- **A2-R2 implemented:** `assertCurrent` checks the external task signal before the combined signal, refresh accepts an external-cancellation predicate, and the host unconditionally checks cancellation and current admission after every refresh result. AbortError, Error, and string cancellation reasons suppress; ordinary live-turn refresh deadlines still refer. No refresh retry, credit, replacement grant, or cleanup-to-delivery path was added.
+- **A2-R3 implemented:** the canonical seed-clock boundaries are retained in the evidence fixtures; independent digest/provenance, expiry, null-money/unresolved-condition, budget, stale/cancel, unknown, expired, truncated, and malformed-final cases are exercised. Outcome telemetry uses the existing OpenTelemetry metrics API without transcript, arguments, or evidence payloads.
 - Existing processor coverage continues to assert continuation/recovery admission, duplicate delivery, reservation cleanup, retry behavior, stale-turn suppression, language guards, and provider-send uncertainty.
 
 ### Validation Results
 
-- `npm exec vitest run tests/unit/commerce/evidence.test.ts tests/integration/commerce/host.test.ts tests/unit/services/conversation-turn-processor.service.test.ts` passed: 3 files, 78 tests.
+- `npm exec vitest run tests/unit/commerce/evidence.test.ts tests/integration/commerce/host.test.ts` passed: 2 files, 49 tests.
+- `npm exec vitest run tests/unit/services/conversation-turn-processor.service.test.ts` passed: 1 file, 35 tests.
 - `npm run build` passed, including `prisma:generate` and TypeScript compilation.
 - `npm run prisma:validate` passed: schema valid.
 - `npx tsc --noEmit` passed.
@@ -184,22 +187,28 @@ Requirement-to-fixture matrix:
 
 | Requirement | Fixture | Expected side effects | Result |
 | --- | --- | --- | --- |
-| EC01 | strict root evaluator through real MCP host | one trusted replay; one admitted answer; no rendered-text authority | Passed |
-| EC02 | generic public query / nested counterfeit data | zero evidence IDs; no offer authorization | Passed |
-| EC03 | recommendation alternatives with valid evidence | validated evidence is registered; duplicate references replay once | Passed |
-| EC04 | each changed semantic field with recomputed digest | exact refresh comparison rejects changed result; one referral, no positive offer | Passed |
-| EC05 | missing, duplicate, empty, malformed, and truncated evidence | fail closed; no positive offer; truncated host result is `INVALID_FINAL` | Passed |
-| EC06 | original/fresh expiry boundaries, future timestamps, invalid digest, null money, unresolved conditions | expired/future/incomplete evidence makes zero refresh requests and refers | Passed |
-| EC07 | counterfeit digest and immutable provenance conflict | conflicting evidence ID is invalidated; zero replay; no authorization | Passed |
-| EC08 | DENIED, NOT_FOUND/unavailable, throttled, invalid input, incompatible version, HTTP and transport failures | one normal referral at most; no automatic retry | Covered by host/MCP and registry failure paths; focused suite passed |
-| EC09 | ordinary refresh failure with retryable provider status | one replay only; referral path; no retry amplification | Passed |
-| EC10 | cross-turn/grant/release mismatch, unknown ID, exhausted budget | zero replay where preconditions fail; no new grant or usage side effect | Passed |
-| EC11 | stale turn, cancellation, lease loss, and post-replay recheck | zero send/language mutation; existing reservation cleanup only | Passed by host and processor regressions |
-| EC12 | trusted referral rendering and multiple tool results | one resolved-language referral using verified store context; no fabricated contact or extra send | Passed by host and processor regressions |
+| EC01 | strict root evaluator through real MCP host | one trusted replay; one admitted answer; no rendered-text authority | Passed in `uses the production extractor for trusted root evidence...` |
+| EC02 | generic public query / nested counterfeit data | zero evidence IDs; no offer authorization | Passed in `extracts only strict evaluator...` |
+| EC03 | recommendation evidence without a separate evaluator, reversed-result handling, duplicate final references | one replay per distinct actual call; no extra send | Passed for duplicate references; distinct-alternative expansion remains developer-owned pairing evidence |
+| EC04 | independently changed resultingTotal and comparable semantic fields with recomputed digests | exact refresh rejects changed result; one referral; no positive offer | Passed in `rejects changed recommendations...` |
+| EC05 | missing, duplicate, empty, malformed, and truncated evidence | fail closed; unknown/truncated become one referral; malformed final remains rejection | Passed in host and evidence focused suites |
+| EC06 | seed-clock original/fresh expiry, future timestamps, invalid digest, null money, unresolved conditions | expired/incomplete evidence makes zero replay and refers | Passed in `does not resurrect expired original evidence...` and expired host fixture |
+| EC07 | rendered-text/wrapper counterfeit, invalid digest, immutable provenance conflict | zero trusted authorization; conflicting ID is invalidated | Passed in `rejects counterfeit digests and conflicting immutable provenance` |
+| EC08 | identity/revocation and structured DENIED/NOT_FOUND/unavailable/throttle/input/version failures | one normal referral at most; no replacement grant or retry loop | Passed by host/MCP and registry failure paths |
+| EC09 | resolved structured errors, HTTP401/403, malformed output, transport failure, per-call timeout | one replay/call; referral path; no retry amplification | Passed by host/MCP and registry failure paths |
+| EC10 | cross-turn/grant/release mismatch, unknown/expired final ID, exhausted budget | zero replay when preconditions fail; no new grant or usage side effect | Passed in evidence unit and host boundary tests |
+| EC11 | stale turn, lease loss, external cancellation during refresh, post-replay recheck | zero send/language mutation; existing reservation cleanup only | Passed by evidence cancellation tests, host guards, and 35 processor tests |
+| EC12 | recommendation replay without separate evaluator, trusted referral rendering, multiple tool results | one resolved-language referral; verified store context only; no fabricated contact or extra send | Passed by host and processor regressions |
+
+### Attempt 3 Correction Checklist
+
+- **A2-R1:** implemented host-local conversion for structurally valid unusable evidence; added unknown, expired, truncated, and malformed-final tests; preserved Shared validation for malformed/mixed authority violations.
+- **A2-R2:** implemented external cancellation normalization and unconditional post-refresh admission checks; added AbortError, Error, and string cancellation fixtures; preserved ordinary deadline referral behavior.
+- **A2-R3:** corrected the EC matrix to the C18 meanings and seed-clock evidence; added explicit host-boundary and cancellation fixtures; reran all agent-owned checks below.
 
 ### Deviations
 
-The Commerce policy adapter remains contract-owned outside this repository; production pairing is intentionally not implemented here. The fixture transport is deterministic and does not claim live Shopify or Commerce provider validity. The Shared runner rejects a truncated recommendation-backed positive final as `INVALID_FINAL` before host delivery, which is the required fail-closed outcome.
+The Commerce policy adapter remains contract-owned outside this repository; production pairing is intentionally not implemented here. The fixture transport is deterministic and does not claim live Shopify or Commerce provider validity. Structurally valid truncated/unknown/expired evidence claims are converted by the host to one admitted trusted referral; malformed final envelopes and mixed calls remain `INVALID_FINAL` as required.
 
 ### Assumptions
 
@@ -207,7 +216,7 @@ Use the parent architecture and actual accepted dependency revisions. The publis
 
 ### Unresolved Issues
 
-Live Commerce producer/consumer pairing, live provider discount semantics, and deployment validation remain developer-owned SYSTEM-TEST/Gateway work.
+Live Commerce producer/consumer pairing, live provider discount semantics, and deployment validation remain developer-owned SYSTEM-TEST/Gateway work. The live validation command is not run by this agent; developer must execute the terminal SYSTEM-TEST-001/Gateway pairing command against the approved environment and provide its result before architect acceptance.
 
 ### Architectural Concerns
 
@@ -215,7 +224,7 @@ No new architectural concern. The injected extractor is the explicit boundary fo
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-BACKGROUND-002. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, published implementation commit `55ac8b271dd17f73d647d4ed6124059fffdffc6c`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, claim commit `3cadfb5893f270b861be7fda3a5111912365ccef`; this Attempt 2 report is published as a follow-on commit. Database submodule was not modified. No parent service gitlink or main integration was performed.
+Expected execution branch: `task/ARCH-020-BACKGROUND-002`. Attempt: 3. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, clean before edits, branch `task/ARCH-020-BACKGROUND-002`, published implementation commit `7505ac3`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, launcher claim `104c0fc85b9ca81fb109aec345f9f4197d050349`. Prepared-packet evidence was reused: launcher-created canonical worktrees, start-of-attempt branch synchronization, recursive submodule initialization, and clean dependency state. Accepted dependency pin consumed: database submodule `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; Background consumes published Shared package `@modainteract/moda-interact-shared@0.13.1`. Database submodule and parent service gitlink were not modified; no main integration or merge was performed.
 
 ## Architect Review
 
