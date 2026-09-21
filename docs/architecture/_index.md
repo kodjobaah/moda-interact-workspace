@@ -95,15 +95,16 @@ Gateway002, Commerce012 and terminal system tests retain other dependencies;
 no dependent is promoted or launched. Developer integration remains separate;
 ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
 
-## COMMERCE-006 Attempt 1 review — 2026-09-21
+## COMMERCE-003 Attempt 4 accepted — 2026-09-21
 
-COMMERCE-006 is **Ready, Attempt 1 retained**, claim cleared, not accepted.
-Reviewed actual implementation `4b968c1` and report `abff9261`, with clean isolated
-worktrees and matching remote heads. Corrections: AI/FIXED authorization, valid
-pinned provider query/mapping evidence, fail-closed normalized facts and bounds,
-and typed budget/error plus pagination completeness. Independent deterministic
-checks: 11 submitted reader tests passed; six functional reproductions failed.
-See the latest task Architect Review for concrete inputs and correction scope.
-Live provider validation remains developer-owned and is not the review blocker.
-No dependent promotion or main integration. This note supersedes older
-COMMERCE-006 current-state wording; the narrowed C19 reader-only scope applies.
+COMMERCE-003 is **Complete, architect accepted, Attempt 4 retained**, claim cleared.
+Reviewed implementation `12df0104` and report `4b86771f`. The isolated rehearsal
+now fails closed on unexpected SQL/cleanup errors, identifies its injected
+rollback case, checks audit-backed replay and reaps owned workers. Independently
+passed 26 lifecycle tests, shell syntax, four mock harness scenarios and diff
+checks. Live disposable PostgreSQL execution remains explicitly developer-owned
+and unrun; COMMERCE-013 owns real adapter/integration composition. No main merge
+or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
+without claiming an attempt. Other dependent tasks retain their current states;
+012/013/system-test still have unresolved prerequisites. This acceptance supersedes
+older COMMERCE-003 current-state wording; architecture is not yet Implemented.
