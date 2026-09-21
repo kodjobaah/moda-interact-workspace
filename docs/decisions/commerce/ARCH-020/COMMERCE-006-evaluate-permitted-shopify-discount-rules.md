@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 100
-executor: copilot
-claimed_at: 2026-09-21T01:23:54Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -127,7 +127,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review. Attempt 2 corrections and agent-owned validation are complete.
+Ready for Review. Attempt 3 corrections and agent-owned validation are complete.
 
 ### Files Changed
 
@@ -197,6 +197,44 @@ actual granted scopes. No live credentials were inspected or used here.
 ### Architectural Concerns
 
 None newly reported.
+
+### Attempt 3 Correction Report
+
+#### Correction Checklist
+
+- A2-R1 implemented: `read` explicitly denies `NONE` before provider I/O, permits `AI_BEST_APPLICABLE`, and retains configured-identity enforcement for `FIXED`. Regression coverage verifies `NONE` returns `DENIED` with zero provider calls.
+- A2-R2 implemented: Shopify fractions are converted by exact decimal string scaling, not digit splitting or floating-point arithmetic. Focused cases verify `0.25 -> 25` and `0.125 -> 12.5`, alongside the existing `0.1 -> 10` case.
+- A2-R3 implemented: list and fixed-ID documents now select the complete normalized rule fields, use the correct `DiscountCollections` fragment, and validate against the installed pinned Admin 2026-07 introspection artifact. Both documents parse and schema-validate in the focused suite.
+- A2-R4 implemented: fixed amounts and subtotal minima require canonical strictly positive decimals; `0.00` remains `UNKNOWN` and cannot become `SUPPORTED`. The zero-value regression passes while valid positive fractional amounts remain covered.
+
+#### Files Changed
+
+- `src/commerce/discounts/reader/reader.ts`
+- `tests/discount-reader.test.ts`
+- `docs/discount-support-matrix.md`
+
+#### Validation Results
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused correction suite | `npm exec vitest run tests/discount-reader.test.ts` | 1 file, 19 tests passed; includes parser and pinned Admin 2026-07 schema validation for both documents |
+| Focused reader/auth suite | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | 2 files, 21 tests passed |
+| Type safety | `npm run typecheck` | Passed; Next route type generation and `tsc --noEmit` |
+| Lint | `npm run lint` | Passed |
+| Production build | `npm run build` | Passed; Prisma client 6.19.3 generated and Next webpack build completed |
+| Full tests | `npm test` | 19 files / 161 tests passed; 3 unrelated baseline/environment failures remained |
+| Diff hygiene | `git diff --check` | Passed |
+
+Full-suite failures were outside the changed discount files: two `tests/readiness-docker.test.ts` descendant signal-handler timing assertions failed before cancellation, and `tests/discovery-limits.test.ts` timed out after 30 seconds in the Redis-backed rolling-window case. No task-local discount test failed.
+
+#### Database / Worktree Evidence
+
+- Accepted database revision: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-006`.
+- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-006`.
+- Implementation branch: `task/ARCH-020-COMMERCE-006`; implementation commit: `de532c6ce57d7acd26af15527610f8efa627df21` (`fix(commerce): close discount reader review gaps`), pushed to `origin/task/ARCH-020-COMMERCE-006`.
+- Database submodule remained pinned at the accepted revision; no database schema, migration, or parent service gitlink was changed.
+- Implementation worktree was clean after push. Developer-owned live/pre-production Shopify validation remains pending; no credentials or live endpoints were inspected or used.
 
 ### Git / VCS
 
