@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 160
-executor: copilot
-claimed_at: 2026-09-21T00:22:03Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-BACKGROUND-001
@@ -126,21 +126,21 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] An authored template/query cannot authorize a discount by imitating evidence fields or a reserved helper name; normal factual product queries remain usable.
+- [x] An authored template/query cannot authorize a discount by imitating evidence fields or a reserved helper name; normal factual product queries remain usable.
 
-- [ ] A newer customer message or lost lease suppresses the older result without a WhatsApp send or stale language update.
-- [ ] Disabling a feature/shop or changing an offer before delivery prevents an invalid offer reply.
-- [ ] MCP failures and retries do not double-charge, double-send, bypass abuse limits or start an unbounded fallback loop.
+- [x] A newer customer message or lost lease suppresses the older result without a WhatsApp send or stale language update.
+- [x] Disabling a feature/shop or changing an offer before delivery prevents an invalid offer reply.
+- [x] MCP failures and retries do not double-charge, double-send, bypass abuse limits or start an unbounded fallback loop.
 
-- [ ] Unknown answers and unusable originally granted tools produce a factual bounded store referral without extra WhatsApp sends, fabricated contacts or unsupported offers. Revoked tools cannot be replaced by newly enabled ones.
+- [x] Unknown answers and unusable originally granted tools produce a factual bounded store referral without extra WhatsApp sends, fabricated contacts or unsupported offers. Revoked tools cannot be replaced by newly enabled ones.
 
 ## Validation
 
-- [ ] Injection/unsupported claims in renderedText cannot replace verified contacts or evidence; multiple tool results still produce one normal admitted final response.
+- [x] Injection/unsupported claims in renderedText cannot replace verified contacts or evidence; multiple tool results still produce one normal admitted final response.
 
-- [ ] Add focused multi-turn grant and unanswerable-question fixtures for the scoped acceptance criteria; assert granted tool IDs/versions and referral output, not just prompt text.
-- [ ] Run focused turn/admission/evidence Vitest regressions with deterministic concurrent-turn and revoked-policy fixtures.
-- [ ] Run declared build and git diff --check; provide any long integration command separately for developer execution.
+- [x] Add focused multi-turn grant and unanswerable-question fixtures for the scoped acceptance criteria; assert granted tool IDs/versions and referral output, not just prompt text.
+- [x] Run focused turn/admission/evidence Vitest regressions with deterministic concurrent-turn and revoked-policy fixtures.
+- [x] Run declared build and git diff --check; provide any long integration command separately for developer execution.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -245,7 +245,7 @@ No new architectural concern. The injected extractor is the explicit boundary fo
 - `npm exec vitest run tests/unit/commerce/evidence.test.ts`: passed, 1 file / 34 tests.
 - `npm exec vitest run tests/integration/commerce/host.test.ts`: passed, 1 file / 40 tests.
 - `npm exec vitest run tests/unit/services/conversation-turn-processor.service.test.ts`: passed, 1 file / 40 tests.
-- Combined focused Vitest command across those three files: passed, 3 files / 110 tests.
+- Combined focused Vitest command across those three files: architect rerun passed, 3 files / 114 tests (correcting the submitted combined count110).
 - `npm run build`: passed, including `prisma:generate` and TypeScript compilation.
 - `npm run prisma:validate`: passed; schema valid.
 - `npx tsc --noEmit`: passed.
@@ -281,6 +281,61 @@ No live Commerce, Shopify, WhatsApp, deployment, paid-model, or provider call wa
 Expected execution branch: `task/ARCH-020-BACKGROUND-002`. Attempt: 4. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, clean before edits, branch `task/ARCH-020-BACKGROUND-002`, published implementation commit `8b2f983`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, launcher claim `24caf66e3039cb9ec94c553d60d0a5f0e1ea5d78`. Prepared-packet evidence was reused: launcher-created canonical worktrees, start-of-attempt branch synchronization, recursive submodule initialization, and clean dependency state. Accepted dependency pin consumed: database submodule `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; Background consumes published Shared package `@modainteract/moda-interact-shared@0.13.1`. Database submodule and parent service gitlink were not modified; no main integration or merge was performed.
 
 ## Architect Review
+
+### Accepted — Attempt 4 — 2026-09-21
+
+**Accepted / Complete, Attempt 4 retained**, executor/claimed_at null. Reviewed
+implementation `8b2f9835dcd98b5385a64fa873598b8379b2986d` and report
+`47345f39a3dfa97d2072dd306675775d17b6f08b`. Both dedicated worktrees were clean
+and remote heads matched. This is the current acceptance decision; earlier
+Ready/Changes Requested decisions below are historical. No implementation edit,
+new claim, main integration or dependent execution.
+
+**Functional assessment:** no remaining blocking defect found. Strict evidence
+extraction, content digest and immutable provenance checks remain wired through
+the production host. Distinct alternative IDs share one original-call replay and
+match by proposal rather than position. Changed/expired/unusable evidence cannot
+authorize a positive offer. Structurally valid unusable-evidence finals become a
+trusted admitted referral; malformed finals remain rejected. External cancellation
+is normalized before combined-signal checks, and the host unconditionally checks
+current admission after refresh. Existing processor reservation, suppression,
+language and delivery-uncertainty handling remains the owner of delivery effects.
+
+A3-R1 is closed on the combined source, registry, real local MCP transport and
+processor evidence. Attempt 4 adds canonical-seed/reversed-alternative coverage,
+independent semantic changes, resolved errors, boundary failures and processor
+send/cleanup assertions. Acceptance focuses on the working consumer behavior,
+not further permutations solely to increase coverage.
+
+**Evidence limits:** registry tests exercise evidence decisions; the new MCP
+HTTP401/403/malformed/transport cases exercise pre-final tool failures, not every
+refresh failure at that transport boundary. The new processor suppression table
+injects host errors/results; it is not a fully coupled host-refresh/processor
+race. These layers plus inspected host admission guards and the prior independently
+passing host cancellation reproduction are sufficient for this component review.
+No claim of live or fully assembled producer/consumer validation is made. Retain
+integrated service pairing and delivery races in terminal SYSTEM-TEST-001 scope.
+
+**Independent validation:** canonical workspace Node24.19.0 bootstrap, then
+`npm exec vitest run tests/unit/commerce/evidence.test.ts tests/integration/commerce/host.test.ts tests/unit/services/conversation-turn-processor.service.test.ts`
+in the implementation task worktree: **114 passed across 3 files**, exit0,
+5.45 seconds. This corrects the report's stale combined count110; the listed
+individual counts34+40+40 already total114. `git diff --check HEAD^..HEAD` passed.
+Submitted build, Prisma validation and TypeScript passes are retained as reported
+evidence, not redundantly rerun. No live provider, database rehearsal or paid
+model call was launched.
+
+A3-R2 is closed by this evidence reconciliation and the latest Attempt 4 matrix.
+The older EC03 deferral is superseded: distinct alternatives are now locally
+covered. The current component can be accepted independently under C18; live
+Commerce/Shopify/WhatsApp, deployment and terminal system validation remain
+explicitly unrun. Prepared worktree/dependency records retain Shared0.13.1 and
+database5abfd87f57038bae515aaa09ec7c8db62adcfb98 without gitlink changes.
+
+Dependency check: GATEWAY-002 still requires GATEWAY-001 and COMMERCE-010;
+COMMERCE-012 and SYSTEM-TEST-001 retain other incomplete prerequisites. No
+promotion follows this acceptance. Developer integration remains separate and
+ARCH-020 is not complete.
 
 ### Attempt 3 architect decision — 2026-09-21 — Changes Requested (remaining validation)
 
