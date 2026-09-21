@@ -227,3 +227,24 @@ DATABASE-003/SHARED-002 are Ready with Complete prerequisites, others Pending.
 Existing status/attempt/claim fields are unchanged. Required task sections, local
 links and scoped whitespace pass. No task claimed and no application/security test
 execution or deployed sandbox claimed by this documentation amendment.
+
+## Four-area tightening after COMMERCE-013 review history — 2026-09-21
+
+Inspected013's canonical parent task worktree: six Changes Requested reviews and
+Attempt7 in progress. Production adapters/read models, positive-path evidence and
+regressions between adjacent allowed/denied cases caused repeated rework. No013
+implementation/review/claim was changed by this amendment.
+
+Narrowed020 to connection lifecycle/kernel, added028 credential management. Added
+HT01–04 actual transport positive/error cases to021. Removed new business work from
+024 into030 publication/receipts,031 preview backend and032 availability. Added029
+reusable sandbox proof before026 typed adapter. C21 section9 freezes producer exports,
+file ownership and scenario-level evidence. Existing020/024/026 remain unclaimed
+Pending;029 Ready from accepted001;028/030/031/032 Pending.
+
+Validation:44-task graph remains reciprocal and acyclic; dependency metadata/body
+lists agree; all17 extension tasks retain unclaimed attempt0. Existing status and
+claim fields unchanged. New029 Ready prerequisite001 is Complete. All nine narrowed/
+new Commerce tasks resolve through read-only launcher routing. Required sections,
+local links and scoped whitespace pass. These are documentation checks, not runtime
+or sandbox feasibility evidence. No task launched.

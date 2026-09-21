@@ -932,17 +932,25 @@ The new tasks are unclaimed; no implementation/deployment started. Existing acti
 base scopes and claims stay intact. Database and Shared definitions can begin
 independently; backend, processing and UI components use C21 ports independently.
 
-### COMMERCE-013 Attempt 7 architect review — 2026-09-21
+## C21 tightened frontier — 2026-09-21
 
-**Changes Requested; Ready, Attempt 7 retained; executor/claim null.** Reviewed
-implementation `0fab9dc` and report `3dc1fbf7`. A6-R2 binding correction passes.
-A7-R1 requires correcting six pinned Shopify schema errors in the production
-customer/segment selections; A7-R2 requires substantiating the native-basic
-calculation profile and demonstrating the supported production path. Explicit
-corrections and bounded verification examples are in the task Architect Review.
-Focused integration: 60/60. Architect harness: 11 passed, 1 failed (production
-Admin document validation). PostgreSQL report remains one passing smoke and one
-failed rehearsal; no new storage regression is established, and developer-owned
-isolated infrastructure validation remains pending. No acceptance, implementation
-change, main merge, gitlink update or downstream promotion. COMMERCE-018/019
-remain Pending; final manual system-test gate remains.
+Section9 of [C21](ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence)
+supersedes the earlier extension ownership diagram. No active013 scope/claim changed.
+
+```text
+DATABASE-003 +SHARED-002 ->020 connection lifecycle ->028 scoped credentials
+COMMERCE-001 ->029 reusable sandbox proof (Ready)
+029 +SHARED-002 ->026 typed code adapter
+021 HTTP and025 visual processor remain independent component work
+003 +021 +025 +026 +SHARED-002 ->030 publication validation/receipts
+019 +009 +025 +026 +030 +SHARED-002 ->031 external preview backend
+013 +028 +SHARED-002 ->032 merchant/runtime availability
+020/021/022/023/025/026/027/028/030/031/032 +013/018/019 ->024 wiring only
+GATEWAY-001 +020/021/026/028/029 ->GATEWAY-003
+024 +GATEWAY-003 +BACKGROUND-002 ->SYSTEM-TEST-002 (manual)
+all extension implementation ->012 cache bypass ->SYSTEM-TEST-001 (manual)
+```
+
+DATABASE-003, SHARED-002 and COMMERCE-029 can begin independently. The last is an
+implementation proof with reusable artifact, not an approval to defer hard limits.
+Each submission maps named acceptance case to a committed scenario and actual result.

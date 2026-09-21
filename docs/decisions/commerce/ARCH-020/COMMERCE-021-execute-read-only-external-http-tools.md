@@ -21,6 +21,7 @@ enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-024
   - ARCH-020-GATEWAY-003
+  - ARCH-020-COMMERCE-030
 created: 2026-09-21
 updated: 2026-09-21
 ---
@@ -36,7 +37,7 @@ limits, errors, ownership and acceptance IDs. No model-selected replacement desi
 
 ## Objective
 
-Own src/commerce/external-http/** plus explicit014 dispatcher/renderer and publication compiler extension points. Implement C21 transport with injected020 resolver and025/026 processing ports. No connection persistence, UI or production factory wiring.
+Own src/commerce/external-http/** plus explicit014 dispatcher/renderer extension points. Implement C21 transport with injected028 resolver and025/026 processing ports. No connection persistence, UI or production factory wiring.
 
 ## Context
 
@@ -47,7 +48,7 @@ This is new scope, not a correction to an accepted task.
 
 ## Scope
 
-Own src/commerce/external-http/** plus explicit014 dispatcher/renderer and publication compiler extension points. Implement C21 transport with injected020 resolver and025/026 processing ports. No connection persistence, UI or production factory wiring.
+Own src/commerce/external-http/** plus explicit014 dispatcher/renderer extension points. Implement C21 transport with injected028 resolver and025/026 processing ports. No connection persistence, UI or production factory wiring.
 
 ## Out of Scope
 
@@ -65,7 +66,7 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement createExternalHttpExecutionPort and explicit EXTERNAL_HTTP branch, schema-driven wrapper/template validation and result/error mapping. Existing query/policy dispatch remains exhaustive.
+- [ ] Implement createExternalHttpExecutionPort and explicit EXTERNAL_HTTP branch, runtime wrapper/schema validation, rendering and result/error mapping. Existing query/policy dispatch remains exhaustive.
 - [ ] Implement fixed-origin DNS/socket pinning, TLS hostname verification, target classification, no redirects/proxies/cookies, encoded bounded query and abort/deadline/decompression limits.
 - [ ] Decode declared JSON/TEXT without assuming structured content; apply injected visual/code dispatcher before final schema validation/rendering; on failure return bounded error, never raw upstream data. Exclude provider responses from logs.
 - [ ] Consume shared per-call budgets with no hidden retries; current connection authorization every call. Document transport fixture evidence and exact public factory in docs/external-http-executor.md.
@@ -83,26 +84,24 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-COMMERCE-014
 
 ## Enables
+
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-024
 - ARCH-020-GATEWAY-003
-
+- ARCH-020-COMMERCE-030
 
 ## Acceptance Criteria
 
-- [ ] X04: actual socket fixture proves approved DNS address is connected; reject private/mapped-IP/rebinding/redirect destinations and credentials never cross origin.
-- [ ] Timeout/cancel/body/depth/content-type/schema/status mappings match C21; no more than one request per invocation and no fresh budget.
-- [ ] Old Shopify/policy execution still passes; successful external results contain only processed values and no evidence assertions.
+- [ ] HT01: first prove supported GET through actual DNS-aware transport into controlled HTTPS server, with auth from injected resolver, exact encoded query and filtered valid response reaching renderer. Missing-config-only evidence is insufficient.
+- [ ] HT02: recorded socket address matches approved resolution; private/mapped-IP/rebinding/redirect attempts fail before credential-bearing dispatch; no second unvalidated DNS lookup.
+- [ ] HT03: UTF-8 JSON and TEXT decoding, one-request budget, streamed/decompressed byte bound, deadline/abort, MIME/schema/status mapping use actual stream fixtures; no raw body fallback.
+- [ ] HT04: synthetic404/429/5xx and malformed data produce exact errors; old Shopify/policy dispatch still works; each denial case is paired with adjacent permitted case through same entry point.
 
 ## Validation
 
-Provide `test:arch020-external-http` in the owning repository and document its exact scope.
-Run focused changed-boundary tests, then existing repository typecheck/build
-and lint where defined. Inspect package scripts first; do not invent a claim that
-an absent script passed. Use C21 controlled transports and isolated stores.
-Follow current developer-owned live/container validation policy; clearly separate
-actual agent results from required unrun developer checks. No arbitrary screenshot
-quota or repeated full-suite runs without new changes/failures.
+Provide `test:arch020-external-http` with HT01–HT04. HT01 must be implemented first and retained as the positive baseline. Tests instantiate createExternalHttpExecutionPort and the actual production DNS/transport implementation. A controlled HTTPS endpoint and injected DNS mapping may replace external internet, never bypass certificate/hostname verification or target validation in production code. Use recording socket/TLS adapters at OS boundary only where CI cannot bind a public address; demonstrate production connector uses the approved address.
+
+Publish a fixtures table naming request, expected status/data, connected address and provider-call count. Every review correction becomes a committed regression plus adjacent allowed case. Typecheck/build plus old suites cannot substitute for these scenarios. Live public provider calls are unnecessary.
 
 ## Stop Condition
 
