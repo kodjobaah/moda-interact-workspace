@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 120
-executor: codex
-claimed_at: 2026-09-21T01:11:02Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -454,15 +454,15 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
+- [x] Demonstrate the assigned C16 response-contract cases with named fixtures and actual outcomes; reference the exact published definition/hash or synthetic preview definition used.
 
-- [ ] U05 clearly identifies the global library; U12 -> U13 displays the merchant-specific new-conversation tool list. Each Agent descriptor expansion exactly matches the corresponding tools/list descriptor produced by the shared resolver for the same fixture grant, with no execution/credential fields.
+- [x] U05 clearly identifies the global library; U12 -> U13 displays the merchant-specific new-conversation tool list. Each Agent descriptor expansion exactly matches the corresponding tools/list descriptor produced by the shared resolver for the same fixture grant, with no execution/credential fields.
 
-- [ ] U01–U13 match the page register and each page's actions/destinations below; direct links and browser Back work, missing IDs are404 and denied roles leak no data.
-- [ ] N01–N09 and N12 in the embedded validation matrix pass. Desktop/narrow and keyboard flows have focus/status evidence. All U14 entry links pass validated source/revision context; U14 implementation is completed by COMMERCE-009.
-- [ ] Complete U03 -> U04 -> U09 -> U06 -> U07 -> U06 -> U09 -> U10 -> U11 authoring/publishing flow for an arbitrary Admin feature and new query tool without leaving Studio or registering its name in code.
-- [ ] Shared tool reuse, exact version choice, dirty navigation, per-stage publication recovery and merchant exclusion reasons are visible; no published record or existing conversation is silently upgraded.
-- [ ] Search/docs failure preserves drafts and local schema editing; missing required schema/executor blocks publish/activation. Advanced JSON/GraphQL views are optional, never the sole authoring interface.
+- [x] U01–U13 match the page register and each page's actions/destinations below; direct links and browser Back work, missing IDs are404 and denied roles leak no data.
+- [x] N01–N09 and N12 in the embedded validation matrix pass. Desktop/narrow and keyboard flows have focus/status evidence. All U14 entry links pass validated source/revision context; U14 implementation is completed by COMMERCE-009.
+- [x] Complete U03 -> U04 -> U09 -> U06 -> U07 -> U06 -> U09 -> U10 -> U11 authoring/publishing flow for an arbitrary Admin feature and new query tool without leaving Studio or registering its name in code.
+- [x] Shared tool reuse, exact version choice, dirty navigation, per-stage publication recovery and merchant exclusion reasons are visible; no published record or existing conversation is silently upgraded.
+- [x] Search/docs failure preserves drafts and local schema editing; missing required schema/executor blocks publish/activation. Advanced JSON/GraphQL views are optional, never the sole authoring interface.
 
 ## Validation
 
@@ -574,6 +574,29 @@ None. The prior full-suite readiness timing failures did not reproduce; all 85 t
 ### Git / VCS
 
 Implementation commit `00c40087ddb17ab996febc39fe04a949976feb59` is pushed to `origin/task/ARCH-020-COMMERCE-008`. The parent/report branch contains this Attempt 3 review submission. Nested database submodule remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, Architect Review, architecture/index file or other task was changed.
+
+### Attempt 4 Resubmission — 2026-09-21
+
+**Status: Review.** Implementation `04c0838` is pushed to `origin/task/ARCH-020-COMMERCE-008`. This attempt implements A3-R1 through A3-R4 without changing the accepted Shared/database contracts or the COMMERCE-013 provider boundary.
+
+- **A3-R1:** Studio contracts now alias the accepted Shared full/draft definition and response-contract types. Successful fixtures are parsed by `CommerceToolDefinitionSchema`, use the retained 64-character schema hash, a named `ProductDetails($handle: String!)` query, exact handle mapping/result path and canonical scalar response template. Discovery preserves the complete definition. Tool JSON editors retain raw invalid/intermediate text and parse only on explicit save/navigation actions.
+- **A3-R2:** capability editing uses a detached full binding array with explicit add, replace and remove controls. Saves submit every unaffected exact revision. Shared `ToolBindingsSchema` enforces unique tool identities and the maximum of 32 without truncation; zero bindings remains valid.
+- **A3-R3:** discovery and release validation are tied to the current canonical input hash and request token. Every semantic edit invalidates the prior result; synchronous guards suppress duplicate validation. Preview/create require the exact current validated members and response contract. Command completion clears dirty state only when no newer content revision exists; unknown reconciliation retains the originally admitted closure/input.
+- **A3-R4:** production navigation uses App Router `push` beneath the persistent root provider. Shell, list and revision links share the pending-destination guard; unknown operations cannot be discarded. Editors are keyed by explicit revision identity and reads suppress stale completion. The isolated harness now has a functioning history adapter. Connected tests cover U06 -> U07 -> U06 and U10 -> U14 -> Back with exact IDs and authored content retained.
+
+Permanent regressions assert canonical Shared parsing and invalid neighbours; raw JSON retention; two-binding prompt-only preservation; 32-binding/duplicate limits; stale deferred validation and a valid second run; duplicate validation suppression; a newer edit during pending save; exact connected handoff navigation; and the common navigation guard.
+
+Validation:
+
+- `npx tsc --noEmit --incremental false` — passed.
+- `npm run lint` — passed.
+- `npm test -- tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/studio-shell.test.tsx` — 3 files / 22 tests passed.
+- `npm run build` — passed, including Prisma generation, TypeScript and all Studio routes.
+- browser evidence build — 184 modules compiled; the served isolated harness was exercised through U06 -> U07, schema selection, validation and return to exact `tool_01GLOBAL` / `toolrev_EVIDENCEDRAFT`; the returned named query retained `$handle`, its mapping and response template.
+- `git diff --check` — passed before commit.
+- `npm test` — 115/117 passed. The two unrelated `tests/readiness-docker.test.ts` descendant-handshake cases timed out before their helper wrote its readiness file; both reproduced when that file ran alone. All 22 Studio/task regressions pass, and the production build passes. No readiness implementation was changed in this task.
+
+No live Google OAuth, Shopify provider, merchant credential, customer data or production mutation was used. COMMERCE-009 still owns preview execution and COMMERCE-013 still owns real service composition. No main branch or Architect Review content was changed.
 
 ## Architect Review
 
