@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 90
-executor: copilot
-claimed_at: 2026-09-21T03:42:32Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -128,6 +128,13 @@ Ready for Review.
 
 ### Work Completed
 
+### Attempt 4 Correction Checklist
+
+- [x] A3-R1.1: early status/redirect/version rejection and late responses now start body cancellation without awaiting it; cleanup rejections are observed and cannot replace the typed result or extend the execution deadline.
+- [x] A3-R1.2: `StorefrontQueryResponse` now accepts only `Uint8Array` or `ReadableStream<Uint8Array>`; the uninterruptible generic `AsyncIterable` path and stale commented duplicate implementation were removed.
+- [x] A3-R1.3: active stream readers retain abort cancellation, overflow cancellation, lock release and bounded deadline behavior; unsupported runtime bodies fail closed without attempting iteration.
+- [x] A3-R1.4: type-level exclusion, unsupported-body runtime rejection and a pending `429` cleanup barrier are covered by focused regressions.
+
 ### Attempt 3 Correction Checklist
 
 - [x] A2-R1: list response validation preserves the selection set; populated `ProductList` data succeeds with one request and aliased/scalar shape validation remains compiler-bound.
@@ -146,12 +153,15 @@ Agent validation:
 | Case | Fixture | Command | Result |
 |---|---|---|---|
 | Focused Q01-Q04 and A2 regressions | injected query, ProductList projection, malformed input, HTTP envelope, controlled streams, overflow, early rejection and deadline fixtures | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 11/11; pre-I/O rejects made zero provider calls, response rejects made one injected request, and rejected/late streams were cancelled |
+| Attempt 4 A3-R1 regressions | async-iterable type exclusion, unsupported runtime body, and 429 body whose `cancel()` remains pending | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 13/13; unsupported body was not iterated and typed throttle returned before cleanup resolved |
 | lint | query module and tests | `npm run lint` | PASS |
 | typecheck | repository after Prisma generation | `npm run typecheck` | PASS |
+| build | Prisma client generation and production Next.js build | `npm run build` | PASS |
+| diff hygiene | implementation worktree | `git diff --check` | PASS |
 | build | production build and Prisma generation | `npm run build` | PASS |
 | diff hygiene | scoped files | `git diff --check` | PASS |
 
-Full `npm test`: 30 files, 255 passed and 2 failed (257 total). Both are unrelated baseline failures: `tests/discovery-limits.test.ts` timed out in the Redis-backed rolling-window admission test, and `tests/readiness-docker.test.ts` failed the ignored-stdio descendant signal-handler timing assertion in abort mode. No failure involved the changed Commerce-005 files.
+Full `npm test`: 30 files, 272 passed and 3 failed (275 total). The failures remain unrelated baseline conditions: `tests/discovery-limits.test.ts` timed out in the Redis-backed rolling-window admission test, and `tests/readiness-docker.test.ts` failed the ignored-stdio descendant signal-handler timing assertions in timeout and abort modes. No failure involved the changed Commerce-005 files.
 
 Developer validation required: execute against an approved development Shopify shop to confirm real tokenless `2026-07` provider behavior, redirect rejection, cancellation/timeout and GraphQL error handling. Fixture tests do not prove live provider behavior. Run environment/database/container readiness checks when developer-owned dependencies are available; this task performs no migrations.
 
@@ -174,7 +184,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 3. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005` on `task/ARCH-020-COMMERCE-005`, clean after implementation commit `6b2c410` pushed to `origin/task/ARCH-020-COMMERCE-005`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`; claim cleared with status `review`. Recursive database submodule remained at accepted recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed. No main branch, architecture/index file or Architect Review text was modified; no enabled task was started.
+Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 4. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005` on `task/ARCH-020-COMMERCE-005`, clean after implementation commit `f099659` pushed to `origin/task/ARCH-020-COMMERCE-005`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`; claim cleared with status `review`. Recursive database submodule remained at accepted recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed. No main branch, architecture/index file or Architect Review text was modified; no enabled task was started.
 
 ## Architect Review
 
