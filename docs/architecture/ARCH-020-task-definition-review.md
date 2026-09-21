@@ -192,3 +192,20 @@ matches the binding UI design.012 and terminal system testing include014–017.
 Local Markdown links and scoped whitespace checks passed. These are definition
 checks only, not application/provider test results. Frontend017 owns no backend
 implementation;013 owns saved-bundle loading and actual preview/frontend pairing.
+
+
+## Integration-task decomposition — 2026-09-21
+
+Replaced unclaimed013's combined scope with backend integration and created018
+Studio /019 preview integration. C20 supplies inspected source exports, exact
+payload/error translations, facade contract, isolated seed, file boundaries and
+I01–I09 ownership. Explicitly assigned the discovered enable/disable timestamp-CAS
+compatibility gap to013; consumers may not discard it.018 and019 have no mutual
+edge and can run concurrently. No application code or task claim was changed.
+
+Validation: all 27 ARCH-020 tasks form a reciprocal, acyclic dependency graph.
+018/019 have no mutual dependency, both require 013, and caching/deployment/system
+testing require both. Claims and attempts are unchanged. Both new tasks resolve
+through the launcher in read-only route mode as Pending, attempt 0 and unclaimed.
+Local links and scoped whitespace checks passed. Former I01–I09 checks are mapped
+to B/S/P owners in C20. These are task-definition checks, not application tests.

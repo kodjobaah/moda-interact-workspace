@@ -1312,19 +1312,10 @@ pending. No dependent promotion, new claim, main integration or gitlink update.
 012 remains the final implementation checkpoint; architecture is not yet Implemented.
 This supersedes older005 current-state wording while preserving review history.
 
-## COMMERCE-017 Attempt 3 architect review — 2026-09-21
 
-COMMERCE-017 is **Changes Requested / Ready, Attempt 3 retained**, executor and
-claimed_at cleared; not accepted. Reviewed implementation `64847e64` and parent
-report `f3644a64` against their remote task heads. Independent UI/client tests
-passed 12/12 and all four previous reproductions now pass. Four new reproductions
-fail: second-run cancellation remains locked, empty catalogue permits a tool POST,
-malformed HTTP failures discard uncertainty, and nullable input types bypass
-validation. Direct-entry saved-source selection also remains unimplemented.
-The task's A3-R1–R4 specify exact files, corrections and expected request effects;
-preserve the verified prior fixes. Authenticated browser evidence remains pending
-local Studio identity; source-selection implementation is still task-owned.
-No new claim, dependent promotion, implementation change, main integration or
-gitlink update. This overlay supersedes older COMMERCE-017 current-state wording only;
-other task decisions and historical reports remain unchanged. Architecture is
-not yet Implemented; COMMERCE-012 remains the final implementation checkpoint.
+### Integration ownership — 2026-09-21
+
+C20 assigns backend assembly to013, U01–U13 service wiring to018 and U14/preview
+service wiring to019.018 and019 run independently after their prerequisites;
+neither owns or edits the other's adapters. Component page ownership is unchanged.
+Gateway/caching/system-test dependencies include both new integration tasks.

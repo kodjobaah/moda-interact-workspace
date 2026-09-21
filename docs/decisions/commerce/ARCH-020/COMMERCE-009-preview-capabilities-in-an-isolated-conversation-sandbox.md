@@ -19,9 +19,9 @@ depends_on:
   - ARCH-020-SHARED-001
   - ARCH-020-COMMERCE-001
 enables:
+  - ARCH-020-COMMERCE-019
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-010
-  - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
 updated: 2026-09-21
@@ -86,9 +86,9 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Enables
 
+- ARCH-020-COMMERCE-019
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-010
-- ARCH-020-COMMERCE-013
 - ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
