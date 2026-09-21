@@ -1494,6 +1494,9 @@ Source/processing configuration is published with the immutable tool revision.
 Future supported operations need authoring/publication, not Background handlers.
 The extension tasks are separate from accepted/in-progress base implementation.
 
+C21 ownership refinement: section9 separates connection lifecycle/credentials,
+publication/preview/availability, and sandbox proof/adapter.024 assembles accepted
+components only. The API and UI behavior defined above is unchanged.
 
 ## SHARED-002 Attempt 1 architect review — 2026-09-21
 

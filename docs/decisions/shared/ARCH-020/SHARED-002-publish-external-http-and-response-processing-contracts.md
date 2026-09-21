@@ -25,6 +25,10 @@ enables:
   - ARCH-020-COMMERCE-020
   - ARCH-020-COMMERCE-026
   - ARCH-020-COMMERCE-027
+  - ARCH-020-COMMERCE-028
+  - ARCH-020-COMMERCE-030
+  - ARCH-020-COMMERCE-031
+  - ARCH-020-COMMERCE-032
 created: 2026-09-21
 updated: 2026-09-21
 ---
@@ -95,6 +99,10 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-COMMERCE-020
 - ARCH-020-COMMERCE-026
 - ARCH-020-COMMERCE-027
+- ARCH-020-COMMERCE-028
+- ARCH-020-COMMERCE-030
+- ARCH-020-COMMERCE-031
+- ARCH-020-COMMERCE-032
 
 ## Acceptance Criteria
 
@@ -279,3 +287,18 @@ were part of these package checks.
 This entry records publication execution only; it is not architect acceptance or
 a claim that SHARED-002 is Complete. Existing execution claim/status is preserved
 for the owning task to finish its report and submission. No downstream launch.
+
+
+## Parent branch reconciliation — 2026-09-21
+
+Architect reconciled origin/main into the existing task branch, retaining both
+C21 section9 ownership/frontier refinements and the Attempt1 Changes Requested
+review. Status remains Ready, attempt1, executor/claimed_at null. No new attempt
+was claimed and no implementation branch was changed.
+
+Publication clarification for resumption:0.14.0 was explicitly authorized by the
+user, published successfully and verified by registry integrity, clean installation,
+exports, runner and consumer typecheck. The old “approval pending to publish0.14.0”
+message is stale. Do not republish0.14.0. Resume the latest R1–R3 corrections under
+the updated C21 boundaries and prepare the corrected patch release. No acceptance
+or downstream promotion is implied by this reconciliation.
