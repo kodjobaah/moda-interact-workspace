@@ -141,23 +141,42 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Review.
 
 ### Files Changed
 
-None; implementation has not started.
+- `moda-interact-commerce/lib/preview/runtime.ts`
+- `moda-interact-commerce/src/commerce/integration/preview/adapters.ts`
+- `moda-interact-commerce/tests/preview-integration.test.ts`
+- `moda-interact-commerce/docs/commerce-preview-integration.md`
+- `moda-interact-commerce/package.json`
 
 ### Work Completed
 
-None; task definition only.
+Connected production `PreviewService` composition to Redis, the accepted COMMERCE-013
+saved-selection facade, authored prompt loading, and fixture tool execution. Fixture
+execution uses the accepted definition executor with a synthetic query boundary and
+does not construct live Shopify or paid model transports. Bundle, prompt, and loaded
+tool definitions are frozen for an existing conversation. Added focused integration
+and Redis validation scripts plus integration documentation.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+- `npm run test:arch020-preview-integration`: 4 files passed, 36 tests passed.
+- `npm run test:arch020-preview-integration:redis`: 1 file passed, 4 tests passed.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with 2 pre-existing warnings in
+  `scripts/code-runtime-manifest.mjs` and `src/commerce/code-response/runtime/kernel.ts`.
+- `npm run build`: passed; Next.js production build completed and emitted all expected
+  Commerce routes.
+- `git diff --check`: passed.
+- Recursive database submodule initialized at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The generic MODEL adapter remains fail-closed because no separate preview model
+configuration was installed. No live provider, Shopify, WhatsApp, PostgreSQL, or
+production credential validation was performed.
 
 ### Assumptions
 
@@ -174,7 +193,14 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-019. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Attempt: 1. Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-019`,
+branch `task/ARCH-020-COMMERCE-019`, commit `ed6e22e`, pushed to
+`origin/task/ARCH-020-COMMERCE-019`. Canonical parent worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-019`,
+branch `task/ARCH-020-COMMERCE-019`. COMMERCE-013 accepted source commit:
+`4d529773fde26599027aef2d76fbd70bc974b352`. No parent service gitlink or main
+integration was performed.
 
 ## Architect Review
 
