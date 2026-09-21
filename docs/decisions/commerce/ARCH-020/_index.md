@@ -13,7 +13,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-003](COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-004](COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Authenticate MCP requests and resolve immutable grants | pending | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | ready | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-006](COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Read merchant discount policy and normalise Shopify rules | ready | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
+| [ARCH-020-COMMERCE-006](COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Read merchant discount policy and normalise Shopify rules | complete | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | pending | ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-015 |
 | [ARCH-020-COMMERCE-008](COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Implement isolated preview lifecycle and execution service | ready | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001, ARCH-020-COMMERCE-001 |
@@ -112,3 +112,16 @@ cancellation, pre-dispatch checks and rejection of late successful data.
 See the canonical COMMERCE-006 task for precise code locations and expected effects.
 No live validation gate, dependent promotion, new claim, implementation change,
 main integration or gitlink update. Parent overlay published before preparation.
+
+
+## COMMERCE-006 Attempt 4 accepted — 2026-09-21
+
+Current decision: Complete, architect accepted; Attempt4 retained, claim clear.
+Implementation1c124f4 / report70c3cf24. A3-R1 bounded nested5-item query profile
+and A3-R2 typed cancellation/late-result guards accepted. Independent reader/auth
+27/27 pass; prior architect harness23/23 pass, including all4 prior failures.
+Live Shopify/provider assembly and unproven semantics remain explicitly separate;
+unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awaits
+015;012/013/system-test retain other unfinished dependencies. No downstream
+promotion, implementation changes, main integration or gitlink update. See the
+canonical task's latest Accepted review for validation limits and integration order.

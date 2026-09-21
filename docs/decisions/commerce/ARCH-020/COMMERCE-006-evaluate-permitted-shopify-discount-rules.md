@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 100
 executor: null
 claimed_at: null
@@ -127,7 +127,7 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review. Attempt 4 corrections and agent-owned validation are complete.
+Architect accepted — Complete, Attempt 4. See the current Architect Review decision below.
 
 ### Files Changed
 
@@ -358,6 +358,27 @@ architecture/index file, or `main` branch was updated.
 - Developer-owned pending validation: approved live/pre-production Shopify Admin API check against a test shop using the pinned 2026-07 schema and granted scopes. No credentials or live endpoints were inspected or used by the agent.
 
 ## Architect Review
+
+### Accepted — Attempt 4 — 2026-09-21
+
+**Current decision: Complete; architect accepted. Attempt 4 retained; executor/claimed_at null.** Reviewed implementation `1c124f4b53a494425735a8064ac20a2e2000914e` and report `70c3cf24166b70996ccdf2c251c23e5c9ca3815b` against verified remote task heads. Dedicated worktrees clean; accepted database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` and preparation evidence recorded. This supersedes previous Changes Requested decisions; their history is retained.
+
+A3-R1 accepted: both static documents retain pinned Admin2026-07 schema validation and use exactly5 for each of six nested target connections. The support matrix explicitly separates this conservative request profile from the1000-ID DTO bound. Incomplete provider target facts normalize to null targets/TARGETS_INCOMPLETE and cannot be supported.013 must preserve hasNextPage-to-completeness mapping when supplying the real provider; these fixtures prove normalization at the declared RawDiscount boundary, not live GraphQL response mapping.
+
+A3-R2 accepted: signal/deadlineAt are required; read/list check stop conditions before work, after policy resolution, around reservation/provider I/O and before success. AbortError resolves to typed DEADLINE; late successful data is rejected and no next page starts after cancellation. Prior NONE, identity, decimal conversion, positive-money, fingerprint and bounded-list corrections remain intact. No remaining blocking finding in the reviewed narrowed006 component scope.
+
+Independent validation:
+
+- `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts`: **27/27 passed**, including25 reader cases and both pinned-schema/AST query checks.
+- Previous architect harness `/tmp/c006-a3-review/review.test.ts`, with only newly required signal/deadline fixture fields added: **23/23 passed** (19 prior submitted tests plus all4 previously failing connection/cancellation cases). It imports the current committed implementation; no implementation edits were made.
+- Diff checks passed. Submitted Prisma generation, typecheck, lint, build and full168-pass/2-readiness/Redis-failure results are recorded evidence, not independent reruns. The deadline test uses a short real-clock starting window; fake-clock conversion is a non-blocking test robustness follow-up, not an acceptance condition.
+
+Live Shopify installation/scopes, actual provider response mapping and allocation/rounding proof remain explicitly developer/013-owned. Missing or unproven facts continue to be UNKNOWN/UNSUPPORTED. Acceptance does not certify live execution or activate a new discount profile. No credentials, Redis deployment, database rehearsal or system test was executed.
+
+Dependency reconciliation:006 is now satisfied. COMMERCE-016 remains pending because COMMERCE-015 is not accepted; COMMERCE-012 and013 retain their other unfinished prerequisites, including015/016. SYSTEM-TEST-001 likewise retains unfinished implementation dependencies and the developer invocation gate. No downstream task is promoted or regressed. The architecture remains in implementation until all required components and system validation are accepted.
+
+Parent task/index/architecture/handoff/workspace rollup are reconciled and published on the parent task branch. No implementation commit, new claim, main merge/push or parent gitlink change. Developer final integration remains implementation merge first, then parent gitlink/report integration.
+
 
 ### Changes Requested — Attempt 3 — 2026-09-21
 
