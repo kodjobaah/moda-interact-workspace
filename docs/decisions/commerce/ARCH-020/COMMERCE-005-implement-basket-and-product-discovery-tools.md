@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 90
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-001
   - ARCH-020-COMMERCE-011
@@ -63,10 +63,10 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Consume011 actual pinned compiler/schema exports; execute the fixed published query and mapped variables only against the verified canonical shop host.
-- [ ] Enforce C14 query/depth/list/time/response bounds and API-version checks. Reject partial GraphQL errors; no privileged fallback or installation-token lookup.
-- [ ] Preserve the query fact wrapper including source/schema/version/observedAt/values; selected values can never replace it with a policy-evidence output.
-- [ ] Expose QueryExecutionPort to014 with injected bounded provider transport, clock and signal. Do not implement basket/search policy helpers or MCP routes.
+- [x] Consume011 actual pinned compiler/schema exports; execute the fixed published query and mapped variables only against the verified canonical shop host.
+- [x] Enforce C14 query/depth/list/time/response bounds and API-version checks. Reject partial GraphQL errors; no privileged fallback or installation-token lookup.
+- [x] Preserve the query fact wrapper including source/schema/version/observedAt/values; selected values can never replace it with a policy-evidence output.
+- [x] Expose QueryExecutionPort to014 with injected bounded provider transport, clock and signal. Do not implement basket/search policy helpers or MCP routes.
 
 ## Interfaces / Contracts
 
@@ -90,10 +90,10 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] Q01: two arbitrary authored queries execute without registering business names; mapped variables/results match the accepted compiler.
-- [ ] Q02: wrong host, query/version, malformed variables/projection, partial errors and oversized response fail closed; zero credentials looked up on every path.
-- [ ] Q03: timeout/throttle/cancel/count limits are honored; no redirect to unverified host or mutation is emitted.
-- [ ] Q04: nested counterfeit evidence remains ordinary query values; no policy-shaped root output.
+- [x] Q01: two arbitrary authored queries execute without registering business names; mapped variables/results match the accepted compiler.
+- [x] Q02: wrong host, query/version, malformed variables/projection, partial errors and oversized response fail closed; zero credentials looked up on every path.
+- [x] Q03: timeout/throttle/cancel/count limits are honored; no redirect to unverified host or mutation is emitted.
+- [x] Q04: nested counterfeit evidence remains ordinary query values; no policy-shaped root output.
 
 ## Validation
 
@@ -119,23 +119,55 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+- `moda-interact-commerce/src/commerce/query/index.ts`
+- `moda-interact-commerce/tests/query-execution.test.ts`
 
 ### Work Completed
 
-None; task definition only.
+### Attempt 4 Correction Checklist
+
+- [x] A3-R1.1: early status/redirect/version rejection and late responses now start body cancellation without awaiting it; cleanup rejections are observed and cannot replace the typed result or extend the execution deadline.
+- [x] A3-R1.2: `StorefrontQueryResponse` now accepts only `Uint8Array` or `ReadableStream<Uint8Array>`; the uninterruptible generic `AsyncIterable` path and stale commented duplicate implementation were removed.
+- [x] A3-R1.3: active stream readers retain abort cancellation, overflow cancellation, lock release and bounded deadline behavior; unsupported runtime bodies fail closed without attempting iteration.
+- [x] A3-R1.4: type-level exclusion, unsupported-body runtime rejection and a pending `429` cleanup barrier are covered by focused regressions.
+
+### Attempt 3 Correction Checklist
+
+- [x] A2-R1: list response validation preserves the selection set; populated `ProductList` data succeeds with one request and aliased/scalar shape validation remains compiler-bound.
+- [x] A2-R2: `ReadableStream` readers are preferred over async iteration, abort listeners cancel blocked reads, overflow and early status/version/redirect rejection dispose bodies, and late responses are cancelled without accepting facts.
+- [x] A2-R3: missing or mismatched record/`Headers` API-version evidence returns retryable `UNAVAILABLE`; request transport explicitly sets `redirect: 'error'`.
+
+- R1 retained: runtime values use the pinned Storefront schema and GraphQL coercion, with strict declared-name, required/default, nested input, scalar/list and serialized-variable bounds before budget reservation or I/O.
+- R2 retained and corrected: the typed POST/HTTP envelope enforces fixed destination, redirect/final-URL, status/429, pinned-version-header, incremental 256 KiB decoded-body, GraphQL-envelope and compiler-derived output-shape checks. No credentials or retry path exists.
+- R3 retained and corrected: provider request and body consumption race the caller/internal deadline; ignored transports settle with retryable `DEADLINE`, late results are discarded, abort errors are normalized, and cleanup cancels readers/timers/listeners.
+- Q01 uses distinct ProductDetails, ProductAlias and ProductList queries; Q02 covers invalid host, runtime variables, invalid projection, malformed response and overflow; Q03 covers throttle, cancellation, deadline, budget, redirect, version and body disposal; Q04 preserves ordinary nested values inside the C14 fact wrapper.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent validation:
+
+| Case | Fixture | Command | Result |
+|---|---|---|---|
+| Focused Q01-Q04 and A2 regressions | injected query, ProductList projection, malformed input, HTTP envelope, controlled streams, overflow, early rejection and deadline fixtures | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 11/11; pre-I/O rejects made zero provider calls, response rejects made one injected request, and rejected/late streams were cancelled |
+| Attempt 4 A3-R1 regressions | async-iterable type exclusion, unsupported runtime body, and 429 body whose `cancel()` remains pending | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 13/13; unsupported body was not iterated and typed throttle returned before cleanup resolved |
+| lint | query module and tests | `npm run lint` | PASS |
+| typecheck | repository after Prisma generation | `npm run typecheck` | PASS |
+| build | Prisma client generation and production Next.js build | `npm run build` | PASS |
+| diff hygiene | implementation worktree | `git diff --check` | PASS |
+| build | production build and Prisma generation | `npm run build` | PASS |
+| diff hygiene | scoped files | `git diff --check` | PASS |
+
+Full `npm test`: 30 files, 272 passed and 3 failed (275 total). The failures remain unrelated baseline conditions: `tests/discovery-limits.test.ts` timed out in the Redis-backed rolling-window admission test, and `tests/readiness-docker.test.ts` failed the ignored-stdio descendant signal-handler timing assertions in timeout and abort modes. No failure involved the changed Commerce-005 files.
+
+Developer validation required: execute against an approved development Shopify shop to confirm real tokenless `2026-07` provider behavior, redirect rejection, cancellation/timeout and GraphQL error handling. Fixture tests do not prove live provider behavior. Run environment/database/container readiness checks when developer-owned dependencies are available; this task performs no migrations.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The user request mentioned basket/product discovery broadly, but the authoritative narrowed task and C19 assign basket/search policy adapters to Commerce-015. This implementation therefore owns only generic query execution and does not add basket/search policy helpers or MCP routes. The five unrelated full-suite failures remain unchanged.
 
 ### Assumptions
 
@@ -152,13 +184,127 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-005. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 4. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005` on `task/ARCH-020-COMMERCE-005`, clean after implementation commit `f099659` pushed to `origin/task/ARCH-020-COMMERCE-005`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`; claim cleared with status `review`. Recursive database submodule remained at accepted recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed. No main branch, architecture/index file or Architect Review text was modified; no enabled task was started.
 
 ## Architect Review
 
+### Accepted — Attempt 4 — 2026-09-21
+
+**Current decision: Accepted / Complete; Attempt 4 retained; executor/claimed_at null.** Reviewed implementation `f09965942cebd4aec15a40aa825975157d41c8c3` and parent report `e5662be50ab1e58e2bc59f53fd66fe9d8a353770`, verified against remote task heads. Both dedicated worktrees clean. Database pin remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. This supersedes previous current-state/Changes Requested wording while preserving the review history.
+
+**A3-R1 is resolved.** Early HTTP/status/redirect/version rejection and late response disposal now initiate rejection-observed cleanup without awaiting it before returning the determined result. Synchronous acquisition errors become observed cleanup rejections. The transport body contract is narrowed to Uint8Array or ReadableStream<Uint8Array>; generic AsyncIterable is neither advertised nor consumed, and unsupported runtime data fails closed. Active stream abort/overflow handling and byte bounds remain. The large commented duplicate module is removed. The previously accepted populated-list selection and provider-version semantics corrections are retained.
+
+Independent validation: **13/13 focused query tests passed**, including unsupported-body rejection, pending429 cancellation, existing blocked-stream/overflow/late-disposal cases and one-request behavior. The prior isolated pending-cleanup reproduction also **passed** (`/tmp/c005-a3-review`,1 selected/12 skipped). Its old generic-iterator cancellation case is superseded by the explicitly approved narrowed contract and the new runtime/type-level exclusion; it is not counted as an unchanged passing test. Implementation and parent diff checks passed. Submitted typecheck/lint/build success and full272 passed/three unrelated baseline failures remain reported evidence, not independently rerun. The stale five-failure sentence in Deviations is superseded by the current Attempt4 validation totals. No live Shopify/Redis/database validation was run.
+
+No remaining functional blocker was identified in the scoped correction review. Acceptance covers the generic C14 query execution component and its injected transport boundary, not013's production wiring or live tokenless provider behavior.013 must supply a no-redirect fetch-compatible body using the narrowed contract. Cleanup that remains pending cannot hold the caller's typed response; this does not assert that JavaScript can force a non-cooperative underlying source to settle.
+
+No dependent task is promoted:013 and terminal system testing retain other prerequisites, and012 remains the final implementation checkpoint. No new claim, implementation edits, main merge/push or gitlink update. Architecture is not yet Implemented; developer-owned live validation remains separately pending.
+
+### Changes Requested — Attempt 3 — 2026-09-21
+
+**Current decision: Ready; Attempt 3 retained; executor/claimed_at null; not accepted.** Reviewed implementation `6b2c410a49a487d55a7435cace52540f44089129` and report `4b681aa1dd24be5d179f95a409c32e86197a6bae`, verified against remote heads; dedicated worktrees clean. No implementation changes, new claim, dependent promotion, main integration or gitlink update.
+
+A2-R1 populated-list selection recursion and A2-R3 provider-version UNAVAILABLE/redirect-error fixes are verified. Retain them and the new ReadableStream cancellation/overflow cases. Independent `/tmp/c005-a3-review/review.test.ts` imports committed code: **11 submitted tests pass; 2 added cleanup-boundary cases fail**. Diff checks passed. Submitted lint/typecheck/build/full255-pass/two-baseline-failure evidence was inspected, not broadly rerun. No live provider/Redis/database validation was executed.
+
+#### A3-R1 — P1 — Finish bounded body cleanup on all supported paths
+
+Files: `src/commerce/query/index.ts` StorefrontQueryResponse/readBody/disposeBody and execute early-return branches; focused query tests. This is the remaining A2-R2 requirement, not new scope.
+
+1. HTTP429/status/redirect/version rejection currently `await disposeBody(...)` outside the deadline race. A ReadableStream.cancel callback returning a pending promise holds execute beyond its deadline. Reproduction:429 response with cancel waiting on a barrier, context deadline100ms, advance fake time101ms: execute remains pending until the barrier is manually released. Start cleanup without waiting for it before returning the already determined typed error. Use a rejection-observing helper equivalent to `void disposeBody(body).catch(() => undefined)` for early-rejected and late-arriving bodies, or race cleanup against the remaining deadline. Catch synchronous getReader/iterator acquisition failures too. Never let cleanup replace the selected business failure or create an unhandled rejection.
+
+2. Generic AsyncIterable remains an advertised body type, but readBody's iterator.next has no abort listener/hook. Its finally/iterator.return cannot run until next settles. Reproduction: next stays pending, deadline returns DEADLINE, return/cancel hook is never called. Minimal deterministic correction: remove generic AsyncIterable from StorefrontQueryResponse and its read/dispose branches; support only Uint8Array or ReadableStream<Uint8Array>, with the latter's existing active cancel listener.013 can supply a fetch Response.body; generic iteration is not required by C14. Update the published TypeScript contract/examples so callers cannot pass unsupported iterators. If generic iteration is retained instead, require a separate mandatory cancel/close hook that can interrupt a pending next, invoke it on abort, and prove that behavior; plain iterator.return queued behind next is insufficient.
+
+Preserve active ReadableStream cancellation, lock release, byte bounds and late-result disposal. Do not add retries or live transport composition. Remove the remaining large commented duplicate module as already requested while editing this file; keep one authoritative implementation.
+
+Permanent regressions: rejected429/redirect/version body whose cancel promise never settles still returns its typed response within the overall bound; eventual cleanup rejection produces no unhandled rejection; normal blocked ReadableStream cancellation and overflow still work. For the minimal narrowed body contract, add type-level coverage showing AsyncIterable is not accepted and a runtime defensive rejection for unsupported transport data; no attempt to consume an unsupported iterator. If the explicit-cancel alternative is chosen, test a pending next is interrupted through that hook. Retain all11 passing cases and exact one-request/no-retry effects.
+
+### Resubmission
+
+Implement only A3-R1 in005-owned query files/tests, run focused and required checks, update report, commit/push the same branch pair and return to review. The prior two closed corrections do not need reimplementation. Live Shopify and full-suite baseline conditions remain separate; no dependent task is promoted. Parent review overlay is published before handoff; normal preparation owns the next claim.
+
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready; Attempt 2 retained; executor/claimed_at null; not accepted.** Reviewed implementation `2761e6b83806e9ca0d8a00df0200ad55f6b48086` and report `e4fc15cdeed48ec1406ac9d2deeb6257fe6bc1ee`; remote task heads verified and dedicated worktrees clean. No implementation changes, new claim, dependency promotion, main integration or gitlink update.
+
+Retain runtime String validation, typed HTTP envelope, decoded-byte counting, partial-error rejection, real deadline race and aliased query support. Independent isolated `/tmp/c005-a2-review/review.test.ts` imports current code: **7 submitted tests pass; 2 added task-owned cases fail** (valid populated bounded product list rejected; deadline settles but blocked ReadableStream is not cancelled). Diff check passed. Submitted typecheck/lint/build/full214/216 are reported evidence, not broader reruns. No live provider/Redis/database check was executed. These are remaining R2/R3 corrections, not new scope.
+
+#### A2-R1 — P1 — Preserve selections when validating populated lists
+
+File: src/commerce/query/index.ts, validResponseValue's isListType branch. It recurses with `(item, nullableType.ofType)` and drops selectionSet. Every nonempty list of selected objects then reaches the object branch without its required selection and returns false. The single-object alias test does not cover connections.
+
+Change this exact recursion to:
+
+```ts
+if (isListType(nullableType)) {
+  return Array.isArray(value)
+    && value.every((item) => validResponseValue(item, nullableType.ofType, selectionSet));
+}
+```
+
+Preserve non-null/list-element/type validation and compiler-derived output checks. Add `query ProductList { products(first: 2) { nodes { title } } }` with resultPath `products.nodes`, variables={}, and provider data `{products:{nodes:[{title:'A'}]}}`: expected OK with values=[{title:'A'}], exactly1 request. Also test empty list success, malformed title rejected, nullable/non-null item behavior where allowed by the pinned schema, and an alias nested inside a populated list. Remove the large commented duplicate implementations after the active module while touching this file; they are not an acceptance mechanism or alternate runtime.
+
+#### A2-R2 — P1 — Cancel body readers when the deadline wins
+
+File: index.ts readBody and execute cleanup; transport contract. Promise.race settles the caller, but the body reader can remain blocked in reader.read/iterator.next indefinitely. Modern ReadableStream has Symbol.asyncIterator, so this code selects the for-await branch and never reaches its explicit reader.cancel finally. Reproduction supplies a ReadableStream with no chunks and a cancel hook; execute returns DEADLINE after a fake-clock timeout, but the hook remains uncalled.
+
+Prefer the ReadableStream reader branch before generic AsyncIterable detection. Register an abort listener which cancels the active reader immediately, including while read() is pending; remove it and releaseLock in finally. Check abort before parsing/accepting data. For generic AsyncIterable add an explicit transport cancellation hook or equivalent documented cancellation contract that can interrupt pending reads; do not assume iterator.return queued behind a blocked next is sufficient. On early status/version/redirect rejection and on a late response arriving after timeout, dispose/cancel any obtained body. Observe cleanup rejections without extending the bounded deadline or accepting late facts.
+
+Permanent stream tests: blocked reader deadline and caller cancellation invoke cancel; overflow cancels at the first excessive chunk and does not process subsequent chunks; early429/version/redirect rejection disposes the body; successful stream releases its reader; late response cannot leave an unread open body. Use fake clocks and controlled streams/effect counters. The submitted 'bounded-stream overflow' fixture is Uint8Array, not a stream, and cannot prove cleanup. Preserve one-request/no-retry/tokenless behavior.
+
+#### A2-R3 — P2 — Match C14 provider-version failure semantics
+
+File: index.ts headerValue/version check and query tests. A missing or differing `x-shopify-api-version` currently returns INCOMPATIBLE_VERSION,false, and the new test asserts that behavior. C14 explicitly classifies provider API-version fallback as UNAVAILABLE; INCOMPATIBLE_VERSION remains appropriate for the immutable definition's unsupported executor/api version before I/O.
+
+Change the response-header failure to `failure('UNAVAILABLE', true)` and update missing/different-header fixtures. Keep malformed published versions rejected before I/O. Handle record-form header names case-insensitively (or require Headers only in the typed envelope). Document the no-redirect transport requirement explicitly so013 disables redirect following before network work rather than relying only on after-the-fact finalUrl rejection. No actual network adapter or live provider test is required.
+
+### Resubmission
+
+Implement A2-R1–A2-R3 within005-owned query files/tests; preserve the original successful variable/deadline corrections and the query fact wrapper. Record exact fixtures and side-effect counts, including actual streams versus preloaded bytes. Run required checks, commit/push the same branch pair, and return to review. Full-suite environment limits and live Shopify remain separate; no dependent task is promoted. Parent overlay is published before handoff; normal preparation owns the next claim.
+
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Ready; Attempt 1 retained; executor/claimed_at null; not accepted.** Reviewed implementation `32fceff69e1ee437710b9555e8f00cd5a6698e25` and report `6135a05f290443ccc353e7056096a443b680e323`, verified against remote task heads. Dedicated worktrees clean; recorded database pin unchanged. No implementation edits, next claim, downstream promotion, main integration or gitlink update.
+
+Retain canonical host construction, accepted011 compiler invocation, source/schema/version/observation wrapper, partial-error rejection, shared reservation and no business-name registry. Independent isolated `/tmp/c005-review/review.test.ts` imports committed implementation: **4 submitted tests pass; 3 added cases fail**. handle=42 for String! returns OK; product.title=42 for a selected String field returns OK; a transport ignoring AbortSignal leaves execute pending beyond its deadline. Diff checks passed. Submitted lint/typecheck/build and182/187 full results are recorded evidence, not rerun here. No live Shopify/Redis/database validation was executed.
+
+All corrections below belong to `src/commerce/query/index.ts` (split owned modules allowed) and `tests/query-execution.test.ts`. They implement Q01–Q04/C14/C19 already assigned; no basket/discount/MCP work is added.
+
+#### R1 — P1 — Validate actual mapped variable values
+
+validVariables only checks JSON and equality of declared/supplied name sets. It accepts42 or null for a required String variable and rejects legitimate omitted optional/defaulted variables. createCommerceCompiler().compile(execution, EMPTY_INPUT_SCHEMA) validates the document but its returned validation/schema products are discarded; this does not validate the actual mapped values.
+
+Use the pinned011 schema and operation variable definitions to validate runtime values before reservation/I/O. Preserve strict no-coercion semantics: required non-null values present, scalar/enum/input-object/list types correct, unknown names/fields rejected, optional omitted variables allowed when valid. Distinguish014's mapping-definition validation from005's runtime mapped-variable validation; do not claim an empty authored input schema proves mappings. Reuse accepted compiler/schema exports, with a narrow adapter if needed, rather than duplicating a different Shopify type catalogue. Bound serialized variables before sending and retain fixed immutable document/version/hash checks.
+
+Permanent tests: String! numeric/null, missing required, unknown extra name, nested malformed input, valid optional omission/default and list/scalar mismatch all have explicit outcomes and0 provider calls on rejection. Execute TWO distinct authored queries (for example product details and a bounded collection query), including alias/result mapping, without adding name-specific code. The existing Q01 only executes one query.
+
+#### R2 — P1 — Validate result shape and decoded transport envelope
+
+Current StorefrontQueryTransport returns an arbitrary already-parsed unknown. responseBytes serializes that object after allocation, so it cannot enforce C14's decoded-body limit before processing, observe HTTP throttling, detect redirects or inspect Shopify API-version fallback headers. A safe constructed initial URL alone does not prohibit the injected transport from following a redirect. On success the compiled outputSchema is ignored; malformed selected field types become trusted query facts.
+
+Make the injected transport return a bounded HTTP envelope with status, final URL/redirect indication, headers and a decoded byte stream (a fetch Response or equivalent typed port).005 owns status/version/redirect/body admission and schema projection;013 supplies the actual HTTP transport. Express POST/tokenless/redirect-error/no-retry requirements in its request contract, with no caller credential/header fields. Reject redirect responses/final-host changes, missing or different pinned API-version evidence as C14 requires, non-success statuses and all GraphQL errors; preserve typed THROTTLED for HTTP/provider throttling. Do not perform installation-token lookup or fallback.
+
+Read decoded response bytes incrementally and cancel at256KiB before JSON parsing/projection. Do not substitute JSON.stringify length for the wire/decoded byte count. Validate the selected response against the compiler-derived schema, respecting selected aliases, nullable fields and list element types. Schema/provider failures return UNAVAILABLE; a valid null resultPath target returns NOT_FOUND; a valid empty list remains success. Validate final wrapper through accepted Shared bounds without dropping source/schema/version/observedAt. Extra counterfeit evidence must remain ordinary values, never become the policy root or trusted evidence.
+
+Tests: actual Response/controlled stream fixtures for exact limit/overflow/cancellation, redirect/unverified destination, fallback version,429, GraphQL errors with partial data, malformed selected type (title42 reproduction), missing required selected fields, valid null/empty list and nested counterfeit evidence. Assert no retry/credential lookup and body processing stops on overflow. These are deterministic local fixtures, not a requirement for a live Shopify call. Document the transport success/failure contract for013.
+
+#### R3 — P1 — Settle execution when its deadline or cancellation fires
+
+The timer aborts the controller, but execute continues awaiting transport.request forever if the transport ignores it. Fake-clock reproduction advances beyond the deadline; result remains pending until the fixture manually releases the transport. isAbort also recognizes only DOMException, and the catch does not check the internal controller's aborted state, so an internal timeout surfaced as ordinary Error(name=AbortError) can be mislabeled UNAVAILABLE.
+
+Race transport/body processing against a promise bound to the combined caller/internal deadline signal; settle with typed retryable DEADLINE at min(context.deadlineAt, start+10s). Wire cancellation before starting work, observe late resolution/rejection without accepting data or creating an unhandled rejection, and clean timer/listeners/readers in finally. Check controller.signal.aborted in error handling as well as caller signal/deadline; normalize standard AbortError shapes. Keep every actual provider request on the existing shared12-request budget, no retry or reset.
+
+Tests with fake clocks/barriers: never-settling transport returns DEADLINE on time, late resolve/reject discarded, caller cancellation settles, internal timeout with ordinary AbortError is DEADLINE, pre-abort/pre-expiry/budget exhaustion make0 requests, and exactly one successful request remains unchanged. No real sleeps or live provider effects.
+
+### Evidence and resubmission
+
+Update Q01–Q04 and work-item checkboxes only after their effects are exercised. The current Q02 report incorrectly says all invalid cases make0 calls, although provider-response cases necessarily make1; distinguish pre-I/O rejection from rejected response. Record actual preparation synchronization and accepted source revisions, same-branch commits and required checks. Keep the five unrelated full-suite limitations and developer live validation separate; they are not these blockers. Publish implementation/report and return to review. Parent architect overlay is committed/pushed before handoff; normal preparation owns the next claim. No dependent task is promoted.
+
+
 ### Review Status
 
-Pending.
+Accepted / Complete at Attempt 4; see the current architect decision above.
 
 ### Review Notes
 
