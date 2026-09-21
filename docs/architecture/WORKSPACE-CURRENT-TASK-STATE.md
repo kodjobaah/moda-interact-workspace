@@ -697,3 +697,17 @@ reproductions failed. See the latest task Architect Review for exact instruction
 Reported unrelated baseline failures and pending live validation are not the
 review blockers. No dependent promotion, main merge or gitlink change. This note
 supersedes earlier COMMERCE-015 current-state wording.
+
+## COMMERCE-015 Attempt 3 accepted — 2026-09-21
+
+COMMERCE-015 is **Complete, architect accepted, Attempt 3 retained**, claim cleared.
+Reviewed implementation `511e14ad` and report `a8c9a9e3`; clean dedicated worktrees
+and matching remote heads verified. All five previous functional failures are
+resolved: terminal-page continuation, nullable nodes, snapshot currency provenance,
+post-authorization cancellation and nested provider error propagation. Independent
+checks passed: 14 previous harness cases (including all five reproductions), plus
+13 current focused tests and diff check. Submitted full-suite Redis timeout remains
+separate; live Shopify/integration validation is still developer-owned and pending.
+No dependent promotion:016 still needs006,007 needs016, and012/013/system-test have
+other prerequisites. No main merge/gitlink change; architecture is not Implemented.
+This acceptance supersedes all older COMMERCE-015 current-state wording.

@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 95
-executor: codex
-claimed_at: 2026-09-21T01:55:18Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -190,6 +190,25 @@ None newly reported.
 Implementation commit: `511e14a`, pushed to `origin/task/ARCH-020-COMMERCE-015`. Attempt: 3. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-015`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-015`. Both use mirrored `task/ARCH-020-COMMERCE-015` branches; no shared checkout or another task worktree was reused. Parent and implementation remote task branches needed no fast-forward and both already incorporated `origin/main`. Recursive submodule sync/update passed; database remains pinned at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink, main branch, Architect Review text or enabled task was modified.
 
 ## Architect Review
+
+### Accepted — Attempt 3 — 2026-09-21
+
+**Current decision: Complete, architect accepted; Attempt 3 retained, executor/claimed_at null.** Reviewed implementation `511e14ad25fb5f34882102e324b246a601ca9053` and report `a8c9a9e34b2092d4d7330aa795356bdba7968ee1`. Launcher routing confirms the dedicated parent/implementation worktrees; both were clean and matched remote task heads. This acceptance supersedes all earlier Changes Requested/current-state wording while preserving history. The stale executor/claimed_at in the submitted review YAML is cleared. No implementation edit, next claim, main integration or gitlink update.
+
+A2-R1–A2-R4 are resolved:
+
+- Search continuation now considers unconsumed edges on the current terminal page as well as later provider pages. The limit-one two-variant fixture returns each variant once and ends with null cursor.
+- Nullable provider nodes become per-requested-ID missing facts without discarding valid variants; completeness remains false when any requested product is missing.
+- Basket currency comes only from the parsed persisted source envelope. Arrays and missing/null source currency remain unknown even when current context has a currency.
+- Authorization completion is followed by a deadline/signal check before recovery I/O. Nested collection errors retain their typed provider failure; cancellation and malformed nested responses no longer silently become successful facts.
+
+Independent validation: the previous isolated harness in `/tmp/c015-a3-review` passed **14/14** (nine earlier submitted cases plus all five previous failing review reproductions). The current committed focused product-policy suite separately passed **13/13**. Implementation diff whitespace check passed. No remaining blocker was identified in this correction review; earlier registry, authorization, bounded-read and null-line improvements remain accepted progress.
+
+Submitted lint/typecheck/build success is recorded as reported evidence, not independently rerun in full. The full-suite result remains **157 passed, one configured-Redis discovery-limit timeout**; discovery code/test and package manifests are unchanged by this correction. This review does not claim a green full suite or independent live Redis validation. That reported unrelated timeout is not an acceptance blocker.
+
+Acceptance covers the owned product-policy component under C19 and deterministic local evidence. Live Shopify, production adapter composition and developer-owned integration/system validation remain pending; no live provider or database checks were performed by this review. COMMERCE-013 retains production composition responsibility.
+
+Dependency reconciliation: no dependent task becomes Ready solely from this acceptance. COMMERCE-016 still requires COMMERCE-006 acceptance; COMMERCE-007 still requires COMMERCE-016; COMMERCE-012/013 and SYSTEM-TEST-001 retain other unresolved prerequisites. Preserve each task's actual state rather than copying stale branch snapshots. Architecture is not Implemented. Final developer integration remains implementation merge first, then parent gitlink/report integration.
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 
