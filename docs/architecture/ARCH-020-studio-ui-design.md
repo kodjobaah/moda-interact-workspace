@@ -1,6 +1,6 @@
 # ARCH-020: Binding Studio pages and navigation
 
-This is a required implementation specification for COMMERCE-008/009/011, not
+This is a required implementation specification for COMMERCE-008/017/011, not
 an illustrative mock-up. Each task includes its owned page/action checklist and
 acceptance cases. C7/C9/C14/C15 in the [contracts](ARCH-020-implementation-contracts.md)
 supply backend behaviour, execution bounds and authorization. All UI labels below
@@ -17,7 +17,7 @@ semantics and state handling below take precedence over simplified prototype
 controls. Preserve the approved sidebar order, page hierarchy and editor steps.
 
 COMMERCE-002 implements authentication services; COMMERCE-008 owns U01/U02 visual
-pages and all U03–U13 pages. COMMERCE-009 owns U14. COMMERCE-011 supplies U07
+pages and all U03–U13 pages. COMMERCE-017 owns U14. COMMERCE-011 supplies U07
 services, not another separate discovery page. GATEWAY-001 exposes these same
 routes and never creates alternative UI pages. Their task instructions identify
 these exact screen IDs and required acceptance tests.
@@ -289,8 +289,8 @@ Traversal case N13: U11 Response contract -> Edit as new release -> U10 Response
 contract -> edit -> Validate -> U14 Test -> Back -> Review -> Create -> new U11 ->
 Activate. Check cancellation, role denial, invalid schema, duplicate activation and
 existing-conversation pinning at terminal system validation. COMMERCE-008 tests
-the U14 handoff/return with a preview stub; COMMERCE-009 tests the real U14 round
-trip. COMMERCE-008 acceptance does not require COMMERCE-009. This C16 extension supersedes the original approved
+the U14 handoff/return with a preview stub; COMMERCE-017 tests the real U14 round
+trip. COMMERCE-008 acceptance does not require COMMERCE-017. This C16 extension supersedes the original approved
 prototype's release panels; other U01–U14 routes and traversals remain unchanged.
 
 Publication stages are tool version -> capability revision -> release -> active
@@ -393,3 +393,7 @@ C7.1 governs U01/U02 and the authenticated shell: Continue with Google is the on
 hosted sign-in choice. A server-resolved development SUPER_ADMIN bypass redirects
 U01 to U03 and shows Development — SUPER_ADMIN across U03–U14. No UI bypass
 selector or extra provider. Protected page/API/action guards remain server-owned.
+
+
+C19 ownership clarification:009 owns preview backend/routes;017 owns the exact
+U14 page and N10/N11 plus U14 part of N13.008 retains U01–U13 and the composer.

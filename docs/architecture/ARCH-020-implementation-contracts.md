@@ -275,7 +275,7 @@ map. Before delivery Background applies the exact-call refresh contract below
 and replaces the proposed offer answer with a bounded referral on failure. Never
 trust a model-supplied evidence object or accept a recomputed hash as authority.
 
-### Exact-call evidence refresh (COMMERCE-004/006/007, BACKGROUND-002)
+### Exact-call evidence refresh (COMMERCE-004/014/016/007, BACKGROUND-002)
 
 Background owns a turn-local provenance record for each registered evidence ID:
 the actual successfully invoked granted tool name, its exact immutable revision,
@@ -1135,7 +1135,8 @@ service deployments; changed queries/templates stay invisible to old grants.
 
 The [Studio UI design](ARCH-020-studio-ui-design.md) is binding, including its
 screen IDs and acceptance matrix. COMMERCE-008 implements screens U01–U13;
-COMMERCE-009 implements U14; COMMERCE-011 supplies discovery/validation services.
+COMMERCE-017 implements U14; COMMERCE-009 supplies preview backend routes;
+COMMERCE-011 supplies discovery/validation services.
 Admin owns Feature creation/plan membership; Studio reads that catalogue and
 associates Commerce behaviour. No new feature-creation action or duplicate table.
 
@@ -1384,7 +1385,8 @@ Deterministic provider mocks prove workflow. Record representative French/Englis
 COMMERCE-003 and COMMERCE-008 can start and complete their component work after
 002, DATABASE-001 and SHARED-001. They prove their contracts using deterministic
 fixtures. COMMERCE-013 separately owns real integration and cannot start until
-003/004/005/006/007/008/011 are Complete.009 and GATEWAY-001 require013 Complete.
+the component prerequisites listed in C19 are Complete.009 and017 are independent
+backend/frontend components; GATEWAY-001 requires013 Complete.
 This is a task split, not a launcher bypass or deferred acceptance within003/008.
 No active011 attempt is reclaimed and no accepted task implementation is reopened.
 
@@ -1444,13 +1446,13 @@ matching TypeScript types alone is not integration evidence.
 Any shared route/barrel/package configuration edit must be minimal and reconciled
 on synchronization.003 does not build Studio pages;008 does not add competing
 publication mutations or compiler endpoints. 003/008 submit component/fixture evidence;013 submits actual integration evidence.
-Downstream009/GATEWAY-001 and terminal caching/system-test gates require013.
+GATEWAY-001 and terminal caching/system-test gates require013;009/017 feed013.
 Fixture acceptance never asserts that the assembled application is functional.
 
 
 ## C18. Recommendation producer / Background consumer contract
 
-Binding for COMMERCE-004/006/007, BACKGROUND-002 and SYSTEM-TEST-001. This
+Binding for COMMERCE-004/014/016/007, BACKGROUND-002 and SYSTEM-TEST-001. This
 specifies C4/C5 exact-call refresh, not a new protocol/package version. Both owners
 consume the accepted `@modainteract/moda-interact-shared/commerce` exports:
 `CommerceTurnIdentitySchema`, `CommerceEvidenceSchema`, `CommerceProposalSchema`,
@@ -1570,3 +1572,207 @@ call/send/reservation counts and results. No new Shared publication is required.
 | EC10 | Unknown final ID, conflicting provenance, cross-turn evidence, exhausted budget | Fail closed; zero refresh for missing trusted provenance/budget; cross-turn cannot send |
 | EC11 | New inbound message, lease loss or cancellation while refresh is pending | Zero delivery and zero stale language writes; existing reservation cleanup only |
 | EC12 | Recommendation has no separate evaluator; identical or changed returned proposal | Identical exact-call refresh succeeds; changed proposal refers; zero ungranted calls |
+
+## C19. Smaller implementation tasks and their internal interfaces
+
+This replaces the former combined scopes of004/005/006/009. Existing filenames
+remain stable for links; titles and full task bodies now describe the narrower
+scope. No task was claimed or implementation discarded. Earlier owner references
+are interpreted by this table; business behavior in C4–C18 is unchanged.
+
+| Owner | Owns | Does not own | Assembly owner |
+|---|---|---|---|
+|004|MCP transport, authentication, grant/discovery|definition execution, provider adapters|013|
+|014|definition validation/mapping/dispatch/template rendering|authentication or provider business logic|013|
+|005|tokenless generic Shopify query execution|basket/product policy helpers|013|
+|015|trusted basket, product search/current variant facts|generic compiler or discount calculation|013|
+|006|current offer policy, listing, rule retrieval/normalization|eligibility/savings/Evidence calculation|013|
+|016|pure eligibility calculation, discounts.evaluate orchestration|provider rule parsing or recommendations|013|
+|009|preview routes, runner lifecycle, Redis state/budgets|U14 controls or browser navigation|013|
+|017|U14 frontend, typed API client, browser interactions|routes, Redis, database loaders or service composition|013|
+
+013 wires004 ->014, then014 ->005/015/006/016/007, and the existing Studio ports.
+013 also wires017 U14 ->009 with actual saved-bundle loading and008 composer return. SYSTEM-TEST-001
+retains cross-service/Background/gateway acceptance.012 still follows ALL other
+implementation tasks. No new interface package publication or DB migration.
+
+### Contract ownership and concurrency
+
+Each port below is Commerce-local TypeScript, not a new wire API. Use the accepted
+Shared schemas for all existing identities, grants, definitions, inputs, products,
+baskets, evidence and typed errors. Unknown external keys remain rejected. Names
+below are required exported interfaces; implementations/files may use existing
+repository conventions inside the task-owned directories. No new app root.
+Publish the owned type declaration and a success/failure example with its focused
+contract test before building the adapter. Producer and consumer use those exact
+types; never maintain parallel hand-written copies or simplify fields to fit a UI.
+
+004 owns AuthorizedToolCall and DefinitionExecutionPort in its MCP module;014
+imports them.014 owns QueryExecutionPort and PolicyOperationRegistry declarations
+in its execution module;005/015/006/016/007 can implement equivalent structural
+adapters independently, and013 installs/types-checks them against those ports.
+015 owns ProductFactsPort;006 owns DiscountRuleReader/Snapshot;016 imports both.
+009 owns PreviewBundleLoader and route schemas;017 imports them. Component tests
+inject ports, never dynamically import another task's unfinished implementation.
+Any required provider field that cannot map to the declared normalized DTO is
+UNKNOWN/UNSUPPORTED, not an excuse to discard a restriction. A required contract
+change is reconciled by the architect before either side changes its meaning.
+
+### Transport and execution boundary
+
+`AuthorizedToolCall` has exactly these server-side fields:
+
+- `turn`: CommerceTurnIdentity; `grantId`, `releaseId`, `toolId`, `toolRevisionId`:
+  canonical IDs; `name`: exact granted authored name; `definition`: exact pinned
+  accepted Shared tool definition; `arguments`: JSON object supplied to tools/call.
+- `shopDomain`: verified canonical shop domain; `environment`: existing runtime
+  environment type; `limits:{maxRecommendations,maxSearchResults}`: C8 effective
+  integers; `deadlineAt`: absolute epoch milliseconds; `signal`: AbortSignal.
+- `budget`: shared task-local budget object with
+  `reserveProviderRequest(): void`, throwing typed DEADLINE on elapsed time and
+  typed DEADLINE on exhausted12 requests. Every actual provider
+  request, retry and nested read reserves BEFORE I/O. No reset in nested adapters.
+
+Only004 constructs production context after C5 authentication/ownership/current
+permission checks. No route accepts it from JSON. Fixture constructors exist only
+in tests. Context contains no token; privileged adapters perform trusted lookup.
+`DefinitionExecutionPort.execute(call): Promise<CommerceToolResult>` consumes this
+context.014 validates authored arguments, applies input mappings/literals, and
+validates exact operation input before provider invocation. Invalid input returns
+INVALID_INPUT with zero provider requests. Missing installed revision/adapter
+returns INCOMPATIBLE_VERSION or UNAVAILABLE as C4/C5 specify, never latest fallback.
+The014 response is the unchanged C4 structured union;004 alone performs MCP encoding.
+
+`QueryExecutionPort.execute({context,execution,variables})` returns the C14 query
+fact object `{source,apiVersion,schemaHash,observedAt,values}` inside the existing
+success/error union. `execution` is the canonical SHOPIFY_STOREFRONT_QUERY branch,
+not arbitrary SQL/URL/code; `variables` is the validated mapped JSON object. Reuse
+005/011's canonical fact field names if the accepted Shared query schema specifies
+them differently:013 must document the exact mapping, never omit source identity
+or return bare projected values. Provider content cannot become policy Evidence.
+
+`PolicyOperationRegistry.get(operation,operationVersion)` returns null or an adapter
+`execute({context,input}): Promise<CommerceToolResult>`. The input/output schema is
+selected by the canonical operation, not its authored tool name. Keys are exact
+installed versions; registration is immutable after service composition.005 has no
+privileged fallback.015 owns recovery.getBasket/shopify.searchProducts,006 owns
+discounts.getOptions,016 owns discounts.evaluate and007 owns products.findQualifying/
+products.findSimilar.014 owns mappings/rendering; providers return structured facts.
+
+Common provider errors use C4's codes/retryable flag, never exception strings.
+Cancellation/deadline propagate without fallback or background continuation.
+Contract fixtures include concurrent different shops, missing adapter/version,
+malformed mappings, nested request ceiling and unchanged structured output after
+rendering. Production factories never install fixture adapters.
+
+### Product facts for discount evaluation
+
+`ProductFactsPort.readVariants({context,variantIds})` accepts1–103 unique canonical
+IDs (at most100 basket lines plus3 proposed additions), then returns the C4 result
+union whose success data is `{variants,complete}`. `variants` is an array ordered
+by variantId with one row per requested ID:
+`{variantId,product,collectionIds,collectionsComplete}`. `product` is the canonical
+Shared Product or null; `collectionIds` is a sorted unique array of IDs, capped1000
+per variant; `collectionsComplete` is boolean. Missing product/null price/currency/
+availability and partial memberships are unknown, not fabricated absent membership.
+`complete` means every requested product was retrieved, not that all its nullable
+facts are known. Exceeding membership bounds sets collectionsComplete=false. An
+unavailable/throttled request is a typed error rather than a complete empty result.
+Use the same context budget across all reads. No discount calculation in015.
+
+### Normalized discount rule contract
+
+`DiscountRuleReader.read({context,offerId})` returns the C4 result union with
+`DiscountRuleSnapshot` below.006 verifies current policy/tenant/scope before I/O;
+NONE or a different FIXED offer is DENIED. Offer-list success remains the existing
+Shared discounts.getOptions shape. Snapshots are internal immutable values, never
+new database rows or model-authored arguments.
+
+`DiscountRuleSnapshot` fields (all required, explicit null where permitted):
+
+- `offer`: canonical Shared Offer; `enabled`: boolean or null; `observedAt`: UTC ISO;
+  `ruleFingerprint`: C4 SHA-256 of normalized semantic fields, excluding observedAt
+  and fingerprint itself; `support`: SUPPORTED | UNSUPPORTED | UNKNOWN.
+- `discount`: null or `{kind:"PERCENTAGE",value}` or
+  `{kind:"FIXED_AMOUNT",value,currency,appliesPerItem}`. Values are canonical
+  nonnegative decimal strings; percentage is >0 and<=100; fixed amount>0;
+  currency is canonical and appliesPerItem boolean. Unknown fixed semantics ->null.
+- `targets`: null (unknown) or `{kind:"ALL"}` or `{kind:"PRODUCT"|"VARIANT"|"COLLECTION",ids}`;
+  ids sorted/unique/nonempty/max1000. If target data is incomplete, use
+  null, support UNKNOWN and unresolved code TARGETS_INCOMPLETE; never ALL or a
+  partial supported list.
+- `minimum`: null or `{kind:"QUANTITY",value,basis}` or
+  `{kind:"SUBTOTAL",value,currency,basis}`; quantity positive integer, money canonical,
+  basis BASKET | ELIGIBLE_LINES. null with no unresolved MINIMUM_UNKNOWN means authoritatively no minimum;
+  otherwise null plus MINIMUM_UNKNOWN records an unknown minimum and cannot qualify.
+- `semantics`: null or `{subtotalBasis:"PRE_DISCOUNT_EXCLUDING_TAX_SHIPPING",
+  allocation:"ACROSS_ELIGIBLE_LINES"|"PER_ELIGIBLE_ITEM",
+  rounding:"HALF_UP"|"HALF_EVEN"|"DOWN",roundAt:"LINE"|"TOTAL"}`.
+  A profile is populated only when pinned provider evidence proves every choice;
+  unsupported bases/modes yield support UNSUPPORTED and semantics=null. These
+  enum values are normalized calculation choices, not assertions about Shopify.
+- `unresolvedConditions` and `unsupportedConditions`: arrays max32 of C4 bounded
+  `{code,description}`. Restrictions involving customer/usage/combination cannot
+  be omitted. SUPPORTED requires known discount/targets/semantics, enabled not null,
+  targets not null, complete minimum facts and both arrays empty. Dates use `offer.startsAt/endsAt`.
+
+Where targets/minimum cannot be fully read, use the exact null/unresolved
+representations above;016 cannot use them to establish qualification. Never claim
+unsupported conditions have been evaluated.016 applies C8 known-failure/unsupported/unknown precedence.
+
+`evaluateDiscount({turn,grantId,releaseId,basket,proposal,rule,variantFacts,now})`
+is016's pure function returning canonical CommerceEvidence. `basket`/`proposal`
+use Shared schemas, rule is the DTO above and variantFacts is015's success data.
+No network/DB/clock lookup inside this function. The discounts.evaluate adapter
+loads current inputs through006/015 and passes frozen now; orchestration and pure
+calculation tests are separate. The reader proves rule interpretation; evaluator
+proves arithmetic against it. Unprovable provider semantics remain UNSUPPORTED.
+Do not create a second rule engine in007; it calls016 for every exact proposal.
+
+Required common reader/evaluator fixtures: percentage10 on eligible subtotal100
+has savings10/result90 when the proved profile yields that calculation; fixed5
+across eligible100 yields5/95; subtotal exactly at and just below its minimum;
+expired at exactly endsAt; unknown collection membership; missing currency;
+unsupported family; known expired plus unsupported; unproved rounding profile.
+Use canonical currency precision and explicit expected results. Production013
+runs these through actual006 normalization and016 evaluation, not reader doubles.
+
+### Preview service/page boundary
+
+009 exposes C9.1 routes unchanged. `PreviewBundleLoader.load({principal,selection,
+fixtureId})` returns exactly `{grant,manifest}` in the accepted Shared shapes, both validated
+and frozen for the synthetic preview conversation. `principal` is the accepted staff principal, selection is C9.1's
+strict RELEASE/DRAFT union, fixtureId belongs to the server catalogue. No customer
+identity or live provider credentials are accepted. Lookup owner/role/revision
+access before returning. The loader maps canonical saved revisions into synthetic
+IDs/context; it does not write a production conversation grant. Typed not-found,
+denied and unavailable errors use C9.1 status mapping.
+
+009 accepts loader fixtures to test lifecycle independently.013 supplies the real
+saved-bundle loader using003 and exercises017 UI against actual009 routes. It
+uses014's actual interpreter with fixture provider operations, never production
+MCP/Shopify or WhatsApp. C16 U10/U11 response composer stays008-owned. U14 screen,
+N10/N11 and the U14 part of N13 move from009 to017; no other pages move.017 must
+show populated Tool test and Conversation views with contract fixtures;013 pairs
+them with the real service and retain all C9.1 concurrency,
+unknown-outcome, reset, role and draft-handoff semantics.
+
+### Completion evidence and integration
+
+Component tasks provide one successful port example and each named failure fixture,
+plus their focused behavior matrix. Builds/typechecks or many empty screenshots
+cannot substitute for working components.013 performs real backend adapter pairing;
+013 also performs real preview/page pairing; terminal SYSTEM-TEST owns cross-service
+conversations. All25 task start edges must be reciprocal and acyclic. This split
+adds no automatic task execution or new definition-time provider calls.
+
+
+Frontend boundary rule for C19:017 can start after008/auth/Shared are accepted,
+without009. `PreviewClient` exposes `listFixtures()`, `startConversation(body)`,
+`sendRun(conversationId,body)`, `getRun(conversationId,runId)`,
+`cancelRun(conversationId,runId)`, `runToolTest(body)` and `getToolTest(runId)`.
+Each body/result/error is exactly C9.1, not a second DTO; methods map one-to-one to
+its routes. HTTP transport is injected. UI contract fixtures exercise exact outgoing
+payloads and return statuses; production client uses authenticated same-origin HTTP.
+013 owns saved-bundle loading and I09 actual client/server pairing. Backend task009
+never edits page components; frontend017 never edits DB/Redis/route handlers.

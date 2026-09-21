@@ -405,7 +405,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-010 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| ARCH-020-COMMERCE-011 | commerce | ready | 8 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
+| ARCH-020-COMMERCE-011 | commerce | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | complete | 4 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
@@ -611,15 +611,13 @@ Gateway002, Commerce012 and terminal system tests retain other dependencies;
 no dependent is promoted or launched. Developer integration remains separate;
 ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
 
-## COMMERCE-011 Attempt 8 review — 2026-09-21
 
-COMMERCE-011 is **Ready, Attempt 8 retained**, claim cleared, not accepted.
-Reviewed implementation `ae6acb4` and report `409b14a`; clean dedicated worktrees
-and matching remote heads verified. All three Attempt 7 reproductions now pass;
-R7-2 Redis cleanup is accepted. The sole remaining correction is R8-1: preserve
-interleaved text/element order during document extraction (inline code currently
-scrambles instructions). Independent focused validation: 19 passed; isolated
-checks: 3 passed, 1 failed. See the latest canonical task Architect Review for
-reproduction and correction scope. No dependent promotion or main integration.
-Live validation remains developer-owned and is not an acceptance blocker.
-This note supersedes previous COMMERCE-011 current-state wording.
+## ARCH-020 smaller-scope frontier — 2026-09-21
+
+C19 splits004/005/006/009 into paired components with new014–017. Backend006
+(rule reader),009 (preview service) and015 (basket/product facts) are Ready,
+attempt0/unclaimed; their prerequisites are accepted Complete. Frontend017 owns
+U14 only;013 assembles real frontend/backend services after component acceptance.
+The25-task graph is reciprocal and acyclic. Active task worktrees remain
+authoritative; the concurrently integrated BACKGROUND-002 Attempt4 acceptance
+is preserved. No task is launched by this definition update.

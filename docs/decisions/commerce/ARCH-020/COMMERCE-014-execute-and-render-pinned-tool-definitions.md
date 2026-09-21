@@ -1,7 +1,7 @@
 ---
-id: ARCH-020-COMMERCE-005
+id: ARCH-020-COMMERCE-014
 architecture_id: ARCH-020
-title: Execute validated public Shopify queries
+title: Execute and render pinned tool definitions
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -10,23 +10,22 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 90
+priority: 85
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-020-COMMERCE-001
-  - ARCH-020-COMMERCE-011
+  - ARCH-020-COMMERCE-004
   - ARCH-020-SHARED-001
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
-created: 2026-09-20
+created: 2026-09-21
 updated: 2026-09-21
 ---
 
-# Execute validated public Shopify queries
+# Execute and render pinned tool definitions
 
 ## Architecture
 
@@ -36,7 +35,7 @@ C4/C5/C7/C8/C9/C14/C16/C18 as applicable, and exact ownership/interfaces in **C1
 
 ## Objective
 
-Own tokenless execution of immutable SHOPIFY_STOREFRONT_QUERY definitions and schema-bound result projection only.
+Own C14 input validation, mappings, operation dispatch and safe response templates behind the authenticated MCP port.
 
 ## Context
 
@@ -46,7 +45,7 @@ launcher/worktree/review policies apply. No task is claimed by this definition.
 
 ## Scope
 
-Own tokenless execution of immutable SHOPIFY_STOREFRONT_QUERY definitions and schema-bound result projection only.
+Own C14 input validation, mappings, operation dispatch and safe response templates behind the authenticated MCP port.
 
 ## Out of Scope
 
@@ -63,20 +62,20 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Consume011 actual pinned compiler/schema exports; execute the fixed published query and mapped variables only against the verified canonical shop host.
-- [ ] Enforce C14 query/depth/list/time/response bounds and API-version checks. Reject partial GraphQL errors; no privileged fallback or installation-token lookup.
-- [ ] Preserve the query fact wrapper including source/schema/version/observedAt/values; selected values can never replace it with a policy-evidence output.
-- [ ] Expose QueryExecutionPort to014 with injected bounded provider transport, clock and signal. Do not implement basket/search policy helpers or MCP routes.
+- [ ] Implement DefinitionExecutionPort from C19 against the exact pinned C14 execution union; never select latest, infer business handlers from tool names or mutate a process-global tenant registry.
+- [ ] Validate authored input schema and mappings/literals before provider work; dispatch QueryExecutionPort or versioned policy registry with trusted context injected server-side.
+- [ ] Implement bounded text/items renderer, allowed tokens and null/empty/unavailable/error behavior; no expressions, eval, recursive interpolation or hidden I/O.
+- [ ] Preserve structured policy Evidence and public-query wrapper separation under C18; rendering cannot promote UNKNOWN or counterfeit facts.
+- [ ] Use injected query/policy adapters for component acceptance.013 owns production registration;014 does not implement provider retrieval, pricing or discount logic.
 
 ## Interfaces / Contracts
 
-Own `src/commerce/query/`. C19 QueryExecutionPort receives trusted context and the canonical query definition;013 connects it to014. C14 result wrapper and Shared types remain unchanged.
+Own `src/commerce/execution/`. Import004 context types; do not edit its authorizer. Implement query/policy ports with fixtures here;013 installs real005/015/006/016/007 providers.
 
 
 ## Dependencies
 
-- ARCH-020-COMMERCE-001
-- ARCH-020-COMMERCE-011
+- ARCH-020-COMMERCE-004
 - ARCH-020-SHARED-001
 
 All listed prerequisites must be Complete and architect-accepted before a claim.
@@ -90,10 +89,10 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] Q01: two arbitrary authored queries execute without registering business names; mapped variables/results match the accepted compiler.
-- [ ] Q02: wrong host, query/version, malformed variables/projection, partial errors and oversized response fail closed; zero credentials looked up on every path.
-- [ ] Q03: timeout/throttle/cancel/count limits are honored; no redirect to unverified host or mutation is emitted.
-- [ ] Q04: nested counterfeit evidence remains ordinary query values; no policy-shaped root output.
+- [ ] E01: renamed/narrowed/literal tools dispatch the exact version and arguments once; bad mapping/schema/absent operation dispatches zero times.
+- [ ] E02: two shops/concurrent calls share no mutable context; deadline/cancellation propagate; missing adapter is typed UNAVAILABLE.
+- [ ] E03: template null/empty/overflow/error/injection cases obey C14, keep structured data unchanged and never evaluate provider text as a template.
+- [ ] E04: C18 EC07/EC08 output provenance/authorization cases hold through the full definition executor.
 
 ## Validation
 
@@ -152,7 +151,7 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-005. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: task/ARCH-020-COMMERCE-014. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
 
 ## Architect Review
 
