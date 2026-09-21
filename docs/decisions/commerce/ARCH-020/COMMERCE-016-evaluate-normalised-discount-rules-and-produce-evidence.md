@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 105
-executor: codex
-claimed_at: 2026-09-21T03:47:54Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-006
@@ -127,7 +127,8 @@ Ready for Review.
 
 ### Files Changed
 
-- Implementation commit `bfbd7839503b60e88b17da49f258c84c4e506c76`:
+- Implementation commits `bfbd7839503b60e88b17da49f258c84c4e506c76` and
+  `55204ec24b2508c38c064aadfd1dd81bef768e4a`:
   - `src/commerce/discounts/evaluator/types.ts`
   - `src/commerce/discounts/evaluator/evaluator.ts`
   - `src/commerce/discounts/evaluator/adapter.ts`
@@ -156,13 +157,28 @@ Ready for Review.
   Shared input, re-reads the authorized current rule first, then basket and product
   facts with the same context/budget, propagates typed failures and performs no later
   reads after DENIED/NONE/wrong-FIXED/revoked or malformed input.
+- Attempt2 correction R1 now requires current identity, availability, price and
+  currency facts for every existing basket variant while retaining the historical
+  basket unit price for calculation. False availability is a known failure; null
+  facts fail closed as UNKNOWN after independent known failures and unsupported rules.
+- Attempt2 correction R2 derives the eligible savings cap using the rule's proven
+  LINE or TOTAL rounding point. Two USD0.005 lines now produce savings0.02/total0.00
+  for LINE and savings0.01/total0.00 for TOTAL, including the fixed-amount cap path.
+- Attempt2 correction R3 defers subtotal-minimum failure until every monetary line is
+  comparable with the basket currency. Mixed or missing proposal currency produces
+  canonical UNKNOWN evidence through both the pure evaluator and operation adapter,
+  while independent disabled, quantity and target failures remain known failures.
 
 ### Validation Results
 
 Agent-executed:
 
+- `npm test -- tests/discount-evaluator.test.ts`: PASS,1 file /15 tests, including
+  all Attempt2 R1/R2/R3 regressions.
 - `npm test -- tests/discount-evaluator.test.ts tests/discount-reader.test.ts tests/products-policy.test.ts`:
-  PASS,3 files /50 tests.
+  evaluator/product suites passed;52 tests passed and one unrelated reader deadline
+  fixture failed because its fake clock recorded `[]` rather than `['reserve']`.
+  The same unchanged reader case reproduced when rerun alone.
 - `npm run lint`: PASS, zero warnings/errors.
 - `npm run typecheck`: PASS.
 - `npm run build`: PASS; Prisma client generation and Next.js production build completed.
@@ -177,13 +193,17 @@ Case/effect matrix:
 
 - V01: percentage10 over USD100 produced savings10.00/result90.00; fixed5 produced
   5.00/95.00; exact/below subtotal and quantity bounds, all target kinds, USD/JPY,
-  half-up/even/down and per-item allocation assert exact money and outcomes.
+  half-up/even/down and per-item allocation assert exact money and outcomes. The
+  two-line half-cent fixture asserts the distinct LINE0.02 and TOTAL0.01 caps for
+  percentage discounts and the LINE0.02 cap for fixed discounts.
 - V02: exact start qualifies, exact end/disabled/minimum/target failure does not;
   known failure wins over an unsupported family, while unsupported wins over unknown
   customer/current facts. No unresolved result qualifies.
 - V03: wrong currencies, missing variants, unavailable proposal variants and partial
-  collections fail closed; ADD/REPLACE order is unchanged in evidence and basket/rule
-  changes produce distinct evidence IDs.
+  collections fail closed. Existing basket availability/currency nulls are separately
+  covered. Mixed/missing proposal currency cannot trigger a premature subtotal
+  failure; pure and adapter paths return canonical UNKNOWN evidence. ADD/REPLACE order
+  is unchanged in evidence and basket/rule changes produce distinct evidence IDs.
 - V04: the canonical C18 seed parses and its published digest recomputes exactly;
   generated evidence validates against Shared, has a60-second ceiling, and the exact
   `discounts.evaluate` operation is exported. Malformed and three denied policy cases
@@ -211,8 +231,9 @@ None.
 ### Unresolved Issues
 
 Production adapter assembly and live provider evidence remain owned by013 and the
-terminal system test. The four broader-suite infrastructure failures above are not
-caused by or located in this task's changed paths.
+terminal system test. The four prior broader-suite infrastructure failures and the
+current unchanged reader fake-clock failure are not caused by or located in this
+task's changed evaluator/test paths.
 
 ### Architectural Concerns
 
@@ -226,12 +247,12 @@ None newly reported.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-016`.
 - Shared workspace/implementation checkout switched or mutated: no. Another task
   worktree reused: no.
-- Start synchronization: parent and implementation remote task fast-forward not
-  needed; both already contained current `origin/main` at launcher preparation.
+- Start synchronization: the launcher incorporated current `origin/main` into the
+  parent and implementation task worktrees before the Attempt2 correction.
 - Recursive submodule sync/update: passed. Database pin:
   `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
-- Implementation commit `bfbd7839503b60e88b17da49f258c84c4e506c76` pushed to
-  `origin/task/ARCH-020-COMMERCE-016`.
+- Implementation correction commit `55204ec24b2508c38c064aadfd1dd81bef768e4a`
+  pushed to `origin/task/ARCH-020-COMMERCE-016`.
 - No main merge/push, force push, parent gitlink update or unrelated parent file edit.
 
 ## Architect Review
