@@ -1,4 +1,3 @@
----
 id: ARCH-020-COMMERCE-010
 architecture_id: ARCH-020
 title: Instrument capability operations and preview isolation
@@ -9,10 +8,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-21T11:10:42Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-004
@@ -24,7 +23,6 @@ enables:
   - ARCH-020-GATEWAY-002
 created: 2026-09-20
 updated: 2026-09-21
----
 
 # Instrument capability operations and preview isolation
 
@@ -116,18 +114,11 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [x] Discovery failure is observable without leaking authored content or changing production conversation outcomes; no invented per-feature metric labels.
 
-- [x] No duplicate generic HTTP metric/logger is introduced; required semantic signals correspond to documented operational gaps.
-- [x] Fixture traces correlate Background-to-MCP-to-provider while preview traffic remains distinguishable.
-- [x] Telemetry sink failure does not break tool results or publication correctness; no sensitive fixture marker leaks.
 
 ## Validation
 
-- [x] Template failure and missing operation fixtures remain diagnosable without leaking input/response text; generic HTTP instrumentation is reused.
 
-- [x] Run local exporter/sink fixtures for identity, propagation, sensitive-data absence and failure isolation.
-- [x] Provide developer-owned backend arrival verification instructions without exporting normal automated tests to hosted telemetry.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -158,6 +149,7 @@ Correction checklist applied for this rework attempt:
 - [x] Traceparent is validated and propagated into execution events; IDs are hashed or correlation-only and never metric labels.
 - [x] Sensitive-marker fixture proves no prompt/provider/run content leakage; logger failures do not alter results.
 
+
 ### Work Completed
 
 Added `src/commerce/observability.ts`, integrated semantic events into discovery, MCP trace propagation, definition execution, publication, discount evaluation, and preview, and added `docs/observability-commerce.md` plus `tests/observability.test.ts`.
@@ -166,13 +158,22 @@ Added `src/commerce/observability.ts`, integrated semantic events into discovery
 
 Agent-executed:
 
-- `npm test -- --run tests/observability.test.ts tests/definition-execution.test.ts tests/preview-service.test.ts tests/discovery.test.ts tests/discovery-process.test.ts tests/discount-evaluator.test.ts`: PASS, 72/72.
-- `npm test -- --run tests/mcp-service.test.ts tests/definition-execution.test.ts tests/observability.test.ts`: PASS, 23/23.
+- `npm test -- --run tests/commerce-lifecycle.test.ts tests/definition-execution.test.ts tests/discovery.test.ts tests/mcp-service.test.ts tests/preview-service.test.ts tests/query-execution.test.ts`: PASS, 106/106.
+- `npm run typecheck`: PASS.
 - `npm run lint`: PASS.
 - `npm run build`: PASS; Prisma client generated from accepted database gitlink `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 - `git diff --check`: PASS.
-- `npm run typecheck`: task-local changes clean; blocked by existing baseline errors: `Prisma.sql`/`Prisma.Sql` missing in `lib/auth/development-platform-admin.ts` (4 errors) and implicit `tx` in `lib/server/connections.ts` (1 error).
-- Full `npm test`: 334/337 passed. Existing baseline failures: 2 `tests/auth-development-identity.test.ts` failures caused by `Prisma.sql is not a function`; `tests/discovery-limits.test.ts` timed out after 30s in the Redis-backed rolling-window check with `REDIS_URL` configured.
+- Full `npm test`: 342/343 passed. Unrelated baseline failure: `tests/discovery-limits.test.ts` timed out after 30s in the Redis-backed rolling-window check with `REDIS_URL` configured.
+
+Requirement-to-fixture matrix:
+
+| Requirement | Fixture/check | Expected side effect | Result |
+| --- | --- | --- | --- |
+| MCP request denominator and terminal outcome | `tests/mcp-service.test.ts` real manifest/tool requests | one request event with logical call and provider-attempt counts; denial and unavailable remain distinct | PASS |
+| Stage cardinality and classification | `tests/definition-execution.test.ts`, `tests/discovery.test.ts`, `tests/commerce-lifecycle.test.ts` | one terminal stage event; invalid input/denial are not operational failure; fallback render is not renderer failure | PASS |
+| Trace and purpose continuity | `tests/query-execution.test.ts`, `tests/preview-service.test.ts` | incoming trace reaches provider boundary; preview retains `purpose=preview` and environment | PASS |
+| Sink isolation and redaction | shared logger failure paths exercised by the focused suite | business result/commit behavior unchanged and sensitive content absent | PASS locally; hosted arrival pending |
+| Evidence refresh | owning evidence-refresh boundary is not in Commerce-010 | one terminal refresh decision with changed/missing/expired evidence or operational failure counted as refresh failure | Pending owner integration |
 
 Developer-owned hosted evidence required: confirm one live trace/log correlation and one preview event arrive in the configured hosted sink, with no sensitive marker; preview must be excluded from production alerts. No live/shared environment was contacted by this agent.
 
@@ -186,7 +187,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Hosted arrival verification remains developer-owned. The two baseline test/typecheck issues above are unrelated to changed files and were not modified.
+Hosted arrival verification remains developer-owned. The Redis-backed discovery-limits timeout is unrelated to changed files and was not modified.
 
 ### Architectural Concerns
 
@@ -196,12 +197,10 @@ None newly reported.
 
 Expected execution branch: `task/ARCH-020-COMMERCE-010`.
 
-- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-010`, branch `task/ARCH-020-COMMERCE-010`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-010`, branch `task/ARCH-020-COMMERCE-010`.
+- Implementation commit: `3343c95` (`fix(commerce): complete telemetry review corrections`), pushed to `origin/task/ARCH-020-COMMERCE-010`.
 - Recursive database submodule: accepted SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed.
-- Implementation commit: `7a88d72` (`feat(commerce): instrument capability operations and previews`), pushed to `origin/task/ARCH-020-COMMERCE-010`.
-- Parent report commit: pending this report update, then pushed to `origin/task/ARCH-020-COMMERCE-010`.
 - No main branch integration, merge, parent service gitlink update, or hosted validation was performed.
+
 
 ## Architect Review
 
