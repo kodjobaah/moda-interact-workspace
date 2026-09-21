@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 135
-executor: copilot
-claimed_at: 2026-09-21T03:39:47Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-008
@@ -211,21 +211,100 @@ The submission placed this narrative over definition sections. The definition is
 > expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 > Developer must provide the authenticated browser/live preview evidence after selecting an available port or stopping the conflicting process. The two unrelated full-suite failures above should be compared with the repository baseline during review; they did not affect preview-focused tests, typecheck, lint or build.
 
+### Submitted Attempt 2 Report
+
+Ready for Review. Attempt 1 implementation was preserved and corrected in the same mirrored task branches.
+
+#### Correction checklist
+
+- R1 implemented in `src/studio/preview/preview-screen.tsx`: conversation IDs and run IDs are reserved before dispatch, synchronous duplicate guards cover Start/Send/Cancel/tool test, unknown operations retain identity for same-ID reconciliation, RUNNING cancellation continues polling, reset/unmount fences late responses, and terminal completion clears the submitted message once.
+- R2 implemented in `src/studio/preview/client.ts`: `listFixtures`, `sendRun`, `getRun`, `cancelRun`, `runToolTest`, and `getToolTest` are exposed through the injected transport; status/result and conversation identity shapes are validated; known service errors remain distinct from uncertain transport errors.
+- R3 implemented in the screen: fixture catalogue is loaded through the client, release selection submits `RELEASE` with the composer handoff ID, draft selection submits exact revision IDs/response contract, and Back honors explicit `returnTo`, tool handoff, release handoff, then `/features` fallback. Authenticated page entry remains guarded by `requireStudioAdminPage`; no browser storage or URL payload was added.
+- R4 implemented in the screen: string, number, integer, boolean, enum, bounded string, object, and array inputs are parsed/validated before dispatch; invalid input produces zero calls; scenario and argument edits clear stale output and pending inputs are disabled.
+- R5 completed as far as the local environment permits: the built app was served on port 3318 and `/preview` redirected to `/access-denied`. Populated authenticated browser workflows could not run because no local Studio identity is provisioned; this is the exact remaining developer-owned limitation, not a live-provider requirement.
+
+#### Requirement-to-fixture matrix
+
+| Requirement | Fixture/test | Expected and observed effect |
+| --- | --- | --- |
+| Fixture catalogue and selectable scenarios | `GET /api/studio/preview/fixtures`, injected `listFixtures` client fixture | UI uses returned IDs/labels; no hard-coded unavailable IDs are dispatched. |
+| Duplicate Start/Send/Cancel guards | `tests/preview-screen.test.tsx`, same-ID client fixtures | One reserved operation ID and one dispatch; cancellation retains the active ID while status is RUNNING. |
+| Unknown reconciliation | injected rejected send/tool fixtures plus `getRun`/`getToolTest` | Input and identity remain visible; retry/check uses the original ID. |
+| Release/draft source and return context | composer handoff fields and screen source selection | RELEASE carries release ID; DRAFT carries exact revisions; Back resolves handoff return context or `/features`. |
+| Typed tool arguments and stale output | schema-driven `catalog_lookup` fixture | String input remains supported; numeric/boolean/object values are parsed and invalid values make zero calls; edits invalidate prior results. |
+| Preview service contract | `tests/preview-screen.test.tsx tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts` | 5 files, 41 tests passed. |
+
+#### Validation
+
+Agent-executed:
+
+- `npm test -- --run tests/preview-screen.test.tsx`: 1 file, 4 tests passed.
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: 5 files, 41 tests passed.
+- `npm run typecheck`: passed; Next route types and `tsc --noEmit` passed.
+- `npm run lint`: passed.
+- `npm run build`: passed; Prisma Client generated and Next production build compiled `/preview` and all preview API routes.
+- `git diff --check`: passed.
+- `npm test`: 265 passed, 1 failed out of 266. `tests/discovery-limits.test.ts` timed out at 30 seconds in Redis discovery admission; no U14 or preview test failed.
+
+Browser/developer-owned limitation:
+
+- `PORT=3318 npm run start` served the validated build. Opening `http://127.0.0.1:3318/preview` redirected to `/access-denied` with the expected Studio auth message. A provisioned authenticated local identity is required for populated desktop/narrow/keyboard workflow evidence; no credentials, live provider, database, MCP, WhatsApp, or customer transcript was used.
+
+#### Worktree and dependency evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`; Attempt 1 base `2ec7f661bd56ca44e1fdbed8d30a05f48fd78d59` was retained.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`; only this task report was changed.
+- Dependency source remained the accepted Commerce `origin/main` baseline and initialized database submodule pin; no schema, architecture, index, service gitlink, or other repository was modified.
+
+#### Attempt 2 final validation update
+
+The correction checklist is implemented and revalidated in the current Attempt 2 worktree:
+
+- **R1:** Start, Send, Cancel, tool Run, and same-ID Check actions use synchronous operation guards. Conversation/tool payloads and generated IDs are retained across uncertain outcomes. RUNNING cancellation continues polling with the original ID until terminal acknowledgement; UNKNOWN stops automatic polling and remains explicitly reconcilable. Reset/unmount increments generation and clears timers; late success/error callbacks are fenced. Submitted text is cleared once only on terminal success and retained for known failure or uncertainty.
+- **R2:** `PreviewClient` exposes and validates `listFixtures`, `startConversation`, `sendRun`, `getRun`, `cancelRun`, `runToolTest`, and `getToolTest`; known `PreviewError` codes are separated from uncertain transport failures. The UI renders only the returned fixture catalogue.
+- **R3:** Release and draft selections retain the exact handoff IDs, revisions, response contract and return context. Back resolves explicit `returnTo`, tool/release handoff context, then `/features`; no browser storage or URL payload was added.
+- **R4:** String, number, integer, boolean, enum, bounded string, object and array inputs are schema-rendered and parsed. Required/enum/minimum/maximum/length/type checks reject invalid input before dispatch; edits clear stale output and pending/unknown operations cannot be edited.
+- **R5:** The authenticated route guard and built `/preview` route were verified. A populated authenticated browser workflow remains blocked by the missing local Studio identity; the built route returned `/access-denied` as expected and no live credentials/provider calls were used.
+
+#### Final fixture and focused-test matrix
+
+| Requirement | Fixture/test evidence | Expected and observed effect |
+| --- | --- | --- |
+| Catalogue and scenario selection | `listFixtures` injected fixture and `GET /api/studio/preview/fixtures` contract | Returned IDs/labels populate the UI; unavailable hard-coded IDs are not dispatched. |
+| Start/Send/Cancel duplicate guards | deferred promises in `tests/preview-screen.test.tsx` | One synchronous dispatch; replay/check uses the exact original ID and frozen payload; Cancel remains tied to that ID through RUNNING. |
+| Unknown reconciliation and stale callback fencing | rejected POST plus same-ID GET; unmount generation test | Input and identity remain visible; GET reconciliation is deduplicated; late responses cannot update the next generation. |
+| Release/draft and return context | selection payload assertions and `returnTo` navigation test | RELEASE carries release ID; DRAFT carries exact revision/contract data; Back restores the originating destination or `/features`. |
+| Typed arguments and zero-side-effect validation | number/boolean/enum/object/array test with out-of-range value | Invalid input makes zero `runToolTest` calls; valid values arrive as typed `{ count: 2, enabled: true, kind: 'linen', metadata: {}, tags: [] }`. |
+| Preview contract regression suite | five focused preview test files | 5 files, 46 tests passed. |
+
+#### Final validation
+
+- `npm test -- --run tests/preview-screen.test.tsx`: **9 tests passed**.
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: **5 files, 46 tests passed**.
+- `npm run typecheck`: **passed** (`next typegen` and `tsc --noEmit`).
+- `npm run lint`: **passed** (`eslint .`).
+- `npm run build`: **passed** (`prisma generate` and `next build --webpack`; `/preview` and preview API routes compiled).
+- `git diff --check`: **passed**.
+
+#### Browser/live limitation
+
+`PORT=3318 npm run start` served the validated build during Attempt 2 and `/preview` redirected to `/access-denied` with the expected auth guard. No local Studio identity is provisioned for this worktree, so populated authenticated desktop/narrow/keyboard workflows remain developer-owned pending that prerequisite. No live database, Shopify, MCP, model, WhatsApp, billing or customer transcript was used.
+
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+Implementation: `src/studio/preview/client.ts`, `src/studio/preview/preview-screen.tsx`, `tests/preview-screen.test.tsx`.
 
 ### Work Completed
 
-None; task definition only.
+Attempt 2 correction checklist and focused validation completed. Authenticated populated browser evidence remains explicitly pending the developer-owned Studio identity prerequisite.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+See the Submitted Attempt 2 Report and the final validation update above for exact commands, results, fixture matrix, worktree/dependency evidence and the developer-owned browser limitation.
 
 ### Deviations
 
@@ -246,7 +325,7 @@ None newly reported.
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`, implementation commit `2ec7f661bd56ca44e1fdbed8d30a05f48fd78d59`, pushed to `origin/task/ARCH-020-COMMERCE-017`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`, Attempt 2 implementation commit `74a848ad7cebfe39524f12a3a657167cde864f4c`, pushed to `origin/task/ARCH-020-COMMERCE-017`.
 Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`, parent claim base `a5f59b22d0dca79cfeb4785e449ea45c29b55a4d`.
 Dependency evidence: implementation repository consumed the accepted `origin/main` source at `19b1dc03b317c6d36a504469627a2bb0f8ec64d6`; recursive database submodule was initialized at `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`).
 This report is the only parent-workspace change. No domain index, architecture document, other task, service gitlink or `main` branch was modified. Generated Next.js `AGENTS.md` and `CLAUDE.md` files were removed and not committed.
