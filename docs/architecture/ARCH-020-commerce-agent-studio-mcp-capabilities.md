@@ -1031,3 +1031,15 @@ pairing. No further coverage-only correction is required for this acceptance.
 Gateway002, Commerce012 and terminal system tests retain other dependencies;
 no dependent is promoted or launched. Developer integration remains separate;
 ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
+
+
+## COMMERCE-009 Attempt 1 review — 2026-09-21
+
+Current decision: Ready, Attempt1 retained, claim clear; Changes Requested.
+Reviewedfa795af /4081872. Four submitted focused tests pass; four independent
+review cases fail: duplicate creation, accepted turn21, repeated tool execution,
+and rejected canonical saved revision ID. R1–R4 specify actual Shared runner
+execution, task-owned atomic Redis/budgets, persisted tool-test replay/status,
+and strict canonical route contracts. C19 defers saved-bundle composition to013,
+not009's Redis/runner responsibilities. No UI work, live provider run, promotion,
+new claim, main merge or gitlink update. See canonical task for exact corrections.

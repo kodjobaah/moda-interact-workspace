@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 130
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -226,6 +226,51 @@ None newly reported.
   was performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 1 — 2026-09-21
+
+**Current decision: Ready, Attempt 1 retained, executor/claimed_at null; not accepted.** Reviewed implementation `fa795af310d0df76a1553e4adb7d77dbe6c7b149` and report `4081872461747617aa103e222456262dd7ff0443`. Remote task heads verified and dedicated worktrees clean. No new claim, implementation edits, dependent promotion or main integration.
+
+Independently ran the submitted focused suite: **4/4 passed**. Isolated harness `/tmp/c009-review/preview-review.test.ts` imports the committed service/schemas and extends the submitted fixtures: **4 original tests pass; 4 added review tests fail**. Two concurrent same-ID creations both return201; turn21 is accepted; matching tool-test replay executes twice; canonical saved CUID-style revision identity is rejected. Diff check passed. Lint/typecheck/build and full72-pass/one-readiness-failure remain submitted evidence, not independently rerun. The readiness failure is not the acceptance blocker. No live Redis/model/provider or database operation was run.
+
+#### R1 — P1 — Implement the actual Shared-runner preview lifecycle
+
+Assigned location: `src/commerce/preview/` per C19, moving current `lib/preview/{types,service,runtime}.ts` responsibilities there; a compatibility re-export is fine. `PreviewBundle` currently contains unknown grant/manifest values and execute ignores both, returning fixture-prefixed user text or unchanged user text for MODEL. There is no Shared runner invocation, C16 final validation, tool dispatch, model call or C6.2 language behavior. Environment-variable presence must not turn an echo into a reported completed model preview.
+
+Define PreviewBundleLoader with accepted Shared grant/manifest types exactly as C19; validate and freeze both plus synthetic fixture state at creation. Execute through accepted `runCommerceTurn` with the frozen prompts, response definition/hash, grant and tool descriptors. Fixture mode uses deterministic scripted model/tool adapters, with no paid model or live provider; explicit MODEL uses a separately injected configured model transport and preview-only credentials, never Background fallback. Missing adapters/config produce503 UNAVAILABLE before admission/dispatch as applicable.013 owns real saved-bundle loading and actual interpreter/provider composition;009 still owns runner lifecycle and its controlled fixtures.
+
+Propagate one cancellation signal through each model/tool step, validate bounded final/trace results, record redacted preview telemetry using the accepted shared logging/observability infrastructure, and never invoke WhatsApp or production grants/transcripts. Async dispatch must durably record RUNNING before execution; first run POST returns202 status, polling observes terminal state. Crashed ownership becomes UNKNOWN, never a completed echo. Provide fake-clock/barrier P04/P05 fixtures: French/English language rules, frozen later-publication independence, C16 valid/invalid final details and hash, fixture0 paid calls, explicit model mock1 call, model failure/cancel with no retry/fallback. No live paid/provider execution is required.
+
+#### R2 — P1 — Own atomic Redis state, limits and cancellation as C19 requires
+
+Files: `src/commerce/preview/store.ts`, Redis adapter, lifecycle service and focused store/runner tests. The existing store has separate get/put calls, keys only admin/id (no environment), mutable read references and no atomic claim/quota operations. C19 explicitly assigns Redis state/budgets to009; it does not transfer them to013. Correct the report's contrary deviation. The unavailable loader is permitted; an in-memory production state factory is not the required distributed lifecycle implementation.
+
+Expose atomic create/replay, run reservation, completion/cancel and quota transitions in the state port; implement Redis operations with atomic scripts/transactions and inject a controlled Redis transport for tests. Provide a detached in-memory equivalent in test fixtures only. Use environment/admin/conversation/run identity. Check canonical payload hash with Shared canonicalJson (not JSON.stringify property order), same-ID replay BEFORE busy/quota, then atomic conversation lock and budget reservation. Matching concurrent creation returns one201 plus replay200 and freezes one winner bundle; changed identity/payload conflicts without overwriting state. Two service instances must share the same atomic test store.
+
+Implement C9's20 dispatched-turn limit,32,000-character completed history/input reservation,10 model turns/admin/rolling hour,1 model run/admin and2 platform-wide. Reject before dispatch with exact409/429 statuses and zero side effects. Failed/cancelled/unknown dispatched runs count; rejected requests do not. Store assistant and user text only for completed turns; do not push pending input into completed history. Bound completion before append, never truncate. Retain run/result/dedupe24h, expire crashed in-flight slots120s, and keep UNKNOWN conversations blocked until Reset. Cancellation is a distributed request checked by the owning runner; acknowledge only when stopped, preserve completed-wins-late-cancel, and never clear a newer owner's lock via unconditional finish. Reset does not refund or bypass old-call quotas. Missing Redis fails closed for model execution.
+
+Permanent tests: the concurrent-creation and21st-turn reproductions; same-run replay/changed payload; two distinct runs racing one conversation; separate-admin/platform quota boundaries; canonical key-order equivalence;120s/24h exact boundaries; cancel/complete race; crash UNKNOWN; stale completion fencing; no quota refund/automatic retry. Use barriers, two instances and effect counts, not sequential get/put fixtures. Real deployment validation can remain separately unrun, but implementation of these owned operations cannot be deferred.
+
+#### R3 — P1 — Persist and replay tool tests; implement their GET route
+
+Files: lifecycle/store, `app/api/studio/preview/tool-tests/route.ts`, `app/api/studio/preview/tool-tests/[runId]/route.ts`. runToolTest directly calls the optional loader method on every submission and never stores a run. GET unconditionally returns NOT_FOUND. Reproduction submits the same run ID and payload twice: execution count2, expected1. This breaks C9.1/U14 even with injected fixtures.
+
+Use the same environment/admin/run namespace, canonical hash, atomic claim and24h retention as conversation runs, including cross-kind ID conflicts. Recheck current admin/revision access; load and freeze the exact authorized saved revision, validate arguments against its accepted schema, then invoke only fixture tool execution. Persist bounded {previewRunId,status,result}; repeated same input recovers it without executing again, changed input returns409 ID_CONFLICT, wrong owner/expired returns404. Implement GET from retained state. Tool tests never invoke a model or consume paid-model quota. Loader's exact C19 load return remains {grant,manifest}; inject a separate typed fixture tool execution port rather than using an unvalidated optional loader method as a shortcut.
+
+Tests: POST -> GET -> matching replay with execution1, concurrent duplicate1, changed arguments conflict0 extra, different admin404, invalid arguments0 execution, expiry404, <=64KiB result bound and no model/provider/WhatsApp calls.
+
+#### R4 — P1 — Correct saved IDs, C16 validation and HTTP contract tests
+
+Files: preview schemas/http and every C9.1 route; add executable route tests. Preview conversation/run IDs are UUIDs; saved release/tool/capability revision IDs are canonical database IDs, not UUID-only. The submitted selection/tool-test schemas reject valid saved CUID-style IDs such as `cmflq1234000008l79abc1234`. Reuse accepted Shared identity bounds/types for saved IDs, keep UUID validation for preview IDs, and perform saved ownership/access checks through the loader. DRAFT responseContract must use full accepted C16 schema; z.unknown is not validation. Validate loaded Shared limits and unique selected membership before freezing.
+
+Bound body reading before unbounded JSON accumulation and enforce serialized result<=64KiB. Use the exact C9.1 bounded {code} mappings for unexpected loader/store/runner failures as well as known errors; don't rethrow arbitrary exceptions as uncontrolled500 responses. The run POST currently discards result on replay; first acceptance returns202 {previewRunId,status}, matching replay returns200 existing status/result as C9.1 specifies. Keep active-admin and cross-owner checks on every method/status/cancel; ensure body/path inputs are strict. Keep fixture catalogue and model mode distinctions per C6.2/C9 rather than claiming four labels cover all named status/language outcomes.
+
+Route tests must invoke actual handlers with injected service/transport: unauthorized/revoked, saved non-UUID identity, malformed and extra keys, unsupported response contract, oversized streamed body/result, cross-owner status/cancel, first/replay/conflict HTTP statuses, tool-test retrieval, and bounded503 on infrastructure failure. Assert zero execution/budget on rejected input. Use correct release and revision fixtures, not `{grant:{id:'grant'},manifest:{version:'fixture'}}` placeholders as accepted bundles.
+
+### Evidence and resubmission gate
+
+Implement R1–R4 within009's owned backend paths; do not implement017 screens or013 saved-source adapters. Publish typed ports with validated success/failure examples so017/013 can consume them without guessing. Replace the report's unsupported Redis/lifecycle deferral and map P01–P05 to actual tests with reserve/model/tool/history/result effects. Record preparation synchronization and nested dependency pin evidence, passing focused/type/lint/build/diff checks, and the full-suite baseline limitation accurately. No task-count minimum or live provider/Redis run is added. Commit/push the same implementation/report branches and resubmit for review. This parent overlay is published before handoff; normal preparation owns the next claim.
+
 
 ### Review Status
 

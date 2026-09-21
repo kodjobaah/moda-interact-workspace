@@ -34,3 +34,15 @@ worktree status remains authoritative. No task was claimed by this amendment.
 2026-09-21 C19 split:004 transport/014 executor,005 queries/015 basket-products,
 006 rule reader/016 evaluator,009 backend/017 U14 frontend.013 owns real pairing.
 006/009/015 are newly Ready from accepted prerequisites; no task was launched.
+
+
+## COMMERCE-009 Attempt 1 review — 2026-09-21
+
+Current decision: Ready, Attempt1 retained, claim clear; Changes Requested.
+Reviewedfa795af /4081872. Four submitted focused tests pass; four independent
+review cases fail: duplicate creation, accepted turn21, repeated tool execution,
+and rejected canonical saved revision ID. R1–R4 specify actual Shared runner
+execution, task-owned atomic Redis/budgets, persisted tool-test replay/status,
+and strict canonical route contracts. C19 defers saved-bundle composition to013,
+not009's Redis/runner responsibilities. No UI work, live provider run, promotion,
+new claim, main merge or gitlink update. See canonical task for exact corrections.

@@ -621,3 +621,15 @@ U14 only;013 assembles real frontend/backend services after component acceptance
 The25-task graph is reciprocal and acyclic. Active task worktrees remain
 authoritative; the concurrently integrated BACKGROUND-002 Attempt4 acceptance
 is preserved. No task is launched by this definition update.
+
+
+## COMMERCE-009 Attempt 1 review — 2026-09-21
+
+Current decision: Ready, Attempt1 retained, claim clear; Changes Requested.
+Reviewedfa795af /4081872. Four submitted focused tests pass; four independent
+review cases fail: duplicate creation, accepted turn21, repeated tool execution,
+and rejected canonical saved revision ID. R1–R4 specify actual Shared runner
+execution, task-owned atomic Redis/budgets, persisted tool-test replay/status,
+and strict canonical route contracts. C19 defers saved-bundle composition to013,
+not009's Redis/runner responsibilities. No UI work, live provider run, promotion,
+new claim, main merge or gitlink update. See canonical task for exact corrections.
