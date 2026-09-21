@@ -65,11 +65,11 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Normalize accepted CheckoutRecovery.lineItems into C4 basket; every supported source shape has an explicit fixture, unknown/missing source remains unknown, never a fabricated basket.
-- [ ] Implement bounded current product/variant search, decimal maximumPrice, availability/market/currency and safe shop URLs using privileged installation credentials only in these policy adapters.
-- [ ] Bind opaque cursors to shop/query/expiry; cap20 variants/page,3 pages and common12-request/deadline budget. Deny wrong-shop IDs before provider I/O.
-- [ ] Expose C19 ProductFactsPort.readVariants for exact proposal variants/collection membership; carry explicit unknowns/completeness for016/007. Never calculate discounts.
-- [ ] Export operation descriptors with executable adapters and test request construction.013 registers them through014; no bespoke MCP endpoints or public-query compiler.
+- [x] Normalize accepted CheckoutRecovery.lineItems into C4 basket; every supported source shape has an explicit fixture, unknown/missing source remains unknown, never a fabricated basket.
+- [x] Implement bounded current product/variant search, decimal maximumPrice, availability/market/currency and safe shop URLs using privileged installation credentials only in these policy adapters.
+- [x] Bind opaque cursors to shop/query/expiry; cap20 variants/page,3 pages and common12-request/deadline budget. Deny wrong-shop IDs before provider I/O.
+- [x] Expose C19 ProductFactsPort.readVariants for exact proposal variants/collection membership; carry explicit unknowns/completeness for016/007. Never calculate discounts.
+- [x] Export operation descriptors with executable adapters and test request construction.013 registers them through014; no bespoke MCP endpoints or public-query compiler.
 
 ## Interfaces / Contracts
 
@@ -95,10 +95,10 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] B01: each recovery snapshot source shape maps to strict Shared basket; zero lines/unknown prices are not live or free-basket facts.
-- [ ] B02: search filters unavailable/unknown/market/currency cases and preserves decimal prices; cursors reject tampering/cross-shop/expiry.
-- [ ] B03: exact variant/collection fact reads distinguish complete from partial results, including missing variant and provider failures; output is stable by variantId.
-- [ ] B04: tenant checks, throttle/timeout/cancel and nested request ceiling have measured call counts; no provider mutation or credential leakage.
+- [x] B01: each recovery snapshot source shape maps to strict Shared basket; zero lines/unknown prices are not live or free-basket facts.
+- [x] B02: search filters unavailable/unknown/market/currency cases and preserves decimal prices; cursors reject tampering/cross-shop/expiry.
+- [x] B03: exact variant/collection fact reads distinguish complete from partial results, including missing variant and provider failures; output is stable by variantId.
+- [x] B04: tenant checks, throttle/timeout/cancel and nested request ceiling have measured call counts; no provider mutation or credential leakage.
 
 ## Validation
 
