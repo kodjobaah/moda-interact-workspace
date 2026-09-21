@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 100
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-001
@@ -253,6 +253,38 @@ architecture/index file, or `main` branch was updated.
 - Developer-owned pending validation: approved live/pre-production Shopify Admin API check against a test shop using the pinned 2026-07 schema and granted scopes. No credentials or live endpoints were inspected or used by the agent.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready, Attempt 2 retained, executor/claimed_at null; not accepted.** Reviewed implementation `724875d3913207c583fc7f783c91379db5014ec9` and report `2000bccb5198dd86fcdd91ccc0c23385573d883f`. Clean dedicated worktrees and matching remote heads verified. The correction commit changes four discount-owned files; publication files in the wider branch diff arrived through synchronization and are not discount corrections. This decision supersedes earlier current-state wording, preserving history. No implementation edits, dependent promotions, next claim or main integration.
+
+Retain the working improvements: AI reads, FIXED result identity checks, explicit minimum/status/restriction completeness flags, target-count and reason-code caps, typed budget errors and page-ceiling truncation. Independent isolated review ran the 16 submitted reader tests successfully. Five additional functional checks failed as follows; these remain original R1–R3 requirements rather than new scope.
+
+#### A2-R1 — P1 — Deny NONE rule reads before provider I/O
+
+`reader.ts:163` calls `authorized(policy, policy.mode, offerId)`. For NONE the mode equality is trivially true and the FIXED-only identity condition is bypassed. With NONE policy and a valid provider fixture, `read` returns an OK snapshot and reserves/calls the provider. C19 requires DENIED with zero provider calls. Use an explicit permitted-mode decision: NONE denied, FIXED only its configured ID, AI permitted. Preserve the working AI/FIXED regressions and add a NONE read regression (the existing NONE test covers listing only).
+
+#### A2-R2 — P1 — Correct decimal fraction-to-percentage conversion
+
+`reader.ts:47` splits the stripped digits two places from the end whenever the source has at least two fractional digits. This does not multiply the original decimal by100: `0.25` returns `0.25` instead of `25`, and `0.125` returns `1.25` instead of `12.5`. Both wrong values are exposed as supported facts to COMMERCE-016. The single `0.1 -> 10` fixture masks the issue.
+
+Implement exact decimal multiplication by100 using the original decimal scale, retaining canonical decimal output and no floating-point rounding. Add the two demonstrated conversions alongside the existing case and supported range boundaries. This is normalization, not discount calculation.
+
+#### A2-R3 — P1 — Deliver executable list and fixed-ID query documents
+
+`reader.ts:193` exports a list document that fails the GraphQL parser with `Syntax Error: Unexpected Name "pageInfo"` at line3,column1423 due to malformed selection nesting. It cannot execute against any Shopify schema. The new fixed-ID document at line195 selects only id/__typename, so it also does not provide the rule fields promised by the reader/support matrix. Text substring assertions do not establish query correctness.
+
+Repair selection nesting and use the actual pinned node/discount wrapper and type structure for both list and ID retrieval. Validate both complete documents with a GraphQL parser and against the pinned Admin schema, including fragment applicability, item/collection field ownership and pagination arguments. Reuse the normalized-field selection/mapping for fixed-ID retrieval or document an explicit bounded follow-up that actually obtains those facts. Keep missing restrictions/semantics unknown or unsupported. Update the support matrix with actual query/schema evidence; no live Shopify call or COMMERCE-013 provider assembly is requested.
+
+#### A2-R4 — P2 — Enforce positive canonical fixed amounts
+
+`POSITIVE_DECIMAL` at reader.ts:9 accepts `0.00` (and leading-zero forms), so a fully known BASIC_FIXED fixture with amount='0.00', currency='USD', appliesOnEachItem=true is returned SUPPORTED. C19 requires a canonical amount strictly greater than zero. Validate canonical syntax and positivity together; zero must not become a supported discount. Preserve valid positive fractional amounts and apply the appropriate C19 rule separately for subtotal minima. Retain the prior malformed-value regression and add the demonstrated zero case.
+
+#### Validation and resubmission
+
+Isolated harness `/tmp/c006-a2-review/review.test.ts` uses copies of exact committed reader/types and the submitted tests: **16 submitted tests passed; 5 review checks failed** (NONE read, two fraction conversions, zero fixed amount, query parsing). The exact failing inputs/outputs are recorded above. GraphQL parsing used the installed GraphQL implementation from the existing COMMERCE-011 worktree; this was syntax validation, not a claim of full provider-schema validation. Diff whitespace check passed. Submitted 18 focused / 111 full tests, typecheck/lint/build/Prisma generation remain reported evidence, not independently rerun in full.
+
+Correct A2-R1–A2-R4 on the same branch pair and resubmit focused behavioral results plus required checks. Preserve the narrowed C19 ownership and working prior corrections. Live Shopify remains developer-owned and is not the blocker. No dependent task is promoted. Distinguish the historical Attempt1 validation/VCS section from the current Attempt2 correction report when updating evidence.
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 

@@ -720,7 +720,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | ready | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Implement basket and product discovery tools | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
-| [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
+| [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Read merchant discount policy and normalise Shopify rules | moda_commerce | ready | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
 | [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
@@ -1081,3 +1081,16 @@ or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
 without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
+
+## COMMERCE-006 Attempt 2 review — 2026-09-21
+
+COMMERCE-006 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `724875d` and report `2000bccb`; dedicated worktrees clean
+and remote heads matched. Working AI/FIXED, completeness, budget and pagination
+improvements are retained. Corrections remain for NONE read denial, exact
+fraction-to-percentage conversion, executable list/ID query documents and positive
+canonical fixed amounts. Independent checks: 16 submitted reader tests passed;
+five functional reproductions failed. See the latest task Architect Review.
+Live Shopify remains developer-owned and is not the blocker. No dependent
+promotion or main integration. This supersedes prior COMMERCE-006 current-state
+wording; the narrowed C19 reader-only scope remains authoritative.

@@ -400,7 +400,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-003 | commerce | complete | 4 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-004 | commerce | ready | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
-| ARCH-020-COMMERCE-006 | commerce | ready | 1 | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
+| ARCH-020-COMMERCE-006 | commerce | ready | 2 | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
 | ARCH-020-COMMERCE-008 | commerce | pending | 0 | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
@@ -683,3 +683,16 @@ See the latest task Architect Review for concrete inputs and correction scope.
 Live provider validation remains developer-owned and is not the review blocker.
 No dependent promotion or main integration. This note supersedes older
 COMMERCE-006 current-state wording; the narrowed C19 reader-only scope applies.
+
+## COMMERCE-006 Attempt 2 review — 2026-09-21
+
+COMMERCE-006 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `724875d` and report `2000bccb`; dedicated worktrees clean
+and remote heads matched. Working AI/FIXED, completeness, budget and pagination
+improvements are retained. Corrections remain for NONE read denial, exact
+fraction-to-percentage conversion, executable list/ID query documents and positive
+canonical fixed amounts. Independent checks: 16 submitted reader tests passed;
+five functional reproductions failed. See the latest task Architect Review.
+Live Shopify remains developer-owned and is not the blocker. No dependent
+promotion or main integration. This supersedes prior COMMERCE-006 current-state
+wording; the narrowed C19 reader-only scope remains authoritative.
