@@ -719,7 +719,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | complete | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | complete | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | ready | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
+| [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | complete | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
 | [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
@@ -1263,3 +1263,39 @@ architect regressions3/3 pass.007 promoted to Ready because015/016 are Complete;
 attempt0/claim unchanged, no execution.012/013/system-test retain other unmet
 prerequisites. Live integration and reader baseline limitation remain separate.
 No implementation changes, main integration or gitlink update.
+
+## COMMERCE-005 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt2 retained, claim clear; not accepted.
+Reviewed2761e6b/e4fc15cd. Seven submitted tests pass; two task-owned review cases
+fail: populated list selection validation and blocked stream cancellation.
+A2-R1–R3 give exact recursion fix, active body cleanup and C14 UNAVAILABLE mapping
+for provider-version fallback. Retain variable validation/HTTP envelope/deadline
+race improvements. No scope expansion, promotion, new claim, main merge or gitlink
+change. See task for exact acceptance effects; live provider validation is separate.
+
+
+## COMMERCE-005 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
+Reviewed6b2c410/4b681aa1. List recursion and provider-version/redirect fixes verified.
+Eleven submitted tests pass; two cleanup cases fail: awaited rejected-body cancel
+exceeds deadline and pending AsyncIterable read is not interrupted. A3-R1 gives
+bounded cleanup and a minimal ReadableStream/Uint8Array-only contract correction.
+No new scope, downstream promotion, claim, main merge or gitlink update. See task
+for exact effects; live provider and baseline validation remain separate.
+
+## COMMERCE-005 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-005 is **Accepted / Complete, Attempt 4 retained**, claim cleared.
+Reviewed implementation `f099659` and report `e5662be5` against remote heads.
+A3-R1 is resolved: rejected/late body cleanup no longer delays typed responses;
+cleanup rejections are observed; only Uint8Array/ReadableStream bodies are supported,
+and unsupported iterators are rejected without consumption. Existing stream and
+query corrections remain. Independent13 focused tests and the prior pending-cleanup
+reproduction passed; diff checks passed. Typecheck/lint/build and full272/275 are
+submitted evidence; baseline failures do not block this component acceptance.
+013 owns real transport composition; live Shopify/provider validation remains
+pending. No dependent promotion, new claim, main integration or gitlink update.
+012 remains the final implementation checkpoint; architecture is not yet Implemented.
+This supersedes older005 current-state wording while preserving review history.

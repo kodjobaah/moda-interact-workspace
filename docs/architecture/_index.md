@@ -231,3 +231,17 @@ budget boundaries are retained. No implementation edits, next claim, main merge,
 gitlink update or dependent promotion.007 remains gated by016;013 and012 retain
 their remaining gates. Live provider composition remains separate integration work.
 Older readiness wording is historical; architecture is not yet Implemented.
+## COMMERCE-005 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-005 is **Accepted / Complete, Attempt 4 retained**, claim cleared.
+Reviewed implementation `f099659` and report `e5662be5` against remote heads.
+A3-R1 is resolved: rejected/late body cleanup no longer delays typed responses;
+cleanup rejections are observed; only Uint8Array/ReadableStream bodies are supported,
+and unsupported iterators are rejected without consumption. Existing stream and
+query corrections remain. Independent13 focused tests and the prior pending-cleanup
+reproduction passed; diff checks passed. Typecheck/lint/build and full272/275 are
+submitted evidence; baseline failures do not block this component acceptance.
+013 owns real transport composition; live Shopify/provider validation remains
+pending. No dependent promotion, new claim, main integration or gitlink update.
+012 remains the final implementation checkpoint; architecture is not yet Implemented.
+This supersedes older005 current-state wording while preserving review history.
