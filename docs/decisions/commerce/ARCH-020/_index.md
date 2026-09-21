@@ -14,7 +14,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-004](COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Authenticate MCP requests and resolve immutable grants | complete | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-005](COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | complete | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Read merchant discount policy and normalise Shopify rules | complete | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
-| [ARCH-020-COMMERCE-007](COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | pending | ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-015 |
+| [ARCH-020-COMMERCE-007](COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | ready | ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-015 |
 | [ARCH-020-COMMERCE-008](COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | ready | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Implement isolated preview lifecycle and execution service | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001, ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-010](COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
@@ -219,6 +219,30 @@ still the final implementation checkpoint. No implementation changes, main merge
 main push or gitlink update. Architecture is not yet Implemented. This supersedes
 older008 state wording while retaining historical reviews.
 
+## COMMERCE-016 Attempt 1 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt 1 retained, claim cleared; not accepted.
+Reviewed implementation `bfbd7839` and report `f96b41df` against remote task heads.
+Independent submitted contract suites passed50/50; three isolated functional
+reproductions fail: unknown current basket variant facts still qualify, a LINE
+rounding cap understates100% savings, and mixed-currency proposal amounts produce
+a false known subtotal failure. R1–R3 give explicit evaluator corrections and
+expected outputs in the task report. Pure arithmetic/Shared evidence and shared
+budget boundaries are retained. No implementation edits, next claim, main merge,
+gitlink update or dependent promotion.007 remains gated by016;013 and012 retain
+their remaining gates. Live provider composition remains separate integration work.
+Older readiness wording is historical; architecture is not yet Implemented.
+
+
+## COMMERCE-016 Attempt 2 accepted — 2026-09-21
+
+Complete, architect accepted; Attempt2 retained, claim clear. Reviewed55204ec /
+dc9edf85. Current-fact checks, consistent LINE/TOTAL savings caps and comparable
+currency minimum precedence accepted. Independent evaluator15/15 and previous
+architect regressions3/3 pass.007 promoted to Ready because015/016 are Complete;
+attempt0/claim unchanged, no execution.012/013/system-test retain other unmet
+prerequisites. Live integration and reader baseline limitation remain separate.
+No implementation changes, main integration or gitlink update.
 
 ## COMMERCE-005 Attempt 2 architect review — 2026-09-21
 
