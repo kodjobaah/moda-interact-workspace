@@ -437,3 +437,50 @@ cleanup failure, arbitrary SQL-error masking, replay assertion and worker-teardo
 corrections. Preserve passing component code. PostgreSQL execution remains
 explicitly developer-owned/unrun;013 composition remains separate. This is the
 latest decision. No downstream promotion, new claim, main merge or gitlink edit.
+
+## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 1, claim cleared; not accepted. Reviewed a7ccac5 /
+ffcc0461. R1 wired strict C18 extractor; R2 digest/provenance/freshness/matching;
+R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
+three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
+are required; live producer pairing stays terminal-system-test-owned. See the
+canonical task's explicit correction steps. No new claim or downstream promotion.
+
+
+## BACKGROUND-002 Attempt 2 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 2, claim cleared; not accepted. Reviewed implementation
+55ac8b2 / report5802e25; 78 focused tests independently pass. Strict extraction and
+digest/provenance corrections are present. Remaining A2-R1: unusable final evidence
+must produce C18's admitted referral, not INVALID_FINAL; A2-R2: unconditional
+post-refresh cancellation/admission checks (ordinary-Error cancellation reproduced
+a deliverable referral); A2-R3: complete the canonical EC01–EC12 tests and correct
+overstated report mappings/results. See the task's exact code/location instructions.
+This is the latest decision; prior review entries are historical. No downstream
+promotion or claim; live pairing remains terminal-system-test-owned.
+
+
+## BACKGROUND-002 Attempt 3 review — 2026-09-21
+
+Current decision: Ready, Attempt 3, claim cleared; Changes Requested for remaining
+A2-R3 deterministic validation/report corrections. Reviewed7505ac3 / f409db23.
+A2-R1 referral conversion and A2-R2 cancellation/admission code fixes are verified:
+84 focused tests and the prior failing host cancellation reproduction now pass.
+Canonical two-alternative, independent semantic/error and refresh-pending processor
+cases remain required; exact files/cases/counts are in the task review. Live pairing
+is terminal-owned and is NOT a prerequisite to component acceptance. Prior review
+current-state wording is historical. No downstream promotion, claim or main merge.
+
+## BACKGROUND-002 Attempt 4 — Accepted — 2026-09-21
+
+ARCH-020-BACKGROUND-002 is **Accepted / Complete, Attempt 4**, claim cleared.
+Reviewed implementation `8b2f983` and report `47345f39`; architect independently
+reran **114 passing focused tests**, correcting the reported combined total110.
+Evidence/provenance refresh, trusted referrals and cancellation/admission guards
+conform to the component contract. Latest task review distinguishes registry,
+local MCP transport and injected processor evidence from unrun integrated/live
+pairing. No further coverage-only correction is required for this acceptance.
+Gateway002, Commerce012 and terminal system tests retain other dependencies;
+no dependent is promoted or launched. Developer integration remains separate;
+ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.

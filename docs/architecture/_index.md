@@ -81,3 +81,16 @@ and Changes Requested notes. Other task states remain unchanged. BACKGROUND-002,
 GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
+
+## BACKGROUND-002 Attempt 4 — Accepted — 2026-09-21
+
+ARCH-020-BACKGROUND-002 is **Accepted / Complete, Attempt 4**, claim cleared.
+Reviewed implementation `8b2f983` and report `47345f39`; architect independently
+reran **114 passing focused tests**, correcting the reported combined total110.
+Evidence/provenance refresh, trusted referrals and cancellation/admission guards
+conform to the component contract. Latest task review distinguishes registry,
+local MCP transport and injected processor evidence from unrun integrated/live
+pairing. No further coverage-only correction is required for this acceptance.
+Gateway002, Commerce012 and terminal system tests retain other dependencies;
+no dependent is promoted or launched. Developer integration remains separate;
+ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
