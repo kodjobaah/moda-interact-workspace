@@ -879,3 +879,14 @@ Background-owned, distinct from evaluator eligibility; an external signal gap
 must be handed off honestly, not replaced by an evaluator metric. No acceptance
 or downstream promotion. Redis baseline and hosted arrival are not review blockers;
 the developer-owned final manual system-test gate remains unchanged.
+
+
+### COMMERCE-010 Attempt 3 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `a51eb69`
+and report `27429e6b`. One correction remains: A3-R1 preserves a completed tool's
+DENIED outcome when the JSON-RPC envelope succeeds. The submitted focused suites
+passed 71 tests; prior architect reproductions passed 3/3, while the new denial
+precedence check failed. Other A2 corrections are resolved. No acceptance or
+downstream promotion. External C18 refresh signal/hosted arrival remain explicit
+integration/developer handoffs; baseline failures are not review blockers.

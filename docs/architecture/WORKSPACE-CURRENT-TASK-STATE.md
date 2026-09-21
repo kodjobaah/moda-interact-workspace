@@ -404,7 +404,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
 | ARCH-020-COMMERCE-008 | commerce | ready | 5 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
-| ARCH-020-COMMERCE-010 | commerce | ready | 2 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
+| ARCH-020-COMMERCE-010 | commerce | ready | 3 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | ARCH-020-COMMERCE-011 | commerce | complete | 9 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | complete | 4 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
@@ -1016,3 +1016,14 @@ Background-owned, distinct from evaluator eligibility; an external signal gap
 must be handed off honestly, not replaced by an evaluator metric. No acceptance
 or downstream promotion. Redis baseline and hosted arrival are not review blockers;
 the developer-owned final manual system-test gate remains unchanged.
+
+
+### COMMERCE-010 Attempt 3 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `a51eb69`
+and report `27429e6b`. One correction remains: A3-R1 preserves a completed tool's
+DENIED outcome when the JSON-RPC envelope succeeds. The submitted focused suites
+passed 71 tests; prior architect reproductions passed 3/3, while the new denial
+precedence check failed. Other A2 corrections are resolved. No acceptance or
+downstream promotion. External C18 refresh signal/hosted arrival remain explicit
+integration/developer handoffs; baseline failures are not review blockers.

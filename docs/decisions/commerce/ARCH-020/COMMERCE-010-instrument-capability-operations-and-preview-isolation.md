@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 140
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-004
@@ -209,6 +209,24 @@ Expected execution branch: `task/ARCH-020-COMMERCE-010`.
 
 
 ## Architect Review
+
+### Attempt 3 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `a51eb6917594f27164723d32f8f2f4f3aecd212c` and report `27429e6bf837052b30edfcc4b4a9c100a163eb74`; both submitted heads matched remote and both worktrees were clean. **Changes Requested; Ready, Attempt 3; executor/claim null.** One functional correction remains. Do not reopen the resolved evaluator/render/batch issues or expand this into exhaustive coverage.
+
+#### A3-R1 — Preserve a completed tool's DENIED outcome
+
+File: `src/commerce/mcp/service.ts`, response classification after `boundedResponse()`.
+
+`onToolResult()` correctly sets DENIED for a tool returning `{status:'ERROR', code:'DENIED'}`. The SDK wraps that in a valid JSON-RPC result with `isError:true`. `responseOutcome()` returns SUCCEEDED for that envelope, and the condition `... || outcome === 'DENIED'` overwrites the real business denial. The architect reproduction confirms the client receives an error result while the single request telemetry event says SUCCEEDED. Expected denials must remain visible as denials and excluded from operational failures, rather than being recorded as successes.
+
+Distinguish “no tool callback/result yet” from an actual completed DENIED result. Remove the overloaded DENIED placeholder or track callback completion explicitly. Use protocol classification for protocol/transport failures and requests without a completed tool result; a successful envelope must preserve every terminal tool outcome, including DENIED. Preserve the actual response, one request event, request count, provider attempts and trace context. Add a service regression where the executor returns a typed DENIED result and assert `isError:true` plus exactly one DENIED event. Retain batch/SDK invalid-input and successful/operational tool checks. No additional feature, exporter or infrastructure work is requested.
+
+#### Resolved corrections and validation
+
+A2 evaluator purpose/environment/correlation, fallback render classification and rejected-batch classification now pass the three prior architect reproductions. The provider counter rejects the thirteenth reservation before incrementing; the render classifier distinguishes a renderer-created failure from an upstream-error fallback. Publication has a real throwing-sink fixture. Background-owned C18 refresh is now documented separately from Commerce eligibility, with the external integration gap explicit; that gap and hosted arrival remain pending without requiring another repository's implementation here.
+
+Architect command: `npm test -- tests/mcp-service.test.ts tests/definition-execution.test.ts tests/discount-evaluator.test.ts tests/commerce-lifecycle.test.ts tests/observability.test.ts`: **71/71 passed**. Temporary service harness `/tmp/c010-a3-review/review.test.ts`: **3 passed, 1 failed**, with the sole failure described in A3-R1. Submitted typecheck/lint/build/diff evidence reviewed; no redundant full-suite run. Reported discount-reader timing and Redis baseline failures are not the reason for Changes Requested. No implementation/main change and no dependent promotion. Preserve developer-owned hosted validation and the final manual system-test gate.
 
 ### Attempt 2 — Changes Requested (2026-09-21)
 
