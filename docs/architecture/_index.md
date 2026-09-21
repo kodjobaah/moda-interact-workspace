@@ -520,3 +520,10 @@ fresh/upgrade migration and runtime checks remain unrun and are directly owned
 by this migration task. No acceptance, implementation change, main merge, gitlink
 update or downstream promotion. COMMERCE-020/028 remain gated on their actual
 dependencies; no automatic launch.
+### ARCH-020 COMMERCE-029 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-029 is **Accepted / Complete, Attempt 4** (`f22e2d6`; report `4069f60c`).
+The C21 bounded QuickJS kernel now has accepted compile-only, supervisor-termination,
+cleanup/recovery, packaged artifact and fixed-memory evidence. COMMERCE-026 remains
+Pending because SHARED-002 is not yet Complete; no downstream task is launched and
+ARCH-020 remains In Progress.

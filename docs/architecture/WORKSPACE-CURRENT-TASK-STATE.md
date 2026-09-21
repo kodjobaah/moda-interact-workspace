@@ -1054,11 +1054,11 @@ See [C21](ARCH-020-external-api-tools.md) and handoff for exact interfaces/depen
 
 ## C21 tightened task definitions — 2026-09-21
 
-Extension now has17 tasks. DATABASE-003/SHARED-002/COMMERCE-029 are Ready in this
-workspace snapshot; no task launched.028 credentials,030 publication checks,031
-preview backend and032 availability are separate Pending producers;024 is wiring
-only.026 requires029's accepted runtime proof. C21 section9 and task YAML are
-authoritative; existing execution claims remain untouched.
+Extension has17 tasks. DATABASE-003/SHARED-002 remain Ready; COMMERCE-029 is
+Accepted / Complete at Attempt 4.028 credentials,030 publication checks,031 preview
+backend and032 availability remain separate Pending producers;024 is wiring only.
+026 has cleared its029 prerequisite but still requires SHARED-002 Complete. C21
+section9 and task YAML are authoritative; existing execution claims remain untouched.
 
 ### COMMERCE-013 Attempt 8 architect review — 2026-09-21
 
@@ -1120,3 +1120,11 @@ predecessor fixture. Existing Shop/Admin/tool/tool-revision/grant rows are
 preserved and the C21 database constraints, immutable rows and rollback behaviour
 are proven. DATABASE-003 is Complete. COMMERCE-020/028/012 remain gated by other
 explicit prerequisites, so no dependent is newly launched.
+## COMMERCE-029 Attempt 4 accepted — 2026-09-21
+
+Current state: `ARCH-020-COMMERCE-029` **Complete, Attempt 4**, claims null; reviewed
+implementation `f22e2d6` and report `4069f60c`. Non-executing compile-only validation
+and real supervisor `DEADLINE` termination/recovery close the Attempt 3 functional
+gaps; prior runtime isolation, packaging and fixed-memory proof remains accepted.
+COMMERCE-026 stays Pending because SHARED-002 is Ready, not Complete. No dependent
+promotion or automatic launch; ARCH-020 remains In Progress.

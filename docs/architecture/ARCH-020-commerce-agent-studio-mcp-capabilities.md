@@ -1559,3 +1559,14 @@ state. Fresh and upgrade PostgreSQL rehearsals pass with preservation,
 credential uniqueness/bounds, RESTRICT FK, immutable-row and rollback evidence.
 No dependent task becomes Ready solely from this acceptance; remaining declared
 dependencies continue to gate the frontier.
+## COMMERCE-029 Attempt 4 accepted — 2026-09-21
+
+ARCH-020-COMMERCE-029 is **Accepted / Complete, Attempt 4**. Reviewed implementation
+`f22e2d6` and report `4069f60c`: the reusable C21 sandbox kernel now validates syntax
+through QuickJS compile-only evaluation without running authored top-level code, and
+demonstrates real supervisor termination/recovery with `DEADLINE`. Existing packaged
+artifact, isolation, serialization and fixed-memory evidence is preserved.
+
+No dependent task is newly Ready: COMMERCE-026 still awaits SHARED-002. GATEWAY-003,
+COMMERCE-012 and system validation keep their remaining gates. ARCH-020 remains In
+Progress and no task is launched automatically.
