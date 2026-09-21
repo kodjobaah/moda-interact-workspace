@@ -977,6 +977,42 @@ adapters and integrated U01–U13 acceptance;009, GATEWAY-001,012 and terminal
 system tests depend on013. Component fixtures never become production fallbacks.
 
 
+## COMMERCE-003 Attempt 1 review — 2026-09-21
+
+Current decision: Ready for Changes Requested, Attempt 1, claim cleared; not
+accepted. Reviewed 211b4a3 / 19441950. R1 Shared schemas/canonical hashes;
+R2 immutable ownership/unique release members; R3 complete C17 ports and lifecycle
+component with transactional fixtures; R4 pagination skipping rows. Eight original
+fixture tests passed and four architect regressions failed. Exact correction
+instructions/tests are in the task. C17 fixture acceptance remains permitted;
+013 production composition and developer PostgreSQL rehearsal remain separate.
+No new claim, downstream promotion, main integration or gitlink update.
+
+
+## COMMERCE-003 Attempt 2 review — 2026-09-21
+
+Current decision: Ready, Attempt 2, claim cleared; Changes Requested, not accepted.
+Reviewed d5d7f56 / 6f4359a3. The17 submitted focused tests pass independently;
+three added architect regressions fail (ADMIN draft status injection, scalar
+configuration publication, incompatible release activation). Exact A2-R1–R4
+corrections cover strict command/persistence validation, runtime compatibility,
+canonical Feature/selection ports and executable transaction rehearsal evidence.
+Preserve the working Shared hashes, ownership/membership and cursor fixes.
+See the task for file-level algorithms/tests. This supersedes previous current-state
+wording. C17 component acceptance remains permitted;013 composition and developer
+PostgreSQL execution remain separate. No promotion, claim, main merge or gitlink edit.
+
+
+## COMMERCE-003 Attempt 3 review — 2026-09-21
+
+Current decision: Ready, Attempt3 retained, claim cleared; Changes Requested for
+the remaining rehearsal deliverable. Reviewed ebe612bb /3d58f69f. Strict inputs,
+compatibility and Feature/storage corrections are present;26 focused tests,
+shell syntax and diff checks independently pass. A3-R1 documents immutable-row
+cleanup failure, arbitrary SQL-error masking, replay assertion and worker-teardown
+corrections. Preserve passing component code. PostgreSQL execution remains
+explicitly developer-owned/unrun;013 composition remains separate. This is the
+latest decision. No downstream promotion, new claim, main merge or gitlink edit.
 ### Smaller component scopes — 2026-09-21
 
 C19 splits004 into transport004/execution014,005 into queries005/basket-products015,
@@ -1058,3 +1094,16 @@ Ready (001/011/Shared Complete), with no new claim. Other dependants retain curr
 states because prerequisites remain unresolved. No main merge or gitlink update;
 architecture is not Implemented. This supersedes older COMMERCE-011 current-state
 wording while preserving historical reviews.
+## COMMERCE-003 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-003 is **Complete, architect accepted, Attempt 4 retained**, claim cleared.
+Reviewed implementation `12df0104` and report `4b86771f`. The isolated rehearsal
+now fails closed on unexpected SQL/cleanup errors, identifies its injected
+rollback case, checks audit-backed replay and reaps owned workers. Independently
+passed 26 lifecycle tests, shell syntax, four mock harness scenarios and diff
+checks. Live disposable PostgreSQL execution remains explicitly developer-owned
+and unrun; COMMERCE-013 owns real adapter/integration composition. No main merge
+or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
+without claiming an attempt. Other dependent tasks retain their current states;
+012/013/system-test still have unresolved prerequisites. This acceptance supersedes
+older COMMERCE-003 current-state wording; architecture is not yet Implemented.
