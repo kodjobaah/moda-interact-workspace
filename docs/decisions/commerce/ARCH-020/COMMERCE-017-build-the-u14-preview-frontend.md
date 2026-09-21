@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 135
-executor: copilot
-claimed_at: 2026-09-21T05:26:07Z
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
   - ARCH-020-COMMERCE-008
@@ -461,21 +461,95 @@ transcript and deployment/system pairing remain developer-owned and were not
 contacted. No auth bypass, production fixture substitution or live credential was
 introduced.
 
+### Submitted Attempt 7 Report
+
+Ready for Review. Attempt 7 preserves Attempts 1-6 and implements the complete
+remaining A6-R1 correction from the latest Architect Review. The current review
+decision remains Changes Requested historically; it was not rewritten or
+treated as acceptance.
+
+#### Correction checklist
+
+- **A6-R1 implemented:** `isToolSourceLocked()` is a live synchronous predicate
+  over the frozen conversation ID, pending/uncertain conversation creation,
+  same-ID conversation check, tool POST and tool GET operation refs. `selectTool`
+  consults that predicate at event admission, so a same-React-batch source
+  change after Start cannot replace the source in the frozen payload. Both the
+  top Preview tool source selector and the Tool test selector use the same
+  lock. Known creation failure releases the source; unknown creation retains
+  the original ID/payload for same-ID replay; successful creation freezes the
+  source until confirmed Reset.
+- **Focused regression added:** a deferred A/B tool fixture starts from A,
+  attempts B in the same event turn as Start, rejects the creation as unknown,
+  attempts B through the source control again, checks the same conversation,
+  and verifies exactly one initial request plus one exact-ID/payload replay.
+  The corrected conversation remains selected and Reset remains the lifecycle
+  boundary for a subsequent source change.
+- Prior Attempt 6 draft/saved source cycling, tool POST/GET locking and reset
+  lifecycle corrections remain unchanged.
+
+#### Fixture and request matrix
+
+| Case | Fixture/test | Request count and observed effect |
+| --- | --- | --- |
+| Pending conversation source freeze | Tool A `toolrev_01PUBLISHED`, saved Tool B `toolrev_02SAVED`, deferred `startConversation` | Same-turn source change is rejected; exactly one POST is issued with A's DRAFT/tool revision payload. |
+| Unknown creation replay | Same A/B fixture with rejected creation | B remains unselected; Check same conversation issues exactly one second call with the original `previewConversationId` and payload, not B. |
+| Successful reconciliation freeze | Same deferred fixture resolved with `conversation-1` | Conversation becomes frozen; source remains A until confirmed Reset. |
+| Existing tool operation guard | Attempt 6 deferred Tool A POST/GET fixture | Pending/UNKNOWN source changes remain blocked; same-ID GET resolves before B can be selected; the existing test then dispatches B once with `toolrev_02SAVED`. |
+| Preview contract regression | Six focused preview test files | 6 files, 60 tests passed; client identity/error, route, service, store, Redis and screen contracts remain green. |
+
+#### Agent-executed validation
+
+- `npm test -- --run tests/preview-screen.test.tsx`: **19 tests passed**.
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-client.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: **6 files, 60 tests passed**.
+- `npm run typecheck`: **passed** (`next typegen` and `tsc --noEmit`).
+- `npm run lint`: **passed** (`eslint .`).
+- `npm run build`: **passed** (`prisma generate` and `next build --webpack`); `/preview` and all preview API routes compiled.
+- `git diff --check`: **passed**.
+
+#### Synchronization and dependency evidence
+
+- Attempt 7 used the launcher-prepared mirrored worktrees and existing
+  `task/ARCH-020-COMMERCE-017` branches; no preparation, reclaim, worktree
+  recreation, main operation or dependent-task promotion was performed.
+- Implementation worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`.
+- Parent report worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`.
+- The accepted recursive database submodule pin remains
+  `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no schema, migration,
+  architecture, index, service gitlink or other repository changed.
+- Implementation files changed in Attempt 7 are
+  `src/studio/preview/preview-screen.tsx` and
+  `tests/preview-screen.test.tsx`. The parent change is this task report only.
+
+#### Authenticated browser and live limitations
+
+No authenticated desktop, narrow, keyboard or live browser workflow is
+claimed. The local Studio identity prerequisite remains unprovisioned; the
+existing `/preview` auth guard therefore remains the required boundary and no
+auth bypass was introduced. Component tests use populated injected,
+contract-faithful fixtures and are not authenticated browser evidence. Live
+database/container, Shopify, MCP, model, WhatsApp, billing, customer
+transcript, deployment and system pairing remain developer-owned and were not
+contacted. No production credential, provider call or production fixture was
+used.
+
 ### Status
 
 Ready for Review.
 
 ### Files Changed
 
-Implementation: `app/preview/page.tsx`, `src/studio/preview/client.ts`, `src/studio/preview/preview-screen.tsx`, `tests/preview-client.test.ts`, `tests/preview-screen.test.tsx`.
+Implementation: `src/studio/preview/preview-screen.tsx`, `tests/preview-screen.test.tsx`.
 
 ### Work Completed
 
-Attempt 4 correction checklist A3-R1 through A3-R4 completed in owned files; A3-R5 is recorded as an explicit authenticated local identity limitation. Prior valid work and Architect Review text are preserved.
+Attempt 7 A6-R1 correction completed in owned files; authenticated local identity and live environment limitations are recorded explicitly. Prior valid work and Architect Review text are preserved.
 
 ### Validation Results
 
-See the Submitted Attempt 4 Report above for exact commands/results, fixture matrix, synchronization/dependency evidence and browser/live limitation.
+See the Submitted Attempt 7 Report above for exact commands/results, fixture matrix, synchronization/dependency evidence and browser/live limitation.
 
 ### Deviations
 
@@ -496,7 +570,12 @@ None newly reported.
 
 ### Git / VCS
 
-Implementation commit `bdb753c` (`fix(commerce): close preview source lifecycle gaps`) is published on the mirrored `task/ARCH-020-COMMERCE-017` branches; the parent report commit is the publication commit for this Attempt 5 report. The parent claim commit is `d6faaafa107aefdc317c2d228df28d30405cbafb`. No main branch, service gitlink, domain index, architecture document, other task or other repository was modified.
+Attempt 7 implementation commit `c6da2f2bbb16d28aa469f4ed7d08d42a1d91f6e1`
+(`fix(commerce): freeze preview source during creation`) is published on the
+mirrored implementation task branch. The parent report publication commit is
+created below on the mirrored parent task branch. No main branch, service
+gitlink, domain index, architecture document, other task or other repository
+was modified.
 
 ### Submitted Attempt 6 Report
 
