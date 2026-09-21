@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 105
-executor: codex
-claimed_at: 2026-09-21T03:11:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-006
@@ -64,11 +64,11 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Implement the pure C19 evaluator with injected now and exact decimal/currency metadata; no network/DB access inside arithmetic.
-- [ ] Apply C8 condition precedence, startsAt<=now<endsAt, native supported rule scope, minimum bases/allocation/rounding only where006 evidence proves semantics.
-- [ ] Implement discounts.evaluate orchestration: re-read current policy/rule, load exact basket/proposal facts, enforce NONE/FIXED and caller ownership, and share request budget across adapters.
-- [ ] Generate C4/C18 Evidence/digest/fingerprints/lifetime for exact proposal; UNKNOWN/UNSUPPORTED/unresolved never qualifies. No checkout guarantee or mutation.
-- [ ] Export evaluator for007 and operation adapter for013 registration. Accept rule-reader/product fixtures plus actual pure evaluator tests;013 verifies real reader/provider composition.
+- [x] Implement the pure C19 evaluator with injected now and exact decimal/currency metadata; no network/DB access inside arithmetic.
+- [x] Apply C8 condition precedence, startsAt<=now<endsAt, native supported rule scope, minimum bases/allocation/rounding only where006 evidence proves semantics.
+- [x] Implement discounts.evaluate orchestration: re-read current policy/rule, load exact basket/proposal facts, enforce NONE/FIXED and caller ownership, and share request budget across adapters.
+- [x] Generate C4/C18 Evidence/digest/fingerprints/lifetime for exact proposal; UNKNOWN/UNSUPPORTED/unresolved never qualifies. No checkout guarantee or mutation.
+- [x] Export evaluator for007 and operation adapter for013 registration. Accept rule-reader/product fixtures plus actual pure evaluator tests;013 verifies real reader/provider composition.
 
 ## Interfaces / Contracts
 
@@ -93,11 +93,11 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] V01: percentage/fixed rule matrix includes quantity/subtotal boundaries, product/variant/collection scope and exact decimal rounding/allocation; expected money is explicitly calculated in fixtures.
-- [ ] V02: time/disabled/failure -> nonqualification precedes unsupported/missing facts; unknown semantics and customer/usage restrictions never qualify.
-- [ ] V03: wrong currency, absent variants, partial memberships and stale/changed rules fail closed; exact proposal operation order and fingerprints are preserved.
-- [ ] V04: canonical C18 seed parses; producer evidence lifetime/digest, renamed evaluator, NONE/FIXED and revoked policy cases have zero unauthorized reads.
-- [ ] V05: re-evaluation of changed basket/rule produces changed semantic evidence; provider ceiling includes all nested reads; pure arithmetic makes zero I/O calls.
+- [x] V01: percentage/fixed rule matrix includes quantity/subtotal boundaries, product/variant/collection scope and exact decimal rounding/allocation; expected money is explicitly calculated in fixtures.
+- [x] V02: time/disabled/failure -> nonqualification precedes unsupported/missing facts; unknown semantics and customer/usage restrictions never qualify.
+- [x] V03: wrong currency, absent variants, partial memberships and stale/changed rules fail closed; exact proposal operation order and fingerprints are preserved.
+- [x] V04: canonical C18 seed parses; producer evidence lifetime/digest, renamed evaluator, NONE/FIXED and revoked policy cases have zero unauthorized reads.
+- [x] V05: re-evaluation of changed basket/rule produces changed semantic evidence; provider ceiling includes all nested reads; pure arithmetic makes zero I/O calls.
 
 ## Validation
 
@@ -123,32 +123,96 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+- Implementation commit `bfbd7839503b60e88b17da49f258c84c4e506c76`:
+  - `src/commerce/discounts/evaluator/types.ts`
+  - `src/commerce/discounts/evaluator/evaluator.ts`
+  - `src/commerce/discounts/evaluator/adapter.ts`
+  - `src/commerce/discounts/evaluator/index.ts`
+  - `tests/discount-evaluator.test.ts`
 
 ### Work Completed
 
-None; task definition only.
+- Added the pure `evaluateDiscount` C19 function. It accepts only validated basket,
+  proposal, normalized rule, current variant facts, identities and an injected UTC
+  time; it performs no database, network or clock lookup.
+- Implemented exact decimal arithmetic with `BigInt`, canonical currency minor-unit
+  metadata, HALF_UP/HALF_EVEN/DOWN rounding, LINE/TOTAL rounding points and
+  ACROSS_ELIGIBLE_LINES/PER_ELIGIBLE_ITEM allocation.
+- Applied the C8 precedence chain: disabled/not-started/expired and every provable
+  target/proposal/minimum failure return DOES_NOT_QUALIFY before unsupported rule
+  semantics; unsupported precedes incomplete rule, currency and membership facts.
+- Evaluated ALL/PRODUCT/VARIANT/COLLECTION targets, basket/eligible quantity and
+  subtotal minima, ordered ADD/REPLACE proposals, current availability and exact
+  currency. Missing variants, partial collection membership and contradictions fail
+  closed without a qualifying result.
+- Produced Shared `CommerceEvidence` with the original proposal order, basket/rule
+  fingerprints, positive lifetime capped at60 seconds and offer expiry, and a
+  lowercase SHA-256 digest over canonical C4 JSON excluding `evidenceId`.
+- Added the immutable `discounts.evaluate` version1.0.0 adapter for013. It validates
+  Shared input, re-reads the authorized current rule first, then basket and product
+  facts with the same context/budget, propagates typed failures and performs no later
+  reads after DENIED/NONE/wrong-FIXED/revoked or malformed input.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-executed:
+
+- `npm test -- tests/discount-evaluator.test.ts tests/discount-reader.test.ts tests/products-policy.test.ts`:
+  PASS,3 files /50 tests.
+- `npm run lint`: PASS, zero warnings/errors.
+- `npm run typecheck`: PASS.
+- `npm run build`: PASS; Prisma client generation and Next.js production build completed.
+- `git diff --check`: PASS.
+- `npm test`:253 passed,4 failed outside the changed evaluator/reader/product paths.
+  Existing infrastructure-sensitive failures were two descendant-process timing cases
+  in `readiness-docker.test.ts`, the live Shopify developer-MCP request timeout in
+  `discovery-process.test.ts`, and the configured Redis discovery-limit timeout in
+  `discovery-limits.test.ts`. The focused evaluator dependency matrix passed.
+
+Case/effect matrix:
+
+- V01: percentage10 over USD100 produced savings10.00/result90.00; fixed5 produced
+  5.00/95.00; exact/below subtotal and quantity bounds, all target kinds, USD/JPY,
+  half-up/even/down and per-item allocation assert exact money and outcomes.
+- V02: exact start qualifies, exact end/disabled/minimum/target failure does not;
+  known failure wins over an unsupported family, while unsupported wins over unknown
+  customer/current facts. No unresolved result qualifies.
+- V03: wrong currencies, missing variants, unavailable proposal variants and partial
+  collections fail closed; ADD/REPLACE order is unchanged in evidence and basket/rule
+  changes produce distinct evidence IDs.
+- V04: the canonical C18 seed parses and its published digest recomputes exactly;
+  generated evidence validates against Shared, has a60-second ceiling, and the exact
+  `discounts.evaluate` operation is exported. Malformed and three denied policy cases
+  perform zero basket/product reads.
+- V05: adapter fixtures prove one shared budget object across rule, basket and nested
+  product ports; the accepted015 suite proves its12-request nested ceiling. The pure
+  function has value-only inputs and no I/O dependency. Typed deadline/provider
+  failures stop without fallback or later reads.
+
+Developer/integration validation remains for013's production composition with real
+006/015 readers and provider configuration. No live Shopify, database mutation,
+cart/order write, model or WhatsApp operation was run or claimed.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+None.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+- Existing basket snapshot prices are evaluated as the exact C18 basket snapshot;
+  current015 facts establish variant identity, availability, proposal price/currency
+  and collection membership. Evidence remains a snapshot claim, never a checkout guarantee.
+- Accepted database submodule revision: `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+Production adapter assembly and live provider evidence remain owned by013 and the
+terminal system test. The four broader-suite infrastructure failures above are not
+caused by or located in this task's changed paths.
 
 ### Architectural Concerns
 
@@ -156,7 +220,19 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-016. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+- Task branch: `task/ARCH-020-COMMERCE-016` in both repositories.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-016`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-016`.
+- Shared workspace/implementation checkout switched or mutated: no. Another task
+  worktree reused: no.
+- Start synchronization: parent and implementation remote task fast-forward not
+  needed; both already contained current `origin/main` at launcher preparation.
+- Recursive submodule sync/update: passed. Database pin:
+  `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+- Implementation commit `bfbd7839503b60e88b17da49f258c84c4e506c76` pushed to
+  `origin/task/ARCH-020-COMMERCE-016`.
+- No main merge/push, force push, parent gitlink update or unrelated parent file edit.
 
 ## Architect Review
 
