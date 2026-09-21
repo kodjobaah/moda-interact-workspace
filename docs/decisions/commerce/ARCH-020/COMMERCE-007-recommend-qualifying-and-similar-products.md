@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 110
-executor: copilot
-claimed_at: 2026-09-21T04:16:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-016
@@ -153,23 +153,52 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; implementation has not started.
+Implementation repository files:
+- `src/commerce/products/index.ts`
+- `src/commerce/products/recommendations.ts`
+- `tests/recommendations.test.ts`
 
 ### Work Completed
 
-None; task definition only.
+Implemented the qualifying and similar-product policy operations, deterministic ranking, bounded evaluator processing, currency-safe totals, unavailable-variant filtering, and exact C4 evidence provenance checks. Existing recovery and public product-search operations remain available.
+
+#### Correction checklist
+
+- No separate Architect Review `Changes Requested` items were present; the latest review remained `Pending` with no implementation submitted.
+- C18 shared recommendation outputs and operation descriptors: implemented and wired.
+- C4 exact-call evidence identity for offer, turn, current basket fingerprint, and exact proposal: implemented.
+- C8 deterministic ranking, max-three output, currency/extra-spend disclosure, and evaluator bound: implemented.
+- Qualifying/similar separation and unavailable/cross-currency filtering: implemented.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Focused: `npm test -- --run tests/recommendations.test.ts` -> 6 passed, 0 failed.
+Typecheck: `npm run typecheck` -> passed.
+Lint: `npm run lint` -> passed with 0 warnings/errors.
+Build: `npm run build` -> passed; Prisma client generation and Next.js production build completed.
+Full tests: `npm test` -> 36 test files, 306 passed and 1 failed. The unrelated baseline failure is `tests/discovery-limits.test.ts`, which timed out after 30 seconds in the Redis-backed sequential discovery-limit test; no recommendation tests failed.
+Whitespace: `git diff --check` -> passed.
+
+#### Requirement-to-fixture matrix
+
+| Requirement | Fixture/check | Expected side effect | Result |
+|---|---|---|---|
+| Same inputs produce ordered max-three results | ranking/cap test | stable order and truncation | passed |
+| No match or unsupported qualification | nonqualifying-evidence test | empty alternatives, no invented savings | passed |
+| Missing attributes and unavailable variant | similarity fixture | exclude unknown type/unavailable product | passed |
+| Higher-spend proposal disclosure | ranking fixture | disclose exact extra spend and resulting total | passed |
+| Wrong currency | currency-bound fixture | skip known EUR candidate for USD basket | passed |
+| Provider/evaluator ceiling | 11-candidate fixture | evaluate at most 10 and mark truncated | passed |
+| Changed basket/turn/proposal evidence | provenance fixtures | reject stale or mismatched evidence | passed |
+| Similarity versus qualification separation | similarity fixture | no qualifying label without separate evidence | passed |
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The full-suite Redis-backed discovery timeout remains unrelated to the changed files and recommendation path. No live MCP, deployment, or system-test validation was launched.
 
 ### Assumptions
 
@@ -177,8 +206,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+Developer-owned live/system validation remains pending, including the local MCP sequence and tampered-evidence integration path required by the task validation section.
 
 ### Architectural Concerns
 
@@ -186,7 +214,11 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-007. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Task branch: `task/ARCH-020-COMMERCE-007`, attempt 1; claim cleared for review.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, claim revision `98b876779783fdc49127d182aa73295ea6d8c8bd`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `6821a49` (`feat(commerce): recommend qualifying and similar products`), pushed to `origin/task/ARCH-020-COMMERCE-007`.
+- Recursive database submodule evidence: `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`).
+- No parent service gitlink, main branch integration, or other repository changes were performed.
 
 ## Architect Review
 
