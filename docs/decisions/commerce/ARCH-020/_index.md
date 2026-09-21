@@ -420,3 +420,16 @@ functional defects; pending infrastructure execution alone is not the decision.
 COMMERCE-013 is not accepted and its facade is not frozen. COMMERCE-018/019 stay
 Pending; no downstream promotion. PostgreSQL/Redis/container execution remains
 developer-owned and the final manual system-test gate is unchanged.
+
+
+### COMMERCE-013 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2; executor/claim null.** Reviewed `d432276`
+and report `b506f60d`. A2-R1–R6 specify tokenless bounded transport, complete real
+policy composition, initial resolution/pinned-grant eligibility, normalized
+changed-row persistence/CAS, exact saved-selection/inspection, and a backend
+rehearsal that invokes the adapter. Focused tests: 52 passed. Prior four architect
+reproductions pass; two new functional checks fail (unchanged draft UPDATE and
+missing selection accepted). No acceptance; COMMERCE-018/019 remain Pending.
+Infrastructure execution remains developer-owned; its absence alone does not
+cause this decision. Preserve the final manual system-test gate.

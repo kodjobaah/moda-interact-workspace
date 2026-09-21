@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 125
 executor: null
 claimed_at: null
@@ -320,6 +320,62 @@ be recorded after publication of this report branch. This task is ready for
 architect review; no downstream task was launched.
 
 ## Architect Review
+
+### Attempt 2 — Changes Requested (2026-09-21)
+
+Reviewer: moda_architect. Reviewed implementation `d43227645f002f6ecc794685ef55d35716e85022` and report `b506f60d5be65cd41a5971579758f78f2b97559d`; remote heads match and submitted task worktrees were clean. **Changes Requested; Ready, Attempt 2; executor/claim null.** The four previous adapter reproductions now pass: immutable audit replay, publisher metadata, timestamp precision and invalid template rejection. Preserve those fixes. The following are remaining functional integration defects, not a request for exhaustive tests. COMMERCE-018/019 remain Pending.
+
+#### A2-R1 — Restore the tokenless, bounded Storefront transport
+
+File: `src/commerce/integration/backend.ts:createProductionStorefrontTransport`.
+
+The production transport looks up the installation accessToken and adds `authorization: Bearer ...` to the Storefront request. This violates the accepted005 tokenless boundary. It also calls `response.arrayBuffer()` before returning to005, buffering the entire response before005's bounded body reader can enforce its limit.
+
+Send only the approved tokenless query headers to the validated Storefront host/path. Keep any installation/admission check separate from credential transmission. Return the response stream to005 so its byte limit, cancellation and cleanup remain effective; do not pre-buffer it without the same bound. Keep privileged Admin credentials confined to the accepted privileged provider path, with canonical authentication, response/error validation, redirect restrictions and deadline/budget handling. Add a synthetic fetch-boundary check proving no installation token/authentication header reaches Storefront and an oversized/aborted body is bounded and cleaned up. No live Shopify call is required.
+
+#### A2-R2 — Assemble the complete real policy registry
+
+File: `backend.ts:createProductionPolicyRegistrations` and executable-registry composition.
+
+The production function constructs only `createProductPolicyAdapters` without `recommendation.evaluator`. Its exported operations contain basket/search/recommendations, not `discounts.getOptions` or `discounts.evaluate`. Qualifying recommendations therefore return UNAVAILABLE when they need evaluation. When COMMERCE_CURSOR_SECRET is absent, the code instead registers six dummy UNAVAILABLE adapters, causing publication's registry to advertise unavailable operations as installed.
+
+Construct the accepted006 rule reader/options and016 evaluator with the real basket/product-facts readers and pass that evaluator into007 recommendation composition. Register exact installed operations/versions in one immutable registry shared by publication/execution. Preserve the same trusted context, budget and deadline across nested calls. Do not register placeholder adapters as available: missing mandatory config must fail the appropriate production availability boundary or leave the capability unavailable to publication. Verify a renamed evaluation and qualifying recommendation through the assembled registry with synthetic external provider transport, and verify missing dependencies cannot pass publication availability checks.
+
+#### A2-R3 — Implement initial resolution and current eligibility without expanding pinned grants
+
+File: `backend.ts:createPrismaAuthorizationResolver`.
+
+Without an existing grant, memberRows is empty and manifestValue is null, so the resolver always throws before an initial resolve request can obtain the active release. With a grant, the resolver reconstructs a manifest from every release member and selects every capability, instead of honoring the grant's original selected keys/tool provenance; the accepted manifestMatchesGrant check then rejects legitimate subset grants. Current eligibility only checks capability.enabled and a stored preference. It does not read Feature.active, plan eligibility or recovery-policy association; BASE and RECOVERY_POLICY are treated identically when featureId is null. Limits are hard-coded rather than resolved from current associations, and leaseActive checks only version plus a non-null start timestamp.
+
+Implement separate resolve and execute paths using the existing canonical models. Initial resolve reads the configured environment's active release and selects currently eligible capabilities. Execute uses the persisted grant's exact original selected revisions/tool provenance, then applies current revocation and accepted feature/plan/preference/recovery eligibility without adding capabilities. Resolve lease freshness and association limits from the accepted admission contract, not existence/defaults; do not substitute assertion.checkoutRecoveryId for a missing durable recovery link. Map expected authorization failures to the accepted MCP denial error rather than generic unavailable. Verify initial no-grant resolve, a subset grant after a newer release is published, disabled-feature/plan/recovery exclusion, and stale lease with zero provider calls. These are the concrete B03 admission cases missing from the assembly.
+
+#### A2-R4 — Compare normalized state against its original snapshot and preserve CAS
+
+File: `backend/publication-storage.ts:writeState`.
+
+The loader maps draft contentHash NULL to undefined, but writeState compares it with the raw database NULL. Thus every untouched draft satisfies the “changed” condition and is UPDATEd without incrementing editVersion. The canonical trigger rejects that update; unrelated commands/replays still fail when a draft exists. A recording Prisma reproduction confirmed this exact generated UPDATE. JSON.stringify comparisons can similarly mistake database JSON key order for a semantic change. Re-reading database rows after the callback is not an original before/after change journal.
+
+Normalize nullable/JSON representations consistently and compare the transaction's original state with its final state. Persist only actual owned changes; no-op/replay must issue no writes to drafts, audits, pointers or immutable rows. Keep locked current-version predicates on genuine updates. Verify an untouched tool AND capability draft with NULL contentHash alongside another command/replay, including reordered equivalent JSON. Timestamp read precision is fixed, but transaction.now still uses raw wall-clock milliseconds: ensure metadata changes advance the CAS token even for two writes in the same millisecond, as A1-R3 required. Keep database constraints and atomic rollback intact.
+
+#### A2-R5 — Finish the exact saved-selection and inspection contracts
+
+File: `backend.ts:createPrismaSavedSelection`, result types and `createPrismaInspection`.
+
+The saved adapter accepts a requested missing draft and returns `{kind:'DRAFT',capabilities:[],tools:[]}`; the architect reproduction confirms partial success instead of rejection. Invalid definitions are silently dropped by flatMap. RELEASE reads do not restore release-member position order after findMany, and neither path verifies complete membership/ownership before returning. The locally invented DRAFT input also omits accepted009's responseContract, while the output retains unknown/optional fields and does not compute required draft content hashes. Inspection returns preference rows only, with no candidate manifest, plan/recovery eligibility or exclusion reasons required by U13/C20.
+
+Reuse accepted PreviewSelection parsing and exact bounds/uniqueness/responseContract semantics. Resolve all requested/bound records, reject missing/invalid/conflicting records atomically, preserve release order, and return typed exact definitions/prompts/hashes/responseContract and hash. Do not silently filter invalid definitions or substitute newest revisions. Complete canonical inspection eligibility and candidate-manifest/exclusion output without exposing tokens, customer history or execution definitions. Preserve server-resolved staff reauthorization for each read. Test missing selection rejection, release ordering and a concrete excluded-capability inspection case through the facade.019 still owns conversation-scoped snapshot storage; it must not repair013's incomplete read model.
+
+#### A2-R6 — Make the backend rehearsal exercise the backend implementation
+
+Files: `scripts/rehearse-commerce-backend-postgres.sh`, backend integration tests and mapping/report.
+
+The new shell wrapper invokes the existing003 SQL rehearsal. That script applies migrations and runs SQL fixtures; it never imports PrismaPublicationStorage, CommerceLifecycle or the new facade. It cannot detect the adapter's NULL/editVersion failure above. The new B02/B03-labelled unit test only asserts missing config throws; a scenario label does not demonstrate replay/authenticated execution.
+
+Retain the accepted migration/SQL checks, but add the promised backend database rehearsal that invokes the actual adapter/facade against isolated PostgreSQL and asserts duplicate replay, two-connection CAS races, atomic rollback and publication rows/audits. Supply a runnable command and local composition scenarios for the real query/policy/admission wiring, substituting external transports only. Actual PostgreSQL/Redis/container execution remains developer-owned and may be recorded pending; lack of infrastructure is not itself this review's blocker. Correct the mapping/checklists to describe actual connections and evidence rather than marking these scenarios complete based on component tests.
+
+#### Architect validation and disposition
+
+Reran `npm run test:arch020-backend-integration`: **52/52 passed**. Temporary harness `/tmp/c013-a2-review/review.test.ts` imports actual storage, validator and facade, with a recording Prisma port: **4 passed, 2 failed**. The passing assertions cover the four prior defects; failures are untouched-draft UPDATE and missing-selection success above. This is local adapter evidence, not real PostgreSQL validation. Submitted lint/typecheck/build/static/diff evidence reviewed without redundant reruns. No implementation/main changes, gitlink change or downstream promotion. Preserve developer-owned infrastructure validation and the final manual system-test gate.
 
 ### Attempt 1 — Changes Requested (2026-09-21)
 
