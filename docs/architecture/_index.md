@@ -134,3 +134,16 @@ or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
 without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
+
+## COMMERCE-015 Attempt 2 review — 2026-09-21
+
+COMMERCE-015 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `8793bc2` and report `b791e1c`; clean isolated worktrees
+and matching remote heads verified. Working registry/auth/null-line improvements
+are retained. Remaining corrections: terminal-page continuation, nullable facts
+nodes, historical snapshot currency provenance, and async recovery/nested-provider
+failure handling. Independent checks: 9 submitted tests passed, 5 functional
+reproductions failed. See the latest task Architect Review for exact instructions.
+Reported unrelated baseline failures and pending live validation are not the
+review blockers. No dependent promotion, main merge or gitlink change. This note
+supersedes earlier COMMERCE-015 current-state wording.

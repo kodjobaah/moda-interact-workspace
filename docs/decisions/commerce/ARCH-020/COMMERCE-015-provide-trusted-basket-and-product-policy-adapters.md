@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 95
 executor: null
 claimed_at: null
@@ -182,6 +182,43 @@ None newly reported.
 Implementation commit: `8793bc2393b60dc7d323b6ab4615160ea777d30f`, pushed to `origin/task/ARCH-020-COMMERCE-015`. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-015`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-015`. Both physical worktrees are clean on mirrored `task/ARCH-020-COMMERCE-015` branches. Nested database submodule is clean and pinned at accepted revision `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink, main branch, Architect Review text or enabled task was modified.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready, Attempt 2 retained, executor/claimed_at null; not accepted.** Reviewed implementation `8793bc2393b60dc7d323b6ab4615160ea777d30f` and report `b791e1c506325eaadbdbd6923422c5f7d4f328d3`, with clean dedicated worktrees and matching remote branch heads. No implementation edit, next claim, dependent promotion or main integration. This supersedes earlier current-state wording; historical reviews remain below.
+
+Accepted progress: authorization now covers variant facts; post-provider cancellation is checked; consumed-edge cursors fix the nonterminal-page case; C19 context/input invocation and frozen descriptors work; explicit null line fields and authorized empty snapshots are handled. R4's runtime interface correction is retained. The following remaining failures concern functionality in the existing R1–R5 scope, not exhaustive coverage or live validation.
+
+#### A2-R1 — P1 — Preserve unconsumed edges on the terminal provider page
+
+In searchProducts, continuation is assigned only when pageInfo.hasNextPage is true. That flag means another provider page exists, not that all edges of the current page were consumed. Exact reproduction: limit1, edges [c1/v-1,c2/v-2], hasNextPage=false, endCursor=c2. The adapter returns v-1 and cursor=null, permanently losing v-2. The new test uses hasNextPage=true and misses the original terminal-page failure.
+
+Track the consumed edge index. Return a signed cursor after the last consumed edge whenever either unconsumed current-page edges OR a later provider page remain. Alternatively request no more than remaining output capacity and consume every returned edge, enforcing the provider contract. Preserve filtering and page/request caps. Test the exact two-edge terminal-page case across two invocations and assert both variants are returned once, with a null cursor only after v-2.
+
+#### A2-R2 — P2 — Normalize nullable provider nodes into per-ID missing facts
+
+rawVariantResponseSchema requires every nodes element to be an object. A response `{shop:{currencyCode:'USD'},nodes:[validVariant,null]}` therefore returns UNAVAILABLE for the entire call, discarding the valid variant. C19 requires a row for each requested ID, with product=null and complete=false for missing products. The existing test models a missing variant by omitting its node, not by the nullable node response.
+
+Allow null node entries at the raw boundary, preserve known facts, and map each missing requested variant to product=null/collectionsComplete=false. Never read .id from null or infer missing membership as an empty complete set. Keep malformed/error responses separate from a valid nullable result. Add the exact mixed valid/null fixture and assert both requested rows plus complete=false.
+
+#### A2-R3 — P1 — Do not assign current currency to historical snapshot amounts
+
+getBasket falls back to context.currency when the snapshot currency is absent/null. Reproduction: `{lineItems:[{quantity:1,price:'10.00'}],currency:null}` with context.currency='GBP' returns basket currency GBP. This invents the monetary unit of historical source data and can corrupt subsequent comparison/calculation. Original R5 explicitly requires source currency provenance.
+
+Remove the current-context currency fallback. Extend/consume the trusted recovery reader envelope to provide the persisted snapshot currency where available; otherwise preserve null/unknown. Keep array compatibility without claiming arrays establish currency. Test known source currency differing from current context and missing/null source currency with a known current context. Preserve known zero price and null line unknownFields behavior.
+
+#### A2-R4 — P2 — Honor cancellation before recovery I/O and preserve nested provider errors
+
+Two independent failures remain in the asynchronous paths:
+
+- If authorizer.authorize aborts the signal then returns true, getBasket still calls recovery.read once before returning DEADLINE. Check deadline/signal immediately after authorization and before recovery I/O. Regression must assert DEADLINE and zero recovery/provider calls.
+- The collection paging catch simply breaks. If the first facts call succeeds but the nested collections request throws `{code:'THROTTLED'}`, readVariants returns OK instead of the C19 typed THROTTLED result. Use the same typed provider error mapping for nested failures as for initial calls; do not disguise a throttle/outage as successful fact acquisition. Keep deliberate membership-bound/budget incompleteness distinct from provider failure, and preserve cancellation/deadline behavior. Add a two-call fixture asserting the typed throttle, no retry/fallback and no further requests.
+
+#### Validation and resubmission
+
+Independent isolated harness `/tmp/c015-a2-review/review.test.ts` used a copy of the exact committed source plus submitted fixtures: **9 submitted tests passed; 5 architect checks failed**, with exact inputs/effects described above. Implementation diff whitespace check passed. Commit changes only the products module/tests; package manifests, discovery and readiness files are unchanged by this correction. Submitted lint success, 110 passing full-suite cases with reported baseline failures, and blocked typecheck/build are recorded as submitted evidence, not an independently reproduced clean build. Those baseline conditions are not this decision's blockers. Correct the report's failure tally/categories when resubmitting so test, suite-load and build failures are not conflated.
+
+Official Admin ProductVariant/productVariants documentation was inspected for the revised request direction; this is not a claim of complete offline schema validation or live execution. Keep original R1's pinned query evidence and trusted provider assumptions accurate. Live Shopify and developer-owned integration remain pending and are not new gates. Fix A2-R1–A2-R4 in015-owned files, run the focused regressions and required checks, publish the same branch pair and return to Review. No dependent task is promoted.
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 

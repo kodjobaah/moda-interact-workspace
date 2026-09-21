@@ -684,3 +684,16 @@ Ready (001/011/Shared Complete), with no new claim. Other dependants retain curr
 states because prerequisites remain unresolved. No main merge or gitlink update;
 architecture is not Implemented. This supersedes older COMMERCE-011 current-state
 wording while preserving historical reviews.
+
+## COMMERCE-015 Attempt 2 review — 2026-09-21
+
+COMMERCE-015 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `8793bc2` and report `b791e1c`; clean isolated worktrees
+and matching remote heads verified. Working registry/auth/null-line improvements
+are retained. Remaining corrections: terminal-page continuation, nullable facts
+nodes, historical snapshot currency provenance, and async recovery/nested-provider
+failure handling. Independent checks: 9 submitted tests passed, 5 functional
+reproductions failed. See the latest task Architect Review for exact instructions.
+Reported unrelated baseline failures and pending live validation are not the
+review blockers. No dependent promotion, main merge or gitlink change. This note
+supersedes earlier COMMERCE-015 current-state wording.
