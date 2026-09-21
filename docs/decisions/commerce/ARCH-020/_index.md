@@ -297,3 +297,19 @@ This supersedes older005 current-state wording while preserving review history.
 2026-09-21 integration split: C20 supersedes combined 013 ownership. 013 owns
 backend integration; 018 and 019 independently own Studio and preview integration
 and can run concurrently after their explicit prerequisites complete.
+
+## COMMERCE-017 Attempt 4 architect review — 2026-09-21
+
+COMMERCE-017 is **Changes Requested / Ready, Attempt 4 retained**, executor and
+claimed_at null; not accepted. Reviewed implementation `8b902a6` and report
+`c44ebd71`, matching remote task heads. Independent UI/client tests passed 17/17
+and all 8 previous reproductions passed. Four current functional reproductions
+failed: Start after Reset is blocked, changing a handoff source still dispatches
+the original tool, Conversation Back chooses an unrelated tool, and a valid
+nullable integer null cannot execute. Task A4-R1–R3 provide exact correction
+steps and expected effects. Preserve the verified previous fixes and the existing
+authenticated source-read boundary. Browser identity/live-provider evidence remains
+pending separately. No dependent promotion, new claim, implementation change,
+main integration or gitlink update. This supersedes earlier COMMERCE-017 current-state
+wording only; other task decisions remain unchanged. Architecture is not yet
+Implemented; COMMERCE-012 remains the final implementation checkpoint.

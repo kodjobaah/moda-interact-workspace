@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 135
-executor: copilot
-claimed_at: 2026-09-21T04:39:57Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-008
@@ -422,6 +422,53 @@ None newly reported.
 Implementation commit `8b902a6ab80d3751ce5f73d963c3e2e9776df58c` and parent report commit to be recorded after publication are on the mirrored `task/ARCH-020-COMMERCE-017` branches. The parent claim commit is `d6faaafa107aefdc317c2d228df28d30405cbafb`. No main branch, service gitlink, domain index, architecture document, other task or other repository was modified.
 
 ## Architect Review
+
+### Changes Requested — Attempt 4 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for corrections. Attempt 4 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `8b902a6ab80d3751ce5f73d963c3e2e9776df58c` and parent report `c44ebd717ad6758f7da71724091b2dd84b09b9f5`, matching remote task heads. Dedicated worktrees were clean. This review supersedes earlier current-state wording while preserving previous reports. No implementation change, new claim, dependent promotion, main integration or gitlink update.
+
+Independent validation: submitted UI/client tests **17/17 passed**; all **8 prior architect reproductions passed** (`/tmp/c017-a3-review`). This confirms prior FAILED/UNKNOWN preservation, unsaved DRAFT identity, response UUID checks, second-run cancellation, empty-catalogue gating, malformed HTTP uncertainty and nested invalid-type rejection. Retain those fixes. Four new functional reproductions importing the submitted component failed in `/tmp/c017-a4-review/review.test.tsx` (config `vitest.config.mts`): reset cannot restart, selected tool differs from dispatched tool, Back chooses an unrelated tool, and valid nullable integer null cannot execute. Submitted54 preview tests and typecheck/lint/build are reported evidence; not independently rerun in full. Diff check passed.
+
+The following is the authoritative remaining correction checklist; use the existing U14 ownership and accepted read/client/schema interfaces. No new backend, auth bypass, production fixture substitution or live-provider work is required.
+
+#### A4-R1 — P1 — Release conversation creation admission after settlement
+
+Files: `src/studio/preview/preview-screen.tsx`, focused screen tests.
+
+**Reproduction:** Start conversation succeeds; confirm Reset conversation; press Start again. Expected two creation calls with different reserved UUIDs; observed one. `reconcileConversation` sets `conversationCheckPending.current = true`, then clears `conversationOperation.current` on success (and known failure). Its finally block only releases the pending flag if that now-cleared operation still matches. `commitReset` does not clear the flag, so subsequent Start silently returns forever. The same defect prevents retrying after a definitive typed creation failure.
+
+**Correct exactly:** represent creation in-flight ownership separately from the pending payload, and release that guard on every settled request owned by the same operation/generation, including success and known failure. Do not condition guard release on a payload deliberately cleared earlier. Reset clears eligible generation-local admission state; uncertain creation retains the original UUID/payload and allows only its same-ID check. Capture/check generation before creation success/error/finally mutation, as previously requested; a stale completion must not unlock a newer request. Preserve synchronous duplicate Start protection.
+
+**Acceptance:** Start -> success -> confirmed Reset -> Start makes exactly two calls with distinct IDs. A canonical known failure allows a new attempt; an uncertain failure checks the original ID instead. Duplicate clicks still issue one in-flight creation. Verify actual call counts and selected payloads, not only the rendered reset notice.
+
+#### A4-R2 — P1 — Make one selected source drive controls, execution and Back
+
+Files: `src/studio/preview/preview-screen.tsx`, source-selection tests. Retain `app/preview/page.tsx`'s authenticated read boundary.
+
+**Reproduction 1:** supply initial tool handoff A and saved tools A/B, select B in `Preview tool source`, enter valid arguments and Run. Expected B; observed A. `selectedTool` always resolves to `tool || composer.tool` when a handoff exists, ignoring the selection state. `selectedRelease` has the same precedence defect. The visible source selector can therefore disagree with the executed revision.
+
+**Reproduction 2:** direct entry in Conversation mode has a saved release with returnTo `/releases/release_SAVED` and a listed tool with returnTo `/tools/tool_FIRST`. Back navigates to the tool, because `back()` always prefers `selectedTool` even when the active preview source is the release.
+
+**Correct exactly:** use handoffs to initialize a coherent selected-source state; after an explicit source change, resolve the definition, request IDs/members, visible controls and return origin from that selection. Preserve unsaved composer drafts as their own source (exact members/response contract, never handoffId as releaseId). Do not let an unrelated default saved release override a tool draft, or a stale composer override a newly selected saved source. Back uses explicit `returnTo` if provided, otherwise the active mode/source origin. Consolidate duplicated selectors or bind all copies to the same value and lock rules. During pending/UNKNOWN work, freeze its source controls until same-ID reconciliation; changing an idle source invalidates old result/arguments as appropriate. Render the active handoff as an actual option when it is absent from saved lists; unavailable/lost selection disables execution with guidance.
+
+**Acceptance:** handoff A -> select B sends B's revision and validates B's schema; selecting a saved release after an unsaved handoff sends the saved release ID; leaving the unsaved source selected still sends DRAFT. Conversation Back returns to the selected release even with populated tool sources; Tool test Back returns to its selected tool. No control may display a source different from its next dispatched payload. Test populated fixtures with more than one source, not only the first default.
+
+#### A4-R3 — P2 — Encode valid nullable values before canonical validation
+
+Files: `src/studio/preview/preview-screen.tsx`, focused schema-input tests.
+
+**Reproduction:** required top-level `count` has `type: ['integer', 'null']`; enter `null` and Run. Expected arguments `{count:null}`; observed zero calls with a numeric error. `parseArguments` handles integer/number before the nullable branch, so `Number('null')` fails. Nullable boolean has the same ordering issue. Shared validation is now correct; input encoding must also allow its valid values.
+
+**Correct exactly:** provide an unambiguous null input/control and map it to JSON null before numeric/boolean conversion when the schema permits null. Distinguish omitted optional input from explicit null and the string `"null"`. Keep real integer/number/boolean JSON types and validate the complete schema with Shared `compileSubset`; preserve the32KiB bound and zero dispatch for invalid values. Do not add a parallel schema validator.
+
+**Acceptance:** nullable integer accepts null and2 as their exact JSON values; nullable boolean accepts null andfalse. A nonnullable field rejects null. String `"null"` remains distinguishable from explicit null. Retain the passing nested-invalid-value reproduction.
+
+#### Report and cleanup
+
+Remove the obsolete commented implementation still at the end of `preview-screen.tsx` (lines1094–1175 at this revision), as already requested. Report the actual remaining/fixed behaviors rather than claiming all prior review items are complete. The previous implementation was reviewed with changes requested, not architect-accepted; correct that wording in the new report while preserving historical submissions. Record these scoped fixture results and commands.
+
+Authenticated desktop/narrow/keyboard browser validation remains explicitly pending a provisioned local Studio identity; live-provider/system pairing remains developer-owned. Those prerequisites do not explain the component failures above and are not new implementation demands. Return to Review after corrections and both task branches are pushed; do not self-accept or start dependent tasks.
+
 
 ### Changes Requested — Attempt 3 — 2026-09-21
 
