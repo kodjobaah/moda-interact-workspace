@@ -188,24 +188,55 @@ Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Awaiting implementation of the exact source-gating correction above.
+Independent review of implementation commit `57bd7d6` and report commit
+`1b96d318` found no acceptance-blocking defects. Tool-only U06 handoff remains
+in Tool test mode, preserves the selected tool revision, and does not call
+`startConversation`. Conversation admission now requires a persisted release or
+a non-empty authored draft source; selected-tool fallback, zero-capability DRAFT
+payloads, synthetic capabilities and generic prompts are absent.
+
+The release path emits exactly `{ kind: "RELEASE", releaseId }` when the
+selected source is persisted. The draft path uses only the selected source's
+`members.map(member => member.capabilityRevisionId)`, sends
+`toolRevisionIds: []`, and forwards the selected `responseContract`. The tool
+and Conversation selectors remain independent. Focused tests also cover source
+locks during pending/uncertain operations, reset admission, release/draft
+switching, and Back navigation to the originating release context. No backend,
+PreviewClient/shared contract, route, provider, or deployment changes were
+introduced.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/src/studio/preview/preview-screen.tsx`
+- `moda-interact-commerce/tests/preview-screen.test.tsx`
+- Implementation commit `57bd7d6`
+- Completion Report in parent commit `1b96d318`
 
 ### Validation Reviewed
 
-None.
+- Focused U14 Vitest run: 20/20 passed.
+- `npm run lint`: 0 errors; two warnings are pre-existing and outside the
+   touched files.
+- `npm run build`: passed production packaging, compilation, generation and
+   optimization checks.
+- `git diff --check`: passed.
+- `npm run typecheck`: 179 pre-existing errors in four unrelated backend files;
+   no diagnostics were reported for the touched U14 files.
+- Remote implementation ref `origin/task/ARCH-020-COMMERCE-034` resolves to
+   `57bd7d6`; the commit changes only the two scoped files.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to ARCH-020 U14/C9/C20 and the COMMERCE-019 Attempt 2 correction
+boundary. The implementation preserves the accepted PreviewClient and
+`PreviewSelection` contracts, keeps source gating in the U14 UI, and satisfies
+the required tool-only, release, draft, selector, reset/lock, and Back
+semantics. The recorded typecheck baseline is not a regression from this task.
 
 ### Follow-up
 
-Accept independently, then leave019 blocked until COMMERCE-033 is also Complete.
+None for this task. No downstream task was launched.
