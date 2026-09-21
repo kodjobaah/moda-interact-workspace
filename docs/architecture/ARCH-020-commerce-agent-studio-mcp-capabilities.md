@@ -1013,6 +1013,14 @@ cleanup failure, arbitrary SQL-error masking, replay assertion and worker-teardo
 corrections. Preserve passing component code. PostgreSQL execution remains
 explicitly developer-owned/unrun;013 composition remains separate. This is the
 latest decision. No downstream promotion, new claim, main merge or gitlink edit.
+### Smaller component scopes — 2026-09-21
+
+C19 splits004 into transport004/execution014,005 into queries005/basket-products015,
+006 into rule reader006/evaluator016 and009 into preview backend009/U14 interface017.
+013 owns backend and frontend service assembly;017 is frontend-only; SYSTEM-TEST owns cross-service evidence.
+This ownership replaces earlier combined-owner references without changing behavior.
+
+
 ## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
 
 Current state: Ready, Attempt 1, claim cleared; not accepted. Reviewed a7ccac5 /

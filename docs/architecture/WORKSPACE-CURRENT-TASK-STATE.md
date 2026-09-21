@@ -660,3 +660,13 @@ or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
 without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
+
+## ARCH-020 smaller-scope frontier — 2026-09-21
+
+C19 splits004/005/006/009 into paired components with new014–017. Backend006
+(rule reader),009 (preview service) and015 (basket/product facts) are Ready,
+attempt0/unclaimed; their prerequisites are accepted Complete. Frontend017 owns
+U14 only;013 assembles real frontend/backend services after component acceptance.
+The25-task graph is reciprocal and acyclic. Active task worktrees remain
+authoritative; the concurrently integrated BACKGROUND-002 Attempt4 acceptance
+is preserved. No task is launched by this definition update.
