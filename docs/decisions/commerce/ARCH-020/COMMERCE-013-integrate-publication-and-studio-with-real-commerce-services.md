@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 125
-executor: copilot
-claimed_at: 2026-09-21T14:41:37Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-020-COMMERCE-003
@@ -585,6 +585,114 @@ Task fields are clean for review: `status: review`, `executor: null`,
 branch was merged or updated. The parent report commit and push are recorded
 after this report edit; implementation branch is already pushed at
 `3ab867916f53a9665c16062b34cacf4656f3a529`.
+
+## Completion Report - Attempt 6
+
+Status: Ready for Review.
+
+Attempt 6 preserves Attempts 1-5 and implements every correction in the latest
+A5 Changes Requested review. The implementation commit is
+`812e97e85435ce9cefb520e4eb0cf6513c08e32f`, pushed to the mirrored
+`task/ARCH-020-COMMERCE-013` implementation branch. The parent task report is
+updated only in this task file; no other repository, schema, index, parent
+service gitlink, downstream task, main branch, or Architect Review text was
+changed.
+
+### A5 correction checklist
+
+- [x] **A5-R1:** Replaced invalid abstract Discount union selections with
+  concrete `DiscountCodeBasic` and `DiscountAutomaticBasic` fragments. Minimum
+  fields use Shopify's `DiscountMinimumQuantity` and
+  `DiscountMinimumSubtotal` members. Product and variant target connections,
+  pagination cursors, codes, supported percentage/fixed values and dates are
+  mapped from the actual privileged response. Null minimum is treated as known
+  absence only when `minimumRequirement` is present; omitted minimum remains
+  unknown. Restriction completeness and allocation/rounding semantics remain
+  fail-closed because this read does not establish them. The Admin document is
+  exported for schema/fixture validation and keeps the installation token in
+  the privileged `X-Shopify-Access-Token` path.
+- [x] **A5-R2:** Product/Admin provider reads now use the shared bounded byte
+  streaming reader before JSON parsing, preserving abort signals, reader
+  cleanup and response bounds. Storefront remains tokenless and returns its
+  bounded response stream to the accepted query transport.
+- [x] **A5-R3:** Explicitly selected saved DRAFT tool revisions are now allowed
+  to return their current validated definition/hash. Capability-bound tool
+  revisions still require PUBLISHED status, ownership/binding consistency and
+  complete record resolution; unpublished bound-only revisions fail closed.
+- [x] **A5-R4:** Inspection now receives the immutable validated deployment
+  environment from `CommerceBackendDependencies`, the same value used by
+  production authorization/publication composition. It no longer reads
+  `COMMERCE_ENVIRONMENT` or defaults to DEVELOPMENT, so TEST/STAGING/PRODUCTION
+  inspection and resolution use the same active release pointer.
+
+### Focused source and dependency mapping
+
+The implementation consumed the accepted producer revisions without copying
+source: COMMERCE-007 recommendation source `e08b896`;
+publication lifecycle/ports `ebe612bbcbccb69202c682ed009d1c302c347d3f3`;
+query execution `f09965942cebd4aec15a40aa825975157d41c8c3`; product adapters
+`6821a49c5d8568227ff81085f0398c934df58332`; recommendations
+`bad71ef55e5942e74343c35b611c5177f0852a20`; discount reader
+`1c124f4b53a494425735a8064ac20a2e2000914e`; discount evaluator
+`bfbd7839503b60e88b17da49f258c84c4e50f6c76`; execution registry
+`232cbdd9af4411c2e4cdcac86bda8285e5b81554`; MCP auth/authentication
+`0411babc90182f41ad3f036096eb51427f128ac0`; compiler
+`f363ac41b2a36e683d1514d02a582dd2c375fef5`; and database submodule
+`5abfd87f57038bae515aaa09ec7c8db62adcfb98`. Installed compatibility remains
+shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, and MCP SDK `1.30.0`.
+
+### Files changed
+
+- `src/commerce/integration/backend.ts`: Admin GraphQL fragments and raw-rule
+  normalization, bounded product reads, explicit draft-tool handling, shared
+  inspection environment, and the required injected dependency type.
+- `tests/backend-integration.test.ts`: injected TEST environment fixture.
+- `tests/backend-postgres-rehearsal.test.ts`: activation uses the current
+  isolated target pointer CAS token rather than assuming an empty database.
+
+### Validation Results
+
+Implementation worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
+
+| Command | Result |
+| --- | --- |
+| `npm run test:arch020-backend-integration` | passed, 4 files / 59 tests |
+| `npm run typecheck` | passed; Next route type generation and `tsc --noEmit` passed |
+| `npm run lint` | passed with zero warnings/errors |
+| `npm run build` | passed; Prisma Client 6.19.3 and Next production build completed |
+| `git diff --check` | passed |
+| `npm run test:arch020-backend-integration:postgres` | real Prisma publication rehearsal passed 2/2; disposable SQL phase stopped at the explicit `ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1` authorization gate |
+| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD schema checks passed; migration rehearsal failed closed before connection with `AssertionError: Local isolated target required` |
+
+The first PostgreSQL rehearsal run exposed only a reused-target test
+precondition (`expectedEditVersion: 0` against an existing DEVELOPMENT
+pointer); the rehearsal now reads the current pointer token and the rerun
+passed. Actual local PostgreSQL evidence therefore includes durable publication
+rows/audits, durable replay, mismatched replay rejection, stale CAS rejection,
+same-row two-connection contention with one winner, and injected post-write
+rollback with restored business/pointer state and no rollback audit.
+
+### Infrastructure evidence and lifecycle
+
+Pending developer-owned evidence remains separate: authorize and run the
+disposable PostgreSQL SQL phase; run the migration validator twice against
+developer-created isolated targets `arch020_test_fresh` and
+`arch020_test_upgrade`; run Redis/container transport checks; and perform the
+final manual system-test gate. No live Shopify, model, WhatsApp, billing,
+customer-history, production credential, or paid-provider evidence is claimed.
+The restricted `PATH=/usr/bin:/bin` variant was not required for the passing
+static checks; the normal workspace Node toolchain was used. No downstream task
+was launched.
+
+### Git / VCS
+
+Implementation branch `task/ARCH-020-COMMERCE-013` is pushed at
+`812e97e85435ce9cefb520e4eb0cf6513c08e32f`. Parent branch is the mirrored
+`task/ARCH-020-COMMERCE-013`; its final report commit hash is recorded in the
+submission response after this report commit. Both task worktrees must be clean
+at submission, with `status: review`, `executor: null`, and
+`claimed_at: null`. No main branch or parent service gitlink was changed.
 
 ## Architect Review
 
