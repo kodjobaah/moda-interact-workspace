@@ -1396,3 +1396,17 @@ implementation change, main integration or gitlink update. Live deployed/worker/
 Shopify validation remains with its assigned owner. This supersedes older COMMERCE-007
 current-state wording only; other decisions and history remain unchanged.
 Architecture is not yet Implemented.
+
+## COMMERCE-007 Attempt 6 architect review — 2026-09-21
+
+COMMERCE-007 is **Changes Requested / Ready, Attempt 6 retained**, claims cleared.
+Reviewed implementation `21e150f` and report `73981c7b`, matching remote heads.
+Independent 11 focused tests and seven runtime reproductions pass; the 12-request
+budget proof remains valid. The unified replay now handles all selected proposals,
+truncation and valid fresh digests. A6-R1 identifies two remaining harness issues:
+refresh receives no original-call tuple, and expired original evidence can be
+rescued by a fresh response. Exact callback/provenance and expiry corrections are
+recorded in the task; no production recommendation defect or code change is requested.
+No dependent promotion, new claim, main integration or gitlink update. Live service
+validation remains with its assigned owner. This supersedes older COMMERCE-007 current-state
+wording only; other decisions remain unchanged. Architecture is not yet Implemented.

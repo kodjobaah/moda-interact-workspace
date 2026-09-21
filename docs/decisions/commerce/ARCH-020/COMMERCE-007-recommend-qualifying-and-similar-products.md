@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 110
 executor: null
 claimed_at: null
@@ -240,6 +240,27 @@ Task branch: `task/ARCH-020-COMMERCE-007`, attempt 6; claim cleared for review (
 - No parent service gitlink, main branch integration, or other repository changes were performed.
 
 ## Architect Review
+
+### Changes Requested — Attempt 6 — 2026-09-21
+
+**Current decision: Changes Requested; Ready for one scoped harness/report correction. Attempt 6 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `21e150fed34788ae084a30e4466b9fcdb45b1642` and report `73981c7b78168517286bf113ef837137e4d33c46`, verified against remote task heads. Both worktrees clean. No new production recommendation defect is alleged; preserve the runtime implementation.
+
+Independent validation: **11/11 focused tests and 7/7 prior runtime reproductions pass**. The unified helper now uses actual producer evidence, invokes an async callback, checks every selected proposal, rejects truncation and accepts changed valid fresh timestamps/digests. These portions of A5-R1 are resolved. An isolated copy of the submitted test (`/tmp/c007-a6-review/review.test.ts`) confirms the budget still makes exactly 12 provider requests and denies reservation 13. Its two added replay assertions fail: expired original evidence is rescued by a fresh response; the callback receives no original-call arguments. Diff check passes. Typecheck/lint/build and full 334/335 are submitted evidence, not independent full reruns.
+
+#### A6-R1 — Pass actual replay provenance and reject expired original evidence
+
+Files: `tests/recommendation-contract.test.ts` and this report only. Keep the unified helper, real producer fixture and repaired budget path. No additional feature or exhaustive test matrix is requested.
+
+**1. Connect provenance to the callback.** Current `refresh: () => Promise<unknown>` / `await refresh()` cannot prove the original authored call is replayed. `result.replayed.push(originalCall)` records a local intention, not callback arguments. The grouping key also omits the stored toolRevisionId.
+
+Define a test-only call tuple `{name, toolRevisionId, arguments}`; include all three fields in the grouping key and map value. Change the callback to `refresh(originalCall)` and actually pass that tuple. In the happy-path fixture, capture/assert the received tuple and invoke the real definition executor using the corresponding original authorized call. The pinned revision is fixture provenance, not a new model-controlled MCP argument. Derive refresh assertions from observed callback invocations; assert exact original name/revision/arguments and one callback for multiple IDs from the same call. Keep controlled response callbacks for mutation fixtures.
+
+**2. Validate original evidence before refreshing.** C18 explicitly says an expired original item cannot be rescued for this pending answer. The helper currently validates only fresh timestamps. Reproduction: original evidence expires at03:01:00; at03:01:02 return identical semantics with a valid digest, evaluatedAt03:01:01 and expiresAt03:01:31. Actual ACCEPT; required REFER, zero deliveries/language writes. Validate every selected provenance item's original digest and time window before issuing refresh; an expired/invalid original returns early. Preserve fresh validation after the await and acceptance of changed fresh timestamps while the original remains valid. Share the time/digest check rather than adding a second partial consumer.
+
+**Acceptance:** the expired-original/valid-fresh fixture refers without refresh or delivery; an unexpired original with valid changed fresh timestamps still accepts. A callback spy receives exactly `{name:'mapped_replay_fixture',toolRevisionId:'revision-1',arguments:{search:'shirt',max:3}}` once for all selected IDs from that call. Keep the 11 focused tests/seven runtime regressions passing and the 12-request budget proof intact. Update the report with measured callback arguments/counts and both time-window outcomes. Run the existing required validation and publish mirrored branches with claims clear; no runtime code churn is requested.
+
+Real deployed MCP/worker/Shopify validation remains developer-owned. No dependent promotion, new claim, main integration or gitlink update. This decision supersedes earlier current-state wording while preserving history. Architecture remains not yet Implemented.
+
 
 ### Changes Requested — Attempt 5 — 2026-09-21
 
