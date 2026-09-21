@@ -722,7 +722,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | ready | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
 | [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | pending | ARCH-020-COMMERCE-006 |
-| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | pending | ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-011 |
+| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
@@ -1109,6 +1109,44 @@ without claiming an attempt. Other dependent tasks retain their current states;
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
 
 
+## COMMERCE-015 Attempt 1 architect review — 2026-09-21
+
+Changes Requested; status Ready, Attempt1 retained, claim clear; not accepted.
+Reviewed implementationff386e2 and report42b8c300. Seven submitted tests pass;
+five independent cases fail: denied variant read, late cancelled success, skipped
+search results, C19 input mismatch, and missing null basket unknown markers.
+R1–R5 require schema-shaped Admin requests/normalization, authorization and bounded
+cancellation, lossless pagination, exact C19 descriptors, and null/source fixtures.
+See canonical COMMERCE-015 task for deterministic locations and acceptance effects.
+Prisma baseline and developer-owned live checks are separate from these blockers.
+No dependency promotion, implementation edits, new claim, main merge or gitlink change.
+
+## COMMERCE-015 Attempt 2 review — 2026-09-21
+
+COMMERCE-015 is **Ready, Attempt 2 retained**, claim cleared, not accepted.
+Reviewed implementation `8793bc2` and report `b791e1c`; clean isolated worktrees
+and matching remote heads verified. Working registry/auth/null-line improvements
+are retained. Remaining corrections: terminal-page continuation, nullable facts
+nodes, historical snapshot currency provenance, and async recovery/nested-provider
+failure handling. Independent checks: 9 submitted tests passed, 5 functional
+reproductions failed. See the latest task Architect Review for exact instructions.
+Reported unrelated baseline failures and pending live validation are not the
+review blockers. No dependent promotion, main merge or gitlink change. This note
+supersedes earlier COMMERCE-015 current-state wording.
+
+## COMMERCE-015 Attempt 3 accepted — 2026-09-21
+
+COMMERCE-015 is **Complete, architect accepted, Attempt 3 retained**, claim cleared.
+Reviewed implementation `511e14ad` and report `a8c9a9e3`; clean dedicated worktrees
+and matching remote heads verified. All five previous functional failures are
+resolved: terminal-page continuation, nullable nodes, snapshot currency provenance,
+post-authorization cancellation and nested provider error propagation. Independent
+checks passed: 14 previous harness cases (including all five reproductions), plus
+13 current focused tests and diff check. Submitted full-suite Redis timeout remains
+separate; live Shopify/integration validation is still developer-owned and pending.
+No dependent promotion:016 still needs006,007 needs016, and012/013/system-test have
+other prerequisites. No main merge/gitlink change; architecture is not Implemented.
+This acceptance supersedes all older COMMERCE-015 current-state wording.
 ## COMMERCE-006 Attempt 3 architect review — 2026-09-21
 
 Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
@@ -1145,3 +1183,31 @@ Prior accepted prompt/history/language/replay/bounded-state corrections retained
 009 is satisfied;012/013/system-test retain other unfinished prerequisites, and
 017 has no009 dependency. No promotion or automatic execution. Live deployment
 and013 assembly remain separate. No main integration or gitlink update.
+## COMMERCE-008 Attempt 5 review — 2026-09-21
+
+COMMERCE-008 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
+Reviewed implementation `558432f` and report `0b2e03bb`; remote heads matched and
+worktrees were clean. A4-R2/R3 are accepted; all three previous reproductions and
+25 focused tests passed independently. One remaining A5-R1 failure: adding a
+nested field beneath an existing aliased product creates an unbound second root
+outside the retained resultPath. The canonical task review contains exact AST
+merge/validation instructions. Local U14 handoff passes; real preview integration
+and live validation remain separately owned and are not blockers. No dependent
+promotion or main integration. This supersedes older COMMERCE-008 state wording.
+
+## COMMERCE-008 Attempt 6 accepted — 2026-09-21
+
+COMMERCE-008 is **Accepted / Complete, Attempt 6 retained**, claim cleared.
+Reviewed implementation `8ba5e42` and report `7f8e194` against remote task heads.
+The final alias correction preserves the existing field's arguments/result path,
+rejects ambiguous edits and denies unbound duplicate roots. Independent validation:
+24 focused tests and all four previous architect reproductions passed; diff checks
+passed. Submitted typecheck/lint/build passed; the reported208-pass/one unrelated
+Redis timeout does not block this component acceptance. Live OAuth/providers,
+production composition and actual U14 execution remain separate integration work.
+COMMERCE-017 is promoted Ready, Attempt0, no claim, because008/002/SHARED-001 are
+accepted Complete.009 is not a prerequisite for017's contract-fixture frontend.
+Other downstream tasks remain gated by their own unresolved prerequisites;012 is
+still the final implementation checkpoint. No implementation changes, main merge,
+main push or gitlink update. Architecture is not yet Implemented. This supersedes
+older008 state wording while retaining historical reviews.
