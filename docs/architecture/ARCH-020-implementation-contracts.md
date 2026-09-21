@@ -1384,9 +1384,9 @@ Deterministic provider mocks prove workflow. Record representative French/Englis
 
 COMMERCE-003 and COMMERCE-008 can start and complete their component work after
 002, DATABASE-001 and SHARED-001. They prove their contracts using deterministic
-fixtures. COMMERCE-013 separately owns real integration and cannot start until
-the component prerequisites listed in C19 are Complete.009 and017 are independent
-backend/frontend components; GATEWAY-001 requires013 Complete.
+fixtures. COMMERCE-013 owns backend integration; COMMERCE-018 owns Studio
+integration and COMMERCE-019 owns preview integration, as specified in C20. Each
+waits for its explicit prerequisites. GATEWAY-001 requires all three Complete.
 This is a task split, not a launcher bypass or deferred acceptance within003/008.
 No active011 attempt is reclaimed and no accepted task implementation is reopened.
 
@@ -1395,8 +1395,9 @@ No active011 attempt is reclaimed and no accepted task implementation is reopene
 COMMERCE-003 owns `src/commerce/publication/` (domain operations, persistence,
 read models and port types) and its focused tests.
 COMMERCE-008 owns `src/studio/` (page components, view models, ports and adapters),
-U01–U13 page entry points and browser fixtures.013 owns production adapters
-and composition in `src/commerce/integration/`, plus minimal wiring of these ports. Follow the accepted App Router root;
+U01–U13 page entry points and browser fixtures. C20 divides production adapters
+and composition among 013 backend, 018 Studio and 019 preview, with separate
+owned directories and entry points. Follow the accepted App Router root;
 do not create a second app directory. Existing002 auth handlers/helpers remain
 owned by their accepted implementation.011 keeps its discovery/compiler modules.
 Use separate launcher-resolved worktrees. Never edit another task's port/provider
@@ -1438,15 +1439,16 @@ adapters use real accepted services; unavailable services return the specified
 unavailable/error state and cannot publish, activate or report synthetic success.
 Fixtures include success, empty, not found, forbidden, unavailable, stale CAS,
 matching replay, conflicting replay and uncertain timeout, with operation counts.
-Test UI double-click/keyboard activation against those counts, 013 repeats the
-required cases against real adapters before its completion. Contract tests must run
+Test UI double-click/keyboard activation against those counts; 018 repeats the
+required UI cases against real adapters, while 013 proves backend replay/CAS. Contract tests must run
 against both fixture and production adapter with controlled external transports;
 matching TypeScript types alone is not integration evidence.
 
 Any shared route/barrel/package configuration edit must be minimal and reconciled
 on synchronization.003 does not build Studio pages;008 does not add competing
-publication mutations or compiler endpoints. 003/008 submit component/fixture evidence;013 submits actual integration evidence.
-GATEWAY-001 and terminal caching/system-test gates require013;009/017 feed013.
+publication mutations or compiler endpoints. 003/008 submit component/fixture
+evidence; 013/018/019 submit their C20 integration evidence. GATEWAY-001 and
+terminal caching/system-test gates require all three; 009/017 feed 019.
 Fixture acceptance never asserts that the assembled application is functional.
 
 
@@ -1588,11 +1590,11 @@ are interpreted by this table; business behavior in C4–C18 is unchanged.
 |015|trusted basket, product search/current variant facts|generic compiler or discount calculation|013|
 |006|current offer policy, listing, rule retrieval/normalization|eligibility/savings/Evidence calculation|013|
 |016|pure eligibility calculation, discounts.evaluate orchestration|provider rule parsing or recommendations|013|
-|009|preview routes, runner lifecycle, Redis state/budgets|U14 controls or browser navigation|013|
-|017|U14 frontend, typed API client, browser interactions|routes, Redis, database loaders or service composition|013|
+|009|preview routes, runner lifecycle, Redis state/budgets|U14 controls or browser navigation|019|
+|017|U14 frontend, typed API client, browser interactions|routes, Redis, database loaders or service composition|019|
 
-013 wires004 ->014, then014 ->005/015/006/016/007, and the existing Studio ports.
-013 also wires017 U14 ->009 with actual saved-bundle loading and008 composer return. SYSTEM-TEST-001
+013 wires 004 ->014, then 014 ->005/015/006/016/007, and publication services.
+019 wires017 U14 ->009 with actual saved-bundle loading and008 composer return;018 connects U01–U13. SYSTEM-TEST-001
 retains cross-service/Background/gateway acceptance.012 still follows ALL other
 implementation tasks. No new interface package publication or DB migration.
 
@@ -1762,7 +1764,7 @@ unknown-outcome, reset, role and draft-handoff semantics.
 Component tasks provide one successful port example and each named failure fixture,
 plus their focused behavior matrix. Builds/typechecks or many empty screenshots
 cannot substitute for working components.013 performs real backend adapter pairing;
-013 also performs real preview/page pairing; terminal SYSTEM-TEST owns cross-service
+018 pairs Studio services and019 pairs preview/page services; terminal SYSTEM-TEST owns cross-service
 conversations. All25 task start edges must be reciprocal and acyclic. This split
 adds no automatic task execution or new definition-time provider calls.
 
@@ -1774,5 +1776,177 @@ without009. `PreviewClient` exposes `listFixtures()`, `startConversation(body)`,
 Each body/result/error is exactly C9.1, not a second DTO; methods map one-to-one to
 its routes. HTTP transport is injected. UI contract fixtures exercise exact outgoing
 payloads and return statuses; production client uses authenticated same-origin HTTP.
-013 owns saved-bundle loading and I09 actual client/server pairing. Backend task009
+019 owns saved-bundle loading and I09 actual client/server pairing under C20. Backend task009
 never edits page components; frontend017 never edits DB/Redis/route handlers.
+
+## C20. Integration task ownership and parallel execution
+
+This replaces the combined013 ownership in C17/C19. Component behavior and public
+contracts remain unchanged.013 is backend-only;018 connects U01–U13;019 connects
+preview/U14.018 and019 have NO dependency on each other and may run concurrently
+once013 and their own listed components are accepted. Both stay Pending until
+those prerequisites complete.012/GATEWAY-001/SYSTEM-TEST-001 require both.
+
+### Fixed file boundaries and producer inventory
+
+All paths below are relative to moda-interact-commerce.013 owns
+`src/commerce/integration/backend.ts`, `integration/backend/**` and MCP production
+composition.018 owns `integration/studio/**`, the Studio service/action/client
+composition and U01–U13 entry points only.019 owns `integration/preview/**`,
+`lib/preview/runtime.ts` and U14 client composition. Both consumers import the013
+facade; neither edits it. Neither edits the other's application routes or tests.
+No shared catch-all integration barrel, global mutable registry or combined factory.
+
+At preparation, inspect each accepted producer SHA and fill the task's
+`docs/commerce-<backend|studio|preview>-integration.md` table with source file/export,
+input/output mapping, destination adapter, errors and test ID. Most source exports
+are pinned in the task definitions from inspected code;007 recommendation and017
+client symbols must come from their eventual accepted implementation reports.
+Missing export is a concrete gap, not permission to invent another implementation.
+013 must finish/freeze its typed facade before either consumer claims work.
+
+### Backend facade contract
+
+013 exports server-only `getCommerceBackend()` from integration/backend.ts.
+It returns a read-only object with these members, using the actual accepted types:
+
+- `publication`: CommerceLifecycle; all calls take the server-resolved Principal.
+- `discovery`: return type of createDiscoveryService; use existing011 operations.
+- `compiler`: return type of createCommerceCompiler; no alternative parser.
+- `execution`: DefinitionExecutionPort with real query/policy adapters.
+- `createFixtureExecution(registrations, queryAdapter)`: creates the same014
+  interpreter with explicit caller-owned fixture ports, without loading live
+  installation credentials or the live policy registry. Used only by preview/tests.
+- `saved.readSelection({principal,selection})`: authorized read-only saved revision
+  selection. selection is the accepted009 RELEASE/DRAFT shape; result supplies exact
+  immutable release members or selected draft revisions, definitions, prompts,
+  content hashes and responseContract/hash.013 defines the typed result by composing
+  accepted003/Shared record types; both consumers import it, never redefine it.
+- `inspection.listShops({principal,search})` and
+  `inspection.inspectShop({principal,shopId})`: canonical read-only merchant/feature
+  eligibility records plus candidate manifest/exclusion reasons for U13. No token,
+  customer history, server execution definitions or persisted grant write.
+
+Stateless clients/pools may be reused; principal/turn/grant/policy stay request-local.
+Environment comes from validated deployment config, never browser input. Publication
+reads and methods do not rely on a previously authorized browser session; each
+protected entry rechecks current staff identity/role. Preview selection rechecks
+saved-record ownership, conflicts and schema bounds before returning.
+
+013 owns real missing persistence/admission/transport adapters, not only imports:
+`createProductionLifecycle()` currently throws unavailable and MCP currently uses
+createUnavailableMcpRuntime. Replace those boundaries with durable adapters. Use
+canonical Prisma models, C7 READ COMMITTED/locking/CAS/replay and one transaction
+for business rows plus audit. Rebuild replay state from durable audit metadata;
+never persist process-local Map state as the authority. Never truncate/reinsert
+catalogue tables or overwrite unchanged snapshot rows during a state-to-DB diff.
+Recheck locked current versions and persist only owned changes. No migrations or
+startup seeds. Missing schema/dependency remains unavailable.
+
+Known interface mismatch:008's setCapabilityEnabled includes expectedUpdatedAt,
+while inspected003's strict method/schema omits it.013 owns the narrow correction:
+accept/validate that timestamp, compare it in the same locked transaction as the
+explicit enabled-value write, include it in operation replay hashing and update
+the metadata timestamp. Apply the same contract check to tool enable/disable.
+A stale timestamp fails without write/audit; altered replay payload conflicts.
+Do not perform an unlocked precheck or silently remove the CAS token in018. This
+is required C7 compatibility work, not authorization to redesign publication.
+Other semantic gaps must be recorded with the exact source/reproduction and resolved
+before producer acceptance; consumers must not silently weaken guarantees.
+
+### Studio field and error mappings (018)
+
+Every command retains operationId/reason byte-for-byte, and principal is supplied
+only by server auth. Method names are the existing StudioServices interface.
+
+| Studio field/operation | Publication translation |
+|---|---|
+| createToolDraft.proposedDefinition | definition; sourceToolRevisionId/toolId unchanged |
+| createCapability.type | selectionBinding; validate BASE/FEATURE/RECOVERY_POLICY; featureId preserved/null per canonical rule |
+| createDraft.sourceCapabilityRevisionId | sourceRevisionId; group promptTemplate/configuration/contractVersion/toolBindings under draft |
+| updateDraft.capabilityRevisionId | revisionId; full draft grouped as above; expectedEditVersion unchanged |
+| publishRevision.capabilityRevisionId | revisionId; expectedEditVersion unchanged |
+| createRelease.members | validate exact capability ownership, unique revisions and contiguous positions; sort by position then pass memberRevisionIds in that order; preserve responseContract |
+| activateRelease/rollbackRelease.expectedActiveReleaseVersion | expectedEditVersion; environment from server configuration; selected releaseId unchanged |
+| metadata/enable expectedUpdatedAt | unchanged, mandatory;013 supplies atomic support |
+| returned publication result IDs | re-read the exact saved record and construct Studio view model; never fabricate revision ID/number, use array position as ID or return latest revision instead |
+
+For createRelease, use publication's documented contractVersion/runnerCompatibility
+and description defaults when absent from the UI; do not derive them from user text.
+Read models preserve distinct metadata IDs, revision IDs, SemVer, revision numbers,
+editVersion and timestamp CAS tokens. Feature.active, plan and merchant preference
+remain separate eligibility reasons; U13 never issues live MCP assertions.
+
+Map known NOT_FOUND -> not-found; permission denial -> forbidden;
+CAS_CONFLICT -> conflict/STALE_CAS; OPERATION_REUSE_CONFLICT ->
+conflict/CONFLICTING_REPLAY; definitive availability errors -> unavailable.
+Ambiguous write transport/commit outcome -> unknown with the SAME operationId,
+never a retry with a fresh ID. Validation errors retain field paths/content and
+make zero writes. If the existing Studio union lacks a required structured validation
+variant, add a bounded typed adapter/UI error presentation in018; never relabel an
+invalid definition as a committed success. Unexpected exceptions expose no internals.
+
+### Preview mapping and isolation (019)
+
+Use009's PreviewBundleLoader, PreviewPromptLoader, PreviewToolExecutionPort and
+PreviewServiceDependencies; lib/preview re-exports those types.019 installs real
+implementations in getPreviewService, replacing unavailableLoader, while retaining
+RedisPreviewStateStore and009's lifecycle. No duplicate quota/cancel/replay engine.
+PreviewPromptLoader returns the actual selected authored prompt text in release
+order. Response definition comes from the selected release or validated local C16
+draft, not the currently active release after Start. Do not replace prompts with
+hard-coded generic instructions.
+
+saved.readSelection feeds a bounded immutable synthetic bundle; freeze definitions
+as well as descriptors/prompts. For mutable saved drafts use a grant-scoped frozen
+snapshot, never reload draft content by ID during a later turn.019 owns this
+server-side snapshot adapter. It may add private snapshot-handle plumbing to009's
+internal composition if needed; no new public C9.1 field, DB table or model argument.
+Use Redis's existing preview environment/admin/grant isolation and24-hour retention,
+maximum32 definitions each<=65,536 bytes, prompt total<=64,000 characters, and
+maximum3MiB serialized snapshot. Fail unavailable/invalid selection when bounds
+cannot be met; no silent dropping of tools or fresh reload after eviction. Restart
+fixtures must prove old conversations retain their exact frozen content.
+
+Only createFixtureExecution with isolated fixture operations is reachable from
+preview, including MODEL mode. MODEL changes only the model transport and retains
+separate credentials; it never enables live tools. Fixture adapters are authorized
+preview composition, not a production MCP fallback. Permit no call to live /api/mcp,
+Shopify transport, checkout admission or WhatsApp. Tests assert those call counts0.
+019 uses013 saved services directly and can mount real008 composer components with
+injected source data to prove handoff; it does not wait for018 page-service wiring.
+
+### Shared integration fixture and acceptance ownership
+
+013 supplies an isolated seed/helper consumed by018/019: two active admins with
+ADMIN/SUPER_ADMIN roles; two shops, distinct recoveries/conversations; one arbitrary
+existing Feature with plan/merchant selection; tool metadata plus exact revisions;
+base and feature capability members; two releases and one active pointer; one
+original persisted grant. IDs are generated by schema-compatible helpers and returned
+in a typed fixture object, never parsed for meaning. Seed explicit unique operation
+IDs/reasons and current schema/environment values. Reset only isolated test-owned
+rows/Redis namespaces; reject non-test targets. No seed on application startup.
+
+Keep provider/query responses deterministic, model scripted, clock injectable and
+DB/Redis real for transaction/distributed-state evidence. Successful duplicate
+mutation adds exactly one business effect and audit; failed validation/CAS adds0.
+Exact rows differ by command: assert tool/revision/member/pointer IDs and versions,
+not a vague total table count. C7 ledger behavior remains the source of truth.
+
+| Former013 acceptance | New owner |
+|---|---|
+| I01 full authoring traversal |018 S01|
+| I02 compiler/publication failure |013 B01;018 displays its actual result|
+| I03 MCP pinning/execution |013 B03|
+| I04 installed operation registration |013 B04|
+| I05 transaction/replay plus UI duplicate behavior |013 B02/B06 and018 S03|
+| I06 navigation/composer |018 S02/S06;019 P02 for U14 portion|
+| I07 discovery outage/draft retention |018 S04|
+| I08 real production composition/no fixture fallback |013 B05,018 S04,019 P05/P06|
+| I09 actual preview/Redis/UI pairing |019 P01–P06|
+
+Before final submission each owner runs its named suite, records producer revisions
+and demonstrates its success path plus rejection paths. Build/typecheck alone is
+not integration evidence. No arbitrary additional screenshot count.013 acceptance
+unblocks both consumers; acceptance of one consumer must not block the other's
+execution. Gateway/terminal gates require all three completed integrations.

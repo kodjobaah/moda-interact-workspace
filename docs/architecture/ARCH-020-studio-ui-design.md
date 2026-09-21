@@ -397,3 +397,11 @@ selector or extra provider. Protected page/API/action guards remain server-owned
 
 C19 ownership clarification:009 owns preview backend/routes;017 owns the exact
 U14 page and N10/N11 plus U14 part of N13.008 retains U01–U13 and the composer.
+
+
+### Integration ownership — 2026-09-21
+
+C20 assigns backend assembly to013, U01–U13 service wiring to018 and U14/preview
+service wiring to019.018 and019 run independently after their prerequisites;
+neither owns or edits the other's adapters. Component page ownership is unchanged.
+Gateway/caching/system-test dependencies include both new integration tasks.

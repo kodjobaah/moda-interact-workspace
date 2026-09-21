@@ -872,3 +872,11 @@ submitted evidence; baseline failures do not block this component acceptance.
 pending. No dependent promotion, new claim, main integration or gitlink update.
 012 remains the final implementation checkpoint; architecture is not yet Implemented.
 This supersedes older005 current-state wording while preserving review history.
+
+
+### Integration ownership — 2026-09-21
+
+C20 assigns backend assembly to013, U01–U13 service wiring to018 and U14/preview
+service wiring to019.018 and019 run independently after their prerequisites;
+neither owns or edits the other's adapters. Component page ownership is unchanged.
+Gateway/caching/system-test dependencies include both new integration tasks.
