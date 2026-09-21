@@ -465,3 +465,17 @@ checks: 3 passed, 1 failed. See the latest canonical task Architect Review for
 reproduction and correction scope. No dependent promotion or main integration.
 Live validation remains developer-owned and is not an acceptance blocker.
 This note supersedes previous COMMERCE-011 current-state wording.
+
+## COMMERCE-011 Attempt 9 accepted — 2026-09-21
+
+COMMERCE-011 is **Complete, architect accepted, Attempt 9 retained**, claim cleared.
+Reviewed implementation `1176412` and report `ccb35ea3`; clean dedicated worktrees
+and matching remote heads verified. R8-1 inline text order is fixed; all four prior
+review reproductions and 38 focused checks passed independently. Submitted full
+suite remains 117/119 with two existing readiness timing failures in unchanged
+code; no green full-suite or live Redis claim is made. Live Redis/OAuth/Shopify/
+deployment checks remain developer-owned and pending. COMMERCE-005 is promoted
+Ready (001/011/Shared Complete), with no new claim. Other dependants retain current
+states because prerequisites remain unresolved. No main merge or gitlink update;
+architecture is not Implemented. This supersedes older COMMERCE-011 current-state
+wording while preserving historical reviews.

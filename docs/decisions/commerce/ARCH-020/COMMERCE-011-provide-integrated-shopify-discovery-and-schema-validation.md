@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
-executor: copilot
-claimed_at: 2026-09-21T01:04:35Z
+status: complete
+executor: null
+claimed_at: null
 priority: 85
 attempt: 9
 depends_on:
@@ -257,6 +257,20 @@ implementation and parent report are kept in dedicated physical task worktrees.
  Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
+
+### Accepted — Attempt 9 — 2026-09-21
+
+**Current decision: Complete, architect accepted; Attempt 9 retained, executor/claimed_at null.** Reviewed implementation `11764125825a119b5dd7aa8c8adf88c0341f75f8` and parent report `ccb35ea33d5669dd7e4214fb36f70e94ced324dc`. Dedicated worktrees were clean and matched published remote task heads. This acceptance supersedes all earlier Changes Requested/current-state wording; prior reports and reviews remain historical evidence. The stale active claim in the submitted review YAML is cleared. No implementation edit, next claim, main merge or gitlink update.
+
+**R8-1 is resolved.** Text and element nodes now share one ordered child sequence, and extraction traverses that sequence. The exact previously failing instruction retains `Use first before second` in order. Container preservation, mismatched-container rejection and synchronous Redis release-error preservation remain correct in the earlier reproductions. Existing URL, input/output bounds, compiler/schema, pinned MCP process and admission work remain accepted progress. No remaining blocking finding was identified in this correction review.
+
+Independent validation: **4/4 isolated review reproductions passed** against copies of the exact committed source in `/tmp/c011-a9-review`; **38/38 focused checks passed** across discovery, document, admission-cleanup and limits files with REDIS_URL unset; implementation diff whitespace check passed. The environment-gated real Redis test returns early without an endpoint: its reported pass is not live Redis evidence. Lint/typecheck/build are submitted passing evidence, not independently rerun in full here.
+
+The submitted full-suite result remains **117/119**, with two reported existing readiness descendant-signal timing failures. The change is confined to document extraction, its regression test and runtime documentation; readiness code/tests are unchanged from the prior reviewed revision. Earlier review history already records this timing baseline. This review does not claim a green full suite or a fresh independent reproduction of those readiness failures, and does not require unrelated readiness changes for acceptance.
+
+Live Redis rolling admission/cross-replica behavior, OAuth/revocation, live Shopify and deployment lifecycle validation remain developer-owned and pending. No live endpoint check was performed during this review. Acceptance establishes the owned discovery/schema component and its local evidence; COMMERCE-013 retains real service/Studio integration responsibility.
+
+Dependency reconciliation: promote COMMERCE-005 Pending -> Ready because COMMERCE-001, COMMERCE-011 and SHARED-001 are accepted Complete. No next task is claimed. COMMERCE-012, COMMERCE-013, GATEWAY-001 and SYSTEM-TEST-001 retain their existing pending states because other prerequisites remain unresolved. Architecture is not yet Implemented. Final developer integration remains implementation merge first, followed by the parent gitlink/report integration.
 
 ### Changes Requested — Attempt 8 — 2026-09-21
 
