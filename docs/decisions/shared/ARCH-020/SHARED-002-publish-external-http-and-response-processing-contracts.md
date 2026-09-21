@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 145
-executor: copilot
-claimed_at: 2026-09-21T19:18:05Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-SHARED-001
@@ -76,7 +76,7 @@ and never expose secrets or raw external response data in errors/logs.
 - [x] Implement C21 sections2/2.1/4 strict shapes and export the named schemas/types, including connection DTOs, JSON/TEXT decoding, visual/JAVASCRIPT processing union, TransformResponse and both processor input/result types. Preserve existing exports.
 - [x] Extend every execution-kind branch explicitly; reject unauthorized inputs/methods/path/query mappings. Retain definition size bound and add processing config to canonical tool hash through execution.
 - [x] Allow publication compiler output-schema derivation for external wrapper/projection; keep MCP/grant/final-response wire shapes unchanged. Add unchanged old-definition/descriptor/runner fixtures.
-- [x] Update README including complete inventory; publish one new exact package version following normal Shared release workflow and record registry/install verification. Public publication and fresh exact-version registry install/typecheck evidence are complete for `@modainteract/moda-interact-shared@0.14.1`.
+- [x] Update README including complete inventory; publish one new exact package version following normal Shared release workflow and record registry/install verification. Public publication and fresh exact-version registry install/typecheck evidence are complete for `@modainteract/moda-interact-shared@0.14.2`.
 
 ## Interfaces / Contracts
 
@@ -108,7 +108,7 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 - [x] X01: C21 worked examples parse, unsupported method/body/authority/type/path/oversize fails, old two execution variants still parse unchanged.
 - [x] Projection bounds/filter unions/connection DTOs are strict; malformed processing affects hash; external descriptor contains no origin/auth/execution fields.
-- [x] Package exports and fresh install/typecheck demonstrate new named APIs; published version and integrity evidence recorded for `0.14.1`.
+- [x] Package exports and fresh install/typecheck demonstrate new named APIs; published version and integrity evidence are recorded for `0.14.2`.
 
 ## Validation
 
@@ -136,7 +136,7 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ## Completion Report
 
-### Status
+### Historical Attempt 1-4 Submission
 
 Ready for Review.
 
@@ -208,7 +208,7 @@ The task is now ready for Architect review with `status: review`,
 `executor: null`, `claimed_at: null`, and `attempt: 4`. No implementation
 gitlink, main branch, or downstream task was changed.
 
-### Status
+### Historical Attempt 2 Evidence Gap
 
 In Progress. Attempt 2 implementation and public package publication are complete.
 The task remains `in_progress` until the explicit fresh-registry consumer/install
@@ -300,6 +300,57 @@ None newly discovered. No downstream ARCH-020 task is promoted by package public
 - Parent branch: `task/ARCH-020-SHARED-002`.
 - Parent branch head immediately before this report update: `3bf605cd53f56c8389c3696731e36ef1c6afae45` (`task(ARCH-020-SHARED-002): claim task`).
 - Attempt 2 physical worktree/preparation packet is not present in the currently surfaced parent report and remains to be recorded before Review.
+
+### Current Attempt 5 Submission
+
+Status is **Ready for Review** with `attempt: 5`, `executor: null`, and
+`claimed_at: null`. No downstream task was launched, no main branch was changed,
+and no implementation gitlink was updated.
+
+Implementation commit `95bab1d` is pushed to the mirrored implementation branch
+`task/ARCH-020-SHARED-002`. It closes the remaining LIST publication gap by
+rejecting non-`items` root properties, positive `items.minItems`, and
+`items.maxItems` below the configured LIST limit. Focused regressions cover each
+rejection while preserving the valid LIST case. The root package README now
+documents `/commerce`, `/commerce/runner`, the complete C21 external export
+inventory, and the service-ownership boundary. The package version is `0.14.2`.
+
+Validation completed from the dedicated implementation worktree:
+
+- `npm run test:arch020-external-contracts`: **4/4 passed**.
+- `npm run typecheck`: **passed**.
+- `npm run build`: **passed**, including Commerce declarations.
+- `git diff --check`: **passed**.
+
+The exact archive was published publicly as
+`@modainteract/moda-interact-shared@0.14.2` from the committed implementation.
+Archive SHA-1 is `3681fd03c5bbcbfa4cb1aeabb548ef356be1699c` and integrity is
+`sha512-OIQwN6rvC81qis75JXMaQrQ+MSKEP4G8AQls/APlwkSbvqIALTCIcyz2xXN4B1dQ5hBH8//l2R+qZqCsHhkKLA==`.
+After npm propagation, a clean consumer at
+`/tmp/arch020-shared002-registry-consumer-0.14.2` installed the exact registry
+version. Runtime imports for `ExternalHttpResultDataSchema`,
+`ExternalHttpExecutionSchema`, `ResponseProcessingSchema`, and
+`commerce/runner` passed; strict consumer typechecking for the C21 public types
+passed; and `COMMERCE_CONSUMER_DIRECTORY=... npm run validate:commerce-entrypoints`
+passed, including clean-process imports, schema, scripted `finalResponse`, and
+R1/R2 regressions.
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-SHARED-002`
+  parent branch: `task/ARCH-020-SHARED-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-SHARED-002`
+  implementation branch: `task/ARCH-020-SHARED-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization: parent remote task branch fast-forwarded
+`not-needed`; parent `origin/main` incorporated `already-current`; implementation
+remote task branch fast-forwarded `not-needed`; implementation `origin/main`
+incorporated `already-current`. Recursive implementation submodule sync/update
+both passed; recorded submodule entries: none. Attempt 5 claim commit was
+`9c62ac3`, pushed by the deterministic launcher.
 
 ## Architect Review
 
