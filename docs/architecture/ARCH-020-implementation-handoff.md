@@ -681,32 +681,64 @@ ARCH-020-COMMERCE-016 is Ready, attempt0, unclaimed. Accepted006/015/SHARED-001
 are Complete in main;006's blank frontmatter ID is repaired to its canonical ID.
 No task is launched and no other task lifecycle state changes in this update.
 
-## COMMERCE-017 Attempt 1 architect review — 2026-09-21
+## COMMERCE-014 Attempt 1 accepted — 2026-09-21
+
+COMMERCE-014 is **Accepted / Complete, Attempt 1 retained**, claim cleared.
+Reviewed implementation `232cbdd` and report `6dc01a40` against remote task heads.
+Exact-version definition dispatch, Shared mappings/output validation, trusted-context
+separation and bounded one-pass rendering satisfy the owned component contract.
+Independent11 focused tests and diff checks passed. Lint/typecheck/build and wider
+suite results remain submitted evidence.013 owns real adapter registration and
+integrated policy/query execution; live infrastructure/evidence validation remains
+separate. No dependent promotion, new claim, implementation edit, main integration
+or gitlink update.012 remains the final implementation checkpoint; architecture is
+not yet Implemented. Older014 readiness wording is historical.
+## COMMERCE-016 Attempt 1 architect review — 2026-09-21
 
 Changes Requested; Ready, Attempt 1 retained, claim cleared; not accepted.
-Reviewed implementation `2ec7f66` and report `c9385f1d` against remote heads.
-Four submitted UI tests pass; four independent functional reproductions fail:
-duplicate Start, new tool ID after uncertainty, stuck RUNNING cancellation, and
-wrong Back destination. R1–R5 require retained lifecycle identities, exact C19
-client/catalogue/errors, connected saved-source/composer navigation, typed tool
-arguments/stale-result handling, and task-owned populated browser validation.
-An occupied local port does not transfer fixture browser validation to the developer.
-Definition sections overwritten by completion prose are restored; submitted prose
-is preserved under Completion Report. No new claim, dependency promotion, code
-change, main integration or gitlink update. Live production integration remains
-separate. See task for explicit corrections; older readiness wording is historical.
+Reviewed implementation `bfbd7839` and report `f96b41df` against remote task heads.
+Independent submitted contract suites passed50/50; three isolated functional
+reproductions fail: unknown current basket variant facts still qualify, a LINE
+rounding cap understates100% savings, and mixed-currency proposal amounts produce
+a false known subtotal failure. R1–R3 give explicit evaluator corrections and
+expected outputs in the task report. Pure arithmetic/Shared evidence and shared
+budget boundaries are retained. No implementation edits, next claim, main merge,
+gitlink update or dependent promotion.007 remains gated by016;013 and012 retain
+their remaining gates. Live provider composition remains separate integration work.
+Older readiness wording is historical; architecture is not yet Implemented.
 
 
-## COMMERCE-017 Attempt 2 architect review — 2026-09-21
+## COMMERCE-016 Attempt 2 accepted — 2026-09-21
 
-Changes Requested; **Ready**, Attempt 2 retained, executor/claimed_at null; not accepted.
-Reviewed implementation `74a848ad` and report `bb816b26` against remote task heads.
-Independent U14 tests:9/9 passed; four added regression checks fail: failed input
-is cleared, returned UNKNOWN tool state loses reconciliation, unsaved handoffId
-is used as releaseId, and client accepts a different run ID. The task's latest
-A2-R1–R5 specify lifecycle, saved-source/composer, client identity/uncertainty,
-complete input validation and populated workflow evidence corrections. Missing
-local Studio identity remains an explicit browser-validation prerequisite.
-No dependency is promoted, no new attempt claimed, no implementation/main/gitlink
-changed. Reclaim the same task only after this parent review overlay is published.
-Older decision summaries are historical; task YAML and latest review govern.
+Complete, architect accepted; Attempt2 retained, claim clear. Reviewed55204ec /
+dc9edf85. Current-fact checks, consistent LINE/TOTAL savings caps and comparable
+currency minimum precedence accepted. Independent evaluator15/15 and previous
+architect regressions3/3 pass.007 promoted to Ready because015/016 are Complete;
+attempt0/claim unchanged, no execution.012/013/system-test retain other unmet
+prerequisites. Live integration and reader baseline limitation remain separate.
+No implementation changes, main integration or gitlink update.
+
+## COMMERCE-005 Attempt 3 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
+Reviewed6b2c410/4b681aa1. List recursion and provider-version/redirect fixes verified.
+Eleven submitted tests pass; two cleanup cases fail: awaited rejected-body cancel
+exceeds deadline and pending AsyncIterable read is not interrupted. A3-R1 gives
+bounded cleanup and a minimal ReadableStream/Uint8Array-only contract correction.
+No new scope, downstream promotion, claim, main merge or gitlink update. See task
+for exact effects; live provider and baseline validation remain separate.
+
+## COMMERCE-005 Attempt 4 accepted — 2026-09-21
+
+COMMERCE-005 is **Accepted / Complete, Attempt 4 retained**, claim cleared.
+Reviewed implementation `f099659` and report `e5662be5` against remote heads.
+A3-R1 is resolved: rejected/late body cleanup no longer delays typed responses;
+cleanup rejections are observed; only Uint8Array/ReadableStream bodies are supported,
+and unsupported iterators are rejected without consumption. Existing stream and
+query corrections remain. Independent13 focused tests and the prior pending-cleanup
+reproduction passed; diff checks passed. Typecheck/lint/build and full272/275 are
+submitted evidence; baseline failures do not block this component acceptance.
+013 owns real transport composition; live Shopify/provider validation remains
+pending. No dependent promotion, new claim, main integration or gitlink update.
+012 remains the final implementation checkpoint; architecture is not yet Implemented.
+This supersedes older005 current-state wording while preserving review history.

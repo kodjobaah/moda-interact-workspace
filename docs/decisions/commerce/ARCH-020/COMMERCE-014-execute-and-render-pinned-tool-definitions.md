@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 85
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-004
   - ARCH-020-SHARED-001
@@ -62,11 +62,11 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Implement DefinitionExecutionPort from C19 against the exact pinned C14 execution union; never select latest, infer business handlers from tool names or mutate a process-global tenant registry.
-- [ ] Validate authored input schema and mappings/literals before provider work; dispatch QueryExecutionPort or versioned policy registry with trusted context injected server-side.
-- [ ] Implement bounded text/items renderer, allowed tokens and null/empty/unavailable/error behavior; no expressions, eval, recursive interpolation or hidden I/O.
-- [ ] Preserve structured policy Evidence and public-query wrapper separation under C18; rendering cannot promote UNKNOWN or counterfeit facts.
-- [ ] Use injected query/policy adapters for component acceptance.013 owns production registration;014 does not implement provider retrieval, pricing or discount logic.
+- [x] Implement DefinitionExecutionPort from C19 against the exact pinned C14 execution union; never select latest, infer business handlers from tool names or mutate a process-global tenant registry.
+- [x] Validate authored input schema and mappings/literals before provider work; dispatch QueryExecutionPort or versioned policy registry with trusted context injected server-side.
+- [x] Implement bounded text/items renderer, allowed tokens and null/empty/unavailable/error behavior; no expressions, eval, recursive interpolation or hidden I/O.
+- [x] Preserve structured policy Evidence and public-query wrapper separation under C18; rendering cannot promote UNKNOWN or counterfeit facts.
+- [x] Use injected query/policy adapters for component acceptance.013 owns production registration;014 does not implement provider retrieval, pricing or discount logic.
 
 ## Interfaces / Contracts
 
@@ -89,10 +89,10 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 
 ## Acceptance Criteria
 
-- [ ] E01: renamed/narrowed/literal tools dispatch the exact version and arguments once; bad mapping/schema/absent operation dispatches zero times.
-- [ ] E02: two shops/concurrent calls share no mutable context; deadline/cancellation propagate; missing adapter is typed UNAVAILABLE.
-- [ ] E03: template null/empty/overflow/error/injection cases obey C14, keep structured data unchanged and never evaluate provider text as a template.
-- [ ] E04: C18 EC07/EC08 output provenance/authorization cases hold through the full definition executor.
+- [x] E01: renamed/narrowed/literal tools dispatch the exact version and arguments once; bad mapping/schema/absent operation dispatches zero times.
+- [x] E02: two shops/concurrent calls share no mutable context; deadline/cancellation propagate; missing adapter is typed UNAVAILABLE.
+- [x] E03: template null/empty/overflow/error/injection cases obey C14, keep structured data unchanged and never evaluate provider text as a template.
+- [x] E04: C18 EC07/EC08 output provenance/authorization cases hold through the full definition executor.
 
 ## Validation
 
@@ -118,46 +118,90 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review. Attempt 1 implementation and agent-owned validation are complete.
 
 ### Files Changed
 
-None; implementation has not started.
+- `src/commerce/execution/executor.ts`
+- `src/commerce/execution/index.ts`
+- `src/commerce/execution/ports.ts`
+- `src/commerce/execution/renderer.ts`
+- `tests/definition-execution.test.ts`
+- `tests/definition-execution-mcp.test.ts`
 
 ### Work Completed
 
-None; task definition only.
+- Implemented the C19 `DefinitionExecutionPort`, injected `QueryExecutionPort`, and immutable exact-version `PolicyOperationRegistry`.
+- Validated authored input schemas and Shared argument mappings before dispatch, including renamed, narrowed, and literal mappings.
+- Added exact policy operation/version dispatch and fail-closed `UNAVAILABLE` behavior for missing adapters.
+- Added bounded scalar and item rendering with strict token grammar, safe own-property traversal, fixed null/empty/error output, and no recursive interpolation.
+- Preserved structured policy evidence and kept public query facts inside the C18 provenance wrapper.
+- Propagated trusted context, cancellation, and deadlines without process-global tenant state.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+Agent-owned checks:
+
+- E01 — renamed query fixture, exact policy-version fixture, malformed schema/mapping and absent-operation fixtures — `npx vitest run tests/definition-execution.test.ts tests/definition-execution-mcp.test.ts --reporter=verbose` — 11/11 tests passed; valid calls dispatched once with exact mapped arguments, invalid calls dispatched zero times.
+- E02 — concurrent two-shop fixture, cancellation/deadline fixtures and missing-adapter fixtures — same focused command — passed; contexts remained distinct, pre-cancelled/expired calls dispatched zero times, post-dispatch expiry failed closed, and missing adapters returned typed `UNAVAILABLE`.
+- E03 — null, empty-item, item-limit, oversized structured result, provider error and injected-template fixtures — same focused command — passed; output stayed bounded, item limiting affected rendered text only, structured data was unchanged, and provider text was not recursively evaluated.
+- E04 — valid/malformed evidence, counterfeit public-query evidence, stale authority and revoked authority fixtures through `createMcpService` — same focused command — passed; valid evidence was preserved, malformed policy evidence was rejected, public data remained wrapped, and denied authority reached the provider zero times.
+- `npm run lint` — passed.
+- `npm run typecheck` — passed after repository-standard Prisma generation.
+- `npm run build` — passed; the production Next build includes the dynamic `/api/mcp` route.
+- Full `npm test` — 31/33 files and 270/273 tests passed. The task-owned suites passed. `tests/discovery-limits.test.ts` timed out waiting for its configured Redis-backed environment. Two `tests/readiness-docker.test.ts` process-tree setup barriers failed under the 33-worker full-suite load.
+- `npx vitest run tests/readiness-docker.test.ts` — 9/10 passed; the abort case missed its setup barrier in the grouped run.
+- The readiness abort case run alone — 1/1 passed.
+- Full non-infrastructure suite excluding `discovery-limits.test.ts` and `readiness-docker.test.ts` — 31 files and 262 tests passed.
+- `git diff --check` — passed.
+
+No live provider, database, or container validation is required by this definition-execution component task. The Redis-backed discovery test remains environment-dependent evidence rather than a task-owned product failure.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+No implementation-scope deviation. Production provider registration remains with COMMERCE-013 as required. Full-suite infrastructure-sensitive failures are recorded above without weakening task-owned acceptance.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+The accepted COMMERCE-004 and SHARED-001 contracts are authoritative. Query providers return the C14 storefront-facts wrapper and policy adapters return their exact Shared output schema. COMMERCE-013 will install production adapters without changing this execution boundary.
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. No additional provisioning prerequisite is introduced.
+The configured Redis-backed discovery suite needs its expected local service to produce live infrastructure evidence. The process-tree readiness abort case is sensitive to full-suite concurrency but passed alone. Neither condition changes the scoped C14/C18 acceptance result.
 
 ### Architectural Concerns
 
-None newly reported.
+None. The implementation preserves the C19 ownership boundary and leaves production adapter composition to COMMERCE-013.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-COMMERCE-014. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-014` on `task/ARCH-020-COMMERCE-014`.
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-014` on `task/ARCH-020-COMMERCE-014`, prepared from accepted source `0aa3a7be8472d9d1325ade395ce20d63fc128d4f`.
+
+Launcher preparation synchronized the registered repository and recursively initialized the accepted database submodule at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`.
+
+Implementation commit `232cbdd` (`feat(commerce): execute pinned tool definitions`) is pushed to `origin/task/ARCH-020-COMMERCE-014`. The parent report commit and push are recorded by the submission commit containing this report. No parent service gitlink update or main integration was performed.
 
 ## Architect Review
 
+### Accepted — Attempt 1 — 2026-09-21
+
+**Current decision: Accepted / Complete; Attempt 1 retained; executor/claimed_at null.** Reviewed implementation `232cbdd9af4411c2e4cdcac86bda8285e5b81554` and parent report `6dc01a40216eb725aeee2566ce05e8b490342fd9`, verified against remote task heads. Both dedicated worktrees were clean. Database pin remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. This supersedes previous readiness/pending review wording while preserving history.
+
+The owned C14/C19 definition-execution boundary is accepted. Shared schema/mapping validation feeds exact operation/version dispatch; trusted004 context is supplied separately from mapped arguments. Registry keys are immutable and no authored tool-name handler table or latest-version fallback is used. Missing adapters fail closed. Query results retain their source/version/schema wrapper, policy outputs are validated against their Shared operation schemas, and structured data remains separate from rendered text. Scalar/item templates use bounded own-property paths, fixed empty/unavailable behavior and one-pass interpolation; unsafe syntax and overflow fail closed. The executor propagates the supplied signal/budget/deadline and rejects late results;004 owns the outer bounded wait and authenticated context construction.
+
+Independent validation: **11/11 focused tests passed** across definition-execution and actual-MCP-handler integration fixtures. This covers renamed/literal mappings, exact dispatch, zero-call denials, concurrent shop contexts, pre/late deadline behavior, empty/null/error/overflow rendering, unchanged structured policy data and public-query provenance separation. Implementation and parent diff checks passed. Submitted lint/typecheck/build success, full270/273, non-infrastructure262-pass and isolated readiness results remain reported evidence, not independently rerun. No live provider, Redis, database or container validation was performed.
+
+No remaining functional blocker was identified in this component review.013 still owns installation/type-checking of the real005/015/006/016/007 adapters and end-to-end policy/query composition. Background's evidence registration/semantic validation and real producer authority remain their assigned integration responsibilities; schema preservation here is not proof of live evidence validity or a substitute for them. Developer-owned infrastructure validation remains pending.
+
+No downstream promotion:013 and terminal system testing retain other prerequisites;012 remains the final implementation checkpoint. No new claim, implementation edits, main merge/push or service gitlink update. Architecture is not yet Implemented.
+
 ### Review Status
 
-Pending.
+Accepted / Complete at Attempt 1; see the current architect decision above.
 
 ### Review Notes
 
