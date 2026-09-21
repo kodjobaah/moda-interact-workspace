@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 160
-executor: copilot
-claimed_at: 2026-09-20T23:41:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-BACKGROUND-001
@@ -218,6 +218,48 @@ No new architectural concern. The injected extractor is the explicit boundary fo
 Expected execution branch: task/ARCH-020-BACKGROUND-002. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, published implementation commit `55ac8b271dd17f73d647d4ed6124059fffdffc6c`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002`, branch `task/ARCH-020-BACKGROUND-002`, claim commit `3cadfb5893f270b861be7fda3a5111912365ccef`; this Attempt 2 report is published as a follow-on commit. Database submodule was not modified. No parent service gitlink or main integration was performed.
 
 ## Architect Review
+
+### Attempt 2 architect decision — 2026-09-21 — Changes Requested
+
+Current authoritative decision: **Ready, Attempt 2, unclaimed; not accepted**. This decision supersedes Attempt 1's current-state wording and the Attempt 2 submission's assertion that R1–R3 are fully satisfied. Preserve completed extractor/digest/provenance work. These are remaining C18 defects, not scope amendments. No dependent promotion, new claim, implementation edit or main merge is performed by this review.
+
+Reviewed implementation `55ac8b271dd17f73d647d4ed6124059fffdffc6c` and report `5802e25af618838a9fd0eab999797cca24d82f4f`; both remote task heads verified. Both dedicated worktrees were clean. Independently reran the exact submitted focused command: **78 tests passed across 3 files**. Implementation diff check passed. Build/Prisma/TypeScript remain submitted passing evidence, not independently rerun in this review. No provider/deployed service was contacted.
+
+#### A2-R1 — P1 — Convert unusable evidence to the required admitted referral
+
+Files: `src/commerce/host.ts`, `src/commerce/evidence.ts`, `tests/integration/commerce/host.test.ts`, and processor integration fixtures. The new test named `uses the production extractor for trusted root evidence and refers on truncated recommendations` actually expects `INVALID_FINAL`. Shared runner rejects unknown/expired/unregistered final IDs before Background reaches `evidence.refresh`; host rethrows, and `ConversationTurnProcessor` fails the reservation, releases the turn and rethrows. That is not C18's single normal admitted REFER_TO_STORE outcome. The report's Deviation declaring this the required outcome is incorrect.
+
+Required implementation: preserve Shared validation and strict extraction. At the host's model-result boundary, inspect only a sole `finalResponse` call that passes the accepted `finalResponseSchema(verifyResponseContract(manifest.responseContract, manifest.responseContractHash, digest))`. Before handing that valid call back to the runner, use a read-only registry eligibility check (no network) to identify ANSWER references with missing, invalid, conflicting, expired or nonqualifying trusted evidence. Convert only those structurally valid evidence failures to `answerKind: "REFER_TO_STORE"`, `referralReason: "UNVERIFIABLE_FACTS"`, `evidenceIds: []`, `details: {}`, and a trusted store referral text. Keep output-token accounting, normal runner validation, language guards and ordinary admission intact. Do not blindly translate every INVALID_FINAL or all thrown errors into a reply; malformed final envelopes, mixed tool calls and unrelated authority violations remain rejected. Do not register counterfeit IDs merely to get through Shared validation. No Shared release is necessary for this host-local correction.
+
+Tests must change the existing truncated final expectation to a resolved trusted referral, and add unknown final ID and expired original at the model-final boundary. Assert zero refresh calls for these invalid originals, no positive offer, one admitted send and one existing reservation lifecycle through processor integration. A structurally malformed final must still reject. Use canonical EC05/06/10 fixtures, not an invented alternative interpretation of fail closed.
+
+#### A2-R2 — P1 — Recheck cancellation and admission after every refresh outcome
+
+Files: `src/commerce/host.ts` (the `assertCurrent` closure and block immediately after `await evidence.refresh`), `src/commerce/evidence.ts` (failure exits), and host/processor tests. `suppressionReason` recognizes an AbortError name or selected error codes, but AbortController may abort with any reason. On a transport failure or structured non-OK response, refresh returns early without its final admission check; host has no unconditional check after refresh. Therefore cancellation can become a deliverable referral. A downstream inbound-version check does not test the host AbortSignal and cannot repair this.
+
+Independent reproduction: copied the actual MCP host fixture into `/tmp/bg002-a2-review/host-review.test.ts`, used the production default extractor and valid hashed evidence, and executed `controller.abort(new Error("operator cancellation"))` when the second tools/call (refresh) arrived. Expected rejection with CANCELLED; actual host result was REFER_TO_STORE with a trusted replyText. **1 review case failed, 33 unselected cases skipped**. No implementation files changed.
+
+Add this unconditional guard immediately after the awaited refresh returns, before recording/handling a deliverable result:
+
+```ts
+if (deps.signal?.aborted) throw new CommerceHostError("CANCELLED");
+await assertCurrent();
+```
+
+Also normalize external cancellation at the beginning of `assertCurrent` using the same first line, before `signal.throwIfAborted()`. Preserve the separate ordinary per-call deadline -> referral behavior; an external cancel must suppress regardless of the reason object/string, while the overall turn deadline must not deliver after expiry. Preserve explicit STALE_TURN outcomes even if the local version has not changed. Ensure cleanup cannot turn suppression into delivery. Do not add retry, credit or replacement-grant paths.
+
+Tests: trigger default AbortError, ordinary Error and string cancellation reasons while replay is pending; each must suppress. Table-test new inbound and processing lease loss racing both a successful replay and a failing replay. For processor-integrated cases assert zero send and zero language writes plus exactly existing reservation cleanup. Test ordinary refresh timeout with live turn separately: exactly one referral and no refresh retry.
+
+#### A2-R3 — P2 — Supply the actual canonical matrix and correct the report
+
+Files: `tests/unit/commerce/evidence.test.ts`, `tests/integration/commerce/host.test.ts`, processor integration fixtures, and this Completion Report. Current evidence file contains 10 tests; the changed-field test covers only resultingTotal, the recommendation test repeats one ID rather than two distinct alternatives, and there is no canonical seed import. Existing processor mocks/regressions do not establish refresh-pending EC11 behavior. The report reassigns EC02/07/12 meanings and claims cases not implemented. The revoked-producer unit case uses Date.now against a fixed 30-second September21 midnight fixture, so it can exit for expiry without ever testing DENIED; use the frozen seed clock and assert exactly one replay. The combined counterfeit/provenance test asserts only the valid ID's conflicting provenance; split invalid-digest rejection into an independent assertion. Do not let a Shared schema failure mask the null-money/unresolved-condition checks: first assert test input passes the Shared schema and has the correct recomputed digest.
+
+Use `docs/architecture/ARCH-020-evidence-contract-fixtures.json` and retain the exact EC01–EC12 meanings in C18. Add independently hashed single-field changes for every EC04 field; two distinct proposal IDs, reversed result order and one replay for EC03; missing/duplicate/empty/truncated matches for EC05; time/digest/schema boundaries for EC06; wrapper/rendered-text counterfeits for EC07; identity/revocation for EC08; each structured business code as a resolved error envelope plus HTTP401/403, malformed output, thrown transport failure and per-call timeout for EC09 (assert one call, no retry); budget and provenance cases for EC10; pending-replay barriers for EC11; exact recommendation replay without a separate evaluator for EC12. Exercise the real default extractor and host, then assert delivery/reservation/language effects at the processor boundary. Registry tests alone cannot claim send assertions. In particular, mockRejectedValue of an ERROR envelope is not testing the normal resolved structured-error branch.
+
+For each EC row report concrete test names, clock, replay/send/reservation/language counts and actual result. Re-run the focused suite, build, Prisma validation and diff check. Record prepared-packet start-of-attempt synchronization/recursive-submodule evidence and accepted Shared/database pins; the claim SHA alone is not the full required packet evidence. Do not re-prepare Attempt 2 to manufacture this report: recover its existing launcher evidence. Live pairing remains terminal-system-test-owned and explicitly unrun.
+
+Publish implementation corrections and updated report on the same mirrored task branches, then return to Review. This architect parent overlay is committed/pushed before handoff so preparation is not blocked by uncommitted review changes.
+
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 

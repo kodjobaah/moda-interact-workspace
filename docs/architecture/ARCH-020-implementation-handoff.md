@@ -410,3 +410,16 @@ R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
 three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
 are required; live producer pairing stays terminal-system-test-owned. See the
 canonical task's explicit correction steps. No new claim or downstream promotion.
+
+
+## BACKGROUND-002 Attempt 2 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 2, claim cleared; not accepted. Reviewed implementation
+55ac8b2 / report5802e25; 78 focused tests independently pass. Strict extraction and
+digest/provenance corrections are present. Remaining A2-R1: unusable final evidence
+must produce C18's admitted referral, not INVALID_FINAL; A2-R2: unconditional
+post-refresh cancellation/admission checks (ordinary-Error cancellation reproduced
+a deliverable referral); A2-R3: complete the canonical EC01–EC12 tests and correct
+overstated report mappings/results. See the task's exact code/location instructions.
+This is the latest decision; prior review entries are historical. No downstream
+promotion or claim; live pairing remains terminal-system-test-owned.
