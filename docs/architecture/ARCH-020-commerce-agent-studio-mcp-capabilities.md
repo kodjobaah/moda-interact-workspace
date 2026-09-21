@@ -727,7 +727,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | pending | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
-| [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | pending | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
+| [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | complete | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
@@ -975,3 +975,51 @@ Binding C17 allows003 publication and008 Studio to be implemented and accepted
 against agreed service ports while011 continues. Separate013 owns production
 adapters and integrated U01–U13 acceptance;009, GATEWAY-001,012 and terminal
 system tests depend on013. Component fixtures never become production fallbacks.
+
+
+## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 1, claim cleared; not accepted. Reviewed a7ccac5 /
+ffcc0461. R1 wired strict C18 extractor; R2 digest/provenance/freshness/matching;
+R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
+three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
+are required; live producer pairing stays terminal-system-test-owned. See the
+canonical task's explicit correction steps. No new claim or downstream promotion.
+
+
+## BACKGROUND-002 Attempt 2 — Changes Requested — 2026-09-21
+
+Current state: Ready, Attempt 2, claim cleared; not accepted. Reviewed implementation
+55ac8b2 / report5802e25; 78 focused tests independently pass. Strict extraction and
+digest/provenance corrections are present. Remaining A2-R1: unusable final evidence
+must produce C18's admitted referral, not INVALID_FINAL; A2-R2: unconditional
+post-refresh cancellation/admission checks (ordinary-Error cancellation reproduced
+a deliverable referral); A2-R3: complete the canonical EC01–EC12 tests and correct
+overstated report mappings/results. See the task's exact code/location instructions.
+This is the latest decision; prior review entries are historical. No downstream
+promotion or claim; live pairing remains terminal-system-test-owned.
+
+
+## BACKGROUND-002 Attempt 3 review — 2026-09-21
+
+Current decision: Ready, Attempt 3, claim cleared; Changes Requested for remaining
+A2-R3 deterministic validation/report corrections. Reviewed7505ac3 / f409db23.
+A2-R1 referral conversion and A2-R2 cancellation/admission code fixes are verified:
+84 focused tests and the prior failing host cancellation reproduction now pass.
+Canonical two-alternative, independent semantic/error and refresh-pending processor
+cases remain required; exact files/cases/counts are in the task review. Live pairing
+is terminal-owned and is NOT a prerequisite to component acceptance. Prior review
+current-state wording is historical. No downstream promotion, claim or main merge.
+
+## BACKGROUND-002 Attempt 4 — Accepted — 2026-09-21
+
+ARCH-020-BACKGROUND-002 is **Accepted / Complete, Attempt 4**, claim cleared.
+Reviewed implementation `8b2f983` and report `47345f39`; architect independently
+reran **114 passing focused tests**, correcting the reported combined total110.
+Evidence/provenance refresh, trusted referrals and cancellation/admission guards
+conform to the component contract. Latest task review distinguishes registry,
+local MCP transport and injected processor evidence from unrun integrated/live
+pairing. No further coverage-only correction is required for this acceptance.
+Gateway002, Commerce012 and terminal system tests retain other dependencies;
+no dependent is promoted or launched. Developer integration remains separate;
+ARCH-020 is not complete. Earlier BACKGROUND-002 review statuses are historical.
