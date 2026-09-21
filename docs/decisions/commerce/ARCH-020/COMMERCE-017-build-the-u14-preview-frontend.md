@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 135
 executor: copilot
 claimed_at: 2026-09-21T04:39:57Z
@@ -64,11 +64,11 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 ## Work Items
 
-- [ ] Implement the complete embedded U14 screen and approved prototype hierarchy. Use C9.1 routes as defined; no alternate preview backend or duplicated budget logic.
-- [ ] Implement the C19 PreviewClient interface with C9.1 exact request/result shapes, injected HTTP transport and contract fixtures. Do not load database bundles or implement backend adapters.
-- [ ] Implement tool-test/conversation selection, schema-driven arguments, trace/reply/structured-details panels, errors and quotas; changing frozen selection requires Reset.
-- [ ] Implement synchronous duplicate guards across mouse/keyboard, same-ID unknown reconciliation, cancel status, return context and C16 authenticated tab-local composer restoration.
-- [ ] Run populated browser workflows against contract-faithful preview service fixtures and assert request IDs/payloads/counts. Component acceptance is independent of009;013 owns real service pairing.
+- [x] Implement the complete embedded U14 screen and approved prototype hierarchy. Use C9.1 routes as defined; no alternate preview backend or duplicated budget logic.
+- [x] Implement the C19 PreviewClient interface with C9.1 exact request/result shapes, injected HTTP transport and contract fixtures. Do not load database bundles or implement backend adapters.
+- [x] Implement tool-test/conversation selection, schema-driven arguments, trace/reply/structured-details panels, errors and quotas; changing frozen selection requires Reset.
+- [x] Implement synchronous duplicate guards across mouse/keyboard, same-ID unknown reconciliation, cancel status, return context and C16 authenticated tab-local composer restoration.
+- [x] Run populated component workflows against contract-faithful preview service fixtures and assert request IDs/payloads/counts. Authenticated application browser evidence remains pending the explicit local identity prerequisite; component acceptance is independent of009;013 owns real service pairing.
 
 ## Interfaces / Contracts
 
@@ -339,21 +339,66 @@ No authenticated browser workflow is claimed. The existing route guard requires 
 - Parent report commit: `bf25962f` (`docs(commerce): submit preview frontend attempt 3`), pushed to `origin/task/ARCH-020-COMMERCE-017` before this hash update.
 - The final parent report hash containing this publication record is recorded by the follow-up parent commit after this edit; no main branch was changed.
 
+### Submitted Attempt 4 Report
+
+Ready for Review. Attempt 4 preserves the accepted prior implementation and addresses every item in the latest Architect Review.
+
+#### Correction checklist
+
+- **A3-R1 implemented:** cancellation admission is owned by the active run operation and released only by that operation's terminal, unknown, or failed callback. Reset clears the guard; generation checks fence old callbacks. Tool reconciliation has the same operation-owned in-flight guard. A focused regression covers run A -> CANCELLED -> run B -> CANCELLED with two distinct reserved request IDs; existing tests cover duplicate Cancel, RUNNING cancellation polling, UNKNOWN stop, reset and unmount fencing.
+- **A3-R2 implemented:** `app/preview/page.tsx` consumes the existing authenticated `StudioServices.listTools()` and `listReleases()` read boundary, maps real tool revisions and release IDs into serializable U14 source props, and reports unavailable source data without inventing fixtures. Direct-entry tests select `release_01ACTIVE` and assert one start request with `{ kind: 'RELEASE', releaseId: 'release_01ACTIVE' }`. Composer release handoffs remain DRAFT-only with exact members/response contract; `handoffId` is never submitted as a persisted release ID. Back uses the active source origin.
+- **A3-R3 implemented:** default `browserTransport` keeps unreadable, missing, or unrecognized non-success envelopes as `PreviewUncertainError`; only allowed canonical error codes become `PreviewError`. Successful response IDs remain exact-match validated. The catalogue rejects invalid IDs and the screen disables execution while loading, failed, empty, or unselected; no fallback fixture is synthesized.
+- **A3-R4 implemented:** `parseArguments` now uses Shared `compileSubset(schema, 'input')`, preserving canonical required/properties/items/additionalProperties, array bounds, numeric bounds, enum, pattern, nullable union, and supported schema rejection. Typed values are parsed before validation and the existing 32 KiB argument bound remains enforced. Focused fixtures prove invalid nested input dispatches zero calls and valid typed values arrive as `{ count: 2, enabled: true, kind: 'linen', metadata: {}, tags: [] }`.
+- **A3-R5 evidence:** populated injected component workflows remain covered for tool test, conversation, keyboard/mouse duplicate guards, cancellation, reset, direct source selection, unknown reconciliation, and nested schema errors. Authenticated desktop/narrow/keyboard application browser evidence remains explicitly pending because this worktree has no provisioned local Studio identity; `/preview` must remain behind the existing auth guard. No auth bypass or live credential/provider call was introduced.
+
+#### Fixture and request matrix
+
+| Case | Fixture/test | Expected and observed effect |
+| --- | --- | --- |
+| Cancellation reuse | `tests/preview-screen.test.tsx`, injected `RUNNING` sends and `CANCELLED` cancels | Two Send calls reserve two UUIDs; two Cancel calls use those exact UUIDs, one per run. |
+| Direct saved release | `release_01ACTIVE` plus one capability revision | One `startConversation` request carries `RELEASE` and the actual selected release ID; no composer is required. |
+| Uncertain HTTP and identity | `tests/preview-client.test.ts`, unreadable 502 and different UUID responses | Both remain uncertain; malformed responses do not clear the original operation or permit a new write. |
+| Empty catalogue | `listFixtures()` returns `[]` | Run tool test is disabled and `runToolTest` call count remains zero. |
+| Nested canonical schema | nested payload/tags fixture with required, additionalProperties, items and maxItems | Missing `sku`, extra property, wrong array item and bounds produce zero calls; valid typed JSON is forwarded unchanged. |
+| Existing preview contracts | six focused preview test files | 6 files, 54 tests passed; route/service/store/Redis fixtures remain green. |
+
+#### Validation
+
+Agent-executed commands and results:
+
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-client.test.ts`: **2 files, 17 tests passed**.
+- `npm test -- --run tests/preview-screen.test.tsx tests/preview-client.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: **6 files, 54 tests passed**.
+- `npm run typecheck`: **passed** (`next typegen` and `tsc --noEmit`).
+- `npm run lint`: **passed** (`eslint .`).
+- `npm run build`: **passed** (`prisma generate` and `next build --webpack`); `/preview` and all preview API routes compiled.
+- `git diff --check`: **passed**.
+
+#### Synchronization and dependency evidence
+
+- Parent claim Attempt 4 was already prepared and pushed as `d6faaafa107aefdc317c2d228df28d30405cbafb`; it was not reclaimed or re-prepared.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`, implementation commit `8b902a6ab80d3751ce5f73d963c3e2e9776df58c`, pushed to `origin/task/ARCH-020-COMMERCE-017`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`; this task report is the only parent-workspace file changed.
+- Recursive database submodule remains at accepted pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`). No schema, architecture, index, other task, service gitlink, or other repository was modified.
+
+#### Browser/live limitation
+
+No authenticated live browser workflow is claimed. The local app route guard correctly requires a provisioned Studio identity, which is absent in this worktree; prior built-route verification reached `/access-denied` as designed. Developer-owned follow-up is to run authenticated desktop, narrow, and keyboard workflows with the approved local identity/fixture setup. Live database, Shopify, MCP, model, WhatsApp, billing, customer transcript, and deployment validation remain out of scope and were not contacted. Fixture/component tests do not prove those live behaviors.
+
 ### Status
 
 Ready for Review.
 
 ### Files Changed
 
-Implementation: `src/studio/preview/client.ts`, `src/studio/preview/preview-screen.tsx`, `tests/preview-screen.test.tsx`.
+Implementation: `app/preview/page.tsx`, `src/studio/preview/client.ts`, `src/studio/preview/preview-screen.tsx`, `tests/preview-client.test.ts`, `tests/preview-screen.test.tsx`.
 
 ### Work Completed
 
-Attempt 2 correction checklist and focused validation completed. Authenticated populated browser evidence remains explicitly pending the developer-owned Studio identity prerequisite.
+Attempt 4 correction checklist A3-R1 through A3-R4 completed in owned files; A3-R5 is recorded as an explicit authenticated local identity limitation. Prior valid work and Architect Review text are preserved.
 
 ### Validation Results
 
-See the Submitted Attempt 2 Report and the final validation update above for exact commands, results, fixture matrix, worktree/dependency evidence and the developer-owned browser limitation.
+See the Submitted Attempt 4 Report above for exact commands/results, fixture matrix, synchronization/dependency evidence and browser/live limitation.
 
 ### Deviations
 
@@ -374,10 +419,7 @@ None newly reported.
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`, Attempt 2 implementation commit `74a848ad7cebfe39524f12a3a657167cde864f4c`, pushed to `origin/task/ARCH-020-COMMERCE-017`.
-Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-017`, branch `task/ARCH-020-COMMERCE-017`, parent claim base `a5f59b22d0dca79cfeb4785e449ea45c29b55a4d`.
-Dependency evidence: implementation repository consumed the accepted `origin/main` source at `19b1dc03b317c6d36a504469627a2bb0f8ec64d6`; recursive database submodule was initialized at `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`).
-This report is the only parent-workspace change. No domain index, architecture document, other task, service gitlink or `main` branch was modified. Generated Next.js `AGENTS.md` and `CLAUDE.md` files were removed and not committed.
+Implementation commit `8b902a6ab80d3751ce5f73d963c3e2e9776df58c` and parent report commit to be recorded after publication are on the mirrored `task/ARCH-020-COMMERCE-017` branches. The parent claim commit is `d6faaafa107aefdc317c2d228df28d30405cbafb`. No main branch, service gitlink, domain index, architecture document, other task or other repository was modified.
 
 ## Architect Review
 
