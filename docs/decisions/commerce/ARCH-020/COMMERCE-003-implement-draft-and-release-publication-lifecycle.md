@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
 executor: codex
 claimed_at: 2026-09-20T23:31:46Z
@@ -24,7 +24,7 @@ enables:
   - ARCH-020-COMMERCE-013
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # Implement draft and release publication lifecycle
@@ -203,23 +203,101 @@ Ready for Review.
 
 ### Files Changed
 
-`lib/commerce/lifecycle.ts`, `app/api/studio/response-contract/validate/route.ts`, and `tests/commerce-lifecycle.test.ts`.
+Attempt 2 implementation commit `d5d7f56` changes:
+
+- `src/commerce/publication/ports.ts`
+- `src/commerce/publication/validation.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/publication/read-models.ts`
+- `lib/commerce/lifecycle.ts` (compatibility re-export)
+- `app/api/studio/response-contract/validate/route.ts`
+- `tests/commerce-lifecycle.test.ts`
+- `tests/fixtures/publication-store.ts`
+- `docs/publication-service-contract.md`
+- `scripts/rehearse-publication-postgres.sh`
+- `scripts/fixtures/arch020-publication-rehearsal.sql`
 
 ### Work Completed
 
-Implemented injected registry validation, canonical hashes, replay/CAS/audit transactions, immutable published revisions/releases, activation/rollback pointers, explicit enable/disable, bounded pagination, unavailable production composition, and deterministic direct-request fixtures.
+Attempt 2 implements all four requested corrections:
+
+- **R1 implemented:** publication validation and hashes now wrap the accepted
+  Shared schemas and `canonicalJson`, `toolHashInput`, `capabilityHashInput`, and
+  `responseContractCanonicalJson`. Tool hashes select only the six canonical
+  definition fields. The authenticated validation route also validates the
+  complete example response.
+- **R2 implemented:** transaction admission, persisted state, snapshots, command
+  results, and replay results are detached. Release creation validates all
+  members before writes, rejects duplicate revision/capability membership, keeps
+  contiguous positions, permits shared identical tool revisions, and rejects
+  conflicting revisions atomically.
+- **R3 implemented:** the owned component now has explicit storage,
+  authorization, query-validation, and executable-registry ports; complete C7
+  create/update/draft/publish/release/pointer/enable operations; detached read
+  models; and a repeat-safe initial release seed orchestration. Two independent
+  service instances share the transaction fixture. Current authorization is
+  checked before replay and again inside the transaction; development-principal
+  assurance is inside that transaction. Production composition remains
+  unavailable for COMMERCE-013.
+- **R4 implemented:** pagination uses the last returned row as its exclusive
+  continuation cursor, rejects unknown cursors/invalid limits, returns null at
+  completion, and detaches returned rows.
 
 ### Validation Results
 
-Agent validation: focused lifecycle suite 8/8 passed; lint, typecheck, build, and diff check passed. Full suite: 75 passed, 2 failed in pre-existing auth-development identity fixtures because the mocked Prisma namespace lacks Prisma.sql.
+Commands and outcomes for Attempt 2:
 
-Fixture matrix: R01 baseline/hash, R02 new bounded detail, R03/R04/R05 invalid contract rejection, R06 replay/mismatched reuse, authorization/CAS, atomic unavailable publication, immutable membership, registry unavailability, and explicit disable audit all passed.
+- `npm test -- --run tests/commerce-lifecycle.test.ts`: **17/17 passed**.
+- `npm run lint`: **passed**.
+- `npm run typecheck`: **passed**.
+- `npm run build`: **passed**, including Prisma generation and Next production build.
+- `npm test`: **86/86 passed** across 14 files. An earlier run executed in
+  parallel with the production build had two readiness child-process timing
+  failures; the final sequential run passed both unchanged tests.
+- `git diff --check`: **passed**.
 
-Developer-owned pending: isolated PostgreSQL two-transaction rehearsal for duplicate IDs, mismatched reuse, revision allocation, pointer CAS, rollback, audit atomicity, and failed partial publication; real provider/executor composition remains COMMERCE-013-owned.
+Requirement-to-fixture matrix:
+
+- **R1 / Shared validation and hashes:** `accepts the Shared baseline and optional
+  required keyword...`, `hashes only the Shared six-key tool definition`, and
+  `keeps malformed draft content editable but rejects it atomically at
+  publication`. Valid cases commit normally; invalid publication leaves the
+  draft unchanged and adds **0** publication audit rows.
+- **R2 / immutable ownership and membership:** `detaches admitted inputs,
+  snapshots, and replay results`, `rejects duplicate release membership with
+  zero release/member/audit writes`, and `allows two capabilities to share one
+  revision and rejects conflicting tool revisions atomically`. Duplicate and
+  conflict cases add **0** releases and **0** audit rows; the valid shared-tool
+  release commits one release and one audit.
+- **R3 / ports and transactions:** `serializes two service instances...` proves
+  two callers produce **1** business row, **1** operation, and **1** audit;
+  actor/payload conflicts and revoked replay add **0** rows; injected pre-audit
+  failure rolls back to **0** rows and a retry commits exactly **1**. Query
+  validation covers all three false codes and a thrown timeout/error with **0**
+  publication writes/audits. Metadata/draft CAS, explicit enabled state,
+  absent-pointer CAS, and repeat-safe seed all pass.
+- **R4 / pagination:** limits 1 and 2 over five rows concatenate to all five IDs
+  exactly once; empty/final cursors are null; unknown cursor and invalid limits
+  reject; returned rows are detached.
+
+Developer-owned PostgreSQL rehearsal remains explicitly pending. Run:
+
+```bash
+ARCH020_REHEARSAL_DATABASE_URL='postgresql://.../isolated_arch020_test' \
+  bash scripts/rehearse-publication-postgres.sh
+```
+
+The script checks accepted database ownership/revision/position constraints and
+lists the required adapter transaction assertions for duplicate IDs, mismatched
+reuse, revision allocation, pointer CAS, rollback, and pre-audit failure. Real
+provider/executor adapters and assembled integration remain COMMERCE-013-owned.
 
 ### Deviations
 
-Task definition was authored on local main by explicit developer request. Production Prisma composition and real executor registrations remain unavailable by design until later adapter work; synthetic registries are test-only.
+None for the Attempt 2 correction contract. Production Prisma composition and
+real executor registrations remain unavailable by C17 design until COMMERCE-013;
+all stores, authorization resolvers, registries, and query validators used by the
+tests are injected fixtures only.
 
 ### Assumptions
 
@@ -227,7 +305,9 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-PostgreSQL rehearsal remains unexecuted by the agent under live/infrastructure validation policy. Real executor/provider adapters remain pending COMMERCE-005/006/007 and COMMERCE-013 composition.
+The isolated PostgreSQL rehearsal is unexecuted under the developer-owned live
+validation policy. Real executor/provider adapters remain pending
+COMMERCE-005/006/007 and COMMERCE-013 composition.
 
 ### Architectural Concerns
 
@@ -235,7 +315,10 @@ None newly reported.
 
 ### Git / VCS
 
-Expected execution branch: `task/ARCH-020-COMMERCE-003`. Attempt: 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-003`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-003`. No main merge or parent service gitlink update was performed.
+Implementation commit `d5d7f56` is pushed to
+`origin/task/ARCH-020-COMMERCE-003`. Attempt: 2. The parent task report is
+submitted on the mirrored parent branch. No main merge or parent service gitlink
+update was performed.
 
 ## Architect Review
 
