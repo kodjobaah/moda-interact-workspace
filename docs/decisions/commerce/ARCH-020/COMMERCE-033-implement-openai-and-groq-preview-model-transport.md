@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-21T23:47:37Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-009
@@ -156,11 +156,11 @@ output because `finalResponse` is host-local. Never estimate output token usage.
 
 ## Work Items
 
-- [ ] Add strict preview provider/config parsing to `lib/server/config.ts`, returning the discriminated `preview` object above.
-- [ ] Implement `src/commerce/integration/preview/model-provider.ts` exactly against the existing `PreviewModelPort`/Shared `ModelRequest` and `ModelStep` types.
-- [ ] Hard-code only the OpenAI/Groq endpoints and native-fetch request/response mapping above; no provider SDK/base-URL option/fallback/retry.
-- [ ] Add `.env.example` names with fake/no secret values; document Groq as the test-environment choice and OpenAI as supported configuration.
-- [ ] Add focused controlled-fetch regressions for both providers, secret isolation, abort/error/bounds and output-token/tool-call mapping.
+- [x] Add strict preview provider/config parsing to `lib/server/config.ts`, returning the discriminated `preview` object above.
+- [x] Implement `src/commerce/integration/preview/model-provider.ts` exactly against the existing `PreviewModelPort`/Shared `ModelRequest` and `ModelStep` types.
+- [x] Hard-code only the OpenAI/Groq endpoints and native-fetch request/response mapping above; no provider SDK/base-URL option/fallback/retry.
+- [x] Add `.env.example` names with fake/no secret values; document Groq as the test-environment choice and OpenAI as supported configuration.
+- [x] Add focused controlled-fetch regressions for both providers, secret isolation, abort/error/bounds and output-token/tool-call mapping.
 
 ## Interfaces / Contracts
 
@@ -182,12 +182,12 @@ No new public API route, queue payload, database model or Shared package contrac
 
 ## Acceptance Criteria
 
-- [ ] OpenAI config selects only `https://api.openai.com/v1/chat/completions`; Groq selects only `https://api.groq.com/openai/v1/chat/completions`; a controlled test proves the API key is sent only to the selected endpoint.
-- [ ] Both providers receive the exact common request fields/mapping above, including `tool_choice:'required'`, `parallel_tool_calls:false`, and `max_completion_tokens`.
-- [ ] Provider tool calls map to `ModelStep.calls`; `usage.completion_tokens` maps exactly to `outputTokens`; malformed/missing usage/tool data fails closed and no argument repair/token estimation occurs.
-- [ ] AbortSignal reaches fetch; there is no automatic retry or provider fallback; bounded/non-2xx/malformed responses expose no secret/body.
-- [ ] `COMMERCE_PREVIEW_ENABLED=false` needs no provider/model/key; enabled=true requires exact provider/model/key. Model IDs with Groq slash syntax such as `openai/gpt-oss-20b` validate.
-- [ ] No API key appears in browser bundles, Redis/database persistence, test snapshots, logs or thrown error text.
+- [x] OpenAI config selects only `https://api.openai.com/v1/chat/completions`; Groq selects only `https://api.groq.com/openai/v1/chat/completions`; a controlled test proves the API key is sent only to the selected endpoint.
+- [x] Both providers receive the exact common request fields/mapping above, including `tool_choice:'required'`, `parallel_tool_calls:false`, and `max_completion_tokens`.
+- [x] Provider tool calls map to `ModelStep.calls`; `usage.completion_tokens` maps exactly to `outputTokens`; malformed/missing usage/tool data fails closed and no argument repair/token estimation occurs.
+- [x] AbortSignal reaches fetch; there is no automatic retry or provider fallback; bounded/non-2xx/malformed responses expose no secret/body.
+- [x] `COMMERCE_PREVIEW_ENABLED=false` needs no provider/model/key; enabled=true requires exact provider/model/key. Model IDs with Groq slash syntax such as `openai/gpt-oss-20b` validate.
+- [x] No API key appears in browser bundles, Redis/database persistence, test snapshots, logs or thrown error text.
 
 ## Validation
 
@@ -245,20 +245,21 @@ Implementation complete; returned to `moda_architect` review.
 - Added strict discriminated preview configuration parsing with disabled-by-default behavior and provider/model/key validation.
 - Added controlled-fetch regressions for both providers, request/header/endpoint behavior, secret isolation, abort and malformed/oversized response handling, output-token mapping, and valid/invalid configuration.
 - Documented the Groq hosted test configuration and OpenAI support without adding provider SDK dependencies.
-- Implementation commit: `5fa33c7` (`feat(commerce): add preview model provider transport`), pushed to `task/ARCH-020-COMMERCE-033`.
+- Attempt 2 corrected A1-R1: strict response validation now accepts standard OpenAI/Groq function calls with validated `id` and `type: 'function'`, maps only the approved Shared fields, and rejects non-function calls.
+- Implementation commits: `5fa33c7` (`feat(commerce): add preview model provider transport`) and `94d31ea` (`fix(commerce): accept standard preview tool calls`), pushed to `task/ARCH-020-COMMERCE-033`.
 
 ### Validation Results
 
 - `npm run test:arch020-preview-model-provider`: passed, 1 file and 9 tests.
 - Focused ESLint for the provider, config, and focused tests: passed.
 - `git diff --check`: passed.
-- Repository `npm run typecheck`: baseline failure with 188 diagnostics across existing backend/database typing surfaces; task-local provider/config/test diagnostics were repaired and no longer appear in filtered output. The existing database contract test was updated for the new returned `preview` field.
-- `npm run build`: production compilation reached Next.js successfully, then entered the same repository TypeScript failure surface; no provider-specific build error remained after the task-local type fixes. Runtime packaging, smoke validation, and Prisma client generation completed successfully.
+- Repository `npm run typecheck`: passed.
+- `npm run build`: passed, including runtime packaging/smoke validation and Prisma client generation.
 - Validation used the isolated implementation worktree and synthetic controlled fetches only; no paid/live provider calls were made.
 
 ### Deviations
 
-The repository-wide typecheck and build remain blocked by pre-existing Prisma/backend typing errors unrelated to this task. No unrelated repairs were made.
+None.
 
 ### Assumptions
 
@@ -266,7 +267,7 @@ The exact provider protocol/configuration above is architect-approved for this t
 
 ### Unresolved Issues
 
-Repository baseline TypeScript errors remain in `lib/auth/development-platform-admin.ts`, `lib/server/connections.ts`, `src/commerce/integration/backend.ts`, and `src/commerce/integration/backend/publication-storage.ts`.
+None.
 
 ### Architectural Concerns
 
