@@ -9,9 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 155
-executor: null
+executor: copilot
 claimed_at: null
 attempt: 0
 depends_on:
@@ -122,41 +122,78 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; task definition only.
+Implementation branch contains the nine task-scoped files listed below.
 
 ### Work Completed
 
-None.
+Implemented U15/U16 Connections pages using typed fixture ports, added the
+Connections sidebar item after Explore Shopify, and added the declared focused
+test script. The UI supports search, enabled filtering, pagination, detail tabs,
+immutable revision selection/creation, credential status-only reads, explicit
+SUPER_ADMIN reason acknowledgements, duplicate-click guards, same-operation
+credential retry retention, unknown-outcome messaging, ADMIN read-only controls,
+and return navigation retaining search.
+
+The launcher claim step was attempted but could not repair durable claim state
+because the existing implementation worktree was already dirty. The dirty files
+matched this task scope exactly, so the implementation was preserved and
+submitted with `attempt: 0` and no claimed timestamp.
 
 ### Validation Results
 
-No implementation validation performed.
+Agent-executed validation:
+
+- `npm run test:arch020-connections-ui`: passed, 1 file and 4 tests.
+- `npm run lint`: passed with 0 errors and 2 existing warnings outside the task
+  (`scripts/code-runtime-manifest.mjs` and
+  `src/commerce/code-response/runtime/kernel.ts`).
+- `git diff --check`: passed.
+- VS Code diagnostics for the changed Connections UI and focused test: no
+  errors.
+
+`npm run typecheck` was run but is blocked by existing repository-wide Prisma
+and publication typing failures: 188 errors in 7 files, outside the task files.
+No typecheck error was reported for the changed Connections UI or focused test.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+The canonical launcher could not complete its claim phase because the isolated
+implementation worktree was already dirty. No dirty file was discarded or reset.
+The implementation was validated in place and the parent report was updated on
+the mirrored task branch for architect review.
 
 ### Assumptions
 
 C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+The implementation uses shared package `@modainteract/moda-interact-shared@0.14.2`
+for the approved commerce view/input types.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+Repository-wide typecheck remains unresolved outside this task; focused tests,
+lint, diagnostics and whitespace checks pass. No live, deployment, database or
+backend validation was required or run.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+No architectural contradiction identified. The repository-wide typecheck
+failures are pre-existing and outside the owned frontend boundary.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-022. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Expected mirrored branch: `task/ARCH-020-COMMERCE-022`.
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-022`.
+Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-022`.
+The implementation worktree was physically isolated and contained only the
+task-scoped dirty files at continuation. Dependency pin: shared `0.14.2`.
+Implementation commit: `dd0164b` (`feat(commerce): build connections studio pages`).
+Parent report commit and both remote push results are recorded in the final
+submission after publication.
 
 ## Architect Review
 
