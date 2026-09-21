@@ -1200,3 +1200,14 @@ Other downstream tasks remain gated by their own unresolved prerequisites;012 is
 still the final implementation checkpoint. No implementation changes, main merge,
 main push or gitlink update. Architecture is not yet Implemented. This supersedes
 older008 state wording while retaining historical reviews.
+
+
+## COMMERCE-005 Attempt 2 architect review — 2026-09-21
+
+Changes Requested; Ready, Attempt2 retained, claim clear; not accepted.
+Reviewed2761e6b/e4fc15cd. Seven submitted tests pass; two task-owned review cases
+fail: populated list selection validation and blocked stream cancellation.
+A2-R1–R3 give exact recursion fix, active body cleanup and C14 UNAVAILABLE mapping
+for provider-version fallback. Retain variable validation/HTTP envelope/deadline
+race improvements. No scope expansion, promotion, new claim, main merge or gitlink
+change. See task for exact acceptance effects; live provider validation is separate.

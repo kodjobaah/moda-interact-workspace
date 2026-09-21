@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -171,6 +171,46 @@ None newly reported.
 Expected execution branch: `task/ARCH-020-COMMERCE-005`. Attempt: 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-005` on `task/ARCH-020-COMMERCE-005`, clean after implementation commit `2761e6b` pushed to `origin/task/ARCH-020-COMMERCE-005`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-005`; starting claim was `762b3678`, now cleared with status `review`. Recursive database submodule remained at recorded SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No main branch, parent service gitlink, architecture/index file or Architect Review text was modified; no enabled task was started.
 
 ## Architect Review
+
+### Changes Requested — Attempt 2 — 2026-09-21
+
+**Current decision: Ready; Attempt 2 retained; executor/claimed_at null; not accepted.** Reviewed implementation `2761e6b83806e9ca0d8a00df0200ad55f6b48086` and report `e4fc15cdeed48ec1406ac9d2deeb6257fe6bc1ee`; remote task heads verified and dedicated worktrees clean. No implementation changes, new claim, dependency promotion, main integration or gitlink update.
+
+Retain runtime String validation, typed HTTP envelope, decoded-byte counting, partial-error rejection, real deadline race and aliased query support. Independent isolated `/tmp/c005-a2-review/review.test.ts` imports current code: **7 submitted tests pass; 2 added task-owned cases fail** (valid populated bounded product list rejected; deadline settles but blocked ReadableStream is not cancelled). Diff check passed. Submitted typecheck/lint/build/full214/216 are reported evidence, not broader reruns. No live provider/Redis/database check was executed. These are remaining R2/R3 corrections, not new scope.
+
+#### A2-R1 — P1 — Preserve selections when validating populated lists
+
+File: src/commerce/query/index.ts, validResponseValue's isListType branch. It recurses with `(item, nullableType.ofType)` and drops selectionSet. Every nonempty list of selected objects then reaches the object branch without its required selection and returns false. The single-object alias test does not cover connections.
+
+Change this exact recursion to:
+
+```ts
+if (isListType(nullableType)) {
+  return Array.isArray(value)
+    && value.every((item) => validResponseValue(item, nullableType.ofType, selectionSet));
+}
+```
+
+Preserve non-null/list-element/type validation and compiler-derived output checks. Add `query ProductList { products(first: 2) { nodes { title } } }` with resultPath `products.nodes`, variables={}, and provider data `{products:{nodes:[{title:'A'}]}}`: expected OK with values=[{title:'A'}], exactly1 request. Also test empty list success, malformed title rejected, nullable/non-null item behavior where allowed by the pinned schema, and an alias nested inside a populated list. Remove the large commented duplicate implementations after the active module while touching this file; they are not an acceptance mechanism or alternate runtime.
+
+#### A2-R2 — P1 — Cancel body readers when the deadline wins
+
+File: index.ts readBody and execute cleanup; transport contract. Promise.race settles the caller, but the body reader can remain blocked in reader.read/iterator.next indefinitely. Modern ReadableStream has Symbol.asyncIterator, so this code selects the for-await branch and never reaches its explicit reader.cancel finally. Reproduction supplies a ReadableStream with no chunks and a cancel hook; execute returns DEADLINE after a fake-clock timeout, but the hook remains uncalled.
+
+Prefer the ReadableStream reader branch before generic AsyncIterable detection. Register an abort listener which cancels the active reader immediately, including while read() is pending; remove it and releaseLock in finally. Check abort before parsing/accepting data. For generic AsyncIterable add an explicit transport cancellation hook or equivalent documented cancellation contract that can interrupt pending reads; do not assume iterator.return queued behind a blocked next is sufficient. On early status/version/redirect rejection and on a late response arriving after timeout, dispose/cancel any obtained body. Observe cleanup rejections without extending the bounded deadline or accepting late facts.
+
+Permanent stream tests: blocked reader deadline and caller cancellation invoke cancel; overflow cancels at the first excessive chunk and does not process subsequent chunks; early429/version/redirect rejection disposes the body; successful stream releases its reader; late response cannot leave an unread open body. Use fake clocks and controlled streams/effect counters. The submitted 'bounded-stream overflow' fixture is Uint8Array, not a stream, and cannot prove cleanup. Preserve one-request/no-retry/tokenless behavior.
+
+#### A2-R3 — P2 — Match C14 provider-version failure semantics
+
+File: index.ts headerValue/version check and query tests. A missing or differing `x-shopify-api-version` currently returns INCOMPATIBLE_VERSION,false, and the new test asserts that behavior. C14 explicitly classifies provider API-version fallback as UNAVAILABLE; INCOMPATIBLE_VERSION remains appropriate for the immutable definition's unsupported executor/api version before I/O.
+
+Change the response-header failure to `failure('UNAVAILABLE', true)` and update missing/different-header fixtures. Keep malformed published versions rejected before I/O. Handle record-form header names case-insensitively (or require Headers only in the typed envelope). Document the no-redirect transport requirement explicitly so013 disables redirect following before network work rather than relying only on after-the-fact finalUrl rejection. No actual network adapter or live provider test is required.
+
+### Resubmission
+
+Implement A2-R1–A2-R3 within005-owned query files/tests; preserve the original successful variable/deadline corrections and the query fact wrapper. Record exact fixtures and side-effect counts, including actual streams versus preloaded bytes. Run required checks, commit/push the same branch pair, and return to review. Full-suite environment limits and live Shopify remain separate; no dependent task is promoted. Parent overlay is published before handoff; normal preparation owns the next claim.
+
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 
