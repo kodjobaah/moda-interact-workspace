@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 190
-executor: copilot
-claimed_at: 2026-09-22T15:14:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-GATEWAY-001
@@ -107,14 +107,14 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-- [ ] Operational views correlate service and worker effects and cannot mistake preview/test traffic for production.
-- [ ] Observability requirements are version-controlled and no undocumented manual backend configuration is necessary.
-- [ ] Alert thresholds distinguish assumed initial values from measured capacity evidence.
+- [x] Operational views correlate service and worker effects and cannot mistake preview/test traffic for production.
+- [x] Observability requirements are version-controlled and no undocumented manual backend configuration is necessary.
+- [x] Alert thresholds distinguish assumed initial values from measured capacity evidence.
 
 ## Validation
 
-- [ ] Run local dashboard/query/config validation with fixture signal names and environment filters.
-- [ ] Provide developer-owned backend validation instructions; acceptance requires recorded evidence for required hosted signals/alerts.
+- [x] Run local dashboard/query/config validation with fixture signal names and environment filters.
+- [x] Provide developer-owned backend validation instructions; acceptance requires recorded evidence for required hosted signals/alerts.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -130,39 +130,77 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Ready for Review. Attempt 1 implementation is complete and locally validated.
 
 ### Files Changed
 
-None; implementation has not started.
+- `dashboards/commerce-operational.json`
+- `alerts/commerce-operational.yaml`
+- `docs/commerce-operational-runbook.md`
+- `tests/fixtures/commerce-operational-signals.json`
+- `tests/validate-commerce-observability.sh`
 
 ### Work Completed
 
-None; task definition only.
+Added a version-controlled Grafana dashboard with service/environment selectors,
+live MCP and eligibility views, worker oldest-waiting-age view, preview view and
+Background-owned evidence-refresh view. Added four C11 alert rules with explicit
+production/live filters, inclusive sample floors, strictly-greater thresholds,
+consecutive-duration handling for queue lag, and `NoData` states. Added the
+operational runbook for unavailable service, permission/provider failures, queue
+lag, evidence failures, rollback, capability disablement and preview isolation.
+The evidence-refresh rule and panel are intentionally marked as Background-002
+owned; until that accepted terminal event exists they remain `No data` rather
+than fabricating a business signal.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+| Requirement | Fixture / command | Expected side effect | Result |
+| --- | --- | --- | --- |
+| Emitted Commerce signal names and units | `tests/fixtures/commerce-operational-signals.json`; `tests/validate-commerce-observability.sh` | Dashboard/alerts reference discovery, MCP, eligibility, preview, queue-age and refresh names; queue age is milliseconds | PASS |
+| Production vs preview/environment isolation | `dashboards/commerce-operational.json`; validator | Environment selector is test/production; production alert queries require `purpose=live`; preview sample is visible only in preview panel | PASS |
+| MCP denominator and threshold | `alerts/commerce-operational.yaml`; validator | Operational failure rate is `F / A > 0.05` with inclusive `A >= 20`; expected DENIED is excluded | PASS |
+| Queue lag threshold and duration | alert rule plus fixture sample `121000ms` | Converted age is strictly greater than 120 seconds and must remain true for 5 minutes | PASS |
+| Evidence failure threshold and ownership | alert rule, runbook and pending-owner fixture | `F / A > 0.10`, `A >= 20`, live only; missing Background signal remains No data | PASS locally; hosted signal pending |
+| Configuration syntax and hygiene | `bash -n tests/validate-commerce-observability.sh`; Ruby YAML parse; `git diff --check` | Valid shell/YAML and no whitespace errors | PASS |
+
+Exact local results: `tests/validate-commerce-observability.sh` passed with
+`commerce observability configuration validation passed`; `bash -n ...` passed;
+Ruby parsed `alerts/commerce-operational.yaml`; `git diff --check` passed.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+No scope deviation. The C11 evidence-refresh signal is not emitted by the
+accepted Commerce inventory; the alert documents Background-002 ownership and
+does not substitute Commerce eligibility outcomes.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+The deployed Grafana data sources and service/resource label mapping are supplied
+by the developer's environment. Dashboard JSON is provisioned with Loki and
+Prometheus datasource variables and does not commit backend credentials.
 
 ### Unresolved Issues
 
-See parent architecture review assumptions; no implementation evidence asserted.
+Developer-owned hosted validation remains: provision the dashboard/alerts in the
+approved Grafana environment, verify test then production arrival, capture live
+Commerce and preview events, confirm preview exclusion, exercise alert boundaries
+and recovery, and verify Background's terminal evidence-refresh signal. No live
+deployment, backend provisioning, provider call or hosted alert evaluation was
+performed by this agent.
 
 ### Architectural Concerns
 
-None newly reported.
+The evidence-refresh alert cannot become actionable until Background emits the
+accepted terminal signal named in the fixture. This is an explicit cross-repo
+handoff, not an implementation of Background behavior.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-GATEWAY-002. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Expected execution branch: `task/ARCH-020-GATEWAY-002`. Attempt: 1. Implementation
+and parent report commits/pushes will be recorded here before submission. No main
+integration, parent service gitlink update, live deployment or enabled-task launch
+is performed.
 
 ## Architect Review
 
