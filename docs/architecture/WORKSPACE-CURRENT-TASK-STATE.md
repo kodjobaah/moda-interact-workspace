@@ -1168,6 +1168,28 @@ COMMERCE-033. Because this provider task is Complete and 019's other declared
 prerequisites are already Complete, COMMERCE-019 remains **Ready, Attempt 0** with
 no active claim. No downstream task is started automatically.
 
+## ARCH-020 COMMERCE-021 Attempt 1 review — 2026-09-21
+
+Current authoritative task state: `ARCH-020-COMMERCE-021` **Ready, Attempt 1,
+Changes Requested**, executor/claimed_at null. Reviewed implementation `b19f9d7` and
+parent report `5abdd61a`. Attempt 2 is limited to the production DNS/classifier,
+absolute DNS/connect/body deadline+cleanup, raw JSON safety/depth, and explicit
+EXTERNAL_HTTP dispatcher corrections recorded in the task. The architect resolved
+the Shared cancellation mismatch as nonretryable `DEADLINE` at the tool-result
+boundary; no Shared task/publication is opened. `COMMERCE-030`, `COMMERCE-024`,
+`GATEWAY-003`, `COMMERCE-012` and system-test work receive no promotion from this
+review.
+
+
+## ARCH-020 COMMERCE-021 Attempt 2 review — 2026-09-22
+
+Current authoritative task state: `ARCH-020-COMMERCE-021` **Ready, Attempt 2,
+Changes Requested**, executor/claimed_at null. Attempt 2 closes A1-R1–A1-R4.
+Attempt 3 contains only A2-R1 provider response-body cleanup and A2-R2
+nonretryable external deadline preservation at the DefinitionExecutor boundary.
+`COMMERCE-030`, `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test
+work remain gated; no automatic launch or integration occurs.
+
 ## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
 
 COMMERCE-034 is **Accepted / Complete, Attempt 1**. The accepted U14 correction
@@ -1201,3 +1223,12 @@ normal synchronization. If either producer is absent, 019 returns `blocked` with
 reimplementation until developer integration or explicit exact dependency-commit
 consumption makes the accepted producer source available. No downstream task is
 started by this reconciliation.
+
+## ARCH-020 COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+Current authoritative task state: `ARCH-020-COMMERCE-021` **Complete, Attempt 3,
+Accepted**, executor/claimed_at null. Attempt 3 closes post-header provider-body
+cleanup and nonretryable external deadline propagation through `DefinitionExecutor`;
+all prior accepted transport/security behavior is preserved. `COMMERCE-030` still
+requires COMMERCE-025, and COMMERCE-024/GATEWAY-003/COMMERCE-012 retain additional
+dependency gates. No downstream task is automatically launched.
