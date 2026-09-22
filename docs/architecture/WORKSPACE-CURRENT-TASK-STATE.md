@@ -1385,3 +1385,17 @@ focused 9-scenario suite and closes the receipt/liveness/MIME/renderer/runtime p
 The next claim is Attempt 3 and must correct only canonical tool revision hashing and
 remove credential existence from publication/sample gating while retaining current
 non-secret connection auth-shape checks. Dependants remain gated.
+
+## COMMERCE-032 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
+preserves original grant tool/revision/provenance and current exclusion identities,
+but cannot be accepted against the current COMMERCE-028 availability port: 032 passes
+trusted merchant `shopId` for all candidates, while 028 currently requires null for
+PLATFORM credential availability and therefore falsely returns `CREDENTIAL_MISSING`.
+
+C21 now makes the intended boundary explicit and
+**ARCH-020-COMMERCE-037 is Ready, Attempt 0** to normalize only the producer's
+read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
+accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
+COMMERCE-012 remain gated. No task is started automatically.

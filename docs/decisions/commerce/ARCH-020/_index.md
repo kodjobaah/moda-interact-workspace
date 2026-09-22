@@ -39,11 +39,12 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
-| [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | blocked (Attempt 1; awaits COMMERCE-037) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002, ARCH-020-COMMERCE-037 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
 | [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | ready | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-037](COMMERCE-037-normalize-availability-shop-scope.md) | Normalize external availability merchant shop scope | ready | ARCH-020-COMMERCE-028 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -878,3 +879,21 @@ accepted `toolHashInput` definition content hash and remove live credential exis
 from synthetic sample/publication admission while validating only persisted
 connection/revision auth shape. COMMERCE-031/024/012 remain gated and no task is
 auto-started.
+
+## COMMERCE-032 Attempt 1 architect review — 2026-09-22
+
+**Blocked, Attempt 1 retained; claim clear.** Implementation `10639c7` is
+provisionally conformant at the external-availability resolver boundary: exact
+tool/revision grant pinning, capability-provenance overlap, exclusion identity,
+shop-scoped calls, per-call revision caching and typed unavailable behavior are
+present.
+
+Review exposed a producer/consumer mismatch in accepted COMMERCE-028:
+`checkConnectionAvailability` currently treats `shopId` as the credential-row scope
+key, while C21/COMMERCE-032 passes the trusted merchant shop identity. A real PLATFORM
+candidate is therefore falsely excluded as `CREDENTIAL_MISSING`.
+
+The producer correction is materialized as **COMMERCE-037 Ready, Attempt 0**.
+COMMERCE-032 now depends on it and remains Blocked until 037 is accepted. No 032 source
+change is presently required; its next attempt is validation/reconciliation unless
+the corrected producer exposes a new 032-owned defect. No downstream task is launched.

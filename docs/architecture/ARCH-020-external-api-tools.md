@@ -764,14 +764,21 @@ not from input; repeat active-role lookup inside transaction. Same replay return
 saved value without mutate. Unexpected exceptions rollback; no false success audit.
 Types reference generated Prisma.TransactionClient; no invented parallel ORM model.
 
-checkConnectionAvailability({connectionRevisionId,shopId}) returns
-{kind:'available'} or {kind:'excluded',reason:'CONNECTION_DISABLED'|
-'CONNECTION_REVISION_MISSING'|'CREDENTIAL_MISSING'|'CREDENTIAL_KEY_UNAVAILABLE'} or
-{kind:'unavailable'}. Uses metadata and key IDs without returning/decrypting secrets.
-It never substitutes a different revision/shop. Execution still calls resolveConnection
-to decrypt and recheck; corrupted ciphertext can fail even if status looked available.
-032 receives this status port. Distinguish missing configuration from falsely saying
-no feature exists.020 never supplies a placeholder configured=true status.
+checkConnectionAvailability({connectionRevisionId,shopId}) receives the trusted
+merchant shop identity used by032; `shopId` is non-null in this read-only availability
+port. After loading the immutable revision,028 maps credential scope internally:
+PLATFORM reads the null-scope credential row and PER_SHOP reads the exact supplied
+merchant shop row. It returns {kind:'available'} or
+{kind:'excluded',reason:'CONNECTION_DISABLED'|'CONNECTION_REVISION_MISSING'|
+'CREDENTIAL_MISSING'|'CREDENTIAL_KEY_UNAVAILABLE'} or {kind:'unavailable'}.
+Uses metadata and key IDs without returning/decrypting secrets. It never substitutes
+a different revision, another merchant's credential or a platform credential for a
+missing PER_SHOP credential. `getCredentialStatus`, credential mutation and
+`resolveConnection` retain their existing nullable scope-key shopId contracts.
+Execution still calls resolveConnection to decrypt and recheck; corrupted ciphertext
+can fail even if status looked available.032 receives this availability port.
+Distinguish missing configuration from falsely saying no feature exists.020 never
+supplies a placeholder configured=true status.
 
 ### 9.3. HTTP evidence before assembly
 
@@ -1115,3 +1122,17 @@ Two C21 mismatches remain: definition identity must use the canonical
 `toolHashInput(definition)` content hash already used by the lifecycle, and publication
 must validate current non-secret connection/revision auth shape without requiring a
 live PER_SHOP credential. No dependant is promoted until COMMERCE-030 is Complete.
+
+## COMMERCE-032 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
+preserves original grant tool/revision/provenance and current exclusion identities,
+but cannot be accepted against the current COMMERCE-028 availability port: 032 passes
+trusted merchant `shopId` for all candidates, while 028 currently requires null for
+PLATFORM credential availability and therefore falsely returns `CREDENTIAL_MISSING`.
+
+C21 now makes the intended boundary explicit and
+**ARCH-020-COMMERCE-037 is Ready, Attempt 0** to normalize only the producer's
+read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
+accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
+COMMERCE-012 remain gated. No task is started automatically.
