@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 180
-executor: copilot
-claimed_at: 2026-09-22T13:18:14Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -66,16 +66,16 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
-- [ ] Apply C7.1 hosted auth configuration: Google-only AUTH_* variables and a non-development DEPLOYMENT_ENVIRONMENT_NAME. No Render service enables the local SUPER_ADMIN override; production runtime plus development override must fail closed. Keep the private MCP assertion boundary independent of Studio auth.
+- [x] Apply C7.1 hosted auth configuration: Google-only AUTH_* variables and a non-development DEPLOYMENT_ENVIRONMENT_NAME. No Render service enables the local SUPER_ADMIN override; production runtime plus development override must fail closed. Keep the private MCP assertion boundary independent of Studio auth.
 
-- [ ] Allow exactly the C15/U01–U14 UI routes and documented studio/auth methods; add /features, /tools, /explore and /shops index plus detail routes. Discovery endpoints remain staff-authorized, not a public MCP proxy.
-- [ ] Provision the COMMERCE-011 supervised stdio runtime/schema artifacts in the Commerce build, no extra port/service/credentials. Add optional server-only ADMIN_ORIGIN for Admin navigation. Redis is required for discovery rate limits. Child failure degrades docs search without disabling live MCP or local schema editing.
+- [x] Allow exactly the C15/U01–U14 UI routes and documented studio/auth methods; add /features, /tools, /explore and /shops index plus detail routes. Discovery endpoints remain staff-authorized, not a public MCP proxy.
+- [x] Provision the COMMERCE-011 supervised stdio runtime/schema artifacts in the Commerce build, no extra port/service/credentials. Add optional server-only ADMIN_ORIGIN for Admin navigation. Redis is required for discovery rate limits. Child failure degrades docs search without disabling live MCP or local schema editing.
 
-- [ ] Inspect accepted Commerce build/start/port/health contracts and recursive database generation requirements before defining the service.
-- [ ] Add a private Render service for Commerce and an authenticated team UI host through the public gateway; block public MCP routes, transport aliases and normalised/encoded variants. Use an explicit staff UI/auth route allowlist rather than a blanket proxy.
-- [ ] Wire Background private MCP URL and separate staff OAuth, database, assertion-verification/signing and preview-model secret names plus existing platform Redis connectivity for bounded cross-replica preview deduplication. No new Redis service is required. Only Background receives production signing keys; Commerce receives verification keys. Other services and browser/admin identities are not authorised live MCP callers.
-- [ ] Configure bounded streaming/body/timeout behaviour compatible with the selected MCP client/server and environment identity.
-- [ ] Document additive migration ordering, affected-worker pause/resume, initial release publication, resource preservation and coordinated pre-production rollback.
+- [x] Inspect accepted Commerce build/start/port/health contracts and recursive database generation requirements before defining the service.
+- [x] Add a private Render service for Commerce and an authenticated team UI host through the public gateway; block public MCP routes, transport aliases and normalised/encoded variants. Use an explicit staff UI/auth route allowlist rather than a blanket proxy.
+- [x] Wire Background private MCP URL and separate staff OAuth, database, assertion-verification/signing and preview-model secret names plus existing platform Redis connectivity for bounded cross-replica preview deduplication. No new Redis service is required. Only Background receives production signing keys; Commerce receives verification keys. Other services and browser/admin identities are not authorised live MCP callers.
+- [x] Configure bounded streaming/body/timeout behaviour compatible with the selected MCP client/server and environment identity.
+- [x] Document additive migration ordering, affected-worker pause/resume, initial release publication, resource preservation and coordinated pre-production rollback.
 
 ## Interfaces / Contracts
 
@@ -144,18 +144,18 @@ All dependencies must be Complete and architect-accepted before execution.
 
 ## Acceptance Criteria
 
-- [ ] Coordinate BACKGROUND-001 A2/C6.3 transcription configuration: the exact provider/model selector names, values/defaults and credentials below must reach the messaging worker in independent test/production settings. Preserve Groq; OpenAI is explicit, with gpt-4o-mini-transcribe the OpenAI-only default. No automatic fallback. Existing translation-worker OpenAI group is not messaging configuration; scope secrets narrowly rather than importing unrelated translation settings. Background owns any evidence-required conversion/image dependency; Gateway verifies runtime/resources and records explicit rollout/rollback. Configuration checks do not require paid live transcription.
+- [x] Coordinate BACKGROUND-001 A2/C6.3 transcription configuration: the exact provider/model selector names, values/defaults and credentials below must reach the messaging worker in independent test/production settings. Preserve Groq; OpenAI is explicit, with gpt-4o-mini-transcribe the OpenAI-only default. No automatic fallback. Existing translation-worker OpenAI group is not messaging configuration; scope secrets narrowly rather than importing unrelated translation settings. Background owns any evidence-required conversion/image dependency; Gateway verifies runtime/resources and records explicit rollout/rollback. Configuration checks do not require paid live transcription.
 
-- [ ] Public staff can traverse all pages and authenticated discovery operations, but cannot access /api/mcp or invoke arbitrary developer/CLI tools; child process receives no production credentials.
+- [x] Public staff can traverse all pages and authenticated discovery operations, but cannot access /api/mcp or invoke arbitrary developer/CLI tools; child process receives no production credentials.
 
-- [ ] Blueprint references the real new repository and correct commands; no credentials or invented remote/host are committed.
-- [ ] Browser-accessible staff routes work through the gateway while public MCP requests are denied and private MCP accepts only Background service assertions. Another private-network service without that identity and an administrator browser session are both denied.
-- [ ] Fresh builds initialise database recursively; service startup does not run migrations or destroy durable resources.
+- [x] Blueprint references the real new repository and correct commands; no credentials or invented remote/host are committed.
+- [x] Browser-accessible staff routes work through the gateway while public MCP requests are denied and private MCP accepts only Background service assertions. Another private-network service without that identity and an administrator browser session are both denied.
+- [x] Fresh builds initialise database recursively; service startup does not run migrations or destroy durable resources.
 
 ## Validation
 
-- [ ] Run local Blueprint/proxy syntax and route fixture checks covering POST/GET/OPTIONS, encoded/trailing-path/alias attempts, direct private calls without Background identity and authenticated staff UI access and git diff --check.
-- [ ] Provide exact developer-owned deployment/smoke commands with expected private/public/health outcomes; no live deployment is implied by task definition.
+- [x] Run local Blueprint/proxy syntax and route fixture checks covering POST/GET/OPTIONS, encoded/trailing-path/alias attempts, direct private calls without Background identity and authenticated staff UI access and git diff --check.
+- [x] Provide exact developer-owned deployment/smoke commands with expected private/public/health outcomes; no live deployment is implied by task definition.
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -171,10 +171,9 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Attempt 1 — Ready for Review (2026-09-22). Implementation commit **9dbc61c**
-is committed and pushed to `task/ARCH-020-GATEWAY-001`; architect acceptance is
-pending. No live Render deployment, OAuth login, private assertion call, paid
-provider call, or production resource mutation was performed.
+Attempt 2 — Ready for Review (2026-09-22). The Attempt 1 review corrections are
+implemented locally; no live Render deployment, OAuth login, private assertion
+call, paid provider call, or production resource mutation was performed.
 
 ### Files Changed
 
@@ -199,21 +198,25 @@ settings are independent; Groq is retained and OpenAI is explicit.
 | Requirement | Command / fixture | Result |
 |---|---|---|
 | Render topology and credential wiring | `bash tests/validate-render-blueprints.sh` | Passed |
-| Legacy and Commerce negative mutations | `bash tests/validate-render-blueprints-negative.sh` | Passed; 37 rejected |
-| Routing, headers, body integrity, timeouts and MCP variants | `bash tests/run-tests.sh` | 67 passed, 0 failed |
+| Legacy and Commerce negative mutations | `bash tests/validate-render-blueprints-negative.sh` | Passed; 41 meaningful mutations rejected for expected reasons |
+| Routing, headers, body integrity, timeouts and MCP variants | `bash tests/run-tests.sh` | 150 passed, 0 failed |
 | HAProxy rendering | Docker build plus entrypoint `haproxy -c` | Configuration valid |
 | Shell and whitespace | `bash -n docker/entrypoint.sh tests/run-tests.sh`; `git diff --check` | Passed |
 
-The Docker suite covers GET/POST/OPTIONS, Commerce root and preview fixtures,
-public MCP direct/trailing/alias/encoded/duplicate-separator/dot-segment
+The Docker suite covers every C15 page/detail route with GET/HEAD and Server
+Action POST checks, NextAuth GET/POST, all four discovery methods, all seven
+C9.1 preview method combinations and wrong-method cases, the 131072/131073
+byte Commerce boundary, all required public MCP alias/encoded/normalisation
 attempts, and legacy provider-body/header behavior.
 
 ### Deviations
 
-The Studio hostname uses the established `commerce-test` / `commerce` domain
-convention; deployment-specific external DNS remains a Render input. No
-credential values are committed. Local fixtures do not prove hosted Google
-OAuth or Commerce private assertion verification.
+`COMMERCE_PUBLIC_HOST` and the Commerce custom domain remain explicit Render
+deployment inputs; the Blueprint does not claim that `commerce-test` or
+`commerce` DNS is provisioned. `COMMERCE_MCP_URL` is also an operator-supplied
+service-level input built from Render's actual Commerce Internal Service
+Address. No credential values are committed. Local fixtures do not prove
+hosted Google OAuth or Commerce private assertion verification.
 
 ### Assumptions
 
@@ -235,7 +238,7 @@ the exact C9.1 route allowlist against the accepted Commerce route tree.
 ### Git / VCS
 
 Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-001`, branch `task/ARCH-020-GATEWAY-001`, commit `9dbc61c`, pushed to origin. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-001`; this report is the only parent change. No main integration, gitlink change, deployment, or enabled-task launch was performed.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-001`, branch `task/ARCH-020-GATEWAY-001`, Attempt 2 commit **12ca000**, pushed to origin. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-001`. No main integration, gitlink change, deployment, or enabled-task launch was performed.
 
 ## Architect Review
 
