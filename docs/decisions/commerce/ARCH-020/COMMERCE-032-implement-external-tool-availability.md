@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
   - ARCH-020-COMMERCE-013
   - ARCH-020-COMMERCE-028
+  - ARCH-020-COMMERCE-037
   - ARCH-020-SHARED-002
 enables:
   - ARCH-020-COMMERCE-012
@@ -78,6 +79,7 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 
 - ARCH-020-COMMERCE-013
 - ARCH-020-COMMERCE-028
+- ARCH-020-COMMERCE-037
 - ARCH-020-SHARED-002
 
 ## Enables
@@ -176,3 +178,12 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+
+## Architect Dependency Reconciliation — COMMERCE-037 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-037` is now an explicit prerequisite because it defines the
+merchant-identity semantics of the `checkConnectionAvailability(...)` port consumed
+by this task.
+
+COMMERCE-032 remains **Ready** because COMMERCE-037 is Complete in the same
+reconciliation. No implementation claim is created by this documentation update.
