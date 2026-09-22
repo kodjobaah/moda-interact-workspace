@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T02:32:38Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-SHARED-002
@@ -122,7 +122,7 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Review-ready, Attempt 1 implementation submitted to `moda_architect`.
+Review-ready, Attempt 3 implementation submitted to `moda_architect`.
 
 ### Files Changed
 
@@ -237,6 +237,84 @@ these remain COMMERCE-024/SYSTEM-TEST-002 scope.
 
 Attempt 2 implementation commits: `22619b5`, `0c92e5e`, pushed to
 `task/ARCH-020-COMMERCE-027`. The task is handed to `moda_architect` for review.
+
+### Attempt 3 Completion Evidence
+
+Attempt 3 implements every A2 correction from the latest Architect Review without
+moving ownership beyond COMMERCE-027:
+
+- **A2-R1:** `code-response-panel.tsx` grants ADMIN and SUPER_ADMIN author/test
+  controls only for unpublished drafts. Published source remains read-only for
+  both roles; Create draft is available to either role when injected; publication
+  review is rendered only for an unpublished SUPER_ADMIN draft and requires the
+  current saved hash, validation, completed sample and trimmed reason. The
+  focused test proves the SUPER_ADMIN validate/save/run/complete/publish path and
+  published immutability.
+- **A2-R2:** `contracts.ts` defines and exports `SampleExecutionFailure` with
+  MIME_OR_UTF8, CODE, OUTPUT and schema path/expected/message details. The panel
+  maps typed failures without inferring SCHEMA from a generic diagnostic and
+  preserves bounded safe presentation. The focused test proves schema details are
+  shown and rejected values are absent.
+- **A2-R3:** `runSample` separates save from run admission: save failure produces
+  `Draft could not be saved. No sample run was started.`, allocates no run ID and
+  calls no run port. Successful save retains one preview ID before dispatch;
+  dispatch uncertainty remains UNKNOWN with that ID. Read and cancel handlers and
+  controls serialize through the shared pending state. Focused tests prove
+  pre-dispatch failure, retained-ID reconciliation and disabled cross-racing
+  controls.
+
+### Attempt 3 Files and Dependencies
+
+- `src/studio/code-response/contracts.ts`
+- `src/studio/code-response/code-response-panel.tsx`
+- `src/studio/code-response/index.ts`
+- `tests/code-editor.test.tsx`
+
+The feature consumes the accepted Shared `TransformSample`, `ExternalResponseFormat`
+and `canonicalJson` exports from `@modainteract/moda-interact-shared@0.14.2`. No
+dependency or lockfile change was needed. Implementation commit `61d6310` is
+pushed to `task/ARCH-020-COMMERCE-027`.
+
+### Attempt 3 Validation
+
+Agent-executed validation in the isolated implementation worktree:
+
+- `npm run test:arch020-code-editor`: **passed**, 1 file and 14 tests.
+- `npx eslint src/studio/code-response tests/code-editor.test.tsx`: **passed**.
+- `npm run lint`: **non-zero only for the unchanged baseline error** at
+  `src/studio/connections/connections-ui.tsx:235`; six unrelated warnings also
+  remain. No task-owned lint diagnostic was reported.
+- `npm run typecheck`: **non-zero on three unchanged baseline diagnostics only**:
+  two discriminated-union property errors at
+  `src/commerce/integration/backend/executors.ts:17` and the readonly schema array
+  mismatch at `tests/code-response-processor.test.ts:58`. No task-owned type error
+  remains.
+- `npm run build`: QuickJS packaging, packaged smoke, Prisma client generation and
+  Next application compilation **passed**; Next type checking stopped on the same
+  three baseline diagnostics.
+- `git diff --check`: **passed**.
+
+No live provider, sandbox, database, or assembled host-flow validation was run;
+those remain COMMERCE-024/SYSTEM-TEST-002 scope and require developer-owned
+validation.
+
+### Attempt 3 Git / VCS Evidence
+
+The prepared launcher supplied and verified:
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-027`
+- parent branch: `task/ARCH-020-COMMERCE-027`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-027`
+- implementation branch: `task/ARCH-020-COMMERCE-027`
+- parent and implementation synchronization: current at preparation; no main merge
+- recursive submodules: sync/update/init passed; database at
+  `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+- shared/reference checkout or another task worktree mutated: no
+
+Parent claim commit `1d10471770ba1bae2ae0a818ba1884e44e4e2ec2` was supplied by the
+launcher. This report update is the next mirrored parent commit. Status is now
+`review`; executor and claimed_at are cleared. Stop at Architect Review.
 
 ## Architect Review
 
