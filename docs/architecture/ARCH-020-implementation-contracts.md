@@ -708,6 +708,11 @@ one preview conversation; each intentional turn has one previewRunId and frozen
 payload hash. Max20 turns per preview conversation,32,000-character history,
 24-hour Redis retention. Real customer transcripts/shop tokens are not accepted.
 Fixture mode is default; model mode is an explicit action with separate credentials.
+MODEL transport is provider-neutral at PreviewService and supports exactly OpenAI-direct
+and Groq through one OpenAI-compatible Chat Completions adapter owned by
+COMMERCE-033. Provider selection is explicit (`openai|groq`), has no automatic
+fallback and cannot configure an arbitrary base URL. Test/development hosted MODEL
+validation selects Groq; FIXTURE constructs no provider request.
 Only active ADMIN/SUPER_ADMIN can run. Budget per admin: at most10 model turns per
 rolling hour, one in flight; platform at most2 concurrent model turns. Claim and
 budget reservation are atomic in Redis across replicas; repeated run IDs reserve
@@ -792,8 +797,15 @@ New secret/config names: COMMERCE_MCP_URL (Background only, private URL ending
 /api/mcp), COMMERCE_ASSERTION_PRIVATE_KEY and COMMERCE_ASSERTION_KEY_ID (messaging
 worker only), COMMERCE_ASSERTION_PUBLIC_KEYS (Commerce only, max2 kid/PEM entries),
 COMMERCE_STUDIO_ORIGIN, optional ADMIN_ORIGIN (server-only HTTPS navigation origin), AUTH_SECRET, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET, AUTH_URL,
-COMMERCE_PREVIEW_ENABLED (false default), COMMERCE_PREVIEW_MODEL,
-COMMERCE_PREVIEW_API_KEY.
+COMMERCE_PREVIEW_ENABLED (false default), COMMERCE_PREVIEW_PROVIDER
+(`openai|groq` when enabled), COMMERCE_PREVIEW_MODEL, COMMERCE_PREVIEW_API_KEY.
+When preview MODEL is enabled all three provider/model/key values are required; when
+disabled FIXTURE mode requires none of them. Provider endpoint selection is code-owned:
+`openai` -> `https://api.openai.com/v1/chat/completions`; `groq` ->
+`https://api.groq.com/openai/v1/chat/completions`. No configurable preview base URL or
+automatic provider fallback. The hosted test/development environment uses
+`COMMERCE_PREVIEW_PROVIDER=groq` and
+`COMMERCE_PREVIEW_MODEL=openai/gpt-oss-20b`; API key remains an external secret.
 Reuse existing DATABASE_URL, REDIS_URL and deployment-environment conventions.
 No NEXT_PUBLIC secret; fake examples only. Validate hosted origins as HTTPS,
 MCP URL as configured private host. Invalid required config fails readiness and
@@ -1592,10 +1604,13 @@ are interpreted by this table; business behavior in C4–C18 is unchanged.
 |016|pure eligibility calculation, discounts.evaluate orchestration|provider rule parsing or recommendations|013|
 |009|preview routes, runner lifecycle, Redis state/budgets|U14 controls or browser navigation|019|
 |017|U14 frontend, typed API client, browser interactions|routes, Redis, database loaders or service composition|019|
+|033|OpenAI/Groq PreviewModelPort transport + server config|PreviewService composition, U14, Redis, Background model credentials|019|
+|034|U14 tool-vs-conversation source gating correction|preview backend, model transport, synthetic capabilities/prompts|019|
 
 013 wires 004 ->014, then 014 ->005/015/006/016/007, and publication services.
-019 wires017 U14 ->009 with actual saved-bundle loading and008 composer return;018 connects U01–U13. SYSTEM-TEST-001
-retains cross-service/Background/gateway acceptance.012 still follows ALL other
+019 wires017 U14 ->009 with actual saved-bundle loading and008 composer return after
+033 supplies the accepted provider adapter and034 corrects U14 source gating;018
+connects U01–U13. SYSTEM-TEST-001 retains cross-service/Background/gateway acceptance.012 still follows ALL other
 implementation tasks. No new interface package publication or DB migration.
 
 ### Contract ownership and concurrency
@@ -1910,7 +1925,12 @@ fixtures must prove old conversations retain their exact frozen content.
 
 Only createFixtureExecution with isolated fixture operations is reachable from
 preview, including MODEL mode. MODEL changes only the model transport and retains
-separate credentials; it never enables live tools. Fixture adapters are authorized
+separate credentials; it never enables live tools. COMMERCE-033 provides the only
+production preview model adapter: native-fetch OpenAI-compatible Chat Completions
+against the fixed OpenAI/Groq endpoints in C10, `tool_choice=required`,
+`parallel_tool_calls=false`, actual `usage.completion_tokens`, direct AbortSignal,
+zero adapter retries and no arbitrary base URL/provider fallback. COMMERCE-019 only
+injects that accepted adapter; it does not redesign provider transport. Fixture adapters are authorized
 preview composition, not a production MCP fallback. Permit no call to live /api/mcp,
 Shopify transport, checkout admission or WhatsApp. Tests assert those call counts0.
 019 uses013 saved services directly and can mount real008 composer components with
