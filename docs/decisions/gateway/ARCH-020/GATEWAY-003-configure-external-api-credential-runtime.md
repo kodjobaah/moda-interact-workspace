@@ -9,11 +9,11 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 175
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-22T16:33:50Z
+attempt: 1
 depends_on:
   - ARCH-020-GATEWAY-001
   - ARCH-020-COMMERCE-020
