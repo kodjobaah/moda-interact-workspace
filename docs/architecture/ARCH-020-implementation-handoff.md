@@ -1146,6 +1146,18 @@ one-provider-request implementation. COMMERCE-030 still waits on COMMERCE-025; l
 composition/gateway/final-checkpoint tasks retain their other dependencies. No
 automatic launch.
 
+## COMMERCE-027 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 1**, claim clear.
+Submitted implementation `771c1ff` establishes the isolated U17/raw-sample component
+boundary but does not yet satisfy C21 X12/XN04. The task's latest Architect Review is
+the complete deterministic correction contract covering Shared sample shape, content
+hash/stale-result guards, saved-revision run identity, cancel/cooldown/replay behavior,
+published/role/publish review rules, CodeMirror 6 local editor requirements, bounded
+failure presentation and focused evidence.
+
+No dependency is promoted. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
+gated. No downstream task is launched automatically.
 
 ## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
@@ -1165,6 +1177,28 @@ because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 ar
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
 
+## COMMERCE-027 Attempt 2 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 2**, claim clear.
+Attempt 2 correctly implements the Shared `TransformSample` boundary, canonical
+browser hash/stale-result guards, returned-saved-revision run dispatch, retained
+preview identity, RUNNING cancel/status controls and locally bundled CodeMirror 6.
+
+Acceptance remains gated only by three task-owned corrections recorded
+deterministically in the task: reachable SUPER_ADMIN draft publication workflow,
+structured MIME/OUTPUT/SCHEMA failure presentation with `expected`, and correct
+pre-dispatch save-failure plus serialized read/cancel reconciliation semantics.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched
+automatically.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-027` is **Complete / Accepted, Attempt 3**. Consume the exported
+`CodeResponsePanel` / `RawResponseSamplePanel` as the accepted C21 frontend boundary;
+do not reopen its editor, role, typed-failure or retained-run-identity mechanics during
+COMMERCE-024 composition. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
+dependency-gated; no task is auto-started.
 ## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21

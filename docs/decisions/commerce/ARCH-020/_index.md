@@ -34,8 +34,8 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
-| [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
-| [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | ready | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | Complete | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
+| [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | pending | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
@@ -717,6 +717,23 @@ typecheck/build remain blocked only by the recorded unrelated baseline diagnosti
 No enabled task is newly Ready from this acceptance alone; all remaining dependency
 gates stay authoritative and nothing is launched automatically.
 
+## COMMERCE-027 Attempt 1 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 1 retained; claim clear.** Reviewed submitted
+implementation `771c1ff` and reported parent handoff `6a7ff5ea`. The exported panel
+boundary and no-browser-execution direction are valid, but C21 X12/XN04 remains
+incomplete.
+
+The authoritative task review requires: canonical Shared `TransformSample` usage with
+saved response mode; real content-hash/generation stale-result guards; save-before-run
+against the returned saved revision; retained preview identity for unknown/replay;
+RUNNING cancel/read and cooldown state that does not deadlock; published-source and
+ADMIN/SUPER_ADMIN role enforcement with source comparison/reason for publish; the
+mandated locally bundled CodeMirror 6 JavaScript editor; bounded typed sample failure
+presentation; and the exact focused regressions written in the task.
+
+No downstream promotion occurs. COMMERCE-024 and COMMERCE-012 remain gated. The next
+normal claim creates Attempt 2; no task is launched automatically.
 
 ## COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
@@ -738,6 +755,29 @@ All declared prerequisites of COMMERCE-030 are now Complete, so
 COMMERCE-024, COMMERCE-012 and terminal system-test work retain additional
 dependencies. No task is automatically launched.
 
+## COMMERCE-027 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 2 retained; claim clear.** Reviewed submitted
+implementation commits `22619b5`, `0c92e5e` and parent handoff `56bc050c`. Attempt 2
+materially closes the canonical sample contract, Web Crypto hash/stale-result guards,
+save-before-run saved-revision dispatch, retained UNKNOWN run identity, RUNNING cancel
+availability, cooldown handling and local CodeMirror 6 requirements.
+
+Three bounded corrections remain in the authoritative task review: make the
+SUPER_ADMIN unpublished-draft validate/save/run/publish path actually reachable while
+published source remains immutable; preserve structured MIME/OUTPUT/SCHEMA failure
+categories including schema `expected`; and distinguish save failure before run
+admission from UNKNOWN while serializing read/cancel reconciliation. No downstream
+promotion occurs. The next normal claim creates Attempt 3.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 3.** The code/raw-response frontend now satisfies the
+remaining SUPER_ADMIN draft/publication path, typed sample-failure presentation and
+save-before-run / retained-ID reconciliation requirements. Focused 14/14 tests, scoped
+ESLint and diff checks pass. Repository-wide lint/typecheck/build remain non-zero only
+on the unchanged documented baseline outside COMMERCE-027. No dependant becomes Ready
+solely from this acceptance; COMMERCE-024 and COMMERCE-012 remain gated.
 ## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
 
 COMMERCE-020 is **Accepted / Complete, Attempt 2** at implementation `d2b7154`
