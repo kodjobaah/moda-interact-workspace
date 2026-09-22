@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T11:57:58Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-019
@@ -121,23 +121,33 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Implementation complete for the bounded first slice; submitted for Architect Review with acceptance gaps recorded below.
 
 ### Files Changed
 
-None; task definition only.
+- `moda-interact-commerce/src/commerce/external-preview/contracts.ts`
+- `moda-interact-commerce/src/commerce/external-preview/service.ts`
+- `moda-interact-commerce/src/commerce/external-preview/index.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/tests/external-preview.test.ts`
+- `moda-interact-commerce/package.json`
 
 ### Work Completed
 
-None.
+Added bounded optional external response fixtures to conversation/tool-test schemas and stored state, including ownership checking and frozen fixture retention. Added `createExternalPreviewService` with canonical code hash validation, accepted COMMERCE-026 code and COMMERCE-025 visual processor injection, COMMERCE-030 sample-validation/receipt delegation, distributed Redis admin slot, and existing preview replay/conflict result persistence. Added external tool-test completion without live tool execution.
 
 ### Validation Results
 
-No implementation validation performed.
+PR01 partial: `tests/external-preview.test.ts` covers visual JSON processing, receipt-validator delegation, and canonical code validation; `npm run test:arch020-external-preview` passed 3 tests. Adjacent `npm run test:arch020-external-publication` passed 11 tests, `npm run test:arch020-code-processor` passed 6 tests, and focused legacy preview routes/store passed 10 tests. Changed-file ESLint passed. Repository typecheck remains blocked by pre-existing Prisma generation and integration diagnostics; no changed external-preview errors remain.
+
+PR02 partial: external preview replay/conflict is covered in `tests/external-preview.test.ts`; Redis cross-instance quota/cancel/expiry coverage is not yet implemented.
+
+PR03 partial: legacy request compatibility and zero live executor usage are covered by the implementation shape and focused positive test; the required foreign-fixture, unsupported-media, oversize, raw HTML, invalid-output, and explicit zero HTTP/credential/decryption call regressions are not yet covered.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+The accepted COMMERCE-030 validator currently returns only a success envelope, so the external preview service independently reprocesses the frozen sample with the accepted 025/026 processors to persist the bounded preview result. The production runtime factory remains owned by the existing preview composition and was not broadened into live external adapters.
 
 ### Assumptions
 
@@ -145,7 +155,7 @@ C21 read-only scope; visual rules and generic JavaScript only inside the specifi
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+The current slice does not yet provide the complete C21 PR02 Redis race matrix or all PR03 rejection cases. The `runSample` contract requires the saved definition from the caller so COMMERCE-030 can recheck current definition identity; no new definition loader was invented.
 
 ### Architectural Concerns
 
@@ -153,9 +163,7 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-031. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Expected mirrored branch: `task/ARCH-020-COMMERCE-031`, attempt 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-031`; parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-031`. Dependencies were installed from the committed lockfile for validation. Commit and push evidence is recorded after submission.
 
 ## Architect Review
 
