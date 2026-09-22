@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 170
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-020
   - ARCH-020-COMMERCE-021
@@ -139,31 +139,56 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Implementation complete; submitted for Architect Review. WI01 is not claimed because the full configured production-factory MCP path was not executed without live credentials or deployment validation.
 
 ### Files Changed
 
-None; task definition only.
+Implementation branch `task/ARCH-020-COMMERCE-024`, commit `1814f82c5828de50f1ae9f040da623f4ceba0ca7`:
+
+- `src/commerce/integration/external/index.ts`
+- `lib/preview/runtime.ts`
+- `app/api/studio/preview/tool-tests/route.ts`
+- `tests/external-wiring.test.ts`
+- `package.json`
+
+The Attempt-1 producer-owned connection changes were reverted from the task branch; no producer business logic was added.
 
 ### Work Completed
 
-None.
+Composed the accepted credential command kernel, saved-tool loader, COMMERCE-038 external fixture runner, COMMERCE-031 preview factory, external HTTP executor, publication validation, and availability resolver. Preview runtime injection preserves one `PreviewService` state-store identity for ordinary and external tests. The tool-test route dispatches only validated `externalResponseFixture` requests to the external preview service; ordinary requests retain the existing path.
+
+Acceptance mapping:
+
+- WI02: `tests/external-wiring.test.ts`, `XN01-XN03`, and `XN04` exercise assembled credential isolation, provider transport boundaries, publication receipt storage, visual/JavaScript fixture processing, preview state identity, and provider-free replay. `tests/external-preview.test.ts` covers the accepted external preview regression suite.
+- WI03: composition consumes accepted producer exports and introduces no duplicate connection, credential, HTTP, publication, response-processing, preview, availability, or fixture-runner algorithm.
+- WI01: not claimed; the full connection -> tool -> publish -> release -> merchant -> MCP production path requires a separate configured integration execution.
 
 ### Validation Results
 
-No implementation validation performed.
+Passed:
+
+- `npm run test:arch020-external-wiring`: 2/2
+- `npm run test:arch020-external-preview`: 18/18
+- `npm run test:arch020-external-publication`: 11/11
+- `npm run test:arch020-external-http`: 13/13
+- `npm run test:arch020-external-credentials`: 9/9
+- `npm run test:arch020-external-availability`: 4/4
+- targeted ESLint and `git diff --check`
+- build webpack compilation and packaged code-runtime smoke completed
+
+`npm run typecheck` and the final build exit remain blocked by 12 pre-existing baseline errors in `components/studio-workspace.tsx`, producer connection files, and unrelated tests. No Attempt-2 file appears in the remaining diagnostics. No live credentials, third-party calls, Shopify, WhatsApp, paid models, PostgreSQL/container checks, or deployment validation were run.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+Attempt 2 was required after Attempt 1 lacked the accepted COMMERCE-019 source and reusable COMMERCE-038 fixture-runner seam. The implementation uses a composition-local command kernel because the accepted COMMERCE-020 lifecycle does not expose its internal kernel; producer-owned connection files were not retained in the final task diff.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox. Accepted dependency source was synchronized before claim. Recursive database submodule evidence: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+WI01 remains unverified and is intentionally not claimed. The repository baseline still has the 12 typecheck/build diagnostics listed above; resolving them belongs to the relevant producer/UI/test owners unless Architect Review redirects scope.
 
 ### Architectural Concerns
 
@@ -171,9 +196,7 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-024. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Expected mirrored branch: `task/ARCH-020-COMMERCE-024`. Attempt 2 implementation worktree was physically isolated at `.../moda-interact-workspace.worktrees/ARCH-020-COMMERCE-024`; commit `1814f82c5828de50f1ae9f040da623f4ceba0ca7` was pushed to the task branch. Dependencies were consumed from accepted synchronized source; recursive database submodule was initialized at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
 ## Architect Review
 
