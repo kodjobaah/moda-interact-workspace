@@ -29,8 +29,8 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-033, ARCH-020-COMMERCE-034 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | complete (Accepted, Attempt 2) | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
-| [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | Complete | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
-| [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
+| [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
+| [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | Complete (Accepted, Attempt 8) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
@@ -812,21 +812,28 @@ All declared prerequisites of COMMERCE-030 are now Complete, so
 COMMERCE-024, COMMERCE-012 and terminal system-test work retain additional
 dependencies. No task is automatically launched.
 
+## COMMERCE-023 Attempt 2 architect review — 2026-09-22
 
-## COMMERCE-035 Attempt 3 infrastructure unblock — 2026-09-22
+**Changes Requested; Ready, Attempt 2 retained; claims cleared.** Preserve the new
+External API tool-purpose choice, explicit external UI port and guarded navigation.
+Attempt 3 must close the remaining valid-draft creation/exact connection context,
+lossless typed query/filter/projection authoring, canonical stale-sample validation,
+typed JavaScript slot/U14 frozen-fixture boundary and the single owned XN02 traversal.
+COMMERCE-024 and COMMERCE-012 remain gated; no automatic launch.
 
-COMMERCE-035 is **Ready, Attempt 3 retained, claim clear** for a validation-only
-Attempt 4. The source proof corrections are already present. The architect explicitly
-authorises the task agent to provision its own local loopback Docker PostgreSQL
-(`postgres:16.4-alpine`) and Redis (`redis:7.4.0-alpine`) targets, run the guarded
-C20 reset/proof, and clean only its labelled containers. Missing pre-supplied test
-URLs are no longer a blocker. Unchanged unrelated repository lint/typecheck/build
-baselines do not prevent return to review once the C20 real-client proof passes.
+## COMMERCE-023 Attempt 3 architect review — 2026-09-22
 
-## COMMERCE-035 Attempt 4 architect acceptance — 2026-09-22
+**Changes Requested; Ready, Attempt 3 retained; claim clear.** Reviewed submitted
+implementation `c71b30e` and parent report `ae9df46`. Attempt 3 preserves useful
+external-port composition, connection metadata, canonical sample hashing and separate
+Apply/Validate behavior, but C21 X06/XN02 remains incomplete.
 
-COMMERCE-035 is **Accepted / Complete, Attempt 4** at implementation `9a0120b`
-(parent report `b357be28`) after real disposable PostgreSQL/Redis execution.
+The latest task review is the complete deterministic correction contract. Remaining
+work is limited to: the exact valid starter schema and fallback returnTo; lossless
+query/filter/IN/null/DESC authoring with protected mode switching and the typed
+COMMERCE-027 slot; editable synthetic sample plus response-shape/review/publish-reason
+state; a corrected exact-revision U14 fixture port (including the current task-owned
+undefined `toolRevisionId` defect); and one owned new-tool XN02 traversal.
 
 The real C20 reset and focused integration proof passed. Repository-wide typecheck,
 lint and build remain non-zero only for the already documented unrelated
@@ -943,6 +950,38 @@ from synthetic sample/publication admission while validating only persisted
 connection/revision auth shape. COMMERCE-031/024/012 remain gated and no task is
 auto-started.
 
+## COMMERCE-023 Attempt 4 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 4 retained; claim clear.** The committed Attempt 4
+source preserves useful progress: real external-draft entry, correct starter response
+wrapper, connection metadata, canonical stale-validation hashing and exact typed U14
+fixture identity. Acceptance remains blocked by the bounded latest review contract:
+correct COMMERCE-027 slot composition and mode-switch guard; complete query/literal and
+8-filter typed authoring; expose editable TransformSample plus response-shape/chip
+guidance; preserve exact fallback return context and collect a real SUPER_ADMIN
+publication reason/review; and prove the full new-tool XN02 traversal without
+pre-seeding `externalDraft()`.
+
+The parent claim was stranded at `in_progress`; architect review clears it and returns
+the same task Ready. The next normal claim creates Attempt 5. No downstream promotion
+occurs.
+
+## COMMERCE-023 Attempt 5 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 5 retained; claim clear.** Implementation
+`c184c58` closes most of the Attempt 4 UI contract: typed code-panel composition,
+guarded mode switching, 8-filter/AND authoring, editable samples/schema chips, exact
+return context, real publication reason/review and a new-tool XN02 traversal are now
+present.
+
+Three bounded issues remain: U14/Publish must bind to the persisted saved revision and
+stay disabled for unsaved local edits; query Literal/IN typing must exactly enforce the
+C21 scalar contract while retaining invalid IN text locally; and the focused XN02 proof
+plus canonical Completion Report must establish the exact authoring/saved-definition/
+duplicate-guard assertions required by the prior reviews.
+
+No downstream promotion occurs. COMMERCE-024 and COMMERCE-012 remain gated. The next
+normal claim creates Attempt 6.
 ## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
 
 COMMERCE-030 is **Accepted / Complete, Attempt 3** at implementation `d15d3f5`.
@@ -1052,15 +1091,27 @@ COMMERCE-024's human-readable dependency list/index row is reconciled to include
 COMMERCE-036, matching its authoritative YAML. COMMERCE-024 remains Pending because
 other prerequisites are still incomplete. No task is automatically launched.
 
-## COMMERCE-031 Attempt 2 implementation checkpoint — 2026-09-22
+## COMMERCE-023 Attempt 7 architect review — 2026-09-22
 
-COMMERCE-031 is returned **Ready, Attempt 2 retained, claim cleared**.
+**Changes Requested; Ready, Attempt 7 retained; claim clear.** Attempt 7 correctly
+refreshes persisted `savedDefinition`, freezes U14 while dirty and improves typed IN
+draft handling. Attempt 8 is limited to three remaining A5-boundary corrections:
+Save must preserve validation only for an already-validated exact persisted candidate;
+IN validation must reject non-scalar JSON values locally and reconcile stale local
+drafts when the canonical filter changes; and the canonical Completion Report must
+record final commits `ba75d1f` / `4d89113e`. COMMERCE-024/012 remain gated; no task
+is auto-started.
 
-The Attempt-2 lifecycle/source corrections are accepted in substance: server-owned
-saved definitions, claim-before-side-effects, tool-test cancellation/expiry,
-conversation fixture byte bounds/freezing and the synthetic conversation runner hook
-are present. The next claim creates Attempt 3 and is limited to the named PR01-PR03
-regressions, any defect those exact regressions expose, required validation and
-durable Completion Report/commit/push reconciliation.
+## COMMERCE-023 Attempt 8 architect acceptance — 2026-09-22
 
-No downstream task is promoted.
+**Accepted / Complete, Attempt 8** (`23b1c82`; parent report `5afce557`).
+
+The final saved-vs-unsaved validation boundary is correct: persisted
+`savedDefinition` is independent from composer-unsaved content and Save preserves
+validation only for an already-validated candidate returned unchanged by persistence.
+IN editing is now scalar-only, same-kind, finite/bounded and reconciles retained local
+draft/error state when canonical filters change.
+
+This exact parent snapshot still contains other non-Complete COMMERCE-024
+prerequisites, so no downstream readiness is promoted here and nothing is
+auto-started.
