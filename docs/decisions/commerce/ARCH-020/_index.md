@@ -28,7 +28,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-033 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | ready | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
-| [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
+| [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | ready | ARCH-020-SHARED-002 |
@@ -668,6 +668,30 @@ list. Since COMMERCE-033 is Complete in this same review and every other current
 prerequisite is already Complete, COMMERCE-019 remains **Ready, Attempt 0**, claim
 clear. No automatic task launch occurs.
 
+## COMMERCE-021 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claimed_at null.** Reviewed
+implementation `b19f9d7` and report `5abdd61a`. Preserve the accepted Shared 0.14.2
+consumer, pinned TLS/socket path, bounded fixed URL/query, processor/result validation
+and provider status mapping. A1-R1–R4 require the production DNS resolver plus a
+maintained global-address classifier, absolute DNS/connect/body wall bounds with
+active abort cleanup, raw JSON depth/unsafe-key validation, and an explicit exhaustive
+EXTERNAL_HTTP dispatcher branch. The Shared `CommerceToolResult`/C21 cancellation
+contradiction is resolved architecturally: tool-boundary cancellation maps to
+nonretryable `DEADLINE`; no Shared widening belongs in this task. No downstream
+promotion or automatic launch.
+
+
+## COMMERCE-021 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claimed_at null.** Attempt 2
+satisfies the prior DNS/classifier, stage-deadline/abort, raw-JSON and explicit
+dispatcher corrections. Attempt 3 is limited to two runtime-boundary fixes:
+terminate provider response bodies on non-2xx/unsupported-encoding early returns,
+and preserve nonretryable `DEADLINE` through the real DefinitionExecutor
+EXTERNAL_HTTP path. Existing status mapping, Shared contracts and Shopify/policy
+semantics remain unchanged. No downstream promotion or automatic launch.
+
 ## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
 
 COMMERCE-034 is **Accepted / Complete, Attempt 1**, executor and claimed_at null.
@@ -691,3 +715,16 @@ integration/Prisma diagnostics reported outside the task files.
 No downstream task is newly Ready from this acceptance alone. COMMERCE-030 still
 requires COMMERCE-025; later preview, assembly, gateway and system-test work retain
 their remaining declared dependencies. No automatic task launch occurs.
+
+
+## COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+COMMERCE-021 is **Accepted / Complete, Attempt 3**. Attempt 3 closes provider-body
+termination for post-header rejection/unsupported-encoding paths and preserves
+nonretryable external `DEADLINE` semantics through `DefinitionExecutor`, while
+retaining the accepted DNS/socket pinning, bounded transport, JSON safety and
+one-request budget behavior. Submitted focused tests pass 13/13 and combined
+dispatcher/transport tests pass 26/26; lint and diff checks pass. Repository-wide
+typecheck/build remain blocked only by the recorded unrelated baseline diagnostics.
+No enabled task is newly Ready from this acceptance alone; all remaining dependency
+gates stay authoritative and nothing is launched automatically.

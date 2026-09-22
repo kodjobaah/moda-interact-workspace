@@ -1115,6 +1115,28 @@ COMMERCE-033. Because this provider task is Complete and 019's other declared
 prerequisites are already Complete, COMMERCE-019 remains **Ready, Attempt 0** with
 no active claim. No downstream task is started automatically.
 
+## COMMERCE-021 Attempt 1 review — 2026-09-21
+
+`ARCH-020-COMMERCE-021` is **Changes Requested / Ready, Attempt 1 retained** after
+review of `b19f9d7` / report `5abdd61a`. Keep the working fixed-origin TLS/socket,
+Shared 0.14.2 and response-processing integration. Attempt 2 is bounded to four
+functional corrections: production DNS + maintained address classification,
+absolute DNS/connect/body stage deadlines and abort cleanup, raw JSON depth/unsafe-key
+rejection, and explicit EXTERNAL_HTTP dispatch exhaustiveness. C21 cancellation is
+reconciled to nonretryable `DEADLINE` at the CommerceToolResult boundary because
+Shared 0.14.2 has no CANCELLED tool-result member; runner cancellation remains
+separate. No downstream task is promoted or launched.
+
+
+## COMMERCE-021 Attempt 2 review — 2026-09-22
+
+`ARCH-020-COMMERCE-021` is **Changes Requested / Ready, Attempt 2 retained**.
+Attempt 3 is narrowly bounded to provider-body termination on post-header rejection
+and preserving nonretryable external `DEADLINE` through DefinitionExecutor. Preserve
+the completed DNS/classifier, pinned TLS transport, stage deadlines, JSON safety,
+explicit dispatch and one-request budget work. No downstream task is promoted or
+launched.
+
 ## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
 
 COMMERCE-034 is **Accepted / Complete, Attempt 1**. The accepted U14 correction
@@ -1134,3 +1156,13 @@ validation owned by COMMERCE-030.
 No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
 COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
 other prerequisites. No downstream task is launched automatically.
+
+
+## COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+`ARCH-020-COMMERCE-021` is **Accepted / Complete, Attempt 3**. Provider-body cleanup
+and nonretryable EXTERNAL_HTTP deadline propagation now close the final review
+contract. Preserve the accepted DNS/socket pinning, stage-deadline, JSON-safety and
+one-provider-request implementation. COMMERCE-030 still waits on COMMERCE-025; later
+composition/gateway/final-checkpoint tasks retain their other dependencies. No
+automatic launch.
