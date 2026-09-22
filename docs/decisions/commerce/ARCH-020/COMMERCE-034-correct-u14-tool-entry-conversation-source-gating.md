@@ -9,18 +9,18 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 140
-executor: null
-claimed_at: null
-attempt: 0
+executor:
+claimed_at:
+attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-017
   - ARCH-020-COMMERCE-009
 enables:
   - ARCH-020-COMMERCE-019
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Correct U14 tool-entry conversation source gating
@@ -87,10 +87,10 @@ Apply these exact UI/payload rules:
 
 ## Work Items
 
-- [ ] Remove selected-tool fallback from Conversation admission and payload construction.
-- [ ] Disable Conversation Start and render the specified guidance when no real behaviour/release source is selected.
-- [ ] Preserve Tool-test handoff/execution and independent source selectors.
-- [ ] Add focused regressions for tool-only entry, release/draft Conversation payloads and coexistence/back behavior.
+- [x] Remove selected-tool fallback from Conversation admission and payload construction.
+- [x] Disable Conversation Start and render the specified guidance when no real behaviour/release source is selected.
+- [x] Preserve Tool-test handoff/execution and independent source selectors.
+- [x] Add focused regressions for tool-only entry, release/draft Conversation payloads and coexistence/back behavior.
 
 ## Interfaces / Contracts
 
@@ -109,12 +109,12 @@ component after architect acceptance.
 
 ## Acceptance Criteria
 
-- [ ] U06 tool-only entry opens Tool test with the correct revision; a valid Run Tool request is emitted and `startConversation` remains zero calls.
-- [ ] Switching that tool-only entry to Conversation leaves Start disabled, shows accessible source guidance and never constructs/sends a zero-capability DRAFT.
-- [ ] Selecting a persisted release enables Start and sends exactly `{kind:'RELEASE',releaseId}`.
-- [ ] Selecting an unsaved/saved draft-behaviour source enables Start and sends its exact capability revision IDs, `toolRevisionIds: []` and response contract.
-- [ ] Tool selection remains usable for Tool test while Conversation selection is independent; reset/source locks/Back regressions remain green.
-- [ ] No fake capability/prompt, backend change or new API shape is introduced.
+- [x] U06 tool-only entry opens Tool test with the correct revision; a valid Run Tool request is emitted and `startConversation` remains zero calls.
+- [x] Switching that tool-only entry to Conversation leaves Start disabled, shows accessible source guidance and never constructs/sends a zero-capability DRAFT.
+- [x] Selecting a persisted release enables Start and sends exactly `{kind:'RELEASE',releaseId}`.
+- [x] Selecting an unsaved/saved draft-behaviour source enables Start and sends its exact capability revision IDs, `toolRevisionIds: []` and response contract.
+- [x] Tool selection remains usable for Tool test while Conversation selection is independent; reset/source locks/Back regressions remain green.
+- [x] No fake capability/prompt, backend change or new API shape is introduced.
 
 ## Validation
 
@@ -139,63 +139,104 @@ synthetic-capability alternative.
 
 ### Status
 
-Not Started.
+Ready for Architect Review.
 
 ### Files Changed
 
-None.
+- `moda-interact-commerce/src/studio/preview/preview-screen.tsx`
+- `moda-interact-commerce/tests/preview-screen.test.tsx`
 
 ### Work Completed
 
-None.
+- Conversation admission now requires a selected persisted release or non-empty behaviour draft source.
+- Removed selected-tool fallback from DRAFT payload construction; DRAFT payloads use the selected source members and `toolRevisionIds: []`.
+- Added bounded accessible guidance for tool-only Conversation entry and regressions covering tool handoff, release/draft payloads, source coexistence, reset, locks and Back behavior.
+- No backend, provider, Shared contract, route or deployment changes.
 
 ### Validation Results
 
-Not run.
+- Focused U14: `./node_modules/.bin/vitest run tests/preview-screen.test.tsx --reporter=dot` -> 20 passed.
+- Typecheck: `npm run typecheck` reached 179 pre-existing errors in four unrelated backend files; no diagnostics were reported in the touched U14 files.
+- Lint: `npm run lint` -> 0 errors, 2 pre-existing warnings in `scripts/code-runtime-manifest.mjs` and `src/commerce/code-response/runtime/kernel.ts`.
+- Production build: `npm run build` -> passed runtime packaging/smoke, Prisma generation, Next compilation, TypeScript, page data, static pages, traces and optimization.
+- Diff check: `git diff --check` -> passed.
 
 ### Deviations
 
-None.
+Repository typecheck remains red on unrelated pre-existing backend diagnostics; this task introduced no typecheck diagnostics in its changed files.
 
 ### Assumptions
 
-COMMERCE-017/009 accepted types remain unchanged.
+COMMERCE-017/009 accepted types remain unchanged; the implementation commit is `57bd7d6` on `task/ARCH-020-COMMERCE-034`.
 
 ### Unresolved Issues
 
-None at definition time.
+None for the bounded U14 change.
 
 ### Architectural Concerns
 
-Return any contradiction in the accepted U14/PreviewClient types to moda_architect.
+No contradiction found in the accepted U14/PreviewClient types.
 
 ### Git / VCS
 
-Defined but not claimed. Expected mirrored branch `task/ARCH-020-COMMERCE-034`.
-Record normal launcher preparation/isolation/commit/push evidence on execution.
+Attempt 1 claimed by the deterministic launcher; parent claim commit `6e118484b5eace5ebf17cabc2cede1f2d2581933`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-034`.
+Implementation commit `57bd7d6` pushed to `task/ARCH-020-COMMERCE-034`.
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-034`.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Awaiting implementation of the exact source-gating correction above.
+Independent review of implementation commit `57bd7d6` and report commit
+`1b96d318` found no acceptance-blocking defects. Tool-only U06 handoff remains
+in Tool test mode, preserves the selected tool revision, and does not call
+`startConversation`. Conversation admission now requires a persisted release or
+a non-empty authored draft source; selected-tool fallback, zero-capability DRAFT
+payloads, synthetic capabilities and generic prompts are absent.
+
+The release path emits exactly `{ kind: "RELEASE", releaseId }` when the
+selected source is persisted. The draft path uses only the selected source's
+`members.map(member => member.capabilityRevisionId)`, sends
+`toolRevisionIds: []`, and forwards the selected `responseContract`. The tool
+and Conversation selectors remain independent. Focused tests also cover source
+locks during pending/uncertain operations, reset admission, release/draft
+switching, and Back navigation to the originating release context. No backend,
+PreviewClient/shared contract, route, provider, or deployment changes were
+introduced.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/src/studio/preview/preview-screen.tsx`
+- `moda-interact-commerce/tests/preview-screen.test.tsx`
+- Implementation commit `57bd7d6`
+- Completion Report in parent commit `1b96d318`
 
 ### Validation Reviewed
 
-None.
+- Focused U14 Vitest run: 20/20 passed.
+- `npm run lint`: 0 errors; two warnings are pre-existing and outside the
+   touched files.
+- `npm run build`: passed production packaging, compilation, generation and
+   optimization checks.
+- `git diff --check`: passed.
+- `npm run typecheck`: 179 pre-existing errors in four unrelated backend files;
+   no diagnostics were reported for the touched U14 files.
+- Remote implementation ref `origin/task/ARCH-020-COMMERCE-034` resolves to
+   `57bd7d6`; the commit changes only the two scoped files.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to ARCH-020 U14/C9/C20 and the COMMERCE-019 Attempt 2 correction
+boundary. The implementation preserves the accepted PreviewClient and
+`PreviewSelection` contracts, keeps source gating in the U14 UI, and satisfies
+the required tool-only, release, draft, selector, reset/lock, and Back
+semantics. The recorded typecheck baseline is not a regression from this task.
 
 ### Follow-up
 
-Accept independently, then leave019 blocked until COMMERCE-033 is also Complete.
+None for implementation. Architect state reconciliation marks this task `complete` and records it as an accepted prerequisite of COMMERCE-019. COMMERCE-019 remains `ready`; no downstream task was launched by this reconciliation.
