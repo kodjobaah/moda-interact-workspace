@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 155
-executor: copilot
-claimed_at: 2026-09-22T08:52:43Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-SHARED-002
@@ -2099,3 +2099,598 @@ Return the same task through:
 after this review patch is applied. The next successful claim must create **Attempt 4
 exactly once**. COMMERCE-024 and COMMERCE-012 remain dependency-gated. No downstream
 task is launched automatically.
+
+### Attempt 4 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 4 source snapshot.
+The developer subsequently confirmed that the implementation changes represented by
+this snapshot were committed. The parent task record itself was not handed off through
+the normal repository-agent transition: it still said `status: in_progress`,
+`executor: copilot`, `attempt: 4` and retained the Attempt 3 Completion Report.
+Because the implementation has been committed and the claim is now stranded rather
+than actively executing, this Architect Review clears the claim and returns the same
+task to `ready` for bounded correction.
+
+Attempt 4 preserves substantial valid progress and should not be redesigned:
+
+- new-tool External API draft selection exists;
+- starter external resultSchema now wraps `values.value` correctly;
+- authorized connection/revision metadata is displayed;
+- canonical sample hash/generation invalidation exists;
+- exact U14 `toolRevisionId + definition + fixture` execution is now wired through
+  one typed `runFixture` result;
+- query keys, projection output names, projection `omitIfMissing`, DESC sort and
+  nullable scalar authoring exist;
+- fixture controls use one-click scenario buttons and no live network/credential path;
+- focused external-tools tests and StudioWorkspace regressions are reported passing.
+
+Attempt 4 is **not accepted** because the following task-owned C21/X06/XN02 defects
+remain in the committed source. These are the complete Attempt 4 rework contract.
+
+#### A4-R1 — wire the COMMERCE-027 code-panel slot and processing-mode guard correctly
+
+**Source and focused-test changes required.**
+
+`ExternalCodePanelSlotProps` is now correctly typed, but the component still invokes
+the slot with the old three-positional-argument call:
+
+```ts
+renderCodePanel(
+  execution.responseProcessing,
+  !editable,
+  processing => updateProcessing(processing),
+)
+```
+
+The declared contract is one object:
+
+```ts
+renderCodePanel?: (props: ExternalCodePanelSlotProps) => React.ReactNode;
+```
+
+Call it exactly as:
+
+```ts
+renderCodePanel?.({
+  processing: execution.responseProcessing,
+  responseFormat: execution.responseFormat,
+  resultSchema: execution.resultSchema,
+  disabled: !editable,
+  onChange: updateProcessing,
+})
+```
+
+If no code-panel slot is supplied while the selected processing kind is JAVASCRIPT,
+render a bounded unavailable placeholder. Do not call `undefined` and do not add a
+second code editor in COMMERCE-023.
+
+The committed file already defines:
+
+```text
+processingDirty
+pendingMode
+switchMode()
+confirmMode()
+```
+
+but the visible Response processing selector bypasses them and directly calls
+`updateProcessing(...)`. Therefore dirty Visual/JavaScript state is still silently
+discarded.
+
+Required behavior:
+
+```text
+selector -> switchMode(requestedMode)
+
+if current processing has unsaved edits:
+  show "Discard response-processing changes?"
+  Keep editing
+  Discard changes and switch
+
+Keep editing:
+  preserve exact current processing
+
+Discard:
+  install the requested default mode once
+```
+
+Actually render and exercise the existing `pendingMode` state.
+
+TEXT response format remains JavaScript-only. If the user selects TEXT while Visual
+processing is active, do **not** silently create or discard processing. Use one of
+these deterministic behaviors:
+
+```text
+preferred:
+  keep JSON/Visual unchanged
+  show "TEXT responses require JavaScript processing"
+  user explicitly switches processing first
+```
+
+or the same discard-confirmation mechanism if both mode changes are applied as one
+user command. In either case there is no silent conversion.
+
+Focused regressions:
+
+```text
+dirty Visual -> choose JavaScript
+  -> confirmation visible
+  -> Keep editing preserves exact visual rules
+  -> Discard switches exactly once
+
+JAVASCRIPT with no renderCodePanel
+  -> bounded unavailable placeholder
+  -> no runtime exception
+
+JAVASCRIPT with slot
+  -> slot receives one ExternalCodePanelSlotProps object containing
+     exact processing/responseFormat/resultSchema/disabled/onChange
+
+TEXT selected while Visual
+  -> no silent processing loss
+```
+
+#### A4-R2 — finish query and LIST filter authoring
+
+**Source and focused-test changes required.**
+
+Query rows can now display either an input or a literal, but the UI still has no
+mapping-source control. `Add query mapping` always creates an input mapping, so a new
+Literal mapping cannot actually be authored through the UI.
+
+Every query row must expose:
+
+```text
+Query key
+Source:
+  Agent input
+  Literal
+```
+
+Switch semantics:
+
+```text
+Agent input -> Literal
+  default literal = ""
+  remove input/omitIfMissing fields
+
+Literal -> Agent input
+  default input = current query key
+  omitIfMissing = true
+  remove literal field
+```
+
+Literal value continues to use the existing typed scalar control:
+
+```text
+string | number | boolean
+```
+
+`null` is not a valid query literal unless the Shared schema explicitly allows it;
+do not widen Shared.
+
+LIST filters still permit 20 filter rows. C21's UI authoring maximum is **8**. Change:
+
+```text
+Add filter disabled when filters.length >= 8
+```
+
+and render the required guidance:
+
+```text
+All filters are ANDed.
+```
+
+`IN` must author:
+
+```text
+1..20 values
+all values same scalar type
+string | number | boolean | null
+```
+
+The current raw JSON fragment parser accepts mixed arrays such as:
+
+```json
+["one", 2, true]
+```
+
+Do not commit mixed-type `IN` values. Retain invalid typed text locally with a bounded
+row error until corrected; do not snap the saved execution to another value.
+
+Focused proof must author from empty/new controls rather than pre-seeded JSON:
+
+```text
+query Agent input + omitIfMissing
+switch query to string Literal
+switch query to numeric Literal
+switch query to boolean Literal
+switch Literal back to Agent input
+
+8 filters allowed
+9th filter disabled
+
+IN string list
+IN number list
+mixed IN rejected without mutating saved processing
+
+"All filters are ANDed" visible
+```
+
+#### A4-R3 — expose the editable TransformSample and complete response-shape guidance
+
+**Source and focused-test changes required.**
+
+Attempt 4 now has real local `sample`, `updateSample()` and `changeSample()` state, but
+the rendered Sample review still exposes only the fixture selector plus Apply/Validate.
+
+Render editable fields for the current synthetic `TransformSample`:
+
+```text
+Status
+Content type
+Body
+```
+
+Every edit must call `updateSample(...)`, preserve Shared `TransformSampleSchema`
+validation and immediately invalidate prior Apply/Validate success.
+
+The fixture selector currently does:
+
+```ts
+setSampleId(event.target.value);
+invalidate();
+```
+
+without replacing the editable sample. Change it to the existing:
+
+```ts
+changeSample(event.target.value)
+```
+
+so selected fixture identity and processed sample cannot diverge.
+
+Required regression:
+
+```text
+select "missing-field"
+  -> editable status/contentType/body exactly equal missing-field fixture
+
+edit body
+  -> prior validation immediately stale
+  -> Apply uses edited body, not catalogue success fixture
+
+switch fixture
+  -> edited sample replaced by exact newly selected fixture
+```
+
+The Response shape section must also render the bounded C21 supported-keyword
+reference:
+
+```text
+object
+properties
+required
+additionalProperties: false
+string / maxLength
+number
+boolean
+array / items / maxItems
+```
+
+and explicitly explain:
+
+```text
+resultPath="" means the response root
+response templates access processed fields beneath values
+```
+
+Derive read-only field chips from the currently valid `resultSchema`, e.g.:
+
+```text
+values.title
+values.price
+values.items[].name
+```
+
+Chips are guidance only. They never mutate the schema/template.
+
+#### A4-R4 — finish exact return context and role-aware publication review/reason
+
+**Source and focused-test changes required.**
+
+The selected-connection Manage connections destination correctly retains the exact U06
+return path. The fallback still uses plain:
+
+```text
+/connections
+```
+
+when the current revision cannot be resolved.
+
+Use the exact same return target in both cases:
+
+```ts
+const returnTo =
+  `/tools/${tool.id}?revision=${selected.id}`;
+
+selected connection:
+  /connections/<connectionId>?returnTo=<encoded returnTo>
+
+no selected connection:
+  /connections?returnTo=<encoded returnTo>
+```
+
+Do not drop return context.
+
+Attempt 4 declares:
+
+```ts
+const [publishReason, setPublishReason] = useState('');
+```
+
+but never renders or consumes it. Publish still sends the hard-coded reason:
+
+```text
+Publish validated external API tool revision
+```
+
+For external drafts, SUPER_ADMIN must receive a required reason field:
+
+```text
+trimmed length: 1..1000
+```
+
+Publish remains disabled unless:
+
+```text
+role = SUPER_ADMIN
+current sample validation is valid/current
+reason is valid
+no command is pending/unknown
+```
+
+Call:
+
+```ts
+services.publishToolRevision({
+  operationId,
+  toolRevisionId: selected.id,
+  expectedEditVersion: selected.editVersion,
+  reason: publishReason.trim(),
+})
+```
+
+Known failure retains the entered reason and displays no success. ADMIN still has no
+Publish control.
+
+Before the Publish button render the required read-only external-definition review:
+
+```text
+agent descriptor:
+  definition name
+  description
+  input schema
+
+connection:
+  display name/key
+  exact revision number
+
+GET path
+
+query:
+  mapping names
+  Agent input names
+  literal values shown as [literal], not the literal secret/value
+
+result schema
+
+processing kind
+
+current sample-validation state
+```
+
+Never render credential values.
+
+Focused regressions:
+
+```text
+no selected connection + Manage connections
+  -> /connections?returnTo=<exact encoded tool revision>
+
+SUPER_ADMIN publish with blank reason
+  -> disabled
+
+1..1000-char trimmed reason + current validation
+  -> publish enabled
+  -> exact entered reason passed
+
+ADMIN
+  -> no publish control
+
+review panel
+  -> contains exact revision/path/processing state
+  -> query literal rendered as [literal]
+```
+
+#### A4-R5 — prove the owned XN02 traversal instead of pre-seeding the external draft
+
+**Focused integration-style component test required.**
+
+All committed focused tests still begin by calling:
+
+```ts
+externalDraft(services)
+```
+
+before rendering U06. That bypasses the central owned X06/XN02 path.
+
+Add one test that starts from a normal new tool with no pre-authored EXTERNAL_HTTP
+revision and proves, using only in-memory/injected ports:
+
+```text
+Create tool
+-> choose External API
+-> select exact authorized connection revision
+-> Create draft
+-> land on exact U06 external draft revision
+-> author query source/literal controls
+-> author projection/filter/sort/limit
+-> edit synthetic sample
+-> Apply
+-> Validate
+-> Save draft
+-> pass exact saved toolRevisionId + saved definition to ExternalFixtureControls
+-> click one fixture and receive processed values + rendered reply
+-> Manage connections and assert exact returnTo
+-> return to same U06 revision
+-> enter SUPER_ADMIN publication reason
+-> Publish
+```
+
+Assertions:
+
+```text
+createToolDraft receives Shared-valid EXTERNAL_HTTP definition
+stored execution equals exact expected C21 JSON
+agent descriptor name/description/input schema remain unchanged
+sample-validation hash is current before Save/Publish
+fixture port receives exact saved revision + definition + fixture
+zero fetch/network calls
+zero credential values
+duplicate Apply / Validate / Save / Publish admitted once each
+```
+
+The existing six focused tests and StudioWorkspace regression suite remain useful and
+must be retained.
+
+#### A4-R6 — reconcile the committed Attempt 4 handoff and remove task-owned diagnostics
+
+**Task record and validation required.**
+
+The implementation was committed, but the uploaded parent task record never completed
+the repository-agent handoff:
+
+```yaml
+status: in_progress
+attempt: 4
+executor: copilot
+claimed_at: 2026-09-22T08:52:43Z
+```
+
+and the Completion Report remains the Attempt 3 report.
+
+This Architect Review treats that active claim as stranded and returns the task to:
+
+```yaml
+status: ready
+attempt: 4
+executor: null
+claimed_at: null
+```
+
+The next authorized `/moda-task ARCH-020-COMMERCE-023` claim must create **Attempt 5
+exactly once**.
+
+After A4-R1 through A4-R5 run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+npx vitest run tests/studio-workspace.test.tsx
+
+npx eslint \
+  src/studio/external-http \
+  components/studio-workspace.tsx \
+  tests/external-tools-ui.test.tsx
+
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+There must be no task-owned diagnostic under:
+
+```text
+src/studio/external-http/**
+components/studio-workspace.tsx
+tests/external-tools-ui.test.tsx
+```
+
+The current positional `renderCodePanel(...)` call is task-owned and cannot be
+classified as unrelated baseline.
+
+If repository-wide lint/typecheck/build then retain only unchanged diagnostics outside
+the task-owned paths, record those exact diagnostics and continue without repairing
+unrelated files.
+
+Before return to review:
+
+```text
+Work Items truthful
+Acceptance Criteria truthful
+Validation truthful
+Completion Report = Attempt 5
+implementation commit recorded
+status: review
+executor: null
+claimed_at: null
+```
+
+Push both mirrored task branches and STOP. Do not start COMMERCE-024 or COMMERCE-012.
+
+### Attempt 4 Reviewed Files
+
+- `components/studio-workspace.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/external-http/ports.ts`
+- `src/studio/external-http/fixture-controls.tsx`
+- `src/studio/external-http/processor.ts`
+- `tests/external-tools-ui.test.tsx`
+- `package.json`
+- C21 sections 2, 2.1, 6 and 8
+- the current task record / prior Architect Reviews
+
+### Attempt 4 Validation Reviewed
+
+Developer reported for the committed implementation snapshot:
+
+```text
+tests/external-tools-ui.test.tsx
+  PASS — 6 focused tests
+
+tests/studio-workspace.test.tsx
+  PASS — 18 tests
+
+changed-file diagnostics
+  reported clean
+
+git diff --check
+  reported clean
+```
+
+Those passes do not override the source-level task-owned defects above. In particular,
+the current code-panel slot call does not match its own declared TypeScript contract,
+and the focused suite does not exercise the JavaScript slot or the required new-tool
+XN02 traversal.
+
+### Attempt 4 Architecture Conformance
+
+Not yet conformant with C21 X06/XN02.
+
+The explicit external-port composition, exact U14 fixture identity, connection
+metadata, sample hashing and zero-network fixture direction are correct and should be
+preserved. Acceptance remains blocked only by the bounded A4-R1 through A4-R6 items
+above.
+
+### Attempt 4 Follow-up
+
+Return through:
+
+```text
+/moda-task ARCH-020-COMMERCE-023
+```
+
+after this review overlay is committed. The next successful claim must create
+**Attempt 5 exactly once**. COMMERCE-024 and COMMERCE-012 remain dependency-gated.
+No downstream task is launched automatically.

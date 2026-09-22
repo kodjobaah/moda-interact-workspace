@@ -1784,3 +1784,16 @@ sample-MIME plus production-renderer reuse, bounded schema issues, and complete
 PV02/PV03 runtime-revalidation evidence.
 
 No dependency is promoted and no downstream task is launched automatically.
+
+## COMMERCE-023 Attempt 4 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 4**, claim clear. The
+committed implementation advances the external fixture integration, but C21 X06/XN02
+is not yet complete. The task's latest Architect Review is the complete deterministic
+Attempt 5 correction contract: code-panel/mode-switch wiring; query/literal and
+8-filter typed authoring; editable sample and response-shape guidance; exact fallback
+return context plus role-aware publication reason/review; and one full new-tool XN02
+proof.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
+automatically.
