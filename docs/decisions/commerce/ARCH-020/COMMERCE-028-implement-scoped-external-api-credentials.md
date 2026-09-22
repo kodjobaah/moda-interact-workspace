@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T02:44:50Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -67,10 +67,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement createCredentialService with getCredentialStatus/setCredential/removeCredential/resolveConnection/checkConnectionAvailability as C21 section9 defines.
-- [ ] Reuse020 locked command kernel for same-transaction credential and audit writes; do not clone replay/auth/digest logic or modify its files.
-- [ ] Implement AES-GCM/AAD/keyring handling, exact scope/no-fallback and current enabled checks. Keep secret result internal; status/availability expose no authentication value.
-- [ ] Deliver two-client credential race, stored-secret roundtrip and rotation fixtures; retain no real secrets in fixtures/logs.
+- [x] Implement createCredentialService with getCredentialStatus/setCredential/removeCredential/resolveConnection/checkConnectionAvailability as C21 section9 defines.
+- [x] Reuse020 locked command kernel for same-transaction credential and audit writes; do not clone replay/auth/digest logic or modify its files.
+- [x] Implement AES-GCM/AAD/keyring handling, exact scope/no-fallback and current enabled checks. Keep secret result internal; status/availability expose no authentication value.
+- [x] Deliver two-client credential race, stored-secret roundtrip and rotation fixtures; retain no real secrets in fixtures/logs.
 
 ## Interfaces / Contracts
 
@@ -91,9 +91,9 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 
 ## Acceptance Criteria
 
-- [ ] CR01: PLATFORM and two PER_SHOP credentials roundtrip through real service; correct decrypted value reaches a recording internal consumer, never a public DTO.
-- [ ] CR02: same-command duplicate yields one credential effect/audit; changed replay and stale credential version reject; NULL-platform uniqueness exercised on PostgreSQL.
-- [ ] CR03: wrong shop, absent credential, disabled connection, invalid key/AAD/tag and removed credential deny/unavailable exactly; old revision remains fixed while secret rotation affects future calls.
+- [x] CR01: PLATFORM and two PER_SHOP credentials roundtrip through real service; correct decrypted value reaches a recording internal consumer, never a public DTO.
+- [ ] CR02: same-command duplicate yields one credential effect/audit; changed replay and stale credential version reject; NULL-platform uniqueness exercised on PostgreSQL. Developer PostgreSQL validation remains required.
+- [x] CR03: wrong shop, absent credential, disabled connection, invalid key/AAD/tag and removed credential deny/unavailable exactly; old revision remains fixed while secret rotation affects future calls.
 
 ## Validation
 
@@ -119,41 +119,93 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Review-ready, Attempt 1 implementation submitted to `moda_architect`.
 
 ### Files Changed
 
-None; task definition only.
+- `moda-interact-commerce/src/commerce/connections/credentials/index.ts`
+- `moda-interact-commerce/tests/external-credentials.test.ts`
+- `moda-interact-commerce/package.json`
 
 ### Work Completed
 
-None.
+Added `createCredentialService` under its assigned path only. It uses the
+accepted COMMERCE-020 `ConnectionCommandKernel` for credential mutation replay,
+authorization, locking and same-transaction audit behavior. The service performs
+AES-256-GCM encryption with a random 12-byte nonce, 16-byte tag, key ID and
+canonical `{connectionRevisionId, shopId, keyId}` AAD. It supports active-key
+rotation while retaining old keyring entries for decryption.
+
+`resolveConnection` is the only local sensitive result: decrypted header values
+remain inside the Commerce service. Status and availability APIs expose only
+configuration/version/timestamp or exclusion reason. Scope resolution is exact:
+PER_SHOP never falls back to platform or another shop, disabled connections deny,
+and decrypt/AAD/tag/key failures fail closed.
 
 ### Validation Results
 
-No implementation validation performed.
+Agent-executed validation:
+
+| Criterion | Committed test | Command | Observable result |
+| --- | --- | --- | --- |
+| CR01 | `external credentials > CR01 encrypts an exact-shop secret and decrypts only for the internal resolver`; `CR01 isolates two shop credentials and supports a platform credential without exposing it in status` | `npm run test:arch020-external-credentials` | PLATFORM plus two exact PER_SHOP secrets roundtrip through `createCredentialService`; only `resolveConnection` receives header value; status has no secret. |
+| CR02 (non-PostgreSQL portion) | `external credentials > CR02 applies CAS and replay without a second credential effect` | `npm run test:arch020-external-credentials` | Same command replay makes one effect; changed replay returns `CONFLICTING_REPLAY`; concurrent same-version clients produce exactly one success and one `STALE_CAS`. |
+| CR03 | `external credentials > CR03 reports disabled, missing, invalid-key, and removed credentials without revealing a secret` | `npm run test:arch020-external-credentials` | Missing/wrong-shop/disabled/key/AAD-tag/removed paths deny or fail unavailable; retained old key decrypts before rotation and active key encrypts replacement. |
+
+- `npm run test:arch020-external-credentials`: passed, 1 file and 4 tests.
+- `npm run test:arch020-external-connection-lifecycle`: passed, 1 file and 9 tests.
+- `npx eslint src/commerce/connections/credentials tests/external-credentials.test.ts`: passed.
+- `git diff --check`: passed.
+- `npm run lint`: non-zero only for existing `src/studio/connections/connections-ui.tsx:235` hook-rule diagnostic and unrelated warnings; no credential diagnostic.
+- `npm run typecheck`: non-zero on 11 existing diagnostics in `src/commerce/connections/command-kernel.ts`, `src/commerce/connections/lifecycle/index.ts`, `src/commerce/integration/backend/executors.ts`, and `tests/code-response-processor.test.ts`; no credential diagnostic.
+- `npm run build`: QuickJS packaging/smoke, Prisma generation and Next compilation passed; subsequent type checking stopped on the same 11 unrelated diagnostics.
+
+Developer validation required:
+
+```bash
+npm run test:arch020-backend-integration:postgres
+```
+
+Expected success condition: run the disposable PostgreSQL credential scenario to
+prove the database partial unique index permits one NULL-platform credential,
+rejects duplicate NULL-platform rows, and preserves transaction/audit rollback.
+This long PostgreSQL/container rehearsal was not agent-executed.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+No scope deviation. The service is frontend/HTTP/factory independent and does not
+modify COMMERCE-020 kernel, DATABASE schema, UI, transport or integration code.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+Shared package version `@modainteract/moda-interact-shared@0.14.2` supplies the
+credential DTO/result contracts and `canonicalJson`. The launcher materialized
+the database submodule at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+CR02 remains pending real PostgreSQL partial-unique-index evidence. The focused
+fixture proves the service's replay/CAS behavior but is not a replacement for the
+developer-owned container/database rehearsal.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+No contract contradiction found. The repository baseline currently blocks full
+typecheck/build after compilation in unrelated pre-existing files as recorded
+above.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-028. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-028`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-028`
+  mirrored branch: `task/ARCH-020-COMMERCE-028`
+  implementation commit: `715da4d`, pushed to the implementation task branch.
+
+The launcher claimed Attempt 1 as `3b610c19076630439b454a1c23175e39f62cda10` and
+verified the recursive database submodule at the recorded commit. This parent
+report update is the review handoff commit.
 
 ## Architect Review
 
