@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 145
-executor: copilot
-claimed_at: 2026-09-22T00:40:02Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -145,7 +145,10 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Review, Attempt 2 rework submitted after the Architect Changes Requested review.
+Blocked, Attempt 3 rework submitted after the Architect Blocked review. The
+accepted MODEL configuration and transport are now composed in the production
+preview runtime; the U14 tool-only Conversation Start source contradiction
+remains unresolved and is not fabricated here.
 
 ### Files Changed
 
@@ -171,26 +174,34 @@ cannot overwrite an older conversation. Limits are enforced at 32 definitions,
 with fail-closed validation. The direct saved-tool test uses the accepted
 empty-capability DRAFT selection and the accepted interpreter with a synthetic query
 boundary.
+Attempt 3 also wires `readConfig().preview` and the accepted
+`createPreviewModel` transport for explicit MODEL mode. Disabled preview remains
+credential-free FIXTURE mode, and no Background or production credential fallback
+is used.
 
 ### Validation Results
 
 - `npm run test:arch020-preview-integration`: 4 files passed, 37 tests passed.
 - `npm run test:arch020-preview-integration:redis`: 1 file passed, 4 tests passed; Redis snapshot state round-tripped and atomic capacity protection passed.
-- `npm run typecheck`: passed.
+- `npm run typecheck`: failed on 20 existing shared-contract/type errors across
+  code-response, external-http, execution, and two preview test call sites.
 - `npm run lint`: passed with 2 pre-existing warnings in
   `scripts/code-runtime-manifest.mjs` and `src/commerce/code-response/runtime/kernel.ts`.
-- `npm run build`: passed; Next.js production build completed and emitted all expected
-  Commerce routes.
+- `npm run build`: compiled the production application but failed during the same
+  20-error type-check phase.
 - `git diff --check`: passed.
 - Recursive database submodule initialized at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+- Attempt 3 focused model/config validation: `npm run test -- --run
+  tests/preview-model-provider.test.ts` passed (1 file, 9 tests).
+- Attempt 3 `npm run typecheck` and `npm run build` failed on 20 existing
+  shared-contract/type errors across code-response, external-http, execution, and
+  two preview test call sites; no `runtime.ts` error was reported.
 
 ### Deviations
 
-The generic MODEL adapter remains fail-closed because no separate preview model
-configuration was installed. The repository has no accepted provider transport
-implementing `PreviewModelPort` from the configured `COMMERCE_PREVIEW_MODEL` and
-`COMMERCE_PREVIEW_API_KEY`. No live provider, Shopify, WhatsApp, PostgreSQL, or
-production credential validation was performed.
+No live provider, Shopify, WhatsApp, PostgreSQL, or production credential
+validation was performed. The accepted preview provider transport was exercised
+only through mocked provider/configuration tests.
 
 ### Assumptions
 
