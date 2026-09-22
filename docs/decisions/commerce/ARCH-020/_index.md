@@ -1160,6 +1160,7 @@ normal live tool path.
 prerequisites are Complete. No task is launched automatically. `COMMERCE-012` and
 terminal system-test work remain behind their later integration/gateway gates.
 
+<!-- Preserved task-branch record. -->
 ## COMMERCE-024 Attempt 1 architect review / COMMERCE-038 creation — 2026-09-22
 
 COMMERCE-024 is **Blocked, Attempt 1 retained, claim cleared**.
@@ -1208,3 +1209,23 @@ Developer verification was performed on Commerce main
 The next launcher claim creates COMMERCE-024 Attempt 2 exactly once and must follow
 the existing post-unblock composition contract. No downstream task is promoted or
 launched by this reconciliation.
+<!-- Preserved mainline record. -->
+## COMMERCE-038 Attempt 1 architect acceptance — 2026-09-22
+
+COMMERCE-038 is **Accepted / Complete, Attempt 1** at implementation `16972af`
+(parent report `f107b817`).
+
+The accepted external-preview producer now exports a reusable
+`createExternalFixtureRunner(...)` that shares the same bounded
+visual/JavaScript/MIME/schema/rendering kernel as COMMERCE-031 tool-test execution
+while owning no replay, quota, publication-receipt, provider, credential or
+preview-state side effects.
+
+This clears COMMERCE-024's missing external fixture-runner producer dependency.
+It does **not** clear COMMERCE-024's separate implementation-base blocker:
+accepted COMMERCE-019 implementation `8850b55` is still absent from the Commerce
+source in this snapshot. The authoritative COMMERCE-024 task therefore remains
+Blocked on its own newer task branch until that accepted source is integrated and a
+fresh synchronized snapshot is verified.
+
+No downstream task is launched.

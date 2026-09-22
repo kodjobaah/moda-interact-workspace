@@ -1443,7 +1443,6 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
-
 ## COMMERCE-018 Attempt 8 acceptance — 2026-09-22
 
 `ARCH-020-COMMERCE-018` is **Complete / Accepted, Attempt 8**. Consumers may rely on
@@ -1557,6 +1556,7 @@ oversize response samples fail closed.
 Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
 their remaining integration/gateway gates.
 
+<!-- Preserved task-branch record. -->
 ## COMMERCE-024 Attempt 1 blocked / COMMERCE-038 created — 2026-09-22
 
 COMMERCE-024 is **Blocked, Attempt 1 retained**.
@@ -1602,3 +1602,31 @@ COMMERCE-012 and SYSTEM-TEST-002 remain gated until 024 is accepted Complete.
 A local untracked `typescript` artifact was present in the developer main worktree;
 it is not part of the accepted source and should be moved/removed before launch rather
 than committed.
+<!-- Preserved mainline record. -->
+## GATEWAY-001 Attempt 4 architect acceptance — 2026-09-22
+
+ARCH-020-GATEWAY-001 is **Complete / Accepted, Attempt 4** (`478923a`; parent
+report `cb41f7c`). The Render/private-MCP/public-Studio topology and final hosted
+smoke contract are accepted. Real deployment/DNS/TLS/OAuth/assertion smoke remains
+a developer validation checkpoint, not an unfinished implementation dependency.
+
+Because their remaining prerequisites are already Complete, GATEWAY-003 (priority
+175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
+Neither is started automatically. COMMERCE-012 and system-test work retain their
+additional dependency gates.
+
+## COMMERCE-038 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1** (`16972af`; parent report `f107b817`).
+
+The reusable external synthetic fixture-processing seam required by final production
+composition is now available from the accepted COMMERCE-031 producer. It shares the
+same visual/JavaScript processing kernel as tool-test execution and introduces no
+quota, receipt, provider, credential or preview-state side effects.
+
+COMMERCE-024 remains blocked on its separate implementation-base condition: accepted
+COMMERCE-019 source `8850b55` is still not present in the Commerce source reviewed in
+this task. Once that source is developer-integrated, a fresh synchronized 024 snapshot
+can be returned to `moda_architect` for Blocked -> Ready reconciliation.
+
+No downstream task is launched automatically.

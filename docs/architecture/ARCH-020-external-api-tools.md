@@ -1333,6 +1333,7 @@ oversize response samples fail closed.
 Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
 their remaining integration/gateway gates.
 
+<!-- Preserved task-branch record. -->
 ## COMMERCE-024 unblock reconciliation — 2026-09-22
 
 **Ready, Attempt 1 retained; claim cleared.**
@@ -1353,3 +1354,24 @@ COMMERCE-012 and SYSTEM-TEST-002 remain gated until 024 is accepted Complete.
 A local untracked `typescript` artifact was present in the developer main worktree;
 it is not part of the accepted source and should be moved/removed before launch rather
 than committed.
+<!-- Preserved mainline record. -->
+## COMMERCE-038 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1** (`16972af`; parent report `f107b817`).
+
+The external-preview producer now exports a reusable
+`createExternalFixtureRunner(...) -> PreviewExternalFixtureRunner`. Tool-test
+`runSample(...)` and Conversation synthetic external-fixture execution can therefore
+reuse one accepted processing implementation for MIME normalization, JSON/TEXT
+handling, resultPath, COMMERCE-025 visual processing, COMMERCE-026 JavaScript
+processing, cancellation, result-schema validation, EXTERNAL_HTTP result construction
+and response rendering.
+
+The runner has no Redis quota, publication receipt, provider HTTP, credential or
+preview-state dependency. Final production composition remains COMMERCE-024
+ownership.
+
+COMMERCE-024 is **not** unblocked by this acceptance alone: the synchronized Commerce
+implementation base used for this review still lacks accepted COMMERCE-019
+implementation `8850b55`. That developer integration remains the only known 024
+unblock condition after COMMERCE-038 acceptance.
