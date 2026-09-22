@@ -724,3 +724,12 @@ All declared prerequisites of COMMERCE-030 are now Complete, so
 **ARCH-020-COMMERCE-030 is promoted Ready, Attempt 0, claim clear**. COMMERCE-031,
 COMMERCE-024, COMMERCE-012 and terminal system-test work retain additional
 dependencies. No task is automatically launched.
+
+## COMMERCE-023 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 2 retained; claims cleared.** Preserve the new
+External API tool-purpose choice, explicit external UI port and guarded navigation.
+Attempt 3 must close the remaining valid-draft creation/exact connection context,
+lossless typed query/filter/projection authoring, canonical stale-sample validation,
+typed JavaScript slot/U14 frozen-fixture boundary and the single owned XN02 traversal.
+COMMERCE-024 and COMMERCE-012 remain gated; no automatic launch.

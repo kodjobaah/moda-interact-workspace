@@ -1251,3 +1251,11 @@ Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
 because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
+
+## COMMERCE-023 Attempt 2 architect review — 2026-09-22
+
+`ARCH-020-COMMERCE-023` is **Ready / Changes Requested, Attempt 2**, claim clear.
+Attempt 2 passes its submitted focused tests but still lacks several required U06/U14
+runtime behaviors from the existing correction contract. The latest task review is the
+authoritative Attempt 3 contract. COMMERCE-024 and COMMERCE-012 remain dependency
+gated; nothing is launched automatically.

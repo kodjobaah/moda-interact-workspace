@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 155
-executor: copilot
-claimed_at: 2026-09-22T02:21:41Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-SHARED-002
@@ -852,3 +852,562 @@ reconcile the Completion Report/checklists, set the task to review, clear the cl
 handoff, push both mirrored task branches and STOP.
 
 Do not start COMMERCE-024 or COMMERCE-012. They remain dependency-gated.
+
+### Attempt 2 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 2 archive and
+parent handoff `2fe2278d315a11de272c82b6fefddb68abc39a41`.
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claimed_at cleared.**
+The Attempt 1 review remains the architectural contract. Attempt 2 materially
+improves the entry path: External API is now a first-class tool-purpose choice,
+`ExternalHttpEditor` no longer installs a fixture port implicitly, Manage connections
+uses the Studio navigation blocker, and an explicit U14 fixture component exists.
+Preserve those corrections.
+
+The submitted focused 6/6 external-UI tests, 18/18 StudioWorkspace tests, scoped
+ESLint, changed-file diagnostics and `git diff --check` are useful supporting
+evidence. Repository-wide typecheck remains blocked by documented unrelated
+Prisma/publication-storage baseline diagnostics and is not itself a task-owned
+failure.
+
+The remaining defects below are functional gaps from the existing Attempt 1
+correction contract. Do not redesign outside them.
+
+#### A2-R1 — make External API creation produce a valid C21 draft and restore exact connection/revision context
+
+Files:
+`components/studio-workspace.tsx`,
+`src/studio/external-http/ports.ts`,
+`src/studio/external-http/editor.tsx`,
+`tests/external-tools-ui.test.tsx`.
+
+`ToolLibrary.externalDefinition()` currently creates:
+
+```ts
+responseProcessing: { kind: 'OBJECT', fields: {} }
+responseTemplate: { kind: 'text', text: '{{result}}', ... }
+```
+
+Both are invalid against the accepted Shared contract: visual field projection must
+contain at least one field, and text template tokens must be rooted below
+`result.<path>`. Therefore the current new-tool flow can create the tool row and then
+fail before a valid EXTERNAL_HTTP draft is created.
+
+Use this deterministic valid starter definition after the user has selected the exact
+authorized connection revision:
+
+```ts
+{
+  name,
+  definitionVersion: '1.0.0',
+  description,
+  inputSchema: {
+    type: 'object',
+    properties: {},
+    required: [],
+    additionalProperties: false
+  },
+  execution: {
+    kind: 'EXTERNAL_HTTP',
+    executorVersion: '1.0.0',
+    connectionRevisionId: selectedRevision.id,
+    method: 'GET',
+    path: '/',
+    query: {},
+    responseFormat: {
+      mode: 'JSON',
+      mediaTypes: ['application/json']
+    },
+    resultPath: '',
+    responseProcessing: {
+      kind: 'OBJECT',
+      fields: {
+        value: { path: 'value' }
+      }
+    },
+    resultSchema: {
+      type: 'object',
+      properties: {
+        value: { type: 'string', maxLength: 4096 }
+      },
+      required: ['value'],
+      additionalProperties: false
+    }
+  },
+  responseTemplate: {
+    kind: 'text',
+    text: '{{result.values.value}}',
+    unavailable: 'Information is unavailable.'
+  }
+}
+```
+
+The starter is only an editable valid draft; it is not a claim about the external
+provider's eventual shape.
+
+Replace the flat `listConnectionRevisions()` authoring boundary with the accepted
+Shared `ConnectionView` hierarchy (or add `listConnections()` while retaining a
+derived revision helper). Do not invent another connection DTO.
+
+For the selected connection/revision, U06 must visibly show:
+
+```text
+connection display name
+connection key
+revision number
+origin
+scope
+auth mode
+API-key header name only for API_KEY
+inline documentation
+```
+
+No credential value or credential status is displayed.
+
+The exact Manage connections destination is owned by the U06 host:
+
+```ts
+const returnTo = `/tools/${tool.id}?revision=${selected.id}`;
+
+selectedConnection
+  ? `/connections/${selectedConnection.id}?returnTo=${encodeURIComponent(returnTo)}`
+  : `/connections?returnTo=${encodeURIComponent(returnTo)}`
+```
+
+Pass that destination through `composer.requestNavigation(...)` so the existing
+Stay/Discard blocker still owns dirty navigation. Returning must reopen the same
+tool revision.
+
+Required focused proof:
+- new tool -> External API -> Create tool creates a valid EXTERNAL_HTTP draft;
+- the draft contains the exact injected connection revision ID;
+- no external port / no authorized revision creates no synthetic draft;
+- connection name/key/revision/scope/auth/header/docs render correctly;
+- Manage connections uses the exact selected connection and exact encoded returnTo.
+
+#### A2-R2 — complete lossless typed query/projection/filter authoring, mode switching and the code-panel slot
+
+Files:
+`src/studio/external-http/editor.tsx`,
+`src/studio/external-http/ports.ts`,
+`tests/external-tools-ui.test.tsx`.
+
+The current query editor still cannot author the Shared v1 contract:
+- query keys are not editable;
+- source cannot be switched between Agent input and Literal;
+- literal string/number/boolean cannot be authored;
+- editing an input mapping reconstructs `{input: ...}` and drops `omitIfMissing`.
+
+The visual editor also still:
+- cannot rename an output field;
+- cannot edit projection `omitIfMissing`;
+- does not offer `IN`;
+- coerces filter values back to strings;
+- has no scalar type selector;
+- omits `pending || locked` from multiple projection/filter/sort/limit controls;
+- silently replaces Visual/JavaScript processing on mode switch;
+- leaves the Advanced JSON text stale after visual edits;
+- still renders a plain "Code editor slot owned by COMMERCE-027" message.
+
+Implement one lossless editor for the existing Shared schemas.
+
+Query row:
+
+```text
+Query key
+Source: Agent input | Literal
+
+Agent input:
+  input name
+  omit if missing
+
+Literal:
+  scalar type: string | number | boolean
+  typed value
+
+Remove
+```
+
+Projection row:
+
+```text
+Output name
+Source path
+Omit if missing
+Remove
+```
+
+LIST filter row:
+
+```text
+Source path
+Operator:
+  EQ NE GT GTE LT LTE CONTAINS STARTS_WITH IN
+
+Scalar type:
+  string number boolean null
+
+Value
+```
+
+For `IN`, edit 1..20 same-type scalar values and write the Shared `{op:'IN',values}`
+member. Preserve numbers, booleans and null as typed values; never stringify them.
+
+Enforce the existing Shared/UI bounds:
+- projections <= 32;
+- filters <= 8;
+- IN values 1..20;
+- LIST limit 1..20;
+- show `All filters are ANDed`.
+
+All mutation controls in this editor must honor `pending || locked`.
+
+Invalid key/path/value text must remain visible in local row state with a bounded
+row error. Do not snap the UI back to the previously parsed execution merely because
+the strict Shared schema rejects the current keystroke. Only a successfully parsed
+row set mutates the persisted execution.
+
+Advanced JSON and visual controls are two views of the same
+`ResponseProcessing` value:
+- successful visual edits immediately replace Advanced JSON text;
+- valid Advanced JSON immediately replaces visual state;
+- invalid Advanced JSON remains visible and leaves the persisted execution unchanged;
+- a later successful visual edit becomes authoritative and replaces stale invalid
+  Advanced JSON.
+
+TEXT response format requires JAVASCRIPT. Visual processing is JSON-only; show that
+rule beside Response format / Process response.
+
+Switching Visual <-> JavaScript while the current processing mode has edits opens:
+
+```text
+Keep editing
+Discard changes and switch
+```
+
+No silent conversion.
+
+Fix the typed slot contract. `ExternalCodePanelSlotProps.processing` must be:
+
+```ts
+Extract<ResponseProcessing, { kind: 'JAVASCRIPT' }>
+```
+
+not `Extract<VisualResponseProcessing, ...>` (which is `never`).
+
+Expose:
+
+```ts
+renderCodePanel?: (props: ExternalCodePanelSlotProps) => React.ReactNode;
+```
+
+through the explicit external UI composition boundary and render it for JAVASCRIPT
+mode. COMMERCE-023 must not import COMMERCE-027's implementation directly.
+
+Required focused proof should build the execution through UI controls and assert exact
+stored JSON for:
+- editable query key;
+- input + omitIfMissing;
+- string literal;
+- numeric literal;
+- boolean literal;
+- renamed projection;
+- projection omitIfMissing;
+- boolean EQ;
+- numeric GT;
+- IN;
+- DESC sort;
+- limit.
+
+#### A2-R3 — implement the specified current-sample hash/generation boundary and separate Apply from Validate
+
+Files:
+`src/studio/external-http/editor.tsx`,
+`src/studio/external-http/ports.ts`,
+`tests/external-tools-ui.test.tsx`.
+
+The current code uses:
+
+```ts
+const contentHash = JSON.stringify(execution);
+```
+
+It excludes sample identity/content, is not canonical SHA-256, has no generation
+guard, and a late `processSample()` / `validateSample()` result can still overwrite
+newer editor state. Changing the sample selector also does not invalidate a previous
+success.
+
+Use Shared `canonicalJson` plus browser Web Crypto SHA-256. The lowercase-hex current
+sample-validation hash is exactly:
+
+```ts
+SHA256(canonicalJson({
+  execution,
+  sampleId,
+  sample
+}))
+```
+
+where `sample` is the current editable `TransformSample`.
+
+Maintain a monotonically increasing validation generation. Every change to:
+
+```text
+connection revision
+path
+query
+response format/media types
+resultPath
+responseProcessing
+resultSchema
+selected sample
+sample status
+sample contentType
+sample bodyText
+```
+
+increments the generation and clears current processing/validation success.
+
+Split the flow:
+
+```text
+Apply to sample
+  -> process the current synthetic sample
+  -> keep processed values only if generation + hash are still current
+  -> record processedHash
+
+Validate sample
+  -> enabled only when processedHash == currentHash
+  -> call injected validateSample(...)
+  -> accept result only if generation + returned/requested hash still current
+  -> record validatedHash
+```
+
+A late result for hash A after any edit to hash B is discarded and must not change
+status, values or publication admission.
+
+Keep the sample synthetic and editable in U06:
+- status;
+- content type;
+- raw body text.
+No live HTTP/decryption.
+
+Response shape section must also include:
+- the bounded supported keyword reference (`object`, `properties`, `required`,
+  `additionalProperties:false`, `string/maxLength`, `number`, `boolean`,
+  `array/items/maxItems`);
+- explanation that `resultPath=""` means response root;
+- explanation that templates consume the wrapper under `values`;
+- read-only schema-derived chips such as `values.title` and
+  `values.items[].name`.
+
+Before Publish render the required review summary:
+
+```text
+unchanged agent descriptor: name + description + input schema
+connection name + exact revision number
+GET path
+query mapping names only
+literal values shown as [literal]
+result schema
+processing kind
+current sample-validation state
+```
+
+Never display credential values.
+
+Publication remains:
+- ADMIN: Save/Test only;
+- SUPER_ADMIN: Save/Test/Publish;
+- exact draft revision + current editVersion + reason;
+- duplicate click admitted once;
+- backend COMMERCE-030 rejection remains a bounded failure.
+
+Do not treat a boolean remembered from an older sample as current validation:
+Publish is enabled only while the current editor/sample state still corresponds to
+`validatedHash`.
+
+Required focused proof:
+- start Apply/Validate for hash A, edit before resolve, late A result discarded;
+- sample selection/body/contentType edit immediately makes validation stale;
+- invalid schema retains schema/sample/source and shows exact issue path;
+- successful current validation enables publish for SUPER_ADMIN only;
+- edit query after success disables publish immediately;
+- duplicate Apply/Validate/Save/Publish is admitted once per logical action.
+
+#### A2-R4 — make the exported U14 fixture slot consume the exact frozen revision through an injected port
+
+Files:
+`src/studio/external-http/fixture-controls.tsx`,
+`src/studio/external-http/ports.ts`,
+`tests/external-tools-ui.test.tsx`.
+
+`ExternalFixtureControls` currently receives `toolRevisionId` but never uses it, and
+`provider-failure` is hard-coded in the component instead of being returned by the
+injected fixture/test port. That does not prove the exact frozen revision or the
+fixture boundary required for COMMERCE-024 composition.
+
+Add a typed fixture test port, for example:
+
+```ts
+type ExternalFixtureRunResult =
+  | {
+      kind: 'ok';
+      values: Record<string, unknown>;
+      renderedReply: string;
+    }
+  | {
+      kind: 'invalid';
+      path: string;
+      message: string;
+    }
+  | {
+      kind: 'unavailable';
+      message: string;
+    };
+
+type ExternalFixtureTestPort = {
+  runFixture(input: {
+    toolRevisionId: string;
+    definition: CommerceToolDefinition;
+    fixture: ExternalFixture;
+  }): Promise<ExternalFixtureRunResult>;
+};
+```
+
+Equivalent naming is acceptable. The important invariant is that the injected port
+receives the exact `toolRevisionId`, exact saved definition and selected fixture for
+**all four** fixture outcomes.
+
+The component renders only the returned processed values / bounded failure / rendered
+reply. `provider-failure` must come from the injected fixture port; do not special-case
+the fixture ID in the UI and do not make a network call.
+
+When `frozen=true`:
+- fixture selector is disabled;
+- editable sample controls, if rendered, are disabled;
+- Run fixture is disabled;
+- show `Reset the conversation to change this fixture.`
+
+When the host resets/unfreezes, selection can change. COMMERCE-023 does not implement
+Redis/reset itself.
+
+Required focused proof:
+- success, empty, missing-field and provider-failure all flow through the injected port;
+- the port observes the exact tool revision ID and saved definition;
+- success renders processed values + rendered reply;
+- bounded failures expose no raw provider body/credential;
+- global `fetch` spy remains zero;
+- frozen blocks change/run and reset/unfrozen permits selection.
+
+#### A2-R5 — add the one owned XN02 component path and reconcile the durable report
+
+File:
+`tests/external-tools-ui.test.tsx` plus this task record.
+
+The current six tests all begin from a pre-authored external draft. They do not prove
+the corrected new-tool flow, complete typed authoring, exact return context, current
+sample validation, exported U14 fixture control, or publish path.
+
+Add one integration-style component test using only the existing injected/in-memory
+ports:
+
+```text
+Create tool
+-> choose External API
+-> choose connection + exact revision
+-> Create draft
+-> verify U06 exact connection/revision metadata
+-> Manage connections -> exact returnTo
+-> return to same tool revision
+-> author query input + typed literal
+-> author LIST projection/filter/sort/limit
+-> edit resultSchema
+-> edit/apply synthetic sample
+-> Validate sample
+-> Save draft
+-> hand the exact saved revision to ExternalFixtureControls
+-> run fixture with zero network
+-> return to the same U06 revision
+-> SUPER_ADMIN Publish
+```
+
+Assert:
+- `createToolDraft` receives a Shared-valid EXTERNAL_HTTP definition;
+- stored execution equals the exact expected C21 JSON;
+- agent descriptor fields remain unchanged;
+- current validation hash is current before save/publish;
+- zero fetch/network and zero credential values;
+- duplicate Apply/Validate/Save/Publish admits one logical operation each.
+
+This is one functional traversal, not a request for an exhaustive screenshot/test
+matrix. Retain the existing StudioWorkspace regressions.
+
+After corrections run:
+
+```bash
+npm run test:arch020-external-tools-ui
+npx vitest run tests/studio-workspace.test.tsx
+npx eslint \
+  src/studio/external-http \
+  components/studio-workspace.tsx \
+  tests/external-tools-ui.test.tsx
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If repository-wide lint/typecheck/build still fail solely on the documented unchanged
+baseline outside the task-owned files, record the exact diagnostics and prove the
+changed files are clean. Do not fix unrelated Connections, Prisma, publication,
+execution or preview code.
+
+Update all Work Items and Acceptance Criteria truthfully, replace stale completion
+claims where necessary, set `status: review`, clear the claim and STOP. Do not start
+COMMERCE-024 or COMMERCE-012.
+
+### Review Status
+
+Changes Requested.
+
+### Reviewed Files
+
+- `components/studio-workspace.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/external-http/ports.ts`
+- `src/studio/external-http/fixture-controls.tsx`
+- `tests/external-tools-ui.test.tsx`
+- C21 section 6 / X06 / XN02
+- accepted Shared external HTTP / connection DTO contracts
+
+### Validation Reviewed
+
+- submitted `npm run test:arch020-external-tools-ui`: 6/6 pass;
+- submitted `npx vitest run tests/studio-workspace.test.tsx`: 18/18 pass;
+- submitted changed-slice ESLint / diagnostics / `git diff --check`: pass;
+- repository typecheck remains blocked by documented unrelated
+  Prisma/publication-storage baseline diagnostics;
+- static architect inspection of the exact submitted source identified A2-R1 through
+  A2-R5 above.
+
+### Architecture Conformance
+
+The repository boundary and explicit injected-port direction are correct. The task is
+not yet functionally conformant with the full C21 U06/U14/XN02 contract because the
+creation definition, exact connection context, typed authoring, stale-validation
+boundary and U14 frozen-fixture port remain incomplete.
+
+### Follow-up
+
+Return the same task through `/moda-task ARCH-020-COMMERCE-023`. The next claim is
+Attempt 3. COMMERCE-024 and COMMERCE-012 remain gated until COMMERCE-023 is accepted
+Complete.
+
+Branch synchronization note: the submitted parent report commit
+`2fe2278d315a11de272c82b6fefddb68abc39a41` exists, but during this review the remote
+`origin/task/ARCH-020-COMMERCE-023` ref resolved one commit behind it at the Attempt 2
+claim commit. Applying and pushing this architect review must leave the remote task
+branch containing both the Attempt 2 report and this review before Attempt 3 is
+claimed.

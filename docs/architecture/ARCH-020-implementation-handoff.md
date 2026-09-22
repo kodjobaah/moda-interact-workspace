@@ -1151,3 +1151,12 @@ Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
 because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
+
+## COMMERCE-023 Attempt 2 review — 2026-09-22
+
+`ARCH-020-COMMERCE-023` is **Ready / Changes Requested, Attempt 2**. The explicit U06
+external composition direction is retained. Attempt 3 must satisfy the latest task
+review A2-R1..A2-R5 before COMMERCE-024 consumes the frontend: valid new external
+draft, exact connection/revision return context, complete typed visual/query editor,
+canonical stale sample-validation boundary, typed COMMERCE-027 slot and exact frozen
+U14 fixture port. No dependant is promoted or auto-started.

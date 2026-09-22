@@ -1027,3 +1027,14 @@ production DNS/global-address classification, pinned TLS socket, independent sta
 bounds, decoded-byte limit, raw JSON safety validation, one provider-budget
 reservation and no-retry/no-redirect behavior remain intact. No downstream task is
 newly Ready from this acceptance alone.
+
+## COMMERCE-023 Attempt 2 architect review — 2026-09-22
+
+`ARCH-020-COMMERCE-023` remains **Ready / Changes Requested, Attempt 2**. Attempt 2
+correctly made External API a first-class U06 choice and removed implicit fixture
+composition, but the complete section 6/X06/XN02 contract is not yet met. Required
+remaining work is bounded to a Shared-valid starter draft plus exact
+connection/revision return context, lossless typed query/projection/filter editing and
+mode/code-panel slot behavior, canonical generation/hash guarded synthetic sample
+validation, and exact frozen-revision U14 fixture execution through an injected port.
+No live provider/credential/backend implementation moves into COMMERCE-023.

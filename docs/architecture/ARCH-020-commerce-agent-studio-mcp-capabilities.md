@@ -1665,3 +1665,11 @@ Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
 because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
+
+## COMMERCE-023 Attempt 2 architect review — 2026-09-22
+
+The U06/U14 external authoring task remains **Ready / Changes Requested, Attempt 2**.
+Keep the accepted explicit-port/new-tool direction, but do not treat COMMERCE-023 as a
+consumable producer until the complete typed authoring, exact connection return,
+stale-validation/hash and frozen U14 fixture boundaries in the latest Architect Review
+are closed. COMMERCE-024 remains gated.
