@@ -40,6 +40,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | pending | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | ready | ARCH-020-COMMERCE-013 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -600,3 +601,17 @@ contract/publication prerequisite satisfied, `COMMERCE-020`, `021`, `022`, `023`
 No task is claimed or launched by this reconciliation. `COMMERCE-028`, `030`, `031`,
 `032`, `024`, `GATEWAY-003`, `COMMERCE-012` and the system-test tasks retain their
 remaining dependency gates.
+
+## COMMERCE-035 Attempt 1 follow-up review — 2026-09-22
+
+COMMERCE-035 remains **Ready, Attempt 1 retained, claim cleared; not accepted**.
+The latest fixture source now derives the persisted grant union and performs the
+reset/sentinel/second-seed flow, but the focused real-client proof still omits the
+exact persisted release/response-contract assertions and the lifecycle
+audit/immutability/grant-guard assertions required by the existing Architect Review.
+The canonical task now contains deterministic A1-R1–A1-R3 instructions.
+
+Disposable PostgreSQL/Redis execution remains mandatory. After the remaining
+proof-source corrections, missing target variables must transition the task to
+**Blocked**, not Review/Ready. COMMERCE-035 remains the C20 producer gate for final
+COMMERCE-018/019 integration acceptance; no downstream task is launched by this review.

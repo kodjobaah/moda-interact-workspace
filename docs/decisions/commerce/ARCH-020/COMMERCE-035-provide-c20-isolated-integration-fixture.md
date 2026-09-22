@@ -678,3 +678,240 @@ targets are supplied, run `npm run c20-fixture:reset`, then
 `npm run test:arch020-c20-integration-fixture`, then the repository checks in the
 Validation section. Return the task to review only after the source corrections
 and F01-F08 evidence pass. Do not start COMMERCE-018 or COMMERCE-019.
+
+## Architect Review — Attempt 1 follow-up — 2026-09-22
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Reviewed the latest submitted source after implementation commits `f928cff` and
+`5ae2695` against the existing Attempt 1 rework contract.
+
+The production fixture implementation is now accepted in substance for the
+previous source-level defects:
+
+- `selectedCapabilityKeys` is derived from the persisted Release 2 member graph;
+- `grantedTools` is derived from the persisted tool bindings/tool revisions rather
+  than hard-coded generated identifiers;
+- subscription and merchant preference rows are asserted;
+- active Release 2 member positions are asserted;
+- the reset script is invoked inside the focused proof;
+- an outside-prefix Redis sentinel is asserted after reset;
+- the second seed is executed after that reset.
+
+Do not redesign those working paths.
+
+Two proof-source corrections from the existing Architect Review remain unresolved.
+They are not new scope and they are not a request for exhaustive testing.
+
+#### A1-R1 — prove the exact persisted release graph and response contract
+
+File requiring correction:
+
+`tests/c20-integration-fixture.test.ts`
+
+During the first seed/inspect phase, load both fixture releases from PostgreSQL with
+their `CommerceReleaseCapability` rows ordered by `position`.
+
+Assert the inactive release is exactly:
+
+```text
+releaseId: fixture.releases.inactive.releaseId
+runnerCompatibility: ^1.0.0
+contractVersion: commerce.v1
+responseContract:
+  version: response.v1
+  instructions: Answer only from C20 fixture facts.
+  detailsSchema:
+    type: object
+    properties: {}
+    additionalProperties: false
+members:
+  position 0:
+    capabilityId:         fixture.capabilities.base.capabilityId
+    capabilityRevisionId: fixture.capabilities.base.revisionId
+```
+
+Assert the active release is exactly:
+
+```text
+releaseId: fixture.releases.active.releaseId
+runnerCompatibility: ^1.0.0
+contractVersion: commerce.v1
+responseContract:
+  version: response.v1
+  instructions: Answer only from C20 fixture facts.
+  detailsSchema:
+    type: object
+    properties: {}
+    additionalProperties: false
+members:
+  position 0:
+    capabilityId:         fixture.capabilities.base.capabilityId
+    capabilityRevisionId: fixture.capabilities.base.revisionId
+
+  position 1:
+    capabilityId:         fixture.capabilities.feature.capabilityId
+    capabilityRevisionId: fixture.capabilities.feature.revisionId
+```
+
+Do not prove only `[0, 1]`; prove the exact persisted member identities and order.
+
+Also assert that both persisted releases have a non-empty
+`responseContractHash`, and that the published tool/capability revisions inspected
+by the test have non-empty `contentHash` values. Do not reimplement the hash
+algorithm in this test.
+
+#### A1-R2 — prove lifecycle audit, immutable published state and the grant relational guard
+
+File requiring correction:
+
+`tests/c20-integration-fixture.test.ts`
+
+After the first seed succeeds, compute:
+
+```ts
+const expectedOperationIds = Object.values(fixture.operationIds).sort();
+```
+
+Read `CommerceAuditEvent` rows whose IDs are in that set and assert:
+
+```text
+audit row IDs, sorted == expectedOperationIds
+audit row count          == expectedOperationIds.length
+every reason             == "ARCH-020 C20 integration fixture"
+every actorAdminId       is one of:
+  fixture.admins.admin.id
+  fixture.admins.superAdmin.id
+```
+
+This proves each fixture publication command went through the real lifecycle/audit
+boundary exactly once.
+
+Then, against the same real PostgreSQL target, prove the existing database guards
+remain active. All of the following operations must reject and leave the persisted
+fixture unchanged:
+
+1. update the active `CommerceRelease.description`;
+   expected database error contains `ARCH020 immutable CommerceRelease`;
+
+2. update the published feature `CommerceCapabilityRevision.promptTemplate`;
+   expected database error contains `ARCH020 published revision immutable`;
+
+3. update the audit row whose ID is
+   `fixture.operationIds.createRelease2`;
+   expected database error contains `ARCH020 immutable CommerceAuditEvent`;
+
+4. attempt to create a grant for
+   `fixture.shops.excluded.conversationId` / `fixture.shops.excluded.shopId`
+   on the active release using:
+
+```text
+initialInboundVersion: 1
+selectedCapabilityKeys: ["conversation_core"]
+grantedTools: []
+runnerVersion: "1.0.0"
+```
+
+   expected database error contains
+   `ARCH020 grant must equal complete tool union`.
+
+After the rejected mutations assert:
+
+```text
+CommerceConversationGrant count == 1
+the original grant still has the exact selectedCapabilityKeys/grantedTools already asserted
+the lifecycle audit ID set is unchanged
+```
+
+Do not disable triggers, alter transaction isolation, mock Prisma, or replace these
+checks with source-regex assertions.
+
+#### A1-R3 — infrastructure outcome is deterministic
+
+The real PostgreSQL/Redis validation remains mandatory and is separate from A1-R1
+and A1-R2.
+
+After implementing only A1-R1/A1-R2, execute exactly:
+
+```bash
+npm run c20-fixture:reset
+npm run test:arch020-c20-integration-fixture
+npm run typecheck
+npm run lint -- --quiet
+npm run build
+git diff --check
+```
+
+with all four required environment values present:
+
+```text
+COMMERCE_TEST_DATABASE_URL=postgresql://.../arch020_c20_<unique_name>
+COMMERCE_TEST_REDIS_URL=redis://...
+COMMERCE_C20_REDIS_NAMESPACE=arch020:c20:<unique_name>
+DEPLOYMENT_ENVIRONMENT_NAME=test
+```
+
+If the disposable PostgreSQL/Redis values are still unavailable, do **not** return
+the task to `review` and do **not** leave it `ready`. After committing the proof-source
+corrections, set:
+
+```yaml
+status: blocked
+executor: null
+claimed_at: null
+attempt: <current claimed attempt>
+```
+
+and record the exact missing environment values/failed commands in the Completion
+Report. This follows the task's existing Validation contract.
+
+When the targets are later supplied, `moda_architect` will return the blocked task
+to `ready` for validation-only execution.
+
+### Reviewed Files
+
+- `src/commerce/integration/backend/c20-test-fixture.ts`
+- `tests/c20-integration-fixture.test.ts`
+- `scripts/reset-c20-integration-fixture.mjs`
+- `docs/commerce-backend-integration.md`
+- `docs/architecture/ARCH-020-implementation-contracts.md`
+- `database/prisma/migrations/20260920182429_arch020_commerce_capability_releases/migration.sql`
+
+### Validation Reviewed
+
+Submitted evidence records successful Prisma generation, typecheck, lint, build,
+reset-script syntax and diff checks. The required live reset/fixture commands remain
+unexecuted because the disposable target variables were not supplied.
+
+The review environment archive does not contain installed repository dependencies,
+so the architect did not manufacture a second dependency-backed run. Static
+inspection confirms the latest fixture source contains the persisted grant derivation
+and reset/sentinel corrections described above.
+
+### Architecture Conformance
+
+Partial.
+
+The fixture production boundary now conforms in substance, but the focused proof still
+does not establish all previously requested C20 persisted-release and F05
+audit/immutability/relational-guard evidence. Real PostgreSQL/Redis execution also
+remains mandatory before acceptance.
+
+`ARCH-020-COMMERCE-035` is therefore not Complete and does not yet satisfy its
+producer gate for COMMERCE-018/019 C20 integration acceptance.
+
+### Follow-up
+
+On the next authorized claim, change only
+`tests/c20-integration-fixture.test.ts` for A1-R1/A1-R2 unless an actual failing real
+integration run proves another task-owned correction is necessary.
+
+Do not modify the production fixture implementation merely to manufacture test
+evidence. Do not start COMMERCE-018 or COMMERCE-019 from this task.
+
+If A1-R1/A1-R2 are committed but disposable targets are unavailable, return this same
+task `blocked` exactly as A1-R3 specifies and STOP.

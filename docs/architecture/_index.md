@@ -533,3 +533,14 @@ ARCH-020 remains In Progress.
 SHARED-002 is Accepted / Complete at Attempt 5 (`95bab1d`, Shared `0.14.2`). The
 direct C21 component frontier `COMMERCE-020/021/022/023/025/026/027` is Ready;
 remaining extension/integration/gateway/system-test tasks stay dependency-gated.
+
+## ARCH-020 COMMERCE-035 Attempt 1 follow-up — 2026-09-22
+
+COMMERCE-035 is **Changes Requested / Ready, Attempt 1 retained**, claim null. The
+fixture implementation itself now materially satisfies the prior grant-derivation and
+reset/isolation corrections. Acceptance is still blocked by two unresolved pieces of
+the existing proof contract: exact persisted release/response-contract evidence and
+real lifecycle audit/immutability/grant-relational-guard evidence. Real disposable
+PostgreSQL/Redis execution remains mandatory. If those target variables are absent
+after the proof-source correction, the repository agent must return the task
+`blocked`. No downstream task is launched or accepted from this review.
