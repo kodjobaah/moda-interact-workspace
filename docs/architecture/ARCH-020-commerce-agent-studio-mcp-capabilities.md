@@ -1744,3 +1744,15 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
+
+## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
+
+ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
+The current combined snapshot still contains implementation `59f0c34` unchanged; only
+unrelated ARCH-020 coordination documentation has advanced since the original review
+overlay. The deterministic correction contract in the task is unchanged: tester and
+publisher liveness/role enforcement, exact 24-hour fail-closed receipt semantics,
+sample-MIME plus production-renderer reuse, bounded schema issues, and complete
+PV02/PV03 runtime-revalidation evidence.
+
+No dependency is promoted and no downstream task is launched automatically.
