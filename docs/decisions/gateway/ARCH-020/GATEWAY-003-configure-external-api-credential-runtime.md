@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 175
-executor: copilot
-claimed_at: 2026-09-22T16:33:50Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-GATEWAY-001
@@ -130,31 +130,52 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Implementation complete; submitted for Architect Review. No live Render deployment, connection, provider credential, or production assertion was created.
 
 ### Files Changed
 
-None; task definition only.
+Implementation branch `task/ARCH-020-GATEWAY-003`, commit `844043f`:
+
+- `render.test.yaml`
+- `render.production.yaml`
+- `haproxy/haproxy.cfg`
+- `tests/validate-render-blueprints.sh`
+- `tests/validate-render-blueprints-negative.sh`
+- `tests/run-tests.sh`
+- `scripts/validate:arch020-external-runtime`
+- `docs/commerce-deployment.md`
 
 ### Work Completed
 
-None.
+Added exactly three Commerce-server-only Render inputs in both blueprints: `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID`, and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`, each service-level with `sync: false`. The validator now requires each exactly once on Commerce and rejects missing, duplicate, group-scoped, Messaging, or other-service copies.
+
+Extended the explicit HAProxy Commerce page allowlist for U15/U16: `/connections` and one-segment `/connections/<id>` allow GET/HEAD and POST only when `Next-Action` is present. Deeper paths remain 404, wrong methods remain 405, and the existing public MCP/ambiguous-path denial is unchanged. Added route fixtures for allowed methods, missing-Next-Action rejection, and deeper-path rejection.
+
+Added the `./scripts/validate:arch020-external-runtime` static/config validation command and documented operator key generation, retained-key rotation, rollback, missing-configuration behavior, and migration-before-runtime ordering without committing secret values.
 
 ### Validation Results
 
-No implementation validation performed.
+Passed:
+
+- `./scripts/validate:arch020-external-runtime`: passed; positive blueprint validation, 51 expected negative rejections, shell syntax, exact runtime-setting checks, and bounded route/MCP invariants.
+- `bash tests/validate-render-blueprints.sh`: passed.
+- `bash tests/validate-render-blueprints-negative.sh`: passed, including the three new connection-runtime negative cases.
+- `bash -n docker/entrypoint.sh tests/run-tests.sh tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`: passed.
+- `git diff --check`: passed.
+
+Not run: `bash tests/run-tests.sh` because it is the developer-owned Docker route suite; this environment has Docker but agent policy prohibits launching long-running/container validation without explicit authorization. HAProxy binary is not installed, so direct `haproxy -c` was not run. This repository has no `package.json`, so typecheck, build, and lint scripts are unavailable. No live Render, OAuth, Background assertion, provider, PostgreSQL, or deployment validation was performed.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+The task owns gateway blueprints, route allowlisting, validation fixtures, and the operator runbook only. Runtime application behavior remains owned by Commerce; no application implementation or fallback key was added.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+C21 read-only scope; the three settings are supplied externally by Render or an approved secret manager. `COMMERCE_CONNECTION_KEYS_JSON` contains key IDs mapped to base64 32-byte AES-GCM keys, the active ID must exist in that keyring, and the HMAC key remains stable for replay auditing. Recursive submodule preparation passed with no entries.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+Developer-owned Docker route validation remains pending, including the live HAProxy render check and U15/U16 HTTP assertions. No claim is made for live deployment behavior.
 
 ### Architectural Concerns
 
@@ -162,9 +183,7 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-GATEWAY-003. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Expected mirrored branch: `task/ARCH-020-GATEWAY-003`, Attempt 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-003`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-003`. Implementation commit `844043f` was pushed to `origin/task/ARCH-020-GATEWAY-003`. Parent report is being committed and pushed on the mirrored parent branch.
 
 ## Architect Review
 
