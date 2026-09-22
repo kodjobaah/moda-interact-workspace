@@ -28,7 +28,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | ready | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
-| [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | ready (Changes Requested, Attempt 1) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
+| [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | ready | ARCH-020-SHARED-002 |
@@ -614,3 +614,14 @@ EXTERNAL_HTTP dispatcher branch. The Shared `CommerceToolResult`/C21 cancellatio
 contradiction is resolved architecturally: tool-boundary cancellation maps to
 nonretryable `DEADLINE`; no Shared widening belongs in this task. No downstream
 promotion or automatic launch.
+
+
+## COMMERCE-021 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claimed_at null.** Attempt 2
+satisfies the prior DNS/classifier, stage-deadline/abort, raw-JSON and explicit
+dispatcher corrections. Attempt 3 is limited to two runtime-boundary fixes:
+terminate provider response bodies on non-2xx/unsupported-encoding early returns,
+and preserve nonretryable `DEADLINE` through the real DefinitionExecutor
+EXTERNAL_HTTP path. Existing status mapping, Shared contracts and Shopify/policy
+semantics remain unchanged. No downstream promotion or automatic launch.

@@ -1153,3 +1153,13 @@ the Shared cancellation mismatch as nonretryable `DEADLINE` at the tool-result
 boundary; no Shared task/publication is opened. `COMMERCE-030`, `COMMERCE-024`,
 `GATEWAY-003`, `COMMERCE-012` and system-test work receive no promotion from this
 review.
+
+
+## ARCH-020 COMMERCE-021 Attempt 2 review — 2026-09-22
+
+Current authoritative task state: `ARCH-020-COMMERCE-021` **Ready, Attempt 2,
+Changes Requested**, executor/claimed_at null. Attempt 2 closes A1-R1–A1-R4.
+Attempt 3 contains only A2-R1 provider response-body cleanup and A2-R2
+nonretryable external deadline preservation at the DefinitionExecutor boundary.
+`COMMERCE-030`, `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test
+work remain gated; no automatic launch or integration occurs.

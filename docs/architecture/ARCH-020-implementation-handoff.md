@@ -1053,3 +1053,13 @@ rejection, and explicit EXTERNAL_HTTP dispatch exhaustiveness. C21 cancellation 
 reconciled to nonretryable `DEADLINE` at the CommerceToolResult boundary because
 Shared 0.14.2 has no CANCELLED tool-result member; runner cancellation remains
 separate. No downstream task is promoted or launched.
+
+
+## COMMERCE-021 Attempt 2 review — 2026-09-22
+
+`ARCH-020-COMMERCE-021` is **Changes Requested / Ready, Attempt 2 retained**.
+Attempt 3 is narrowly bounded to provider-body termination on post-header rejection
+and preserving nonretryable external `DEADLINE` through DefinitionExecutor. Preserve
+the completed DNS/classifier, pinned TLS transport, stage deadlines, JSON safety,
+explicit dispatch and one-request budget work. No downstream task is promoted or
+launched.

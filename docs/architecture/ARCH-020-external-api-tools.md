@@ -1001,3 +1001,16 @@ Architectural contradiction resolved here: accepted Shared 0.14.2 does not permi
 nonretryable `DEADLINE` at this tool-result boundary; turn-runner cancellation remains
 runner-level `CANCELLED`. No new Shared publication is required by COMMERCE-021.
 Downstream C21 tasks remain dependency-gated.
+
+
+## COMMERCE-021 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 2 retained; claims cleared.** The production DNS
+factory/classifier, socket pinning, independent DNS/connect/body bounds, active
+body-abort handling, raw JSON safety traversal and explicit EXTERNAL_HTTP dispatcher
+from Attempt 2 are retained. Two bounded conformance issues remain: post-header
+early rejection must terminate the provider response body (including 404/429/5xx
+and unsupported content-encoding), and the outer DefinitionExecutor must not change
+external HTTP `DEADLINE` back to `retryable:true`. C21 continues to require
+nonretryable `DEADLINE` at the CommerceToolResult boundary. No Shared widening,
+provider retry or transport redesign.
