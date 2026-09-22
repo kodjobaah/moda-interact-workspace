@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 155
 executor: copilot
 claimed_at: 2026-09-22T02:21:41Z
@@ -122,23 +122,38 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Implementation complete; submitted to moda_architect for review after Attempt 2 rework.
 
 ### Files Changed
 
-None; task definition only.
+`moda-interact/components/studio-workspace.tsx`
+`moda-interact/src/studio/external-http/editor.tsx`
+`moda-interact/src/studio/external-http/ports.ts`
+`moda-interact/src/studio/external-http/fixture-controls.tsx`
+`moda-interact/tests/external-tools-ui.test.tsx`
 
 ### Work Completed
 
-None.
+Implemented explicit external UI-port composition, External API tool creation with exact
+authorized connection revision selection, guarded Manage connections navigation, response
+processing/query/schema/sample controls, stale sample validation, role-aware publication
+gating, and explicit U14 fixture controls. Focused tests now inject the fixture port rather
+than relying on an application default.
 
 ### Validation Results
 
-No implementation validation performed.
+Passed: `npm run test:arch020-external-tools-ui` (6/6).
+Passed: `npx vitest run tests/studio-workspace.test.tsx` (18/18, isolated rerun).
+Passed: changed-slice ESLint for `src/studio/external-http`, `components/studio-workspace.tsx`,
+and `tests/external-tools-ui.test.tsx`.
+Passed: `get_errors` on all changed files and `git diff --check`.
+`npm run typecheck` remains blocked by existing unrelated Prisma/publication-storage
+diagnostics; no diagnostics were reported for changed files.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+No scope deviations. Repository-wide typecheck remains blocked by pre-existing baseline
+Prisma/publication-storage diagnostics outside this task's changed files.
 
 ### Assumptions
 
@@ -146,7 +161,7 @@ C21 read-only scope; visual rules and generic JavaScript only inside the specifi
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+Architect review remains required; no downstream tasks were launched.
 
 ### Architectural Concerns
 
@@ -154,9 +169,10 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-023. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-023`.
+Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-023`.
+Branch: `task/ARCH-020-COMMERCE-023`; attempt 2; implementation commit `dd647bf` pushed to origin.
+Dependencies were prepared and passed; recursive database submodule was initialized and ready.
 
 ## Architect Review
 
