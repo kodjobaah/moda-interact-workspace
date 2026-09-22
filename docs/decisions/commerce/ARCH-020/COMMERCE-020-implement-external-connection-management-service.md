@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T01:55:49Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-DATABASE-003
@@ -127,29 +127,27 @@ Implementation complete; submitted for Architect Review.
 - `src/commerce/connections/lifecycle/index.ts`
 - `src/commerce/connections/lifecycle/types.ts`
 - `tests/connection-lifecycle.test.ts`
-- `package.json` (`test:arch020-external-connection-lifecycle`)
 
 ### Work Completed
 
-- Implemented the C21 command transaction kernel with active-staff/SUPER_ADMIN authorization before replay lookup, canonical keyed request digests, same-operation replay, conflicting replay rejection, atomic mutation/audit handling, and unique-race reconciliation.
-- Implemented metadata-only connection list/get/create/updateMetadata/createRevision/setEnabled lifecycle operations with strict bounded DTOs, HTTPS origin and auth-header validation, immutable revision numbering, and atomic edit-version CAS.
-- Added CL01/CL02/CL03 focused acceptance coverage for the positive lifecycle, replay/conflict/stale-CAS/rollback behavior, and origin/auth rejection.
+- Consumed the exact Shared `0.14.2` commerce connection schemas/types and returned strict Shared result envelopes without invented error messages.
+- Implemented the reusable C21 command kernel with authorization-before-replay, canonical keyed digests, all six accepted actions including credential actions, same-connection parameterized PostgreSQL `FOR UPDATE`, transaction-scoped mutation/audit, and unique-race reconciliation.
+- Implemented metadata-only list/get/create/updateMetadata/createRevision/setEnabled lifecycle operations with strict bounded DTOs, canonical HTTPS origins, immutable revision numbering, and edit-version CAS.
+- Preserved the accepted development-admin helper call inside the command transaction before replay and FK-backed mutation/audit writes.
+- Added CL01/CL02/CL03 and A1-R2 focused acceptance coverage for lifecycle success, replay/conflict/stale-CAS/rollback, strict result parsing, credential-action locking, and bounded input rejection.
 
 ### Validation Results
 
-- `npm run test:arch020-external-connection-lifecycle`: passed, 1 file and 5 tests.
+- `npm run test:arch020-external-connection-lifecycle`: passed, 1 file and 9 tests.
 - `npx eslint src/commerce/connections/command-kernel.ts src/commerce/connections/lifecycle/index.ts src/commerce/connections/lifecycle/types.ts tests/connection-lifecycle.test.ts`: passed.
-- `npm run typecheck`: task-owned connection files have no diagnostics; the repository command remains red on pre-existing unrelated baseline errors in `lib/auth/development-platform-admin.ts`, `lib/server/connections.ts`, and `src/commerce/integration/**`.
 - `git diff --check`: passed.
-- Full build and PostgreSQL/container checks were not run; no live credentials or external HTTP calls were used.
+- `npm run typecheck`: non-zero only on existing unrelated `src/commerce/integration/**` diagnostics; no diagnostics were reported for the task-owned connection files.
+- `npm run build`: non-zero at the same existing unrelated integration TypeScript diagnostics; the task-owned connection files were not implicated.
+- PostgreSQL/container checks were not run; no live credentials or external HTTP calls were used.
 
 ### Deviations
 
-No design deviations. Implementation remains within the task-owned connection lifecycle/kernel paths, with the required focused test script and test file added for acceptance evidence.
-
-### Assumptions
-
-C21 read-only scope; credential encryption/storage, OAuth, network execution, UI, publication, preview, and final factories remain out of scope.
+No design deviations. Implementation remains within the task-owned connection lifecycle/kernel paths; credential storage, OAuth, network execution, UI, publication, preview, and final factories remain out of scope.
 
 ### Unresolved Issues
 
@@ -157,16 +155,34 @@ Repository-wide typecheck/build debt remains outside the task-owned files. Postg
 
 ### Architectural Concerns
 
-No architectural concern identified in the implemented scope. Architect review should confirm the accepted C21 field/error contracts and the baseline typecheck debt noted above.
+Architect review should confirm the accepted C21 field/error contracts and the baseline integration typecheck/build debt noted above.
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-020`.
-Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-020`.
-Logical agent: `moda_commerce`; canonical executor: `copilot`; attempt: 1.
-Dependencies were accepted before execution: DATABASE-003, SHARED-002, COMMERCE-002.
-Database submodule evidence: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
-Implementation branch: `task/ARCH-020-COMMERCE-020`; commit/push: `5229b033a7dbef73b35571784996b539707cf03a`.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-020`
+  parent branch: `task/ARCH-020-COMMERCE-020`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-020`
+  implementation branch: `task/ARCH-020-COMMERCE-020`
+  shared workspace checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recorded submodule commit: `database` at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+
+Logical agent: `moda_commerce`; canonical executor: `copilot`; attempt: 2.
+Dependencies accepted before execution: DATABASE-003, SHARED-002, COMMERCE-002.
+Implementation commit/push: `d2b7154` on `task/ARCH-020-COMMERCE-020`.
+Parent claim commit/push: `bb2d70a` from launcher; claim cleared for review handoff.
 
 ## Architect Review
 
