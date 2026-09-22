@@ -1375,3 +1375,23 @@ COMMERCE-024 is **not** unblocked by this acceptance alone: the synchronized Com
 implementation base used for this review still lacks accepted COMMERCE-019
 implementation `8850b55`. That developer integration remains the only known 024
 unblock condition after COMMERCE-038 acceptance.
+
+## COMMERCE-024 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 2 retained; claim cleared.**
+
+The former producer blockers are resolved: accepted COMMERCE-019 preview composition,
+COMMERCE-036 connection compatibility handling and COMMERCE-038 reusable fixture
+processing are present in the synchronized source.
+
+Attempt 2 successfully wires the external preview service/fixture runner into the
+accepted preview runtime direction, but final composition is not yet complete. The
+COMMERCE-030 identity adapter incorrectly treats saved DRAFT revisions as an empty
+definition hash/disabled revision; EXTERNAL_HTTP publication is fail-open if the
+external publication validator is absent; the submitted XN04 proof constructs an
+isolated in-memory PreviewService instead of traversing production composition; and
+WI01's publish -> release -> grant -> assembled MCP execution path is still unproven.
+
+Attempt 3 is bounded to those 024-owned corrections/evidence. Accepted connection and
+external producers must remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain
+gated.

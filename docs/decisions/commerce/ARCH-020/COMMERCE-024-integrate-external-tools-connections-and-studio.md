@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 170
 executor: null
 claimed_at: null
@@ -141,56 +141,12 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-<<<<<<< HEAD
-Ready for Review.
+Implementation complete; submitted for Architect Review.
 
 ### Files Changed
 
-- `moda-interact-commerce/package.json`
-- `moda-interact-commerce/src/commerce/connections/command-kernel.ts`
-- `moda-interact-commerce/src/commerce/connections/lifecycle/index.ts`
-- `moda-interact-commerce/src/commerce/integration/backend.ts`
-- `moda-interact-commerce/src/commerce/integration/backend/executors.ts`
-- `moda-interact-commerce/src/commerce/integration/external/index.ts`
-- `moda-interact-commerce/src/commerce/publication/lifecycle.ts`
-- `moda-interact-commerce/tests/external-wiring.test.ts`
-
-### Work Completed
-
-- Added the external integration composition boundary. It assembles the accepted connection lifecycle command kernel, credential service, external HTTP execution port, publication validator/receipt store, response processors and availability resolver.
-- Passed the assembled external executor into the Commerce backend executor and executable registry so published `EXTERNAL_HTTP` definitions are available only when the accepted producer is present.
-- Exposed existing DNS and HTTPS transport ports only for controlled tests; production defaults remain the Node implementations.
-- Corrected the accepted connection command kernel's outer Prisma client and transaction-client boundary and restored explicit generic execute typing.
-- Added the required `test:arch020-external-wiring` command and real assembled-service fixture coverage.
-
-### Validation Results
-
-- WI02 / XN01-XN03: `tests/external-wiring.test.ts`, `XN01-XN03 assembles accepted producers and preserves per-shop credentials and provider boundaries`, `npm run test:arch020-external-wiring`: passed 1 test. This invokes the real lifecycle command kernel, credential encryption/resolution, availability resolver, and external HTTP execution port; shop B is excluded for a missing credential and the controlled transport receives only shop A's resolved credential.
-- XN04 preview boundary: `tests/external-preview.test.ts`, `runs a frozen conversation external fixture without live provider or credential access`, `npm run test:arch020-external-preview`: existing producer evidence passed. The assembled 024 adapter intentionally has `preview: undefined` because no accepted production composition for 031's required loader/state-store/prompt/model boundary is exported in this repository.
-- Producer regressions: `npm run test:arch020-external-http` (13 passed), `npm run test:arch020-external-credentials` (9 passed), `npm run test:arch020-external-availability` (4 passed).
-- `npm run lint`: passed with 0 errors and 4 pre-existing warnings in `scripts/code-runtime-manifest.mjs`, `src/commerce/code-response/runtime/kernel.ts`, `src/commerce/integration/studio/services.ts`, and `tests/studio-integration.test.ts`.
-- `npm run typecheck`: blocked by the two pre-existing diagnostics at `components/studio-workspace.tsx:2436` (`expectedActivePointerVersion`) and `tests/code-response-processor.test.ts:58` (readonly `required` schema); no task-owned diagnostics remain.
-- `npm run build`: runtime packaging, packaged smoke, Prisma generation and Next compilation completed, then failed on the same two typecheck diagnostics above; webpack emitted only the existing dynamic-dependency warning for the QuickJS worker.
-- `git diff --check`: passed.
-
-### Deviations
-
-WI01 and the fully assembled XN04 production path cannot be claimed. 031 currently exports `createExternalPreviewService` but does not export a production factory assembling its required preview loader, state store, prompt loader, saved-tool loader and fixture/model boundary. 024 therefore does not invent persistence, model execution or an unavailable-loader substitute. The parent architecture should route the missing production composition contract to COMMERCE-031 before WI01 is accepted.
-
-### Assumptions
-
-C21 read-only scope; visual rules and generic JavaScript remain inside the accepted processors/runtime. Controlled provider transport and synthetic credentials are test fixtures only.
-
-### Unresolved Issues
-
-- Concrete producer contract gap: COMMERCE-031's `ExternalPreviewService` requires an already assembled `PreviewService` and Redis-backed preview state/prompt/bundle loading, but 024 has no accepted production factory or loader export to compose. The current production path therefore leaves `preview` absent and cannot claim WI01/XN04 assembled success.
-- Developer-owned PostgreSQL/container and live deployment checks were not run; no live credentials, WhatsApp calls or deployment were used.
-=======
-Implementation complete; submitted for Architect Review. WI01 is not claimed because the full configured production-factory MCP path was not executed without live credentials or deployment validation.
-
-### Files Changed
-
-Implementation branch `task/ARCH-020-COMMERCE-024`, commit `1814f82c5828de50f1ae9f040da623f4ceba0ca7`:
+Implementation branch `task/ARCH-020-COMMERCE-024`, commit
+`1814f82c5828de50f1ae9f040da623f4ceba0ca7`:
 
 - `src/commerce/integration/external/index.ts`
 - `lib/preview/runtime.ts`
@@ -198,57 +154,135 @@ Implementation branch `task/ARCH-020-COMMERCE-024`, commit `1814f82c5828de50f1ae
 - `tests/external-wiring.test.ts`
 - `package.json`
 
-The Attempt-1 producer-owned connection changes were reverted from the task branch; no producer business logic was added.
+The Attempt-1 producer-owned connection changes were reverted from the task branch.
+After submission, accepted COMMERCE-036 was merged into canonical Commerce main and
+both COMMERCE-024 worktrees were synchronized; the accepted
+`CompatibleRevisionInputSchema` producer implementation is now present and must not
+be edited by the next COMMERCE-024 attempt.
 
 ### Work Completed
 
-Composed the accepted credential command kernel, saved-tool loader, COMMERCE-038 external fixture runner, COMMERCE-031 preview factory, external HTTP executor, publication validation, and availability resolver. Preview runtime injection preserves one `PreviewService` state-store identity for ordinary and external tests. The tool-test route dispatches only validated `externalResponseFixture` requests to the external preview service; ordinary requests retain the existing path.
+Composed the accepted credential command kernel, saved-tool loader, COMMERCE-038
+external fixture runner, COMMERCE-031 external preview service, external HTTP
+executor, publication validation and availability resolver.
 
-Acceptance mapping:
+Preview runtime injection preserves one `PreviewService` state-store identity for
+ordinary and external tool-test requests. The tool-test POST route dispatches only a
+validated request containing `externalResponseFixture` to the external preview
+service; ordinary requests retain the accepted preview path.
 
-- WI02: `tests/external-wiring.test.ts`, `XN01-XN03`, and `XN04` exercise assembled credential isolation, provider transport boundaries, publication receipt storage, visual/JavaScript fixture processing, preview state identity, and provider-free replay. `tests/external-preview.test.ts` covers the accepted external preview regression suite.
-- WI03: composition consumes accepted producer exports and introduces no duplicate connection, credential, HTTP, publication, response-processing, preview, availability, or fixture-runner algorithm.
-- WI01: not claimed; the full connection -> tool -> publish -> release -> merchant -> MCP production path requires a separate configured integration execution.
+Acceptance mapping submitted by Attempt 2:
+
+- WI02: `tests/external-wiring.test.ts`, `XN01-XN03` and `XN04` exercise assembled
+  credential isolation, provider transport boundaries, publication receipt storage,
+  visual/JavaScript fixture processing, preview state identity and provider-free
+  synthetic execution.
+- WI03: composition consumes accepted producer exports and introduces no duplicate
+  connection, credential, HTTP, publication, response-processing, preview,
+  availability or fixture-runner algorithm.
+- WI01: not claimed; the full connection -> tool -> publish -> release -> merchant ->
+  MCP production path was not executed.
 
 ### Validation Results
 
-Passed:
+Submitted Attempt-2 evidence:
 
-- `npm run test:arch020-external-wiring`: 2/2
-- `npm run test:arch020-external-preview`: 18/18
-- `npm run test:arch020-external-publication`: 11/11
-- `npm run test:arch020-external-http`: 13/13
-- `npm run test:arch020-external-credentials`: 9/9
-- `npm run test:arch020-external-availability`: 4/4
-- targeted ESLint and `git diff --check`
-- build webpack compilation and packaged code-runtime smoke completed
+```text
+npm run test:arch020-external-wiring
+  PASS — 2/2
 
-`npm run typecheck` and the final build exit remain blocked by 12 pre-existing baseline errors in `components/studio-workspace.tsx`, producer connection files, and unrelated tests. No Attempt-2 file appears in the remaining diagnostics. No live credentials, third-party calls, Shopify, WhatsApp, paid models, PostgreSQL/container checks, or deployment validation were run.
+npm run test:arch020-external-preview
+  PASS — 18/18
+
+npm run test:arch020-external-publication
+  PASS — 11/11
+
+npm run test:arch020-external-http
+  PASS — 13/13
+
+npm run test:arch020-external-credentials
+  PASS — 9/9
+
+npm run test:arch020-external-availability
+  PASS — 4/4
+
+targeted ESLint
+  PASS
+
+git diff --check
+  PASS
+
+build
+  webpack compilation and packaged code-runtime smoke completed;
+  final exit remains on 12 documented pre-existing TypeScript diagnostics
+
+npm run typecheck
+  non-zero on the same documented repository baseline;
+  no submitted Attempt-2-owned file was reported in the remaining diagnostics
+```
+
+No live third-party credentials, Shopify calls, WhatsApp delivery, paid model calls
+or deployment validation were used.
 
 ### Deviations
 
-Attempt 2 was required after Attempt 1 lacked the accepted COMMERCE-019 source and reusable COMMERCE-038 fixture-runner seam. The implementation uses a composition-local command kernel because the accepted COMMERCE-020 lifecycle does not expose its internal kernel; producer-owned connection files were not retained in the final task diff.
+Attempt 2 followed the post-unblock composition direction after COMMERCE-019 and
+COMMERCE-038 became available. It uses a composition-local accepted connection
+command kernel because the accepted lifecycle does not expose its private kernel.
+
+The submitted XN04 test does not actually traverse the production preview runtime; it
+constructs an `InMemoryPreviewStateStore` PreviewService directly. WI01 is also not
+implemented. Those points are resolved by the following Architect Review rather than
+being treated as accepted deviations.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox. Accepted dependency source was synchronized before claim. Recursive database submodule evidence: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+C21 read-only scope. Visual rules and generic JavaScript remain inside their accepted
+processors/runtime. Controlled provider transport and synthetic credentials are test
+fixtures only.
+
+Accepted producer source was synchronized before review. Developer verification after
+the Attempt-2 submission confirms:
+
+```text
+COMMERCE-019 accepted preview adapters/runtime: present
+COMMERCE-036 CompatibleRevisionInputSchema: present in Commerce main
+COMMERCE-038 createExternalFixtureRunner: present
+```
 
 ### Unresolved Issues
 
-WI01 remains unverified and is intentionally not claimed. The repository baseline still has the 12 typecheck/build diagnostics listed above; resolving them belongs to the relevant producer/UI/test owners unless Architect Review redirects scope.
->>>>>>> origin/main
+See **Architect Review — Attempt 2 — 2026-09-22** below.
 
 ### Architectural Concerns
 
-The accepted C21 requirement that 024 bind 031 is not satisfiable from the current published source surface without a new 031 producer export. Please narrow or extend 031's contract before accepting WI01; do not make 024 create a duplicate preview runtime or hide the missing producer behind an unavailable implementation.
+The previous statement that COMMERCE-031 lacked the required reusable producer seam
+is superseded. COMMERCE-038 is accepted and integrated. The remaining issues are
+COMMERCE-024-owned composition/validation/evidence defects described by the current
+Architect Review.
 
 ### Git / VCS
 
-<<<<<<< HEAD
-Expected mirrored branch: `task/ARCH-020-COMMERCE-024`. Attempt1, executor and claimed_at cleared for review. Implementation worktree commit `900df37` (`feat(commerce): wire external tool producers`) is pushed to `moda-interact-commerce` `task/ARCH-020-COMMERCE-024`. Parent report is being committed and pushed on the parent repository's mirrored task branch. The implementation used the existing database submodule pin and did not modify schemas or gitlinks.
-=======
-Expected mirrored branch: `task/ARCH-020-COMMERCE-024`. Attempt 2 implementation worktree was physically isolated at `.../moda-interact-workspace.worktrees/ARCH-020-COMMERCE-024`; commit `1814f82c5828de50f1ae9f040da623f4ceba0ca7` was pushed to the task branch. Dependencies were consumed from accepted synchronized source; recursive database submodule was initialized at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
->>>>>>> origin/main
+Implementation commit:
+
+```text
+1814f82c5828de50f1ae9f040da623f4ceba0ca7
+```
+
+Original Attempt-2 parent report commit supplied at handoff:
+
+```text
+34a8a8e5
+```
+
+The parent/docs branch was subsequently synchronized with workspace main and supplied
+for this review at:
+
+```text
+230b567f099ef0a1d70daf9384148f2fce98514b
+```
+
+Both implementation and parent worktrees were reported clean after synchronization.
 
 ## Architect Review
 
@@ -986,3 +1020,568 @@ launcher must create Attempt 2 exactly once.
 
 COMMERCE-012 and SYSTEM-TEST-002 remain gated until COMMERCE-024 is architect-accepted
 Complete.
+
+## Architect Review — Attempt 2 — 2026-09-22
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Reviewed the synchronized Attempt-2 source at implementation
+`1814f82c5828de50f1ae9f040da623f4ceba0ca7` together with the submitted parent
+report (`34a8a8e5`, later synchronized to parent HEAD
+`230b567f099ef0a1d70daf9384148f2fce98514b`).
+
+The previous producer blockers are resolved:
+
+```text
+COMMERCE-019 accepted production preview composition  PRESENT
+COMMERCE-036 accepted CompatibleRevisionInputSchema   PRESENT
+COMMERCE-038 reusable external fixture runner          PRESENT
+```
+
+Do not reopen those producers from COMMERCE-024.
+
+Attempt 2 has useful composition work that must be preserved:
+
+```text
+accepted COMMERCE-019 preview runtime is retained
+COMMERCE-038 externalFixtureRunner is injected
+COMMERCE-031 ExternalPreviewService is composed from the same PreviewService identity
+U14 externalResponseFixture POST requests dispatch to the external preview service
+ordinary U14 tool tests retain the accepted normal preview path
+XN01-XN03 per-shop credential/provider-boundary direction is sound
+```
+
+The task is not accepted because four COMMERCE-024-owned requirements remain.
+
+### A2-R1 — fix saved DRAFT definition identity without changing producer contracts
+
+Primary file:
+
+```text
+src/commerce/integration/external/index.ts
+```
+
+Current code returns:
+
+```ts
+definitionHash: revision.contentHash ?? '',
+enabled: revision.status === 'PUBLISHED',
+```
+
+for COMMERCE-030 definition identity.
+
+That makes the required pre-publication workflow impossible:
+
+```text
+saved DRAFT
+-> synthetic sample
+-> COMMERCE-030 receipt
+-> publish
+```
+
+A DRAFT normally has:
+
+```text
+revision.contentHash == null
+revision.status == DRAFT
+```
+
+so the current adapter supplies an empty definition hash and marks the tool disabled.
+
+Use the canonical saved definition identity instead.
+
+Import the already-accepted hash function:
+
+```ts
+import { toolContentHash } from '../../publication/validation';
+```
+
+The exact found identity must be equivalent to:
+
+```ts
+const definition = parsed.data;
+
+return {
+  kind: 'found' as const,
+  value: {
+    toolRevisionId,
+    definition,
+    definitionHash:
+      revision.contentHash ?? toolContentHash(definition),
+    connectionRevisionId:
+      definition.execution.kind === 'EXTERNAL_HTTP'
+        ? definition.execution.connectionRevisionId
+        : '',
+    enabled: revision.tool.enabled,
+  },
+};
+```
+
+Keep:
+
+```text
+include: { tool: true }
+```
+
+Do not infer tool enablement from publication status.
+
+Semantics:
+
+```text
+DRAFT + contentHash null + tool.enabled true
+  -> canonical toolContentHash(saved definition)
+  -> enabled true
+  -> sample/receipt path is allowed
+
+PUBLISHED + stored contentHash
+  -> stored contentHash remains authoritative
+
+tool.enabled false
+  -> disabled regardless of revision publication state
+```
+
+Add focused regression coverage in:
+
+```text
+tests/external-wiring.test.ts
+```
+
+The test must use a real saved revision fixture with:
+
+```text
+status: DRAFT
+contentHash: null
+tool.enabled: true
+```
+
+and prove both visual and JavaScript sample execution can reach COMMERCE-030 receipt
+validation.
+
+Then set only:
+
+```text
+tool.enabled: false
+```
+
+and prove the sample is rejected as disabled.
+
+Do not modify COMMERCE-030 to accommodate the bad adapter value.
+
+### A2-R2 — EXTERNAL_HTTP publication validation must fail closed
+
+Primary file:
+
+```text
+src/commerce/publication/lifecycle.ts
+```
+
+The narrowly authorized COMMERCE-024 publication binding currently contains:
+
+```ts
+if (
+  definition.execution.kind === 'EXTERNAL_HTTP' &&
+  this.dependencies.externalPublication
+) {
+  await this.dependencies.externalPublication.validateForPublication(...);
+}
+```
+
+This is fail-open. An EXTERNAL_HTTP executor can be available while
+`externalPublication` is absent, allowing publication to continue without the
+COMMERCE-030 gate.
+
+For `EXTERNAL_HTTP`, absence of the validator must fail before registry availability
+or publication mutation.
+
+Required behavior is equivalent to:
+
+```ts
+if (definition.execution.kind === 'EXTERNAL_HTTP') {
+  const validator = this.dependencies.externalPublication;
+
+  if (!validator) {
+    throw new LifecycleError(
+      'VALIDATOR_UNAVAILABLE',
+      'external publication validation is unavailable',
+    );
+  }
+
+  const validation = await validator.validateForPublication({
+    principal,
+    toolRevisionId: revision.id,
+    definition,
+    signal: new AbortController().signal,
+  });
+
+  if (!validation.ok) {
+    throw new LifecycleError(
+      validation.code === 'VALIDATOR_UNAVAILABLE'
+        ? 'VALIDATOR_UNAVAILABLE'
+        : 'INVALID_DEFINITION',
+      validation.issues[0]?.message ?? validation.code,
+    );
+  }
+}
+```
+
+Only after successful EXTERNAL_HTTP validation may the existing:
+
+```ts
+await this.registry.isAvailable(definition)
+```
+
+check and existing one publication mutation continue.
+
+Add focused regression evidence proving:
+
+```text
+EXTERNAL_HTTP + registry/executor available + validator absent
+  -> VALIDATOR_UNAVAILABLE
+  -> draft remains DRAFT
+  -> registry publication path is not admitted
+
+validator returns invalid
+  -> no publication mutation
+
+validator succeeds
+  -> existing registry check occurs
+  -> exactly one publication mutation/audit
+```
+
+Do not move receipt storage, response processing or any COMMERCE-030 algorithm into
+the publication lifecycle.
+
+### A2-R3 — XN04 must traverse the actual production preview composition
+
+The submitted XN04 test is named:
+
+```text
+XN04 runs visual and JavaScript synthetic preview through the production preview composition
+```
+
+but constructs:
+
+```ts
+new PreviewService({
+  store: new InMemoryPreviewStateStore(),
+  ...
+})
+```
+
+and passes it directly to:
+
+```ts
+integration.createPreview(previewService)
+```
+
+That proves the integration factory in isolation, not the production composition
+owned by this task.
+
+Primary files:
+
+```text
+tests/external-wiring.test.ts
+lib/preview/runtime.ts            # test seam only if required
+src/commerce/integration/backend.ts  # existing reset/config seam only if required
+app/api/studio/preview/tool-tests/route.ts
+```
+
+Do not replace the production PreviewService implementation or create a second
+preview state store.
+
+Add/replace the XN04 regression with exact title:
+
+```text
+XN04 routes saved DRAFT external samples through the production preview runtime
+```
+
+The test must traverse the actual exported composition seam:
+
+```text
+configured/cached Commerce backend
+-> getPreviewService()
+-> getExternalPreviewService()
+-> POST /api/studio/preview/tool-tests with externalResponseFixture
+-> same underlying PreviewService run identity
+-> read the same previewRunId through the accepted tool-test read path/service
+```
+
+Use the repository's existing test injection/reset mechanisms and controlled local
+Redis/test transport as needed. No live third-party provider is allowed.
+
+The external revision used by this scenario must be a real pre-publication fixture:
+
+```text
+status: DRAFT
+contentHash: null
+tool.enabled: true
+```
+
+Prove:
+
+```text
+visual synthetic sample -> COMPLETED
+JavaScript synthetic sample -> COMPLETED
+COMMERCE-030 receipt exists for each validated sample
+GET/read observes the same terminal previewRunId/result
+provider HTTP calls == 0
+credential resolution/decryption calls == 0 for synthetic preview
+ordinary non-external tool-test routing remains unchanged
+```
+
+If a minimal test-only reset/install seam is genuinely missing, add only that seam;
+do not add a second production preview factory.
+
+### A2-R4 — implement WI01 through the assembled backend/MCP path
+
+WI01 is an Acceptance Criterion, not an optional deployment check:
+
+```text
+new connection/credential
+-> external tool
+-> visual/code sample
+-> publish
+-> release
+-> merchant
+-> real MCP call
+succeeds through configured production factories
+```
+
+No live deployment or third-party credential is required. Use synthetic credentials
+and the controlled HTTPS/provider transport already used by XN01-XN03.
+
+Add exact named regression:
+
+```text
+WI01 publishes activates grants and executes an external tool through the assembled MCP backend
+```
+
+Primary file:
+
+```text
+tests/external-wiring.test.ts
+```
+
+Use actual accepted application services/producers rather than calling isolated
+helpers.
+
+The scenario must perform, in order:
+
+```text
+1. create external connection
+2. create immutable connection revision
+3. configure PER_SHOP synthetic credential for shop A
+4. create external tool
+5. create saved DRAFT external tool revision
+6. run at least one synthetic sample on that DRAFT
+7. prove COMMERCE-030 sample receipt for the exact canonical DRAFT identity
+8. publish the DRAFT through CommerceLifecycle.publishToolRevision
+9. create/publish the required capability binding
+10. create release containing the published external tool revision
+11. activate that release for the test environment
+12. resolve merchant availability for shop A
+13. create/consume the existing immutable merchant/conversation grant path
+14. invoke the assembled backend MCP tools/call path for the external tool
+15. execute exactly one controlled external HTTPS request
+16. assert the schema-validated/rendered CommerceToolResult
+```
+
+Require exact immutable pins:
+
+```text
+toolRevisionId == the published revision used by the release/grant
+connectionRevisionId == the configured immutable connection revision
+```
+
+Require:
+
+```text
+shop A credential is the credential reaching the controlled transport
+another shop cannot borrow that credential
+controlled HTTPS transport called exactly once
+publication was admitted only after the COMMERCE-030 receipt/validator gate
+no EXTERNAL_HTTP result-cache read/write layer is introduced
+no Shopify, WhatsApp, paid model or live third-party endpoint is called
+```
+
+The scenario may use controlled in-memory/database test adapters already accepted by
+the repository, but must invoke the assembled Commerce backend/MCP service rather than
+calling the HTTP executor directly as the final assertion.
+
+### A2-R5 — preserve accepted producers and reconcile the durable report
+
+The synchronized implementation base now contains the accepted COMMERCE-036 producer:
+
+```text
+src/commerce/connections/lifecycle/index.ts
+  CompatibleRevisionInputSchema PRESENT
+```
+
+Attempt 3 must contain **no COMMERCE-024-owned diff** in:
+
+```text
+src/commerce/connections/command-kernel.ts
+src/commerce/connections/lifecycle/index.ts
+```
+
+Before implementation, record these guards:
+
+```bash
+grep -Fq "const CompatibleRevisionInputSchema" \
+  src/commerce/connections/lifecycle/index.ts
+
+grep -Fq "revision: CompatibleRevisionInputSchema" \
+  src/commerce/connections/lifecycle/index.ts
+```
+
+If either fails in the launcher-resolved Attempt-3 worktree, STOP and return Blocked;
+do not repair COMMERCE-036 from COMMERCE-024.
+
+Also preserve the accepted COMMERCE-019/038 guards:
+
+```bash
+test -f src/commerce/integration/preview/adapters.ts
+! grep -Fq "unavailableLoader" lib/preview/runtime.ts
+grep -Fq "createExternalFixtureRunner" \
+  src/commerce/external-preview/index.ts
+```
+
+At resubmission:
+
+1. remove/supersede the old statement that COMMERCE-031 lacks a producer seam;
+   COMMERCE-038 resolved it;
+2. check WI01 only after A2-R4 passes;
+3. check WI02 only after the real production-composition XN04 evidence passes;
+4. check WI03 only if the final task diff remains composition-only;
+5. map every claimed criterion to exact test file, exact test title, command and
+   observed result;
+6. record the final implementation SHA and final parent report SHA;
+7. record both synchronized worktrees clean and pushed.
+
+Return exactly:
+
+```yaml
+status: review
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+Then STOP. Do not launch COMMERCE-012 or SYSTEM-TEST-002.
+
+### Allowed Attempt-3 Source Scope
+
+Expected task-owned files:
+
+```text
+src/commerce/integration/external/index.ts
+src/commerce/publication/lifecycle.ts
+lib/preview/runtime.ts                    # only if a minimal test/reset seam is needed
+app/api/studio/preview/tool-tests/route.ts # only if the production route proof exposes a routing defect
+tests/external-wiring.test.ts
+package.json                              # focused command only if required
+```
+
+The final diff must not contain accepted producer rewrites under:
+
+```text
+src/commerce/connections/**
+src/commerce/external-preview/**
+src/commerce/external-publication/**
+src/commerce/external-http/**
+src/commerce/external-response/**
+src/commerce/code-response/**
+```
+
+If an exact regression demonstrates a defect in one of those accepted producers,
+return the concrete reproduction to `moda_architect` rather than fixing it in 024.
+
+### Required Validation
+
+Run:
+
+```bash
+npm run test:arch020-external-wiring
+npm run test:arch020-external-preview
+npm run test:arch020-external-publication
+npm run test:arch020-external-http
+npm run test:arch020-external-credentials
+npm run test:arch020-external-availability
+
+npx eslint \
+  src/commerce/integration/external \
+  src/commerce/publication/lifecycle.ts \
+  lib/preview/runtime.ts \
+  app/api/studio/preview/tool-tests/route.ts \
+  tests/external-wiring.test.ts
+
+npm run typecheck
+npm run build
+git diff --check
+```
+
+Repository-wide typecheck/build may remain non-zero only for a materially unchanged
+documented baseline, and only if no diagnostic points at an Attempt-3-owned file.
+
+The final focused evidence must include the exact named XN04 and WI01 scenarios above;
+an aggregate suite count is not sufficient.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/integration/external/index.ts`
+- `moda-interact-commerce/src/commerce/publication/lifecycle.ts`
+- `moda-interact-commerce/lib/preview/runtime.ts`
+- `moda-interact-commerce/app/api/studio/preview/tool-tests/route.ts`
+- `moda-interact-commerce/tests/external-wiring.test.ts`
+- `moda-interact-commerce/src/commerce/connections/lifecycle/index.ts`
+- synchronized Attempt-2 Completion Report
+- C21 post-unblock COMMERCE-024 composition contract
+
+### Validation Reviewed
+
+Submitted Attempt-2 evidence:
+
+```text
+external wiring:       2 PASS
+external preview:     18 PASS
+publication:          11 PASS
+external HTTP:        13 PASS
+credentials:           9 PASS
+availability:          4 PASS
+targeted ESLint:       PASS
+git diff --check:      PASS
+typecheck/build:       documented repository baseline remains
+```
+
+Those tests establish useful composition progress but do not prove the required WI01
+assembled path, and the current XN04 does not traverse the production runtime despite
+its title.
+
+### Architecture Conformance
+
+Partial.
+
+The accepted preview/fixture-runner producer blockers are resolved. Remaining defects
+are now within COMMERCE-024's final composition ownership: canonical DRAFT definition
+identity mapping, fail-closed publication binding, real production-preview composition
+evidence and the required end-to-end assembled MCP path.
+
+No downstream task is promoted.
+
+### Follow-up
+
+Return the same task to `ready`, preserve `attempt: 2`, clear the claim.
+
+The next successful:
+
+```text
+/moda-task ARCH-020-COMMERCE-024
+```
+
+claim creates Attempt 3 exactly once.
+
+Implement only A2-R1 through A2-R5, return to Review and STOP.

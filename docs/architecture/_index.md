@@ -860,3 +860,23 @@ GATEWAY-002 is Superseded at Attempt 2. Custom Commerce dashboards and alerts ar
 developer-managed in Grafana Cloud; repository-owned telemetry emissions and existing
 OTLP/Loki transport remain unchanged. No implementation or system-test task depends on
 GATEWAY-002 after this reconciliation.
+
+## COMMERCE-024 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 2 retained; claim cleared.**
+
+The former producer blockers are resolved: accepted COMMERCE-019 preview composition,
+COMMERCE-036 connection compatibility handling and COMMERCE-038 reusable fixture
+processing are present in the synchronized source.
+
+Attempt 2 successfully wires the external preview service/fixture runner into the
+accepted preview runtime direction, but final composition is not yet complete. The
+COMMERCE-030 identity adapter incorrectly treats saved DRAFT revisions as an empty
+definition hash/disabled revision; EXTERNAL_HTTP publication is fail-open if the
+external publication validator is absent; the submitted XN04 proof constructs an
+isolated in-memory PreviewService instead of traversing production composition; and
+WI01's publish -> release -> grant -> assembled MCP execution path is still unproven.
+
+Attempt 3 is bounded to those 024-owned corrections/evidence. Accepted connection and
+external producers must remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain
+gated.
