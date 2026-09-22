@@ -1285,3 +1285,14 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
+
+## COMMERCE-018 Attempt 6 autonomous validation unblock — 2026-09-22
+
+`ARCH-020-COMMERCE-018` is **Ready / validation-only, Attempt 6 retained**. No new
+Studio source correction is requested before the real C20 proof. Its canonical
+fixture dependency is the accepted `ARCH-020-COMMERCE-035`; historical references to
+a COMMERCE-033 fixture are superseded because COMMERCE-033 is the preview-model
+provider task. Attempt 7 may provision its own task-labelled, loopback-only disposable
+PostgreSQL/Redis Docker targets and must run reset + `test:arch020-studio-integration:c20`.
+Unchanged unrelated repository baseline diagnostics do not block return to review
+after that proof and the focused Studio suite pass. No dependant is auto-started.

@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 140
-executor: copilot
-claimed_at: 2026-09-22T03:30:46Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-020-COMMERCE-013
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-002
   - ARCH-020-COMMERCE-011
-  - ARCH-020-COMMERCE-033
+  - ARCH-020-COMMERCE-035
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
@@ -83,7 +83,13 @@ Source: `src/studio/contracts.ts: StudioServices` and the accepted
 Factory destination: existing `src/studio/server-services.ts:getStudioServices`.
 Use `lib/auth` helpers including requireStudioAdmin/requireStudioSuperAdmin and
 assertStudioMutationOrigin. C20 lists actual payload mappings; no backend module
-may be imported into browser bundles. New protected action files belong only to018.
+may be imported into browser bundles.
+
+C20 test-only fixture producer: `ARCH-020-COMMERCE-035`, accepted Complete at
+Attempt 4, export `src/commerce/integration/backend/c20-test-fixture.ts:
+seedC20IntegrationFixture`. `ARCH-020-COMMERCE-033` is the preview OpenAI/Groq
+model-provider task and is not the fixture dependency for this Studio integration
+task. New protected action files belong only to018.
 If the accepted facade cannot express a required field, report the producer gap;
 do not silently omit it or implement a second publication service.
 
@@ -93,6 +99,7 @@ do not silently omit it or implement a second publication service.
 - ARCH-020-COMMERCE-008
 - ARCH-020-COMMERCE-002
 - ARCH-020-COMMERCE-011
+- ARCH-020-COMMERCE-035
 
 All dependencies must be Complete and architect-accepted before execution.
 Readiness never launches a task; use the normal dedicated mirrored worktrees.
@@ -623,3 +630,327 @@ mapping, rerun the existing named repository checks, return to Review and stop.
 
 No UI redesign, new schema, Shared contract, live provider call or COMMERCE-019
 implementation is authorised by this review.
+
+## Architect Review — Attempt 6 autonomous C20 validation unblock — 2026-09-22
+
+### Review Status
+
+Changes Requested — validation-only resumption.
+
+`ARCH-020-COMMERCE-018` is returned to **Ready**, Attempt 6 retained, with
+`executor: null` and `claimed_at: null`. The next authorised `/moda-task` claim
+becomes Attempt 7.
+
+No Studio source correction is currently requested. The submitted Attempt 6 source
+already contains the previously requested production-adapter corrections and the
+named real-adapter test. The remaining acceptance gate is execution of that C20 path
+against disposable PostgreSQL and Redis.
+
+The exact submitted parent handoff is
+`860107f5ea76e2cc480421c830ac0d43f88d022a`; the remote parent task branch matched
+that commit at review time. The submitted implementation head is
+`d96d74192da3175c9bce8d1e1497e2026ba3dfc6`. The Commerce implementation remote is
+not readable through the current review connector, so source review is grounded in
+the exact submitted archive.
+
+### Dependency reconciliation
+
+Historical COMMERCE-018 review text referred to the C20 fixture correction as
+`ARCH-020-COMMERCE-033`. That identifier is now canonically the accepted OpenAI/Groq
+preview-model transport.
+
+The accepted C20 isolated fixture producer is:
+
+```text
+ARCH-020-COMMERCE-035
+Provide the C20 isolated integration fixture boundary
+status: complete
+accepted: Attempt 4
+implementation: 9a0120b
+export: seedC20IntegrationFixture
+```
+
+This review therefore replaces COMMERCE-018's stale fixture dependency on
+COMMERCE-033 with COMMERCE-035. The source already imports the canonical
+`src/commerce/integration/backend/c20-test-fixture.ts` helper produced by
+COMMERCE-035; do not copy or reimplement that fixture.
+
+### Explicit validation-policy override for Attempt 7
+
+For **ARCH-020-COMMERCE-018 Attempt 7 only**, `moda_architect` explicitly authorises
+the repository agent to create, use and destroy its own local Docker PostgreSQL and
+Redis containers for the required C20 real-adapter validation.
+
+The agent MUST NOT wait for developer-supplied
+`COMMERCE_TEST_DATABASE_URL` / `COMMERCE_TEST_REDIS_URL` when a usable local Docker
+engine exists.
+
+This authorisation is limited to:
+
+- local Docker through a Unix-socket Docker context;
+- exactly two task-owned disposable containers;
+- loopback-only dynamically allocated host ports;
+- no persistent Docker volumes;
+- no shared/deployed PostgreSQL or Redis;
+- no Render, managed database, managed Redis, production or normal developer
+  database;
+- no `FLUSHALL` / `FLUSHDB`;
+- cleanup only of resources whose run label exactly matches this invocation.
+
+Do not inspect `.env` files, deployment secrets or developer configuration to find
+infrastructure.
+
+### Exact disposable target contract
+
+Use the already accepted local C20 image versions:
+
+```text
+PostgreSQL: postgres:16.4-alpine
+Redis:      redis:7.4.0-alpine
+```
+
+Use exactly:
+
+```text
+database name:     arch020_c20_commerce018_a7
+Redis namespace:   arch020:c20:commerce018-a7
+Postgres user:     fixture
+Postgres password: fixture-only
+environment:       test
+label key:         moda.arch020.c20.run
+```
+
+The password is synthetic local fixture data, not a platform secret.
+
+No fixed host port is permitted. Docker must allocate loopback ports dynamically.
+
+### Exact provisioning and validation procedure
+
+Run this from the dedicated COMMERCE-018 implementation worktree:
+
+```bash
+set -euo pipefail
+
+command -v docker >/dev/null 2>&1 || {
+  echo "C20_LOCAL_DOCKER_UNAVAILABLE: docker command not found" >&2
+  exit 1
+}
+
+DOCKER_ENDPOINT="$(
+  docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null
+)"
+
+case "$DOCKER_ENDPOINT" in
+  unix://*) ;;
+  *)
+    echo "C20_LOCAL_DOCKER_UNAVAILABLE: local Unix-socket Docker context required" >&2
+    exit 1
+    ;;
+esac
+
+docker version --format '{{.Server.Version}}' >/dev/null
+
+RUN_ID="arch020-c20-commerce018-a7-$$"
+LABEL_KEY="moda.arch020.c20.run"
+PG_CONTAINER="${RUN_ID}-postgres"
+REDIS_CONTAINER="${RUN_ID}-redis"
+
+DB_NAME="arch020_c20_commerce018_a7"
+PG_USER="fixture"
+PG_PASSWORD="fixture-only"
+REDIS_NAMESPACE="arch020:c20:commerce018-a7"
+
+cleanup_c20_targets() {
+  for container in "$PG_CONTAINER" "$REDIS_CONTAINER"; do
+    if docker container inspect "$container" >/dev/null 2>&1; then
+      owner="$(
+        docker container inspect \
+          --format '{{index .Config.Labels "moda.arch020.c20.run"}}' \
+          "$container"
+      )"
+      if [ "$owner" = "$RUN_ID" ]; then
+        docker rm -f -v "$container" >/dev/null
+      else
+        echo "C20 cleanup ownership mismatch for $container" >&2
+        return 1
+      fi
+    fi
+  done
+}
+
+trap cleanup_c20_targets EXIT INT TERM
+
+docker pull postgres:16.4-alpine >/dev/null
+docker pull redis:7.4.0-alpine >/dev/null
+
+docker run -d \
+  --name "$PG_CONTAINER" \
+  --label "${LABEL_KEY}=${RUN_ID}" \
+  --publish 127.0.0.1::5432 \
+  --tmpfs /var/lib/postgresql/data \
+  --env "POSTGRES_USER=${PG_USER}" \
+  --env "POSTGRES_PASSWORD=${PG_PASSWORD}" \
+  --env "POSTGRES_DB=${DB_NAME}" \
+  postgres:16.4-alpine >/dev/null
+
+docker run -d \
+  --name "$REDIS_CONTAINER" \
+  --label "${LABEL_KEY}=${RUN_ID}" \
+  --publish 127.0.0.1::6379 \
+  --tmpfs /data \
+  redis:7.4.0-alpine \
+  redis-server --save "" --appendonly no >/dev/null
+
+pg_ready=0
+for _ in $(seq 1 100); do
+  if docker exec "$PG_CONTAINER" \
+      pg_isready -h 127.0.0.1 -U "$PG_USER" -d "$DB_NAME" >/dev/null 2>&1; then
+    pg_ready=1
+    break
+  fi
+  sleep 0.2
+done
+[ "$pg_ready" -eq 1 ] || {
+  echo "C20_LOCAL_POSTGRES_UNAVAILABLE: disposable PostgreSQL did not become ready" >&2
+  exit 1
+}
+
+redis_ready=0
+for _ in $(seq 1 100); do
+  if [ "$(docker exec "$REDIS_CONTAINER" redis-cli ping 2>/dev/null || true)" = "PONG" ]; then
+    redis_ready=1
+    break
+  fi
+  sleep 0.2
+done
+[ "$redis_ready" -eq 1 ] || {
+  echo "C20_LOCAL_REDIS_UNAVAILABLE: disposable Redis did not become ready" >&2
+  exit 1
+}
+
+PG_BIND="$(docker port "$PG_CONTAINER" 5432/tcp)"
+REDIS_BIND="$(docker port "$REDIS_CONTAINER" 6379/tcp)"
+
+case "$PG_BIND" in
+  127.0.0.1:*) ;;
+  *) echo "C20_LOCAL_POSTGRES_UNSAFE_BIND: expected loopback binding" >&2; exit 1 ;;
+esac
+
+case "$REDIS_BIND" in
+  127.0.0.1:*) ;;
+  *) echo "C20_LOCAL_REDIS_UNSAFE_BIND: expected loopback binding" >&2; exit 1 ;;
+esac
+
+PG_PORT="${PG_BIND##*:}"
+REDIS_PORT="${REDIS_BIND##*:}"
+
+export COMMERCE_TEST_DATABASE_URL="postgresql://${PG_USER}:${PG_PASSWORD}@127.0.0.1:${PG_PORT}/${DB_NAME}"
+export DATABASE_URL="$COMMERCE_TEST_DATABASE_URL"
+export COMMERCE_TEST_REDIS_URL="redis://127.0.0.1:${REDIS_PORT}"
+export COMMERCE_C20_REDIS_NAMESPACE="$REDIS_NAMESPACE"
+export DEPLOYMENT_ENVIRONMENT_NAME="test"
+
+# Do not echo the full URLs or fixture password.
+echo "C20 Studio targets ready: database=${DB_NAME} namespace=${REDIS_NAMESPACE}"
+
+npm run c20-fixture:reset
+npm run test:arch020-studio-integration:c20
+npm run test:arch020-studio-integration
+
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+The `EXIT` trap owns cleanup. Do not manually remove any container whose
+`moda.arch020.c20.run` label does not equal this invocation's `RUN_ID`.
+
+### Required C20 evidence
+
+The real-adapter command must exercise the actual accepted application components:
+Prisma storage, publication lifecycle, inspection and the COMMERCE-018 Studio
+adapter, consuming COMMERCE-035's `seedC20IntegrationFixture`.
+
+Only external discovery/query transports may remain controlled test doubles.
+
+Record the observed results for the task-owned C20 scenarios, including:
+
+- missing/mismatched Origin rejects before mutation;
+- ADMIN remains unable to publish;
+- replay/CAS preserves one business write/audit for one operation ID;
+- configured-environment activation and rollback use the current pointer CAS;
+- discovery outage returns bounded unavailable while publication/draft state remains
+  intact;
+- U13 exposes real positive/excluded feature eligibility and remains read-only;
+- the task consumes the exact COMMERCE-035 fixture graph rather than a local copy.
+
+The existing focused 9-test suite remains useful adapter evidence but does not replace
+the real C20 path.
+
+### Required execution evidence
+
+Record in the Attempt 7 Completion Report:
+
+- Docker context endpoint class (`unix://...`; do not record unrelated environment
+  values);
+- Docker server version;
+- `postgres:16.4-alpine` and `redis:7.4.0-alpine` image RepoDigests;
+- run-scoped container names;
+- database name and Redis namespace, but not the full URLs/password;
+- PostgreSQL and Redis health success;
+- `npm run c20-fixture:reset` result;
+- `npm run test:arch020-studio-integration:c20` exact result/scenario count;
+- `npm run test:arch020-studio-integration` exact result;
+- cleanup success for both labelled containers.
+
+### Known repository baseline handling
+
+Attempt 6 recorded repository-wide failures outside the Studio integration change:
+
+- lint: the existing `src/studio/connections/connections-ui.tsx`
+  `react-hooks/set-state-in-effect` diagnostic plus existing warnings;
+- typecheck/build: existing connection-lifecycle, backend-executor, CodeMirror and
+  response-processor diagnostics.
+
+Attempt 7 must rerun the commands because the task requires them. If the failures are
+materially identical to the already recorded baseline and no COMMERCE-018-owned file
+is implicated, record them accurately and **continue to `review` once both the C20
+reset/proof and focused Studio suite pass**.
+
+Do not return COMMERCE-018 to `blocked` merely because those unchanged unrelated
+diagnostics remain.
+
+### Failure handling
+
+Return to `blocked` only if:
+
+1. Docker command/server is unavailable;
+2. the selected Docker context is not local `unix://`;
+3. an approved task-owned PostgreSQL/Redis container cannot start or become healthy;
+4. cleanup ownership cannot be proven;
+5. the real C20 path exposes a genuine COMMERCE-018-owned defect that cannot be
+   corrected within this task; or
+6. the real C20 path demonstrates a regression in the already accepted
+   COMMERCE-035 fixture producer. In that case do not modify COMMERCE-035 from this
+   task; record the exact producer reproduction for `moda_architect`.
+
+If the real path exposes a bounded COMMERCE-018 adapter defect, fix only that defect,
+rerun the affected proof and report it.
+
+**Do not ask the developer for PostgreSQL/Redis URLs as the next step.**
+
+### Stop condition
+
+When the C20 reset/proof and focused Studio suite pass:
+
+1. reconcile S01-S06 and Work Items truthfully from the combined evidence;
+2. update the Completion Report with the real-client evidence;
+3. set `status: review`;
+4. set `executor: null`;
+5. set `claimed_at: null`;
+6. push both mirrored task branches;
+7. return control to `moda_architect`;
+8. **STOP**.
+
+Do not begin COMMERCE-012, COMMERCE-024, GATEWAY-001 or any system-test task.

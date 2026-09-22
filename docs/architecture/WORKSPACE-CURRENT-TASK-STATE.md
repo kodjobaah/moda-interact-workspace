@@ -1385,3 +1385,13 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
+
+## COMMERCE-018 Attempt 6 autonomous validation unblock — 2026-09-22
+
+COMMERCE-018: **Ready / Attempt 6 retained / claim clear** for validation-only
+Attempt 7. COMMERCE-035 is the accepted C20 fixture producer and is Complete;
+COMMERCE-033 is unrelated preview-model transport. The next agent claim is explicitly
+authorised to create and destroy its own isolated local PostgreSQL/Redis containers,
+run the real C20 Studio-adapter proof and return to review without asking the
+developer for target URLs. Existing unrelated lint/typecheck/build diagnostics remain
+baseline unless the Attempt 7 changes worsen them.

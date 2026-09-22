@@ -1791,3 +1791,12 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
+
+## COMMERCE-018 Attempt 6 autonomous validation unblock — 2026-09-22
+
+The Studio production-integration implementation remains source-complete pending its
+task-owned C20 real-adapter proof. `ARCH-020-COMMERCE-035` is now the canonical,
+Accepted/Complete C20 fixture producer; stale historical prose naming COMMERCE-033 as
+that fixture is superseded. COMMERCE-018 is Ready for validation-only Attempt 7 with
+architect-authorised local disposable Docker PostgreSQL/Redis provisioning. No
+downstream promotion occurs until architect acceptance of COMMERCE-018.

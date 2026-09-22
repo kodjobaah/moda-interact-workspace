@@ -1938,7 +1938,7 @@ injected source data to prove handoff; it does not wait for018 page-service wiri
 
 ### Shared integration fixture and acceptance ownership
 
-The producer-side fixture correction is owned by ARCH-020-COMMERCE-033. It supplies
+The producer-side fixture correction is owned by ARCH-020-COMMERCE-035. It supplies
 the isolated seed/helper consumed by018/019 while accepted013 production behavior
 remains frozen: two active admins with ADMIN/SUPER_ADMIN roles; two shops, distinct
 recoveries/conversations; one arbitrary existing Feature with plan/merchant selection;
@@ -1953,9 +1953,10 @@ PostgreSQL fixture reset uses a dedicated disposable database guarded as TEST an
 reset/re-migrated as a whole; consumers must not delete immutable rows, disable
 triggers or reuse a normal development/production database. Redis cleanup is bounded
 to the explicit `arch020:c20:<namespace>:*` prefix and must preserve keys outside that
-prefix. COMMERCE-033 defines the exact module exports, target guards, fixture graph,
+prefix. COMMERCE-035 defines the exact module exports, target guards, fixture graph,
 reset command and validation.018/019 consume that helper directly and must not create
-local copies.
+local copies. COMMERCE-033 remains the separate preview OpenAI/Groq model-provider
+owner and is not the C20 fixture producer.
 
 Keep provider/query responses deterministic, model scripted, clock injectable and
 DB/Redis real for transaction/distributed-state evidence. Successful duplicate

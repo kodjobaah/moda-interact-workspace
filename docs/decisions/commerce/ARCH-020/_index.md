@@ -25,7 +25,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-015](COMMERCE-015-provide-trusted-basket-and-product-policy-adapters.md) | Provide trusted basket and product policy adapters | complete | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | complete | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | complete | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
+| [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready (validation-only; Attempt 6 retained) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-035 |
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-033, ARCH-020-COMMERCE-034 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | complete (Accepted, Attempt 2) | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
@@ -857,3 +857,13 @@ business-write/audit semantics.
 `COMMERCE-028` is promoted **Pending -> Ready** because `DATABASE-003` and
 `SHARED-002` are already Complete. No task is launched automatically. `COMMERCE-024`,
 `GATEWAY-003`, `COMMERCE-012` and system-test work retain their remaining gates.
+
+## COMMERCE-018 Attempt 6 autonomous C20 unblock — 2026-09-22
+
+COMMERCE-018 is **Ready / validation-only, Attempt 6 retained, claim clear**. The
+canonical C20 fixture dependency is COMMERCE-035 (Accepted/Complete Attempt 4), not
+COMMERCE-033; COMMERCE-033 remains the preview OpenAI/Groq provider task. Attempt 7
+is explicitly authorised to provision its own loopback-only disposable PostgreSQL
+and Redis Docker targets, run the real C20 Studio proof, clean them up, and return to
+review. Unchanged unrelated lint/typecheck/build baseline diagnostics do not block
+review after the C20 proof passes.
