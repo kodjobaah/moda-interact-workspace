@@ -1366,3 +1366,22 @@ the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
 credential resolution derives `Authorization`. The bounded producer correction is
 materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
 on it before final production composition. No task is started automatically.
+## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
+
+ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
+The current combined snapshot still contains implementation `59f0c34` unchanged; only
+unrelated ARCH-020 coordination documentation has advanced since the original review
+overlay. The deterministic correction contract in the task is unchanged: tester and
+publisher liveness/role enforcement, exact 24-hour fail-closed receipt semantics,
+sample-MIME plus production-renderer reuse, bounded schema issues, and complete
+PV02/PV03 runtime-revalidation evidence.
+
+No dependency is promoted and no downstream task is launched automatically.
+
+## COMMERCE-030 Attempt 2 architect review — 2026-09-22
+
+COMMERCE-030 is **Ready / Attempt 2 retained / claim clear**. Attempt 2 passed its
+focused 9-scenario suite and closes the receipt/liveness/MIME/renderer/runtime proof.
+The next claim is Attempt 3 and must correct only canonical tool revision hashing and
+remove credential existence from publication/sample gating while retaining current
+non-secret connection auth-shape checks. Dependants remain gated.
