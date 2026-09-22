@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T00:56:12Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-020-SHARED-002
@@ -134,6 +134,8 @@ Ready for Review.
 
 - Implemented server-only `createResponseProcessor({now})` for C21 visual OBJECT/LIST processing.
 - Added own-property-safe scalar projection, strict filters, code-point sorting with stable ties, null/missing handling, bounded rows/fields/filters/limits, and typed deadline/cancellation failures.
+- Corrected DESC sorting so valid values are ordered by direction while null/missing values remain last in either direction, preserving stable order among null/missing rows.
+- Added `import 'server-only';` as the module boundary and added the exact DESC null/missing regression.
 - Added focused tests for projection, strict filters, null/missing behavior, Unicode ordering, stable ties, unsafe paths, scalar validation, row bounds, cancellation and deadlines.
 - Aligned the Commerce dependency with the accepted `@modainteract/moda-interact-shared@0.14.2` contract.
 
@@ -141,12 +143,13 @@ Ready for Review.
 
 Agent-executed validation:
 
-- `npm run test:arch020-response-processing`: passed, 5/5 tests.
-- `npm run lint`: passed with two pre-existing warnings in `scripts/code-runtime-manifest.mjs` and `src/commerce/code-response/runtime/kernel.ts`; no errors in changed files.
-- `npm run typecheck`: repository baseline remains failing in unrelated Prisma/execution/integration files; no diagnostics remain for `src/commerce/external-response` or `tests/response-processing.test.ts`.
+- `npm run test:arch020-response-processing`: passed, 6/6 tests, including the exact DESC null/missing regression.
+- `npm run lint`: failed on the pre-existing `react-hooks/set-state-in-effect` error in `src/studio/connections/connections-ui.tsx`; six warnings were also reported, with no diagnostics in changed files.
+- `npm run typecheck`: failed with 183 repository baseline errors across unrelated auth, Prisma, integration, execution and code-processor files; no diagnostics were reported for `src/commerce/external-response` or `tests/response-processing.test.ts`.
+- `npm run build`: production bundle compilation passed, then the repository TypeScript phase failed on the same unrelated baseline diagnostics; the overlapping retry exited on the generated Next build lock and is not treated as a code result.
 - `git diff --check`: passed.
 
-Implementation repository commit: `44f9138` (`feat(ARCH-020-COMMERCE-025): add bounded response processor`), pushed to `origin/task/ARCH-020-COMMERCE-025`.
+Implementation repository commits: `44f9138` (`feat(ARCH-020-COMMERCE-025): add bounded response processor`) and `8b281cf` (`fix(ARCH-020-COMMERCE-025): correct response sort null ordering`), pushed to `origin/task/ARCH-020-COMMERCE-025`.
 
 ### Deviations
 
@@ -158,7 +161,7 @@ C21 read-only visual processing only; the separate JavaScript processor remains 
 
 ### Unresolved Issues
 
-Repository-wide typecheck is blocked by the existing generated Prisma/client and execution/integration type errors outside this task. Focused behavior tests, lint, and touched-file type diagnostics pass.
+Repository-wide typecheck, lint and build TypeScript validation remain blocked by established unrelated repository errors. Focused behavior tests and diff validation pass; changed files have no reported diagnostics.
 
 ### Architectural Concerns
 
@@ -166,7 +169,28 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: `task/ARCH-020-COMMERCE-025`. Implementation commit `44f9138` is pushed. Parent task metadata is being returned on the same mirrored branch for architect review; no merge, self-acceptance, or main update performed.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-025`
+  parent branch: `task/ARCH-020-COMMERCE-025`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-025`
+  implementation branch: `task/ARCH-020-COMMERCE-025`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  `git submodule sync --recursive`: passed
+  `git submodule update --init --recursive`: passed
+  recorded submodule commits: `database@7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+
+Expected mirrored branch: `task/ARCH-020-COMMERCE-025`. Implementation commits `44f9138` and `8b281cf` are pushed. Parent task metadata is being returned on the same mirrored branch for architect review; no merge, self-acceptance, or main update performed.
 
 ## Architect Review
 
