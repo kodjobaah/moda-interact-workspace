@@ -71,6 +71,7 @@ and never expose secrets or raw external response data in errors/logs.
 - [ ] Declare server-only keyring, active-key selector and stable command-HMAC secret on appropriate Commerce runtime only; no NEXT_PUBLIC or Background copies.
 - [ ] Document key generation by operator, retained decrypt-key rotation, rollback, missing-config behavior and migration-before-runtime ordering.
 - [ ] Validate configuration examples without printing secrets and preserve staff-only public Studio plus Background-only private MCP ingress.
+- [ ] Extend the explicit public Commerce page allowlist for C21 U15 `/connections` and U16 `/connections/[id]`: GET/HEAD plus authenticated Next Server Action POST only; no deeper catch-all.
 
 ## Interfaces / Contracts
 
@@ -98,10 +99,12 @@ contract contradictions with a source reproduction; do not weaken validation.
 - [ ] X08: blueprint/config checks show exactly the three new settings in server scope, no secrets committed and no accidental public MCP route.
 - [ ] Runbook explains encrypted credentials cannot be decrypted after dropping old key; missing config disables external operations without breaking Shopify.
 - [ ] No live connection created, no deployment asserted; runtime behavior evidence comes from020/024 controlled tests.
+- [ ] C21 U15/U16 route fixtures prove `/connections` and `/connections/<id>` GET/HEAD plus Next-Action POST are allowed, wrong methods return 405, deeper paths return 404 and public MCP denial remains unchanged.
 
 ## Validation
 
 Provide `validate:arch020-external-runtime` in the owning repository and document its exact scope.
+Also extend the existing Gateway route fixture suite with U15/U16 exact method/path cases; do not add a blanket `/connections/**` or `/api/studio/**` proxy.
 Run focused changed-boundary tests, then existing repository typecheck/build
 and lint where defined. Inspect package scripts first; do not invent a claim that
 an absent script passed. Use C21 controlled transports and isolated stores.
@@ -188,3 +191,19 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+### Architect scope clarification — 2026-09-22
+
+C21 was added after the original GATEWAY-001 U01–U14 route contract. This task now
+owns the bounded public-route delta for accepted Connections pages:
+
+```text
+GET/HEAD /connections
+POST /connections with Next-Action only
+GET/HEAD /connections/<id>
+POST /connections/<id> with Next-Action only
+wrong method -> 405
+deeper path -> 404
+```
+
+Preserve GATEWAY-001's public MCP/ambiguous-path denial and existing explicit route
+matrix. No blanket proxy is authorized.

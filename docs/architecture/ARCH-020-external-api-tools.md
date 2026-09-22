@@ -1219,3 +1219,16 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## GATEWAY-001 Attempt 2 architect review — 2026-09-22
+
+ARCH-020-GATEWAY-001 is **Changes Requested / Ready, Attempt 2**, claim clear.
+Implementation `12ca000` now conforms on the major private-topology, explicit
+U01–U14/C9.1/discovery route, MCP-denial, Commerce body-size/timeout and validator
+boundaries. The remaining Attempt 3 corrections are limited to making the Commerce
+public hostname a genuine Render deployment input and correcting hosted smoke commands
+for authenticated Studio/Auth.js/private-assertion behavior.
+
+The later C21 U15/U16 `/connections` public-route delta is explicitly added to
+GATEWAY-003 scope. GATEWAY-002, GATEWAY-003, COMMERCE-012 and system-test work remain
+dependency-gated; no task is started automatically.
