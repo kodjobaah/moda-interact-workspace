@@ -1185,3 +1185,16 @@ review A2-R1..A2-R5 before COMMERCE-024 consumes the frontend: valid new externa
 draft, exact connection/revision return context, complete typed visual/query editor,
 canonical stale sample-validation boundary, typed COMMERCE-027 slot and exact frozen
 U14 fixture port. No dependant is promoted or auto-started.
+
+## COMMERCE-023 Attempt 3 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 3**, claim clear.
+Implementation `c71b30e` materially improves the U06 external editor but does not yet
+satisfy C21 X06/XN02. The task's latest Architect Review is the complete deterministic
+Attempt 4 correction contract: valid starter/return context, complete typed
+query/filter/sort and code-slot authoring, editable sample plus current-validation
+review/publish state, exact-revision U14 fixture port with no task-owned diagnostics,
+and the owned new-tool XN02 path.
+
+No dependency is promoted. COMMERCE-024, COMMERCE-012 and terminal system-test work
+retain their declared dependencies. No downstream task is launched automatically.
