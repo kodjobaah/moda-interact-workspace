@@ -1632,3 +1632,17 @@ validation owned by COMMERCE-030.
 No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
 COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
 other prerequisites. No downstream task is launched automatically.
+
+## COMMERCE-023 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 1**, claim clear. The
+submitted external-tool visual editor proves a useful zero-network starting point, but
+does not yet satisfy C21 X06/XN02. The task's latest Architect Review is the complete
+deterministic correction contract covering external-draft entry, exact
+connection/revision return context, full query/filter authoring, protected visual/code
+mode switching, synchronized Advanced JSON, result-schema/sample validation with
+stale-hash guards, schema/review/publish guidance, exported U14 fixture controls and
+the full injected-port XN02 owned flow.
+
+No dependency is promoted. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
+gated. No downstream task is launched automatically.
