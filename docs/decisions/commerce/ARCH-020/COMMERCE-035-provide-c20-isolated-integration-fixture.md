@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 130
-executor: copilot
-claimed_at: 2026-09-22T00:26:47Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -435,15 +435,15 @@ Document:
 
 ## Work Items
 
-- [ ] Add `src/commerce/integration/backend/c20-test-fixture.ts` with the exact R1 exports.
-- [ ] Implement R2 fail-closed target guards before any write.
-- [ ] Add guarded disposable PostgreSQL + prefix-scoped Redis reset script from R3.
-- [ ] Seed the exact R4 graph using real publication lifecycle/storage for published Commerce rows.
-- [ ] Return the typed R5 identifiers and explicit operation IDs.
-- [ ] Prove R6 prefix isolation with an outside-prefix sentinel.
-- [ ] Add `tests/c20-integration-fixture.test.ts`.
-- [ ] Add the exact `c20-fixture:reset` and `test:arch020-c20-integration-fixture` package scripts.
-- [ ] Document the R7 consumer contract in `docs/commerce-backend-integration.md`.
+- [x] Add `src/commerce/integration/backend/c20-test-fixture.ts` with the exact R1 exports.
+- [x] Implement R2 fail-closed target guards before any write.
+- [x] Add guarded disposable PostgreSQL + prefix-scoped Redis reset script from R3.
+- [x] Seed the exact R4 graph using real publication lifecycle/storage for published Commerce rows.
+- [x] Return the typed R5 identifiers and explicit operation IDs.
+- [x] Add the R6 prefix-isolation proof with an outside-prefix sentinel.
+- [x] Add `tests/c20-integration-fixture.test.ts`.
+- [x] Add the exact `c20-fixture:reset` and `test:arch020-c20-integration-fixture` package scripts.
+- [x] Document the R7 consumer contract in `docs/commerce-backend-integration.md`.
 
 ## Interfaces / Contracts
 
@@ -551,8 +551,8 @@ constraint to `moda_architect`.
 
 ### Status
 
-Blocked: implementation is present, but the required disposable PostgreSQL and
-Redis targets were not supplied in this execution environment.
+Blocked: Attempt 2 source corrections are complete, but the required disposable
+PostgreSQL and Redis targets were not supplied in this execution environment.
 
 ### Files Changed
 
@@ -566,29 +566,35 @@ Redis targets were not supplied in this execution environment.
 
 Implemented the guarded C20 fixture API, lifecycle-backed publication graph,
 prefix-scoped Redis seed/reset boundary, focused real-client proof, package
-scripts, and consumer documentation. No production route or startup registration
-was added.
+scripts, and consumer documentation. Corrected the focused proof to assert exact
+persisted inactive/active release members and response contracts, non-empty
+publication hashes, lifecycle audit IDs/reasons/actors, immutable published rows,
+the grant relational guard, and unchanged state after rejected writes. No
+production route or startup registration was added.
 
 ### Validation Results
 
-- `npm ci` passed.
-- `npm run prisma:generate` passed.
-- `npm run typecheck` passed.
+- `npm run prisma:generate` passed during `npm run build`.
 - `npm run lint -- --quiet` passed.
-- `npm run build` passed.
-- `node --check scripts/reset-c20-integration-fixture.mjs` passed.
 - `git diff --check` passed.
 - `npm run c20-fixture:reset` failed closed with `C20_FIXTURE_UNSAFE_ENVIRONMENT:
   C20 test targets are required` because no disposable URLs were supplied.
 - `npm run test:arch020-c20-integration-fixture` failed before tests with
   `C20_FIXTURE_UNSAFE_ENVIRONMENT: disposable PostgreSQL, Redis, and namespace
   variables are required` for the same reason.
+- `npm run typecheck` reached compilation but remains blocked by the known
+  unrelated code-response baseline errors in `src/commerce/code-response/processor.ts`
+  and `tests/code-response-processor.test.ts`; no task-owned diagnostic was
+  reported.
+- `npm run build` compiled the application and reached the same six unrelated
+  code-response type errors before completion.
 
 ### Deviations
 
 F02, F03, F05, and F06 remain unverified because the required real PostgreSQL and
 Redis targets were unavailable. The task is intentionally blocked rather than
-claiming integration evidence.
+claiming integration evidence. The source-level A1-R1/A1-R2 proof corrections
+are committed, but no real-client test assertions ran.
 
 ### Assumptions
 
@@ -598,13 +604,26 @@ The developer/test harness will provide a fresh PostgreSQL database named
 
 ### Unresolved Issues
 
-Run the reset twice and execute the focused proof against supplied disposable
-targets, then review persisted graph, immutability, grant, and Redis sentinel
-evidence.
+Run `npm run c20-fixture:reset` and the focused proof with the four required
+environment values, then complete the reset -> seed/inspect -> reset -> seed
+cycle and review persisted graph, immutability, grant, audit, and Redis sentinel
+evidence. The current implementation commit is `57932ec`.
 
 ### Architectural Concerns
 
-None
+Disposable targets are required before the focused real PostgreSQL/Redis proof
+can establish the producer gate for COMMERCE-018 and COMMERCE-019.
+
+### Git / VCS
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-035`.
+Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-035`.
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Implementation branch: `task/ARCH-020-COMMERCE-035`; implementation commit:
+`57932ec` (`test commerce c20 fixture persistence guards`), pushed successfully.
+The launcher claimed Attempt 2 with parent claim commit
+`4c21b8aa4a51b98d53c81fbe366265242cbc0ac5`; the parent synchronization commit
+is `f105630b`. The claim is now cleared per the blocked-task contract.
 
 ## Architect Review
 
