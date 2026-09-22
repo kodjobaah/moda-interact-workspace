@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 130
 executor: null
 claimed_at: null
@@ -610,24 +610,71 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending implementation.
+Reviewed implementation `f928cffea3b059bf0f4b74958062fe3f92e9d126` and parent
+report `a39f7f713a060857f141e2d486e7401c25ce9db0` against the canonical C20
+contract. The bounded file scope, exact exports, fail-closed target guards,
+dedicated PostgreSQL reset command, prefix-scoped Redis scan, lifecycle-backed
+publication calls, package scripts, and consumer documentation are aligned with
+the task. The supplied static checks passed, and the required real-client
+commands correctly failed closed when their target variables were absent.
+
+The implementation is not yet conformant for acceptance:
+
+- `src/commerce/integration/backend/c20-test-fixture.ts` constructs
+  `selectedCapabilityKeys` and `grantedTools` with hardcoded values instead of
+  deriving the grant's complete tool union and capability keys from the
+  persisted Release 2 graph as required by R4/F03/F05.
+- `tests/c20-integration-fixture.test.ts` does not prove the required C20
+  contract. It omits subscription and preference assertions, release member
+  ordering/response-contract assertions, persisted grant tool-union and
+  lifecycle-audit/immutability assertions, and the second reset/seed cycle.
+- The focused test writes an outside-prefix sentinel but never runs the reset
+  command afterward, so it cannot establish F02 or the required sentinel
+  survival evidence.
+
+The missing disposable targets explain why F02, F03, F05 and F06 could not be
+executed, but they do not explain the source-level deficiencies above. The task
+therefore returns to `ready` with its claim cleared; it is not accepted or
+eligible to unblock COMMERCE-018 or COMMERCE-019.
 
 ### Reviewed Files
 
-None
+- `src/commerce/integration/backend/c20-test-fixture.ts`
+- `scripts/reset-c20-integration-fixture.mjs`
+- `tests/c20-integration-fixture.test.ts`
+- `package.json`
+- `docs/commerce-backend-integration.md`
+- `docs/architecture/ARCH-020-implementation-contracts.md`
+- `docs/architecture/ARCH-020-commerce-agent-studio-mcp-capabilities.md`
 
 ### Validation Reviewed
 
-None
+- Reviewed the submitted `prisma:generate`, `typecheck`, `lint -- --quiet`,
+  `build`, `node --check`, and `git diff --check` results.
+- Confirmed both required real-client commands failed closed with the documented
+  missing-target guard.
+- Confirmed dedicated parent and implementation task worktrees are clean,
+  isolated, on matching `task/ARCH-020-COMMERCE-035` branches, and match the
+  supplied remote commits.
 
 ### Architecture Conformance
 
-Pending.
+Partial. Repository ownership and the bounded C20 fixture boundary conform, but
+the grant derivation and focused real-client proof do not yet satisfy the
+ARCH-020 C20 acceptance contract. No production route, startup seed, migration,
+or cross-service contract change was introduced.
 
 ### Follow-up
 
-None
+On the same task branch and attempt, correct grant construction to derive the
+persisted Release 2 member/tool union, expand the focused proof to cover the
+omitted F03/F05 assertions, and execute the required reset -> seed/inspect ->
+reset -> seed cycle with a sentinel outside the deleted prefix. Once disposable
+targets are supplied, run `npm run c20-fixture:reset`, then
+`npm run test:arch020-c20-integration-fixture`, then the repository checks in the
+Validation section. Return the task to review only after the source corrections
+and F01-F08 evidence pass. Do not start COMMERCE-018 or COMMERCE-019.
