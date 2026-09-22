@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -962,3 +962,135 @@ Return the same task through:
 
 The next claim becomes **Attempt 3** exactly once. Dependants remain gated until
 COMMERCE-030 is architect-accepted Complete.
+
+## Architect Review — Attempt 3 — 2026-09-22
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Reviewed the exact submitted Attempt 3 snapshot and implementation `d15d3f5`
+against the complete Attempt-2 A2-R1/A2-R2 correction contract.
+
+Attempt 3 resolves both remaining production-contract mismatches without regressing
+the already accepted receipt/liveness/MIME/rendering/runtime-revalidation behavior.
+
+A2-R1 — canonical lifecycle definition identity — is resolved:
+
+- `current(...)` computes the expected saved definition hash as
+  `digest(canonicalJson(toolHashInput(input.definition)))`;
+- the saved revision `definitionHash` must match that canonical lifecycle hash;
+- receipt creation/publication continues to use the persisted canonical saved hash;
+- the focused harness derives the saved hash from `toolHashInput(definition)`;
+- raw `SHA256(canonicalJson(definition))` is explicitly proven not to be the accepted
+  persisted revision identity.
+
+A2-R2 — credential-independent synthetic sample/publication admission — is resolved:
+
+- the publication-only connection metadata contract contains only persisted
+  non-secret revision shape:
+  `enabled`, `revisionPresent`, `scope`, `authMode`, `authHeader`;
+- no credential existence/status/decrypt/secret lookup remains in
+  `src/commerce/external-publication/**`;
+- valid PLATFORM/NONE, PER_SHOP/BEARER and PER_SHOP/API_KEY shapes can be admitted
+  without merchant credential provisioning;
+- disabled/missing revisions and invalid scope/auth-header combinations fail closed.
+
+Static inspection also confirms the accepted Attempt-2 behavior remains intact:
+
+- ADMIN/SUPER_ADMIN sample-author authorization and active-staff checks;
+- SUPER_ADMIN-only publication admission;
+- receipt tester liveness recheck;
+- strict 24-hour receipt age;
+- strict bounded Redis receipt shape/key dimensions;
+- normalized sample MIME checks;
+- result-schema parsing and bounded safe issues;
+- production `renderDefinitionResult(...)` reuse;
+- receipt-write failure isolation;
+- runtime revalidation of later provider output independent of publication receipt.
+
+No provider HTTP, credential mutation/decryption, UI, preview lifecycle, final factory,
+database schema or publication-write ownership has moved into COMMERCE-030.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/external-publication/contracts.ts`
+- `moda-interact-commerce/src/commerce/external-publication/index.ts`
+- `moda-interact-commerce/src/commerce/external-publication/receipt-store.ts`
+- `moda-interact-commerce/tests/external-publication.test.ts`
+- `moda-interact-commerce/src/commerce/publication/validation.ts`
+- `moda-interact-commerce/package.json`
+- C21 sections 2.3 and 9.5
+
+### Validation Reviewed
+
+Submitted Attempt 3 evidence:
+
+```text
+npm run test:arch020-external-publication
+  PASS — 11 focused scenarios
+
+A2-R1:
+  "uses the canonical lifecycle hash and rejects the raw definition hash"
+  PASS
+
+A2-R2:
+  "validates persisted connection auth shape without requiring credentials"
+  PASS
+
+npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts
+  PASS
+
+git diff --check
+  PASS
+
+repository lint/typecheck/build
+  non-zero only on documented unrelated baseline diagnostics
+  no task-owned external-publication diagnostic recorded
+```
+
+The uploaded archive does not include installed repository dependencies, so architect
+review does not claim a second dependency-backed rerun. Acceptance is based on direct
+inspection of the exact submitted source plus the durable focused validation evidence.
+
+### Architecture Conformance
+
+Conformant for COMMERCE-030.
+
+Accepted invariants include:
+
+```text
+saved definition identity == lifecycle toolHashInput content hash
+sample/publication connection validation == non-secret persisted revision shape
+synthetic publication admission does not require live credentials
+active staff/sample-author receipt semantics
+strict 24-hour bounded receipt
+sample MIME and schema validation
+production Commerce result rendering
+fresh compiler/template/connection checks at publication
+runtime revalidates real provider output later
+publication receipt never bypasses runtime validation
+```
+
+### Follow-up
+
+`ARCH-020-COMMERCE-030` is Complete at Attempt 3.
+
+`ARCH-020-COMMERCE-031` is promoted from Pending to Ready because all of its other
+declared prerequisites are Complete:
+
+```text
+ARCH-020-COMMERCE-019  Complete
+ARCH-020-COMMERCE-009  Complete
+ARCH-020-SHARED-002    Complete
+ARCH-020-COMMERCE-025  Complete
+ARCH-020-COMMERCE-026  Complete
+ARCH-020-COMMERCE-030  Complete
+```
+
+Do not automatically launch COMMERCE-031.
+
+`ARCH-020-COMMERCE-024` and `ARCH-020-COMMERCE-012` remain Pending behind other
+incomplete dependencies. No system-test task is launched by this acceptance.

@@ -25,14 +25,14 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-015](COMMERCE-015-provide-trusted-basket-and-product-policy-adapters.md) | Provide trusted basket and product policy adapters | complete | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | complete | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | complete | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
+| [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-035 |
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-033, ARCH-020-COMMERCE-034 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | complete (Accepted, Attempt 2) | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready (Changes Requested, Attempt 5) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032 |
+| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
@@ -44,7 +44,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
-| [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | ready | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -596,6 +596,46 @@ No dependent is promoted by this acceptance alone: COMMERCE-026 still awaits
 SHARED-002, which remains Ready rather than Complete. GATEWAY-003, COMMERCE-012
 and system validation retain their remaining dependency gates. No automatic task
 launch, implementation/main merge or service gitlink update.
+### COMMERCE-018 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `d074205` and parent report `686abc47`. Production Studio composition
+is present, but six bounded functional corrections remain: mutation Server Actions
+need the canonical Origin guard; capability publication currently sends a strict-schema
+extra field; documentation search paths are double-prefixed on document fetch; release
+read models do not carry the current environment pointer CAS/member-order semantics;
+response validation ignores the supplied example; and U13 omits positive eligibility.
+The exact correction contract is recorded in COMMERCE-018 Architect Review. Submitted
+focused tests (3), typecheck, lint, build and diff hygiene pass, but do not establish
+these flows. No exhaustive retest is requested and no downstream task is promoted or
+launched.
+
+### COMMERCE-018 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Attempt 2
+closes the Origin-boundary source check, strict capability-publish payload, discovery
+path handoff and response-example validation, and preserves no-active-release and
+descriptor de-duplication. Acceptance is still blocked because mutation release
+rereads use the environment-agnostic `release(state,id)` helper (returning the wrong
+pointer CAS/status), U13 still substitutes capability IDs for missing feature IDs,
+the named suite remains mocked-adapter evidence rather than C20's required
+real-application-service integration path, and the C20 producer-SHA/source/export
+mapping table is still absent. Exact A2-R1..R4 corrections are recorded in the task's
+Architect Review. Submitted 8 focused tests plus typecheck/lint/build/diff hygiene are
+retained as passing evidence. No dependent task is promoted or launched.
+
+
+## COMMERCE-018 Attempt 3 / C20 fixture correction — 2026-09-21
+
+COMMERCE-018 is **Blocked, Attempt 3 retained, claims null**. Its environment-aware
+release reread and U13 feature-identity corrections are accepted at source level, but
+real C20 PostgreSQL/Redis integration cannot run because the backend producer fixture
+specified by C20 is absent from accepted COMMERCE-013.
+
+ARCH-020-COMMERCE-033 is therefore **Ready, Attempt 0, claims null** and owns exactly
+the missing deterministic test-only fixture/reset boundary. COMMERCE-019 is also
+Blocked, Attempt 0 retained, because it consumes the same fixture. Neither consumer
+may manufacture a local copy. No task is launched automatically.
 
 ## SHARED-002 Attempt 5 acceptance frontier — 2026-09-21
 
@@ -841,6 +881,15 @@ business-write/audit semantics.
 `SHARED-002` are already Complete. No task is launched automatically. `COMMERCE-024`,
 `GATEWAY-003`, `COMMERCE-012` and system-test work retain their remaining gates.
 
+## COMMERCE-018 Attempt 6 autonomous C20 unblock — 2026-09-22
+
+COMMERCE-018 is **Ready / validation-only, Attempt 6 retained, claim clear**. The
+canonical C20 fixture dependency is COMMERCE-035 (Accepted/Complete Attempt 4), not
+COMMERCE-033; COMMERCE-033 remains the preview OpenAI/Groq provider task. Attempt 7
+is explicitly authorised to provision its own loopback-only disposable PostgreSQL
+and Redis Docker targets, run the real C20 Studio proof, clean them up, and return to
+review. Unchanged unrelated lint/typecheck/build baseline diagnostics do not block
+review after the C20 proof passes.
 ## COMMERCE-028 Attempt 1 architect review — 2026-09-22
 
 **Changes Requested; Ready, Attempt 1 retained; claim clear.** Reviewed implementation
@@ -933,6 +982,33 @@ duplicate-guard assertions required by the prior reviews.
 
 No downstream promotion occurs. COMMERCE-024 and COMMERCE-012 remain gated. The next
 normal claim creates Attempt 6.
+## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
+
+COMMERCE-030 is **Accepted / Complete, Attempt 3** at implementation `d15d3f5`.
+
+The publication validator now uses the canonical lifecycle
+`toolHashInput(definition)` content identity and validates only persisted non-secret
+connection revision shape for synthetic sample/publication admission. Live credential
+existence is not a publication prerequisite. Previously accepted receipt liveness,
+TTL, MIME/schema/template/rendering and runtime-revalidation behavior remains intact.
+
+`COMMERCE-031` is promoted **Pending -> Ready** because all its other declared
+prerequisites are Complete. No task is launched automatically. `COMMERCE-024`,
+`COMMERCE-012` and system-test work retain their other dependency gates.
+## COMMERCE-018 Attempt 7 architect review — 2026-09-22
+
+COMMERCE-018 is **Changes Requested / Ready, Attempt 7 retained, claim clear**.
+Attempt 7 successfully passes the real disposable PostgreSQL/Redis C20 path
+(4/4), the focused Studio suite (9/9), changed-test lint, diff hygiene and labelled
+container cleanup. Those infrastructure/real-adapter results are accepted and must
+not be discarded.
+
+One bounded task-owned gap remains: C20 assigns the full I01 authoring traversal to
+COMMERCE-018 S01, but the current real suite only toggles an existing capability and
+activates/rolls back pre-seeded releases. Attempt 8 adds one deterministic real
+create-tool -> draft -> publish -> capability -> draft -> publish -> release ->
+activate -> rollback traversal, including explicit draft preservation during the
+configured discovery outage. No downstream task is promoted.
 ## COMMERCE-032 Attempt 1 architect review — 2026-09-22
 
 **Blocked, Attempt 1 retained; claim clear.** Implementation `10639c7` is
@@ -963,6 +1039,20 @@ contracts for status/mutation/resolution remain unchanged.
 COMMERCE-032 remains Ready and now explicitly depends on COMMERCE-037. No task is
 claimed or launched automatically.
 
+## COMMERCE-018 Attempt 8 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 8** (`621b33c`; parent report `c99dd982`).
+
+The fifth real C20 Studio scenario now performs the missing I01/S01 production-service
+authoring traversal: tool create/draft/publish, FEATURE capability
+create/draft/publish, saved-draft preservation through discovery outage, response
+validation, exact-member release creation, pointer-CAS activation/rollback and
+one-audit-per-operation verification. C20 passes 5/5 and the focused Studio suite
+passes 9/9. The bounded optional-source-revision hashing correction is accepted.
+
+This acceptance makes ARCH-020-GATEWAY-001 Ready because all of its prerequisites are
+now Complete. No task is launched automatically; COMMERCE-024/012 and system-test
+work retain other gates.
 ## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 4.** The U15/U16 Connections frontend now closes its
@@ -984,3 +1074,19 @@ old-grant pinning, revocation and typed lookup-outage behavior.
 The duplicate COMMERCE-037 dependency and stale duplicate 032/037 index rows are
 reconciled. No downstream promotion occurs because COMMERCE-024 and COMMERCE-012
 retain other incomplete prerequisites.
+
+## COMMERCE-036 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1; claim clear.** Implementation `ccc8c41` and parent
+handoff `e0f0265e` restore the canonical BEARER metadata boundary: null/blank and
+legacy `Authorization` inputs are accepted, but persisted/public revision metadata is
+always `authHeader:null`. API_KEY/NONE behavior is unchanged.
+
+Focused lifecycle tests pass 11/11 and the real PostgreSQL regression passes for both
+accepted BEARER input forms, proving the DATABASE-003 auth-header CHECK is satisfied
+with a real lifecycle write. Scoped ESLint and `git diff --check` pass; remaining
+repository-wide diagnostics are the documented unrelated baseline.
+
+COMMERCE-024's human-readable dependency list/index row is reconciled to include
+COMMERCE-036, matching its authoritative YAML. COMMERCE-024 remains Pending because
+other prerequisites are still incomplete. No task is automatically launched.

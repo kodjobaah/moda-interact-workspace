@@ -527,6 +527,19 @@ The C21 bounded QuickJS kernel now has accepted compile-only, supervisor-termina
 cleanup/recovery, packaged artifact and fixed-memory evidence. COMMERCE-026 remains
 Pending because SHARED-002 is not yet Complete; no downstream task is launched and
 ARCH-020 remains In Progress.
+### COMMERCE-018 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `d074205` and parent report `686abc47`. Production Studio composition
+is present, but six bounded functional corrections remain: mutation Server Actions
+need the canonical Origin guard; capability publication currently sends a strict-schema
+extra field; documentation search paths are double-prefixed on document fetch; release
+read models do not carry the current environment pointer CAS/member-order semantics;
+response validation ignores the supplied example; and U13 omits positive eligibility.
+The exact correction contract is recorded in COMMERCE-018 Architect Review. Submitted
+focused tests (3), typecheck, lint, build and diff hygiene pass, but do not establish
+these flows. No exhaustive retest is requested and no downstream task is promoted or
+launched.
 
 ## ARCH-020 SHARED-002 Attempt 5 accepted — 2026-09-21
 
@@ -629,6 +642,37 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
 
+## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 3** (`d15d3f5`).
+
+The C21 external publication/sample validator now shares the lifecycle's canonical
+`toolHashInput(definition)` identity and admits synthetic samples/publication from
+persisted non-secret connection revision state (`enabled`, `revisionPresent`,
+`scope`, `authMode`, `authHeader`) without requiring live merchant credentials.
+Active-staff receipt semantics, strict 24-hour TTL, sample MIME/schema validation,
+production renderer reuse and later real-provider runtime validation remain intact.
+
+`ARCH-020-COMMERCE-031` is now **Ready** because COMMERCE-019, COMMERCE-009,
+SHARED-002, COMMERCE-025, COMMERCE-026 and COMMERCE-030 are Complete. It is not
+automatically launched. COMMERCE-024 and COMMERCE-012 remain Pending behind their
+other authoritative prerequisites.
+## COMMERCE-018 Attempt 7 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 7 retained.**
+
+The real C20 infrastructure gate is now closed: disposable PostgreSQL/Redis health,
+fixture reset, 4/4 real Studio integration scenarios, 9/9 focused adapter tests and
+container cleanup all pass. The production Studio adapter remains accepted in
+substance.
+
+The remaining COMMERCE-018 task-owned requirement is C20 I01 / S01: the real suite
+must perform one full authoring traversal through production `StudioServices`
+(create tool/draft/publish, create capability/draft/publish, create release,
+activate, rollback) rather than only operating on COMMERCE-035's pre-seeded
+published graph. Attempt 8 is limited to that deterministic proof plus explicit
+saved-draft preservation during the intentional discovery outage unless the real
+flow exposes a bounded 018-owned defect. No downstream task is promoted.
 ## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
