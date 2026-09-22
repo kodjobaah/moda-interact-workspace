@@ -571,3 +571,19 @@ acceptance alone.
 ## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
 `ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.
+
+## COMMERCE-035 Attempt 4 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 4** (`9a0120b`; parent report `b357be28`).
+
+The C20 isolated integration fixture boundary has now executed successfully against
+real task-owned disposable PostgreSQL and Redis targets. The guarded reset and
+focused fixture proof passed, closing the remaining F02/F03/F05/F06 infrastructure
+and relational-proof gates. Repository-wide typecheck/lint/build remain blocked only
+by previously documented unrelated Shared/external-response/Connections diagnostics;
+no COMMERCE-035-owned file is implicated and `git diff --check` passes.
+
+The C20 producer gate is therefore satisfied. This acceptance does not automatically
+launch a consumer and does not rewrite newer COMMERCE-018/019 task branches from the
+older COMMERCE-035 parent snapshot. Reconcile each current consumer branch after this
+acceptance is integrated.

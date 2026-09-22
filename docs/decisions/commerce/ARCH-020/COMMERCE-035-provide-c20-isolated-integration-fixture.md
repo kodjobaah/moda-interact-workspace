@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: complete
 priority: 130
 executor: null
 claimed_at: null
@@ -1218,3 +1218,159 @@ When the disposable reset/proof passes:
 8. **STOP**.
 
 Do not begin COMMERCE-018, COMMERCE-019 or any other task.
+
+## Architect Review — Attempt 4 acceptance — 2026-09-22
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 4 is accepted after real disposable PostgreSQL/Redis execution.
+
+The final source correction at implementation `9a0120b` preserves the accepted C20
+fixture boundary and corrects the grant capability-key ordering / focused proof
+predicates without broadening production scope.
+
+Developer-run real-client validation on 2026-09-22 established:
+
+```text
+npm run c20-fixture:reset
+  PASS
+  "C20 fixture targets reset."
+
+npm run test:arch020-c20-integration-fixture
+  PASS
+  1 test file passed
+  2/2 tests passed
+  "rejects unsafe targets before writes"
+  "seeds the real C20 graph and task-owned Redis namespace"
+```
+
+That execution used task-owned disposable PostgreSQL and Redis targets under the
+accepted `moda.arch020.c20.run` label boundary. It exercised the focused F01-F08
+fixture proof against real services rather than mocks.
+
+Secondary repository validation produced only previously documented unrelated
+baseline diagnostics:
+
+```text
+typecheck:
+  non-zero
+  45 errors in unrelated code-response / external-http /
+  external-response / Connections files and tests
+  no diagnostic in a COMMERCE-035-owned file
+
+lint:
+  non-zero
+  existing src/studio/connections/connections-ui.tsx
+  react-hooks/set-state-in-effect diagnostic
+  no diagnostic in a COMMERCE-035-owned file
+
+build:
+  application compilation PASS
+  later typecheck failure is the same unrelated Shared/external-contract baseline
+  no COMMERCE-035-owned diagnostic
+
+git diff --check:
+  PASS
+```
+
+The real proof closes the remaining F02/F03/F05/F06 acceptance gate:
+
+```text
+F02 disposable PostgreSQL isolation                  PASS
+F03 task-owned Redis namespace/reset                 PASS
+F05 lifecycle audit/immutability/grant guards        PASS
+F06 deterministic reset/reseed isolation             PASS
+```
+
+The production fixture implementation, focused proof and guarded reset path are now
+accepted as the canonical C20 producer boundary for downstream Studio consumers.
+
+### Cleanup Precondition For Applying This Acceptance Patch
+
+This acceptance patch is intentionally generated before the final disposable-container
+removal command is executed.
+
+Apply this patch **only after** the developer has removed exactly:
+
+```text
+arch020-c20-commerce035-verify-18642-postgres
+arch020-c20-commerce035-verify-18642-redis
+```
+
+after verifying both carry:
+
+```text
+moda.arch020.c20.run=arch020-c20-commerce035-verify-18642
+```
+
+and after this command returns no rows:
+
+```bash
+docker ps -a \
+  --filter "label=moda.arch020.c20.run=arch020-c20-commerce035-verify-18642" \
+  --format '{{.Names}}'
+```
+
+Applying this patch is the durable confirmation that this cleanup precondition has
+been satisfied. Do not apply it while either labelled container remains.
+
+### Reviewed Files
+
+- `src/commerce/integration/backend/c20-test-fixture.ts`
+- `tests/c20-integration-fixture.test.ts`
+- `scripts/reset-c20-integration-fixture.mjs`
+- `package.json`
+- `docs/commerce-backend-integration.md`
+- `docs/architecture/ARCH-020-implementation-contracts.md`
+- `database/prisma/migrations/20260920182429_arch020_commerce_capability_releases/migration.sql`
+
+### Validation Reviewed
+
+Architect review incorporates both the durable Attempt-4 Completion Report and the
+developer-supplied terminal evidence from the real disposable validation.
+
+The accepted evidence is limited to COMMERCE-035's bounded fixture responsibility.
+It does not convert the unrelated repository-wide Shared/external-contract baseline
+into COMMERCE-035 work.
+
+### Architecture Conformance
+
+Conformant.
+
+The accepted C20 producer now provides:
+
+```text
+one guarded disposable-database fixture boundary
+one task-owned Redis namespace
+deterministic seed/reset behavior
+real published release/member/response-contract proof
+real lifecycle audit proof
+real immutable published-state proof
+real grant relational-guard proof
+repeatable reset/reseed isolation
+no trigger disabling
+no shared database/Redis destruction
+no production-service redesign
+```
+
+### Follow-up
+
+`ARCH-020-COMMERCE-035` is **Complete at Attempt 4**.
+
+The producer gate for C20 consumers is now satisfied. This COMMERCE-035 task branch
+does not directly rewrite COMMERCE-018 or COMMERCE-019 task files because those tasks
+have newer authoritative task branches than the snapshot used for this acceptance.
+
+After COMMERCE-035 acceptance is merged/reconciled, `moda_architect` must reconcile
+the current COMMERCE-018 branch from `blocked` to `ready` if COMMERCE-035 is its only
+remaining dependency. Preserve COMMERCE-018's accepted attempt number so its next
+launcher claim increments exactly once.
+
+COMMERCE-019 is already Complete in this snapshot and is not reopened by this
+producer acceptance.
+
+Do not automatically launch either consumer.
