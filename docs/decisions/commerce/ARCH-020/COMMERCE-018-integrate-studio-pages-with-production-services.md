@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-22T11:24:09Z
+executor: null
+claimed_at: null
 attempt: 8
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -145,39 +145,37 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Attempt 5 implementation submitted for Architect Review.
+Attempt 8 implementation submitted for Architect Review.
 
 ### Files Changed
 
 - `docs/commerce-studio-integration.md`
 - `tests/studio-integration-c20.test.ts`
 - `package.json`
+- `src/commerce/integration/studio/services.ts`
 
 ### Work Completed
 
-Consumed the accepted COMMERCE-033 `seedC20IntegrationFixture` helper directly from the real-adapter test. The test keeps the production backend, Prisma storage, lifecycle, inspection and Studio adapter real, substituting only discovery and query transports, and covers origin rejection, role authorization, replay/CAS, configured-environment activation/rollback, discovery outage, positive/excluded eligibility and read-only U13 behavior. Updated the mapping document with accepted producer revisions for COMMERCE-002, COMMERCE-008, COMMERCE-011 and COMMERCE-013, and added the documented `test:arch020-studio-integration:c20` script. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
+Consumed the accepted COMMERCE-035 `seedC20IntegrationFixture` helper directly from the real-adapter test. Added the required fifth C20 scenario covering real Studio tool/capability validation, draft creation, publication, response validation, exact-position release creation, activation, rollback and one-audit-per-operation assertions. Fixed two Studio adapter payload mappings so absent optional source revision IDs are omitted before lifecycle operation hashing. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
 
 ### Validation Results
 
 Agent-executed:
 
 - `npm run test:arch020-studio-integration` — passed, 1 file and 9 tests.
-- `npx eslint tests/studio-integration-c20.test.ts` — passed.
+- `npm run c20-fixture:reset` — passed against the approved disposable PostgreSQL/Redis targets.
+- `npm run test:arch020-studio-integration:c20` — passed, 1 file and 5 tests.
+- `npx eslint tests/studio-integration-c20.test.ts src/commerce/integration/studio/services.ts` — passed with one pre-existing unused `ShopSummary` warning.
 - `git diff --check` — passed.
-- `npm run lint` — blocked by one pre-existing error in `src/studio/connections/connections-ui.tsx` (`react-hooks/set-state-in-effect`) and eight warnings; no C20-test error.
-- `npm run typecheck` — route type generation passed, then blocked on three unrelated baseline errors: two narrowing errors in `src/commerce/integration/backend/executors.ts` and one readonly-schema typing error in `tests/code-response-processor.test.ts`.
-- `git diff --check` — passed.
+- `npm run lint` — blocked by the known unrelated `src/studio/connections/connections-ui.tsx` `react-hooks/set-state-in-effect` error and existing warnings; no task-owned error.
+- `npm run typecheck` — route type generation passed, then retained the known unrelated errors in connections typing, backend executor narrowing, CodeMirror dependencies, and code-response test schema typing.
+- `npm run build` — retained the known repository baseline failure; no task-owned diagnostic was implicated.
 
-C20 execution evidence:
-
-- `npm run c20-fixture:reset` — not run; disposable C20 targets were not provisioned.
-- `npm run test:arch020-studio-integration:c20` — resolved the new script and blocked before tests; exact error: `C20_FIXTURE_UNSAFE_DATABASE_TARGET: disposable C20 targets are required`.
-
-PostgreSQL/Redis real-adapter evidence is therefore not claimed. No live provider, production credential, or non-task-owned infrastructure was used.
+No live provider, production credential, or non-task-owned infrastructure was used.
 
 ### Deviations
 
-The required disposable PostgreSQL/Redis environment variables were unavailable, so the reset and real-adapter test were not treated as passes. This attempt adds the missing named C20 script and reconciles the existing evidence/mapping; no out-of-scope source was changed.
+The real C20 run required complete ephemeral service configuration in addition to the disposable target variables; the run was then reset and passed. The final authored release is correctly reported as `SUPERSEDED` after rollback under the existing publication-state model.
 
 ### Assumptions
 
@@ -185,7 +183,7 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Architect/developer action is required to provide disposable C20 PostgreSQL/Redis targets and rerun the real-adapter path. Repository lint remains blocked by the unrelated connections UI error; typecheck did not complete in the available validation window.
+Repository lint, typecheck and build remain blocked by unrelated baseline diagnostics documented above.
 
 ### Architectural Concerns
 
