@@ -1326,3 +1326,16 @@ access, grant writes or cross-call caching.
 
 No downstream task becomes Ready solely from this acceptance. COMMERCE-024 and
 COMMERCE-012 remain behind their other authoritative dependencies.
+
+## COMMERCE-036 Attempt 1 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-036 is **Accepted / Complete, Attempt 1** (`ccc8c41`; parent
+handoff `e0f0265e`). The lifecycle now accepts null/blank or legacy `Authorization`
+for BEARER input but canonicalizes persisted/public revision metadata to
+`authHeader:null`, preserving the DATABASE-003 CHECK and COMMERCE-028 runtime
+derivation of the `Authorization` header.
+
+Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression proves
+both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
+dependency but remains Pending because other prerequisites are incomplete. No
+downstream task is started automatically.

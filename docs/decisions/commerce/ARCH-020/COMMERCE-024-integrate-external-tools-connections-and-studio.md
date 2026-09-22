@@ -102,6 +102,7 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 - ARCH-020-COMMERCE-030
 - ARCH-020-COMMERCE-031
 - ARCH-020-COMMERCE-032
+- ARCH-020-COMMERCE-036
 
 ## Enables
 - ARCH-020-COMMERCE-012
