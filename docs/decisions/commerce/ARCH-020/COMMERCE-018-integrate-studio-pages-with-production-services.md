@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
 executor: copilot
 claimed_at: 2026-09-22T03:30:46Z
@@ -187,6 +187,68 @@ The accepted COMMERCE-033 helper is present and consumed directly, and the named
 ### Git / VCS
 
 Attempt-5 implementation and parent report commits/pushes are recorded after this report update. No parent service gitlink or main integration was performed.
+
+## Attempt 6 Completion Report
+
+### Status
+
+Attempt 6 implementation revalidated and submitted for Architect Review.
+
+### Scope and Evidence
+
+The implementation worktree was prepared and claimed for Attempt 6 with claim
+`00a92812b9b887c247a1ecbb780046391d2a8a63`, dependency gate passed, and accepted
+COMMERCE-033 fixture support present. The current implementation head was
+`d96d74192da3175c9bce8d1e1497e2026ba3dfc6`; no new source edit was required in
+this attempt because the A2-R1/A2-R2 corrections are present and the existing
+focused regressions cover configured-environment pointer rereads, explicit member
+ordering, feature-only eligibility identity, excluded features, and no-active-
+release handling. The mapping document records the accepted producer revisions
+and the C20 source/export, input/output, destination adapter, bounded errors, and
+test coverage.
+
+### Validation Results
+
+Agent-executed:
+
+- `npm run test:arch020-studio-integration` — passed, 1 file and 9 tests.
+- `npm run lint` — blocked by the pre-existing `react-hooks/set-state-in-effect`
+  error in `src/studio/connections/connections-ui.tsx`; eight warnings were also
+  reported, including the existing unused `ShopSummary` warning in the adapter.
+- `npm run typecheck` — blocked by 15 existing errors in connection lifecycle,
+  backend executor narrowing, CodeMirror dependencies/types, and the response
+  processor test; no Studio integration adapter error was reported.
+- `npm run build` — code-runtime packaging, smoke test, Prisma generation, and
+  Next.js production compilation passed; the command then failed in its
+  TypeScript phase on the same unrelated baseline errors, so the build is not
+  claimed as a pass.
+- `git diff --check` — no whitespace errors.
+
+C20 execution evidence:
+
+- `npm run c20-fixture:reset` — not run because disposable C20 PostgreSQL/Redis
+  targets were not provisioned.
+- `npm run test:arch020-studio-integration:c20` — blocked before tests with the
+  exact error `C20_FIXTURE_UNSAFE_DATABASE_TARGET: disposable C20 targets are
+  required`; no C20 tests are claimed as passed.
+
+No live provider, production credential, non-task-owned infrastructure, fixture
+service, MCP route, preview runtime, Shared package, or database schema was
+changed.
+
+### Deviations and Unresolved Validation
+
+Disposable C20 infrastructure remains developer-gated and must be provisioned
+before the real Prisma/storage/lifecycle/inspection/Studio-adapter proof can run.
+Repository lint, typecheck, and build remain blocked by unrelated baseline issues
+described above. These are recorded as validation blockers rather than treated as
+passes.
+
+### Git / VCS
+
+No implementation commit was needed in Attempt 6 because the claimed branch was
+clean after revalidation. This parent report is the only Attempt 6 change and is
+submitted at Architect Review; no enabled task was started.
 
 ## Architect Review
 
