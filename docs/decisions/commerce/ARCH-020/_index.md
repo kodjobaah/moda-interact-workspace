@@ -943,6 +943,19 @@ from synthetic sample/publication admission while validating only persisted
 connection/revision auth shape. COMMERCE-031/024/012 remain gated and no task is
 auto-started.
 
+## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
+
+COMMERCE-030 is **Accepted / Complete, Attempt 3** at implementation `d15d3f5`.
+
+The publication validator now uses the canonical lifecycle
+`toolHashInput(definition)` content identity and validates only persisted non-secret
+connection revision shape for synthetic sample/publication admission. Live credential
+existence is not a publication prerequisite. Previously accepted receipt liveness,
+TTL, MIME/schema/template/rendering and runtime-revalidation behavior remains intact.
+
+`COMMERCE-031` is promoted **Pending -> Ready** because all its other declared
+prerequisites are Complete. No task is launched automatically. `COMMERCE-024`,
+`COMMERCE-012` and system-test work retain their other dependency gates.
 ## COMMERCE-018 Attempt 7 architect review — 2026-09-22
 
 COMMERCE-018 is **Changes Requested / Ready, Attempt 7 retained, claim clear**.
