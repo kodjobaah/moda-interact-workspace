@@ -527,6 +527,19 @@ The C21 bounded QuickJS kernel now has accepted compile-only, supervisor-termina
 cleanup/recovery, packaged artifact and fixed-memory evidence. COMMERCE-026 remains
 Pending because SHARED-002 is not yet Complete; no downstream task is launched and
 ARCH-020 remains In Progress.
+### COMMERCE-018 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `d074205` and parent report `686abc47`. Production Studio composition
+is present, but six bounded functional corrections remain: mutation Server Actions
+need the canonical Origin guard; capability publication currently sends a strict-schema
+extra field; documentation search paths are double-prefixed on document fetch; release
+read models do not carry the current environment pointer CAS/member-order semantics;
+response validation ignores the supplied example; and U13 omits positive eligibility.
+The exact correction contract is recorded in COMMERCE-018 Architect Review. Submitted
+focused tests (3), typecheck, lint, build and diff hygiene pass, but do not establish
+these flows. No exhaustive retest is requested and no downstream task is promoted or
+launched.
 
 ## ARCH-020 SHARED-002 Attempt 5 accepted — 2026-09-21
 
@@ -534,6 +547,20 @@ SHARED-002 is Accepted / Complete at Attempt 5 (`95bab1d`, Shared `0.14.2`). The
 direct C21 component frontier `COMMERCE-020/021/022/023/025/026/027` is Ready;
 remaining extension/integration/gateway/system-test tasks stay dependency-gated.
 
+## COMMERCE-022 pre-claim implementation review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 0 retained; executor/claim null.** Reviewed
+submitted implementation `dd0164b` and parent reports `330a355` / `b74842df`.
+The U15/U16 visual skeleton and Shared `0.14.2` usage are preserved, but C21 X05/XN01
+is not yet satisfied: server routes pass a function-valued fixture port into a Client
+Component, mutation ports bypass the canonical result/unknown-replay contract,
+search/cursor return state and dirty/unknown navigation are not preserved, PER_SHOP
+credentials use a free-form shop ID instead of authorized shop search/status rows,
+and Overview conflates selected with latest revision. The task was implemented before
+a successful launcher claim, so no Attempt 1 is invented retroactively. The next
+successful `/moda-task ARCH-020-COMMERCE-022` claim creates Attempt 1 from the
+already-pushed implementation branch and executes exact A0-R1–A0-R5 in the task
+Architect Review. No downstream promotion or automatic launch.
 ### COMMERCE-020 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -630,3 +657,46 @@ production renderer reuse and later real-provider runtime validation remain inta
 SHARED-002, COMMERCE-025, COMMERCE-026 and COMMERCE-030 are Complete. It is not
 automatically launched. COMMERCE-024 and COMMERCE-012 remain Pending behind their
 other authoritative prerequisites.
+## COMMERCE-018 Attempt 7 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 7 retained.**
+
+The real C20 infrastructure gate is now closed: disposable PostgreSQL/Redis health,
+fixture reset, 4/4 real Studio integration scenarios, 9/9 focused adapter tests and
+container cleanup all pass. The production Studio adapter remains accepted in
+substance.
+
+The remaining COMMERCE-018 task-owned requirement is C20 I01 / S01: the real suite
+must perform one full authoring traversal through production `StudioServices`
+(create tool/draft/publish, create capability/draft/publish, create release,
+activate, rollback) rather than only operating on COMMERCE-035's pre-seeded
+published graph. Attempt 8 is limited to that deterministic proof plus explicit
+saved-draft preservation during the intentional discovery outage unless the real
+flow exposes a bounded 018-owned defect. No downstream task is promoted.
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
+
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
+
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.
+
+## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
+
+The read-only external availability consumer is now proven against the accepted
+COMMERCE-037 producer semantics: trusted merchant identity is passed unchanged into
+`checkConnectionAvailability`, PLATFORM credentials are selected at null scope by
+the producer, and PER_SHOP isolation remains merchant-specific. Existing resolver
+behavior preserves original grant pinning, exact tool/revision/capability identity,
+explicit current exclusions and typed lookup outage without provider calls, secret
+access, grant writes or cross-call caching.
+
+No downstream task becomes Ready solely from this acceptance. COMMERCE-024 and
+COMMERCE-012 remain behind their other authoritative dependencies.

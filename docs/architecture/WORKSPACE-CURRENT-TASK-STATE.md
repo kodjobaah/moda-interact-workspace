@@ -1132,6 +1132,53 @@ and real supervisor `DEADLINE` termination/recovery close the Attempt 3 function
 gaps; prior runtime isolation, packaging and fixed-memory proof remains accepted.
 COMMERCE-026 stays Pending because SHARED-002 is Ready, not Complete. No dependent
 promotion or automatic launch; ARCH-020 remains In Progress.
+### COMMERCE-018 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `d074205` and parent report `686abc47`. Production Studio composition
+is present, but six bounded functional corrections remain: mutation Server Actions
+need the canonical Origin guard; capability publication currently sends a strict-schema
+extra field; documentation search paths are double-prefixed on document fetch; release
+read models do not carry the current environment pointer CAS/member-order semantics;
+response validation ignores the supplied example; and U13 omits positive eligibility.
+The exact correction contract is recorded in COMMERCE-018 Architect Review. Submitted
+focused tests (3), typecheck, lint, build and diff hygiene pass, but do not establish
+these flows. No exhaustive retest is requested and no downstream task is promoted or
+launched.
+
+### COMMERCE-018 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Attempt 2
+closes the Origin-boundary source check, strict capability-publish payload, discovery
+path handoff and response-example validation, and preserves no-active-release and
+descriptor de-duplication. Acceptance is still blocked because mutation release
+rereads use the environment-agnostic `release(state,id)` helper (returning the wrong
+pointer CAS/status), U13 still substitutes capability IDs for missing feature IDs,
+the named suite remains mocked-adapter evidence rather than C20's required
+real-application-service integration path, and the C20 producer-SHA/source/export
+mapping table is still absent. Exact A2-R1..R4 corrections are recorded in the task's
+Architect Review. Submitted 8 focused tests plus typecheck/lint/build/diff hygiene are
+retained as passing evidence. No dependent task is promoted or launched.
+
+
+### COMMERCE-018 Attempt 3 / COMMERCE-033 fixture correction — 2026-09-21
+
+COMMERCE-018 is **Blocked, Attempt 3 retained, claims null** after source-level
+acceptance of its environment-aware release rereads and authoritative U13 feature
+identity handling. Real C20 integration evidence is blocked by a producer gap: the
+accepted COMMERCE-013 backend does not contain the C20 persistent integration
+seed/reset boundary.
+
+The architect creates `ARCH-020-COMMERCE-033` as a bounded producer-correction task:
+**Ready, Attempt 0, executor/claimed_at null**, depends only on accepted COMMERCE-013.
+It has deterministic file ownership, exact exports, TEST target guards, a dedicated
+disposable PostgreSQL reset contract, prefix-scoped Redis cleanup, exact fixture graph
+and real-infrastructure validation. C20 now names 033 as the fixture owner while the
+accepted013 production runtime remains unchanged.
+
+COMMERCE-018 and unclaimed COMMERCE-019 both depend on 033 and are Blocked until it
+is Complete. Their existing attempt numbers are preserved; neither is automatically
+claimed or launched. COMMERCE-012, GATEWAY and system-test gates remain downstream.
 
 ## ARCH-020 SHARED-002 Attempt 5 acceptance — 2026-09-21
 
@@ -1141,6 +1188,20 @@ promotes `COMMERCE-020`, `021`, `022`, `023`, `026` and `027` to Ready and confi
 `COMMERCE-025` Ready. All later C21 tasks retain unsatisfied dependencies; no task
 is launched, no main integration is performed and no service gitlink is changed.
 
+## COMMERCE-022 pre-claim implementation review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 0 retained; executor/claim null.** Reviewed
+submitted implementation `dd0164b` and parent reports `330a355` / `b74842df`.
+The U15/U16 visual skeleton and Shared `0.14.2` usage are preserved, but C21 X05/XN01
+is not yet satisfied: server routes pass a function-valued fixture port into a Client
+Component, mutation ports bypass the canonical result/unknown-replay contract,
+search/cursor return state and dirty/unknown navigation are not preserved, PER_SHOP
+credentials use a free-form shop ID instead of authorized shop search/status rows,
+and Overview conflates selected with latest revision. The task was implemented before
+a successful launcher claim, so no Attempt 1 is invented retroactively. The next
+successful `/moda-task ARCH-020-COMMERCE-022` claim creates Attempt 1 from the
+already-pushed implementation branch and executes exact A0-R1–A0-R5 in the task
+Architect Review. No downstream promotion or automatic launch.
 ### COMMERCE-020 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1339,6 +1400,42 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
 
+## COMMERCE-018 Attempt 6 autonomous validation unblock — 2026-09-22
+
+COMMERCE-018: **Ready / Attempt 6 retained / claim clear** for validation-only
+Attempt 7. COMMERCE-035 is the accepted C20 fixture producer and is Complete;
+COMMERCE-033 is unrelated preview-model transport. The next agent claim is explicitly
+authorised to create and destroy its own isolated local PostgreSQL/Redis containers,
+run the real C20 Studio-adapter proof and return to review without asking the
+developer for target URLs. Existing unrelated lint/typecheck/build diagnostics remain
+baseline unless the Attempt 7 changes worsen them.
+## COMMERCE-028 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Changes Requested / Ready, Attempt 1**, claim clear.
+Implementation `715da4d` is provisionally conformant at the credential-service source
+boundary, but C21 CR02 is not yet proven. The latest task review requires a dedicated
+real PostgreSQL credential rehearsal using two independent Prisma clients plus the
+accepted COMMERCE-020 command kernel to prove NULL-platform uniqueness, one-effect/
+one-audit replay, stale-CAS race, transaction rollback and no plaintext persistence.
+The developer must execute that committed scenario before CR02 may be checked.
+
+No dependency is promoted. COMMERCE-032, GATEWAY-003, COMMERCE-024, COMMERCE-012
+and terminal system-test work retain their dependencies. No downstream task is
+started automatically.
+
+## COMMERCE-028 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Accepted / Complete, Attempt 2** (`7384f81`; report
+`f5214dc1`). CR01–CR03 are established, including the dedicated real PostgreSQL
+CR02-PG-01..05 rehearsal with two Prisma clients, actual command-kernel replay/CAS,
+NULL-platform uniqueness, rollback and no-plaintext persistence.
+
+COMMERCE-032 is **Ready, Attempt 0**. Review separately identified a pre-existing
+COMMERCE-020/database contradiction for BEARER revision `authHeader`. C21 now makes
+the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
+credential resolution derives `Authorization`. The bounded producer correction is
+materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
+on it before final production composition. No task is started automatically.
 ## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
 
 ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
@@ -1374,3 +1471,76 @@ production renderer reuse and later real-provider runtime validation remain inta
 SHARED-002, COMMERCE-025, COMMERCE-026 and COMMERCE-030 are Complete. It is not
 automatically launched. COMMERCE-024 and COMMERCE-012 remain Pending behind their
 other authoritative prerequisites.
+## COMMERCE-018 Attempt 7 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 7 retained.**
+
+The real C20 infrastructure gate is now closed: disposable PostgreSQL/Redis health,
+fixture reset, 4/4 real Studio integration scenarios, 9/9 focused adapter tests and
+container cleanup all pass. The production Studio adapter remains accepted in
+substance.
+
+The remaining COMMERCE-018 task-owned requirement is C20 I01 / S01: the real suite
+must perform one full authoring traversal through production `StudioServices`
+(create tool/draft/publish, create capability/draft/publish, create release,
+activate, rollback) rather than only operating on COMMERCE-035's pre-seeded
+published graph. Attempt 8 is limited to that deterministic proof plus explicit
+saved-draft preservation during the intentional discovery outage unless the real
+flow exposes a bounded 018-owned defect. No downstream task is promoted.
+## COMMERCE-032 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
+preserves original grant tool/revision/provenance and current exclusion identities,
+but cannot be accepted against the current COMMERCE-028 availability port: 032 passes
+trusted merchant `shopId` for all candidates, while 028 currently requires null for
+PLATFORM credential availability and therefore falsely returns `CREDENTIAL_MISSING`.
+
+C21 now makes the intended boundary explicit and
+**ARCH-020-COMMERCE-037 is Ready, Attempt 0** to normalize only the producer's
+read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
+accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
+COMMERCE-012 remain gated. No task is started automatically.
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
+
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
+
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.
+
+## COMMERCE-018 Attempt 8 acceptance — 2026-09-22
+
+COMMERCE-018 is **Complete / Accepted, Attempt 8**, claim clear. The missing real S01
+authoring traversal now passes: C20 5/5 and focused Studio 9/9. The bounded
+optional-source-revision operation-hash correction is accepted. Repository-wide
+lint/typecheck/build remain non-zero only on the recorded unrelated baseline.
+
+All declared prerequisites of ARCH-020-GATEWAY-001 are now Complete, so GATEWAY-001 is
+**Ready / Attempt 0 / claim clear**. It is not launched automatically. COMMERCE-024,
+COMMERCE-012 and system-test tasks retain other gates.
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+COMMERCE-022 is **Complete / Accepted, Attempt 4**, claim clear. Focused 20/20
+Connections tests, lint, diff check and task-owned diagnostics pass; typecheck/build
+remain non-zero only on the documented unrelated 15-error repository baseline.
+COMMERCE-024 and COMMERCE-012 retain additional incomplete prerequisites and receive
+no automatic promotion from this acceptance.
+## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
+
+The read-only external availability consumer is now proven against the accepted
+COMMERCE-037 producer semantics: trusted merchant identity is passed unchanged into
+`checkConnectionAvailability`, PLATFORM credentials are selected at null scope by
+the producer, and PER_SHOP isolation remains merchant-specific. Existing resolver
+behavior preserves original grant pinning, exact tool/revision/capability identity,
+explicit current exclusions and typed lookup outage without provider calls, secret
+access, grant writes or cross-call caching.
+
+No downstream task becomes Ready solely from this acceptance. COMMERCE-024 and
+COMMERCE-012 remain behind their other authoritative dependencies.
