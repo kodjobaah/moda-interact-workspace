@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T14:15:10Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-COMMERCE-019
@@ -121,7 +121,7 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Attempt 4 implementation submitted for Architect Review. The implementation branch is pushed at `598d641`; the launcher claim remains recorded in the task history.
+Attempt 5 implementation submitted for Architect Review. The implementation branch is pushed at `abb02d9`; the executor claim is cleared.
 
 ### Files Changed
 
@@ -142,42 +142,42 @@ External samples now load and clone/freeze the canonical saved revision, reject 
 ### Acceptance Evidence
 
 - PR01: `runs visual JSON sample through processor receipt and saved preview lifecycle` and `runs JavaScript sample through the accepted code processor and receipt lifecycle` pass in `tests/external-preview.test.ts`; actual COMMERCE-025/026 processors are used, the COMMERCE-030 validator is called once, results are `COMPLETED`, and stored replay returns the same result.
-- PR02: `races the same preview identity across service instances without duplicate processing` and `cancels a blocked processor on the same preview identity` pass; one shared state store yields one validator/processor and cancellation yields `CANCELLED` on the same ID with abort propagation. Existing preview service/store/Redis lifecycle suites also pass.
-- PR03: `ignores caller-supplied definitions and rejects unsupported saved revisions before processing`, `fails closed for unsupported media, raw HTML, and invalid processor output`, and `rejects foreign conversation fixtures before persistence` pass. Legacy requests remain unchanged because fixture fields remain optional.
+- PR02: `replays the same external preview run across Redis-backed instances without duplicate side effects`, `rejects a changed external preview payload before Redis-backed side effects`, `cancels a blocked external preview processor across Redis-backed instances`, `expires a Redis-backed running external preview to UNKNOWN on the same run id`, and `enforces Redis-backed external preview quota across different new run ids` pass in `tests/preview-redis-lua.test.ts`. The in-memory regressions `races the same preview identity across service instances without duplicate processing` and `cancels a blocked processor on the same preview identity` also pass; remote cancellation waits for the shared run to become terminal.
+- PR03: `accepts a parameterized content type when the normalized MIME is allowed`, `runs a frozen conversation external fixture without live provider or credential access`, and `rejects a selected non external conversation fixture before persistence` pass in `tests/external-preview.test.ts`; unsupported media, raw HTML, invalid processor output, oversize samples, and fail-closed counters remain covered. Legacy requests remain unchanged because fixture fields remain optional.
 
 ### Validation Results
 
-- `npm run test:arch020-external-preview`: PASS, 10 tests.
+- `npm run test:arch020-external-preview`: PASS, 13 tests.
 - `npm run test:arch020-external-publication`: PASS, 11 tests.
 - `npm run test:arch020-code-processor`: PASS, 6 tests.
-- Focused preview lifecycle command: PASS, 34 tests.
+- Focused preview lifecycle command: PASS, 43 tests, including 9 real Redis Lua tests.
 - Focused ESLint: PASS.
 - `git diff --check`: PASS.
 - Touched-file TypeScript diagnostics: none after final repair.
-- Repository `npm run typecheck`: non-zero with 12 existing diagnostics in studio workspace, connection command/lifecycle, external executor, and processor-test files; none point to the Attempt-4 change.
+- Repository `npm run typecheck`: non-zero with 12 baseline diagnostics in studio workspace, connection command/lifecycle, external executor, and processor-test files; none point to the Attempt-5 implementation or tests.
 - Repository `npm run build`: non-zero on the same existing diagnostics after successful runtime packaging, smoke validation, Prisma generation, and production compilation.
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-031`. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-031`. Implementation commits: `7243937`, `b3dfcb4`, `411970e`, `598d641`; launcher claim commit: `9c8751af92b76a57dbfb55495cccd4a99367a4dd`. Canonical preparation verified dependency gate passed, origin/main incorporation, and recursive submodule readiness at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-031`. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-031`. Implementation commits: `7243937`, `b3dfcb4`, `411970e`, `598d641`, `abb02d9`; launcher claim commit: `d31ee385b762cee4514fd8c39a75556e9459c0e1`. Canonical preparation verified dependency gate passed, origin/main incorporation, and recursive submodule readiness at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Submitted for Architect Review; Attempt 5 is complete and the executor claim is cleared.
 
 ### Review Notes
 
-Definition only; no implementation acceptance.
+Attempt 5 implementation and evidence are submitted for review. No self-acceptance is recorded.
 
 ### Reviewed Files
 
-Not applicable.
+`src/commerce/external-preview/service.ts`, `src/commerce/preview/service.ts`, `tests/external-preview.test.ts`, and `tests/preview-redis-lua.test.ts`.
 
 ### Validation Reviewed
 
-Not applicable.
+Focused suites pass as recorded above. Repository typecheck/build remain blocked by the listed baseline diagnostics.
 
 ### Architecture Conformance
 
